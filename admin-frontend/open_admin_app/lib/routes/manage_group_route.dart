@@ -14,10 +14,9 @@ import 'package:open_admin_app/widgets/group/group_update_widget.dart';
 /// Every user has access to portfolios, they can only see the ones they have access to
 /// and their access will be limited based on whether they are a site admin.
 class ManageGroupRoute extends StatefulWidget {
-  bool createGroup;
-  ManageGroupRoute({Key? key, required bool createGroup})
-      : this.createGroup = createGroup,
-        super(key: key);
+  final bool createGroup;
+  const ManageGroupRoute({Key? key, required this.createGroup})
+      : super(key: key);
 
   @override
   _ManageGroupRouteState createState() => _ManageGroupRouteState();
@@ -236,9 +235,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
 
   void _createGroupCheck() {
     if (widget.createGroup && bloc != null) {
-      widget.createGroup = false;
-
-      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         _createGroup(bloc!);
       });
     }

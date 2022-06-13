@@ -12,11 +12,10 @@ import 'package:open_admin_app/widgets/features/features_overview_table_widget.d
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 
 class FeatureStatusRoute extends StatefulWidget {
-  bool createFeature;
+  final bool createFeature;
 
-  FeatureStatusRoute({Key? key, required bool createFeature})
-      : this.createFeature = createFeature,
-        super(key: key);
+  const FeatureStatusRoute({Key? key, required this.createFeature})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _FeatureStatusState();
@@ -119,9 +118,9 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
 
   void _createFeatureCheck() {
     if (widget.createFeature && bloc != null) {
-      widget.createFeature = false;
+      // widget.createFeature = false;
 
-      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         _createFeature(bloc!);
       });
     }
@@ -172,7 +171,7 @@ class _CreateFeatureButton extends StatelessWidget {
           final canEdit = bloc.mrClient.personState
               .personCanEditFeaturesForCurrentApplication(snapshot.data);
           return !canEdit
-              ? SizedBox.shrink()
+              ? const SizedBox.shrink()
               : FHFlatButtonAccent(
                   keepCase: true,
                   title: 'Create new feature',

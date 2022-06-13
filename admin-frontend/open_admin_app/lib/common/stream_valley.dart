@@ -206,7 +206,9 @@ class StreamValley {
             .then((app) {
           _currentAppSource.add(ReleasedApplication(application: app));
           _refreshApplicationIdChanged();
-        }).catchError((e, s) => mrClient.dialogError(e, s));
+        }).catchError((e, s) {
+          mrClient.dialogError(e, s);
+        });
       }
     }
   }

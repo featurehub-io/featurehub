@@ -8,11 +8,10 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 /// Every user has access to portfolios, they can only see the ones they have access to
 /// and their access will be limited based on whether they are a super admin.
 class ManageServiceAccountsRoute extends StatefulWidget {
-  bool createServiceAccount;
+  final bool createServiceAccount;
 
-  ManageServiceAccountsRoute({Key? key, required bool createServiceAccount})
-      : this.createServiceAccount = createServiceAccount,
-        super(key: key);
+  const ManageServiceAccountsRoute({Key? key, required this.createServiceAccount})
+      :super(key: key);
 
   @override
   _ServiceAccountSearchState createState() => _ServiceAccountSearchState();
@@ -91,9 +90,7 @@ class _ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
 
   void _createServiceAccountCheck() {
     if (widget.createServiceAccount && bloc != null) {
-      widget.createServiceAccount = false;
-
-      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         _createServiceAccount(bloc!);
       });
     }

@@ -12,11 +12,10 @@ import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 
 class AppsRoute extends StatefulWidget {
-  bool createApp;
+  final bool createApp;
 
-  AppsRoute({Key? key, required bool createApp})
-      : this.createApp = createApp,
-        super(key: key);
+  const AppsRoute({Key? key, required this.createApp})
+      : super(key: key);
 
   @override
   _AppsRouteState createState() => _AppsRouteState();
@@ -85,9 +84,7 @@ class _AppsRouteState extends State<AppsRoute> {
 
   void _createAppCheck() {
     if (widget.createApp && bloc != null) {
-      widget.createApp = false;
-
-      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         _createApp(bloc!);
       });
     }

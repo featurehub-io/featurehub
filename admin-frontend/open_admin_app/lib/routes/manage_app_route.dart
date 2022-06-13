@@ -17,8 +17,8 @@ import 'package:open_admin_app/widgets/common/link_to_applications_page.dart';
 import 'package:open_admin_app/widgets/environments/env_list_widget.dart';
 
 class ManageAppRoute extends StatefulWidget {
-  bool createEnvironment;
-  ManageAppRoute(this.createEnvironment, {Key? key}) : super(key: key);
+  final bool createEnvironment;
+  const ManageAppRoute(this.createEnvironment, {Key? key}) : super(key: key);
 
   @override
   _ManageAppRouteState createState() => _ManageAppRouteState();
@@ -103,9 +103,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
 
   void _createEnvironmentCheck() {
     if (widget.createEnvironment && bloc != null) {
-      widget.createEnvironment = false;
-
-      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         _createEnvironment(bloc!);
       });
     }
@@ -207,10 +205,10 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
             overlayColor:
                 MaterialStateColor.resolveWith((Set<MaterialState> states) {
               if (states.contains(MaterialState.pressed)) {
-                return Theme.of(context).colorScheme.secondaryVariant;
+                return Theme.of(context).colorScheme.secondaryContainer;
               }
               if (states.contains(MaterialState.focused)) {
-                return Theme.of(context).colorScheme.secondaryVariant;
+                return Theme.of(context).colorScheme.secondaryContainer;
               } else if (states.contains(MaterialState.hovered)) {
                 return Theme.of(context).cardColor;
               }

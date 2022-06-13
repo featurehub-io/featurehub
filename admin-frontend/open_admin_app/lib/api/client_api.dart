@@ -349,7 +349,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   // ask for my own details and if there are some, set the person and transition
   // to logged in, otherwise ask them to log in.
-  Future requestOwnDetails({bool routeChange: true}) async {
+  Future requestOwnDetails({bool routeChange = true}) async {
     return personServiceApi
         .getPerson('self', includeAcls: true, includeGroups: true)
         .then((p) {
