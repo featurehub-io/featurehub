@@ -2,8 +2,6 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/utils/utils.dart';
-import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
@@ -11,14 +9,14 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 
-class PersonListWidget extends StatefulWidget {
-  const PersonListWidget({Key? key}) : super(key: key);
+class AdminApiKeysListWidget extends StatefulWidget {
+  const AdminApiKeysListWidget({Key? key}) : super(key: key);
 
   @override
-  _PersonListWidgetState createState() => _PersonListWidgetState();
+  _AdminApiKeysListWidgetState createState() => _AdminApiKeysListWidgetState();
 }
 
-class _PersonListWidgetState extends State<PersonListWidget> {
+class _AdminApiKeysListWidgetState extends State<AdminApiKeysListWidget> {
   bool sortToggle = true;
   int sortColumnIndex = 0;
 
@@ -26,15 +24,14 @@ class _PersonListWidgetState extends State<PersonListWidget> {
   Widget build(BuildContext context) {
     final bs = BorderSide(color: Theme.of(context).dividerColor);
     final bloc = BlocProvider.of<ListUsersBloc>(context);
-    return StreamBuilder<List<SearchPersonEntry>>(
-        stream: bloc.personSearch,
+    return StreamBuilder<List<Person>>(
+        stream: bloc.adminAPIKeySearch,
         builder: (context, snapshot) {
           if (snapshot.hasError || snapshot.data == null) {
             return Container(
                 padding: const EdgeInsets.all(30),
                 child: const Text('Loading...'));
           }
-          final allowedLocalIdentity = bloc.mrClient.identityProviders.hasLocal;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
@@ -58,19 +55,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                           onSortColumn(snapshot.data!, columnIndex, ascending);
                         }),
                     DataColumn(
-                      label: const Text('Email'),
-                      onSort: (columnIndex, ascending) {
-                        onSortColumn(snapshot.data!, columnIndex, ascending);
-                      },
-                    ),
-                    DataColumn(
                       label: const Text('Groups'),
-                      onSort: (columnIndex, ascending) {
-                        onSortColumn(snapshot.data!, columnIndex, ascending);
-                      },
-                    ),
-                    DataColumn(
-                      label: const Text('Last logged in'),
                       onSort: (columnIndex, ascending) {
                         onSortColumn(snapshot.data!, columnIndex, ascending);
                       },
@@ -81,25 +66,18 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                     ), onSort: (i, a) => {}),
                   ],
                   rows: [
-                    for (SearchPersonEntry p in snapshot.data!)
+                    for (Person p in snapshot.data!)
                       DataRow(
                           cells: [
-                            DataCell(p.person.name == "No name"
-                                ? Text('Not yet registered',
-                                    style: Theme.of(context).textTheme.caption)
-                                : Text(
-                                    p.person.name!,
+                            DataCell(Text(
+                                    p.name!,
                                   )),
-                            DataCell(Text(p.person.email!)),
-                            DataCell(Text('${p.person.groups.length}')),
-                            DataCell(Text('${p.person.whenLastAuthenticated?.toLocal() ?? ""}')),
+                            DataCell(Text('${p.groups.length}')),
                             DataCell(Row(children: <Widget>[
                               Tooltip(
-                                message: _infoTooltip(p, allowedLocalIdentity),
+                                message: "bla",
                                 child: FHIconButton(
-                                  icon: Icon(Icons.info,
-                                      color:
-                                          _infoColour(p, allowedLocalIdentity)),
+                                  icon: const Icon(Icons.info),
                                   onPressed: () => bloc.mrClient
                                       .addOverlay((BuildContext context) {
                                     return ListUserInfoDialog(bloc, p);
@@ -110,9 +88,9 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                   icon: const Icon(Icons.edit),
                                   onPressed: () => {
                                         ManagementRepositoryClientBloc.router
-                                            .navigateTo(context, '/manage-user',
+                                            .navigateTo(context, '/edit-admin-api-key',
                                                 params: {
-                                              'id': [p.person.id!.id]
+                                              'id': [p.id!.id]
                                             })
                                       }),
                               // const SizedBox(
@@ -123,10 +101,10 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                 onPressed: () => bloc.mrClient
                                     .addOverlay((BuildContext context) {
                                   return bloc.mrClient.person.id!.id ==
-                                          p.person.id!.id
+                                          p.id!.id
                                       ? cantDeleteYourselfDialog(bloc)
                                       : DeleteDialogWidget(
-                                          person: p.person,
+                                          person: p,
                                           bloc: bloc,
                                         );
                                 }),
@@ -135,8 +113,8 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                           ],
                           onSelectChanged: (newValue) {
                             ManagementRepositoryClientBloc.router
-                                .navigateTo(context, '/manage-user', params: {
-                              'id': [p.person.id!.id]
+                                .navigateTo(context, '/edit-admin-api-key', params: {
+                              'id': [p.id!.id]
                             });
                           }),
                   ],
@@ -148,20 +126,20 @@ class _PersonListWidgetState extends State<PersonListWidget> {
   }
 
   void onSortColumn(
-      List<SearchPersonEntry> people, int columnIndex, bool ascending) {
+      List<Person> people, int columnIndex, bool ascending) {
     setState(() {
       if (columnIndex == 0) {
         if (ascending) {
           people.sort((a, b) {
-            if (a.person.name != null && b.person.name != null) {
-              return a.person.name!.compareTo(b.person.name!);
+            if (a.name != null && b.name != null) {
+              return a.name!.compareTo(b.name!);
             }
             return ascending ? 1 : -1;
           });
         } else {
           people.sort((a, b) {
-            if (a.person.name != null && b.person.name != null) {
-              return b.person.name!.compareTo(a.person.name!);
+            if (a.name != null && b.name != null) {
+              return b.name!.compareTo(a.name!);
             }
             return ascending ? -1 : 1;
           });
@@ -169,38 +147,11 @@ class _PersonListWidgetState extends State<PersonListWidget> {
       }
       if (columnIndex == 1) {
         if (ascending) {
-          people.sort((a, b) => a.person.email!.compareTo(b.person.email!));
-        } else {
-          people.sort((a, b) => b.person.email!.compareTo(a.person.email!));
-        }
-      }
-      if (columnIndex == 2) {
-        if (ascending) {
           people.sort((a, b) =>
-              a.person.groups.length.compareTo(b.person.groups.length));
+              a.groups.length.compareTo(b.groups.length));
         } else {
           people.sort((a, b) =>
-              b.person.groups.length.compareTo(a.person.groups.length));
-        }
-      }
-      if (columnIndex == 3) {
-        if (ascending) {
-          people.sort((a, b) {
-            if(a.person.whenLastAuthenticated != null && b.person.whenLastAuthenticated != null) {
-              return a.person.whenLastAuthenticated!.compareTo(
-                  b.person.whenLastAuthenticated!);
-            }
-            return ascending ? 1 : -1;
-          }
-          );
-        } else {
-          people.sort((a, b) {
-            if(a.person.whenLastAuthenticated != null && b.person.whenLastAuthenticated != null) {
-              return b.person.whenLastAuthenticated!.compareTo(
-                  a.person.whenLastAuthenticated!);
-            }
-            return ascending ? -1 : 1;
-          });
+              b.groups.length.compareTo(a.groups.length));
         }
       }
       if (sortColumnIndex == columnIndex) {
@@ -226,33 +177,11 @@ class _PersonListWidgetState extends State<PersonListWidget> {
       ],
     );
   }
-
-  Color _infoColour(SearchPersonEntry entry, bool allowedLocalLogin) {
-    if (!allowedLocalLogin) {
-      return Theme.of(context).colorScheme.primary;
-    }
-
-    if (entry.registration.expired) {
-      return Colors.red;
-    }
-
-    return Colors.green;
-  }
-
-  String _infoTooltip(SearchPersonEntry entry, bool allowedLocalLogin) {
-    if (!allowedLocalLogin) {
-      return "Identity provider login";
-    }
-    if (entry.registration.expired) {
-      return "Registration expired";
-    }
-    return "Local login";
-  }
 }
 
 class ListUserInfoDialog extends StatelessWidget {
   final ListUsersBloc bloc;
-  final SearchPersonEntry entry;
+  final Person entry;
 
   const ListUserInfoDialog(this.bloc, this.entry, {Key? key}) : super(key: key);
 
@@ -260,7 +189,7 @@ class ListUserInfoDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return FHAlertDialog(
       title: const Text(
-        'User Information',
+        'Admin API Key details',
         style: TextStyle(fontSize: 22.0),
       ),
       content: _ListUserInfo(bloc: bloc, entry: entry),
@@ -279,15 +208,14 @@ class ListUserInfoDialog extends StatelessWidget {
 
 class _ListUserInfo extends StatelessWidget {
   final ListUsersBloc bloc;
-  final SearchPersonEntry entry;
+  final Person entry;
 
   const _ListUserInfo({Key? key, required this.bloc, required this.entry})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final allowedLocalIdentity = bloc.mrClient.identityProviders.hasLocal;
-    entry.person.groups.sort((a, b) => a.name.compareTo(b.name));
+    entry.groups.sort((a, b) => a.name.compareTo(b.name));
     return SizedBox(
 //      height: 400.0,
       width: 400.0,
@@ -295,78 +223,13 @@ class _ListUserInfo extends StatelessWidget {
         children: [
           _ListUserRow(
             title: 'Name',
-            child: Text(entry.person.name!,
+            child: Text(entry.name!,
                 style: Theme.of(context).textTheme.bodyText1),
           ),
-          const SizedBox(height: 8),
-          _ListUserRow(
-            title: 'Email',
-            child: Text(entry.person.email!,
-                style: Theme.of(context).textTheme.bodyText1),
-          ),
-          if (allowedLocalIdentity &&
-              !entry.registration.expired &&
-              entry.registration.token.isNotEmpty)
-            Column(
-              children: [
-                const SizedBox(height: 16),
-                const FHPageDivider(),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Registration URL',
-                    style: Theme.of(context).textTheme.caption,
-                  ),
-                ),
-              ],
-            ),
-          if (allowedLocalIdentity &&
-              !entry.registration.expired &&
-              entry.registration.token.isNotEmpty)
-            Row(
-              children: [
-                Expanded(
-                    child: Text(
-                        bloc.mrClient.registrationUrl(entry.registration.token),
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 11.0))),
-                FHCopyToClipboard(
-                  tooltipMessage: 'Copy URL to Clipboard',
-                  copyString:
-                      bloc.mrClient.registrationUrl(entry.registration.token),
-                )
-              ],
-            ),
-          if (allowedLocalIdentity && entry.registration.expired)
-            const Padding(
-              padding: EdgeInsets.only(top: 12.0, bottom: 4.0),
-              child: Text(
-                'Registration expired',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          if (allowedLocalIdentity && entry.registration.expired)
-            FHCopyToClipboardFlatButton(
-              caption: 'Renew registration URL and copy to clipboard',
-              textProvider: () async {
-                try {
-                  final token = await bloc.mrClient.authServiceApi
-                      .resetExpiredToken(entry.person.email!);
-                  bloc.mrClient.addSnackbar(const Text(
-                      'Registration URL renewed and copied to clipboard'));
-                  return bloc.mrClient.registrationUrl(token.token);
-                } catch (e, s) {
-                  bloc.mrClient.addError(FHError.createError(e, s));
-                }
-
-                return null;
-              },
-            ),
           const SizedBox(height: 16.0),
           const FHPageDivider(),
           const SizedBox(height: 16.0),
-          if (entry.person.groups.isNotEmpty)
+          if (entry.groups.isNotEmpty)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
 //              mainAxisAlignment: MainAxisAlignment.end,
@@ -383,8 +246,8 @@ class _ListUserInfo extends StatelessWidget {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (entry.person.groups.isNotEmpty)
-                            ...entry.person.groups
+                          if (entry.groups.isNotEmpty)
+                            ...entry.groups
                                 .map((e) => Text(
                                       e.name,
                                       style:
@@ -441,7 +304,7 @@ class DeleteDialogWidget extends StatelessWidget {
       deleteSelected: () async {
         try {
           await bloc.deletePerson(person.id!.id, true);
-          bloc.triggerSearch('', true);
+          bloc.triggerSearch('', false);
           bloc.mrClient.addSnackbar(Text("User '${person.name}' deleted!"));
           return true;
         } catch (e, s) {

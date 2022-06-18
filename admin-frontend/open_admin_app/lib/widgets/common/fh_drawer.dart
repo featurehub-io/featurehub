@@ -160,6 +160,12 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
                 iconData: AntDesign.addusergroup,
                 path: '/users',
                 params: {}),
+            const FHMenuItem(
+                name: 'Admin API Keys',
+                permissionType: PermissionType.portfolioadmin,
+                iconData: AntDesign.API,
+                path: '/admin-api-keys',
+                params: {}),
           ];
           menus.addAll(widgetCreator.extraGlobalMenuItems(client));
           return Column(children: menus);

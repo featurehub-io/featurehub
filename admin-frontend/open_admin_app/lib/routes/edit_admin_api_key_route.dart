@@ -1,0 +1,136 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/widgets/common/fh_card.dart';
+import 'package:open_admin_app/widgets/common/fh_filled_input_decoration.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
+import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
+import 'package:open_admin_app/widgets/common/fh_header.dart';
+import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widget.dart';
+import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
+
+class EditAdminApiKeyRoute extends StatelessWidget {
+  const EditAdminApiKeyRoute({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final bloc = BlocProvider.of<EditUserBloc>(context);
+
+    return FHCardWidget(
+        width: 800,
+        child: StreamBuilder(
+            stream: bloc.formState,
+            builder: (context, snapshot) {
+              if (snapshot.data == EditUserForm.initialState) {
+                return EditUserFormWidget(person: bloc.person!);
+              }
+              return Container();
+            }));
+  }
+}
+
+class EditUserFormWidget extends StatefulWidget {
+  final Person person;
+
+  const EditUserFormWidget({Key? key, required this.person}) : super(key: key);
+
+  @override
+  _EditUserFormState createState() => _EditUserFormState();
+}
+
+class _EditUserFormState extends State<EditUserFormWidget> {
+  final _formKey = GlobalKey<FormState>();
+  final _name = TextEditingController();
+
+  bool isAddButtonDisabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_name.text == '') {
+      _name.text = widget.person.name!;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bloc = BlocProvider.of<EditUserBloc>(context);
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const <Widget>[
+              FHHeader(
+                title: 'Edit Admin API Key',
+                children: <Widget>[],
+              ),
+            ],
+          ),
+          const SizedBox(height: 8.0),
+          Container(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(top: 30),
+                  child: TextFormField(
+                    controller: _name,
+                    decoration: fhFilledInputDecoration(labelText: 'Name'),
+                    //  initialValue: bloc.person !=null ? bloc.person.name : '',
+                    validator: (v) => (v?.isEmpty == true) ? 'Edit name' : null,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 30.0),
+                  child: Text(
+                    'Remove Admin API Key from a group or add a new one',
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const PortfolioGroupSelector(),
+          FHButtonBar(children: <Widget>[
+            FHFlatButtonTransparent(
+                onPressed: () {
+                  _formKey.currentState!.reset;
+                  ManagementRepositoryClientBloc.router
+                      .navigateTo(context, '/admin-api-keys');
+                },
+                title: 'Cancel',
+                keepCase: true),
+            Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: FHFlatButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        _formKey.currentState!.save();
+                        try {
+                          bloc.updateApiKeyDetails(_name.text);
+                          bloc.mrClient.addSnackbar(Text(
+                              'Admin API Key ${bloc.person!.name!} has been updated'));
+                          ManagementRepositoryClientBloc.router
+                              .navigateTo(context, '/admin-api-keys');
+                        } catch (e, s) {
+                          bloc.mrClient.dialogError(e, s);
+                        }
+                      }
+                    },
+                    title: 'Save and close',
+                    keepCase: true))
+          ]),
+        ],
+      ),
+    );
+  }
+}

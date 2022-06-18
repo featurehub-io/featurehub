@@ -116,6 +116,10 @@ class Routes {
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.createUser),
         permissionType: PermissionType.portfolioadmin);
+    router.define('/create-admin-api-key',
+        routeSlots: [RouteSlot.portfolio],
+        handler: handleRouteChangeRequest(routeCreator.createAdminApiKey),
+        permissionType: PermissionType.portfolioadmin);
     router.define('/portfolios',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.portfolios));
@@ -135,9 +139,17 @@ class Routes {
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.manageUser),
         permissionType: PermissionType.portfolioadmin);
+    router.define('/edit-admin-api-key',
+        routeSlots: [RouteSlot.portfolio],
+        handler: handleRouteChangeRequest(routeCreator.editAdminApiKey),
+        permissionType: PermissionType.portfolioadmin);
     router.define('/users',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.users),
+        permissionType: PermissionType.portfolioadmin);
+    router.define('/admin-api-keys',
+        routeSlots: [RouteSlot.portfolio],
+        handler: handleRouteChangeRequest(routeCreator.adminAPIKeys),
         permissionType: PermissionType.portfolioadmin);
 
     return router;

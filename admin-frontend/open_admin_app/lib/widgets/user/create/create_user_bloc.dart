@@ -11,6 +11,7 @@ enum CreateUserForm { defaultState, successState }
 class CreateUserBloc implements Bloc {
   RegistrationUrl? registrationUrl;
   String? email;
+  String? name;
   GlobalKey<FormState>? formKey;
 
   final ManagementRepositoryClientBloc client;
@@ -47,6 +48,29 @@ class CreateUserBloc implements Bloc {
 
       if (registrationUrl != null) {
 
+        _formStateStream.add(CreateUserForm.successState);
+
+        selectGroupBloc.clearAddedPortfoliosAndGroups();
+      }
+    });
+  }
+
+  Future<void> createAdminApiServiceAccount(String name) {
+    final listOfAddedPortfolioGroups =
+        selectGroupBloc.listOfAddedPortfolioGroups;
+    final cpd = CreatePersonDetails(
+      name: name,
+      personType: PersonType.serviceAccount,
+      groupIds: listOfAddedPortfolioGroups
+          .map((pg) => pg.group.id)
+          .whereNotNull()
+          .toList(),
+    );
+
+    return client.personServiceApi.createPerson(cpd).then((data) {
+      registrationUrl = data;
+
+      if (registrationUrl != null) {
         _formStateStream.add(CreateUserForm.successState);
 
         selectGroupBloc.clearAddedPortfoliosAndGroups();
