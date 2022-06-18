@@ -52,9 +52,9 @@ import io.featurehub.mr.utils.ApplicationUtils;
 import io.featurehub.mr.utils.PortfolioUtils;
 import io.featurehub.rest.CacheControlFilter;
 import io.featurehub.rest.CorsFilter;
-import io.featurehub.web.security.oauth.AuthProvider;
-import io.featurehub.web.security.oauth.BlankProvider;
-import io.featurehub.web.security.oauth.OAuthAdapter;
+import io.featurehub.web.security.oauth.SSOProviderCollection;
+import io.featurehub.web.security.oauth.BlankProviderCollection;
+import io.featurehub.web.security.oauth.SSOCompletionListener;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.Feature;
 import jakarta.ws.rs.core.FeatureContext;
@@ -96,7 +96,7 @@ public class ManagementRepositoryFeature implements Feature {
     context.register(new AbstractBinder() {
         @Override
         protected void configure() {
-          bind(OAuth2MRAdapter.class).to(OAuthAdapter.class).in(Singleton.class);
+          bind(OAuth2MRAdapter.class).to(SSOCompletionListener.class).in(Singleton.class);
           bind(DatabaseAuthRepository.class).to(AuthenticationRepository.class).in(Singleton.class);
           bind(PortfolioUtils.class).to(PortfolioUtils.class).in(Singleton.class);
           bind(AuthManager.class).to(AuthManagerService.class).in(Singleton.class);
@@ -113,7 +113,7 @@ public class ManagementRepositoryFeature implements Feature {
           bind(ServiceAccountResource.class).to(ServiceAccountServiceDelegate.class).in(Singleton.class);
           bind(SetupResource.class).to(SetupServiceDelegate.class).in(Singleton.class);
           bind(ApplicationUtils.class).to(ApplicationUtils.class).in(Singleton.class);
-          bind(BlankProvider.class).to(AuthProvider.class).in(Singleton.class);
+          bind(BlankProviderCollection.class).to(SSOProviderCollection.class).in(Singleton.class);
         }
       }).register(new ContainerLifecycleListener() {
         public void onStartup(Container container) {

@@ -2,14 +2,9 @@ package io.featurehub.web.security.oauth
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import cd.connect.jersey.common.LoggingConfiguration
-import io.featurehub.jersey.config.CommonConfiguration
-import io.featurehub.lifecycle.ClientTelemetryFeature
 import io.featurehub.web.security.oauth.providers.*
 import io.featurehub.web.security.oauth.providers.GithubProvider.Companion.PROVIDER_NAME
 import jakarta.inject.Singleton
-import jakarta.ws.rs.client.Client
-import jakarta.ws.rs.client.ClientBuilder
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
 import org.glassfish.jersey.internal.inject.AbstractBinder
@@ -54,7 +49,7 @@ class OAuth2Feature : Feature {
 
           // the class that allows discovery of the providers
           bind(OAuth2ProviderManager::class.java).to(OAuth2ProviderDiscovery::class.java).to(
-            AuthProvider::class.java
+            SSOProviderCollection::class.java
           ).`in`(Singleton::class.java)
 
           bind(AuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)

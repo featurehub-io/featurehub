@@ -4,7 +4,6 @@ import io.featurehub.web.security.oauth.AuthClientResult
 import jakarta.ws.rs.client.Invocation.Builder
 import jakarta.ws.rs.core.Form
 
-data class OAuth2ProviderCustomisation(val icon: String, val buttonBackgroundColor: String, val buttonText: String)
 
 interface OAuth2Provider {
     // 3: convert AuthClientResult to an actual user we can use
@@ -33,5 +32,5 @@ interface OAuth2Provider {
 
   fun isSecretInHeader(): Boolean = false
 
-  fun providerIcon(): OAuth2ProviderCustomisation? = null
+  fun providerIcon(): SSOProviderCustomisation? = null
 }

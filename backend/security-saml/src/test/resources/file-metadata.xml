@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" entityID="https://nebula.example.com/o/saml2?" validUntil="2025-12-02T07:07:29.000Z">
+  <md:IDPSSODescriptor WantAuthnRequestsSigned="false" protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+    <md:KeyDescriptor use="signing">
+      <ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+        <ds:X509Data>
+          <ds:X509Certificate>MIIDrjCCApYCCQCTlyzvr0plAzANBgkqhkiG9w0BAQsFADCBmDELMAkGA1UEBhMC
+            dHcxEDAOBgNVBAgMB1R3aW5rbGUxEjAQBgNVBAcMCU1ldGF2ZXJzZTEPMA0GA1UE
+            CgwGR2FsYXh5MQ8wDQYDVQQLDAZOZWJ1bGExGzAZBgNVBAMMEm5lYnVsYS5leGFt
+            cGxlLmNvbTEkMCIGCSqGSIb3DQEJARYVbWVAbmVidWxhLmV4YW1wbGUuY29tMB4X
+            DTIyMDYxNzIwMzUyNloXDTIzMDYxNzIwMzUyNlowgZgxCzAJBgNVBAYTAnR3MRAw
+            DgYDVQQIDAdUd2lua2xlMRIwEAYDVQQHDAlNZXRhdmVyc2UxDzANBgNVBAoMBkdh
+            bGF4eTEPMA0GA1UECwwGTmVidWxhMRswGQYDVQQDDBJuZWJ1bGEuZXhhbXBsZS5j
+            b20xJDAiBgkqhkiG9w0BCQEWFW1lQG5lYnVsYS5leGFtcGxlLmNvbTCCASIwDQYJ
+            KoZIhvcNAQEBBQADggEPADCCAQoCggEBAMuje4/VzP9oRVqoTUhnV1xSXalhjC2f
+            ftwwVqdkIniBvD3Gw4/sj4wSFsScfCKnk4cjEmUBvBA4k7ZtTcItOefloA8KGPpH
+            /DWw7vCzVdoEYy8PTiJ6YgsaMX1HOEynw93RQ+qSnhQIg8E35j7WI2pIj63ichyO
+            E3pDeQEl1KY8ojlOw57WPerRJ8QzboCmnX8AdY/n8gzW3WcrAPg6y9EAOdD7Dhf9
+            1xsQsRrZvFWAbAfoRF0P2YRqWKRMR0ti9yPcNN/86NwtX+jTXskmebW5I21ITpys
+            7Np5Nq3BfBvm4iy9EkZ6gTPntgne8BgMAo8OIauK9ghyTI/aEImVqkcCAwEAATAN
+            BgkqhkiG9w0BAQsFAAOCAQEAGLu+dy73XLnl9lDXIpxRdyLKaQSbq9mYP/dFaqLE
+            bQM0Z8joxI0sN1q/JyYryVrfbdOYgVy+D6uqNrHoJex6x5yqEK1MsuCYj9MI7tV5
+            6MHsLAu9SX6gEgAqN695RNQjkEOVBwTa/GEbII3DuwdSXUotEHe3ZLk7+A7MazuJ
+            UEzOcYp5P9bhPSsW7YnOCfK5cHupsbfxztlNzLfh3NsexPMfm7FJLq+Nycf/7yU4
+            EJCFBkcIuTeGtTk8ODmJUzCjohfIHV0qeiim/3YdqoIv9b+ztQhzNZSvkCPTjP5J
+            y9Zd9QwYWqXpU6bw2MnnC7Zun8uz4N8k/OBXqlWDK0POyw==</ds:X509Certificate>
+        </ds:X509Data>
+      </ds:KeyInfo>
+    </md:KeyDescriptor>
+    <md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</md:NameIDFormat>
+    <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://nebula.example.com/o/saml2/idp?"/>
+    <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://nebula.example.com/o/saml2/idp?"/>
+  </md:IDPSSODescriptor>
+</md:EntityDescriptor>

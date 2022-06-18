@@ -8,6 +8,7 @@ import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.mr.ManagementRepositoryFeature;
 import io.featurehub.publish.NATSFeature;
 import io.featurehub.web.security.oauth.OAuth2Feature;
+import io.featurehub.web.security.saml.SamlEnvironmentalFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ public class Application {
     ResourceConfig config = new ResourceConfig(
       ManagementRepositoryFeature.class,
       OAuth2Feature.class,
+      SamlEnvironmentalFeature.class,
       NATSFeature.class,
       TelemetryFeature.class
       );

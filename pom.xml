@@ -48,6 +48,8 @@
 
   <modules>
     <module>backend/security-oauth</module>
+    <module>backend/security-saml</module>
+    <module>backend/security-common</module>
     <module>backend/common-web</module>
     <module>backend/common-db</module>
     <module>backend/common-db-test</module>

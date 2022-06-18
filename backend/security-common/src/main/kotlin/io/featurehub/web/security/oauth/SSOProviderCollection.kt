@@ -1,26 +1,40 @@
 package io.featurehub.web.security.oauth
 
-import io.featurehub.web.security.oauth.providers.OAuth2ProviderCustomisation
+import io.featurehub.web.security.oauth.providers.SSOProviderCustomisation
 import jakarta.inject.Inject
 import org.glassfish.hk2.api.IterableProvider
 
 interface AuthProviderInfo {
+  /**
+   * the unique code for this provider
+   */
   val code: String
-  val icon: OAuth2ProviderCustomisation?
+
+  /**
+   * true only if you want this url shown on the login page, otherwise not. It can respond to a
+   * request for a login, but will not show in the list.
+   */
+  val exposeOnLoginPage: Boolean
+
+  /**
+   * any login page customisation. If this is null, it is assumed the login page knows how to deal with the
+   * "code" (e.g. google, microsoft, github)
+   */
+  val icon: SSOProviderCustomisation?
 }
 
 // this is an opaque pairing of the auth provider info and the method to get a redirect url
 // this may need to be revisited when supporting SAML
 interface AuthProviderSource {
   val authInfo: AuthProviderInfo
-  val redirectUrl: String
+  val redirectUrl: String?
   val code: String
 }
 
 // oauth and blank - these have a number of providers under them. saml would also be under this.
-interface AuthProvider {
+interface SSOProviderCollection {
   val providers: Collection<AuthProviderInfo>
-  fun requestRedirectUrl(provider: String): String
+  fun requestRedirectUrl(provider: String): String?
 }
 
 interface AuthProviderCollection {
@@ -41,11 +55,11 @@ class NoAuthProviders : AuthProviderCollection {
   }
 }
 
-class AuthProviders @Inject constructor(authProviders: IterableProvider<AuthProvider>
+class AuthProviders @Inject constructor(ssoProvidersCollection: IterableProvider<SSOProviderCollection>
 ) : AuthProviderCollection {
-  inner class InternalAuthProviderSource(override val authInfo: AuthProviderInfo, private val authProvider: AuthProvider) : AuthProviderSource {
-    override val redirectUrl: String
-      get() = authProvider.requestRedirectUrl(code)
+  inner class InternalAuthProviderSource(override val authInfo: AuthProviderInfo, private val ssoProviderCollection: SSOProviderCollection) : AuthProviderSource {
+    override val redirectUrl: String?
+      get() = ssoProviderCollection.requestRedirectUrl(code)
 
     override val code: String
       get() = authInfo.code
@@ -54,11 +68,13 @@ class AuthProviders @Inject constructor(authProviders: IterableProvider<AuthProv
   private val flattenedProviderList: MutableList<AuthProviderSource> = mutableListOf()
 
   init {
-    authProviders.forEach { ap ->
+    ssoProvidersCollection.forEach { ap ->
       ap.providers.forEach { prov ->
         flattenedProviderList.add(InternalAuthProviderSource(prov, ap))
       }
     }
+
+    flattenedProviderList.sortBy { it.code }
   }
 
   override val providers: List<AuthProviderSource>
