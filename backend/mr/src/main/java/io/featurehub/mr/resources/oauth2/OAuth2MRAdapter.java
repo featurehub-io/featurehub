@@ -16,7 +16,7 @@ import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.SortOrder;
 import io.featurehub.mr.utils.PortfolioUtils;
-import io.featurehub.web.security.oauth.OAuthAdapter;
+import io.featurehub.web.security.oauth.SSOCompletionListener;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.NewCookie;
@@ -30,7 +30,7 @@ import static jakarta.ws.rs.core.Cookie.DEFAULT_VERSION;
 import static jakarta.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
 
 @Singleton
-public class OAuth2MRAdapter implements OAuthAdapter {
+public class OAuth2MRAdapter implements SSOCompletionListener {
   private static final Logger log = LoggerFactory.getLogger(OAuth2MRAdapter.class);
 
   protected final PersonApi personApi;
@@ -99,7 +99,8 @@ public class OAuth2MRAdapter implements OAuthAdapter {
     // add cookie
     return Response.status(Response.Status.FOUND).cookie(
       new NewCookie("bearer-token", token, "/",
-        cookieDomain.isEmpty() ? null : cookieDomain, DEFAULT_VERSION, null, DEFAULT_MAX_AGE, null, cookieSecure,
+        cookieDomain.isEmpty() ? null : cookieDomain, DEFAULT_VERSION, null,
+        DEFAULT_MAX_AGE, null, cookieSecure,
         false))
       .location(uri).build();
   }

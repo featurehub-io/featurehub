@@ -25,7 +25,7 @@ import io.featurehub.mr.utils.PortfolioUtils;
 import io.featurehub.utils.FallbackPropertyConfig;
 import io.featurehub.web.security.oauth.AuthProviderCollection;
 import io.featurehub.web.security.oauth.AuthProviderSource;
-import io.featurehub.web.security.oauth.providers.OAuth2ProviderCustomisation;
+import io.featurehub.web.security.oauth.providers.SSOProviderCustomisation;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.WebApplicationException;
@@ -108,8 +108,8 @@ public class SetupResource implements SetupServiceDelegate {
 
     authProviderCollection.getProviders()
       .forEach(am -> {
-      if (am.getAuthInfo().getIcon() != null) {
-        final OAuth2ProviderCustomisation icon = am.getAuthInfo().getIcon();
+      if (am.getAuthInfo().getExposeOnLoginPage() && am.getAuthInfo().getIcon() != null) {
+        final SSOProviderCustomisation icon = am.getAuthInfo().getIcon();
         identityMap.put(am.getCode(),
           new IdentityProviderInfo()
             .buttonIcon(icon.getIcon())
@@ -137,12 +137,18 @@ public class SetupResource implements SetupServiceDelegate {
       throw new BadRequestException("Org name cannot be 0 length");
     }
 
+    // if we don't have an email address from them, and they haven't provided an auth provider in the setup request
+    // we need to go and figure out what providers are available.
     if (setupSiteAdmin.getEmailAddress() == null) {
       if (setupSiteAdmin.getAuthProvider() == null) {
-        final String oauth2Providers = FallbackPropertyConfig.Companion.getConfig("oauth2.providers");
-        if (oauth2Providers != null) {
-          setupSiteAdmin.setAuthProvider(oauth2Providers.trim());
+        if (authProviderCollection.getCodes().isEmpty()) {
+          throw new BadRequestException("Cannot figure out how to authorise first user, no options provided.");
         }
+        if (authProviderCollection.getCodes().size() > 1) {
+          throw new BadRequestException("Cannot figure out how to authorise first user, too many options provided.");
+        }
+
+        setupSiteAdmin.setAuthProvider(authProviderCollection.getCodes().get(0));
       }
 
       AuthProviderSource ap = authProviderCollection.find(setupSiteAdmin.getAuthProvider());
@@ -153,7 +159,7 @@ public class SetupResource implements SetupServiceDelegate {
 
         return new TokenizedPerson().redirectUrl(ap.getRedirectUrl());
       } else {
-        throw new BadRequestException(); // invalid attempt to set up
+        throw new BadRequestException("Unknown auth provider"); // invalid attempt to set up
       }
     }
 

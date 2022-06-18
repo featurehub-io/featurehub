@@ -3,7 +3,7 @@ package io.featurehub.web.security.oauth
 import jakarta.ws.rs.NotFoundException
 
 // ensures we have at least one of these as injection requires it
-class BlankProvider : AuthProvider {
+class BlankProviderCollection : SSOProviderCollection {
   override val providers: Collection<AuthProviderInfo>
     get() = emptyList()
 

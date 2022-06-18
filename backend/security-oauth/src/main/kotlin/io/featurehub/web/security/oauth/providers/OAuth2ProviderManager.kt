@@ -8,7 +8,10 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.function.Consumer
 
-class OAuth2ProviderInfo(override val code: String, override val icon: OAuth2ProviderCustomisation?) : AuthProviderInfo
+data class OAuth2ProviderInfo(
+  override val code: String,
+  override val exposeOnLoginPage: Boolean,
+  override val icon: SSOProviderCustomisation?) : AuthProviderInfo
 
 class OAuth2ProviderManager @Inject constructor(oAuth2Providers: IterableProvider<OAuth2Provider>) :
   OAuth2ProviderDiscovery {
@@ -25,7 +28,7 @@ class OAuth2ProviderManager @Inject constructor(oAuth2Providers: IterableProvide
   }
 
   override val providers: Collection<AuthProviderInfo>
-    get() = providerMap.map { p -> OAuth2ProviderInfo(p.key, p.value.providerIcon()) }
+    get() = providerMap.map { p -> OAuth2ProviderInfo(p.key, true, p.value.providerIcon()) }
 
   override fun requestRedirectUrl(provider: String): String {
     // TODO: store state to ensure valid callback and XSRF attacks

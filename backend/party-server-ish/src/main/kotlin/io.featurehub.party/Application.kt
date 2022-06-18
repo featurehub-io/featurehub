@@ -12,6 +12,7 @@ import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info
 import io.featurehub.web.security.oauth.OAuth2Feature
+import io.featurehub.web.security.saml.SamlEnvironmentalFeature
 import org.glassfish.jersey.server.ResourceConfig
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -34,6 +35,7 @@ class Application {
     val config = ResourceConfig(
       CorsFilter::class.java,
       OAuth2Feature::class.java,
+      SamlEnvironmentalFeature::class.java,
       ManagementRepositoryFeature::class.java,
       EdgeGetFeature::class.java,
       TelemetryFeature::class.java,

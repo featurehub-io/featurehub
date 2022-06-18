@@ -135,8 +135,7 @@ class GenericOAuthProvider : OAuth2Provider {
       return null
     }
 
-    return ProviderUser.Builder().email(idInfo[email]?.toString())
-      .name(realName).build()
+    return ProviderUser(idInfo[email]?.toString(), realName)
   }
 
   override fun providerName(): String {
@@ -172,8 +171,8 @@ class GenericOAuthProvider : OAuth2Provider {
     }
   }
 
-  override fun providerIcon(): OAuth2ProviderCustomisation {
-    return OAuth2ProviderCustomisation(iconUrl!!, iconBackgroundColor!!, iconText!!)
+  override fun providerIcon(): SSOProviderCustomisation {
+    return SSOProviderCustomisation(iconUrl!!, iconBackgroundColor!!, iconText!!)
   }
 
   override fun isSecretInHeader(): Boolean {

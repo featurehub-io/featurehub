@@ -24,7 +24,7 @@ https://YOUR_DOMAIN/authorize?
 class OauthResource @Inject constructor(
   protected val oAuth2Client: OAuth2Client,
   protected val discovery: OAuth2ProviderDiscovery,
-  protected val oAuthAdapter: OAuthAdapter
+  protected val SSOCompletionListener: SSOCompletionListener
 ) {
   // where we redirect the user on successful login (with cookie for code)
   @ConfigKey("oauth2.adminUiUrlSuccess")
@@ -48,7 +48,7 @@ class OauthResource @Inject constructor(
     }
 
     // not initialized!
-    if (!oAuthAdapter.initialAppSetupComplete()) {
+    if (!SSOCompletionListener.initialAppSetupComplete()) {
       return Response.status(302).location(URI.create(failureUrl)).build()
     }
 
@@ -59,7 +59,7 @@ class OauthResource @Inject constructor(
       ?: return Response.status(302).location(URI.create(failureUrl)).build()
     val providerUser = providerFromState.discoverProviderUser(authed)
       ?: return Response.status(302).location(URI.create(failureUrl)).build()
-    return oAuthAdapter.successfulCompletion(
+    return SSOCompletionListener.successfulCompletion(
       providerUser.email,
       providerUser.name,
       userMustBeCreatedFirst!!,

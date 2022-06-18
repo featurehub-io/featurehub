@@ -30,7 +30,7 @@ class AzureProvider : OAuth2Provider {
 
   override fun discoverProviderUser(authed: AuthClientResult): ProviderUser? {
     val idInfo = Jwt.decodeJwt(authed.idToken) ?: return null
-    return ProviderUser.Builder().email(idInfo["email"].toString()).name(idInfo["name"].toString()).build()
+    return ProviderUser(idInfo["email"]?.toString(), idInfo["name"]?.toString())
   }
 
   override fun providerName(): String {
