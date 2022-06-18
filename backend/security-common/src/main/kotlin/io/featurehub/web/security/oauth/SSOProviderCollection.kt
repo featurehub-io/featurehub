@@ -57,9 +57,9 @@ class NoAuthProviders : AuthProviderCollection {
 
 class AuthProviders @Inject constructor(ssoProvidersCollection: IterableProvider<SSOProviderCollection>
 ) : AuthProviderCollection {
-  inner class InternalAuthProviderSource(override val authInfo: AuthProviderInfo, private val SSOProviderCollection: SSOProviderCollection) : AuthProviderSource {
+  inner class InternalAuthProviderSource(override val authInfo: AuthProviderInfo, private val ssoProviderCollection: SSOProviderCollection) : AuthProviderSource {
     override val redirectUrl: String?
-      get() = SSOProviderCollection.requestRedirectUrl(code)
+      get() = ssoProviderCollection.requestRedirectUrl(code)
 
     override val code: String
       get() = authInfo.code

@@ -54,10 +54,10 @@ class GithubProvider @Inject constructor(val client: Client) : OAuth2Provider {
       }
 
       if (user.email != null && user.name != null) {
-        return ProviderUser.Builder().email(user.email).name(user.name).build()
+        return ProviderUser(user.email, user.name)
       }
 
-      log.warn("Failed to get user with name and email from Github", user)
+      log.warn("Failed to get user with name and email from Github: {}", user)
     } else {
       log.warn("Failed when attempting to connect to Github for user details {}", response.status)
     }

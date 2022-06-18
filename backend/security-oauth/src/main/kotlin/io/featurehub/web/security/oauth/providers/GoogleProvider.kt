@@ -22,8 +22,7 @@ class GoogleProvider : OAuth2Provider {
   private val tokenUrl: String
   override fun discoverProviderUser(authed: AuthClientResult): ProviderUser? {
     val idInfo = Jwt.decodeJwt(authed.idToken) ?: return null
-    return ProviderUser.Builder().email(idInfo["email"].toString())
-      .name(idInfo["given_name"].toString() + " " + idInfo["family_name"]).build()
+    return ProviderUser(idInfo["email"]?.toString(), idInfo["given_name"].toString() + " " + idInfo["family_name"])
   }
 
   override fun providerName(): String {

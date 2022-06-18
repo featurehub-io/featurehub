@@ -10,6 +10,7 @@ class SamlResourceSpec extends Specification {
   SSOCompletionListener listener
   SamlImplementationProvider samlImplProvider
   SamlResource resource
+  SamlServiceProviderConfig providerConfig
   static final String failureUrl = "http://failure"
   static final String successUrl = "http://success"
 
@@ -17,6 +18,7 @@ class SamlResourceSpec extends Specification {
     samlSources = Mock(SamlConfigSources)
     listener = Mock(SSOCompletionListener)
     samlImplProvider = Mock(SamlImplementationProvider)
+    providerConfig = Mock(SamlServiceProviderConfig)
 
     resource = new SamlResource(samlSources, listener, samlImplProvider,
       successUrl, failureUrl, false)
@@ -81,7 +83,8 @@ class SamlResourceSpec extends Specification {
     when:
       def response = resource.receiveSamlPayload("blah", "sample")
     then:
-      1 * samlSources.getSourceFromRegistrationId("sample") >> Mock(SamlServiceProviderConfig)
+      1 * samlSources.getSourceFromRegistrationId("sample") >> providerConfig
+      1 * providerConfig.mustMatchEmailDomains >> []
       1 * listener.initialAppSetupComplete() >> true
       1 * payload.attributes >> [:]
       1 * payload.nameId >> "fred@fred.com"
@@ -97,7 +100,8 @@ class SamlResourceSpec extends Specification {
     when:
       def response = resource.receiveSamlPayload("blah", "sample")
     then:
-      1 * samlSources.getSourceFromRegistrationId("sample") >> Mock(SamlServiceProviderConfig)
+      1 * samlSources.getSourceFromRegistrationId("sample") >> providerConfig
+      1 * providerConfig.mustMatchEmailDomains >> ["fred.com"]
       1 * listener.initialAppSetupComplete() >> true
       1 * payload.attributes >> ["urn:oid:2.16.840.1.113730.3.1.241":["fred"]]
       1 * payload.nameId >> "fred@fred.com"
@@ -108,13 +112,31 @@ class SamlResourceSpec extends Specification {
       0 * _
   }
 
+  def "we have a valid payload but an invalid email address"() {
+    given: "a mock payload decode"
+      def payload = Mock(FeatureHubSamlResponse)
+    when:
+      def response = resource.receiveSamlPayload("blah", "sample")
+    then:
+      1 * samlSources.getSourceFromRegistrationId("sample") >> providerConfig
+      1 * providerConfig.mustMatchEmailDomains >> ["sausage.com"]
+      1 * providerConfig.samlProviderName >> "sausage"
+      1 * listener.initialAppSetupComplete() >> true
+      1 * payload.nameId >> "fred@fred.com"
+      1 * payload.valid >> true
+      1 * samlImplProvider.decodeResponse(_, "blah") >> payload
+      response302(response)
+      0 * _
+  }
+
   def "we have a valid payload and first/last names so we should get a completion request"() {
     given: "a mock payload decode"
       def payload = Mock(FeatureHubSamlResponse)
     when:
       def response = resource.receiveSamlPayload("blah", "sample")
     then:
-      1 * samlSources.getSourceFromRegistrationId("sample") >> Mock(SamlServiceProviderConfig)
+      1 * samlSources.getSourceFromRegistrationId("sample") >> providerConfig
+      1 * providerConfig.mustMatchEmailDomains >> []
       1 * listener.initialAppSetupComplete() >> true
       1 * payload.attributes >> ["urn:oid:2.5.4.42":["fred"], "urn:oid:2.5.4.4": ["xml"]]
       1 * payload.nameId >> "fred@fred.com"
@@ -132,7 +154,8 @@ class SamlResourceSpec extends Specification {
     when:
       def response = resource.receiveSamlPayload("blah", "sample")
     then:
-      1 * samlSources.getSourceFromRegistrationId("sample") >> Mock(SamlServiceProviderConfig)
+      1 * samlSources.getSourceFromRegistrationId("sample") >> providerConfig
+      1 * providerConfig.mustMatchEmailDomains >> []
       1 * listener.initialAppSetupComplete() >> true
       1 * payload.attributes >> ["urn:oid:2.5.4.42":["fred"]]
       1 * payload.nameId >> "fred@fred.com"
@@ -146,7 +169,7 @@ class SamlResourceSpec extends Specification {
     when:
       def response = resource.receiveSamlPayload("blah", "sample")
     then:
-      1 * samlSources.getSourceFromRegistrationId("sample") >> Mock(SamlServiceProviderConfig)
+      1 * samlSources.getSourceFromRegistrationId("sample") >> providerConfig
       1 * listener.initialAppSetupComplete() >> true
       1 * samlImplProvider.decodeResponse(_, "blah") >> { throw new RuntimeException("bad") }
       response302(response)

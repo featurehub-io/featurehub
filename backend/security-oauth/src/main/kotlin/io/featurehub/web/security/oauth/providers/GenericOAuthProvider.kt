@@ -135,8 +135,7 @@ class GenericOAuthProvider : OAuth2Provider {
       return null
     }
 
-    return ProviderUser.Builder().email(idInfo[email]?.toString())
-      .name(realName).build()
+    return ProviderUser(idInfo[email]?.toString(), realName)
   }
 
   override fun providerName(): String {

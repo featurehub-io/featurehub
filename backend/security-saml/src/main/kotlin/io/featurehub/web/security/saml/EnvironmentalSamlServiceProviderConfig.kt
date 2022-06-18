@@ -26,7 +26,7 @@ class SamlEnvironmentalFeature : Feature {
     context.register(object: AbstractBinder() {
       override fun configure() {
         bind(SamlResponseProviderImpl::class.java)
-          .to(FeatureHubSamlResponse::class.java)
+          .to(SamlImplementationProvider::class.java)
 
         bind(EnvironmentSamlSourceProviderImpl::class.java)
           .to(EnvironmentSamlSourceProvider::class.java)
@@ -115,6 +115,7 @@ class EnvironmentalSamlServiceProviderConfig(private val samlProvider: String, c
   private val _iconUrl: String?
   private val _buttonBackgroundColor: String?
   private val _buttonText: String?
+  private val _emailDomainMatching: List<String>
 
   init {
     _entityIdUri = FallbackPropertyConfig.getMandatoryConfig("saml.${samlProvider}.idp.entity-id")
@@ -123,6 +124,9 @@ class EnvironmentalSamlServiceProviderConfig(private val samlProvider: String, c
     _iconUrl = FallbackPropertyConfig.getConfig("saml.${samlProvider}.login.icon-url")
     _buttonBackgroundColor = FallbackPropertyConfig.getConfig("saml.${samlProvider}.login.button-background-color")
     _buttonText = FallbackPropertyConfig.getConfig("saml.${samlProvider}.login.button-text")
+
+    _emailDomainMatching = FallbackPropertyConfig.getConfig("saml.${samlProvider}.email-domains", "")
+      .split(",").map { it.trim() }.filter { it.isNotEmpty() }.map { it.lowercase() }
 
     _signatureVerifier = SamlCertificateConverter(
       FallbackPropertyConfig.getMandatoryConfig("saml.${samlProvider}.sp.x509-cert"),
@@ -176,6 +180,8 @@ class EnvironmentalSamlServiceProviderConfig(private val samlProvider: String, c
     get() = _buttonBackgroundColor
   override val buttonText: String?
     get() = _buttonText
+  override val mustMatchEmailDomains: List<String>
+    get() = _emailDomainMatching
   override val debug: Boolean
     get() = FallbackPropertyConfig.getConfig("saml.${samlProvider}.debug", "false") == "true"
 

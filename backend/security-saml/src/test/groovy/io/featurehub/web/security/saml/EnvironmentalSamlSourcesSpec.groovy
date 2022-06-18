@@ -214,6 +214,7 @@ vPAw98CTIIgwcWti8n9Xch0v
         "saml.sample.login.button-background-color": "sample-color",
         "saml.sample.login.button-text": "text",
         "saml.sample.sp.x509-cert": testX509(),
+        "saml.sample.email-domains": "FrEd.COM,,wilma.com,",
         "saml.sample.sp.x509-cert-new": testX509(),
         "saml.sample.sp.private-key": testPrivateKey(),
         "saml.sample.idp.metadata-text": testMetadataText(),
@@ -232,6 +233,7 @@ vPAw98CTIIgwcWti8n9Xch0v
         samlProviderName == "sample"
         saml2Settings().idpx509cert != null
         saml2Settings().idpEntityId == "https://nebula.example.com/o/saml2?"
+        mustMatchEmailDomains == ['fred.com', 'wilma.com']
       }
       with(config.icon) {
         buttonBackgroundColor == "sample-color"

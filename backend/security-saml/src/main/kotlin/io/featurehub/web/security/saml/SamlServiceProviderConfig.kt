@@ -40,6 +40,7 @@ interface SamlServiceProviderConfig {
   val icon: String?
   val buttonBackgroundColor: String?
   val buttonText: String?
+  val mustMatchEmailDomains: List<String>
 
   fun saml2Settings(): Saml2Settings {
     return FeatureHubSaml2Settings(this)

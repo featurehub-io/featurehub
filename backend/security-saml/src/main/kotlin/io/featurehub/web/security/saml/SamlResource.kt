@@ -85,6 +85,12 @@ class SamlResource @Inject constructor(
       val samlResponse = samlImplProvider.decodeResponse(samlSource, samlPayload)
       if (samlResponse.isValid()) {
         val email = samlResponse.getNameId()
+
+        if (!matchEmail(email, samlSource.mustMatchEmailDomains)) {
+          log.warn("Invalid email address {} to provider {}", email, samlSource.samlProviderName)
+          return Response.status(302).location(URI.create(samlFailureUrl)).build()
+        }
+
         val attributes = samlResponse.getAttributes()
 
         log.trace("SAML attributes are {}", attributes)
@@ -111,6 +117,19 @@ class SamlResource @Inject constructor(
     }
 
     return Response.status(302).location(URI.create(samlFailureUrl)).build()
+  }
+
+  private fun matchEmail(email: String, mustMatchEmailDomains: List<String>): Boolean {
+    val pos = email.indexOf("@")
+
+    if (pos <= 0 || (pos +1) == email.length) { // bogus email
+      return false
+    }
+
+    if (mustMatchEmailDomains.isEmpty()) { return true }
+
+    val domain = email.substring(pos+1).lowercase()
+    return mustMatchEmailDomains.contains(domain)
   }
 
   /*

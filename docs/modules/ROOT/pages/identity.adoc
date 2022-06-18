@@ -274,12 +274,22 @@ Your SAML provider will ask you what extra attributes are required, so:
 And yes, we realise these are bizarre names but they are from the days of OASIS committees where people smarter than
 us thought this was a good idea. We will reject the login if the name isn't available.
 
+
+==== Enforcing only certain email addresses
+
+For extra security, it is recommended that you list the email domains that are allowed to use SAML, the email address
+coming through will have its domain name extracted and compared against the list you provide. There is no regex or other
+pattern matching, exact domain names (all forced to lower case) need to be provided.
+
+- `saml.google.email-domains` - a comma separated list of valid domains. If empty or not provided then all email addresses are 
+accepted but the global rule of whether the account must be created first remains in place.
+
 ==== Signed response
 
 You need to tell your provider to sign the response so we know it is coming from them. FeatureHub signs its requests
 in a similar fashion.
 
-This is a checkbox on Google for sample.
+This is a checkbox on Google for example.
 
 === Appearance
 

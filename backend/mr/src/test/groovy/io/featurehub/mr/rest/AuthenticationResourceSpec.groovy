@@ -8,6 +8,7 @@ import io.featurehub.mr.model.PasswordReset
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.resources.AuthResource
+import io.featurehub.web.security.oauth.AuthProviderCollection
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.core.SecurityContext
@@ -20,16 +21,18 @@ class AuthenticationResourceSpec extends Specification {
   AuthResource resource
   AuthenticationRepository authRepository
   Person fromPerson
+  AuthProviderCollection authProviderCollection
 
   def setup() {
     personApi = Mock(PersonApi)
     authManager = Mock(AuthManagerService)
     authApi = Mock(AuthenticationApi)
     authRepository = Mock(AuthenticationRepository)
+    authProviderCollection = Mock(AuthProviderCollection)
     fromPerson = new Person().id(new PersonId().id(UUID.randomUUID()))
     authManager.from(_) >> fromPerson
 
-    resource = new AuthResource(authApi, authManager, personApi, authRepository, null)
+    resource = new AuthResource(authApi, authManager, personApi, authRepository, authProviderCollection)
   }
 
   def "A non-admin cannot reset a password"() {
