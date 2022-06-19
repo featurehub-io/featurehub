@@ -222,7 +222,7 @@ class CreateAdminSAFormButtons extends StatelessWidget {
                 if (bloc.formKey!.currentState!.validate()) {
                   bloc.formKey!.currentState!.save();
                   try {
-                    await bloc.createAdminApiServiceAccount(bloc.name!);
+                    await bloc.createUser(null, bloc.name!);
                   } catch (e, s) {
                     if (e is ApiException && e.code == 409) {
                       await bloc.client.dialogError(e, s,

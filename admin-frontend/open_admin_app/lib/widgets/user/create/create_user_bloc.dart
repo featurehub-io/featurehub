@@ -32,35 +32,13 @@ class CreateUserBloc implements Bloc {
     _formStateStream.add(CreateUserForm.defaultState);
   }
 
-  Future<void> createUser(String email) {
+  Future<void> createUser(String? email, String? name) {
     final listOfAddedPortfolioGroups =
         selectGroupBloc.listOfAddedPortfolioGroups;
     final cpd = CreatePersonDetails(
       email: email,
-      groupIds: listOfAddedPortfolioGroups
-          .map((pg) => pg.group.id)
-          .whereNotNull()
-          .toList(),
-    );
-
-    return client.personServiceApi.createPerson(cpd).then((data) {
-      registrationUrl = data;
-
-      if (registrationUrl != null) {
-
-        _formStateStream.add(CreateUserForm.successState);
-
-        selectGroupBloc.clearAddedPortfoliosAndGroups();
-      }
-    });
-  }
-
-  Future<void> createAdminApiServiceAccount(String name) {
-    final listOfAddedPortfolioGroups =
-        selectGroupBloc.listOfAddedPortfolioGroups;
-    final cpd = CreatePersonDetails(
       name: name,
-      personType: PersonType.serviceAccount,
+      personType: name == null ? PersonType.person : PersonType.serviceAccount,
       groupIds: listOfAddedPortfolioGroups
           .map((pg) => pg.group.id)
           .whereNotNull()
@@ -71,6 +49,7 @@ class CreateUserBloc implements Bloc {
       registrationUrl = data;
 
       if (registrationUrl != null) {
+
         _formStateStream.add(CreateUserForm.successState);
 
         selectGroupBloc.clearAddedPortfoliosAndGroups();

@@ -247,7 +247,7 @@ class CreateUserFormButtons extends StatelessWidget {
                 if (bloc.formKey!.currentState!.validate()) {
                   bloc.formKey!.currentState!.save();
                   try {
-                    await bloc.createUser(bloc.email!);
+                    await bloc.createUser(bloc.email!, null);
                   } catch (e, s) {
                     if (e is ApiException && e.code == 409) {
                       await bloc.client.dialogError(e, s,
