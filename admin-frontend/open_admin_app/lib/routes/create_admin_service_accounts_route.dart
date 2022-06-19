@@ -12,33 +12,33 @@ import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widg
 import 'package:open_admin_app/widgets/user/create/create_user_bloc.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
-class CreateAdminApiKeyRoute extends StatelessWidget {
+class CreateAdminServiceAccountsRoute extends StatelessWidget {
   final String title;
 
-  const CreateAdminApiKeyRoute({Key? key, required this.title})
+  const CreateAdminServiceAccountsRoute({Key? key, required this.title})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const FHCardWidget(width: 800, child: AddUserFormWidget());
+    return const FHCardWidget(width: 800, child: AddAdminServiceAccountFormWidget());
   }
 }
 
-class AddUserFormWidget extends StatelessWidget {
-  const AddUserFormWidget({Key? key}) : super(key: key);
+class AddAdminServiceAccountFormWidget extends StatelessWidget {
+  const AddAdminServiceAccountFormWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
-      children: const <Widget>[TopWidget(), BottomWidget()],
+      children: const <Widget>[TopAdminSAWidget(), BottomAdminSAWidget()],
     );
   }
 }
 
-class TopWidget extends StatelessWidget {
-  const TopWidget({Key? key}) : super(key: key);
+class TopAdminSAWidget extends StatelessWidget {
+  const TopAdminSAWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -49,27 +49,27 @@ class TopWidget extends StatelessWidget {
         builder: (context, AsyncSnapshot<CreateUserForm> snapshot) {
           if (snapshot.hasData &&
               snapshot.data == CreateUserForm.successState) {
-            return const TopWidgetSuccess();
+            return const TopAdminSAWidgetSuccess();
           }
           // ignore: prefer_const_constructors
-          return TopWidgetDefault();
+          return TopAdminSAWidgetDefault();
         });
   }
 }
 
-class TopWidgetDefault extends StatefulWidget {
-  const TopWidgetDefault({Key? key}) : super(key: key);
+class TopAdminSAWidgetDefault extends StatefulWidget {
+  const TopAdminSAWidgetDefault({Key? key}) : super(key: key);
 
   @override
-  _TopWidgetDefaultState createState() => _TopWidgetDefaultState();
+  _TopAdminSAWidgetDefaultState createState() => _TopAdminSAWidgetDefaultState();
 }
 
-class _TopWidgetDefaultState extends State<TopWidgetDefault> {
+class _TopAdminSAWidgetDefaultState extends State<TopAdminSAWidgetDefault> {
   final _name = TextEditingController();
   bool isAddButtonDisabled = true;
 
   @override
-  void didUpdateWidget(TopWidgetDefault oldWidget) {
+  void didUpdateWidget(TopAdminSAWidgetDefault oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     final bloc = BlocProvider.of<CreateUserBloc>(context);
@@ -85,7 +85,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const FHHeader(title: 'Create new Admin API Key'),
+              const FHHeader(title: 'Create Admin Service Account'),
               Container(
                 constraints: const BoxConstraints(maxWidth: 300),
                 child: Column(
@@ -98,7 +98,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                       ),
                       validator: (v) {
                         if (v?.isEmpty == true) {
-                          return 'Please provide a name for the Admin API Key';
+                          return 'Please provide a name for the Admin Service Account';
                         }
                         return null;
                       },
@@ -119,72 +119,66 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
   }
 }
 
-class TopWidgetSuccess extends StatelessWidget {
-  const TopWidgetSuccess({Key? key}) : super(key: key);
+class TopAdminSAWidgetSuccess extends StatelessWidget {
+  const TopAdminSAWidgetSuccess({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
-    final hasLocal =
-        bloc.client.identityProviders.hasLocal && bloc.registrationUrl != null;
 
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text('Admin API Key created! \n',
-                  style: Theme.of(context).textTheme.headline6),
-              Text(bloc.name ?? '',
-                  style: Theme.of(context).textTheme.bodyText1),
-            ],
-          ),
-          if (hasLocal)
+          Text('Admin Service Account "${bloc.name}" created! \n',
+              style: Theme.of(context).textTheme.headline6),
             Padding(
               padding: const EdgeInsets.only(top: 20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text('Admin API Key',
+                  Text('Authentication "Bearer token"',
                       style: Theme.of(context).textTheme.subtitle2),
-                  Text(
+                  const SizedBox(height: 4.0),
+                  SelectableText(
                     bloc.registrationUrl!.token,
                     style: Theme.of(context).textTheme.caption,
                   ),
                 ],
               ),
             ),
-          if (hasLocal)
             Row(
               children: <Widget>[
                 FHCopyToClipboardFlatButton(
                   text: bloc.registrationUrl!.token,
-                  caption: ' Copy Admin API key to clipboard',
+                  caption: ' Copy authentication "Bearer token" to clipboard',
                 ),
               ],
             ),
+          Text(
+            'For security, you will not be able to view the "Bearer token" once you navigate away from this page.',
+            style: Theme.of(context).textTheme.caption,
+          ),
           FHButtonBar(children: [
             FHFlatButtonTransparent(
                 onPressed: () {
                   bloc.backToDefault();
                   ManagementRepositoryClientBloc.router
-                      .navigateTo(context, '/admin-api-keys');
+                      .navigateTo(context, '/admin-service-accounts');
                 },
                 title: 'Close'),
             FHFlatButton(
                 onPressed: () {
                   bloc.backToDefault();
                 },
-                title: 'Create another API Key',
+                title: 'Create another Service Account',
                 keepCase: true),
           ])
         ]);
   }
 }
 
-class BottomWidget extends StatelessWidget {
-  const BottomWidget({Key? key}) : super(key: key);
+class BottomAdminSAWidget extends StatelessWidget {
+  const BottomAdminSAWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -197,13 +191,13 @@ class BottomWidget extends StatelessWidget {
               snapshot.data == CreateUserForm.successState) {
             return Container();
           }
-          return const CreateUserFormButtons();
+          return const CreateAdminSAFormButtons();
         });
   }
 }
 
-class CreateUserFormButtons extends StatelessWidget {
-  const CreateUserFormButtons({Key? key}) : super(key: key);
+class CreateAdminSAFormButtons extends StatelessWidget {
+  const CreateAdminSAFormButtons({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -216,7 +210,7 @@ class CreateUserFormButtons extends StatelessWidget {
             bloc.formKey!.currentState!.reset;
           }
           ManagementRepositoryClientBloc.router
-              .navigateTo(context, '/admin-api-keys');
+              .navigateTo(context, '/admin-service-accounts');
         },
         title: 'Cancel',
         keepCase: true,
@@ -233,7 +227,7 @@ class CreateUserFormButtons extends StatelessWidget {
                     if (e is ApiException && e.code == 409) {
                       await bloc.client.dialogError(e, s,
                           messageTitle:
-                              "API Key with name '${bloc.name}' already exists"); // will this ever happen?
+                              "Service Account with name '${bloc.name}' already exists"); // will this ever happen?
                     } else {
                       await bloc.client.dialogError(e, s);
                     }

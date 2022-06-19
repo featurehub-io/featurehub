@@ -9,14 +9,14 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 
-class AdminApiKeysListWidget extends StatefulWidget {
-  const AdminApiKeysListWidget({Key? key}) : super(key: key);
+class AdminServiceAccountsListWidget extends StatefulWidget {
+  const AdminServiceAccountsListWidget({Key? key}) : super(key: key);
 
   @override
-  _AdminApiKeysListWidgetState createState() => _AdminApiKeysListWidgetState();
+  _AdminServiceAccountsListWidgetState createState() => _AdminServiceAccountsListWidgetState();
 }
 
-class _AdminApiKeysListWidgetState extends State<AdminApiKeysListWidget> {
+class _AdminServiceAccountsListWidgetState extends State<AdminServiceAccountsListWidget> {
   bool sortToggle = true;
   int sortColumnIndex = 0;
 
@@ -74,21 +74,18 @@ class _AdminApiKeysListWidgetState extends State<AdminApiKeysListWidget> {
                                   )),
                             DataCell(Text('${p.groups.length}')),
                             DataCell(Row(children: <Widget>[
-                              Tooltip(
-                                message: "bla",
-                                child: FHIconButton(
-                                  icon: const Icon(Icons.info),
-                                  onPressed: () => bloc.mrClient
-                                      .addOverlay((BuildContext context) {
-                                    return ListUserInfoDialog(bloc, p);
-                                  }),
-                                ),
+                              FHIconButton(
+                                icon: const Icon(Icons.info),
+                                onPressed: () => bloc.mrClient
+                                    .addOverlay((BuildContext context) {
+                                  return ServiceAccountInfoDialog(bloc, p);
+                                }),
                               ),
                               FHIconButton(
                                   icon: const Icon(Icons.edit),
                                   onPressed: () => {
                                         ManagementRepositoryClientBloc.router
-                                            .navigateTo(context, '/edit-admin-api-key',
+                                            .navigateTo(context, '/edit-admin-service-account',
                                                 params: {
                                               'id': [p.id!.id]
                                             })
@@ -100,10 +97,7 @@ class _AdminApiKeysListWidgetState extends State<AdminApiKeysListWidget> {
                                 icon: const Icon(Icons.delete),
                                 onPressed: () => bloc.mrClient
                                     .addOverlay((BuildContext context) {
-                                  return bloc.mrClient.person.id!.id ==
-                                          p.id!.id
-                                      ? cantDeleteYourselfDialog(bloc)
-                                      : DeleteDialogWidget(
+                                  return DeleteAdminServiceAccountDialogWidget(
                                           person: p,
                                           bloc: bloc,
                                         );
@@ -113,7 +107,7 @@ class _AdminApiKeysListWidgetState extends State<AdminApiKeysListWidget> {
                           ],
                           onSelectChanged: (newValue) {
                             ManagementRepositoryClientBloc.router
-                                .navigateTo(context, '/edit-admin-api-key', params: {
+                                .navigateTo(context, '/edit-admin-service-account', params: {
                               'id': [p.id!.id]
                             });
                           }),
@@ -160,39 +154,22 @@ class _AdminApiKeysListWidgetState extends State<AdminApiKeysListWidget> {
       sortColumnIndex = columnIndex;
     });
   }
-
-  Widget cantDeleteYourselfDialog(ListUsersBloc bloc) {
-    return FHAlertDialog(
-      title: const Text("You can't delete yourself!"),
-      content: const Text(
-          "To delete yourself from the system, you'll need to contact a site administrator."),
-      actions: <Widget>[
-        // usually buttons at the bottom of the dialog
-        FHFlatButton(
-          title: 'OK',
-          onPressed: () {
-            bloc.mrClient.removeOverlay();
-          },
-        )
-      ],
-    );
-  }
 }
 
-class ListUserInfoDialog extends StatelessWidget {
+class ServiceAccountInfoDialog extends StatelessWidget {
   final ListUsersBloc bloc;
   final Person entry;
 
-  const ListUserInfoDialog(this.bloc, this.entry, {Key? key}) : super(key: key);
+  const ServiceAccountInfoDialog(this.bloc, this.entry, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return FHAlertDialog(
       title: const Text(
-        'Admin API Key details',
+        'Admin Service Account details',
         style: TextStyle(fontSize: 22.0),
       ),
-      content: _ListUserInfo(bloc: bloc, entry: entry),
+      content: _AdminServiceAccountInfo(bloc: bloc, entry: entry),
       actions: <Widget>[
         // usually buttons at the bottom of the dialog
         FHFlatButton(
@@ -206,11 +183,11 @@ class ListUserInfoDialog extends StatelessWidget {
   }
 }
 
-class _ListUserInfo extends StatelessWidget {
+class _AdminServiceAccountInfo extends StatelessWidget {
   final ListUsersBloc bloc;
   final Person entry;
 
-  const _ListUserInfo({Key? key, required this.bloc, required this.entry})
+  const _AdminServiceAccountInfo({Key? key, required this.bloc, required this.entry})
       : super(key: key);
 
   @override
@@ -221,7 +198,7 @@ class _ListUserInfo extends StatelessWidget {
       width: 400.0,
       child: ListView(
         children: [
-          _ListUserRow(
+          _AdminServiceAccountRow(
             title: 'Name',
             child: Text(entry.name!,
                 style: Theme.of(context).textTheme.bodyText1),
@@ -263,11 +240,11 @@ class _ListUserInfo extends StatelessWidget {
   }
 }
 
-class _ListUserRow extends StatelessWidget {
+class _AdminServiceAccountRow extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const _ListUserRow({Key? key, required this.title, required this.child})
+  const _AdminServiceAccountRow({Key? key, required this.title, required this.child})
       : super(key: key);
 
   @override
@@ -287,25 +264,25 @@ class _ListUserRow extends StatelessWidget {
   }
 }
 
-class DeleteDialogWidget extends StatelessWidget {
+class DeleteAdminServiceAccountDialogWidget extends StatelessWidget {
   final Person person;
   final ListUsersBloc bloc;
 
-  const DeleteDialogWidget({Key? key, required this.person, required this.bloc})
+  const DeleteAdminServiceAccountDialogWidget({Key? key, required this.person, required this.bloc})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return FHDeleteThingWarningWidget(
-      thing: "user '${person.name ?? person.email}'",
+      thing: "service account '${person.name}'",
       content:
-          'This user will be removed from all groups and deleted from the system. \n\nThis cannot be undone!',
+          'This service account will be removed from all groups and deleted from the system. \n\nThis cannot be undone!',
       bloc: bloc.mrClient,
       deleteSelected: () async {
         try {
           await bloc.deletePerson(person.id!.id, true);
           bloc.triggerSearch('', false);
-          bloc.mrClient.addSnackbar(Text("User '${person.name}' deleted!"));
+          bloc.mrClient.addSnackbar(Text("Service account '${person.name}' deleted!"));
           return true;
         } catch (e, s) {
           await bloc.mrClient.dialogError(e, s);

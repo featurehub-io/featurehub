@@ -2,11 +2,11 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
-import 'package:open_admin_app/routes/admin_api_keys_route.dart';
+import 'package:open_admin_app/routes/admin_service_accounts_route.dart';
 import 'package:open_admin_app/routes/apps_route.dart';
-import 'package:open_admin_app/routes/create_admin_api_keys_route.dart';
+import 'package:open_admin_app/routes/create_admin_service_accounts_route.dart';
 import 'package:open_admin_app/routes/create_user_route.dart';
-import 'package:open_admin_app/routes/edit_admin_api_key_route.dart';
+import 'package:open_admin_app/routes/edit_admin_service_account_route.dart';
 import 'package:open_admin_app/routes/edit_user_route.dart';
 import 'package:open_admin_app/routes/features_overview_route.dart';
 import 'package:open_admin_app/routes/home_route.dart';
@@ -130,7 +130,7 @@ class RouteCreator {
         child: BlocProvider<CreateUserBloc>(
             creator: (_context, _bag) =>
                 CreateUserBloc(mrBloc, selectGroupBloc: select),
-            child: const CreateAdminApiKeyRoute(title: 'Create Admin API Key')));
+            child: const CreateAdminServiceAccountsRoute(title: 'Create Admin Service Account')));
   }
 
   Widget manageUser(mrBloc, {Map<String, List<String?>> params = const {}}) {
@@ -152,14 +152,14 @@ class RouteCreator {
             creator: (_context, _bag) => EditUserBloc(
                 mrBloc, params['id']?.elementAt(0),
                 selectGroupBloc: select),
-            child: const EditAdminApiKeyRoute()));
+            child: const EditAdminServiceAccountRoute()));
   }
 
   Widget adminAPIKeys(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<ListUsersBloc>(
         creator: (_context, _bag) =>
             ListUsersBloc(params['search']?.elementAt(0), mrBloc, false),
-        child: const ManageAdminApiKeysRoute());
+        child: const ManageAdminServiceAccountsRoute());
   }
 
   Widget serviceAccount(mrBloc,

@@ -139,7 +139,7 @@ class Routes {
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.manageUser),
         permissionType: PermissionType.portfolioadmin);
-    router.define('/edit-admin-api-key',
+    router.define('/edit-admin-service-account',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.editAdminApiKey),
         permissionType: PermissionType.portfolioadmin);
@@ -147,7 +147,7 @@ class Routes {
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.users),
         permissionType: PermissionType.portfolioadmin);
-    router.define('/admin-api-keys',
+    router.define('/admin-service-accounts',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.adminAPIKeys),
         permissionType: PermissionType.portfolioadmin);

@@ -1,12 +1,12 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/admin_api_keys/list_admin_api_keys_widget.dart';
+import 'package:open_admin_app/widgets/admin_api_keys/list_admin_service_accounts_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 
-class ManageAdminApiKeysRoute extends StatelessWidget {
-  const ManageAdminApiKeysRoute({Key? key}) : super(key: key);
+class ManageAdminServiceAccountsRoute extends StatelessWidget {
+  const ManageAdminServiceAccountsRoute({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class ManageAdminApiKeysRoute extends StatelessWidget {
         ),
         const SizedBox(height: 16.0),
         _filterRow(context, bloc),
-        const AdminApiKeysListWidget(),
+        const AdminServiceAccountsListWidget(),
       ],
     );
   }
@@ -31,14 +31,14 @@ class ManageAdminApiKeysRoute extends StatelessWidget {
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         const FHHeader(
-          title: 'Manage Admin API Keys',
+          title: 'Manage Admin Service Accounts',
         ),
         if (bloc.mrClient.userIsSuperAdmin == true)
           Padding(
             padding: const EdgeInsets.only(top: 12.0),
             child: TextButton.icon(
               icon: const Icon(Icons.add),
-              label: const Text('Create new Admin API Key'),
+              label: const Text('Create Admin Service Account'),
               onPressed: () {
                 ManagementRepositoryClientBloc.router
                     .navigateTo(context, '/create-admin-api-key');
@@ -62,7 +62,7 @@ class ManageAdminApiKeysRoute extends StatelessWidget {
           SizedBox(
             width: 200,
             child: TextField(
-              decoration: const InputDecoration(hintText: 'Filter API keys'),
+              decoration: const InputDecoration(hintText: 'Filter Service Accounts'),
               onChanged: (val) => bloc.triggerSearch(val, false),
             ),
           ),

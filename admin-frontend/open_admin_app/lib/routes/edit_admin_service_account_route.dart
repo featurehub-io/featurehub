@@ -11,8 +11,8 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widget.dart';
 import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
 
-class EditAdminApiKeyRoute extends StatelessWidget {
-  const EditAdminApiKeyRoute({Key? key}) : super(key: key);
+class EditAdminServiceAccountRoute extends StatelessWidget {
+  const EditAdminServiceAccountRoute({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,23 +24,23 @@ class EditAdminApiKeyRoute extends StatelessWidget {
             stream: bloc.formState,
             builder: (context, snapshot) {
               if (snapshot.data == EditUserForm.initialState) {
-                return EditUserFormWidget(person: bloc.person!);
+                return EditAdminServiceAccountFormWidget(person: bloc.person!);
               }
               return Container();
             }));
   }
 }
 
-class EditUserFormWidget extends StatefulWidget {
+class EditAdminServiceAccountFormWidget extends StatefulWidget {
   final Person person;
 
-  const EditUserFormWidget({Key? key, required this.person}) : super(key: key);
+  const EditAdminServiceAccountFormWidget({Key? key, required this.person}) : super(key: key);
 
   @override
   _EditUserFormState createState() => _EditUserFormState();
 }
 
-class _EditUserFormState extends State<EditUserFormWidget> {
+class _EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
 
@@ -69,7 +69,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const <Widget>[
               FHHeader(
-                title: 'Edit Admin API Key',
+                title: 'Edit Admin Service Account',
                 children: <Widget>[],
               ),
             ],
@@ -92,7 +92,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                 Padding(
                   padding: const EdgeInsets.only(top: 30.0),
                   child: Text(
-                    'Remove Admin API Key from a group or add a new one',
+                    'Remove Admin Service Account from a group or add a new one',
                     style: Theme.of(context).textTheme.caption,
                   ),
                 ),
@@ -105,7 +105,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                 onPressed: () {
                   _formKey.currentState!.reset;
                   ManagementRepositoryClientBloc.router
-                      .navigateTo(context, '/admin-api-keys');
+                      .navigateTo(context, '/admin-service-accounts');
                 },
                 title: 'Cancel',
                 keepCase: true),
@@ -118,9 +118,9 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                         try {
                           bloc.updateApiKeyDetails(_name.text);
                           bloc.mrClient.addSnackbar(Text(
-                              'Admin API Key ${bloc.person!.name!} has been updated'));
+                              'Admin Service Account ${bloc.person!.name!} has been updated'));
                           ManagementRepositoryClientBloc.router
-                              .navigateTo(context, '/admin-api-keys');
+                              .navigateTo(context, '/admin-service-accounts');
                         } catch (e, s) {
                           bloc.mrClient.dialogError(e, s);
                         }
