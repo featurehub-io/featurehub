@@ -19,9 +19,12 @@ class ListUsersBloc implements Bloc {
 
   bool isPerson;
 
-  final _adminApiKeysSearchResultSource = BehaviorSubject<List<Person>>.seeded([]);
+  final _adminApiKeysSearchResultSource =
+      BehaviorSubject<List<Person>>.seeded([]);
+
   Stream<List<Person>> get adminAPIKeySearch =>
       _adminApiKeysSearchResultSource.stream;
+
   Stream<List<SearchPersonEntry>> get personSearch =>
       _personSearchResultSource.stream;
   final _personSearchResultSource =
@@ -43,13 +46,12 @@ class ListUsersBloc implements Bloc {
     Timer(const Duration(milliseconds: 300), () {
       if (newSearch == search) {
         // hasn't changed
-        if(isPerson) {
-          _requestSearch();
+        if (isPerson) {
+          _requestSearch(PersonType.person);
+        } else {
+          _requestSearch(PersonType.serviceAccount);
         }
-        else {
-          _requestAdminApiKeysSearch();
-        }
-     // don't need to await it, async is fine
+        // don't need to await it, async is fine
       }
     });
   }
@@ -60,48 +62,36 @@ class ListUsersBloc implements Bloc {
   }
 
   // this really runs the search after we have debounced it
-  void _requestSearch() async {
+  void _requestSearch(
+    PersonType personType,
+  ) async {
+    late SearchPersonResult data;
     if (search != null && search!.length > 1) {
       // wait for global error handling to wrap this in try/catch
-      var data = await _personServiceApi.findPeople(
+      data = await _personServiceApi.findPeople(
           order: SortOrder.ASC,
           filter: search,
           includeGroups: true,
           includeLastLoggedIn: true,
-          personTypes: [PersonType.person]
-      );
+          personTypes: [personType]);
 
       // publish it out...
-      _transformPeople(data);
+      if (personType == PersonType.person) {
+        _transformPeople(data);
+      } else {
+        _transformAdminApiKeys(data);
+      }
     } else if (search == null || search!.isEmpty) {
       // this should paginate one presumes
-      var data = await _personServiceApi.findPeople(
+      data = await _personServiceApi.findPeople(
           order: SortOrder.ASC,
           includeGroups: true,
           includeLastLoggedIn: true,
-          personTypes: [PersonType.person]);
-      _transformPeople(data);
+          personTypes: [personType]);
     }
-  }
-
-  void _requestAdminApiKeysSearch() async {
-    if (search != null && search!.length > 1) {
-      // wait for global error handling to wrap this in try/catch
-      var data = await _personServiceApi.findPeople(
-          order: SortOrder.ASC,
-          filter: search,
-          includeGroups: true,
-          personTypes: [PersonType.serviceAccount]
-      );
-
-      // publish it out...
-      _transformAdminApiKeys(data);
-    } else if (search == null || search!.isEmpty) {
-      // this should paginate one presumes
-      var data = await _personServiceApi.findPeople(
-          order: SortOrder.ASC,
-          includeGroups: true,
-          personTypes: [PersonType.serviceAccount]);
+    if (personType == PersonType.person) {
+      _transformPeople(data);
+    } else {
       _transformAdminApiKeys(data);
     }
   }
