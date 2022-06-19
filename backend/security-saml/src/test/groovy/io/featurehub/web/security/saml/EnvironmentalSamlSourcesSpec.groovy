@@ -165,6 +165,7 @@ vPAw98CTIIgwcWti8n9Xch0v
         samlProviderName == "sample"
         saml2Settings().idpx509cert != null
         saml2Settings().idpEntityId == "https://nebula.example.com/o/saml2?"
+        !userMustExist
 //        saml2Settings().idpx509certMulti.size() == 2
       }
       !config.exposeOnLoginPage
@@ -179,7 +180,9 @@ vPAw98CTIIgwcWti8n9Xch0v
         "saml.sample.sp.base-url": "http://baseurl",
         "saml.sample.sp.x509-cert": testX509(),
         "saml.sample.sp.x509-cert-new": testX509(),
+        "saml.sample.email-domains": "john.com",
         "saml.sample.sp.private-key": testPrivateKey(),
+        "auth.userMustBeCreatedFirst": "true"
       ])
     and:
       def client = Mock(Client)
@@ -195,8 +198,10 @@ vPAw98CTIIgwcWti8n9Xch0v
       1 * builder.get() >> response
       1 * response.readEntity(String) >> testMetadataText()
       with(source) {
+        userMustExist
         idpEntityId == "http://entityid"
         samlProviderName == "sample"
+        mustMatchEmailDomains == ['john.com']
         saml2Settings().idpx509cert != null
         saml2Settings().idpEntityId == "https://nebula.example.com/o/saml2?"
       }

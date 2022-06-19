@@ -44,27 +44,28 @@ class OauthResource @Inject constructor(
     @QueryParam("error") error: String?
   ): Response? {
     if (error != null) {
-      return Response.status(302).location(URI.create(failureUrl)).build()
+      return Response.status(302).location(URI.create(failureUrl!!)).build()
     }
 
     // not initialized!
     if (!SSOCompletionListener.initialAppSetupComplete()) {
-      return Response.status(302).location(URI.create(failureUrl)).build()
+      return Response.status(302).location(URI.create(failureUrl!!)).build()
     }
 
     // decode the ProviderUser
     val providerFromState = discovery.getProviderFromState(state)
-      ?: return Response.status(302).location(URI.create(failureUrl)).build()
+      ?: return Response.status(302).location(URI.create(failureUrl!!)).build()
     val authed = oAuth2Client.requestAccess(code, providerFromState)
-      ?: return Response.status(302).location(URI.create(failureUrl)).build()
+      ?: return Response.status(302).location(URI.create(failureUrl!!)).build()
     val providerUser = providerFromState.discoverProviderUser(authed)
-      ?: return Response.status(302).location(URI.create(failureUrl)).build()
+      ?: return Response.status(302).location(URI.create(failureUrl!!)).build()
     return SSOCompletionListener.successfulCompletion(
-      providerUser.email,
-      providerUser.name,
-      userMustBeCreatedFirst!!,
-      failureUrl,
-      successUrl
+        providerUser.email,
+        providerUser.name,
+        userMustBeCreatedFirst!!,
+        failureUrl,
+        successUrl,
+        providerFromState.providerName()
     )
   }
 

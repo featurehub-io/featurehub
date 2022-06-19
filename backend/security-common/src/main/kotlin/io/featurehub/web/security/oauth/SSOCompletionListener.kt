@@ -9,7 +9,8 @@ interface SSOCompletionListener {
     username: String?,
     userMustBeCreatedFirst: Boolean,
     failureUrl: String?,
-    successUrl: String?
+    successUrl: String?,
+    provider: String
   ): Response
 
   // does the organisation need to be created and does it already exist
