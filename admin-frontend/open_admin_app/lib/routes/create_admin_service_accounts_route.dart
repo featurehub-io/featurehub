@@ -1,7 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_filled_input_decoration.dart';
@@ -9,37 +8,37 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
-import 'package:open_admin_app/widgets/user/common/admin_checkbox.dart';
 import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widget.dart';
 import 'package:open_admin_app/widgets/user/create/create_user_bloc.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
-class CreateUserRoute extends StatelessWidget {
+class CreateAdminServiceAccountsRoute extends StatelessWidget {
   final String title;
 
-  const CreateUserRoute({Key? key, required this.title}) : super(key: key);
+  const CreateAdminServiceAccountsRoute({Key? key, required this.title})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const FHCardWidget(width: 800, child: AddUserFormWidget());
+    return const FHCardWidget(width: 800, child: AddAdminServiceAccountFormWidget());
   }
 }
 
-class AddUserFormWidget extends StatelessWidget {
-  const AddUserFormWidget({Key? key}) : super(key: key);
+class AddAdminServiceAccountFormWidget extends StatelessWidget {
+  const AddAdminServiceAccountFormWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
-      children: const <Widget>[TopWidget(), BottomWidget()],
+      children: const <Widget>[TopAdminSAWidget(), BottomAdminSAWidget()],
     );
   }
 }
 
-class TopWidget extends StatelessWidget {
-  const TopWidget({Key? key}) : super(key: key);
+class TopAdminSAWidget extends StatelessWidget {
+  const TopAdminSAWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -50,27 +49,27 @@ class TopWidget extends StatelessWidget {
         builder: (context, AsyncSnapshot<CreateUserForm> snapshot) {
           if (snapshot.hasData &&
               snapshot.data == CreateUserForm.successState) {
-            return const TopWidgetSuccess();
+            return const TopAdminSAWidgetSuccess();
           }
           // ignore: prefer_const_constructors
-          return TopWidgetDefault();
+          return TopAdminSAWidgetDefault();
         });
   }
 }
 
-class TopWidgetDefault extends StatefulWidget {
-  const TopWidgetDefault({Key? key}) : super(key: key);
+class TopAdminSAWidgetDefault extends StatefulWidget {
+  const TopAdminSAWidgetDefault({Key? key}) : super(key: key);
 
   @override
-  _TopWidgetDefaultState createState() => _TopWidgetDefaultState();
+  _TopAdminSAWidgetDefaultState createState() => _TopAdminSAWidgetDefaultState();
 }
 
-class _TopWidgetDefaultState extends State<TopWidgetDefault> {
-  final _email = TextEditingController();
+class _TopAdminSAWidgetDefaultState extends State<TopAdminSAWidgetDefault> {
+  final _name = TextEditingController();
   bool isAddButtonDisabled = true;
 
   @override
-  void didUpdateWidget(TopWidgetDefault oldWidget) {
+  void didUpdateWidget(TopAdminSAWidgetDefault oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     final bloc = BlocProvider.of<CreateUserBloc>(context);
@@ -86,34 +85,24 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const FHHeader(title: 'Create new user'),
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                child: Text(
-                  'To create a new user please first provide their email address',
-                  style: Theme.of(context).textTheme.caption,
-                ),
-              ),
+              const FHHeader(title: 'Create Admin Service Account'),
               Container(
                 constraints: const BoxConstraints(maxWidth: 300),
                 child: Column(
                   children: [
                     const SizedBox(height: 16.0),
                     TextFormField(
-                      controller: _email,
+                      controller: _name,
                       decoration: fhFilledInputDecoration(
-                        labelText: 'Email',
+                        labelText: 'Name',
                       ),
                       validator: (v) {
                         if (v?.isEmpty == true) {
-                          return 'Please enter email address';
-                        }
-                        if (!validateEmail(v)) {
-                          return 'Please enter a valid email address';
+                          return 'Please provide a name for the Admin Service Account';
                         }
                         return null;
                       },
-                      onSaved: (v) => bloc.email = v,
+                      onSaved: (v) => bloc.name = v,
                     ),
                   ],
                 ),
@@ -121,90 +110,75 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
               Padding(
                 padding: const EdgeInsets.only(top: 30.0),
                 child: Text(
-                  'Add user to some portfolio groups or leave it blank to add them later',
+                  'Assign to some portfolio groups or leave it blank to add them later',
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),
               const PortfolioGroupSelector(),
-              const AdminCheckboxWidget()
             ]));
   }
 }
 
-class TopWidgetSuccess extends StatelessWidget {
-  const TopWidgetSuccess({Key? key}) : super(key: key);
+class TopAdminSAWidgetSuccess extends StatelessWidget {
+  const TopAdminSAWidgetSuccess({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
-    final hasLocal =
-        bloc.client.identityProviders.hasLocal && bloc.registrationUrl != null;
 
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
-        Widget>[
-      Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('User created! \n',
+          Text('Admin Service Account "${bloc.name}" created! \n',
               style: Theme.of(context).textTheme.headline6),
-          Text(bloc.email ?? '', style: Theme.of(context).textTheme.bodyText1),
-        ],
-      ),
-      if (hasLocal)
-        Padding(
-          padding: const EdgeInsets.only(top: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text('Registration URL',
-                  style: Theme.of(context).textTheme.subtitle2),
-              Text(
-                bloc.client.registrationUrl(bloc.registrationUrl!.token),
-                style: Theme.of(context).textTheme.caption,
+            Padding(
+              padding: const EdgeInsets.only(top: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text('Authentication "Bearer token"',
+                      style: Theme.of(context).textTheme.subtitle2),
+                  const SizedBox(height: 4.0),
+                  SelectableText(
+                    bloc.registrationUrl!.token,
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      if (hasLocal)
-        Row(
-          children: <Widget>[
-            FHCopyToClipboardFlatButton(
-              text: bloc.client.registrationUrl(bloc.registrationUrl!.token),
-              caption: ' Copy URL to clipboard',
             ),
-          ],
-        ),
-      if (hasLocal)
-        Text(
-          'You will need to email this URL to the new user, so they can complete their registration and set their password.',
-          style: Theme.of(context).textTheme.caption,
-        ),
-      if (!hasLocal)
-        Text(
-          'The user can now sign in and they will be able to access the system.',
-          style: Theme.of(context).textTheme.caption,
-        ),
-      FHButtonBar(children: [
-        FHFlatButtonTransparent(
-            onPressed: () {
-              bloc.backToDefault();
-              ManagementRepositoryClientBloc.router
-                  .navigateTo(context, '/users');
-            },
-            title: 'Close'),
-        FHFlatButton(
-            onPressed: () {
-              bloc.backToDefault();
-            },
-            title: 'Create another user',
-            keepCase: true),
-      ])
-    ]);
+            Row(
+              children: <Widget>[
+                FHCopyToClipboardFlatButton(
+                  text: bloc.registrationUrl!.token,
+                  caption: ' Copy authentication "Bearer token" to clipboard',
+                ),
+              ],
+            ),
+          Text(
+            'For security, you will not be able to view the "Bearer token" once you navigate away from this page.',
+            style: Theme.of(context).textTheme.caption,
+          ),
+          FHButtonBar(children: [
+            FHFlatButtonTransparent(
+                onPressed: () {
+                  bloc.backToDefault();
+                  ManagementRepositoryClientBloc.router
+                      .navigateTo(context, '/admin-service-accounts');
+                },
+                title: 'Close'),
+            FHFlatButton(
+                onPressed: () {
+                  bloc.backToDefault();
+                },
+                title: 'Create another Service Account',
+                keepCase: true),
+          ])
+        ]);
   }
 }
 
-class BottomWidget extends StatelessWidget {
-  const BottomWidget({Key? key}) : super(key: key);
+class BottomAdminSAWidget extends StatelessWidget {
+  const BottomAdminSAWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -217,13 +191,13 @@ class BottomWidget extends StatelessWidget {
               snapshot.data == CreateUserForm.successState) {
             return Container();
           }
-          return const CreateUserFormButtons();
+          return const CreateAdminSAFormButtons();
         });
   }
 }
 
-class CreateUserFormButtons extends StatelessWidget {
-  const CreateUserFormButtons({Key? key}) : super(key: key);
+class CreateAdminSAFormButtons extends StatelessWidget {
+  const CreateAdminSAFormButtons({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -235,7 +209,8 @@ class CreateUserFormButtons extends StatelessWidget {
           if (bloc.formKey != null) {
             bloc.formKey!.currentState!.reset;
           }
-          ManagementRepositoryClientBloc.router.navigateTo(context, '/users');
+          ManagementRepositoryClientBloc.router
+              .navigateTo(context, '/admin-service-accounts');
         },
         title: 'Cancel',
         keepCase: true,
@@ -247,12 +222,12 @@ class CreateUserFormButtons extends StatelessWidget {
                 if (bloc.formKey!.currentState!.validate()) {
                   bloc.formKey!.currentState!.save();
                   try {
-                    await bloc.createUser(bloc.email!, null);
+                    await bloc.createUser(null, bloc.name!);
                   } catch (e, s) {
                     if (e is ApiException && e.code == 409) {
                       await bloc.client.dialogError(e, s,
                           messageTitle:
-                              "User with email '${bloc.email}' already exists");
+                              "Service Account with name '${bloc.name}' already exists"); // will this ever happen?
                     } else {
                       await bloc.client.dialogError(e, s);
                     }

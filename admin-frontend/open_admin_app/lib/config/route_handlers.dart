@@ -2,8 +2,11 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
+import 'package:open_admin_app/routes/admin_service_accounts_route.dart';
 import 'package:open_admin_app/routes/apps_route.dart';
+import 'package:open_admin_app/routes/create_admin_service_accounts_route.dart';
 import 'package:open_admin_app/routes/create_user_route.dart';
+import 'package:open_admin_app/routes/edit_admin_service_account_route.dart';
 import 'package:open_admin_app/routes/edit_user_route.dart';
 import 'package:open_admin_app/routes/features_overview_route.dart';
 import 'package:open_admin_app/routes/home_route.dart';
@@ -77,7 +80,7 @@ class RouteCreator {
   Widget users(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<ListUsersBloc>(
         creator: (_context, _bag) =>
-            ListUsersBloc(params['search']?.elementAt(0), mrBloc),
+            ListUsersBloc(params['search']?.elementAt(0), mrBloc, true),
         child: const ManageUsersRoute());
   }
 
@@ -119,6 +122,17 @@ class RouteCreator {
             child: const CreateUserRoute(title: 'Create User')));
   }
 
+  Widget createAdminApiKey(mrBloc, {Map<String, List<String?>> params = const {}}) {
+    // TODO: fix this construction, bloc should not be created outside of provider
+    final select = SelectPortfolioGroupBloc(mrBloc);
+    return BlocProvider<SelectPortfolioGroupBloc>(
+        creator: (_context, _bag) => select,
+        child: BlocProvider<CreateUserBloc>(
+            creator: (_context, _bag) =>
+                CreateUserBloc(mrBloc, selectGroupBloc: select),
+            child: const CreateAdminServiceAccountsRoute(title: 'Create Admin Service Account')));
+  }
+
   Widget manageUser(mrBloc, {Map<String, List<String?>> params = const {}}) {
     final select = SelectPortfolioGroupBloc(mrBloc);
     return BlocProvider<SelectPortfolioGroupBloc>(
@@ -128,6 +142,24 @@ class RouteCreator {
                 mrBloc, params['id']?.elementAt(0),
                 selectGroupBloc: select),
             child: const EditUserRoute()));
+  }
+
+  Widget editAdminApiKey(mrBloc, {Map<String, List<String?>> params = const {}}) {
+    final select = SelectPortfolioGroupBloc(mrBloc);
+    return BlocProvider<SelectPortfolioGroupBloc>(
+        creator: (_context, _bag) => select,
+        child: BlocProvider<EditUserBloc>(
+            creator: (_context, _bag) => EditUserBloc(
+                mrBloc, params['id']?.elementAt(0),
+                selectGroupBloc: select),
+            child: const EditAdminServiceAccountRoute()));
+  }
+
+  Widget adminAPIKeys(mrBloc, {Map<String, List<String?>> params = const {}}) {
+    return BlocProvider<ListUsersBloc>(
+        creator: (_context, _bag) =>
+            ListUsersBloc(params['search']?.elementAt(0), mrBloc, false),
+        child: const ManageAdminServiceAccountsRoute());
   }
 
   Widget serviceAccount(mrBloc,

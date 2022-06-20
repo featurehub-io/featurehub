@@ -68,6 +68,18 @@ class EditUserBloc implements Bloc {
     }
   }
 
+  Future<void> updateApiKeyDetails(String name) async {
+    if (person != null) {
+      final pers = person!;
+      pers.groups = selectGroupBloc.listOfAddedPortfolioGroups
+          .map((pg) => pg.group)
+          .toList();
+      pers.name = name;
+      await mrClient.personServiceApi
+          .updatePerson(personId!, pers, includeGroups: true);
+    }
+  }
+
   Future<List<Portfolio>> _findPortfolios() async {
     List<Portfolio> portfolios = [];
     try {

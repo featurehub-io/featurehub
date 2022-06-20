@@ -441,7 +441,7 @@ class DeleteDialogWidget extends StatelessWidget {
       deleteSelected: () async {
         try {
           await bloc.deletePerson(person.id!.id, true);
-          bloc.triggerSearch('');
+          bloc.triggerSearch('', true);
           bloc.mrClient.addSnackbar(Text("User '${person.name}' deleted!"));
           return true;
         } catch (e, s) {
