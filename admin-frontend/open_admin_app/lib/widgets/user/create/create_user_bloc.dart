@@ -11,6 +11,7 @@ enum CreateUserForm { defaultState, successState }
 class CreateUserBloc implements Bloc {
   RegistrationUrl? registrationUrl;
   String? email;
+  String? name;
   GlobalKey<FormState>? formKey;
 
   final ManagementRepositoryClientBloc client;
@@ -31,11 +32,13 @@ class CreateUserBloc implements Bloc {
     _formStateStream.add(CreateUserForm.defaultState);
   }
 
-  Future<void> createUser(String email) {
+  Future<void> createUser(String? email, String? name) {
     final listOfAddedPortfolioGroups =
         selectGroupBloc.listOfAddedPortfolioGroups;
     final cpd = CreatePersonDetails(
       email: email,
+      name: name,
+      personType: name == null ? PersonType.person : PersonType.serviceAccount,
       groupIds: listOfAddedPortfolioGroups
           .map((pg) => pg.group.id)
           .whereNotNull()
