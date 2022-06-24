@@ -21,6 +21,8 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,9 +63,10 @@ public class OAuth2MRAdapter implements SSOCompletionListener {
     DeclaredConfigResolver.resolve(this);
   }
 
+  @NotNull
   @Override
-  public Response successfulCompletion(String email, String username, boolean userMustBeCreatedFirst,
-                                       String failureUrl, String successUrl) {
+  public Response successfulCompletion(@Nullable String email, @Nullable String username, boolean userMustBeCreatedFirst,
+                                       @Nullable String failureUrl, @Nullable String successUrl, @NotNull String provider) {
     // discover if they are a user and if not, add them
     Person p = personApi.get(email, Opts.empty());
 

@@ -47,8 +47,7 @@ auth.userMustBeCreatedFirst=false
 ----
 
 - `auth.disable-login` - by default, disable-login for local is turned off (false). If you only want people to sign in via your IDP, turn this true
-- `auth.userMustBeCreatedFirst` - the user must exist in the database before they are allowed to login using an external
-auth provider. The default is false, unless you are using SAML in which case you must provide a value.
+- `auth.userMustBeCreatedFirst` - the user must exist in the database before they are allowed to login using an external auth provider. The default is false.
 
 == Logging in via your own login page
 

@@ -21,7 +21,7 @@ class SamlResourceSpec extends Specification {
     providerConfig = Mock(SamlServiceProviderConfig)
 
     resource = new SamlResource(samlSources, listener, samlImplProvider,
-      successUrl, failureUrl, false)
+      successUrl, failureUrl)
   }
 
   def "invalid parameters cause failure"() {
@@ -94,6 +94,11 @@ class SamlResourceSpec extends Specification {
       0 * _
   }
 
+  def "email matching logic works"() {
+    expect:
+      resource.matchEmail("saneman@sane.example.com", ["sane.example.com"])
+  }
+
   def "we have a valid payload and a display name so we should get a completion request"() {
     given: "a mock payload decode"
       def payload = Mock(FeatureHubSamlResponse)
@@ -102,12 +107,14 @@ class SamlResourceSpec extends Specification {
     then:
       1 * samlSources.getSourceFromRegistrationId("sample") >> providerConfig
       1 * providerConfig.mustMatchEmailDomains >> ["fred.com"]
+      1 * providerConfig.userMustExist >> false
       1 * listener.initialAppSetupComplete() >> true
       1 * payload.attributes >> ["urn:oid:2.16.840.1.113730.3.1.241":["fred"]]
       1 * payload.nameId >> "fred@fred.com"
       1 * payload.valid >> true
       1 * samlImplProvider.decodeResponse(_, "blah") >> payload
-      1 * listener.successfulCompletion("fred@fred.com", "fred", false, failureUrl, successUrl) >> Response.ok().build()
+      1 * listener.successfulCompletion("fred@fred.com",
+        "fred", false, failureUrl, successUrl, 'sample') >> Response.ok().build()
       response.status == 200
       0 * _
   }
@@ -119,7 +126,7 @@ class SamlResourceSpec extends Specification {
       def response = resource.receiveSamlPayload("blah", "sample")
     then:
       1 * samlSources.getSourceFromRegistrationId("sample") >> providerConfig
-      1 * providerConfig.mustMatchEmailDomains >> ["sausage.com"]
+      2 * providerConfig.mustMatchEmailDomains >> ["sausage.com"]
       1 * providerConfig.samlProviderName >> "sausage"
       1 * listener.initialAppSetupComplete() >> true
       1 * payload.nameId >> "fred@fred.com"
@@ -137,12 +144,14 @@ class SamlResourceSpec extends Specification {
     then:
       1 * samlSources.getSourceFromRegistrationId("sample") >> providerConfig
       1 * providerConfig.mustMatchEmailDomains >> []
+      1 * providerConfig.userMustExist >> false
       1 * listener.initialAppSetupComplete() >> true
       1 * payload.attributes >> ["urn:oid:2.5.4.42":["fred"], "urn:oid:2.5.4.4": ["xml"]]
       1 * payload.nameId >> "fred@fred.com"
       1 * payload.valid >> true
       1 * samlImplProvider.decodeResponse(_, "blah") >> payload
-      1 * listener.successfulCompletion("fred@fred.com", "fred xml", false, failureUrl, successUrl) >> Response.ok().build()
+      1 * listener.successfulCompletion("fred@fred.com", "fred xml", false, failureUrl,
+        successUrl, 'sample') >> Response.ok().build()
       response.status == 200
       0 * _
   }

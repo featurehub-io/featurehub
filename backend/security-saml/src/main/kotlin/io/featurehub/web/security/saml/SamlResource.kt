@@ -50,8 +50,7 @@ class SamlResource @Inject constructor(
   private val completionListener: SSOCompletionListener,
   private val samlImplProvider: SamlImplementationProvider,
   @FeatureHubConfig("saml.adminUiUrlSuccess", required = true) private val samlSuccessUrl: String,
-  @FeatureHubConfig("saml.adminUiUrlFailure", required = true) private val samlFailureUrl: String,
-  @FeatureHubConfig("auth.userMustBeCreatedFirst", required = true) private val userMustExist: Boolean
+  @FeatureHubConfig("saml.adminUiUrlFailure", required = true) private val samlFailureUrl: String
 ) {
   private val log: Logger = LoggerFactory.getLogger(SamlResource::class.java)
 
@@ -87,7 +86,8 @@ class SamlResource @Inject constructor(
         val email = samlResponse.getNameId()
 
         if (!matchEmail(email, samlSource.mustMatchEmailDomains)) {
-          log.warn("Invalid email address {} to provider {}", email, samlSource.samlProviderName)
+          log.warn("Invalid email address {} to provider {} and emails {}", email,
+            samlSource.samlProviderName, samlSource.mustMatchEmailDomains)
           return Response.status(302).location(URI.create(samlFailureUrl)).build()
         }
 
@@ -108,7 +108,10 @@ class SamlResource @Inject constructor(
           "${firstName} ${lastName}"
         } else displayName
 
-        return completionListener.successfulCompletion(email, name, userMustExist, samlFailureUrl, samlSuccessUrl)
+        return completionListener.successfulCompletion(
+          email, name,
+          samlSource.userMustExist, samlFailureUrl, samlSuccessUrl, registrationId
+        )
       } else {
         log.warn("SAML login request failed", samlResponse.getValidationException())
       }
@@ -119,7 +122,7 @@ class SamlResource @Inject constructor(
     return Response.status(302).location(URI.create(samlFailureUrl)).build()
   }
 
-  private fun matchEmail(email: String, mustMatchEmailDomains: List<String>): Boolean {
+  protected fun matchEmail(email: String, mustMatchEmailDomains: List<String>): Boolean {
     val pos = email.indexOf("@")
 
     if (pos <= 0 || (pos +1) == email.length) { // bogus email

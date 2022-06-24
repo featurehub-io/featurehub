@@ -4,10 +4,12 @@ import cd.connect.jersey.common.LoggingConfiguration
 import com.onelogin.saml2.settings.Saml2Settings
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.utils.FallbackPropertyConfig
+import io.featurehub.utils.FeatureHubConfig
 import io.featurehub.web.security.oauth.AuthProviderInfo
 import io.featurehub.web.security.oauth.SSOProviderCollection
 import io.featurehub.web.security.oauth.providers.SSOProviderCustomisation
 import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import jakarta.ws.rs.client.Client
 import jakarta.ws.rs.client.ClientBuilder
 import jakarta.ws.rs.core.Feature
@@ -27,9 +29,11 @@ class SamlEnvironmentalFeature : Feature {
       override fun configure() {
         bind(SamlResponseProviderImpl::class.java)
           .to(SamlImplementationProvider::class.java)
+          .`in`(Singleton::class.java)
 
         bind(EnvironmentSamlSourceProviderImpl::class.java)
           .to(EnvironmentSamlSourceProvider::class.java)
+          .`in`(Singleton::class.java)
 
         bind(EnvironmentSamlSources::class.java)
           .to(SamlConfigSources::class.java)
@@ -116,10 +120,13 @@ class EnvironmentalSamlServiceProviderConfig(private val samlProvider: String, c
   private val _buttonBackgroundColor: String?
   private val _buttonText: String?
   private val _emailDomainMatching: List<String>
+  private val _requireUser: Boolean
 
   init {
     _entityIdUri = FallbackPropertyConfig.getMandatoryConfig("saml.${samlProvider}.idp.entity-id")
     _spBaseUrl = FallbackPropertyConfig.getMandatoryConfig("saml.${samlProvider}.sp.base-url")
+
+     _requireUser = FallbackPropertyConfig.getConfig("auth.userMustBeCreatedFirst", "false") == "true"
 
     _iconUrl = FallbackPropertyConfig.getConfig("saml.${samlProvider}.login.icon-url")
     _buttonBackgroundColor = FallbackPropertyConfig.getConfig("saml.${samlProvider}.login.button-background-color")
@@ -158,6 +165,9 @@ class EnvironmentalSamlServiceProviderConfig(private val samlProvider: String, c
 
     _saml2Settings = FeatureHubSaml2Settings(this)
   }
+
+  override val userMustExist: Boolean
+    get() = _requireUser
 
   override val samlProviderName: String
     get() = samlProvider
