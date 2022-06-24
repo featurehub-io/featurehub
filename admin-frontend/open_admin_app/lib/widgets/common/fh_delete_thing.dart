@@ -17,6 +17,7 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
   final bool extraWarning;
   final String? content;
   final bool isResetThing;
+  final bool removeOverlay;
 
   const FHDeleteThingWarningWidget(
       {Key? key,
@@ -25,7 +26,8 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
       this.wholeWarning,
       this.extraWarning = false,
       required this.bloc,
-      this.content, this.isResetThing = false})
+      this.content, this.isResetThing = false,
+        this.removeOverlay = true})
       : assert(thing != null || wholeWarning != null),
         super(key: key);
 
@@ -61,7 +63,7 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
         FHFlatButton(
             title: isResetThing ? 'Reset' : 'Delete',
             onPressed: () async {
-              if (await deleteSelected()) {
+              if (await deleteSelected() && removeOverlay) {
                 bloc.removeOverlay();
               }
             })

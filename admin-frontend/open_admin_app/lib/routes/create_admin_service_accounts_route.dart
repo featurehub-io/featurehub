@@ -1,7 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
+import 'package:open_admin_app/widgets/admin_sdk_service_account/admin_sa_access_key_display_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_filled_input_decoration.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
@@ -131,33 +131,7 @@ class TopAdminSAWidgetSuccess extends StatelessWidget {
         children: <Widget>[
           Text('Admin Service Account "${bloc.name}" created! \n',
               style: Theme.of(context).textTheme.headline6),
-            Padding(
-              padding: const EdgeInsets.only(top: 20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('Authentication "Bearer token"',
-                      style: Theme.of(context).textTheme.subtitle2),
-                  const SizedBox(height: 4.0),
-                  SelectableText(
-                    bloc.registrationUrl!.token,
-                    style: Theme.of(context).textTheme.caption,
-                  ),
-                ],
-              ),
-            ),
-            Row(
-              children: <Widget>[
-                FHCopyToClipboardFlatButton(
-                  text: bloc.registrationUrl!.token,
-                  caption: ' Copy authentication "Bearer token" to clipboard',
-                ),
-              ],
-            ),
-          Text(
-            'For security, you will not be able to view the "Bearer token" once you navigate away from this page.',
-            style: Theme.of(context).textTheme.caption,
-          ),
+          AdminAccessKeyDisplayWidget(token: bloc.registrationUrl!.token),
           FHButtonBar(children: [
             FHFlatButtonTransparent(
                 onPressed: () {

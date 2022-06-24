@@ -61,6 +61,14 @@ class ListUsersBloc implements Bloc {
         .deletePerson(personId, includeGroups: includeGroups);
   }
 
+  Future<String?> resetApiKey(Person person) async {
+    return mrClient.personServiceApi
+        .resetSecurityToken(person.id!.id)
+        .then((response) {
+      return response.token;
+    }).catchError((e, s) {});
+  }
+
   // this really runs the search after we have debounced it
   void _requestSearch(
     PersonType personType,

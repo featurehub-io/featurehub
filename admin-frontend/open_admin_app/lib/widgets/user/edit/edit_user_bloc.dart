@@ -113,4 +113,6 @@ class EditUserBloc implements Bloc {
   Portfolio isSuperAdminPortfolio() {
     return Portfolio(name: 'Super-Admin', description: 'Super-Admin Portfolio');
   }
+
+
 }
