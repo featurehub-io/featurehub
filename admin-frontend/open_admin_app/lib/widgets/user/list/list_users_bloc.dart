@@ -28,7 +28,7 @@ class ListUsersBloc implements Bloc {
   Stream<List<SearchPersonEntry>> get personSearch =>
       _personSearchResultSource.stream;
   final _personSearchResultSource =
-      BehaviorSubject<List<SearchPersonEntry>>.seeded([]);
+      BehaviorSubject<List<SearchPersonEntry>>();
 
   ListUsersBloc(this.search, this.mrClient, this.isPerson)
       : _personServiceApi = PersonServiceApi(mrClient.apiClient) {}
@@ -58,12 +58,8 @@ class ListUsersBloc implements Bloc {
         .deletePerson(personId, includeGroups: includeGroups);
   }
 
-  Future<String?> resetApiKey(Person person) async {
-    return mrClient.personServiceApi
-        .resetSecurityToken(person.id!.id)
-        .then((response) {
-      return response.token;
-    }).catchError((e, s) {});
+  Future<String> resetApiKey(SearchPerson person) async {
+    return (await mrClient.personServiceApi.resetSecurityToken(person.id)).token;
   }
 
   // this really runs the search after we have debounced it

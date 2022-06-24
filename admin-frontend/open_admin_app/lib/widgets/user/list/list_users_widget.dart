@@ -37,7 +37,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
     return StreamBuilder<List<SearchPersonEntry>>(
         stream: bloc.personSearch,
         builder: (context, snapshot) {
-          if (snapshot.hasError || snapshot.data == null) {
+          if (snapshot.hasError || !snapshot.hasData) {
             return Container(
                 padding: const EdgeInsets.all(30),
                 child: const Text('Loading...'));
@@ -293,11 +293,10 @@ class _ListUserInfo extends StatelessWidget {
     return FutureBuilder<Person>(
         future: bloc.getPerson(foundPerson.person.id),
         builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return SizedBox.shrink();
-          }
-          if (!snapshot.hasData) {
-            return SizedBox.shrink();
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Container(
+                padding: const EdgeInsets.all(30),
+                child: const Text('Loading...'));
           }
 
           final person = snapshot.data!;

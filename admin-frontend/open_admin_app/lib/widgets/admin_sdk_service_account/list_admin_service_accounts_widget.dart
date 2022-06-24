@@ -211,11 +211,10 @@ class _AdminServiceAccountInfo extends StatelessWidget {
     return FutureBuilder<Person>(
       future: bloc.getPerson(foundPerson.id),
       builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return SizedBox.shrink();
-        }
-        if (!snapshot.hasData) {
-          return SizedBox.shrink();
+        if (snapshot.hasError || !snapshot.hasData) {
+          return Container(
+              padding: const EdgeInsets.all(30),
+              child: const Text('Loading...'));
         }
 
         final entry = snapshot.data!;

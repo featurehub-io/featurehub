@@ -181,7 +181,7 @@ open class PersonSqlApi @Inject constructor(
     }
 
     search = if (personTypes.isNotEmpty()) {
-      search.personType.`in`(personTypes)
+      if (personTypes.size == 1) search.personType.eq(personTypes.first()) else search.personType.`in`(personTypes)
     } else {
       search.personType.eq(PersonType.PERSON)
     }
@@ -206,17 +206,13 @@ open class PersonSqlApi @Inject constructor(
       val dbPeople = futureList.get()
       val people = dbPeople.map { dbp: DbPerson? -> convertUtils.toPerson(dbp, org, opts)!! }
 
-      val peopleGroupCount: Map<UUID, Int> = if (opts.contains(FillOpts.CountGroups)) {
-         QGroupMemberAgg()
-          .select(QGroupMemberAgg.Alias.personId, QGroupMemberAgg.Alias.counter)
-          .personId.`in`(dbPeople.map { it.id }).findList().associate {
-            it.personId to it.counter
-          }
-      } else emptyMap()
+      val peopleGroupCount: Map<UUID, Int> =
+        if (opts.contains(FillOpts.CountGroups)) findGroupCounts(dbPeople) else emptyMap()
 
-      PersonApi.PersonPagination(futureCount.get(),
-        people.map { p -> toSearchPerson(p, peopleGroupCount) },
-        people,
+      PersonApi.PersonPagination(
+        futureCount.get(),
+        if (opts.contains(FillOpts.CountGroups)) people.map { p -> toSearchPerson(p, peopleGroupCount) } else emptyList(),
+        if (!opts.contains(FillOpts.CountGroups)) people else emptyList(),
         dbPeople
           .filter { p -> p.token != null }
           .map { p -> PersonApi.PersonToken(p.token, p.id) },
@@ -233,16 +229,14 @@ open class PersonSqlApi @Inject constructor(
     }
   }
 
-  private fun toSearchPerson(person: Person, groupCountsByPersonId: Map<UUID, Int>): SearchPerson {
-    return SearchPerson()
-      .personType(person.personType!!)
-      .id(person.id!!.id)
-      .email(person.email!!)
-      .name(person.name!!)
-      .whenLastAuthenticated(person.whenLastAuthenticated)
-      .whenLastSeen(person.whenLastSeen)
-      .groupCount(groupCountsByPersonId[person.id!!.id] ?: 0)
-  }
+  private fun findGroupCounts(dbPeople: List<DbPerson>) =
+    QGroupMemberAgg()
+      .select(QGroupMemberAgg.Alias.personId, QGroupMemberAgg.Alias.counter)
+      .personId.`in`(dbPeople.map { it.id }).findList().associate {
+        it.personId to it.counter
+      }
+
+
 
   override fun get(email: String, opts: Opts): Person? {
     if (email.contains("@")) {
@@ -271,7 +265,7 @@ open class PersonSqlApi @Inject constructor(
       .orElse(null)
   }
 
-   override fun getByToken(token: String, opts: Opts): Person? {
+  override fun getByToken(token: String, opts: Opts): Person? {
     val person = QDbPerson().whenArchived.isNull.token.eq(token).findOne()
     return if (person != null && person.tokenExpiry.isAfter(now)) {
       convertUtils.toPerson(person, opts)!!
@@ -392,7 +386,11 @@ open class PersonSqlApi @Inject constructor(
   }
 
   @Transactional
-  private fun updatePerson(p: DbPerson, groupChangeCollection: GroupChangeCollection? = null, superuserChanges: SuperuserChanges? = null) {
+  private fun updatePerson(
+    p: DbPerson,
+    groupChangeCollection: GroupChangeCollection? = null,
+    superuserChanges: SuperuserChanges? = null
+  ) {
     database.save(p)
 
     if (groupChangeCollection != null) {
@@ -426,5 +424,16 @@ open class PersonSqlApi @Inject constructor(
   companion object {
     private val log = LoggerFactory.getLogger(PersonSqlApi::class.java)
     const val MAX_SEARCH = 100
+
+    fun toSearchPerson(person: Person, groupCountsByPersonId: Map<UUID, Int>): SearchPerson {
+      return SearchPerson()
+        .personType(person.personType!!)
+        .id(person.id!!.id)
+        .email(person.email!!)
+        .name(person.name!!)
+        .whenLastAuthenticated(person.whenLastAuthenticated)
+        .whenLastSeen(person.whenLastSeen)
+        .groupCount(groupCountsByPersonId[person.id!!.id] ?: 0)
+    }
   }
 }

@@ -8,7 +8,7 @@ import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 import 'admin_sa_access_key_display_widget.dart';
 
 class AdminSAKeyResetDialogWidget extends StatelessWidget {
-  final Person person;
+  final SearchPerson person;
   final ListUsersBloc bloc;
 
   const AdminSAKeyResetDialogWidget(
@@ -25,8 +25,9 @@ class AdminSAKeyResetDialogWidget extends StatelessWidget {
 This will invalidate the current token!""",
       isResetThing: true,
       deleteSelected: () async {
-        var token = await bloc.resetApiKey(person);
-        if (token != null) {
+        try {
+          var token = await bloc.resetApiKey(person);
+
           bloc.mrClient.addOverlay((context) => FHAlertDialog(
                 title: const Text("Admin SDK access token has been reset"),
                 content: SizedBox(
@@ -44,10 +45,11 @@ This will invalidate the current token!""",
               ));
           bloc.mrClient.addSnackbar(
               const Text("Admin SDK access token has been reset!"));
-        } else {
+        } catch (e) {
           bloc.mrClient
               .customError(messageTitle: "Unable to reset access token");
         }
+
         return true;
       },
     );
