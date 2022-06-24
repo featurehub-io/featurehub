@@ -21,5 +21,6 @@ public enum FillOpts {
   RolloutStrategies,
   MetaData, // include meta-data for features and feature values
   Archived, // include archived records
-  Details // full details of the current object type (e.g. if people, all details about people)
+  Details, // full details of the current object type (e.g. if people, all details about people)
+  CountGroups, // only count groups don't include them
 }

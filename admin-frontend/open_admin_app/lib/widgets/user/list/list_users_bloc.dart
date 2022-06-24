@@ -6,7 +6,7 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SearchPersonEntry {
-  final Person person;
+  final SearchPerson person;
   final OutstandingRegistration registration;
 
   SearchPersonEntry(this.person, this.registration);
@@ -20,9 +20,9 @@ class ListUsersBloc implements Bloc {
   bool isPerson;
 
   final _adminApiKeysSearchResultSource =
-      BehaviorSubject<List<Person>>.seeded([]);
+      BehaviorSubject<List<SearchPerson>>.seeded([]);
 
-  Stream<List<Person>> get adminAPIKeySearch =>
+  Stream<List<SearchPerson>> get adminAPIKeySearch =>
       _adminApiKeysSearchResultSource.stream;
 
   Stream<List<SearchPersonEntry>> get personSearch =>
@@ -31,12 +31,9 @@ class ListUsersBloc implements Bloc {
       BehaviorSubject<List<SearchPersonEntry>>.seeded([]);
 
   ListUsersBloc(this.search, this.mrClient, this.isPerson)
-      : _personServiceApi = PersonServiceApi(mrClient.apiClient) {
-    triggerSearch(search, true);
-    triggerSearch(search, false);
-  }
+      : _personServiceApi = PersonServiceApi(mrClient.apiClient) {}
 
-  void triggerSearch(String? s, bool isPerson) async {
+  void triggerSearch(String? s) async {
     // this should also change the url
 
     // debounce the search (i.e. if they are still typing, wait)
@@ -74,12 +71,13 @@ class ListUsersBloc implements Bloc {
     PersonType personType,
   ) async {
     late SearchPersonResult data;
-    if (search != null && search!.length > 1) {
+    if (search != null && search!.isNotEmpty) {
       // wait for global error handling to wrap this in try/catch
       data = await _personServiceApi.findPeople(
           order: SortOrder.ASC,
           filter: search,
-          includeGroups: true,
+          countGroups: true,
+          includeGroups: false,
           includeLastLoggedIn: true,
           personTypes: [personType]);
 
@@ -93,7 +91,8 @@ class ListUsersBloc implements Bloc {
       // this should paginate one presumes
       data = await _personServiceApi.findPeople(
           order: SortOrder.ASC,
-          includeGroups: true,
+          includeGroups: false,
+          countGroups: true,
           includeLastLoggedIn: true,
           personTypes: [personType]);
     }
@@ -110,12 +109,12 @@ class ListUsersBloc implements Bloc {
     final hasLocal = mrClient.identityProviders.hasLocal;
     final emptyReg = OutstandingRegistration(expired: false, id: '', token: '');
 
-    for (var person in data.people) {
+    for (var person in data.summarisedPeople) {
       final spr = SearchPersonEntry(
           person,
           hasLocal
               ? data.outstandingRegistrations.firstWhere(
-                  (element) => element.id == person.id!.id,
+                  (element) => element.id == person.id,
                   orElse: () => emptyReg)
               : emptyReg);
 
@@ -127,10 +126,10 @@ class ListUsersBloc implements Bloc {
   }
 
   void _transformAdminApiKeys(SearchPersonResult data) {
-    final results = <Person>[];
+    final results = <SearchPerson>[];
     // publish it out...
 
-    for (var person in data.people) {
+    for (var person in data.summarisedPeople) {
       final spr = person;
 
       results.add(spr);
@@ -138,8 +137,21 @@ class ListUsersBloc implements Bloc {
     _adminApiKeysSearchResultSource.add(results);
   }
 
+  Future<Person> getPerson(String id) async {
+    return await _personServiceApi.getPerson(id, includeGroups: true);
+  }
+
   @override
   void dispose() {
     _personSearchResultSource.close();
   }
+}
+
+class ListPersonBloc extends ListUsersBloc {
+  ListPersonBloc(String? search, ManagementRepositoryClientBloc mrClient) : super(search, mrClient, true);
+}
+
+class ListAdminServiceAccount extends ListUsersBloc {
+  ListAdminServiceAccount(String? search, ManagementRepositoryClientBloc mrClient) : super(search, mrClient, false);
+
 }

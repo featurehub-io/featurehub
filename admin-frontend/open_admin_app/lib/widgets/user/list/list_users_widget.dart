@@ -22,10 +22,18 @@ class _PersonListWidgetState extends State<PersonListWidget> {
   bool sortToggle = true;
   int sortColumnIndex = 0;
 
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    BlocProvider.of<ListPersonBloc>(context).triggerSearch(null);
+  }
+
   @override
   Widget build(BuildContext context) {
     final bs = BorderSide(color: Theme.of(context).dividerColor);
-    final bloc = BlocProvider.of<ListUsersBloc>(context);
+    final bloc = BlocProvider.of<ListPersonBloc>(context);
     return StreamBuilder<List<SearchPersonEntry>>(
         stream: bloc.personSearch,
         builder: (context, snapshot) {
@@ -88,10 +96,10 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                 ? Text('Not yet registered',
                                     style: Theme.of(context).textTheme.caption)
                                 : Text(
-                                    p.person.name!,
+                                    p.person.name,
                                   )),
-                            DataCell(Text(p.person.email!)),
-                            DataCell(Text('${p.person.groups.length}')),
+                            DataCell(Text(p.person.email)),
+                            DataCell(Text('${p.person.groupCount}')),
                             DataCell(Text('${p.person.whenLastAuthenticated?.toLocal() ?? ""}')),
                             DataCell(Row(children: <Widget>[
                               Tooltip(
@@ -112,7 +120,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                         ManagementRepositoryClientBloc.router
                                             .navigateTo(context, '/manage-user',
                                                 params: {
-                                              'id': [p.person.id!.id]
+                                              'id': [p.person.id]
                                             })
                                       }),
                               // const SizedBox(
@@ -123,7 +131,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                 onPressed: () => bloc.mrClient
                                     .addOverlay((BuildContext context) {
                                   return bloc.mrClient.person.id!.id ==
-                                          p.person.id!.id
+                                          p.person.id
                                       ? cantDeleteYourselfDialog(bloc)
                                       : DeleteDialogWidget(
                                           person: p.person,
@@ -136,7 +144,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                           onSelectChanged: (newValue) {
                             ManagementRepositoryClientBloc.router
                                 .navigateTo(context, '/manage-user', params: {
-                              'id': [p.person.id!.id]
+                              'id': [p.person.id]
                             });
                           }),
                   ],
@@ -153,34 +161,28 @@ class _PersonListWidgetState extends State<PersonListWidget> {
       if (columnIndex == 0) {
         if (ascending) {
           people.sort((a, b) {
-            if (a.person.name != null && b.person.name != null) {
-              return a.person.name!.compareTo(b.person.name!);
-            }
-            return ascending ? 1 : -1;
+            return a.person.name.toLowerCase().compareTo(b.person.name.toLowerCase());
           });
         } else {
           people.sort((a, b) {
-            if (a.person.name != null && b.person.name != null) {
-              return b.person.name!.compareTo(a.person.name!);
-            }
-            return ascending ? -1 : 1;
+            return b.person.name.toLowerCase().compareTo(a.person.name.toLowerCase());
           });
         }
       }
       if (columnIndex == 1) {
         if (ascending) {
-          people.sort((a, b) => a.person.email!.compareTo(b.person.email!));
+          people.sort((a, b) => a.person.email.toLowerCase().compareTo(b.person.email.toLowerCase()));
         } else {
-          people.sort((a, b) => b.person.email!.compareTo(a.person.email!));
+          people.sort((a, b) => b.person.email.toLowerCase().compareTo(a.person.email.toLowerCase()));
         }
       }
       if (columnIndex == 2) {
         if (ascending) {
           people.sort((a, b) =>
-              a.person.groups.length.compareTo(b.person.groups.length));
+              a.person.groupCount.compareTo(b.person.groupCount));
         } else {
           people.sort((a, b) =>
-              b.person.groups.length.compareTo(a.person.groups.length));
+              b.person.groupCount.compareTo(a.person.groupCount));
         }
       }
       if (columnIndex == 3) {
@@ -210,7 +212,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
     });
   }
 
-  Widget cantDeleteYourselfDialog(ListUsersBloc bloc) {
+  Widget cantDeleteYourselfDialog(ListPersonBloc bloc) {
     return FHAlertDialog(
       title: const Text("You can't delete yourself!"),
       content: const Text(
@@ -251,7 +253,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
 }
 
 class ListUserInfoDialog extends StatelessWidget {
-  final ListUsersBloc bloc;
+  final ListPersonBloc bloc;
   final SearchPersonEntry entry;
 
   const ListUserInfoDialog(this.bloc, this.entry, {Key? key}) : super(key: key);
@@ -263,7 +265,7 @@ class ListUserInfoDialog extends StatelessWidget {
         'User Information',
         style: TextStyle(fontSize: 22.0),
       ),
-      content: _ListUserInfo(bloc: bloc, entry: entry),
+      content: _ListUserInfo(bloc: bloc, foundPerson: entry),
       actions: <Widget>[
         // usually buttons at the bottom of the dialog
         FHFlatButton(
@@ -278,124 +280,140 @@ class ListUserInfoDialog extends StatelessWidget {
 }
 
 class _ListUserInfo extends StatelessWidget {
-  final ListUsersBloc bloc;
-  final SearchPersonEntry entry;
+  final ListPersonBloc bloc;
+  final SearchPersonEntry foundPerson;
 
-  const _ListUserInfo({Key? key, required this.bloc, required this.entry})
+  const _ListUserInfo({Key? key, required this.bloc, required this.foundPerson})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final allowedLocalIdentity = bloc.mrClient.identityProviders.hasLocal;
-    entry.person.groups.sort((a, b) => a.name.compareTo(b.name));
-    return SizedBox(
-//      height: 400.0,
-      width: 400.0,
-      child: ListView(
-        children: [
-          _ListUserRow(
-            title: 'Name',
-            child: Text(entry.person.name!,
-                style: Theme.of(context).textTheme.bodyText1),
-          ),
-          const SizedBox(height: 8),
-          _ListUserRow(
-            title: 'Email',
-            child: Text(entry.person.email!,
-                style: Theme.of(context).textTheme.bodyText1),
-          ),
-          if (allowedLocalIdentity &&
-              !entry.registration.expired &&
-              entry.registration.token.isNotEmpty)
-            Column(
-              children: [
-                const SizedBox(height: 16),
-                const FHPageDivider(),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Registration URL',
-                    style: Theme.of(context).textTheme.caption,
-                  ),
-                ),
-              ],
-            ),
-          if (allowedLocalIdentity &&
-              !entry.registration.expired &&
-              entry.registration.token.isNotEmpty)
-            Row(
-              children: [
-                Expanded(
-                    child: Text(
-                        bloc.mrClient.registrationUrl(entry.registration.token),
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 11.0))),
-                FHCopyToClipboard(
-                  tooltipMessage: 'Copy URL to Clipboard',
-                  copyString:
-                      bloc.mrClient.registrationUrl(entry.registration.token),
-                )
-              ],
-            ),
-          if (allowedLocalIdentity && entry.registration.expired)
-            const Padding(
-              padding: EdgeInsets.only(top: 12.0, bottom: 4.0),
-              child: Text(
-                'Registration expired',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          if (allowedLocalIdentity && entry.registration.expired)
-            FHCopyToClipboardFlatButton(
-              caption: 'Renew registration URL and copy to clipboard',
-              textProvider: () async {
-                try {
-                  final token = await bloc.mrClient.authServiceApi
-                      .resetExpiredToken(entry.person.email!);
-                  bloc.mrClient.addSnackbar(const Text(
-                      'Registration URL renewed and copied to clipboard'));
-                  return bloc.mrClient.registrationUrl(token.token);
-                } catch (e, s) {
-                  bloc.mrClient.addError(FHError.createError(e, s));
-                }
 
-                return null;
-              },
-            ),
-          const SizedBox(height: 16.0),
-          const FHPageDivider(),
-          const SizedBox(height: 16.0),
-          if (entry.person.groups.isNotEmpty)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-//              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Expanded(
-                  flex: 1,
+    return FutureBuilder<Person>(
+        future: bloc.getPerson(foundPerson.person.id),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return SizedBox.shrink();
+          }
+          if (!snapshot.hasData) {
+            return SizedBox.shrink();
+          }
+
+          final person = snapshot.data!;
+
+          person.groups.sort((a, b) => a.name.compareTo(b.name));
+
+          return SizedBox(
+//      height: 400.0,
+          width: 400.0,
+          child: ListView(
+            children: [
+              _ListUserRow(
+                title: 'Name',
+                child: Text(foundPerson.person.name,
+                    style: Theme.of(context).textTheme.bodyText1),
+              ),
+              const SizedBox(height: 8),
+              _ListUserRow(
+                title: 'Email',
+                child: Text(foundPerson.person.email,
+                    style: Theme.of(context).textTheme.bodyText1),
+              ),
+              if (allowedLocalIdentity &&
+                  !foundPerson.registration.expired &&
+                  foundPerson.registration.token.isNotEmpty)
+                Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    const FHPageDivider(),
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Registration URL',
+                        style: Theme.of(context).textTheme.caption,
+                      ),
+                    ),
+                  ],
+                ),
+              if (allowedLocalIdentity &&
+                  !foundPerson.registration.expired &&
+                  foundPerson.registration.token.isNotEmpty)
+                Row(
+                  children: [
+                    Expanded(
+                        child: Text(
+                            bloc.mrClient.registrationUrl(foundPerson.registration.token),
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 11.0))),
+                    FHCopyToClipboard(
+                      tooltipMessage: 'Copy URL to Clipboard',
+                      copyString:
+                          bloc.mrClient.registrationUrl(foundPerson.registration.token),
+                    )
+                  ],
+                ),
+              if (allowedLocalIdentity && foundPerson.registration.expired)
+                const Padding(
+                  padding: EdgeInsets.only(top: 12.0, bottom: 4.0),
                   child: Text(
-                    'Groups',
-                    style: Theme.of(context).textTheme.caption,
+                    'Registration expired',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
-                Expanded(
-                    flex: 5,
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (entry.person.groups.isNotEmpty)
-                            ...entry.person.groups
-                                .map((e) => Text(
-                                      e.name,
-                                      style:
-                                          Theme.of(context).textTheme.bodyText2,
-                                    ))
-                                .toList(),
-                        ]))
-              ],
-            ),
-        ],
-      ),
+              if (allowedLocalIdentity && foundPerson.registration.expired)
+                FHCopyToClipboardFlatButton(
+                  caption: 'Renew registration URL and copy to clipboard',
+                  textProvider: () async {
+                    try {
+                      final token = await bloc.mrClient.authServiceApi
+                          .resetExpiredToken(foundPerson.person.email);
+                      bloc.mrClient.addSnackbar(const Text(
+                          'Registration URL renewed and copied to clipboard'));
+                      return bloc.mrClient.registrationUrl(token.token);
+                    } catch (e, s) {
+                      bloc.mrClient.addError(FHError.createError(e, s));
+                    }
+
+                    return null;
+                  },
+                ),
+              const SizedBox(height: 16.0),
+              const FHPageDivider(),
+              const SizedBox(height: 16.0),
+              if (person.groups.isNotEmpty)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+//              mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Text(
+                        'Groups',
+                        style: Theme.of(context).textTheme.caption,
+                      ),
+                    ),
+                    Expanded(
+                        flex: 5,
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (person.groups.isNotEmpty)
+                                ...person.groups
+                                    .map((e) => Text(
+                                          e.name,
+                                          style:
+                                              Theme.of(context).textTheme.bodyText2,
+                                        ))
+                                    .toList(),
+                            ]))
+                  ],
+                ),
+            ],
+          ),
+        );
+      }
     );
   }
 }
@@ -425,8 +443,8 @@ class _ListUserRow extends StatelessWidget {
 }
 
 class DeleteDialogWidget extends StatelessWidget {
-  final Person person;
-  final ListUsersBloc bloc;
+  final SearchPerson person;
+  final ListPersonBloc bloc;
 
   const DeleteDialogWidget({Key? key, required this.person, required this.bloc})
       : super(key: key);
@@ -434,14 +452,14 @@ class DeleteDialogWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FHDeleteThingWarningWidget(
-      thing: "user '${person.name ?? person.email}'",
+      thing: "user '${person.name}'",
       content:
           'This user will be removed from all groups and deleted from the system. \n\nThis cannot be undone!',
       bloc: bloc.mrClient,
       deleteSelected: () async {
         try {
-          await bloc.deletePerson(person.id!.id, true);
-          bloc.triggerSearch('', true);
+          await bloc.deletePerson(person.id, true);
+          bloc.triggerSearch('');
           bloc.mrClient.addSnackbar(Text("User '${person.name}' deleted!"));
           return true;
         } catch (e, s) {

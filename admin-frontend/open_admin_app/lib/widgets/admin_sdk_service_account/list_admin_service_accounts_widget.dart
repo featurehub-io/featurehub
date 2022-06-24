@@ -14,20 +14,25 @@ class AdminServiceAccountsListWidget extends StatefulWidget {
   const AdminServiceAccountsListWidget({Key? key}) : super(key: key);
 
   @override
-  _AdminServiceAccountsListWidgetState createState() =>
-      _AdminServiceAccountsListWidgetState();
+  _AdminServiceAccountsListWidgetState createState() => _AdminServiceAccountsListWidgetState();
 }
 
-class _AdminServiceAccountsListWidgetState
-    extends State<AdminServiceAccountsListWidget> {
+class _AdminServiceAccountsListWidgetState extends State<AdminServiceAccountsListWidget> {
   bool sortToggle = true;
   int sortColumnIndex = 0;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    BlocProvider.of<ListAdminServiceAccount>(context).triggerSearch(null);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final bs = BorderSide(color: Theme.of(context).dividerColor);
-    final bloc = BlocProvider.of<ListUsersBloc>(context);
-    return StreamBuilder<List<Person>>(
+    final bloc = BlocProvider.of<ListAdminServiceAccount>(context);
+    return StreamBuilder<List<SearchPerson>>(
         stream: bloc.adminAPIKeySearch,
         builder: (context, snapshot) {
           if (snapshot.hasError || snapshot.data == null) {
@@ -63,21 +68,19 @@ class _AdminServiceAccountsListWidgetState
                         onSortColumn(snapshot.data!, columnIndex, ascending);
                       },
                     ),
-                    DataColumn(
-                        label: const Padding(
-                          padding: EdgeInsets.only(left: 12.0),
-                          child: Text('Actions'),
-                        ),
-                        onSort: (i, a) => {}),
+                    DataColumn(label: const Padding(
+                      padding: EdgeInsets.only(left:12.0),
+                      child: Text('Actions'),
+                    ), onSort: (i, a) => {}),
                   ],
                   rows: [
-                    for (Person p in snapshot.data!)
+                    for (var p in snapshot.data!)
                       DataRow(
                           cells: [
                             DataCell(Text(
-                              p.name!,
-                            )),
-                            DataCell(Text('${p.groups.length}')),
+                                    p.name,
+                                  )),
+                            DataCell(Text('${p.groupCount}')),
                             DataCell(Row(children: <Widget>[
                               FHIconButton(
                                 icon: const Icon(Icons.info),
@@ -90,10 +93,9 @@ class _AdminServiceAccountsListWidgetState
                                   icon: const Icon(Icons.edit),
                                   onPressed: () => {
                                         ManagementRepositoryClientBloc.router
-                                            .navigateTo(context,
-                                                '/edit-admin-service-account',
+                                            .navigateTo(context, '/edit-admin-service-account',
                                                 params: {
-                                              'id': [p.id!.id]
+                                              'id': [p.id]
                                             })
                                       }),
                               // const SizedBox(
@@ -117,19 +119,18 @@ class _AdminServiceAccountsListWidgetState
                                 onPressed: () => bloc.mrClient
                                     .addOverlay((BuildContext context) {
                                   return DeleteAdminServiceAccountDialogWidget(
-                                    person: p,
-                                    bloc: bloc,
-                                  );
+                                          person: p,
+                                          bloc: bloc,
+                                        );
                                 }),
                               ),
                             ])),
                           ],
                           onSelectChanged: (newValue) {
-                            ManagementRepositoryClientBloc.router.navigateTo(
-                                context, '/edit-admin-service-account',
-                                params: {
-                                  'id': [p.id!.id]
-                                });
+                            ManagementRepositoryClientBloc.router
+                                .navigateTo(context, '/edit-admin-service-account', params: {
+                              'id': [p.id]
+                            });
                           }),
                   ],
                 ),
@@ -139,30 +140,27 @@ class _AdminServiceAccountsListWidgetState
         });
   }
 
-  void onSortColumn(List<Person> people, int columnIndex, bool ascending) {
+  void onSortColumn(
+      List<SearchPerson> people, int columnIndex, bool ascending) {
     setState(() {
       if (columnIndex == 0) {
         if (ascending) {
           people.sort((a, b) {
-            if (a.name != null && b.name != null) {
-              return a.name!.compareTo(b.name!);
-            }
-            return ascending ? 1 : -1;
+            return a.name.compareTo(b.name);
           });
         } else {
           people.sort((a, b) {
-            if (a.name != null && b.name != null) {
-              return b.name!.compareTo(a.name!);
-            }
-            return ascending ? -1 : 1;
+            return b.name.compareTo(a.name);
           });
         }
       }
       if (columnIndex == 1) {
         if (ascending) {
-          people.sort((a, b) => a.groups.length.compareTo(b.groups.length));
+          people.sort((a, b) =>
+              a.groupCount.compareTo(b.groupCount));
         } else {
-          people.sort((a, b) => b.groups.length.compareTo(a.groups.length));
+          people.sort((a, b) =>
+              b.groupCount.compareTo(a.groupCount));
         }
       }
       if (sortColumnIndex == columnIndex) {
@@ -174,11 +172,10 @@ class _AdminServiceAccountsListWidgetState
 }
 
 class ServiceAccountInfoDialog extends StatelessWidget {
-  final ListUsersBloc bloc;
-  final Person entry;
+  final ListAdminServiceAccount bloc;
+  final SearchPerson entry;
 
-  const ServiceAccountInfoDialog(this.bloc, this.entry, {Key? key})
-      : super(key: key);
+  const ServiceAccountInfoDialog(this.bloc, this.entry, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +184,7 @@ class ServiceAccountInfoDialog extends StatelessWidget {
         'Admin Service Account details',
         style: TextStyle(fontSize: 22.0),
       ),
-      content: _AdminServiceAccountInfo(bloc: bloc, entry: entry),
+      content: _AdminServiceAccountInfo(bloc: bloc, foundPerson: entry),
       actions: <Widget>[
         // usually buttons at the bottom of the dialog
         FHFlatButton(
@@ -202,59 +199,74 @@ class ServiceAccountInfoDialog extends StatelessWidget {
 }
 
 class _AdminServiceAccountInfo extends StatelessWidget {
-  final ListUsersBloc bloc;
-  final Person entry;
+  final ListAdminServiceAccount bloc;
+  final SearchPerson foundPerson;
 
-  const _AdminServiceAccountInfo(
-      {Key? key, required this.bloc, required this.entry})
+  const _AdminServiceAccountInfo({Key? key, required this.bloc, required this.foundPerson})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    entry.groups.sort((a, b) => a.name.compareTo(b.name));
-    return SizedBox(
+
+    return FutureBuilder<Person>(
+      future: bloc.getPerson(foundPerson.id),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return SizedBox.shrink();
+        }
+        if (!snapshot.hasData) {
+          return SizedBox.shrink();
+        }
+
+        final entry = snapshot.data!;
+
+        entry.groups.sort((a, b) => a.name.compareTo(b.name));
+
+        return SizedBox(
 //      height: 400.0,
-      width: 400.0,
-      child: ListView(
-        children: [
-          _AdminServiceAccountRow(
-            title: 'Name',
-            child:
-                Text(entry.name!, style: Theme.of(context).textTheme.bodyText1),
-          ),
-          const SizedBox(height: 16.0),
-          const FHPageDivider(),
-          const SizedBox(height: 16.0),
-          if (entry.groups.isNotEmpty)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          width: 400.0,
+          child: ListView(
+            children: [
+              _AdminServiceAccountRow(
+                title: 'Name',
+            child: Text(entry.name!,
+                style: Theme.of(context).textTheme.bodyText1),
+              ),
+              const SizedBox(height: 16.0),
+              const FHPageDivider(),
+              const SizedBox(height: 16.0),
+              if (entry.groups.isNotEmpty)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
 //              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Groups',
-                    style: Theme.of(context).textTheme.caption,
-                  ),
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Text(
+                        'Groups',
+                        style: Theme.of(context).textTheme.caption,
+                      ),
+                    ),
+                    Expanded(
+                        flex: 5,
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (entry.groups.isNotEmpty)
+                                ...entry.groups
+                                    .map((e) => Text(
+                                          e.name,
+                                          style:
+                                              Theme.of(context).textTheme.bodyText2,
+                                        ))
+                                    .toList(),
+                            ]))
+                  ],
                 ),
-                Expanded(
-                    flex: 5,
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (entry.groups.isNotEmpty)
-                            ...entry.groups
-                                .map((e) => Text(
-                                      e.name,
-                                      style:
-                                          Theme.of(context).textTheme.bodyText2,
-                                    ))
-                                .toList(),
-                        ]))
-              ],
-            ),
-        ],
-      ),
+            ],
+          ),
+        );
+      }
     );
   }
 }
@@ -263,8 +275,7 @@ class _AdminServiceAccountRow extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const _AdminServiceAccountRow(
-      {Key? key, required this.title, required this.child})
+  const _AdminServiceAccountRow({Key? key, required this.title, required this.child})
       : super(key: key);
 
   @override
@@ -285,11 +296,10 @@ class _AdminServiceAccountRow extends StatelessWidget {
 }
 
 class DeleteAdminServiceAccountDialogWidget extends StatelessWidget {
-  final Person person;
-  final ListUsersBloc bloc;
+  final SearchPerson person;
+  final ListAdminServiceAccount bloc;
 
-  const DeleteAdminServiceAccountDialogWidget(
-      {Key? key, required this.person, required this.bloc})
+  const DeleteAdminServiceAccountDialogWidget({Key? key, required this.person, required this.bloc})
       : super(key: key);
 
   @override
@@ -301,10 +311,9 @@ class DeleteAdminServiceAccountDialogWidget extends StatelessWidget {
       bloc: bloc.mrClient,
       deleteSelected: () async {
         try {
-          await bloc.deletePerson(person.id!.id, true);
-          bloc.triggerSearch('', false);
-          bloc.mrClient
-              .addSnackbar(Text("Service account '${person.name}' deleted!"));
+          await bloc.deletePerson(person.id, true);
+          bloc.triggerSearch('');
+          bloc.mrClient.addSnackbar(Text("Service account '${person.name}' deleted!"));
           return true;
         } catch (e, s) {
           await bloc.mrClient.dialogError(e, s);

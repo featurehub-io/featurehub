@@ -23,12 +23,14 @@ class PersonResourceSpec extends Specification {
   PersonApi personApi
   AuthManagerService authManager
   PersonResource resource
+  SecurityContext ctx
 
   def setup() {
     groupApi = Mock(GroupApi)
     personApi = Mock(PersonApi)
     authManager = Mock(AuthManagerService)
-    authManager.from(_) >> new Person().id(new PersonId().id(UUID.randomUUID()))
+    ctx = Mock(SecurityContext)
+    authManager.from(ctx) >> new Person().id(new PersonId().id(UUID.randomUUID()))
 
     System.setProperty("register.url", "%s")
     resource = new PersonResource(personApi, groupApi, authManager)
@@ -38,7 +40,7 @@ class PersonResourceSpec extends Specification {
     given: "i am not an admin"
       authManager.isAnyAdmin(_) >> false
     when: "i ask to create a person"
-      resource.createPerson(null, new PersonServiceDelegate.CreatePersonHolder(), null)
+      resource.createPerson(new CreatePersonDetails(), new PersonServiceDelegate.CreatePersonHolder(), ctx)
     then:
       thrown ForbiddenException
   }
@@ -49,7 +51,7 @@ class PersonResourceSpec extends Specification {
     and: "i am an admin"
       authManager.isAnyAdmin(_) >> true
     when: "i ask to create a new person"
-      resource.createPerson(cpd, new PersonServiceDelegate.CreatePersonHolder(), null)
+      resource.createPerson(cpd, new PersonServiceDelegate.CreatePersonHolder(), ctx)
     then:
       thrown(BadRequestException)
   }
@@ -62,7 +64,7 @@ class PersonResourceSpec extends Specification {
     and: "i am an admin"
       authManager.isAnyAdmin(_) >> true
     when: "i ask to create a new person"
-      RegistrationUrl url = resource.createPerson(cpd, null, null)
+      RegistrationUrl url = resource.createPerson(cpd, new PersonServiceDelegate.CreatePersonHolder(), ctx)
     then:
       url.registrationUrl == "fred"
   }
@@ -78,7 +80,7 @@ class PersonResourceSpec extends Specification {
       PersonApi.PersonToken token = new PersonApi.PersonToken("fred", UUID.randomUUID())
       personApi.create(cpd.getEmail(), "name", _) >> token
     when: "i ask to create a new person"
-      RegistrationUrl url = resource.createPerson(cpd, null, null)
+      RegistrationUrl url = resource.createPerson(cpd, new PersonServiceDelegate.CreatePersonHolder(), ctx)
     then:
       url.registrationUrl == "fred"
       1 * groupApi.addPersonToGroup(cpd.groupIds.get(0), token.id, (Opts)_)
@@ -89,7 +91,7 @@ class PersonResourceSpec extends Specification {
     given: "i am not an admin"
       authManager.isAnyAdmin(_) >> false
     when: "i search for a person"
-      resource.findPeople(new PersonServiceDelegate.FindPeopleHolder(), null)
+      resource.findPeople(new PersonServiceDelegate.FindPeopleHolder(), ctx)
     then:
       thrown ForbiddenException
   }
@@ -98,38 +100,38 @@ class PersonResourceSpec extends Specification {
     given: "i am not an admin"
       authManager.isAnyAdmin(_) >> false
     when: "i search for a person"
-      resource.getPerson(null, new PersonServiceDelegate.GetPersonHolder(), null)
+      resource.getPerson("x", new PersonServiceDelegate.GetPersonHolder(), ctx)
     then:
       thrown ForbiddenException
   }
 
   def "a person who updates must be an admin"() {
     when: "I try and update a person without being an admin"
-      resource.updatePerson("1", new Person(), new PersonServiceDelegate.UpdatePersonHolder(), null)
+      resource.updatePerson("1", new Person(), new PersonServiceDelegate.UpdatePersonHolder(), ctx)
     then:
       thrown ForbiddenException
   }
 
   def "an administrator is allowed to update a person"() {
     given: "I have an admin security token"
-      def sec = Mock(SecurityContext)
       authManager.isAnyAdmin(_) >> true
     and:
       personApi.update(_, _, _, _) >> new Person()
     when: "I try and update a person and am an admin"
-      def person = resource.updatePerson("1", new Person(), new PersonServiceDelegate.UpdatePersonHolder(), sec)
+      def person = resource.updatePerson(UUID.randomUUID().toString(), new Person(), new PersonServiceDelegate.UpdatePersonHolder(), ctx)
     then:
       person != null
   }
 
   def "an administrator cannot update a non-existent person"() {
     given: "I have an admin security token"
-      def sec = Mock(SecurityContext)
       authManager.isAnyAdmin(_) >> true
     and: "no such person exists"
       personApi.update(_, _, _, _) >> null
     when: "I try and update a person and am an admin"
-      def person = resource.updatePerson("1", new Person(), new PersonServiceDelegate.UpdatePersonHolder(), sec)
+      def person = resource.updatePerson(UUID.randomUUID().toString(),
+        new Person().id(new PersonId().id(UUID.randomUUID())),
+        new PersonServiceDelegate.UpdatePersonHolder(), ctx)
     then:
       thrown NotFoundException
   }

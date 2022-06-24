@@ -22,7 +22,6 @@ import io.featurehub.mr.model.SetupResponse;
 import io.featurehub.mr.model.SetupSiteAdmin;
 import io.featurehub.mr.model.TokenizedPerson;
 import io.featurehub.mr.utils.PortfolioUtils;
-import io.featurehub.utils.FallbackPropertyConfig;
 import io.featurehub.web.security.oauth.AuthProviderCollection;
 import io.featurehub.web.security.oauth.AuthProviderSource;
 import io.featurehub.web.security.oauth.providers.SSOProviderCustomisation;

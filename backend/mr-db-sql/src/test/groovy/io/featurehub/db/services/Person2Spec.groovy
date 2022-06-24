@@ -5,6 +5,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.Portfolio
+import io.featurehub.mr.model.SortOrder
 
 class Person2Spec extends Base2Spec {
   PersonSqlApi personSqlApi
@@ -37,7 +38,7 @@ class Person2Spec extends Base2Spec {
     when: "i update the person to be a superuser"
       person.addGroupsItem(new Group().id(superuserGroup.id))
       def withSuperuserGroup = personSqlApi.update(person.id.id, person, Opts.opts(FillOpts.Groups), superPerson.id.id)
-    and: "then I update them to remove teh superuser group"
+    and: "then I update them to remove the superuser group"
       def removedSuperuserGroupOk = withSuperuserGroup.groups.removeIf({ g -> g.id == superuserGroup.id})
       def withoutSuperuserGroup = personSqlApi.update(withSuperuserGroup.id.id, withSuperuserGroup, Opts.opts(FillOpts.Groups), superPerson.id.id)
     then: "it should include the superuser group and the two portfolio groups"
