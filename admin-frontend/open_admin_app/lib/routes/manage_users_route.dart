@@ -10,7 +10,7 @@ class ManageUsersRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<ListUsersBloc>(context);
+    final bloc = BlocProvider.of<ListPersonBloc>(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,7 +26,7 @@ class ManageUsersRoute extends StatelessWidget {
     );
   }
 
-  Widget _headerRow(BuildContext context, ListUsersBloc bloc) {
+  Widget _headerRow(BuildContext context, ListPersonBloc bloc) {
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
@@ -49,7 +49,7 @@ class ManageUsersRoute extends StatelessWidget {
     );
   }
 
-  Widget _filterRow(BuildContext context, ListUsersBloc bloc) {
+  Widget _filterRow(BuildContext context, ListPersonBloc bloc) {
     final bs = BorderSide(color: Theme.of(context).dividerColor);
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
@@ -63,7 +63,7 @@ class ManageUsersRoute extends StatelessWidget {
             width: 200,
             child: TextField(
               decoration: const InputDecoration(hintText: 'Filter users'),
-              onChanged: (val) => bloc.triggerSearch(val, true),
+              onChanged: (val) => bloc.triggerSearch(val),
             ),
           ),
         ],

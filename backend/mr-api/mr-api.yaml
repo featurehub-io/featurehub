@@ -386,6 +386,12 @@ paths:
       description: "Gets a list of matching people."
       operationId: findPeople
       parameters:
+        - name: countGroups
+          description: "Return the number of groups"
+          in: query
+          required: false
+          schema:
+            type: boolean
         - name: order
           in: query
           description: "how to order the results"
@@ -2294,14 +2300,19 @@ components:
     SearchPersonResult:
       required:
         - max
-        - people
       properties:
         max:
           type: integer
         people:
           type: array
+          description: "This is for backwards compatibility"
           items:
             $ref: "#/components/schemas/Person"
+        summarisedPeople:
+          type: array
+          description: "If we return the new result type, we are returning a summarised person for less data"
+          items:
+            $ref: "#/components/schemas/SearchPerson"
         outstandingRegistrations:
           type: array
           items:
@@ -2876,6 +2887,35 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PersonInfo"
+    SearchPerson:
+      type: object
+      required:
+        - groupCount
+        - name
+        - email
+        - personType
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        personType:
+          $ref: "#/components/schemas/PersonType"
+        whenLastAuthenticated:
+          description: "This is the timestamp in UTC when they last logged into the system"
+          type: string
+          format: date-time
+        whenLastSeen:
+          description: "This is the timestamp in UTC when they last made a request to the system on their most recent login. If it is null it means they have no current token or have never logged in."
+          type: string
+          format: date-time
+        groupCount:
+          type: integer
     PersonInfo:
       type: object
       required:

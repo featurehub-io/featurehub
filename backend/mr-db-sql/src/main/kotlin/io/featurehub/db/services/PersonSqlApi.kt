@@ -11,10 +11,12 @@ import io.featurehub.db.model.query.QDbGroup
 import io.featurehub.db.model.query.QDbGroupMember
 import io.featurehub.db.model.query.QDbLogin
 import io.featurehub.db.model.query.QDbPerson
+import io.featurehub.db.model.query.QGroupMemberAgg
 import io.featurehub.db.password.PasswordSalter
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonType
+import io.featurehub.mr.model.SearchPerson
 import io.featurehub.mr.model.SortOrder
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -50,6 +52,7 @@ open class PersonSqlApi @Inject constructor(
   override fun noUsersExist(): Boolean {
     return !QDbPerson().exists()
   }
+
 
   inner class GroupChangeCollection {
     val groupsToAdd = mutableListOf<UUID>()
@@ -151,8 +154,7 @@ open class PersonSqlApi @Inject constructor(
     val groupPortfolioMap =
       QDbGroup().id.`in`(groupsTheyWantToAdd)
         .select(QDbGroup.Alias.id, QDbGroup.Alias.owningPortfolio.id).findList()
-        .map { it.id!! to it.owningPortfolio.id }
-        .toMap()
+        .associate { it.id!! to it.owningPortfolio.id }
 
     // now we have to work through them to ensure they are allowed to add them
     groupsTheyWantToAdd.removeIf { groupId ->
@@ -161,16 +163,12 @@ open class PersonSqlApi @Inject constructor(
   }
 
   override fun search(
-    filter: String?,
-    sortOrder: SortOrder?,
-    offset: Int,
-    max: Int,
-    personTypes: Set<PersonType>,
+    filter: String?, sortOrder: SortOrder?, offset: Int, max: Int,
+    personTypes: Set<PersonType?>,
     opts: Opts
   ): PersonApi.PersonPagination {
-    var searchOffset = Math.max(offset, 0)
-    var searchMax = Math.min(max, MAX_SEARCH)
-    searchMax = Math.max(searchMax, 1)
+    val searchOffset = offset.coerceAtLeast(0)
+    val searchMax = max.coerceAtMost(MAX_SEARCH).coerceAtLeast(1)
 
     // set the limits
     var search = QDbPerson().setFirstRow(searchOffset).setMaxRows(searchMax)
@@ -182,17 +180,17 @@ open class PersonSqlApi @Inject constructor(
       search = search.or().name.icontains(fil).email.contains(fil).endOr()
     }
 
-    if (personTypes.isNotEmpty()) {
-      search = search.personType.`in`(personTypes)
+    search = if (personTypes.isNotEmpty()) {
+      if (personTypes.size == 1) search.personType.eq(personTypes.first()) else search.personType.`in`(personTypes)
     } else {
-      search = search.personType.eq(PersonType.PERSON)
+      search.personType.eq(PersonType.PERSON)
     }
 
     if (sortOrder != null) {
       search = if (sortOrder == SortOrder.ASC) {
-        search.order().name.asc()
+        search.orderBy("upper(name) asc")
       } else {
-        search.order().name.desc()
+        search.orderBy("upper(name) desc")
       }
     }
 
@@ -202,24 +200,26 @@ open class PersonSqlApi @Inject constructor(
 
     val futureCount = search.findFutureCount()
     val futureList = search.findFutureList()
-    val pagination = PersonApi.PersonPagination()
 
     return try {
-      pagination.max = futureCount.get()
       val org = convertUtils.dbOrganization
       val dbPeople = futureList.get()
-      pagination.people = dbPeople.stream().map { dbp: DbPerson? -> convertUtils.toPerson(dbp, org, opts) }
-        .collect(Collectors.toList())
-      val now = LocalDateTime.now()
-      pagination.personIdsWithExpiredTokens = dbPeople.stream()
-        .filter { p: DbPerson -> p.token != null && p.tokenExpiry != null && p.tokenExpiry.isBefore(now) }
-        .map { obj: DbPerson -> obj.id }
-        .collect(Collectors.toList())
-      pagination.personsWithOutstandingTokens = dbPeople.stream()
-        .filter { p: DbPerson -> p.token != null }
-        .map { p: DbPerson -> PersonApi.PersonToken(p.token, p.id) }
-        .collect(Collectors.toList())
-      pagination
+      val people = dbPeople.map { dbp: DbPerson? -> convertUtils.toPerson(dbp, org, opts)!! }
+
+      val peopleGroupCount: Map<UUID, Int> =
+        if (opts.contains(FillOpts.CountGroups)) findGroupCounts(dbPeople) else emptyMap()
+
+      PersonApi.PersonPagination(
+        futureCount.get(),
+        if (opts.contains(FillOpts.CountGroups)) people.map { p -> toSearchPerson(p, peopleGroupCount) } else emptyList(),
+        if (!opts.contains(FillOpts.CountGroups)) people else emptyList(),
+        dbPeople
+          .filter { p -> p.token != null }
+          .map { p -> PersonApi.PersonToken(p.token, p.id) },
+        dbPeople
+          .filter { p -> p.token != null && p.tokenExpiry != null && p.tokenExpiry.isBefore(now) }
+          .map { obj -> obj.id },
+      )
     } catch (e: InterruptedException) {
       log.error("Failed to execute search.", e)
       throw RuntimeException(e)
@@ -228,6 +228,15 @@ open class PersonSqlApi @Inject constructor(
       throw RuntimeException(e)
     }
   }
+
+  private fun findGroupCounts(dbPeople: List<DbPerson>) =
+    QGroupMemberAgg()
+      .select(QGroupMemberAgg.Alias.personId, QGroupMemberAgg.Alias.counter)
+      .personId.`in`(dbPeople.map { it.id }).findList().associate {
+        it.personId to it.counter
+      }
+
+
 
   override fun get(email: String, opts: Opts): Person? {
     if (email.contains("@")) {
@@ -264,7 +273,7 @@ open class PersonSqlApi @Inject constructor(
   }
 
   protected val now: LocalDateTime
-    protected get() = LocalDateTime.now()
+  protected get() = LocalDateTime.now()
 
   @Throws(PersonApi.DuplicatePersonException::class)
   override fun create(email: String, name: String?, createdBy: UUID?): PersonApi.PersonToken? {
@@ -291,11 +300,12 @@ open class PersonSqlApi @Inject constructor(
       onePerson.whenArchived = null
       onePerson.token = UUID.randomUUID().toString() // ensures it gets past registration again
       onePerson.name = name
+      onePerson.isPasswordRequiresReset = true
       if (created != null) {
         onePerson.whoCreated = created
       }
       updatePerson(onePerson)
-      return null
+      personToken = PersonApi.PersonToken(onePerson.token, onePerson.id)
     } else {
       throw PersonApi.DuplicatePersonException()
     }
@@ -357,7 +367,7 @@ open class PersonSqlApi @Inject constructor(
     if (createdById != null && created == null) {
       return null
     }
-    return if (QDbPerson().email.eq(email.lowercase(Locale.getDefault())).findOne() == null) {
+    return if (!QDbPerson().email.eq(email.lowercase(Locale.getDefault())).exists()) {
       val builder = DbPerson.Builder()
         .email(email.lowercase(Locale.getDefault()))
         .name(name)
@@ -366,7 +376,7 @@ open class PersonSqlApi @Inject constructor(
       }
       val person = builder.build()
       passwordSalter.saltPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM)
-        .ifPresent { password: String? -> person.password = password }
+        .ifPresent { pwd: String? -> person.password = pwd }
       person.passwordAlgorithm = DbPerson.DEFAULT_PASSWORD_ALGORITHM
       updatePerson(person)
       convertUtils.toPerson(person, opts!!)
@@ -376,7 +386,11 @@ open class PersonSqlApi @Inject constructor(
   }
 
   @Transactional
-  private fun updatePerson(p: DbPerson, groupChangeCollection: GroupChangeCollection? = null, superuserChanges: SuperuserChanges? = null) {
+  private fun updatePerson(
+    p: DbPerson,
+    groupChangeCollection: GroupChangeCollection? = null,
+    superuserChanges: SuperuserChanges? = null
+  ) {
     database.save(p)
 
     if (groupChangeCollection != null) {
@@ -410,5 +424,16 @@ open class PersonSqlApi @Inject constructor(
   companion object {
     private val log = LoggerFactory.getLogger(PersonSqlApi::class.java)
     const val MAX_SEARCH = 100
+
+    fun toSearchPerson(person: Person, groupCountsByPersonId: Map<UUID, Int>): SearchPerson {
+      return SearchPerson()
+        .personType(person.personType!!)
+        .id(person.id!!.id)
+        .email(person.email!!)
+        .name(person.name!!)
+        .whenLastAuthenticated(person.whenLastAuthenticated)
+        .whenLastSeen(person.whenLastSeen)
+        .groupCount(groupCountsByPersonId[person.id!!.id] ?: 0)
+    }
   }
 }

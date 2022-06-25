@@ -149,7 +149,7 @@ class Routes {
         permissionType: PermissionType.portfolioadmin);
     router.define('/admin-service-accounts',
         routeSlots: [RouteSlot.portfolio],
-        handler: handleRouteChangeRequest(routeCreator.adminAPIKeys),
+        handler: handleRouteChangeRequest(routeCreator.adminServiceAccount),
         permissionType: PermissionType.portfolioadmin);
 
     return router;

@@ -158,6 +158,8 @@ class PersonSpec extends BaseSpec {
         originalPerson.name("not me").email("updated@me.com").groups([g1, g2]), Opts.empty(), superuser)
     and:
       def addGroupsPerson = personSqlApi.get(person.id, Opts.opts(FillOpts.Groups))
+    and: "i search for people and ask for group counts"
+      def search = personSqlApi.search("updated@me.com", SortOrder.ASC, 0, 10, [PersonType.PERSON] as Set, Opts.opts(FillOpts.CountGroups))
     and:
       def removeGroupsPerson = personSqlApi.update(person.id,
         addGroupsPerson.copy().name("not you").email("updated@me.com").groups([g2]), Opts.empty(), superuser)
@@ -173,6 +175,8 @@ class PersonSpec extends BaseSpec {
       foundRemovedGroupsPerson.name == 'not you'
       foundRemovedGroupsPerson.groups.size() == 1
       foundRemovedGroupsPerson.groups[0].id == g2.id
+    and:
+      search.searchPeople.find({it.id == person.id}).groupCount == 2
   }
 
   def "when I update the user as a portfolio admin, i can only modify my groups, but can change their name and email"() {
