@@ -1,13 +1,14 @@
 <Configuration packages="cd.connect.logging" monitorInterval="30" verbose="true">
-    <Appenders>
-        <Console name="STDOUT" target="SYSTEM_OUT">
-            <ConnectJsonLayout/>
-<!--            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%thread] %-5level %class{36}.%M %logger{36} - %msg%n"/>-->
-        </Console>
-    </Appenders>
+  <Appenders>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <ConnectJsonLayout/>
+      <DisableLogsFilter/>
+      <!--            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%thread] %-5level %class{36}.%M %logger{36} - %msg%n"/>-->
+    </Console>
+  </Appenders>
 
-    <Loggers>
-      <!--
+  <Loggers>
+    <!--
 <AsyncLogger name="io.featurehub" level="debug"/>
 <AsyncLogger name="io.ebean.SQL" level="trace"/>
 <AsyncLogger name="io.ebean.TXN" level="trace"/>
@@ -21,13 +22,13 @@
 
 <AsyncLogger name="jersey-logging" level="trace"/>
 -->
-      <AsyncLogger name="io.featurehub.edge.features" level="debug"/>
-      <AsyncLogger name="net.stickycode" level="warn"/>
-      <AsyncLogger name="org.glassfish.jersey.server.wadl" level="error"/>
-      <AsyncLogger name="io.avaje.config"  level="warn"/>
-      <AsyncLogger name="org.hibernate" level="error"/>
-      <AsyncRoot level="info">
-        <AppenderRef ref="STDOUT"/>
-      </AsyncRoot>
-    </Loggers>
+    <AsyncLogger name="io.featurehub.edge.features" level="debug"/>
+    <AsyncLogger name="net.stickycode" level="warn"/>
+    <AsyncLogger name="org.glassfish.jersey.server.wadl" level="error"/>
+    <AsyncLogger name="io.avaje.config" level="warn"/>
+    <AsyncLogger name="org.hibernate" level="error"/>
+    <AsyncRoot level="info">
+      <AppenderRef ref="STDOUT"/>
+    </AsyncRoot>
+  </Loggers>
 </Configuration>

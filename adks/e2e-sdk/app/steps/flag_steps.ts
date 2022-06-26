@@ -34,6 +34,7 @@ Given(/^There is a feature flag with the key (.*)$/, async function (key: string
 
 Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (lockedStatus, value) {
   await waitForExpect(() => {
+    expect(this.repository).to.not.be.undefined;
     expect(this.repository.readyness).to.eq(Readyness.Ready);
     const f = this.featureState(this.feature.key) as FeatureStateHolder;
     // console.log('key is val', this.feature.key, f.getBoolean(), value, f.isLocked(), lockedStatus);

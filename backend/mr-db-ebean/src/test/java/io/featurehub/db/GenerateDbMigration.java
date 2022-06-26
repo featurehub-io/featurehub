@@ -9,6 +9,7 @@ public class GenerateDbMigration {
 //    dbMigration.addPlatform(Platform.SQLSERVER17, "mssql");
     dbMigration.addPlatform(Platform.POSTGRES, "postgres");
     dbMigration.addPlatform(Platform.MYSQL, "mysql");
+    dbMigration.addPlatform(Platform.MARIADB, "mariadb");
     dbMigration.addPlatform(Platform.H2, "h2");
     dbMigration.addPlatform(Platform.ORACLE, "oracle");
 
