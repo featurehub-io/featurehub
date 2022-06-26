@@ -1,4 +1,4 @@
-= The Admin SDK (ADK)          
+= The Admin SDK (ADK)
 
 ++++
 <!-- google -->
@@ -58,7 +58,7 @@ implementation 'io.featurehub.mr.sdk:java11-admin-client:[1.1,2)'
 
 === Using the ADK
 
-As we release new Admin tool kits, we will add code examples in different languages. 
+As we release new Admin tool kits, we will add code examples in different languages.
 
 NOTE: for Java, because it doesn't have optional parameters, all parameters must be specified, even if null.
 
@@ -66,10 +66,7 @@ NOTE: when in doubt, the OpenAPI document is the source of truth and this docume
 
 ==== Creating the API Client to enable you to talk to the server
 
-In all ADKs, there is an API client that you need to specify where the server is located. Once you have logged in,
-its on this API client that you also set your *Bearer Token*.
-
-NOTE: FeatureHub as yet does not support Personal Access Tokens. 
+In all ADKs, there is an API client that you need to specify where the server is located.
 
 ====
 .Java 8
@@ -102,11 +99,11 @@ Configuration.setDefaultApiClient(api);
 ====
 
 NOTE: If you do not set the global default API client, then you will have to keep track of the client and
-pass it as the parameter when you construct the various apis. E.g. `new AuthServiceApi()` becomes `new AuthServiceApi(api)` 
+pass it as the parameter when you construct the various apis. E.g. `new AuthServiceApi()` becomes `new AuthServiceApi(api)`
 
-==== Logging in
+==== Authentication
 
-Once the Api client is created, you can then pass it to the Authentication system and log in. Make sure authenticated user has been created in the FeatureHub Admin app prior to that and has enough access rights to perform ADK operations that you are planning to do. 
+Once the Api client is created, you need to provide a "Bearer Token" (access token) to authenticate it. Access token can be obtained via FeatureHub Admin Console on the "Admin Service Account" Page (only accessible by super admins). Make sure Admin Service Account has enough access rights to perform ADK operations that you are planning to do. More on Admin Service Accounts link:index{outfilesuffix}#_admin_service_accounts[here]
 
 ====
 .Java
@@ -115,8 +112,6 @@ Once the Api client is created, you can then pass it to the Authentication syste
 // create the Auth Service
 AuthServiceApi authApi = new AuthServiceApi();
 
-// get back the token
-TokenizedPerson tp = authApi.login(new UserCredentials().email("test@mailinator.com").password("password123"))
 ----
 ====
 
@@ -126,7 +121,8 @@ The differences between 8 and 11 are in how to specify the token to the APIClien
 .Java 8
 [source,java]
 ----
-api.setBearerToken(tp.accessToken)
+String token = "your_token"
+api.setBearerToken(token)
 ----
 
 .Java 11
@@ -134,14 +130,14 @@ api.setBearerToken(tp.accessToken)
 ----
 // tell the API that it should add the bearer token onto the outgoing requests
 api.setRequestInterceptor(builder -> {
-builder.header("Authorization", "Bearer " + tp.accessToken)
+builder.header("Authorization", "Bearer " + token)
 } );
 ----
 ====
 
 Once authenticated, you can now use the SDK and there are no differences between Java 8 and 11.
 
-=== APIs 
+=== APIs
 
 ==== Managing Portfolios
 
@@ -151,7 +147,7 @@ Always examine the generated code for details on what error codes and status cod
 A portfolio consists of Applications and Groups entities. Once you have a portfolio, you can perform operations on those entities.
 
 ====
-.Java 
+.Java
 [source,java]
 ----
 PortfolioServiceApi portfolioService = new PortfolioServiceApi();
@@ -160,7 +156,7 @@ PortfolioServiceApi portfolioService = new PortfolioServiceApi();
 
 ==== Create Portfolio
 
-This operation creates a portfolio, and indicates whether you want to return any created groups and applications inside the portfolio. 
+This operation creates a portfolio, and indicates whether you want to return any created groups and applications inside the portfolio.
 Currently the API does not allow you to create groups and applications when creating portfolios.
 
 ====
@@ -223,7 +219,7 @@ This will return all portfolios in ascending order.
 
 ==== Get a Portfolio
 
-This operation allows to get the details of a portfolio by ID. 
+This operation allows to get the details of a portfolio by ID.
 
 ====
 .Java Definition
@@ -304,7 +300,7 @@ List<Feature> createFeaturesForApplication(UUID id, Feature feature)
 .Java use
 [source,java]
 ----
-List<Feature> allFeatures = featureService.createFeaturesForApplication(appId, 
+List<Feature> allFeatures = featureService.createFeaturesForApplication(appId,
    new Feature().name("Feature's Name").key("FEATURE_KEY").valueType(FeatureValueType.BOOLEAN))
 ----
 ====
@@ -332,8 +328,8 @@ EnvironmentFeatureServiceApi featureValueService = new EnvironmentFeatureService
 === OpenAPI Files
 
 If you use a language we don't provide an artifact for or use an OpenAPI generator that is different from the one we
-are using, the information on the latest API is located at: 
-https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi  
+are using, the information on the latest API is located at:
+https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi
 
 Or can be served from:
 http://api.dev.featurehub.io/mrapi/1.1.5.yaml
