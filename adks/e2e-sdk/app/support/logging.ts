@@ -54,7 +54,7 @@ export const logger = winston.createLogger({
     // - Write all logs with level `verbose` and below to `combined.log`
     //
     new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' }),
+    new winston.transports.File({ filename: 'logs/combined.log', level: 'verbose' }),
   ],
 });
 
@@ -75,6 +75,7 @@ if (process.env.DEBUG) {
 
 export const responseToRecord = function (response: AxiosResponse) {
   const reqConfig = response.config;
+  if (reqConfig.url.endsWith('/mr-api/login')) return undefined;
   return {
     type: 'response',
     status: response.status,
@@ -93,7 +94,10 @@ export const responseToRecord = function (response: AxiosResponse) {
 export function axiosLoggingAttachment(axiosInstances: Array<AxiosInstance>) {
   axiosInstances.forEach((axios) => {
     axios.interceptors.response.use((resp: AxiosResponse) => {
-      logger.log({level: 'verbose', message: 'response:', http: JSON.stringify(responseToRecord(resp), undefined, 2)});
+      const responseToLog = responseToRecord(resp)
+      if (responseToLog !== undefined) {
+        logger.log({level: 'verbose', message: 'response:', http: JSON.stringify(responseToLog, undefined, 2)});
+      }
       return resp;
     }, (error) => {
       if (error.response) {
