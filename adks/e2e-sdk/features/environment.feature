@@ -13,7 +13,7 @@ Feature: We have a grouping of environmental behaviour around features
     And I delete the environment
     Then the edge connection is no longer available
 
-  @feature-delete
+  @featuredelete
   Scenario Outline: When I create multiple features and delete them, the MR list of features should match the Edge list of features
     Given I create a new portfolio
     And I create an application

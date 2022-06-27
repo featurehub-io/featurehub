@@ -83,9 +83,11 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
       .apiKeyServerSide(sa.apiKeyServerEval)
       .permissions(
         QDbServiceAccountEnvironment()
-          .select(QDbServiceAccountEnvironment.Alias.permissions).serviceAccount.id.eq(sa.id).environment.whenUnpublished.isNull.environment.whenArchived.isNull.environment.fetch(
-            QDbEnvironment.Alias.id
-          )
+          .select(QDbServiceAccountEnvironment.Alias.permissions)
+          .serviceAccount.id.eq(sa.id)
+          .environment.whenUnpublished.isNull
+          .environment.whenArchived.isNull
+          .environment.fetch(QDbEnvironment.Alias.id)
           .findStream().map { sap: DbServiceAccountEnvironment ->
             CacheServiceAccountPermission()
               .permissions(convertUtils.splitServiceAccountPermissions(sap.permissions))

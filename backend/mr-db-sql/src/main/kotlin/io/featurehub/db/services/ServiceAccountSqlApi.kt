@@ -116,7 +116,7 @@ class ServiceAccountSqlApi @Inject constructor(
     if (serviceAccount.description != null) {
       sa.description = serviceAccount.description
     }
-    updateServiceAccount(sa, deletePerms, updatePerms, createPerms)
+    asyncUpdateCache(sa, updateServiceAccount(sa, deletePerms, updatePerms, createPerms).values)
     return convertUtils.toServiceAccount(sa, opts)
   }
 
@@ -332,16 +332,16 @@ class ServiceAccountSqlApi @Inject constructor(
     deleted: List<DbServiceAccountEnvironment?>,
     updated: List<DbServiceAccountEnvironment?>,
     created: List<DbServiceAccountEnvironment?>
-  ) {
+  ) : MutableMap<UUID, DbEnvironment> {
     database.update(sa)
     database.updateAll(updated)
     database.deleteAll(deleted)
     database.saveAll(created)
-    val changed: MutableMap<UUID, DbEnvironment> = HashMap()
+    val changed = mutableMapOf<UUID, DbEnvironment>()
     deleted.forEach { e: DbServiceAccountEnvironment? -> changed[e!!.environment.id] = e.environment }
     updated.forEach { e: DbServiceAccountEnvironment? -> changed[e!!.environment.id] = e.environment }
     created.forEach { e: DbServiceAccountEnvironment? -> changed[e!!.environment.id] = e.environment }
-    asyncUpdateCache(sa, changed.values)
+    return changed
   }
 
   // because this is an update or save, its no problem we send this out of band of this save/update.
