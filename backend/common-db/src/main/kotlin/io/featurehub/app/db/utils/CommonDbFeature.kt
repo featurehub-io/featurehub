@@ -98,23 +98,27 @@ open class CommonDbFeature : Feature {
 
     if (databaseUrl.contains("postgres")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/postgres"
-      migrationConfig.platformName = DbPlatformNames.POSTGRES
+      migrationConfig.platform = DbPlatformNames.POSTGRES
       defaultDriver = "org.postgresql.Driver"
-    } else if (databaseUrl.contains("mysql") || databaseUrl.contains("mariadb")) {
+    } else if (databaseUrl.contains("mariadb")) {
+      migrationConfig.migrationPath = "classpath:/dbmigration/mariadb"
+      migrationConfig.platform = DbPlatformNames.MARIADB
+      defaultDriver = "com.mysql.jdbc.Driver"
+  } else if (databaseUrl.contains("mysql")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/mysql"
-      migrationConfig.platformName = DbPlatformNames.MYSQL
+      migrationConfig.platform = DbPlatformNames.MYSQL
       defaultDriver = "com.mysql.jdbc.Driver"
     } else if (databaseUrl.contains("sqlserver")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/mssql"
-      migrationConfig.platformName = DbPlatformNames.SQLSERVER
+      migrationConfig.platform = DbPlatformNames.SQLSERVER
       defaultDriver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
     } else if (databaseUrl.contains("oracle")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/oracle"
-      migrationConfig.platformName = DbPlatformNames.ORACLE
+      migrationConfig.platform = DbPlatformNames.ORACLE
       defaultDriver = "oracle.jdbc.OracleDriver"
     } else {
       migrationConfig.migrationPath = "classpath:/dbmigration/h2"
-      migrationConfig.platformName = DbPlatformNames.H2
+      migrationConfig.platform = DbPlatformNames.H2
       defaultDriver = "org.h2.Driver"
     }
 

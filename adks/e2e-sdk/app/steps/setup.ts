@@ -13,6 +13,7 @@ import { makeid, sleep } from '../support/random';
 import { EdgeFeatureHubConfig, FeatureHubPollingClient } from 'featurehub-javascript-node-sdk';
 import waitForExpect from 'wait-for-expect';
 import { logger } from '../support/logging';
+import { SdkWorld } from '../support/world';
 
 Given(/^I create a new portfolio$/, async function () {
   const portfolioService: PortfolioServiceApi = this.portfolioApi;
@@ -135,7 +136,7 @@ Given('the edge connection is no longer available', async function () {
 
 Given(/^I connect to the feature server$/, function () {
   const serviceAccountPerm: ServiceAccountPermission = this.serviceAccountPermission;
-  const world = this;
+  const world = this as SdkWorld;
 
   waitForExpect(async () => {
     const url = `${world.featureUrl}/features?apiKey=${serviceAccountPerm.sdkUrlClientEval}`;
@@ -143,10 +144,14 @@ Given(/^I connect to the feature server$/, function () {
     logger.info('Waiting for successful connection to feature server at `%s`', url);
 
     let found = false;
-    await (FeatureHubPollingClient.pollingClientProvider({}, url, 0, (data) => {
-      found = true;
-      console.log('initial data is ', data);
-    }).poll());
+    try {
+      await (FeatureHubPollingClient.pollingClientProvider({}, url, 0, (data) => {
+        found = true;
+        console.log('initial data is ', data);
+      }).poll());
+    } catch (e) {
+      console.log('failed to poll', e);
+    }
 
     expect(found).to.be.true;
     logger.info('Successfully completed poll');
