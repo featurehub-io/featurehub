@@ -4,6 +4,8 @@ import io.featurehub.app.db.utils.CommonDbFeature;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.db.publish.MRPublishModule;
 import io.featurehub.db.publish.PublishManager;
+import io.featurehub.db.services.InternalOAuthPersonCreation;
+import io.featurehub.db.services.OAuthPersonCreation;
 import io.featurehub.db.utils.ApiToSqlApiBinder;
 import io.featurehub.db.utils.ComplexUpdateMigrations;
 import io.featurehub.mr.api.ApplicationServiceDelegate;
@@ -97,6 +99,7 @@ public class ManagementRepositoryFeature implements Feature {
         @Override
         protected void configure() {
           bind(OAuth2MRAdapter.class).to(SSOCompletionListener.class).in(Singleton.class);
+          bind(OAuthPersonCreation.class).to(InternalOAuthPersonCreation.class).in(Singleton.class);
           bind(DatabaseAuthRepository.class).to(AuthenticationRepository.class).in(Singleton.class);
           bind(PortfolioUtils.class).to(PortfolioUtils.class).in(Singleton.class);
           bind(AuthManager.class).to(AuthManagerService.class).in(Singleton.class);
