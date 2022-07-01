@@ -288,9 +288,9 @@ FeatureHub was designed to ensure that security was built into the platform from
 === Key Security concepts
 
 ==== Administrators
-There are two types of administrators, *Organisation Super Admin* and *Portfolio Admin*.
+There are two types of administrators, *Organization Super Admin* and *Portfolio Admin*.
 
-===== Site Administrators
+===== Organization Super Admin
 * *Site Administrators* can:
 ** Create and manage users of the system
 ** Create and manage user groups

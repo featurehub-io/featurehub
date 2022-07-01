@@ -102,7 +102,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),
               child: Text(
-                  "Well done, FeatureHub is up and running.  You'll be the first 'Site administrator' of your FeatureHub account.",
+                  "Well done, FeatureHub is up and running.  You'll be the first 'Organization super admin' of your FeatureHub account.",
                   style: Theme.of(context).textTheme.bodyText1),
             ),
             if (external)
