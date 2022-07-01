@@ -28,7 +28,7 @@ import { edgeHost, mrHost } from './discovery';
 
 let apiKey: string;
 
-axiosLoggingAttachment([ globalAxios ]);
+// axiosLoggingAttachment([ globalAxios ]);
 
 export class SdkWorld extends World {
   private _portfolio: Portfolio;
@@ -59,14 +59,25 @@ export class SdkWorld extends World {
     this.adminUrl = mrHost();
     this.featureUrl = edgeHost();
 
-    this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey });
+    this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey, axiosInstance: globalAxios.create() });
     this.portfolioApi = new PortfolioServiceApi(this.adminApiConfig);
     this.applicationApi = new ApplicationServiceApi(this.adminApiConfig);
     this.environmentApi = new EnvironmentServiceApi(this.adminApiConfig);
     this.featureApi = new FeatureServiceApi(this.adminApiConfig);
-    this.loginApi = new AuthServiceApi(this.adminApiConfig);
+    this.loginApi = new AuthServiceApi(this.adminApiConfig); // too noisy in logs
     this.serviceAccountApi = new ServiceAccountServiceApi(this.adminApiConfig);
     this.featureValueApi = new EnvironmentFeatureServiceApi(this.adminApiConfig);
+
+    axiosLoggingAttachment([this.adminApiConfig.axiosInstance]);
+  }
+
+  public reset(): void {
+    this._application = undefined;
+    this._portfolio = undefined;
+    this.feature = undefined;
+    this.environment = undefined;
+    this.serviceAccountPermission = undefined;
+    this.edgeServer = undefined;
   }
 
   public set repository(r: FeatureHubRepository) {
