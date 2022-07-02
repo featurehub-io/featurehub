@@ -3,10 +3,12 @@ FROM --platform=$BUILDPLATFORM nats:2.6.4-alpine AS builder
 WORKDIR /workdir
 RUN cp /usr/local/bin/nats-server /workdir && cp /etc/nats/nats-server.conf /workdir
 
-FROM --platform=$BUILDPLATFORM adoptopenjdk:11-jre-hotspot-focal
+FROM --platform=$BUILDPLATFORM eclipse-temurin:11-alpine
+
+RUN apk update && apk upgrade
 
 # make the non-root user & make appropriate directories
-RUN groupadd -g 999 k8sgroup && useradd -g 999 -u 999 k8suser && mkdir -p /db /target /etc/app-config /etc/common-config
+RUN  (delgroup ping | true) && adduser -g 999 -u 999 -D k8suser && mkdir -p /db /target /etc/app-config /etc/common-config
 
 # copy in nats
 COPY --from=builder /workdir/nats-server /target

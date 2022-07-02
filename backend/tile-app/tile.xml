@@ -12,8 +12,8 @@
     <app.port>8903</app.port>
     <build.version>0.0.1</build.version>
     <app.baseimage.prefix></app.baseimage.prefix>
-    <!-- debian base image is a multi-arch fat manifest, we cannot pin against a sha for multi-arch builds -->
-    <app.baseimage>${app.baseimage.prefix}adoptopenjdk/openjdk11:debian</app.baseimage>
+    <!-- base image is a multi-arch fat manifest, we cannot pin against a sha for multi-arch builds -->
+    <app.baseimage>${app.baseimage.prefix}featurehub/base_jdk:1.11</app.baseimage>
     <app.imagename>${project.artifactId}</app.imagename>
     <docker.goal>dockerBuild</docker.goal>
     <docker.project.prefix>featurehub</docker.project.prefix>
@@ -35,7 +35,7 @@
           <plugin>
             <groupId>com.google.cloud.tools</groupId>
             <artifactId>jib-maven-plugin</artifactId>
-            <version>3.2.0</version>
+            <version>3.2.1</version>
             <executions>
               <execution>
                 <phase>package</phase>
@@ -107,7 +107,7 @@
           <plugin>
             <groupId>com.google.cloud.tools</groupId>
             <artifactId>jib-maven-plugin</artifactId>
-            <version>3.2.0</version>
+            <version>3.2.1</version>
             <executions>
               <execution>
                 <phase>package</phase>

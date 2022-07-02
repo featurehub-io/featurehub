@@ -1,0 +1,10 @@
+== the base_party image
+
+This contains the base of the Party Server, including NATs Server and the Open JRE v11.
+
+It is used by the Party Server build to create a build.
+
+It is built using make-image.sh
+
+Once built, you can login to DockerHub (`docker login` - use `docker logout` if you are logged in using 
+something else). 
