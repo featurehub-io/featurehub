@@ -288,21 +288,24 @@ FeatureHub was designed to ensure that security was built into the platform from
 === Key Security concepts
 
 ==== Administrators
-There are two types of administrators, *Site Administrators* and *Portfolio Administrators*.
+There are two types of administrators, *Organization Super Admin* and *Portfolio Admin*.
 
-===== Site Administrators
+===== Organization Super Admin
 * *Site Administrators* can:
 ** Create and manage users of the system
+** Create and manage user groups
 ** Create and manage portfolios
+** Create and manage Admin service accounts (to control FeatureHub via an ADK)
 
 ===== Portfolio Administrators
 * *Portfolio Administrators* can:
 ** Create and manage portfolio groups
-** Create applications
-** Manage access to applications
-** Create Service Accounts
+** Create and manage applications
+** Create and manage environments
+** Manage users and groups access to applications
+** Create service accounts
 
-NOTE: Every Portfolio automatically gets a group called "Administrators", Simply adding people to this group
+NOTE: Every Portfolio automatically gets a group called "Administrators", simply adding people to this group
 will make them administrators for this portfolio.
 
 
@@ -324,14 +327,19 @@ NOTE: Groups can also separately be assigned the permission to create, edit and 
 Service accounts are used for programmatic access to the features for an application through FeatureHub SDKs.
 A service account will need a minimum of `READ` access to an environment in order to access a feature value. You can set permissions for a service account from the FeatureHub Admin Console.
 
-When a service account is given access for an environment for a selected application, it automatically creates two types of API keys that you can choose from *Client Evaluated API Key* and *Server Evaluated API Key*. Read more info on API Keys types link:sdks#_client_and_server_api_keys[here]
+When a service account is given access for an environment for a selected application, it automatically creates two types of API keys that you can choose from *Client Evaluated API Key* and *Server Evaluated API Key*.Read more info on API Keys types link:sdks#_client_and_server_api_keys[here]
 
-The same service account can be used across multiple environments and applications. We recommend two service accounts be created for an application, one with access to a production environment and the other one for test environments. However, FeatureHub remains flexible to how customers could split their service accounts according to individual needs.
+The same service account can be used across multiple environments and applications.We recommend two service accounts be created for an application, one with access to a production environment and the other one for test environments.However, FeatureHub remains flexible to how customers could split their service accounts according to individual needs.
 
 In case an API key gets compromised there is an option to reset the key and immediately disable the previous one.
 
-NOTE: Because API Keys are based on a service account ID, it is not possible to reset a single API key at a time, but there is an option to reset service account ID, which in turn will cause reset to all API keys attached to that service account. This could potentially affect multiple applications and multiple environments. Thus, it is recommended to always have a separate Service Account for a production environment.
-There is also an option to either reset Client evaluated API keys or Server evaluated API keys. Warning is provided before the reset.
-The option to reset the keys will only be available to Portfolio admins, since service accounts settings can only be viewed by them. Only Portfolio and Super admins always have full permissions to see in which apps and environments a service account is used.
+NOTE: Because API Keys are based on a service account ID, it is not possible to reset a single API key at a time, but there is an option to reset service account ID, which in turn will cause reset to all API keys attached to that service account.This could potentially affect multiple applications and multiple environments.Thus, it is recommended to always have a separate Service Account for a production environment.
+There is also an option to either reset Client evaluated API keys or Server evaluated API keys.Warning is provided before the reset.
+The option to reset the keys will only be available to Portfolio admins, since service accounts settings can only be viewed by them.Only Portfolio and Super admins always have full permissions to see in which apps and environments a service account is used.
 
+[#_admin_service_accounts]
+=== Admin Service Accounts
 
+Admin service accounts are used for programmatic access to the FeatureHub's Management Repository API via an link:admin-development-kit[Admin SDK]. For example, you can use it to create applications, environments, features and perform operations on features.When creating a service account, ensure you are providing enough permissions by adding it to a user group. (Users and Admin Service Accounts can share the same groups.)
+
+When you create an Admin service account, ensure you copy the access token and store it safely as it won't be displayed afterwards in the UI. However, there is an option to reset the token if needed. There is also an option to remove token from a group.
