@@ -33,10 +33,10 @@ Enterprise focused SAML2 standard. We added support for SAML as it supports many
 of grouping users and determining who has access to a resources from that organisational level. Most OpenID providers
 do not provide this capability.
 
-NOTE: it is important to note that if you are using an OAuth2 provider with FeatureHub, that it does not use the 
+NOTE: it is important to note that if you are using an OAuth2 provider with FeatureHub, that it does not use the
 Access Token it receives from the OAuth provider to call back (except in the case of GitHub where it is required
-to understand the user's name), it simply follows the standard OAuth2 Authorization Code Flow and 
-requests an openid style id token. This contains the email address and username and FeatureHub will 
+to understand the user's name), it simply follows the standard OAuth2 Authorization Code Flow and
+requests an openid style id token. This contains the email address and username and FeatureHub will
 then drop the token from the supplier. No further callbacks are made.
 
 === Generalised Config
@@ -53,7 +53,7 @@ auth.userMustBeCreatedFirst=false
 
 All of the following options allow you to specify a "code" which identifies the identity configuration. For both OAuth2
 and SAML you can simply use the URL the FeatureHub home page would use itself. If your site is `https://featurehub.example.com`, and you
-were (for example), using a Microsoft SAML provider you had named `william` then you would use: `https://featurehub.example.com/authentication/external-provider/william`. Simply creating a button or link on your own internal documentation system 
+were (for example), using a Microsoft SAML provider you had named `william` then you would use: `https://featurehub.example.com/authentication/external-provider/william`. Simply creating a button or link on your own internal documentation system
 to link to that URL will start the process. It will redirect to your Identity Provider and then straight back into FeatureHub.
 
 If you specify a single identity provider and no allowed login using the internal password system, this will automatically happen.
@@ -173,7 +173,7 @@ oauth2.providers.generic.scope=[defaults to "profile email"]
 oauth2.providers.generic.name-fields=[optional, field to find inside JWT for the user's name, defaults to "name"]
 oauth2.providers.generic.email-field[optional, field to find inside JWT for user's email, defaults to "email"]
 oauth2.providers.generic.icon.url=[required, full icon url, including https]
-oauth2.providers.generic.icon.background-color=[required, background colour in 0x format, e.g. 0xFFF44336 is a redish colour] 
+oauth2.providers.generic.icon.background-color=[required, background colour in 0x format, e.g. 0xFFF44336 is a redish colour]
 oauth2.providers.generic.icon.text=[required,text to appear on button]
 oauth2.providers.generic.token-form-pairs=[optional, map-format, gets added to form body of token request]
 oauth2.providers.generic.token-header-pairs=[optional, map-format, gets added to the token request]
@@ -195,26 +195,22 @@ Certificate and Private Key. If you do not have either of these, you can generat
 
  $ openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout privateKey.key -out certificate.crt
 
-You will not have to provider either of these to the other end of your SAML config as if they require them they
-can get them from your Metadata endpoint.
-
-The construction of SAML login for FeatureHub is necessarily more involved that OAuth2 as there are more options
-and more complex configuration. You need to make sure you have two things:
+You will not have to provide either of these to the SAML IdP as the IdP can make a request to your Metadata Endpoint URL to retrieve them. If it cannot do so, you can make a request in your own browser to the URL, copy the result and upload it to your IdP manually.
 
 === Configuring a SAML Provider
 
 FeatureHub allows you to configure as many SAML providers as you like, they need to be listed as a comma-separated
 list in the config, e.g:
 
- - `saml.idp-providers=sample` - Whatever name you give it becomes part of the URL - so you will get urls `/saml/sample/sso`, `/saml/sample/auth` and '/saml/sample/metadata` - see below for more details on these URLs. 
+ - `saml.idp-providers=sample` - Whatever name you give it becomes part of the URL - so you will get urls `/saml/sample/sso`, `/saml/sample/auth` and '/saml/sample/metadata` - see below for more details on these URLs.
 
-*sample* is used here because it is the name you have given to the provider, but you should 
+*sample* is used here because it is the name you have given to the provider, but you should
 make it meaningful, e.g. google, microsoft, auth0, okta - etc.
 
 === iDP Metadata
 
 The Metadata gives FeatureHub all the information it requires to know how to talk to the iDP. It is a file or
-a url  that FeatureHub when starting up can use to get the metadata. There are three ways to load this data, 
+a url  that FeatureHub when starting up can use to get the metadata. There are three ways to load this data,
 *one* is required:
 
  - `saml.sample.idp.metadata-file` - gives an absolute filename for SAML metadata, OR
@@ -229,10 +225,10 @@ FeatureHub will use the standard iDP Metadata method to figure out what the Sing
 There are three endpoints that FeatureHub provides that are of use to you:
 
  - `/sso` - this is the endpoint used when the SAML iDP is calling back to you, it is called the *Assertion Consumer Service* URL, or *ACS URL* for short.
- - `/metadata` - this is the endpoint which provides the details about your the FeatureHub service to the remote site,
-it is also called the *SP Entity ID*. It provides the remote side information about the X.509 Certificate that is 
-being used an confirms the Issuer of the request (your site)
- - `/auth` - this simply redirects to your iDP - it is a GET request and it allows you to create your own landing page, or a link on your corporate website that will end up redirecting to FeatureHub. It is not used by FeatureHub itself.
+ - `/metadata` - this is the endpoint which provides the details about the FeatureHub service to the remote site,
+it is also called the *SP Entity ID*. It provides the remote side information about the X.509 Certificate that is
+being used and confirms the Issuer of the request (your site)
+ - `/auth` - this redirects to your iDP - it is a GET request and it allows you to create your own landing page, or a link on your corporate website that will end up redirecting to FeatureHub. It is not used by FeatureHub itself.
 
 Related to these is a further mandatory config:
 
@@ -246,32 +242,29 @@ The two certificates need to be provided to FeatureHub without their surrounding
 
  - `saml.google.sp.x509-cert` - (required) the full text of the X509 Certificate
  - `saml.google.sp.x509-cert-new` - (optional) an optional extra X509 Certificate if yours is expiring
- - `saml.google.sp.private-key` - (required) the full private key (minus comments)  
+ - `saml.google.sp.private-key` - (required) the full private key (minus comments)
 
 If you are using a properties file, you can do line continuations with a `\` character, see below for an
 example.
 
-=== What you need to tell your SAML provider you need
+=== Setting up SAML provider
 
-When you set up your SAML provider, they will ask for 
+When you set up your SAML provider, please provide the following:
 
 ==== NameID
-The NameID format - we need you to specify `email` - the NameID
-passed back must contain the user's email. 
+The NameID format - specify `email` - the NameID
+passed back must contain the user's email.
 
 ==== User Name
-Further we use standard OASIS codes for containing the Display Name and/or the First Name and Last 
-name. Either the display name *or* the First Name/Last Name 
+Further we use standard OASIS codes for containing the Display Name and/or the First Name and Last
+name. Either the display name *or* the First Name/Last Name
 must be provided, there are no other requirements.
 
-Your SAML provider will ask you what extra attributes are required, so:
+Your SAML provider will ask you what extra attributes are required:
 
  - Last Name = `urn:oid:2.5.4.4`
  - First Name = `urn:oid:2.5.4.42`
- - Display Name = `urn:oid:2.16.840.1.113730.3.1.241` 
-
-And yes, we realise these are bizarre names but they are from the days of OASIS committees where people smarter than
-us thought this was a good idea. We will reject the login if the name isn't available.
+ - Display Name = `urn:oid:2.16.840.1.113730.3.1.241`
 
 
 ==== Enforcing only certain email addresses
@@ -280,7 +273,7 @@ For extra security, it is recommended that you list the email domains that are a
 coming through will have its domain name extracted and compared against the list you provide. There is no regex or other
 pattern matching, exact domain names (all forced to lower case) need to be provided.
 
-- `saml.google.email-domains` - a comma separated list of valid domains. If empty or not provided then all email addresses are 
+- `saml.google.email-domains` - a comma separated list of valid domains. If empty or not provided then all email addresses are
 accepted but the global rule of whether the account must be created first remains in place.
 
 ==== Signed response
@@ -294,7 +287,7 @@ This is a checkbox on Google for example.
 
 You must specify the appearance of the button as it appears for login for FeatureHub. If you don't specify these, then
 there will be no login button on the FeatureHub page, but you can still login using your SAML provider (as covered
-under Logging in via your own login page) 
+under Logging in via your own login page)
 
  - `saml.google.login.icon-url` - (required) the full url of the icon, which must be 48x48 pixels, preferably as a PNG
  - `saml.google.login.button-background-color` - (required) a colour understood by a browser, usually specified in hex, e.g. `0xCAE8DC`
