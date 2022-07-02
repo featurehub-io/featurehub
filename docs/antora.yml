@@ -3,5 +3,6 @@ version: 1.5.9
 start_page: ROOT:index.adoc
 title: FeatureHub
 prerelease: -rc
+# comment
 nav:
 - modules/ROOT/nav.adoc
