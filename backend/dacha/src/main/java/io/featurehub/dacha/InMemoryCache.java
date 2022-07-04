@@ -9,6 +9,8 @@ import io.featurehub.dacha.model.PublishAction;
 import io.featurehub.dacha.model.PublishEnvironment;
 import io.featurehub.dacha.model.PublishFeatureValue;
 import io.featurehub.dacha.model.PublishServiceAccount;
+import io.featurehub.metrics.MetricsCollector;
+import io.prometheus.client.Gauge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -37,6 +39,11 @@ public class InMemoryCache implements InternalCache {
   private final Map<String, UUID> apiKeyToServiceAccountKeyMap = new ConcurrentHashMap<>();
   private final Map<UUID, List<PublishFeatureValue>> valuesForUnpublishedEnvironments = new ConcurrentHashMap<>();
   private Runnable notify;
+
+  private final Gauge environmentGauge = MetricsCollector.Companion.gauge("dacha_environment_gauge",
+    "Number of active environments");
+  private final Gauge serviceAccountsGauge = MetricsCollector.Companion.gauge("dacha_service_accounts_gauge",
+    "Number of active service accounts");
 
   @Override
   public boolean cacheComplete() {
@@ -132,6 +139,8 @@ public class InMemoryCache implements InternalCache {
         updateServiceAccountEnvironmentCache(null, removeAccount);
       }
     }
+
+    serviceAccountsGauge.set(serviceAccounts.size());
   }
 
   String serviceAccountIdPlusEnvId(UUID serviceAccountId, UUID environmentId) {
@@ -259,6 +268,8 @@ public class InMemoryCache implements InternalCache {
       removeServiceAccountsFromEnvironment(null, environments.get(envId));
       environments.remove(envId);
     }
+
+    environmentGauge.set(environments.size());
   }
 
   private String sAccounts(PublishEnvironment e) {

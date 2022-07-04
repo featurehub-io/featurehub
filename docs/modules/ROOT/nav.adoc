@@ -4,6 +4,7 @@
 * xref:installation.adoc[Installation]
 * xref:configuration.adoc[Configuration]
 * xref:identity.adoc[Identity]
+* xref:metrics.adoc[Monitoring your Installation]
 * xref:sdks.adoc[Software Development Kits]
 * xref:admin-development-kit.adoc[Admin Software Development Kits]
 * xref:developers.adoc[Contributing]

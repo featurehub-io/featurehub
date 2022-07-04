@@ -2,6 +2,7 @@ package io.featurehub.web.security.oauth
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
+import cd.connect.jersey.prometheus.Prometheus
 import io.featurehub.web.security.oauth.providers.OAuth2ProviderDiscovery
 import jakarta.inject.Inject
 import jakarta.ws.rs.GET
@@ -37,6 +38,7 @@ class OauthResource @Inject constructor(
   protected var userMustBeCreatedFirst: Boolean? = false
 
   @Path("/auth")
+  @Prometheus(name = "oauth2_token", help = "OAuth2 token API")
   @GET
   fun token(
     @QueryParam("code") code: String?,

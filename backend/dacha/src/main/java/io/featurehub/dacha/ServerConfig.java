@@ -10,6 +10,7 @@ import io.featurehub.dacha.model.PublishFeatureValue;
 import io.featurehub.dacha.model.PublishServiceAccount;
 import io.featurehub.dacha.resource.DachaEdgeNATSAdapter;
 import io.featurehub.jersey.config.CacheJsonMapper;
+import io.featurehub.metrics.MetricsCollector;
 import io.featurehub.mr.model.DachaNATSRequest;
 import io.featurehub.mr.model.DachaNATSResponse;
 import io.featurehub.publish.ChannelConstants;
@@ -18,6 +19,7 @@ import io.featurehub.publish.NATSSource;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import io.nats.client.MessageHandler;
+import io.prometheus.client.Counter;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +37,15 @@ public class ServerConfig {
   public String name = ChannelConstants.DEFAULT_CACHE_NAME;
 
   private final List<Runnable> shutdownSubscriptionRunners = new ArrayList<>();
+
+  private final Counter serviceAccountCounter = MetricsCollector.Companion.counter(
+    "dacha_service_account_msg_counter", "Service Account Messages received");
+  private final Counter featureCounter = MetricsCollector.Companion.counter("dacha_feature_msg_counter",
+    "Feature Messages received");
+  private final Counter environmentsCounter = MetricsCollector.Companion.counter("dacha_environments_msg_counter",
+    "Environment Messages received");
+  private final Counter publishCounter = MetricsCollector.Companion.counter("dacha_publish_msg_counter",
+    "Publish Messages received");
 
   @Inject
   public ServerConfig(
@@ -80,6 +91,7 @@ public class ServerConfig {
     listen(
         message -> {
           try {
+            serviceAccountCounter.inc();
             PublishServiceAccount sa =
                 CacheJsonMapper.readFromZipBytes(message.getData(), PublishServiceAccount.class);
             log.trace("service account received {}", sa);
@@ -95,6 +107,7 @@ public class ServerConfig {
     listen(
         message -> {
           try {
+            featureCounter.inc();
             PublishFeatureValue fv =
                 CacheJsonMapper.readFromZipBytes(message.getData(), PublishFeatureValue.class);
             log.trace("feature value received {}", fv);
@@ -110,6 +123,7 @@ public class ServerConfig {
     listen(
         message -> {
           try {
+            environmentsCounter.inc();
             PublishEnvironment e =
                 CacheJsonMapper.readFromZipBytes(message.getData(), PublishEnvironment.class);
             log.trace("environment received {}", e);
@@ -127,6 +141,7 @@ public class ServerConfig {
         connection.createDispatcher(
             (msg) -> {
               try {
+                publishCounter.inc();
                 DachaNATSRequest req =
                     CacheJsonMapper.readFromZipBytes(msg.getData(), DachaNATSRequest.class);
                 log.trace("received NATs Edge request {}", req);

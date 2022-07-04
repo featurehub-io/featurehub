@@ -1,5 +1,6 @@
 package io.featurehub.edge.resources
 
+import cd.connect.jersey.prometheus.Prometheus
 import io.featurehub.edge.rest.FeatureGet
 import io.featurehub.edge.rest.FeatureUpdate
 import io.featurehub.sse.model.FeatureStateUpdate
@@ -19,6 +20,7 @@ class EdgeResource @Inject constructor(private val featureGetProcessor: FeatureG
   @GET
   @Path("/")
   @Produces("application/json")
+  @Prometheus(name = "edge_poll_api", help = "Number of requests for the poll API")
   @ManagedAsync
   fun getFeatureStates(
     @Suspended response: AsyncResponse, @QueryParam("sdkUrl") sdkUrls: List<String>?,
@@ -31,6 +33,7 @@ class EdgeResource @Inject constructor(private val featureGetProcessor: FeatureG
 
   @GET
   @Path("{namedCache}/{environmentId}/{apiKey}")
+  @Prometheus(name = "edge_sse_api", help = "Number of requests for the SSE API")
   @Produces(SseFeature.SERVER_SENT_EVENTS)
   fun features(
     @PathParam("namedCache") namedCache: String?,
@@ -46,6 +49,7 @@ class EdgeResource @Inject constructor(private val featureGetProcessor: FeatureG
   @PUT
   @Path("{namedCache}/{environmentId}/{apiKey}/{featureKey}")
   @ManagedAsync
+  @Prometheus(name = "edge_test_sdk_api", help = "Number of requests to the test SDK API")
   fun update(
     @Suspended response: AsyncResponse, @PathParam("namedCache") namedCache: String,
     @PathParam("environmentId") envId: UUID,
