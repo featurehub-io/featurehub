@@ -13,6 +13,7 @@ class MetricsCollector {
     val gauges: MutableMap<String, Gauge> = ConcurrentHashMap()
     val counters: MutableMap<String, Counter> = ConcurrentHashMap()
 
+
     fun histogram(key: String, help: String): Histogram {
       return histograms.computeIfAbsent(key) {
         Histogram.build(it, help).register()!!

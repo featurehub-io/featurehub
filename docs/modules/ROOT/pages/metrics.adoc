@@ -191,3 +191,41 @@ monitor what is happening.
 5. pool = mapped, direct
 6. state = RUNNABLE, TERMINATED, TIMED_WAITING, WAITING, NEW, BLOCKED
 7. runtime, vendor, version = e.g. `jvm_info{runtime="OpenJDK Runtime Environment",vendor="AdoptOpenJDK",version="11.0.11+9",}` 
+
+== Management Repository
+
+The Management Repository has some special metrics of its own designed to allow you to determine if things are working,
+and flowing properly. All of these are in the Party Server as well unless otherwise specified. 
+
+=== Feature Publishing
+
+Features are published in FeatureHub to NATS channels. These metrics are designed to allow you to ensure that the
+features are flowing correctly and if there are issues with how long it is taking to publish data - in case there is
+some configuration issue.
+
+We have also included a counter specifically for errors in publishing. These counts will also show up in the log
+metrics under the error count, but it allows you to target alerts specifically for them.
+
+[cols="1,1,1"]
+|===
+|*Metric*|*Type*|*Name*
+|mr_publish_environments_bytes|Counter|Bytes published to NATS for environment updates
+|mr_publish_features_bytes|Counter|Bytes published to NATS for feature updates.
+|mr_publish_service_accounts_bytes|Counter|Bytes published to NATS for service account updates.
+|mr_publish_environments_histogram|Histogram|Histogram for publishing environments
+|mr_publish_features_histogram|Histogram|Histogram for publishing features
+|mr_publish_service_accounts_histogram|Histogram|Histogram for publishing service account
+|mr_publish_environments_failed|Counter|Failed to publish to NATS for environment updates
+|mr_publish_features_failed|Counter|Failed to publish to NATS for feature updates.
+|mr_publish_service_accounts_failed|Counter|Failed to publish to NATS for service account updates.
+|===
+
+=== Request Counters
+
+[cols="1,1,1"]
+|===
+|*Metric*|*Type*|*Name*
+|web_request_counter|Counter|Amount of requests from serving the front end Admin website
+|api_request_counter|Counter|Number of API requests received
+|feature_request_counter|Counter|(Party Server only) Number of feature requests received in total
+|===
