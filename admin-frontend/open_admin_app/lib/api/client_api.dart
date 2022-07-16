@@ -303,7 +303,7 @@ class ManagementRepositoryClientBloc implements Bloc {
       organization = setupResponse.organization;
       identityProviders.identityProviders = setupResponse.providers;
       if (setupResponse.providerInfo != null) {
-        identityProviders.identityInfo = setupResponse.providerInfo!;
+        identityProviders.identityInfo = setupResponse.providerInfo;
       }
 
       // yes its initialised, we may not have logged in yet
@@ -325,7 +325,7 @@ class ManagementRepositoryClientBloc implements Bloc {
               as SetupMissingResponse;
           identityProviders.identityProviders = smr.providers;
           if (smr.providerInfo != null) {
-            identityProviders.identityInfo = smr.providerInfo!;
+            identityProviders.identityInfo = smr.providerInfo;
           }
           routeSlot(RouteSlot.setup);
         } else {

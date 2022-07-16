@@ -46,7 +46,7 @@ class UserStateStepdefs {
       await userCommon.userStateService.saveHiddenEnvironments(
           shared.application.id!,
           HiddenEnvironments(
-            environmentIds: storedEnvironments,
+            environmentIds: storedEnvironments!,
           ));
       assert(false, 'Should not be able to save');
     } catch (e) {
@@ -77,7 +77,7 @@ class UserStateStepdefs {
     await userCommon.userStateService.saveHiddenEnvironments(
         shared.application.id!,
         HiddenEnvironments(
-          environmentIds: storedEnvironments,
+          environmentIds: storedEnvironments!,
         ));
   }
 }
