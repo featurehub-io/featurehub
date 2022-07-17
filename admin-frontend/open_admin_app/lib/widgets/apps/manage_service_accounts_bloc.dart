@@ -83,8 +83,6 @@ class ManageServiceAccountsBloc implements Bloc {
           .createServiceAccountInPortfolio(portfolioId!, serviceAccount)
           .then((onSuccess) {
         addServiceAccountsToStream(mrClient.getCurrentPid());
-      }).catchError((e, s) {
-        mrClient.dialogError(e, s);
       });
       await mrClient.streamValley
           .getCurrentPortfolioServiceAccounts(force: true);
