@@ -2,6 +2,7 @@ package io.featurehub.web.security.saml
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
+import cd.connect.jersey.prometheus.Prometheus
 import com.onelogin.saml2.authn.SamlResponse
 import com.onelogin.saml2.settings.Saml2Settings
 import io.featurehub.utils.FeatureHubConfig
@@ -63,6 +64,7 @@ class SamlResource @Inject constructor(
 
   @POST
   @Path("/{registrationId}/sso")
+  @Prometheus(name = "saml_sso", help = "SAML SSO Endpoint")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   fun receiveSamlPayload(
     @FormParam("SAMLResponse") samlPayload: String?,
@@ -140,6 +142,7 @@ class SamlResource @Inject constructor(
    */
   @GET
   @Path("/{registrationId}/auth")
+  @Prometheus(name = "saml_auth_redirect", help = "SAML Redirect URL")
   fun authRedirect(@PathParam("registrationId") registrationId: String): Response {
     val config =
       samlSources.getSourceFromRegistrationId(registrationId) ?: throw NotAuthorizedException("No such registration id")
@@ -158,6 +161,7 @@ class SamlResource @Inject constructor(
   @GET
   @Path("/{registrationId}/metadata")
   @Produces(MediaType.TEXT_PLAIN)
+  @Prometheus(name = "saml_metadata", help = "SAML Metadata API")
   fun metadata(@PathParam("registrationId") registrationId: String): Response {
     val samlSource =
       samlSources.getSourceFromRegistrationId(registrationId) ?: throw NotAuthorizedException("No such registration id")

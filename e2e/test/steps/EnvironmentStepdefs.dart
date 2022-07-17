@@ -87,7 +87,7 @@ class EnvironmentStepdefs {
     var environment =
         await common.findExactEnvironment(environmentName, application.id);
     EnvironmentGroupRole egr = EnvironmentGroupRole(
-        environmentId: environment!.id!, groupId: group.id!);
+        environmentId: environment!.id!, groupId: group.id!, roles: []);
     perm == "READ" ? egr.roles.add(RoleType.READ) : {};
     perm == "EDIT" ? egr.roles.add(RoleType.CHANGE_VALUE) : {};
     perm == "LOCK" ? egr.roles.add(RoleType.LOCK) : {};
@@ -143,11 +143,8 @@ class EnvironmentStepdefs {
         await common.findExactEnvironment(envName, application.id);
     shared.environment = environment!;
     EnvironmentGroupRole egr = EnvironmentGroupRole(
-        groupId: group.id!, environmentId: environment.id!);
-    egr.roles.add(RoleType.READ);
-    egr.roles.add(RoleType.CHANGE_VALUE);
-    egr.roles.add(RoleType.LOCK);
-    egr.roles.add(RoleType.UNLOCK);
+        groupId: group.id!, environmentId: environment.id!,
+        roles: [RoleType.READ, RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]);
 
     group.environmentRoles.add(egr);
     await common.groupService.updateGroup(group.id!, group,
@@ -171,7 +168,7 @@ class EnvironmentStepdefs {
     assert(environment != null, 'we cannot find environment $envName');
     shared.environment = environment!;
     EnvironmentGroupRole egr = EnvironmentGroupRole(
-        groupId: group.id!, environmentId: environment.id!);
+        groupId: group.id!, environmentId: environment.id!, roles: []);
     perms
         .split(",")
         .map((e) => e.trim())
@@ -339,7 +336,7 @@ class EnvironmentStepdefs {
     await common.findExactEnvironment(envName, shared.application.id);
     shared.environment = environment!;
     EnvironmentGroupRole egr = EnvironmentGroupRole(
-        groupId: group.id!, environmentId: environment.id!);
+        groupId: group.id!, environmentId: environment.id!, roles: []);
     egr.roles.add(RoleType.READ);
     egr.roles.add(RoleType.CHANGE_VALUE);
     egr.roles.add(RoleType.LOCK);

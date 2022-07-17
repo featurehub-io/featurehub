@@ -8,20 +8,21 @@ import io.featurehub.dacha.model.PublishEnvironment;
 import io.featurehub.dacha.model.PublishFeatureValue;
 import io.featurehub.dacha.model.PublishServiceAccount;
 import io.featurehub.jersey.config.CacheJsonMapper;
+import io.featurehub.metrics.MetricsCollector;
 import io.featurehub.publish.ChannelNames;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
 import io.nats.client.MessageHandler;
+import io.prometheus.client.Counter;
+import io.prometheus.client.Histogram;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.UUID;
 
-/**
- *
- */
+/** */
 public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   private static final Logger log = LoggerFactory.getLogger(NamedCacheListener.class);
   private final String name;
@@ -33,6 +34,35 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   private final String environmentSubject;
   private final String serviceAccountSubject;
   private final String featureSubject;
+  private final Counter environmentCounter =
+      MetricsCollector.Companion.counter(
+          "mr_publish_environments_bytes", "Bytes published to NATS for environment updates");
+  private final Counter featureCounter =
+      MetricsCollector.Companion.counter(
+          "mr_publish_features_bytes", "Bytes published to NATS for feature updates.");
+  private final Counter serviceAccountCounter =
+      MetricsCollector.Companion.counter(
+          "mr_publish_service_accounts_bytes", "Bytes published to NATS for service account updates.");
+
+  private final Counter environmentFailureCounter =
+      MetricsCollector.Companion.counter(
+          "mr_publish_environments_failed", "Failed to publish to NATS for environment updates");
+  private final Counter featureFailureCounter =
+      MetricsCollector.Companion.counter(
+          "mr_publish_features_failed", "Failed to publish to NATS for feature updates.");
+  private final Counter serviceAccountFailureCounter =
+      MetricsCollector.Companion.counter(
+          "mr_publish_service_accounts_failed", "Failed to publish to NATS for service account updates.");
+
+  private final Histogram environmentGram =
+      MetricsCollector.Companion.histogram(
+          "mr_publish_environments_histogram", "Histogram for publishing environments");
+  private final Histogram featureGram =
+      MetricsCollector.Companion.histogram(
+          "mr_publish_features_histogram", "Histogram for publishing features");
+  private final Histogram serviceAccountsGram =
+      MetricsCollector.Companion.histogram(
+          "mr_publish_service_accounts_histogram", "Histogram for publishing service account");
 
   public NamedCacheListener(String name, Connection connection, UUID id, CacheSource cacheSource) {
     this.name = name;
@@ -62,7 +92,8 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   @Override
   public void onMessage(Message message) {
     try {
-      CacheManagementMessage cmm = CacheJsonMapper.mapper.readValue(message.getData(), CacheManagementMessage.class);
+      CacheManagementMessage cmm =
+          CacheJsonMapper.mapper.readValue(message.getData(), CacheManagementMessage.class);
 
       log.trace("incoming message {}", cmm.toString());
 
@@ -73,7 +104,8 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
 
       if (cmm.getRequestType() == CacheRequestType.SEEKING_COMPLETE_CACHE) {
         sayHelloToNewNamedCache();
-      } else if (id.equals(cmm.getDestId()) && cmm.getRequestType() == CacheRequestType.SEEKING_REFRESH) {
+      } else if (id.equals(cmm.getDestId())
+          && cmm.getRequestType() == CacheRequestType.SEEKING_REFRESH) {
         cacheSource.publishToCache(name);
       }
     } catch (Exception e) {
@@ -84,8 +116,14 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   private void sayHelloToNewNamedCache() {
     try {
       log.trace("responding with complete cache message to {}", managementSubject);
-      connection.publish(managementSubject, CacheJsonMapper.mapper.writeValueAsBytes(
-        new CacheManagementMessage().mit(1L).id(id).cacheState(CacheState.COMPLETE).requestType(CacheRequestType.CACHE_SOURCE)));
+      connection.publish(
+          managementSubject,
+          CacheJsonMapper.mapper.writeValueAsBytes(
+              new CacheManagementMessage()
+                  .mit(1L)
+                  .id(id)
+                  .cacheState(CacheState.COMPLETE)
+                  .requestType(CacheRequestType.CACHE_SOURCE)));
     } catch (JsonProcessingException e) {
       log.error("Unable to say hello as cannot encode message", e);
     }
@@ -97,9 +135,13 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
       if (log.isTraceEnabled())
         log.trace("eci: {}", CacheJsonMapper.mapper.writeValueAsString(eci));
 
-      connection.publish(environmentSubject, CacheJsonMapper.mapper.writeValueAsBytes(eci));
-//      connection.publish(environmentSubject, CacheJsonMapper.writeAsZipBytes(eci));
+      publish(
+          environmentSubject,
+          CacheJsonMapper.writeAsZipBytes(eci),
+          environmentCounter,
+          environmentGram);
     } catch (IOException e) {
+      environmentFailureCounter.inc();
       log.error("Could not encode environment update", e);
     }
   }
@@ -109,9 +151,14 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
     try {
       if (log.isTraceEnabled())
         log.trace("saci: {}", CacheJsonMapper.mapper.writeValueAsString(saci));
-//      connection.publish(serviceAccountSubject, CacheJsonMapper.writeAsZipBytes(saci));
-      connection.publish(serviceAccountSubject, CacheJsonMapper.mapper.writeValueAsBytes(saci));
+
+      publish(
+          serviceAccountSubject,
+          CacheJsonMapper.writeAsZipBytes(saci),
+          serviceAccountCounter,
+          serviceAccountsGram);
     } catch (IOException e) {
+      serviceAccountFailureCounter.inc();
       log.error("Could not encode service account", e);
     }
   }
@@ -120,10 +167,24 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   public void publishFeature(PublishFeatureValue feature) {
     try {
       log.trace("publishing feature {}", feature);
-//      connection.publish(featureSubject, CacheJsonMapper.writeAsZipBytes(feature));
-      connection.publish(featureSubject, CacheJsonMapper.mapper.writeValueAsBytes(feature));
+
+      publish(
+          featureSubject, CacheJsonMapper.writeAsZipBytes(feature), featureCounter, featureGram);
     } catch (IOException e) {
+      featureFailureCounter.inc();
       log.error("Could not encode feature");
+    }
+  }
+
+  private void publish(String subject, byte[] body, Counter counter, Histogram histogram) {
+    counter.inc(body.length);
+
+    final Histogram.Timer timer = histogram.startTimer();
+
+    try {
+      connection.publish(subject, body);
+    } finally {
+      timer.observeDuration();
     }
   }
 }

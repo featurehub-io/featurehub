@@ -55,6 +55,13 @@
       <artifactId>composite-jackson</artifactId>
       <version>[1.2, 2)</version>
     </dependency>
+
+    <dependency>
+      <groupId>cd.connect.common</groupId>
+      <artifactId>connect-prometheus-jersey</artifactId>
+      <version>4.1</version>
+    </dependency>
+
     <dependency>
       <groupId>cd.connect.openapi.gensupport</groupId>
       <artifactId>openapi-jersey3-support</artifactId>

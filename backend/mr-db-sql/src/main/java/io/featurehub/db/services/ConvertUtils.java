@@ -31,6 +31,7 @@ import io.featurehub.db.model.query.QDbServiceAccountEnvironment;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.ApplicationGroupRole;
 import io.featurehub.mr.model.ApplicationRoleType;
+import io.featurehub.mr.model.AuditCreatedBy;
 import io.featurehub.mr.model.Environment;
 import io.featurehub.mr.model.EnvironmentGroupRole;
 import io.featurehub.mr.model.Feature;
@@ -181,11 +182,12 @@ public class ConvertUtils implements Conversions {
 
     if (opts.contains(FillOpts.People)) {
       environment.updatedBy(
-          toPerson(
+          toAuditCreatedBy(toPerson(
               env.getWhoCreated(),
               env.getParentApplication().getPortfolio().getOrganization(),
-              Opts.empty()));
-      environment.createdBy(toPerson(env.getWhoCreated()));
+              Opts.empty())));
+
+      environment.createdBy(toAuditCreatedBy(toPerson(env.getWhoCreated())));
     }
 
     if (opts.contains(FillOpts.Features)) {
@@ -370,6 +372,14 @@ public class ConvertUtils implements Conversions {
     }
 
     return person.getName();
+  }
+
+  public AuditCreatedBy toAuditCreatedBy(@Nullable Person person) {
+    return person == null ? null : new AuditCreatedBy()
+      .id(person.getId())
+      .name(person.getName())
+      .personType(person.getPersonType());
+
   }
 
   @Override
@@ -743,7 +753,7 @@ public class ConvertUtils implements Conversions {
       portfolio
           .whenCreated(toOff(p.getWhenCreated()))
           .whenUpdated(toOff(p.getWhenUpdated()))
-          .createdBy(toPerson(p.getWhoCreated(), p.getOrganization(), Opts.empty()));
+          .createdBy(toAuditCreatedBy(toPerson(p.getWhoCreated(), p.getOrganization(), Opts.empty())));
     }
 
     if (opts.contains(FillOpts.Groups)) {

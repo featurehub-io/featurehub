@@ -1,0 +1,231 @@
+= Monitoring your copy of FeatureHub
+
+FeatureHub uses the industry standard Prometheus standard for metrics. Each of the different services (the Management
+Repository, Edge and Dacha) all provide metric endpoints at `/metrics` to allow you to setup how you would like
+to monitor. 
+
+We would like to include some standard Grafana dashboards as well at some point, and some recommended alerts. 
+
+In this document we will go through each of the services, starting with a section on what is common for all 
+the services.
+
+NOTE: Party Server, Party-Server-ish and Edge-REST are an amalgam of MR, Dacha and Edge in different forms, so if you are running
+Party Server or  Party-Server-ish, you will have the combined metrics available to you. Edge-Rest exposes Edge metrics.
+
+== Common Metrics
+
+All applications have the ability to set an endpoint specifically for metrics and health checks. It is recommended 
+you use a different port to the one you expose to the outside world so the outside world does not perform metrics
+checks or health checks on your server instances. 
+
+The configuration setting is `metrics.port` and the endpoint is `/metrics`
+
+=== Logging metrics
+
+All log levels have Counters associated with them, so:
+
+[cols="1,1"]
+|===
+|*Metric*|*Type*
+|loglevel_trace|Counter
+|loglevel_debug|Counter
+|loglevel_info|Counter
+|loglevel_warn|Counter
+|loglevel_error|Counter
+|===
+
+NOTE: A recommended metric is to alert on error level logs, you should not have any. 
+
+=== REST API endpoints metrics
+
+All API endpoints have Histogram metric around them The names of the endpoints are derived from the `operationId`'s in 
+the <<admin-development-kit.adoc#_openapi_files,OpenAPI document>>, and will not have a prefix unless you specify the system property or 
+environment variable of `prometheus.jersey.prefix`.
+
+For example, if you wanted to create a metric around the `login` method in case of repeated attempts at logging in, 
+then looking at the metrics you would see this:
+
+----
+# HELP login_histogram Login to Feature Hub Histogram
+# TYPE login_histogram histogram
+login_histogram_bucket{le="0.005",} 0.0
+login_histogram_bucket{le="0.01",} 0.0
+login_histogram_bucket{le="0.025",} 0.0
+login_histogram_bucket{le="0.05",} 0.0
+login_histogram_bucket{le="0.075",} 0.0
+login_histogram_bucket{le="0.1",} 0.0
+login_histogram_bucket{le="0.25",} 1.0
+login_histogram_bucket{le="0.5",} 1.0
+login_histogram_bucket{le="0.75",} 1.0
+login_histogram_bucket{le="1.0",} 1.0
+login_histogram_bucket{le="2.5",} 1.0
+login_histogram_bucket{le="5.0",} 1.0
+login_histogram_bucket{le="7.5",} 1.0
+login_histogram_bucket{le="10.0",} 1.0
+login_histogram_bucket{le="+Inf",} 1.0
+login_histogram_count 1.0
+login_histogram_sum 0.132269205
+----
+
+Furthermore, this metric also counts the number of 2xx, 3xx, 4xx and 5xx endpoint responses that occur from your API
+endpoints, allowing you to put alerts to see if there is an usual trend in these metrics. 
+
+[cols="1,1,1"]
+|===
+|*Metric*|*Type*|*Name*
+|2xx response count
+|Counter
+|response_2xx_total
+|3xx response count
+|Counter
+|response_3xx_total
+|4xx response count
+|Counter
+|response_4xx_total
+|5xx response count
+|Counter
+|response_5xx_total
+|===
+
+=== JVM Metrics
+
+The Java Virtual Machine also exposes a collection of potentially useful metrics for each process that will allow you to
+monitor what is happening.
+
+[cols="1,1,1"]
+|===
+|*Metric*|*Type*|*Name*
+|The number of objects waiting in the finalizer queue.
+|Gauge
+|jvm_memory_objects_pending_finalization
+|Used bytes of a given JVM memory area.
+|Gauge
+|jvm_memory_bytes_used
+|Committed (bytes) of a given JVM memory area.
+|Gauge
+|jvm_memory_bytes_committed
+|Max (bytes) of a given JVM memory area. (1)
+|Gauge
+|jvm_memory_bytes_max (}
+|Initial bytes of a given JVM memory area. (1)
+|Gauge
+|jvm_memory_bytes_init
+|Used bytes of a given JVM memory pool (2)
+|Gauge
+|jvm_memory_pool_bytes_used
+|Max bytes of a given JVM memory pool. (2)
+|Gauge
+|jvm_memory_pool_bytes_max
+|Initial bytes of a given JVM memory pool (2)
+|Gauge
+|jvm_memory_pool_bytes_init
+|Used bytes after last collection of a given JVM memory pool. (2)
+|Gauge
+|jvm_memory_pool_collection_used_bytes (3)
+|Committed after last collection bytes of a given JVM memory pool.
+|Gauge
+|jvm_memory_pool_collection_committed_bytes (3)
+|Max bytes after last collection of a given JVM memory pool.
+|Gauge
+|jvm_memory_pool_collection_max_bytes (3))
+|Initial after last collection bytes of a given JVM memory pool.
+|Gauge
+|jvm_memory_pool_collection_init_bytes (3)
+|Time spent in a given JVM garbage collector in seconds.
+|Summary, Count
+|jvm_gc_collection_seconds (4)
+|Total user and system CPU time spent in seconds.
+|Counter
+|process_cpu_seconds_total
+|Start time of the process since unix epoch in seconds
+|Gauge
+|process_start_time_seconds
+|Number of open file descriptors.
+|Gauge
+|process_open_fds
+|Maximum number of open file descriptors
+|Gauge
+|process_max_fds
+|Total bytes allocated in a given JVM memory pool. Only updated after GC, not continuously.
+|Counter
+|jvm_memory_pool_allocated_bytes_total (2)
+|Used bytes of a given JVM buffer pool.
+|Gauge
+|jvm_buffer_pool_used_bytes (5)
+|Bytes capacity of a given JVM buffer pool.
+|Gauge
+|jvm_buffer_pool_capacity_bytes (5)
+|Used buffers of a given JVM buffer pool.
+|Gauge
+|jvm_buffer_pool_used_buffers (5)
+|Current thread count of a JVM
+|Gauge
+|jvm_threads_current
+|Daemon thread count of a JVM
+|Gauge
+|jvm_threads_daemon
+|Peak thread count of a JVM
+|Gauge
+|jvm_threads_peak
+|Started thread count of a JVM
+|Gauge
+|jvm_threads_started_total
+|Cycles of JVM-threads that are in deadlock waiting to acquire object monitors or ownable synchronizers
+|Gauge
+|jvm_threads_deadlocked
+|Cycles of JVM-threads that are in deadlock waiting to acquire object monitors
+|Gauge
+|jvm_threads_deadlocked_monitor
+|Current count of threads by state
+|Gauge
+|jvm_threads_state (6)
+|VM version info
+|Gauge
+|jvm_info (7)
+|===
+
+1. `area = "heap" or "nonheap"
+2. pool = CodeHeap 'non-nmethods', Metaspace, odeHeap 'profiled nmethods', Compressed Class Space, G1 Eden Space, G1 Old Gen, G1 Survivor Space, CodeHeap 'non-profiled nmethods'
+3. pool = G1 Eden Space, G1 Old Gen, G1 Survivor Space
+4. gc = G1 Young Generation, G1 Old Generation
+5. pool = mapped, direct
+6. state = RUNNABLE, TERMINATED, TIMED_WAITING, WAITING, NEW, BLOCKED
+7. runtime, vendor, version = e.g. `jvm_info{runtime="OpenJDK Runtime Environment",vendor="AdoptOpenJDK",version="11.0.11+9",}` 
+
+== Management Repository
+
+The Management Repository has some special metrics of its own designed to allow you to determine if things are working,
+and flowing properly. All of these are in the Party Server as well unless otherwise specified. 
+
+=== Feature Publishing
+
+Features are published in FeatureHub to NATS channels. These metrics are designed to allow you to ensure that the
+features are flowing correctly and if there are issues with how long it is taking to publish data - in case there is
+some configuration issue.
+
+We have also included a counter specifically for errors in publishing. These counts will also show up in the log
+metrics under the error count, but it allows you to target alerts specifically for them.
+
+[cols="1,1,1"]
+|===
+|*Metric*|*Type*|*Name*
+|mr_publish_environments_bytes|Counter|Bytes published to NATS for environment updates
+|mr_publish_features_bytes|Counter|Bytes published to NATS for feature updates.
+|mr_publish_service_accounts_bytes|Counter|Bytes published to NATS for service account updates.
+|mr_publish_environments_histogram|Histogram|Histogram for publishing environments
+|mr_publish_features_histogram|Histogram|Histogram for publishing features
+|mr_publish_service_accounts_histogram|Histogram|Histogram for publishing service account
+|mr_publish_environments_failed|Counter|Failed to publish to NATS for environment updates
+|mr_publish_features_failed|Counter|Failed to publish to NATS for feature updates.
+|mr_publish_service_accounts_failed|Counter|Failed to publish to NATS for service account updates.
+|===
+
+=== Request Counters
+
+[cols="1,1,1"]
+|===
+|*Metric*|*Type*|*Name*
+|web_request_counter|Counter|Amount of requests from serving the front end Admin website
+|api_request_counter|Counter|Number of API requests received
+|feature_request_counter|Counter|(Party Server only) Number of feature requests received in total
+|===

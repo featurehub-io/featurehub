@@ -1,5 +1,6 @@
 package io.featurehub.edge.rest;
 
+import cd.connect.jersey.prometheus.Prometheus;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.sse.model.FeatureStateUpdate;
 import jakarta.inject.Inject;
@@ -46,6 +47,7 @@ public class EventStreamResource {
   @GET
   @Path("/")
   @Produces({"application/json"})
+  @Prometheus(name = "edge_poll_api", help = "Number of requests for the poll API")
   @ManagedAsync
   public void getFeatureStates(
       @Suspended AsyncResponse response,
@@ -60,6 +62,7 @@ public class EventStreamResource {
 
   @GET
   @Path("{namedCache}/{environmentId}/{apiKey}")
+  @Prometheus(name = "edge_sse_api", help = "Number of requests for the SSE API")
   @Produces(SseFeature.SERVER_SENT_EVENTS)
   public EventOutput features(
       @PathParam("namedCache") String namedCache,
@@ -78,6 +81,7 @@ public class EventStreamResource {
    */
   @PUT
   @Path("{namedCache}/{environmentId}/{apiKey}/{featureKey}")
+  @Prometheus(name = "edge_test_sdk_api", help = "Number of requests to the test SDK API")
   @ManagedAsync
   public void update(
       @Suspended AsyncResponse response,
