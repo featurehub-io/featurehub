@@ -45,7 +45,8 @@ public class NATSPublisher implements PublishManager {
         , natsServer.getConnection(), id, cacheSource));
       if (enableListener) {
         edgeFeatureUpdateListeners.put(ChannelConstants.DEFAULT_CACHE_NAME,
-          new FeatureUpdateListener(ChannelConstants.DEFAULT_CACHE_NAME, natsServer.getConnection(), featureUpdateBySDKApi));
+          edgeUpdateListenerSource.createListener(ChannelConstants.DEFAULT_CACHE_NAME, natsServer.getConnection(),
+          featureUpdateBySDKApi));
       }
     }
 
