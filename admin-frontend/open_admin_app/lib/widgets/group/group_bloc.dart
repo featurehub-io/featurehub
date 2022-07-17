@@ -107,10 +107,7 @@ class GroupBloc implements Bloc {
 
   Future<void> createGroup(Group newGroup) async {
     final createdGroup = await _groupServiceApi
-        .createGroup(mrClient.currentPid!, newGroup)
-        .catchError((e, s) {
-      mrClient.dialogError(e, s);
-    });
+        .createGroup(mrClient.currentPid!, newGroup);
     await getGroups(focusGroup: createdGroup);
     groupId = createdGroup.id;
     group = createdGroup;

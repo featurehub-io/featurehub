@@ -12,6 +12,12 @@ bool validateEmail(String? email) {
       .hasMatch(email);
 }
 
+bool validateUrl(String? url) {
+  if (url == null || url.isEmpty) return false;
+  return RegExp(r"((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)")
+      .hasMatch(url);
+}
+
 bool validateFeatureKey(key) {
   return RegExp(r'^[A-Za-z0-9_]+$').hasMatch(key);
 }

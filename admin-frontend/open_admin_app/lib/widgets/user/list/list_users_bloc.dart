@@ -31,7 +31,7 @@ class ListUsersBloc implements Bloc {
       BehaviorSubject<List<SearchPersonEntry>>();
 
   ListUsersBloc(this.search, this.mrClient, this.isPerson)
-      : _personServiceApi = PersonServiceApi(mrClient.apiClient) {}
+      : _personServiceApi = PersonServiceApi(mrClient.apiClient);
 
   void triggerSearch(String? s) async {
     // this should also change the url
