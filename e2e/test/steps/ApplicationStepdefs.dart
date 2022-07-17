@@ -228,7 +228,7 @@ class ApplicationStepdefs {
         .firstWhereOrNull((agr) => agr.applicationId == shared.application.id);
     if (agr == null) {
       agr = api.ApplicationGroupRole(
-          applicationId: shared.application.id!, groupId: group.id!);
+          applicationId: shared.application.id!, groupId: group.id!, roles: []);
       group.applicationRoles.add(agr);
     }
 

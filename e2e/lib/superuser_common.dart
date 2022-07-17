@@ -54,7 +54,9 @@ class SuperuserCommon {
 
       tp = await _authServiceApi
           .login(UserCredentials(password: initPassword, email: initUser));
-    } catch (e) {
+    } catch (e, s) {
+      print(e);
+      print(s);
       assert(e is ApiException);
       assert((e as ApiException).code == 404, 'code is not 404 but ${e.code}');
 
