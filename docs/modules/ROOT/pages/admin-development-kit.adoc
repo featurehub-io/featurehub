@@ -332,6 +332,6 @@ are using, the information on the latest API is located at:
 https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi
 
 Or can be served from:
-http://api.dev.featurehub.io/mrapi/1.1.5.yaml
+http://api.dev.featurehub.io/mrapi/1.1.8.yaml
 
 

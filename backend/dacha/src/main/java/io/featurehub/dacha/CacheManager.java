@@ -10,6 +10,7 @@ import io.featurehub.dacha.model.CacheRequestType;
 import io.featurehub.dacha.model.CacheState;
 import io.featurehub.health.HealthSource;
 import io.featurehub.jersey.config.CacheJsonMapper;
+import io.featurehub.metrics.MetricsCollector;
 import io.featurehub.publish.ChannelNames;
 import io.featurehub.publish.NATSSource;
 import io.featurehub.utils.FallbackPropertyConfig;
@@ -17,6 +18,8 @@ import io.nats.client.Dispatcher;
 import io.nats.client.Message;
 import io.nats.client.MessageHandler;
 import io.opentelemetry.context.Context;
+import io.prometheus.client.Counter;
+import io.prometheus.client.Gauge;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import org.jetbrains.annotations.NotNull;
@@ -51,6 +54,11 @@ public class CacheManager implements MessageHandler, HealthSource {
   @ConfigKey("cache.pool-size")
   Integer cachePoolSize = 10;
 
+  private final Gauge masterGauge = MetricsCollector.Companion.gauge("dacha_master", "Gauge of Dacha Masters");
+  private final Gauge listenerGauge = MetricsCollector.Companion.gauge("dacha_listener", "Gauge of Dacha Listeners");
+  private final Counter managementMessages = MetricsCollector.Companion.counter("dacha_management_msg_counter",
+    "Count of management messages");
+
 
   @Inject
   public CacheManager(InternalCache internalCache, ServerConfig config, NATSSource natsSource) {
@@ -60,8 +68,10 @@ public class CacheManager implements MessageHandler, HealthSource {
 
     DeclaredConfigResolver.resolve(this);
 
+    listenerGauge.inc();
+
     if (FallbackPropertyConfig.Companion.getConfig("cache.mit")  != null) {
-      mit = Long.parseLong(FallbackPropertyConfig.Companion.getConfig("cache.mit"));
+      mit = Long.parseLong(FallbackPropertyConfig.Companion.getMandatoryConfig("cache.mit"));
     } else {
       mit = (long)(Math.random() * Long.MAX_VALUE);
       if (mit == 1) {
@@ -149,6 +159,8 @@ public class CacheManager implements MessageHandler, HealthSource {
    * asking to become master
    */
   private void becomeMaster() {
+    listenerGauge.dec();
+    masterGauge.inc();
     log.info("becomeMaster triggered");
     actionTimer.cancel();
     masterTimer.cancel();
@@ -270,6 +282,8 @@ public class CacheManager implements MessageHandler, HealthSource {
 
   @Override
   public void onMessage(Message message) throws InterruptedException {
+    managementMessages.inc();
+
     try {
       CacheManagementMessage resp = CacheJsonMapper.readFromZipBytes(message.getData(), CacheManagementMessage.class);
 

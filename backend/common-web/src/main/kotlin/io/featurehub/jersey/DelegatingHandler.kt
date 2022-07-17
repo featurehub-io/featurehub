@@ -1,5 +1,6 @@
 package io.featurehub.jersey
 
+import io.featurehub.metrics.MetricsCollector
 import io.featurehub.utils.FallbackPropertyConfig
 import org.glassfish.grizzly.http.server.HttpHandler
 import org.glassfish.grizzly.http.server.Request
@@ -11,6 +12,10 @@ class DelegatingHandler(
   private val staticHttpHandler: AdminAppStaticHttpHandler
 ) : HttpHandler() {
   private var jerseyPrefixes = listOf("/mr-api/", "/saml/", "/oauth/", "/features", "/health/", "/metrics", "/info")
+
+  private val webRequestCounter = MetricsCollector.counter("web_request_counter", "Amount of requests from serving the front end Admin website")
+  private val apiRequestCounter = MetricsCollector.counter("api_request_counter", "Number of API requests received")
+  private val featureRequestCounter = MetricsCollector.counter("feature_request_counter", "Number of Feature requests we have received")
 
   init {
     var prefixes = FallbackPropertyConfig.getConfig("jersey.prefixes")
@@ -52,26 +57,32 @@ class DelegatingHandler(
     val url = getRelativeURI(request)
 
     if (url == null) {   // root url request
+      webRequestCounter.inc()
       staticHttpHandler.handle("/index.html", request, response)
       return
     }
 
     if (url.startsWith("/features")) {
+      featureRequestCounter.inc()
       return jerseyHandler.service(request, response)
     }
 
     if (url.isEmpty() || url == "/" || url.endsWith(".ico") || url.endsWith(".html") || url.endsWith(".js") || url.startsWith("/assets") || url.startsWith("/canvaskit")) {
+      webRequestCounter.inc()
       return staticHttpHandler.service(request, response)
     }
 
     // do the html5 thing and redirect everything else to index.html.
     if (jerseyPrefixes.none { url.startsWith(it)} ) {
+      webRequestCounter.inc()
       // this MUST be index.html, as all those random html5 urls are not actual files, e.g. /setup and /dashboard. if we let the
       // actual request pass through, it will never find the file and so if a user refreshes their page they will get nothing.
       staticHttpHandler.handle("/index.html", request, response)
 
       return
     }
+
+    apiRequestCounter.inc()
 
     return jerseyHandler.service(request, response)
   }
