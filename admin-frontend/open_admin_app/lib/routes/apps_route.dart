@@ -10,12 +10,13 @@ import 'package:open_admin_app/widgets/apps/app_update_dialog_widget.dart';
 import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 
 class AppsRoute extends StatefulWidget {
   final bool createApp;
 
-  const AppsRoute({Key? key, required this.createApp})
-      : super(key: key);
+  const AppsRoute({Key? key, required this.createApp}) : super(key: key);
 
   @override
   _AppsRouteState createState() => _AppsRouteState();
@@ -116,17 +117,24 @@ class _ApplicationsCardsList extends StatelessWidget {
     return StreamBuilder<List<Application>>(
         stream: bloc.currentApplicationsStream,
         builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.hasError) {
-            return const SizedBox.shrink();
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const FHLoadingIndicator();
+          } else if (snapshot.connectionState == ConnectionState.active ||
+              snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              return const FHLoadingError();
+            } else if (snapshot.hasData) {
+              return Wrap(
+                direction: Axis.horizontal,
+                crossAxisAlignment: WrapCrossAlignment.start,
+                children: snapshot.data!
+                    .map(
+                        (app) => _ApplicationCard(application: app, bloc: bloc))
+                    .toList(),
+              );
+            }
           }
-
-          return Wrap(
-            direction: Axis.horizontal,
-            crossAxisAlignment: WrapCrossAlignment.start,
-            children: snapshot.data!
-                .map((app) => _ApplicationCard(application: app, bloc: bloc))
-                .toList(),
-          );
+          return const SizedBox.shrink();
         });
   }
 }

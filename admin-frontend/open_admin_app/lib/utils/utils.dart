@@ -115,7 +115,7 @@ class FHError {
     var errorMessage = '';
 
     if (_is5XX(e)) {
-      message = 'There is an issue with FeatureHub';
+      message = 'There is an issue with FeatureHub, please try again later';
     } else if (_noAuth(e)) {
       message = 'Looks like you are not authorised to perform this operation';
     } else if (e is ApiException && e.code == 409) {

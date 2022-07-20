@@ -7,8 +7,11 @@ import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';
 import 'package:openapi_dart_common/openapi.dart';
+
+import '../common/fh_loading_indicator.dart';
 
 class PortfolioListWidget extends StatelessWidget {
   const PortfolioListWidget({Key? key}) : super(key: key);
@@ -21,22 +24,26 @@ class PortfolioListWidget extends StatelessWidget {
     return StreamBuilder<List<Portfolio>>(
         stream: bloc.portfolioSearch,
         builder: (context, snapshot) {
-          if (snapshot.hasError || snapshot.data == null) {
-            return Container(
-                padding: const EdgeInsets.all(30),
-                child: const Text('Loading...'));
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const FHLoadingIndicator();
+          } else if (snapshot.connectionState == ConnectionState.active ||
+              snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              return const FHLoadingError();
+            } else if (snapshot.hasData) {
+              return Column(
+                children: <Widget>[
+                  for (Portfolio p in snapshot.data!)
+                    _PortfolioWidget(
+                      portfolio: p,
+                      mr: mrBloc,
+                      bloc: bloc,
+                    )
+                ],
+              );
+            }
           }
-
-          return Column(
-            children: <Widget>[
-              for (Portfolio p in snapshot.data!)
-                _PortfolioWidget(
-                  portfolio: p,
-                  mr: mrBloc,
-                  bloc: bloc,
-                )
-            ],
-          );
+          return const SizedBox.shrink();
         });
   }
 }

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
 
-enum CreateUserForm { defaultState, successState }
+enum CreateUserForm { defaultState, successState, loadingState }
 
 class CreateUserBloc implements Bloc {
   RegistrationUrl? registrationUrl;
@@ -59,5 +59,9 @@ class CreateUserBloc implements Bloc {
 
   void backToDefault() {
     _formStateStream.add(CreateUserForm.defaultState);
+  }
+
+  void loading() {
+     _formStateStream.add(CreateUserForm.loadingState);
   }
 }

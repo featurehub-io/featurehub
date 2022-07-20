@@ -6,6 +6,8 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 
 import 'manage_app_bloc.dart';
@@ -20,12 +22,13 @@ class GroupPermissionsWidget extends StatelessWidget {
     return StreamBuilder<List<Group>>(
         stream: bloc.groupsStream,
         builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.hasError) {
-            return Container(
-              padding: const EdgeInsets.all(30),
-              child: const Text('Loading...'),
-            );
-          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const FHLoadingIndicator();
+          } else if (snapshot.connectionState == ConnectionState.active ||
+              snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              return const FHLoadingError();
+            } else if (snapshot.hasData) {
 
           return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,6 +64,8 @@ class GroupPermissionsWidget extends StatelessWidget {
                 ),
                 _GroupPermissionDetailWidget(bloc: bloc, mr: mrBloc)
               ]);
+        }}
+        return const SizedBox.shrink();
         });
   }
 }
