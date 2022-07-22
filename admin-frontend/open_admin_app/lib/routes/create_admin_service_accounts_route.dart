@@ -92,6 +92,7 @@ class _TopAdminSAWidgetDefaultState extends State<TopAdminSAWidgetDefault> {
                   children: [
                     const SizedBox(height: 16.0),
                     TextFormField(
+                      autofocus: true,
                       controller: _name,
                       decoration: fhFilledInputDecoration(
                         labelText: 'Name',

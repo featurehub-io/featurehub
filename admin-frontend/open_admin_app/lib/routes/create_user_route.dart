@@ -114,6 +114,8 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                   children: [
                     const SizedBox(height: 16.0),
                     TextFormField(
+                      autofocus: true,
+                      onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                       controller: _email,
                       decoration: fhFilledInputDecoration(
                         labelText: 'Email',

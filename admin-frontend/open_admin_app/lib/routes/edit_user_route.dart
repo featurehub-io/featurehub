@@ -96,6 +96,8 @@ class _EditUserFormState extends State<EditUserFormWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
+                  autofocus: true,
+                  onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   controller: _email,
                   decoration: fhFilledInputDecoration(labelText: 'Email'),
                   //initialValue: bloc.person != null ? bloc.person.email : '',
@@ -105,6 +107,8 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                 Padding(
                   padding: const EdgeInsets.only(top: 30),
                   child: TextFormField(
+                    autofocus: true,
+                    onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                     controller: _name,
                     decoration: fhFilledInputDecoration(labelText: 'Name'),
                     //  initialValue: bloc.person !=null ? bloc.person.name : '',
