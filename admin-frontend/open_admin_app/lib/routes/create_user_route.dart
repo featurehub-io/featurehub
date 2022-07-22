@@ -50,7 +50,8 @@ class TopWidget extends StatelessWidget {
     return StreamBuilder<CreateUserForm>(
         stream: bloc.formState,
         builder: (context, AsyncSnapshot<CreateUserForm> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting ||
+              snapshot.data == CreateUserForm.loadingState) {
             return const FHLoadingIndicator();
           } else if (snapshot.connectionState == ConnectionState.active ||
               snapshot.connectionState == ConnectionState.done) {
@@ -58,12 +59,15 @@ class TopWidget extends StatelessWidget {
               return const FHLoadingError();
             } else if (snapshot.hasData) {
               if (snapshot.data == CreateUserForm.successState) {
-                   return const TopWidgetSuccess();
+                return const TopWidgetSuccess();
               }
-          // ignore: prefer_const_constructors
-              else {return TopWidgetDefault();}
-        }}
-        return const SizedBox.shrink();
+              // ignore: prefer_const_constructors
+              else {
+                return const TopWidgetDefault();
+              }
+            }
+          }
+          return const SizedBox.shrink();
         });
   }
 }
@@ -257,14 +261,14 @@ class CreateUserFormButtons extends StatelessWidget {
                 if (bloc.formKey!.currentState!.validate()) {
                   bloc.formKey!.currentState!.save();
                   try {
-                    // bloc.loading();
                     await bloc.createUser(bloc.email!, null);
                   } catch (e, s) {
-                    // bloc.stopLoading();
+                    bloc.backToDefault();
                     if (e is ApiException && e.code == 409) {
                       await bloc.client.dialogError(e, s,
                           messageTitle:
-                              "User with email '${bloc.email}' already exists");
+                              "User with email '${bloc.email}' already exists",
+                          showDetails: false);
                     } else {
                       await bloc.client.dialogError(e, s);
                     }

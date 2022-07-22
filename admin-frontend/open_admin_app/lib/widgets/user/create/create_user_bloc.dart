@@ -33,6 +33,7 @@ class CreateUserBloc implements Bloc {
   }
 
   Future<void> createUser(String? email, String? name) {
+    _formStateStream.add(CreateUserForm.loadingState);
     final listOfAddedPortfolioGroups =
         selectGroupBloc.listOfAddedPortfolioGroups;
     final cpd = CreatePersonDetails(
@@ -59,9 +60,5 @@ class CreateUserBloc implements Bloc {
 
   void backToDefault() {
     _formStateStream.add(CreateUserForm.defaultState);
-  }
-
-  void loading() {
-     _formStateStream.add(CreateUserForm.loadingState);
   }
 }
