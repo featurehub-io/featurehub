@@ -1,26 +1,76 @@
 import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/mr_client_aware.dart';
 import 'package:rxdart/rxdart.dart' hide Notification;
 
-class FeatureStatusFeatures {
+
+
+/**
+ * this represents a grouping of types of features, with a name of some kind just
+ * to make it easier to find
+ */
+class FeatureGrouping {
+  final List<FeatureValueType> types;
+
+  FeatureGrouping({required this.types});
+}
+
+final featureGroups = [
+  FeatureGrouping(types: [FeatureValueType.BOOLEAN]),
+  FeatureGrouping(types: [FeatureValueType.STRING, FeatureValueType.NUMBER]),
+  FeatureGrouping(types: [FeatureValueType.JSON]),
+];
+
+final featureGroupDefault = featureGroups[0];
+final featureGroupFlags = featureGroups[0];
+final featureGroupValues = featureGroups[1];
+final featureGroupConfig = featureGroups[2];
+
+///
+/// represents the constant information across all tabs, the hidden environments and
+/// the whole list of environments accessible by this person
+///
+class EnvironmentsInfo {
+  final HiddenEnvironments userEnvironmentData;
+  final List<Environment> environments;
+  final bool isEmpty;
+
+  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false;
+
+  EnvironmentsInfo.empty() : userEnvironmentData = HiddenEnvironments(), environments = [], isEmpty = true;
+
+  List<Environment> get shownEnvironments =>
+    environments.where((env) => !userEnvironmentData.environmentIds.contains(env.id)).toList();
+
+  List<Environment> get hiddenEnvironments =>
+      environments.where((env) => userEnvironmentData.environmentIds.contains(env.id)).toList();
+}
+
+class FeaturesByType {
   final ApplicationFeatureValues applicationFeatureValues;
-  List<String> sortedByNameEnvironmentIds = [];
+  final FeatureGrouping grouping; // the grouping this set of features relates to
+  final bool isEmpty; // indicates this represents an empty set of data
+
+  String? filter; // the filter this set of data reflects
+  int featureCount = 0; // how many entries there are
+  int featureStartingPosition = 0; // the first feature in the total count represented here
+
   // envId, EnvironmentFeatureValues mapping - so it is done only once not once per line in table
   Map<String, EnvironmentFeatureValues> applicationEnvironments = {};
 
-  FeatureStatusFeatures(this.applicationFeatureValues) {
-    sortedByNameEnvironmentIds = applicationFeatureValues.environments
-        .map((e) => e.environmentId!)
-        .toList();
-
+  FeaturesByType(this.applicationFeatureValues, this.grouping) : isEmpty = false {
     for (var e in applicationFeatureValues.environments) {
       applicationEnvironments[e.environmentId!] = e;
     }
   }
+
+  FeaturesByType.empty(this.grouping) : applicationFeatureValues =
+    ApplicationFeatureValues(applicationId: '', environments: [], features: [], maxFeatures: 0),
+    isEmpty = true;
 }
 
 ///
@@ -39,17 +89,33 @@ class PerApplicationFeaturesBloc
 
   late FeatureServiceApi _featureServiceApi;
 
+  final _environmentsSource = BehaviorSubject.seeded(EnvironmentsInfo.empty());
+  Stream<EnvironmentsInfo> get environmentsStream => _environmentsSource;
   final _appSearchResultSource = BehaviorSubject<List<Application>?>();
+
   Stream<List<Application>?> get applications => _appSearchResultSource.stream;
 
   final _shownEnvironmentsSource = BehaviorSubject<List<String>>.seeded([]);
   Stream<List<String>> get shownEnvironmentsStream =>
       _shownEnvironmentsSource.stream;
 
-  final _appFeatureValuesBS = BehaviorSubject<FeatureStatusFeatures?>();
-  Stream<FeatureStatusFeatures?> get appFeatureValues =>
-      _appFeatureValuesBS.stream;
-  // feature-id, environments for feature
+  final Map<FeatureGrouping, BehaviorSubject<FeaturesByType>> _perTabApplicationFeatures = {};
+
+  ManagementRepositoryClientBloc get mrBloc => _mrClient;
+
+  BehaviorSubject<FeaturesByType> _grouping(FeatureGrouping grouping) {
+    final subject = _perTabApplicationFeatures.putIfAbsent(grouping, () =>
+        BehaviorSubject.seeded(
+            FeaturesByType.empty(grouping)));
+
+    return subject;
+  }
+
+  Stream<FeaturesByType> appFeatures(FeatureGrouping grouping) {
+    final subject = _grouping(grouping);
+
+    return subject.stream;
+  }
 
   late StreamSubscription<String?> _currentPid;
   late StreamSubscription<String?> _currentAppId;
@@ -59,7 +125,7 @@ class PerApplicationFeaturesBloc
   Stream<Feature> get publishNewFeatureStream =>
       _publishNewFeatureSource.stream;
 
-  final _getAllAppValuesDebounceStream = BehaviorSubject<bool>();
+  final _getAllAppValuesDebounceStream = BehaviorSubject<String?>();
 
   PerApplicationFeaturesBloc(this._mrClient) {
     _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
@@ -70,27 +136,17 @@ class PerApplicationFeaturesBloc
 
     _currentPid = _mrClient.streamValley.currentPortfolioIdStream
         .listen(addApplicationsToStream);
-    _currentAppId = _mrClient.streamValley.currentAppIdStream.listen(setAppId);
+    _currentAppId = _mrClient.streamValley.currentAppIdStream.listen((appId) => _getAllAppValuesDebounceStream.add(appId));
 
     _getAllAppValuesDebounceStream
         .debounceTime(const Duration(milliseconds: 300))
-        .listen((event) {
-      _actuallyCallAddAppFeatureValuesToStream();
+        .listen((appId) {
+      _actuallyChangeApplicationIdAfterDebounce(appId);
     });
   }
 
   @override
   ManagementRepositoryClientBloc get mrClient => _mrClient;
-
-  void setAppId(String? appId) {
-    applicationId = appId;
-    if (applicationId != null) {
-      addAppFeatureValuesToStream();
-    } else {
-      _appFeatureValuesBS
-          .add(FeatureStatusFeatures(ApplicationFeatureValues()));
-    }
-  }
 
   Future<RolloutStrategyValidationResponse> validationCheck(
       List<RolloutStrategy> customStrategies,
@@ -120,50 +176,93 @@ class PerApplicationFeaturesBloc
     appFeatureValues.features.sort((a, b) => a.name.compareTo(b.name));
   }
 
-  void _actuallyCallAddAppFeatureValuesToStream() async {
-    if (applicationId != null) {
-      final appId = applicationId!;
-      try {
-        final environments =
-            await _userStateServiceApi.getHiddenEnvironments(appId);
-        final appFeatureValues = await _featureServiceApi
-            .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(appId);
-        if (!_appFeatureValuesBS.isClosed) {
-          _sortApplicationFeatureValues(appFeatureValues);
+  Future<void> updateFeatureGrouping(FeatureGrouping grouping, String? filter, int startingPosition) async {
+    if (applicationId == null) {
+      return;
+    }
 
-          if (environments.environmentIds.isEmpty) {
-            if (appFeatureValues.environments.isNotEmpty) {
-              environments.environmentIds = [
-                appFeatureValues.environments.first.environmentId!
-              ];
-              await _updateShownEnvironments(environments.environmentIds);
-            }
-          } else {
-            _shownEnvironmentsSource.add(environments.environmentIds);
+    try {
+      // hidden environments is based on application, swap this out
+      final appFeatureValues = await
+          _featureServiceApi
+          .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(applicationId!,
+          filter: filter,
+          featureTypes: grouping.types,
+          max: 20,
+          page: startingPosition);
+
+      final bs = _grouping(grouping);
+      if (!bs.isClosed) {
+        _sortApplicationFeatureValues(appFeatureValues);
+
+        final hiddenEnvironments = _environmentsSource.value!.userEnvironmentData;
+
+        if (hiddenEnvironments.environmentIds.isEmpty) {
+          if (appFeatureValues.environments.isNotEmpty) {
+            hiddenEnvironments.environmentIds = [
+              appFeatureValues.environments.first.environmentId!
+            ];
+
+            await _updateShownEnvironments(hiddenEnvironments.environmentIds);
           }
-
-          _appFeatureValuesBS.add(FeatureStatusFeatures(appFeatureValues));
+        } else {
+          _shownEnvironmentsSource.add(hiddenEnvironments.environmentIds);
         }
-      } catch (e, s) {
-        await mrClient.dialogError(e, s);
+
+        _grouping(grouping).add(FeaturesByType(appFeatureValues, grouping));
       }
+    } catch (e, s) {
+      await mrClient.dialogError(e, s);
     }
   }
 
+  void _actuallyChangeApplicationIdAfterDebounce(String? appId) async {
+    applicationId = appId;
+
+    if (applicationId == null) {
+      // wipe the list of environments and hidden data
+      _environmentsSource.add(EnvironmentsInfo.empty());
+    } else {
+      final environments = await mrClient.environmentServiceApi.findEnvironments(appId!);
+      final hidden = await _userStateServiceApi.getHiddenEnvironments(appId);
+
+      _environmentsSource.add(EnvironmentsInfo(hidden, environments));
+    }
+
+    // wipe all the groups, the downstream page must trigger a request
+    for(final grouping in featureGroups) {
+      _grouping(grouping).add(FeaturesByType.empty(grouping));
+    }
+  }
+
+  void clearAppFeatureValuesStream(FeatureGrouping grouping) {
+    final g = _grouping(grouping);
+
+    if (!g.isClosed) {
+      g.add(FeaturesByType.empty(grouping));
+    }
+  }
+
+  // hidden environments have their own lifecycle, people can turn them on and
+  // off completely separately from their grouping and filters. We should optimise
+  // the request and specify environments in our API call to limit data further.
   Future<void> _updateShownEnvironments(List<String> environmentIds) async {
     final envs = await _userStateServiceApi.saveHiddenEnvironments(
         applicationId!,
         HiddenEnvironments(
           environmentIds: environmentIds,
         ));
+
     _shownEnvironmentsSource.add(envs.environmentIds);
   }
 
   Future<void> addShownEnvironment(String envId) async {
-    final envs = <String>[..._shownEnvironmentsSource.value!];
-    envs.add(envId);
-    // ignore: unawaited_futures
-    _updateShownEnvironments(envs);
+    if (_shownEnvironmentsSource.value?.contains(envId) != true) {
+      final envs = <String>[..._shownEnvironmentsSource.value!];
+      envs.add(envId);
+      // ignore: unawaited_futures
+      _updateShownEnvironments(envs);
+    }
   }
 
   Future<void> removeShownEnvironment(String envId) async {
@@ -176,18 +275,7 @@ class PerApplicationFeaturesBloc
   }
 
   bool environmentVisible(String envId) {
-    return _shownEnvironmentsSource.value!.contains(envId);
-  }
-
-  void addAppFeatureValuesToStream() async {
-    _getAllAppValuesDebounceStream.add(
-        true); // tell it to ask for the data, but debounce it through a 300ms stream
-  }
-
-  void clearAppFeatureValuesStream() {
-    if (!_appFeatureValuesBS.isClosed) {
-      _appFeatureValuesBS.add(null);
-    }
+    return _shownEnvironmentsSource.value?.contains(envId) == true;
   }
 
   void checkPortfolioIdIsLegit(List<Portfolio> portfolios) {
@@ -201,7 +289,6 @@ class PerApplicationFeaturesBloc
 
   Future<void> addApplicationsToStream(String? pid) async {
     portfolioId = pid;
-    clearAppFeatureValuesStream();
 
     if (pid != null) {
       List<Application>? appList;
@@ -214,6 +301,7 @@ class PerApplicationFeaturesBloc
       } catch (e, s) {
         await mrClient.dialogError(e, s);
       }
+
       if (appList != null && applicationId != null) {
         checkApplicationIdIsLegit(appList);
       }
@@ -222,8 +310,8 @@ class PerApplicationFeaturesBloc
 
   void checkApplicationIdIsLegit(List<Application> appList) {
     if (!appList.any((app) => app.id == applicationId)) {
-      //if applicationId not found in the system - set it to null
-      applicationId = null;
+      _getAllAppValuesDebounceStream.add(null);
+
       mrClient.customError(
           messageTitle: 'Provided application ID is not found in the system');
     }
@@ -247,7 +335,6 @@ class PerApplicationFeaturesBloc
     await _featureServiceApi.createFeaturesForApplication(
         applicationId!, feature);
     unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
-    addAppFeatureValuesToStream();
     _publishNewFeatureSource.add(feature);
   }
 
@@ -263,19 +350,17 @@ class PerApplicationFeaturesBloc
       ..key = newKey;
     await _featureServiceApi.updateFeatureForApplication(
         applicationId!, feature.key!, newFeature);
-    addAppFeatureValuesToStream();
   }
 
   Future<void> deleteFeature(String key) async {
     await _featureServiceApi.deleteFeatureForApplication(applicationId!, key);
-    addAppFeatureValuesToStream();
     unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
   }
 
   @override
   void dispose() {
     _appSearchResultSource.close();
-    _appFeatureValuesBS.close();
+    _perTabApplicationFeatures.values.forEach((featureGroupSource) { featureGroupSource.close(); });
     _currentPid.cancel();
     _currentAppId.cancel();
   }
@@ -284,8 +369,5 @@ class PerApplicationFeaturesBloc
       Feature feature, List<FeatureValue> updates) async {
     await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(
         applicationId!, feature.key!, updates);
-
-    // get the data again
-    _getAllAppValuesDebounceStream.add(true);
   }
 }

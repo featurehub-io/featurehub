@@ -159,6 +159,11 @@ public class ConvertUtils implements Conversions {
   }
 
   @Override
+  public boolean isPersonMemberOfPortfolioGroup(@NotNull UUID portfolioId, @NotNull UUID personId) {
+    return new QDbGroup().owningPortfolio.id.eq(portfolioId).groupMembers.person.id.eq(personId).exists();
+  }
+
+  @Override
   public String limitLength(String s, int len) {
     return s == null ? null : (s.length() > len ? s.substring(0, len) : s);
   }

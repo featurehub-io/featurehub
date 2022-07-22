@@ -4,7 +4,9 @@ import io.featurehub.mr.model.ApplicationFeatureValues;
 import io.featurehub.mr.model.EnvironmentFeaturesResult;
 import io.featurehub.mr.model.FeatureEnvironment;
 import io.featurehub.mr.model.FeatureValue;
+import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.mr.model.Person;
+import io.featurehub.mr.model.SortOrder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,34 +15,52 @@ import java.util.UUID;
 
 public interface FeatureApi {
 
-  void updateAllFeatureValuesByApplicationForKey(@NotNull UUID id, String key, @NotNull List<FeatureValue> featureValue,
-                                                 Person from,
-                                                 boolean removeValuesNotPassed)
-    throws OptimisticLockingException, NoAppropriateRole,
-    RolloutStrategyValidator.InvalidStrategyCombination;
+  void updateAllFeatureValuesByApplicationForKey(
+      @NotNull UUID id,
+      String key,
+      @NotNull List<FeatureValue> featureValue,
+      Person from,
+      boolean removeValuesNotPassed)
+      throws OptimisticLockingException, NoAppropriateRole,
+          RolloutStrategyValidator.InvalidStrategyCombination;
 
-  @Nullable ApplicationFeatureValues findAllFeatureAndFeatureValuesForEnvironmentsByApplication(UUID appId,
-                                                                                             Person current);
+  @Nullable
+  ApplicationFeatureValues findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
+      @NotNull UUID appId,
+      @NotNull Person current,
+      @Nullable String filter,
+      @Nullable Integer maxFeatures,
+      @Nullable Integer page,
+      @Nullable List<FeatureValueType> featureValueTypes,
+      @Nullable SortOrder sortOrder);
 
-  class NoAppropriateRole extends Exception {
-  }
+  class NoAppropriateRole extends Exception {}
 
-  FeatureValue createFeatureValueForEnvironment(@NotNull UUID eid, String key, @NotNull FeatureValue featureValue,
-                                                @NotNull PersonFeaturePermission person) throws OptimisticLockingException,
-    RolloutStrategyValidator.InvalidStrategyCombination, NoAppropriateRole;
+  FeatureValue createFeatureValueForEnvironment(
+      @NotNull UUID eid,
+      String key,
+      @NotNull FeatureValue featureValue,
+      @NotNull PersonFeaturePermission person)
+      throws OptimisticLockingException, RolloutStrategyValidator.InvalidStrategyCombination,
+          NoAppropriateRole;
 
   boolean deleteFeatureValueForEnvironment(UUID eid, String key);
 
-  FeatureValue updateFeatureValueForEnvironment(UUID eid, String key, FeatureValue featureValue,
-                                                PersonFeaturePermission person) throws OptimisticLockingException,
-    RolloutStrategyValidator.InvalidStrategyCombination, NoAppropriateRole;
+  FeatureValue updateFeatureValueForEnvironment(
+      UUID eid, String key, FeatureValue featureValue, PersonFeaturePermission person)
+      throws OptimisticLockingException, RolloutStrategyValidator.InvalidStrategyCombination,
+          NoAppropriateRole;
 
-  @Nullable FeatureValue getFeatureValueForEnvironment(UUID eid, String key);
+  @Nullable
+  FeatureValue getFeatureValueForEnvironment(UUID eid, String key);
 
   EnvironmentFeaturesResult getAllFeatureValuesForEnvironment(UUID eid);
 
-  List<FeatureValue> updateAllFeatureValuesForEnvironment(UUID eid, List<FeatureValue> featureValues,
-                                                          PersonFeaturePermission requireRoleCheck) throws OptimisticLockingException, NoAppropriateRole, RolloutStrategyValidator.InvalidStrategyCombination;
+  List<FeatureValue> updateAllFeatureValuesForEnvironment(
+      UUID eid, List<FeatureValue> featureValues, PersonFeaturePermission requireRoleCheck)
+      throws OptimisticLockingException, NoAppropriateRole,
+          RolloutStrategyValidator.InvalidStrategyCombination;
 
-  List<FeatureEnvironment> getFeatureValuesForApplicationForKeyForPerson(UUID appId, String key, Person person);
+  List<FeatureEnvironment> getFeatureValuesForApplicationForKeyForPerson(
+      UUID appId, String key, Person person);
 }

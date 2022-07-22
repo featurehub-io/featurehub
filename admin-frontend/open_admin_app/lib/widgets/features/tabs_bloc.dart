@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
-import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
+import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'per_application_features_bloc.dart';
@@ -27,21 +27,36 @@ class FeatureStrategyCountOverride {
   }
 }
 
+class CombinedEnvironmentInfoAndFeaturesEditing {
+  final Set<String>? featureKeys;
+  final EnvironmentsInfo environmentsInfo;
+
+  CombinedEnvironmentInfoAndFeaturesEditing(this.featureKeys,
+      this.environmentsInfo);
+}
+
+// this bloc is actually mixing the feature groups available and features???
 class FeaturesOnThisTabTrackerBloc implements Bloc {
-  final String applicationId;
-  FeatureStatusFeatures featureStatus;
-  final _stateSource = BehaviorSubject<TabsState>.seeded(TabsState.featureFlags);
+  final FeatureGrouping grouping;
+  final _stateSource =
+      BehaviorSubject<FeatureGrouping>.seeded(featureGroupDefault);
   List<Feature> _featuresForTabs = [];
   final _currentlyEditingFeatureKeys = <String>{};
-  final _featureCurrentlyEditingSource = BehaviorSubject<Set<String>?>();
+  final _featureCurrentlyEditingSource = BehaviorSubject.seeded([] as Set<String>);
   final ManagementRepositoryClientBloc mrClient;
   final _allFeaturesByKey = <String, Feature>{};
+  String? filter;
+  int startingFeatureIndex = 0;
+
+  Stream<FeaturesByType> featuresStream;
 
   // determine which tab they have selected
-  Stream<TabsState> get currentTab => _stateSource.stream;
+  Stream<FeatureGrouping> get currentTab => _stateSource.stream;
 
   Stream<Set<String>?> get featureCurrentlyEditingStream =>
       _featureCurrentlyEditingSource.stream;
+
+  late Stream<CombinedEnvironmentInfoAndFeaturesEditing> environmentAndFeaturesCurrentlyEditingStream;
 
   // when editing, the base count we have doesn't match what is actually being used
   // so we need to override it. We also need to clean it up on save or edit
@@ -51,26 +66,36 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   List<Feature> get features => _featuresForTabs;
   final featureValueBlocs = <String, PerFeatureStateTrackingBloc>{};
   final PerApplicationFeaturesBloc featureStatusBloc;
-  late StreamSubscription<FeatureStatusFeatures?> _featureStream;
+  late StreamSubscription<FeaturesByType?> _featureStreamSubscription;
   late StreamSubscription<Feature> _newFeatureStream;
   late StreamSubscription<List<String>> _shownEnvironmentsStream;
 
+  ApplicationFeatureValues applicationFeatureValues;
+
   var shownEnvironments = <String>[];
 
-  FeaturesOnThisTabTrackerBloc(this.featureStatus, this.applicationId,
-      this.mrClient, this.featureStatusBloc) {
+  FeaturesOnThisTabTrackerBloc(this.grouping,
+      this.featureStatusBloc) :
+        featuresStream = featureStatusBloc.appFeatures(grouping),
+        mrClient = featureStatusBloc.mrClient,
+        applicationFeatureValues = FeaturesByType.empty(grouping).applicationFeatureValues
+  {
+    environmentAndFeaturesCurrentlyEditingStream =
+      Rx.combineLatest2(featureCurrentlyEditingStream, featureStatusBloc.environmentsStream, (Set<String>? features, EnvironmentsInfo envs) =>
+          CombinedEnvironmentInfoAndFeaturesEditing(features, envs));
+
     _featureCurrentlyEditingSource.add(_currentlyEditingFeatureKeys);
 
-    // if they have created a new feature we want to swap to the right tab
-    _fixFeaturesForTabs(_stateSource.value!);
-    _refixFeaturesByKey();
+    _featureStreamSubscription = featuresStream.listen((appFeatures) {
+      applicationFeatureValues = appFeatures.applicationFeatureValues;
 
-    _featureStream = featureStatusBloc.appFeatureValues.listen((appFeatures) {
-      if (appFeatures != null) {
-        featureStatus = appFeatures;
+      if (appFeatures.isEmpty) {
+        // we have just swapped to an application, so we need to request the list of features
+        featureStatusBloc.updateFeatureGrouping(grouping, filter, startingFeatureIndex);
 
-        _fixFeaturesForTabs(_stateSource.value!);
-        _refixFeaturesByKey();
+        _allFeaturesByKey.clear();
+      } else {
+        _refixFeaturesByKey(appFeatures);
 
         _checkForFeaturesWeWereEditingThatHaveNowGone();
       }
@@ -81,22 +106,9 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
     _newFeatureStream =
         featureStatusBloc.publishNewFeatureStream.listen((feature) {
-      switch (feature.valueType!) {
-        case FeatureValueType.BOOLEAN:
-          _stateSource.add(TabsState.featureFlags);
-          break;
-        case FeatureValueType.STRING:
-          _stateSource.add(TabsState.featureValues);
-          break;
-        case FeatureValueType.NUMBER:
-          _stateSource.add(TabsState.featureValues);
-          break;
-        case FeatureValueType.JSON:
-          _stateSource.add(TabsState.configurations);
-          break;
-      }
-
-      _currentlyEditingFeatureKeys.add(feature.key!);
+          if (grouping.types.contains(feature.valueType)) {
+            _currentlyEditingFeatureKeys.add(feature.key!);
+          }
     });
   }
 
@@ -170,7 +182,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
         .where((e) => fvKeys.contains(e.feature.key))
         .toList();
 
-    var linesInAllFeatures = featureStatus.applicationFeatureValues.environments
+    var linesInAllFeatures = applicationFeatureValues.environments
         .where((env) => shownEnvironments.contains(env.environmentId))
         .map((e) {
       // this will only pick up where we have actual features,
@@ -240,37 +252,22 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   }
 
   // turns them into a map for easy access
-  void _refixFeaturesByKey() {
-    for (var f in featureStatus.applicationFeatureValues.features) {
+  void _refixFeaturesByKey(FeaturesByType appFeatures) {
+    _allFeaturesByKey.clear();
+
+    for (var f in appFeatures.applicationFeatureValues.features) {
       _allFeaturesByKey[f.key!] = f;
     }
   }
 
-  void _fixFeaturesForTabs(TabsState tab) {
-    _featuresForTabs =
-        featureStatus.applicationFeatureValues.features.where((f) {
-      return ((tab == TabsState.featureFlags) &&
-              f.valueType == FeatureValueType.BOOLEAN) ||
-          ((tab == TabsState.featureValues) &&
-              (f.valueType == FeatureValueType.NUMBER ||
-                  f.valueType == FeatureValueType.STRING)) ||
-          ((tab == TabsState.configurations) &&
-              (f.valueType == FeatureValueType.JSON));
-    }).toList();
-  }
-
-  void swapTab(TabsState tab) {
-    _fixFeaturesForTabs(tab);
-    _stateSource.add(tab);
-  }
-
-  List<EnvironmentFeatureValues> get sortedEnvironmentsThatAreShowing {
-    return featureStatus.sortedByNameEnvironmentIds
-        .where((id) => shownEnvironments.contains(id))
-        .map((id) => featureStatus.applicationEnvironments[id])
-        .whereNotNull()
-        .toList();
-  }
+  // List<EnvironmentFeatureValues> get sortedEnvironmentsThatAreShowing {
+  //   final shownEnvs = featureStatusBloc.
+  //   return featureGrouping.sortedByNameEnvironmentIds
+  //       .where((id) => shownEnvironments.contains(id))
+  //       .map((id) => featureGrouping.applicationEnvironments[id])
+  //       .whereNotNull()
+  //       .toList();
+  // }
 
   @override
   void dispose() {
@@ -278,7 +275,8 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
     for (var element in featureValueBlocs.values) {
       element.dispose();
     }
-    _featureStream.cancel();
+
+    _featureStreamSubscription.cancel();
     _newFeatureStream.cancel();
     _shownEnvironmentsStream.cancel();
   }
@@ -302,20 +300,20 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   }
 
   void _createFeatureValueBlocForFeature(Feature feature) {
-    var values = featureStatus.applicationFeatureValues.environments
+    var values = applicationFeatureValues.environments
         .map((env) =>
             env.features.firstWhereOrNull((fv) => fv.key == feature.key))
         .whereNotNull()
         .toList();
 
     featureValueBlocs[feature.key!] = PerFeatureStateTrackingBloc(
-        applicationId,
+        featureStatusBloc.applicationId!,
         feature,
         mrClient,
         this,
         values,
         featureStatusBloc,
-        featureStatus.applicationFeatureValues);
+        applicationFeatureValues);
   }
 
   Feature findFeature(String key, String environmentId) {

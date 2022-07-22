@@ -1,6 +1,6 @@
 package io.featurehub.db.services
 
-import io.ebean.DB
+
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.FillOpts
@@ -32,6 +32,7 @@ import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
+import io.featurehub.mr.model.SortOrder
 
 class FeatureSpec extends Base2Spec {
   PersonSqlApi personSqlApi
@@ -45,6 +46,7 @@ class FeatureSpec extends Base2Spec {
   UUID envIdApp1
   UUID appId
   UUID app2Id
+  Person averageIrinaNotPortfolioMember
   Person averageJoeMemberOfPortfolio1
   Person portfolioAdminOfPortfolio1
   Group groupInPortfolio1
@@ -80,6 +82,10 @@ class FeatureSpec extends Base2Spec {
     averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("fsspec-1-p1"), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
+
+    def averageIrina = new DbPerson.Builder().email("averageirina@featurehub.io").name("Average Irina").build()
+    db.save(averageIrina)
+    averageIrinaNotPortfolioMember = convertUtils.toPerson(averageIrina)
 
     def portfolioAdmin = new DbPerson.Builder().email("pee-admin-fvs@featurehub.io").name("Portfolio Admin p1 fvs").build()
     db.save(portfolioAdmin)
@@ -299,10 +305,157 @@ class FeatureSpec extends Base2Spec {
       foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).locked
   }
 
+  def "as admin i can filter what features I want for an application"() {
+    given: "i create 1 environment"
+      def env1 = environmentSqlApi.create(new Environment().name("production"), new Application().id(app2Id), superPerson)
+    and: "i create some features"
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_IRINA').key('FEATURE_IRINA').description('Some description').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_RICHARD').key('FEATURE_RICHARD').description('description2').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_VIDYA').key('FEATURE_VIDYA').description('not desc').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_ALEX').key('FEATURE_ALEX').description('not').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+    when: "i request application features for 'desc'"
+      ApplicationFeatureValues withDesc = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, 'desc', null, null, null, null)
+    and: 'application features with null'
+      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null, null, null, null, null)
+    and: 'with not'
+      ApplicationFeatureValues withNot = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, 'not', null, null, null, null)
+    and: 'with description'
+      ApplicationFeatureValues withDescription = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, 'description', null, null, null, null)
+    and: 'with IRINA'
+      ApplicationFeatureValues withIrina = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, 'IRINA', null, null, null, null)
+    then:
+      withDesc.features.size() == 3
+      withDesc.environments[0].features.size() == 3
+      withNull.features.size() == 4
+      withNull.environments[0].features.size() == 4
+      withNot.features.size() == 2
+      withNot.environments[0].features.size() == 2
+      withDescription.features.size() == 2
+      withDescription.environments[0].features.size() == 2
+      withIrina.features.size() == 1
+      withIrina.environments[0].features.size() == 1
+  }
 
+  // the features themselves are irrespective of access, a superuser and a user with access gets the same structure of keys
+  def "i should be able to paginate through the results"() {
+    given: "i create 1 environment"
+      def env1 = environmentSqlApi.create(new Environment().name("production"), new Application().id(app2Id), superPerson)
+    and: "i create some features"
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_IRINA').key('FEATURE_IRINA').description('Some description').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_RICHARD').key('FEATURE_RICHARD').description('description2').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_VIDYA').key('FEATURE_VIDYA').description('not desc').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_ALEX').key('FEATURE_ALEX').description('not').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+    when: "i request pages of 2"
+      def pageOne = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null,
+          1, 0, null, null)
+      def pageTwo = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null,
+        1, 1, null, null)
+      def pageOneReverse = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null,
+        1, 0, null, SortOrder.DESC)
+    and: "i request only number features"
+      def onlyNumber = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null,
+        null, null, [FeatureValueType.NUMBER], null)
+    and: "i request number and boolean features"
+      def numAndBool = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null,
+        null, null, [FeatureValueType.NUMBER, FeatureValueType.BOOLEAN], null)
+    then:
+      pageOne.maxFeatures == 4
+      pageOne.features.size() == 1
+      pageOne.features[0].name == 'FEATURE_ALEX'
+      pageTwo.maxFeatures == 4
+      pageTwo.features.size() == 1
+      pageTwo.features[0].name == 'FEATURE_IRINA'
+      pageOneReverse.maxFeatures == 4
+      pageOneReverse.features.size() == 1
+      pageOneReverse.features[0].name == 'FEATURE_VIDYA'
+      onlyNumber.maxFeatures == 0
+      onlyNumber.features.size() == 0
+      numAndBool.maxFeatures == 4
+      numAndBool.features.size() == 4
+  }
+
+  def "as a user who has no access to the portfolio, i cannot see any features"() {
+    given: "i create 1 environment"
+      def env1 = environmentSqlApi.create(new Environment().name("production"), new Application().id(app2Id), superPerson)
+    and: "i create some features"
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_IRINA').key('FEATURE_IRINA').description('Some description').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+    when: 'application features with null'
+      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageIrinaNotPortfolioMember, null, null, null, null, null)
+    then:
+      withNull == null
+  }
+
+  def "as a user who has access to a group but not this application, i cannot see any features"() {
+    given: "i create 1 environment"
+      def env1 = environmentSqlApi.create(new Environment().name("production"), new Application().id(app2Id), superPerson)
+    and: "i create some features"
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_IRINA').key('FEATURE_IRINA').description('Some description').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+    when: 'application features with null filter'
+      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, null, null, null, null, null)
+    then:
+      withNull == null
+  }
+
+  def "i have access to the environment but there are no features, so i should see that"() {
+    given: "i create 1 environment"
+      def env1 = environmentSqlApi.create(new Environment().name("production"), new Application().id(app2Id), superPerson)
+    and: "i allow average joe access to access the environment"
+      Group g1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("app2-f1-test"), superPerson)
+      g1.environmentRoles([
+        new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
+      ])
+      g1.members = [averageJoeMemberOfPortfolio1]
+      groupSqlApi.updateGroup(g1.id, g1, true, true, true, Opts.empty());
+    when: 'application features with null filter'
+      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, null, null, null, null, null)
+    then:
+      withNull.environments.size() == 1
+      withNull.environments[0].features.isEmpty()
+      withNull.environments[0].priorEnvironmentId == null
+      withNull.environments[0].roles.size() == 3
+      withNull.features.isEmpty()
+  }
+
+  def "as a group user in an application, i can filter for features i want in an application"() {
+    given: "i create 1 environment"
+      def env1 = environmentSqlApi.create(new Environment().name("production"), new Application().id(app2Id), superPerson)
+    and: "i create some features"
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_IRINA').key('FEATURE_IRINA').description('Some description').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_RICHARD').key('FEATURE_RICHARD').description('description2').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_VIDYA').key('FEATURE_VIDYA').description('not desc').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_ALEX').key('FEATURE_ALEX').description('not').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+    and: "i allow average joe access to access the environment"
+      Group g1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("app2-f1-test"), superPerson)
+      g1.environmentRoles([
+        new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
+      ])
+      g1.members = [averageJoeMemberOfPortfolio1]
+      groupSqlApi.updateGroup(g1.id, g1, true, true, true, Opts.empty());
+    when: "i request application features for 'desc'"
+      ApplicationFeatureValues withDesc = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'desc', null, null, null, null)
+    and: 'application features with null'
+      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, null, null, null, null, null)
+    and: 'with not'
+      ApplicationFeatureValues withNot = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'not', null, null, null, null)
+    and: 'with description'
+      ApplicationFeatureValues withDescription = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'description', null, null, null, null)
+    and: 'with IRINA'
+      ApplicationFeatureValues withIrina = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'IRINA', null, null, null, null)
+    then:
+      withDesc.features.size() == 3
+      withDesc.environments[0].features.size() == 3
+      withNull.features.size() == 4
+      withNull.environments[0].features.size() == 4
+      withNot.features.size() == 2
+      withNot.environments[0].features.size() == 2
+      withDescription.features.size() == 2
+      withDescription.environments[0].features.size() == 2
+      withIrina.features.size() == 1
+      withIrina.environments[0].features.size() == 1
+  }
 
   def "i can block update a bunch of feature values for an application"() {
-    given: "i create 3 environments"
+    given: "i create 4 environments"
       def env1 = environmentSqlApi.create(new Environment().name("app2-dev-f1"), new Application().id(app2Id), superPerson)
       def env2 = environmentSqlApi.create(new Environment().name("app2-test-f1"), new Application().id(app2Id), superPerson)
       def env3 = environmentSqlApi.create(new Environment().name("app2-staging-f1"), new Application().id(app2Id), superPerson)
@@ -338,9 +491,9 @@ class FeatureSpec extends Base2Spec {
       ], averageJoeMemberOfPortfolio1, true)
 
     and: "i ask for irina's api"
-      ApplicationFeatureValues afv = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson)
-      ApplicationFeatureValues afvAverageJoe = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1)
-      ApplicationFeatureValues afvPortfolioAdminOfPortfolio1 = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, portfolioAdminOfPortfolio1)
+      ApplicationFeatureValues afv = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null, null, null, null, null)
+      ApplicationFeatureValues afvAverageJoe = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, null, null, null, null, null)
+      ApplicationFeatureValues afvPortfolioAdminOfPortfolio1 = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, portfolioAdminOfPortfolio1, null, null, null, null, null)
     and:
       List<FeatureEnvironment> envs = featureSqlApi.getFeatureValuesForApplicationForKeyForPerson(app2Id, k, superPerson)
     and:

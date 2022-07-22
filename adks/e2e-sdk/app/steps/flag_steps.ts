@@ -3,8 +3,7 @@ import { Feature, FeatureValueType } from 'featurehub-javascript-admin-sdk';
 import { makeid } from '../support/random';
 import { expect } from 'chai';
 import waitForExpect from 'wait-for-expect';
-import { ClientContext, FeatureHubRepository, FeatureStateHolder, Readyness } from 'featurehub-javascript-node-sdk';
-import DataTable from '@cucumber/cucumber/lib/models/data_table';
+import { FeatureStateHolder, Readyness } from 'featurehub-javascript-node-sdk';
 
 Given(/^There is a new feature flag$/, async function () {
   const name = makeid(5).toUpperCase();
@@ -79,5 +78,29 @@ Then(/^I set the feature flag to (on|off|locked|unlocked) and (on|off|locked|unl
 });
 
 
+When(/^I setup (\d+) random feature (flags|strings|numbers|json)$/, async function (counter: number, type: string) {
+  let valueType = FeatureValueType.Boolean;
 
+  if (type === 'strings') {
+    valueType = FeatureValueType.String;
+  }
+  if (type === 'numbers') {
+    valueType = FeatureValueType.Number;
+  }
+  if (type === 'json') {
+    valueType = FeatureValueType.Json;
+  }
 
+  for (let pos = 0; pos < counter; pos ++) {
+    const key = makeid(10);
+
+    const fCreate = await this.featureApi.createFeaturesForApplication(this.application.id, new Feature({
+      name: key,
+      key: key,
+      valueType: valueType
+    }));
+
+    expect(fCreate.status).to.eq(200);
+  }
+
+});

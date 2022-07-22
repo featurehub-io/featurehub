@@ -10,7 +10,7 @@ class HiddenEnvironmentsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<FeaturesOnThisTabTrackerBloc>(context);
+    final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
     return Container(
       margin: const EdgeInsets.only(top: 24.0, bottom: 24.0, right: 24.0),
       height: 40,
@@ -22,18 +22,16 @@ class HiddenEnvironmentsList extends StatelessWidget {
                 style: Theme.of(context).textTheme.caption),
           ),
           Expanded(
-            child: StreamBuilder<FeatureStatusFeatures?>(
-                stream: bloc.featureStatusBloc.appFeatureValues,
+            child: StreamBuilder<EnvironmentsInfo>(
+                stream: bloc.environmentsStream,
                 builder: (context, snapshot) {
                   return ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
                       if (snapshot.hasData)
-                        ...snapshot.data!.sortedByNameEnvironmentIds
+                        ...snapshot.data!.environments
                             .map((e) => HideEnvironmentContainer(
-                                envId: e,
-                                efv:
-                                    snapshot.data!.applicationEnvironments[e]!))
+                                environment: e))
                             .toList()
                     ],
                   );
@@ -46,11 +44,10 @@ class HiddenEnvironmentsList extends StatelessWidget {
 }
 
 class HideEnvironmentContainer extends StatefulWidget {
-  final String envId;
-  final EnvironmentFeatureValues efv;
+  final Environment environment;
 
   const HideEnvironmentContainer(
-      {Key? key, required this.envId, required this.efv})
+      {Key? key, required this.environment})
       : super(key: key);
 
   @override
@@ -68,7 +65,7 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
       child: Row(children: [
         ChoiceChip(
             label: Text(
-              widget.efv.environmentName!.toUpperCase(),
+              widget.environment.name.toUpperCase(),
               style: Theme.of(context).textTheme.overline,
               overflow: TextOverflow.ellipsis,
             ),
@@ -78,9 +75,9 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
               final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
               if (newValue) {
-                bloc.addShownEnvironment(widget.efv.environmentId!);
+                bloc.addShownEnvironment(widget.environment.id!);
               } else {
-                bloc.removeShownEnvironment(widget.efv.environmentId!);
+                bloc.removeShownEnvironment(widget.environment.id!);
               }
 
               setState(() {
@@ -95,6 +92,6 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     selected = BlocProvider.of<PerApplicationFeaturesBloc>(context)
-        .environmentVisible(widget.efv.environmentId!);
+        .environmentVisible(widget.environment.id!);
   }
 }

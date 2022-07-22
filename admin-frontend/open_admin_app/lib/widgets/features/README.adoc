@@ -1,0 +1,40 @@
+= Structural Overview
+
+This provides an overview of how the Flutter components fit together here.
+
+This is created by the route manager, where the PerApplicationFeaturesBloc is the first created.
+
+Important concepts:
+- FeatureGrouping = a tab, representing a grouping of specific types of features (e.g. booleans, number/strings, json)
+
+----
+ PerApplicationFeaturesBloc - holds the server features for each featureGrouping and the application id
+   |
+ FeatureStatusRoute 
+   |
+ TabSelectedBloc - controls which featuregrouping is currently selected
+   | 
+ TabParentWidget
+ |   |  |
+ |   |  _FeatureTabsHeader - shows all possible tabs and when clicked on, tells the TabSelectedBloc to change
+ |   |
+ |   FeaturesOnThisTabTrackerBloc - holds the state of each tabs feature data
+ |   |
+ |   TabsView - holds the per tab features bloc and creates the FeaturesOverviewTableWidget
+ |
+ | HiddenEnvironments - allows control over hidden environments
+----
+
+Starting here again:
+
+----
+FeaturesOverviewTableWidget
+  |
+FeaturesOnThisTabTrackerBloc - tracks the full state of all features inside this 
+  |
+_FeatureTabsBodyHolder
+  |
+ Row of:
+  - ... FeatureNamesLeftPanel (1 per feature)
+  - EnvironmentsAndFeatureValuesListView - this is listing all of the features
+----
