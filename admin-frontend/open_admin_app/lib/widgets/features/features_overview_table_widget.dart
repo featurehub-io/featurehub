@@ -37,24 +37,24 @@ class TabParentWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<TabSelectedBloc>(context);
 
-    return StreamBuilder<FeatureGrouping?>(
-        stream: bloc.currentGrouping,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const SizedBox.shrink();
-          }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _FeatureTabsHeader(),
+        const HiddenEnvironmentsList(),
+        StreamBuilder<FeatureGrouping?>(
+            stream: bloc.currentGrouping,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const SizedBox.shrink();
+              }
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _FeatureTabsHeader(),
-              const HiddenEnvironmentsList(),
-              TabsView(grouping: snapshot.data!,
-                  bloc: BlocProvider.of<PerApplicationFeaturesBloc>(context))
-            ],
-          );
-        }
+              return TabsView(
+                  grouping: snapshot.data!,
+                  bloc: BlocProvider.of<PerApplicationFeaturesBloc>(context));
+            }),
+      ],
     );
   }
 }
@@ -76,7 +76,7 @@ class TabsView extends StatelessWidget {
                 grouping,
                 bloc),
         child:
-            FeaturesOverviewTableWidget()
+            const FeaturesOverviewTableWidget()
         );
   }
 }

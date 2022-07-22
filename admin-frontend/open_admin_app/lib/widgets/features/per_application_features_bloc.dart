@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
@@ -39,7 +40,11 @@ class EnvironmentsInfo {
   final List<Environment> environments;
   final bool isEmpty;
 
-  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false;
+  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false {
+    print("environments are " + environments.toString());
+    print("shown environments are " + shownEnvironments.toString());
+    print("hidden environments are " + hiddenEnvironments.toString());
+  }
 
   EnvironmentsInfo.empty() : userEnvironmentData = HiddenEnvironments(), environments = [], isEmpty = true;
 
@@ -48,6 +53,18 @@ class EnvironmentsInfo {
 
   List<Environment> get hiddenEnvironments =>
       environments.where((env) => userEnvironmentData.environmentIds.contains(env.id)).toList();
+
+  bool isHidden(String envId) =>
+      environments.firstWhereOrNull((env) => env.id == envId) != null;
+
+  bool isShown(String envId) => !isHidden(envId);
+
+  List<String> get hiddenEnvironmentIds => [...userEnvironmentData.environmentIds];
+
+  @override
+  String toString() {
+    return 'EnvironmentsInfo{userEnvironmentData: $userEnvironmentData, environments: $environments, isEmpty: $isEmpty}';
+  }
 }
 
 class FeaturesByType {
@@ -94,10 +111,6 @@ class PerApplicationFeaturesBloc
   final _appSearchResultSource = BehaviorSubject<List<Application>?>();
 
   Stream<List<Application>?> get applications => _appSearchResultSource.stream;
-
-  final _shownEnvironmentsSource = BehaviorSubject<List<String>>.seeded([]);
-  Stream<List<String>> get shownEnvironmentsStream =>
-      _shownEnvironmentsSource.stream;
 
   final Map<FeatureGrouping, BehaviorSubject<FeaturesByType>> _perTabApplicationFeatures = {};
 
@@ -195,20 +208,6 @@ class PerApplicationFeaturesBloc
       if (!bs.isClosed) {
         _sortApplicationFeatureValues(appFeatureValues);
 
-        final hiddenEnvironments = _environmentsSource.value!.userEnvironmentData;
-
-        if (hiddenEnvironments.environmentIds.isEmpty) {
-          if (appFeatureValues.environments.isNotEmpty) {
-            hiddenEnvironments.environmentIds = [
-              appFeatureValues.environments.first.environmentId!
-            ];
-
-            await _updateShownEnvironments(hiddenEnvironments.environmentIds);
-          }
-        } else {
-          _shownEnvironmentsSource.add(hiddenEnvironments.environmentIds);
-        }
-
         _grouping(grouping).add(FeaturesByType(appFeatureValues, grouping));
       }
     } catch (e, s) {
@@ -247,18 +246,19 @@ class PerApplicationFeaturesBloc
   // off completely separately from their grouping and filters. We should optimise
   // the request and specify environments in our API call to limit data further.
   Future<void> _updateShownEnvironments(List<String> environmentIds) async {
-    final envs = await _userStateServiceApi.saveHiddenEnvironments(
-        applicationId!,
-        HiddenEnvironments(
-          environmentIds: environmentIds,
-        ));
+    final newHiddenEnvironments = HiddenEnvironments(
+      environmentIds: environmentIds,
+    );
 
-    _shownEnvironmentsSource.add(envs.environmentIds);
+    final envs = await _userStateServiceApi.saveHiddenEnvironments(
+        applicationId!, newHiddenEnvironments);
+
+    _environmentsSource.add(EnvironmentsInfo(newHiddenEnvironments, _environmentsSource.value!.environments));
   }
 
   Future<void> addShownEnvironment(String envId) async {
-    if (_shownEnvironmentsSource.value?.contains(envId) != true) {
-      final envs = <String>[..._shownEnvironmentsSource.value!];
+    if (_environmentsSource.value?.isShown(envId) != true) {
+      final envs =_environmentsSource.value!.hiddenEnvironmentIds;
       envs.add(envId);
       // ignore: unawaited_futures
       _updateShownEnvironments(envs);
@@ -266,7 +266,7 @@ class PerApplicationFeaturesBloc
   }
 
   Future<void> removeShownEnvironment(String envId) async {
-    final envs = <String>[..._shownEnvironmentsSource.value!];
+    final envs =_environmentsSource.value!.hiddenEnvironmentIds;
 
     if (envs.remove(envId)) {
       // ignore: unawaited_futures
@@ -275,7 +275,7 @@ class PerApplicationFeaturesBloc
   }
 
   bool environmentVisible(String envId) {
-    return _shownEnvironmentsSource.value?.contains(envId) == true;
+    return _environmentsSource.value?.isShown(envId) == true;
   }
 
   void checkPortfolioIdIsLegit(List<Portfolio> portfolios) {

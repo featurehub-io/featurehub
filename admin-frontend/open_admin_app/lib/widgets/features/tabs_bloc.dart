@@ -33,25 +33,25 @@ class CombinedEnvironmentInfoAndFeaturesEditing {
 
   CombinedEnvironmentInfoAndFeaturesEditing(this.featureKeys,
       this.environmentsInfo);
+
+  @override
+  String toString() {
+    return 'CombinedEnvironmentInfoAndFeaturesEditing{featureKeys: $featureKeys, environmentsInfo: $environmentsInfo}';
+  }
 }
 
 // this bloc is actually mixing the feature groups available and features???
 class FeaturesOnThisTabTrackerBloc implements Bloc {
   final FeatureGrouping grouping;
-  final _stateSource =
-      BehaviorSubject<FeatureGrouping>.seeded(featureGroupDefault);
-  List<Feature> _featuresForTabs = [];
+  final List<Feature> _featuresForTabs = [];
   final _currentlyEditingFeatureKeys = <String>{};
-  final _featureCurrentlyEditingSource = BehaviorSubject.seeded([] as Set<String>);
+  final _featureCurrentlyEditingSource = BehaviorSubject.seeded(<String>{});
   final ManagementRepositoryClientBloc mrClient;
   final _allFeaturesByKey = <String, Feature>{};
   String? filter;
   int startingFeatureIndex = 0;
 
   Stream<FeaturesByType> featuresStream;
-
-  // determine which tab they have selected
-  Stream<FeatureGrouping> get currentTab => _stateSource.stream;
 
   Stream<Set<String>?> get featureCurrentlyEditingStream =>
       _featureCurrentlyEditingSource.stream;
@@ -68,11 +68,8 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   final PerApplicationFeaturesBloc featureStatusBloc;
   late StreamSubscription<FeaturesByType?> _featureStreamSubscription;
   late StreamSubscription<Feature> _newFeatureStream;
-  late StreamSubscription<List<String>> _shownEnvironmentsStream;
 
   ApplicationFeatureValues applicationFeatureValues;
-
-  var shownEnvironments = <String>[];
 
   FeaturesOnThisTabTrackerBloc(this.grouping,
       this.featureStatusBloc) :
@@ -84,8 +81,6 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
       Rx.combineLatest2(featureCurrentlyEditingStream, featureStatusBloc.environmentsStream, (Set<String>? features, EnvironmentsInfo envs) =>
           CombinedEnvironmentInfoAndFeaturesEditing(features, envs));
 
-    _featureCurrentlyEditingSource.add(_currentlyEditingFeatureKeys);
-
     _featureStreamSubscription = featuresStream.listen((appFeatures) {
       applicationFeatureValues = appFeatures.applicationFeatureValues;
 
@@ -94,15 +89,16 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
         featureStatusBloc.updateFeatureGrouping(grouping, filter, startingFeatureIndex);
 
         _allFeaturesByKey.clear();
+        _featuresForTabs.clear();
       } else {
+        _featuresForTabs.clear();
+        _featuresForTabs.addAll(appFeatures.applicationFeatureValues.features);
+
         _refixFeaturesByKey(appFeatures);
 
         _checkForFeaturesWeWereEditingThatHaveNowGone();
       }
     });
-
-    _shownEnvironmentsStream = featureStatusBloc.shownEnvironmentsStream
-        .listen(_updatedShownEnvironments);
 
     _newFeatureStream =
         featureStatusBloc.publishNewFeatureStream.listen((feature) {
@@ -125,20 +121,12 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
       } else {
         found.strategyCount = fsco.strategyCount;
       }
-
-      // trigger a re-layout
-      _stateSource.add(_stateSource.value!);
     }
   }
 
   void _cleanFeatureStrategyCountOverridesOnSaveOrCancel(Feature feature) {
     _featurePerEnvironmentStrategyCountOverrides
         .removeWhere((e) => e.feature.id == feature.id);
-  }
-
-  void _updatedShownEnvironments(List<String> environments) {
-    shownEnvironments = environments;
-    _stateSource.add(_stateSource.value!);
   }
 
   double featureExtraCellHeight(Feature feature) {
@@ -183,7 +171,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
         .toList();
 
     var linesInAllFeatures = applicationFeatureValues.environments
-        .where((env) => shownEnvironments.contains(env.environmentId))
+        .where((env) => featureStatusBloc.environmentVisible(env.environmentId!))
         .map((e) {
       // this will only pick up where we have actual features,
       // if we have an environment with a null feature value and
@@ -278,7 +266,6 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
     _featureStreamSubscription.cancel();
     _newFeatureStream.cancel();
-    _shownEnvironmentsStream.cancel();
   }
 
   void hideOrShowFeature(Feature feature) {

@@ -23,6 +23,9 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
         builder: (context, snapshot) {
           final unselHeight = bloc.unselectedFeatureCountForHeight;
           final selHeight = bloc.selectedFeatureCountForHeight;
+          if (bloc.features.isNotEmpty && snapshot.hasData) {
+            print("event happened " + snapshot.data!.toString());
+          }
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: SizedBox(

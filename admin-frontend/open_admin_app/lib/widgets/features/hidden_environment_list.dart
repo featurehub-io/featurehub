@@ -31,7 +31,7 @@ class HiddenEnvironmentsList extends StatelessWidget {
                       if (snapshot.hasData)
                         ...snapshot.data!.environments
                             .map((e) => HideEnvironmentContainer(
-                                environment: e))
+                                environment: e, environmentInfo: snapshot.data!))
                             .toList()
                     ],
                   );
@@ -45,9 +45,10 @@ class HiddenEnvironmentsList extends StatelessWidget {
 
 class HideEnvironmentContainer extends StatefulWidget {
   final Environment environment;
+  final EnvironmentsInfo environmentInfo;
 
   const HideEnvironmentContainer(
-      {Key? key, required this.environment})
+      {Key? key, required this.environment, required this.environmentInfo})
       : super(key: key);
 
   @override
@@ -57,6 +58,13 @@ class HideEnvironmentContainer extends StatefulWidget {
 
 class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
   bool selected = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    selected = widget.environmentInfo.isShown(widget.environment.id!);
+  }
 
   @override
   Widget build(BuildContext context) {
