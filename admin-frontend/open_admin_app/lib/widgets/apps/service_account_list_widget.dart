@@ -33,20 +33,20 @@ class ServiceAccountsListWidget extends StatelessWidget {
             if (snapshot.hasError) {
               return const FHLoadingError();
             } else if (snapshot.hasData) {
-
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              for (ServiceAccount sa in snapshot.data!)
-                _ServiceAccountWidget(
-                  serviceAccount: sa,
-                  mr: mrBloc,
-                  bloc: bloc,
-                )
-            ],
-          );
-        }}
-        return const SizedBox.shrink();
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  for (ServiceAccount sa in snapshot.data!)
+                    _ServiceAccountWidget(
+                      serviceAccount: sa,
+                      mr: mrBloc,
+                      bloc: bloc,
+                    )
+                ],
+              );
+            }
+          }
+          return const SizedBox.shrink();
         });
   }
 }
