@@ -84,9 +84,8 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
   bool isAddButtonDisabled = true;
 
   @override
-  void didUpdateWidget(TopWidgetDefault oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
+  void initState() {
+    super.initState();
     final bloc = BlocProvider.of<CreateUserBloc>(context);
     bloc.formKey = GlobalKey<FormState>();
   }

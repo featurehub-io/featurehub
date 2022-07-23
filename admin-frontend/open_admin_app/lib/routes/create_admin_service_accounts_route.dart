@@ -69,9 +69,8 @@ class _TopAdminSAWidgetDefaultState extends State<TopAdminSAWidgetDefault> {
   bool isAddButtonDisabled = true;
 
   @override
-  void didUpdateWidget(TopAdminSAWidgetDefault oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
+  void initState() {
+    super.initState();
     final bloc = BlocProvider.of<CreateUserBloc>(context);
     bloc.formKey = GlobalKey<FormState>();
   }
