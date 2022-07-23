@@ -195,47 +195,39 @@ class _FeatureTabsHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
-    return StreamBuilder<EnvironmentsInfo>(
-        stream: bloc.environmentsStream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.data!.noApplications) {
-            return const SizedBox.shrink();
-          }
+    final ScrollController controller = ScrollController();
 
-          final ScrollController controller = ScrollController();
-
-          return ScrollConfiguration(
-            behavior: CustomScrollBehavior(),
-            child: SingleChildScrollView(
-              controller: controller,
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _FeatureTab(
-                      text: 'Standard Flags',
-                      subtext: '(Boolean)',
-                      icon: Icons.flag,
-                      state: featureGroupFlags,
-                      color: Colors.green),
-                  _FeatureTab(
-                      text: 'Non-binary Flags',
-                      subtext: '(String / Number)',
-                      icon: Icons.code,
-                      state: featureGroupValues,
-                      color: Colors.blue),
-                  _FeatureTab(
-                      text: 'Remote Configuration',
-                      subtext: '(JSON)',
-                      icon: Icons.device_hub,
-                      state: featureGroupConfig,
-                      color: Colors.orange),
-                ],
-              ),
-            ),
-          );
-        });
+    return ScrollConfiguration(
+      behavior: CustomScrollBehavior(),
+      child: SingleChildScrollView(
+        controller: controller,
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _FeatureTab(
+                text: 'Standard Flags',
+                subtext: '(Boolean)',
+                icon: Icons.flag,
+                state: featureGroupFlags,
+                color: Colors.green),
+            _FeatureTab(
+                text: 'Non-binary Flags',
+                subtext: '(String / Number)',
+                icon: Icons.code,
+                state: featureGroupValues,
+                color: Colors.blue),
+            _FeatureTab(
+                text: 'Remote Configuration',
+                subtext: '(JSON)',
+                icon: Icons.device_hub,
+                state: featureGroupConfig,
+                color: Colors.orange),
+          ],
+        ),
+      ),
+    );
   }
 }
 

@@ -13,7 +13,7 @@ class HiddenEnvironmentsList extends StatelessWidget {
     return StreamBuilder<EnvironmentsInfo>(
         stream: bloc.environmentsStream,
         builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.data!.noApplications) {
+          if (!snapshot.hasData || bloc.applicationId == null) {
             return const SizedBox.shrink();
           }
 

@@ -34,15 +34,14 @@ class EnvironmentsInfo {
   final HiddenEnvironments userEnvironmentData;
   final List<Environment> environments;
   final bool isEmpty;
-  final bool noApplications;
 
-  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false, noApplications = false {
+  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false {
     print("environments are " + environments.toString());
     print("shown environments are " + shownEnvironments.toString());
     print("hidden environments are " + hiddenEnvironments.toString());
   }
 
-  EnvironmentsInfo.empty({required this.noApplications}) : userEnvironmentData = HiddenEnvironments(), environments = [], isEmpty = true;
+  EnvironmentsInfo.empty() : userEnvironmentData = HiddenEnvironments(), environments = [], isEmpty = true;
 
   List<Environment> get shownEnvironments =>
     environments.where((env) => !userEnvironmentData.environmentIds.contains(env.id)).toList();
@@ -59,7 +58,7 @@ class EnvironmentsInfo {
 
   @override
   String toString() {
-    return 'EnvironmentsInfo{userEnvironmentData: $userEnvironmentData, environments: $environments, isEmpty: $isEmpty, noApplications: $noApplications}';
+    return 'EnvironmentsInfo{userEnvironmentData: $userEnvironmentData, environments: $environments, isEmpty: $isEmpty';
   }
 }
 
@@ -102,7 +101,7 @@ class PerApplicationFeaturesBloc
 
   late FeatureServiceApi _featureServiceApi;
 
-  final _environmentsSource = BehaviorSubject.seeded(EnvironmentsInfo.empty(noApplications: true));
+  final _environmentsSource = BehaviorSubject.seeded(EnvironmentsInfo.empty());
   Stream<EnvironmentsInfo> get environmentsStream => _environmentsSource;
   final _appSearchResultSource = BehaviorSubject<List<Application>?>();
 
@@ -216,7 +215,7 @@ class PerApplicationFeaturesBloc
 
     if (applicationId == null) {
       // wipe the list of environments and hidden data
-      _environmentsSource.add(EnvironmentsInfo.empty(noApplications: false));
+      _environmentsSource.add(EnvironmentsInfo.empty());
     } else {
       final environments = await mrClient.environmentServiceApi.findEnvironments(appId!);
       final hidden = await _userStateServiceApi.getHiddenEnvironments(appId);
@@ -249,7 +248,7 @@ class PerApplicationFeaturesBloc
     final envs = await _userStateServiceApi.saveHiddenEnvironments(
         applicationId!, newHiddenEnvironments);
 
-    _environmentsSource.add(EnvironmentsInfo(newHiddenEnvironments, _environmentsSource.value!.environments));
+    _environmentsSource.add(EnvironmentsInfo(envs, _environmentsSource.value!.environments));
   }
 
   Future<void> addShownEnvironment(String envId) async {
@@ -306,10 +305,15 @@ class PerApplicationFeaturesBloc
 
   void checkApplicationIdIsLegit(List<Application> appList) {
     if (appList.isEmpty) {
+      print("applist is empty");
       applicationId = null;
-      _environmentsSource.add(EnvironmentsInfo.empty(noApplications: true));
+      _environmentsSource.add(EnvironmentsInfo.empty());
     } else if (!appList.any((app) => app.id == applicationId)) {
+      print("applist does not contain applicationid");
       _getAllAppValuesDebounceStream.add(null);
+    } else {
+      print("forcing selection of application");
+      _getAllAppValuesDebounceStream.add(appList[0].id);
     }
   }
 

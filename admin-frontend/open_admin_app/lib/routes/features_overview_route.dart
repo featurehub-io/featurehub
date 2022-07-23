@@ -41,9 +41,19 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
         _headerRow(context, bloc),
         const FHPageDivider(),
         const SizedBox(height: 16.0),
-        BlocProvider(
-            creator: (_c, _b) => TabSelectedBloc(bloc),
-            child: const TabParentWidget())
+
+        StreamBuilder<EnvironmentsInfo?>(
+          stream: bloc.environmentsStream,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || bloc.applicationId == null) {
+              return const SizedBox.shrink();
+            }
+
+            return BlocProvider(
+                creator: (_c, _b) => TabSelectedBloc(bloc),
+                child: const TabParentWidget());
+          }
+        )
       ],
     );
   }
@@ -170,7 +180,8 @@ class _CreateFeatureButton extends StatelessWidget {
     return StreamBuilder<EnvironmentsInfo>(
         stream: bloc.environmentsStream,
         builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.data!.noApplications) {
+          print("create feature ${snapshot.data}");
+          if (!snapshot.hasData || bloc.applicationId == null) {
             return const SizedBox.shrink();
           }
 
