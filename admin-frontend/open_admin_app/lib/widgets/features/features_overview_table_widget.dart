@@ -259,20 +259,27 @@ class _FeatureTab extends StatelessWidget {
             onTap: () {
               bloc.swapTab(state);
             },
-            child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(16.0)),
-                  color: Theme.of(context).primaryColorLight,
-                ),
-                child: Row(children: <Widget>[
-                  Icon(icon, color: color, size: 20.0),
-                  const SizedBox(width: 4.0),
-                  Text(text, style: Theme.of(context).textTheme.subtitle1),
-                  const SizedBox(width: 2.0),
-                  Text(subtext, style: Theme.of(context).textTheme.caption),
-                ]))));
+            child: StreamBuilder<FeatureGrouping?>(
+              stream: bloc.currentGrouping,
+              builder: (context, snapshot) {
+                return Container(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.all(Radius.circular(16.0)),
+                      color:
+                        snapshot.data == state ?
+                          Theme.of(context).primaryColorLight : Colors.transparent,
+                    ),
+                    child: Row(children: <Widget>[
+                      Icon(icon, color: color, size: 20.0),
+                      const SizedBox(width: 4.0),
+                      Text(text, style: Theme.of(context).textTheme.subtitle1),
+                      const SizedBox(width: 2.0),
+                      Text(subtext, style: Theme.of(context).textTheme.caption),
+                    ]));
+              }
+            )));
   }
 }
 
