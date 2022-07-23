@@ -41,7 +41,7 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
         _headerRow(context, bloc),
         const FHPageDivider(),
         const SizedBox(height: 16.0),
-        BlocProvider(creator: (_c, _b) => TabSelectedBloc(), child: const TabParentWidget())
+        BlocProvider(creator: (_c, _b) => TabSelectedBloc(bloc), child: const TabParentWidget())
       ],
     );
   }

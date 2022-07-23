@@ -43,7 +43,7 @@ class CombinedEnvironmentInfoAndFeaturesEditing {
 // this bloc is actually mixing the feature groups available and features???
 class FeaturesOnThisTabTrackerBloc implements Bloc {
   final FeatureGrouping grouping;
-  final List<Feature> _featuresForTabs = [];
+  final List<Feature> _featuresForTab = [];
   final _currentlyEditingFeatureKeys = <String>{};
   final _featureCurrentlyEditingSource = BehaviorSubject.seeded(<String>{});
   final ManagementRepositoryClientBloc mrClient;
@@ -56,14 +56,12 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   Stream<Set<String>?> get featureCurrentlyEditingStream =>
       _featureCurrentlyEditingSource.stream;
 
-  late Stream<CombinedEnvironmentInfoAndFeaturesEditing> environmentAndFeaturesCurrentlyEditingStream;
-
   // when editing, the base count we have doesn't match what is actually being used
   // so we need to override it. We also need to clean it up on save or edit
   final List<FeatureStrategyCountOverride>
       _featurePerEnvironmentStrategyCountOverrides = [];
 
-  List<Feature> get features => _featuresForTabs;
+  List<Feature> get features => _featuresForTab;
   final featureValueBlocs = <String, PerFeatureStateTrackingBloc>{};
   final PerApplicationFeaturesBloc featureStatusBloc;
   late StreamSubscription<FeaturesByType?> _featureStreamSubscription;
@@ -77,10 +75,6 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
         mrClient = featureStatusBloc.mrClient,
         applicationFeatureValues = FeaturesByType.empty(grouping).applicationFeatureValues
   {
-    environmentAndFeaturesCurrentlyEditingStream =
-      Rx.combineLatest2(featureCurrentlyEditingStream, featureStatusBloc.environmentsStream, (Set<String>? features, EnvironmentsInfo envs) =>
-          CombinedEnvironmentInfoAndFeaturesEditing(features, envs));
-
     _featureStreamSubscription = featuresStream.listen((appFeatures) {
       applicationFeatureValues = appFeatures.applicationFeatureValues;
 
@@ -89,10 +83,10 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
         featureStatusBloc.updateFeatureGrouping(grouping, filter, startingFeatureIndex);
 
         _allFeaturesByKey.clear();
-        _featuresForTabs.clear();
+        _featuresForTab.clear();
       } else {
-        _featuresForTabs.clear();
-        _featuresForTabs.addAll(appFeatures.applicationFeatureValues.features);
+        _featuresForTab.clear();
+        _featuresForTab.addAll(appFeatures.applicationFeatureValues.features);
 
         _refixFeaturesByKey(appFeatures);
 
@@ -107,6 +101,10 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
           }
     });
   }
+
+  Stream<CombinedEnvironmentInfoAndFeaturesEditing> get environmentAndFeaturesCurrentlyEditingStream =>
+      Rx.combineLatest2(featureCurrentlyEditingStream, featureStatusBloc.environmentsStream, (Set<String>? features, EnvironmentsInfo envs) =>
+          CombinedEnvironmentInfoAndFeaturesEditing(features, envs));
 
   void addFeatureEnvironmentStrategyCountOverride(
       FeatureStrategyCountOverride fsco) {
@@ -141,7 +139,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
     }
   }
 
-  int get unselectedFeatureCount => _featuresForTabs
+  int get unselectedFeatureCount => _featuresForTab
       .where((f) => !_currentlyEditingFeatureKeys.contains(f.key))
       .length;
 
@@ -206,7 +204,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   double get unselectedFeatureCountForHeight {
     // go through the features on this tab and find those we are NOT
     // currently editing
-    final sel = _featuresForTabs
+    final sel = _featuresForTab
         .where((f) => !_currentlyEditingFeatureKeys.contains(f.key))
         .toList();
 
@@ -220,12 +218,12 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
     return retVal;
   }
 
-  int get selectedFeatureCount => _featuresForTabs
+  int get selectedFeatureCount => _featuresForTab
       .where((f) => _currentlyEditingFeatureKeys.contains(f.key))
       .length;
 
   double get selectedFeatureCountForHeight {
-    final sel = _featuresForTabs
+    final sel = _featuresForTab
         .where((f) => _currentlyEditingFeatureKeys.contains(f.key))
         .toList();
 

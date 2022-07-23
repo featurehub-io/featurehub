@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
@@ -18,8 +22,35 @@ final _log = Logger('FeaturesOverviewTable');
 
 class TabSelectedBloc implements Bloc {
   final _groupingSelected = BehaviorSubject.seeded(featureGroupDefault);
+  final PerApplicationFeaturesBloc featureStatusBloc;
+
+  late StreamSubscription<Feature> publishNewFeatureStream;
+
+  TabSelectedBloc(this.featureStatusBloc) {
+    // list for new features and swap to the right tab if we need to. We may still
+    // not see it as we have no way of scrolling from here
+    publishNewFeatureStream = featureStatusBloc.publishNewFeatureStream.listen((feature) {
+      final fg = featureGroups.firstWhereOrNull((grouping) => grouping.types.contains(feature.valueType));
+
+      if (fg != null) {
+        swapTab(fg);
+      }
+    });
+  }
 
   Stream<FeatureGrouping> get currentGrouping => _groupingSelected.stream;
+
+  // this follows the same pattern as PerApplicationFeaturesBloc
+  Map<FeatureGrouping, FeaturesOnThisTabTrackerBloc> _featureBlocMap = {};
+
+  FeaturesOnThisTabTrackerBloc featuresBloc(FeatureGrouping grouping) {
+    return _featureBlocMap.putIfAbsent(grouping, () =>
+        FeaturesOnThisTabTrackerBloc(grouping, featureStatusBloc));
+  }
+
+  FeaturesOnThisTabTrackerBloc currentFeaturesBloc() {
+    return featuresBloc(_groupingSelected.value!);
+  }
 
   void swapTab(FeatureGrouping grouping) {
     _groupingSelected.add(grouping);
@@ -27,6 +58,10 @@ class TabSelectedBloc implements Bloc {
 
   @override
   void dispose() {
+    _groupingSelected.close();
+    _featureBlocMap.values.forEach((bloc) {
+      bloc.dispose();
+    });
   }
 }
 
@@ -46,48 +81,27 @@ class TabParentWidget extends StatelessWidget {
         StreamBuilder<FeatureGrouping?>(
             stream: bloc.currentGrouping,
             builder: (context, snapshot) {
+              print("swap tab ${snapshot.data?.types}");
               if (!snapshot.hasData) {
                 return const SizedBox.shrink();
               }
 
-              return TabsView(
-                  grouping: snapshot.data!,
-                  bloc: BlocProvider.of<PerApplicationFeaturesBloc>(context));
+              return FeaturesOverviewTableWidget(grouping: snapshot.data!,);
             }),
       ],
     );
   }
 }
 
-class TabsView extends StatelessWidget {
-  final FeatureGrouping grouping;
-  final PerApplicationFeaturesBloc bloc;
-
-  const TabsView({Key? key,
-    required this.grouping,
-    required this.bloc})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-        creator: (_c, _b) =>
-            FeaturesOnThisTabTrackerBloc(
-                grouping,
-                bloc),
-        child:
-            const FeaturesOverviewTableWidget()
-        );
-  }
-}
-
 class FeaturesOverviewTableWidget extends StatelessWidget {
-  const FeaturesOverviewTableWidget({Key? key})
+  final FeatureGrouping grouping;
+
+  const FeaturesOverviewTableWidget({Key? key, required this.grouping})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<FeaturesOnThisTabTrackerBloc>(context);
+    final bloc = BlocProvider.of<TabSelectedBloc>(context).featuresBloc(grouping);
 
     try {
       return StreamBuilder<FeaturesByType?>(
@@ -117,7 +131,7 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Card(
-                  child: _FeatureTabsBodyHolder(),
+                  child: _FeatureTabsBodyHolder(bloc: bloc),
                 ),
               ],
             );
@@ -130,9 +144,12 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
 }
 
 class _FeatureTabsBodyHolder extends StatelessWidget {
+  final FeaturesOnThisTabTrackerBloc bloc;
+
+  const _FeatureTabsBodyHolder({Key? key, required this.bloc}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<FeaturesOnThisTabTrackerBloc>(context);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,

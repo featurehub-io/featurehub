@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/widgets.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/mr_client_aware.dart';
@@ -201,7 +200,7 @@ class PerApplicationFeaturesBloc
           .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(applicationId!,
           filter: filter,
           featureTypes: grouping.types,
-          max: 20,
+          max: 10,
           page: startingPosition);
 
       final bs = _grouping(grouping);
@@ -311,9 +310,6 @@ class PerApplicationFeaturesBloc
   void checkApplicationIdIsLegit(List<Application> appList) {
     if (!appList.any((app) => app.id == applicationId)) {
       _getAllAppValuesDebounceStream.add(null);
-
-      mrClient.customError(
-          messageTitle: 'Provided application ID is not found in the system');
     }
   }
 
