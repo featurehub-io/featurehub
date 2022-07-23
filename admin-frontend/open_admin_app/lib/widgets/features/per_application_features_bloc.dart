@@ -67,14 +67,13 @@ class FeaturesByType {
   final FeatureGrouping grouping; // the grouping this set of features relates to
   final bool isEmpty; // indicates this represents an empty set of data
 
-  String? filter; // the filter this set of data reflects
-  int featureCount = 0; // how many entries there are
-  int featureStartingPosition = 0; // the first feature in the total count represented here
+  final String? filter; // the filter this set of data reflects
+  final int pageNumber; // the page number depending on the page size we are sending
 
   // envId, EnvironmentFeatureValues mapping - so it is done only once not once per line in table
   Map<String, EnvironmentFeatureValues> applicationEnvironments = {};
 
-  FeaturesByType(this.applicationFeatureValues, this.grouping) : isEmpty = false {
+  FeaturesByType(this.applicationFeatureValues, this.grouping, this.filter, this.pageNumber) : isEmpty = false {
     for (var e in applicationFeatureValues.environments) {
       applicationEnvironments[e.environmentId!] = e;
     }
@@ -82,6 +81,8 @@ class FeaturesByType {
 
   FeaturesByType.empty(this.grouping) : applicationFeatureValues =
     ApplicationFeatureValues(applicationId: '', environments: [], features: [], maxFeatures: 0),
+    filter = null,
+    pageNumber = -1,
     isEmpty = true;
 }
 
@@ -108,6 +109,8 @@ class PerApplicationFeaturesBloc
   Stream<List<Application>?> get applications => _appSearchResultSource.stream;
 
   final Map<FeatureGrouping, BehaviorSubject<FeaturesByType>> _perTabApplicationFeatures = {};
+
+  int get itemsPerPage => 10;
 
   ManagementRepositoryClientBloc get mrBloc => _mrClient;
 
@@ -184,11 +187,10 @@ class PerApplicationFeaturesBloc
     appFeatureValues.features.sort((a, b) => a.name.compareTo(b.name));
   }
 
-  Future<void> updateFeatureGrouping(FeatureGrouping grouping, String? filter, int startingPosition) async {
+  Future<void> updateFeatureGrouping(FeatureGrouping grouping, String? filter, int pageNumber) async {
     if (applicationId == null) {
       return;
     }
-
     try {
       // hidden environments is based on application, swap this out
       final appFeatureValues = await
@@ -196,17 +198,27 @@ class PerApplicationFeaturesBloc
           .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(applicationId!,
           filter: filter,
           featureTypes: grouping.types,
-          max: 10,
-          page: startingPosition);
+          max: itemsPerPage,
+          page: pageNumber);
 
       final bs = _grouping(grouping);
       if (!bs.isClosed) {
         _sortApplicationFeatureValues(appFeatureValues);
 
-        _grouping(grouping).add(FeaturesByType(appFeatureValues, grouping));
+        _grouping(grouping).add(FeaturesByType(appFeatureValues, grouping, filter, pageNumber));
       }
     } catch (e, s) {
       await mrClient.dialogError(e, s);
+    }
+  }
+
+  void _reloadGrouping(FeatureValueType valueType) {
+    final grouping = featureGroups.firstWhereOrNull((g) => g.types.contains(valueType));
+
+    if (grouping != null) {
+      final subject = _grouping(grouping);
+
+      updateFeatureGrouping(grouping, subject.value!.filter, subject.value!.pageNumber);
     }
   }
 
@@ -310,7 +322,7 @@ class PerApplicationFeaturesBloc
       _environmentsSource.add(EnvironmentsInfo.empty());
     } else if (!appList.any((app) => app.id == applicationId)) {
       print("applist does not contain applicationid");
-      _getAllAppValuesDebounceStream.add(null);
+      _getAllAppValuesDebounceStream.add(appList[0].id);
     } else {
       print("forcing selection of application");
       _getAllAppValuesDebounceStream.add(appList[0].id);
@@ -334,6 +346,9 @@ class PerApplicationFeaturesBloc
     );
     await _featureServiceApi.createFeaturesForApplication(
         applicationId!, feature);
+
+    _reloadGrouping(featureValueType);
+
     unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
     _publishNewFeatureSource.add(feature);
   }
@@ -350,10 +365,12 @@ class PerApplicationFeaturesBloc
       ..key = newKey;
     await _featureServiceApi.updateFeatureForApplication(
         applicationId!, feature.key!, newFeature);
+    _reloadGrouping(currentFeature.valueType!);
   }
 
-  Future<void> deleteFeature(String key) async {
-    await _featureServiceApi.deleteFeatureForApplication(applicationId!, key);
+  Future<void> deleteFeature(Feature feature) async {
+    await _featureServiceApi.deleteFeatureForApplication(applicationId!, feature.key!);
+    _reloadGrouping(feature.valueType!);
     unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
   }
 
@@ -369,5 +386,6 @@ class PerApplicationFeaturesBloc
       Feature feature, List<FeatureValue> updates) async {
     await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(
         applicationId!, feature.key!, updates);
+    _reloadGrouping(feature.valueType!);
   }
 }

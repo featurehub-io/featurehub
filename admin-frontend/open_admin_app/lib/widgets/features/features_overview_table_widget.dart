@@ -15,6 +15,7 @@ import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'feature_dashboard_constants.dart';
+import 'feature_pagination_widget.dart';
 import 'hidden_environment_list.dart';
 import 'per_application_features_bloc.dart';
 
@@ -174,8 +175,7 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                             ? 260.0
                             : 130,
                         padding: const EdgeInsets.only(left: 8.0),
-                        child: Text('',
-                            style: Theme.of(context).textTheme.caption)),
+                        child: FeaturePaginationWidget(grouping: bloc.grouping)),
                   ...bloc.features.map(
                     (f) {
                       return FeatureNamesLeftPanel(tabsBloc: bloc, feature: f);
@@ -193,8 +193,6 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
 class _FeatureTabsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
-
     final ScrollController controller = ScrollController();
 
     return ScrollConfiguration(
