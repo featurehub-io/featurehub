@@ -29,8 +29,10 @@ class TabSelectedBloc implements Bloc {
   TabSelectedBloc(this.featureStatusBloc) {
     // list for new features and swap to the right tab if we need to. We may still
     // not see it as we have no way of scrolling from here
-    publishNewFeatureStream = featureStatusBloc.publishNewFeatureStream.listen((feature) {
-      final fg = featureGroups.firstWhereOrNull((grouping) => grouping.types.contains(feature.valueType));
+    publishNewFeatureStream =
+        featureStatusBloc.publishNewFeatureStream.listen((feature) {
+      final fg = featureGroups.firstWhereOrNull(
+          (grouping) => grouping.types.contains(feature.valueType));
 
       if (fg != null) {
         swapTab(fg);
@@ -44,8 +46,8 @@ class TabSelectedBloc implements Bloc {
   Map<FeatureGrouping, FeaturesOnThisTabTrackerBloc> _featureBlocMap = {};
 
   FeaturesOnThisTabTrackerBloc featuresBloc(FeatureGrouping grouping) {
-    return _featureBlocMap.putIfAbsent(grouping, () =>
-        FeaturesOnThisTabTrackerBloc(grouping, featureStatusBloc));
+    return _featureBlocMap.putIfAbsent(grouping,
+        () => FeaturesOnThisTabTrackerBloc(grouping, featureStatusBloc));
   }
 
   FeaturesOnThisTabTrackerBloc currentFeaturesBloc() {
@@ -86,7 +88,9 @@ class TabParentWidget extends StatelessWidget {
                 return const SizedBox.shrink();
               }
 
-              return FeaturesOverviewTableWidget(grouping: snapshot.data!,);
+              return FeaturesOverviewTableWidget(
+                grouping: snapshot.data!,
+              );
             }),
       ],
     );
@@ -101,7 +105,8 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<TabSelectedBloc>(context).featuresBloc(grouping);
+    final bloc =
+        BlocProvider.of<TabSelectedBloc>(context).featuresBloc(grouping);
 
     try {
       return StreamBuilder<FeaturesByType?>(
@@ -146,11 +151,11 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
 class _FeatureTabsBodyHolder extends StatelessWidget {
   final FeaturesOnThisTabTrackerBloc bloc;
 
-  const _FeatureTabsBodyHolder({Key? key, required this.bloc}) : super(key: key);
+  const _FeatureTabsBodyHolder({Key? key, required this.bloc})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,30 +168,20 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                 children: [
                   if (bloc.features.isNotEmpty)
                     Container(
-                        color: Theme
-                            .of(context)
-                            .highlightColor,
+                        color: Theme.of(context).highlightColor,
                         height: headerHeight,
-                        width: MediaQuery
-                            .of(context)
-                            .size
-                            .width > 600
+                        width: MediaQuery.of(context).size.width > 600
                             ? 260.0
                             : 130,
                         padding: const EdgeInsets.only(left: 8.0),
                         child: Text('',
-                            style: Theme
-                                .of(context)
-                                .textTheme
-                                .caption)),
+                            style: Theme.of(context).textTheme.caption)),
                   ...bloc.features.map(
-                        (f) {
-                      return FeatureNamesLeftPanel(
-                          tabsBloc: bloc, feature: f);
+                    (f) {
+                      return FeatureNamesLeftPanel(tabsBloc: bloc, feature: f);
                     },
                   ).toList(),
-                ])
-        ),
+                ])),
         Flexible(
           child: EnvironmentsAndFeatureValuesListView(bloc: bloc),
         )
@@ -198,39 +193,49 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
 class _FeatureTabsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final ScrollController controller = ScrollController();
+    final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
-    return ScrollConfiguration(
-      behavior: CustomScrollBehavior(),
-      child: SingleChildScrollView(
-        controller: controller,
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _FeatureTab(
-                text: 'Standard Flags',
-                subtext: '(Boolean)',
-                icon: Icons.flag,
-                state: featureGroupFlags,
-                color: Colors.green),
-            _FeatureTab(
-                text: 'Non-binary Flags',
-                subtext: '(String / Number)',
-                icon: Icons.code,
-                state: featureGroupValues,
-                color: Colors.blue),
-            _FeatureTab(
-                text: 'Remote Configuration',
-                subtext: '(JSON)',
-                icon: Icons.device_hub,
-                state: featureGroupConfig,
-                color: Colors.orange),
-          ],
-        ),
-      ),
-    );
+    return StreamBuilder<EnvironmentsInfo>(
+        stream: bloc.environmentsStream,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data!.noApplications) {
+            return const SizedBox.shrink();
+          }
+
+          final ScrollController controller = ScrollController();
+
+          return ScrollConfiguration(
+            behavior: CustomScrollBehavior(),
+            child: SingleChildScrollView(
+              controller: controller,
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _FeatureTab(
+                      text: 'Standard Flags',
+                      subtext: '(Boolean)',
+                      icon: Icons.flag,
+                      state: featureGroupFlags,
+                      color: Colors.green),
+                  _FeatureTab(
+                      text: 'Non-binary Flags',
+                      subtext: '(String / Number)',
+                      icon: Icons.code,
+                      state: featureGroupValues,
+                      color: Colors.blue),
+                  _FeatureTab(
+                      text: 'Remote Configuration',
+                      subtext: '(JSON)',
+                      icon: Icons.device_hub,
+                      state: featureGroupConfig,
+                      color: Colors.orange),
+                ],
+              ),
+            ),
+          );
+        });
   }
 }
 
@@ -242,12 +247,13 @@ class _FeatureTab extends StatelessWidget {
 
   final Color color;
 
-  const _FeatureTab({Key? key,
-    required this.text,
-    required this.icon,
-    required this.state,
-    required this.color,
-    required this.subtext})
+  const _FeatureTab(
+      {Key? key,
+      required this.text,
+      required this.icon,
+      required this.state,
+      required this.color,
+      required this.subtext})
       : super(key: key);
 
   @override
@@ -264,29 +270,18 @@ class _FeatureTab extends StatelessWidget {
               bloc.swapTab(state);
             },
             child: Container(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 6.0, horizontal: 12.0),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
                 decoration: BoxDecoration(
-                  borderRadius:
-                  const BorderRadius.all(Radius.circular(16.0)),
-                  color: Theme
-                      .of(context)
-                      .primaryColorLight,
+                  borderRadius: const BorderRadius.all(Radius.circular(16.0)),
+                  color: Theme.of(context).primaryColorLight,
                 ),
                 child: Row(children: <Widget>[
                   Icon(icon, color: color, size: 20.0),
                   const SizedBox(width: 4.0),
-                  Text(text,
-                      style: Theme
-                          .of(context)
-                          .textTheme
-                          .subtitle1),
+                  Text(text, style: Theme.of(context).textTheme.subtitle1),
                   const SizedBox(width: 2.0),
-                  Text(subtext,
-                      style: Theme
-                          .of(context)
-                          .textTheme
-                          .caption),
+                  Text(subtext, style: Theme.of(context).textTheme.caption),
                 ]))));
   }
 }
@@ -306,10 +301,7 @@ class NoEnvironmentMessage extends StatelessWidget {
         children: <Widget>[
           Text(
               'Either there are no environments defined for this application or you don\'t have permissions to access any of them',
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .caption),
+              style: Theme.of(context).textTheme.caption),
           StreamBuilder<ReleasedPortfolio?>(
               stream: bloc.mrClient.streamValley.currentPortfolioStream,
               builder: (context, snapshot) {
@@ -320,8 +312,7 @@ class NoEnvironmentMessage extends StatelessWidget {
                     child: FHUnderlineButton(
                         title: 'Go to environments settings',
                         keepCase: true,
-                        onPressed: () =>
-                            ManagementRepositoryClientBloc.router
+                        onPressed: () => ManagementRepositoryClientBloc.router
                                 .navigateTo(context, '/app-settings', params: {
                               'id': [bloc.applicationId!],
                               'tab': ['environments']
@@ -349,10 +340,7 @@ class NoFeaturesMessage extends StatelessWidget {
       child: Column(
         children: <Widget>[
           Text('There are no features defined for this application',
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .caption),
+              style: Theme.of(context).textTheme.caption),
         ],
       ),
     );

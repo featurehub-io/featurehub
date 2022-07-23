@@ -41,7 +41,9 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
         _headerRow(context, bloc),
         const FHPageDivider(),
         const SizedBox(height: 16.0),
-        BlocProvider(creator: (_c, _b) => TabSelectedBloc(bloc), child: const TabParentWidget())
+        BlocProvider(
+            creator: (_c, _b) => TabSelectedBloc(bloc),
+            child: const TabParentWidget())
       ],
     );
   }
@@ -165,11 +167,16 @@ class _CreateFeatureButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<String?>(
-        stream: bloc.mrClient.streamValley.currentAppIdStream,
+    return StreamBuilder<EnvironmentsInfo>(
+        stream: bloc.environmentsStream,
         builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data!.noApplications) {
+            return const SizedBox.shrink();
+          }
+
           final canEdit = bloc.mrClient.personState
-              .personCanEditFeaturesForCurrentApplication(snapshot.data);
+              .personCanEditFeaturesForCurrentApplication(bloc.applicationId);
+
           return !canEdit
               ? const SizedBox.shrink()
               : FHFlatButtonAccent(

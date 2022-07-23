@@ -7,12 +7,8 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/mr_client_aware.dart';
 import 'package:rxdart/rxdart.dart' hide Notification;
 
-
-
-/**
- * this represents a grouping of types of features, with a name of some kind just
- * to make it easier to find
- */
+/// this represents a grouping of types of features, with a name of some kind just
+/// to make it easier to find
 class FeatureGrouping {
   final List<FeatureValueType> types;
 
@@ -38,14 +34,15 @@ class EnvironmentsInfo {
   final HiddenEnvironments userEnvironmentData;
   final List<Environment> environments;
   final bool isEmpty;
+  final bool noApplications;
 
-  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false {
+  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false, noApplications = false {
     print("environments are " + environments.toString());
     print("shown environments are " + shownEnvironments.toString());
     print("hidden environments are " + hiddenEnvironments.toString());
   }
 
-  EnvironmentsInfo.empty() : userEnvironmentData = HiddenEnvironments(), environments = [], isEmpty = true;
+  EnvironmentsInfo.empty({required this.noApplications}) : userEnvironmentData = HiddenEnvironments(), environments = [], isEmpty = true;
 
   List<Environment> get shownEnvironments =>
     environments.where((env) => !userEnvironmentData.environmentIds.contains(env.id)).toList();
@@ -62,7 +59,7 @@ class EnvironmentsInfo {
 
   @override
   String toString() {
-    return 'EnvironmentsInfo{userEnvironmentData: $userEnvironmentData, environments: $environments, isEmpty: $isEmpty}';
+    return 'EnvironmentsInfo{userEnvironmentData: $userEnvironmentData, environments: $environments, isEmpty: $isEmpty, noApplications: $noApplications}';
   }
 }
 
@@ -105,7 +102,7 @@ class PerApplicationFeaturesBloc
 
   late FeatureServiceApi _featureServiceApi;
 
-  final _environmentsSource = BehaviorSubject.seeded(EnvironmentsInfo.empty());
+  final _environmentsSource = BehaviorSubject.seeded(EnvironmentsInfo.empty(noApplications: true));
   Stream<EnvironmentsInfo> get environmentsStream => _environmentsSource;
   final _appSearchResultSource = BehaviorSubject<List<Application>?>();
 
@@ -219,7 +216,7 @@ class PerApplicationFeaturesBloc
 
     if (applicationId == null) {
       // wipe the list of environments and hidden data
-      _environmentsSource.add(EnvironmentsInfo.empty());
+      _environmentsSource.add(EnvironmentsInfo.empty(noApplications: false));
     } else {
       final environments = await mrClient.environmentServiceApi.findEnvironments(appId!);
       final hidden = await _userStateServiceApi.getHiddenEnvironments(appId);
@@ -301,14 +298,17 @@ class PerApplicationFeaturesBloc
         await mrClient.dialogError(e, s);
       }
 
-      if (appList != null && applicationId != null) {
+      if (appList != null) {
         checkApplicationIdIsLegit(appList);
       }
     }
   }
 
   void checkApplicationIdIsLegit(List<Application> appList) {
-    if (!appList.any((app) => app.id == applicationId)) {
+    if (appList.isEmpty) {
+      applicationId = null;
+      _environmentsSource.add(EnvironmentsInfo.empty(noApplications: true));
+    } else if (!appList.any((app) => app.id == applicationId)) {
       _getAllAppValuesDebounceStream.add(null);
     }
   }

@@ -10,35 +10,40 @@ class HiddenEnvironmentsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
-    return Container(
-      margin: const EdgeInsets.only(top: 24.0, bottom: 24.0, right: 24.0),
-      height: 40,
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text('Choose environments',
-                style: Theme.of(context).textTheme.caption),
-          ),
-          Expanded(
-            child: StreamBuilder<EnvironmentsInfo>(
-                stream: bloc.environmentsStream,
-                builder: (context, snapshot) {
-                  return ListView(
+    return StreamBuilder<EnvironmentsInfo>(
+        stream: bloc.environmentsStream,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data!.noApplications) {
+            return const SizedBox.shrink();
+          }
+
+          return Container(
+            margin: const EdgeInsets.only(top: 24.0, bottom: 24.0, right: 24.0),
+            height: 40,
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text('Choose environments',
+                      style: Theme.of(context).textTheme.caption),
+                ),
+                Expanded(
+                  child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
                       if (snapshot.hasData)
                         ...snapshot.data!.environments
                             .map((e) => HideEnvironmentContainer(
-                                environment: e, environmentInfo: snapshot.data!))
+                                environment: e,
+                                environmentInfo: snapshot.data!))
                             .toList()
                     ],
-                  );
-                }),
-          ),
-        ],
-      ),
-    );
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
   }
 }
 
