@@ -4,13 +4,11 @@ import 'package:logging/logging.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
-import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/features/environments_features_list_view.dart';
 import 'package:open_admin_app/widgets/features/feature_names_left_panel.dart';
 import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
 
-import '../common/fh_loading_indicator.dart';
 import 'feature_dashboard_constants.dart';
 import 'hidden_environment_list.dart';
 import 'per_application_features_bloc.dart';
@@ -24,38 +22,42 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
-    return StreamBuilder<FeatureStatusFeatures?>(
-        stream: bloc.appFeatureValues,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const FHLoadingIndicator();
-          } else if (
-          snapshot.connectionState == ConnectionState.active ||
-              snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasError) {
-              return const FHLoadingError();
-            } else if (snapshot.hasData) {
-              if (snapshot.data!.sortedByNameEnvironmentIds.isEmpty) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const <Widget>[
-                    NoEnvironmentMessage(),
-                  ],
-                );
-              } else if (snapshot
-                  .data!.applicationFeatureValues.features.isEmpty) {
-                return const NoFeaturesMessage();
-              } else {
-                return TabsView(
-                  featureStatus: snapshot.data!,
-                  applicationId: bloc.applicationId!,
-                  bloc: bloc,
-                );
-              }
+    try {
+      return StreamBuilder<FeatureStatusFeatures?>(
+          stream: bloc.appFeatureValues,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const SizedBox.shrink();
             }
-          }
-          return const SizedBox.shrink();
-        });
+
+            if (snapshot.hasData &&
+                snapshot.data!.sortedByNameEnvironmentIds.isEmpty) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const <Widget>[
+                  NoEnvironmentMessage(),
+                ],
+              );
+            }
+            if (snapshot.hasData &&
+                snapshot.data!.applicationFeatureValues.features.isEmpty) {
+              return const NoFeaturesMessage();
+            }
+
+            if (snapshot.hasData) {
+              return TabsView(
+                featureStatus: snapshot.data!,
+                applicationId: bloc.applicationId!,
+                bloc: bloc,
+              );
+            } else {
+              return const NoFeaturesMessage();
+            }
+          });
+    } catch (e, s) {
+      _log.shout('Failed to render, $e\n$s\n');
+      return const SizedBox.shrink();
+    }
   }
 }
 
