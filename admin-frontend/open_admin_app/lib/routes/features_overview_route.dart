@@ -180,7 +180,6 @@ class _CreateFeatureButton extends StatelessWidget {
     return StreamBuilder<EnvironmentsInfo>(
         stream: bloc.environmentsStream,
         builder: (context, snapshot) {
-          print("create feature ${snapshot.data}");
           if (!snapshot.hasData || bloc.applicationId == null) {
             return const SizedBox.shrink();
           }

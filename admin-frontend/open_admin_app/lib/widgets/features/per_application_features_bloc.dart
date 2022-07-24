@@ -35,11 +35,7 @@ class EnvironmentsInfo {
   final List<Environment> environments;
   final bool isEmpty;
 
-  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false {
-    print("environments are " + environments.toString());
-    print("shown environments are " + shownEnvironments.toString());
-    print("hidden environments are " + hiddenEnvironments.toString());
-  }
+  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false
 
   EnvironmentsInfo.empty() : userEnvironmentData = HiddenEnvironments(), environments = [], isEmpty = true;
 
@@ -327,14 +323,11 @@ class PerApplicationFeaturesBloc
 
   void checkApplicationIdIsLegit(List<Application> appList) {
     if (appList.isEmpty) {
-      print("applist is empty");
       applicationId = null;
       _environmentsSource.add(EnvironmentsInfo.empty());
     } else if (!appList.any((app) => app.id == applicationId)) {
-      print("applist does not contain applicationid");
       _getAllAppValuesDebounceStream.add(appList[0].id);
     } else {
-      print("forcing selection of application");
       _getAllAppValuesDebounceStream.add(appList[0].id);
     }
   }
