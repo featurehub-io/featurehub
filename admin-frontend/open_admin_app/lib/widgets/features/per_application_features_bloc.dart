@@ -35,7 +35,9 @@ class EnvironmentsInfo {
   final List<Environment> environments;
   final bool isEmpty;
 
-  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false;
+  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false {
+    print("environments are ${environments}");
+  }
 
   EnvironmentsInfo.empty() : userEnvironmentData = HiddenEnvironments(),
         environments = [], isEmpty = true;
@@ -47,7 +49,7 @@ class EnvironmentsInfo {
       environments.where((env) => userEnvironmentData.environmentIds.contains(env.id)).toList();
 
   bool isHidden(String envId) =>
-      environments.firstWhereOrNull((env) => env.id == envId) != null;
+      userEnvironmentData.environmentIds.contains(envId);
 
   bool isShown(String envId) => !isHidden(envId);
 
