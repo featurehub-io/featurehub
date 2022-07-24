@@ -115,7 +115,7 @@ class PerApplicationFeaturesBloc
 
   final Map<FeatureGrouping, BehaviorSubject<FeaturesByType>> _perTabApplicationFeatures = {};
 
-  int get itemsPerPage => 10;
+  int get itemsPerPage => 10000;
 
   ManagementRepositoryClientBloc get mrBloc => _mrClient;
 
