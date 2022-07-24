@@ -31,6 +31,8 @@ class AddStrategyButton extends StatelessWidget {
                             RolloutStrategy(
                               name: '',
                               id: 'created',
+                              attributes: [],
+                              percentageAttributes: []
                             )),
                         child: StrategyEditingWidget(
                           bloc: bloc,

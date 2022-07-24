@@ -42,6 +42,7 @@ class IndividualStrategyBloc extends Bloc {
     final rs = RolloutStrategyAttribute(
       id: _individualBlocUUidGenerator.v4(),
       fieldName: type?.name,
+      values: []
     );
 
     if (type != null) {
@@ -65,8 +66,10 @@ class IndividualStrategyBloc extends Bloc {
 
   void addAttribute(RolloutStrategyAttribute rs) {
     rs.id ??= _individualBlocUUidGenerator.v4();
+    print("here1");
     rolloutStrategy.attributes.add(rs);
     _rolloutStrategyAttributeSource.add(rolloutStrategy.attributes);
+    print("here2");
   }
 
   void deleteAttribute(RolloutStrategyAttribute rs) {

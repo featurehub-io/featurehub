@@ -285,6 +285,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     final newStrategy = RolloutStrategy(
       name: _strategyName.text,
       attributes: individualStrategyBloc!.currentAttributes,
+      percentageAttributes: [],
       value: defaultValue,
     );
 
