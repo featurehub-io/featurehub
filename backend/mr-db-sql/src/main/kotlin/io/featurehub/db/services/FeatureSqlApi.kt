@@ -1,5 +1,6 @@
 package io.featurehub.db.services
 
+import cd.connect.app.config.ConfigKey
 import io.ebean.Database
 import io.ebean.annotation.Transactional
 import io.featurehub.db.api.*
@@ -27,6 +28,9 @@ class FeatureSqlApi @Inject constructor(
     private val database: Database, private val convertUtils: Conversions, private val cacheSource: CacheSource,
     private val rolloutStrategyValidator: RolloutStrategyValidator, private val strategyDiffer: StrategyDiffer
 ) : FeatureApi, FeatureUpdateBySDKApi {
+  @ConfigKey("features.max-per-page")
+  private var maxPagination: Int? = 10000
+
   @Throws(OptimisticLockingException::class, RolloutStrategyValidator.InvalidStrategyCombination::class, FeatureApi.NoAppropriateRole::class)
   override fun createFeatureValueForEnvironment(
       eId: UUID,
@@ -531,8 +535,7 @@ class FeatureSqlApi @Inject constructor(
         return null
       }
 
-//      val max = if (maxFeatures != null) max(maxFeatures, 1).coerceAtMost(20) else 20
-      val max = if (maxFeatures != null) max(maxFeatures, 1) else 20
+      val max = if (maxFeatures != null) max(maxFeatures, 1).coerceAtMost(maxPagination!!) else maxPagination!!
       val page = if (startingPage != null && startingPage >= 0) startingPage else 0
       val sort = sortOrder ?: SortOrder.ASC
       val empty = Opts.empty()
