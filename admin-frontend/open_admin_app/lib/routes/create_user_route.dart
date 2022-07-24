@@ -62,9 +62,7 @@ class TopWidget extends StatelessWidget {
                 return const TopWidgetSuccess();
               }
               // ignore: prefer_const_constructors
-              else {
-                return const TopWidgetDefault();
-              }
+              return const TopWidgetDefault();
             }
           }
           return const SizedBox.shrink();
