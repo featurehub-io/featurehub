@@ -245,7 +245,7 @@ class EnvironmentSqlApi @Inject constructor(
   override fun search(
     appId: UUID?,
     filter: String?,
-    order: SortOrder?,
+    order: EnvironmentSortOrder?,
     opts: Opts?,
     current: Person?
   ): List<Environment?>? {
@@ -259,9 +259,9 @@ class EnvironmentSqlApi @Inject constructor(
           eq = eq.name.ilike("%$filter%")
         }
         eq = fetchEnvironmentOpts(opts, eq)
-        if (SortOrder.ASC == order) {
+        if (EnvironmentSortOrder.ASC == order) {
           eq = eq.order().name.asc()
-        } else if (SortOrder.DESC == order) {
+        } else if (EnvironmentSortOrder.DESC == order) {
           eq = eq.order().name.desc()
         }
         if (!opts!!.contains(FillOpts.Archived)) {
@@ -270,8 +270,14 @@ class EnvironmentSqlApi @Inject constructor(
         if (convertUtils.personIsNotSuperAdmin(currentPerson)) {
           eq = eq.parentApplication.portfolio.groups.groupMembers.person.id.eq(currentPerson.id)
         }
-        return eq.findList().stream().map { e: DbEnvironment? -> convertUtils.toEnvironment(e, opts) }
-          .collect(Collectors.toList())
+
+        var environmentList = eq.findList().toMutableList()
+
+        if (order == null || order == EnvironmentSortOrder.PRIORITY) {
+          EnvironmentUtils.sortEnvironments(environmentList)
+        }
+
+        return environmentList.map { e: DbEnvironment? -> convertUtils.toEnvironment(e, opts) }.toMutableList()
       }
     }
     return ArrayList()
