@@ -273,7 +273,7 @@ class PerApplicationFeaturesBloc
   }
 
   Future<void> addShownEnvironment(String envId) async {
-    if (_environmentsSource.value?.isShown(envId) != true) {
+    if (_environmentsSource.value?.isHidden(envId) != true) {
       final envs =_environmentsSource.value!.hiddenEnvironmentIds;
       envs.add(envId);
       // ignore: unawaited_futures

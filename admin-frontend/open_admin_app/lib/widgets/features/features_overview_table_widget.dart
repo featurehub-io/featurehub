@@ -81,19 +81,26 @@ class TabParentWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _FeatureTabsHeader(),
-        const HiddenEnvironmentsList(),
-        // FeatureSearchWidget(tabSelectedBloc: bloc,),
-        StreamBuilder<FeatureGrouping?>(
-            stream: bloc.currentGrouping,
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const SizedBox.shrink();
-              }
+        Card(
+            child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const HiddenEnvironmentsList(),
+            // FeatureSearchWidget(tabSelectedBloc: bloc,),
+            StreamBuilder<FeatureGrouping?>(
+                stream: bloc.currentGrouping,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const SizedBox.shrink();
+                  }
 
-              return FeaturesOverviewTableWidget(
-                grouping: snapshot.data!,
-              );
-            }),
+                  return FeaturesOverviewTableWidget(
+                    grouping: snapshot.data!,
+                  );
+                }),
+          ],
+        )),
       ],
     );
   }
@@ -133,15 +140,7 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
               return const NoFeaturesMessage();
             }
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Card(
-                  child: _FeatureTabsBodyHolder(bloc: bloc),
-                ),
-              ],
-            );
+            return  _FeatureTabsBodyHolder(bloc: bloc);
           });
     } catch (e, s) {
       _log.shout('Failed to render, $e\n$s\n');
@@ -178,7 +177,7 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                         padding: const EdgeInsets.only(left: 8.0),
                         child: Text('',
                             style: Theme.of(context).textTheme.caption)),
-                         // FeaturePaginationWidget(grouping: bloc.grouping)),
+                  // FeaturePaginationWidget(grouping: bloc.grouping)),
                   ...bloc.features.map(
                     (f) {
                       return FeatureNamesLeftPanel(tabsBloc: bloc, feature: f);
@@ -263,26 +262,28 @@ class _FeatureTab extends StatelessWidget {
               bloc.swapTab(state);
             },
             child: StreamBuilder<FeatureGrouping?>(
-              stream: bloc.currentGrouping,
-              builder: (context, snapshot) {
-                return Container(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.all(Radius.circular(16.0)),
-                      color:
-                        snapshot.data == state ?
-                          Theme.of(context).primaryColorLight : Colors.transparent,
-                    ),
-                    child: Row(children: <Widget>[
-                      Icon(icon, color: color, size: 20.0),
-                      const SizedBox(width: 4.0),
-                      Text(text, style: Theme.of(context).textTheme.subtitle1),
-                      const SizedBox(width: 2.0),
-                      Text(subtext, style: Theme.of(context).textTheme.caption),
-                    ]));
-              }
-            )));
+                stream: bloc.currentGrouping,
+                builder: (context, snapshot) {
+                  return Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 6.0, horizontal: 12.0),
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(16.0)),
+                        color: snapshot.data == state
+                            ? Theme.of(context).primaryColorLight
+                            : Colors.transparent,
+                      ),
+                      child: Row(children: <Widget>[
+                        Icon(icon, color: color, size: 20.0),
+                        const SizedBox(width: 4.0),
+                        Text(text,
+                            style: Theme.of(context).textTheme.subtitle1),
+                        const SizedBox(width: 2.0),
+                        Text(subtext,
+                            style: Theme.of(context).textTheme.caption),
+                      ]));
+                })));
   }
 }
 

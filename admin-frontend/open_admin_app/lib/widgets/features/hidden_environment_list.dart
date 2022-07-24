@@ -88,9 +88,9 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
               final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
               if (newValue) {
-                bloc.addShownEnvironment(widget.environment.id!);
-              } else {
                 bloc.removeShownEnvironment(widget.environment.id!);
+              } else {
+                bloc.addShownEnvironment(widget.environment.id!);
               }
 
               setState(() {
