@@ -1502,7 +1502,7 @@ paths:
           in: query
           description: "how to order the results"
           schema:
-            $ref: "#/components/schemas/SortOrder"
+            $ref: "#/components/schemas/EnvironmentSortOrder"
         - name: filter
           in: query
           description: "What to filter the results by"
@@ -2871,6 +2871,12 @@ components:
         whenUpdated:
           type: string
           format: date-time
+    EnvironmentSortOrder:
+      type: string
+      enum:
+        - ASC
+        - DESC
+        - PRIORITY
     SortOrder:
       type: string
       enum:
