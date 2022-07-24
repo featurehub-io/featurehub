@@ -531,7 +531,8 @@ class FeatureSqlApi @Inject constructor(
         return null
       }
 
-      val max = if (maxFeatures != null) max(maxFeatures, 1).coerceAtMost(20) else 20
+//      val max = if (maxFeatures != null) max(maxFeatures, 1).coerceAtMost(20) else 20
+      val max = 10000
       val page = if (startingPage != null && startingPage >= 0) startingPage else 0
       val sort = sortOrder ?: SortOrder.ASC
       val empty = Opts.empty()

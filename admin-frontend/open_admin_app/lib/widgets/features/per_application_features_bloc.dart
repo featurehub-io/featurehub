@@ -108,6 +108,11 @@ class PerApplicationFeaturesBloc
 
   Stream<List<Application>?> get applications => _appSearchResultSource.stream;
 
+  // all updates get published through here AFTER they go through their individual channel
+  // so anything responding to all updates down the chain can listen for them
+  final _allTabUpdates = BehaviorSubject<FeaturesByType?>.seeded(null);
+  Stream<FeaturesByType?> get allUpdateRequests => _allTabUpdates.stream;
+
   final Map<FeatureGrouping, BehaviorSubject<FeaturesByType>> _perTabApplicationFeatures = {};
 
   int get itemsPerPage => 10;
@@ -205,7 +210,9 @@ class PerApplicationFeaturesBloc
       if (!bs.isClosed) {
         _sortApplicationFeatureValues(appFeatureValues);
 
-        _grouping(grouping).add(FeaturesByType(appFeatureValues, grouping, filter, pageNumber));
+        final groupingUpdate = FeaturesByType(appFeatureValues, grouping, filter, pageNumber);
+        _grouping(grouping).add(groupingUpdate);
+        _allTabUpdates.add(groupingUpdate);
       }
     } catch (e, s) {
       await mrClient.dialogError(e, s);
@@ -237,8 +244,11 @@ class PerApplicationFeaturesBloc
 
     // wipe all the groups, the downstream page must trigger a request
     for(final grouping in featureGroups) {
-      _grouping(grouping).add(FeaturesByType.empty(grouping));
+      final featureGroupingUpdate = FeaturesByType.empty(grouping);
+      _grouping(grouping).add(featureGroupingUpdate);
+      _allTabUpdates.add(featureGroupingUpdate);
     }
+
   }
 
   void clearAppFeatureValuesStream(FeatureGrouping grouping) {

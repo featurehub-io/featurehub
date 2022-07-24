@@ -16,6 +16,7 @@ import 'package:rxdart/rxdart.dart';
 
 import 'feature_dashboard_constants.dart';
 import 'feature_pagination_widget.dart';
+import 'feature_search_widget.dart';
 import 'hidden_environment_list.dart';
 import 'per_application_features_bloc.dart';
 
@@ -81,10 +82,10 @@ class TabParentWidget extends StatelessWidget {
       children: [
         _FeatureTabsHeader(),
         const HiddenEnvironmentsList(),
+        // FeatureSearchWidget(tabSelectedBloc: bloc,),
         StreamBuilder<FeatureGrouping?>(
             stream: bloc.currentGrouping,
             builder: (context, snapshot) {
-              print("swap tab ${snapshot.data?.types}");
               if (!snapshot.hasData) {
                 return const SizedBox.shrink();
               }
@@ -175,7 +176,9 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                             ? 260.0
                             : 130,
                         padding: const EdgeInsets.only(left: 8.0),
-                        child: FeaturePaginationWidget(grouping: bloc.grouping)),
+                        child: Text('',
+                            style: Theme.of(context).textTheme.caption)),
+                         // FeaturePaginationWidget(grouping: bloc.grouping)),
                   ...bloc.features.map(
                     (f) {
                       return FeatureNamesLeftPanel(tabsBloc: bloc, feature: f);
