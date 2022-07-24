@@ -35,9 +35,10 @@ class EnvironmentsInfo {
   final List<Environment> environments;
   final bool isEmpty;
 
-  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false
+  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false;
 
-  EnvironmentsInfo.empty() : userEnvironmentData = HiddenEnvironments(), environments = [], isEmpty = true;
+  EnvironmentsInfo.empty() : userEnvironmentData = HiddenEnvironments(),
+        environments = [], isEmpty = true;
 
   List<Environment> get shownEnvironments =>
     environments.where((env) => !userEnvironmentData.environmentIds.contains(env.id)).toList();
