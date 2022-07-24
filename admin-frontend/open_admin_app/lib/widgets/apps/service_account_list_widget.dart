@@ -8,6 +8,8 @@ import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 import 'package:open_admin_app/widgets/service-accounts/apikey_reset_dialog_widget.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
@@ -24,21 +26,27 @@ class ServiceAccountsListWidget extends StatelessWidget {
     return StreamBuilder<List<ServiceAccount>>(
         stream: bloc.serviceAccountsList,
         builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.hasError) {
-            return Container();
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const FHLoadingIndicator();
+          } else if (snapshot.connectionState == ConnectionState.active ||
+              snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              return const FHLoadingError();
+            } else if (snapshot.hasData) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  for (ServiceAccount sa in snapshot.data!)
+                    _ServiceAccountWidget(
+                      serviceAccount: sa,
+                      mr: mrBloc,
+                      bloc: bloc,
+                    )
+                ],
+              );
+            }
           }
-
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              for (ServiceAccount sa in snapshot.data!)
-                _ServiceAccountWidget(
-                  serviceAccount: sa,
-                  mr: mrBloc,
-                  bloc: bloc,
-                )
-            ],
-          );
+          return const SizedBox.shrink();
         });
   }
 }

@@ -9,6 +9,8 @@ import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 
 class PersonListWidget extends StatefulWidget {
@@ -21,7 +23,6 @@ class PersonListWidget extends StatefulWidget {
 class _PersonListWidgetState extends State<PersonListWidget> {
   bool sortToggle = true;
   int sortColumnIndex = 0;
-
 
   @override
   void didChangeDependencies() {
@@ -37,121 +38,139 @@ class _PersonListWidgetState extends State<PersonListWidget> {
     return StreamBuilder<List<SearchPersonEntry>>(
         stream: bloc.personSearch,
         builder: (context, snapshot) {
-          if (snapshot.hasError || !snapshot.hasData) {
-            return Container(
-                padding: const EdgeInsets.all(30),
-                child: const Text('Loading...'));
-          }
-          final allowedLocalIdentity = bloc.mrClient.identityProviders.hasLocal;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: bs,
-                    left: bs,
-                    right: bs,
-                  ),
-                  color: Theme.of(context).cardColor,
-                ),
-                child: DataTable(
-                  showCheckboxColumn: false,
-                  sortAscending: sortToggle,
-                  sortColumnIndex: sortColumnIndex,
-                  columns: [
-                    DataColumn(
-                        label: const Text('Name'),
-                        onSort: (columnIndex, ascending) {
-                          onSortColumn(snapshot.data!, columnIndex, ascending);
-                        }),
-                    DataColumn(
-                      label: const Text('Email'),
-                      onSort: (columnIndex, ascending) {
-                        onSortColumn(snapshot.data!, columnIndex, ascending);
-                      },
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const FHLoadingIndicator();
+          } else if (snapshot.connectionState == ConnectionState.active ||
+              snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              return const FHLoadingError();
+            } else if (snapshot.hasData) {
+              final allowedLocalIdentity =
+                  bloc.mrClient.identityProviders.hasLocal;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: bs,
+                        left: bs,
+                        right: bs,
+                      ),
+                      color: Theme.of(context).cardColor,
                     ),
-                    DataColumn(
-                      label: const Text('Groups'),
-                      onSort: (columnIndex, ascending) {
-                        onSortColumn(snapshot.data!, columnIndex, ascending);
-                      },
-                    ),
-                    DataColumn(
-                      label: const Text('Last logged in'),
-                      onSort: (columnIndex, ascending) {
-                        onSortColumn(snapshot.data!, columnIndex, ascending);
-                      },
-                    ),
-                    DataColumn(label: const Padding(
-                      padding: EdgeInsets.only(left:12.0),
-                      child: Text('Actions'),
-                    ), onSort: (i, a) => {}),
-                  ],
-                  rows: [
-                    for (SearchPersonEntry p in snapshot.data!)
-                      DataRow(
-                          cells: [
-                            DataCell(p.person.name == "No name"
-                                ? Text('Not yet registered',
-                                    style: Theme.of(context).textTheme.caption)
-                                : Text(
-                                    p.person.name,
-                                  )),
-                            DataCell(Text(p.person.email)),
-                            DataCell(Text('${p.person.groupCount}')),
-                            DataCell(Text('${p.person.whenLastAuthenticated?.toLocal() ?? ""}')),
-                            DataCell(Row(children: <Widget>[
-                              Tooltip(
-                                message: _infoTooltip(p, allowedLocalIdentity),
-                                child: FHIconButton(
-                                  icon: Icon(Icons.info,
-                                      color:
-                                          _infoColour(p, allowedLocalIdentity)),
-                                  onPressed: () => bloc.mrClient
-                                      .addOverlay((BuildContext context) {
-                                    return ListUserInfoDialog(bloc, p);
-                                  }),
-                                ),
-                              ),
-                              FHIconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () => {
-                                        ManagementRepositoryClientBloc.router
-                                            .navigateTo(context, '/manage-user',
-                                                params: {
-                                              'id': [p.person.id]
-                                            })
+                    child: DataTable(
+                      showCheckboxColumn: false,
+                      sortAscending: sortToggle,
+                      sortColumnIndex: sortColumnIndex,
+                      columns: [
+                        DataColumn(
+                            label: const Text('Name'),
+                            onSort: (columnIndex, ascending) {
+                              onSortColumn(
+                                  snapshot.data!, columnIndex, ascending);
+                            }),
+                        DataColumn(
+                          label: const Text('Email'),
+                          onSort: (columnIndex, ascending) {
+                            onSortColumn(
+                                snapshot.data!, columnIndex, ascending);
+                          },
+                        ),
+                        DataColumn(
+                          label: const Text('Groups'),
+                          onSort: (columnIndex, ascending) {
+                            onSortColumn(
+                                snapshot.data!, columnIndex, ascending);
+                          },
+                        ),
+                        DataColumn(
+                          label: const Text('Last logged in'),
+                          onSort: (columnIndex, ascending) {
+                            onSortColumn(
+                                snapshot.data!, columnIndex, ascending);
+                          },
+                        ),
+                        DataColumn(
+                            label: const Padding(
+                              padding: EdgeInsets.only(left: 12.0),
+                              child: Text('Actions'),
+                            ),
+                            onSort: (i, a) => {}),
+                      ],
+                      rows: [
+                        for (SearchPersonEntry p in snapshot.data!)
+                          DataRow(
+                              cells: [
+                                DataCell(p.person.name == "No name"
+                                    ? Text('Not yet registered',
+                                        style:
+                                            Theme.of(context).textTheme.caption)
+                                    : Text(
+                                        p.person.name,
+                                      )),
+                                DataCell(Text(p.person.email)),
+                                DataCell(Text('${p.person.groupCount}')),
+                                DataCell(Text(
+                                    '${p.person.whenLastAuthenticated?.toLocal() ?? ""}')),
+                                DataCell(Row(children: <Widget>[
+                                  Tooltip(
+                                    message:
+                                        _infoTooltip(p, allowedLocalIdentity),
+                                    child: FHIconButton(
+                                      icon: Icon(Icons.info,
+                                          color: _infoColour(
+                                              p, allowedLocalIdentity)),
+                                      onPressed: () => bloc.mrClient
+                                          .addOverlay((BuildContext context) {
+                                        return ListUserInfoDialog(bloc, p);
                                       }),
-                              // const SizedBox(
-                              //   width: 8.0,
-                              // ),
-                              FHIconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () => bloc.mrClient
-                                    .addOverlay((BuildContext context) {
-                                  return bloc.mrClient.person.id!.id ==
-                                          p.person.id
-                                      ? cantDeleteYourselfDialog(bloc)
-                                      : DeleteDialogWidget(
-                                          person: p.person,
-                                          bloc: bloc,
-                                        );
-                                }),
-                              ),
-                            ])),
-                          ],
-                          onSelectChanged: (newValue) {
-                            ManagementRepositoryClientBloc.router
-                                .navigateTo(context, '/manage-user', params: {
-                              'id': [p.person.id]
-                            });
-                          }),
-                  ],
-                ),
-              ),
-            ],
-          );
+                                    ),
+                                  ),
+                                  FHIconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () => {
+                                            ManagementRepositoryClientBloc
+                                                .router
+                                                .navigateTo(
+                                                    context, '/manage-user',
+                                                    params: {
+                                                  'id': [p.person.id]
+                                                })
+                                          }),
+                                  // const SizedBox(
+                                  //   width: 8.0,
+                                  // ),
+                                  FHIconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () => bloc.mrClient
+                                        .addOverlay((BuildContext context) {
+                                      return bloc.mrClient.person.id!.id ==
+                                              p.person.id
+                                          ? cantDeleteYourselfDialog(bloc)
+                                          : DeleteDialogWidget(
+                                              person: p.person,
+                                              bloc: bloc,
+                                            );
+                                    }),
+                                  ),
+                                ])),
+                              ],
+                              onSelectChanged: (newValue) {
+                                ManagementRepositoryClientBloc.router
+                                    .navigateTo(context, '/manage-user',
+                                        params: {
+                                      'id': [p.person.id]
+                                    });
+                              }),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }
+          }
+          return const SizedBox.shrink();
         });
   }
 
@@ -161,45 +180,54 @@ class _PersonListWidgetState extends State<PersonListWidget> {
       if (columnIndex == 0) {
         if (ascending) {
           people.sort((a, b) {
-            return a.person.name.toLowerCase().compareTo(b.person.name.toLowerCase());
+            return a.person.name
+                .toLowerCase()
+                .compareTo(b.person.name.toLowerCase());
           });
         } else {
           people.sort((a, b) {
-            return b.person.name.toLowerCase().compareTo(a.person.name.toLowerCase());
+            return b.person.name
+                .toLowerCase()
+                .compareTo(a.person.name.toLowerCase());
           });
         }
       }
       if (columnIndex == 1) {
         if (ascending) {
-          people.sort((a, b) => a.person.email.toLowerCase().compareTo(b.person.email.toLowerCase()));
+          people.sort((a, b) => a.person.email
+              .toLowerCase()
+              .compareTo(b.person.email.toLowerCase()));
         } else {
-          people.sort((a, b) => b.person.email.toLowerCase().compareTo(a.person.email.toLowerCase()));
+          people.sort((a, b) => b.person.email
+              .toLowerCase()
+              .compareTo(a.person.email.toLowerCase()));
         }
       }
       if (columnIndex == 2) {
         if (ascending) {
-          people.sort((a, b) =>
-              a.person.groupCount.compareTo(b.person.groupCount));
+          people.sort(
+              (a, b) => a.person.groupCount.compareTo(b.person.groupCount));
         } else {
-          people.sort((a, b) =>
-              b.person.groupCount.compareTo(a.person.groupCount));
+          people.sort(
+              (a, b) => b.person.groupCount.compareTo(a.person.groupCount));
         }
       }
       if (columnIndex == 3) {
         if (ascending) {
           people.sort((a, b) {
-            if(a.person.whenLastAuthenticated != null && b.person.whenLastAuthenticated != null) {
-              return a.person.whenLastAuthenticated!.compareTo(
-                  b.person.whenLastAuthenticated!);
+            if (a.person.whenLastAuthenticated != null &&
+                b.person.whenLastAuthenticated != null) {
+              return a.person.whenLastAuthenticated!
+                  .compareTo(b.person.whenLastAuthenticated!);
             }
             return ascending ? 1 : -1;
-          }
-          );
+          });
         } else {
           people.sort((a, b) {
-            if(a.person.whenLastAuthenticated != null && b.person.whenLastAuthenticated != null) {
-              return b.person.whenLastAuthenticated!.compareTo(
-                  a.person.whenLastAuthenticated!);
+            if (a.person.whenLastAuthenticated != null &&
+                b.person.whenLastAuthenticated != null) {
+              return b.person.whenLastAuthenticated!
+                  .compareTo(a.person.whenLastAuthenticated!);
             }
             return ascending ? -1 : 1;
           });
@@ -293,127 +321,134 @@ class _ListUserInfo extends StatelessWidget {
     return FutureBuilder<Person>(
         future: bloc.getPerson(foundPerson.person.id),
         builder: (context, snapshot) {
-          if (snapshot.hasError || !snapshot.hasData) {
-            return Container(
-                padding: const EdgeInsets.all(30),
-                child: const Text('Loading...'));
-          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const FHLoadingIndicator();
+          } else if (snapshot.connectionState == ConnectionState.active ||
+              snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              return const FHLoadingError();
+            } else if (snapshot.hasData) {
+              final person = snapshot.data!;
 
-          final person = snapshot.data!;
+              person.groups.sort((a, b) => a.name.compareTo(b.name));
 
-          person.groups.sort((a, b) => a.name.compareTo(b.name));
-
-          return SizedBox(
+              return SizedBox(
 //      height: 400.0,
-          width: 400.0,
-          child: ListView(
-            children: [
-              _ListUserRow(
-                title: 'Name',
-                child: Text(foundPerson.person.name,
-                    style: Theme.of(context).textTheme.bodyText1),
-              ),
-              const SizedBox(height: 8),
-              _ListUserRow(
-                title: 'Email',
-                child: Text(foundPerson.person.email,
-                    style: Theme.of(context).textTheme.bodyText1),
-              ),
-              if (allowedLocalIdentity &&
-                  !foundPerson.registration.expired &&
-                  foundPerson.registration.token.isNotEmpty)
-                Column(
+                width: 400.0,
+                child: ListView(
                   children: [
-                    const SizedBox(height: 16),
-                    const FHPageDivider(),
-                    const SizedBox(height: 16),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Registration URL',
-                        style: Theme.of(context).textTheme.caption,
-                      ),
+                    _ListUserRow(
+                      title: 'Name',
+                      child: Text(foundPerson.person.name,
+                          style: Theme.of(context).textTheme.bodyText1),
                     ),
-                  ],
-                ),
-              if (allowedLocalIdentity &&
-                  !foundPerson.registration.expired &&
-                  foundPerson.registration.token.isNotEmpty)
-                Row(
-                  children: [
-                    Expanded(
+                    const SizedBox(height: 8),
+                    _ListUserRow(
+                      title: 'Email',
+                      child: Text(foundPerson.person.email,
+                          style: Theme.of(context).textTheme.bodyText1),
+                    ),
+                    if (allowedLocalIdentity &&
+                        !foundPerson.registration.expired &&
+                        foundPerson.registration.token.isNotEmpty)
+                      Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          const FHPageDivider(),
+                          const SizedBox(height: 16),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Registration URL',
+                              style: Theme.of(context).textTheme.caption,
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (allowedLocalIdentity &&
+                        !foundPerson.registration.expired &&
+                        foundPerson.registration.token.isNotEmpty)
+                      Row(
+                        children: [
+                          Expanded(
+                              child: Text(
+                                  bloc.mrClient.registrationUrl(
+                                      foundPerson.registration.token),
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 11.0))),
+                          FHCopyToClipboard(
+                            tooltipMessage: 'Copy URL to Clipboard',
+                            copyString: bloc.mrClient.registrationUrl(
+                                foundPerson.registration.token),
+                          )
+                        ],
+                      ),
+                    if (allowedLocalIdentity &&
+                        foundPerson.registration.expired)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 12.0, bottom: 4.0),
                         child: Text(
-                            bloc.mrClient.registrationUrl(foundPerson.registration.token),
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 11.0))),
-                    FHCopyToClipboard(
-                      tooltipMessage: 'Copy URL to Clipboard',
-                      copyString:
-                          bloc.mrClient.registrationUrl(foundPerson.registration.token),
-                    )
-                  ],
-                ),
-              if (allowedLocalIdentity && foundPerson.registration.expired)
-                const Padding(
-                  padding: EdgeInsets.only(top: 12.0, bottom: 4.0),
-                  child: Text(
-                    'Registration expired',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (allowedLocalIdentity && foundPerson.registration.expired)
-                FHCopyToClipboardFlatButton(
-                  caption: 'Renew registration URL and copy to clipboard',
-                  textProvider: () async {
-                    try {
-                      final token = await bloc.mrClient.authServiceApi
-                          .resetExpiredToken(foundPerson.person.email);
-                      bloc.mrClient.addSnackbar(const Text(
-                          'Registration URL renewed and copied to clipboard'));
-                      return bloc.mrClient.registrationUrl(token.token);
-                    } catch (e, s) {
-                      bloc.mrClient.addError(FHError.createError(e, s));
-                    }
-
-                    return null;
-                  },
-                ),
-              const SizedBox(height: 16.0),
-              const FHPageDivider(),
-              const SizedBox(height: 16.0),
-              if (person.groups.isNotEmpty)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-//              mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: Text(
-                        'Groups',
-                        style: Theme.of(context).textTheme.caption,
+                          'Registration expired',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
-                    ),
-                    Expanded(
-                        flex: 5,
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (person.groups.isNotEmpty)
-                                ...person.groups
-                                    .map((e) => Text(
-                                          e.name,
-                                          style:
-                                              Theme.of(context).textTheme.bodyText2,
-                                        ))
-                                    .toList(),
-                            ]))
+                    if (allowedLocalIdentity &&
+                        foundPerson.registration.expired)
+                      FHCopyToClipboardFlatButton(
+                        caption: 'Renew registration URL and copy to clipboard',
+                        textProvider: () async {
+                          try {
+                            final token = await bloc.mrClient.authServiceApi
+                                .resetExpiredToken(foundPerson.person.email);
+                            bloc.mrClient.addSnackbar(const Text(
+                                'Registration URL renewed and copied to clipboard'));
+                            return bloc.mrClient.registrationUrl(token.token);
+                          } catch (e, s) {
+                            bloc.mrClient.addError(FHError.createError(e, s));
+                          }
+
+                          return null;
+                        },
+                      ),
+                    const SizedBox(height: 16.0),
+                    const FHPageDivider(),
+                    const SizedBox(height: 16.0),
+                    if (person.groups.isNotEmpty)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+//              mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: Text(
+                              'Groups',
+                              style: Theme.of(context).textTheme.caption,
+                            ),
+                          ),
+                          Expanded(
+                              flex: 5,
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (person.groups.isNotEmpty)
+                                      ...person.groups
+                                          .map((e) => Text(
+                                                e.name,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyText2,
+                                              ))
+                                          .toList(),
+                                  ]))
+                        ],
+                      ),
                   ],
                 ),
-            ],
-          ),
-        );
-      }
-    );
+              );
+            }
+          }
+          return const SizedBox.shrink();
+        });
   }
 }
 

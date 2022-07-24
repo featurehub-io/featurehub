@@ -102,6 +102,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                 child: InkWell(
                   mouseCursor: SystemMouseCursors.click,
                   child: DropdownButton(
+                    autofocus: true,
                     icon: const Padding(
                       padding: EdgeInsets.only(left: 8.0),
                       child: Icon(
@@ -155,6 +156,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                   child: InkWell(
                     mouseCursor: SystemMouseCursors.click,
                     child: DropdownButton<String?>(
+                      autofocus: true,
                       icon: const Padding(
                         padding: EdgeInsets.only(left: 8.0),
                         child: Icon(

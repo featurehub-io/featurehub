@@ -140,6 +140,7 @@ class ListUsersBloc implements Bloc {
   @override
   void dispose() {
     _personSearchResultSource.close();
+    _adminApiKeysSearchResultSource.close();
   }
 }
 

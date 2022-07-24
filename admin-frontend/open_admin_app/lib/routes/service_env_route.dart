@@ -8,10 +8,11 @@ import 'package:open_admin_app/widgets/common/application_drop_down.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
 import 'package:open_admin_app/widget_creator.dart';
-
 
 class ServiceAccountEnvRoute extends StatelessWidget {
   const ServiceAccountEnvRoute({Key? key}) : super(key: key);
@@ -84,17 +85,26 @@ class ServiceAccountEnvRoute extends StatelessWidget {
               StreamBuilder<ServiceAccountEnvironments>(
                   stream: bloc.serviceAccountEnvironmentsStream,
                   builder: (context, envSnapshot) {
-                    if (!envSnapshot.hasData) {
-                      return const SizedBox.shrink();
+                    if (envSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const FHLoadingIndicator();
+                    } else if (envSnapshot.connectionState ==
+                            ConnectionState.active ||
+                        envSnapshot.connectionState == ConnectionState.done) {
+                      if (envSnapshot.hasError) {
+                        return const FHLoadingError();
+                      } else if (envSnapshot.hasData) {
+                        if (envSnapshot.data!.serviceAccounts.isEmpty) {
+                          return Text('No service accounts available',
+                              style: Theme.of(context).textTheme.caption);
+                        } else {
+                          return _ServiceAccountDisplayWidget(
+                              serviceAccountEnvs: envSnapshot.data!,
+                              bloc: bloc);
+                        }
+                      }
                     }
-
-                    if (envSnapshot.data!.serviceAccounts.isEmpty) {
-                      return Text('No service accounts available',
-                          style: Theme.of(context).textTheme.caption);
-                    }
-
-                    return _ServiceAccountDisplayWidget(
-                        serviceAccountEnvs: envSnapshot.data!, bloc: bloc);
+                    return const SizedBox.shrink();
                   }),
             ],
           ),
@@ -163,10 +173,12 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                               children: [
                                 for (var env in serviceAccountEnvs.environments)
                                   if (serviceAccount.permissions
-                                      .firstWhere((p) => p.environmentId == env.id,
-                                          orElse: () => ServiceAccountPermission(
-                                              permissions: [],
-                                              environmentId: env.id!))
+                                      .firstWhere(
+                                          (p) => p.environmentId == env.id,
+                                          orElse: () =>
+                                              ServiceAccountPermission(
+                                                  permissions: [],
+                                                  environmentId: env.id!))
                                       .permissions
                                       .isNotEmpty)
                                     Padding(

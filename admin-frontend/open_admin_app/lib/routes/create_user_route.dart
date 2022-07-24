@@ -9,6 +9,8 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 import 'package:open_admin_app/widgets/user/common/admin_checkbox.dart';
 import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widget.dart';
 import 'package:open_admin_app/widgets/user/create/create_user_bloc.dart';
@@ -48,12 +50,22 @@ class TopWidget extends StatelessWidget {
     return StreamBuilder<CreateUserForm>(
         stream: bloc.formState,
         builder: (context, AsyncSnapshot<CreateUserForm> snapshot) {
-          if (snapshot.hasData &&
-              snapshot.data == CreateUserForm.successState) {
-            return const TopWidgetSuccess();
+          if (snapshot.connectionState == ConnectionState.waiting ||
+              snapshot.data == CreateUserForm.loadingState) {
+            return const FHLoadingIndicator();
+          } else if (snapshot.connectionState == ConnectionState.active ||
+              snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              return const FHLoadingError();
+            } else if (snapshot.hasData) {
+              if (snapshot.data == CreateUserForm.successState) {
+                return const TopWidgetSuccess();
+              }
+              // ignore: prefer_const_constructors
+              return const TopWidgetDefault();
+            }
           }
-          // ignore: prefer_const_constructors
-          return TopWidgetDefault();
+          return const SizedBox.shrink();
         });
   }
 }
@@ -70,9 +82,8 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
   bool isAddButtonDisabled = true;
 
   @override
-  void didUpdateWidget(TopWidgetDefault oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
+  void initState() {
+    super.initState();
     final bloc = BlocProvider.of<CreateUserBloc>(context);
     bloc.formKey = GlobalKey<FormState>();
   }
@@ -100,6 +111,8 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                   children: [
                     const SizedBox(height: 16.0),
                     TextFormField(
+                      autofocus: true,
+                      onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                       controller: _email,
                       decoration: fhFilledInputDecoration(
                         labelText: 'Email',
@@ -249,10 +262,12 @@ class CreateUserFormButtons extends StatelessWidget {
                   try {
                     await bloc.createUser(bloc.email!, null);
                   } catch (e, s) {
+                    bloc.backToDefault();
                     if (e is ApiException && e.code == 409) {
                       await bloc.client.dialogError(e, s,
                           messageTitle:
-                              "User with email '${bloc.email}' already exists");
+                              "User with email '${bloc.email}' already exists",
+                          showDetails: false);
                     } else {
                       await bloc.client.dialogError(e, s);
                     }
