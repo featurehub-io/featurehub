@@ -70,17 +70,6 @@ class _EditAttributeStrategyWidgetState
 
     _value.text = '';
 
-    if (_wellKnown == StrategyAttributeWellKnownNames.platform) {
-      widget.attribute.values =
-          widget.attribute.values.map(_platformNameReverseMapper).toList();
-    } else if (_wellKnown == StrategyAttributeWellKnownNames.device) {
-      widget.attribute.values =
-          widget.attribute.values.map(_deviceNameReverseMapper).toList();
-    } else if (_wellKnown == StrategyAttributeWellKnownNames.country) {
-      widget.attribute.values =
-          widget.attribute.values.map(_countryNameReverseMapper).toList();
-    }
-
     _matchers = defineMatchers(_attributeType, _wellKnown);
   }
 
@@ -230,26 +219,40 @@ class _EditAttributeStrategyWidgetState
         Expanded(
             flex: 4,
             child: MultiSelectDropdown(
-                widget.attribute.values,
-                StrategyAttributeCountryName.values,
-                _countryNameMapper,
-                'Select Country'))
+                values: widget.attribute.values,
+                possibleValues: StrategyAttributeCountryName.values,
+                enumToDisplayNameMapper: _countryNameMapper,
+                enumToJsonMapper: (e) =>
+                    (e as StrategyAttributeCountryName).toJson(),
+                jsonToEnumMapper: (e) =>
+                    StrategyAttributeCountryNameExtension.fromJson(e),
+                hint: 'Select Country'))
       else if (_wellKnown == StrategyAttributeWellKnownNames.device)
         Expanded(
             flex: 4,
             child: MultiSelectDropdown(
-                widget.attribute.values,
-                StrategyAttributeDeviceName.values,
-                _deviceNameMapper,
-                'Select Device'))
+              values: widget.attribute.values,
+              possibleValues: StrategyAttributeDeviceName.values,
+              enumToDisplayNameMapper: _deviceNameMapper,
+              hint: 'Select Device',
+              enumToJsonMapper: (e) =>
+                  (e as StrategyAttributeDeviceName).toJson(),
+              jsonToEnumMapper: (e) =>
+                  StrategyAttributeDeviceNameExtension.fromJson(e),
+            ))
       else if (_wellKnown == StrategyAttributeWellKnownNames.platform)
         Expanded(
             flex: 4,
             child: MultiSelectDropdown(
-                widget.attribute.values,
-                StrategyAttributePlatformName.values,
-                _platformNameMapper,
-                'Select Platform'))
+              values: widget.attribute.values,
+              possibleValues: StrategyAttributePlatformName.values,
+              enumToDisplayNameMapper: _platformNameMapper,
+              hint: 'Select Platform',
+              enumToJsonMapper: (e) =>
+                  (e as StrategyAttributePlatformName).toJson(),
+              jsonToEnumMapper: (e) =>
+                  StrategyAttributePlatformNameExtension.fromJson(e),
+            ))
       else
         Expanded(flex: 4, child: _fieldValueEditorByFieldType())
     ]);

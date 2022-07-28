@@ -1,17 +1,23 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/attribute_value_chip_widget.dart';
 
-typedef MultiSelectMapPossibleValueToName = String Function(dynamic value);
+typedef MultiSelectMapEnumToDisplayName = String Function(dynamic value);
+typedef MultiSelectMapEnumToJson = String Function(dynamic value);
+typedef MultiSelectMapJsonToEnum = dynamic Function(String value);
 
 class MultiSelectDropdown extends StatefulWidget {
-  final List<dynamic> values;
+  final List<dynamic> values; // these are the actual values that will be sent back to the server, they *must* be strings
   final List<dynamic> possibleValues;
   final String hint;
-  final MultiSelectMapPossibleValueToName mapper;
+  final MultiSelectMapEnumToDisplayName enumToDisplayNameMapper;
+  final MultiSelectMapEnumToJson enumToJsonMapper;
+  final MultiSelectMapJsonToEnum jsonToEnumMapper;
 
   const MultiSelectDropdown(
-      this.values, this.possibleValues, this.mapper, this.hint,
-      {Key? key})
+  {required this.values, required this.possibleValues, required this.enumToDisplayNameMapper, required this.hint,
+    required this.enumToJsonMapper, required this.jsonToEnumMapper,
+      Key? key})
       : super(key: key);
 
   @override
@@ -21,13 +27,18 @@ class MultiSelectDropdown extends StatefulWidget {
 }
 
 class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
+  // this is the list of enum values that are selectable
   List<dynamic> selectableValues = [];
+  List<dynamic> selectedValues = [];
 
   @override
   void didChangeDependencies() {
+    // these are JSON values converted to ENUM values
+    selectedValues = widget.values.map((e) => widget.jsonToEnumMapper(e)).whereNotNull().toList();
+    // these are the ones in the list that aren't selected
     selectableValues = widget.possibleValues
-        .where((e) => !widget.values.contains(e))
-        .toList(growable: true);
+        .where((e) => !selectedValues.contains(e))
+        .toList();
     super.didChangeDependencies();
   }
 
@@ -47,14 +58,18 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
           Wrap(
             spacing: 4.0,
             children: [
-              for (dynamic val in widget.values)
+              for (dynamic val in selectedValues)
                 AttributeValueChipWidget(
-                  label: widget.mapper(val),
-                  value: val,
+                  label: widget.enumToDisplayNameMapper(val),
+                  value: val, // this is an enum
                   onSelected: (e) {
                     setState(() {
+                      // add in as a newly selectable value as we have removed it now
                       selectableValues.add(e);
-                      widget.values.remove(e);
+                      // remove the enum value we are tracking
+                      selectedValues.remove(e);
+                      // remove the raw value
+                      widget.values.remove(widget.enumToJsonMapper(e));
                     });
                   },
                 )
@@ -83,7 +98,7 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
             items: selectableValues
                 .map((e) => DropdownMenuItem(
                     value: e,
-                    child: Text(widget.mapper(e),
+                    child: Text(widget.enumToDisplayNameMapper(e),
                         style: Theme.of(context).textTheme.bodyText2)))
                 .toList(),
             hint:
@@ -92,7 +107,8 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
               var readOnly = false; //TODO parametrise this if needed
               if (!readOnly) {
                 setState(() {
-                  widget.values.add(value);
+                  widget.values.add(widget.enumToJsonMapper(value));
+                  selectedValues.add(value);
                   selectableValues.remove(value);
                 });
               }

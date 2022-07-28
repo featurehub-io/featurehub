@@ -68,7 +68,6 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
     super.initState();
 
     selected = widget.environmentInfo.isHidden(widget.environment.id!);
-    print("selected ${widget.environment.id} - selected is ${selected}");
   }
 
   @override

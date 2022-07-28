@@ -35,9 +35,7 @@ class EnvironmentsInfo {
   final List<Environment> environments;
   final bool isEmpty;
 
-  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false {
-    print("environments are ${environments}");
-  }
+  EnvironmentsInfo(this.userEnvironmentData, this.environments) : isEmpty = false;
 
   EnvironmentsInfo.empty() : userEnvironmentData = HiddenEnvironments(),
         environments = [], isEmpty = true;
@@ -166,14 +164,15 @@ class PerApplicationFeaturesBloc
   Future<RolloutStrategyValidationResponse> validationCheck(
       List<RolloutStrategy> customStrategies,
       List<RolloutStrategyInstance> sharedStrategies) async {
-    // print('validating custom strategies $customStrategies');
+
+    final rolloutStrategyValidationRequest = RolloutStrategyValidationRequest(
+          customStrategies: customStrategies,
+          sharedStrategies: sharedStrategies,
+        );
 
     return _rolloutStrategyServiceApi.validate(
         applicationId!,
-        RolloutStrategyValidationRequest(
-          customStrategies: customStrategies,
-          sharedStrategies: sharedStrategies,
-        ));
+        rolloutStrategyValidationRequest);
   }
 
   Future<Environment> getEnvironment(String envId) async {
