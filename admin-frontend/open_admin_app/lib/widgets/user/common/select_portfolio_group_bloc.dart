@@ -86,8 +86,10 @@ class SelectPortfolioGroupBloc implements Bloc {
   }
 
   void removeAdminGroupFromStream() {
-    final adminGroup = mrClient.organization!.orgGroup!;
-    removeGroupFromStream(PortfolioGroup(null, adminGroup));
+    final adminGroup = mrClient.personState.personInSuperuserGroup();
+    if (adminGroup != null) {
+      removeGroupFromStream(PortfolioGroup(null, adminGroup));
+    }
   }
 
   void removeGroupFromStream(PortfolioGroup groupToBeDeleted) {
