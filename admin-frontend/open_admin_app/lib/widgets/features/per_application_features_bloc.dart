@@ -224,8 +224,6 @@ class PerApplicationFeaturesBloc
     if (!appList.any((app) => app.id == applicationId)) {
       //if applicationId not found in the system - set it to null
       applicationId = null;
-      mrClient.customError(
-          messageTitle: 'Provided application ID is not found in the system');
     }
   }
 
