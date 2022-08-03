@@ -12,11 +12,18 @@ class PortfolioBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
   late PortfolioServiceApi _portfolioServiceApi;
 
+  late StreamSubscription<String?>? _globalRefresherSubscriber;
+
   Stream<List<Portfolio>> get portfolioSearch =>
       _portfolioSearchResultSource.stream;
   final _portfolioSearchResultSource = BehaviorSubject<List<Portfolio>>();
 
   PortfolioBloc(this.search, this.mrClient) {
+    _globalRefresherSubscriber = mrClient.streamValley.globalRefresherStream.listen((event) {
+      _portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient);
+      triggerSearch(search);
+    });
+
     _portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient);
     triggerSearch(search);
   }
@@ -86,6 +93,8 @@ class PortfolioBloc implements Bloc {
   @override
   void dispose() {
     _portfolioSearchResultSource.close();
+    _globalRefresherSubscriber?.cancel();
+    _globalRefresherSubscriber = null;
   }
 
   Future refreshPortfolios() async {

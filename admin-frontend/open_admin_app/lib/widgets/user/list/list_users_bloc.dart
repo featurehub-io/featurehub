@@ -15,7 +15,7 @@ class SearchPersonEntry {
 class ListUsersBloc implements Bloc {
   String? search;
   final ManagementRepositoryClientBloc mrClient;
-  final PersonServiceApi _personServiceApi;
+  PersonServiceApi _personServiceApi;
 
   bool isPerson;
 
@@ -30,8 +30,15 @@ class ListUsersBloc implements Bloc {
   final _personSearchResultSource =
       BehaviorSubject<List<SearchPersonEntry>>();
 
+  late StreamSubscription<String?>? _globalRefresherSubscriber;
+
   ListUsersBloc(this.search, this.mrClient, this.isPerson)
-      : _personServiceApi = PersonServiceApi(mrClient.apiClient);
+      : _personServiceApi = PersonServiceApi(mrClient.apiClient) {
+    _globalRefresherSubscriber = mrClient.streamValley.globalRefresherStream.listen((event) {
+      _personServiceApi = PersonServiceApi(mrClient.apiClient);
+      triggerSearch(search);
+    });
+  }
 
   void triggerSearch(String? s) async {
     // this should also change the url
@@ -141,6 +148,8 @@ class ListUsersBloc implements Bloc {
   void dispose() {
     _personSearchResultSource.close();
     _adminApiKeysSearchResultSource.close();
+    _globalRefresherSubscriber?.cancel();
+    _globalRefresherSubscriber = null;
   }
 }
 

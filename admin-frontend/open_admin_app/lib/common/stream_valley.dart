@@ -95,6 +95,10 @@ class StreamValley {
 
   String? get currentPortfolioId => currentPortfolio.portfolio.id;
 
+  final _globalRefresherSource = BehaviorSubject<String?>();
+
+  Stream<String?> get globalRefresherStream => _globalRefresherSource.stream;
+
   StreamValley(this.personState) {
     personState.personStream.listen((person) async {
       // print("streamvalley got $person");
@@ -423,5 +427,13 @@ class StreamValley {
   bool containsPid(String? pid) {
     if (pid == null) return false;
     return _portfoliosSource.value?.any((p) => p.id == pid) ?? false;
+  }
+
+  /*
+   * This is used to allow forcing global things, e.g. portfolios, users and
+   * admin service accounts.
+   */
+  void triggerGlobalRefresh(String? id) {
+    _globalRefresherSource.add(id);
   }
 }
