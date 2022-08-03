@@ -42,6 +42,12 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            Container(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: const FHHeader(
+                title: 'Application settings',
+              ),
+            ),
             StreamBuilder<List<Application>>(
                 stream: bloc
                     .mrClient.streamValley.currentPortfolioApplicationsStream,
@@ -67,12 +73,6 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                         ));
                   }
                 }),
-            Container(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: const FHHeader(
-                title: 'Application settings',
-              ),
-            ),
             const FHPageDivider(),
             StreamBuilder(
                 stream: bloc.pageStateStream,
@@ -187,45 +187,16 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
         ScrollConfiguration(
           behavior: CustomScrollBehavior(),
           child: TabBar(
-            // indicatorPadding: const EdgeInsets.all(5),
             indicatorSize: TabBarIndicatorSize.label,
-            indicator: BoxDecoration(
-              shape: BoxShape.rectangle,
-              border: Border.all(
-                  color:
-                      Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-                  width: 2),
-              borderRadius: BorderRadius.circular(50),
-              color: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-            ),
             controller: _controller,
-            labelStyle: Theme.of(context).textTheme.bodyText1,
-            labelColor: Theme.of(context).textTheme.subtitle2!.color,
-            unselectedLabelColor: Theme.of(context).colorScheme.secondary,
-            overlayColor:
-                MaterialStateColor.resolveWith((Set<MaterialState> states) {
-              if (states.contains(MaterialState.pressed)) {
-                return Theme.of(context).colorScheme.secondaryContainer;
-              }
-              if (states.contains(MaterialState.focused)) {
-                return Theme.of(context).colorScheme.secondaryContainer;
-              } else if (states.contains(MaterialState.hovered)) {
-                return Theme.of(context).cardColor;
-              }
-
-              return Colors.transparent;
-            }),
+            labelStyle: MediaQuery.of(context).size.width > 400
+                ? const TextStyle(fontSize: 18.0) : const TextStyle(fontSize: 12.0),
             tabs: [
-              Tab(
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: const Align(
-                    alignment: Alignment.center,
-                    child: Text("ENVIRONMENTS"),
-                  ),
-                ),
+              const Tab(
+                child: Text("Environments"),
+              ),
+              const Tab(
+                child: Text("Group Permissions"),
               ),
               Tab(
                 child: Container(
@@ -234,18 +205,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
                   ),
                   child: const Align(
                     alignment: Alignment.center,
-                    child: Text("GROUP PERMISSIONS"),
-                  ),
-                ),
-              ),
-              Tab(
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: const Align(
-                    alignment: Alignment.center,
-                    child: Text("SERVICE ACCOUNT PERMISSIONS"),
+                    child: Text("Service Account Permissions"),
                   ),
                 ),
               ),
