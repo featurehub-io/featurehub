@@ -19,7 +19,6 @@ import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.container.AsyncResponse
 import jakarta.ws.rs.core.Response
 import java.util.function.Consumer
-import java.util.stream.Collectors
 
 interface FeatureGet {
   fun processGet(
@@ -35,7 +34,9 @@ interface FeatureGet {
 class FeatureGetProcessor @Inject constructor(
   private val getOrchestrator: DachaFeatureRequestSubmitter,
   @FeatureHubConfig("edge.cache-control.header")
-  private val cacheControlHeader: String?
+  private val cacheControlHeader: String?,
+  @FeatureHubConfig("edge.cache.fastly.key")
+  private val fastlyAuth: String?
   ) : FeatureGet {
 
   override fun processGet(
@@ -70,7 +71,7 @@ class FeatureGetProcessor @Inject constructor(
     val clientContext = ClientContext.decode(featureHubAttrs, realApiKeys)
     val etags = splitTag(etagHeader, realApiKeys, clientContext.makeEtag())
 
-    val environments: List<FeatureRequestResponse> = getOrchestrator.request(realApiKeys, clientContext, etags)
+    val environments = getOrchestrator.request(realApiKeys, clientContext, etags)
 
     if (statRecorder != null) {
       // record the result
@@ -88,35 +89,50 @@ class FeatureGetProcessor @Inject constructor(
 
     inout.dec()
 
-    if (environments[0].success === FeatureRequestSuccess.NO_CHANGE) {
-      response.resume(wrapCacheControl(Response.status(304).header("etag", etagHeader)).build())
+    if (environments[0].success === FeatureRequestSuccess.NO_CHANGE && environments.size == 1) {
+      response.resume(wrapCacheControl(environments, Response.status(304).header("etag", etagHeader)).build())
     } else if (environments.all { it.success == FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE }) {
-      response.resume(Response.status(404).build())
+      response.resume(wrapCacheControl(environments, Response.status(404)).build())
     } else if (environments.all { it.success == FeatureRequestSuccess.DACHA_NOT_READY }) {
       // all the SDKs fail on a 400 level error and just stop.
       response.resume(Response.status(503).entity("cache layer not ready, try again shortly").build())
     } else {
       val newEtags = makeEtags(
         etags,
-        environments.stream().map(FeatureRequestResponse::etag).collect(Collectors.toList()))
+        environments.map(FeatureRequestResponse::etag))
 
       response.resume(
         wrapCacheControl(
-        Response.status(200)
-          .header("etag", "\"${newEtags}\"")
-          .entity(environments.stream().map(FeatureRequestResponse::environment).collect(Collectors.toList()))
+          environments,
+          Response.status(200)
+            .header("etag", "\"${newEtags}\"")
+            .entity(environments.map(FeatureRequestResponse::environment))
         )
           .build()
       )
     }
   }
 
-  private fun wrapCacheControl(builder: Response.ResponseBuilder): Response.ResponseBuilder {
+  private fun wrapCacheControl(environments: List<FeatureRequestResponse>, builder: Response.ResponseBuilder): Response.ResponseBuilder {
+    var bld = builder;
     if (cacheControlHeader?.isNotEmpty() == true) {
-      return builder.header("Cache-Control", cacheControlHeader)
+      bld = bld.header("Cache-Control", cacheControlHeader)
     }
 
-    return builder
+    /**
+     * We set the surrogate key to include the environments that have been returned. This means that Dacha can send a request to
+     * break any of these caches so the next time client requests it will come to us instead of the cache. The cache cannot be used without
+     * a streaming platform. This will work regardless of apikey, all environments using client evaluated or server evaluated keys will have
+     * their cache broken on the next poll.
+     *
+     * Clients using server evaluation needs to be upgraded to ensure that the SHA of their context data is included as
+     * a parameter. This will mean they can break their own cache if they change their context data.
+     */
+    if (fastlyAuth != null && environments.isNotEmpty()) {
+      bld.header("Surrogate-Key", environments.map { it.environment.id.toString() }.joinToString(" "))
+    }
+
+    return bld
   }
 
   private fun mapSuccess(success: FeatureRequestSuccess): EdgeHitResultType {

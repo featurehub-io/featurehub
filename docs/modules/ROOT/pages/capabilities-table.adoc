@@ -6,8 +6,8 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |===================================
 ||Java|Javascript^1^|Go|Dart^2^|C#|Python
 |Event Streaming|Y|Y|Y|Y|Y|Y
-|Rollout Strategies - Server Evaluated*|Y|Y|N|Y|Y|Y
-|Rollout Strategies - Client Evaluated*|Y|Y|Y|N|Y|Y
+|Rollout Strategies - Server Evaluated^2^|Y|Y|N|Y|Y|Y
+|Rollout Strategies - Client Evaluated^2^|Y|Y|Y|N|Y|Y
 |Background Start|Y|Y|Y|Y|Y|Y
 |Block until Start|N|N|Y|N|N|N
 |Readyness Listeners|Y|Y|Y|Y|Y|N
@@ -16,9 +16,15 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |Analytics Support|Y|Y|Y|Y|Y|N
 |Google Analytics|Y|Y|Y|Y|Y|N
 |Feature Overrides|N|Y|N|N|N|Y
+|CDN Support^3^|N|N|N|N|N|N
 |===================================
 
-*To apply rollout strategies (targeting and percentage rules) _user context_ is required to be passed to the SDKs and can be evaluated either on the client or server
+1. Javascript also includes Typescript
+
+2. To apply rollout strategies (targeting and percentage rules) _user context_ is required to be passed to the SDKs and can be evaluated either on the client or server
+
+3. Fastly CDN is supported for all existing SDKs for client evaluated keys only. As we roll through changes we will note `Y` in the column. 
+ 
 
 ==== Web + Mobile focused capabilities for SDKs
 
