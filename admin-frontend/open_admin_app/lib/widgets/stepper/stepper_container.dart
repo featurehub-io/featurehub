@@ -51,7 +51,7 @@ class StepperRocketButton extends StatelessWidget {
               icon: const Icon(
                 MaterialCommunityIcons.rocket,
 //                color: Theme.of(context).primaryColor,
-                size: 24.0,
+                size: 18.0,
               ),
               onPressed: () => mrBloc.stepperOpened = true,
             );
