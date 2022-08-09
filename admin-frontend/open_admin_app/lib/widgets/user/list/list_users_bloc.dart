@@ -146,10 +146,11 @@ class ListUsersBloc implements Bloc {
 
   @override
   void dispose() {
-    _personSearchResultSource.close();
-    _adminApiKeysSearchResultSource.close();
+    // cancel subs first
     _globalRefresherSubscriber?.cancel();
     _globalRefresherSubscriber = null;
+    _personSearchResultSource.close();
+    _adminApiKeysSearchResultSource.close();
   }
 }
 

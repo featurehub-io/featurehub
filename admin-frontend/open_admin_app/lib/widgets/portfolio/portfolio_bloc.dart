@@ -92,9 +92,9 @@ class PortfolioBloc implements Bloc {
 
   @override
   void dispose() {
-    _portfolioSearchResultSource.close();
     _globalRefresherSubscriber?.cancel();
     _globalRefresherSubscriber = null;
+    _portfolioSearchResultSource.close();
   }
 
   Future refreshPortfolios() async {
