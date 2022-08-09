@@ -53,6 +53,8 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
   late StreamSubscription<RouteChange?> _routeChangeSubscription;
   late StreamSubscription<RouteSlot> _siteInitialisedSubscription;
 
+  late StreamSubscription<String?> _globalRefreshListener;
+
   @override
   FHRoutePath get currentConfiguration {
     return _path;
@@ -61,6 +63,7 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
   @override
   void dispose() {
     super.dispose();
+    _globalRefreshListener.cancel();
     _routeChangeSubscription.cancel();
     _siteInitialisedSubscription.cancel();
   }
@@ -143,53 +146,67 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
           return;
         }
 
-        bool swapped = false;
-
-        if (_stashedRoutePath?.routeName != null &&
-            ManagementRepositoryClientBloc.router
-                .isRouteInSlot(_stashedRoutePath!.routeName, _currentSlot)) {
-          // if they have logged in now and have a held route, lets check if they are allowed to access it, and if so
-          // swap to that instead
-          if (ManagementRepositoryClientBloc.router
-              .canUseRoute(_stashedRoutePath!.routeName)) {
-            bloc.swapRoutes(RouteChange(_stashedRoutePath!.routeName,
-                params: _stashedRoutePath!.params));
-            _stashedRoutePath = null;
-            swapped = true;
-          } else if (_currentSlot != RouteSlot.login &&
-              _currentSlot != RouteSlot.nowhere) {
-            // only if we have logged in and we have no permission to that slot should we wipe it
-            _stashedRoutePath = null;
-            _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
-            bloc.swapRoutes(RouteChange(_path.routeName));
-            swapped = true;
-          }
-        }
-
-        // is the path we are currently in / or is the path not in the current slot?, if so, we
-        // need to swap to the initial route in the current slot as that is what we have been asked
-        if (!swapped &&
-            (_path.routeName == '/' ||
-                !ManagementRepositoryClientBloc.router
-                    .isRouteInSlot(_path.routeName, _currentSlot))) {
-          _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
-          bloc.swapRoutes(RouteChange(_path.routeName));
-          swapped = true;
-        }
-
-        if (!swapped &&
-            !ManagementRepositoryClientBloc.router.canUseRoute(_path.routeName,
-                autoFailPermissions: [PermissionType.any])) {
-          _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
-          bloc.swapRoutes(RouteChange(_path.routeName));
-          swapped = true;
-        }
-
-        if (swapped) {
-          notifyListeners();
-        }
+        routeCheckOnSlotChange();
       }
     });
+
+    _globalRefreshListener = bloc.streamValley.globalRefresherStream.listen((g) => routeCheckOnGlobalRefresh());
+  }
+
+  void routeCheckOnGlobalRefresh() {
+    //print("swap check ${ManagementRepositoryClientBloc.router.canUseRoute(currentConfiguration.routeName)}");
+
+    if (!ManagementRepositoryClientBloc.router.canUseRoute(currentConfiguration.routeName)) {
+      bloc.swapRoutes(RouteChange(routeSlotMappings[_currentSlot]!.initialRoute));
+    }
+  }
+
+  void routeCheckOnSlotChange() {
+    bool swapped = false;
+
+    if (_stashedRoutePath?.routeName != null &&
+        ManagementRepositoryClientBloc.router
+            .isRouteInSlot(_stashedRoutePath!.routeName, _currentSlot)) {
+      // if they have logged in now and have a held route, lets check if they are allowed to access it, and if so
+      // swap to that instead
+      if (ManagementRepositoryClientBloc.router
+          .canUseRoute(_stashedRoutePath!.routeName)) {
+        bloc.swapRoutes(RouteChange(_stashedRoutePath!.routeName,
+            params: _stashedRoutePath!.params));
+        _stashedRoutePath = null;
+        swapped = true;
+      } else if (_currentSlot != RouteSlot.login &&
+          _currentSlot != RouteSlot.nowhere) {
+        // only if we have logged in and we have no permission to that slot should we wipe it
+        _stashedRoutePath = null;
+        _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
+        bloc.swapRoutes(RouteChange(_path.routeName));
+        swapped = true;
+      }
+    }
+
+    // is the path we are currently in / or is the path not in the current slot?, if so, we
+    // need to swap to the initial route in the current slot as that is what we have been asked
+    if (!swapped &&
+        (_path.routeName == '/' ||
+            !ManagementRepositoryClientBloc.router
+                .isRouteInSlot(_path.routeName, _currentSlot))) {
+      _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
+      bloc.swapRoutes(RouteChange(_path.routeName));
+      swapped = true;
+    }
+
+    if (!swapped &&
+        !ManagementRepositoryClientBloc.router.canUseRoute(_path.routeName,
+            autoFailPermissions: [PermissionType.any])) {
+      _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
+      bloc.swapRoutes(RouteChange(_path.routeName));
+      swapped = true;
+    }
+
+    if (swapped) {
+      notifyListeners();
+    }
   }
 
   @override
