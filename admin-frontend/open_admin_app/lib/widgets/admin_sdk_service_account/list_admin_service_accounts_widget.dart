@@ -34,7 +34,6 @@ class _AdminServiceAccountsListWidgetState
 
   @override
   Widget build(BuildContext context) {
-    final bs = BorderSide(color: Theme.of(context).dividerColor);
     final bloc = BlocProvider.of<ListAdminServiceAccount>(context);
     return StreamBuilder<List<SearchPerson>>(
         stream: bloc.adminAPIKeySearch,
@@ -49,15 +48,7 @@ class _AdminServiceAccountsListWidgetState
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: bs,
-                        left: bs,
-                        right: bs,
-                      ),
-                      color: Theme.of(context).cardColor,
-                    ),
+                  Card(
                     child: DataTable(
                       showCheckboxColumn: false,
                       sortAscending: sortToggle,

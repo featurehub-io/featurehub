@@ -33,7 +33,6 @@ class _PersonListWidgetState extends State<PersonListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final bs = BorderSide(color: Theme.of(context).dividerColor);
     final bloc = BlocProvider.of<ListPersonBloc>(context);
     return StreamBuilder<List<SearchPersonEntry>>(
         stream: bloc.personSearch,
@@ -50,15 +49,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: bs,
-                        left: bs,
-                        right: bs,
-                      ),
-                      color: Theme.of(context).cardColor,
-                    ),
+                  Card(
                     child: DataTable(
                       showCheckboxColumn: false,
                       sortAscending: sortToggle,
@@ -114,18 +105,12 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                 DataCell(Text(
                                     '${p.person.whenLastAuthenticated?.toLocal() ?? ""}')),
                                 DataCell(Row(children: <Widget>[
-                                  Tooltip(
-                                    message:
-                                        _infoTooltip(p, allowedLocalIdentity),
-                                    child: FHIconButton(
-                                      icon: Icon(Icons.info,
-                                          color: _infoColour(
-                                              p, allowedLocalIdentity)),
-                                      onPressed: () => bloc.mrClient
-                                          .addOverlay((BuildContext context) {
-                                        return ListUserInfoDialog(bloc, p);
-                                      }),
-                                    ),
+                                  FHIconButton(
+                                    icon: const Icon(Icons.info),
+                                    onPressed: () => bloc.mrClient
+                                        .addOverlay((BuildContext context) {
+                                      return ListUserInfoDialog(bloc, p);
+                                    }),
                                   ),
                                   FHIconButton(
                                       icon: const Icon(Icons.edit),
@@ -255,28 +240,6 @@ class _PersonListWidgetState extends State<PersonListWidget> {
         )
       ],
     );
-  }
-
-  Color _infoColour(SearchPersonEntry entry, bool allowedLocalLogin) {
-    if (!allowedLocalLogin) {
-      return Theme.of(context).colorScheme.primary;
-    }
-
-    if (entry.registration.expired) {
-      return Colors.red;
-    }
-
-    return Colors.green;
-  }
-
-  String _infoTooltip(SearchPersonEntry entry, bool allowedLocalLogin) {
-    if (!allowedLocalLogin) {
-      return "Identity provider login";
-    }
-    if (entry.registration.expired) {
-      return "Registration expired";
-    }
-    return "Local login";
   }
 }
 
