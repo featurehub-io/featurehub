@@ -304,8 +304,13 @@ class StreamValley {
           // we need more info
           await getCurrentApplicationEnvironments();
         } else {
-          final app = appList.firstWhere((app) => app.id == currentAppId);
-          currentApplicationEnvironments = app.environments;
+          final app = appList.firstWhereOrNull((app) => app.id == currentAppId);
+          if (app != null) {
+            currentApplicationEnvironments = app.environments;
+          } else {
+            currentApplicationEnvironments = [];
+          }
+
         }
       }
     } else {

@@ -367,14 +367,17 @@ class ManagementRepositoryClientBloc implements Bloc {
     await authServiceApi.logout();
   }
 
+  Future<void> afterLogout() async {}
+
   Future logout() async {
-    logoutBackend();
+    await logoutBackend();
     setBearerToken(null);
     personState.logout();
     menuOpened.add(false);
     currentPid = null;
     currentAid = null;
     routeSlot(RouteSlot.login);
+    await afterLogout();
   }
 
   void routeSlot(RouteSlot slot) {

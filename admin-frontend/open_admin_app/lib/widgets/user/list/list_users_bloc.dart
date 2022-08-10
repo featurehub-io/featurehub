@@ -35,8 +35,10 @@ class ListUsersBloc implements Bloc {
   ListUsersBloc(this.search, this.mrClient, this.isPerson)
       : _personServiceApi = PersonServiceApi(mrClient.apiClient) {
     _globalRefresherSubscriber = mrClient.streamValley.globalRefresherStream.listen((event) {
-      _personServiceApi = PersonServiceApi(mrClient.apiClient);
-      triggerSearch(search);
+      if (mrClient.userIsSuperAdmin) {
+        _personServiceApi = PersonServiceApi(mrClient.apiClient);
+        triggerSearch(search);
+      }
     });
   }
 
