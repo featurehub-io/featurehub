@@ -21,7 +21,7 @@ class CacheControlFilter : ContainerResponseFilter {
   }
 
   override fun filter(requestContext: ContainerRequestContext, responseContext: ContainerResponseContext) {
-    if (enableCacheControl!! && requestContext.method == "GET" && !responseContext.stringHeaders.containsKey("cache-control")) {
+    if (enableCacheControl!! && requestContext.method == "GET" && responseContext.stringHeaders.keys.none { it.lowercase() == "cache-control" }) {
       responseContext.headers.add("cache-control", cacheControlHeader)
     }
   }
