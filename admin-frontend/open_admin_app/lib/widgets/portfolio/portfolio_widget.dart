@@ -31,16 +31,17 @@ class PortfolioListWidget extends StatelessWidget {
             if (snapshot.hasError) {
               return const FHLoadingError();
             } else if (snapshot.hasData) {
-              return Column(
-                children: <Widget>[
-                  for (Portfolio p in snapshot.data!)
-                    _PortfolioWidget(
-                      portfolio: p,
+              return ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    final portfolio = snapshot.data![index];
+                    return _PortfolioWidget(
+                      portfolio: portfolio,
                       mr: mrBloc,
                       bloc: bloc,
-                    )
-                ],
-              );
+                    );
+                  });
             }
           }
           return const SizedBox.shrink();
@@ -59,50 +60,47 @@ class _PortfolioWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bs = BorderSide(color: Theme.of(context).dividerColor);
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
-      decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border(bottom: bs, left: bs, right: bs)),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-              child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(portfolio.name),
-              Text(
-                portfolio.description ?? '',
-                style: Theme.of(context).textTheme.caption,
-              ),
-            ],
-          )),
-          mr.userIsSuperAdmin
-              ? Row(
-                  children: <Widget>[
-                    FHIconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () =>
-                            bloc.mrClient.addOverlay((BuildContext context) {
-                              return PortfolioUpdateDialogWidget(
-                                  bloc: bloc, portfolio: portfolio);
-                            })),
-                    if (mr.userIsSuperAdmin)
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: <Widget>[
+            Expanded(
+                child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(portfolio.name),
+                Text(
+                  portfolio.description ?? '',
+                  style: Theme.of(context).textTheme.caption,
+                ),
+              ],
+            )),
+            mr.userIsSuperAdmin
+                ? Row(
+                    children: <Widget>[
                       FHIconButton(
-                          icon: const Icon(Icons.delete),
+                          icon: const Icon(Icons.edit),
                           onPressed: () =>
                               bloc.mrClient.addOverlay((BuildContext context) {
-                                return PortfolioDeleteDialogWidget(
-                                  portfolio: portfolio,
-                                  bloc: bloc,
-                                );
-                              }))
-                  ],
-                )
-              : Container(),
-        ],
+                                return PortfolioUpdateDialogWidget(
+                                    bloc: bloc, portfolio: portfolio);
+                              })),
+                      if (mr.userIsSuperAdmin)
+                        FHIconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => bloc.mrClient
+                                    .addOverlay((BuildContext context) {
+                                  return PortfolioDeleteDialogWidget(
+                                    portfolio: portfolio,
+                                    bloc: bloc,
+                                  );
+                                }))
+                    ],
+                  )
+                : Container(),
+          ],
+        ),
       ),
     );
   }

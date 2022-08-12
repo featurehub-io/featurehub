@@ -18,57 +18,40 @@ class PortfolioRoute extends StatelessWidget {
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
-          child: _headerRow(context, bloc),
+          child: Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              const FHHeader(
+                title: 'Manage portfolios',
+              ),
+              if (bloc.mrClient.userIsSuperAdmin == true)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('Create new portfolio'),
+                    onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
+                      return PortfolioUpdateDialogWidget(
+                        bloc: bloc,
+                      );
+                    }),
+                  ),
+                )
+            ],
+          )
         ),
         const SizedBox(height: 16.0),
-        _filterRow(context, bloc),
+        Container(
+          constraints: const BoxConstraints(maxWidth: 300),
+          child: TextField(
+            decoration: const InputDecoration(hintText: 'Search portfolios',
+                icon: Icon(Icons.search)),
+            onChanged: (val) => bloc.triggerSearch(val),
+          ),
+        ),
+        const SizedBox(height: 16.0),
         const PortfolioListWidget(),
       ],
-    );
-  }
-
-  Widget _headerRow(BuildContext context, PortfolioBloc bloc) {
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        const FHHeader(
-          title: 'Manage portfolios',
-        ),
-        if (bloc.mrClient.userIsSuperAdmin == true)
-          Padding(
-            padding: const EdgeInsets.only(top: 12.0),
-            child: TextButton.icon(
-              icon: const Icon(Icons.add),
-              label: const Text('Create new portfolio'),
-              onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
-                return PortfolioUpdateDialogWidget(
-                  bloc: bloc,
-                );
-              }),
-            ),
-          )
-      ],
-    );
-  }
-
-  Widget _filterRow(BuildContext context, PortfolioBloc bloc) {
-    final bs = BorderSide(color: Theme.of(context).dividerColor);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
-      decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border(bottom: bs, left: bs, right: bs, top: bs)),
-      child: Row(
-        children: <Widget>[
-          SizedBox(
-            width: 300,
-            child: TextField(
-              decoration: const InputDecoration(hintText: 'Filter portfolios'),
-              onChanged: (val) => bloc.triggerSearch(val),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
