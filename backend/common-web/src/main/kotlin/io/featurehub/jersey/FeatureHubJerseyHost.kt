@@ -128,7 +128,7 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
       serverConfig.addHttpHandler(
         resourceHandler,
         HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("").build()
-      );
+      )
     }
 
 

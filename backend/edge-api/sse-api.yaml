@@ -17,6 +17,12 @@ paths:
             type: array
             items:
               type: string
+        - name: contextSha
+          in: query
+          description: "A SHA of the context in string form designed to break any cache if the client changes context. It is not used by the server in any way."
+          required: false
+          schema:
+              type: string
       description: Requests all features for this sdkurl and disconnects
       operationId: getFeatureStates
       responses:
