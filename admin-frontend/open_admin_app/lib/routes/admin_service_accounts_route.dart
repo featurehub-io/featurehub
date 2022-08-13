@@ -17,57 +17,38 @@ class ManageAdminServiceAccountsRoute extends StatelessWidget {
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
-          child: _headerRow(context, bloc),
+          child: Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              const FHHeader(
+                title: 'Manage admin SDK service accounts',
+              ),
+              if (bloc.mrClient.userIsSuperAdmin == true)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('Create Admin Service Account'),
+                    onPressed: () {
+                      ManagementRepositoryClientBloc.router
+                          .navigateTo(context, '/create-admin-api-key');
+                    },
+                  ),
+                )
+            ],
+          )
         ),
         const SizedBox(height: 16.0),
-        _filterRow(context, bloc),
+        Container(
+          constraints: const BoxConstraints(maxWidth: 300),
+          child: TextField(
+            decoration: const InputDecoration(hintText: 'Search Service Accounts', icon: Icon(Icons.search),),
+            onChanged: (val) => bloc.triggerSearch(val),
+          ),
+        ),
+        const SizedBox(height: 16.0),
         const AdminServiceAccountsListWidget(),
       ],
-    );
-  }
-
-  Widget _headerRow(BuildContext context, ListAdminServiceAccount bloc) {
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        const FHHeader(
-          title: 'Manage admin SDK service accounts',
-        ),
-        if (bloc.mrClient.userIsSuperAdmin == true)
-          Padding(
-            padding: const EdgeInsets.only(top: 12.0),
-            child: TextButton.icon(
-              icon: const Icon(Icons.add),
-              label: const Text('Create Admin Service Account'),
-              onPressed: () {
-                ManagementRepositoryClientBloc.router
-                    .navigateTo(context, '/create-admin-api-key');
-              },
-            ),
-          )
-      ],
-    );
-  }
-
-  Widget _filterRow(BuildContext context, ListAdminServiceAccount bloc) {
-    final bs = BorderSide(color: Theme.of(context).dividerColor);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        border: Border(bottom: bs, left: bs, right: bs, top: bs),
-      ),
-      child: Row(
-        children: <Widget>[
-          SizedBox(
-            width: 200,
-            child: TextField(
-              decoration: const InputDecoration(hintText: 'Filter Service Accounts'),
-              onChanged: (val) => bloc.triggerSearch(val),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

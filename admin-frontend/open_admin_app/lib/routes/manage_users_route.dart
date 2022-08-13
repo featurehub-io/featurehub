@@ -17,57 +17,40 @@ class ManageUsersRoute extends StatelessWidget {
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
-          child: _headerRow(context, bloc),
+          child: Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              const FHHeader(
+                title: 'Manage users',
+              ),
+              if (bloc.mrClient.userIsSuperAdmin == true)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('Create new user'),
+                    onPressed: () {
+                      ManagementRepositoryClientBloc.router
+                          .navigateTo(context, '/create-user');
+                    },
+                  ),
+                )
+            ],
+          )
         ),
         const SizedBox(height: 16.0),
-        _filterRow(context, bloc),
+        Container(
+          constraints: const BoxConstraints(maxWidth: 300),
+          child: TextField(
+            decoration: const InputDecoration(hintText: 'Search users',
+                icon: Icon(Icons.search),
+                ),
+            onChanged: (val) => bloc.triggerSearch(val),
+          ),
+        ),
+        const SizedBox(height: 16.0),
         const PersonListWidget(),
       ],
-    );
-  }
-
-  Widget _headerRow(BuildContext context, ListPersonBloc bloc) {
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        const FHHeader(
-          title: 'Manage users',
-        ),
-        if (bloc.mrClient.userIsSuperAdmin == true)
-          Padding(
-            padding: const EdgeInsets.only(top: 12.0),
-            child: TextButton.icon(
-              icon: const Icon(Icons.add),
-              label: const Text('Create new user'),
-              onPressed: () {
-                ManagementRepositoryClientBloc.router
-                    .navigateTo(context, '/create-user');
-              },
-            ),
-          )
-      ],
-    );
-  }
-
-  Widget _filterRow(BuildContext context, ListPersonBloc bloc) {
-    final bs = BorderSide(color: Theme.of(context).dividerColor);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        border: Border(bottom: bs, left: bs, right: bs, top: bs),
-      ),
-      child: Row(
-        children: <Widget>[
-          SizedBox(
-            width: 200,
-            child: TextField(
-              decoration: const InputDecoration(hintText: 'Filter users'),
-              onChanged: (val) => bloc.triggerSearch(val),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

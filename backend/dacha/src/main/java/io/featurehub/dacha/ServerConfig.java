@@ -21,6 +21,7 @@ import io.nats.client.Dispatcher;
 import io.nats.client.MessageHandler;
 import io.prometheus.client.Counter;
 import jakarta.inject.Inject;
+import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ import java.util.List;
 
 public class ServerConfig {
   private static final Logger log = LoggerFactory.getLogger(ServerConfig.class);
-  private final InternalCache cache;
+  private final List<CacheUpdateListener> caches = new ArrayList<>();
   private final NATSSource natsServer;
   private final DachaEdgeNATSAdapter edgeNatsAdapter;
 
@@ -49,8 +50,9 @@ public class ServerConfig {
 
   @Inject
   public ServerConfig(
-      InternalCache cache, NATSSource natsServer, DachaEdgeNATSAdapter edgeNatsAdapter) {
-    this.cache = cache;
+    IterableProvider<CacheUpdateListener> caches, NATSSource natsServer, DachaEdgeNATSAdapter edgeNatsAdapter) {
+    caches.forEach(this.caches::add);
+
     this.natsServer = natsServer;
     this.edgeNatsAdapter = edgeNatsAdapter;
 
@@ -95,7 +97,7 @@ public class ServerConfig {
             PublishServiceAccount sa =
                 CacheJsonMapper.readFromZipBytes(message.getData(), PublishServiceAccount.class);
             log.trace("service account received {}", sa);
-            cache.updateServiceAccount(sa);
+            caches.parallelStream().forEach(c -> c.updateServiceAccount(sa));
           } catch (Exception e) {
             log.error("Unable to read message on SA channel", e);
           }
@@ -111,7 +113,7 @@ public class ServerConfig {
             PublishFeatureValue fv =
                 CacheJsonMapper.readFromZipBytes(message.getData(), PublishFeatureValue.class);
             log.trace("feature value received {}", fv);
-            cache.updateFeatureValue(fv);
+            caches.parallelStream().forEach(c -> c.updateFeatureValue(fv));
           } catch (Exception e) {
             log.error("Failure to decode featue value message", e);
           }
@@ -127,7 +129,7 @@ public class ServerConfig {
             PublishEnvironment e =
                 CacheJsonMapper.readFromZipBytes(message.getData(), PublishEnvironment.class);
             log.trace("environment received {}", e);
-            cache.updateEnvironment(e);
+            caches.parallelStream().forEach(c -> c.updateEnvironment(e));
           } catch (Exception ex) {
             log.error("unable to decode message on environment channel", ex);
           }

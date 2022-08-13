@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-public interface InternalCache {
+public interface InternalCache extends CacheUpdateListener {
   interface FeatureValues {
     Collection<CacheEnvironmentFeature> getFeatures();
     PublishEnvironment getEnvironment();
@@ -44,13 +44,8 @@ public interface InternalCache {
   Stream<PublishEnvironment> environments();
   Stream<PublishServiceAccount> serviceAccounts();
 
-  void updateServiceAccount(PublishServiceAccount sa);
-
-  void updateEnvironment(PublishEnvironment e);
-
   FeatureCollection getFeaturesByEnvironmentAndServiceAccount(UUID environmentId, String apiKey);
 
-  void updateFeatureValue(PublishFeatureValue fv);
 
   PublishEnvironment findEnvironment(UUID environmentId);
 }

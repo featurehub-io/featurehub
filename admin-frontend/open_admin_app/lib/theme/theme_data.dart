@@ -167,6 +167,7 @@ final ThemeData myTheme = ThemeData(
       style: BorderStyle.none,
     )),
   ),
+  primaryTextTheme: const TextTheme(bodyText1: TextStyle(color: Colors.black87))
 );
 final ThemeData darkTheme = ThemeData(
   applyElevationOverlayColor: false,

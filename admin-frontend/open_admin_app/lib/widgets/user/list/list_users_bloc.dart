@@ -20,7 +20,7 @@ class ListUsersBloc implements Bloc {
   bool isPerson;
 
   final _adminApiKeysSearchResultSource =
-      BehaviorSubject<List<SearchPerson>>.seeded([]);
+      BehaviorSubject<List<SearchPerson>>();
 
   Stream<List<SearchPerson>> get adminAPIKeySearch =>
       _adminApiKeysSearchResultSource.stream;

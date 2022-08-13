@@ -1,6 +1,7 @@
 package io.featurehub.dacha
 
 import io.featurehub.dacha.api.DachaApiKeyService
+import io.featurehub.dacha.caching.FastlyPublisher
 import io.featurehub.dacha.resource.DachaApiKeyResource
 import io.featurehub.dacha.resource.DachaEdgeNATSAdapter
 import io.featurehub.dacha.resource.DachaEnvironmentResource
@@ -21,7 +22,8 @@ class DachaFeature : Feature {
 
     context.register(object: AbstractBinder() {
       override fun configure() {
-        bind(InMemoryCache::class.java).to(InternalCache::class.java).`in`(Singleton::class.java)
+        bind(InMemoryCache::class.java).to(InternalCache::class.java).to(CacheUpdateListener::class.java).`in`(Singleton::class.java)
+        bind(FastlyPublisher::class.java).to(CacheUpdateListener::class.java).`in`(Singleton::class.java)
         bind(ServerConfig::class.java).to(ServerConfig::class.java).`in`(Singleton::class.java)
         bind(CacheManager::class.java).to(CacheManager::class.java).to(HealthSource::class.java).`in`(Immediate::class.java)
         bind(DacheEdgeNATSAdapterService::class.java).to(DachaEdgeNATSAdapter::class.java).`in`(Singleton::class.java)
