@@ -90,7 +90,15 @@ class FeatureGetProcessor @Inject constructor(
     inout.dec()
 
     if (environments[0].success === FeatureRequestSuccess.NO_CHANGE && environments.size == 1) {
-      response.resume(wrapCacheControl(environments, Response.status(304).header("etag", etagHeader)).build())
+      if (pollingStaleEnvironment(environments)) { // they should stop polling, and we don't want the cache to trigger
+        response.resume(
+          wrapCacheControl(
+            environments,
+            Response.status(236).entity(environments.map(FeatureRequestResponse::environment))
+          ).build())
+      } else {
+        response.resume(wrapCacheControl(environments, Response.status(304).header("etag", etagHeader)).build())
+      }
     } else if (environments.all { it.success == FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE }) {
       response.resume(wrapCacheControl(environments, Response.status(404)).build())
     } else if (environments.all { it.success == FeatureRequestSuccess.DACHA_NOT_READY }) {
@@ -104,7 +112,7 @@ class FeatureGetProcessor @Inject constructor(
       response.resume(
         wrapCacheControl(
           environments,
-          Response.status(if (environments.any { it.envInfo?.containsKey("mgmt.environment-stagnant") == true }) 236 else 200 )
+          Response.status(if (pollingStaleEnvironment(environments)) 236 else 200 )
             .header("etag", "\"${newEtags}\"")
             .entity(environments.map(FeatureRequestResponse::environment))
         )
@@ -113,14 +121,25 @@ class FeatureGetProcessor @Inject constructor(
     }
   }
 
-  private fun wrapCacheControl(environments: List<FeatureRequestResponse>, builder: Response.ResponseBuilder): Response.ResponseBuilder {
-    var bld = builder;
+  private fun pollingStaleEnvironment(environments: List<FeatureRequestResponse>) =
+    environments.any { it.envInfo?.containsKey("mgmt.env.poll.stale") == true }
 
-    val environmentCacheControlHeader = environments.find { it.envInfo?.containsKey("cacheControl") == true }
-    if (environmentCacheControlHeader != null) {
-      bld = bld.header("Cache-Control", environmentCacheControlHeader?.envInfo!!["cacheControl"])
+  private fun wrapCacheControl(environments: List<FeatureRequestResponse>, builder: Response.ResponseBuilder): Response.ResponseBuilder {
+    var bld = builder
+
+    // check if the Ops team has set a header for this environment, then if they have set a generic one, and then
+    // if the team themselves have set one in the database
+    val managementCacheControl = environments.find { it.envInfo?.containsKey("mgmt.cacheControl") == true }
+
+    if (managementCacheControl != null ) {
+      bld = bld.header("Cache-Control", managementCacheControl.envInfo!!["mgmt.cacheControl"])
     } else if (cacheControlHeader?.isNotEmpty() == true) {
       bld = bld.header("Cache-Control", cacheControlHeader)
+    } else {
+      val environmentCacheControlHeader = environments.find { it.envInfo?.containsKey("cacheControl") == true }
+      if (environmentCacheControlHeader != null) {
+        bld = bld.header("Cache-Control", environmentCacheControlHeader.envInfo!!["cacheControl"])
+      }
     }
 
     /**

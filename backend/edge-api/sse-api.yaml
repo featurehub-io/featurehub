@@ -124,7 +124,7 @@ components:
           type: boolean
     SSEResultState:
       type: string
-      description: "error is an inherint state"
+      description: "error is an inherent state"
       enum:
         - ack
         - bye

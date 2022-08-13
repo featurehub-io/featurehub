@@ -17,6 +17,7 @@ import io.featurehub.sse.model.SSEResultState;
 import io.featurehub.sse.stats.model.EdgeHitResultType;
 import io.featurehub.sse.stats.model.EdgeHitSourceType;
 import io.prometheus.client.Histogram;
+import jakarta.ws.rs.core.Feature;
 import jakarta.ws.rs.core.MediaType;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
@@ -217,10 +218,20 @@ public class TimedBucketClientConnection implements ClientConnection {
     }
   }
 
+  private boolean sseStaleEnvironment(FeatureRequestResponse e) {
+    return e.getEnvInfo() != null && e.getEnvInfo().containsKey("mgmt.env.sse.stale");
+  }
+
+
   @Override
   public void initResponse(FeatureRequestResponse edgeResponse) {
     try {
       try {
+        if (sseStaleEnvironment(edgeResponse)) {
+          // tell the client this data is stale and they need to stop polling
+          writeMessage(SSEResultState.CONFIG, "{\"edge.stale\": true}");
+        }
+
         switch (edgeResponse.getSuccess()) {
           case NO_SUCH_KEY_IN_CACHE:
             failed("Unrecognized API key. Please stop requesting.");
