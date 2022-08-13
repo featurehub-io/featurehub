@@ -264,7 +264,12 @@ components:
         version:
           type: integer
           format: int64
-#        features:
+        environmentInfo:
+          description: "Allows extensibility for the environment"
+          x-basename: eInf
+          additionalProperties:
+            type: string
+    #        features:
 #          type: array
 #          items:
 #            $ref: "#/components/schemas/CacheFeature"
@@ -453,6 +458,11 @@ components:
           x-basename: sId
           type: string
           format: uuid
+        environmentInfo:
+          description: "Allows extensibility for the environment"
+          x-basename: eInf
+          additionalProperties:
+            type: string
         features:
           type: array
           items:

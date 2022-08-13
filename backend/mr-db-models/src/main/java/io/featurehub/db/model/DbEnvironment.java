@@ -3,6 +3,7 @@ package io.featurehub.db.model;
 import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.ConstraintMode;
 import io.ebean.annotation.DbForeignKey;
+import io.ebean.annotation.DbJson;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -13,6 +14,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Set;
 
 @Entity
@@ -33,6 +35,7 @@ public class DbEnvironment extends DbVersionedBase {
     setGroupRolesAcl(builder.groupRolesAcl);
     setEnvironmentFeatures(builder.environmentFeatures);
     setServiceAccountEnvironments(builder.serviceAccountEnvironments);
+    setUserEnvironmentInfo(builder.userEnvironmentInfo);
   }
 
   private DbPerson whoUpdated;
@@ -81,6 +84,14 @@ public class DbEnvironment extends DbVersionedBase {
    * unpublishing is a system action.
    */
   private Instant whenUnpublished;
+
+  @DbJson
+  @Column(name = "u_env_inf")
+  private Map<String, String> userEnvironmentInfo;
+
+  @DbJson
+  @Column(name = "m_env_inf")
+  private Map<String, String> managementEnvironmentInfo;
 
   public Instant getWhenUnpublished() {
     return whenUnpublished;
@@ -178,6 +189,22 @@ public class DbEnvironment extends DbVersionedBase {
     this.whenArchived = whenArchived;
   }
 
+  public Map<String, String> getUserEnvironmentInfo() {
+    return userEnvironmentInfo;
+  }
+
+  public void setUserEnvironmentInfo(Map<String, String> userEnvironmentInfo) {
+    this.userEnvironmentInfo = userEnvironmentInfo;
+  }
+
+  public Map<String, String> getManagementEnvironmentInfo() {
+    return managementEnvironmentInfo;
+  }
+
+  public void setManagementEnvironmentInfo(Map<String, String> managementEnvironmentInfo) {
+    this.managementEnvironmentInfo = managementEnvironmentInfo;
+  }
+
   public static final class Builder {
     private DbPerson whoUpdated;
     private DbPerson whoCreated;
@@ -189,6 +216,7 @@ public class DbEnvironment extends DbVersionedBase {
     private Set<DbAcl> groupRolesAcl;
     private Set<DbFeatureValue> environmentFeatures;
     private Set<DbServiceAccountEnvironment> serviceAccountEnvironments;
+    private Map<String, String> userEnvironmentInfo;
 
     public Builder() {
     }
@@ -200,6 +228,11 @@ public class DbEnvironment extends DbVersionedBase {
 
     public Builder whoCreated(DbPerson val) {
       whoCreated = val;
+      return this;
+    }
+
+    public Builder userEnvironmentInfo(Map<String, String> val) {
+      userEnvironmentInfo = val;
       return this;
     }
 

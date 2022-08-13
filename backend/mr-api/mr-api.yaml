@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: ManagementResourceApi
   description: This describes the API clients use for accessing features. This reflects the API from 1.5.7 onwards.
-  version: "1.1.8"
+  version: "1.1.9"
 #  CRUD for portfolios, environments, features, service account, people, and groups (edited)
 #  roles are fixed
 #  then people<->group association
@@ -1486,9 +1486,14 @@ paths:
           in: query
           schema:
             type: boolean
+        - name: includeDetails
+          description: "Include all environment details"
+          in: query
+          schema:
+            type: boolean
       responses:
         200:
-          description: "Gets all portfolios, alphabetically sorted"
+          description: "Gets all environments, alphabetically sorted"
           content:
             application/json:
               schema:
@@ -1499,7 +1504,6 @@ paths:
           description: "Bad Request"
         401:
           description: "no permission"
-
     post:
       security:
         - bearerAuth: [ ]
@@ -1531,6 +1535,60 @@ paths:
         409:
           description: "duplicate environment"
 
+  /mr-api/environment/{eid}/v2:
+    parameters:
+      - name: eid
+        description: "The id of the environment to find"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: includeAcls
+        description: "Include the acls attached to this environment"
+        in: query
+        schema:
+          type: boolean
+      - name: includeFeatures
+        description: "Include the features attached to this environment"
+        in: query
+        schema:
+          type: boolean
+      - name: includeDetails
+        description: "Include all environment details"
+        in: query
+        schema:
+          type: boolean
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - Environment2Service
+      description: "Update an environment"
+      operationId: updateEnvironmentV2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEnvironment"
+      responses:
+        200:
+          description: "Resulting environment"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Environment"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "No environment found to update"
+        409:
+          description: "Duplicate environment"
+        422:
+          description: "Updating old environment"
   /mr-api/environment/{eid}:
     parameters:
       - name: eid
@@ -1547,6 +1605,11 @@ paths:
           type: boolean
       - name: includeFeatures
         description: "Include the features attached to this environment"
+        in: query
+        schema:
+          type: boolean
+      - name: includeDetails
+        description: "Include all environment details"
         in: query
         schema:
           type: boolean
@@ -1586,7 +1649,8 @@ paths:
         - bearerAuth: [ ]
       tags:
         - EnvironmentService
-      description: "Update an environment"
+      description: "Update an environment. Please use updateEnvironment2 as that has the fields that can actually be updated"
+      deprecated: true
       operationId: updateEnvironment
       requestBody:
         required: true
@@ -1596,7 +1660,7 @@ paths:
               $ref: "#/components/schemas/Environment"
       responses:
         200:
-          description: "Resulting portfolio"
+          description: "Resulting environment"
           content:
             application/json:
               schema:
@@ -2976,6 +3040,10 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Feature"
+            environmentInfo:
+              nullable: true
+              additionalProperties:
+                type: string
             serviceAccountPermission:
               type: array
               items:
@@ -2983,7 +3051,36 @@ components:
             whenArchived:
               type: string
               format: date-time
-
+    UpdateEnvironment:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          description: "Version of the record, included for attempting to update out of date records"
+          type: integer
+          format: int64
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+          nullable: true
+        description:
+          type: string
+          maxLength: 400
+          nullable: true
+        production:
+          description: "is this a production environment?"
+          nullable: true
+          type: boolean
+        environmentInfo:
+          nullable: true
+          additionalProperties:
+            type: string
+        priorEnvironmentId:
+          nullable: true
+          type: string
+          format: uuid
     ServiceAccount:
       required:
         - name
