@@ -3075,6 +3075,7 @@ components:
           type: boolean
         environmentInfo:
           nullable: true
+          description: "Allows some settings that affect the behaviour of this environment. Currently `cacheControl` if set will be passed and set on the responses to GET requests."
           additionalProperties:
             type: string
         priorEnvironmentId:

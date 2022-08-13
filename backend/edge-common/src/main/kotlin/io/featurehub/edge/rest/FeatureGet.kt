@@ -104,7 +104,7 @@ class FeatureGetProcessor @Inject constructor(
       response.resume(
         wrapCacheControl(
           environments,
-          Response.status(200)
+          Response.status(if (environments.any { it.envInfo?.containsKey("mgmt.environment-stagnant") == true }) 236 else 200 )
             .header("etag", "\"${newEtags}\"")
             .entity(environments.map(FeatureRequestResponse::environment))
         )
@@ -115,7 +115,11 @@ class FeatureGetProcessor @Inject constructor(
 
   private fun wrapCacheControl(environments: List<FeatureRequestResponse>, builder: Response.ResponseBuilder): Response.ResponseBuilder {
     var bld = builder;
-    if (cacheControlHeader?.isNotEmpty() == true) {
+
+    val environmentCacheControlHeader = environments.find { it.envInfo?.containsKey("cacheControl") == true }
+    if (environmentCacheControlHeader != null) {
+      bld = bld.header("Cache-Control", environmentCacheControlHeader?.envInfo!!["cacheControl"])
+    } else if (cacheControlHeader?.isNotEmpty() == true) {
       bld = bld.header("Cache-Control", cacheControlHeader)
     }
 
