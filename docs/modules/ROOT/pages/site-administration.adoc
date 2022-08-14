@@ -1,0 +1,21 @@
+= Site Administrators
+
+There are two types of administrators, *Organization Super Admin* and *Portfolio Admin*.
+
+== Organization Super Admin
+* *Site Administrators* can:
+** Create and manage users of the system
+** Create and manage user groups
+** Create and manage portfolios
+** Create and manage Admin service accounts (to control FeatureHub via an ADK)
+
+== Portfolio Administrators
+* *Portfolio Administrators* can:
+** Create and manage portfolio groups
+** Create and manage applications
+** Create and manage environments
+** Manage users and groups access to applications
+** Create service accounts
+
+NOTE: Every Portfolio automatically gets a group called "Administrators", simply adding people to this group
+will make them administrators for this portfolio.

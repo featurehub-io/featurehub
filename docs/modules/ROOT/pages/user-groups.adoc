@@ -1,0 +1,29 @@
+= Portfolio groups
+
+You can create one or more groups of people, these groups can be used to set various permissions
+on the applications and their environments, within the portfolio. Either use the same groups across applications within the
+portfolio, or create separate groups for each application.
+Some example groups might be:
+
+* _Developers_ (Typically can create features and change feature values in non-production environments)
+* _Testers_ (Typically can change feature values in non-production environments)
+* _Operations_ (Typically can't create or delete features but can update values in production)
+
+NOTE: Every Portfolio automatically gets a group called "Administrators", Simply adding people to this group will
+make them administrators for this portfolio, and they automatically get all feature permissions in any application within that Portfolio.
+
+You can also add Admin Service Accounts to the user groups for programmatic control via link:admin-development-kit{outfilesuffix}[Admin SDK API]
+
+== Group permissions to control features
+For each application environment, there are permissions you can assign to portfolio groups
+
+* Special permission to `create`, `edit` and `delete` entire feature.
+
+* `READ` Can see the value of a feature
+* `LOCK` Can lock a feature, so it's value can't be changed, this gives us a
+safety net when deploying incomplete code into production.
+(Typically developers and testers keep features locked until they are finished and ready to be set)
+* `UNLOCK` Can unlock a feature, so it's value can be changed
+* `CHANGE_VALUE` Can change the value of a feature or can "retire" a feature
+
+image::fh-group-permissions.png[Group permissions,600]
