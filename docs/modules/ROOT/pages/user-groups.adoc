@@ -26,4 +26,4 @@ safety net when deploying incomplete code into production.
 * `UNLOCK` Can unlock a feature, so it's value can be changed
 * `CHANGE_VALUE` Can change the value of a feature or can "retire" a feature
 
-image::fh-group-permissions.png[Group permissions,600]
+image::fh-group-permissions.png[Group permissions, 1500]

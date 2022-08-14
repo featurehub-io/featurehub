@@ -6,14 +6,14 @@
 * xref:site-administration.adoc[Site Administration]
 * xref:service-accounts.adoc[Service Accounts]
 
-.FeatureHub management via an API
+.FeatureHub Management Via an API
 * xref:admin-service-accounts.adoc[Admin Service Accounts]
 * xref:admin-development-kit.adoc[Admin Software Development Kits]
 
-.Identity, authentication, OAuth2 and SAML options
-* xref:identity.adoc[Identity]
+.FeatureHub Identity Management
+* xref:identity.adoc[Identity, authentication, OAuth2 and SAML options]
 
-.Self-hosting FeatureHub app
+.Self-Hosting FeatureHub App
 * xref:architecture.adoc[Architecture]
 * xref:evaluation.adoc[Evaluating FeatureHub]
 * xref:installation.adoc[Installation]
@@ -25,7 +25,7 @@
 * xref:sdks-development.adoc[Developing an SDK]
 
 .Analytics
-* xref:analytics.adoc[Analytics]
+* xref:analytics.adoc[Google Analytics Integration]
 
 .Contributing to FeatureHub
-* xref:developers.adoc[Contributing]
+* xref:developers.adoc[Contributors Documentation]
