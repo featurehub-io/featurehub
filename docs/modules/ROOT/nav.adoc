@@ -1,31 +1,45 @@
-.FeatureHub Key Concepts
-* xref:index.adoc[Overview]
-* xref:key-concepts.adoc[Key Concepts]
-* xref:strategies.adoc[Rollout Strategy and User Targeting]
-* xref:user-groups.adoc[User Groups and Permissions]
-* xref:site-administration.adoc[Site Administration]
-* xref:service-accounts.adoc[Service Accounts]
+.FeatureHub
+* FeatureHub Key Concepts
+** xref:index.adoc[Overview]
+** xref:key-concepts.adoc[Key Concepts]
+** xref:strategies.adoc[Rollout Strategy and User Targeting]
+** xref:user-groups.adoc[User Groups and Permissions]
+** xref:site-administration.adoc[Site Administration]
+** xref:service-accounts.adoc[Service Accounts]
 
-.FeatureHub Management Via an API
-* xref:admin-service-accounts.adoc[Admin Service Accounts]
-* xref:admin-development-kit.adoc[Admin Software Development Kits]
+* FeatureHub Management Via an API
+** xref:admin-service-accounts.adoc[Admin Service Accounts]
+** xref:admin-development-kit.adoc[Admin Software Development Kits]
 
-.FeatureHub Identity Management
-* xref:identity.adoc[Identity, authentication, OAuth2 and SAML options]
+* FeatureHub Identity Management
+** xref:identity.adoc[Identity, authentication, OAuth2 and SAML options]
 
-.Self-Hosting FeatureHub App
-* xref:architecture.adoc[Architecture]
-* xref:evaluation.adoc[Evaluating FeatureHub]
-* xref:installation.adoc[Installation]
-* xref:configuration.adoc[Configuration]
-* xref:metrics.adoc[Monitoring your Installation]
+* Self-Hosting FeatureHub App
+** xref:architecture.adoc[Architecture]
+** xref:evaluation.adoc[Evaluating FeatureHub]
+** xref:installation.adoc[Installation]
+** xref:configuration.adoc[Configuration]
+** xref:metrics.adoc[Monitoring your Installation]
 
-.FeatureHub SDKs
-* xref:sdks.adoc[Software Development Kits]
-* xref:sdks-development.adoc[Developing an SDK]
+* FeatureHub SDKs
+** xref:sdks.adoc[Software Development Kits]
+** xref:sdks-development.adoc[Developing an SDK]
 
-.Analytics
-* xref:analytics.adoc[Google Analytics Integration]
+* Analytics
+** xref:analytics.adoc[Google Analytics Integration]
 
-.Contributing to FeatureHub
-* xref:developers.adoc[Contributors Documentation]
+* Contributing to FeatureHub
+** xref:developers.adoc[Contributors Documentation]
+
+.FeatureHub Hosted
+
+* FeatureHub Key Concepts
+** xref:hosted:index.adoc[Overview]
+
+* Identity Management
+** xref:hosted:saml.adoc[SAML Configuration]
+
+
+* Pricing & Billing
+** xref:hosted:pricing.adoc[Pricing & Billing Explained]
+
