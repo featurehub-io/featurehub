@@ -33,13 +33,9 @@
 
 .FeatureHub Hosted
 
-* FeatureHub Key Concepts
-** xref:hosted:index.adoc[Overview]
+* xref:hosted::index.adoc[Overview]
 
-* Identity Management
-** xref:hosted:saml.adoc[SAML Configuration]
+* xref:hosted::saml.adoc[SSO / SAML Configuration]
 
-
-* Pricing & Billing
-** xref:hosted:pricing.adoc[Pricing & Billing Explained]
+* xref:hosted::pricing.adoc[Pricing & Billing]
 
