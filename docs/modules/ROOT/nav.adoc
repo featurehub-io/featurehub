@@ -33,9 +33,8 @@
 
 .FeatureHub Hosted
 
-* xref:@1.0.0:featurehub:hosted:index.adoc[Overview]
+* xref:1.0.0@featurehub:hosted:index.adoc[Overview]
 
-* xref:@1.0.0:featurehub:hosted:saml.adoc[SSO / SAML Configuration]
+* xref:1.0.0@featurehub:hosted:saml.adoc[SSO / SAML Configuration]
 
-* xref:@1.0.0:featurehub:hosted:pricing.adoc[Pricing & Billing]
-
+* xref:1.0.0@featurehub:hosted:pricing.adoc[Pricing & Billing]
