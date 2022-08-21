@@ -5,3 +5,5 @@ You can create multiple applications in a portfolio. The number of applications 
 You are required to provide an application name and a description when creating an application.
 If you decide to delete an application, all features and environments associated with the application will be deleted.
 Applications can only be created and managed with "Portfolio Admin" or "Organization Super Admin" permission.
+
+image::fh_apps_page.png[Apppplications, 1500]

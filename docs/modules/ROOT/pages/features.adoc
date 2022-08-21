@@ -1,9 +1,9 @@
-== Features
+= Features
 
 Features are the main components of FeatureHub, they can be simple feature flags, strings, numbers or more advanced JSON
 formats intended for forms of configuration.
 
-=== Feature types
+== Feature types
 
 You can create features of the following types:
 
@@ -12,22 +12,22 @@ You can create features of the following types:
 * `STRING` string values
 * `JSON` valid JSON only (typically used for remote configuration, or otherwise overriding internal values of an application)
 
-=== Feature key
+== Feature key
 
 The feature key is the reference you use in your application, when you use the SDK,
 you can check the value of a feature, referencing the feature key.
 It *must be unique* for your application. For example "FEATURE_LANDING_PAGE"
 
-=== Feature value
+== Feature value
 
 When you add a feature flag, this will also automatically create a feature value in each environment. The default feature value will be set to `*off*` for `boolean` type and to `*null*` for `string`, `number` and `json`. By default, each feature value will be locked. Essentially feature value is always associated with an application and an environment for that application.
 
 NOTE: See link:service-accounts{outfilesuffix}[Feature Permissions] for details on the various permission states a feature can have.
 
-=== Deleting and retiring a feature
+== Deleting and retiring a feature
 
 When feature flag is not needed any longer in your application, and you are ready to remove it, you can first "retire" this feature in a single environment to test how your application behaves, by setting it to the "Retired" state. This means that the feature won't be visible by the SDKs, imitating the "deleted" state. You can always "un-retire" a feature if you change your mind as this operation is reversible. Once you retire feature values across all the environments and test that your application behaves as expected, you can delete your entire feature. Deleting a feature means it is completely deleted from the system for all environments. This operation is not reversible. To retire a feature you will need environment specific "CHANGE_VALUE" permission. To delete a feature, you require an application specific permission to create, edit and delete features.
 
-=== Locking a feature
+== Locking a feature
 Locking provides an additional safety net per environment when deploying incomplete code into production. It locks a feature, so its value can't be changed for a given environment.
 Typically, developers keep features locked until they are finished and ready to be set, for example when they are ready to be tested in one of the test environments. Another use case for feature locking would be when developers or testers keep it locked in production environment, indicating to release management team that it is not ready to be turned on. Only groups or service accounts with `LOCK/UNLOCK` or `CHANGE_VALUE` permission can lock or unlock the feature value.  `CHANGE_VALUE` permission supersedes the `LOCK/UNLOCK`.

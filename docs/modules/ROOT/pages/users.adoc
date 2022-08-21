@@ -1,8 +1,11 @@
+= Users & User Groups Permissions
+
+Anyone with an email can be added to your organization. We encourage everyone in your team to join FeatureHub as we believe both business and technical people will benefit from using it. If you are practicing DevOps, make sure all your developers, testers and business people are onboarded.
 
 FeatureHub provides granular user permissions which can be assigned per application and even per environment through user groups and permissions.
 
 == Users
-Users can be added to an organization by members with "Super Admin" permission. Once user is added, they can be assigned a group or multiple groups. User can also be assigned a "Super Admin" role. Editing of users details and deleting users can be performed only by "Super Admins", however assigning those users to portfolio groups can also be done by users with "Portfolio Admin" role.
+Users can be added to an organization by members with "Super Admin" permission. Once user is added, they can be assigned a group or multiple groups. User can also be assigned a "Super Admin" role. Editing of users details and deleting users can be performed only by "Super Admins", however assigning those users to portfolio groups or removing them from the groups can also be done by users with "Portfolio Admin" role.
 
 image::fh_add_user.png[Group permissions, 600]
 
@@ -18,6 +21,8 @@ image::fh_add_user_link.png[Registration link, 600]
 If an organization user forget their password, it can be reset by "Super Admin" user to a temporary password. Share the temporary password with the user. They will be able to reset it to a permanent password next time they attempt to login.
 
 image::fh_reset_password.png[Registration link, 600]
+
+NOTE: FeatureHub doesn't send emails to recover passwords or any registration or login related emails.
 
 == User groups
 
@@ -38,7 +43,7 @@ Once you create a group, you can add users in your organization to it.
 
 You can also add Admin Service Accounts to the user groups for programmatic control via link:admin-development-kit{outfilesuffix}[Admin SDK API]
 
-== Group permissions to control features
+=== Group permissions to control features
 For each application environment, there are permissions you can assign to portfolio groups
 
 * Special permission to `create`, `edit` and `delete` entire feature.
@@ -52,11 +57,11 @@ safety net when deploying incomplete code into production.
 
 image::fh-group-permissions.png[Group permissions, 1500]
 
-== Administrator groups
+=== Administrator groups
 
 There are two types of administrator groups that are available by default, *Organization Super Admin* and *Portfolio Admin*.
 
-=== Organization Super Admin
+==== Organization Super Admin
 *Organization Super Admin* can:
 
 ** Create and manage users of the system
@@ -67,7 +72,7 @@ There are two types of administrator groups that are available by default, *Orga
 
 In other words, organization super admin has got all privileges, hence it is recommended to have at least 2 super admins, in case one of them leaves the organization.
 
-=== Portfolio Administrators
+==== Portfolio Administrators
 *Portfolio Administrators* can:
 
 ** Create and manage portfolio groups
