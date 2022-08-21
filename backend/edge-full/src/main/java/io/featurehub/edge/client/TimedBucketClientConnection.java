@@ -136,7 +136,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   public void writeMessage(SSEResultState name, String etags, String data) throws IOException {
     if (!output.isClosed()) {
       final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
-      log.debug("data is  etag `{}`: name: `{}` data `{}`", etags, name, data);
+      log.trace("data is  etag `{}`: name: `{}` data `{}`", etags, name, data);
       eventBuilder.name(name.toString());
       eventBuilder.mediaType(MediaType.TEXT_PLAIN_TYPE);
       if (etags != null) {
@@ -222,16 +222,12 @@ public class TimedBucketClientConnection implements ClientConnection {
     return e.getEnvInfo() != null && e.getEnvInfo().containsKey("mgmt.env.sse.stale");
   }
 
+  private static final Long DELAY_PERIOD_STALE = 2 * 86400L;
 
   @Override
   public void initResponse(FeatureRequestResponse edgeResponse) {
     try {
       try {
-        if (sseStaleEnvironment(edgeResponse)) {
-          // tell the client this data is stale and they need to stop polling
-          writeMessage(SSEResultState.CONFIG, "{\"edge.stale\": true}");
-        }
-
         switch (edgeResponse.getSuccess()) {
           case NO_SUCH_KEY_IN_CACHE:
             failed("Unrecognized API key. Please stop requesting.");
@@ -261,6 +257,14 @@ public class TimedBucketClientConnection implements ClientConnection {
             // move it to a random number of buckets ahead to get a kick-out
             bucketService.dachaIsUnavailable(this);
             break;
+        }
+
+        if (sseStaleEnvironment(edgeResponse)) {
+          // tell the client this data is stale and they need to stop polling. Specify a
+          // random period within which they can repoll
+
+          writeMessage(SSEResultState.CONFIG, String.format("{\"edge.stale\": %d}",
+            Math.round(Math.random() * DELAY_PERIOD_STALE)));
         }
       } catch (IOException iex) {
         statRecorder.recordHit(
