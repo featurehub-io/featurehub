@@ -1,6 +1,27 @@
+
+FeatureHub provides granular user permissions which can be assigned per application and even per environment through user groups and permissions.
+
+== Users
+Users can be added to an organization by members with "Super Admin" permission. Once user is added, they can be assigned a group or multiple groups. User can also be assigned a "Super Admin" role. Editing of users details and deleting users can be performed only by "Super Admins", however assigning those users to portfolio groups can also be done by users with "Portfolio Admin" role.
+
+image::fh_add_user.png[Group permissions, 600]
+
+A user with "Super Admin" role cannot delete themselves from an organization. This is done for security reasons.
+
+=== Registering for FeatureHub (only for non-SSO, SAML or social logins)
+If you are using default identity option with the self-hosted FeatureHub instance, after you add a new user to the organization, you should copy the registration link and share it with the added user. They will be able to set their password and complete the registration.
+
+image::fh_add_user_link.png[Registration link, 600]
+
+
+=== Password reset (only for non-SSO, SAML or social logins)
+If an organization user forget their password, it can be reset by "Super Admin" user to a temporary password. Share the temporary password with the user. They will be able to reset it to a permanent password next time they attempt to login.
+
+image::fh_reset_password.png[Registration link, 600]
+
 == User groups
 
-Groups primary purpose is to control FeatureHub user access to the features per application and environments.
+Groups primary purpose is to control FeatureHub user access to the features in different portfolios, application and environments.
 Groups are created under a portfolio. You can create one or more groups and use them to set various permissions
 within the portfolio. Either use the same groups across applications within the
 portfolio, or create separate groups for each application.
@@ -33,10 +54,11 @@ image::fh-group-permissions.png[Group permissions, 1500]
 
 == Administrator groups
 
-There are two types of administrator groups, *Organization Super Admin* and *Portfolio Admin*.
+There are two types of administrator groups that are available by default, *Organization Super Admin* and *Portfolio Admin*.
 
-== Organization Super Admin
-* *Site Administrators* can:
+=== Organization Super Admin
+*Organization Super Admin* can:
+
 ** Create and manage users of the system
 ** Create and manage user groups
 ** Create and manage portfolios
@@ -45,8 +67,9 @@ There are two types of administrator groups, *Organization Super Admin* and *Por
 
 In other words, organization super admin has got all privileges, hence it is recommended to have at least 2 super admins, in case one of them leaves the organization.
 
-== Portfolio Administrators
-* *Portfolio Administrators* can:
+=== Portfolio Administrators
+*Portfolio Administrators* can:
+
 ** Create and manage portfolio groups
 ** Create and manage applications
 ** Create and manage environments
