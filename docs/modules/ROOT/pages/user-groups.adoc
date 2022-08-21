@@ -1,7 +1,8 @@
-= Portfolio groups
+== User groups
 
-You can create one or more groups of people, these groups can be used to set various permissions
-on the applications and their environments, within the portfolio. Either use the same groups across applications within the
+Groups primary purpose is to control FeatureHub user access to the features per application and environments.
+Groups are created under a portfolio. You can create one or more groups and use them to set various permissions
+within the portfolio. Either use the same groups across applications within the
 portfolio, or create separate groups for each application.
 Some example groups might be:
 
@@ -11,6 +12,8 @@ Some example groups might be:
 
 NOTE: Every Portfolio automatically gets a group called "Administrators", Simply adding people to this group will
 make them administrators for this portfolio, and they automatically get all feature permissions in any application within that Portfolio.
+
+Once you create a group, you can add users in your organization to it.
 
 You can also add Admin Service Accounts to the user groups for programmatic control via link:admin-development-kit{outfilesuffix}[Admin SDK API]
 
@@ -27,3 +30,29 @@ safety net when deploying incomplete code into production.
 * `CHANGE_VALUE` Can change the value of a feature or can "retire" a feature
 
 image::fh-group-permissions.png[Group permissions, 1500]
+
+== Administrator groups
+
+There are two types of administrator groups, *Organization Super Admin* and *Portfolio Admin*.
+
+== Organization Super Admin
+* *Site Administrators* can:
+** Create and manage users of the system
+** Create and manage user groups
+** Create and manage portfolios
+** Create and manage Admin service accounts
+** Create and manage features in any portfolio, application and environment.
+
+In other words, organization super admin has got all privileges, hence it is recommended to have at least 2 super admins, in case one of them leaves the organization.
+
+== Portfolio Administrators
+* *Portfolio Administrators* can:
+** Create and manage portfolio groups
+** Create and manage applications
+** Create and manage environments
+** Create and manage service accounts
+** Manage groups access to applications
+** Add and delete user from a group
+
+NOTE: Every Portfolio automatically gets a group called "Administrators", simply adding people to this group
+will make them administrators for this portfolio.

@@ -7,7 +7,7 @@ e.g green, blue, red etc. With rollout strategies, you can serve a `green` value
 `blue` value to users whose emails ending with `gmail.com` and `red` value to users whose location is
 `New Zealand or United States or United Kingdom`. You can also use percentage based rollouts and for example, turn your feature "on" only to 50% of the audience.
 
-Rollout strategies are created and added per link:key-concepts{outfilesuffix}[Feature value]. Once you add a strategy you can set a feature value to serve to users that will match this strategy, for example "on" or "off". In case a user doesn't match any of the provided strategies, they will be served a "default value". You can change the default strategy and rollout strategy feature values at any time (given you have permissions).
+Rollout strategies are created and added per link:features{outfilesuffix}[Feature value]. Once you add a strategy you can set a feature value to serve to users that will match this strategy, for example "on" or "off". In case a user doesn't match any of the provided strategies, they will be served a "default value". You can change the default strategy and rollout strategy feature values at any time (given you have permissions).
 
 You can apply zero or more rollout strategies to a feature. Each rollout strategy can be assigned a different feature value.
 
