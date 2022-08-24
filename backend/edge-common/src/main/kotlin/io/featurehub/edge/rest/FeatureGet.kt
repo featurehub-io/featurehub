@@ -18,6 +18,8 @@ import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.container.AsyncResponse
 import jakarta.ws.rs.core.Response
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.function.Consumer
 
 interface FeatureGet {
@@ -38,6 +40,8 @@ class FeatureGetProcessor @Inject constructor(
   @FeatureHubConfig("edge.cache.fastly.key")
   private val fastlyAuth: String?
   ) : FeatureGet {
+
+  private val log: Logger = LoggerFactory.getLogger(FeatureGetProcessor::class.java)
 
   override fun processGet(
     response: AsyncResponse,
@@ -108,6 +112,8 @@ class FeatureGetProcessor @Inject constructor(
       val newEtags = makeEtags(
         etags,
         environments.map(FeatureRequestResponse::etag))
+
+      log.debug("env-info is {}", environments.first().envInfo)
 
       response.resume(
         wrapCacheControl(

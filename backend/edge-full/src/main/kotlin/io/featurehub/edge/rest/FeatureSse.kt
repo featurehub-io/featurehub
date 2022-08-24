@@ -1,10 +1,9 @@
 package io.featurehub.edge.rest
 
-import io.featurehub.edge.FeatureTransformer
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.StreamingFeatureController
-import io.featurehub.edge.bucket.EventOutputBucketService
-import io.featurehub.edge.client.TimedBucketClientConnection
+import io.featurehub.edge.bucket.BucketService
+import io.featurehub.edge.client.TimedBucketClientFactory
 import io.featurehub.edge.stats.StatRecorder
 import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
@@ -22,13 +21,14 @@ interface FeatureSse {
     apiKey: String,
     featureHubAttrs: List<String>?,
     browserHubAttrs: String?,
-    etag: String?
+    etag: String?,
+    extraContext: String?
   ): EventOutput
 }
 
 class FeatureSseProcessor @Inject constructor(
-    private val bucketService: EventOutputBucketService, private val serverConfig: StreamingFeatureController,
-    private val statRecorder: StatRecorder, private val featureTransformer: FeatureTransformer
+  private val bucketService: BucketService, private val serverConfig: StreamingFeatureController,
+  private val statRecorder: StatRecorder, private val timedBucketFactory: TimedBucketClientFactory
 ) : FeatureSse {
   private val log: Logger = LoggerFactory.getLogger(FeatureSseProcessor::class.java)
 
@@ -38,24 +38,21 @@ class FeatureSseProcessor @Inject constructor(
     apiKey: String,
     featureHubAttrs: List<String>?,
     browserHubAttrs: String?,
-    etag: String?
+    etag: String?,
+    extraContext: String?
   ): EventOutput {
-    val o = EventOutput()
+    val outputStream = EventOutput()
 
     val apiKey = KeyParts(namedCache, envId, apiKey)
 
     try {
-      val b = TimedBucketClientConnection(
-        o,
-        apiKey,
-        featureTransformer,
-        statRecorder,
-        browserHubAttrs?.let { listOf(it) } ?: featureHubAttrs,
-        etag,
-        bucketService)
-      if (b.discovery()) {
-        serverConfig.requestFeatures(b)
-        bucketService.putInBucket(b)
+      val bucket = timedBucketFactory.createBucket(
+        outputStream, apiKey, browserHubAttrs?.let { listOf(it) } ?: featureHubAttrs,
+        etag, extraContext,
+      )
+      if (bucket.discovery()) {
+        serverConfig.requestFeatures(bucket)
+        bucketService.putInBucket(bucket)
       } else {
         statRecorder.recordHit(apiKey, EdgeHitResultType.FAILED_TO_WRITE_ON_INIT, EdgeHitSourceType.EVENTSOURCE)
       }
@@ -65,6 +62,6 @@ class FeatureSseProcessor @Inject constructor(
       throw InternalServerErrorException(e)
     }
 
-    return o
+    return outputStream
   }
 }

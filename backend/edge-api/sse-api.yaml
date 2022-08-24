@@ -9,7 +9,7 @@ paths:
       tags:
         - FeatureService
       parameters:
-        - name: sdkUrl
+        - name: apiKey
           in: query
           description: "A list of API keys to retrieve information about"
           required: true
