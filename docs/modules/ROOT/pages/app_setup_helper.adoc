@@ -1,6 +1,6 @@
-= Application setup helper
+= Quick setup helper
 
-If you have minimum of "Portfolio Admin" permissions, to help you to setup your first feature and everything required to use it in the SDK, we provide "Application setup progress" helper, which you can get to by clicking the "Rocket" icon in the app bar at the top.
+To help you to setup your first feature and everything required to use it in the SDK (code is not included), we provide "Application setup progress" helper. You can find it by clicking the "Rocket" icon in the app bar at the top. Requires minimum of "Portfolio Admin" permission.
 
 image::fh_progress_helper.png[App Setup progress helper, 300, 1500]
 

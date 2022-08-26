@@ -15,6 +15,14 @@ Environments can only be created and managed with "Portfolio Admin" or "Organiza
 
 == Environments ordering
 
-Environments ordering allows you to drag and drop environments according to the deployment order in your CI/CD pipeline, in other words you can refer to this as "environments promotion order". Environments ordering is useful as it will reflect on the Features Dashboard and display feature values for the environments in the order that you have specified.
+Environments ordering allows you to drag and drop environments according to the deployment order in your CI/CD pipeline, in other words you can refer to this as "environments promotion order". Environments ordering is useful as it will reflect on the "Features console" and display feature values for the environments in the order that you have specified.
+
+*Application settings*
+
+image::fh_env_order.png[Apppplications, 1000]
+
+*Features console*
+
+image::fh_features_dahsboard.png[Apppplications, 1500]
 
 

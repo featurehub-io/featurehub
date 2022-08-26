@@ -47,7 +47,7 @@ class StepperRocketButton extends StatelessWidget {
           if (snapshot.data != null &&
               (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
             return IconButton(
-              tooltip: 'Open setup helper',
+              tooltip: 'Open quick setup',
               icon: const Icon(
                 MaterialCommunityIcons.rocket,
 //                color: Theme.of(context).primaryColor,
