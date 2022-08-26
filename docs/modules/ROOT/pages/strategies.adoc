@@ -11,11 +11,19 @@ Rollout strategies are created and added per link:features{outfilesuffix}[Featur
 
 You can apply zero or more rollout strategies to a feature. Each rollout strategy can be assigned a different feature value.
 
+image::fh_split_targeting_2.png[Split targeting,600]
+
+
 == Targeting rules
 A rollout strategy consists of one or more targeting rules. The rule can consist of any combination of matching criteria.
 
 Each additional rule is always applied as an `AND` condition - the user is using a mobile device that is iOS `AND`
 their country is Australia.
+
+*Example of a targeting rule*
+
+image::fh_split_targeting.png[Split targeting,1500]
+
 
 Each rule is essentially a key, a condition (equals, includes, etc) and zero or more values. Whereas each rule
 is an `AND` condition, each _value_ is an `OR` condition. For example, if the `country` is `New Zealand` `OR` `Indonesia`
