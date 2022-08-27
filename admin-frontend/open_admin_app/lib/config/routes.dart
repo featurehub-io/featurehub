@@ -122,7 +122,8 @@ class Routes {
         permissionType: PermissionType.portfolioadmin);
     router.define('/portfolios',
         routeSlots: [RouteSlot.portfolio],
-        handler: handleRouteChangeRequest(routeCreator.portfolios));
+        handler: handleRouteChangeRequest(routeCreator.portfolios),
+        permissionType: PermissionType.superadmin);
     router.define('/app-settings',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.manageApp),

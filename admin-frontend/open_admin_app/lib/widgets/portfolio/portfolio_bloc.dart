@@ -12,11 +12,22 @@ class PortfolioBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
   late PortfolioServiceApi _portfolioServiceApi;
 
+  late StreamSubscription<String?>? _globalRefresherSubscriber;
+
   Stream<List<Portfolio>> get portfolioSearch =>
       _portfolioSearchResultSource.stream;
   final _portfolioSearchResultSource = BehaviorSubject<List<Portfolio>>();
 
   PortfolioBloc(this.search, this.mrClient) {
+    _globalRefresherSubscriber = mrClient.streamValley.globalRefresherStream.listen((event) {
+      // if they no longer have the right permissions, ignore this trigger
+      print("admin? ${mrClient.userIsSuperAdmin}");
+      if (mrClient.userIsSuperAdmin) {
+        _portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient);
+        triggerSearch(search);
+      }
+    });
+
     _portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient);
     triggerSearch(search);
   }
@@ -85,6 +96,8 @@ class PortfolioBloc implements Bloc {
 
   @override
   void dispose() {
+    _globalRefresherSubscriber?.cancel();
+    _globalRefresherSubscriber = null;
     _portfolioSearchResultSource.close();
   }
 
