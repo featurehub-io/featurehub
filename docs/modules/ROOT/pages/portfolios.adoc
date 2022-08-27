@@ -1,0 +1,12 @@
+= Portfolios
+
+Portfolios are simply a collection of one or more applications.
+Typically, portfolios are named to match areas of your business where groups of applications (or application suites) live. E.g. "Digital", "Platforms", "Operations".
+There is no limit to the number of portfolios you can have.
+Portfolios can only be created and edited with "Super Admin" permission.
+
+image::fh_portfolios.png[Portfolios,1500]
+
+The diagram representing Portfolio and components that belong within a portfolio
+
+image::fh_overview.svg[Overview,500]

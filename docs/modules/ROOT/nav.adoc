@@ -1,11 +1,40 @@
-* xref:index.adoc[Overview]
-* xref:analytics.adoc[Analytics]
-* xref:architecture.adoc[Architecture]
-* xref:installation.adoc[Installation]
-* xref:configuration.adoc[Configuration]
-* xref:identity.adoc[Identity]
-* xref:metrics.adoc[Monitoring your Installation]
-* xref:sdks.adoc[Software Development Kits]
-* xref:admin-development-kit.adoc[Admin Software Development Kits]
-* xref:developers.adoc[Contributing]
-* xref:sdks-development.adoc[Developing an SDK]
+* xref:index.adoc[FeatureHub Overview]
+* FeatureHub Key Concepts
+** xref:portfolios.adoc[Portfolios]
+** xref:applications.adoc[Applications]
+** xref:environments.adoc[Environments]
+** xref:features.adoc[Features]
+** xref:strategies.adoc[Rollout Strategy and User Targeting]
+** xref:service-accounts.adoc[Service Accounts & API Keys]
+** xref:users.adoc[Users & User Groups Permissions]
+** xref:app_setup_helper.adoc[Quick Setup Helper]
+
+* FeatureHub Management Via an API
+** xref:admin-service-accounts.adoc[Admin Service Accounts]
+** xref:admin-development-kit.adoc[Admin Software Development Kits]
+
+* Self-Hosting FeatureHub App
+** xref:architecture.adoc[Architecture]
+** xref:evaluation.adoc[Evaluating FeatureHub]
+** xref:installation.adoc[Installation]
+** xref:configuration.adoc[Configuration]
+** xref:identity.adoc[Identity, authentication, OAuth2 and SAML options]
+** xref:metrics.adoc[Monitoring your Installation]
+
+* FeatureHub SDKs
+** xref:sdks.adoc[Software Development Kits]
+** xref:sdks-development.adoc[Developing an SDK]
+
+* Analytics
+** xref:analytics.adoc[Google Analytics Integration]
+
+* Contributing to FeatureHub
+** xref:developers.adoc[Contributors Documentation]
+
+.FeatureHub Hosted
+
+* xref:hosted:index.adoc[Overview]
+
+* xref:hosted:saml.adoc[SSO / SAML Configuration]
+
+* xref:hosted:pricing.adoc[Pricing & Billing]

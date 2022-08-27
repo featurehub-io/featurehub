@@ -17,7 +17,7 @@ We go into this in more detail below but suffice to say, the streaming deploymen
 even billions of requests. Deployed, conceptually it looks like this:
 
 image::fh_architecture_streaming.svg[Architecture,600]
-NOTE: Communication between Edge and Dacha(Cache) is shown via REST on this image, which can be configured optionally. By default it is via NATS.
+NOTE: Communication between Edge and Dacha(Cache) is shown via REST on this image, which can be configured optionally. By default, it is via NATS.
 
 === Non-Streaming - Party-Server-Ish
 The non-streaming platform (Party-Server-Ish) is designed to scale to less - tens of thousands, possibly

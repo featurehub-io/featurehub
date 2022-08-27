@@ -12,11 +12,14 @@ ga('send', 'pageview');
 </script>
 ++++
 
-== Overview
-The Admin SDK is designed to provide access to the Management Repository API. It is an OpenAPI driven API, based on the MR OpenAPI file that can be located https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[here]
+== Admin SDK API
+
+The Admin SDK API is designed to provide access to the Management Repository API. It is an OpenAPI driven API, based on the MR OpenAPI file that can be located https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[here]
 
 The API is broken up into a number of services representing different facets of the Management Repository, e.g.
 Portfolios, Applications, Environments, Features, Service Accounts, Authentication and so forth.
+
+
 
 == Installing the ADK in your project
 

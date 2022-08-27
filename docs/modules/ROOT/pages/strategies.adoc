@@ -1,0 +1,110 @@
+= Rollout strategies and targeting rules
+
+== Rollout strategies
+
+Rollout strategies provide an ability to rollout features to a limited audience based on targeting rules, for example imagine you have a feature flag of type string which controls a _"button color"_ that can be in multiple states,
+e.g green, blue, red etc. With rollout strategies, you can serve a `green` value to users on `iOS` devices,
+`blue` value to users whose emails ending with `gmail.com` and `red` value to users whose location is
+`New Zealand or United States or United Kingdom`. You can also use percentage based rollouts and for example, turn your feature "on" only to 50% of the audience.
+
+Rollout strategies are created and added per link:features{outfilesuffix}[Feature value]. Once you add a strategy you can set a feature value to serve to users that will match this strategy, for example "on" or "off". In case a user doesn't match any of the provided strategies, they will be served a "default value". You can change the default strategy and rollout strategy feature values at any time (given you have permissions).
+
+You can apply zero or more rollout strategies to a feature. Each rollout strategy can be assigned a different feature value.
+
+image::fh_split_targeting_2.png[Split targeting,600]
+
+
+== Targeting rules
+A rollout strategy consists of one or more targeting rules. The rule can consist of any combination of matching criteria.
+
+Each additional rule is always applied as an `AND` condition - the user is using a mobile device that is iOS `AND`
+their country is Australia.
+
+*Example of a targeting rule*
+
+image::fh_split_targeting.png[Split targeting,1500]
+
+
+Each rule is essentially a key, a condition (equals, includes, etc) and zero or more values. Whereas each rule
+is an `AND` condition, each _value_ is an `OR` condition. For example, if the `country` is `New Zealand` `OR` `Indonesia`
+`AND` the custom field `payment_method` is equal to `credit_card` `OR` `direct_debit`.
+
+Each rollout strategy can have zero or more rules associated with it. If it has zero rules and no percentage rule
+the strategy will be ignored. There is no limit on how many rules you can apply. There are 3 main rule types: *Preset*, *Custom* and *Percentage split*
+
+== Targeting rule types
+
+=== Preset
+
+- Country
+
+Available https://www.britannica.com/topic/list-of-countries-1993160[list of countries to match on]
+
+- Device
+
+Available values to match on:
+`browser, mobile, desktop, server, watch, embedded`
+
+- Platform
+
+Available values to match on:
+
+`linux, windows, macos, android, ios`
+
+- User Key
+
+For example, can be used to match on email address, partial email address, user id, partial user id or regex.
+
+- Version
+
+Requires to be in semantic version format, e.g. `1.2.0` -  read more about semantic versioning https://semver.org/[here]
+
+=== Custom
+
+If you cannot find a suitable rule from those listed above, you can create your own rule. When setting up a custom rule you will be required to select a rule type.
+
+*Supported custom rules types:*
+
+`string`
+
+`number` - any valid number
+
+`boolean` - true and false
+
+`semantic version` - as per semantic version format. If you are only targeting Java you also get the additional formats supported by Maven and Gradle.
+
+`date` - international format only - ``YYYY-MM-DD ``
+
+`date-time` - international format only - `YYYY-MM-DDTHH:MM:SS.NNN` with an optional timezone, UTC is assumed
+
+`ip-address` - CIDR or specific IP addresses are supported.
+
+
+Note, if you do not set the value in the _user context_ in the SDK, and the rule indicates to match `blank` value then this rule will evaluate to true.
+
+== Percentage split rule
+
+As well as setting up targeting rules you can also setup a special rule type - percentage split. Percentage rules lets you rollout a feature value to an approximate percentage of your user base.
+
+A typical scenario for a flag for example would be a "soft launch". The "default value" of your flag would be `off` and you set some arbitrary percentage
+to `on` (e.g. 20%). Then you would analyse how your feature is performing for those 20%, collect any user feedback, monitor your logging for any issues and if you are happy you will start
+increasing the rollout to more and more people in your user base, eventually setting it to 100%, changing the default to
+"on" and removing the strategy. (This is set _per environment_).
+
+In case of multiple rollout strategies assigned to a feature that contain percentage split rules, the sum of all of them cannot be over 100%.
+If you add percentage based rollout strategies that do not add to 100%, then the remainder continues to use the
+default value.
+
+You can also use percentage rules to perform *_A-B testing_* or *_run experiments_*. Given FeatureHub provides a GoogleAnalytics connector - you can see the result of your experimentation in the Google Analytics Events dashboard in real time.
+
+Percentage rules can be mixed with other rules, for example a strategy can have a country rule and a percentage rule, e.g. turn on the feature flag to 25% of the audience in New Zealand.
+
+For Percentage rule to work you need to set a `Context` with `sessionId` or `userKey` when implementing feature flags through our SDKs. `userKey` can be anything that identifies your user, e.g `userId`, `email` etc..
+
+
+NOTE: It is important to note that the percentages are an approximation, the algorithm works by taking user _Context_ data you provide
+in SDK in the client side (either a `sessionId` or a `userKey`, ideally consistent for the user across platforms) and it uses
+an algorithm to spread that across a range giving you control down to four decimal points, but the algorithm is more accurate
+the greater the number of clients you have. i.e. you can rollout to 0.0001% of your usage base if you wish.
+If you only have five users, this probably won't turn it on for anyone, if you have a million it will
+be more accurate.

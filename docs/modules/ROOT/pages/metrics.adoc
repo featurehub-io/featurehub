@@ -2,21 +2,21 @@
 
 FeatureHub uses the industry standard Prometheus standard for metrics. Each of the different services (the Management
 Repository, Edge and Dacha) all provide metric endpoints at `/metrics` to allow you to setup how you would like
-to monitor. 
+to monitor.
 
-We would like to include some standard Grafana dashboards as well at some point, and some recommended alerts. 
+We would like to include some standard Grafana dashboards as well at some point, and some recommended alerts.
 
-In this document we will go through each of the services, starting with a section on what is common for all 
+In this document we will go through each of the services, starting with a section on what is common for all
 the services.
 
 NOTE: Party Server, Party-Server-ish and Edge-REST are an amalgam of MR, Dacha and Edge in different forms, so if you are running
-Party Server or  Party-Server-ish, you will have the combined metrics available to you. Edge-Rest exposes Edge metrics.
+Party Server or Party-Server-ish, you will have the combined metrics available to you. Edge-Rest exposes Edge metrics.
 
 == Common Metrics
 
-All applications have the ability to set an endpoint specifically for metrics and health checks. It is recommended 
+All applications have the ability to set an endpoint specifically for metrics and health checks. It is recommended
 you use a different port to the one you expose to the outside world so the outside world does not perform metrics
-checks or health checks on your server instances. 
+checks or health checks on your server instances.
 
 The configuration setting is `metrics.port` and the endpoint is `/metrics`
 
@@ -34,15 +34,15 @@ All log levels have Counters associated with them, so:
 |loglevel_error|Counter
 |===
 
-NOTE: A recommended metric is to alert on error level logs, you should not have any. 
+NOTE: A recommended metric is to alert on error level logs, you should not have any.
 
 === REST API endpoints metrics
 
-All API endpoints have Histogram metric around them The names of the endpoints are derived from the `operationId`'s in 
-the <<admin-development-kit.adoc#_openapi_files,OpenAPI document>>, and will not have a prefix unless you specify the system property or 
+All API endpoints have Histogram metric around them The names of the endpoints are derived from the `operationId`'s in
+the <<admin-development-kit.adoc#_openapi_files,OpenAPI document>>, and will not have a prefix unless you specify the system property or
 environment variable of `prometheus.jersey.prefix`.
 
-For example, if you wanted to create a metric around the `login` method in case of repeated attempts at logging in, 
+For example, if you wanted to create a metric around the `login` method in case of repeated attempts at logging in,
 then looking at the metrics you would see this:
 
 ----
@@ -68,7 +68,7 @@ login_histogram_sum 0.132269205
 ----
 
 Furthermore, this metric also counts the number of 2xx, 3xx, 4xx and 5xx endpoint responses that occur from your API
-endpoints, allowing you to put alerts to see if there is an usual trend in these metrics. 
+endpoints, allowing you to put alerts to see if there is an usual trend in these metrics.
 
 [cols="1,1,1"]
 |===
@@ -190,12 +190,12 @@ monitor what is happening.
 4. gc = G1 Young Generation, G1 Old Generation
 5. pool = mapped, direct
 6. state = RUNNABLE, TERMINATED, TIMED_WAITING, WAITING, NEW, BLOCKED
-7. runtime, vendor, version = e.g. `jvm_info{runtime="OpenJDK Runtime Environment",vendor="AdoptOpenJDK",version="11.0.11+9",}` 
+7. runtime, vendor, version = e.g. `jvm_info{runtime="OpenJDK Runtime Environment",vendor="AdoptOpenJDK",version="11.0.11+9",}`
 
 == Management Repository
 
 The Management Repository has some special metrics of its own designed to allow you to determine if things are working,
-and flowing properly. All of these are in the Party Server as well unless otherwise specified. 
+and flowing properly. All of these are in the Party Server as well unless otherwise specified.
 
 === Feature Publishing
 

@@ -1,0 +1,28 @@
+= Environments
+
+Applications have one or more environments, these typically refer to groups of co-operating deployments of your
+application in different environments. There are often multiple environments, for example: development,
+acceptance testing, UAT, production. You can create as many environments as you need.
+The values of your features are set per environment.
+
+When an application is created there is always an initial environment
+called `Production` created and marked as "Production". Marking an environment as "Production" doesn't impact any feature values or the way they are served, it will just throw an additional warning if you attempt to remove it.
+
+Every FeatureHub environment has a unique ID, this ID plus a Service Account form an API Key, which you reference in your application via the
+SDK when you query for the value of the features.
+
+Environments can only be created and managed with "Portfolio Admin" or "Organization Super Admin" permission.
+
+== Environments ordering
+
+Environments ordering allows you to drag and drop environments according to the deployment order in your CI/CD pipeline, in other words you can refer to this as "environments promotion order". Environments ordering is useful as it will reflect on the "Features console" and display feature values for the environments in the order that you have specified.
+
+*Application settings*
+
+image::fh_env_order.png[Apppplications, 1000]
+
+*Features console*
+
+image::fh_features_dahsboard.png[Apppplications, 1500]
+
+
