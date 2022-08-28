@@ -3,10 +3,9 @@ package io.featurehub.edge
 import io.featurehub.edge.features.DachaFeatureRequestSubmitter
 import io.featurehub.edge.features.DachaRequestOrchestrator
 import io.featurehub.edge.features.EdgeConcurrentRequestPool
-import io.featurehub.edge.rest.FeatureGet
-import io.featurehub.edge.rest.FeatureGetProcessor
-import io.featurehub.edge.rest.FeatureUpdate
-import io.featurehub.edge.rest.FeatureUpdateProcessor
+import io.featurehub.edge.rest.*
+import io.featurehub.edge.utils.CacheControlResponseWrapper
+import io.featurehub.edge.utils.FastlyResponseWrapper
 import io.featurehub.edge.utils.UpdateFeatureMapper
 import io.featurehub.edge.utils.UpdateMapper
 import jakarta.inject.Singleton
@@ -32,7 +31,14 @@ class EdgeCommonFeature : Feature {
         bind(UpdateFeatureMapper::class.java)
           .to(UpdateMapper::class.java)
           .`in`(Singleton::class.java)
-
+        bind(CacheControlResponseWrapper::class.java)
+          .to(EdgeGetResponseWrapper::class.java)
+          .`in`(Singleton::class.java)
+        if (FastlyResponseWrapper.fastlyConfigured()) {
+          bind(FastlyResponseWrapper::class.java)
+            .to(EdgeGetResponseWrapper::class.java)
+            .`in`(Singleton::class.java)
+        }
       }
     })
 

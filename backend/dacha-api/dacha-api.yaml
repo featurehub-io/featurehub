@@ -412,6 +412,11 @@ components:
           x-basename: sId
           type: string
           format: uuid
+        environmentInfo:
+          description: "Allows extensibility for the environment"
+          x-basename: eInf
+          additionalProperties:
+            type: string
         roles:
           type: array
           items:
