@@ -17,6 +17,7 @@ class FHAlertDialog extends StatelessWidget {
     return Stack(children: [
       const ModalBarrier(dismissible: true, color: Colors.black54),
       AlertDialog(
+        scrollable: true,
         title: title,
         content: content,
         actions: actions,

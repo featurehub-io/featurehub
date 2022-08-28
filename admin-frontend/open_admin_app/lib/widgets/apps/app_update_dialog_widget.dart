@@ -3,6 +3,7 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 import 'apps_bloc.dart';
@@ -42,63 +43,68 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return FHAlertDialog(
-      title: Text(widget.application == null
-          ? 'Create new application'
-          : 'Edit application'),
-      content: Form(
-          key: _formKey,
-          child: SizedBox(
-            width: 500,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextFormField(
-                    controller: _appName,
-                    autofocus: true,
-                    textInputAction: TextInputAction.next,
-                    decoration:
-                        const InputDecoration(labelText: 'Application name'),
-                    validator: ((v) {
-                      if (v == null || v.isEmpty) {
-                        return 'Please enter an application name';
-                      }
-                      if (v.length < 4) {
-                        return 'Application name needs to be at least 4 characters long';
-                      }
-                      return null;
-                    })),
-                TextFormField(
-                    controller: _appDescription,
-                    textInputAction: TextInputAction.done,
-                    decoration: const InputDecoration(
-                        labelText: 'Application description'),
-                    validator: ((v) {
-                      if (v == null || v.isEmpty) {
-                        return 'Please enter app description';
-                      }
-                      if (v.length < 4) {
-                        return 'Application description needs to be at least 4 characters long';
-                      }
-                      return null;
-                    })),
-              ],
-            ),
-          )),
-      actions: [
-        FHFlatButtonTransparent(
-          title: 'Cancel',
-          keepCase: true,
-          onPressed: () {
-            widget.bloc.mrClient.removeOverlay();
-          },
-        ),
-        FHFlatButton(
-            title: isUpdate ? 'Update' : 'Create',
+    if (_busy) {
+      return const FHLoadingIndicator();
+    }
+    else {
+      return FHAlertDialog(
+        title: Text(widget.application == null
+            ? 'Create new application'
+            : 'Edit application'),
+        content: Form(
+            key: _formKey,
+            child: SizedBox(
+              width: 500,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextFormField(
+                      controller: _appName,
+                      autofocus: true,
+                      textInputAction: TextInputAction.next,
+                      decoration:
+                      const InputDecoration(labelText: 'Application name'),
+                      validator: ((v) {
+                        if (v == null || v.isEmpty) {
+                          return 'Please enter an application name';
+                        }
+                        if (v.length < 4) {
+                          return 'Application name needs to be at least 4 characters long';
+                        }
+                        return null;
+                      })),
+                  TextFormField(
+                      controller: _appDescription,
+                      textInputAction: TextInputAction.done,
+                      decoration: const InputDecoration(
+                          labelText: 'Application description'),
+                      validator: ((v) {
+                        if (v == null || v.isEmpty) {
+                          return 'Please enter app description';
+                        }
+                        if (v.length < 4) {
+                          return 'Application description needs to be at least 4 characters long';
+                        }
+                        return null;
+                      })),
+                ],
+              ),
+            )),
+        actions: [
+          FHFlatButtonTransparent(
+            title: 'Cancel',
             keepCase: true,
-            onPressed: () => _busy ? null : _handleValidation()),
-      ],
-    );
+            onPressed: () {
+              widget.bloc.mrClient.removeOverlay();
+            },
+          ),
+          FHFlatButton(
+              title: isUpdate ? 'Update' : 'Create',
+              keepCase: true,
+              onPressed: () => _handleValidation()),
+        ],
+      );
+    }
   }
 
   void _handleValidation() async {

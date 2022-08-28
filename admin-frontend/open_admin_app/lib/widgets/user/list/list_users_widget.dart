@@ -105,12 +105,16 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                 DataCell(Text(
                                     '${p.person.whenLastAuthenticated?.toLocal() ?? ""}')),
                                 DataCell(Row(children: <Widget>[
-                                  FHIconButton(
-                                    icon: const Icon(Icons.info),
-                                    onPressed: () => bloc.mrClient
-                                        .addOverlay((BuildContext context) {
-                                      return ListUserInfoDialog(bloc, p);
-                                    }),
+                                  Tooltip(
+                                    message:
+                                    _infoTooltip(p, allowedLocalIdentity),
+                                    child: FHIconButton(
+                                      icon: Icon(Icons.info, color: _infoColour(p, allowedLocalIdentity)),
+                                      onPressed: () => bloc.mrClient
+                                          .addOverlay((BuildContext context) {
+                                        return ListUserInfoDialog(bloc, p);
+                                      }),
+                                    ),
                                   ),
                                   FHIconButton(
                                       icon: const Icon(Icons.edit),
@@ -253,7 +257,7 @@ class ListUserInfoDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return FHAlertDialog(
       title: const Text(
-        'User Information',
+        'User information',
         style: TextStyle(fontSize: 22.0),
       ),
       content: _ListUserInfo(bloc: bloc, foundPerson: entry),
@@ -296,7 +300,7 @@ class _ListUserInfo extends StatelessWidget {
               person.groups.sort((a, b) => a.name.compareTo(b.name));
 
               return SizedBox(
-//      height: 400.0,
+                height: 250.0,
                 width: 400.0,
                 child: ListView(
                   children: [
@@ -466,4 +470,20 @@ class DeleteDialogWidget extends StatelessWidget {
       },
     );
   }
+}
+
+String _infoTooltip(SearchPersonEntry entry, bool allowedLocalLogin) {
+  if (entry.registration.expired) {
+    return "Registration expired";
+  }
+  return "";
+}
+
+Color _infoColour(SearchPersonEntry entry, bool allowedLocalLogin) {
+
+  if (entry.registration.expired) {
+    return Colors.red;
+  }
+
+  return Colors.green;
 }
