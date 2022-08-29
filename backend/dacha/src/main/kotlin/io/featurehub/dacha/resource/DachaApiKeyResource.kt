@@ -40,6 +40,7 @@ class DachaApiKeyResource @Inject constructor(private val cache: InternalCache) 
       .applicationId(environment.applicationId)
       .serviceKeyId(collection.serviceAccountId)
       .etag(collection.features.etag)
+      .environmentInfo(environment.environment.environmentInfo)
       .features(filteredList)
   }
 
@@ -55,6 +56,7 @@ class DachaApiKeyResource @Inject constructor(private val cache: InternalCache) 
       .applicationId(environment.applicationId)
       .serviceKeyId(collection.serviceAccountId)
       .roles(collection.perms.permissions)
+      .environmentInfo(environment.environment.environmentInfo)
       .feature(feature)
   }
 }

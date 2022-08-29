@@ -9,7 +9,7 @@ paths:
       tags:
         - FeatureService
       parameters:
-        - name: sdkUrl
+        - name: apiKey
           in: query
           description: "A list of API keys to retrieve information about"
           required: true
@@ -28,6 +28,19 @@ paths:
       responses:
         "200":
           description: feature request successful, all environments you have permission to or that were found are returned
+          headers:
+            x-fh-version:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeatureEnvironmentCollection"
+        "236":
+          description: its not you, its me, environment stagnant.
           headers:
             x-fh-version:
               required: false
@@ -111,7 +124,7 @@ components:
           type: boolean
     SSEResultState:
       type: string
-      description: "error is an inherint state"
+      description: "error is an inherent state"
       enum:
         - ack
         - bye

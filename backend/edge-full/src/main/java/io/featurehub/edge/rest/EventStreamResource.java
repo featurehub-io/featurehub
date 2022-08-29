@@ -69,9 +69,10 @@ public class EventStreamResource {
       @PathParam("environmentId") UUID envId,
       @PathParam("apiKey") String apiKey,
       @HeaderParam("x-featurehub") List<String> featureHubAttrs, // non browsers can set headers
+      @HeaderParam("x-fh-extraconfig") String extraConfig,
       @QueryParam("xfeaturehub") String browserHubAttrs, // browsers can't set headers,
       @HeaderParam("Last-Event-ID") String etag) {
-    return featureSse.process(namedCache, envId, apiKey, featureHubAttrs, browserHubAttrs, etag);
+    return featureSse.process(namedCache, envId, apiKey, featureHubAttrs, browserHubAttrs, etag, extraConfig);
   }
 
   /**

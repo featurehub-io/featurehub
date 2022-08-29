@@ -180,6 +180,11 @@ public class ConvertUtils implements Conversions {
                 env.getPriorEnvironment() != null ? env.getPriorEnvironment().getId() : null)
             .applicationId(env.getParentApplication().getId());
 
+    if (opts.contains(FillOpts.Details)) {
+      environment.environmentInfo(env.getUserEnvironmentInfo());
+      environment.description(env.getDescription());
+    }
+
     if (opts.contains(FillOpts.People)) {
       environment.updatedBy(
           toAuditCreatedBy(toPerson(

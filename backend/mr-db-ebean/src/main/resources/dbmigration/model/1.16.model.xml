@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addColumn tableName="fh_environment">
+            <column name="u_env_inf" type="json"/>
+            <column name="m_env_inf" type="json"/>
+        </addColumn>
+        <alterColumn columnName="person_type" tableName="fh_person" checkConstraint="check ( person_type in ('PERSON','SERVICEACCOUNT'))" checkConstraintName="ck_fh_person_person_type"/>
+    </changeSet>
+</migration>

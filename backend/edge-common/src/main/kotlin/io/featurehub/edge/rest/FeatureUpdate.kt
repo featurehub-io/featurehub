@@ -3,21 +3,23 @@ package io.featurehub.edge.rest
 import com.fasterxml.jackson.core.JsonProcessingException
 import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.api.DachaClientServiceRegistry
+import io.featurehub.dacha.model.DachaPermissionResponse
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.stats.StatRecorder
 import io.featurehub.edge.utils.UpdateMapper
 import io.featurehub.mr.messaging.StreamedFeatureUpdate
-import io.featurehub.dacha.model.DachaPermissionResponse
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RoleType
 import io.featurehub.sse.model.FeatureStateUpdate
 import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
 import io.prometheus.client.Histogram
+import jakarta.annotation.PostConstruct
 import jakarta.inject.Inject
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.container.AsyncResponse
 import jakarta.ws.rs.core.Response
+import org.glassfish.hk2.api.IterableProvider
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
@@ -29,15 +31,28 @@ interface FeatureUpdate {
     featureStateUpdate: FeatureStateUpdate, statRecorder: StatRecorder?)
 }
 
+interface FeatureUpdateResponseInterceptor {
+  /** returns true if processed */
+  fun intercept(perms: DachaPermissionResponse, response: AsyncResponse): Boolean
+}
+
 interface FeatureUpdatePublisher {
   fun publishFeatureChangeRequest(featureUpdate: StreamedFeatureUpdate, namedCache: String)
 }
 
 class FeatureUpdateProcessor @Inject constructor(private val updateMapper: UpdateMapper,
                                                  private val dachaClientRegistry: DachaClientServiceRegistry,
-                                                 private val featureUpdatePublisher: FeatureUpdatePublisher
+                                                 private val featureUpdatePublisher: FeatureUpdatePublisher,
+                                                 private val sourceResponseInterceptors: IterableProvider<FeatureUpdateResponseInterceptor>
 ) : FeatureUpdate {
   private val log: Logger = LoggerFactory.getLogger(FeatureUpdateProcessor::class.java)
+  private val responseInterceptors = mutableListOf<FeatureUpdateResponseInterceptor>()
+
+  @PostConstruct
+  fun postInit() {
+    responseInterceptors.addAll(sourceResponseInterceptors.toList())
+    log.debug("there are {} post response interceptors for PUT requests: {}", responseInterceptors.size, responseInterceptors.map { it.javaClass.name })
+  }
 
   override fun updateFeature(
     response: AsyncResponse,
@@ -85,6 +100,10 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
       if (perms == null) {
         statRecorder?.recordHit(key, EdgeHitResultType.MISSED, EdgeHitSourceType.TESTSDK)
         response.resume(Response.status(Response.Status.NOT_FOUND).build())
+        return
+      }
+
+      if (responseInterceptors.any { it.intercept(perms, response) }) {
         return
       }
 
