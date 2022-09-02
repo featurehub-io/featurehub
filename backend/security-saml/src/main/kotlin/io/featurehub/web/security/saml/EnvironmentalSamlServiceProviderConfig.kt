@@ -4,7 +4,6 @@ import cd.connect.jersey.common.LoggingConfiguration
 import com.onelogin.saml2.settings.Saml2Settings
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.utils.FallbackPropertyConfig
-import io.featurehub.utils.FeatureHubConfig
 import io.featurehub.web.security.oauth.AuthProviderInfo
 import io.featurehub.web.security.oauth.SSOProviderCollection
 import io.featurehub.web.security.oauth.providers.SSOProviderCustomisation
@@ -45,6 +44,12 @@ class SamlEnvironmentalFeature : Feature {
     return true
   }
 
+
+  companion object {
+    fun samlProvidersExist(): Boolean {
+      return FallbackPropertyConfig.getConfig("saml.idp-providers") != null
+    }
+  }
 }
 
 class SamlConfigAsAuthProvider(private val config: SamlServiceProviderConfig) : AuthProviderInfo {
