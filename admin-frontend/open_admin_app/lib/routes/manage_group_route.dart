@@ -15,6 +15,7 @@ import 'package:open_admin_app/widgets/group/group_update_widget.dart';
 /// and their access will be limited based on whether they are a site admin.
 class ManageGroupRoute extends StatefulWidget {
   final bool createGroup;
+
   const ManageGroupRoute({Key? key, required this.createGroup})
       : super(key: key);
 
@@ -24,6 +25,8 @@ class ManageGroupRoute extends StatefulWidget {
 
 class _ManageGroupRouteState extends State<ManageGroupRoute> {
   GroupBloc? bloc;
+  bool sortToggle = true;
+  int sortColumnIndex = 0;
 
   @override
   void initState() {
@@ -96,13 +99,98 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      _filterRow(context, bloc, snapshot.data!),
-                      for (Person p in snapshot.data!.members)
-                        MemberWidget(
-                          group: snapshot.data!,
-                          member: p,
-                          bloc: bloc,
-                        )
+                      Row(
+                        children: <Widget>[
+                          Container(
+                            child: bloc.mrClient.isPortfolioOrSuperAdmin(
+                                    snapshot.data!.portfolioId!)
+                                ? TextButton.icon(
+                                    icon: const Icon(Icons.add),
+                                    label: const Text('Add members'),
+                                    onPressed: () => bloc.mrClient
+                                        .addOverlay((BuildContext context) {
+                                      return AddMembersDialogWidget(
+                                        bloc: bloc,
+                                        group: snapshot.data!,
+                                      );
+                                    }),
+                                  )
+                                : Container(),
+                          )
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Card(
+                              child: DataTable(
+                            showCheckboxColumn: false,
+                            sortAscending: sortToggle,
+                            sortColumnIndex: sortColumnIndex,
+                            columns: [
+                              DataColumn(
+                                  label: const Text('Name'),
+                                  onSort: (columnIndex, ascending) {
+                                    onSortColumn(
+                                        snapshot.data!.members, columnIndex, ascending);
+                                  }),
+                              DataColumn(
+                                label: const Text('Email'),
+                                onSort: (columnIndex, ascending) {
+                                  onSortColumn(
+                                      snapshot.data!.members, columnIndex, ascending);
+                                },
+                              ),
+                              DataColumn(
+                                label: const Text(
+                                    'Type (User or Admin Service Account)'),
+                                onSort: (columnIndex, ascending) {
+                                  onSortColumn(
+                                      snapshot.data!.members, columnIndex, ascending);
+                                },
+                              ),
+                              DataColumn(
+                                  label: const Padding(
+                                    padding: EdgeInsets.only(left: 12.0),
+                                    child: Text('Actions'),
+                                  ),
+                                  onSort: (i, a) => {}),
+                            ],
+                            rows: [
+                              for (Person member in snapshot.data!.members)
+                                DataRow(cells: [
+                                  DataCell(
+                                    Text(member.name ?? ''),
+                                  ),
+                                  DataCell(Text(member.personType == PersonType.person ? member.email! : "")),
+                                  DataCell(Text(
+                                      member.personType == PersonType.person
+                                          ? 'User'
+                                          : 'Service Account')),
+                                  DataCell(bloc.mrClient.isPortfolioOrSuperAdmin(
+                                          snapshot.data!.portfolioId!)
+                                      ? Tooltip(
+                                      message: "Remove from group",
+                                        child: FHIconButton(
+                                            icon: const Icon(Icons.delete),
+                                            onPressed: () {
+                                              try {
+                                                bloc.removeFromGroup(
+                                                    snapshot.data!, member);
+                                                bloc.mrClient.addSnackbar(Text(
+                                                    "'${member.name}' removed from group '${snapshot.data!.name}'"));
+                                              } catch (e, s) {
+                                                bloc.mrClient.dialogError(e, s);
+                                              }
+                                            },
+                                          ),
+                                      )
+                                      : const Text(''))
+                                ])
+                            ],
+                          )),
+                        ],
+                      )
                     ],
                   );
                 } else {
@@ -113,6 +201,53 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
       ],
     );
   }
+  void onSortColumn(
+      List<Person> people, int columnIndex, bool ascending) {
+    setState(() {
+      if (columnIndex == 0) {
+        if (ascending) {
+          people.sort((a, b) {
+            return a.name!
+                .toLowerCase()
+                .compareTo(b.name!.toLowerCase());
+          });
+        } else {
+          people.sort((a, b) {
+            return b.name!
+                .toLowerCase()
+                .compareTo(a.name!.toLowerCase());
+          });
+        }
+      }
+      if (columnIndex == 1) {
+        if (ascending) {
+          people.sort((a, b) => a.email!
+              .toLowerCase()
+              .compareTo(b.email!.toLowerCase()));
+        } else {
+          people.sort((a, b) => b.email!
+              .toLowerCase()
+              .compareTo(a.email!.toLowerCase()));
+        }
+      }
+      if (columnIndex == 2) {
+        if (ascending) {
+          people.sort((a, b) => a.personType.toString()
+              .toLowerCase()
+              .compareTo(b.personType.toString().toLowerCase()));
+        } else {
+          people.sort((a, b) => b.personType.toString()
+              .toLowerCase()
+              .compareTo(a.personType.toString().toLowerCase()));
+        }
+      }
+      if (sortColumnIndex == columnIndex) {
+        sortToggle = !sortToggle;
+      }
+      sortColumnIndex = columnIndex;
+    });
+  }
+
 
   Widget _getAdminActions(GroupBloc bloc) {
     return Row(children: <Widget>[
@@ -198,35 +333,6 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
           );
   }
 
-  Widget _filterRow(BuildContext context, GroupBloc bloc, Group group) {
-    final bs = BorderSide(color: Theme.of(context).dividerColor);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(8, 10, 30, 10),
-      decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border(bottom: bs, left: bs, right: bs, top: bs)),
-      child: Row(
-        children: <Widget>[
-          Container(
-            child: bloc.mrClient.isPortfolioOrSuperAdmin(group.portfolioId!)
-                ? TextButton.icon(
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add members'),
-                    onPressed: () =>
-                        bloc.mrClient.addOverlay((BuildContext context) {
-                      return AddMembersDialogWidget(
-                        bloc: bloc,
-                        group: group,
-                      );
-                    }),
-                  )
-                : Container(),
-          )
-        ],
-      ),
-    );
-  }
-
   @override
   void didUpdateWidget(ManageGroupRoute oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -253,53 +359,6 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
         bloc: bloc,
       );
     });
-  }
-}
-
-class MemberWidget extends StatelessWidget {
-  final Person member;
-  final Group group;
-  final GroupBloc bloc;
-
-  const MemberWidget(
-      {Key? key, required this.group, required this.bloc, required this.member})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final bs = BorderSide(color: Theme.of(context).dividerColor);
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
-      decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border(bottom: bs, left: bs, right: bs)),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-              child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(member.name ?? ''),
-            ],
-          )),
-          if (bloc.mrClient.isPortfolioOrSuperAdmin(group.portfolioId!))
-            FHFlatButtonTransparent(
-              title: 'Remove from group',
-              keepCase: true,
-              onPressed: () {
-                try {
-                  bloc.removeFromGroup(group, member);
-                  bloc.mrClient.addSnackbar(Text(
-                      "'${member.name}' removed from group '${group.name}'"));
-                } catch (e, s) {
-                  bloc.mrClient.dialogError(e, s);
-                }
-              },
-            ),
-        ],
-      ),
-    );
   }
 }
 
@@ -411,4 +470,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
       },
     );
   }
+
 }
+
+

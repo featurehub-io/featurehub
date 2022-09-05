@@ -122,7 +122,7 @@ class _MenuContainer extends StatelessWidget {
                               padding: const EdgeInsets.only(
                                   left: 16.0, top: 32.0, bottom: 8.0),
                               child: Text(
-                                'Global Settings',
+                                'Organization Settings',
                                 style: Theme.of(context).textTheme.caption,
                               ),
                             ),
@@ -255,21 +255,18 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
         FHMenuItem(
           name: 'Applications',
           iconData: Feather.grid,
-          iconSize: 24,
           path: '/applications',
           params: {},
         ),
         FHMenuItem(
           name: 'Features',
           iconData: Feather.flag,
-          iconSize: 24,
           path: routeNameFeatureDashboard,
           params: {},
         ),
         FHMenuItem(
           name: 'API Keys',
           iconData: AntDesign.key,
-          iconSize: 24,
           path: '/api-keys',
           params: {},
         )
@@ -350,11 +347,11 @@ class FHMenuItem extends StatelessWidget {
                 children: <Widget>[
                   Icon(
                     iconData,
-                    size: iconSize ?? 20.0,
+                    size: iconSize ?? 18.0,
                   ),
                   Padding(
                     padding:
-                        EdgeInsets.only(left: iconSize != null ? 14.0 : 16.0),
+                        const EdgeInsets.only(left: 12.0),
                     child: Text(' $name',
                         style: Theme.of(context).textTheme.bodyText2!.copyWith(
                             fontWeight:

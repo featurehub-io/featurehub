@@ -335,14 +335,7 @@ class _ServiceAccountUpdateDialogWidgetState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              isUpdate
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Text('Name: ${_name.text}'),
-                      ],
-                    )
-                  : TextFormField(
+              TextFormField(
                       controller: _name,
                       autofocus: true,
                       decoration: const InputDecoration(

@@ -70,7 +70,8 @@ class FHappBar extends StatelessWidget {
                   child: Row(
                     children: [
                       Tooltip(
-                          message: person.name,
+                          message: "${person.name} \n"
+                              "${person.email}",
                           child: PersonAvatar(person: person)),
                       if (isWide) const SizedBox(
                         width: 32.0,

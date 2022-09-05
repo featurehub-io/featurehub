@@ -116,6 +116,11 @@ class ServiceAccountSqlApi @Inject constructor(
     if (serviceAccount.description != null) {
       sa.description = serviceAccount.description
     }
+
+    if (serviceAccount.name != sa.name) {
+      sa.name = serviceAccount.name
+    }
+
     asyncUpdateCache(sa, updateServiceAccount(sa, deletePerms, updatePerms, createPerms).values)
     return convertUtils.toServiceAccount(sa, opts)
   }

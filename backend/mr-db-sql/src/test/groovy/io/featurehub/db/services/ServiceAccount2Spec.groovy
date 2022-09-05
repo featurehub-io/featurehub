@@ -262,6 +262,7 @@ class ServiceAccount2Spec extends Base2Spec {
     and: "then update the service account to remove environment 2 and remove toggle-enabled"
       def updated = new ServiceAccount()
         .version(createdServiceAccount.version)
+        .name(createdServiceAccount.name)
         .description('sa-2 test')
         .permissions(
           [new ServiceAccountPermission()
