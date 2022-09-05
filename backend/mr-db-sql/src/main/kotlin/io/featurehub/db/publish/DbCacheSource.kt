@@ -2,7 +2,6 @@ package io.featurehub.db.publish
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import io.ebean.Database
 import io.ebean.datasource.DataSourceConfig
 import io.featurehub.dacha.model.*
 import io.featurehub.db.model.*
@@ -20,7 +19,7 @@ import java.util.concurrent.Executors
 import java.util.stream.Collectors
 import kotlin.collections.set
 
-open class DbCacheSource @Inject constructor(private val convertUtils: Conversions, private val dsConfig: DataSourceConfig) : CacheSource {
+open class DbCacheSource @Inject constructor(private val convertUtils: Conversions,  dsConfig: DataSourceConfig) : CacheSource {
   private val executor: ExecutorService
 
   @ConfigKey("cache.pool-size")
@@ -42,8 +41,6 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   }
 
   override fun publishToCache(cacheName: String) {
-    val db: Database
-
     val cacheBroadcast = cacheBroadcasters[cacheName]
     if (cacheBroadcast != null) {
       val saFuture = executor.submit { publishToCacheServiceAccounts(cacheName, cacheBroadcast) }
@@ -105,8 +102,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   }
 
   private fun publishCacheEnvironments(cacheName: String, cacheBroadcast: CacheBroadcast) {
-    val envFinder = environmentsByCacheName(cacheName)
-    val count = envFinder.findCount()
+    val count = environmentsByCacheName(cacheName, true).findCount()
     if (count == 0) {
       log.info("database has no environments, publishing empty environments indicator.")
       val empty = UUID.randomUUID()
@@ -120,7 +116,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
         .count(0))
     } else {
       log.info("publishing {} environments to cache {}", count, cacheName)
-      envFinder.findEach { env: DbEnvironment ->
+      environmentsByCacheName(cacheName, false).findEach { env: DbEnvironment ->
         executor.submit {
           val eci = fillEnvironmentCacheItem(count, env, PublishAction.CREATE)
           cacheBroadcast.publishEnvironment(eci)
@@ -146,8 +142,6 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
           QDbApplicationFeature.Alias.version
         ).findList().associate { it.id!! to it!! }.toMutableMap()
 
-      val featureCollection: Collection<DbApplicationFeature> = features.values
-
       val fvFinder = QDbFeatureValue()
         .select(
           QDbFeatureValue.Alias.id,
@@ -160,9 +154,10 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
         ).feature.whenArchived.isNull.feature.fetch(
           QDbApplicationFeature.Alias.id
         ).environment.whenArchived.isNull.environment.whenUnpublished.isNull.environment.eq(env)
+
       val eci = PublishEnvironment()
         .action(publishAction)
-        .environment(toEnvironment(env, featureCollection))
+        .environment(toEnvironment(env))
         .organizationId(env.parentApplication.portfolio.organization.id)
         .portfolioId(env.parentApplication.portfolio.id)
         .applicationId(env.parentApplication.id)
@@ -201,11 +196,27 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
       .value(toCacheFeatureValue(dfv, feature))
   }
 
-  private fun toEnvironment(env: DbEnvironment, features: Collection<DbApplicationFeature>): CacheEnvironment {
+  private fun toEnvironment(env: DbEnvironment): CacheEnvironment {
     // match these fields with the finder environmentsByCacheName, so you don't get fields you don't need
-    return CacheEnvironment()
+    val ce = CacheEnvironment()
       .id(env.id)
       .version(env.version)
+
+    if (env.userEnvironmentInfo != null ) {
+      if (ce.environmentInfo == null) {
+        ce.environmentInfo = HashMap(env.userEnvironmentInfo)
+      }
+    }
+
+    if (env.managementEnvironmentInfo != null) {
+      if (ce.environmentInfo == null) {
+        ce.environmentInfo = HashMap(env.managementEnvironmentInfo)
+      } else {
+        ce.environmentInfo?.putAll(env.managementEnvironmentInfo)
+      }
+    }
+
+    return ce
   }
 
   private fun toCacheFeature(feature: DbApplicationFeature): CacheFeature {
@@ -243,20 +254,30 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     } else null
   }
 
-  private fun environmentsByCacheName(cacheName: String): QDbEnvironment {
+  private fun environmentsByCacheName(cacheName: String, wantCount: Boolean): QDbEnvironment {
     log.trace("environment by cache-name: {}", cacheName)
-    return QDbEnvironment()
-      .select(
-        QDbEnvironment.Alias.id,
-        QDbEnvironment.Alias.name,
-        QDbEnvironment.Alias.version
-      ).whenArchived.isNull.whenUnpublished.isNull.parentApplication.portfolio.organization.namedCache.cacheName.eq(
+    val envQuery = QDbEnvironment()
+      .whenArchived.isNull.whenUnpublished.isNull.parentApplication.portfolio.organization.namedCache.cacheName.eq(
         cacheName
       ).environmentFeatures.feature.fetch().parentApplication.fetch(
         QDbApplication.Alias.id
       ).parentApplication.portfolio.fetch(QDbPortfolio.Alias.id).parentApplication.portfolio.organization.fetch(
         QDbOrganization.Alias.id
       )
+
+    return if (wantCount) {
+      envQuery .select(
+        QDbEnvironment.Alias.id,
+      )
+    } else {
+      envQuery.select(
+        QDbEnvironment.Alias.id,
+        QDbEnvironment.Alias.name,
+        QDbEnvironment.Alias.version,
+        QDbEnvironment.Alias.userEnvironmentInfo,
+        QDbEnvironment.Alias.managementEnvironmentInfo
+      )
+    }
   }
 
   override fun registerCache(cacheName: String, cacheBroadcast: CacheBroadcast) {
@@ -405,8 +426,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
                 .apiKeyServerSide("")
                 .apiKeyClientSide("")
                 .version(Long.MAX_VALUE)
-            ) // just send the id, thats all the cache
-            // needs
+            ) // just send the id, that is all the cache needs
             .action(PublishAction.DELETE)
         )
       }
@@ -428,7 +448,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
         if (cacheBroadcast != null) {
           log.trace("publishing environment {} ({})", environment.name, environment.id)
           val environmentCacheItem = fillEnvironmentCacheItem(
-            environmentsByCacheName(cacheName).findCount(),
+            environmentsByCacheName(cacheName, true).findCount(),
             environment,
             publishAction
           )
@@ -453,7 +473,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
             .organizationId(randomUUID)
             .portfolioId(randomUUID)
             .applicationId(randomUUID)
-            .count(environmentsByCacheName(cacheName).findCount() - 1)
+            .count(environmentsByCacheName(cacheName, true).findCount() - 1)
             .environment(CacheEnvironment().id(id).version(Long.MAX_VALUE))
             .action(PublishAction.DELETE)
         )

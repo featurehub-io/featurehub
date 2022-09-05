@@ -26,8 +26,10 @@ class FeatureRequestCollection(
 
     if (completed.size == requestCount) {
       // determine first if any of the environments failed its etag match
-      val sendFullResults = !etags.validEtag || completed.find { !etags.environmentTags[it.key].equals(it.details?.etag) } != null
-      future.complete(completed.map { req -> transformFeatures(req.details, req.key, sendFullResults, req.failure) }.toList())
+      val sendFullResults =
+        !etags.validEtag || completed.find { !etags.environmentTags[it.key].equals(it.details?.etag) } != null
+      future.complete(completed.map { req -> transformFeatures(req.details, req.key, sendFullResults, req.failure) }
+        .toList())
     }
   }
 
@@ -41,21 +43,27 @@ class FeatureRequestCollection(
 
     if (failure != null && failure is WebApplicationException) {
       if (failure.response == null || failure.response.status == 412) {
-        return FeatureRequestResponse(env, FeatureRequestSuccess.DACHA_NOT_READY, key, "")
+        return FeatureRequestResponse(env, FeatureRequestSuccess.DACHA_NOT_READY, key, "", null)
       } else if (failure.response.status == 404) {
-        return FeatureRequestResponse(env, FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE, key, "")
+        return FeatureRequestResponse(env, FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE, key, "", null)
       }
     }
 
     if (details == null) {
-      return FeatureRequestResponse(env, FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE, key, "0")
+      return FeatureRequestResponse(env, FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE, key, "0", null)
     }
 
     if (!sendFullResults) {
-      return FeatureRequestResponse(env, FeatureRequestSuccess.NO_CHANGE, key, "")
+      return FeatureRequestResponse(env, FeatureRequestSuccess.NO_CHANGE, key, "", details.environmentInfo)
     }
 
-    return FeatureRequestResponse(env
-      .features( featureTransformer.transform(details.features, clientContext)), FeatureRequestSuccess.SUCCESS, key, details.etag!!)
+    return FeatureRequestResponse(
+      env
+        .features(featureTransformer.transform(details.features, clientContext)),
+      FeatureRequestSuccess.SUCCESS,
+      key,
+      details.etag!!,
+      details.environmentInfo
+    )
   }
 }

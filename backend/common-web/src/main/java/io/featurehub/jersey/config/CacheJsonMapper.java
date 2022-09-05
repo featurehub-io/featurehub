@@ -46,6 +46,13 @@ public class CacheJsonMapper {
       if (clazz.equals(String.class)) {
         return (T)new String(is.readAllBytes());
       }
+
+      if (log.isTraceEnabled()) {
+        String logSt = new String(is.readAllBytes());
+        log.trace("Zipped message is {}", logSt);
+        return mapper.readValue(logSt,  clazz);
+      }
+
       return mapper.readValue(is, clazz);
     } catch (Exception ignored) {
       // not a valid gzip stream

@@ -98,7 +98,9 @@ public class EnvironmentResource implements EnvironmentServiceDelegate {
     Person current = authManager.from(securityContext);
 
     return environmentApi.search(id, holder.filter, holder.order,
-      new Opts().add(FillOpts.Acls, holder.includeAcls).add(FillOpts.Features, holder.includeFeatures), current);
+      new Opts().add(FillOpts.Acls, holder.includeAcls)
+        .add(FillOpts.Features, holder.includeFeatures)
+        .add(FillOpts.Details, holder.includeDetails), current);
 
   }
 
@@ -111,6 +113,7 @@ public class EnvironmentResource implements EnvironmentServiceDelegate {
         .add(FillOpts.Features, holder.includeFeatures)
         .add(FillOpts.ServiceAccounts, holder.includeServiceAccounts)
         .add(FillOpts.SdkURL, holder.includeSdkUrl)
+        .add(FillOpts.Details, holder.includeDetails)
       , current);
 
     if (found == null) {
@@ -132,7 +135,7 @@ public class EnvironmentResource implements EnvironmentServiceDelegate {
 
       try {
          update = environmentApi.update(eid, environment, new Opts().add(FillOpts.Acls,
-          holder.includeAcls).add(FillOpts.Features, holder.includeFeatures));
+          holder.includeAcls).add(FillOpts.Features, holder.includeFeatures).add(FillOpts.Details, holder.includeDetails));
       } catch (OptimisticLockingException e) {
         throw new WebApplicationException(422);
       } catch (EnvironmentApi.DuplicateEnvironmentException e) {

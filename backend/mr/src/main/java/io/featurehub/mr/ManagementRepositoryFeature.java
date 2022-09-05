@@ -10,6 +10,8 @@ import io.featurehub.mr.api.ApplicationServiceDelegate;
 import io.featurehub.mr.api.ApplicationServiceDelegator;
 import io.featurehub.mr.api.AuthServiceDelegate;
 import io.featurehub.mr.api.AuthServiceDelegator;
+import io.featurehub.mr.api.Environment2ServiceDelegate;
+import io.featurehub.mr.api.Environment2ServiceDelegator;
 import io.featurehub.mr.api.EnvironmentFeatureServiceDelegate;
 import io.featurehub.mr.api.EnvironmentFeatureServiceDelegator;
 import io.featurehub.mr.api.EnvironmentServiceDelegate;
@@ -37,6 +39,7 @@ import io.featurehub.mr.auth.AuthenticationRepository;
 import io.featurehub.mr.auth.DatabaseAuthRepository;
 import io.featurehub.mr.resources.ApplicationResource;
 import io.featurehub.mr.resources.AuthResource;
+import io.featurehub.mr.resources.Environment2Resource;
 import io.featurehub.mr.resources.EnvironmentFeatureResource;
 import io.featurehub.mr.resources.EnvironmentResource;
 import io.featurehub.mr.resources.FeatureResource;
@@ -74,6 +77,7 @@ public class ManagementRepositoryFeature implements Feature {
       AuthServiceDelegator.class,
       EnvironmentFeatureServiceDelegator.class,
       EnvironmentServiceDelegator.class,
+      Environment2ServiceDelegator.class,
       FeatureServiceDelegator.class,
       GroupServiceDelegator.class,
       PersonServiceDelegator.class,
@@ -105,6 +109,7 @@ public class ManagementRepositoryFeature implements Feature {
           bind(EnvironmentFeatureResource.class).to(EnvironmentFeatureServiceDelegate.class).in(Singleton.class);
           bind(UserStateResource.class).to(UserStateServiceDelegate.class).in(Singleton.class);
           bind(EnvironmentResource.class).to(EnvironmentServiceDelegate.class).in(Singleton.class);
+          bind(Environment2Resource.class).to(Environment2ServiceDelegate.class).in(Singleton.class);
           bind(FeatureResource.class).to(FeatureServiceDelegate.class).in(Singleton.class);
           bind(GroupResource.class).to(GroupServiceDelegate.class).in(Singleton.class);
           bind(PersonResource.class).to(PersonServiceDelegate.class).in(Singleton.class);

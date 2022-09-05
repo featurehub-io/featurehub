@@ -17,6 +17,7 @@ import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.SortOrder
+import io.featurehub.mr.model.UpdateEnvironment
 import org.jetbrains.annotations.Nullable
 
 class Environment2Spec extends Base2Spec {
@@ -300,5 +301,31 @@ class Environment2Spec extends Base2Spec {
       permsAdmin.environmentRoles.containsAll(RoleType.values() as List)
       permsWhenNonAdmin.applicationRoles.containsAll(ApplicationRoleType.values() as List)
       permsWhenNonAdmin.environmentRoles.containsAll(RoleType.values() as List)
+  }
+
+  def "i create an environment and update it using the update2"() {
+    given:
+      def envInfo = ['cacheControl': 'private, none', 'webhookUrl': 'https://blah']
+      def envInfoExtra = ['mgmt.my.server': '2']
+      envInfoExtra.putAll(envInfo)
+      def env = envApi.create(new Environment().name("env-update2").description("1")
+        .environmentInfo(envInfoExtra), appTreeEnvs, superPerson)
+    when: "i update it"
+      def upd1 = envApi.updateEnvironment(env.id, new UpdateEnvironment().version(env.version).description("2"), Opts.opts(FillOpts.Details))
+    and: "i set the env vars"
+      def upd2EnvInfo = ['info': 'i-want']
+      def upd2 = envApi.updateEnvironment(env.id, new UpdateEnvironment().version(upd1.version).environmentInfo(upd2EnvInfo), Opts.opts(FillOpts.Details))
+    and: "i include management env info"
+      def upd3EnvInfo = ['mgmt.server.derver': '1', 'cacheControl': 'nostore']
+      def upd3 = envApi.updateEnvironment(env.id, new UpdateEnvironment().version(upd2.version).environmentInfo(upd3EnvInfo), Opts.opts(FillOpts.Details))
+    then:
+      env.name == 'env-update2'
+      upd1.description == '2'
+      upd1.name == 'env-update2'
+      upd1.environmentInfo == envInfo
+      upd2.environmentInfo == upd2EnvInfo
+      upd2.description == '2'
+      upd3.environmentInfo != upd3EnvInfo
+      upd3.environmentInfo['cacheControl'] == 'nostore'
   }
 }

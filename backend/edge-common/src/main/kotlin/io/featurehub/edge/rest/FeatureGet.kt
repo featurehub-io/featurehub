@@ -10,14 +10,17 @@ import io.featurehub.edge.stats.StatRecorder
 import io.featurehub.edge.strategies.ClientContext
 import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
-import io.featurehub.utils.FeatureHubConfig
 import io.prometheus.client.Gauge
 import io.prometheus.client.Histogram
+import jakarta.annotation.PostConstruct
 import jakarta.inject.Inject
 import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.container.AsyncResponse
 import jakarta.ws.rs.core.Response
+import org.glassfish.hk2.api.IterableProvider
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.function.Consumer
 
 interface FeatureGet {
@@ -31,13 +34,24 @@ interface FeatureGet {
   )
 }
 
+interface EdgeGetResponseWrapper {
+  // this lets mutate the status as the response builder is not queryable
+  fun wrapResponse(environments: List<FeatureRequestResponse>, builder: Response.ResponseBuilder, status: Int): Int
+}
+
 class FeatureGetProcessor @Inject constructor(
   private val getOrchestrator: DachaFeatureRequestSubmitter,
-  @FeatureHubConfig("edge.cache-control.header")
-  private val cacheControlHeader: String?,
-  @FeatureHubConfig("edge.cache.fastly.key")
-  private val fastlyAuth: String?
+  private val sourceResponseWrapper: IterableProvider<EdgeGetResponseWrapper>,
   ) : FeatureGet {
+
+  private val log: Logger = LoggerFactory.getLogger(FeatureGetProcessor::class.java)
+  private val responseWrappers = mutableListOf <EdgeGetResponseWrapper>()
+
+  @PostConstruct
+  fun postConstruct() {
+    responseWrappers.addAll(sourceResponseWrapper.toList())
+    log.debug("there are {} post response wrappers for GET requests: {}", responseWrappers.size, responseWrappers.map { it.javaClass.name })
+  }
 
   override fun processGet(
     response: AsyncResponse,
@@ -90,9 +104,9 @@ class FeatureGetProcessor @Inject constructor(
     inout.dec()
 
     if (environments[0].success === FeatureRequestSuccess.NO_CHANGE && environments.size == 1) {
-      response.resume(wrapCacheControl(environments, Response.status(304).header("etag", etagHeader)).build())
+      response.resume(wrapResponse(environments, Response.status(304).header("etag", etagHeader), 304).build())
     } else if (environments.all { it.success == FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE }) {
-      response.resume(wrapCacheControl(environments, Response.status(404)).build())
+      response.resume(wrapResponse(environments, Response.status(404), 404).build())
     } else if (environments.all { it.success == FeatureRequestSuccess.DACHA_NOT_READY }) {
       // all the SDKs fail on a 400 level error and just stop.
       response.resume(Response.status(503).entity("cache layer not ready, try again shortly").build())
@@ -102,37 +116,24 @@ class FeatureGetProcessor @Inject constructor(
         environments.map(FeatureRequestResponse::etag))
 
       response.resume(
-        wrapCacheControl(
+        wrapResponse(
           environments,
           Response.status(200)
             .header("etag", "\"${newEtags}\"")
-            .entity(environments.map(FeatureRequestResponse::environment))
+            .entity(environments.map(FeatureRequestResponse::environment)), 200
         )
           .build()
       )
     }
   }
 
-  private fun wrapCacheControl(environments: List<FeatureRequestResponse>, builder: Response.ResponseBuilder): Response.ResponseBuilder {
-    var bld = builder;
-    if (cacheControlHeader?.isNotEmpty() == true) {
-      bld = bld.header("Cache-Control", cacheControlHeader)
-    }
 
-    /**
-     * We set the surrogate key to include the environments that have been returned. This means that Dacha can send a request to
-     * break any of these caches so the next time client requests it will come to us instead of the cache. The cache cannot be used without
-     * a streaming platform. This will work regardless of apikey, all environments using client evaluated or server evaluated keys will have
-     * their cache broken on the next poll.
-     *
-     * Clients using server evaluation needs to be upgraded to ensure that the SHA of their context data is included as
-     * a parameter. This will mean they can break their own cache if they change their context data.
-     */
-    if (fastlyAuth != null && environments.isNotEmpty()) {
-      bld.header("Surrogate-Key", environments.map { it.environment.id.toString() }.joinToString(" "))
-    }
+  private fun wrapResponse(environments: List<FeatureRequestResponse>, builder: Response.ResponseBuilder, httpStatus: Int): Response.ResponseBuilder {
+    var status = httpStatus
 
-    return bld
+    responseWrappers.forEach { wrapper -> status = wrapper.wrapResponse(environments, builder, status) }
+
+    return builder
   }
 
   private fun mapSuccess(success: FeatureRequestSuccess): EdgeHitResultType {

@@ -1,5 +1,6 @@
 package io.featurehub.edge;
 
+import io.featurehub.edge.bucket.BucketService;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.permission.PermissionPublishDelivery;
 import io.featurehub.edge.rest.FeatureSse;
@@ -25,7 +26,7 @@ public class EdgeFeature implements Feature {
                 bind(StreamingFeatureSource.class).to(StreamingFeatureController.class).in(Singleton.class);
                 bind(FeatureSseProcessor.class).to(FeatureSse.class).in(Singleton.class);
                 bind(EventOutputBucketService.class)
-                    .to(EventOutputBucketService.class)
+                    .to(BucketService.class)
                     .in(Singleton.class);
                 bind(PermissionPublishDelivery.class)
                   .to(FeatureUpdatePublisher.class)

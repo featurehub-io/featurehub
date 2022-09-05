@@ -107,8 +107,8 @@ class EnvironmentSqlApi @Inject constructor(
       if (env!!.version == null || environment.version != env.version) {
         throw OptimisticLockingException()
       }
-      dupeEnvironmentNameCheck(env, environment)
-      circularPriorEnvironmentCheck(env, environment)
+      dupeEnvironmentNameCheck(env.name, environment)
+      circularPriorEnvironmentCheck(env.priorEnvironmentId, environment)
       environment.description = env.description
       if (env.production != null) {
         environment.isProductionEnvironment = java.lang.Boolean.TRUE == env.production
@@ -119,10 +119,43 @@ class EnvironmentSqlApi @Inject constructor(
     return null
   }
 
-  private fun circularPriorEnvironmentCheck(env: Environment?, environment: DbEnvironment) {
+  override fun updateEnvironment(eid: UUID, env: UpdateEnvironment, opts: Opts): Environment? {
+    val environment = convertUtils.byEnvironment(eid)
+
+    if (environment != null) {
+      if (environment.version != env.version) {
+        throw OptimisticLockingException()
+      }
+
+      if (env.name != null) {
+        dupeEnvironmentNameCheck(env.name!!, environment)
+      }
+
+      circularPriorEnvironmentCheck(env.priorEnvironmentId, environment)
+
+      if (env.description != null) {
+        environment.description = env.description
+      }
+
+      if (env.production != null) {
+        environment.isProductionEnvironment = java.lang.Boolean.TRUE == env.production
+      }
+
+      if (env.environmentInfo != null) {
+        environment.userEnvironmentInfo = env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap()  // prevent mgmt prefixes being used
+      }
+
+      update(environment)
+
+      return convertUtils.toEnvironment(environment, opts)
+    }
+    return null
+  }
+
+  private fun circularPriorEnvironmentCheck(priorEnvironmentId: UUID?, environment: DbEnvironment) {
     // find anything that pointed to this environment and set it to what we used to point to
-    val newPriorEnvironment = if (env!!.priorEnvironmentId == null) null else convertUtils.byEnvironment(
-      env.priorEnvironmentId
+    val newPriorEnvironment = if (priorEnvironmentId == null) null else convertUtils.byEnvironment(
+      priorEnvironmentId
     )
     if (newPriorEnvironment == null) {
       environment.priorEnvironment = null
@@ -148,19 +181,17 @@ class EnvironmentSqlApi @Inject constructor(
   }
 
   @Throws(EnvironmentApi.DuplicateEnvironmentException::class)
-  private fun dupeEnvironmentNameCheck(env: Environment?, dbEnv: DbEnvironment) {
-    if (env?.name != null) {
-      env.name = env.name.trim { it <= ' ' }
-      if (dbEnv.name != env.name) {
-        val dupe = QDbEnvironment().and().name.eq(
-          env.name
-        ).parentApplication.eq(dbEnv.parentApplication).endAnd().findOne()
-        if (dupe != null && dupe.id != dbEnv.id) {
-          throw EnvironmentApi.DuplicateEnvironmentException()
-        }
+  private fun dupeEnvironmentNameCheck(name: String, dbEnv: DbEnvironment) {
+    val envName = name.trim { it <= ' ' }
+    if (dbEnv.name != envName) {
+      val dupe = QDbEnvironment().and().name.eq(
+        envName
+      ).parentApplication.eq(dbEnv.parentApplication).endAnd().findOne()
+      if (dupe != null && dupe.id != dbEnv.id) {
+        throw EnvironmentApi.DuplicateEnvironmentException()
       }
-      dbEnv.name = env.name
     }
+    dbEnv.name = envName
   }
 
   // we assume
@@ -191,6 +222,7 @@ class EnvironmentSqlApi @Inject constructor(
         .description(env.description)
         .name(env.name)
         .priorEnvironment(priorEnvironment)
+        .userEnvironmentInfo(env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap())  // prevent mgmt prefixes being used
         .parentApplication(application)
         .productionEnvironment(java.lang.Boolean.TRUE == env.production)
         .build()
