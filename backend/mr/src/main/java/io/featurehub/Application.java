@@ -7,8 +7,13 @@ import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.mr.ManagementRepositoryFeature;
 import io.featurehub.publish.NATSFeature;
+import io.featurehub.web.security.oauth.AuthProviderCollection;
+import io.featurehub.web.security.oauth.AuthProviders;
+import io.featurehub.web.security.oauth.NoAuthProviders;
 import io.featurehub.web.security.oauth.OAuth2Feature;
 import io.featurehub.web.security.saml.SamlEnvironmentalFeature;
+import jakarta.inject.Singleton;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,11 +41,29 @@ public class Application {
     // register our resources, try and tag them as singleton as they are instantiated faster
     ResourceConfig config = new ResourceConfig(
       ManagementRepositoryFeature.class,
-      OAuth2Feature.class,
       SamlEnvironmentalFeature.class,
       NATSFeature.class,
       TelemetryFeature.class
       );
+
+    if (OAuth2Feature.Companion.oauth2ProvidersExist()) {
+      config.register(OAuth2Feature.class);
+    }
+
+    if (SamlEnvironmentalFeature.Companion.samlProvidersExist()) {
+      config.register(SamlEnvironmentalFeature.class);
+    }
+
+    config.register(new AbstractBinder() {
+      @Override
+      protected void configure() {
+        if (OAuth2Feature.Companion.oauth2ProvidersExist() || SamlEnvironmentalFeature.Companion.samlProvidersExist()) {
+          bind(AuthProviders.class).to(AuthProviderCollection.class).in(Singleton.class);
+        } else {
+          bind(NoAuthProviders.class).to(AuthProviderCollection.class).in(Singleton.class);
+        }
+      }
+    });
 
     MetricsHealthRegistration.Companion.registerMetrics(config);
 

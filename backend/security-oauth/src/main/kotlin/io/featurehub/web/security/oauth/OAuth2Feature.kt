@@ -2,6 +2,7 @@ package io.featurehub.web.security.oauth
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
+import io.featurehub.utils.FallbackPropertyConfig
 import io.featurehub.web.security.oauth.providers.*
 import io.featurehub.web.security.oauth.providers.GithubProvider.Companion.PROVIDER_NAME
 import jakarta.inject.Singleton
@@ -52,25 +53,21 @@ class OAuth2Feature : Feature {
             SSOProviderCollection::class.java
           ).`in`(Singleton::class.java)
 
-          bind(AuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
-
           // now the outbound http request to validate authorization flow
           bind(OAuth2JerseyClient::class.java).to(OAuth2Client::class.java).`in`(Singleton::class.java)
         }
       })
-    } else {
-      log.info("No oauth2 providers in config, skipping oauth2.")
-      context.register(object: AbstractBinder() {
-        override fun configure() {
-          bind(NoAuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
-        }
-      })
     }
+
     return true
   }
 
   companion object {
     private val log = LoggerFactory.getLogger(OAuth2Feature::class.java)
+
+    fun oauth2ProvidersExist(): Boolean {
+      return FallbackPropertyConfig.getConfig("oauth2.providers") != null
+    }
   }
 
   init {

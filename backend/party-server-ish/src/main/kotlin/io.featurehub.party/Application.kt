@@ -11,8 +11,15 @@ import io.featurehub.publish.ChannelConstants
 import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info
+import io.featurehub.web.security.oauth.AuthProviderCollection
+import io.featurehub.web.security.oauth.AuthProviders
+import io.featurehub.web.security.oauth.NoAuthProviders
 import io.featurehub.web.security.oauth.OAuth2Feature
+import io.featurehub.web.security.oauth.OAuth2Feature.Companion.oauth2ProvidersExist
 import io.featurehub.web.security.saml.SamlEnvironmentalFeature
+import io.featurehub.web.security.saml.SamlEnvironmentalFeature.Companion.samlProvidersExist
+import jakarta.inject.Singleton
+import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.glassfish.jersey.server.ResourceConfig
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -34,15 +41,31 @@ class Application {
     // register our resources, try and tag them as singleton as they are instantiated faster
     val config = ResourceConfig(
       CorsFilter::class.java,
-      OAuth2Feature::class.java,
-      SamlEnvironmentalFeature::class.java,
       ManagementRepositoryFeature::class.java,
       EdgeGetFeature::class.java,
       TelemetryFeature::class.java,
       CacheControlFilter::class.java
     )
 
-      // check if we should list on a different port
+    if (oauth2ProvidersExist()) {
+      config.register(OAuth2Feature::class.java)
+    }
+
+    if (samlProvidersExist()) {
+      config.register(SamlEnvironmentalFeature::class.java)
+    }
+
+    config.register(object : AbstractBinder() {
+      override fun configure() {
+        if (oauth2ProvidersExist() || samlProvidersExist()) {
+          bind(AuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
+        } else {
+          bind(NoAuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
+        }
+      }
+    })
+
+    // check if we should list on a different port
     registerMetrics(config)
     FeatureHubJerseyHost(config).start()
     log.info("Party-Server-ish Launched - (HTTP/2 payloads enabled!)")
