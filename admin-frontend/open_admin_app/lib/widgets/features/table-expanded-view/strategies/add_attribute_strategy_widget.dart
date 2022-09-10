@@ -351,7 +351,7 @@ class _EditAttributeStrategyWidgetState
         break;
       case RolloutStrategyFieldType.DATE:
         labelText = 'Date(s) - YYYY-MM-DD';
-        helperText = '2017-04-16';
+        helperText = 'e.g. 2017-04-16';
         break;
       case RolloutStrategyFieldType.DATETIME:
         labelText = 'Date/Time(s) - UTC/ISO8601 format';
@@ -366,7 +366,7 @@ class _EditAttributeStrategyWidgetState
               decoration: BoxDecoration(
                   borderRadius: const BorderRadius.all(Radius.circular(6.0)),
                   color: Theme.of(context).cardColor),
-              height: 32,
+              height: 42,
               child: OutlinedButton(
                 onPressed: () => {},
                 child: DropdownButtonHideUnderline(

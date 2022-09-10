@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
+import 'package:open_admin_app/config/route_handlers.dart';
 import 'package:open_admin_app/config/route_names.dart';
 
-import 'route_handlers.dart';
 
 final _log = Logger('Routes');
 

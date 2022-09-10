@@ -21,7 +21,7 @@ class PortfolioBloc implements Bloc {
   PortfolioBloc(this.search, this.mrClient) {
     _globalRefresherSubscriber = mrClient.streamValley.globalRefresherStream.listen((event) {
       // if they no longer have the right permissions, ignore this trigger
-      print("admin? ${mrClient.userIsSuperAdmin}");
+      // print("admin? ${mrClient.userIsSuperAdmin}");
       if (mrClient.userIsSuperAdmin) {
         _portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient);
         triggerSearch(search);

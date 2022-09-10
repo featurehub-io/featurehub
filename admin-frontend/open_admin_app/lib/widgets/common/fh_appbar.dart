@@ -25,10 +25,12 @@ class FHappBar extends StatelessWidget {
               builder: (context, snapshot) {
                 if (snapshot.hasData && snapshot.data == true) {
                   return IconButton(
+                      splashRadius: 20,
                       icon: const Icon(SimpleLineIcons.menu, size: 20.0),
                       onPressed: () => mrBloc.menuOpened.add(false));
                 } else {
                   return IconButton(
+                      splashRadius: 20,
                       icon: const Icon(SimpleLineIcons.menu, size: 20.0),
                       onPressed: () => mrBloc.menuOpened.add(true));
                 }
@@ -88,6 +90,7 @@ class FHappBar extends StatelessWidget {
                         width: 16.0,
                       ),
                       IconButton(
+                          splashRadius: 20,
                           tooltip: light ? 'Dark mode' : 'Light mode',
                           icon: Icon(light
                               ? MaterialCommunityIcons.weather_night
@@ -98,6 +101,7 @@ class FHappBar extends StatelessWidget {
                           }),
                       StepperRocketButton(mrBloc: mrBloc),
                       IconButton(
+                          splashRadius: 20,
                           onPressed: () async {
                             await mrBloc.logout();
                             ManagementRepositoryClientBloc.router

@@ -377,56 +377,53 @@ class _PopUpAdminMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      shape: const CircleBorder(),
-      color: Colors.transparent,
-      child: PopupMenuButton(
-        tooltip: 'Show more',
-        icon: const Icon(
-          Icons.more_vert,
-          size: 22.0,
-        ),
-        onSelected: (value) {
-          if (value == 'edit') {
-            bloc.mrClient
-                .addOverlay((BuildContext context) => AppUpdateDialogWidget(
-                      bloc: bloc,
-                      application: application,
-                    ));
-          }
-          if (value == 'delete') {
-            bloc.mrClient.addOverlay((BuildContext context) {
-              return AppDeleteDialogWidget(
-                bloc: bloc,
-                application: application,
-              );
-            });
-          }
-          if (value == 'features') {
-            bloc.mrClient.setCurrentAid(application.id);
-            ManagementRepositoryClientBloc.router.navigateTo(
-              context,
-              routeNameFeatureDashboard,
-            );
-          }
-        },
-        itemBuilder: (BuildContext context) {
-          return [
-            PopupMenuItem(
-                value: 'features',
-                child: Text('Features',
-                    style: Theme.of(context).textTheme.bodyText2)),
-            PopupMenuItem(
-                value: 'edit',
-                child:
-                    Text('Edit', style: Theme.of(context).textTheme.bodyText2)),
-            PopupMenuItem(
-                value: 'delete',
-                child: Text('Delete',
-                    style: Theme.of(context).textTheme.bodyText2))
-          ];
-        },
+    return PopupMenuButton(
+      splashRadius: 20,
+      tooltip: 'Show more',
+      icon: const Icon(
+        Icons.more_vert,
+        size: 22.0,
       ),
+      onSelected: (value) {
+        if (value == 'edit') {
+          bloc.mrClient
+              .addOverlay((BuildContext context) => AppUpdateDialogWidget(
+                    bloc: bloc,
+                    application: application,
+                  ));
+        }
+        if (value == 'delete') {
+          bloc.mrClient.addOverlay((BuildContext context) {
+            return AppDeleteDialogWidget(
+              bloc: bloc,
+              application: application,
+            );
+          });
+        }
+        if (value == 'features') {
+          bloc.mrClient.setCurrentAid(application.id);
+          ManagementRepositoryClientBloc.router.navigateTo(
+            context,
+            routeNameFeatureDashboard,
+          );
+        }
+      },
+      itemBuilder: (BuildContext context) {
+        return [
+          PopupMenuItem(
+              value: 'features',
+              child: Text('Features',
+                  style: Theme.of(context).textTheme.bodyText2)),
+          PopupMenuItem(
+              value: 'edit',
+              child:
+                  Text('Edit', style: Theme.of(context).textTheme.bodyText2)),
+          PopupMenuItem(
+              value: 'delete',
+              child: Text('Delete',
+                  style: Theme.of(context).textTheme.bodyText2))
+        ];
+      },
     );
   }
 }

@@ -233,7 +233,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
     return FHAlertDialog(
       title: const Text("You can't delete yourself!"),
       content: const Text(
-          "To delete yourself from the system, you'll need to contact a site administrator."),
+          "To delete yourself from the organization, you'll need to contact a site administrator."),
       actions: <Widget>[
         // usually buttons at the bottom of the dialog
         FHFlatButton(
@@ -455,7 +455,7 @@ class DeleteDialogWidget extends StatelessWidget {
     return FHDeleteThingWarningWidget(
       thing: "user '${person.name}'",
       content:
-          'This user will be removed from all groups and deleted from the system. \n\nThis cannot be undone!',
+          'This user will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!',
       bloc: bloc.mrClient,
       deleteSelected: () async {
         try {
