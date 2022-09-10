@@ -1,0 +1,213 @@
+components:
+  schemas:
+    PublishAction:
+      x-package: io.featurehub.dacha.model
+      type: string
+      description: "Indicates what type of update this is. If CREATE, it is a new record, if UPDATE it updates an existing one,
+          if DELETE you should delete the record. If EMPTY then it indicates there are no records of this type and you shouldn't
+          expect to see any further. EMPTY is used to indicate that the Master process is complete."
+      enum:
+        - CREATE
+        - UPDATE
+        - DELETE
+        - EMPTY
+    PublishEnvironment:
+      x-package: io.featurehub.dacha.model
+      description: "Even a EMPTY message must set all the data to junk as it is an unusual situation"
+      required:
+        - action
+        - featureValues
+        - environment
+        - serviceAccounts
+        - organizationId
+        - applicationId
+        - portfolioId
+        - count
+      properties:
+        environment:
+          $ref: "#/components/schemas/CacheEnvironment"
+        organizationId:
+          x-basename: oId
+          type: string
+          format: uuid
+        portfolioId:
+          x-basename: pId
+          type: string
+          format: uuid
+        applicationId:
+          x-basename: aId
+          type: string
+          format: uuid
+        featureValues:
+          x-basename: fv
+          type: array
+          items:
+            $ref: "#/components/schemas/CacheEnvironmentFeature"
+        serviceAccounts:
+          x-basename: sa
+          type: array
+          items:
+            type: string
+            format: UUID
+        action:
+          $ref: "#/components/schemas/PublishAction"
+        count:
+          x-basename: c
+          type: integer
+    CacheEnvironment:
+      x-package: io.featurehub.dacha.model
+      type: object
+      required:
+        - id
+        - version
+      #        - features
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+        environmentInfo:
+          description: "Allows extensibility for the environment"
+          x-basename: eInf
+          additionalProperties:
+            type: string
+    CacheEnvironmentFeature:
+      x-package: io.featurehub.dacha.model
+      type: object
+      description: "A feature and its possible value (which could be null)"
+      required:
+        - feature
+      properties:
+        feature:
+          $ref: "#/components/schemas/CacheFeature"
+        value:
+          $ref: "#/components/schemas/CacheFeatureValue"
+    CacheFeature:
+      x-package: io.featurehub.dacha.model
+      type: object
+      required:
+        - id
+        - key
+        - valueType
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+          description: "Unique within this application"
+        valueType:
+          $ref: "#/components/schemas/FeatureValueType"
+        version:
+          description: "used for optimistic locking when renaming a feature"
+          type: integer
+          format: int64
+    CacheFeatureValue:
+      x-package: io.featurehub.dacha.model
+      required:
+        - key
+        - locked
+        - id
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        locked:
+          type: boolean
+        value:
+          description: "default value if no strategy matches. interpreted by type in parent"
+        rolloutStrategies:
+          description: "These are custom rollout strategies that only apply to this feature value."
+          type: array
+          items:
+            $ref: "#/components/schemas/CacheRolloutStrategy"
+        version:
+          description: "used for optimistic locking"
+          type: integer
+          format: int64
+        retired:
+          type: boolean
+          description: "if true or null, this feature will visible on edge. if false, it will not be passed to the client"
+    PublishServiceAccount:
+      x-package: io.featurehub.dacha.model
+      required:
+        - action
+        - count
+      properties:
+        serviceAccount:
+          $ref: "#/components/schemas/CacheServiceAccount"
+        action:
+          $ref: "#/components/schemas/PublishAction"
+        count:
+          type: integer
+    CacheServiceAccount:
+      x-package: io.featurehub.dacha.model
+      type: object
+      required:
+        - id
+        - version
+        - apiKeyClientSide
+        - apiKeyServerSide
+        - permissions
+      properties:
+        id:
+          type: string
+          format: UUID
+        version:
+          type: integer
+          format: int64
+        apiKeyClientSide:
+          type: string
+          description: "this is a read only field, it denotes an api key where the eval is done client side"
+          maxLength: 400
+        apiKeyServerSide:
+          type: string
+          description: "this is a read only field, it denotes an api key where the eval is done server side"
+          maxLength: 400
+        permissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/CacheServiceAccountPermission"
+    CacheServiceAccountPermission:
+      x-package: io.featurehub.dacha.model
+      type: object
+      required:
+        - permissions
+        - environmentId
+      properties:
+        permissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoleType"
+        environmentId:
+          type: string
+          format: uuid
+    CacheRolloutStrategy:
+      x-package: io.featurehub.dacha.model
+      description: "This is the model for the rollout strategy as required by Dacha and Edge"
+      allOf:
+        - $ref: "#/components/schemas/BaseRolloutStrategy"
+        - type: object
+          required:
+            - id
+            - attributes
+          properties:
+            attributes:
+              type: array
+              items:
+                $ref: "#/components/schemas/CacheRolloutStrategyAttribute"
+    CacheRolloutStrategyAttribute:
+      x-package: io.featurehub.dacha.model
+      allOf:
+        - $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
+        - type: object
+          required:
+            - conditional
+            - fieldName
+            - type

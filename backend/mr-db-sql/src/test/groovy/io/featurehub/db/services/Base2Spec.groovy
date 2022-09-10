@@ -5,7 +5,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.query.QDbOrganization
-import io.featurehub.db.publish.CacheSource
+import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.db.test.DbSpecification
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Organization

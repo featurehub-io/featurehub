@@ -76,14 +76,21 @@
     <module>backend/mr-api-java-server</module>
     <module>backend/mr-db-api</module>
     <module>backend/mr-db-sql</module>
+    <module>backend/mr-dacha-api</module>
+    <module>backend/mr-dacha-resource</module>
     <module>backend/mr-db-models</module>
     <module>backend/mr-db-ebean</module>
+    <module>backend/mr-db-services</module>
+    <module>backend/mr-eventing</module>
+    <module>backend/mr-eventing-common</module>
+    <module>backend/mr-eventing-nats</module>
     <module>backend/edge-feature-update-async-api</module>
     <module>backend/mr-publish-api</module>
     <module>backend/sdk-strategy-matchers</module>
     <module>backend/party-server</module>
     <module>backend/party-server-ish</module>
     <module>backend/dacha</module>
+    <module>backend/dacha2</module>
     <module>backend/dacha-api</module>
     <module>backend/dacha-client</module>
     <module>admin-frontend/app_mr_layer</module>

@@ -6,7 +6,7 @@ import io.featurehub.db.api.RolloutStrategyApi
 import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbOrganization
-import io.featurehub.db.publish.CacheSource
+import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.db.services.strategies.StrategyDifferUtils
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.Environment

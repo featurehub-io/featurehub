@@ -12,7 +12,7 @@ import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.query.QDbEnvironment;
-import io.featurehub.db.publish.CacheSource;
+import io.featurehub.mr.events.common.CacheSource;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,7 @@ public class DbArchiveStrategy implements ArchiveStrategy {
   private static final Logger log = LoggerFactory.getLogger(DbArchiveStrategy.class);
   private final Database database;
   private final CacheSource cacheSource;
-  public static final String archivePrefix = ":\\:\\:";
+
   private final DateTimeFormatter isoDate = DateTimeFormatter.ISO_DATE_TIME;
 
   @Inject
@@ -37,7 +37,7 @@ public class DbArchiveStrategy implements ArchiveStrategy {
   @Transactional
   public void archivePortfolio(DbPortfolio portfolio) {
     portfolio.setWhenArchived(LocalDateTime.now());
-    portfolio.setName(portfolio.getName() + archivePrefix + isoDate.format(portfolio.getWhenArchived()));
+    portfolio.setName(portfolio.getName() + Conversions.Companion.archivePrefix + isoDate.format(portfolio.getWhenArchived()));
     database.save(portfolio);
     portfolio.getApplications().forEach(this::archiveApplication);
     portfolio.getGroups().forEach(this::archiveGroup);
@@ -61,7 +61,7 @@ public class DbArchiveStrategy implements ArchiveStrategy {
   @Transactional
   public void archiveEnvironment(DbEnvironment environment) {
     environment.setWhenArchived(LocalDateTime.now());
-    environment.setName(environment.getName() + archivePrefix + isoDate.format(environment.getWhenArchived()));
+    environment.setName(environment.getName() + Conversions.Companion.archivePrefix + isoDate.format(environment.getWhenArchived()));
     database.save(environment);
     cacheSource.deleteEnvironment(environment.getId());
     new QDbEnvironment().priorEnvironment.eq(environment).findList().forEach(e -> {
@@ -88,7 +88,7 @@ public class DbArchiveStrategy implements ArchiveStrategy {
   @Transactional
   public void archiveServiceAccount(DbServiceAccount serviceAccount) {
     serviceAccount.setWhenArchived(LocalDateTime.now());
-    serviceAccount.setName(serviceAccount.getName() + archivePrefix + isoDate.format(serviceAccount.getWhenArchived()));
+    serviceAccount.setName(serviceAccount.getName() + Conversions.Companion.archivePrefix + isoDate.format(serviceAccount.getWhenArchived()));
     database.save(serviceAccount);
     cacheSource.deleteServiceAccount(serviceAccount.getId());
   }
@@ -97,7 +97,7 @@ public class DbArchiveStrategy implements ArchiveStrategy {
   @Transactional
   public void archiveGroup(DbGroup group) {
     group.setWhenArchived(LocalDateTime.now());
-    group.setName(group.getName() + archivePrefix + isoDate.format(group.getWhenArchived()));
+    group.setName(group.getName() + Conversions.Companion.archivePrefix + isoDate.format(group.getWhenArchived()));
     database.save(group);
   }
 
@@ -107,7 +107,7 @@ public class DbArchiveStrategy implements ArchiveStrategy {
     feature.setWhenArchived(LocalDateTime.now());
     // key is unique
     String originalKey = feature.getKey();
-    feature.setKey(feature.getKey() + archivePrefix + isoDate.format(feature.getWhenArchived()));
+    feature.setKey(feature.getKey() + Conversions.Companion.archivePrefix + isoDate.format(feature.getWhenArchived()));
     database.save(feature);
     cacheSource.publishFeatureChange(feature, PublishAction.DELETE, originalKey);
   }

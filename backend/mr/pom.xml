@@ -57,6 +57,12 @@
 
     <dependency>
       <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-dacha-resource</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
       <artifactId>mr-api-java-server</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>

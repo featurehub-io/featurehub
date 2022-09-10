@@ -21,13 +21,50 @@ import org.slf4j.LoggerFactory
  */
 
 class MetricsHealthRegistration {
-
-
   companion object {
     private val log: Logger = LoggerFactory.getLogger(MetricsHealthRegistration::class.java)
     const val monitorPortName = "monitor.port"
 
+    fun hasExternalMonitoringPort() = FallbackPropertyConfig.getConfig(monitorPortName) != null
+
+    fun configureMetrics(resourceConfig: ResourceConfig, serviceLocator: ServiceLocator): ResourceConfig {
+      // pull all of the health sources out of the main context and replicate them
+      // into our health repository
+      val healthSources = serviceLocator.getAllServices(HealthSource::class.java);
+
+      listOf(JerseyPrometheusResource::class.java,
+        HealthFeature::class.java, LoadBalancerFeature::class.java, ApplicationLifecycleListener::class.java)
+        .forEach { resourceConfig.register(it) }
+
+      resourceConfig.register(object: AbstractBinder() {
+        override fun configure() {
+          healthSources.forEach { hs ->
+            if (!(hs is ApplicationHealthSource)) {
+              bind(hs).to(HealthSource::class.java)
+            }
+          }
+        }
+      })
+
+      return resourceConfig
+    }
+
+    fun startMetricsEndpoint(resourceConfig: ResourceConfig) {
+      val port = FallbackPropertyConfig.getConfig(monitorPortName)!!.toInt()
+      FeatureHubJerseyHost(resourceConfig).disallowWebHosting().start(port)
+
+      log.info("metric/health endpoint now active on port {}", port)
+    }
+
     fun registerMetrics(config: ResourceConfig) {
+      registerMetrics(config) { resourceConfig -> resourceConfig }
+    }
+    /**
+     * Register a metrics endpoint against the current port if no external monitoring port is defined, otherwise
+     * create a new monitoring port web host, callback for any extra things requiring config and start the internal
+     * port.
+     */
+    fun registerMetrics(config: ResourceConfig, registerCallback: (config: ResourceConfig) -> ResourceConfig) {
       // turn on all jvm prometheus metrics
       DefaultExports.initialize()
 
@@ -35,34 +72,16 @@ class MetricsHealthRegistration {
         config.register(JerseyPrometheusResource::class.java)
         config.register(HealthFeature::class.java)
         config.register(ApplicationLifecycleListener::class.java)
+
+        registerCallback(config)
       } else {
         config.register(object : ContainerLifecycleListener {
           override fun onStartup(container: Container) {
-            // access the ServiceLocator here
-            val injector = container.applicationHandler
-              .injectionManager.getInstance(ServiceLocator::class.java)
 
-            // pull all of the health sources out of the main context and replicate them
-            // into our health repository
-            val healthSources = injector.getAllServices(HealthSource::class.java);
-
-            val resourceConfig = ResourceConfig(JerseyPrometheusResource::class.java,
-              HealthFeature::class.java, LoadBalancerFeature::class.java, ApplicationLifecycleListener::class.java)
-
-            resourceConfig.register(object: AbstractBinder() {
-              override fun configure() {
-                healthSources.forEach { hs ->
-                  if (!(hs is ApplicationHealthSource)) {
-                    bind(hs).to(HealthSource::class.java)
-                  }
-                }
-              }
-            })
-
-            val port = FallbackPropertyConfig.getConfig(monitorPortName)!!.toInt()
-            FeatureHubJerseyHost(resourceConfig).disallowWebHosting().start(port)
-
-            log.info("metric/health endpoint now active on port {}", port)
+            startMetricsEndpoint(registerCallback(configureMetrics(
+              ResourceConfig(), container.applicationHandler
+                .injectionManager.getInstance(ServiceLocator::class.java)
+            )))
           }
 
           override fun onReload(container: Container) {

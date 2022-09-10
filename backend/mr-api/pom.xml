@@ -90,6 +90,22 @@
               </artifacts>
             </configuration>
           </execution>
+          <execution>
+            <id>attach-e2ecommon-yaml</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>end2end-common.yaml</file>
+                  <type>yaml</type>
+                  <classifier>api-common</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 

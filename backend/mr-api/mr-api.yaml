@@ -501,6 +501,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
       - name: includeGroups
         description: "Include groups in result"
@@ -520,11 +521,12 @@ paths:
       description: "Get person"
       operationId: getPerson
       parameters:
-        - name: includeGroups
-          description: "Include the groups for the user"
-          in: query
+        - name: id
+          description: "The id of the person to find"
+          in: path
           schema:
-            type: boolean
+            type: string
+          required: true
       responses:
         200:
           description: "Resulting person"

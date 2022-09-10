@@ -5,7 +5,7 @@ import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbPortfolio
-import io.featurehub.db.publish.CacheSource
+import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Feature
 
 class FeatureStandaloneSpec extends Base2Spec {

@@ -140,12 +140,12 @@ class PersonResource @Inject constructor(
   }
 
   override fun deletePerson(
-    id: String,
+    id: UUID,
     holder: PersonServiceDelegate.DeletePersonHolder,
     securityContext: SecurityContext
   ): Boolean {
     if (authManager.isOrgAdmin(authManager.from(securityContext))) {
-      val p = getPerson(id, false, false, securityContext)
+      val p = getPerson(id.toString(), false, false, securityContext)
       if (p.email != null) {
         return personApi.delete(p.email!!)
       }
@@ -207,7 +207,7 @@ class PersonResource @Inject constructor(
   }
 
   override fun updatePerson(
-    id: String,
+    id: UUID,
     person: Person,
     holder: PersonServiceDelegate.UpdatePersonHolder,
     securityContext: SecurityContext
@@ -217,7 +217,7 @@ class PersonResource @Inject constructor(
       var updatedPerson: Person? = null
       updatedPerson = try {
         personApi.update(
-          Conversions.checkUuid(id), person,
+          id, person,
           peopleOpts(holder.includeAcls, holder.includeGroups),
           from.id!!.id
         )

@@ -13,7 +13,7 @@ import io.featurehub.db.model.query.QDbAcl
 import io.featurehub.db.model.query.QDbEnvironment
 import io.featurehub.db.model.query.QDbServiceAccount
 import io.featurehub.db.model.query.QDbServiceAccountEnvironment
-import io.featurehub.db.publish.CacheSource
+import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.ServiceAccount
@@ -24,7 +24,6 @@ import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
-import java.util.stream.Collectors
 
 @Singleton
 class ServiceAccountSqlApi @Inject constructor(
@@ -171,15 +170,14 @@ class ServiceAccountSqlApi @Inject constructor(
           .findList()
       )
     }
-    return qFinder.findList().stream()
+    return qFinder.findList()
       .map { sa: DbServiceAccount? ->
         convertUtils.toServiceAccount(
           sa,
           opts,
           environmentPermissions
-        )
+        )!!
       }
-      .collect(Collectors.toList())
   }
 
   override fun resetApiKey(
@@ -273,7 +271,6 @@ class ServiceAccountSqlApi @Inject constructor(
 
     // now where we actually find the environment, add it into the list
     val perms = serviceAccount.permissions!!
-      .stream()
       .map { sap: ServiceAccountPermission ->
         val e = envs[sap.environmentId]
         if (e != null) {
@@ -285,8 +282,8 @@ class ServiceAccountSqlApi @Inject constructor(
         }
         null
       }
-      .filter { obj: DbServiceAccountEnvironment? -> Objects.nonNull(obj) }
-      .collect(Collectors.toSet())
+      .filterNotNull()
+      .toMutableSet()
 
     // now create the SA and attach the perms to form the links
     val sa = DbServiceAccount.Builder()
@@ -312,10 +309,8 @@ class ServiceAccountSqlApi @Inject constructor(
 
   private fun environmentMap(serviceAccount: ServiceAccount?): Map<UUID, DbEnvironment> {
     // find all of the UUIDs in the environment list
-    val envIds = serviceAccount!!.permissions!!.stream()
+    val envIds = serviceAccount!!.permissions!!
       .map { obj: ServiceAccountPermission -> obj.environmentId }
-      .filter { obj: UUID? -> Objects.nonNull(obj) }
-      .collect(Collectors.toList())
 
     // now find them in the db in one swoop using "in" syntax
     return QDbEnvironment().id.`in`(envIds).whenArchived.isNull.findList().associateBy { e -> e.id }
@@ -355,7 +350,7 @@ class ServiceAccountSqlApi @Inject constructor(
   ) {
     cacheSource.updateServiceAccount(sa, PublishAction.UPDATE)
     if (changedEnvironments != null && !changedEnvironments.isEmpty()) {
-      changedEnvironments.forEach { e: DbEnvironment? ->
+      changedEnvironments.forEach { e: DbEnvironment ->
         cacheSource.updateEnvironment(
           e,
           PublishAction.UPDATE

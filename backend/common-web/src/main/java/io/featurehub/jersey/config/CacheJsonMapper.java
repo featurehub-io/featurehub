@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.v1.CloudEventBuilder;
+import io.cloudevents.core.v1.CloudEventV1;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -60,5 +64,30 @@ public class CacheJsonMapper {
 
     // still a string
     return mapper.readValue(data, clazz);
+  }
+
+  @Nullable
+  static public <T> T fromEventData(CloudEvent event, Class<T> clazz) throws IOException {
+    if (event.getData() == null) {
+      return null;
+    }
+
+    if ("application/json+gzip".equals(event.getDataContentType())) {
+      return readFromZipBytes(event.getData().toBytes(), clazz);
+    } else if (!"application/json".equals(event.getDataContentType())) {
+      throw new IllegalArgumentException("Unknown format, cannot decode");
+    }
+
+    return mapper.readValue(event.getData().toBytes(), clazz);
+  }
+
+  static public CloudEventBuilder toEventData(CloudEventBuilder builder, Object data, boolean compress) throws IOException {
+    if (compress) {
+      builder.withData("application/json+gzip", writeAsZipBytes(data));
+    } else {
+      builder.withData("application/json", mapper.writeValueAsBytes(data));
+    }
+
+    return builder;
   }
 }

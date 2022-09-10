@@ -1,0 +1,84 @@
+openapi: 3.0.1
+info:
+  title: Management APi for Dacha2 Caching
+  description: This describes the API clients use for accessing features. This reflects the API from 1.5.7 onwards.
+  version: "1.1.1"
+paths:
+  /dacha2/serviceAccount/{id}:
+    get:
+      tags:
+        - Dacha2Service
+      description: "Gets the service account identified by this ID"
+      operationId: getServiceAccount
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: "the service account api-key"
+          schema:
+            type: string
+        - name: key
+          required: false
+          in: header
+          description: "protection key (if any) allowing exposing on public API"
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successfully found service account"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dacha2ServiceAccount"
+        404:
+          description: "not found"
+        403:
+          description: "no permission"
+  /dacha2/environment/{id}:
+    get:
+      tags:
+        - Dacha2Service
+      description: "Gets the environment and features identified by this ID"
+      operationId: getEnvironment
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: "the environment id"
+          schema:
+            type: string
+            format: uuid
+        - name: key
+          required: false
+          in: header
+          description: "protection key (if any) allowing exposing on public API"
+          schema:
+            type: string
+      responses:
+        200:
+          description: "successfully found environment"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dacha2Environment"
+        404:
+          description: "not found"
+        403:
+          description: "no permission"
+components:
+  schemas:
+    Dacha2ServiceAccount:
+      type: object
+      required:
+        - serviceAccount
+      properties:
+        serviceAccount:
+          $ref: "#/components/schemas/CacheServiceAccount"
+    Dacha2Environment:
+      type: object
+      description: "We need all of the application/organisation/etc data so we need the PublishEnvironment here"
+      required:
+        - env
+      properties:
+        env:
+          $ref: "#/components/schemas/PublishEnvironment"

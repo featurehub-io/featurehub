@@ -107,7 +107,7 @@ class PersonResourceSpec extends Specification {
 
   def "a person who updates must be an admin"() {
     when: "I try and update a person without being an admin"
-      resource.updatePerson("1", new Person(), new PersonServiceDelegate.UpdatePersonHolder(), ctx)
+      resource.updatePerson(UUID.randomUUID(), new Person(), new PersonServiceDelegate.UpdatePersonHolder(), ctx)
     then:
       thrown ForbiddenException
   }
@@ -118,7 +118,7 @@ class PersonResourceSpec extends Specification {
     and:
       personApi.update(_, _, _, _) >> new Person()
     when: "I try and update a person and am an admin"
-      def person = resource.updatePerson(UUID.randomUUID().toString(), new Person(), new PersonServiceDelegate.UpdatePersonHolder(), ctx)
+      def person = resource.updatePerson(UUID.randomUUID(), new Person(), new PersonServiceDelegate.UpdatePersonHolder(), ctx)
     then:
       person != null
   }
@@ -129,7 +129,7 @@ class PersonResourceSpec extends Specification {
     and: "no such person exists"
       personApi.update(_, _, _, _) >> null
     when: "I try and update a person and am an admin"
-      def person = resource.updatePerson(UUID.randomUUID().toString(),
+      def person = resource.updatePerson(UUID.randomUUID(),
         new Person().id(new PersonId().id(UUID.randomUUID())),
         new PersonServiceDelegate.UpdatePersonHolder(), ctx)
     then:

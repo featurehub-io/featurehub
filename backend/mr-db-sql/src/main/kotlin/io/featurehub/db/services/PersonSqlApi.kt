@@ -27,8 +27,6 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.ExecutionException
-import java.util.stream.Collectors
-
 
 @Singleton
 open class PersonSqlApi @Inject constructor(
@@ -79,7 +77,7 @@ open class PersonSqlApi @Inject constructor(
     }
 
     val groupChanges = GroupChangeCollection()
-    val superuserChanges = SuperuserChanges(convertUtils.dbOrganization)
+    val superuserChanges = SuperuserChanges(convertUtils.dbOrganization!!)
 
     if (person.groups != null) {
       // we are going to need their groups to determine what they can do
@@ -87,10 +85,9 @@ open class PersonSqlApi @Inject constructor(
       val performedBySuperuser = admin!!.groups!!
         .stream().anyMatch { g: Group -> g.portfolioId == null && g.admin!! }
 
-      var portfoliosPerformingUserCanManage = admin.groups?.stream()
+      var portfoliosPerformingUserCanManage = admin.groups
         ?.filter { g: Group -> g.portfolioId != null && g.admin!! }
         ?.map { obj: Group -> obj.portfolioId }
-        ?.collect(Collectors.toList())
 
       if (!performedBySuperuser && portfoliosPerformingUserCanManage?.isEmpty() == true) {
         return null // why are they even here???
@@ -100,7 +97,7 @@ open class PersonSqlApi @Inject constructor(
         portfoliosPerformingUserCanManage = listOf()
       }
 
-      val superuserGroup = internalGroupSqlApi.superuserGroup(convertUtils.dbOrganization)
+      val superuserGroup = internalGroupSqlApi.superuserGroup(convertUtils.dbOrganization!!)
 
       val groupsAlreadyIn =
         QDbGroupMember().person.id.eq(p.id).select(QDbGroupMember.Alias.id.groupId).findList().map { it.id.groupId }
@@ -273,7 +270,7 @@ open class PersonSqlApi @Inject constructor(
   }
 
   protected val now: LocalDateTime
-  protected get() = LocalDateTime.now()
+  get() = LocalDateTime.now()
 
   @Throws(PersonApi.DuplicatePersonException::class)
   override fun create(email: String, name: String?, createdBy: UUID?): PersonApi.PersonToken? {
@@ -412,7 +409,7 @@ open class PersonSqlApi @Inject constructor(
     }
   }
 
-  override open fun delete(email: String): Boolean {
+  override fun delete(email: String): Boolean {
     return QDbPerson().email.eq(email.lowercase(Locale.getDefault())).findOne()?.let { p ->
       archiveStrategy.archivePerson(p)
       // remove all of their tokens
