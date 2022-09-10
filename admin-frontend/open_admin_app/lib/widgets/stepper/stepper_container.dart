@@ -47,6 +47,7 @@ class StepperRocketButton extends StatelessWidget {
           if (snapshot.data != null &&
               (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
             return IconButton(
+              splashRadius: 20,
               tooltip: 'Open quick setup',
               icon: const Icon(
                 MaterialCommunityIcons.rocket,

@@ -35,12 +35,13 @@ class _StepperState extends State<FHSetupProgressStepper> {
           const Text(
             'Application setup progress',
           ),
-          CircleIconButton(
+          IconButton(
+              splashRadius: 20,
               icon: const Icon(
                 Icons.close,
                 size: 16.0,
               ),
-              onTap: () => bloc.mrClient.stepperOpened = false)
+              onPressed: () => bloc.mrClient.stepperOpened = false)
         ],
       ),
       const SizedBox(height: 8.0),

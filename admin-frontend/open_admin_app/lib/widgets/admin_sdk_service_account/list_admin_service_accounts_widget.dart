@@ -319,7 +319,7 @@ class DeleteAdminServiceAccountDialogWidget extends StatelessWidget {
     return FHDeleteThingWarningWidget(
       thing: "service account '${person.name}'",
       content:
-          'This service account will be removed from all groups and deleted from the system. \n\nThis cannot be undone!',
+          'This service account will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!',
       bloc: bloc.mrClient,
       deleteSelected: () async {
         try {
