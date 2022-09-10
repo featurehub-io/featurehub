@@ -13,11 +13,11 @@ else
   BUILD_PARAMS="$BUILD_PARAMS -Djib.to.tags=latest"
 fi
 DOCKER_PREFIX="${OVERRIDE_DOCKER_PREFIX:-featurehub}"
-echo mvn -f pom-packages.xml -DskipTests $BUILD_PARAMS -Ddocker.project.prefix=$DOCKER_PREFIX -Dcloud-build=true -Dbuild.version=$VERSION clean install
+echo mvn -f pom-packages.xml -DskipTests $BUILD_PARAMS -Dapp.baseimage.prefix=featurehub/ -Ddocker.project.prefix=$DOCKER_PREFIX -Dcloud-build=true -Dbuild.version=$VERSION clean install
 while true; do
     read -p "Are you sure you wish to release (y/n): " yn
     case $yn in
-        [Yy]* ) mvn -f pom-packages.xml -DskipTests $BUILD_PARAMS -Ddocker.project.prefix=$DOCKER_PREFIX -Dcloud-build=true -Dbuild.version=$VERSION clean install; break;;
+        [Yy]* ) mvn -f pom-packages.xml -DskipTests $BUILD_PARAMS  -Dapp.baseimage.prefix=featurehub/  -Ddocker.project.prefix=$DOCKER_PREFIX -Dcloud-build=true -Dbuild.version=$VERSION clean install; break;;
         [Nn]* ) exit;;
         * ) echo "Please answer yes or no.";;
     esac

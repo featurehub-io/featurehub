@@ -24,478 +24,9 @@ as we can go, but try and choose dependencies that are MIT or similarly licensed
 
 We use an OpenAPI definition for the SSE layer. Hold on you say, OpenAPI is a REST/JSON-RPC standard, it doesn't support
 SSE. Yes, you would be right, it doesn't support WebSockets either. However, there is one REST call in the API, and
-all of the data structures that are sent over the wire are listed in that document. It is merged from several files,
-but essentially looks like this:
+all of the data structures that are sent over the wire are listed in that document. 
 
-[source,yaml]
-----
-openapi: 3.0.1
-info:
-  title: FeatureServiceApi
-  description: This describes the API clients use for accessing features
-  version: "1.1.2"
-paths:
-  /features/:
-    get:
-      tags:
-        - FeatureService
-      parameters:
-        - name: apiKey
-          in: query
-          description: "The API keys requested"
-          required: true
-          schema:
-            type: array
-            items:
-              type: string
-      description: Requests all features for this sdkurl and disconnects
-      operationId: getFeatureStates
-      responses:
-        "200":
-          description: feature request successful, all environments you have permission to or that were found are returned
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Environment"
-        "400":
-          description: you didn't ask for any environments
-          content:
-            application/json:
-              schema:
-                {}
-  /features/{sdkUrl}/{featureKey}:
-    put:
-      tags:
-        - FeatureService
-      parameters:
-        - name: sdkUrl
-          in: path
-          description: "The API key for the environment and service account"
-          required: true
-          schema:
-            type: string
-        - name: featureKey
-          in: path
-          description: "The key you wish to update/action"
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FeatureStateUpdate"
-      description: "Updates the feature state if allowed."
-      operationId: setFeatureState
-      responses:
-        "200":
-          description: update was accepted but not actioned because feature is already in that state
-          content:
-            application/json:
-              schema:
-                {}
-        "201":
-          description: update was accepted and actioned
-          content:
-            application/json:
-              schema:
-                {}
-        "400":
-          description: you have made a request that doesn't make sense. e.g. it has no data
-          content:
-            application/json:
-              schema:
-                {}
-        "403":
-          description: update was not accepted, attempted change is outside the permissions of this user
-          content:
-            application/json:
-              schema:
-                {}
-        "404":
-          description: something about the presented data isn't right and we couldn't find it, could be the service key, the environment or the feature
-          content:
-            application/json:
-              schema:
-                {}
-        "412":
-          description: you have made a request that isn't possible. e.g. changing a value without unlocking it.
-          content:
-            application/json:
-              schema:
-                {}
-
-components:
-  schemas:
-    FeatureStateUpdate:
-      type: object
-      properties:
-        value:
-          description: "the new value"
-        updateValue:
-          type: boolean
-          description: "indicates whether you are trying to update the value, as value can be null"
-        lock:
-          description: "set only if you wish to lock or unlock, otherwise null"
-          type: boolean
-    SSEResultState:
-      type: string
-      enum:
-        - ack
-        - bye
-        - failure
-        - features
-        - feature
-        - delete_feature
-    Environment:
-      properties:
-        id:
-          type: string
-        features:
-          type: array
-          items:
-            $ref: "#/components/schemas/FeatureState"
-    FeatureState:
-      required:
-        - name
-      properties:
-        id:
-          type: string
-        key:
-          type: string
-        l:
-          description: "Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter."
-          type: boolean
-        version:
-          description: "The version of the feature, this allows features to change values and it means we don't trigger events"
-          type: integer
-          format: int64
-        type:
-          $ref: "#/components/schemas/FeatureValueType"
-        value:
-          description: "the current value"
-        environmentId:
-          description: "This field is filled in from the client side in the GET api as the GET api is able to request multiple environments.
-                        It is never passed from the server, as an array of feature states is wrapped in an environment."
-          type: string
-        strategies:
-          type: array
-          items:
-            $ref: "#/components/schemas/RolloutStrategy"
-    FeatureValueType:
-      type: string
-      enum:
-        - BOOLEAN
-        - STRING
-        - NUMBER
-        - JSON
-    RoleType:
-      type: string
-      enum:
-        - READ
-        - LOCK
-        - UNLOCK
-        - CHANGE_VALUE
-    RolloutStrategy:
-      description: "if the feature in an environment is different from its default, this will be the reason for it.
-                    a rollout strategy is defined at the Application level and then applied to a specific feature value.
-                    When they are copied to the cache layer they are cloned and the feature value for that strategy
-                    is inserted into the clone and those are published."
-      required:
-        - name
-      properties:
-        id:
-          type: string
-        name:
-          description: "names are unique in a case insensitive fashion"
-          type: string
-          maxLength: 100
-        percentage:
-          description: "value between 0 and 1000000 - for four decimal places"
-          type: integer
-        percentageAttributes:
-          type: array
-          description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
-          items:
-            type: string
-        colouring:
-          description: "the colour used to display the strategy in the UI. indexed table of background/foreground combos."
-          type: integer
-        avatar:
-          type: string
-          description: "url to avatar (if any). Not sent to SDK. Preferably a unicorn."
-          maxLength: 200
-        value:
-          description: "when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge."
-        attributes:
-          type: array
-          items:
-            $ref: "#/components/schemas/RolloutStrategyAttribute"
-    RolloutStrategyAttribute:
-      properties:
-        conditional:
-          $ref: "#/components/schemas/RolloutStrategyAttributeConditional"
-        fieldName:
-          type: string
-        value:
-          description: "its value"
-        values:
-          description: "the values if it is an array"
-          type: array
-          items:
-            $ref: "#/components/schemas/RolloutStrategyArrayType"
-        type:
-          $ref: "#/components/schemas/RolloutStrategyFieldType"
-        array:
-          type: boolean
-    RolloutStrategyArrayType:
-      description: "values depend on the field type"
-    RolloutStrategyFieldType:
-      type: string
-      enum:
-        - STRING
-        - SEMANTIC_VERSION
-        - NUMBER
-        - DATE
-        - DATETIME
-        - BOOLEAN
-        - IP_ADDRESS
-    RolloutStrategyAttributeConditional:
-      type: string
-      enum:
-        - EQUALS
-        - ENDS_WITH
-        - STARTS_WITH
-        - GREATER
-        - GREATER_EQUALS
-        - LESS
-        - LESS_EQUALS
-        - NOT_EQUALS
-        - INCLUDES
-        - EXCLUDES
-        - REGEX
-    StrategyAttributeDeviceName:
-      type: string
-      enum:
-        - browser
-        - mobile
-        - desktop
-    StrategyAttributePlatformName:
-      type: string
-      enum:
-        - linux
-        - windows
-        - macos
-        - android
-        - ios
-    StrategyAttributeCountryName:
-      type: string
-      description: "https://www.britannica.com/topic/list-of-countries-1993160 - we put these in API so everyone can have the same list"
-      enum:
-        - afghanistan
-        - albania
-        - algeria
-        - andorra
-        - angola
-        - antigua_and_barbuda
-        - argentina
-        - armenia
-        - australia
-        - austria
-        - azerbaijan
-        - the_bahamas
-        - bahrain
-        - bangladesh
-        - barbados
-        - belarus
-        - belgium
-        - belize
-        - benin
-        - bhutan
-        - bolivia
-        - bosnia_and_herzegovina
-        - botswana
-        - brazil
-        - brunei
-        - bulgaria
-        - burkina_faso
-        - burundi
-        - cabo_verde
-        - cambodia
-        - cameroon
-        - canada
-        - central_african_republic
-        - chad
-        - chile
-        - china
-        - colombia
-        - comoros
-        - congo_democratic_republic_of_the
-        - congo_republic_of_the
-        - costa_rica
-        - cote_divoire
-        - croatia
-        - cuba
-        - cyprus
-        - czech_republic
-        - denmark
-        - djibouti
-        - dominica
-        - dominican_republic
-        - east_timor
-        - ecuador
-        - egypt
-        - el_salvador
-        - equatorial_guinea
-        - eritrea
-        - estonia
-        - eswatini
-        - ethiopia
-        - fiji
-        - finland
-        - france
-        - gabon
-        - the_gambia
-        - georgia
-        - germany
-        - ghana
-        - greece
-        - grenada
-        - guatemala
-        - guinea
-        - guinea_bissau
-        - guyana
-        - haiti
-        - honduras
-        - hungary
-        - iceland
-        - india
-        - indonesia
-        - iran
-        - iraq
-        - ireland
-        - israel
-        - italy
-        - jamaica
-        - japan
-        - jordan
-        - kazakhstan
-        - kenya
-        - kiribati
-        - korea_north
-        - korea_south
-        - kosovo
-        - kuwait
-        - kyrgyzstan
-        - laos
-        - latvia
-        - lebanon
-        - lesotho
-        - liberia
-        - libya
-        - liechtenstein
-        - lithuania
-        - luxembourg
-        - madagascar
-        - malawi
-        - malaysia
-        - maldives
-        - mali
-        - malta
-        - marshall_islands
-        - mauritania
-        - mauritius
-        - mexico
-        - micronesia_federated_states_of
-        - moldova
-        - monaco
-        - mongolia
-        - montenegro
-        - morocco
-        - mozambique
-        - myanmar
-        - namibia
-        - nauru
-        - nepal
-        - netherlands
-        - new_zealand
-        - nicaragua
-        - niger
-        - nigeria
-        - north_macedonia
-        - norway
-        - oman
-        - pakistan
-        - palau
-        - panama
-        - papua_new_guinea
-        - paraguay
-        - peru
-        - philippines
-        - poland
-        - portugal
-        - qatar
-        - romania
-        - russia
-        - rwanda
-        - saint_kitts_and_nevis
-        - saint_lucia
-        - saint_vincent_and_the_grenadines
-        - samoa
-        - san_marino
-        - sao_tome_and_principe
-        - saudi_arabia
-        - senegal
-        - serbia
-        - seychelles
-        - sierra_leone
-        - singapore
-        - slovakia
-        - slovenia
-        - solomon_islands
-        - somalia
-        - south_africa
-        - spain
-        - sri_lanka
-        - sudan
-        - sudan_south
-        - suriname
-        - sweden
-        - switzerland
-        - syria
-        - taiwan
-        - tajikistan
-        - tanzania
-        - thailand
-        - togo
-        - tonga
-        - trinidad_and_tobago
-        - tunisia
-        - turkey
-        - turkmenistan
-        - tuvalu
-        - uganda
-        - ukraine
-        - united_arab_emirates
-        - united_kingdom
-        - united_states
-        - uruguay
-        - uzbekistan
-        - vanuatu
-        - vatican_city
-        - venezuela
-        - vietnam
-        - yemen
-        - zambia
-        - zimbabwe
-
-
-
-----
-
+To find the latest published version of the API, go to http://api.dev.featurehub.io/edge/releases.json - and then take the latest version and go to http://api.dev.featurehub.io/edge/1.1.3.yaml (where you replace 1.1.3.yaml with the latest revision).
 
 You will notice the eventsource url is missing, and it is. If you use the standard
 https://github.com/OpenAPITools/openapi-generator[OpenAPI generator] as supported by the community, then you will
@@ -511,8 +42,7 @@ key functions the same between the different languages.
 An SDK is generally recommended to have a local feature _cache_ which we refer to as a _repository_. This will store
 the state of all of the features and let the user interact with the features all of the time, without the application
 needing to ask the FeatureHub server for features. Then there is a _client_, which operates independently and gets the features
-and passes them to the repository for processing. There are two forms currently, `GET` and `SSE` (Server Sent Events, aka
-Server Push)
+and passes them to the repository for processing. There are two forms currently, `GET` and `SSE` (Server Sent Events)
 
 It is worthwhile they be idiomatic to your language.
 
@@ -536,14 +66,29 @@ recommend that Baggage support is built into the SDK using Open Telemetry as use
 
 The GET Adapter is almost fully documented in the OpenAPI document above.
 
-General notes
-- For server evaluated support, the Context sends an `X-FeatureHub` header. If it can't set a header (e.g. a browser) it can pass it as a parameter instead.
-- etags are supported. When a request is made, the `etag` header is set. If that is held onto, and on the next request, it should be sent back
-in the `if-none-matches` header. If this matches the current etag of the features, the server will reply with a 304.
-- You will always get a 200 (list of environments and their features), 304 (no change in data, so no data), 400 (malformed request),
-404 (the key doesn't exist, please stop asking for it), 500 (some tragic event happened on the server and woe to the
-Ops person investigating it) or 503 (the server cache isn't ready and
-can't give an answer as to whether the key does or does not exist - wait for a little while and try again) back.
+=== General notes
+- MUST: etags are supported. When a response comes back, the `etag` header is received, it must be held onto and on the next request, it must be sent back in the `if-none-matches` header. If this matches the current etag of the features, the server will reply with a 304.
+- MUST: You will always get a 200 (list of environments and their features) or 236 on success. A 236 will
+send back the same data as a 200 but the client _must stop polling_ as it is an indication that the
+environment is _stale_ and will no longer receive updates.
+- MUST: 304 (no change in data, so no data) - the client should just skip and expect no data and wait for the next poll
+- MUST: 400 - malformed request - typically you have requested no environments
+- MUST: 404 - the key doesn't exist, please stop asking for it - polling should stop completely and not restart.
+- MUST: 500 - some tragic event happened on the server and woe to the
+Ops person investigating it
+- MUST: 503 - the server cache isn't ready and
+can't give an answer as to whether the key does or does not exist - wait for a little while and try again.
+- MUST: Support polling interval changes from the server by interpreting the `max-age=X` field. If the cache-control header is set, and there is a `max-age=X` field, the polling interval must be updated to match. This is the number of seconds between polls. This allows per environment control over cache control and the server being able to indicate to the client how quickly (or slowly) to poll. 
+
+=== Server Evaluated Feature Support
+
+If you are intending to support server evaluated features:
+
+- MUST: For server evaluated support, the Context sends an `x-featurehub` header. If it can't set a header (e.g. a browser) it can pass it as a parameter instead.
+- MUST: The `x-featurehub` header is a FORM style separation of attributes from the context, `key=value&key=value`, etc
+- MUST: When an `x-featurehub` header is sent (i.e the client context has values) the SDK must calculate a SHA256 in hexdigest form. This is added as a _query_ parameter called `contextSha` to the outgoing request. This parameter is in the OpenAPI document. It
+is intended to allow the client side to "bust the cache" if there is a Fastly for a FeatureHub
+deploy.
 
 == Building an SSE Adapter
 
@@ -647,18 +192,26 @@ data: {"status":"closed"}
 
 You can see it is a series of pairs: event, data. These are standard names in SSE, their values are what we control.
 
-The event is the command, there is a special one called "error" that is managed by the protocol itself. But in our
-case we are typically seeing:
+The event is the command, there is a special one called "error" that is managed by the protocol itself.
 
-- ack: i have received your request, I'm checking to see if everything is ok
-- features: ok, this is the list of features and their current state
 
-and then as things change
+=== Requirements for SSE client
 
-- feature - when a feature changes
-- bye - when you are being kicked off
+The SSE client must support all server field types, and not fault if new event types are introduced.
+These are 
 
-You would expect delete_feature to be rare.
+- `ack`:  nothing needs to be done for this, it is simply a heartbeat and is sent at start to ensure that the client receives something.
+- `features`: this contains an array of Feature objects and their appropriate state. If client evaluated keys are supported, this will include strategies, if server evaluated keys are being used, it will only include the specific feature values for this client.
+- `feature`: this contains the update to a single feature
+- `delete_feature`: this indicates that the specified feature should be deleted
+- `config`: this contains metadata used about how the channel should perform, see below
+- `bye` - when the server is closing the connection (you will not always receive this)
+
+==== `config`
+
+The `config` response always responds with a JSON data packet. The currently recognized fields are:
+
+- `edge.stale` - the client should stop attempting to connect as this API key represents an environment that is stale. This MUST be honoured. 
 
 === A note on the EventSource spec
 
@@ -669,6 +222,8 @@ it may due transient issues on the network preventing your client from talking t
 happen. It could also happen because the cache does not _yet_ know about your
 environment or service account, such as Dacha starting after the Edge server, or the first Dacha taking a short while
 to negotiate its cache.
+
+
 
 === Look at the other examples, talk to us
 
@@ -681,8 +236,8 @@ Please also talk to us, we are available on the #fh-sdk channel on the Anyways L
 
 It is expected that there will be a repository pattern of some kind in each SDK. That may have all the functionality
 pertaining to features, listeners, streamed updates, and analytics logging built in and yet actually do nothing itself.
-The Java and Typescript versions are designed to distinctly separate the repository from the method used to feed
-data into that repository - they are two separate artifacts.
+
+As an example, the Typescript client has two repositories - a LocalRepository intended to be loaded from a file, and a ClientFeatureRepository. Most of the other SDKs have just one. They generally have two Edge connectors to choose from - a polling edge connector and an eventstream edge connector. Both of these feed data to the repository through a generic interface.
 
 For the Java version, this has been done because Jersey is the first example stack, but there are many others in Java-land
 and when we have a Mobile SDK, it will support Android-Java, which will not be able to use SSE. It also means if someone
@@ -696,7 +251,7 @@ However, if it is unlikely your repository will be used a different way, then me
 Typically, because the repository is what the main code base will interact with, a repository will be responsible for:
 
 - holding all of the features
-- keeping a track of the new features coming in and checking their versions to make sure they are new versions
+- keeping a track of the new features coming in and _checking their versions to make sure they are new versions_ or that their values have changed. A feature could arrive with the same version but a different value in Server Evaluated API Keys because the client can change its context which will change the way a feature has been evaluated.
 - triggering events (callbacks, streams or whatever is idiomatic in your language) for when features change
 - keeping track of user context so you can apply rollout strategies (see Rollout Strategies below)
 - allowing clients to remove themselves from listening
