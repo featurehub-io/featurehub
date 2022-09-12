@@ -4,7 +4,7 @@ There are several deployment options for running FeatureHub. As FeatureHub is pa
 
 There is a GitHub https://github.com/featurehub-io/featurehub-install[repository] where you can find sample docker-compose style deployment options.
 
-All of the deployment options mount the database volume separately from the main set of containers, allowing you to upgrade your database and versions of FeatureHub without destroying your database.
+All the deployment options mount the database volume separately from the main set of containers, allowing you to upgrade your database and versions of FeatureHub without destroying your database.
 
 NOTE: As FeatureHub is an open source project, we test on only a limited number of databases, primarily Postgres.
 
@@ -20,7 +20,7 @@ you are willing to test it out.
 == Deployment Options
 
 As explained in the link:architecture{outfilesuffix}[Architecture] section, there are a number of different combinations
-for deployment of FeatureHub and they typically focus on _where_ you will deploy the infrastructure, _how_ you want
+for deployment of FeatureHub. Those typically focus on _where_ you will deploy the infrastructure, _how_ you want
 your clients to use it and _how much_  use it will get. FeatureHub as of 1.5.0 is designed to support
 very low use cases of only hundreds of requests a day up to tens of millions of requests a day or more.
 
@@ -28,9 +28,9 @@ To get you up and going quickly, we have created a number of different Docker op
 
 You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here]
 
-To install, grab the latest version of FeatureHub tagged release, e.g:
+To install, clone the https://github.com/featurehub-io/featurehub-install[featurehub-install repo] or download using the command below:
 
-`curl -L https://github.com/featurehub-io/featurehub-install/archive/refs/tags/featurehub-1.4.1.tar.gz | tar xv`
+`curl -L https://github.com/featurehub-io/featurehub-install/tarball/main | tar -xz`
 
 Make sure you have your docker server running and docker-compose installed if you are using it (or your swarm
 set up if you are using docker stack). These example stacks are great for experimenting or to understand what the
@@ -41,14 +41,14 @@ provider, multiple NATs servers and so forth.
 
 For the _Evaluation_ option (not recommended for production):
 
-`cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-in-one-h2`
+`cd docker-compose-options/all-in-one-h2`
 
 `docker compose up`
 
 This will install all the necessary components including FeatureHub Admin Console. You can now load it on http://localhost:8085
 
 What makes it only an evaluation option is simply the database used (H2), it writes to the local
-disk and is not intended to be used for a long running or highly performant, concurrent system.
+disk and is not intended to be used for a long-running or highly performant, concurrent system.
 
 == Production-Ready Deployments
 
@@ -65,7 +65,7 @@ disk and is not intended to be used for a long running or highly performant, con
 
 image::fh_deployment_option_1a.svg[Architecture,600]
 
-With Option 1a, the Party Server, all of the services are deployed in a single running container. Internally this is packaged as a single
+With Option 1a (the Party Server) all the services are deployed in a single running container. Internally this is packaged as a single
 Java server running four different services (a static web server serving the Admin App, the Management Repository server,
 the cache and the Edge service), and also the NATs service bus to provide cache and streaming services. This allows you to
 run only one of these (for instance) and support a full streaming service talking to an external database.
@@ -87,13 +87,13 @@ encourage you to use different DNS hosts pointing to the same server for feature
 
 For Postgres option:
 
-`cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-in-one-postgres`
+`cd docker-compose-options/all-in-one-postgres`
 
 `docker compose up`
 
 Or for MySQL option:
 
-`cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-in-one-mysql`
+`cd docker-compose-options/all-in-one-mysql`
 
 `docker compose up`
 
@@ -135,7 +135,7 @@ how you can use a different URL to serve traffic for feature consumers from your
 
 ==== Setup Instructions
 
-`cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-separate-postgres`
+`cd docker-compose-options/all-separate-postgres`
 
 `docker compose up`
 
@@ -228,7 +228,7 @@ gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instance
 ----
 
 If you are using OAuth2, then you will need to set those properties, and we recommend setting your `oauth2.disable-login` to true to
-prevent being able to login without an OAuth2 connection.
+prevent being able to log in without an OAuth2 connection.
 
 Use the example Cloud Shell to ensure you can connect to it, but it can take a while to create.
 
