@@ -30,7 +30,7 @@ You can check for the latest versions https://github.com/featurehub-io/featurehu
 
 To install, clone the https://github.com/featurehub-io/featurehub-install[featurehub-install repo] or download using the command below:
 
-`curl -L https://github.com/featurehub-io/featurehub-install/tarball/main | tar -xz`
+`curl -sL https://github.com/featurehub-io/featurehub-install/tarball/main | tar -xvz`
 
 Make sure you have your docker server running and docker-compose installed if you are using it (or your swarm
 set up if you are using docker stack). These example stacks are great for experimenting or to understand what the
