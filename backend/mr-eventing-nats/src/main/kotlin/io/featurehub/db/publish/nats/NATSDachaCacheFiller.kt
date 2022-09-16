@@ -18,6 +18,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 
+/**
+ * This code is designed to support Dacha (1) - it supports listening to the feature updates channel and
+ * processing events through it, and also acting as the master source for Dacha 1's broadcast resolution.
+ */
 class NATSDachaCacheFiller @Inject constructor(val cacheName: String, val nats: NATSSource,
                                                private val id: UUID, val cacheSource: CacheSource,
                                                private val updateListener: EdgeUpdateListener

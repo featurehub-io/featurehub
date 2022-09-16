@@ -195,6 +195,23 @@
               </artifacts>
             </configuration>
           </execution>
+          <execution>
+            <!-- these are only used by dacha1 and MR to communicate -->
+            <id>attach-dacha1-mr-yaml</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>dacha1-mr.yaml</file>
+                  <type>yaml</type>
+                  <classifier>dacha1-mr</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 

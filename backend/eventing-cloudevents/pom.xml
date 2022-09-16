@@ -7,13 +7,13 @@
     <version>1.2-SNAPSHOT</version>
     <relativePath>../composite-parent</relativePath>
   </parent>
-  <groupId>io.featurehub.mr</groupId>
-  <artifactId>mr-eventing-nats</artifactId>
+  <groupId>io.featurehub.events</groupId>
+  <artifactId>eventing-cloudevents</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>mr-eventing-nats</name>
+  <name>eventing-cloudevents</name>
 
   <description>
-    NATS Specific eventing config and classes
+    Eventing common interfaces used by the main eventing and individual adapters
   </description>
 
   <url>https://featurehub.io</url>
@@ -42,48 +42,28 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-db-models</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.common</groupId>
-      <artifactId>common-db</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-ebean</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-eventing-common</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-db-services</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.events</groupId>
-      <artifactId>eventing-nats</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <groupId>io.cloudevents</groupId>
+      <artifactId>cloudevents-core</artifactId>
+      <version>2.4.0</version>
     </dependency>
     <dependency>
       <groupId>io.cloudevents</groupId>
-      <artifactId>cloudevents-nats</artifactId>
-      <version>2.5.0-SNAPSHOT</version>
+      <artifactId>cloudevents-json-jackson</artifactId>
+      <version>2.4.0</version>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.common</groupId>
-      <artifactId>common-db-test</artifactId>
+      <artifactId>common-web</artifactId>
       <version>1.1-SNAPSHOT</version>
-      <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-test</artifactId>
+      <version>1.3-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -97,8 +77,6 @@
           <filtering>false</filtering>
           <tiles>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
-            <tile>org.avaje.tile:java-compile:1.1</tile>
-            <tile>io.ebean.tile:enhancement:${ebean.version}</tile>
           </tiles>
         </configuration>
       </plugin>

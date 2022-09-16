@@ -40,9 +40,9 @@ internal class CacheBroadcastProxy(private val broadcasters: List<CacheBroadcast
     }
   }
 
-  override fun publishFeature(cacheName: String, feature: PublishFeatureValue) {
+  override fun publishFeature(cacheName: String, features: PublishFeatureValues) {
     broadcasters.forEach { cb ->
-      executor.submit { cb.publishFeature(cacheName, feature) }
+      executor.submit { cb.publishFeature(cacheName, features) }
     }
   }
 }
@@ -355,10 +355,10 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
 
   private fun innerPublishFeatureValueChange(cacheName: String, featureValue: DbFeatureValue, cacheBroadcast: CacheBroadcast) {
     cacheBroadcast.publishFeature(cacheName,
-      PublishFeatureValue()
+      PublishFeatureValues().addFeaturesItem(PublishFeatureValue()
         .feature(toCacheEnvironmentFeature(featureValue, mutableMapOf(Pair(featureValue.feature.id, featureValue.feature))))
         .environmentId(featureValue.environment.id)
-        .action(PublishAction.UPDATE)
+        .action(PublishAction.UPDATE))
     )
   }
 
@@ -415,13 +415,13 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
       val cacheName = QDbNamedCache().organizations.portfolios.applications.eq(feature.parentApplication)
         .findOne()!!.cacheName
       cacheBroadcast.publishFeature(cacheName,
-        PublishFeatureValue()
+        PublishFeatureValues().addFeaturesItem(PublishFeatureValue()
           .feature(
             CacheEnvironmentFeature()
               .feature(toCacheFeature(feature))
           )
           .environmentId(environmentId)
-          .action(PublishAction.DELETE)
+          .action(PublishAction.DELETE))
       )
     }
   }
@@ -562,13 +562,13 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
               toCacheFeatureValue.key = originalKey
             }
             cacheBroadcast.publishFeature(cacheName,
-                PublishFeatureValue()
+              PublishFeatureValues().addFeaturesItem(PublishFeatureValue()
                   .feature(
                     CacheEnvironmentFeature()
                       .feature(cacheFeature)
                       .value(toCacheFeatureValue)
                   )
-                  .environmentId(env.id).action(action)
+                  .environmentId(env.id).action(action))
               )
             }
     }

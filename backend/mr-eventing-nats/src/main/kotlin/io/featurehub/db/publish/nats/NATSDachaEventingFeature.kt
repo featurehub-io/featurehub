@@ -19,15 +19,14 @@ class NATSDachaEventingFeature : Feature {
     }
 
     /*
-
     We need to be able to support both Dacha 1 and Dacha 2 at the same time for rollover.
-
      */
     fun isDacha2Enabled(): Boolean =
       FallbackPropertyConfig.getConfig("dacha2.enabled") == "true"
 
+    // enabled by default
     fun isDacha1Enabled(): Boolean =
-      FallbackPropertyConfig.getConfig("dacha1.enabled") == "false"
+      FallbackPropertyConfig.getConfig("dacha1.enabled") != "false"
   }
 
   override fun configure(context: FeatureContext): Boolean {

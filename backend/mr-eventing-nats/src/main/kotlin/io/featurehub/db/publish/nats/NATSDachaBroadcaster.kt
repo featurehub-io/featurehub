@@ -2,6 +2,7 @@ package io.featurehub.db.publish.nats
 
 import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValue
+import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.events.common.CacheBroadcast
@@ -32,11 +33,16 @@ class NATSDachaBroadcaster @Inject constructor(private val  nats: NATSSource) : 
     )
   }
 
-  override fun publishFeature(cacheName: String, feature: PublishFeatureValue) {
-    publish(
-      featureChannelNameCache.getOrPut(cacheName) { ChannelNames.featureValueChannel(cacheName) },
-      feature, "feature", CacheMetrics.features
-    )
+  override fun publishFeature(cacheName: String, features: PublishFeatureValues) {
+    val subject = featureChannelNameCache.getOrPut(cacheName) { ChannelNames.featureValueChannel(cacheName) }
+
+    // splits out the old way
+    for (feature in features.features) {
+      publish(
+        subject,
+        feature, "feature", CacheMetrics.features
+      )
+    }
   }
 
   private fun publish(subject: String, obj: Any, desc: String, metrics: CacheMetric) {

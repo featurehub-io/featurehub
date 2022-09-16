@@ -55,8 +55,8 @@
     </dependency>
 
     <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-publish-api</artifactId>
+      <groupId>io.featurehub.events</groupId>
+      <artifactId>eventing-nats</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 

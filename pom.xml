@@ -85,7 +85,8 @@
     <module>backend/mr-eventing-common</module>
     <module>backend/mr-eventing-nats</module>
     <module>backend/edge-feature-update-async-api</module>
-    <module>backend/mr-publish-api</module>
+    <module>backend/eventing-nats</module>
+    <module>backend/eventing-cloudevents</module>
     <module>backend/sdk-strategy-matchers</module>
     <module>backend/party-server</module>
     <module>backend/party-server-ish</module>

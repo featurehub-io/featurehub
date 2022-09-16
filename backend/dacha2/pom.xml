@@ -64,10 +64,42 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- we provide this api -->
     <dependency>
       <groupId>io.featurehub.mr</groupId>
       <artifactId>dacha-api</artifactId>
       <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <!-- we use this API to get data -->
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-dacha-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>31.1-jre</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.events</groupId>
+      <artifactId>eventing-cloudevents</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.events</groupId>
+      <artifactId>eventing-nats</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.cloudevents</groupId>
+      <artifactId>cloudevents-nats</artifactId>
+      <version>2.5.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 

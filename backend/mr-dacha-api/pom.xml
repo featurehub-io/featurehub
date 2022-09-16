@@ -80,6 +80,15 @@
                 </artifactItem>
                 <artifactItem>
                   <groupId>io.featurehub.mr</groupId>
+                  <artifactId>dacha-api</artifactId>
+                  <version>1.1-SNAPSHOT</version>
+                  <classifier>dacha1-mr</classifier>
+                  <type>yaml</type>
+                  <outputDirectory>${project.basedir}/target</outputDirectory>
+                  <destFileName>dacha1-mr.yaml</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>io.featurehub.mr</groupId>
                   <artifactId>mr-api</artifactId>
                   <version>1.1-SNAPSHOT</version>
                   <classifier>api-common</classifier>
@@ -109,6 +118,7 @@
               <files>
                 <file>${project.basedir}/mr-dacha-api.yaml</file>
                 <file>${project.basedir}/target/dacha-components.yaml</file>
+                <file>${project.basedir}/target/dacha1-mr.yaml</file>
                 <file>${project.basedir}/target/e2e-common.yaml</file>
               </files>
               <finalYaml>${project.basedir}/target/final.yaml</finalYaml>

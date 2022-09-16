@@ -11,6 +11,34 @@ components:
         - UPDATE
         - DELETE
         - EMPTY
+    PublishFeatureValues:
+      x-package: io.featurehub.dacha.model
+      type: object
+      description: "A collection of features that updated at once"
+      required:
+        - features
+      properties:
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublishFeatureValue"
+    PublishFeatureValue:
+      x-package: io.featurehub.dacha.model
+      type: object
+      description: "This is the item that gets published from MR originally"
+      required:
+        - action
+        - environmentId
+        - feature
+      properties:
+        action:
+          $ref: "#/components/schemas/PublishAction"
+        environmentId:
+          description: "this needs to be passed because the feature value may be null"
+          type: string
+          format: uuid
+        feature:
+          $ref: "#/components/schemas/CacheEnvironmentFeature"
     PublishEnvironment:
       x-package: io.featurehub.dacha.model
       description: "Even a EMPTY message must set all the data to junk as it is an unusual situation"

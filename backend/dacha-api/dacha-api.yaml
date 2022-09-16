@@ -136,46 +136,7 @@ components:
           properties:
             featureKey:
               type: string
-    CacheManagementMessage:
-      x-package: io.featurehub.dacha.model
-      required:
-        - id
-        - mit
-        - requestType
-        - cacheState
-      properties:
-        id:
-          type: string
-          format: uuid
-        destId:
-          description: "this allows one instance on the bus to communicate directly with another instance"
-          type: string
-          format: uuid
-        requestType:
-          $ref: "#/components/schemas/CacheRequestType"
-        mit:
-          description: "used only to negotiate master who is attempting to get data from MR"
-          type: integer
-          format: int64
-        cacheState:
-          $ref: "#/components/schemas/CacheState"
-    CacheRequestType:
-      x-package: io.featurehub.dacha.model
-      type: string
-      enum:
-        - SEEKING_COMPLETE_CACHE
-        - SEEKING_REFRESH
-        - CLAIMING_MASTER
-        - CACHE_REMOVED
-        - CACHE_SOURCE
-        - DUPLICATE_MIT
-    CacheState:
-      x-package: io.featurehub.dacha.model
-      type: string
-      enum:
-        - NONE
-        - REQUESTED
-        - COMPLETE
+
     DachaStructureResponse:
       x-package: io.featurehub.dacha.model
       type: object
@@ -229,23 +190,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RoleType"
-        feature:
-          $ref: "#/components/schemas/CacheEnvironmentFeature"
-    PublishFeatureValue:
-      x-package: io.featurehub.dacha.model
-      type: object
-      description: "This is the item that gets published from MR originally"
-      required:
-        - action
-        - environmentId
-        - feature
-      properties:
-        action:
-          $ref: "#/components/schemas/PublishAction"
-        environmentId:
-          description: "this needs to be passed because the feature value may be null"
-          type: string
-          format: uuid
         feature:
           $ref: "#/components/schemas/CacheEnvironmentFeature"
     DachaKeyDetailsResponse:
