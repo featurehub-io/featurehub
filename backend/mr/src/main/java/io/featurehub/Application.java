@@ -6,14 +6,11 @@ import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.mr.ManagementRepositoryFeature;
+import io.featurehub.mr.dacha2.Dacha2Feature;
+import io.featurehub.mr.events.dacha2.CacheApi;
 import io.featurehub.publish.NATSFeature;
-import io.featurehub.web.security.oauth.AuthProviderCollection;
-import io.featurehub.web.security.oauth.AuthProviders;
-import io.featurehub.web.security.oauth.NoAuthProviders;
-import io.featurehub.web.security.oauth.OAuth2Feature;
 import io.featurehub.web.security.saml.SamlEnvironmentalFeature;
 import jakarta.inject.Singleton;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +19,6 @@ import static io.featurehub.rest.Info.APPLICATION_NAME_PROPERTY;
 
 public class Application {
   private static final Logger log = LoggerFactory.getLogger(Application.class);
-
 
   public static void main(String[] args) {
     System.setProperty("user.timezone", "UTC");
@@ -46,26 +42,17 @@ public class Application {
       TelemetryFeature.class
       );
 
-    if (OAuth2Feature.Companion.oauth2ProvidersExist()) {
-      config.register(OAuth2Feature.class);
-    }
-
-    if (SamlEnvironmentalFeature.Companion.samlProvidersExist()) {
-      config.register(SamlEnvironmentalFeature.class);
-    }
-
-    config.register(new AbstractBinder() {
-      @Override
-      protected void configure() {
-        if (OAuth2Feature.Companion.oauth2ProvidersExist() || SamlEnvironmentalFeature.Companion.samlProvidersExist()) {
-          bind(AuthProviders.class).to(AuthProviderCollection.class).in(Singleton.class);
-        } else {
-          bind(NoAuthProviders.class).to(AuthProviderCollection.class).in(Singleton.class);
-        }
+    MetricsHealthRegistration.Companion.registerMetrics(config, (resourceConfig, locator, binder) -> {
+      if (locator != null) {
+        binder.bind(locator.getService(CacheApi.class)).to(CacheApi.class).in(Singleton.class);
       }
-    });
 
-    MetricsHealthRegistration.Companion.registerMetrics(config);
+      if (resourceConfig != null) {
+        resourceConfig.register(Dacha2Feature.class);
+      }
+
+      return resourceConfig;
+    });
 
     new FeatureHubJerseyHost(config).start();
 

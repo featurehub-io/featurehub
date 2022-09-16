@@ -6,7 +6,7 @@ import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
-import io.featurehub.db.publish.CacheSource
+import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole

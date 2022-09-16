@@ -7,6 +7,7 @@ import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
+import io.featurehub.mr.dacha2.Dacha2Feature
 import io.featurehub.publish.ChannelConstants
 import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
@@ -67,6 +68,7 @@ class Application {
 
     // check if we should list on a different port
     registerMetrics(config)
+
     FeatureHubJerseyHost(config).start()
     log.info("Party-Server-ish Launched - (HTTP/2 payloads enabled!)")
 

@@ -1,0 +1,43 @@
+    # models specifically for dacha1 for management
+components:
+  schemas:
+    CacheManagementMessage:
+      x-package: io.featurehub.dacha.model
+      required:
+        - id
+        - mit
+        - requestType
+        - cacheState
+      properties:
+        id:
+          type: string
+          format: uuid
+        destId:
+          description: "this allows one instance on the bus to communicate directly with another instance"
+          type: string
+          format: uuid
+        requestType:
+          $ref: "#/components/schemas/CacheRequestType"
+        mit:
+          description: "used only to negotiate master who is attempting to get data from MR"
+          type: integer
+          format: int64
+        cacheState:
+          $ref: "#/components/schemas/CacheState"
+    CacheRequestType:
+      x-package: io.featurehub.dacha.model
+      type: string
+      enum:
+        - SEEKING_COMPLETE_CACHE
+        - SEEKING_REFRESH
+        - CLAIMING_MASTER
+        - CACHE_REMOVED
+        - CACHE_SOURCE
+        - DUPLICATE_MIT
+    CacheState:
+      x-package: io.featurehub.dacha.model
+      type: string
+      enum:
+        - NONE
+        - REQUESTED
+        - COMPLETE

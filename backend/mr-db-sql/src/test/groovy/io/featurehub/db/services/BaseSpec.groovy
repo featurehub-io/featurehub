@@ -4,7 +4,7 @@ import io.ebean.DB
 import io.ebean.Database
 import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbPerson
-import io.featurehub.db.publish.CacheSource
+import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person

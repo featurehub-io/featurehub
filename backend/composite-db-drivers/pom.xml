@@ -43,7 +43,7 @@
   </licenses>
 
   <properties>
-    <cloud-sql-version>1.6.0</cloud-sql-version>
+    <cloud-sql-version>1.7.0</cloud-sql-version>
   </properties>
 
   <dependencies>
@@ -58,7 +58,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>42.3.3</version>
+      <version>42.3.7</version>
     </dependency>
 
     <dependency>
@@ -70,13 +70,13 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.29</version>
+      <version>8.0.30</version>
     </dependency>
 
     <dependency>
       <groupId>com.oracle.database.jdbc</groupId>
       <artifactId>ojdbc11</artifactId>
-      <version>21.5.0.0</version>
+      <version>21.7.0.0</version>
     </dependency>
 
     <!-- gcloud support -->
@@ -95,7 +95,7 @@
     <dependency>
       <groupId>com.google.oauth-client</groupId>
       <artifactId>google-oauth-client</artifactId>
-      <version>1.33.3</version>
+      <version>1.34.1</version>
     </dependency>
 
     <dependency>

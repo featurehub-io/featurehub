@@ -56,15 +56,16 @@
       <artifactId>composite-ebean</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
+
     <dependency>
       <groupId>io.featurehub.mr</groupId>
-      <artifactId>dacha-api</artifactId>
+      <artifactId>mr-eventing</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-publish-api</artifactId>
+      <artifactId>mr-db-services</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 

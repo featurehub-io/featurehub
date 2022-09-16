@@ -60,7 +60,7 @@
     <!-- we need this because these two generate the same code and it can clash if dacha-api isn't built -->
     <dependency>
       <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-api-java-server</artifactId>
+      <artifactId>mr-api</artifactId>
       <version>1.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
@@ -68,6 +68,34 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>extract common model</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>io.featurehub.mr</groupId>
+                  <artifactId>mr-api</artifactId>
+                  <version>1.1-SNAPSHOT</version>
+                  <classifier>api-common</classifier>
+                  <type>yaml</type>
+                  <outputDirectory>${project.basedir}/target</outputDirectory>
+                  <destFileName>e2e-common.yaml</destFileName>
+                </artifactItem>
+              </artifactItems>
+              <overWriteReleases>true</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>cd.connect.maven</groupId>
         <artifactId>merge-yaml-plugin</artifactId>
@@ -82,9 +110,10 @@
             <configuration>
               <files>
                 <file>${project.basedir}/dacha-api.yaml</file>
-                <file>${project.basedir}/../mr-api/end2end-common.yaml</file>
+                <file>${project.basedir}/dacha-component.yaml</file>
+                <file>${project.basedir}/target/e2e-common.yaml</file>
               </files>
-              <finalYaml>${project.basedir}/final.yaml</finalYaml>
+              <finalYaml>${project.basedir}/target/final.yaml</finalYaml>
             </configuration>
           </execution>
         </executions>
@@ -112,7 +141,7 @@
               <apiPackage>io.featurehub.dacha.api</apiPackage>
               <!-- we overlap the models -->
               <modelPackage>io.featurehub.mr.model</modelPackage>
-              <inputSpec>${project.basedir}/final.yaml</inputSpec>
+              <inputSpec>${project.basedir}/target/final.yaml</inputSpec>
               <generatorName>jersey3-api</generatorName>
               <generateApis>true</generateApis>
 
@@ -148,6 +177,39 @@
               <sources>
                 <source>${project.build.directory}/generated-sources/api/src/gen</source>
               </sources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>attach-components-yaml</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>dacha-component.yaml</file>
+                  <type>yaml</type>
+                  <classifier>dacha-components</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+          <execution>
+            <!-- these are only used by dacha1 and MR to communicate -->
+            <id>attach-dacha1-mr-yaml</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>dacha1-mr.yaml</file>
+                  <type>yaml</type>
+                  <classifier>dacha1-mr</classifier>
+                </artifact>
+              </artifacts>
             </configuration>
           </execution>
         </executions>

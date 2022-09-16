@@ -6,8 +6,8 @@ import io.featurehub.dacha.model.PublishAction
 import io.featurehub.db.api.*
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.*
-import io.featurehub.db.publish.CacheSource
 import io.featurehub.db.utils.EnvironmentUtils
+import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
 import jakarta.inject.Inject
@@ -15,7 +15,6 @@ import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
-import java.util.stream.Collectors
 
 @Singleton
 class EnvironmentSqlApi @Inject constructor(
@@ -51,7 +50,7 @@ class EnvironmentSqlApi @Inject constructor(
       }
       QDbAcl().application.eq(environment.parentApplication).group.groupMembers.person.eq(p).findList().forEach { fe: DbAcl ->
         val splitRoles = convertUtils.splitApplicationRoles(fe.roles)
-        if (splitRoles != null && splitRoles.contains(ApplicationRoleType.FEATURE_EDIT)) {
+        if (splitRoles.contains(ApplicationRoleType.FEATURE_EDIT)) {
           appRoles.add(ApplicationRoleType.FEATURE_EDIT)
         }
       }
@@ -241,7 +240,7 @@ class EnvironmentSqlApi @Inject constructor(
     val newFeatures =
       QDbApplicationFeature().whenArchived.isNull.parentApplication.eq(createdEnvironment.parentApplication).valueType.eq(
         FeatureValueType.BOOLEAN
-      ).findList().stream()
+      ).findList()
         .map { af: DbApplicationFeature? ->
           DbFeatureValue.Builder()
             .defaultValue(java.lang.Boolean.FALSE.toString())
@@ -251,7 +250,7 @@ class EnvironmentSqlApi @Inject constructor(
             .locked(true)
             .whoUpdated(convertUtils.byPerson(whoCreated))
             .build()
-        }.collect(Collectors.toList())
+        }
     saveAllFeatures(newFeatures)
     for (nf in newFeatures) {
       cacheSource.publishFeatureChange(nf)
@@ -260,7 +259,7 @@ class EnvironmentSqlApi @Inject constructor(
 
   @Transactional
   private fun saveAllFeatures(newFeatures: List<DbFeatureValue>) {
-    newFeatures.forEach { bean: DbFeatureValue? -> database.save(bean) }
+    newFeatures.forEach { bean: DbFeatureValue -> database.save(bean) }
   }
 
   private fun promotionSortedEnvironments(environments: List<DbEnvironment>?) {
@@ -302,8 +301,7 @@ class EnvironmentSqlApi @Inject constructor(
         if (convertUtils.personIsNotSuperAdmin(currentPerson)) {
           eq = eq.parentApplication.portfolio.groups.groupMembers.person.id.eq(currentPerson.id)
         }
-        return eq.findList().stream().map { e: DbEnvironment? -> convertUtils.toEnvironment(e, opts) }
-          .collect(Collectors.toList())
+        return eq.findList().map { e: DbEnvironment? -> convertUtils.toEnvironment(e, opts) }
       }
     }
     return ArrayList()
@@ -360,12 +358,7 @@ class EnvironmentSqlApi @Inject constructor(
       }
     }
     if (environments.size > 1) {
-      val destinations = environments.stream().collect(
-        Collectors.toMap(
-          { obj: Environment -> obj.id },
-          java.util.function.Function.identity()
-        )
-      )
+      val destinations = environments.associateBy { it.id!! }
       for (e in environments) {
         // create a slot for each environment
         val spot: MutableMap<UUID, Int> = environments.map { env -> env.id!! to 0 }.toMap() as MutableMap<UUID, Int>
@@ -389,7 +382,7 @@ class EnvironmentSqlApi @Inject constructor(
     }
 
     val emptyOpts = Opts.opts()
-    return envFinder.findList().map { e: DbEnvironment? -> convertUtils.toEnvironment(e, emptyOpts) }
+    return envFinder.findList().map { e: DbEnvironment -> convertUtils.toEnvironment(e, emptyOpts)!! }
   }
 
   @Transactional

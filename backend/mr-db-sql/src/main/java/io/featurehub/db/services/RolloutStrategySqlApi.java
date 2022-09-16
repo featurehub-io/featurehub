@@ -9,7 +9,7 @@ import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.query.QDbRolloutStrategy;
-import io.featurehub.db.publish.CacheSource;
+import io.featurehub.mr.events.common.CacheSource;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.RolloutStrategyInfo;
