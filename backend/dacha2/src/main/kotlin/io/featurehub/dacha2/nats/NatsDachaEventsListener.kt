@@ -54,11 +54,18 @@ class NatsListener @Inject constructor(natsSource: NATSSource, private val event
     dispatcher.subscribe(environmentSubject, this::processEvent)
     dispatcher.subscribe(serviceAccountSubject, this::processEvent)
     dispatcher.subscribe(featureSubject, this::processEvent)
+
+    log.info("nats: cloud event listener started and listening to {}, {} and {}", environmentSubject, serviceAccountSubject, featureSubject)
   }
 
-  fun processEvent(msg: Message) {
+  private fun processEvent(msg: Message) {
+    log.info("received message {}", msg.headers.toString())
     NatsMessageFactory.createReader(msg)?.let {
-      eventListener.process(it.toEvent())
+      try {
+        eventListener.process(it.toEvent())
+      } catch (e: Exception) {
+        log.error("failed ot process incoming message", e)
+      }
     } ?: log.error("Unable to parse incoming NATS message into an event")
   }
 

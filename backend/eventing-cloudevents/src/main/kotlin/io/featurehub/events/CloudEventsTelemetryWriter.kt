@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory
 
 data class CloudEventChannelMetric(val counter: Counter, val failures: Counter, val perf: Histogram)
 
-interface CloudEventTelemetryWrapper {
+interface CloudEventsTelemetryWriter {
   fun publish(subject: String, builder: CloudEventBuilder, metrics: CloudEventChannelMetric,
               broadcastWriter: (event: CloudEventBuilder) -> Unit)
 }
@@ -26,10 +26,10 @@ internal class CloudEventsTextMapSetter : TextMapSetter<CloudEventBuilder> {
   }
 }
 
-class CloudEventTelemetryWrapperImpl @Inject constructor(private val openTelemetry: OpenTelemetry,
+class CloudEventsTelemetryWriterImpl @Inject constructor(private val openTelemetry: OpenTelemetry,
                                                          private val tracer: Tracer
-) : CloudEventTelemetryWrapper {
-  private val log: Logger = LoggerFactory.getLogger(CloudEventTelemetryWrapperImpl::class.java)
+) : CloudEventsTelemetryWriter {
+  private val log: Logger = LoggerFactory.getLogger(CloudEventsTelemetryWriterImpl::class.java)
   private val telemetrySetter = CloudEventsTextMapSetter()
 
   override fun publish(subject: String, builder: CloudEventBuilder, metrics: CloudEventChannelMetric,

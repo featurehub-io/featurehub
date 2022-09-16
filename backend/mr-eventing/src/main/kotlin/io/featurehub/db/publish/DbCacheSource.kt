@@ -49,8 +49,8 @@ internal class CacheBroadcastProxy(private val broadcasters: List<CacheBroadcast
 
 
 open class DbCacheSource @Inject constructor(private val convertUtils: Conversions, dsConfig: DataSourceConfig,
-                                             private val cacheBroadcasters: IterableProvider<CacheBroadcast>) : CacheSource,
-  CacheApi {
+                                             private val cacheBroadcasters: IterableProvider<CacheBroadcast>)
+  : CacheSource, CacheApi {
   private val executor: ExecutorService
 
   @ConfigKey("cache.pool-size")

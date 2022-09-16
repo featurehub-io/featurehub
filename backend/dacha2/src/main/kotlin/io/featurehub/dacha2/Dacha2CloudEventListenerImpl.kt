@@ -18,6 +18,7 @@ class Dacha2CloudEventListenerImpl @Inject constructor(private val dacha2Cache: 
   private val log: Logger = LoggerFactory.getLogger(Dacha2CloudEventListenerImpl::class.java)
 
   override fun process(event: CloudEvent) {
+    log.info("processing cloud event {}", event)
     when (event.subject) {
       KnownEventSubjects.Management.environmentUpdate -> processEnvironment(event)
       KnownEventSubjects.Management.serviceAccountUpdate -> processServiceAccount(event)
@@ -29,14 +30,14 @@ class Dacha2CloudEventListenerImpl @Inject constructor(private val dacha2Cache: 
 
   private fun processFeature(event: CloudEvent) {
     when (event.type) {
-      "publish-feature-v1" ->
+      "publish-features-v1" ->
         CacheJsonMapper.fromEventData(event, PublishFeatureValues::class.java)?.let {
           for(feature in it.features) {
             dacha2Cache.updateFeature(feature)
           }
         } ?: log.error("Unable to decode event {}", event)
       else ->
-        log.info("Unknown service account update format ignored {}", event.type)
+        log.info("Unknown feature update format ignored {}", event.type)
     }
   }
 

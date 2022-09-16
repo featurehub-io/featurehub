@@ -1,5 +1,6 @@
 package io.featurehub.db.publish.nats
 
+import io.featurehub.events.CloudEventsFeature
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CloudEventBroadcaster
 import io.featurehub.mr.events.common.CloudEventBroadcasterWriter

@@ -1,19 +1,23 @@
 package io.featurehub.mr.events.common
 
-import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.v1.CloudEventBuilder
 import io.featurehub.dacha.model.*
 import io.featurehub.events.CloudEventChannelMetric
-import io.featurehub.events.CloudEventTelemetryWrapper
+import io.featurehub.events.CloudEventsTelemetryWriter
 import io.featurehub.events.KnownEventSubjects
 import io.featurehub.jersey.config.CacheJsonMapper
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
+import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.util.TimeZone
 
 interface CloudEventBroadcasterWriter {
   fun encodePureJson(): Boolean
@@ -23,7 +27,7 @@ interface CloudEventBroadcasterWriter {
 
 class CloudEventBroadcaster @Inject constructor(
   private val broadcastWriter: CloudEventBroadcasterWriter,
-  private val cloudEventTelemetryWrapper: CloudEventTelemetryWrapper
+  private val cloudEventsTelemetryWriter: CloudEventsTelemetryWriter
 ) : CacheBroadcast {
   private val log: Logger = LoggerFactory.getLogger(CloudEventBroadcaster::class.java)
 
@@ -50,28 +54,34 @@ class CloudEventBroadcaster @Inject constructor(
     action: PublishAction,
     metrics: CacheMetric
   ) {
-    val event = CloudEventBuilder()
-    event.withSubject(subject)
-    event.withId(id ?: "000")
-    event.withType(type)
-    event.withSource(URI("http://management-service"))
-    event.withContextAttribute("cache-name", cacheName)
-    event.withContextAttribute("publish-action", action(action))
+    try {
+      val event = CloudEventBuilder()
+      event.withSubject(subject)
+      event.withId(id ?: "000")
+      event.withType(type)
+      event.withSource(URI("http://management-service"))
+      event.withContextAttribute("cachename", cacheName)
+      event.withContextAttribute("publishaction", action(action))
 
-    val body: ByteArray
-    if (broadcastWriter.encodePureJson()) {
-      body = CacheJsonMapper.mapper.writeValueAsBytes(data)
-      event.withData("application/json", body)
-    } else {
-      body = CacheJsonMapper.writeAsZipBytes(data)
-      event.withData("application/json+gzip", body)
-    }
+      val body: ByteArray
+      if (broadcastWriter.encodePureJson()) {
+        body = CacheJsonMapper.mapper.writeValueAsBytes(data)
+        event.withData("application/json", body)
+      } else {
+        body = CacheJsonMapper.writeAsZipBytes(data)
+        event.withData("application/json+gzip", body)
+      }
 
-    event.withTime(OffsetDateTime.now())
+      event.withTime(OffsetDateTime.now())
 
-    cloudEventTelemetryWrapper.publish(subject, event,
-      CloudEventChannelMetric(metrics.counter, metrics.failures, metrics.perf)) { evt ->
+      cloudEventsTelemetryWriter.publish(
+        subject, event,
+        CloudEventChannelMetric(metrics.counter, metrics.failures, metrics.perf)
+      ) { evt ->
         broadcastWriter.publish(evt.build())
+      }
+    } catch (e: Exception) {
+      log.error("failed", e)
     }
   }
 

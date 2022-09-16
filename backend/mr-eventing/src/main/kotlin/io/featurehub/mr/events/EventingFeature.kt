@@ -4,6 +4,7 @@ import io.featurehub.db.publish.DbCacheSource
 import io.featurehub.db.publish.DummyPublisher
 import io.featurehub.db.publish.EdgeUpdateListenerFactory
 import io.featurehub.db.publish.nats.NATSDachaEventingFeature
+import io.featurehub.events.CloudEventsFeature
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.events.common.listeners.EdgeUpdateListenerSource
 import io.featurehub.mr.events.dacha2.CacheApi
@@ -15,6 +16,8 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 class EventingFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     var amPublishing = false
+
+    context.register(CloudEventsFeature::class.java)
 
     if (NATSDachaEventingFeature.isEnabled()) {
       amPublishing = true
@@ -42,5 +45,4 @@ class EventingFeature : Feature {
 
     return true
   }
-
 }

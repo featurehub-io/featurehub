@@ -17,7 +17,7 @@
     It will listen to all streamed environment, service account and feature changes on a single stream updating its own internal
     state. It expects these events in CloudEvents format.
 
-    It will support event streaming via NATS, Google Pub/Sub, Kinesis, Kafka and Azure Cloud Bus
+    It will support event streaming via NATS, Google Pub/Sub, Kinesis, Kafka and Azure Service Bus
   </description>
 
   <url>https://featurehub.io</url>
@@ -38,9 +38,8 @@
   </developers>
 
   <properties>
-    <skipCacheTests>true</skipCacheTests>
-    <app.port>8902</app.port> <!-- this isn't really true as it does not listen to any port -->
-    <app.entrypoint>io.featurehub.dacha.Application</app.entrypoint>
+    <app.port>8902</app.port>
+    <app.entrypoint>io.featurehub.dacha2.Application</app.entrypoint>
   </properties>
 
   <licenses>
@@ -97,9 +96,9 @@
     </dependency>
 
     <dependency>
-      <groupId>io.cloudevents</groupId>
+      <groupId>io.featurehub.cloudevents</groupId>
       <artifactId>cloudevents-nats</artifactId>
-      <version>2.5.0-SNAPSHOT</version>
+      <version>1.1</version>
     </dependency>
   </dependencies>
 

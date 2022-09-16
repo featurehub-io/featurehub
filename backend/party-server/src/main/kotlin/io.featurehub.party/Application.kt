@@ -67,11 +67,15 @@ class Application {
       override fun onShutdown(container: Container?) {}
     })
 
+    registerMetrics(config)
+
       // check if we should list on a different port
-    registerMetrics(config) { resourceConfig: ResourceConfig ->
-      resourceConfig.register(Dacha2Feature::class.java)
-      resourceConfig
-    }
+//    registerMetrics(config) { resourceConfig, locator, binder ->
+//      if (resourceConfig != null) {
+//        resourceConfig.register(Dacha2Feature::class.java)
+//      }
+//      resourceConfig
+//    }
 
     FeatureHubJerseyHost(config).start()
     log.info("MR Launched - (HTTP/2 payloads enabled!)")

@@ -3,6 +3,7 @@ package io.featurehub.mr.events.nats
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.cloudevents.CloudEvent
+import io.cloudevents.jackson.JsonFormat
 import io.cloudevents.nats.NatsMessageFactory
 import io.featurehub.events.KnownEventSubjects
 import io.featurehub.mr.events.common.CloudEventBroadcasterWriter
@@ -38,7 +39,7 @@ class NATSCloudEventsBroadcaster @Inject constructor(private val nats: NATSSourc
     }
 
     if (subject != null) {
-      nats.connection.publish(NatsMessageFactory.createWriter().writeBinary(event))
+      nats.connection.publish(NatsMessageFactory.createWriter(subject).writeBinary(event))
     } else {
       log.error("unknown message type {}", event)
       throw RuntimeException("Attempting to send unknown message type")

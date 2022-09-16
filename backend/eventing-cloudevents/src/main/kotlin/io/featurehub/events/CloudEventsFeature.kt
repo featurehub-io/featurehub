@@ -9,8 +9,8 @@ class CloudEventsFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     context.register(object: AbstractBinder() {
       override fun configure() {
-        bind(CloudEventTelemetryWrapperImpl::class.java).to(CloudEventTelemetryWrapper::class.java).`in`(Singleton::class.java)
-        bind(CloudEventsTelemetryWrapperImpl::class.java).to(CloudEventsTelemetryWrapper::class.java).`in`(Singleton::class.java)
+        bind(CloudEventsTelemetryWriterImpl::class.java).to(CloudEventsTelemetryWriter::class.java).`in`(Singleton::class.java)
+        bind(CloudEventsTelemetryReaderImpl::class.java).to(CloudEventsTelemetryReader::class.java).`in`(Singleton::class.java)
       }
     })
     return true

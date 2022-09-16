@@ -7,14 +7,10 @@ import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.mr.ManagementRepositoryFeature;
 import io.featurehub.mr.dacha2.Dacha2Feature;
+import io.featurehub.mr.events.dacha2.CacheApi;
 import io.featurehub.publish.NATSFeature;
-import io.featurehub.web.security.oauth.AuthProviderCollection;
-import io.featurehub.web.security.oauth.AuthProviders;
-import io.featurehub.web.security.oauth.NoAuthProviders;
-import io.featurehub.web.security.oauth.OAuth2Feature;
 import io.featurehub.web.security.saml.SamlEnvironmentalFeature;
 import jakarta.inject.Singleton;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +42,14 @@ public class Application {
       TelemetryFeature.class
       );
 
-    MetricsHealthRegistration.Companion.registerMetrics(config, (resourceConfig) -> {
-      resourceConfig.register(Dacha2Feature.class);
+    MetricsHealthRegistration.Companion.registerMetrics(config, (resourceConfig, locator, binder) -> {
+      if (locator != null) {
+        binder.bind(locator.getService(CacheApi.class)).to(CacheApi.class).in(Singleton.class);
+      }
+
+      if (resourceConfig != null) {
+        resourceConfig.register(Dacha2Feature.class);
+      }
 
       return resourceConfig;
     });

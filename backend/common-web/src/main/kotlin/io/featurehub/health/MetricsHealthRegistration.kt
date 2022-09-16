@@ -27,14 +27,19 @@ class MetricsHealthRegistration {
 
     fun hasExternalMonitoringPort() = FallbackPropertyConfig.getConfig(monitorPortName) != null
 
-    fun configureMetrics(resourceConfig: ResourceConfig, serviceLocator: ServiceLocator): ResourceConfig {
+    fun configureMetrics(resourceConfig: ResourceConfig,
+                         serviceLocator: ServiceLocator,
+      registerCallback: (config: ResourceConfig?, locator: ServiceLocator?, binder: AbstractBinder?) -> ResourceConfig?
+    ): ResourceConfig {
       // pull all of the health sources out of the main context and replicate them
       // into our health repository
-      val healthSources = serviceLocator.getAllServices(HealthSource::class.java);
+      val healthSources = serviceLocator.getAllServices(HealthSource::class.java)
 
       listOf(JerseyPrometheusResource::class.java,
         HealthFeature::class.java, LoadBalancerFeature::class.java, ApplicationLifecycleListener::class.java)
         .forEach { resourceConfig.register(it) }
+
+      registerCallback(resourceConfig, null, null);
 
       resourceConfig.register(object: AbstractBinder() {
         override fun configure() {
@@ -43,6 +48,8 @@ class MetricsHealthRegistration {
               bind(hs).to(HealthSource::class.java)
             }
           }
+
+          registerCallback(null, serviceLocator, this)
         }
       })
 
@@ -57,14 +64,19 @@ class MetricsHealthRegistration {
     }
 
     fun registerMetrics(config: ResourceConfig) {
-      registerMetrics(config) { resourceConfig -> resourceConfig }
+      registerMetrics(config) { resourceConfig, _, _ -> resourceConfig }
     }
     /**
      * Register a metrics endpoint against the current port if no external monitoring port is defined, otherwise
      * create a new monitoring port web host, callback for any extra things requiring config and start the internal
      * port.
+     *
+     * The registerCallback will call in two phases:
+     * (1) a callback with the ResourceConfig - for registering features and Resources
+     * (2) a bind callback ONLY when registering a second context, when the ResourceConfig is not passed
      */
-    fun registerMetrics(config: ResourceConfig, registerCallback: (config: ResourceConfig) -> ResourceConfig) {
+    fun registerMetrics(config: ResourceConfig,
+                        registerCallback: (config: ResourceConfig?, locator: ServiceLocator?, binder: AbstractBinder?) -> ResourceConfig?) {
       // turn on all jvm prometheus metrics
       DefaultExports.initialize()
 
@@ -73,15 +85,16 @@ class MetricsHealthRegistration {
         config.register(HealthFeature::class.java)
         config.register(ApplicationLifecycleListener::class.java)
 
-        registerCallback(config)
+        registerCallback(config, null, null)
       } else {
         config.register(object : ContainerLifecycleListener {
           override fun onStartup(container: Container) {
 
-            startMetricsEndpoint(registerCallback(configureMetrics(
-              ResourceConfig(), container.applicationHandler
-                .injectionManager.getInstance(ServiceLocator::class.java)
-            )))
+            val serviceLocator = container.applicationHandler
+              .injectionManager.getInstance(ServiceLocator::class.java)
+
+            startMetricsEndpoint(
+              configureMetrics(ResourceConfig(), serviceLocator, registerCallback))
           }
 
           override fun onReload(container: Container) {

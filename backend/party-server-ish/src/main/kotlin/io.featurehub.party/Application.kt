@@ -67,10 +67,7 @@ class Application {
     })
 
     // check if we should list on a different port
-    registerMetrics(config) { resourceConfig: ResourceConfig ->
-      resourceConfig.register(Dacha2Feature::class.java)
-      resourceConfig
-    }
+    registerMetrics(config)
 
     FeatureHubJerseyHost(config).start()
     log.info("Party-Server-ish Launched - (HTTP/2 payloads enabled!)")

@@ -18,15 +18,15 @@ internal class CloudEventTextMapGetter : TextMapGetter<CloudEvent> {
   override fun get(carrier: CloudEvent?, key: String): String? = carrier?.getAttribute(key)?.toString()
 }
 
-interface CloudEventsTelemetryWrapper {
+interface CloudEventsTelemetryReader {
   fun receive(subject: String, event: CloudEvent, metrics: CloudEventChannelMetric, process: (event: CloudEvent) -> Unit)
 }
 
-class CloudEventsTelemetryWrapperImpl @Inject constructor(private val openTelemetry: OpenTelemetry,
-                                                          private val tracer: Tracer
-) : CloudEventsTelemetryWrapper {
+class CloudEventsTelemetryReaderImpl @Inject constructor(private val openTelemetry: OpenTelemetry,
+                                                         private val tracer: Tracer
+) : CloudEventsTelemetryReader {
   private val telemetryGetter = CloudEventTextMapGetter()
-  private val log: Logger = LoggerFactory.getLogger(CloudEventsTelemetryWrapperImpl::class.java)
+  private val log: Logger = LoggerFactory.getLogger(CloudEventsTelemetryReaderImpl::class.java)
 
   override fun receive(subject: String, event: CloudEvent, metrics: CloudEventChannelMetric, process: (event: CloudEvent) -> Unit) {
     val extractedContext =

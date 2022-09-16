@@ -286,6 +286,6 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
 
         log.warn("attempting to remove a feature older than we have")
       }
-    }
+    } ?: log.debug("received update for unknown feature {}: {}", feature.environmentId, feature.feature.feature.key)
   }
 }
