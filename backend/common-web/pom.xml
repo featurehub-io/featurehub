@@ -37,7 +37,7 @@
   </licenses>
 
   <properties>
-    <cloudevents.version>2.5.0-SNAPSHOT</cloudevents.version>
+    <cloudevents.version>2.4.0</cloudevents.version>
   </properties>
 
   <dependencies>
