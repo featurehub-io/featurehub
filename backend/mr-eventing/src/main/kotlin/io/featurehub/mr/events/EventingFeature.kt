@@ -2,12 +2,12 @@ package io.featurehub.mr.events
 
 import io.featurehub.db.publish.DbCacheSource
 import io.featurehub.db.publish.DummyPublisher
-import io.featurehub.db.publish.EdgeUpdateListenerFactory
-import io.featurehub.db.publish.nats.NATSDachaEventingFeature
+import io.featurehub.db.publish.nats.NatsDachaEventingFeature
 import io.featurehub.events.CloudEventsFeature
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.mr.events.common.listeners.EdgeUpdateListenerSource
+import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
 import io.featurehub.mr.events.dacha2.CacheApi
+import io.featurehub.mr.events.service.FeatureUpdateListenerImpl
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
@@ -19,17 +19,15 @@ class EventingFeature : Feature {
 
     context.register(CloudEventsFeature::class.java)
 
-    if (NATSDachaEventingFeature.isEnabled()) {
+    if (NatsDachaEventingFeature.isEnabled()) {
       amPublishing = true
-      context.register(NATSDachaEventingFeature::class.java)
+      context.register(NatsDachaEventingFeature::class.java)
     }
 
     context.register(object: AbstractBinder() {
       override fun configure() {
         if (amPublishing) {
-          bind(EdgeUpdateListenerFactory::class.java).to(EdgeUpdateListenerSource::class.java).`in`(
-            Singleton::class.java
-          )
+          bind(FeatureUpdateListenerImpl::class.java).to(FeatureUpdateListener::class.java).`in`(Singleton::class.java)
           bind(DbCacheSource::class.java).to(CacheSource::class.java).to(CacheApi::class.java)
             .`in`(
               Singleton::class.java

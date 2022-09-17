@@ -6,7 +6,7 @@ import io.featurehub.dacha.model.CacheRequestType
 import io.featurehub.dacha.model.CacheState
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.mr.events.common.listeners.EdgeUpdateListener
+import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
 import io.featurehub.mr.messaging.StreamedFeatureUpdate
 import io.featurehub.publish.ChannelNames
 import io.featurehub.publish.NATSSource
@@ -22,16 +22,16 @@ import java.util.*
  * This code is designed to support Dacha (1) - it supports listening to the feature updates channel and
  * processing events through it, and also acting as the master source for Dacha 1's broadcast resolution.
  */
-class NATSDachaCacheFiller @Inject constructor(val cacheName: String, val nats: NATSSource,
+class NatsDachaCacheFiller @Inject constructor(val cacheName: String, val nats: NATSSource,
                                                private val id: UUID, val cacheSource: CacheSource,
-                                               private val updateListener: EdgeUpdateListener
+                                               private val updateListener: FeatureUpdateListener
 ) {
   private val managementSubject: String
   private val featureUpdaterSubject: String
   private val managementDispatcher: Dispatcher
   private val featureUpdaterDispatcher: Dispatcher
 
-  private val log: Logger = LoggerFactory.getLogger(NATSDachaCacheFiller::class.java)
+  private val log: Logger = LoggerFactory.getLogger(NatsDachaCacheFiller::class.java)
 
   init {
     managementSubject = ChannelNames.managementChannel(cacheName)

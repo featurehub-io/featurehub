@@ -1,7 +1,6 @@
 package io.featurehub.mr.events.common.listeners
 
 import io.cloudevents.CloudEvent
-import io.featurehub.events.KnownEventSubjects
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.messaging.StreamedFeatureUpdate
 import jakarta.inject.Inject
@@ -12,8 +11,13 @@ interface CloudEventListener {
   fun process(event: CloudEvent)
 }
 
-class CloudEventListenerImpl @Inject constructor(private val edgeUpdateListener: EdgeUpdateListener) : CloudEventListener {
+class CloudEventListenerImpl @Inject constructor(private val edgeUpdateListenerFactory: FeatureUpdateFactory) : CloudEventListener {
   private val log: Logger = LoggerFactory.getLogger(CloudEventListenerImpl::class.java)
+  private val featureUpdateListener: FeatureUpdateListener
+
+  init {
+    featureUpdateListener = edgeUpdateListenerFactory.createListener()
+  }
 
   override fun process(event: CloudEvent) {
     when (event.subject) {
@@ -24,7 +28,7 @@ class CloudEventListenerImpl @Inject constructor(private val edgeUpdateListener:
   private fun processEdgeUpdate(event: CloudEvent) {
     if (event.type == StreamedFeatureUpdate.CLOUD_EVENT_TYPE) {
       CacheJsonMapper.fromEventData(event, StreamedFeatureUpdate::class.java)?.let {
-        edgeUpdateListener.processUpdate(it)
+        featureUpdateListener.processUpdate(it)
       } ?: log.error("Dropped feature update {}", event.toString())
     } else {
       log.error("received unknown format feature update {}", event)

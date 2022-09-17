@@ -1,9 +1,6 @@
 package io.featurehub.mr.events.common
 
-import cd.connect.app.config.DeclaredConfigResolver
-import io.cloudevents.CloudEvent
 import io.cloudevents.core.v1.CloudEventBuilder
-import io.featurehub.dacha.model.PublishAction
 import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
@@ -16,31 +13,12 @@ import org.slf4j.LoggerFactory
 import java.net.URI
 import java.time.OffsetDateTime
 
-interface CloudEventBroadcasterWriter {
-  fun encodePureJson(): Boolean
-  fun publish(event: CloudEvent)
-}
-
-
-class CloudEventBroadcaster @Inject constructor(
-  private val broadcastWriter: CloudEventBroadcasterWriter,
-  private val cloudEventsTelemetryWriter: CloudEventsTelemetryWriter
+class CloudEventCacheBroadcaster @Inject constructor(
+  private val edgeChannel: CloudEventsEdgeChannel,
+  private val dachaChannel: CloudEventsDachaChannel,
+  private val cloudEventsTelemetryWriter: CloudEventsTelemetryWriter,
 ) : CacheBroadcast {
-  private val log: Logger = LoggerFactory.getLogger(CloudEventBroadcaster::class.java)
-
-
-  init {
-    DeclaredConfigResolver.resolve(this)
-  }
-
-  private fun action(action: PublishAction): String {
-    return when (action) {
-      PublishAction.CREATE -> "create"
-      PublishAction.UPDATE -> "update"
-      PublishAction.DELETE -> "delete"
-      PublishAction.EMPTY -> "empty"
-    }
-  }
+  private val log: Logger = LoggerFactory.getLogger(CloudEventCacheBroadcaster::class.java)
 
   fun publish(
     cacheName: String,
@@ -48,8 +26,8 @@ class CloudEventBroadcaster @Inject constructor(
     data: Any,
     id: String?,
     type: String,
-    action: PublishAction,
-    metrics: CacheMetric
+    metrics: CacheMetric,
+    vararg channels: CloudEventChannel
   ) {
     try {
       val event = CloudEventBuilder()
@@ -58,34 +36,58 @@ class CloudEventBroadcaster @Inject constructor(
       event.withType(type)
       event.withSource(URI("http://management-service"))
       event.withContextAttribute("cachename", cacheName)
-      event.withContextAttribute("publishaction", action(action))
-
-      val body: ByteArray
-      if (broadcastWriter.encodePureJson()) {
-        body = CacheJsonMapper.mapper.writeValueAsBytes(data)
-        event.withData("application/json", body)
-      } else {
-        body = CacheJsonMapper.writeAsZipBytes(data)
-        event.withData("application/json+gzip", body)
-      }
-
       event.withTime(OffsetDateTime.now())
 
-      cloudEventsTelemetryWriter.publish(
-        subject, event,
-        CloudEventChannelMetric(metrics.counter, metrics.failures, metrics.perf)
-      ) { evt ->
-        broadcastWriter.publish(evt.build())
+      // write any pure json channels
+      val pureJsonChannels = channels.filter { it.encodePureJson() }
+      if (pureJsonChannels.isNotEmpty()) {
+        val eventData = event.withData("application/json", CacheJsonMapper.mapper.writeValueAsBytes(data))
+
+        for (cloudEventChannel in pureJsonChannels) {
+          publishToChannel(
+            subject,
+            eventData,
+            metrics,
+            cloudEventChannel)
+        }
+      }
+
+      // now write any zipped channels
+      val jsonZipChannels = channels.filter { !it.encodePureJson() }
+      if (jsonZipChannels.isNotEmpty()) {
+        val eventData = event.withData("application/json+gzip", CacheJsonMapper.writeAsZipBytes(data))
+
+        for (cloudEventChannel in jsonZipChannels) {
+          publishToChannel(
+            subject,
+            eventData,
+            metrics,
+            cloudEventChannel)
+        }
       }
     } catch (e: Exception) {
       log.error("failed", e)
     }
   }
 
+  private fun publishToChannel(
+      subject: String,
+      event: CloudEventBuilder,
+      metrics: CacheMetric,
+      channel: CloudEventChannel
+  ) {
+    cloudEventsTelemetryWriter.publish(
+      subject, event,
+      CloudEventChannelMetric(metrics.counter, metrics.failures, metrics.perf)
+    ) { evt ->
+      channel.publishEvent(evt.build())
+    }
+  }
+
   override fun publishEnvironment(cacheName: String, eci: PublishEnvironment) {
     publish(cacheName, PublishEnvironment.CLOUD_EVENT_SUBJECT, eci, eci.environment.id.toString(),
       PublishEnvironment.CLOUD_EVENT_TYPE,
-      eci.action, CacheMetrics.environments)
+      CacheMetrics.environments, dachaChannel)
   }
 
   override fun publishServiceAccount(cacheName: String, saci: PublishServiceAccount) {
@@ -95,12 +97,12 @@ class CloudEventBroadcaster @Inject constructor(
       saci,
       saci.serviceAccount?.id.toString(),
       PublishServiceAccount.CLOUD_EVENT_TYPE,
-      saci.action,
-      CacheMetrics.services
+      CacheMetrics.services,
+      dachaChannel
     )
   }
 
-  override fun publishFeature(cacheName: String, features: PublishFeatureValues) {
+  override fun publishFeatures(cacheName: String, features: PublishFeatureValues) {
     if (features.features.isNotEmpty()) {
       // all updates are the same type for the same environment, not that it really matters
       val firstFeature = features.features[0]
@@ -108,7 +110,7 @@ class CloudEventBroadcaster @Inject constructor(
       publish(
         cacheName, PublishFeatureValues.CLOUD_EVENT_SUBJECT, features,
         "${firstFeature.environmentId}/${firstFeature.feature.feature.key}", PublishFeatureValues.CLOUD_EVENT_TYPE,
-        firstFeature.action, CacheMetrics.features
+        CacheMetrics.features, dachaChannel, edgeChannel
       )
     }
   }

@@ -40,9 +40,9 @@ internal class CacheBroadcastProxy(private val broadcasters: List<CacheBroadcast
     }
   }
 
-  override fun publishFeature(cacheName: String, features: PublishFeatureValues) {
+  override fun publishFeatures(cacheName: String, features: PublishFeatureValues) {
     broadcasters.forEach { cb ->
-      executor.submit { cb.publishFeature(cacheName, features) }
+      executor.submit { cb.publishFeatures(cacheName, features) }
     }
   }
 }
@@ -354,7 +354,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   }
 
   private fun innerPublishFeatureValueChange(cacheName: String, featureValue: DbFeatureValue, cacheBroadcast: CacheBroadcast) {
-    cacheBroadcast.publishFeature(cacheName,
+    cacheBroadcast.publishFeatures(cacheName,
       PublishFeatureValues().addFeaturesItem(PublishFeatureValue()
         .feature(toCacheEnvironmentFeature(featureValue, mutableMapOf(Pair(featureValue.feature.id, featureValue.feature))))
         .environmentId(featureValue.environment.id)
@@ -414,7 +414,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     executor.submit {
       val cacheName = QDbNamedCache().organizations.portfolios.applications.eq(feature.parentApplication)
         .findOne()!!.cacheName
-      cacheBroadcast.publishFeature(cacheName,
+      cacheBroadcast.publishFeatures(cacheName,
         PublishFeatureValues().addFeaturesItem(PublishFeatureValue()
           .feature(
             CacheEnvironmentFeature()
@@ -561,7 +561,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
             if (originalKey != null && toCacheFeatureValue != null) {
               toCacheFeatureValue.key = originalKey
             }
-            cacheBroadcast.publishFeature(cacheName,
+            cacheBroadcast.publishFeatures(cacheName,
               PublishFeatureValues().addFeaturesItem(PublishFeatureValue()
                   .feature(
                     CacheEnvironmentFeature()

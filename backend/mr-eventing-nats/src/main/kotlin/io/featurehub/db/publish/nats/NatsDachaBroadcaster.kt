@@ -1,7 +1,6 @@
 package io.featurehub.db.publish.nats
 
 import io.featurehub.dacha.model.PublishEnvironment
-import io.featurehub.dacha.model.PublishFeatureValue
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.jersey.config.CacheJsonMapper
@@ -14,7 +13,7 @@ import jakarta.inject.Inject
 import org.slf4j.LoggerFactory
 
 /**  */
-class NATSDachaBroadcaster @Inject constructor(private val  nats: NATSSource) : CacheBroadcast {
+class NatsDachaBroadcaster @Inject constructor(private val  nats: NATSSource) : CacheBroadcast {
   private val envChannelNameCache = mutableMapOf<String, String>()
   private val serviceAccountChannelNameCache = mutableMapOf<String, String>()
   private val featureChannelNameCache = mutableMapOf<String, String>()
@@ -33,7 +32,7 @@ class NATSDachaBroadcaster @Inject constructor(private val  nats: NATSSource) : 
     )
   }
 
-  override fun publishFeature(cacheName: String, features: PublishFeatureValues) {
+  override fun publishFeatures(cacheName: String, features: PublishFeatureValues) {
     val subject = featureChannelNameCache.getOrPut(cacheName) { ChannelNames.featureValueChannel(cacheName) }
 
     // splits out the old way
@@ -69,6 +68,6 @@ class NATSDachaBroadcaster @Inject constructor(private val  nats: NATSSource) : 
   }
 
   companion object {
-    private val log = LoggerFactory.getLogger(NATSDachaBroadcaster::class.java)
+    private val log = LoggerFactory.getLogger(NatsDachaBroadcaster::class.java)
   }
 }

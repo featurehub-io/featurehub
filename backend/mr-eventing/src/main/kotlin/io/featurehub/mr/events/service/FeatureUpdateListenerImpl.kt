@@ -2,15 +2,15 @@ package io.featurehub.mr.events.service
 
 import io.featurehub.db.api.RolloutStrategyValidator.InvalidStrategyCombination
 import io.featurehub.db.listener.FeatureUpdateBySDKApi
-import io.featurehub.mr.events.common.listeners.EdgeUpdateListener
+import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
 import io.featurehub.mr.messaging.StreamedFeatureUpdate
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueType
 import org.slf4j.LoggerFactory
 
-open class FeatureUpdateListener(
+open class FeatureUpdateListenerImpl(
   private val featureUpdateBySDKApi: FeatureUpdateBySDKApi
-) : EdgeUpdateListener {
+) : FeatureUpdateListener {
 
   override fun processUpdate(update: StreamedFeatureUpdate) {
     try {
