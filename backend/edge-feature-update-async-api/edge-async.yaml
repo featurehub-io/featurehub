@@ -24,6 +24,8 @@ paths:
 components:
   schemas:
     StreamedFeatureUpdate:
+      x-cloudevent-type: feature-update-v1
+      x-cloudevent-subject: io.featurehub.edge.feature-update
       type: object
       description: "This object is passed on the nats stream /named-cache/updates from the edge client. Note that
             version is not passed as the Edge client is intended for testing only, and it is not expected to know

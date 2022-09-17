@@ -2,12 +2,7 @@ package io.featurehub.dacha2
 
 import cd.connect.app.config.ConfigKey
 import com.google.common.cache.*
-import io.featurehub.dacha.model.CacheServiceAccount
-import io.featurehub.dacha.model.CacheServiceAccountPermission
-import io.featurehub.dacha.model.PublishAction
-import io.featurehub.dacha.model.PublishEnvironment
-import io.featurehub.dacha.model.PublishFeatureValue
-import io.featurehub.dacha.model.PublishServiceAccount
+import io.featurehub.dacha.model.*
 import io.featurehub.dacha2.api.Dacha2ServiceClient
 import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
@@ -62,6 +57,9 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
   @ConfigKey("dacha2.cache.all-updates")
   var cacheStreamedUpdates: Boolean? = true
 
+  @ConfigKey("dacha2.cache.api-key")
+  var apiKey: String? = null
+
   init {
     environmentMissCache = CacheBuilder.newBuilder()
       .maximumSize(maximumEnvironmentMisses!!)
@@ -80,11 +78,14 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
       .build(object : CacheLoader<UUID, EnvironmentFeatures>() {
         override fun load(id: UUID): EnvironmentFeatures {
           try {
-            val env = mrDacha2Api.getEnvironment(id, null).env
+            val env = mrDacha2Api.getEnvironment(id, apiKey).env
             return featureValueFactory.create(env)
           } catch (nfe: NotFoundException) {
             environmentMissCache.put(id, true)
             throw nfe
+          } catch (e: Exception) {
+            log.error("failed", e)
+            throw e
           }
         }
       })
@@ -106,7 +107,7 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
       .build(object : CacheLoader<String, CacheServiceAccount>() {
         override fun load(key: String): CacheServiceAccount {
           try {
-            val serviceAccount = mrDacha2Api.getServiceAccount(key, null).serviceAccount
+            val serviceAccount = mrDacha2Api.getServiceAccount(key, apiKey).serviceAccount
             fillServiceAccountCache(key, serviceAccount)
             serviceAccountCache.put(serviceAccount.id, serviceAccount)
             return serviceAccount
@@ -178,31 +179,20 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
     if (env.action == PublishAction.DELETE) {
       environmentCache.invalidate(envId)
       permsCache.invalidateAll(env.serviceAccounts.map { "$envId/$it" })
+      environmentMissCache.put(envId, true)
       return
     }
 
-    try {
-      val oldEnv = environmentCache[envId]
-      if (env.environment.version >= oldEnv.environment.environment.version) {
-        // remove the permCache entries for deleted service accounts if any
-        val current = env.serviceAccounts.associateBy { it }
-
-        // take while the service account it in the existing list doesn't exist in the new one, map it to a list of
-        // perm cache keys we have to remove, flatten, invalidate
-        permsCache.invalidateAll(
-          oldEnv.environment.serviceAccounts
-            .takeWhile { current[it] == null }
-            .map {
-              serviceAccountCache.getIfPresent(it)?.let { sa ->
-                listOf(permCacheKey(envId, sa.apiKeyServerSide), permCacheKey(envId, sa.apiKeyClientSide))
-              } ?: emptyList()
-            }
-            .flatten())
-      }
-    } catch (e: Exception) {
+    val oldEnv = environmentCache.getIfPresent(envId)
+    if (oldEnv == null) {
+      // we know it exists now so if it was deleted and added to the miss cache, removed it
+      environmentMissCache.invalidate(envId)
       if (cacheStreamedUpdates!!) {
         environmentCache.put(envId, EnvironmentFeatures(env))
       }
+    } else if (env.environment.version >= oldEnv.environment.environment.version) {
+      environmentMissCache.invalidate(envId)
+      environmentCache.put(envId, EnvironmentFeatures(env))
     }
   }
 
@@ -216,6 +206,8 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
         // if we have it, update respective caches
         serviceAccountCache.getIfPresent(sId)?.let {
           serviceAccountApiKeyCache.invalidate(listOf(it.apiKeyServerSide, it.apiKeyClientSide))
+          serviceAccountMissCache.put(it.apiKeyClientSide, true)
+          serviceAccountMissCache.put(it.apiKeyServerSide, true)
           serviceAccountCache.invalidate(sId)
         }
 
@@ -224,12 +216,14 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
 
       val existing = serviceAccountCache.getIfPresent(sId)
       if (existing == null) {
+        serviceAccountMissCache.invalidateAll(listOf(sa.apiKeyServerSide, sa.apiKeyClientSide))
         if (cacheStreamedUpdates!!) {
-          serviceAccountApiKeyCache.put(sa.apiKeyServerSide, sa)
-          serviceAccountApiKeyCache.put(sa.apiKeyClientSide, sa)
-          serviceAccountCache.put(sId, sa)
+          stashServiceAccount(sa, sId)
         }
       } else if (sa.version >= existing.version) {
+        serviceAccountMissCache.invalidateAll(listOf(sa.apiKeyServerSide, sa.apiKeyClientSide))
+        stashServiceAccount(sa, sId)
+
         val envs = sa.permissions.associateBy { it.environmentId }
 
         // take while the envId in the existing list doesn't exist in the new one, map it to a list of
@@ -238,8 +232,13 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
           listOf(permCacheKey(it.environmentId, sa.apiKeyServerSide), permCacheKey(it.environmentId, sa.apiKeyClientSide)) }
            .flatten())
       }
-
     }
+  }
+
+  private fun stashServiceAccount(sa: CacheServiceAccount, sId: UUID) {
+    serviceAccountApiKeyCache.put(sa.apiKeyServerSide, sa)
+    serviceAccountApiKeyCache.put(sa.apiKeyClientSide, sa)
+    serviceAccountCache.put(sId, sa)
   }
 
   private fun receivedNewFeatureForExistingEnvironmentFeatureCache(feature:  PublishFeatureValue, environment: EnvironmentFeatures) {
@@ -248,15 +247,24 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
         log.trace("received new feature `{}` for environment `{}`", feature.feature.feature.key, environment.environment.environment.id)
       }
 
-      environment.set(feature.feature)
+      environment.setFeature(feature.feature)
     }
   }
 
   override fun updateFeature(feature: PublishFeatureValue) {
+    if (feature.action == PublishAction.EMPTY) {
+      return
+    }
+
     // we ignore features we don't have the environment for
     environmentCache.getIfPresent(feature.environmentId)?.let { ef ->
-
       val newFeature = feature.feature.feature
+
+      if (feature.action == PublishAction.DELETE) {
+        ef.remove(newFeature.id)
+        return
+      }
+
       val newValue = feature.feature.value
 
       val existingCachedFeature = ef[newFeature.id]
@@ -273,13 +281,12 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
 
       if (feature.action == PublishAction.CREATE || feature.action == PublishAction.UPDATE) {
         if (existingFeature.version < newFeature.version) {
-          ef.set(feature.feature)
-          return
+          ef.setFeature(feature.feature)
         }
 
-        if (newValue != null) {
+        if (newValue != null) {  // values once set are never null as we cannot support versioning if so
           if (existingValue == null || existingValue.version < newValue.version) {
-            ef.set(feature.feature)
+            ef.setFeatureValue(feature.feature)
             return
           }
         }

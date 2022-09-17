@@ -17,13 +17,17 @@ class CloudEventListenerImpl @Inject constructor(private val edgeUpdateListener:
 
   override fun process(event: CloudEvent) {
     when (event.subject) {
-      KnownEventSubjects.ServiceAccountAction.featureUpdates -> processEdgeUpdate(event)
+      StreamedFeatureUpdate.CLOUD_EVENT_SUBJECT -> processEdgeUpdate(event)
     }
   }
 
   private fun processEdgeUpdate(event: CloudEvent) {
-    CacheJsonMapper.fromEventData(event, StreamedFeatureUpdate::class.java)?.let {
-      edgeUpdateListener.processUpdate(it)
-    } ?: log.error("Dropped feature update {}", event.toString())
+    if (event.type == StreamedFeatureUpdate.CLOUD_EVENT_TYPE) {
+      CacheJsonMapper.fromEventData(event, StreamedFeatureUpdate::class.java)?.let {
+        edgeUpdateListener.processUpdate(it)
+      } ?: log.error("Dropped feature update {}", event.toString())
+    } else {
+      log.error("received unknown format feature update {}", event)
+    }
   }
 }

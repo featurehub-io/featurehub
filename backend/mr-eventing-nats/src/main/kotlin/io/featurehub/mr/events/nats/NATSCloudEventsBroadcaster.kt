@@ -5,6 +5,9 @@ import cd.connect.app.config.DeclaredConfigResolver
 import io.cloudevents.CloudEvent
 import io.cloudevents.jackson.JsonFormat
 import io.cloudevents.nats.NatsMessageFactory
+import io.featurehub.dacha.model.PublishEnvironment
+import io.featurehub.dacha.model.PublishFeatureValues
+import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.events.KnownEventSubjects
 import io.featurehub.mr.events.common.CloudEventBroadcasterWriter
 import io.featurehub.publish.NATSSource
@@ -32,9 +35,9 @@ class NATSCloudEventsBroadcaster @Inject constructor(private val nats: NATSSourc
 
   override fun publish(event: CloudEvent) {
     val subject = when (event.subject) {
-      KnownEventSubjects.Management.featureUpdates -> featureSubject
-      KnownEventSubjects.Management.serviceAccountUpdate -> serviceAccountSubject
-      KnownEventSubjects.Management.environmentUpdate -> environmentSubject
+      PublishFeatureValues.CLOUD_EVENT_SUBJECT-> featureSubject
+      PublishServiceAccount.CLOUD_EVENT_SUBJECT -> serviceAccountSubject
+      PublishEnvironment.CLOUD_EVENT_SUBJECT -> environmentSubject
       else -> null
     }
 

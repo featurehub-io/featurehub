@@ -3,21 +3,18 @@ package io.featurehub.mr.events.common
 import cd.connect.app.config.DeclaredConfigResolver
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.v1.CloudEventBuilder
-import io.featurehub.dacha.model.*
+import io.featurehub.dacha.model.PublishAction
+import io.featurehub.dacha.model.PublishEnvironment
+import io.featurehub.dacha.model.PublishFeatureValues
+import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.events.CloudEventChannelMetric
 import io.featurehub.events.CloudEventsTelemetryWriter
-import io.featurehub.events.KnownEventSubjects
 import io.featurehub.jersey.config.CacheJsonMapper
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
-import java.time.Instant
 import java.time.OffsetDateTime
-import java.time.ZoneId
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.TimeZone
 
 interface CloudEventBroadcasterWriter {
   fun encodePureJson(): Boolean
@@ -86,17 +83,18 @@ class CloudEventBroadcaster @Inject constructor(
   }
 
   override fun publishEnvironment(cacheName: String, eci: PublishEnvironment) {
-    publish(cacheName, KnownEventSubjects.Management.environmentUpdate, eci, eci.environment.id.toString(), "publish-environment-v1",
+    publish(cacheName, PublishEnvironment.CLOUD_EVENT_SUBJECT, eci, eci.environment.id.toString(),
+      PublishEnvironment.CLOUD_EVENT_TYPE,
       eci.action, CacheMetrics.environments)
   }
 
   override fun publishServiceAccount(cacheName: String, saci: PublishServiceAccount) {
     publish(
       cacheName,
-      KnownEventSubjects.Management.serviceAccountUpdate,
+      PublishServiceAccount.CLOUD_EVENT_SUBJECT,
       saci,
       saci.serviceAccount?.id.toString(),
-      "publish-service-account-v1",
+      PublishServiceAccount.CLOUD_EVENT_TYPE,
       saci.action,
       CacheMetrics.services
     )
@@ -108,8 +106,8 @@ class CloudEventBroadcaster @Inject constructor(
       val firstFeature = features.features[0]
 
       publish(
-        cacheName, KnownEventSubjects.Management.featureUpdates, features,
-        "${firstFeature.environmentId}/${firstFeature.feature.feature.key}", "publish-features-v1",
+        cacheName, PublishFeatureValues.CLOUD_EVENT_SUBJECT, features,
+        "${firstFeature.environmentId}/${firstFeature.feature.feature.key}", PublishFeatureValues.CLOUD_EVENT_TYPE,
         firstFeature.action, CacheMetrics.features
       )
     }
