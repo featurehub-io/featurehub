@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
@@ -20,13 +22,20 @@ class SetFeatureMetadataWidget extends StatefulWidget {
 class _SetFeatureMetadataWidgetState extends State<SetFeatureMetadataWidget> {
   TextEditingController tec = TextEditingController();
   Feature? _feature;
+  late StreamSubscription<Feature> streamSubscription;
+  @override
+  void dispose() {
+    super.dispose();
+    tec.dispose();
+    streamSubscription.cancel();
+  }
 
   @override
   void initState() {
     super.initState();
-    widget.bloc.featureMetadataStream.listen((feature) {
+    streamSubscription = widget.bloc.featureMetadataStream.listen((feature) {
       _feature = feature;
-      if (feature.metaData != null) {
+      if (feature.metaData != null && mounted) {
         setState(() {
           tec.text = feature.metaData!;
         });

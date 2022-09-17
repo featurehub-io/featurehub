@@ -60,7 +60,7 @@ class PerApplicationFeaturesBloc
       _publishNewFeatureSource.stream;
 
   final _getAllAppValuesDebounceStream = BehaviorSubject<bool>();
-  final _featureMetadataStream = BehaviorSubject<Feature>();
+  final _featureMetadataStream = PublishSubject<Feature>();
   Stream<Feature> get featureMetadataStream =>
       _featureMetadataStream.stream;
 
@@ -293,6 +293,7 @@ class PerApplicationFeaturesBloc
   void dispose() {
     _appSearchResultSource.close();
     _appFeatureValuesBS.close();
+    _featureMetadataStream.close();
     _currentPid.cancel();
     _currentAppId.cancel();
   }
