@@ -1,6 +1,6 @@
 package io.featurehub.events
 
-import io.cloudevents.core.v1.CloudEventBuilder
+import io.cloudevents.core.builder.CloudEventBuilder
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.StatusCode

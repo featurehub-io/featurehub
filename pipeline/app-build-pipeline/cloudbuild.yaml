@@ -120,7 +120,8 @@ steps:
     volumes:
       - name: user.home
         path: /root
-
+options:
+  machineType: 'N1_HIGHCPU_8'
 
 
 

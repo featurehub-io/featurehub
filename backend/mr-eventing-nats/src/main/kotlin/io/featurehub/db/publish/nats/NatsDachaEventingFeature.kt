@@ -37,12 +37,11 @@ class NatsDachaEventingFeature : Feature {
 
     context.register(object: AbstractBinder() {
       override fun configure() {
-        if (isDacha2Enabled()) {
-          // initial requests come in via REST, we only publish changes
-          bind(NatsCloudEventsEdgeChannel::class.java).to(CloudEventsEdgeChannel::class.java).`in`(Singleton::class.java)
-          bind(NatsCloudEventsDachaChannel::class.java).to(CloudEventsDachaChannel::class.java).`in`(Singleton::class.java)
-          bind(CloudEventCacheBroadcaster::class.java).to(CacheBroadcast::class.java).`in`(Singleton::class.java)
-        }
+        // initial requests come in via REST, we only publish changes
+        bind(NatsCloudEventsEdgeChannel::class.java).to(CloudEventsEdgeChannel::class.java).`in`(Singleton::class.java)
+        bind(NatsCloudEventsDachaChannel::class.java).to(CloudEventsDachaChannel::class.java).`in`(Singleton::class.java)
+        // the broadcaster will determine if dacha2 is enabled and not publish to that channel if not
+        bind(CloudEventCacheBroadcaster::class.java).to(CacheBroadcast::class.java).`in`(Singleton::class.java)
 
         // always listen for Edge updates in Cloud Events format
         bind(NatsMRCloudEventsQueueUpdateListener::class.java).to(NatsMRCloudEventsQueueUpdateListener::class.java).`in`(Immediate::class.java)

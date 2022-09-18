@@ -7,9 +7,7 @@ import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
 import jakarta.ws.rs.core.GenericType
-import org.glassfish.hk2.api.ServiceLocator
-import org.glassfish.jersey.server.spi.Container
-import org.glassfish.jersey.server.spi.ContainerLifecycleListener
+import org.glassfish.hk2.api.Immediate
 
 class StatsFeature : Feature {
   @ConfigKey("edge.stats-publisher")
@@ -28,10 +26,11 @@ class StatsFeature : Feature {
           .to(StatsOrchestrator::class.java)
           .`in`(Singleton::class.java)
 
-        bind(StatDisruptor::class.java).to(StatRecorder::class.java).`in`(Singleton::class.java)
+        bind(StatDisruptor::class.java).to(StatRecorder::class.java).`in`(Immediate::class.java)
+        bind(StatPublisherImpl::class.java).to(StatPublisher::class.java).`in`(Singleton::class.java)
 
         if (whichStatsPublisherToUse == "nats") {
-          bind(NATSStatPublisher::class.java).to(StatPublisher::class.java).`in`(Singleton::class.java)
+          bind(NATSStatPublisher::class.java).to(CloudEventStatPublisher::class.java).`in`(Singleton::class.java)
         }
 
         bind(StatsCollectionOrchestrator::class.java).to(StatsOrchestrator::class.java).`in`(
@@ -42,30 +41,30 @@ class StatsFeature : Feature {
           Singleton::class.java
         )
 
-        bind(StatTimeTrigger::class.java).to(StatTimeTrigger::class.java).`in`(Singleton::class.java)
+        bind(StatTimeTrigger::class.java).to(StatTimeTrigger::class.java).`in`(Immediate::class.java)
       }
     })
-      .register(object : ContainerLifecycleListener {
-        override fun onStartup(container: Container) {
-
-          // access the ServiceLocator here
-          val injector = container
-            .applicationHandler
-            .injectionManager
-            .getInstance(ServiceLocator::class.java)
-          // starts the stats time publisher if there are any
-
-          // starts the stats time publisher if there are any
-          injector.getService(StatTimeTrigger::class.java)
-          injector.getService(StatRecorder::class.java)
-        }
-
-        override fun onReload(container: Container) {
-        }
-
-        override fun onShutdown(container: Container) {
-        }
-      })
+//      .register(object : ContainerLifecycleListener {
+//        override fun onStartup(container: Container) {
+//
+//          // access the ServiceLocator here
+//          val injector = container
+//            .applicationHandler
+//            .injectionManager
+//            .getInstance(ServiceLocator::class.java)
+//          // starts the stats time publisher if there are any
+//
+//          // starts the stats time publisher if there are any
+//          injector.getService(StatTimeTrigger::class.java)
+//          injector.getService(StatRecorder::class.java)
+//        }
+//
+//        override fun onReload(container: Container) {
+//        }
+//
+//        override fun onShutdown(container: Container) {
+//        }
+//      })
 
     return true
   }

@@ -6,9 +6,10 @@ import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
 import io.featurehub.mr.messaging.StreamedFeatureUpdate
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueType
+import jakarta.inject.Inject
 import org.slf4j.LoggerFactory
 
-open class FeatureUpdateListenerImpl(
+open class FeatureUpdateListenerImpl @Inject constructor(
   private val featureUpdateBySDKApi: FeatureUpdateBySDKApi
 ) : FeatureUpdateListener {
 

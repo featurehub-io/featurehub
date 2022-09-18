@@ -6,7 +6,7 @@ import cd.connect.lifecycle.LifecycleTransition
 import io.featurehub.db.model.DbNamedCache
 import io.featurehub.db.model.query.QDbNamedCache
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.mr.events.common.listeners.FeatureUpdateFactory
+import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
 import io.featurehub.publish.ChannelConstants
 import io.featurehub.publish.NATSSource
 import jakarta.inject.Inject
@@ -21,14 +21,12 @@ import java.util.concurrent.ConcurrentHashMap
 @Singleton
 class NATSSetupCacheFillers @Inject constructor(
   cacheSource: CacheSource,
-  natsServer: NATSSource, featureUpdateFactory: FeatureUpdateFactory
+  natsServer: NATSSource, featureUpdateListener: FeatureUpdateListener
 ) {
   private val namedCaches: MutableMap<String, NatsDachaCacheFiller> = ConcurrentHashMap()
 
   init {
     val id = UUID.randomUUID()
-
-    val featureUpdateListener = featureUpdateFactory.createListener()
 
     // always listen to default
     if (QDbNamedCache().findCount() == 0) {

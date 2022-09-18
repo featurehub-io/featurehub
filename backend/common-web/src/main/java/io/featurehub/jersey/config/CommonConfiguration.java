@@ -4,7 +4,6 @@ import cd.connect.openapi.support.OpenApiEnumProvider;
 import io.featurehub.jersey.OffsetDateTimeQueryProvider;
 import io.featurehub.rest.WebHeaderAuditLogger;
 import io.featurehub.utils.FallbackPropertyConfig;
-import io.featurehub.utils.FeatureHubConfig;
 import jakarta.ws.rs.core.Feature;
 import jakarta.ws.rs.core.FeatureContext;
 import org.glassfish.jersey.CommonProperties;

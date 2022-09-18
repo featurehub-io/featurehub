@@ -20,10 +20,11 @@ class NatsCloudEventTopicListener constructor(
 
   init {
     subscription = dispatcher.subscribe(subject, this::process)
+
+    log.info("nats: listening on topic {}", subject)
   }
 
   override fun close() {
-    subscription.unsubscribe()
     natsSource.connection.closeDispatcher(dispatcher)
   }
 

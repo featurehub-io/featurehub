@@ -7,6 +7,8 @@ interface CloudEventChannel {
   fun publishEvent(event: CloudEvent)
 }
 
-interface CloudEventsDachaChannel : CloudEventChannel
+interface CloudEventsDachaChannel : CloudEventChannel {
+  fun dacha2Enabled(): Boolean
+}
 
 interface CloudEventsEdgeChannel : CloudEventChannel

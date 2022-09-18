@@ -9,6 +9,10 @@ import org.slf4j.LoggerFactory
 class NatsCloudEventsPublisher constructor(private val natsSource: NATSSource, private val subject: String) {
   private val log: Logger = LoggerFactory.getLogger(NatsCloudEventsPublisher::class.java)
 
+  init {
+    log.info("nats: ready to publish on topic {}", subject)
+  }
+
   fun publish(event: CloudEvent) {
     try {
       natsSource.connection.publish(

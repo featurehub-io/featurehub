@@ -68,5 +68,6 @@ steps:
 #      env: 'REGISTRY_USERNAME'
 #    - versionName: projects/676228694437/secrets/DOCKERHUB_PASSWORD/versions/latest
 #      env: 'REGISTRY_PASSWORD'
-
+options:
+  machineType: 'N1_HIGHCPU_8'
 

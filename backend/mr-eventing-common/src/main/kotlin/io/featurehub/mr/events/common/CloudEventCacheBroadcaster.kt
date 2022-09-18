@@ -1,6 +1,6 @@
 package io.featurehub.mr.events.common
 
-import io.cloudevents.core.v1.CloudEventBuilder
+import io.cloudevents.core.builder.CloudEventBuilder
 import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
@@ -20,6 +20,9 @@ class CloudEventCacheBroadcaster @Inject constructor(
 ) : CacheBroadcast {
   private val log: Logger = LoggerFactory.getLogger(CloudEventCacheBroadcaster::class.java)
 
+  private val featureChannels: Array<CloudEventChannel> =
+    if (dachaChannel.dacha2Enabled()) arrayOf(dachaChannel, edgeChannel) else arrayOf(edgeChannel)
+
   fun publish(
     cacheName: String,
     subject: String,
@@ -30,7 +33,7 @@ class CloudEventCacheBroadcaster @Inject constructor(
     vararg channels: CloudEventChannel
   ) {
     try {
-      val event = CloudEventBuilder()
+      val event = CloudEventBuilder.v1().newBuilder()
       event.withSubject(subject)
       event.withId(id ?: "000")
       event.withType(type)
@@ -41,12 +44,12 @@ class CloudEventCacheBroadcaster @Inject constructor(
       // write any pure json channels
       val pureJsonChannels = channels.filter { it.encodePureJson() }
       if (pureJsonChannels.isNotEmpty()) {
-        val eventData = event.withData("application/json", CacheJsonMapper.mapper.writeValueAsBytes(data))
+        CacheJsonMapper.toEventData(event, data, false)
 
         for (cloudEventChannel in pureJsonChannels) {
           publishToChannel(
             subject,
-            eventData,
+            event,
             metrics,
             cloudEventChannel)
         }
@@ -55,12 +58,12 @@ class CloudEventCacheBroadcaster @Inject constructor(
       // now write any zipped channels
       val jsonZipChannels = channels.filter { !it.encodePureJson() }
       if (jsonZipChannels.isNotEmpty()) {
-        val eventData = event.withData("application/json+gzip", CacheJsonMapper.writeAsZipBytes(data))
+        CacheJsonMapper.toEventData(event, data, true)
 
         for (cloudEventChannel in jsonZipChannels) {
           publishToChannel(
             subject,
-            eventData,
+            event,
             metrics,
             cloudEventChannel)
         }
@@ -85,21 +88,25 @@ class CloudEventCacheBroadcaster @Inject constructor(
   }
 
   override fun publishEnvironment(cacheName: String, eci: PublishEnvironment) {
-    publish(cacheName, PublishEnvironment.CLOUD_EVENT_SUBJECT, eci, eci.environment.id.toString(),
-      PublishEnvironment.CLOUD_EVENT_TYPE,
-      CacheMetrics.environments, dachaChannel)
+    if (dachaChannel.dacha2Enabled()) {
+      publish(cacheName, PublishEnvironment.CLOUD_EVENT_SUBJECT, eci, eci.environment.id.toString(),
+        PublishEnvironment.CLOUD_EVENT_TYPE,
+        CacheMetrics.environments, dachaChannel)
+    }
   }
 
   override fun publishServiceAccount(cacheName: String, saci: PublishServiceAccount) {
-    publish(
-      cacheName,
-      PublishServiceAccount.CLOUD_EVENT_SUBJECT,
-      saci,
-      saci.serviceAccount?.id.toString(),
-      PublishServiceAccount.CLOUD_EVENT_TYPE,
-      CacheMetrics.services,
-      dachaChannel
-    )
+    if (dachaChannel.dacha2Enabled()) {
+      publish(
+        cacheName,
+        PublishServiceAccount.CLOUD_EVENT_SUBJECT,
+        saci,
+        saci.serviceAccount?.id.toString(),
+        PublishServiceAccount.CLOUD_EVENT_TYPE,
+        CacheMetrics.services,
+        dachaChannel
+      )
+    }
   }
 
   override fun publishFeatures(cacheName: String, features: PublishFeatureValues) {
@@ -110,7 +117,7 @@ class CloudEventCacheBroadcaster @Inject constructor(
       publish(
         cacheName, PublishFeatureValues.CLOUD_EVENT_SUBJECT, features,
         "${firstFeature.environmentId}/${firstFeature.feature.feature.key}", PublishFeatureValues.CLOUD_EVENT_TYPE,
-        CacheMetrics.features, dachaChannel, edgeChannel
+        CacheMetrics.features, *featureChannels
       )
     }
   }

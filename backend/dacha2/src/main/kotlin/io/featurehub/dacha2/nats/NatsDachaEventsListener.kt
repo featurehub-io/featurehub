@@ -34,8 +34,8 @@ class NatsDachaEventsListener : Feature {
 }
 
 class Dacha2NatsListener @Inject constructor(natsSource: NATSSource, private val eventListener: Dacha2CloudEventListener) {
-  @ConfigKey("cloudevents.dacha2.channel-name")
-  private var dachaChannelName: String? = "featurehub/dacha2-channel"
+  @ConfigKey("cloudevents.mr-dacha2.nats.channel-name")
+  private var dachaChannelName: String? = "featurehub/mr-dacha2-channel"
 
   private val log: Logger = LoggerFactory.getLogger(Dacha2NatsListener::class.java)
   private val dachaListener: NatsListener

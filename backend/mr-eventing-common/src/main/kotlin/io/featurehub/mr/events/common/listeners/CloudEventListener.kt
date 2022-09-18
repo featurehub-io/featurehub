@@ -11,13 +11,8 @@ interface CloudEventListener {
   fun process(event: CloudEvent)
 }
 
-class CloudEventListenerImpl @Inject constructor(private val edgeUpdateListenerFactory: FeatureUpdateFactory) : CloudEventListener {
+class CloudEventListenerImpl @Inject constructor(private val featureUpdateListener: FeatureUpdateListener) : CloudEventListener {
   private val log: Logger = LoggerFactory.getLogger(CloudEventListenerImpl::class.java)
-  private val featureUpdateListener: FeatureUpdateListener
-
-  init {
-    featureUpdateListener = edgeUpdateListenerFactory.createListener()
-  }
 
   override fun process(event: CloudEvent) {
     when (event.subject) {

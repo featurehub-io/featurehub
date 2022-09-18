@@ -27,7 +27,7 @@ import java.util.*
 
 interface FeatureUpdate {
   fun updateFeature(
-    response: AsyncResponse, namedCache: String, envId: UUID, apiKey: String, featureKey: String,
+    response: AsyncResponse, namedCache: String?, envId: UUID, apiKey: String, featureKey: String,
     featureStateUpdate: FeatureStateUpdate, statRecorder: StatRecorder?)
 }
 
@@ -56,7 +56,7 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
 
   override fun updateFeature(
     response: AsyncResponse,
-    namedCache: String,
+    namedCache: String?,
     envId: UUID,
     apiKey: String,
     featureKey: String,
@@ -66,7 +66,7 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
     val timer = testSpeedHistogram.startTimer()
 
     try {
-      updateFeatureProcess(response, namedCache, envId, apiKey, featureKey, featureStateUpdate, statRecorder)
+      updateFeatureProcess(response, "default", envId, apiKey, featureKey, featureStateUpdate, statRecorder)
     } finally {
       timer.observeDuration()
     }
