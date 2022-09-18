@@ -8,7 +8,7 @@
   <name>party-server-ish</name>
 
   <description>
-    This includes the MR, the Dacha cache, and the SSE Edge all in one server.
+    This includes the MR, the Dacha cache, and the SSE Edge (REST) all in one server.
   </description>
 
   <properties>

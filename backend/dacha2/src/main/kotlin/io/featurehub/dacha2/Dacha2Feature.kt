@@ -1,5 +1,6 @@
 package io.featurehub.dacha2
 
+import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha2.nats.NatsDachaEventsListener
 import io.featurehub.dacha2.resource.DachaApiKeyResource
 import io.featurehub.dacha2.resource.DachaEnvironmentResource
@@ -23,6 +24,7 @@ class Dacha2Feature : Feature {
         bind(Dacha2CacheImpl::class.java).to(Dacha2Cache::class.java).`in`(Singleton::class.java)
         bind(Dacha2CloudEventListenerImpl::class.java).to(Dacha2CloudEventListener::class.java).`in`(Singleton::class.java)
         bind(FeatureValuesFactoryImpl::class.java).to(FeatureValuesFactory::class.java).`in`(Singleton::class.java)
+        bind(DachaApiKeyResource::class.java).to(DachaApiKeyService::class.java).`in`(Singleton::class.java)
       }
 
     })

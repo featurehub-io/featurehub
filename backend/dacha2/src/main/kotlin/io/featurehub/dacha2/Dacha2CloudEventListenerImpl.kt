@@ -17,7 +17,7 @@ class Dacha2CloudEventListenerImpl @Inject constructor(private val dacha2Cache: 
   private val log: Logger = LoggerFactory.getLogger(Dacha2CloudEventListenerImpl::class.java)
 
   override fun process(event: CloudEvent) {
-    log.info("processing cloud event {}: {}", event.subject, event.type)
+    log.debug("processing cloud event {}: {}", event.subject, event.type)
     when (event.subject) {
       PublishEnvironment.CLOUD_EVENT_SUBJECT -> processEnvironment(event)
       PublishServiceAccount.CLOUD_EVENT_SUBJECT -> processServiceAccount(event)
@@ -31,6 +31,7 @@ class Dacha2CloudEventListenerImpl @Inject constructor(private val dacha2Cache: 
     when (event.type) {
       PublishFeatureValues.CLOUD_EVENT_TYPE ->
         CacheJsonMapper.fromEventData(event, PublishFeatureValues::class.java)?.let {
+          log.trace("received feature values {}", it)
           for(feature in it.features) {
             dacha2Cache.updateFeature(feature)
           }
@@ -43,7 +44,10 @@ class Dacha2CloudEventListenerImpl @Inject constructor(private val dacha2Cache: 
   private fun processServiceAccount(event: CloudEvent) {
     when (event.type) {
       PublishServiceAccount.CLOUD_EVENT_TYPE ->
-        CacheJsonMapper.fromEventData(event, PublishServiceAccount::class.java)?.let { dacha2Cache.updateServiceAccount(it) } ?: log.error("Unable to decode event {}", event)
+        CacheJsonMapper.fromEventData(event, PublishServiceAccount::class.java)?.let {
+          log.trace("received service account update {}", it)
+          dacha2Cache.updateServiceAccount(it)
+        } ?: log.error("Unable to decode event {}", event)
       else ->
         log.info("Unknown service account update format ignored {}", event.type)
     }
@@ -52,7 +56,10 @@ class Dacha2CloudEventListenerImpl @Inject constructor(private val dacha2Cache: 
   private fun processEnvironment(event: CloudEvent) {
     when (event.type) {
       PublishEnvironment.CLOUD_EVENT_TYPE ->
-        CacheJsonMapper.fromEventData(event, PublishEnvironment::class.java)?.let { dacha2Cache.updateEnvironment(it) } ?: log.error("Unable to decode event {}", event)
+        CacheJsonMapper.fromEventData(event, PublishEnvironment::class.java)?.let {
+          log.trace("received environment {}", it)
+          dacha2Cache.updateEnvironment(it)
+        } ?: log.error("Unable to decode event {}", event)
       else ->
         log.info("Unknown environment update format ignored {}", event.type)
     }

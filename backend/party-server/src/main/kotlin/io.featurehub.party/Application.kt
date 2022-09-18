@@ -2,10 +2,11 @@ package io.featurehub.party
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import io.featurehub.dacha.DachaFeature
+import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.api.DachaClientFeature
 import io.featurehub.dacha.api.DachaClientServiceRegistry
-import io.featurehub.dacha.resource.DachaApiKeyResource
+import io.featurehub.dacha2.client.Dacha2MRClientFeature
+import io.featurehub.dacha2.resource.DachaApiKeyResource
 import io.featurehub.edge.EdgeFeature
 import io.featurehub.edge.EdgeResourceFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
@@ -47,8 +48,9 @@ class Application {
       ManagementRepositoryFeature::class.java,
       EdgeResourceFeature::class.java,
       EdgeFeature::class.java,
-      DachaFeature::class.java,
+      io.featurehub.dacha2.Dacha2Feature::class.java,
       DachaClientFeature::class.java,
+      Dacha2Feature::class.java, // MR API for dacha2
       TelemetryFeature::class.java,
       CacheControlFilter::class.java
     )
@@ -58,7 +60,7 @@ class Application {
         FeatureHubJerseyHost.withServiceLocator(container) { injector ->
           // make sure Edge talks directly to Dacha for the current cache
           val dachaServiceRegistry = injector.getService(DachaClientServiceRegistry::class.java)
-          dachaServiceRegistry.registerApiKeyService(name, injector.getService(DachaApiKeyResource::class.java) )
+          dachaServiceRegistry.registerApiKeyService(name, injector.getService(DachaApiKeyService::class.java) )
         }
       }
 
@@ -89,6 +91,8 @@ class Application {
     @JvmStatic
     fun main(args: Array<String>) {
       System.setProperty("user.timezone", "UTC")
+      System.setProperty("dacha1.disabled", "true")
+      System.setProperty("dacha2.enabled", "true")
       System.setProperty(APPLICATION_NAME_PROPERTY, "party-server")
       try {
         Application().run()
