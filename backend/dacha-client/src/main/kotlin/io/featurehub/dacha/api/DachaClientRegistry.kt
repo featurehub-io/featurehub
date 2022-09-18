@@ -31,7 +31,32 @@ class NoSuchCacheDachaClient : DachaApiKeyService {
   }
 }
 
-class DachaClientRegistry @Inject constructor(private val natsSource: NATSSource) : DachaClientServiceRegistry {
+interface BackupDachaFactory {
+  fun supportsNATS(): Boolean
+  fun createClient(cacheName: String, readTimeout: Long): NATSDachaApiKeyService
+}
+
+class NoNatsBackupDachaFactory : BackupDachaFactory {
+  override fun supportsNATS(): Boolean {
+    return false
+  }
+
+  override fun createClient(cacheName: String, readTimeout: Long): NATSDachaApiKeyService {
+    throw NotImplementedError()
+  }
+}
+
+class NatsBackupDachaFactory @Inject constructor(private val natsSource: NATSSource) : BackupDachaFactory {
+  override fun supportsNATS(): Boolean {
+    return true
+  }
+
+  override fun createClient(cacheName: String, readTimeout: Long): NATSDachaApiKeyService {
+    return NATSDachaApiKeyService(natsSource, cacheName, readTimeout)
+  }
+}
+
+class DachaClientRegistry @Inject constructor(private val backupDachaFactory: BackupDachaFactory) : DachaClientServiceRegistry {
   private val client: Client
   private val environmentServiceMap: MutableMap<String, DachaEnvironmentService> = ConcurrentHashMap()
   private val apiServiceMap: MutableMap<String, DachaApiKeyService> = ConcurrentHashMap()
@@ -75,12 +100,12 @@ class DachaClientRegistry @Inject constructor(private val natsSource: NATSSource
       if (url != null) {
         service = DachaApiKeyServiceServiceImpl(ApiClient(client, url))
         apiServiceMap[cacheName] = service
-      } else if (noCacheConfigurationReferences()) {
+      } else if (noCacheConfigurationReferences() && backupDachaFactory.supportsNATS() ) {
         log.info("Cache {} is not configured by REST definition, resorting back to NATS Request/Reply", cacheName)
-        service = NATSDachaApiKeyService(natsSource, cacheName, readTimeout!!.toLong())
+        service = backupDachaFactory.createClient(cacheName, readTimeout!!.toLong())
         apiServiceMap[cacheName] = service
       } else {
-        log.warn("Request for missing cache {}", cacheName)
+        log.error("Request for missing cache {}", cacheName)
       }
     }
 

@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 
 class PubsubDachaEventsListener @Inject constructor(pubSubFactory: PubSubFactory, eventListener: Dacha2CloudEventListener) {
   @ConfigKey("cloudevents.mr-dacha2.pubsub.channel-name")
-  var subscription: String? = "featurehub-mr-dacha2"
+  var subscription: String? = "featurehub-mr-dacha2-sub"
 
   private val log: Logger = LoggerFactory.getLogger(PubsubDachaEventsListener::class.java)
 

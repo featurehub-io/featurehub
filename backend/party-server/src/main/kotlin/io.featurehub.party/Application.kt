@@ -5,10 +5,9 @@ import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.api.DachaClientFeature
 import io.featurehub.dacha.api.DachaClientServiceRegistry
-import io.featurehub.dacha2.client.Dacha2MRClientFeature
-import io.featurehub.dacha2.resource.DachaApiKeyResource
 import io.featurehub.edge.EdgeFeature
 import io.featurehub.edge.EdgeResourceFeature
+import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
@@ -42,6 +41,7 @@ class Application {
     // register our resources, try and tag them as singleton as they are instantiated faster
     val config = ResourceConfig(
       NATSFeature::class.java,
+      GoogleEventFeature::class.java,
       CorsFilter::class.java,
       OAuth2Feature::class.java,
       SamlEnvironmentalFeature::class.java,

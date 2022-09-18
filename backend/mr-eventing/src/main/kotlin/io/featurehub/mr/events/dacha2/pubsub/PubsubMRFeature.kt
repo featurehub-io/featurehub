@@ -48,7 +48,7 @@ class PubsubMRFeature : Feature {
 
 class PubsubCloudEventsEdgeChannel @Inject constructor(pubSubFactory: PubSubFactory) : CloudEventsEdgeChannel {
   @ConfigKey("cloudevents.mr-edge.pubsub.channel-name")
-  private var edgeChannelName: String? = "featurehub-mr-edge-channel"
+  private var edgeChannelName: String? = "featurehub-mr-edge"
 
   private val publisher: PubSubPublisher
 
@@ -69,7 +69,7 @@ class PubsubCloudEventsEdgeChannel @Inject constructor(pubSubFactory: PubSubFact
 
 class PubsubCloudEventsDachaChannel @Inject constructor(pubSubFactory: PubSubFactory) : CloudEventsDachaChannel {
   @ConfigKey("cloudevents.mr-dacha2.pubsub.channel-name")
-  private var dachaChannelName: String? = "featurehub-mr-dacha2-channel"
+  private var dachaChannelName: String? = "featurehub-mr-dacha2"
 
   private val publisher: PubSubPublisher
 
@@ -97,7 +97,7 @@ class PubsubMRCloudEventsQueueUpdateListener @Inject constructor(pubSubFactory: 
   private val featureUpdaterSub: PubSubSubscriber
   private val log: Logger = LoggerFactory.getLogger(NatsMRCloudEventsQueueUpdateListener::class.java)
   @ConfigKey("cloudevents.edge-mr.pubsub.channel-name")
-  private val updatesSubscription: String = "featurehub-mr-updates-subscription"
+  private val updatesSubscription: String = "featurehub-mr-updates-sub"
 
   init {
     DeclaredConfigResolver.resolve(this)

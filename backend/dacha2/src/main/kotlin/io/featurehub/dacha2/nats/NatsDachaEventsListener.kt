@@ -21,8 +21,6 @@ class NatsDachaEventsListener : Feature {
   }
 
   override fun configure(context: FeatureContext): Boolean {
-    context.register(NATSFeature::class.java)
-
     context.register(object: AbstractBinder() {
       override fun configure() {
         bind(Dacha2NatsListener::class.java).to(Dacha2NatsListener::class.java).`in`(Immediate::class.java)

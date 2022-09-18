@@ -1,6 +1,7 @@
 package io.featurehub.mr.dacha2.rest
 
 import cd.connect.app.config.ConfigKey
+import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.openapi.support.ApiResponse
 import io.featurehub.dacha2.api.Dacha2Service
 import io.featurehub.dacha2.api.Dacha2ServiceClient
@@ -15,13 +16,44 @@ import java.util.*
 /**
  * we implement the Dacha2ServiceClient so the dacha2 service can bind to it when we merge it into the party-server
  */
-class Dacha2Resource @Inject constructor(private val cacheApi: CacheApi) : Dacha2Service, Dacha2ServiceClient {
+class Dacha2Resource @Inject constructor(private val cacheApi: CacheApi) : Dacha2Service {
   @ConfigKey("mr.dacha2.api-keys")
   var apiKeys: List<String> = emptyList()
+
+  init {
+    DeclaredConfigResolver.resolve(this)
+  }
 
   override fun getEnvironment(id: UUID, key: String?): Dacha2Environment {
     checkKey(key)
 
+    val env = cacheApi.getEnvironment(id) ?: throw NotFoundException()
+
+    return Dacha2Environment().env(env)
+  }
+
+  override fun getServiceAccount(id: String, key: String?): Dacha2ServiceAccount {
+    checkKey(key)
+
+    val serviceAccount = cacheApi.getServiceAccount(id) ?: throw NotFoundException()
+
+    return Dacha2ServiceAccount().serviceAccount(serviceAccount)
+  }
+
+  private fun checkKey(key: String?) {
+    // is this API protected by an API Key - typically only used when it is exposed on the public internet
+    if (apiKeys.isNotEmpty() && key != null && !apiKeys.contains(key)) {
+      throw ForbiddenException()
+    }
+  }
+}
+
+class Dacha2ProxyClient @Inject constructor(private val cacheApi: CacheApi) : Dacha2ServiceClient {
+  init {
+    DeclaredConfigResolver.resolve(this)
+  }
+
+  override fun getEnvironment(id: UUID, key: String?): Dacha2Environment {
     val env = cacheApi.getEnvironment(id) ?: throw NotFoundException()
 
     return Dacha2Environment().env(env)
@@ -36,8 +68,6 @@ class Dacha2Resource @Inject constructor(private val cacheApi: CacheApi) : Dacha
   }
 
   override fun getServiceAccount(id: String, key: String?): Dacha2ServiceAccount {
-    checkKey(key)
-
     val serviceAccount = cacheApi.getServiceAccount(id) ?: throw NotFoundException()
 
     return Dacha2ServiceAccount().serviceAccount(serviceAccount)
@@ -53,12 +83,5 @@ class Dacha2Resource @Inject constructor(private val cacheApi: CacheApi) : Dacha
 
   override fun getServiceAccountWithHttpInfo(id: String?, key: String?): ApiResponse<Dacha2ServiceAccount> {
     throw NotImplementedError()
-  }
-
-  private fun checkKey(key: String?) {
-    // is this API protected by an API Key - typically only used when it is exposed on the public internet
-    if (apiKeys.isNotEmpty() && key != null && !apiKeys.contains(key)) {
-      throw ForbiddenException()
-    }
   }
 }

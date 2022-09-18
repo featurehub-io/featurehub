@@ -44,7 +44,7 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
   @ConfigKey("cloudevents.pubsub.local.sub-pairs")
   var pairs: MutableMap<String, String> = mutableMapOf()
 
-  @ConfigKey("pubsub.min-backoff-delay-seconds")
+  @ConfigKey("cloudevents.pubsub.min-backoff-delay-seconds")
   var minBackoffDelayInSeconds: Int? = null
 
   private val topicAdminClient: TopicAdminClient?
@@ -127,20 +127,16 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
 
   private fun createTopicSubscriberPairs() {
     log.debug("Ensuring the following topics exist {}", pubSubTopics)
-    val topics = topicAdminClient!!.listTopics(ProjectName.of(projectId))
-    val desiredTopics = pubSubTopics.map { TopicName.of(projectId, it)!!.toString() }.toMutableList()
+    val topics = topicAdminClient!!.listTopics(ProjectName.of(projectId)).iterateAll().toList()
+    val desiredTopics =
+      pubSubTopics.map { TopicName.of(projectId, it).toString() }
+        .filter { wantedTopic -> topics.find { existingTopic -> existingTopic.name != wantedTopic  } == null }
 
-    topics.iterateAll().forEach { topic ->
-      if (desiredTopics.remove(topic.name) != null) {
-        log.info("pubsub: topic {} already exists", topic.name)
-      } else {
-        log.info("pubsub: topic {} found", topic.name)
-      }
-    }
+    desiredTopics.forEach { log.info("pubsub-local: creating topic `{}`", it) }
 
-    desiredTopics.forEach { topic ->
-      log.info("pubsub: creating topic {}", topic)
-      topicAdminClient.createTopic(topic)
+    desiredTopics.forEach { topicName ->
+      log.info("pubsub: creating topic {}", topicName)
+      topicAdminClient.createTopic(topicName)
     }
 
     val pairsTransformed = pairs.entries.associate {

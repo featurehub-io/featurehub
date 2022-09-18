@@ -41,7 +41,7 @@ class PubsubFeaturesListener @Inject constructor(
   private val controller: EdgeSubscriber,
   pubsubFactory: PubSubFactory) {
   @ConfigKey("cloudevents.mr-edge.pubsub.channel-name")
-  private var edgeChannelName: String? = "featurehub-mr-edge-channel"
+  private var edgeChannelName: String? = "featurehub-mr-edge-sub"
 
   private val log: Logger = LoggerFactory.getLogger(PubsubFeaturesListener::class.java)
 
@@ -61,7 +61,7 @@ class PubsubFeaturesListener @Inject constructor(
 
 class PubsubFeatureUpdatePublisher @Inject constructor(pubsubFactory: PubSubFactory) : CloudEventsEdgePublisher {
   @ConfigKey("cloudevents.edge-mr.pubsub.channel-name")
-  private val updateChannelName: String = "featurehub-mr-updates-subscription"
+  private val updateChannelName: String = "featurehub-mr-updates"
   private var publisher: PubSubPublisher
 
   init {
