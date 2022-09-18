@@ -60,8 +60,8 @@ class PerApplicationFeaturesBloc
       _publishNewFeatureSource.stream;
 
   final _getAllAppValuesDebounceStream = BehaviorSubject<bool>();
-  final _featureMetadataStream = PublishSubject<Feature>();
-  Stream<Feature> get featureMetadataStream =>
+  final _featureMetadataStream = BehaviorSubject<Feature?>();
+  Stream<Feature?> get featureMetadataStream =>
       _featureMetadataStream.stream;
 
   PerApplicationFeaturesBloc(this._mrClient) {
@@ -268,6 +268,7 @@ class PerApplicationFeaturesBloc
   }
 
   Future<void> getFeatureIncludingMetadata(Feature feature) async {
+    _featureMetadataStream.add(null);
     final currentFeature =
     await _featureServiceApi.getFeatureByKey(applicationId!, feature.key!, includeMetaData: true);
     _featureMetadataStream.add(currentFeature);

@@ -22,7 +22,7 @@ class SetFeatureMetadataWidget extends StatefulWidget {
 class _SetFeatureMetadataWidgetState extends State<SetFeatureMetadataWidget> {
   TextEditingController tec = TextEditingController();
   Feature? _feature;
-  late StreamSubscription<Feature> streamSubscription;
+  late StreamSubscription<Feature?> streamSubscription;
   @override
   void dispose() {
     super.dispose();
@@ -35,7 +35,7 @@ class _SetFeatureMetadataWidgetState extends State<SetFeatureMetadataWidget> {
     super.initState();
     streamSubscription = widget.bloc.featureMetadataStream.listen((feature) {
       _feature = feature;
-      if (feature.metaData != null && mounted) {
+      if (feature != null && feature.metaData != null && mounted) {
         setState(() {
           tec.text = feature.metaData!;
         });
@@ -50,7 +50,7 @@ class _SetFeatureMetadataWidgetState extends State<SetFeatureMetadataWidget> {
     return SizedBox(
       height: 500,
       child: (AlertDialog(
-          title: const Text("Edit metadata"),
+          title: Text("Edit metadata for '${_feature != null ? _feature!.name : ''}'"),
           actions: [
             FHFlatButtonTransparent(
               onPressed: () {
