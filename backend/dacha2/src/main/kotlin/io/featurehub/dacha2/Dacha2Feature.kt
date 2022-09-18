@@ -2,11 +2,14 @@ package io.featurehub.dacha2
 
 import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha2.nats.NatsDachaEventsListener
+import io.featurehub.dacha2.pubsub.PubsubDachaEventsListener
 import io.featurehub.dacha2.resource.DachaApiKeyResource
 import io.featurehub.dacha2.resource.DachaEnvironmentResource
+import io.featurehub.events.pubsub.GoogleEventFeature
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
+import org.glassfish.hk2.api.Immediate
 import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class Dacha2Feature : Feature {
@@ -25,6 +28,12 @@ class Dacha2Feature : Feature {
         bind(Dacha2CloudEventListenerImpl::class.java).to(Dacha2CloudEventListener::class.java).`in`(Singleton::class.java)
         bind(FeatureValuesFactoryImpl::class.java).to(FeatureValuesFactory::class.java).`in`(Singleton::class.java)
         bind(DachaApiKeyResource::class.java).to(DachaApiKeyService::class.java).`in`(Singleton::class.java)
+
+        if (GoogleEventFeature.isEnabled()) {
+          // bind and start listening immediately
+          bind(PubsubDachaEventsListener::class.java).to(PubsubDachaEventsListener::class.java).`in`(Immediate::class.java)
+        }
+
       }
 
     })

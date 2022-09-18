@@ -12,7 +12,6 @@ class CloudEventsCommonFeature : Feature {
     context.register(object: AbstractBinder() {
       override fun configure() {
         bind(CloudEventListenerImpl::class.java).to(CloudEventListener::class.java).`in`(Singleton::class.java)
-
       }
 
     })

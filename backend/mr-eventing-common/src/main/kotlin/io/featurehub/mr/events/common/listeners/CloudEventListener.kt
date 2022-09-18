@@ -15,6 +15,8 @@ class CloudEventListenerImpl @Inject constructor(private val featureUpdateListen
   private val log: Logger = LoggerFactory.getLogger(CloudEventListenerImpl::class.java)
 
   override fun process(event: CloudEvent) {
+    log.trace("update received: {} / {}", event.subject, event.type)
+
     when (event.subject) {
       StreamedFeatureUpdate.CLOUD_EVENT_SUBJECT -> processEdgeUpdate(event)
     }

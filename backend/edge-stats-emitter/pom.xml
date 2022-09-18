@@ -67,6 +67,12 @@
     </dependency>
 
     <dependency>
+      <groupId>io.featurehub.events</groupId>
+      <artifactId>eventing-google-pubsub</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-test</artifactId>
       <version>[1.1, 2)</version>

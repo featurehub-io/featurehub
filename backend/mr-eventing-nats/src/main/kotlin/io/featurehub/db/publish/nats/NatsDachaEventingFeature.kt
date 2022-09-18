@@ -20,21 +20,12 @@ class NatsDachaEventingFeature : Feature {
       return FallbackPropertyConfig.getConfig("nats.urls") != null
     }
 
-    /*
-    We need to be able to support both Dacha 1 and Dacha 2 at the same time for rollover.
-     */
-    fun isDacha2Enabled(): Boolean =
-      FallbackPropertyConfig.getConfig("dacha2.enabled") == "true"
-
     // enabled by default
     fun isDacha1Enabled(): Boolean =
       FallbackPropertyConfig.getConfig("dacha1.enabled") != "false"
   }
 
   override fun configure(context: FeatureContext): Boolean {
-    // this excludes the clloudevent cache broadcaster which is only wired on dacha2
-    context.register(CloudEventsCommonFeature::class.java)
-
     context.register(object: AbstractBinder() {
       override fun configure() {
         // initial requests come in via REST, we only publish changes

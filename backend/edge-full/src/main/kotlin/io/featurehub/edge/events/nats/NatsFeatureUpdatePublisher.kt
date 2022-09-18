@@ -1,8 +1,9 @@
-package io.featurehub.edge.events
+package io.featurehub.edge.events.nats
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.cloudevents.CloudEvent
+import io.featurehub.edge.events.CloudEventsEdgePublisher
 import io.featurehub.events.nats.NatsCloudEventsPublisher
 import io.featurehub.publish.NATSSource
 import jakarta.inject.Inject

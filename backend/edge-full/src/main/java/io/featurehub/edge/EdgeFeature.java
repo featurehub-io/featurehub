@@ -3,7 +3,10 @@ package io.featurehub.edge;
 import io.featurehub.edge.bucket.BucketService;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.events.CloudEventsFeatureUpdatePublisherImpl;
-import io.featurehub.edge.events.NatsFeature;
+import io.featurehub.edge.events.EdgeSubscriber;
+import io.featurehub.edge.events.EdgeSubscriberImpl;
+import io.featurehub.edge.events.nats.NatsEdgeFeature;
+import io.featurehub.edge.events.pubsub.PubsubEdgeFeature;
 import io.featurehub.edge.rest.FeatureSse;
 import io.featurehub.edge.rest.FeatureSseProcessor;
 import io.featurehub.edge.rest.FeatureUpdatePublisher;
@@ -33,6 +36,7 @@ public class EdgeFeature implements Feature {
               protected void configure() {
                 bind(StreamingFeatureSource.class).to(StreamingFeatureController.class).in(Singleton.class);
                 bind(FeatureSseProcessor.class).to(FeatureSse.class).in(Singleton.class);
+                bind(EdgeSubscriberImpl.class).to(EdgeSubscriber.class).in(Singleton.class);
                 bind(EventOutputBucketService.class)
                     .to(BucketService.class)
                     .in(Singleton.class);
@@ -42,9 +46,8 @@ public class EdgeFeature implements Feature {
               }
             });
 
-    if (NatsFeature.Companion.isNatsEnabled()) {
-      context.register(NatsFeature.class);
-    }
+    context.register(NatsEdgeFeature.class);
+    context.register(PubsubEdgeFeature.class);
 
     return true;
   }

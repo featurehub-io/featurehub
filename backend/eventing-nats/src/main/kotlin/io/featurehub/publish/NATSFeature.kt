@@ -14,7 +14,7 @@ class NATSFeature : Feature {
   var natsUrls: String? = null
 
   companion object {
-    fun isNatsConfigured() = FallbackPropertyConfig.getConfig("nats.urls") != null
+    fun isNatsConfigured() = FallbackPropertyConfig.getConfig("nats.urls") != null && FallbackPropertyConfig.getConfig("nats.enabled") != "false"
   }
 
   init {
@@ -26,17 +26,21 @@ class NATSFeature : Feature {
   }
 
   override fun configure(context: FeatureContext): Boolean {
-    context.register(object: AbstractBinder() {
-      override fun configure() {
-        bind(NATSConnectionSource::class.java).to(NATSSource::class.java).`in`(Singleton::class.java)
+    if (isNatsConfigured()) {
+      context.register(object : AbstractBinder() {
+        override fun configure() {
+          bind(NATSConnectionSource::class.java).to(NATSSource::class.java).`in`(Singleton::class.java)
 
-        if (natsUrls != null) {
-          bind(NATSHealthSource::class.java).to(HealthSource::class.java).`in`(Singleton::class.java)
+          if (natsUrls != null) {
+            bind(NATSHealthSource::class.java).to(HealthSource::class.java).`in`(Singleton::class.java)
+          }
         }
-      }
 
-    })
+      })
 
-    return true
+      return true
+    }
+
+    return false
   }
 }

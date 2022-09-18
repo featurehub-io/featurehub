@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>io.featurehub.composites</groupId>
-    <artifactId>composite-parent</artifactId>
-    <version>1.2-SNAPSHOT</version>
-    <relativePath>../composite-parent</relativePath>
-  </parent>
-  <groupId>io.featurehub.mr</groupId>
-  <artifactId>mr-eventing</artifactId>
+
+  <groupId>io.featurehub.events</groupId>
+  <artifactId>eventing-google-pubsub</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>mr-eventing</name>
+  <name>eventing-nats</name>
 
   <description>
-    Management Registry Database API.
+    Supporting all publishing using Google Pub/Sub. This layer supports dynamic creation of local topics and subscriptions
+    if they don't already exist but not when deploying to the cloud. This layer supports the CloudEvents variant of
+    FeatureHub only.
   </description>
 
   <url>https://featurehub.io</url>
@@ -40,43 +37,31 @@
     </license>
   </licenses>
 
+  <properties>
+    <google-pubsub.version>1.120.15</google-pubsub.version>
+  </properties>
+
   <dependencies>
     <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-db-models</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
       <groupId>io.featurehub.common</groupId>
-      <artifactId>common-db</artifactId>
+      <artifactId>common-web</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-ebean</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-eventing-nats</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-db-services</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.events</groupId>
-      <artifactId>eventing-google-pubsub</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.common</groupId>
-      <artifactId>common-db-test</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <artifactId>composite-test</artifactId>
+      <version>[1.1, 2)</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-pubsub</artifactId>
+      <version>[${google-pubsub.version}]</version>
+    </dependency>
+    <dependency>
+      <groupId>io.featurehub.cloudevents</groupId>
+      <artifactId>cloudevents-google-pubsub</artifactId>
+      <version>1.1-SNAPSHOT</version>
     </dependency>
 
   </dependencies>
@@ -92,8 +77,6 @@
           <filtering>false</filtering>
           <tiles>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
-            <tile>org.avaje.tile:java-compile:1.1</tile>
-            <tile>io.ebean.tile:enhancement:${ebean.version}</tile>
           </tiles>
         </configuration>
       </plugin>

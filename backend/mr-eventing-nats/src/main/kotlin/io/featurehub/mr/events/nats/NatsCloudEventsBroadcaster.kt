@@ -7,6 +7,7 @@ import io.featurehub.db.publish.nats.NatsDachaEventingFeature
 import io.featurehub.events.nats.NatsCloudEventsPublisher
 import io.featurehub.mr.events.common.CloudEventsDachaChannel
 import io.featurehub.mr.events.common.CloudEventsEdgeChannel
+import io.featurehub.mr.events.common.Dacha2Config
 import io.featurehub.publish.NATSSource
 import jakarta.inject.Inject
 
@@ -44,7 +45,7 @@ class NatsCloudEventsDachaChannel @Inject constructor(nats: NATSSource) : CloudE
 
   init {
     DeclaredConfigResolver.resolve(this)
-    isDacha2Enabled = NatsDachaEventingFeature.isDacha2Enabled()
+    isDacha2Enabled = Dacha2Config.isDacha2Enabled()
     natsChannel = nats.createPublisher(dachaChannelName!!)
   }
 
