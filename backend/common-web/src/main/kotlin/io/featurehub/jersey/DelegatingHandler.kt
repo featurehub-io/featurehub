@@ -11,7 +11,7 @@ class DelegatingHandler(
   private val jerseyHandler: GrizzlyHttpContainer,
   private val staticHttpHandler: AdminAppStaticHttpHandler
 ) : HttpHandler() {
-  private var jerseyPrefixes = listOf("/mr-api/", "/saml/", "/oauth/", "/features", "/health/", "/metrics", "/info")
+  private var jerseyPrefixes = listOf("/mr-api/", "/saml/", "/oauth/", "/features", "/health/", "/metrics", "/info", "/dacha2")
 
   private val webRequestCounter = MetricsCollector.counter("web_request_counter", "Amount of requests from serving the front end Admin website")
   private val apiRequestCounter = MetricsCollector.counter("api_request_counter", "Number of API requests received")

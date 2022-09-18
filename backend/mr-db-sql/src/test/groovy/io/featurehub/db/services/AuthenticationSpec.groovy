@@ -2,7 +2,7 @@ package io.featurehub.db.services
 
 import io.featurehub.db.api.DBLoginSession
 import io.featurehub.db.api.Opts
-import io.featurehub.db.publish.CacheSource
+import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
@@ -13,7 +13,6 @@ import io.featurehub.mr.model.Portfolio
 import spock.lang.Shared
 
 import java.time.Instant
-import java.time.LocalDateTime
 
 class AuthenticationSpec extends BaseSpec {
   @Shared AuthenticationSqlApi auth

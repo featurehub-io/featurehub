@@ -12,7 +12,7 @@ import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.DbServiceAccount
 import io.featurehub.db.model.query.QDbServiceAccount
-import io.featurehub.db.publish.CacheSource
+import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole

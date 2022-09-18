@@ -1,6 +1,6 @@
 package io.featurehub.dacha
 
-import io.featurehub.dacha.api.CacheAction
+import io.featurehub.dacha.CacheAction
 import io.featurehub.dacha.resource.DachaEdgeNATSAdapter
 import io.featurehub.publish.NATSSource
 import io.nats.client.Connection

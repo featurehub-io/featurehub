@@ -4,7 +4,6 @@ import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
-import io.featurehub.dacha.api.CacheAction;
 import io.featurehub.dacha.model.CacheManagementMessage;
 import io.featurehub.dacha.model.CacheRequestType;
 import io.featurehub.dacha.model.CacheState;

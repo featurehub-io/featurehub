@@ -12,6 +12,7 @@ import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
+import io.featurehub.mr.dacha2.Dacha2Feature
 import io.featurehub.publish.ChannelConstants
 import io.featurehub.publish.NATSFeature
 import io.featurehub.rest.CacheControlFilter
@@ -87,8 +88,16 @@ class Application {
       override fun onShutdown(container: Container?) {}
     })
 
-      // check if we should list on a different port
     registerMetrics(config)
+
+      // check if we should list on a different port
+//    registerMetrics(config) { resourceConfig, locator, binder ->
+//      if (resourceConfig != null) {
+//        resourceConfig.register(Dacha2Feature::class.java)
+//      }
+//      resourceConfig
+//    }
+
     FeatureHubJerseyHost(config).start()
     log.info("MR Launched - (HTTP/2 payloads enabled!)")
 
