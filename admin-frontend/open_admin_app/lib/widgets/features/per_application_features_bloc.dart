@@ -60,6 +60,9 @@ class PerApplicationFeaturesBloc
       _publishNewFeatureSource.stream;
 
   final _getAllAppValuesDebounceStream = BehaviorSubject<bool>();
+  final _featureMetadataStream = BehaviorSubject<Feature?>();
+  Stream<Feature?> get featureMetadataStream =>
+      _featureMetadataStream.stream;
 
   PerApplicationFeaturesBloc(this._mrClient) {
     _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
@@ -264,6 +267,23 @@ class PerApplicationFeaturesBloc
     addAppFeatureValuesToStream();
   }
 
+  Future<void> getFeatureIncludingMetadata(Feature feature) async {
+    _featureMetadataStream.add(null);
+    final currentFeature =
+    await _featureServiceApi.getFeatureByKey(applicationId!, feature.key!, includeMetaData: true);
+    _featureMetadataStream.add(currentFeature);
+  }
+
+  Future<void> updateFeatureMetadata(Feature feature, String metaData) async {
+    final currentFeature =
+    await _featureServiceApi.getFeatureByKey(applicationId!, feature.key!, includeMetaData: true);
+    final newFeature = currentFeature
+      ..metaData = metaData;
+    await _featureServiceApi.updateFeatureForApplication(
+        applicationId!, feature.key!, newFeature);
+    await getFeatureIncludingMetadata(newFeature);
+  }
+
   Future<void> deleteFeature(String key) async {
     await _featureServiceApi.deleteFeatureForApplication(applicationId!, key);
     addAppFeatureValuesToStream();
@@ -274,6 +294,7 @@ class PerApplicationFeaturesBloc
   void dispose() {
     _appSearchResultSource.close();
     _appFeatureValuesBS.close();
+    _featureMetadataStream.close();
     _currentPid.cancel();
     _currentAppId.cancel();
   }

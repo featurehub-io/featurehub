@@ -7,6 +7,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/features/create_update_feature_dialog_widget.dart';
 import 'package:open_admin_app/widgets/features/delete_feature_widget.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
+import 'package:open_admin_app/widgets/features/set_feature_metadata.dart';
 import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
 
 import 'per_application_features_bloc.dart';
@@ -148,17 +149,33 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                                         bloc: bloc,
                                                         feature: feature));
                                           }
+                                          if (value == 'metadata') {
+                                            bloc.getFeatureIncludingMetadata(feature);
+                                            tabsBloc.mrClient.addOverlay(
+                                                    (BuildContext context) =>
+                                                    SetFeatureMetadataWidget(
+                                                        bloc: bloc,
+                                                        ));
+                                          }
                                         },
                                         itemBuilder: (BuildContext context) {
+                                          var isEditor = bloc.mrClient
+                                              .userIsFeatureAdminOfCurrentApplication;
                                           return [
                                             PopupMenuItem(
                                                 value: 'edit',
-                                                child: Text('View details',
+                                                child: Text(isEditor ? 'Edit details' : 'View details',
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .bodyText2)),
-                                            if (bloc.mrClient
-                                                .userIsFeatureAdminOfCurrentApplication)
+                                            PopupMenuItem(
+                                              value: 'metadata',
+                                              child: Text(isEditor ? 'Edit metadata' : 'View metadata',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText2),
+                                            ),
+                                            if (isEditor)
                                               PopupMenuItem(
                                                 value: 'delete',
                                                 child: Text('Delete',

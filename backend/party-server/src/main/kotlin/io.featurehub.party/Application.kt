@@ -18,8 +18,13 @@ import io.featurehub.publish.NATSFeature
 import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info.Companion.APPLICATION_NAME_PROPERTY
+import io.featurehub.web.security.oauth.AuthProviderCollection
+import io.featurehub.web.security.oauth.AuthProviders
+import io.featurehub.web.security.oauth.NoAuthProviders
 import io.featurehub.web.security.oauth.OAuth2Feature
 import io.featurehub.web.security.saml.SamlEnvironmentalFeature
+import jakarta.inject.Singleton
+import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.spi.Container
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener
@@ -42,8 +47,6 @@ class Application {
     val config = ResourceConfig(
       NATSFeature::class.java,
       CorsFilter::class.java,
-      OAuth2Feature::class.java,
-      SamlEnvironmentalFeature::class.java,
       ManagementRepositoryFeature::class.java,
       EdgeResourceFeature::class.java,
       EdgeFeature::class.java,
@@ -52,6 +55,24 @@ class Application {
       TelemetryFeature::class.java,
       CacheControlFilter::class.java
     )
+
+    if (OAuth2Feature.oauth2ProvidersExist()) {
+      config.register(OAuth2Feature::class.java)
+    }
+
+    if (SamlEnvironmentalFeature.samlProvidersExist()) {
+      config.register(SamlEnvironmentalFeature::class.java)
+    }
+
+    config.register(object : AbstractBinder() {
+      override fun configure() {
+        if (OAuth2Feature.oauth2ProvidersExist() || SamlEnvironmentalFeature.samlProvidersExist()) {
+          bind(AuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
+        } else {
+          bind(NoAuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
+        }
+      }
+    })
 
     config.register(object: ContainerLifecycleListener {
       override fun onStartup(container: Container) {
