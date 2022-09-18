@@ -50,7 +50,7 @@ class _SetFeatureMetadataWidgetState extends State<SetFeatureMetadataWidget> {
     return SizedBox(
       height: 500,
       child: (AlertDialog(
-          title: Text("Edit metadata for '${_feature != null ? _feature!.name : ''}'"),
+          title: Text(" ${isReadOnly ? 'View' : 'Edit'} metadata for '${_feature != null ? _feature!.name : ''}'"),
           actions: [
             FHFlatButtonTransparent(
               onPressed: () {
