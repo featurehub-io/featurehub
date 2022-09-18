@@ -159,27 +159,26 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                           }
                                         },
                                         itemBuilder: (BuildContext context) {
+                                          var isEditor = bloc.mrClient
+                                              .userIsFeatureAdminOfCurrentApplication;
                                           return [
                                             PopupMenuItem(
                                                 value: 'edit',
-                                                child: Text('View details',
+                                                child: Text(isEditor ? 'Edit details' : 'View details',
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .bodyText2)),
-                                            if (bloc.mrClient
-                                                .userIsFeatureAdminOfCurrentApplication)
+                                            PopupMenuItem(
+                                              value: 'metadata',
+                                              child: Text(isEditor ? 'Edit metadata' : 'View metadata',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText2),
+                                            ),
+                                            if (isEditor)
                                               PopupMenuItem(
                                                 value: 'delete',
                                                 child: Text('Delete',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyText2),
-                                              ),
-                                            if (bloc.mrClient
-                                                .userIsFeatureAdminOfCurrentApplication)
-                                              PopupMenuItem(
-                                                value: 'metadata',
-                                                child: Text('Add metadata',
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .bodyText2),

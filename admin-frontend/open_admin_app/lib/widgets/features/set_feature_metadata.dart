@@ -45,7 +45,7 @@ class _SetFeatureMetadataWidgetState extends State<SetFeatureMetadataWidget> {
 
   @override
   Widget build(BuildContext context) {
-    var enabled = true;
+    final isReadOnly = !widget.bloc.mrClient.userIsFeatureAdminOfCurrentApplication;
 
     return SizedBox(
       height: 500,
@@ -59,7 +59,7 @@ class _SetFeatureMetadataWidgetState extends State<SetFeatureMetadataWidget> {
               title: 'Cancel',
               keepCase: true,
             ),
-            enabled
+            !isReadOnly
                 ? FHFlatButton(
                     title: 'Set value',
                     onPressed: (() {
