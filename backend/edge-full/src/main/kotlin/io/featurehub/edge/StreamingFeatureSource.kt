@@ -85,7 +85,7 @@ class StreamingFeatureSource @Inject constructor(
     updateExecutor = Context.taskWrapping(Executors.newFixedThreadPool(updatePoolSize!!))
     listenExecutor = Context.taskWrapping(Executors.newFixedThreadPool(listenPoolSize!!))
 
-    log.info("connected to NATS with cache pool size of `{}", updatePoolSize)
+    log.info("connected to stream with cache pool size of `{}", updatePoolSize)
 
     ApplicationLifecycleManager.registerListener { trans: LifecycleTransition ->
       if (trans.next == LifecycleStatus.TERMINATING) {
@@ -109,6 +109,8 @@ class StreamingFeatureSource @Inject constructor(
     if (features.features.isEmpty()) {
       return
     }
+
+    log.info("sending feature {}", features)
 
     val environmentId = features.features[0].environmentId
 
