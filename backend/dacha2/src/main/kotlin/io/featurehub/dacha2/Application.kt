@@ -4,6 +4,7 @@ import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.lifecycle.ApplicationLifecycleManager
 import cd.connect.lifecycle.LifecycleStatus
 import io.featurehub.dacha2.client.Dacha2MRClientFeature
+import io.featurehub.events.CloudEventsFeature
 import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.health.CommonFeatureHubFeatures
 import io.featurehub.health.MetricsHealthRegistration
@@ -30,6 +31,7 @@ class Application {
       CommonFeatureHubFeatures::class.java,
       TelemetryFeature::class.java,
       Dacha2Feature::class.java,
+      CloudEventsFeature::class.java,
       GoogleEventFeature::class.java,
       NATSFeature::class.java,
       Dacha2MRClientFeature::class.java, // the Api to the MR instance, (party-server mocks them)

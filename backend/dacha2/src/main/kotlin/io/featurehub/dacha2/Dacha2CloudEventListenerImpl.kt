@@ -4,6 +4,7 @@ import io.cloudevents.CloudEvent
 import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
+import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.jersey.config.CacheJsonMapper
 import jakarta.inject.Inject
 import org.slf4j.Logger
@@ -13,8 +14,31 @@ interface Dacha2CloudEventListener {
   fun process(event: CloudEvent)
 }
 
-class Dacha2CloudEventListenerImpl @Inject constructor(private val dacha2Cache: Dacha2Cache) : Dacha2CloudEventListener {
+class Dacha2CloudEventListenerImpl @Inject constructor(
+  private val dacha2Cache: Dacha2Cache,
+  register: CloudEventReceiverRegistry
+) : Dacha2CloudEventListener {
   private val log: Logger = LoggerFactory.getLogger(Dacha2CloudEventListenerImpl::class.java)
+
+  init {
+    register.listen(PublishEnvironment::class.java) { env ->
+      log.trace("received environment {}", env)
+      dacha2Cache.updateEnvironment(env)
+    }
+
+    register.listen(PublishServiceAccount::class.java) { serviceAccount ->
+      log.trace("received service account {}", serviceAccount)
+      dacha2Cache.updateServiceAccount(serviceAccount)
+    }
+
+    register.listen(PublishFeatureValues::class.java) { features ->
+      log.trace("received feature values {}", features)
+      for (feature in features.features) {
+        dacha2Cache.updateFeature(feature)
+      }
+
+    }
+  }
 
   override fun process(event: CloudEvent) {
     log.debug("processing cloud event {}: {}", event.subject, event.type)
@@ -31,10 +55,6 @@ class Dacha2CloudEventListenerImpl @Inject constructor(private val dacha2Cache: 
     when (event.type) {
       PublishFeatureValues.CLOUD_EVENT_TYPE ->
         CacheJsonMapper.fromEventData(event, PublishFeatureValues::class.java)?.let {
-          log.trace("received feature values {}", it)
-          for(feature in it.features) {
-            dacha2Cache.updateFeature(feature)
-          }
         } ?: log.error("Unable to decode event {}", event)
       else ->
         log.info("Unknown feature update format ignored {}", event.type)

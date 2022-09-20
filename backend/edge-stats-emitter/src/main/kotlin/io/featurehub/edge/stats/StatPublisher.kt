@@ -53,12 +53,6 @@ class StatPublisherImpl @Inject constructor(private val publisher: CloudEventSta
 
       CacheJsonMapper.toEventData(event, bundle, !publisher.encodeAsJson())
 
-      val counter = prometheusPublishSuccessCounter.computeIfAbsent(cacheName) {
-        Counter.build(
-          String.format("edge_stat_nats_success_%s", cacheName.replace("-", "_")),
-          String.format("Edge Stats NATS Success publishing to channel %s", cacheName)
-        ).register()
-      }
       val failed = prometheusPublishFailedCounter.computeIfAbsent(cacheName) {
         Counter.build(
           String.format("edge_stat_nats_failed_%s", cacheName.replace("-", "_")),
@@ -73,7 +67,7 @@ class StatPublisherImpl @Inject constructor(private val publisher: CloudEventSta
       }
 
       telemetryWriter.publish(EdgeStatsBundle.CLOUD_EVENT_SUBJECT, event,
-        CloudEventChannelMetric(counter, failed, histogram)
+        CloudEventChannelMetric(failed, histogram)
       ) { builder ->
         publisher.publish(event.build())
       }

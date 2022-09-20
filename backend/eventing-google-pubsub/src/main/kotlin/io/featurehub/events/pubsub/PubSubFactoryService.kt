@@ -14,6 +14,7 @@ import com.google.pubsub.v1.*
 import io.cloudevents.CloudEvent
 import io.featurehub.health.HealthSource
 import io.grpc.ManagedChannelBuilder
+import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -21,6 +22,9 @@ interface PubSubFactory {
   fun makePublisher(topicName: String): PubSubPublisher
 
   fun makeSubscriber(subscriber: String, message: (msg: CloudEvent) -> Boolean): PubSubSubscriber
+  fun makeSubscriber(subscriber: String, message: MessageReceiver): PubSubSubscriber
+
+  fun makeUniqueSubscriber(topicName: String, subscriptionPrefix: String, message: (msg: CloudEvent) -> Boolean): PubSubSubscriber
 }
 
 interface PubSubLocalEnricher {
@@ -48,11 +52,12 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
   var minBackoffDelayInSeconds: Int? = null
 
   private val topicAdminClient: TopicAdminClient?
-  private val subscriptionAdminClient: SubscriptionAdminClient?
+  private val subscriptionAdminClient: SubscriptionAdminClient
   private val channelProvider: FixedTransportChannelProvider?
   private var credsProvider: CredentialsProvider? = null
   private val knownSubscribers = mutableListOf<PubSubSubscriber>()
   private var unknownSubscribers = mutableListOf<PubSubSubscriber>()
+  private val dynamicSubscriber = mutableListOf<String>()
 
   init {
     DeclaredConfigResolver.resolve(this)
@@ -87,7 +92,7 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
       createTopicSubscriberPairs()
     } else {
       topicAdminClient = null
-      subscriptionAdminClient = null
+      subscriptionAdminClient = SubscriptionAdminClient.create()
       channelProvider = null
     }
 
@@ -106,8 +111,16 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
     // register so when the system shuts down we stop listening
     ApplicationLifecycleManager.registerListener { trans ->
       if (trans.next == LifecycleStatus.TERMINATING) {
+        deleteDynamicSubscribers()
         stopSubscribers()
       }
+    }
+  }
+
+  private fun deleteDynamicSubscribers() {
+    log.info("pubsub: deleting dynamic subscribers before shutdown")
+    dynamicSubscriber.forEach {
+      deleteSubscription(it)
     }
   }
 
@@ -144,7 +157,7 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
         .toString()
     }.toMutableMap()
 
-    val subscriptions = subscriptionAdminClient!!.listSubscriptions(ProjectName.of(projectId))
+    val subscriptions = subscriptionAdminClient.listSubscriptions(ProjectName.of(projectId))
 
     subscriptions.iterateAll().forEach { sub ->
       log.info("pubsub: found subscription {} for topic {}", sub.name, sub.topic)
@@ -166,23 +179,32 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
     }
 
     pairsTransformed.forEach { (subscription, topic) ->
-      log.info("pubsub: connecting subscription {} for topic {}", subscription, topic)
-
-      val retryPolicy = RetryPolicy.newBuilder()
-        .setMinimumBackoff(Duration.newBuilder().setSeconds(minBackoffDelayInSeconds!!.toLong()).build())
-        .build()
-      log.info("pubsub: setting retry policy with minimum backoff duration of $minBackoffDelayInSeconds seconds")
-
-      val subscriptionRequest: Subscription = Subscription.newBuilder()
-        .setName(subscription)
-        .setTopic(topic)
-        .setPushConfig(PushConfig.getDefaultInstance())
-        .setRetryPolicy(retryPolicy)
-        .setAckDeadlineSeconds(20)
-        .build()
-
-      subscriptionAdminClient.createSubscription(subscriptionRequest)
+      makeSubscription(subscription, topic)
     }
+  }
+
+  private fun makeSubscription(subscription: String, topic: String): Subscription {
+    log.info("pubsub: connecting subscription {} for topic {}", subscription, topic)
+
+    val retryPolicy = RetryPolicy.newBuilder()
+      .setMinimumBackoff(Duration.newBuilder().setSeconds(minBackoffDelayInSeconds!!.toLong()).build())
+      .build()
+    log.info("pubsub: setting retry policy with minimum backoff duration of $minBackoffDelayInSeconds seconds")
+
+    val subscriptionRequest: Subscription = Subscription.newBuilder()
+      .setName(subscription)
+      .setTopic(topic)
+      .setPushConfig(PushConfig.getDefaultInstance())
+      .setRetryPolicy(retryPolicy)
+      .setAckDeadlineSeconds(20)
+      .build()
+
+    return subscriptionAdminClient.createSubscription(subscriptionRequest)
+  }
+
+  private fun deleteSubscription(subscription: String) {
+    log.info("pubsub: deleting unique subscription")
+    subscriptionAdminClient.deleteSubscription(subscription)
   }
 
   override fun makePublisher(topicName: String): PubSubPublisher {
@@ -190,6 +212,10 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
   }
 
   override fun makeSubscriber(subscriber: String, message: (msg: CloudEvent) -> Boolean): PubSubSubscriber {
+    return makeSubscriber(subscriber, PubSubscriberMessageReceiver(message))
+  }
+
+  override fun makeSubscriber(subscriber: String, message: MessageReceiver): PubSubSubscriber {
     val sub = PubSubSubscriberImpl(projectId, subscriber, message, this)
 
     // for health checks, we make sure on health checks that we are subscribed and aren't healthy until we are
@@ -202,6 +228,21 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
     }
 
     return sub
+  }
+
+  override fun makeUniqueSubscriber(topicName: String, subscriptionPrefix: String, message: (msg: CloudEvent) -> Boolean): PubSubSubscriber {
+    val subscriptionName = subscriptionPrefix + RandomStringUtils.randomAlphabetic(12)
+    log.info("pubsub: making dynamic subscription for {} to topic {}", subscriptionName, topicName)
+    makeSubscription(subscriptionName, topicName)
+    if (dynamicSubscriber.isEmpty()) {
+      Runtime.getRuntime().addShutdownHook(object: Thread() {
+        override fun run() {
+          deleteDynamicSubscribers()
+        }
+      })
+    }
+    dynamicSubscriber.add(subscriptionName)
+    return makeSubscriber(subscriptionName, message)
   }
 
   override fun enrichPublisherClient(publisherBuilder: Publisher.Builder) {

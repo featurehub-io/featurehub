@@ -81,7 +81,7 @@ class CloudEventCacheBroadcaster @Inject constructor(
   ) {
     cloudEventsTelemetryWriter.publish(
       subject, event,
-      CloudEventChannelMetric(metrics.counter, metrics.failures, metrics.perf)
+      CloudEventChannelMetric(metrics.failures, metrics.perf)
     ) { evt ->
       channel.publishEvent(evt.build())
     }

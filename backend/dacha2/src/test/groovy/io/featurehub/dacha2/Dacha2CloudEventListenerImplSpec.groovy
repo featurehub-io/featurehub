@@ -5,15 +5,15 @@ import io.featurehub.dacha.model.CacheEnvironment
 import io.featurehub.dacha.model.CacheEnvironmentFeature
 import io.featurehub.dacha.model.CacheFeature
 import io.featurehub.dacha.model.CacheServiceAccount
-import io.featurehub.dacha.model.CacheServiceAccountPermission
 import io.featurehub.dacha.model.PublishAction
 import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValue
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
+import io.featurehub.events.CloudEventReceiverRegistry
+import io.featurehub.events.CloudEventReceiverRegistryImpl
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.model.FeatureValueType
-import io.featurehub.mr.model.RoleType
 import spock.lang.Specification
 
 import java.time.OffsetDateTime
@@ -22,6 +22,7 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
   CloudEventBuilder builder
   Dacha2CloudEventListenerImpl listener
   Dacha2Cache cache
+  CloudEventReceiverRegistry register
 
   UUID serviceAccountId
   String apiKeyClientSide
@@ -36,7 +37,8 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
 
   def setup() {
     cache = Mock()
-    listener = new Dacha2CloudEventListenerImpl(cache)
+    register = new CloudEventReceiverRegistryImpl()
+    listener = new Dacha2CloudEventListenerImpl(cache, register)
     serviceAccountId = UUID.randomUUID()
     apiKeyClientSide = "1234*1"
     apiKeyServerSide = "1234"
@@ -66,7 +68,7 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
       def p =createEnv()
       CacheJsonMapper.toEventData(builder, p, false)
     when:
-      listener.process(builder.build())
+      register.process(builder.build())
     then:
       1 * cache.updateEnvironment(p)
       0 * _
@@ -79,7 +81,7 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
     and: "data to  publish"
       CacheJsonMapper.toEventData(builder, createEnv(), false)
     when:
-      listener.process(builder.build())
+      register.process(builder.build())
     then:
       0 * _
   }
@@ -93,7 +95,7 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
       def s = new PublishServiceAccount().count(0).action(PublishAction.CREATE).serviceAccount(basicServiceAccount())
       CacheJsonMapper.toEventData(builder, s, false)
     when:
-      listener.process(builder.build())
+      register.process(builder.build())
     then:
       1 * cache.updateServiceAccount(s)
       0 * _
@@ -107,7 +109,7 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
       def s = new PublishServiceAccount().count(0).action(PublishAction.CREATE).serviceAccount(basicServiceAccount())
       CacheJsonMapper.toEventData(builder, s, false)
     when:
-      listener.process(builder.build())
+      register.process(builder.build())
     then:
       0 * _
   }
@@ -135,7 +137,7 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
       def f = features()
       CacheJsonMapper.toEventData(builder, f, false)
     when:
-      listener.process(builder.build())
+      register.process(builder.build())
     then:
       1 * cache.updateFeature(f.features[0])
       1 * cache.updateFeature(f.features[1])
@@ -150,7 +152,7 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
       def f = features()
       CacheJsonMapper.toEventData(builder, f, false)
     when:
-      listener.process(builder.build())
+      register.process(builder.build())
     then:
       0 * _
   }

@@ -13,7 +13,7 @@ import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-data class CloudEventChannelMetric(val counter: Counter, val failures: Counter, val perf: Histogram)
+data class CloudEventChannelMetric(val failures: Counter, val perf: Histogram)
 
 interface CloudEventsTelemetryWriter {
   fun publish(subject: String, builder: CloudEventBuilder, metrics: CloudEventChannelMetric,
@@ -38,8 +38,6 @@ class CloudEventsTelemetryWriterImpl @Inject constructor(private val openTelemet
       .setSpanKind(SpanKind.PRODUCER)
       .startSpan()
 
-    metrics.counter.inc()
-
     val timer = metrics.perf.startTimer()
     try {
       span.makeCurrent().use {
@@ -57,7 +55,6 @@ class CloudEventsTelemetryWriterImpl @Inject constructor(private val openTelemet
         }
       }
     } catch (e: Exception) {
-      metrics.failures.inc()
       log.error("Unable to publish {}", subject, e)
     } finally {
       timer.observeDuration()

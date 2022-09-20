@@ -41,7 +41,7 @@ class CloudEventsTelemetryReaderImpl @Inject constructor(private val openTelemet
         process(event)
       } catch (e: Exception) {
         metrics.failures.inc()
-        log.error("Failed to process event {}", event.toString(), e)
+        throw e
       } finally {
         span.end()
       }

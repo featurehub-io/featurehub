@@ -2,7 +2,7 @@ package io.featurehub.dacha2.nats
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import io.featurehub.dacha2.Dacha2CloudEventListener
+import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.nats.NatsListener
 import io.featurehub.publish.NATSFeature
 import io.featurehub.publish.NATSSource
@@ -31,7 +31,7 @@ class NatsDachaEventsListener : Feature {
   }
 }
 
-class Dacha2NatsListener @Inject constructor(natsSource: NATSSource, private val eventListener: Dacha2CloudEventListener) {
+class Dacha2NatsListener @Inject constructor(natsSource: NATSSource, private val eventListener: CloudEventReceiverRegistry) {
   @ConfigKey("cloudevents.mr-dacha2.nats.channel-name")
   private var dachaChannelName: String? = "featurehub/mr-dacha2-channel"
 

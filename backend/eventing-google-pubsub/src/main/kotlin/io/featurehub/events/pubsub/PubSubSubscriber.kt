@@ -4,6 +4,7 @@ import com.google.cloud.pubsub.v1.AckReplyConsumer
 import com.google.cloud.pubsub.v1.MessageReceiver
 import com.google.cloud.pubsub.v1.Subscriber
 import com.google.cloud.pubsub.v1.SubscriberInterface
+import com.google.protobuf.Message
 import com.google.pubsub.v1.ProjectSubscriptionName
 import com.google.pubsub.v1.PubsubMessage
 import io.cloudevents.CloudEvent
@@ -44,7 +45,7 @@ class PubSubscriberMessageReceiver(
 
 class PubSubSubscriberImpl(
   projectId: String, subscriptionId: String,
-  message: (msg: CloudEvent) -> Boolean,
+  receiver: MessageReceiver,
   enricher: PubSubLocalEnricher,
 ) : PubSubSubscriber {
   private val log: Logger = LoggerFactory.getLogger(PubSubSubscriber::class.java)
@@ -56,7 +57,7 @@ class PubSubSubscriberImpl(
 
     log.info("attempting to listen to {}", subName)
 
-    val newBuilder = Subscriber.newBuilder(subName, PubSubscriberMessageReceiver(message))
+    val newBuilder = Subscriber.newBuilder(subName, receiver)
 
     enricher.enrichSubscriberClient(newBuilder)
 
