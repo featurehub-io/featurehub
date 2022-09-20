@@ -36,12 +36,11 @@ class _SetFeatureMetadataWidgetState extends State<SetFeatureMetadataWidget> {
   void initState() {
     super.initState();
     streamSubscription = widget.bloc.featureMetadataStream.listen((feature) {
-      _feature = feature;
-      if (feature != null && feature.metaData != null && mounted) {
         setState(() {
+          _feature = feature;
+          if (feature != null && feature.metaData != null && mounted) {
           tec.text = feature.metaData!;
-        });
-      }
+        }});
     });
   }
 
