@@ -75,6 +75,20 @@ public class EventStreamResource {
     return featureSse.process(namedCache, envId, apiKey, featureHubAttrs, browserHubAttrs, etag, extraConfig);
   }
 
+  @GET
+  @Path("{environmentId}/{apiKey}")
+  @Prometheus(name = "edge_sse_api", help = "Number of requests for the SSE API")
+  @Produces(SseFeature.SERVER_SENT_EVENTS)
+  public EventOutput features(
+    @PathParam("environmentId") UUID envId,
+    @PathParam("apiKey") String apiKey,
+    @HeaderParam("x-featurehub") List<String> featureHubAttrs, // non browsers can set headers
+    @HeaderParam("x-fh-extraconfig") String extraConfig,
+    @QueryParam("xfeaturehub") String browserHubAttrs, // browsers can't set headers,
+    @HeaderParam("Last-Event-ID") String etag) {
+    return featureSse.process(null, envId, apiKey, featureHubAttrs, browserHubAttrs, etag, extraConfig);
+  }
+
   /**
    * We do a double check of all permissions and values at Edge to ensure that as much load as
    * possible is kept off MR. MR will do these checks against this set of permissions again, but
@@ -93,5 +107,19 @@ public class EventStreamResource {
       FeatureStateUpdate featureStateUpdate) {
     featureUpdateProcessor.updateFeature(
         response, namedCache, envId, apiKey, featureKey, featureStateUpdate, statRecorder);
+  }
+
+  @PUT
+  @Path("{environmentId}/{apiKey}/{featureKey}")
+  @Prometheus(name = "edge_test_sdk_api", help = "Number of requests to the test SDK API")
+  @ManagedAsync
+  public void update(
+      @Suspended AsyncResponse response,
+      @PathParam("environmentId") UUID envId,
+      @PathParam("apiKey") String apiKey,
+      @PathParam("featureKey") String featureKey,
+      FeatureStateUpdate featureStateUpdate) {
+    featureUpdateProcessor.updateFeature(
+        response, null, envId, apiKey, featureKey, featureStateUpdate, statRecorder);
   }
 }

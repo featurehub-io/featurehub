@@ -1,7 +1,7 @@
 package io.featurehub.dacha2.nats
 
 
-import io.featurehub.dacha2.Dacha2CloudEventListener
+import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.nats.NatsListener
 import io.featurehub.publish.NATSSource
 import spock.lang.Specification
@@ -9,7 +9,7 @@ import spock.lang.Specification
 class Dacha2NatsListenerSpec extends Specification {
   NATSSource nats
   Dacha2NatsListener listener
-  Dacha2CloudEventListener eventListener
+  CloudEventReceiverRegistry eventListener
   NatsListener natsListener
 
   def setup() {

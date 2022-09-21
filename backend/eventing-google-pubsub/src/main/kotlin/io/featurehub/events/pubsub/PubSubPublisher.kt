@@ -35,7 +35,7 @@ class PubSubPublisherImpl(
 
   override fun publish(msg: CloudEvent) {
     if (log.isTraceEnabled) {
-      log.trace("pubsub: publishing on {} : {}", publisherName, CacheJsonMapper.mapper.writeValueAsString(msg))
+      log.trace("pubsub: publishing on {} : {}", publisherName, msg.toString())
     }
 
     val published = publisher.publish(

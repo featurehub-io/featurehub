@@ -204,7 +204,7 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
 
   private fun deleteSubscription(subscription: String) {
     log.info("pubsub: deleting unique subscription")
-    subscriptionAdminClient.deleteSubscription(subscription)
+    subscriptionAdminClient.deleteSubscription(ProjectSubscriptionName.of(projectId, subscription).toString())
   }
 
   override fun makePublisher(topicName: String): PubSubPublisher {
@@ -231,9 +231,10 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
   }
 
   override fun makeUniqueSubscriber(topicName: String, subscriptionPrefix: String, message: (msg: CloudEvent) -> Boolean): PubSubSubscriber {
-    val subscriptionName = subscriptionPrefix + RandomStringUtils.randomAlphabetic(12)
+    val subscriptionName =  subscriptionPrefix + "-" + RandomStringUtils.randomAlphabetic(12).lowercase()
     log.info("pubsub: making dynamic subscription for {} to topic {}", subscriptionName, topicName)
-    makeSubscription(subscriptionName, topicName)
+    makeSubscription(ProjectSubscriptionName.of(projectId, subscriptionName).toString(),
+      ProjectTopicName.of(projectId, topicName).toString())
     if (dynamicSubscriber.isEmpty()) {
       Runtime.getRuntime().addShutdownHook(object: Thread() {
         override fun run() {

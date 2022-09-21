@@ -11,7 +11,7 @@ import io.featurehub.dacha.model.PublishFeatureValue
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.events.CloudEventReceiverRegistry
-import io.featurehub.events.CloudEventReceiverRegistryImpl
+import io.featurehub.events.CloudEventReceiverRegistryProcessor
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.model.FeatureValueType
 import spock.lang.Specification
@@ -37,7 +37,7 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
 
   def setup() {
     cache = Mock()
-    register = new CloudEventReceiverRegistryImpl()
+    register = new CloudEventReceiverRegistryProcessor()
     listener = new Dacha2CloudEventListenerImpl(cache, register)
     serviceAccountId = UUID.randomUUID()
     apiKeyClientSide = "1234*1"

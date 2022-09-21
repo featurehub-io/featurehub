@@ -25,7 +25,7 @@ class Dacha2Feature : Feature {
     context.register(object: AbstractBinder() {
       override fun configure() {
         bind(Dacha2CacheImpl::class.java).to(Dacha2Cache::class.java).`in`(Singleton::class.java)
-        bind(Dacha2CloudEventListenerImpl::class.java).to(Dacha2CloudEventListener::class.java).`in`(Singleton::class.java)
+        bind(Dacha2CloudEventListenerImpl::class.java).to(Dacha2CloudEventListener::class.java).`in`(Immediate::class.java)
         bind(FeatureValuesFactoryImpl::class.java).to(FeatureValuesFactory::class.java).`in`(Singleton::class.java)
         bind(DachaApiKeyResource::class.java).to(DachaApiKeyService::class.java).`in`(Singleton::class.java)
 

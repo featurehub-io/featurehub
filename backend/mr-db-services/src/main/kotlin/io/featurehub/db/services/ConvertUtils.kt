@@ -192,17 +192,16 @@ open class ConvertUtils : Conversions {
       // if role perms is null (i.e. we don't care) or the roles that a person has is a super-set of
       // the roles of the service account
       if (!mustHaveRolePerms || rolePerms != null && rolePerms.containsAll(sap.permissions)) {
-        val cacheName = getCacheNameByEnvironment(sae.environment)
         sap.sdkUrlClientEval(
           String.format(
-            "%s/%s/%s",
-            cacheName, sap.environmentId, sae.serviceAccount.apiKeyClientEval
+            "%s/%s",
+            sap.environmentId, sae.serviceAccount.apiKeyClientEval
           )
         )
         sap.sdkUrlServerEval(
           String.format(
-            "%s/%s/%s",
-            cacheName, sap.environmentId, sae.serviceAccount.apiKeyServerEval
+            "%s/%s",
+            sap.environmentId, sae.serviceAccount.apiKeyServerEval
           )
         )
       }

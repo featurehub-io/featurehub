@@ -68,7 +68,7 @@ class PubSubSubscriberImpl(
     if (subscriber == null) {
       log.error("Attempting to start {} and it is not initialized", subName)
     } else {
-      log.error("Starting {} and it is not initialized", subName)
+      log.info("Starting {} and it is not initialized", subName)
       subscriber!!.startAsync()
     }
   }
