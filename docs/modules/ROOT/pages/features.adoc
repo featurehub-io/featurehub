@@ -33,7 +33,11 @@ This field can hold a link for example to your task management system, e.g. Jira
 
 == Feature metadata
 
-`metaData` property is only available through the Admin SDK API (ADK). The intention of this field is to store additional information that you may need to provide about your feature, for example when you want to access this information from your CI/CD pipeline. This could be key-value pairs, or any other metadata. It is stored as a string and has no data limit (stored as CLOB).
+The intention of this field is to store additional information that you may need to provide about your feature, for example when you want to access this information from your CI/CD pipeline. This could be JSON string, simple string, property entries or other types of data. It is stored as a string and has no data limit (stored as CLOB).
+Metadata field can be accessible once feature is created from the Edit menu.
+
+image::fh-metadata-edit.png[Feature Metadata, 600]
+
 
 == Deleting and retiring a feature
 
