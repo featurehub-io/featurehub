@@ -25,7 +25,7 @@ public class OrganizationSqlApi implements OrganizationApi {
   }
 
   public Organization get() {
-    return convertUtils.toOrganization(convertUtils.getDbOrganization(), Opts.opts(FillOpts.Groups));
+    return convertUtils.toOrganization(convertUtils.dbOrganization(), Opts.opts(FillOpts.Groups));
   }
 
   @Transactional

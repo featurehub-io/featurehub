@@ -21,7 +21,7 @@ public class SetupSqlApi implements SetupApi {
 
   @Override
   public boolean initialized() {
-    return convertUtils.getDbOrganization() != null;
+    return convertUtils.dbOrganization() != null;
   }
 
   @Override

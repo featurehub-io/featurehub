@@ -77,7 +77,7 @@ open class PersonSqlApi @Inject constructor(
     }
 
     val groupChanges = GroupChangeCollection()
-    val superuserChanges = SuperuserChanges(convertUtils.dbOrganization!!)
+    val superuserChanges = SuperuserChanges(convertUtils.dbOrganization())
 
     if (person.groups != null) {
       // we are going to need their groups to determine what they can do
@@ -97,7 +97,7 @@ open class PersonSqlApi @Inject constructor(
         portfoliosPerformingUserCanManage = listOf()
       }
 
-      val superuserGroup = internalGroupSqlApi.superuserGroup(convertUtils.dbOrganization!!)
+      val superuserGroup = internalGroupSqlApi.superuserGroup(convertUtils.dbOrganization())
 
       val groupsAlreadyIn =
         QDbGroupMember().person.id.eq(p.id).select(QDbGroupMember.Alias.id.groupId).findList().map { it.id.groupId }
@@ -199,7 +199,7 @@ open class PersonSqlApi @Inject constructor(
     val futureList = search.findFutureList()
 
     return try {
-      val org = convertUtils.dbOrganization
+      val org = convertUtils.dbOrganization()
       val dbPeople = futureList.get()
       val people = dbPeople.map { dbp: DbPerson? -> convertUtils.toPerson(dbp, org, opts)!! }
 

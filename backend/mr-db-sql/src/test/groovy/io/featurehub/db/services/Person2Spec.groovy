@@ -34,7 +34,7 @@ class Person2Spec extends Base2Spec {
         superPerson
       )
     and: "i know what the superuser group is"
-      def superuserGroup = groupSqlApi.getSuperuserGroup(convertUtils.organizationId, superPerson)
+      def superuserGroup = groupSqlApi.getSuperuserGroup(convertUtils.organizationId(), superPerson)
     when: "i update the person to be a superuser"
       person.addGroupsItem(new Group().id(superuserGroup.id))
       def withSuperuserGroup = personSqlApi.update(person.id.id, person, Opts.opts(FillOpts.Groups), superPerson.id.id)

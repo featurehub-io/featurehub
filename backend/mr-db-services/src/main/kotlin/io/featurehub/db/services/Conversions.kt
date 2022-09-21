@@ -12,8 +12,9 @@ import java.util.*
 
 interface Conversions {
   // used so things that call toPerson multiple times can hold onto it
-  val organizationId: UUID?
-  val dbOrganization: DbOrganization?
+  fun organizationId(): UUID
+  fun dbOrganization(): DbOrganization
+  fun hasOrganisation(): Boolean
   fun byPerson(id: UUID?): DbPerson?
   fun byPerson(id: UUID?, opts: Opts?): DbPerson?
   fun byPerson(creator: Person?): DbPerson?
