@@ -22,17 +22,6 @@ bool validateFeatureKey(key) {
   return RegExp(r'^[A-Za-z0-9_]+$').hasMatch(key);
 }
 
-String? validateJson(String? jsonToCheck) {
-  if (jsonToCheck == null || jsonToCheck.isEmpty) {
-    return null;
-  }
-  try {
-    json.decode(jsonToCheck);
-  } catch (e) {
-    return e.toString();
-  }
-  return null;
-}
 
 String? validateNumber(String? numberToCheck) {
   if (numberToCheck == null || numberToCheck.isEmpty) {

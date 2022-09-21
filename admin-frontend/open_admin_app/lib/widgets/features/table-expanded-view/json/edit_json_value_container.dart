@@ -30,6 +30,8 @@ class EditJsonValueContainer extends StatefulWidget {
 
 class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
   TextEditingController tec = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
 
   @override
   void didChangeDependencies() {
@@ -101,6 +103,8 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
                   Expanded(
                     child: FHJsonEditorWidget(
                       controller: tec,
+                      formKey: _formKey,
+                      onlyJsonValidation: true,
                     ),
                   ),
                   FHButtonBar(
@@ -117,17 +121,11 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
                           ? FHFlatButton(
                               title: 'Set value',
                               onPressed: (() {
-                                if (validateJson(tec.text) != null) {
-                                  widget.strBloc.fvBloc.mrClient.customError(
-                                      messageTitle: 'JSON not valid!',
-                                      messageBody:
-                                          'Make sure your keys and values are in double quotes.');
-                                } else {
+                                if (_formKey.currentState!.validate()) {
                                   _valueChanged();
                                   widget.strBloc.fvBloc.mrClient
                                       .removeOverlay();
-                                }
-                              }))
+                              }}))
                           : Container(),
                     ],
                   ),
