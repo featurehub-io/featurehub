@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/utils.dart';
+import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
@@ -31,7 +32,6 @@ class EditJsonValueContainer extends StatefulWidget {
 class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
   TextEditingController tec = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-
 
   @override
   void didChangeDependencies() {
@@ -95,43 +95,34 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
   void _viewJsonEditor(BuildContext context, bool enabled) {
     var initialValue = tec.text;
     widget.strBloc.fvBloc.mrClient
-        .addOverlay((BuildContext context) => AlertDialog(
-                content: SizedBox(
-              height: 575,
-              child: Column(
-                children: <Widget>[
-                  Expanded(
-                    child: FHJsonEditorWidget(
-                      controller: tec,
-                      formKey: _formKey,
-                      onlyJsonValidation: true,
-                    ),
-                  ),
-                  FHButtonBar(
-                    children: <Widget>[
-                      FHFlatButtonTransparent(
-                        onPressed: () {
-                          tec.text = initialValue;
-                          widget.strBloc.fvBloc.mrClient.removeOverlay();
-                        },
-                        title: 'Cancel',
-                        keepCase: true,
-                      ),
-                      enabled
-                          ? FHFlatButton(
-                              title: 'Set value',
-                              onPressed: (() {
-                                if (_formKey.currentState!.validate()) {
-                                  _valueChanged();
-                                  widget.strBloc.fvBloc.mrClient
-                                      .removeOverlay();
-                              }}))
-                          : Container(),
-                    ],
-                  ),
-                ],
+        .addOverlay((BuildContext context) => FHAlertDialog(
+              content: FHJsonEditorWidget(
+                controller: tec,
+                formKey: _formKey,
+                onlyJsonValidation: true,
               ),
-            )));
+              title: const Text("Set feature value"),
+              actions: [
+                FHFlatButtonTransparent(
+                  onPressed: () {
+                    tec.text = initialValue;
+                    widget.strBloc.fvBloc.mrClient.removeOverlay();
+                  },
+                  title: 'Cancel',
+                  keepCase: true,
+                ),
+                enabled
+                    ? FHFlatButton(
+                        title: 'Set value',
+                        onPressed: (() {
+                          if (_formKey.currentState!.validate()) {
+                            _valueChanged();
+                            widget.strBloc.fvBloc.mrClient.removeOverlay();
+                          }
+                        }))
+                    : Container(),
+              ],
+            ));
   }
 
   void _valueChanged() {
