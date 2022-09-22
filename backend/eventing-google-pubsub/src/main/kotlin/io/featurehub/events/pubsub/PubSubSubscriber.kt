@@ -4,7 +4,6 @@ import com.google.cloud.pubsub.v1.AckReplyConsumer
 import com.google.cloud.pubsub.v1.MessageReceiver
 import com.google.cloud.pubsub.v1.Subscriber
 import com.google.cloud.pubsub.v1.SubscriberInterface
-import com.google.protobuf.Message
 import com.google.pubsub.v1.ProjectSubscriptionName
 import com.google.pubsub.v1.PubsubMessage
 import io.cloudevents.CloudEvent
@@ -25,16 +24,21 @@ class PubSubscriberMessageReceiver(
 ) : MessageReceiver {
   private val log: Logger = LoggerFactory.getLogger(PubSubscriberMessageReceiver::class.java)
 
-  override fun receiveMessage(message: PubsubMessage, consumer: AckReplyConsumer) {
-    log.debug("pubsub: received message id: {} => {}", message.messageId, message.attributesMap)
+  override fun receiveMessage(incomingMessage: PubsubMessage, consumer: AckReplyConsumer) {
+    log.debug("pubsub: received message id: {} => {}", incomingMessage.messageId, incomingMessage.attributesMap)
 
-    PubsubMessageFactory.createReader(message).toEvent()?.let {
-      if (message(it)) {
-        consumer.ack()
-      } else {
-        consumer.nack()
-      }
-    } ?: failed(message, consumer)
+    try {
+      PubsubMessageFactory.createReader(incomingMessage).toEvent()?.let {
+        if (message(it)) {
+          consumer.ack()
+        } else {
+          consumer.nack()
+        }
+      } ?: failed(incomingMessage, consumer)
+    } catch (e: Exception) {
+      log.error("Unable to decode message - discarding", e)
+      consumer.ack()
+    }
   }
 
   private fun failed(message: PubsubMessage, consumer: AckReplyConsumer) {
@@ -55,7 +59,7 @@ class PubSubSubscriberImpl(
   init {
     subName = ProjectSubscriptionName.of(projectId, subscriptionId)
 
-    log.info("attempting to listen to {}", subName)
+    log.info("pubsub: new subscription to {}", subName)
 
     val newBuilder = Subscriber.newBuilder(subName, receiver)
 

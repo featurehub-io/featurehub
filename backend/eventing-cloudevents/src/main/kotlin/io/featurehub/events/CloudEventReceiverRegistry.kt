@@ -4,6 +4,7 @@ import cd.connect.cloudevents.CloudEventUtils
 import cd.connect.cloudevents.TaggedCloudEvent
 import io.cloudevents.CloudEvent
 import io.featurehub.jersey.config.CacheJsonMapper
+import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -17,7 +18,7 @@ interface CloudEventReceiverRegistry {
 }
 
 abstract class CloudEventReceiverRegistryImpl : CloudEventReceiverRegistry {
-  data class CallbackHolder(val clazz: Class<*>, val handler: (msg: Any) -> Unit )
+  data class CallbackHolder(val clazz: Class<*>, val handler: (msg: TaggedCloudEvent) -> Unit )
   protected val eventHandlers = mutableMapOf<String, MutableMap<String, CallbackHolder>>()
   protected val ignoredEvent = mutableMapOf<String, String>()
   protected val log: Logger = LoggerFactory.getLogger(CloudEventReceiverRegistry::class.java)
@@ -49,7 +50,9 @@ class CloudEventReceiverRegistryMock : CloudEventReceiverRegistryImpl() {
   }
 }
 
-class CloudEventReceiverRegistryProcessor : CloudEventReceiverRegistryImpl() {
+class CloudEventReceiverRegistryProcessor @Inject
+  constructor(private val openTelemetryReader: CloudEventsTelemetryReader) : CloudEventReceiverRegistryImpl() {
+
   override fun process(event: CloudEvent) {
     if (event.subject != null && event.type != null) {
       val handler = eventHandlers[event.type]?.get(event.subject!!)
@@ -62,10 +65,18 @@ class CloudEventReceiverRegistryProcessor : CloudEventReceiverRegistryImpl() {
           }
         }
       } else {
-        CacheJsonMapper.fromEventData(event, handler.clazz)?.let {
-          handler.handler(it)
-        } ?: log.error("Failed to handle message {} : {}", event.subject, event.type)
+        openTelemetryReader.receive(event) {
+          CacheJsonMapper.fromEventData(event, handler.clazz)?.let { eventData ->
+            if (log.isTraceEnabled) {
+              log.trace("cloudevent: incoming message on {}/{} : {}", event.type, event.subject, eventData.toString())
+            }
+
+            handler.handler(eventData as TaggedCloudEvent)
+          } ?: log.error("cloudevent: failed to handle message {} : {}", event.subject, event.type)
+        }
       }
+    } else {
+      log.error("received a cloud event with no type or subject")
     }
   }
 }

@@ -34,12 +34,13 @@ class PubSubPublisherImpl(
   }
 
   override fun publish(msg: CloudEvent) {
-    if (log.isTraceEnabled) {
-      log.trace("pubsub: publishing on {} : {}", publisherName, msg.toString())
-    }
+    val cloudMessage = PubsubMessageFactory.createWriter().writeBinary(msg)
 
+    if (log.isTraceEnabled) {
+      log.trace("pubsub: publishing on {} : {} {} - {}", publisherName, msg.type, msg.subject, cloudMessage.attributesMap)
+    }
     val published = publisher.publish(
-      PubsubMessageFactory.createWriter().writeBinary(msg)
+      cloudMessage
     )
 
     // ensure we log failures
