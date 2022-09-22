@@ -61,7 +61,7 @@ class PubsubFeaturesListener @Inject constructor(
 
 class PubsubFeatureUpdatePublisher @Inject constructor(pubsubFactory: PubSubFactory) : CloudEventsEdgePublisher {
   @ConfigKey("cloudevents.edge-mr.pubsub.channel-name")
-  private val updateChannelName: String = "featurehub-mr-updates"
+  private val updateChannelName: String = "featurehub-edge-updates"
   private var publisher: PubSubPublisher
 
   init {

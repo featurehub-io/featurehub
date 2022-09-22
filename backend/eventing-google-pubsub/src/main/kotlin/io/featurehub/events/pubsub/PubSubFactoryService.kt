@@ -143,7 +143,7 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
     val topics = topicAdminClient!!.listTopics(ProjectName.of(projectId)).iterateAll().toList()
     val desiredTopics =
       pubSubTopics.map { TopicName.of(projectId, it).toString() }
-        .filter { wantedTopic -> topics.find { existingTopic -> existingTopic.name != wantedTopic  } == null }
+        .filter { wantedTopic -> topics.find { existingTopic -> existingTopic.name == wantedTopic  } == null }
 
     desiredTopics.forEach { log.info("pubsub-local: creating topic `{}`", it) }
 

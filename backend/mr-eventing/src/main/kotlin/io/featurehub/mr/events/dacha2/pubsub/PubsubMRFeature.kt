@@ -97,7 +97,7 @@ class PubsubMRCloudEventsQueueUpdateListener @Inject constructor(pubSubFactory: 
   private val featureUpdaterSub: PubSubSubscriber
   private val log: Logger = LoggerFactory.getLogger(NatsMRCloudEventsQueueUpdateListener::class.java)
   @ConfigKey("cloudevents.edge-mr.pubsub.channel-name")
-  private val updatesSubscription: String = "featurehub-mr-updates-sub"
+  private val updatesSubscription: String = "featurehub-edge-updates-mr-sub"
 
   init {
     DeclaredConfigResolver.resolve(this)
