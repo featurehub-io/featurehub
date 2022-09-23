@@ -112,14 +112,17 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                                                       .bold)),
                                                 ),
                                                 if (feature.link!.isNotEmpty)
-                                                  IconButton(
-                                                    splashRadius: 20,
-                                                    icon: const Icon(
-                                                        Feather.external_link),
-                                                    onPressed: () {
-                                                      window.open(feature.link!,
-                                                          'new tab');
-                                                    },
+                                                  Tooltip(
+                                                    message: feature.link!,
+                                                    child: IconButton(
+                                                      splashRadius: 20,
+                                                      icon: const Icon(
+                                                          Feather.external_link),
+                                                      onPressed: () {
+                                                        window.open(feature.link!,
+                                                            'new tab');
+                                                      },
+                                                    ),
                                                   )
                                               ]),
                                               const SizedBox(
