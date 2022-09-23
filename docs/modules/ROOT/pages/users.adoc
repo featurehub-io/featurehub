@@ -18,11 +18,16 @@ image::fh_add_user_link.png[Registration link, 600]
 
 
 === Password reset (only for non-SSO, SAML or social logins)
-If a user forget their password, it can be reset by "Super Admin" user to a temporary password. Share the temporary password with the user. They will be able to reset it to a permanent password next time they attempt to login.
+
+If a user forgets their password, it can be reset by "Super Admin" user to a temporary password. Share the temporary password with the user. They will be able to reset it to a permanent password next time they attempt to login.
 
 image::fh_reset_password.png[Registration link, 600]
 
 NOTE: FeatureHub doesn't send emails to recover passwords or any registration or login related emails. We recommend having at least 2 users with super admin permissions, in case one of them forget their password.
+
+==== When there is only one Super Admin
+
+When there is only a single Super Admin, and they have forgotten their password, the only way to reset it is to go to the database. To do this, in the database, find the id of the superuser in the `fh_person` table, and reset the `password` field to `1000:caffda0b26e265a0977718a548d784e6:1123a076c3925d0d77f2c902115e8732de25ae22394f74faaa52c8d9d9a829b8021299afd4a1793e47936445bb0ceff0f17f329716342db19f4e428dd5859dc1`. You can then login with the password `featurehub`. 
 
 == User groups
 
