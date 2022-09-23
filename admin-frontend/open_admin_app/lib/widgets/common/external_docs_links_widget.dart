@@ -1,7 +1,6 @@
-import 'dart:html';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 
 class ExternalDocsLinksWidget extends StatelessWidget {
   const ExternalDocsLinksWidget({Key? key}) : super(key: key);
@@ -9,37 +8,12 @@ class ExternalDocsLinksWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(children: [
-      Tooltip(
-        message: 'Documentation',
-        child: TextButton.icon(
-            icon: Icon(Feather.external_link,
-                color: Theme.of(context).colorScheme.onPrimary),
-            onPressed: () {
-              window.open('https://docs.featurehub.io', 'new tab');
-            },
-            label: Text(
-              'Docs',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimary,
-              ),
-            )),
-      ),
-      Tooltip(
-        message: 'GitHub',
-        child: TextButton.icon(
-            icon: Icon(AntDesign.github,
-                color: Theme.of(context).colorScheme.onPrimary),
-            onPressed: () {
-              window.open(
-                  'https://github.com/featurehub-io/featurehub', 'new tab');
-            },
-            label: Text(
-              'GitHub',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimary,
-              ),
-            )),
-      ),
+      FHExternalLinkWidget(label: 'Docs', tooltipMessage: 'Documentation',
+        link: 'https://docs.featurehub.io', icon: Icon(Feather.external_link,
+            color: Theme.of(context).colorScheme.onPrimary)),
+      FHExternalLinkWidget(label: 'GitHub', tooltipMessage: 'GitHub', link: 'https://github.com/featurehub-io/featurehub',
+      icon: Icon(AntDesign.github,
+          color: Theme.of(context).colorScheme.onPrimary)),
     ]);
   }
 }
