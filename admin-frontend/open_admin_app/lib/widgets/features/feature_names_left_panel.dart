@@ -1,6 +1,8 @@
-import 'package:auto_size_text/auto_size_text.dart';
+import 'dart:html';
+
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
@@ -35,7 +37,6 @@ class FeatureNamesLeftPanel extends StatelessWidget {
             onTap: () => tabsBloc.hideOrShowFeature(feature),
             child: Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
                   border: Border(
                     bottom: BorderSide(
                         color: Theme.of(context)
@@ -95,17 +96,35 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              AutoSizeText(feature.name,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 3,
-                                                  minFontSize: 8.0,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodyText1!
-                                                      .copyWith(
-                                                          fontWeight:
-                                                              FontWeight.bold)),
+                                              Row(children: [
+                                                Flexible(
+                                                  child: Text(feature.name,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      maxLines: 2,
+                                                      // minFontSize: 8.0,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyText1!
+                                                          .copyWith(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold)),
+                                                ),
+                                                if (feature.link!.isNotEmpty)
+                                                  Tooltip(
+                                                    message: feature.link!,
+                                                    child: IconButton(
+                                                      splashRadius: 20,
+                                                      icon: const Icon(
+                                                          Feather.external_link),
+                                                      onPressed: () {
+                                                        window.open(feature.link!,
+                                                            'new tab');
+                                                      },
+                                                    ),
+                                                  )
+                                              ]),
                                               const SizedBox(
                                                 height: 4.0,
                                               ),
@@ -117,7 +136,8 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                   style: const TextStyle(
-                                                      fontFamily: 'SourceCodePro',
+                                                      fontFamily:
+                                                          'SourceCodePro',
                                                       fontSize: 10,
                                                       letterSpacing: 1.0)),
                                             ],
@@ -128,64 +148,68 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                   ),
                                   Container(
                                     padding: const EdgeInsets.only(right: 4.0),
-                                    child: Material(
-                                      color: Theme.of(context).cardColor,
-                                      shape: const CircleBorder(),
-                                      child: PopupMenuButton(
-                                        tooltip: 'Show more',
-                                        icon: const Icon(Icons.more_vert),
-                                        onSelected: (value) {
-                                          if (value == 'edit') {
-                                            tabsBloc.mrClient.addOverlay(
-                                                (BuildContext context) =>
-                                                    CreateFeatureDialogWidget(
-                                                        bloc: bloc,
-                                                        feature: feature));
-                                          }
-                                          if (value == 'delete') {
-                                            tabsBloc.mrClient.addOverlay(
-                                                (BuildContext context) =>
-                                                    FeatureDeleteDialogWidget(
-                                                        bloc: bloc,
-                                                        feature: feature));
-                                          }
-                                          if (value == 'metadata') {
-                                            bloc.getFeatureIncludingMetadata(feature);
-                                            tabsBloc.mrClient.addOverlay(
-                                                    (BuildContext context) =>
-                                                    SetFeatureMetadataWidget(
-                                                        bloc: bloc,
-                                                        ));
-                                          }
-                                        },
-                                        itemBuilder: (BuildContext context) {
-                                          var isEditor = bloc.mrClient
-                                              .userIsFeatureAdminOfCurrentApplication;
-                                          return [
+                                    child: PopupMenuButton(
+                                      splashRadius: 20,
+                                      tooltip: 'Show more',
+                                      icon: const Icon(Icons.more_vert),
+                                      onSelected: (value) {
+                                        if (value == 'edit') {
+                                          tabsBloc.mrClient.addOverlay(
+                                              (BuildContext context) =>
+                                                  CreateFeatureDialogWidget(
+                                                      bloc: bloc,
+                                                      feature: feature));
+                                        }
+                                        if (value == 'delete') {
+                                          tabsBloc.mrClient.addOverlay(
+                                              (BuildContext context) =>
+                                                  FeatureDeleteDialogWidget(
+                                                      bloc: bloc,
+                                                      feature: feature));
+                                        }
+                                        if (value == 'metadata') {
+                                          bloc.getFeatureIncludingMetadata(
+                                              feature);
+                                          tabsBloc.mrClient.addOverlay(
+                                              (BuildContext context) =>
+                                                  SetFeatureMetadataWidget(
+                                                    bloc: bloc,
+                                                  ));
+                                        }
+                                      },
+                                      itemBuilder: (BuildContext context) {
+                                        var isEditor = bloc.mrClient
+                                            .userIsFeatureAdminOfCurrentApplication;
+                                        return [
+                                          PopupMenuItem(
+                                              value: 'edit',
+                                              child: Text(
+                                                  isEditor
+                                                      ? 'Edit details'
+                                                      : 'View details',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText2)),
+                                          PopupMenuItem(
+                                            value: 'metadata',
+                                            child: Text(
+                                                isEditor
+                                                    ? 'Edit metadata'
+                                                    : 'View metadata',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyText2),
+                                          ),
+                                          if (isEditor)
                                             PopupMenuItem(
-                                                value: 'edit',
-                                                child: Text(isEditor ? 'Edit details' : 'View details',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyText2)),
-                                            PopupMenuItem(
-                                              value: 'metadata',
-                                              child: Text(isEditor ? 'Edit metadata' : 'View metadata',
+                                              value: 'delete',
+                                              child: Text('Delete',
                                                   style: Theme.of(context)
                                                       .textTheme
                                                       .bodyText2),
                                             ),
-                                            if (isEditor)
-                                              PopupMenuItem(
-                                                value: 'delete',
-                                                child: Text('Delete',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyText2),
-                                              ),
-                                          ];
-                                        },
-                                      ),
+                                        ];
+                                      },
                                     ),
                                   )
                                 ],
