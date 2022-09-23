@@ -16,7 +16,7 @@ import java.util.*
 
 interface FeatureSse {
   fun process(
-    namedCache: String,
+    namedCache: String?,
     envId: UUID,
     apiKey: String,
     featureHubAttrs: List<String>?,
@@ -33,7 +33,7 @@ class FeatureSseProcessor @Inject constructor(
   private val log: Logger = LoggerFactory.getLogger(FeatureSseProcessor::class.java)
 
   override fun process(
-    namedCache: String,
+    namedCache: String?,
     envId: UUID,
     apiKey: String,
     featureHubAttrs: List<String>?,
@@ -43,7 +43,7 @@ class FeatureSseProcessor @Inject constructor(
   ): EventOutput {
     val outputStream = EventOutput()
 
-    val apiKey = KeyParts(namedCache, envId, apiKey)
+    val apiKey = KeyParts("default", envId, apiKey)
 
     try {
       val bucket = timedBucketFactory.createBucket(

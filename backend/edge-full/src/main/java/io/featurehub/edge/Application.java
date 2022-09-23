@@ -5,6 +5,7 @@ import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.dacha.api.DachaClientFeature;
 import io.featurehub.dacha.api.DachaClientServiceRegistry;
+import io.featurehub.events.pubsub.GoogleEventFeature;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.publish.NATSFeature;
@@ -28,15 +29,16 @@ public class Application {
     // we do not want telemetry enabled on Edge
     ResourceConfig config =
         new ResourceConfig(
-            NATSFeature.class,
             DachaClientFeature.class,
             EdgeFeature.class,
+            GoogleEventFeature.class,
+            NATSFeature.class,
             EdgeResourceFeature.class,
             CorsFilter.class,
             CacheControlFilter.class);
 
-    // check if we should list on a different port
-    MetricsHealthRegistration.Companion.registerMetrics(config);
+      // check if we should list on a different port
+      MetricsHealthRegistration.Companion.registerMetrics(config);
 
     if (FallbackPropertyConfig.Companion.getConfig("cache.name") != null) {
       config.register(new ContainerLifecycleListener() {

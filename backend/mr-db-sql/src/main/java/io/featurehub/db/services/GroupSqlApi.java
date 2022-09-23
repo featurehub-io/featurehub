@@ -32,6 +32,7 @@ import io.featurehub.mr.model.SortOrder;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -426,6 +427,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi, InternalGroup
   }
 
   @Override
+  @Nullable
   public Group findOrganizationAdminGroup(UUID orgId, Opts opts) {
     Conversions.nonNullOrganisationId(orgId);
 

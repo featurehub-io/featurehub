@@ -16,6 +16,7 @@ import io.featurehub.sse.stats.model.EdgeHitSourceType
 import io.prometheus.client.Histogram
 import jakarta.annotation.PostConstruct
 import jakarta.inject.Inject
+import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.container.AsyncResponse
 import jakarta.ws.rs.core.Response
@@ -27,7 +28,7 @@ import java.util.*
 
 interface FeatureUpdate {
   fun updateFeature(
-    response: AsyncResponse, namedCache: String, envId: UUID, apiKey: String, featureKey: String,
+    response: AsyncResponse, namedCache: String?, envId: UUID, apiKey: String, featureKey: String,
     featureStateUpdate: FeatureStateUpdate, statRecorder: StatRecorder?)
 }
 
@@ -56,7 +57,7 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
 
   override fun updateFeature(
     response: AsyncResponse,
-    namedCache: String,
+    namedCache: String?,
     envId: UUID,
     apiKey: String,
     featureKey: String,
@@ -66,7 +67,7 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
     val timer = testSpeedHistogram.startTimer()
 
     try {
-      updateFeatureProcess(response, namedCache, envId, apiKey, featureKey, featureStateUpdate, statRecorder)
+      updateFeatureProcess(response, "default", envId, apiKey, featureKey, featureStateUpdate, statRecorder)
     } finally {
       timer.observeDuration()
     }
@@ -79,6 +80,8 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
       apiKeyService.getApiKeyPermissions(
         key.environmentId, key.serviceKey, featureKey
       )
+    } catch (nfe: NotFoundException) {
+      throw nfe
     } catch (wae: WebApplicationException) {
       throw wae
     } catch (ignored: Exception) {
@@ -129,7 +132,9 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
         if (!perms.roles.contains(RoleType.UNLOCK)) {
           log.trace("FeatureUpdate failed: feature is locked and no permission to unlock")
           statRecorder?.recordHit(key, EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.TESTSDK)
-          response.resume(Response.status(Response.Status.FORBIDDEN).entity("feature locked, no permission to unlock").build())
+          response.resume(
+            Response.status(Response.Status.FORBIDDEN).entity("feature locked, no permission to unlock").build()
+          )
           return
         }
       }
@@ -141,21 +146,28 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
       if (featureStateUpdate.lock == null && (featureStateUpdate.updateValue == null || false == featureStateUpdate.updateValue)) {
         log.trace("FeatureUpdate failed: not asking to lock or update value, so nothing to do")
         statRecorder?.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK)
-        response.resume(Response.status(Response.Status.BAD_REQUEST).entity("lock and updateValue null, nothing to do").build())
+        response.resume(
+          Response.status(Response.Status.BAD_REQUEST).entity("lock and updateValue null, nothing to do").build()
+        )
         return
       }
       if (true == featureStateUpdate.updateValue) {
         if (!perms.roles.contains(RoleType.CHANGE_VALUE)) {
           log.trace("FeatureUpdate failed: No permission to change value")
           statRecorder?.recordHit(key, EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.TESTSDK)
-          response.resume(Response.status(Response.Status.FORBIDDEN).entity("API Key has no change_value permission").build())
+          response.resume(
+            Response.status(Response.Status.FORBIDDEN).entity("API Key has no change_value permission").build()
+          )
           return
         } else if (true == perms.feature.value?.locked && false != featureStateUpdate.lock) {
           // its locked, and you are trying to change its value and not unlocking it at the same time, that makes no
           // sense
           log.trace("FeatureUpdate failed: Attempting to change locked value without unlocking")
           statRecorder?.recordHit(key, EdgeHitResultType.UPDATE_NONSENSE, EdgeHitSourceType.TESTSDK)
-          response.resume(Response.status(Response.Status.PRECONDITION_FAILED).entity("it is locked, cannot change value without also unlocking").build())
+          response.resume(
+            Response.status(Response.Status.PRECONDITION_FAILED)
+              .entity("it is locked, cannot change value without also unlocking").build()
+          )
           return
         }
       }
@@ -181,7 +193,9 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
               if (!newValue.equals("true", ignoreCase = true) && !newValue.equals("false", ignoreCase = true)) {
                 log.trace("FeatureUpdate failed: Attempting to change flag value to non true/false")
                 statRecorder?.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK)
-                response.resume(Response.status(Response.Status.BAD_REQUEST).entity("flag value must be true or false").build())
+                response.resume(
+                  Response.status(Response.Status.BAD_REQUEST).entity("flag value must be true or false").build()
+                )
                 return
               }
 
@@ -198,7 +212,10 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
               } catch (jpe: JsonProcessingException) {
                 log.trace("FeatureUpdate failed: Attempting to update JSON value to non-json")
                 statRecorder?.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK)
-                response.resume(Response.status(Response.Status.BAD_REQUEST).entity("Attempting to update JSON value to non-json").build())
+                response.resume(
+                  Response.status(Response.Status.BAD_REQUEST).entity("Attempting to update JSON value to non-json")
+                    .build()
+                )
                 return
               }
               upd.valueString(newValue)
@@ -210,7 +227,10 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
             } catch (e: Exception) {
               log.trace("FeatureUpdate failed: Attempting to update NUMBER value with non-NUMBER")
               statRecorder?.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK)
-              response.resume(Response.status(Response.Status.BAD_REQUEST).entity("Attempting to update NUMBER value with non-NUMBER").build())
+              response.resume(
+                Response.status(Response.Status.BAD_REQUEST).entity("Attempting to update NUMBER value with non-NUMBER")
+                  .build()
+              )
               return
             }
             else -> {
@@ -225,7 +245,9 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
               log.trace("FeatureUpdate failed: Cannot set flag value to null")
               // a null boolean is not valid
               statRecorder?.recordHit(key, EdgeHitResultType.UPDATE_NONSENSE, EdgeHitSourceType.TESTSDK)
-              response.resume(Response.status(Response.Status.PRECONDITION_FAILED).entity("cannot set flag value to null").build())
+              response.resume(
+                Response.status(Response.Status.PRECONDITION_FAILED).entity("cannot set flag value to null").build()
+              )
               return
             }
             FeatureValueType.STRING, FeatureValueType.NUMBER, FeatureValueType.JSON -> value?.value == null
@@ -259,6 +281,9 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
       statRecorder?.recordHit(key, EdgeHitResultType.SUCCESS, EdgeHitSourceType.TESTSDK)
 
       response.resume(Response.ok().build())
+    } catch (nfe: NotFoundException) {
+      statRecorder?.recordHit(key, EdgeHitResultType.MISSED, EdgeHitSourceType.TESTSDK)
+      response.resume(Response.status(Response.Status.NOT_FOUND).build())
     } catch (e: Exception) {
       log.error("Failed to process request: {}/{}/{}/{} : {}", namedCache, envId, apiKey, featureKey,
         featureStateUpdate, e)

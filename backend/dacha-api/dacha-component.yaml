@@ -13,6 +13,8 @@ components:
         - EMPTY
     PublishFeatureValues:
       x-package: io.featurehub.dacha.model
+      x-cloudevent-type: publish-feature-v1
+      x-cloudevent-subject: io.featurehub.events.feature-values
       type: object
       description: "A collection of features that updated at once"
       required:
@@ -40,6 +42,8 @@ components:
         feature:
           $ref: "#/components/schemas/CacheEnvironmentFeature"
     PublishEnvironment:
+      x-cloudevent-type: publish-environment-v1
+      x-cloudevent-subject: io.featurehub.events.environment
       x-package: io.featurehub.dacha.model
       description: "Even a EMPTY message must set all the data to junk as it is an unusual situation"
       required:
@@ -163,6 +167,8 @@ components:
           type: boolean
           description: "if true or null, this feature will visible on edge. if false, it will not be passed to the client"
     PublishServiceAccount:
+      x-cloudevent-type: publish-serviceaccount-v1
+      x-cloudevent-subject: io.featurehub.events.service-account
       x-package: io.featurehub.dacha.model
       required:
         - action

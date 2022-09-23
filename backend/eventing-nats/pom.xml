@@ -55,6 +55,12 @@
       <artifactId>jnats</artifactId>
       <version>2.15.6</version>
     </dependency>
+    <dependency>
+      <groupId>io.featurehub.cloudevents</groupId>
+      <artifactId>cloudevents-nats</artifactId>
+      <version>1.1</version>
+    </dependency>
+
   </dependencies>
 
   <build>

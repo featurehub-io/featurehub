@@ -43,6 +43,7 @@
     <module>mr</module>
     <module>../admin-frontend</module>
     <module>dacha</module>
+    <module>dacha2</module>
     <module>party-server</module>
     <module>party-server-ish</module>
   </modules>

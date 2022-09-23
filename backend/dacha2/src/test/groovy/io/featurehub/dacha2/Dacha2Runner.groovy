@@ -7,6 +7,8 @@ class Dacha2Runner {
   @Test
   void run() {
     new BatheBooter().run(new String[]{"-R" + Application.class.getName(),
-      "-Pclasspath:/application.properties", '-P${user.home}/.featurehub/dacha2.properties'})
+      "-Pclasspath:/application.properties",
+      '-P${user.home}/.featurehub/fhos-common.properties',
+      '-P${user.home}/.featurehub/dacha2.properties'})
   }
 }

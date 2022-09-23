@@ -40,19 +40,37 @@ class EnvironmentFeatures(override val environment: PublishEnvironment) : Featur
     return features[id]
   }
 
-  fun set(feature: CacheEnvironmentFeature) {
+  fun setFeatureValue(feature: CacheEnvironmentFeature) {
     val id = feature.feature.id
-    features[id] = feature
 
-    val index = features.values.indexOfFirst { it.feature.id == id }
-
-    if (index == -1) {
+    val existed = features.containsKey(id)
+    if (!existed) { // this is just a "just in case", the main code never creates this situation
+      features[id] = feature
       environment.featureValues.add(feature)
     } else {
-      environment.featureValues.set(index, feature)
+      environment.featureValues.find { it.feature.id == id }?.let {
+        it.value = feature.value
+      }
     }
 
     calculateEtag()
+  }
+
+  fun setFeature(feature: CacheEnvironmentFeature) {
+    val id = feature.feature.id
+
+    val existed = features.containsKey(id)
+    if (!existed) {
+      features[id] = feature
+      environment.featureValues.add(feature)
+
+      // etag only uses the ID of the feature, which never changes
+      calculateEtag()
+    } else {
+      environment.featureValues.find { it.feature.id == id }?.let {
+        it.feature = feature.feature
+      }
+    }
   }
 
   fun remove(id: UUID) {

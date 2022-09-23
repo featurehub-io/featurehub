@@ -24,7 +24,7 @@ steps:
     id: tile-install
     args:
       - '-c'
-      - 'cd backend && mvn -s ../pipeline/m2/settings.xml -Dmaven.wagon.http.retryHandler.count=3 --no-transfer-progress install -f pom-first.xml'
+      - 'cd backend && mvn -T4C -s ../pipeline/m2/settings.xml -Dmaven.wagon.http.retryHandler.count=3 --no-transfer-progress install -f pom-first.xml'
     volumes:
       - name: user.home
         path: /root
@@ -32,7 +32,7 @@ steps:
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - 'mvn -s pipeline/m2/settings.xml --no-transfer-progress -Dmaven.wagon.http.retryHandler.count=3 -DaltDeploymentRepository=artifact-registry::default::artifactregistry://us-central1-maven.pkg.dev/demohub-283022/fh-build-repo deploy -f pom.xml'
+      - 'mvn -s pipeline/m2/settings.xml -T4C --no-transfer-progress -Dmaven.wagon.http.retryHandler.count=3 -DaltDeploymentRepository=artifact-registry::default::artifactregistry://us-central1-maven.pkg.dev/demohub-283022/fh-build-repo deploy -f pom.xml'
     waitFor:
       - tile-install
     volumes:
@@ -68,5 +68,6 @@ steps:
 #      env: 'REGISTRY_USERNAME'
 #    - versionName: projects/676228694437/secrets/DOCKERHUB_PASSWORD/versions/latest
 #      env: 'REGISTRY_PASSWORD'
-
+options:
+  machineType: 'N1_HIGHCPU_8'
 

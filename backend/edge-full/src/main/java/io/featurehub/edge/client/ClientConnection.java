@@ -10,6 +10,7 @@ import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.sse.model.SSEResultState;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 public interface ClientConnection {
@@ -43,7 +44,7 @@ public interface ClientConnection {
   void initResponse(FeatureRequestResponse edgeResponse);
 
   // notify the client of a new feature (if they have received their features)
-  void notifyFeature(PublishFeatureValue rf);
+  void notifyFeature(List<PublishFeatureValue> rf);
 
   EtagStructureHolder etags();
 

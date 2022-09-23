@@ -49,6 +49,12 @@
     </dependency>
 
     <dependency>
+      <groupId>io.featurehub.events</groupId>
+      <artifactId>eventing-cloudevents</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
       <groupId>io.featurehub.edge</groupId>
       <artifactId>edge-shared</artifactId>
       <version>1.1-SNAPSHOT</version>
@@ -57,6 +63,12 @@
     <dependency>
       <groupId>io.featurehub.events</groupId>
       <artifactId>eventing-nats</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.events</groupId>
+      <artifactId>eventing-google-pubsub</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 

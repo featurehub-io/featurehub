@@ -38,16 +38,17 @@ class Base2Spec extends DbSpecification {
     def organizationSqlApi = new OrganizationSqlApi(db, convertUtils)
 
     // ensure the org is created and we have an admin user in an admin group
-    org = organizationSqlApi.get()
     Group adminGroup
-    def createAdminGroup = (org == null)
-    if (org == null) {
+    def newOrganisation = !convertUtils.hasOrganisation()
+    if (newOrganisation) {
       org = organizationSqlApi.save(new Organization().name("org1"))
+    } else {
+      org = organizationSqlApi.get()
     }
 
     superPerson = convertUtils.toPerson(dbSuperPerson, Opts.empty())
 
-    if (createAdminGroup) {
+    if (newOrganisation) {
       adminGroup = groupSqlApi.createOrgAdminGroup(org.id, 'admin group', superPerson)
     } else {
       adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())

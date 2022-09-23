@@ -192,17 +192,16 @@ open class ConvertUtils : Conversions {
       // if role perms is null (i.e. we don't care) or the roles that a person has is a super-set of
       // the roles of the service account
       if (!mustHaveRolePerms || rolePerms != null && rolePerms.containsAll(sap.permissions)) {
-        val cacheName = getCacheNameByEnvironment(sae.environment)
         sap.sdkUrlClientEval(
           String.format(
-            "%s/%s/%s",
-            cacheName, sap.environmentId, sae.serviceAccount.apiKeyClientEval
+            "%s/%s",
+            sap.environmentId, sae.serviceAccount.apiKeyClientEval
           )
         )
         sap.sdkUrlServerEval(
           String.format(
-            "%s/%s/%s",
-            cacheName, sap.environmentId, sae.serviceAccount.apiKeyServerEval
+            "%s/%s",
+            sap.environmentId, sae.serviceAccount.apiKeyServerEval
           )
         )
       }
@@ -213,7 +212,7 @@ open class ConvertUtils : Conversions {
   override fun applicationGroupRoleFromAcl(acl: DbAcl?): ApplicationGroupRole? {
     return ApplicationGroupRole()
       .groupId(acl!!.group.id)
-      .roles(splitApplicationRoles(acl.roles)!!)
+      .roles(splitApplicationRoles(acl.roles))
       .applicationId(acl.application.id)
   }
 
@@ -299,11 +298,13 @@ open class ConvertUtils : Conversions {
       .groups(null)
   }
 
-  override val organizationId: UUID?
-    get() = dbOrganization?.id
+  override fun organizationId(): UUID = dbOrganization().id
 
-  override val dbOrganization: DbOrganization?
-    get() = QDbOrganization().findOne()
+  override fun dbOrganization(): DbOrganization =
+    QDbOrganization().findOne()!!
+
+  override fun hasOrganisation(): Boolean =
+    QDbOrganization().exists()
 
   override fun toPerson(dbp: DbPerson?, opts: Opts): Person? {
     return toPerson(dbp, null, opts)
@@ -335,7 +336,7 @@ open class ConvertUtils : Conversions {
     if (opts.contains(FillOpts.Groups)) {
       val groupList = QDbGroup().whenArchived
         .isNull.groupMembers.person
-        .eq(dbp).owningOrganization.id.eq(if (org == null) organizationId else org.id)
+        .eq(dbp).owningOrganization.id.eq(if (org == null) organizationId() else org.id)
         .findList()
       log.info("groups for person {} are {}", p, groupList)
       groupList
@@ -736,7 +737,7 @@ open class ConvertUtils : Conversions {
 
   override fun getSuperuserGroup(opts: Opts?): Group? {
     val g = QDbGroup().owningOrganization.id.eq(
-      organizationId
+      organizationId()
     ).adminGroup
       .isTrue.owningPortfolio
       .isNull.groupMembers.person

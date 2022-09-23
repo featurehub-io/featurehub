@@ -60,8 +60,20 @@
     </dependency>
 
     <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>31.1-jre</version>
+    </dependency>
+
+    <dependency>
       <groupId>io.featurehub.events</groupId>
       <artifactId>eventing-nats</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.events</groupId>
+      <artifactId>eventing-google-pubsub</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 

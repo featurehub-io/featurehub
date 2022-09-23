@@ -22,6 +22,12 @@ class KeyParts(val cacheName: String, val environmentId: UUID, val serviceKey: S
         } catch (e: Exception) {
           return null
         }
+      } else if (parts.size == 2) {
+        try {
+          return KeyParts("default", UUID.fromString(parts[0]), parts[1])
+        } catch (e: Exception) {
+          return null
+        }
       }
 
       return null
@@ -30,17 +36,17 @@ class KeyParts(val cacheName: String, val environmentId: UUID, val serviceKey: S
 
   override fun equals(other: Any?): Boolean {
     if (other is KeyParts) {
-      return other.cacheName.equals(cacheName) && other.environmentId.equals(environmentId) && other.serviceKey.equals(serviceKey)
+      return other.environmentId.equals(environmentId) && other.serviceKey.equals(serviceKey)
     }
 
     return false
   }
 
   override fun hashCode(): Int {
-    return String.format("%s/%s/%s", cacheName, environmentId, serviceKey).hashCode()
+    return String.format("%s/%s", environmentId, serviceKey).hashCode()
   }
 
   override fun toString(): String {
-    return "$cacheName/$environmentId/$serviceKey"
+    return "$environmentId/$serviceKey"
   }
 }

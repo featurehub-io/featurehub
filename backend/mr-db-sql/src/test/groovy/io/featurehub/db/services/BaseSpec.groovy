@@ -39,20 +39,24 @@ class BaseSpec extends Specification {
 
     def organizationSqlApi = new OrganizationSqlApi(database, convertUtils)
 
-    // ensure the org is created and we have an admin user in an admin group
-    org = organizationSqlApi.get()
-    Group adminGroup
-    def createAdminGroup = (org == null)
-    if (org == null) {
+
+    def orgExists = convertUtils.hasOrganisation()
+
+    if (orgExists) {
+      org = organizationSqlApi.get()
+    } else {
       org = organizationSqlApi.save(new Organization().name("org1"))
     }
+    // ensure the org is created and we have an admin user in an admin group
+
+    Group adminGroup
 
     superPerson = convertUtils.toPerson(dbSuperPerson, Opts.empty())
 
-    if (createAdminGroup) {
-      adminGroup = groupSqlApi.createOrgAdminGroup(org.id, 'admin group', superPerson)
-    } else {
+    if (orgExists) {
       adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
+    } else {
+      adminGroup = groupSqlApi.createOrgAdminGroup(org.id, 'admin group', superPerson)
     }
 
     groupSqlApi.addPersonToGroup(adminGroup.id, superuser, Opts.empty())

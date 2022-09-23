@@ -2,6 +2,8 @@ components:
   schemas:
     EdgeStatsBundle:
       type: object
+      x-cloudevent-type: edge-stat-bundle-v1
+      x-cloudevent-subject: io.featurehub.events.edge-stat
       x-package: io.featurehub.sse.stats.model
       required:
         - misses

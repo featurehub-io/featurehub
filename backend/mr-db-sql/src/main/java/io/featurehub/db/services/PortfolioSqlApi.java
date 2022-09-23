@@ -51,7 +51,7 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
       return new ArrayList<>();
     }
 
-    QDbPortfolio pFinder = new QDbPortfolio().organization.eq(convertUtils.getDbOrganization());
+    QDbPortfolio pFinder = new QDbPortfolio().organization.eq(convertUtils.dbOrganization());
 
     if (filter != null && filter.trim().length() > 0) {
       pFinder = pFinder.name.ilike('%' + filter.trim() + '%');
@@ -103,7 +103,7 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
       throw new IllegalArgumentException("portfolio:name is required");
     }
 
-    final DbOrganization org = convertUtils.getDbOrganization();
+    final DbOrganization org = convertUtils.dbOrganization();
     final DbPerson person = convertUtils.byPerson(createdBy);
 
     if (createdBy != null && person == null) {

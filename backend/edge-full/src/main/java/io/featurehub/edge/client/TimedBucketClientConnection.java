@@ -272,30 +272,34 @@ public class TimedBucketClientConnection implements ClientConnection {
     heldFeatureUpdates = null;
 
     if (heldUpdates != null) {
-      heldUpdates.forEach(this::notifyFeature);
+      notifyFeature(heldUpdates);
     }
   }
 
   // notify the client of a new feature (if they have received their features)
   @Override
-  public void notifyFeature(PublishFeatureValue rf) {
-    if (heldFeatureUpdates != null) {
-      log.debug("holding feature update for client");
-      heldFeatureUpdates.add(rf);
-    } else {
-      try {
-        String data =
-            CacheJsonMapper.mapper.writeValueAsString(
-                featureTransformer.transform(rf.getFeature(), attributesForStrategy));
-        // if it was a DELETE or it was being triggered as a retired feature
-        if (rf.getAction() == PublishAction.DELETE || (rf.getFeature().getValue() != null && rf.getFeature().getValue().getRetired() == Boolean.TRUE)) {
-          writeMessage(SSEResultState.DELETE_FEATURE, data);
-        } else {
-          writeMessage(SSEResultState.FEATURE, data);
+  public void notifyFeature(List<PublishFeatureValue> features) {
+    for (PublishFeatureValue rf : features) {
+      if (heldFeatureUpdates != null) {
+        log.debug("holding feature update for client");
+        heldFeatureUpdates.add(rf);
+      } else {
+        try {
+          String data =
+              CacheJsonMapper.mapper.writeValueAsString(
+                  featureTransformer.transform(rf.getFeature(), attributesForStrategy));
+          // if it was a DELETE or it was being triggered as a retired feature
+          if (rf.getAction() == PublishAction.DELETE
+              || (rf.getFeature().getValue() != null
+                  && rf.getFeature().getValue().getRetired() == Boolean.TRUE)) {
+            writeMessage(SSEResultState.DELETE_FEATURE, data);
+          } else {
+            writeMessage(SSEResultState.FEATURE, data);
+          }
+        } catch (IOException e) {
+          log.error("Failed to write feature", e);
+          close(false);
         }
-      } catch (IOException e) {
-        log.error("Failed to write feature", e);
-        close(false);
       }
     }
   }

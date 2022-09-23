@@ -28,6 +28,7 @@ class DachaApiKeyResource @Inject constructor(private val cache: Dacha2Cache) : 
       .features(filteredList.toList())
   }
 
+  // this is used by the PUT api
   override fun getApiKeyPermissions(eId: UUID, serviceAccountKey: String, featureKey: String): DachaPermissionResponse {
     val collection = cache.getFeatureCollection(eId, serviceAccountKey) ?: throw NotFoundException()
 

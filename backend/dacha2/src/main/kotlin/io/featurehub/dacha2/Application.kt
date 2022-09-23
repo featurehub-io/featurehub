@@ -4,12 +4,13 @@ import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.lifecycle.ApplicationLifecycleManager
 import cd.connect.lifecycle.LifecycleStatus
 import io.featurehub.dacha2.client.Dacha2MRClientFeature
+import io.featurehub.events.CloudEventsFeature
+import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.health.CommonFeatureHubFeatures
 import io.featurehub.health.MetricsHealthRegistration
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
-import io.featurehub.rest.CacheControlFilter
-import io.featurehub.rest.CorsFilter
+import io.featurehub.publish.NATSFeature
 import io.featurehub.rest.Info
 import org.glassfish.jersey.server.ResourceConfig
 import org.slf4j.Logger
@@ -30,7 +31,10 @@ class Application {
       CommonFeatureHubFeatures::class.java,
       TelemetryFeature::class.java,
       Dacha2Feature::class.java,
-      Dacha2MRClientFeature::class.java
+      CloudEventsFeature::class.java,
+      GoogleEventFeature::class.java,
+      NATSFeature::class.java,
+      Dacha2MRClientFeature::class.java, // the Api to the MR instance, (party-server mocks them)
     )
 
     // recommended this is on a different port
