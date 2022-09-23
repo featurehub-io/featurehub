@@ -11,12 +11,16 @@ import io.featurehub.dacha.model.PublishFeatureValue
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.events.CloudEventReceiverRegistry
+import io.featurehub.events.CloudEventReceiverRegistryMock
 import io.featurehub.events.CloudEventReceiverRegistryProcessor
+import io.featurehub.events.CloudEventsTelemetryReader
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.model.FeatureValueType
 import spock.lang.Specification
 
 import java.time.OffsetDateTime
+
+
 
 class Dacha2CloudEventListenerImplSpec extends Specification {
   CloudEventBuilder builder
@@ -37,7 +41,7 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
 
   def setup() {
     cache = Mock()
-    register = new CloudEventReceiverRegistryProcessor()
+    register = new CloudEventReceiverRegistryMock()
     listener = new Dacha2CloudEventListenerImpl(cache, register)
     serviceAccountId = UUID.randomUUID()
     apiKeyClientSide = "1234*1"

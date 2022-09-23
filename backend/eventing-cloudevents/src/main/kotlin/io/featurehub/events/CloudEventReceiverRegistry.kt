@@ -39,7 +39,13 @@ abstract class CloudEventReceiverRegistryImpl : CloudEventReceiverRegistry {
  */
 class CloudEventReceiverRegistryMock : CloudEventReceiverRegistryImpl() {
   override fun process(event: CloudEvent) {
-    throw NotImplementedError()
+    val handler = eventHandlers[event.type]?.get(event.subject!!)
+
+    if (handler != null) {
+      CacheJsonMapper.fromEventData(event, handler.clazz)?.let { eventData ->
+        handler.handler(eventData as TaggedCloudEvent)
+      }
+    }
   }
 
   fun process(obj: TaggedCloudEvent) {

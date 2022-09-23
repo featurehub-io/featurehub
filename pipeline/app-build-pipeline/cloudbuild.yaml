@@ -87,7 +87,7 @@ steps:
         path: /root
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     env:
-      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3 -T4C
     entrypoint: '/bin/sh'
     args:
       - '-c'
@@ -98,7 +98,7 @@ steps:
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     # run partial build if special "all-build" file is missing
     env:
-      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3 -T4C
     entrypoint: '/bin/sh'
     args:
       - '-c'
