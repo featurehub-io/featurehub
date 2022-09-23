@@ -87,22 +87,22 @@ steps:
         path: /root
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     env:
-      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3 -T4C
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - 'cd featurehub && if [ -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml; else true; fi'
+      - 'cd featurehub && if [ -f all-build ]; then mvn -T4C -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml; else true; fi'
     volumes:
       - name: user.home
         path: /root
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     # run partial build if special "all-build" file is missing
     env:
-      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3 -T4C
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - 'cd featurehub && if [ ! -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=main -f pom.xml; else true; fi'
+      - 'cd featurehub && if [ ! -f all-build ]; then mvn -T4C -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=main -f pom.xml; else true; fi'
     volumes:
       - name: user.home
         path: /root
