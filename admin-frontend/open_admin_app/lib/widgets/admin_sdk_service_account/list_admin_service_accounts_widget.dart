@@ -49,95 +49,97 @@ class _AdminServiceAccountsListWidgetState
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   Card(
-                    child: DataTable(
-                      showCheckboxColumn: false,
-                      sortAscending: sortToggle,
-                      sortColumnIndex: sortColumnIndex,
-                      columns: [
-                        DataColumn(
-                            label: const Text('Name'),
+                    child: SelectionArea(
+                      child: DataTable(
+                        showCheckboxColumn: false,
+                        sortAscending: sortToggle,
+                        sortColumnIndex: sortColumnIndex,
+                        columns: [
+                          DataColumn(
+                              label: const Text('Name'),
+                              onSort: (columnIndex, ascending) {
+                                onSortColumn(
+                                    snapshot.data!, columnIndex, ascending);
+                              }),
+                          DataColumn(
+                            label: const Text('Groups'),
                             onSort: (columnIndex, ascending) {
                               onSortColumn(
                                   snapshot.data!, columnIndex, ascending);
-                            }),
-                        DataColumn(
-                          label: const Text('Groups'),
-                          onSort: (columnIndex, ascending) {
-                            onSortColumn(
-                                snapshot.data!, columnIndex, ascending);
-                          },
-                        ),
-                        DataColumn(
-                            label: const Padding(
-                              padding: EdgeInsets.only(left: 12.0),
-                              child: Text('Actions'),
-                            ),
-                            onSort: (i, a) => {}),
-                      ],
-                      rows: [
-                        for (var p in snapshot.data!)
-                          DataRow(
-                              cells: [
-                                DataCell(Text(
-                                  p.name,
-                                )),
-                                DataCell(Text('${p.groupCount}')),
-                                DataCell(Row(children: <Widget>[
-                                  FHIconButton(
-                                    icon: const Icon(Icons.info),
-                                    onPressed: () => bloc.mrClient
-                                        .addOverlay((BuildContext context) {
-                                      return ServiceAccountInfoDialog(bloc, p);
-                                    }),
-                                  ),
-                                  FHIconButton(
-                                      icon: const Icon(Icons.edit),
-                                      onPressed: () => {
-                                            ManagementRepositoryClientBloc
-                                                .router
-                                                .navigateTo(context,
-                                                    '/edit-admin-service-account',
-                                                    params: {
-                                                  'id': [p.id]
-                                                })
-                                          }),
-                                  // const SizedBox(
-                                  //   width: 8.0,
-                                  // ),
-                                  FHIconButton(
-                                    icon: const Icon(
-                                      Icons.refresh,
+                            },
+                          ),
+                          DataColumn(
+                              label: const Padding(
+                                padding: EdgeInsets.only(left: 12.0),
+                                child: Text('Actions'),
+                              ),
+                              onSort: (i, a) => {}),
+                        ],
+                        rows: [
+                          for (var p in snapshot.data!)
+                            DataRow(
+                                cells: [
+                                  DataCell(Text(
+                                    p.name,
+                                  )),
+                                  DataCell(Text('${p.groupCount}')),
+                                  DataCell(Row(children: <Widget>[
+                                    FHIconButton(
+                                      icon: const Icon(Icons.info),
+                                      onPressed: () => bloc.mrClient
+                                          .addOverlay((BuildContext context) {
+                                        return ServiceAccountInfoDialog(bloc, p);
+                                      }),
                                     ),
-                                    tooltip: "Reset Admin SDK access token",
-                                    onPressed: () => bloc.mrClient
-                                        .addOverlay((BuildContext context) {
-                                      return AdminSAKeyResetDialogWidget(
-                                        person: p,
-                                        bloc: bloc,
-                                      );
-                                    }),
-                                  ),
-                                  FHIconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () => bloc.mrClient
-                                        .addOverlay((BuildContext context) {
-                                      return DeleteAdminServiceAccountDialogWidget(
-                                        person: p,
-                                        bloc: bloc,
-                                      );
-                                    }),
-                                  ),
-                                ])),
-                              ],
-                              onSelectChanged: (newValue) {
-                                ManagementRepositoryClientBloc.router
-                                    .navigateTo(
-                                        context, '/edit-admin-service-account',
-                                        params: {
-                                      'id': [p.id]
-                                    });
-                              }),
-                      ],
+                                    FHIconButton(
+                                        icon: const Icon(Icons.edit),
+                                        onPressed: () => {
+                                              ManagementRepositoryClientBloc
+                                                  .router
+                                                  .navigateTo(context,
+                                                      '/edit-admin-service-account',
+                                                      params: {
+                                                    'id': [p.id]
+                                                  })
+                                            }),
+                                    // const SizedBox(
+                                    //   width: 8.0,
+                                    // ),
+                                    FHIconButton(
+                                      icon: const Icon(
+                                        Icons.refresh,
+                                      ),
+                                      tooltip: "Reset Admin SDK access token",
+                                      onPressed: () => bloc.mrClient
+                                          .addOverlay((BuildContext context) {
+                                        return AdminSAKeyResetDialogWidget(
+                                          person: p,
+                                          bloc: bloc,
+                                        );
+                                      }),
+                                    ),
+                                    FHIconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () => bloc.mrClient
+                                          .addOverlay((BuildContext context) {
+                                        return DeleteAdminServiceAccountDialogWidget(
+                                          person: p,
+                                          bloc: bloc,
+                                        );
+                                      }),
+                                    ),
+                                  ])),
+                                ],
+                                onSelectChanged: (newValue) {
+                                  ManagementRepositoryClientBloc.router
+                                      .navigateTo(
+                                          context, '/edit-admin-service-account',
+                                          params: {
+                                        'id': [p.id]
+                                      });
+                                }),
+                        ],
+                      ),
                     ),
                   ),
                 ],

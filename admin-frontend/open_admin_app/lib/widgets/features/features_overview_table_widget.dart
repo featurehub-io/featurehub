@@ -252,7 +252,7 @@ class NoEnvironmentMessage extends StatelessWidget {
       padding: const EdgeInsets.only(left: 12.0),
       child: Row(
         children: <Widget>[
-          Text(
+          SelectableText(
               'Either there are no environments defined for this application or you don\'t have permissions to access any of them',
               style: Theme.of(context).textTheme.caption),
           StreamBuilder<ReleasedPortfolio?>(
@@ -292,7 +292,7 @@ class NoFeaturesMessage extends StatelessWidget {
       padding: const EdgeInsets.only(top: 16.0),
       child: Column(
         children: <Widget>[
-          Text('There are no features defined for this application',
+          SelectableText('There are no features defined for this application',
               style: Theme.of(context).textTheme.caption),
         ],
       ),

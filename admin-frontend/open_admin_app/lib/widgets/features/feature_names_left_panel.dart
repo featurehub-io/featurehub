@@ -98,18 +98,20 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                             children: [
                                               Row(children: [
                                                 Flexible(
-                                                  child: Text(feature.name,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      maxLines: 2,
-                                                      // minFontSize: 8.0,
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodyText1!
-                                                          .copyWith(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold)),
+                                                  child: SelectionArea(
+                                                    child: Text(feature.name,
+                                                        overflow:
+                                                            TextOverflow.ellipsis,
+                                                        maxLines: 2,
+                                                        // minFontSize: 8.0,
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .bodyText1!
+                                                            .copyWith(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold)),
+                                                  ),
                                                 ),
                                                 if (feature.link!.isNotEmpty)
                                                   Tooltip(

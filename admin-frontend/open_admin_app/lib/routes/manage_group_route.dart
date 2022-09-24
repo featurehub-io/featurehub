@@ -123,72 +123,74 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Card(
-                              child: DataTable(
+                              child: SelectionArea(
+                                child: DataTable(
                             showCheckboxColumn: false,
                             sortAscending: sortToggle,
                             sortColumnIndex: sortColumnIndex,
                             columns: [
-                              DataColumn(
-                                  label: const Text('Name'),
+                                DataColumn(
+                                    label: const Text('Name'),
+                                    onSort: (columnIndex, ascending) {
+                                      onSortColumn(
+                                          snapshot.data!.members, columnIndex, ascending);
+                                    }),
+                                DataColumn(
+                                  label: const Text('Email'),
                                   onSort: (columnIndex, ascending) {
                                     onSortColumn(
                                         snapshot.data!.members, columnIndex, ascending);
-                                  }),
-                              DataColumn(
-                                label: const Text('Email'),
-                                onSort: (columnIndex, ascending) {
-                                  onSortColumn(
-                                      snapshot.data!.members, columnIndex, ascending);
-                                },
-                              ),
-                              DataColumn(
-                                label: const Text(
-                                    'Type (User or Admin Service Account)'),
-                                onSort: (columnIndex, ascending) {
-                                  onSortColumn(
-                                      snapshot.data!.members, columnIndex, ascending);
-                                },
-                              ),
-                              DataColumn(
-                                  label: const Padding(
-                                    padding: EdgeInsets.only(left: 12.0),
-                                    child: Text('Actions'),
-                                  ),
-                                  onSort: (i, a) => {}),
+                                  },
+                                ),
+                                DataColumn(
+                                  label: const Text(
+                                      'Type (User or Admin Service Account)'),
+                                  onSort: (columnIndex, ascending) {
+                                    onSortColumn(
+                                        snapshot.data!.members, columnIndex, ascending);
+                                  },
+                                ),
+                                DataColumn(
+                                    label: const Padding(
+                                      padding: EdgeInsets.only(left: 12.0),
+                                      child: Text('Actions'),
+                                    ),
+                                    onSort: (i, a) => {}),
                             ],
                             rows: [
-                              for (Person member in snapshot.data!.members)
-                                DataRow(cells: [
-                                  DataCell(
-                                    Text(member.name ?? ''),
-                                  ),
-                                  DataCell(Text(member.personType == PersonType.person ? member.email! : "")),
-                                  DataCell(Text(
-                                      member.personType == PersonType.person
-                                          ? 'User'
-                                          : 'Service Account')),
-                                  DataCell(bloc.mrClient.isPortfolioOrSuperAdmin(
-                                          snapshot.data!.portfolioId!)
-                                      ? Tooltip(
-                                      message: "Remove from group",
-                                        child: FHIconButton(
-                                            icon: const Icon(Icons.delete),
-                                            onPressed: () {
-                                              try {
-                                                bloc.removeFromGroup(
-                                                    snapshot.data!, member);
-                                                bloc.mrClient.addSnackbar(Text(
-                                                    "'${member.name}' removed from group '${snapshot.data!.name}'"));
-                                              } catch (e, s) {
-                                                bloc.mrClient.dialogError(e, s);
-                                              }
-                                            },
-                                          ),
-                                      )
-                                      : const Text(''))
-                                ])
+                                for (Person member in snapshot.data!.members)
+                                  DataRow(cells: [
+                                    DataCell(
+                                      Text(member.name ?? ''),
+                                    ),
+                                    DataCell(Text(member.personType == PersonType.person ? member.email! : "")),
+                                    DataCell(Text(
+                                        member.personType == PersonType.person
+                                            ? 'User'
+                                            : 'Service Account')),
+                                    DataCell(bloc.mrClient.isPortfolioOrSuperAdmin(
+                                            snapshot.data!.portfolioId!)
+                                        ? Tooltip(
+                                        message: "Remove from group",
+                                          child: FHIconButton(
+                                              icon: const Icon(Icons.delete),
+                                              onPressed: () {
+                                                try {
+                                                  bloc.removeFromGroup(
+                                                      snapshot.data!, member);
+                                                  bloc.mrClient.addSnackbar(Text(
+                                                      "'${member.name}' removed from group '${snapshot.data!.name}'"));
+                                                } catch (e, s) {
+                                                  bloc.mrClient.dialogError(e, s);
+                                                }
+                                              },
+                                            ),
+                                        )
+                                        : const Text(''))
+                                  ])
                             ],
-                          )),
+                          ),
+                              )),
                         ],
                       )
                     ],

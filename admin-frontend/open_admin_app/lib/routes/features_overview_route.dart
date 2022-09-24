@@ -86,7 +86,7 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
                             snapshot.data!.currentPortfolioOrSuperAdmin) {
                           return Row(
                             children: <Widget>[
-                              Text(
+                              SelectableText(
                                   'There are no applications in this portfolio',
                                   style: Theme.of(context).textTheme.caption),
                               const Padding(
@@ -96,7 +96,7 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
                             ],
                           );
                         } else {
-                          return Text(
+                          return SelectableText(
                               "Either there are no applications in this portfolio or you don't have access to any of the applications.\n"
                               'Please contact your administrator.',
                               style: Theme.of(context).textTheme.caption);

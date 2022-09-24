@@ -50,109 +50,111 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   Card(
-                    child: DataTable(
-                      showCheckboxColumn: false,
-                      sortAscending: sortToggle,
-                      sortColumnIndex: sortColumnIndex,
-                      columns: [
-                        DataColumn(
-                            label: const Text('Name'),
+                    child: SelectionArea(
+                      child: DataTable(
+                        showCheckboxColumn: false,
+                        sortAscending: sortToggle,
+                        sortColumnIndex: sortColumnIndex,
+                        columns: [
+                          DataColumn(
+                              label: const Text('Name'),
+                              onSort: (columnIndex, ascending) {
+                                onSortColumn(
+                                    snapshot.data!, columnIndex, ascending);
+                              }),
+                          DataColumn(
+                            label: const Text('Email'),
                             onSort: (columnIndex, ascending) {
                               onSortColumn(
                                   snapshot.data!, columnIndex, ascending);
-                            }),
-                        DataColumn(
-                          label: const Text('Email'),
-                          onSort: (columnIndex, ascending) {
-                            onSortColumn(
-                                snapshot.data!, columnIndex, ascending);
-                          },
-                        ),
-                        DataColumn(
-                          label: const Text('Groups'),
-                          onSort: (columnIndex, ascending) {
-                            onSortColumn(
-                                snapshot.data!, columnIndex, ascending);
-                          },
-                        ),
-                        DataColumn(
-                          label: const Text('Last logged in'),
-                          onSort: (columnIndex, ascending) {
-                            onSortColumn(
-                                snapshot.data!, columnIndex, ascending);
-                          },
-                        ),
-                        DataColumn(
-                            label: const Padding(
-                              padding: EdgeInsets.only(left: 12.0),
-                              child: Text('Actions'),
-                            ),
-                            onSort: (i, a) => {}),
-                      ],
-                      rows: [
-                        for (SearchPersonEntry p in snapshot.data!)
-                          DataRow(
-                              cells: [
-                                DataCell(p.person.name == "No name"
-                                    ? Text('Not yet registered',
-                                        style:
-                                            Theme.of(context).textTheme.caption)
-                                    : Text(
-                                        p.person.name,
-                                      )),
-                                DataCell(Text(p.person.email)),
-                                DataCell(Text('${p.person.groupCount}')),
-                                DataCell(Text(
-                                    '${p.person.whenLastAuthenticated?.toLocal() ?? ""}')),
-                                DataCell(Row(children: <Widget>[
-                                  Tooltip(
-                                    message:
-                                    _infoTooltip(p, allowedLocalIdentity),
-                                    child: FHIconButton(
-                                      icon: Icon(Icons.info, color: _infoColour(p, allowedLocalIdentity)),
+                            },
+                          ),
+                          DataColumn(
+                            label: const Text('Groups'),
+                            onSort: (columnIndex, ascending) {
+                              onSortColumn(
+                                  snapshot.data!, columnIndex, ascending);
+                            },
+                          ),
+                          DataColumn(
+                            label: const Text('Last logged in'),
+                            onSort: (columnIndex, ascending) {
+                              onSortColumn(
+                                  snapshot.data!, columnIndex, ascending);
+                            },
+                          ),
+                          DataColumn(
+                              label: const Padding(
+                                padding: EdgeInsets.only(left: 12.0),
+                                child: Text('Actions'),
+                              ),
+                              onSort: (i, a) => {}),
+                        ],
+                        rows: [
+                          for (SearchPersonEntry p in snapshot.data!)
+                            DataRow(
+                                cells: [
+                                  DataCell(p.person.name == "No name"
+                                      ? Text('Not yet registered',
+                                          style:
+                                              Theme.of(context).textTheme.caption)
+                                      : Text(
+                                          p.person.name,
+                                        )),
+                                  DataCell(Text(p.person.email)),
+                                  DataCell(Text('${p.person.groupCount}')),
+                                  DataCell(Text(
+                                      '${p.person.whenLastAuthenticated?.toLocal() ?? ""}')),
+                                  DataCell(Row(children: <Widget>[
+                                    Tooltip(
+                                      message:
+                                      _infoTooltip(p, allowedLocalIdentity),
+                                      child: FHIconButton(
+                                        icon: Icon(Icons.info, color: _infoColour(p, allowedLocalIdentity)),
+                                        onPressed: () => bloc.mrClient
+                                            .addOverlay((BuildContext context) {
+                                          return ListUserInfoDialog(bloc, p);
+                                        }),
+                                      ),
+                                    ),
+                                    FHIconButton(
+                                        icon: const Icon(Icons.edit),
+                                        onPressed: () => {
+                                              ManagementRepositoryClientBloc
+                                                  .router
+                                                  .navigateTo(
+                                                      context, '/manage-user',
+                                                      params: {
+                                                    'id': [p.person.id]
+                                                  })
+                                            }),
+                                    // const SizedBox(
+                                    //   width: 8.0,
+                                    // ),
+                                    FHIconButton(
+                                      icon: const Icon(Icons.delete),
                                       onPressed: () => bloc.mrClient
                                           .addOverlay((BuildContext context) {
-                                        return ListUserInfoDialog(bloc, p);
+                                        return bloc.mrClient.person.id!.id ==
+                                                p.person.id
+                                            ? cantDeleteYourselfDialog(bloc)
+                                            : DeleteDialogWidget(
+                                                person: p.person,
+                                                bloc: bloc,
+                                              );
                                       }),
                                     ),
-                                  ),
-                                  FHIconButton(
-                                      icon: const Icon(Icons.edit),
-                                      onPressed: () => {
-                                            ManagementRepositoryClientBloc
-                                                .router
-                                                .navigateTo(
-                                                    context, '/manage-user',
-                                                    params: {
-                                                  'id': [p.person.id]
-                                                })
-                                          }),
-                                  // const SizedBox(
-                                  //   width: 8.0,
-                                  // ),
-                                  FHIconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () => bloc.mrClient
-                                        .addOverlay((BuildContext context) {
-                                      return bloc.mrClient.person.id!.id ==
-                                              p.person.id
-                                          ? cantDeleteYourselfDialog(bloc)
-                                          : DeleteDialogWidget(
-                                              person: p.person,
-                                              bloc: bloc,
-                                            );
-                                    }),
-                                  ),
-                                ])),
-                              ],
-                              onSelectChanged: (newValue) {
-                                ManagementRepositoryClientBloc.router
-                                    .navigateTo(context, '/manage-user',
-                                        params: {
-                                      'id': [p.person.id]
-                                    });
-                              }),
-                      ],
+                                  ])),
+                                ],
+                                onSelectChanged: (newValue) {
+                                  ManagementRepositoryClientBloc.router
+                                      .navigateTo(context, '/manage-user',
+                                          params: {
+                                        'id': [p.person.id]
+                                      });
+                                }),
+                        ],
+                      ),
                     ),
                   ),
                 ],

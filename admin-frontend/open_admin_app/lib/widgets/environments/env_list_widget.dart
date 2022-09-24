@@ -153,7 +153,7 @@ class _EnvWidget extends StatelessWidget {
                     )),
                 Row(
                   children: <Widget>[
-                    Text(env.name),
+                    SelectableText(env.name),
                     Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: (env.production == true)
