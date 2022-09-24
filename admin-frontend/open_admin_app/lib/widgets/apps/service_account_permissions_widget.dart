@@ -53,7 +53,7 @@ class _ServiceAccountPermissionState
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: <Widget>[
-                        Text(
+                        SelectableText(
                             'There are no service accounts in the "${bloc.portfolio!.name}" portfolio.'),
                         Container(
                           padding: const EdgeInsets.only(top: 20, bottom: 20),
@@ -195,7 +195,7 @@ class _ServiceAccountPermissionDetailState
                     children: <Widget>[
                       Container(
                           padding: const EdgeInsets.all(20),
-                          child: const Text(
+                          child: const SelectableText(
                               "You need to first create some 'Environments' for this application.")),
                     ],
                   );
@@ -219,7 +219,7 @@ class _ServiceAccountPermissionDetailState
                       children: [
                         Container(
                             padding: const EdgeInsets.fromLTRB(5, 15, 0, 0),
-                            child: Text(env.name)),
+                            child: SelectableText(env.name)),
                         getPermissionCheckbox(env.id!, RoleType.READ),
                         getPermissionCheckbox(env.id!, RoleType.LOCK),
                         getPermissionCheckbox(env.id!, RoleType.UNLOCK),
@@ -235,7 +235,7 @@ class _ServiceAccountPermissionDetailState
                     Container(
                         padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
                         child: Center(
-                          child: Text(
+                          child: SelectableText(
                               'Set the service account access to features for each environment',
                               style: Theme.of(context).textTheme.caption),
                         )),

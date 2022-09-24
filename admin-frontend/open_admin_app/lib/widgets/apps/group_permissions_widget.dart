@@ -150,7 +150,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
           if (!groupSnapshot.hasData) {
             return Container(
                 padding: const EdgeInsets.all(20),
-                child: const Text(
+                child: const SelectableText(
                     'You need to select a group to edit the permissions for.'));
           }
 
@@ -163,7 +163,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                     children: <Widget>[
                       Container(
                           padding: const EdgeInsets.all(20),
-                          child: const Text(
+                          child: const SelectableText(
                               "You need to first create some 'Environments' for this application.")),
                     ],
                   );
@@ -191,7 +191,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                       children: [
                         Container(
                             padding: const EdgeInsets.fromLTRB(5, 15, 0, 0),
-                            child: Text(env.name)),
+                            child: SelectableText(env.name)),
                         getPermissionCheckbox(env.id!, RoleType.READ),
                         getPermissionCheckbox(env.id!, RoleType.LOCK),
                         getPermissionCheckbox(env.id!, RoleType.UNLOCK),
@@ -212,7 +212,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                                 });
                               }
                             }),
-                        Text(
+                        SelectableText(
                             'This group can create, edit and delete features for this application',
                             style: Theme.of(context).textTheme.caption),
                       ],
@@ -220,7 +220,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                     Container(
                         padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
                         child: Center(
-                          child: Text(
+                          child: SelectableText(
                               'Set the group access to features for each environment',
                               style: Theme.of(context).textTheme.caption),
                         )),

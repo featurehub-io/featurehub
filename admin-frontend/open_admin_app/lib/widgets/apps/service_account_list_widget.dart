@@ -65,41 +65,40 @@ class _ServiceAccountWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bs = BorderSide(color: Theme.of(context).dividerColor);
 
-    return Flexible(
-      fit: FlexFit.loose,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-        decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            border: Border(bottom: bs, left: bs, right: bs)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                const SizedBox(width: 4.0),
-                _ServiceAccountDescription(serviceAccount: serviceAccount),
-                const SizedBox(width: 24.0),
-                StreamBuilder<ReleasedPortfolio?>(
-                    stream: bloc.mrClient.streamValley.currentPortfolioStream,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData &&
-                          snapshot.data!.currentPortfolioOrSuperAdmin) {
-                        return _adminFunctions(context);
-                      } else {
-                        return Container();
-                      }
-                    }),
-              ],
-            ),
-            const SizedBox(height: 8.0),
-            ServiceAccountEnvironments(
-                serviceAccount: serviceAccount, serviceAccountBloc: bloc)
-          ],
+    return Card(
+      margin: const EdgeInsets.all(8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Flexible(
+          fit: FlexFit.loose,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  const SizedBox(width: 4.0),
+                  _ServiceAccountDescription(serviceAccount: serviceAccount),
+                  const SizedBox(width: 24.0),
+                  StreamBuilder<ReleasedPortfolio?>(
+                      stream: bloc.mrClient.streamValley.currentPortfolioStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData &&
+                            snapshot.data!.currentPortfolioOrSuperAdmin) {
+                          return _adminFunctions(context);
+                        } else {
+                          return Container();
+                        }
+                      }),
+                ],
+              ),
+              const SizedBox(height: 8.0),
+              ServiceAccountEnvironments(
+                  serviceAccount: serviceAccount, serviceAccountBloc: bloc)
+            ],
+          ),
         ),
       ),
     );
@@ -194,7 +193,7 @@ class _ServiceAccountEnvironment extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(application.name),
+              SelectableText(application.name),
               Text(
                   found
                       ? 'This service account has permissions to one or more environments in this application.'
@@ -238,19 +237,21 @@ class _ServiceAccountDescription extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var light = Theme.of(context).brightness == Brightness.light;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(serviceAccount.name,
-            style: Theme.of(context).textTheme.subtitle1!.copyWith(
-                color: light
-                    ? Theme.of(context).primaryColor
-                    : Theme.of(context).colorScheme.secondary)),
-        Text(
-          serviceAccount.description ?? '',
-          style: Theme.of(context).textTheme.caption,
-        ),
-      ],
+    return SelectionArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(serviceAccount.name,
+              style: Theme.of(context).textTheme.subtitle1!.copyWith(
+                  color: light
+                      ? Theme.of(context).primaryColor
+                      : Theme.of(context).colorScheme.secondary)),
+          Text(
+            serviceAccount.description ?? '',
+            style: Theme.of(context).textTheme.caption,
+          ),
+        ],
+      ),
     );
   }
 }

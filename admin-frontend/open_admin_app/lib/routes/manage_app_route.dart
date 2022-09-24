@@ -63,7 +63,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                         padding: const EdgeInsets.only(left: 8, top: 15),
                         child: Row(
                           children: [
-                            Text('There are no applications in this portfolio',
+                            SelectableText('There are no applications in this portfolio',
                                 style: Theme.of(context).textTheme.caption),
                             const Padding(
                               padding: EdgeInsets.only(left: 8.0),

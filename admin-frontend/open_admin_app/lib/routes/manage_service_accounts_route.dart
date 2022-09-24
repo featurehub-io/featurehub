@@ -51,33 +51,26 @@ class _ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
   }
 
   Widget _filterRow(BuildContext context, ManageServiceAccountsBloc bloc) {
-    final bs = BorderSide(color: Theme.of(context).dividerColor);
     return Column(
       children: <Widget>[
-        Container(
-          padding: const EdgeInsets.fromLTRB(10, 10, 30, 10),
-          decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              border: Border(bottom: bs, left: bs, right: bs, top: bs)),
-          child: StreamBuilder<ReleasedPortfolio?>(
-              stream: bloc.mrClient.streamValley.currentPortfolioStream,
-              builder: (context, snapshot) {
-                if (snapshot.hasData &&
-                    snapshot.data!.currentPortfolioOrSuperAdmin) {
-                  return Row(
-                    children: <Widget>[
-                      TextButton.icon(
-                        icon: const Icon(Icons.add),
-                        label: const Text('Create new service account'),
-                        onPressed: () => _createServiceAccount(bloc),
-                      ),
-                    ],
-                  );
-                } else {
-                  return Container();
-                }
-              }),
-        ),
+        StreamBuilder<ReleasedPortfolio?>(
+            stream: bloc.mrClient.streamValley.currentPortfolioStream,
+            builder: (context, snapshot) {
+              if (snapshot.hasData &&
+                  snapshot.data!.currentPortfolioOrSuperAdmin) {
+                return Row(
+                  children: <Widget>[
+                    TextButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: const Text('Create new service account'),
+                      onPressed: () => _createServiceAccount(bloc),
+                    ),
+                  ],
+                );
+              } else {
+                return Container();
+              }
+            }),
       ],
     );
   }

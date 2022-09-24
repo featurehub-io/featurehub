@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build -t featurehub/flutter_web:1.7 .
+docker build -t featurehub/flutter_web:1.8 .

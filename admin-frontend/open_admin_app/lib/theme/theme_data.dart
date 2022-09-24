@@ -31,8 +31,8 @@ final ThemeData myTheme = ThemeData(
         headingTextStyle: TextStyle(
             fontSize: 14, fontWeight: FontWeight.w800, color: Colors.black87)),
     textSelectionTheme: const TextSelectionThemeData(
-      selectionColor: Color(0xff9cacfc),
-      cursorColor: Color(0xff4285f4),
+      // selectionColor: Color(0xff9cacfc),
+      cursorColor: Color(0xff473e8f),
       selectionHandleColor: Color(0xff6b83fa),
     ),
     textButtonTheme: TextButtonThemeData(

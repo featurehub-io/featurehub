@@ -159,8 +159,10 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 4.0),
                                   Expanded(
-                                    child: Text(serviceAccount.name,
-                                        overflow: TextOverflow.ellipsis),
+                                    child: SelectionArea(
+                                      child: Text(serviceAccount.name,
+                                          overflow: TextOverflow.ellipsis),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -187,7 +189,7 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                                         children: [
                                           Expanded(
                                             flex: 2,
-                                            child: Text(env.name,
+                                            child: SelectableText(env.name,
                                                 style: Theme.of(context)
                                                     .textTheme
                                                     .bodyText2),
@@ -239,15 +241,17 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
             ));
     final perms = account.permissions;
 
-    return Container(
-        child: perms.isNotEmpty
-            ? Text(perms.map((p) => p.name).join(', '),
-                style: const TextStyle(
-                    fontFamily: 'SourceCodePro',
-                    fontSize: 12,
-                    letterSpacing: 1.0))
-            : Text('No permissions defined',
-                style: Theme.of(context).textTheme.caption));
+    return SelectionArea(
+      child: Container(
+          child: perms.isNotEmpty
+              ? Text(perms.map((p) => p.name).join(', '),
+                  style: const TextStyle(
+                      fontFamily: 'SourceCodePro',
+                      fontSize: 12,
+                      letterSpacing: 1.0))
+              : Text('No permissions defined',
+                  style: Theme.of(context).textTheme.caption)),
+    );
   }
 }
 

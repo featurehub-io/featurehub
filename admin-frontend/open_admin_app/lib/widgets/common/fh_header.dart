@@ -17,7 +17,7 @@ class FHHeader extends StatelessWidget {
     titleChildren.add(
       Container(
         padding: const EdgeInsets.only(right: 24),
-        child: Text(title, style: Theme.of(context).textTheme.headline5
+        child: SelectableText(title, style: Theme.of(context).textTheme.headline5
             // .copyWith(color: Theme.of(context).primaryColor
             ),
       ),
