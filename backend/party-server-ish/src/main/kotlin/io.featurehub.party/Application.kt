@@ -47,25 +47,7 @@ class Application {
       TelemetryFeature::class.java,
       CacheControlFilter::class.java
     )
-
-    if (oauth2ProvidersExist()) {
-      config.register(OAuth2Feature::class.java)
-    }
-
-    if (samlProvidersExist()) {
-      config.register(SamlEnvironmentalFeature::class.java)
-    }
-
-    config.register(object : AbstractBinder() {
-      override fun configure() {
-        if (oauth2ProvidersExist() || samlProvidersExist()) {
-          bind(AuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
-        } else {
-          bind(NoAuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
-        }
-      }
-    })
-
+    
     // check if we should list on a different port
     registerMetrics(config)
 

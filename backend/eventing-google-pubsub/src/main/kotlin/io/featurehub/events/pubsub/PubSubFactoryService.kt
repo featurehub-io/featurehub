@@ -24,6 +24,9 @@ interface PubSubFactory {
   fun makeSubscriber(subscriber: String, message: (msg: CloudEvent) -> Boolean): PubSubSubscriber
   fun makeSubscriber(subscriber: String, message: MessageReceiver): PubSubSubscriber
 
+  fun getTopics(): List<String>
+  fun getGoogleProjectId(): String
+
   fun makeUniqueSubscriber(topicName: String, subscriptionPrefix: String, message: (msg: CloudEvent) -> Boolean): PubSubSubscriber
 }
 
@@ -51,13 +54,14 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
   @ConfigKey("cloudevents.pubsub.min-backoff-delay-seconds")
   var minBackoffDelayInSeconds: Int? = null
 
-  private val topicAdminClient: TopicAdminClient?
+  private val topicAdminClient: TopicAdminClient
   private val subscriptionAdminClient: SubscriptionAdminClient
   private val channelProvider: FixedTransportChannelProvider?
   private var credsProvider: CredentialsProvider? = null
   private val knownSubscribers = mutableListOf<PubSubSubscriber>()
   private var unknownSubscribers = mutableListOf<PubSubSubscriber>()
   private val dynamicSubscriber = mutableListOf<String>()
+  private val publisherCache = mutableMapOf<String, PubSubPublisher>()
 
   init {
     DeclaredConfigResolver.resolve(this)
@@ -91,7 +95,7 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
 
       createTopicSubscriberPairs()
     } else {
-      topicAdminClient = null
+      topicAdminClient = TopicAdminClient.create()
       subscriptionAdminClient = SubscriptionAdminClient.create()
       channelProvider = null
     }
@@ -138,9 +142,18 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
     }
   }
 
+  override fun getTopics(): List<String> {
+    val prefixLen = ProjectTopicName.of(projectId, "x").toString().length - 1
+    return topicAdminClient.listTopics(ProjectName.of(projectId)).iterateAll()
+      .map { it.name.substring(prefixLen) }
+      .toList()
+  }
+
+  override fun getGoogleProjectId(): String = this.projectId
+
   private fun createTopicSubscriberPairs() {
     log.debug("Ensuring the following topics exist {}", pubSubTopics)
-    val topics = topicAdminClient!!.listTopics(ProjectName.of(projectId)).iterateAll().toList()
+    val topics = topicAdminClient.listTopics(ProjectName.of(projectId)).iterateAll().toList()
     val desiredTopics =
       pubSubTopics.map { TopicName.of(projectId, it).toString() }
         .filter { wantedTopic -> topics.find { existingTopic -> existingTopic.name == wantedTopic  } == null }
@@ -208,7 +221,7 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
   }
 
   override fun makePublisher(topicName: String): PubSubPublisher {
-    return PubSubPublisherImpl(projectId, topicName, this)
+    return publisherCache.computeIfAbsent(topicName) { PubSubPublisherImpl(projectId, topicName, this) }
   }
 
   override fun makeSubscriber(subscriber: String, message: (msg: CloudEvent) -> Boolean): PubSubSubscriber {
