@@ -2,6 +2,7 @@ package io.featurehub.mr.events.service
 
 import io.featurehub.db.api.RolloutStrategyValidator.InvalidStrategyCombination
 import io.featurehub.db.listener.FeatureUpdateBySDKApi
+import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
 import io.featurehub.mr.messaging.StreamedFeatureUpdate
 import io.featurehub.mr.model.FeatureValue
@@ -10,8 +11,15 @@ import jakarta.inject.Inject
 import org.slf4j.LoggerFactory
 
 open class FeatureUpdateListenerImpl @Inject constructor(
-  private val featureUpdateBySDKApi: FeatureUpdateBySDKApi
+  private val featureUpdateBySDKApi: FeatureUpdateBySDKApi,
+  cloudEventReceiverRegistry: CloudEventReceiverRegistry
 ) : FeatureUpdateListener {
+
+  init {
+    cloudEventReceiverRegistry.listen(StreamedFeatureUpdate::class.java) {
+      processUpdate(it)
+    }
+  }
 
   override fun processUpdate(update: StreamedFeatureUpdate) {
     try {

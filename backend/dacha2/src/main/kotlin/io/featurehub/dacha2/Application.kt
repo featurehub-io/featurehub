@@ -12,6 +12,7 @@ import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.publish.NATSFeature
 import io.featurehub.rest.Info
+import io.featurehub.utils.FallbackPropertyConfig
 import org.glassfish.jersey.server.ResourceConfig
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -21,8 +22,6 @@ class Application {
 
   fun run() {
     ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTING)
-
-    DeclaredConfigResolver.resolve(this)
 
     // ensure migrations do not run
 //    System.setProperty("db.run-migrations", "false")

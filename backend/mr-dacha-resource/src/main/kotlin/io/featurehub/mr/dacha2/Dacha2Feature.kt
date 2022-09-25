@@ -1,6 +1,5 @@
 package io.featurehub.mr.dacha2
 
-import io.featurehub.dacha2.api.Dacha2Service
 import io.featurehub.dacha2.api.Dacha2ServiceClient
 import io.featurehub.mr.dacha2.rest.Dacha2ProxyClient
 import io.featurehub.mr.dacha2.rest.Dacha2Resource

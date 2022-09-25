@@ -23,6 +23,8 @@ import java.security.cert.X509Certificate
 
 class SamlEnvironmentalFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
+    if (!samlProvidersExist()) return false
+
     context.register(SamlResource::class.java)
     context.register(object: AbstractBinder() {
       override fun configure() {

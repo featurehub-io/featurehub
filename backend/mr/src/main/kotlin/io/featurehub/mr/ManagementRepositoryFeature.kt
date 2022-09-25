@@ -40,25 +40,22 @@ class ManagementRepositoryFeature : Feature {
       RolloutStrategyServiceDelegator::class.java,
       CorsFilter::class.java,
       CacheControlFilter::class.java,  //      ConstraintExceptionHandler.class,
-      AuthApplicationEventListener::class.java
+      AuthApplicationEventListener::class.java,
+      Dacha2Feature::class.java,
+      OAuth2Feature::class.java,
+      SamlEnvironmentalFeature::class.java,
+      AuthProvidersFeature::class.java
     ).forEach { componentClass: Class<out Any?>? -> context.register(componentClass) }
+
+    // only mount the dacha2 endpoints on the public API if the keys exist to protect it.
+    if (Dacha2Feature.dacha2ApiKeysExist()) {
+      context.register(Dacha2Feature::class.java)
+    }
 
     context.register(CommonDbFeature::class.java)
     context.register(ApiToSqlApiBinder())
     context.register(ComplexUpdateMigrations())
     context.register(EventingFeature::class.java)
-
-    if (Dacha2Feature.dacha2ApiKeysExist()) {
-      context.register(Dacha2Feature::class.java)
-    }
-
-    if (oauth2ProvidersExist()) {
-      context.register(OAuth2Feature::class.java)
-    }
-
-    if (samlProvidersExist()) {
-      context.register(SamlEnvironmentalFeature::class.java)
-    }
 
     context.register(object : AbstractBinder() {
       override fun configure() {

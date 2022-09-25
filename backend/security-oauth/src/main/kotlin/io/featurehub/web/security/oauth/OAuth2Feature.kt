@@ -18,6 +18,8 @@ class OAuth2Feature : Feature {
   protected var validProviderSources: List<String> = ArrayList()
 
   override fun configure(context: FeatureContext): Boolean {
+    if (!oauth2ProvidersExist()) return false
+
     if (!validProviderSources.isEmpty()) {
       val providers: MutableList<Class<out OAuth2Provider>> = ArrayList()
       if (validProviderSources.contains(GoogleProvider.Companion.PROVIDER_NAME)) {

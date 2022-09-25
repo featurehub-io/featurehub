@@ -6,20 +6,14 @@ import io.cloudevents.CloudEvent
 import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.events.pubsub.PubSubFactory
 import io.featurehub.events.pubsub.PubSubPublisher
-import io.featurehub.events.pubsub.PubSubSubscriber
 import io.featurehub.mr.events.common.CloudEventsDachaChannel
 import io.featurehub.mr.events.common.CloudEventsEdgeChannel
 import io.featurehub.mr.events.common.Dacha2Config
-import io.featurehub.mr.events.common.listeners.CloudEventListener
-import io.featurehub.mr.events.nats.NatsMRCloudEventsQueueUpdateListener
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
-import org.glassfish.hk2.api.Immediate
 import org.glassfish.jersey.internal.inject.AbstractBinder
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 class PubsubMRFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
@@ -30,12 +24,6 @@ class PubsubMRFeature : Feature {
             .`in`(Singleton::class.java)
           bind(PubsubCloudEventsDachaChannel::class.java).to(CloudEventsDachaChannel::class.java)
             .`in`(Singleton::class.java)
-
-          // always listen for Edge updates in Cloud Events format
-          bind(PubsubMRCloudEventsQueueUpdateListener::class.java).to(PubsubMRCloudEventsQueueUpdateListener::class.java)
-            .`in`(
-              Immediate::class.java
-            )
         }
       })
 
@@ -88,25 +76,5 @@ class PubsubCloudEventsDachaChannel @Inject constructor(pubSubFactory: PubSubFac
 
   override fun publishEvent(event: CloudEvent) {
     publisher.publish(event)
-  }
-}
-
-// listens for updates from Edge
-class PubsubMRCloudEventsQueueUpdateListener @Inject constructor(pubSubFactory: PubSubFactory,
-  private val updateListener: CloudEventListener) {
-  private val featureUpdaterSub: PubSubSubscriber
-  private val log: Logger = LoggerFactory.getLogger(NatsMRCloudEventsQueueUpdateListener::class.java)
-  @ConfigKey("cloudevents.edge-mr.pubsub.channel-name")
-  private val updatesSubscription: String = "featurehub-edge-updates-mr-sub"
-
-  init {
-    DeclaredConfigResolver.resolve(this)
-
-    log.info("Listening for MR updates on {}", updatesSubscription)
-
-    featureUpdaterSub = pubSubFactory.makeSubscriber(updatesSubscription) { event ->
-      updateListener.process(event)
-      true
-    }
   }
 }
