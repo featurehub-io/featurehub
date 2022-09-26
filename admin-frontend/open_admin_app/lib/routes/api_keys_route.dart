@@ -14,8 +14,8 @@ import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
 import 'package:open_admin_app/widget_creator.dart';
 
-class ServiceAccountEnvRoute extends StatelessWidget {
-  const ServiceAccountEnvRoute({Key? key}) : super(key: key);
+class ApiKeysRoute extends StatelessWidget {
+  const ApiKeysRoute({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +98,7 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                           return Text('No service accounts available',
                               style: Theme.of(context).textTheme.caption);
                         } else {
-                          return _ServiceAccountDisplayWidget(
+                          return _ApiKeysDisplayWidget(
                               serviceAccountEnvs: envSnapshot.data!,
                               bloc: bloc);
                         }
@@ -112,11 +112,11 @@ class ServiceAccountEnvRoute extends StatelessWidget {
   }
 }
 
-class _ServiceAccountDisplayWidget extends StatelessWidget {
+class _ApiKeysDisplayWidget extends StatelessWidget {
   final ServiceAccountEnvironments serviceAccountEnvs;
   final ServiceAccountEnvBloc bloc;
 
-  const _ServiceAccountDisplayWidget(
+  const _ApiKeysDisplayWidget(
       {Key? key, required this.serviceAccountEnvs, required this.bloc})
       : super(key: key);
 
@@ -127,6 +127,51 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
     return Column(
       children: [
         widgetCreator.edgeUrlCopyWidget(bloc.mrClient),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: const [
+                        SizedBox(width: 8.0),
+                        Expanded(
+                          child: SelectionArea(
+                            child: Text("Service account name", style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                  flex: 6,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: const [
+                        Expanded(
+                          flex: 2,
+                          child: SelectableText("Environments", style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                        Expanded(
+                            flex: 3,
+                            child:
+                            Text("Permissions", style: TextStyle(fontWeight: FontWeight.bold))),
+                        Expanded(
+                            flex: 4,
+                            child: Text("Client & Server API Keys", style: TextStyle(fontWeight: FontWeight.bold)))
+                      ],
+                    ),
+                  )),
+            ],
+          ),
+        ),
         ListView.builder(
             shrinkWrap: true,
             itemCount: serviceAccountEnvs.serviceAccounts.length,
@@ -148,15 +193,6 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                             children: [
                               Row(
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 2.0),
-                                    child: Icon(Ionicons.ios_settings,
-                                        color: Theme.of(context)
-                                            .textTheme
-                                            .bodyText2
-                                            ?.color
-                                            ?.withOpacity(0.5)),
-                                  ),
                                   const SizedBox(width: 4.0),
                                   Expanded(
                                     child: SelectionArea(

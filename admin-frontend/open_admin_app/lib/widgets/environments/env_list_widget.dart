@@ -135,38 +135,39 @@ class _EnvWidget extends StatelessWidget {
     return ReorderableDragStartListener(
       index: index,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
             border: Border.all(color: Theme.of(context).dividerColor)),
-        child: SizedBox(
-          height: 50,
-          child: InkWell(
-            mouseCursor: SystemMouseCursors.grab,
-            child: Row(
-              children: <Widget>[
-                Container(
-                    padding: const EdgeInsets.only(right: 30),
-                    child: const Icon(
-                      Icons.drag_handle,
-                      size: 24.0,
-                    )),
-                Row(
-                  children: <Widget>[
-                    SelectableText(env.name),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: (env.production == true)
-                            ? _ProductionEnvironmentIndicatorWidget()
-                            : _NonProductionEnvironmentIndicatorWidget()),
-                  ],
-                ),
-                Expanded(child: Container()),
-                bloc.mrClient.isPortfolioOrSuperAdmin(bloc.portfolio?.id)
-                    ? _adminFunctions(context)
-                    : Container()
-              ],
-            ),
+        child: InkWell(
+          mouseCursor: SystemMouseCursors.grab,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Row(
+                children: [
+                  Container(
+                      padding: const EdgeInsets.only(right: 30),
+                      child: const Icon(
+                        Icons.drag_handle,
+                        size: 24.0,
+                      )),
+                  Row(
+                    children: <Widget>[
+                      SelectableText(env.name),
+                      Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: (env.production == true)
+                              ? _ProductionEnvironmentIndicatorWidget()
+                              : Container()),
+                    ],
+                  ),
+                ],
+              ),
+              bloc.mrClient.isPortfolioOrSuperAdmin(bloc.portfolio?.id)
+                  ? _adminFunctions(context)
+                  : Container()
+            ],
           ),
         ),
       ),
@@ -211,16 +212,6 @@ class _ProductionEnvironmentIndicatorWidget extends StatelessWidget {
                   style: TextStyle(color: Colors.red, fontSize: 16.0))),
         ),
       ),
-    );
-  }
-}
-
-class _NonProductionEnvironmentIndicatorWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 24.0,
-      height: 24.0,
     );
   }
 }
