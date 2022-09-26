@@ -5,6 +5,7 @@ import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.events.CloudEventsFeatureUpdatePublisherImpl;
 import io.featurehub.edge.events.EdgeSubscriber;
 import io.featurehub.edge.events.EdgeSubscriberImpl;
+import io.featurehub.edge.events.kinesis.KinesisEdgeFeature;
 import io.featurehub.edge.events.nats.NatsEdgeFeature;
 import io.featurehub.edge.events.pubsub.PubsubEdgeFeature;
 import io.featurehub.edge.rest.FeatureSse;
@@ -48,6 +49,7 @@ public class EdgeFeature implements Feature {
 
     context.register(NatsEdgeFeature.class);
     context.register(PubsubEdgeFeature.class);
+    context.register(KinesisEdgeFeature.class);
 
     return true;
   }

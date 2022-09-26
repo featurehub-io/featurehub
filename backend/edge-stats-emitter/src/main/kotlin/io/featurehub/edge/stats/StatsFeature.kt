@@ -3,6 +3,8 @@ package io.featurehub.edge.stats
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import com.lmax.disruptor.EventHandler
+import io.featurehub.events.kinesis.KinesisEventFeature
+import io.featurehub.events.kinesis.KinesisFactory
 import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.publish.NATSFeature
 import jakarta.inject.Singleton
@@ -37,6 +39,10 @@ class StatsFeature : Feature {
 
         if (GoogleEventFeature.isEnabled()) {
           bind(PubsubStatsPublisher::class.java).to(CloudEventStatPublisher::class.java).`in`(Singleton::class.java)
+        }
+
+        if (KinesisEventFeature.isEnabled()) {
+          bind(KinesisStatsPublisher::class.java).to(CloudEventStatPublisher::class.java).`in`(Singleton::class.java)
         }
 
         bind(StatsCollectionOrchestrator::class.java).to(StatsOrchestrator::class.java).`in`(

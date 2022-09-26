@@ -1,10 +1,12 @@
 package io.featurehub.dacha2
 
 import io.featurehub.dacha.api.DachaApiKeyService
+import io.featurehub.dacha2.kinesis.KinesisDachaEventsListener
 import io.featurehub.dacha2.nats.NatsDachaEventsListener
 import io.featurehub.dacha2.pubsub.PubsubDachaEventsListener
 import io.featurehub.dacha2.resource.DachaApiKeyResource
 import io.featurehub.dacha2.resource.DachaEnvironmentResource
+import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.pubsub.GoogleEventFeature
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
@@ -34,8 +36,10 @@ class Dacha2Feature : Feature {
           bind(PubsubDachaEventsListener::class.java).to(PubsubDachaEventsListener::class.java).`in`(Immediate::class.java)
         }
 
+        if (KinesisEventFeature.isEnabled()) {
+          bind(KinesisDachaEventsListener::class.java).to(KinesisDachaEventsListener::class.java).`in`(Immediate::class.java)
+        }
       }
-
     })
 
     return true
