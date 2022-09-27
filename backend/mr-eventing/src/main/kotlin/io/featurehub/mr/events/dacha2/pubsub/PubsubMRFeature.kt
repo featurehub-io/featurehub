@@ -17,20 +17,18 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class PubsubMRFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
-    if (GoogleEventFeature.isEnabled()) {
-      context.register(object : AbstractBinder() {
-        override fun configure() {
-          bind(PubsubCloudEventsEdgeChannel::class.java).to(CloudEventsEdgeChannel::class.java)
-            .`in`(Singleton::class.java)
-          bind(PubsubCloudEventsDachaChannel::class.java).to(CloudEventsDachaChannel::class.java)
-            .`in`(Singleton::class.java)
-        }
-      })
+    if (!GoogleEventFeature.isEnabled()) return false
 
-      return true
-    }
+    context.register(object : AbstractBinder() {
+      override fun configure() {
+        bind(PubsubCloudEventsEdgeChannel::class.java).to(CloudEventsEdgeChannel::class.java)
+          .`in`(Singleton::class.java)
+        bind(PubsubCloudEventsDachaChannel::class.java).to(CloudEventsDachaChannel::class.java)
+          .`in`(Singleton::class.java)
+      }
+    })
 
-    return false
+    return true
   }
 }
 
