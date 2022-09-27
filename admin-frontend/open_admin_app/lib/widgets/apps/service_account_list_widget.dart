@@ -70,35 +70,32 @@ class _ServiceAccountWidget extends StatelessWidget {
       margin: const EdgeInsets.all(8.0),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Flexible(
-          fit: FlexFit.loose,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  const SizedBox(width: 4.0),
-                  _ServiceAccountDescription(serviceAccount: serviceAccount),
-                  const SizedBox(width: 24.0),
-                  StreamBuilder<ReleasedPortfolio?>(
-                      stream: bloc.mrClient.streamValley.currentPortfolioStream,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData &&
-                            snapshot.data!.currentPortfolioOrSuperAdmin) {
-                          return _adminFunctions(context);
-                        } else {
-                          return Container();
-                        }
-                      }),
-                ],
-              ),
-              const SizedBox(height: 8.0),
-              ServiceAccountEnvironments(
-                  serviceAccount: serviceAccount, serviceAccountBloc: bloc)
-            ],
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                const SizedBox(width: 4.0),
+                _ServiceAccountDescription(serviceAccount: serviceAccount),
+                const SizedBox(width: 24.0),
+                StreamBuilder<ReleasedPortfolio?>(
+                    stream: bloc.mrClient.streamValley.currentPortfolioStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData &&
+                          snapshot.data!.currentPortfolioOrSuperAdmin) {
+                        return _adminFunctions(context);
+                      } else {
+                        return Container();
+                      }
+                    }),
+              ],
+            ),
+            const SizedBox(height: 8.0),
+            ServiceAccountEnvironments(
+                serviceAccount: serviceAccount, serviceAccountBloc: bloc)
+          ],
         ),
       ),
     );
@@ -196,8 +193,8 @@ class _ServiceAccountEnvironment extends StatelessWidget {
               SelectableText(application.name),
               Text(
                   found
-                      ? 'This service account has permissions to one or more environments in this application.'
-                      : 'This service account has no permissions to any environments in this application.',
+                      ? 'The service account has permissions to one or more environments in this application'
+                      : 'The service account has no permissions to any environments in this application',
                   style: Theme.of(context).textTheme.caption),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
