@@ -19,7 +19,7 @@ import 'package:open_admin_app/routes/manage_users_route.dart';
 import 'package:open_admin_app/routes/not_found_route.dart';
 import 'package:open_admin_app/routes/oauth2_fail_route.dart';
 import 'package:open_admin_app/routes/register_url_route.dart';
-import 'package:open_admin_app/routes/service_env_route.dart';
+import 'package:open_admin_app/routes/api_keys_route.dart';
 import 'package:open_admin_app/routes/setup_route.dart';
 import 'package:open_admin_app/routes/signin_route.dart';
 import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
@@ -206,7 +206,7 @@ class RouteCreator {
       {Map<String, List<String>>? params}) {
     return BlocProvider<ServiceAccountEnvBloc>(
       creator: (_c, _b) => ServiceAccountEnvBloc(mrBloc),
-      child: const ServiceAccountEnvRoute(),
+      child: const ApiKeysRoute(),
     );
   }
 
