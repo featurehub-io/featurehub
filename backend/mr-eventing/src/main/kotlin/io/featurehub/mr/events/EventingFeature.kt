@@ -11,6 +11,7 @@ import io.featurehub.mr.events.common.CloudEventCacheBroadcaster
 import io.featurehub.mr.events.common.CloudEventsCommonFeature
 import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
 import io.featurehub.mr.events.dacha2.CacheApi
+import io.featurehub.mr.events.dacha2.kinesis.KinesisMRFeature
 import io.featurehub.mr.events.dacha2.pubsub.PubsubMRFeature
 import io.featurehub.mr.events.service.FeatureUpdateListenerImpl
 import jakarta.inject.Singleton
@@ -28,6 +29,7 @@ class EventingFeature : Feature {
 
     context.register(CloudEventsFeature::class.java)
     context.register(PubsubMRFeature::class.java) // this will in fact not register anything if it is not enabled
+    context.register(KinesisMRFeature::class.java)
 
     if (NatsDachaEventingFeature.isEnabled()) {
       context.register(NatsDachaEventingFeature::class.java)

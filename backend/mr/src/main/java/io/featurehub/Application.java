@@ -2,6 +2,7 @@ package io.featurehub;
 
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
+import io.featurehub.events.kinesis.KinesisEventFeature;
 import io.featurehub.events.pubsub.GoogleEventFeature;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
@@ -41,6 +42,7 @@ public class Application {
       SamlEnvironmentalFeature.class,
       NATSFeature.class,
       GoogleEventFeature.class,
+      KinesisEventFeature.class,
       TelemetryFeature.class
       );
 

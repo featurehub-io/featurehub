@@ -87,6 +87,7 @@
     <module>backend/edge-feature-update-async-api</module>
     <module>backend/eventing-nats</module>
     <module>backend/eventing-google-pubsub</module>
+    <module>backend/eventing-kinesis</module>
     <module>backend/eventing-cloudevents</module>
     <module>backend/sdk-strategy-matchers</module>
     <module>backend/party-server</module>

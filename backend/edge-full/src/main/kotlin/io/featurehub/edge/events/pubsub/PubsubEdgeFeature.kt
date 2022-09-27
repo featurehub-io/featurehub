@@ -19,21 +19,18 @@ import org.slf4j.LoggerFactory
 
 class PubsubEdgeFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
-    if (GoogleEventFeature.isEnabled()) {
+    if (!GoogleEventFeature.isEnabled()) return false
 
-      context.register(object: AbstractBinder() {
-        override fun configure() {
-          bind(PubsubFeaturesListener::class.java)
-            .to(PubsubFeaturesListener::class.java).`in`(Immediate::class.java)
-          bind(PubsubFeatureUpdatePublisher::class.java)
-            .to(CloudEventsEdgePublisher::class.java).`in`(Singleton::class.java)
-        }
-      })
+    context.register(object: AbstractBinder() {
+      override fun configure() {
+        bind(PubsubFeaturesListener::class.java)
+          .to(PubsubFeaturesListener::class.java).`in`(Immediate::class.java)
+        bind(PubsubFeatureUpdatePublisher::class.java)
+          .to(CloudEventsEdgePublisher::class.java).`in`(Singleton::class.java)
+      }
+    })
 
-      return true
-    }
-
-    return false
+    return true
   }
 }
 

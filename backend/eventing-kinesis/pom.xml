@@ -3,14 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub.events</groupId>
-  <artifactId>eventing-google-pubsub</artifactId>
+  <artifactId>eventing-kinesis</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>eventing-google-pubsub</name>
+  <name>eventing-kinesis</name>
 
   <description>
-    Supporting all publishing using Google Pub/Sub. This layer supports dynamic creation of local topics and subscriptions
-    if they don't already exist but not when deploying to the cloud. This layer supports the CloudEvents variant of
-    FeatureHub only.
+    Supporting all publishing using Kinesis. This layer supports Kinesis using a client as a
+    Queue (same application name, MR),
+    and as a Topic listener (Dacha2 and Edge both use it as a topic listener)
   </description>
 
   <url>https://featurehub.io</url>
@@ -38,7 +38,7 @@
   </licenses>
 
   <properties>
-    <google-pubsub.version>1.120.15</google-pubsub.version>
+    <aws.kcl-client.version>2.4.3</aws.kcl-client.version>
   </properties>
 
   <dependencies>
@@ -54,20 +54,14 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-pubsub</artifactId>
-      <version>[${google-pubsub.version}]</version>
+      <groupId>software.amazon.kinesis</groupId>
+      <artifactId>amazon-kinesis-client</artifactId>
+      <version>${aws.kcl-client.version}</version>
     </dependency>
     <dependency>
       <groupId>io.featurehub.cloudevents</groupId>
-      <artifactId>cloudevents-google-pubsub</artifactId>
+      <artifactId>cloudevents-kinesis</artifactId>
       <version>1.1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.cloud</groupId>
-          <artifactId>google-cloud-pubsub</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.featurehub.events</groupId>

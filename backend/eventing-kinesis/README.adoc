@@ -1,0 +1,22 @@
+= Kinesis Support in FeatureHub
+
+== Local Development
+
+Run the localstack with the default names configured usin
+
+ $ ./testing-setup.sh
+
+You can confirm it is working using:
+
+ $ awslocal kinesis list-streams
+
+Then you need to enable kinesis in the app, in each of the env vars you need to have:
+
+----
+cloudevents.kinesis.enabled=true
+cloudevents.kinesis.endpointUrl=http://localhost:4566
+aws.accessKeyId=testing
+aws.secretAccessKey=testing
+----
+
+NOTE: your access key and secret don't matter for localstack.
