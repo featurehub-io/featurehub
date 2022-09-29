@@ -1,0 +1,43 @@
+= Migration from Dacha to Dacha2
+
+== Overview
+The impetus behind Dacha version 2 is a faster startup time to be healthy, a lower memory threshold, and the ability to support more Async Event Buses - particularly those native to your cloud environment.
+
+Dacha2 supports:
+
+- NATS
+- Google Pub/Sub
+- AWS Kinesis
+
+Coming are:
+
+- Kafka
+- Azure* - we aren't sure what is the right choice on Azure for best support here yet.
+
+== Discussion
+NATS is an excellent technology and we continue to use and support it internally as our first choice for FHOS, but
+the way the application was structured was such when Dacha started it had to receive a cache of the entire environment and service account data set before becoming healthy. This process could fail if one service went away, and it could take a varied amount of time on a very large environment with thousands of environments and service accounts. This leads to difficulty for k8s operations to determine when a Dacha instance is legitimately unhealthy and when it is just "not ready yet".
+
+Dacha 2 is _generally_ not as fast for first hit requests to the cache as Dacha 1 is, because it lazy loads environments. It is designed to see a cache miss as something to immediately ask the Management Repository for, and based on the response it will put it in its cache or in the cache miss bucket (so client SDKs can't DDos your Management Repository). 
+
+The requirement for FeatureHub is a streaming event platform as well as a queue.  
+
+== Migration considerations for zero downtime
+
+Migration to Dacha2 requires you to roll out your changes ideally in stages. The Management Repository can be configured to broadcast messages in Dacha1 and Dacha2 at the same time - giving you the ability to migrate (for example) from NATS to AWS Kinesis as you rollout, with little or no interruption(1).
+
+. First, if you have not already, ensure Edge talks to Dacha using REST. This means setting `dacha.url.default=http://dacha:8034` - to the web address of your dacha instance. If you have not done this, it is still
+using NATS request/reply semantics to communicate. Roll this change out and it will not interrupt existing traffic as Edge will simply swap its communication mechanism. Dacha2 talks using the same API.
+. Next roll out your Management Repository (MR) with `dacha2.enabled=true` in your environment variables (or property file), and ensure you configure your async platform as per the Dacha2 documentation. MR can send messages to both platforms at the same time. 
+. Next roll out your changes to use Dacha2. Dacha2 needs a new API on the Management Repository to lazy load its data, so if this isn't available any requests from Edge instances will fail. Follow the Dacha2 configuration guide in installation. Once MR is rolled and Dacha2 is in, as Edge uses the REST APi, and Dacha2 does not require a full cache to be useful, it will immediately be usable. If you aren't using NATS any longer, remove this configuration. 
+. Next roll your Edge instances, if you aren't using NATS any longer, remove the nats configuration.
+. Finally, set `dacha1.enabled=false` in your MR configuration, and if not using NATS, remove the NATS configuration and remove NATS from your cluster configuration.
+
+* (1) For 1.5.9 only, only the Test SDK is impacted, it cannot be used with anything other than with a matching Edge and Management Repository version as we swap the format of these to Cloud Events. 
+
+== Migration considerations with downtime
+
+If you are happy with downtime, then:
+
+. Update to the new helm chart for k8s instances
+. For other configurations, replace your `dacha` container with `dacha2` and ensure Edge is configured as above to speak REST. Disable Dacha1 style configuration in MR and enable Dacha2 style configuration. 

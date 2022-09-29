@@ -89,6 +89,7 @@ class CloudEventCacheBroadcaster @Inject constructor(
 
   override fun publishEnvironment(cacheName: String, eci: PublishEnvironment) {
     if (dachaChannel.dacha2Enabled()) {
+      log.trace("cloudevent: publish environment {}", eci)
       publish(cacheName, PublishEnvironment.CLOUD_EVENT_SUBJECT, eci, eci.environment.id.toString(),
         PublishEnvironment.CLOUD_EVENT_TYPE,
         CacheMetrics.environments, dachaChannel)
@@ -97,6 +98,7 @@ class CloudEventCacheBroadcaster @Inject constructor(
 
   override fun publishServiceAccount(cacheName: String, saci: PublishServiceAccount) {
     if (dachaChannel.dacha2Enabled()) {
+      log.trace("cloudevent: publish service account {}", saci)
       publish(
         cacheName,
         PublishServiceAccount.CLOUD_EVENT_SUBJECT,
@@ -110,9 +112,11 @@ class CloudEventCacheBroadcaster @Inject constructor(
   }
 
   override fun publishFeatures(cacheName: String, features: PublishFeatureValues) {
-    if (features.features.isNotEmpty()) {
+    if (features.features.isNotEmpty() && dachaChannel.dacha2Enabled()) {
       // all updates are the same type for the same environment, not that it really matters
       val firstFeature = features.features[0]
+
+      log.trace("cloudevent: publish features {}", features)
 
       publish(
         cacheName, PublishFeatureValues.CLOUD_EVENT_SUBJECT, features,

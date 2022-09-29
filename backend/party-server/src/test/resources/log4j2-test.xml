@@ -26,7 +26,7 @@
     <AsyncLogger name="io.avaje.config"  level="warn"/>
     <AsyncLogger name="org.hibernate" level="error"/>
     <AsyncLogger name="io.featurehub.db.publish" level="trace"/>
-    <AsyncRoot level="debug">
+    <AsyncRoot level="info">
       <AppenderRef ref="STDOUT"/>
     </AsyncRoot>
   </Loggers>
