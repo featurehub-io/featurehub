@@ -16,8 +16,8 @@ import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.sse.model.SSEResultState;
 import io.featurehub.sse.stats.model.EdgeHitResultType;
 import io.featurehub.sse.stats.model.EdgeHitSourceType;
+import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
-import jakarta.ws.rs.core.Feature;
 import jakarta.ws.rs.core.MediaType;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
@@ -54,6 +54,9 @@ public class TimedBucketClientConnection implements ClientConnection {
               "The length of time that the connection is open for SSE clients")
           .register();
 
+  private static final Gauge sseGauge = Gauge.build("edge_sse_active_connections",
+    "The number of active SSE connections").register();
+
   private final Histogram.Timer timer;
   private TimedBucket timedBucketSlot;
 
@@ -82,6 +85,7 @@ public class TimedBucketClientConnection implements ClientConnection {
         ETagSplitter.Companion.splitTag(etag, List.of(apiKey), attributesForStrategy.makeEtag());
 
     timer = connectionLengthHistogram.startTimer();
+    sseGauge.inc();
   }
 
   @Override
@@ -181,6 +185,10 @@ public class TimedBucketClientConnection implements ClientConnection {
 
   @Override
   public void close(boolean sayBye) {
+    if (timer != null) {
+      timer.observeDuration();
+      sseGauge.dec();
+    }
     // could have been closed by a failure earlier, it isn't ejected from the list
     if (!output.isClosed()) {
       if (sayBye) {

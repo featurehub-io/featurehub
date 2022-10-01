@@ -229,3 +229,21 @@ metrics under the error count, but it allows you to target alerts specifically f
 |api_request_counter|Counter|Number of API requests received
 |feature_request_counter|Counter|(Party Server only) Number of feature requests received in total
 |===
+
+== Edge Metrics
+
+Edge exposes a number of metrics specific to SSE,
+
+[cols="1,1,1"]
+|===
+|*Metric*|*Type*|*Name*
+|edge_conn_length_sse|Histogram|Indicates how long SSE connections are being held open.
+|edge_sse_active_connections|Gauge|Indicates the number of active SSE connections there are.
+|edge_get_req|Histogram|Indicates the time a connection is being held open for an Edge GET request.
+|edge_testsdk_length_test|Histogram|The amount of time, number of, etc requests for updating features via Test SDK API.
+|edge_stat_failed_X|Counter|A counter for the number of failures related to publishing Edge stats
+|edge_stat_published_X|Counter|A counter for the number of failures related to publishing Edge stats
+|edge_publish_time|Histogram|Amount of time it is taking to publish stats
+|===
+
+

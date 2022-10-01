@@ -17,6 +17,7 @@ import io.featurehub.mr.events.service.FeatureUpdateListenerImpl
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
+import org.glassfish.hk2.api.Immediate
 import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class EventingFeature : Feature {
@@ -41,7 +42,7 @@ class EventingFeature : Feature {
           // the broadcaster will determine if dacha2 is enabled and not publish to that channel if not
           bind(CloudEventCacheBroadcaster::class.java).to(CacheBroadcast::class.java).`in`(Singleton::class.java)
 
-          bind(FeatureUpdateListenerImpl::class.java).to(FeatureUpdateListener::class.java).`in`(Singleton::class.java)
+          bind(FeatureUpdateListenerImpl::class.java).to(FeatureUpdateListener::class.java).`in`(Immediate::class.java)
           bind(DbCacheSource::class.java).to(CacheSource::class.java).to(CacheApi::class.java)
             .`in`(
               Singleton::class.java

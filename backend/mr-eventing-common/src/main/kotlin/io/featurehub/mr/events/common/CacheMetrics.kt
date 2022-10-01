@@ -9,22 +9,22 @@ data class CacheMetric(val counter: Counter, val failures: Counter, val perf: Hi
 class CacheMetrics {
   companion object {
     val environmentCounter = MetricsCollector.counter(
-      "mr_publish_environments_bytes", "Bytes published to NATS for environment updates"
+      "mr_publish_environments_bytes", "Bytes published to channel for environment updates"
     )
     val featureCounter = MetricsCollector.counter(
-      "mr_publish_features_bytes", "Bytes published to NATS for feature updates."
+      "mr_publish_features_bytes", "Bytes published to channel for feature updates."
     )
     val serviceAccountCounter = MetricsCollector.counter(
-      "mr_publish_service_accounts_bytes", "Bytes published to NATS for service account updates."
+      "mr_publish_service_accounts_bytes", "Bytes published to channel for service account updates."
     )
     val environmentFailureCounter = MetricsCollector.counter(
-      "mr_publish_environments_failed", "Failed to publish to NATS for environment updates"
+      "mr_publish_environments_failed", "Failed to publish to channel for environment updates"
     )
     val featureFailureCounter = MetricsCollector.counter(
-      "mr_publish_features_failed", "Failed to publish to NATS for feature updates."
+      "mr_publish_features_failed", "Failed to publish to channel for feature updates."
     )
     val serviceAccountFailureCounter = MetricsCollector.counter(
-      "mr_publish_service_accounts_failed", "Failed to publish to NATS for service account updates."
+      "mr_publish_service_accounts_failed", "Failed to publish to channel for service account updates."
     )
     val environmentGram = MetricsCollector.histogram(
       "mr_publish_environments_histogram", "Histogram for publishing environments"

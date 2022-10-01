@@ -293,7 +293,7 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
   }
 
   companion object {
-    val testSpeedHistogram: Histogram = Histogram.build("edge_conn_length_test", "The length of " +
+    val testSpeedHistogram: Histogram = Histogram.build("edge_testsdk_length_test", "The length of " +
     "time that the connection is open for Testing clients").register()
   }
 }
