@@ -122,9 +122,7 @@ public class SetupResource implements SetupServiceDelegate {
 
   @Override
   public TokenizedPerson setupSiteAdmin(SetupSiteAdmin setupSiteAdmin) {
-    Organization existingOrg = organizationApi.get();
-
-    if (existingOrg != null) {
+    if (organizationApi.hasOrganisation()) {
       throw new WebApplicationException("duplicate", Response.Status.CONFLICT);
     }
 

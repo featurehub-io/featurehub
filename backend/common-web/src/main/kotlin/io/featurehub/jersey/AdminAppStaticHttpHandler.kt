@@ -212,6 +212,11 @@ class AdminAppStaticHttpHandler constructor(private val offsetBaseUrl: String) :
       return false;
     }
 
-    return internal_handle(uri, request, response!!)
+    if (!internal_handle(uri, request, response!!)) {
+      response.setHeader("Cache-Control", indexCacheControlHeader)
+      sendFile(response!!)
+    }
+
+    return true
   }
 }

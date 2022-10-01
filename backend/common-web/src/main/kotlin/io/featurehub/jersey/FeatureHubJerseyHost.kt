@@ -8,6 +8,7 @@ import cd.connect.lifecycle.LifecycleTransition
 import io.featurehub.health.CommonFeatureHubFeatures
 import io.featurehub.lifecycle.ExecutorPoolDrainageSource
 import io.featurehub.utils.FallbackPropertyConfig
+import org.glassfish.grizzly.http.server.HttpHandlerChain
 import org.glassfish.grizzly.http.server.HttpHandlerRegistration
 import org.glassfish.grizzly.http.server.HttpServer
 import org.glassfish.grizzly.http.server.NetworkListener
@@ -36,9 +37,16 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
   var gracePeriod: Int? = 10
 
   var allowedWebHosting = true
+  private var jerseyPrefixes = listOf("/mr-api/*", "/saml/*", "/oauth/*", "/features*", "/info/*", "/dacha2/*", "/metrics", "/health/*")
 
   init {
     DeclaredConfigResolver.resolve(this)
+
+    var prefixes = FallbackPropertyConfig.getConfig("jersey.prefixes")
+
+    if (prefixes != null) {
+      jerseyPrefixes = prefixes.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toList()
+    }
 
     config.register(
       CommonFeatureHubFeatures::class.java,
@@ -114,24 +122,57 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
 
     val serverConfig = server.serverConfiguration
 
-    val resourceHandler = HttpGrizzlyContainer.makeHandler(config)
+    val handlerChain = HttpHandlerChain(server)
+    val resourceHandler =  HttpGrizzlyContainer.makeHandler(config)
 
     val contextPath: String =
       if (offsetPath.endsWith("/")) offsetPath.substring(0, offsetPath.length - 1) else offsetPath
-    if (allowedWebHosting && FallbackPropertyConfig.getConfig("run.nginx") != null) {
-      log.info("starting with web asset support")
-      serverConfig.addHttpHandler(
-        DelegatingHandler(resourceHandler, AdminAppStaticHttpHandler(offsetPath)),
-        HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("").build()
-      )
-    } else {
-      serverConfig.addHttpHandler(
-        resourceHandler,
-        HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("").build()
-      )
+
+    val amHosting = (allowedWebHosting && FallbackPropertyConfig.getConfig("run.nginx") != null)
+    if (amHosting) {
+      log.info("starting with web asset support - adding default path")
+
+      handlerChain.addHandler(DelegatingHandler(AdminAppStaticHttpHandler(offsetPath)),
+          arrayOf(HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("").build()))
+    }
+
+    val resourceHandlerPatterns = mutableListOf<HttpHandlerRegistration>()
+    // we have been mounted to respond at /foo/featurehub, so we need to mount and response at / as well (secondarily)
+    if (contextPath != "/") {
+      resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath("").urlPattern("/metrics").build())
+      resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath("").urlPattern("/health/").build())
+
+      if (jerseyPrefixes.contains("/dacha2/*")) {
+        resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath("").urlPattern("/dacha2/").build())
+      }
+    }
+
+    resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("/metrics").build())
+    resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("/health/").build())
+
+    jerseyPrefixes.forEach { prefix ->
+      resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern(prefix).build())
+    }
+
+    handlerChain.addHandler(resourceHandler, resourceHandlerPatterns.toTypedArray())
+
+    if (amHosting) {
+      log.info("starting with web asset support - adding remaining paths")
+
+      handlerChain.addHandler(DelegatingHandler(AdminAppStaticHttpHandler(offsetPath)),
+        arrayOf(HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("*").build()))
+
+//      val assetHandlingPatterns  = mutableListOf<HttpHandlerRegistration>()
+//
+//      listOf("*").forEach {
+//        assetHandlingPatterns.add(HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern(it).build())
+//      }
+//
+//      handlerChain.addHandler(DelegatingHandler(AdminAppStaticHttpHandler(offsetPath)), assetHandlingPatterns.toTypedArray())
     }
 
 
+    serverConfig.addHttpHandler(handlerChain)
     serverConfig.isPassTraceRequest = true
     serverConfig.defaultQueryEncoding = Charsets.UTF8_CHARSET
 

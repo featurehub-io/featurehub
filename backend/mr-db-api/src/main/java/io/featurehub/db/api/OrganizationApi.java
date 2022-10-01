@@ -1,7 +1,6 @@
 package io.featurehub.db.api;
 import io.featurehub.mr.model.Organization;
 
-
 public interface OrganizationApi {
 
   /**
@@ -19,4 +18,6 @@ public interface OrganizationApi {
   Organization save(Organization organisation);
 
   Organization get();
+
+  boolean hasOrganisation();
 }
