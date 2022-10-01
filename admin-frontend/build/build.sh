@@ -46,7 +46,7 @@ mv build build_original
 mkdir -p build/web/assets
 
 # Flutter already downloads Canvaskit, this just lets us use what it has already downloaded
-flutter build web --dart-define=FLUTTER_WEB_CANVASKIT_URL=/canvaskit/ --target=lib/deploy_main.dart
+flutter build web --dart-define=FLUTTER_WEB_CANVASKIT_URL=canvaskit/ --target=lib/deploy_main.dart
 
 rename_main_dart
 
