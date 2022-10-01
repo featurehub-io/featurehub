@@ -4,10 +4,7 @@ import io.featurehub.edge.features.DachaFeatureRequestSubmitter
 import io.featurehub.edge.features.DachaRequestOrchestrator
 import io.featurehub.edge.features.EdgeConcurrentRequestPool
 import io.featurehub.edge.rest.*
-import io.featurehub.edge.utils.CacheControlResponseWrapper
-import io.featurehub.edge.utils.FastlyResponseWrapper
-import io.featurehub.edge.utils.UpdateFeatureMapper
-import io.featurehub.edge.utils.UpdateMapper
+import io.featurehub.edge.utils.*
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
@@ -15,6 +12,10 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class EdgeCommonFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
+    if (FastlyResponseWrapper.fastlyConfigured()) {
+      context.register(FastlySSEContainerResponseFilter::class.java)
+    }
+
     context.register(object: AbstractBinder() {
       override fun configure() {
         bind(FeatureGetProcessor::class.java).to(FeatureGet::class.java).`in`(Singleton::class.java)
