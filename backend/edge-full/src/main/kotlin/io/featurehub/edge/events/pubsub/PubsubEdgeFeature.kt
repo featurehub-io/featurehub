@@ -39,13 +39,15 @@ class PubsubFeaturesListener @Inject constructor(
   pubsubFactory: PubSubFactory) {
   @ConfigKey("cloudevents.mr-edge.pubsub.topic-name")
   private var edgeTopicName: String? = "featurehub-mr-edge"
+  @ConfigKey("cloudevents.mr-edge.pubsub.subscription-prefix")
+  var subscriptionPrefix: String? = "featurehub-edge-listener"
 
   private val log: Logger = LoggerFactory.getLogger(PubsubFeaturesListener::class.java)
 
   init {
     DeclaredConfigResolver.resolve(this)
 
-    pubsubFactory.makeUniqueSubscriber(edgeTopicName!!, "edge") {
+    pubsubFactory.makeUniqueSubscriber(edgeTopicName!!, subscriptionPrefix!!) {
       try {
         controller.process(it)
       } catch (e: Exception) {

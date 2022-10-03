@@ -4,6 +4,7 @@ import io.featurehub.db.publish.DbCacheSource
 import io.featurehub.db.publish.DummyPublisher
 import io.featurehub.db.publish.nats.NatsDachaEventingFeature
 import io.featurehub.events.CloudEventsFeature
+import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CacheSource
@@ -22,7 +23,7 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class EventingFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
-    var amPublishing = GoogleEventFeature.isEnabled() || NatsDachaEventingFeature.isEnabled()
+    var amPublishing = GoogleEventFeature.isEnabled() || NatsDachaEventingFeature.isEnabled() || KinesisEventFeature.isEnabled()
 
     if (amPublishing) {
       context.register(CloudEventsCommonFeature::class.java)

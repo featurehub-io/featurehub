@@ -25,7 +25,10 @@ class MetricsHealthRegistration {
     private val log: Logger = LoggerFactory.getLogger(MetricsHealthRegistration::class.java)
     const val monitorPortName = "monitor.port"
 
-    fun hasExternalMonitoringPort() = FallbackPropertyConfig.getConfig(monitorPortName) != null
+    fun hasExternalMonitoringPort(): Boolean {
+      val config = FallbackPropertyConfig.getConfig(monitorPortName)
+      return config != null && config.trim() != "0"
+    }
 
     fun configureMetrics(resourceConfig: ResourceConfig,
                          serviceLocator: ServiceLocator,
@@ -82,7 +85,7 @@ class MetricsHealthRegistration {
       // turn on all jvm prometheus metrics
       DefaultExports.initialize()
 
-      if (FallbackPropertyConfig.getConfig(monitorPortName) == null) {
+      if (!hasExternalMonitoringPort()) {
         config.register(JerseyPrometheusResource::class.java)
         config.register(HealthFeature::class.java)
         config.register(ApplicationLifecycleListener::class.java)

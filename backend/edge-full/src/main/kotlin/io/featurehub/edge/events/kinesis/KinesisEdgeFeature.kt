@@ -52,6 +52,8 @@ class KinesisFeaturesListener @Inject constructor(
 class KinesisFeatureUpdatePublisher @Inject constructor(kinesisFactory: KinesisFactory) : CloudEventsEdgePublisher {
   @ConfigKey("cloudevents.edge-mr.kinesis.stream-name")
   private val updateStreamName: String = "featurehub-edge-updates"
+  @ConfigKey("cloudevents.edge-mr.kinesis.randomise")
+  private var randomise: Boolean? = true
   private var publisher: KinesisCloudEventsPublisher
 
   init {
@@ -62,7 +64,9 @@ class KinesisFeatureUpdatePublisher @Inject constructor(kinesisFactory: KinesisF
 
   override fun encodeAsJson() = false
 
+  private fun publishKey() = if (randomise!!) UUID.randomUUID().toString() else "edge-client"
+
   override fun publish(event: CloudEvent) {
-    publisher.publish(event, UUID.randomUUID().toString()) // scatter gun them across the listeners
+    publisher.publish(event, publishKey()) // scatter gun them across the listeners
   }
 }

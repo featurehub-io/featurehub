@@ -11,13 +11,15 @@ import org.slf4j.LoggerFactory
 class PubsubDachaEventsListener @Inject constructor(pubSubFactory: PubSubFactory, eventListener: CloudEventReceiverRegistry) {
   @ConfigKey("cloudevents.mr-dacha2.pubsub.topic-name")
   var topicName: String? = "featurehub-mr-dacha2"
+  @ConfigKey("cloudevents.mr-dacha2.pubsub.subscription-prefix")
+  var subscriptionPrefix: String? = "featurehub-dacha2-listener"
 
   private val log: Logger = LoggerFactory.getLogger(PubsubDachaEventsListener::class.java)
 
   init {
     DeclaredConfigResolver.resolve(this)
 
-    pubSubFactory.makeUniqueSubscriber(topicName!!, "dacha2-listener") { msg ->
+    pubSubFactory.makeUniqueSubscriber(topicName!!, subscriptionPrefix!!) { msg ->
       try {
         eventListener.process(msg)
       } catch (e: Exception) {

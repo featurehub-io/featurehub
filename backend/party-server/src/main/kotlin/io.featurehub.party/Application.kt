@@ -7,6 +7,7 @@ import io.featurehub.dacha.api.DachaClientFeature
 import io.featurehub.dacha.api.DachaClientServiceRegistry
 import io.featurehub.edge.EdgeFeature
 import io.featurehub.edge.EdgeResourceFeature
+import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
@@ -47,6 +48,7 @@ class Application {
     val config = ResourceConfig(
       NATSFeature::class.java,
       GoogleEventFeature::class.java,
+      KinesisEventFeature::class.java,
       CorsFilter::class.java,
       ManagementRepositoryFeature::class.java,
       EdgeResourceFeature::class.java,

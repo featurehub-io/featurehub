@@ -54,7 +54,7 @@ class KinesisFactoryImpl : KinesisFactory, HealthSource {
   var shutdownLength: Int? = 20
   // do we put synchronously
   @ConfigKey("cloudevents.kinesis.put-sync")
-  var putSync: Boolean? = false
+  var putSync: Boolean? = true
 
   @ConfigKey("cloudevents.kinesis.endpointUrl")
   var endpointOverride: String? = ""
@@ -124,6 +124,7 @@ class KinesisFactoryImpl : KinesisFactory, HealthSource {
     }
 
     override fun processRecords(processRecordsInput: ProcessRecordsInput) {
+      log.trace("kinesis: stream {} received {} records", tracker.streamName, processRecordsInput.records().size)
       processRecordsInput.records().forEach {
         KinesisMessageFactory.createReader(it).toEvent()?.let { msg ->
           try {
@@ -158,7 +159,7 @@ class KinesisFactoryImpl : KinesisFactory, HealthSource {
   override fun makeSubscriber(applicationName: String, streamName: String, messageHandler: (message: CloudEvent) -> Unit) {
     val tracker = ListenerTracker(applicationName, streamName, true, messageHandler, null)
 
-    log.info("kinesis: {} listening to {}", applicationName, streamName)
+    log.trace("kinesis: subscriber {} listening to {}", applicationName, streamName)
 
     val configsBuilder = ConfigsBuilder(
       streamName, applicationName, kinesisClient, makeDynamoClient(),
@@ -198,7 +199,7 @@ class KinesisFactoryImpl : KinesisFactory, HealthSource {
     return object: KinesisCloudEventsPublisher {
       override fun publish(msg: CloudEvent, partition: String) {
         try {
-          log.info("kinesis: publishing {}", msg)
+          log.trace("kinesis: stream {} publishing {}", streamName, msg.type)
           val put = kinesisClient.putRecord(
             KinesisMessageFactory.createWriter().writeStructured(msg, jsonFormat)
               .partitionKey(partition)

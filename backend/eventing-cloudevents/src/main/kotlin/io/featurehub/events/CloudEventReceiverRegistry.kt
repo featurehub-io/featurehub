@@ -18,8 +18,9 @@ interface CloudEventReceiverRegistry {
 }
 
 abstract class CloudEventReceiverRegistryImpl : CloudEventReceiverRegistry {
-  data class CallbackHolder(val clazz: Class<*>, val handler: (msg: TaggedCloudEvent) -> Unit )
-  protected val eventHandlers = mutableMapOf<String, MutableMap<String, CallbackHolder>>()
+  data class CallbackHolder(val clazz: Class<*>, val handler: (msg: TaggedCloudEvent) -> Unit)
+
+  protected val eventHandlers = mutableMapOf<String, MutableMap<String, MutableList<CallbackHolder>>>()
   protected val ignoredEvent = mutableMapOf<String, String>()
   protected val log: Logger = LoggerFactory.getLogger(CloudEventReceiverRegistry::class.java)
 
@@ -28,7 +29,8 @@ abstract class CloudEventReceiverRegistryImpl : CloudEventReceiverRegistry {
     val type = CloudEventUtils.type(clazz)
     val subject = CloudEventUtils.subject(clazz)
 
-    eventHandlers.getOrPut(type) { mutableMapOf() }[subject] =  CallbackHolder(clazz) { msg -> handler(msg as T) }
+    val handlerList = eventHandlers.getOrPut(type) { mutableMapOf() }.getOrPut(subject) { mutableListOf() }
+    handlerList.add(CallbackHolder(clazz) { msg -> handler(msg as T) })
 
     log.info("cloudevent: receiving {} / {}", subject, type)
   }
@@ -39,50 +41,60 @@ abstract class CloudEventReceiverRegistryImpl : CloudEventReceiverRegistry {
  */
 class CloudEventReceiverRegistryMock : CloudEventReceiverRegistryImpl() {
   override fun process(event: CloudEvent) {
-    val handler = eventHandlers[event.type]?.get(event.subject!!)
+    val handlers = eventHandlers[event.type]?.get(event.subject!!)
 
-    if (handler != null) {
-      CacheJsonMapper.fromEventData(event, handler.clazz)?.let { eventData ->
-        handler.handler(eventData as TaggedCloudEvent)
+    if (handlers != null) {
+      CacheJsonMapper.fromEventData(event, handlers[0].clazz)?.let { eventData ->
+        handlers.parallelStream().forEach { handler ->
+          handler.handler(eventData as TaggedCloudEvent)
+        }
       }
     }
   }
 
   fun process(obj: TaggedCloudEvent) {
-    val handler = eventHandlers[CloudEventUtils.type(obj.javaClass)]?.get(CloudEventUtils.subject(obj.javaClass))
+    val handlers = eventHandlers[CloudEventUtils.type(obj.javaClass)]?.get(CloudEventUtils.subject(obj.javaClass))
       ?: throw java.lang.RuntimeException("No handler for " + obj.toString())
 
-    handler.handler(obj)
+    handlers.parallelStream().forEach { handler ->
+      handler.handler(obj)
+    }
   }
 }
 
 class CloudEventReceiverRegistryProcessor @Inject
-  constructor(private val openTelemetryReader: CloudEventsTelemetryReader) : CloudEventReceiverRegistryImpl() {
+constructor(private val openTelemetryReader: CloudEventsTelemetryReader) : CloudEventReceiverRegistryImpl() {
 
   override fun process(event: CloudEvent) {
-    if (event.subject != null && event.type != null) {
-      val handler = eventHandlers[event.type]?.get(event.subject!!)
-      if (handler == null) {
-        event.subject?.let {it ->
-          // if we can't handle this message, warn about it once and then stick it in
-          // the ignore bucket
-          ignoredEvent.putIfAbsent(event.type, it)?.let {
-            log.warn("Did not understand incoming event: {} / {}", event.subject, event.type)
-          }
-        }
-      } else {
-        openTelemetryReader.receive(event) {
-          CacheJsonMapper.fromEventData(event, handler.clazz)?.let { eventData ->
-            if (log.isTraceEnabled) {
-              log.trace("cloudevent: incoming message on {}/{} : {}", event.type, event.subject, eventData.toString())
-            }
+    if (event.subject == null || event.type == null) {
+      log.error("received a cloud event with no type or subject")
+      return
+    }
 
-            handler.handler(eventData as TaggedCloudEvent)
-          } ?: log.error("cloudevent: failed to handle message {} : {}", event.subject, event.type)
+    val handlers = eventHandlers[event.type]?.get(event.subject!!)
+
+    if (handlers == null) {
+      event.subject?.let { it ->
+        // if we can't handle this message, warn about it once and then stick it in
+        // the ignore bucket
+        ignoredEvent.putIfAbsent(event.type, it)?.let {
+          log.debug("cloudevent: did not understand incoming event: {} / {}", event.subject, event.type)
         }
       }
-    } else {
-      log.error("received a cloud event with no type or subject")
+
+      return
+    }
+
+    openTelemetryReader.receive(event) {
+      CacheJsonMapper.fromEventData(event, handlers[0].clazz)?.let { eventData ->
+        if (log.isTraceEnabled) {
+          log.trace("cloudevent: incoming message on {}/{} : {}", event.type, event.subject, eventData.toString())
+        }
+
+        handlers.parallelStream().forEach { handler ->
+          handler.handler(eventData as TaggedCloudEvent)
+        }
+      } ?: log.error("cloudevent: failed to handle message {} : {}", event.subject, event.type)
     }
   }
 }
