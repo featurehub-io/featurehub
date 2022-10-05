@@ -41,7 +41,7 @@
     <module>edge-full</module>
     <module>edge-rest</module>
     <module>mr</module>
-    <module>../admin-frontend</module>
+<!--    <module>../admin-frontend</module>-->
     <module>dacha</module>
     <module>dacha2</module>
     <module>party-server</module>

@@ -269,7 +269,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
 
   @Override
   public void invalidateSession(@NotNull String token) {
-    new QDbLogin().token.eq(token).person.personType.eq(PersonType.PERSON).delete();
+    new QDbLogin().token.eq(token).delete();
   }
 
   @Override

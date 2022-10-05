@@ -8,7 +8,7 @@ import io.featurehub.events.pubsub.PubSubPublisher
 import jakarta.inject.Inject
 
 class PubsubStatsPublisher @Inject constructor(pubSubFactory: PubSubFactory) : CloudEventStatPublisher {
-  @ConfigKey("cloudevents.stats.pubsub.channel-name")
+  @ConfigKey("cloudevents.stats.pubsub.topic-name")
   var topicName: String? = "featurehub-stats"
   private var publisher: PubSubPublisher
 
