@@ -23,9 +23,9 @@ class AdminServiceAccount2Spec extends Base2Spec {
       authenticationSqlApi.changePassword(sa1.person.id.id, '', 'new-password') == null
     and: 'i can get the person by token'
       authenticationSqlApi.findSession(sa1.token).person.id.id == sa1.person.id.id
-    and: "i delete the token but i can still use it because it won't delete"
-      authenticationSqlApi.invalidateSession(sa1.token)
-      authenticationSqlApi.findSession(sa1.token).person.id.id == sa1.person.id.id
+//    and: "i delete the token but i can still use it because it won't delete"
+//      authenticationSqlApi.invalidateSession(sa1.token)
+//      authenticationSqlApi.findSession(sa1.token).person.id.id == sa1.person.id.id
     and: "i cannot reset an expired token"
       authenticationSqlApi.resetExpiredRegistrationToken(sa1.person.email) == null
   }
