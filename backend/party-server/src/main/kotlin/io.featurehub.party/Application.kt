@@ -96,7 +96,7 @@ class Application {
     @JvmStatic
     fun main(args: Array<String>) {
       System.setProperty("user.timezone", "UTC")
-      System.setProperty("dacha1.disabled", "true")
+      System.setProperty("dacha1.enabled", "false")
       System.setProperty("dacha2.enabled", "true")
       System.setProperty(APPLICATION_NAME_PROPERTY, "party-server")
       try {

@@ -110,7 +110,7 @@ class StreamingFeatureSource @Inject constructor(
       return
     }
 
-    log.info("sending feature {}", features)
+    log.trace("sending feature {}", features)
 
     val environmentId = features.features[0].environmentId
 

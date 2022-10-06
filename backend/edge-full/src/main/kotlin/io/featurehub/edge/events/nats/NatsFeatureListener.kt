@@ -21,7 +21,7 @@ class NatsFeatureListener @Inject constructor(private val controller: EdgeSubscr
   private val log: Logger = LoggerFactory.getLogger(NatsFeatureListener::class.java)
 
   init {
-      DeclaredConfigResolver.resolve(this)
+    DeclaredConfigResolver.resolve(this)
 
     listener = nats.createTopicListener(edgeChannelName!!) { event ->
       controller.process(event)

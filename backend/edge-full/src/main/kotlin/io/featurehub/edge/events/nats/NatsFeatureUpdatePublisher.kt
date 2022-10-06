@@ -9,14 +9,15 @@ import io.featurehub.publish.NATSSource
 import jakarta.inject.Inject
 
 class NatsFeatureUpdatePublisher @Inject constructor(
-    natsSource: NATSSource,
+  natsSource: NATSSource,
 ) : CloudEventsEdgePublisher {
   private val publisher: NatsCloudEventsPublisher
+
   @ConfigKey("cloudevents.edge-mr.nats.channel-name")
   private val updatesSubject: String = "featurehub/mr-updates-queue"
 
   init {
-      DeclaredConfigResolver.resolve(this)
+    DeclaredConfigResolver.resolve(this)
 
     publisher = natsSource.createPublisher(updatesSubject!!)
   }

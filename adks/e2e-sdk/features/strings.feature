@@ -7,7 +7,7 @@ Feature: All string based functionality works as expected
     And I connect to the feature server
 
     @strings
-  Scenario: A new portfolio with a boolean feature
+  Scenario: A new portfolio with a strings feature
 #    Given I connect to the Edge server using <ConnectionType>
     Given There is a new string feature
     Then the string feature is unlocked and null
