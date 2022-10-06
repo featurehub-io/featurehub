@@ -37,7 +37,7 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
   var gracePeriod: Int? = 10
 
   var allowedWebHosting = true
-  private var jerseyPrefixes = listOf("/mr-api/*", "/saml/*", "/oauth/*", "/features*", "/info/*", "/dacha2/*", "/metrics", "/health/*")
+  private var jerseyPrefixes = listOf("/mr-api/*", "/saml/*", "/oauth/*", "/features", "/features/*", "/info/*", "/dacha2/*")
 
   init {
     DeclaredConfigResolver.resolve(this)
@@ -140,15 +140,15 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
     // we have been mounted to respond at /foo/featurehub, so we need to mount and response at / as well (secondarily)
     if (contextPath != "/") {
       resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath("").urlPattern("/metrics").build())
-      resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath("").urlPattern("/health/").build())
+      resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath("").urlPattern("/health/*").build())
 
       if (jerseyPrefixes.contains("/dacha2/*")) {
-        resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath("").urlPattern("/dacha2/").build())
+        resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath("").urlPattern("/dacha2/*").build())
       }
     }
 
     resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("/metrics").build())
-    resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("/health/").build())
+    resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("/health/*").build())
 
     jerseyPrefixes.forEach { prefix ->
       resourceHandlerPatterns.add(HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern(prefix).build())
@@ -160,7 +160,7 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
       log.info("starting with web asset support - adding remaining paths")
 
       handlerChain.addHandler(DelegatingHandler(AdminAppStaticHttpHandler(offsetPath)),
-        arrayOf(HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("*").build()))
+        arrayOf(HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("/*").build()))
 
 //      val assetHandlingPatterns  = mutableListOf<HttpHandlerRegistration>()
 //

@@ -4,6 +4,7 @@ import io.featurehub.db.publish.DbCacheSource
 import io.featurehub.db.publish.DummyPublisher
 import io.featurehub.db.publish.nats.NatsDachaEventingFeature
 import io.featurehub.events.CloudEventsFeature
+import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CacheSource
@@ -17,11 +18,12 @@ import io.featurehub.mr.events.service.FeatureUpdateListenerImpl
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
+import org.glassfish.hk2.api.Immediate
 import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class EventingFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
-    var amPublishing = GoogleEventFeature.isEnabled() || NatsDachaEventingFeature.isEnabled()
+    var amPublishing = GoogleEventFeature.isEnabled() || NatsDachaEventingFeature.isEnabled() || KinesisEventFeature.isEnabled()
 
     if (amPublishing) {
       context.register(CloudEventsCommonFeature::class.java)
@@ -41,7 +43,7 @@ class EventingFeature : Feature {
           // the broadcaster will determine if dacha2 is enabled and not publish to that channel if not
           bind(CloudEventCacheBroadcaster::class.java).to(CacheBroadcast::class.java).`in`(Singleton::class.java)
 
-          bind(FeatureUpdateListenerImpl::class.java).to(FeatureUpdateListener::class.java).`in`(Singleton::class.java)
+          bind(FeatureUpdateListenerImpl::class.java).to(FeatureUpdateListener::class.java).`in`(Immediate::class.java)
           bind(DbCacheSource::class.java).to(CacheSource::class.java).to(CacheApi::class.java)
             .`in`(
               Singleton::class.java

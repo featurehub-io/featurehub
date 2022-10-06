@@ -55,14 +55,14 @@ class StatPublisherImpl @Inject constructor(private val publisher: CloudEventSta
 
       val failed = prometheusPublishFailedCounter.computeIfAbsent(cacheName) {
         Counter.build(
-          String.format("edge_stat_nats_failed_%s", cacheName.replace("-", "_")),
-          String.format("Edge Stats NATS Failed publishing to channel %s", cacheName)
+          String.format("edge_stat_failed_%s", cacheName.replace("-", "_")),
+          String.format("Edge Stats Failed publishing to channel %s", cacheName)
         ).register()
       }
       val histogram = prometheusHistogram.computeIfAbsent(cacheName) {
         Histogram.build(
-          String.format("edge_stat_nats%s", cacheName.replace("-", "_")),
-          String.format("Edge Stats NATS %s", cacheName)
+          String.format("edge_stat_published_%s", cacheName.replace("-", "_")),
+          String.format("Edge Stats Published %s", cacheName)
         ).register()
       }
 

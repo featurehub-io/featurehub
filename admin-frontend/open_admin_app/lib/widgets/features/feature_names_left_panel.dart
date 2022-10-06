@@ -113,7 +113,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                                                         .bold)),
                                                   ),
                                                 ),
-                                                if (feature.link!.isNotEmpty)
+                                                if (feature.link?.isNotEmpty == true)
                                                   Tooltip(
                                                     message: feature.link!,
                                                     child: IconButton(

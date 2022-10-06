@@ -338,7 +338,7 @@ open class ConvertUtils : Conversions {
         .isNull.groupMembers.person
         .eq(dbp).owningOrganization.id.eq(if (org == null) organizationId() else org.id)
         .findList()
-      log.info("groups for person {} are {}", p, groupList)
+      log.trace("groups for person {} are {}", p, groupList)
       groupList
         .forEach { dbg: DbGroup? -> p.addGroupsItem(toGroup(dbg, opts.minus(FillOpts.Groups))) }
     }

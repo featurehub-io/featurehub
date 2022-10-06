@@ -33,7 +33,7 @@ class PubsubMRFeature : Feature {
 }
 
 class PubsubCloudEventsEdgeChannel @Inject constructor(pubSubFactory: PubSubFactory) : CloudEventsEdgeChannel {
-  @ConfigKey("cloudevents.mr-edge.pubsub.channel-name")
+  @ConfigKey("cloudevents.mr-edge.pubsub.topic-name")
   private var edgeChannelName: String? = "featurehub-mr-edge"
 
   private val publisher: PubSubPublisher
@@ -54,7 +54,7 @@ class PubsubCloudEventsEdgeChannel @Inject constructor(pubSubFactory: PubSubFact
 }
 
 class PubsubCloudEventsDachaChannel @Inject constructor(pubSubFactory: PubSubFactory) : CloudEventsDachaChannel {
-  @ConfigKey("cloudevents.mr-dacha2.pubsub.channel-name")
+  @ConfigKey("cloudevents.mr-dacha2.pubsub.topic-name")
   private var dachaChannelName: String? = "featurehub-mr-dacha2"
 
   private val publisher: PubSubPublisher
