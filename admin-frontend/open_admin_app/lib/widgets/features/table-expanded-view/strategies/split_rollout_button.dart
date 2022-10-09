@@ -16,30 +16,24 @@ class AddStrategyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 16.0),
-      child: SizedBox(
-        height: 36,
-        child: TextButton.icon(
-            label: const Text('Add split targeting rules'),
-            icon: const Icon(MaterialCommunityIcons.arrow_split_vertical),
-            onPressed: (editable == true)
-                ? () => bloc.fvBloc.mrClient.addOverlay((BuildContext context) {
-                      return BlocProvider(
-                        creator: (_c, _b) => IndividualStrategyBloc(
-                            bloc.environmentFeatureValue,
-                            RolloutStrategy(
-                              name: '',
-                              id: 'created',
-                            )),
-                        child: StrategyEditingWidget(
-                          bloc: bloc,
-                          editable: editable,
-                        ),
-                      );
-                    })
-                : null),
-      ),
-    );
+    return TextButton.icon(
+        label: const Text('Add split targeting rules'),
+        icon: const Icon(MaterialCommunityIcons.arrow_split_vertical),
+        onPressed: (editable == true)
+            ? () => bloc.fvBloc.mrClient.addOverlay((BuildContext context) {
+                  return BlocProvider(
+                    creator: (_c, _b) => IndividualStrategyBloc(
+                        bloc.environmentFeatureValue,
+                        RolloutStrategy(
+                          name: '',
+                          id: 'created',
+                        )),
+                    child: StrategyEditingWidget(
+                      bloc: bloc,
+                      editable: editable,
+                    ),
+                  );
+                })
+            : null);
   }
 }

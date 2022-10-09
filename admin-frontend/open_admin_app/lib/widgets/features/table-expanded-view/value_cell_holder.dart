@@ -64,6 +64,7 @@ class ValueCellHolder extends StatelessWidget {
                       var editable = !snapshot.data! && canChangeValue;
                       return Column(
                         children: [
+                          const SizedBox(height: 8.0),
                           AddStrategyButton(
                               bloc: strategyBloc, editable: editable),
                           RetireFeatureValueCheckboxWidget(
