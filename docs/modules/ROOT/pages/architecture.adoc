@@ -7,14 +7,18 @@ one where updates to feature values are streamed out to listening clients in nea
 Since its release, other patterns for use
 have emerged and we are, with the 1.5.0 release, making a few additions and alterations to match these expectations.
 
+With the 1.5.9 release we have moved to using Cloud Events and supporting an increased number of async layers - 
+NATS (preferred), Google PubSub (Release), AWS Kinesis (beta).
+
 [#_streaming]
 === Streaming - Party Server
-FeatureHub is available as a bundle (for streaming this is the Party Server, ) or as individual
+FeatureHub is available as a bundle (for streaming this is the Party Server) or as individual
 pieces for better scalability and isolation of your Administration side from your applications that require their
 features.
 
-We go into this in more detail below but suffice to say, the streaming deployment is designed to scale to millions,
-even billions of requests. Deployed, conceptually it looks like this:
+The extended streaming deployment is designed to scale to millions, even billions of requests, while mostly isolating 
+your backend system from being overwhelmed by requests. With release 1.5.9 we have moved to the preferred "Dacha2" Lazy Cache system,
+and deployed it conceptually looks like this:
 
 image::fh_architecture_streaming.svg[Architecture,600]
 NOTE: Communication between Edge and Dacha(Cache) is shown via REST on this image, which can be configured optionally. By default, it is via NATS.
@@ -39,8 +43,8 @@ and what each part is for.
 
 === The Management Repository (MR, the FeatureHub Server)
 
-This is the main admin server and is the source of truth for the application. All users login here, all portfolios,
-applications, environments, groups, features, etc are all controlled via this. This is always bundled with a UI
+This is the main admin server and is the source of truth for the application. All users login here (via local, OAuth2 or SAML), 
+all portfolios, applications, environments, groups, features, etc are all controlled via this. This is always bundled with a UI
 and backend server and is configured to talk to some external database.
 
 If MR server goes down, it won't affect the operation of end-user clients, all their data is in the cache (or in
@@ -60,25 +64,39 @@ to transfer environments, features and service accounts around the network to fe
 === Dacha
 
 Dacha is where the data that is required by every SDK is cached, and you need at least one of these for an operational
-FeatureHub system. It can be run in-process (using the _Party Server_ design), or separately. In any case, it always
-communicates via NATS, and when it starts it broadcasts for another complete cache and will fill itself from that. If
-none is available, it negotiates a master, and will request the MR to provide details. Each Dacha is defined with a name,
-and the self hosted one is always called "default". All but the very largest of corporations should never need more
-than one cache name, as it is a form of sharding. Each cache is able to handle thousands of environments and their
-features.
+FeatureHub system. It can be run in-process (using the _Party Server_ design), or separately. Edge always talks to
+Dacha which holds permissions, environments, features, and pre-calculated etags for appropriate requests.
 
-It is expected you will always run at least two of these in any production environment. They are always listening to
-the same topic from MR, so they do not suffer split brain.
+==== Architectural Choices for Dacha
+
+There are two choices for Dacha, the standard for Dacha before 1.5.9 is Dacha1.
+
+- It must use NATS as it relies on features only NATS has
+- When it starts it completely fills its internal cache, either from another NATS or via the MR. This makes it completely
+isolate your servers from MR, no deliberate "miss" traffic can impact your Management Repository
+- Edge is able to talk to Dacha ove NATS
+- Filling its internal cache can take some time with hundreds or thousands of environments, and MR must be available
+for it to do so, so it can lead to a complicated start for a new k8s cluster or rollout. This can delay it from being
+healthy depending on how fast it can fill its cache, which can lead to operational complexity.
+
+Dacha2 is introduced in 1.5.9 and exists to support multiple async layers. It is a lazy cache:
+
+- it supports multiple async layers (NATS, Google Pub/Sub, AWS Kinesis (beta), we are looking at others)
+- it is Cloud Events first
+- it caches misses as well as hits to ensure consistent misses do not make it to MR
+- it automatically updates itself as new environments, features, and service account changes are broadcast from MR, so
+a newly created environment will be a "cache hit" by default.
 
 === Edge (Streaming+REST)
 
 Edge is intended to be where the communication with the SDKs live. It is intended to be high volume endpoint but retain
 little data - only who is connected to it and which environment they are listening to for feature updates. Access to
-Edge is given by a combination of Service Account and Environment IDs. That combination is given a permission structure
+Edge is given by a combination of Service Account and Environment IDs (the API key). That combination is given a permission structure
 back in MR, and is usually simply READ. For test accounts, a service account can also have the ability to change
 features as it may need to while doing end-to-end tests.
 
-It does not currently attempt to retain the active feature list for each Service Account + Environment.
+It does not attempt to retain the active feature list for each Service Account + Environment. It is highly multithreaded
+and concentrates requests to Dacha.
 
 It is expected that you will normally run at least two of these in any kind of environment.
 
