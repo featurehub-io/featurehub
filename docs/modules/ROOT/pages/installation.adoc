@@ -6,9 +6,9 @@ There is a GitHub https://github.com/featurehub-io/featurehub-install[repository
 
 All the deployment options mount the database volume separately from the main set of containers, allowing you to upgrade your database and versions of FeatureHub without destroying your database.
 
-NOTE: As FeatureHub is an open source project, we test on only a limited number of databases, primarily Postgres.
+NOTE: As FeatureHub is an open source project, we develop on only a limited number of databases, primarily Postgres.
 
-We provide and maintain database migrations scripts for Postgres, MySQL/MariaDB, and Oracle.
+We provide and maintain database migrations scripts for Postgres, MySQL, MariaDB, and Oracle.
 
 There is also a MariaDB and Oracle example docker-compose install, and the MariaDB and MySQL drivers are installed in all
 server runtimes. Further we include support for Google's Cloud SQL libraries in the base images if you need to

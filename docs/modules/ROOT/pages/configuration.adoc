@@ -6,15 +6,21 @@ By this we mean the properties you can set to control the behaviour of different
 FeatureHub controller properties are available as environment variables using the same case. If you have been using
 the mechanism introduced in 1.4.1 this still works but isn't recommended going forward.
 
+NOTE: Please make sure you check out the https://github.com/featurehub-io/featurehub-install[`featurehub-install`] GitHub repository 
+and the https://github.com/featurehub-io/featurehub-helm[`featurehub-helm`] 
+repository for examples on how these projects should be run and deployed.
+
 If you are using a system like
 Kubernetes, you can mount these properties in `/etc/app-config/application.properties` and
 `/etc/app-config/secrets.properties`.
 
+
 === Database configuration
 
-All subsystems that talk to the database take these parameters. Even if
-you are using environment variables, we recommend using lower case
-so the database connections are correctly configured.
+Only the Management Repository, Party Server, Party-Server-ish and Edge-REST deployments talk to the database.
+Edge (streaming), Dacha and Dacha2 do not. 
+
+Configuration parameters:
 
 - `db.url` - the jdbc url of the database server.
 - `db.username` -  the username used to log in.
@@ -23,10 +29,10 @@ so the database connections are correctly configured.
 - `db.maxConnections` - the maximum connections to open to the db (default 100)
 - `db.pstmtCacheSize` - the prepared statement cache size (no default)
 
-The library we use - ebean - supports a number of other configuration
-parameters
+The library we use - ebean - supports a number of other configuration parameters
 
 ==== Database Read Replicas
+
 We also support Read Replicas which are useful for deployments of `edge-rest`. We do not
 recommend them for `mr`, `party-server` or `party-server-ish` deployments as read replicas have to behave
 like being up to a couple of seconds out is ok. This is fine for `edge-rest` as it's major functionality
@@ -34,19 +40,93 @@ is reading via a GET. To use a read replica `db.` prefixes  use `db-replica` pre
 where it is and how it should be connected to. Typically an `edge-rest` deployment will configure both of these (`db`
 and `db-replica` parameters) but the corresponding `mr` will not.
 
-== NATS
+== Async options for FeatureHub
 
-If you are using the Streaming version of FeatureHub, then you may
-need to configure your NATS urls. If you have only once instance of a
-party-server, you can leave it as the default.  If you have deployed
-Option 2, or you have multiple servers with Option 1a, you will need to make sure  your NATS
-servers are configured correctly.
+If you use a streaming version of FeatureHub, you need an async layer and this has traditionally been NATS.
+With the advent of Dacha2, the async layer is now a bigger topic. 
+
+NOTE: If you use Dacha1, you do not need to change anything, the preconfigured settings are all normal.
+
+To swap from Dacha1 (NATS only) to Dacha2 (all options), you need to set the environment variables:
+
+- `dacha1.enabled=false` - tell FeatureHub we are no longer using Dacha1
+- `dacha2.enabled=true`
+
+=== NATS
+
+The upside of NATS is simplicity and speed, it is the fastest product we test with by far. We do not use JetStream,
+but you can configure it with JetStream if you wish. The downside is typically that your Operations team has to support
+it and it is an extra cost to deploy. The Kubernetes charts for NATS are extremely good and reliable.
+
+==== Communication
+NATS communicates using a protocol whereby the clients essentially tell the servers about each other, but they
+do have to be able to communicate. Please read the https://docs.nats.io/[NATS documentation] for more information. 
+
+If you have only one instance of a
+party-server you do not need to set anything. If you have deployed NATS yourself or are running multiple Party Servers,
+you will need to set the environment variable:
 
 - `nats.urls` - a comma separated list of NATs servers.
 
-NATS works by having the clients tell the servers where each other
-are, so the NATS servers need to be routable (i.e. they must be able to talk to each other) but do not need to
-be explicitly told about each other.
+You do not need to configure anything further for NATS for Dacha1 or Dacha2. NATS supports request/reply, 
+true pub/sub and pub/queues in a single product. 
+
+=== Google's Pub/Sub
+
+For Google's PubSub, you will need to turn NATS *off*. We consider Google Pub/Sub to be production ready as of 1.5.9.
+
+- `nats.enabled=false`
+
+And PubSub on:
+
+- `cloudevents.pubsub.enabled=true`
+
+You will also need to tell FeatureHub what the topics are for publishing on. You need to configure these across all
+three applications. 
+
+- `cloudevents.pubsub.project=featurehub` - whatever the Google project ID you are deploying FeatureHub into
+- `cloudevents.edge-mr.pubsub.topic-name=featurehub-edge-updates` - the name of the topic used by Edge to publish TestSDK updates back to MR
+- `cloudevents.mr-edge.pubsub.topic-name=featurehub-mr-edge` - Feature Updates published from MR -> Edge for streaming clients
+- `cloudevents.stats.pubsub.topic-name=featurehub-stats` - You only need to configure this if you have Stats publishing turned on, otherwise you can ignore it
+- `cloudevents.mr-dacha2.pubsub.topic-name=featurehub-mr-dacha2` - the name of the topic MR publishes feature updates, environment updates and service account updates.
+- `cloudevents.pubsub.min-backoff-delay-seconds=5` - Edge and Dacha must be able to create their own subscriptions. Google PubSub is not actually "pubsub", there is no way for all connections to a subscription
+to receive a message, so this delay reflects how long PubSub should wait before trying to redeliver the message. Edge and Dacha will delete their subscriptions when they shut down, so keep this low.
+- `cloudevents.mr-edge.pubsub.subscription-prefix=featurehub-edge-listener` - the prefix used for subscriptions created by Edge 
+- `cloudevents.mr-dacha2.pubsub.subscription-prefix=featurehub-dacha2-listener` - the prefix used for subscriptions created by Dacha2 instances
+
+MR also needs an extra environment variable to tell it what subscription to listen to for updates from the TestSDK topic configured above (`cloudevents.edge-mr.pubsub.topic-name`):
+
+- `cloudevents.inbound.channel-names=featurehub-edge-updates-mr-sub`
+
+For testing locally there are extra fields if you are using the emulator - they are used in the `featurehub-installs` PubSub folder. To test in Google, we use https://www.pulumi.com/[Pulumi]. 
+
+=== AWS Kinesis
+
+We are now supporting AWS Kinesis however we are not fully happy with the performance, the polling only mode and the delivery jitter 
+means it is not passing our strenuous high performance testing harness. If you are evaluating FeatureHub and want to deploy on AWS, please contact us via our Website and consider
+working with us. As with PubSub, you must turn NATS support off.
+
+- `nats.enabled=false`
+
+And Kinesis on:
+
+- `cloudevents.kinesis.enabled=true`
+
+Then MR, Edge and MR need to know the streams:  
+
+- `cloudevents.mr-edge.kinesis.stream-name=featurehub-mr-edge` - the stream for MR -> Edge communication
+- `cloudevents.mr-edge.kinesis.randomise-partition-key=false` - if you have > 1 shard, make sure this is true, unless you have a lot of traffic you probably don't need it
+- `cloudevents.stats.kinesis.stream-name=featurehub-stats` - if you are publishing stats, the stream for doing so
+- `cloudevents.mr-dacha2.kinesis.stream-name=featurehub-mr-dacha2` - the stream for MR -> Dacha2 communication
+- `cloudevents.mr-dacha2.kinesis.randomise-partition-key=false` - if you have > 1 shard, make sure this is true, unless you have a lot of traffic you probably don't need it
+
+Then MR needs to know the stream for TestSDK updates:
+
+- `cloudevents.inbound.stream-names=featurehub-edge-updates` - 
+
+And Edge needs to know the stream to publish them on:
+
+- `cloudevents.edge-mr.kinesis.stream-name=featurehub-edge-updates`
 
 === Management Repository
 
@@ -68,16 +148,26 @@ created.
 - `cache-control.web.index` - this allows you to set the Cache-Control header on the index.html file. It is set by default to `no-store, max-age=0` preventing any caching, so as new versions roll out, they are correctly picked up.
 - `cache-control.web.other` - this sets the cache control on all of the other content of the website, which is essentially considered to be versioned. This data should never change and it is set by default to `max-age=864000` - or about 10 days. 
 
-=== Dacha Config
+=== Dacha1 Config
 
-The following properties can be set (that are meaningful):
+If you are using Dacha1 (the "active" cache), the following properties/environment variables can be set (that are meaningful):
 
-- `nats.urls` - a comma separated list of NATs servers
 - `cache.timeout` - how long the server will attempt to find and resolve a master cache before moving onto the next step (in ms, default = 5000)
 - `cache.complete-timeout` - how long it will wait after another cache has negotiated master before it expects to see data (in ms, default = 15000)
 - `cache.pool-size` - the number of threads in pool for doing "work" - defaults to 10
 
+=== Dacha2 Config
+
+If you are using Dacha2 (the "lazy" cache), then the following properties/environment variables can be set:
+
+- `dacha2.cache.api-key` - if Dacha2 is available directly on the internet, it is recommended you set an API key to protect it. 
+Also set this on *Edge* (but only if Dacha2 is publicically exposed). 
+
+There are other configuration fields that allow you to not activetely cache incoming new environments or set the size of the LRU cache for data, but unless
+you are getting memory issues or need to support more than 10000 active environments, it is not recommended you bother with these.
+
 == Edge (all) Config
+
 - `jersey.cors.headers` - a list of CORS headers that will be allowed, specifically for browser support
 - `update.pool-size` (10) - how many threads to allocate to processing incoming updates from NATs. These are responses to feature
 requests and feature updates coming from the server.
@@ -88,7 +178,6 @@ there may be situations where it makes sense.
 
 === Edge (Streaming) Config
 
-- `nats.urls` - a comma separated list of NATs servers
 - `listen.pool-size` (10) - how many threads to allocate to processing incoming requests to listen. This just takes the request,
 decodes it and sends it down via NATs and releases.
 - `edge.sse.drop-after-seconds` (30) - how many seconds a client is allowed to listen for before being kicked off. Used to ensure connections
@@ -99,9 +188,9 @@ to prevent reconnect storms as infrastructure is restarted.
 connection while it is alive. If you set `edge.sse.drop-after-seconds` to 0, then the SSE connection will stay open, sending heartbeat
 signals until the remote system drops the connection. This allows the heartbeat to be used as well as or instead of kicking SSE connections
 off to ensure ghost connections.
-- `dacha.url.<cache-name>` = url - this is only relevant if you are running split servers - so Dacha and Edge run in their own containers. You
-need to tell Edge where Dacha is located. The default cache is called `default, so it will expect one called `dacha.url.default` and the url. In the
-sample docker-compose where they are split, the hostname for Dacha is `dacha`, so this is `dacha.url.default=http://localhost:8094`. This isn't
+- `dacha.url.default` = url - *You MUST specify this for Dacha2* this is only relevant if you are running split servers - so Dacha and Edge run in their own containers. You
+need to tell Edge where Dacha is located. In the
+sample docker-compose where they are split, the hostname for Dacha is `dacha`, so this is `dacha.url.default=http://localhost:8034`. This isn't
 required for the Party Server because communication is internal.
 
 === Edge (REST only) Config
@@ -130,8 +219,8 @@ which means they are available to all of your normal API endpoints as well. In a
 which FeatureHub is aimed at, this is rarely what you want. So FeatureHub has the ability to list these
 endpoints on a different port.
 
-- `monitor.port` (undefined) - if not defined, it will expose the metrics and health on the server port.
-If not, it will expose them on this port (and not on the server port).
+- `monitor.port` (undefined) - if not defined or `0`, it will expose the metrics and health on the server port.
+If not, it will expose them on this port (and not on the server port). For systems like ECS where having > 1 port is not desirable, you should set it to `0`.
 - `featurehub.url-path` - allows  to configure base path (context root) other than "/". This will set the base path in the index.html of the FeatureHub web app and the backend. Note, this is an offset, not a full domain name, e.g. `featurehub.url-path=/foo/featurehub`.
 In case if the front-end is decoupled on a CDN, the base bath needs to be configured directly in index.html by setting: `<base href="/foo/featurehub/">` (note the trailing slash).
 - `cache-control.api` - allows the configuration of the Cache-Control headings on all GET based API calls. This allows you to put a CDN in front of FeatureHub and ensure the CDN does not
