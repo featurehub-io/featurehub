@@ -81,8 +81,8 @@ And PubSub on:
 
 - `cloudevents.pubsub.enabled=true`
 
-You will also need to tell FeatureHub what the topics are for publishing on. There is no harm in configuring these
-across all three applications:
+You will also need to tell FeatureHub what the topics are for publishing on. You need to configure these across all
+three applications. 
 
 - `cloudevents.pubsub.project=featurehub` - whatever the Google project ID you are deploying FeatureHub into
 - `cloudevents.edge-mr.pubsub.topic-name=featurehub-edge-updates` - the name of the topic used by Edge to publish TestSDK updates back to MR
