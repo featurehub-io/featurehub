@@ -14,7 +14,34 @@
   <title>FeatureHub</title>
   <link rel="shortcut icon" href="favicon.ico" />
   <script defer src="main.dart.js" type="application/javascript"></script>
+
+  <style>
+    .container {
+      width: 100vw;
+      height: 100vh;
+      display: flex; /* Default Axis is X*/
+      justify-content: center; /* Main Axis */
+      align-items: center; /* Cross Axis */
+    }
+    .indicator{
+      width: 5vw;
+    }
+  </style>
 </head>
-<body id="app-container">
+<body id="app-container" style="overflow: hidden">
+<div id="loading_indicator" class="container">
+  <img class="indicator" src="./assets/loading.gif" />
+</div>
+<script>
+  window.onload = function () {
+    setTimeout(function () {
+      var loadingIndicator = document.getElementById("loading_indicator");
+      if (loadingIndicator) {
+        loadingIndicator.remove();
+      }
+    }, 10000);
+  };
+</script>
+
 </body>
 </html>

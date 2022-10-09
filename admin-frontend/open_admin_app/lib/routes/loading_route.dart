@@ -5,8 +5,8 @@ class LoadingRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: LinearProgressIndicator(),
+    return Center(
+      child: Container(),
     );
   }
 }
