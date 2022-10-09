@@ -69,7 +69,7 @@ Dacha which holds permissions, environments, features, and pre-calculated etags 
 
 ==== Architectural Choices for Dacha
 
-There are two choices for Dacha, the standard for Dacha before 1.5.9 is Dacha1.
+There are two choice for Dacha: Dacha1 and Dacha2 (Dacha2 is available from v1.5.9).
 
 - It must use NATS as it relies on features only NATS has
 - When it starts it completely fills its internal cache, either from another NATS or via the MR. This makes it completely

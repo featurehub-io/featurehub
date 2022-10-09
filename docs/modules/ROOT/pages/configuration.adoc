@@ -62,7 +62,7 @@ it and it is an extra cost to deploy. The Kubernetes charts for NATS are extreme
 NATS communicates using a protocol whereby the clients essentially tell the servers about each other, but they
 do have to be able to communicate. Please read the https://docs.nats.io/[NATS documentation] for more information. 
 
-If you have only once instance of a
+If you have only one instance of a
 party-server you do not need to set anything. If you have deployed NATS yourself or are running multiple Party Servers,
 you will need to set the environment variable:
 
@@ -73,7 +73,7 @@ true pub/sub and pub/queues in a single product.
 
 === Google's Pub/Sub
 
-For Google's PubSub, you will need to turn nats *off*. We consider Google Pub/Sub to be production ready as of 1.5.9.
+For Google's PubSub, you will need to turn NATS *off*. We consider Google Pub/Sub to be production ready as of 1.5.9.
 
 - `nats.enabled=false`
 
@@ -102,9 +102,9 @@ For testing locally there are extra fields if you are using the emulator - they 
 
 === AWS Kinesis
 
-This is the support for AWS Kinesis. We are not fully happy with the performance of this, the polling only mode and the delivery jitter 
+We are now supporting AWS Kinesis however we are not fully happy with the performance, the polling only mode and the delivery jitter 
 means it is not passing our strenuous high performance testing harness. If you are evaluating FeatureHub and want to deploy on AWS, please contact us via our Website and consider
-working with us. As with PubSub, you must turn nats support off.
+working with us. As with PubSub, you must turn NATS support off.
 
 - `nats.enabled=false`
 
