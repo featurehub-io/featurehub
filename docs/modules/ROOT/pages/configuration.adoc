@@ -6,8 +6,8 @@ By this we mean the properties you can set to control the behaviour of different
 FeatureHub controller properties are available as environment variables using the same case. If you have been using
 the mechanism introduced in 1.4.1 this still works but isn't recommended going forward.
 
-NOTE: Please make sure you check out the https://github.com/featurehub-io/featurehub-install[`featurehub-install`] GitHub repository 
-and the https://github.com/featurehub-io/featurehub-helm[`featurehub-helm`] 
+NOTE: Please make sure you check out the https://github.com/featurehub-io/featurehub-install[`featurehub-install`] GitHub repository
+and the https://github.com/featurehub-io/featurehub-helm[`featurehub-helm`]
 repository for examples on how these projects should be run and deployed.
 
 If you are using a system like
@@ -18,7 +18,7 @@ Kubernetes, you can mount these properties in `/etc/app-config/application.prope
 === Database configuration
 
 Only the Management Repository, Party Server, Party-Server-ish and Edge-REST deployments talk to the database.
-Edge (streaming), Dacha and Dacha2 do not. 
+Edge (streaming), Dacha1 and Dacha2 do not.
 
 Configuration parameters:
 
@@ -43,24 +43,24 @@ and `db-replica` parameters) but the corresponding `mr` will not.
 == Async options for FeatureHub
 
 If you use a streaming version of FeatureHub, you need an async layer and this has traditionally been NATS.
-With the advent of Dacha2, the async layer is now a bigger topic. 
+With the advent of Dacha2, the async layer is now a bigger topic.
 
-NOTE: If you use Dacha1, you do not need to change anything, the preconfigured settings are all normal.
+NOTE: If you use Dacha1, you do not need to change anything, the preconfigured settings are sufficient.
 
 To swap from Dacha1 (NATS only) to Dacha2 (all options), you need to set the environment variables:
 
-- `dacha1.enabled=false` - tell FeatureHub we are no longer using Dacha1
-- `dacha2.enabled=true`
+- `dacha1.enabled=false` - disable Dacha1
+- `dacha2.enabled=true` - enable Dacha2
 
 === NATS
 
 The upside of NATS is simplicity and speed, it is the fastest product we test with by far. We do not use JetStream,
 but you can configure it with JetStream if you wish. The downside is typically that your Operations team has to support
-it and it is an extra cost to deploy. The Kubernetes charts for NATS are extremely good and reliable.
+it, and it is an extra cost to deploy. The Kubernetes charts for NATS are extremely good and reliable.
 
 ==== Communication
 NATS communicates using a protocol whereby the clients essentially tell the servers about each other, but they
-do have to be able to communicate. Please read the https://docs.nats.io/[NATS documentation] for more information. 
+do have to be able to communicate. Please read the https://docs.nats.io/[NATS documentation] for more information.
 
 If you have only one instance of a
 party-server you do not need to set anything. If you have deployed NATS yourself or are running multiple Party Servers,
@@ -68,8 +68,8 @@ you will need to set the environment variable:
 
 - `nats.urls` - a comma separated list of NATs servers.
 
-You do not need to configure anything further for NATS for Dacha1 or Dacha2. NATS supports request/reply, 
-true pub/sub and pub/queues in a single product. 
+You do not need to configure anything further for NATS for Dacha1 or Dacha2. NATS supports request/reply,
+true pub/sub and pub/queues in a single product.
 
 === Google's Pub/Sub
 
@@ -82,7 +82,7 @@ And PubSub on:
 - `cloudevents.pubsub.enabled=true`
 
 You will also need to tell FeatureHub what the topics are for publishing on. You need to configure these across all
-three applications. 
+three applications.
 
 - `cloudevents.pubsub.project=featurehub` - whatever the Google project ID you are deploying FeatureHub into
 - `cloudevents.edge-mr.pubsub.topic-name=featurehub-edge-updates` - the name of the topic used by Edge to publish TestSDK updates back to MR
@@ -91,28 +91,28 @@ three applications.
 - `cloudevents.mr-dacha2.pubsub.topic-name=featurehub-mr-dacha2` - the name of the topic MR publishes feature updates, environment updates and service account updates.
 - `cloudevents.pubsub.min-backoff-delay-seconds=5` - Edge and Dacha must be able to create their own subscriptions. Google PubSub is not actually "pubsub", there is no way for all connections to a subscription
 to receive a message, so this delay reflects how long PubSub should wait before trying to redeliver the message. Edge and Dacha will delete their subscriptions when they shut down, so keep this low.
-- `cloudevents.mr-edge.pubsub.subscription-prefix=featurehub-edge-listener` - the prefix used for subscriptions created by Edge 
+- `cloudevents.mr-edge.pubsub.subscription-prefix=featurehub-edge-listener` - the prefix used for subscriptions created by Edge
 - `cloudevents.mr-dacha2.pubsub.subscription-prefix=featurehub-dacha2-listener` - the prefix used for subscriptions created by Dacha2 instances
 
 MR also needs an extra environment variable to tell it what subscription to listen to for updates from the TestSDK topic configured above (`cloudevents.edge-mr.pubsub.topic-name`):
 
 - `cloudevents.inbound.channel-names=featurehub-edge-updates-mr-sub`
 
-For testing locally there are extra fields if you are using the emulator - they are used in the `featurehub-installs` PubSub folder. To test in Google, we use https://www.pulumi.com/[Pulumi]. 
+For testing locally there are extra fields if you are using the emulator - they are used in the `featurehub-installs` PubSub folder. To test in Google, we use https://www.pulumi.com/[Pulumi].
 
 === AWS Kinesis
 
-We are now supporting AWS Kinesis however we are not fully happy with the performance, the polling only mode and the delivery jitter 
-means it is not passing our strenuous high performance testing harness. If you are evaluating FeatureHub and want to deploy on AWS, please contact us via our Website and consider
-working with us. As with PubSub, you must turn NATS support off.
+We are supporting AWS Kinesis from v1.5.9 of FeatureHub
+
+Disable NATS:
 
 - `nats.enabled=false`
 
-And Kinesis on:
+Enable Kinesis:
 
 - `cloudevents.kinesis.enabled=true`
 
-Then MR, Edge and MR need to know the streams:  
+Then MR, Edge and MR need to know the streams settings:
 
 - `cloudevents.mr-edge.kinesis.stream-name=featurehub-mr-edge` - the stream for MR -> Edge communication
 - `cloudevents.mr-edge.kinesis.randomise-partition-key=false` - if you have > 1 shard, make sure this is true, unless you have a lot of traffic you probably don't need it
@@ -120,13 +120,15 @@ Then MR, Edge and MR need to know the streams:
 - `cloudevents.mr-dacha2.kinesis.stream-name=featurehub-mr-dacha2` - the stream for MR -> Dacha2 communication
 - `cloudevents.mr-dacha2.kinesis.randomise-partition-key=false` - if you have > 1 shard, make sure this is true, unless you have a lot of traffic you probably don't need it
 
-Then MR needs to know the stream for TestSDK updates:
+MR needs to know the stream for TestSDK updates:
 
-- `cloudevents.inbound.stream-names=featurehub-edge-updates` - 
+- `cloudevents.inbound.stream-names=featurehub-edge-updates` -
 
-And Edge needs to know the stream to publish them on:
+Edge needs to know the stream to publish on:
 
 - `cloudevents.edge-mr.kinesis.stream-name=featurehub-edge-updates`
+
+NOTE: We haven't conducted performance tests with AWS Kinesis, we recommend for you to run your own tests before using this setup in production
 
 === Management Repository
 
@@ -146,7 +148,7 @@ for the first time, it needs an Admin group. So a portfolio called "Marketing" w
 created.
 - `web.asset.location=/var/www/html/intranet` - can be set optionally if you are intending to serve the Admin web app on the intranet without public internet access. We supply this application build already preloaded with all necessary assets. Available in FeatureHub v1.5.4 and higher.
 - `cache-control.web.index` - this allows you to set the Cache-Control header on the index.html file. It is set by default to `no-store, max-age=0` preventing any caching, so as new versions roll out, they are correctly picked up.
-- `cache-control.web.other` - this sets the cache control on all of the other content of the website, which is essentially considered to be versioned. This data should never change and it is set by default to `max-age=864000` - or about 10 days. 
+- `cache-control.web.other` - this sets the cache control on all of the other content of the website, which is essentially considered to be versioned. This data should never change and it is set by default to `max-age=864000` - or about 10 days.
 
 === Dacha1 Config
 
@@ -160,8 +162,8 @@ If you are using Dacha1 (the "active" cache), the following properties/environme
 
 If you are using Dacha2 (the "lazy" cache), then the following properties/environment variables can be set:
 
-- `dacha2.cache.api-key` - if Dacha2 is available directly on the internet, it is recommended you set an API key to protect it. 
-Also set this on *Edge* (but only if Dacha2 is publicically exposed). 
+- `dacha2.cache.api-key` - if Dacha2 is available directly on the internet, it is recommended you set an API key to protect it.
+Also set this on *Edge* (but only if Dacha2 is publicically exposed).
 
 There are other configuration fields that allow you to not activetely cache incoming new environments or set the size of the LRU cache for data, but unless
 you are getting memory issues or need to support more than 10000 active environments, it is not recommended you bother with these.
