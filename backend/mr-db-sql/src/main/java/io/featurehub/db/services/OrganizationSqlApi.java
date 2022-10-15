@@ -13,6 +13,7 @@ import io.featurehub.mr.model.Organization;
 import io.featurehub.publish.ChannelConstants;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import javassist.NotFoundException;
 
 @Singleton
 public class OrganizationSqlApi implements OrganizationApi {
@@ -26,7 +27,11 @@ public class OrganizationSqlApi implements OrganizationApi {
   }
 
   public Organization get() {
-    return convertUtils.toOrganization(convertUtils.dbOrganization(), Opts.opts(FillOpts.Groups));
+    if (convertUtils.hasOrganisation()) {
+      return convertUtils.toOrganization(convertUtils.dbOrganization(), Opts.opts(FillOpts.Groups));
+    }
+
+    return null;
   }
 
   @Override

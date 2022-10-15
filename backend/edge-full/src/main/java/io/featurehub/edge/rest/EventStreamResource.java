@@ -2,6 +2,7 @@ package io.featurehub.edge.rest;
 
 import cd.connect.jersey.prometheus.Prometheus;
 import io.featurehub.edge.stats.StatRecorder;
+import io.featurehub.edge.utils.FastlyResponseWrapper;
 import io.featurehub.sse.model.FeatureStateUpdate;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -11,8 +12,10 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.AsyncResponse;
 import jakarta.ws.rs.container.Suspended;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.hk2.api.Immediate;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.SseFeature;
@@ -28,6 +31,7 @@ public class EventStreamResource {
   private final FeatureSse featureSse;
   private final FeatureGet featureGetProcessor;
   private final FeatureUpdate featureUpdateProcessor;
+  private final boolean fastlyConfigured;
 
   @Inject
   public EventStreamResource(
@@ -39,6 +43,7 @@ public class EventStreamResource {
     this.featureSse = featureSse;
     this.featureGetProcessor = featureGetProcessor;
     this.featureUpdateProcessor = featureUpdateProcessor;
+    this.fastlyConfigured = FastlyResponseWrapper.Companion.fastlyConfigured();
   }
 
   // support new and old style for GET - apiKeys and sdkUrl, they are the same we just want to
@@ -53,8 +58,14 @@ public class EventStreamResource {
       @Suspended AsyncResponse response,
       @QueryParam("sdkUrl") List<String> sdkUrls,
       @QueryParam("apiKey") List<String> apiKeys,
+      @QueryParam("contentSha") String contentSha,
       @HeaderParam("x-featurehub") List<String> featureHubAttrs,
       @HeaderParam("if-none-match") String etagHeader) {
+    if (fastlyConfigured && contentSha == null) {
+      throw new WebApplicationException(Response.status(400).header("content-type", "text/plain").entity(
+        "Fastly is configured and your SDK is too old to support it and will " +
+        "malfunction, please update.").build());
+    }
 
     featureGetProcessor.processGet(
         response, sdkUrls, apiKeys, featureHubAttrs, etagHeader, statRecorder);
