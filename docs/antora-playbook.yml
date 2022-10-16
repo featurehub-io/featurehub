@@ -18,6 +18,7 @@ content:
         - docs-multi-version-support
         - v1.5.7
         - v1.5.8
+        - v1.5.9
       start_path: docs
 urls:
   latest_version_segment: latest
