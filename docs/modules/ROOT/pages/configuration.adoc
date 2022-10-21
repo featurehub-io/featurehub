@@ -112,6 +112,13 @@ Enable Kinesis:
 
 - `cloudevents.kinesis.enabled=true`
 
+Some global Kinesis settings for all apps:
+
+- `cloudevents.kinesis.aws.region` - (default `us-east-1`)
+- `cloudevents.kinesis.shutdown-length` - (default 20) how long we will wait to try and shutdown the Kinesis stream before closing it by force
+- `cloudevents.kinesis.put-sync` - (default true) put events onto the stream synchronously, i.e. wait for them. We have found this is more reliable when true.
+- `cloudevents.kinesis.endpointUrl` - (optional) in case you are using something like localstack or wish to specify a specific endpoint url
+
 Then MR, Edge and MR need to know the streams settings:
 
 - `cloudevents.mr-edge.kinesis.stream-name=featurehub-mr-edge` - the stream for MR -> Edge communication

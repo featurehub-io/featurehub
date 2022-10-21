@@ -1,17 +1,14 @@
 package io.featurehub.dacha.caching
 
-import io.featurehub.dacha.CacheUpdateListener
-import io.featurehub.dacha.model.PublishAction
-import io.featurehub.dacha.model.PublishEnvironment
-import io.featurehub.dacha.model.PublishFeatureValue
-import io.featurehub.dacha.model.PublishServiceAccount
+import io.featurehub.dacha.model.*
+import io.featurehub.dacha2.Dacha2CacheListener
 import io.featurehub.utils.FallbackPropertyConfig
 import io.featurehub.utils.FeatureHubConfig
 import jakarta.inject.Inject
 import jakarta.ws.rs.client.Client
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.UUID
+import java.util.*
 
 class FastlyPublisher @Inject constructor(@FeatureHubConfig("edge.cache.fastly.key")
                                     private val fastlyKey: String?,
@@ -19,9 +16,8 @@ class FastlyPublisher @Inject constructor(@FeatureHubConfig("edge.cache.fastly.k
                                     private val fastlyServiceId: String?,
                                           private val client: Client
 
-) : CacheUpdateListener {
+) : Dacha2CacheListener {
   private val log: Logger = LoggerFactory.getLogger(FastlyPublisher::class.java)
-
 
   override fun updateServiceAccount(sa: PublishServiceAccount) {
   }
@@ -35,6 +31,10 @@ class FastlyPublisher @Inject constructor(@FeatureHubConfig("edge.cache.fastly.k
     }
   }
 
+  override fun updateFeature(feature: PublishFeatureValue) {
+    purge(feature.environmentId)
+  }
+
   private fun purge(e: UUID) {
     if (fastlyServiceId != null && fastlyKey != null) {
       try {
@@ -46,10 +46,6 @@ class FastlyPublisher @Inject constructor(@FeatureHubConfig("edge.cache.fastly.k
         log.error("Unable to break cache for Fastly for environment ${e}")
       }
     }
-  }
-
-  override fun updateFeatureValue(fv: PublishFeatureValue) {
-    purge(fv.environmentId)
   }
 
   companion object {

@@ -12,21 +12,19 @@ import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.CloudEventReceiverRegistryMock
-import io.featurehub.events.CloudEventReceiverRegistryProcessor
-import io.featurehub.events.CloudEventsTelemetryReader
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.model.FeatureValueType
+import org.glassfish.hk2.api.IterableProvider
 import spock.lang.Specification
 
 import java.time.OffsetDateTime
 
-
-
 class Dacha2CloudEventListenerImplSpec extends Specification {
   CloudEventBuilder builder
   Dacha2CloudEventListenerImpl listener
-  Dacha2Cache cache
+  Dacha2CacheListener cache
   CloudEventReceiverRegistry register
+  IterableProvider<Dacha2CacheListener> cacheProvider
 
   UUID serviceAccountId
   String apiKeyClientSide
@@ -41,8 +39,11 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
 
   def setup() {
     cache = Mock()
+    cacheProvider = Mock(IterableProvider)
+    cacheProvider.iterator() >> [cache].iterator()
     register = new CloudEventReceiverRegistryMock()
-    listener = new Dacha2CloudEventListenerImpl(cache, register)
+    listener = new Dacha2CloudEventListenerImpl(cacheProvider, register)
+    listener.init()
     serviceAccountId = UUID.randomUUID()
     apiKeyClientSide = "1234*1"
     apiKeyServerSide = "1234"
@@ -157,15 +158,6 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
       CacheJsonMapper.toEventData(builder, f, false)
     when:
       register.process(builder.build())
-    then:
-      0 * _
-  }
-
-  def "an unrecognized cloud events is ignored"() {
-    given:
-      builder.withSubject("bad").withType("type")
-    when:
-      listener.process(builder.build())
     then:
       0 * _
   }

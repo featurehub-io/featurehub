@@ -17,10 +17,7 @@ data class FeatureCollection(
   val serviceAccountId: UUID
 )
 
-interface Dacha2Cache {
-  fun updateServiceAccount(serviceAccount: PublishServiceAccount)
-  fun updateEnvironment(env: PublishEnvironment)
-  fun updateFeature(feature: PublishFeatureValue)
+interface Dacha2Cache : Dacha2CacheListener {
   fun getFeatureCollection(eId: UUID, apiKey: String): FeatureCollection?
   fun findEnvironment(eId: UUID): FeatureValues?
 }
