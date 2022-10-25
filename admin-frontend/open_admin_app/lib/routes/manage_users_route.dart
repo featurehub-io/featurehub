@@ -5,6 +5,8 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_widget.dart';
 
+import '../widgets/user/list/list_users_paging_widget.dart';
+
 class ManageUsersRoute extends StatelessWidget {
   const ManageUsersRoute({Key? key}) : super(key: key);
 
@@ -50,6 +52,7 @@ class ManageUsersRoute extends StatelessWidget {
         ),
         const SizedBox(height: 16.0),
         const PersonListWidget(),
+        PagingUsersWidget()
       ],
     );
   }
