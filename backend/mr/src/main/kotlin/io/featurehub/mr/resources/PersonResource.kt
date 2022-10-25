@@ -184,6 +184,7 @@ class PersonResource @Inject constructor(
         }
           .collect(Collectors.toList()))
       .max(pp.max)
+      .unfilteredMax(pp.unfilteredMax)
   }
 
   override fun getPerson(
