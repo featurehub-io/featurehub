@@ -8,8 +8,9 @@ import 'package:rxdart/rxdart.dart';
 class SearchPersonEntry {
   final SearchPerson person;
   final OutstandingRegistration registration;
+  final int totalRecords;
 
-  SearchPersonEntry(this.person, this.registration);
+  SearchPersonEntry(this.person, this.registration, this.totalRecords);
 }
 
 class ListUsersBloc implements Bloc {
@@ -21,6 +22,7 @@ class ListUsersBloc implements Bloc {
 
   final _adminApiKeysSearchResultSource =
       BehaviorSubject<List<SearchPerson>>();
+
 
   Stream<List<SearchPerson>> get adminAPIKeySearch =>
       _adminApiKeysSearchResultSource.stream;
@@ -42,10 +44,11 @@ class ListUsersBloc implements Bloc {
     });
   }
 
-  void triggerSearch(String? s) async {
+  void triggerSearch(String? s, {int? startFrom=0, int? pageSize=10}) async {
     // this should also change the url
 
     // debounce the search (i.e. if they are still typing, wait)
+    print("in trigger search");
     final newSearch = s;
     search = s;
 
@@ -53,9 +56,9 @@ class ListUsersBloc implements Bloc {
       if (newSearch == search) {
         // hasn't changed
         if (isPerson) {
-          _requestSearch(PersonType.person);
+          _requestSearch(PersonType.person, startFrom, pageSize);
         } else {
-          _requestSearch(PersonType.serviceAccount);
+          _requestSearch(PersonType.serviceAccount, startFrom, pageSize);
         }
         // don't need to await it, async is fine
       }
@@ -73,17 +76,20 @@ class ListUsersBloc implements Bloc {
 
   // this really runs the search after we have debounced it
   void _requestSearch(
-    PersonType personType,
+    PersonType personType, int? startAt, int? pageSize
   ) async {
     late SearchPersonResult data;
     if (search != null && search!.isNotEmpty) {
       // wait for global error handling to wrap this in try/catch
+      print("call search");
       data = await _personServiceApi.findPeople(
           order: SortOrder.ASC,
           filter: search,
           countGroups: true,
           includeGroups: false,
           includeLastLoggedIn: true,
+          pageSize: pageSize,
+          startAt: startAt,
           personTypes: [personType]);
 
       // publish it out...
@@ -99,6 +105,8 @@ class ListUsersBloc implements Bloc {
           includeGroups: false,
           countGroups: true,
           includeLastLoggedIn: true,
+          pageSize: pageSize,
+          startAt: startAt,
           personTypes: [personType]);
     }
     if (personType == PersonType.person) {
@@ -121,7 +129,7 @@ class ListUsersBloc implements Bloc {
               ? data.outstandingRegistrations.firstWhere(
                   (element) => element.id == person.id,
                   orElse: () => emptyReg)
-              : emptyReg);
+              : emptyReg, data.max);
 
       results.add(spr);
     }

@@ -1,3 +1,5 @@
+import 'package:advanced_datatable/advanced_datatable_source.dart';
+import 'package:advanced_datatable/datatable.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
@@ -23,6 +25,7 @@ class PersonListWidget extends StatefulWidget {
 class _PersonListWidgetState extends State<PersonListWidget> {
   bool sortToggle = true;
   int sortColumnIndex = 0;
+  var rowsPerPage = 20;
 
   @override
   void didChangeDependencies() {
@@ -49,112 +52,61 @@ class _PersonListWidgetState extends State<PersonListWidget> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Card(
-                    child: SelectionArea(
-                      child: DataTable(
-                        showCheckboxColumn: false,
-                        sortAscending: sortToggle,
-                        sortColumnIndex: sortColumnIndex,
-                        columns: [
-                          DataColumn(
-                              label: const Text('Name'),
-                              onSort: (columnIndex, ascending) {
-                                onSortColumn(
-                                    snapshot.data!, columnIndex, ascending);
-                              }),
-                          DataColumn(
-                            label: const Text('Email'),
+                  SelectionArea(
+                    child: AdvancedPaginatedDataTable(
+                      rowsPerPage: rowsPerPage,
+                      showCheckboxColumn: false,
+                      addEmptyRows: false,
+                      availableRowsPerPage: const [10, 20, 50, 100],
+                      sortAscending: sortToggle,
+                      sortColumnIndex: sortColumnIndex,
+                      // onPageChanged: (currentNum) =>
+                      //     bloc.triggerSearch(
+                      //         '', startFrom: currentNum+rowsPerPage, pageSize: rowsPerPage),
+                      onRowsPerPageChanged: (newRowsPerPage) {
+                        if (newRowsPerPage != null) {
+                          setState(() {
+                            rowsPerPage = newRowsPerPage;
+                          });
+                        }
+                      },
+                      columns: [
+                        DataColumn(
+                            label: const Text('Name'),
                             onSort: (columnIndex, ascending) {
                               onSortColumn(
                                   snapshot.data!, columnIndex, ascending);
-                            },
-                          ),
-                          DataColumn(
-                            label: const Text('Groups'),
-                            onSort: (columnIndex, ascending) {
-                              onSortColumn(
-                                  snapshot.data!, columnIndex, ascending);
-                            },
-                          ),
-                          DataColumn(
-                            label: const Text('Last logged in'),
-                            onSort: (columnIndex, ascending) {
-                              onSortColumn(
-                                  snapshot.data!, columnIndex, ascending);
-                            },
-                          ),
-                          DataColumn(
-                              label: const Padding(
-                                padding: EdgeInsets.only(left: 12.0),
-                                child: Text('Actions'),
-                              ),
-                              onSort: (i, a) => {}),
-                        ],
-                        rows: [
-                          for (SearchPersonEntry p in snapshot.data!)
-                            DataRow(
-                                cells: [
-                                  DataCell(p.person.name == "No name"
-                                      ? Text('Not yet registered',
-                                          style:
-                                              Theme.of(context).textTheme.caption)
-                                      : Text(
-                                          p.person.name,
-                                        )),
-                                  DataCell(Text(p.person.email)),
-                                  DataCell(Text('${p.person.groupCount}')),
-                                  DataCell(Text(
-                                      '${p.person.whenLastAuthenticated?.toLocal() ?? ""}')),
-                                  DataCell(Row(children: <Widget>[
-                                    Tooltip(
-                                      message:
-                                      _infoTooltip(p, allowedLocalIdentity),
-                                      child: FHIconButton(
-                                        icon: Icon(Icons.info, color: _infoColour(p, allowedLocalIdentity)),
-                                        onPressed: () => bloc.mrClient
-                                            .addOverlay((BuildContext context) {
-                                          return ListUserInfoDialog(bloc, p);
-                                        }),
-                                      ),
-                                    ),
-                                    FHIconButton(
-                                        icon: const Icon(Icons.edit),
-                                        onPressed: () => {
-                                              ManagementRepositoryClientBloc
-                                                  .router
-                                                  .navigateTo(
-                                                      context, '/manage-user',
-                                                      params: {
-                                                    'id': [p.person.id]
-                                                  })
-                                            }),
-                                    // const SizedBox(
-                                    //   width: 8.0,
-                                    // ),
-                                    FHIconButton(
-                                      icon: const Icon(Icons.delete),
-                                      onPressed: () => bloc.mrClient
-                                          .addOverlay((BuildContext context) {
-                                        return bloc.mrClient.person.id!.id ==
-                                                p.person.id
-                                            ? cantDeleteYourselfDialog(bloc)
-                                            : DeleteDialogWidget(
-                                                person: p.person,
-                                                bloc: bloc,
-                                              );
-                                      }),
-                                    ),
-                                  ])),
-                                ],
-                                onSelectChanged: (newValue) {
-                                  ManagementRepositoryClientBloc.router
-                                      .navigateTo(context, '/manage-user',
-                                          params: {
-                                        'id': [p.person.id]
-                                      });
-                                }),
-                        ],
-                      ),
+                            }),
+                        DataColumn(
+                          label: const Text('Email'),
+                          onSort: (columnIndex, ascending) {
+                            onSortColumn(
+                                snapshot.data!, columnIndex, ascending);
+                          },
+                        ),
+                        DataColumn(
+                          label: const Text('Groups'),
+                          onSort: (columnIndex, ascending) {
+                            onSortColumn(
+                                snapshot.data!, columnIndex, ascending);
+                          },
+                        ),
+                        DataColumn(
+                          label: const Text('Last logged in'),
+                          onSort: (columnIndex, ascending) {
+                            onSortColumn(
+                                snapshot.data!, columnIndex, ascending);
+                          },
+                        ),
+                        DataColumn(
+                            label: const Padding(
+                              padding: EdgeInsets.only(left: 12.0),
+                              child: Text('Actions'),
+                            ),
+                            onSort: (i, a) => {}),
+                      ],
+                      source: PersonDataTableSource(
+                          snapshot.data!, context, allowedLocalIdentity, bloc),
                     ),
                   ),
                 ],
@@ -229,6 +181,107 @@ class _PersonListWidgetState extends State<PersonListWidget> {
       }
       sortColumnIndex = columnIndex;
     });
+  }
+}
+
+// The "source" of the table
+class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
+  final List<SearchPersonEntry> _data;
+  final BuildContext context;
+  final bool allowedLocalIdentity;
+  final ListPersonBloc bloc;
+
+  PersonDataTableSource(
+      this._data, this.context, this.allowedLocalIdentity, this.bloc);
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get rowCount => _data.length;
+
+  @override
+  int get selectedRowCount => 0;
+
+  @override
+  Future<RemoteDataSourceDetails<SearchPersonEntry>> getNextPage(
+      NextPageRequest pageRequest) async {
+    var data;
+    bloc.personSearch.listen((event) {
+      data = event;
+    });
+    bloc.triggerSearch('',
+        pageSize: _data[0].totalRecords, startFrom: pageRequest.offset);
+    await Future.delayed(Duration(seconds: 2));
+    return RemoteDataSourceDetails(
+      data[0].totalRecords,
+      data
+          .skip(pageRequest.offset)
+          .take(pageRequest.pageSize)
+          .toList(),
+      filteredRows:
+          data.length, //the total amount of filtered rows, null by default
+    );
+  }
+
+  @override
+  DataRow getRow(int index) {
+    final _personEntry = _data[index];
+    return DataRow.byIndex(
+        index: index,
+        cells: [
+          DataCell(_personEntry.person.name == "No name"
+              ? Text('Not yet registered',
+                  style: Theme.of(context).textTheme.caption)
+              : Text(
+                  _personEntry.person.name,
+                )),
+          DataCell(Text(_personEntry.person.email)),
+          DataCell(Text('${_personEntry.person.groupCount}')),
+          DataCell(Text(
+              '${_personEntry.person.whenLastAuthenticated?.toLocal() ?? ""}')),
+          DataCell(Row(children: <Widget>[
+            Tooltip(
+              message: _infoTooltip(_personEntry, allowedLocalIdentity),
+              child: FHIconButton(
+                icon: Icon(Icons.info,
+                    color: _infoColour(_personEntry, allowedLocalIdentity)),
+                onPressed: () =>
+                    bloc.mrClient.addOverlay((BuildContext context) {
+                  return ListUserInfoDialog(bloc, _personEntry);
+                }),
+              ),
+            ),
+            FHIconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () => {
+                      ManagementRepositoryClientBloc.router
+                          .navigateTo(context, '/manage-user', params: {
+                        'id': [_personEntry.person.id]
+                      })
+                    }),
+            // const SizedBox(
+            //   width: 8.0,
+            // ),
+            FHIconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
+                return bloc.mrClient.person.id!.id == _personEntry.person.id
+                    ? cantDeleteYourselfDialog(bloc)
+                    : DeleteDialogWidget(
+                        person: _personEntry.person,
+                        bloc: bloc,
+                      );
+              }),
+            ),
+          ])),
+        ],
+        onSelectChanged: (newValue) {
+          ManagementRepositoryClientBloc.router
+              .navigateTo(context, '/manage-user', params: {
+            'id': [_personEntry.person.id]
+          });
+        });
   }
 
   Widget cantDeleteYourselfDialog(ListPersonBloc bloc) {
@@ -482,7 +535,6 @@ String _infoTooltip(SearchPersonEntry entry, bool allowedLocalLogin) {
 }
 
 Color _infoColour(SearchPersonEntry entry, bool allowedLocalLogin) {
-
   if (entry.registration.expired) {
     return Colors.red;
   }
