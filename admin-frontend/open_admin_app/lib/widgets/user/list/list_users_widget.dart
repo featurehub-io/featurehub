@@ -23,210 +23,124 @@ class PersonListWidget extends StatefulWidget {
 }
 
 class _PersonListWidgetState extends State<PersonListWidget> {
-  bool sortToggle = true;
-  int sortColumnIndex = 0;
-  var rowsPerPage = 20;
+  var sortIndex = 0;
+  var sortAsc = true;
+  var rowsPerPage = AdvancedPaginatedDataTable.defaultRowsPerPage;
+
+  late PersonDataTableSource source;
+  late ListPersonBloc bloc;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    BlocProvider.of<ListPersonBloc>(context).triggerSearch(null);
+  void initState() {
+    super.initState();
+    bloc = BlocProvider.of<ListPersonBloc>(context);
+    source = PersonDataTableSource(bloc, context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<ListPersonBloc>(context);
-    return StreamBuilder<List<SearchPersonEntry>>(
-        stream: bloc.personSearch,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const FHLoadingIndicator();
-          } else if (snapshot.connectionState == ConnectionState.active ||
-              snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasError) {
-              return const FHLoadingError();
-            } else if (snapshot.hasData) {
-              final allowedLocalIdentity =
-                  bloc.mrClient.identityProviders.hasLocal;
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  SelectionArea(
-                    child: AdvancedPaginatedDataTable(
-                      rowsPerPage: rowsPerPage,
-                      showCheckboxColumn: false,
-                      addEmptyRows: false,
-                      availableRowsPerPage: const [10, 20, 50, 100],
-                      sortAscending: sortToggle,
-                      sortColumnIndex: sortColumnIndex,
-                      // onPageChanged: (currentNum) =>
-                      //     bloc.triggerSearch(
-                      //         '', startFrom: currentNum+rowsPerPage, pageSize: rowsPerPage),
-                      onRowsPerPageChanged: (newRowsPerPage) {
-                        if (newRowsPerPage != null) {
-                          setState(() {
-                            rowsPerPage = newRowsPerPage;
-                          });
-                        }
-                      },
-                      columns: [
-                        DataColumn(
-                            label: const Text('Name'),
-                            onSort: (columnIndex, ascending) {
-                              onSortColumn(
-                                  snapshot.data!, columnIndex, ascending);
-                            }),
-                        DataColumn(
-                          label: const Text('Email'),
-                          onSort: (columnIndex, ascending) {
-                            onSortColumn(
-                                snapshot.data!, columnIndex, ascending);
-                          },
-                        ),
-                        DataColumn(
-                          label: const Text('Groups'),
-                          onSort: (columnIndex, ascending) {
-                            onSortColumn(
-                                snapshot.data!, columnIndex, ascending);
-                          },
-                        ),
-                        DataColumn(
-                          label: const Text('Last logged in'),
-                          onSort: (columnIndex, ascending) {
-                            onSortColumn(
-                                snapshot.data!, columnIndex, ascending);
-                          },
-                        ),
-                        DataColumn(
-                            label: const Padding(
-                              padding: EdgeInsets.only(left: 12.0),
-                              child: Text('Actions'),
-                            ),
-                            onSort: (i, a) => {}),
-                      ],
-                      source: PersonDataTableSource(
-                          snapshot.data!, context, allowedLocalIdentity, bloc),
-                    ),
-                  ),
-                ],
-              );
-            }
-          }
-          return const SizedBox.shrink();
-        });
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Container(
+          constraints: const BoxConstraints(maxWidth: 300),
+          child: TextField(
+            decoration: const InputDecoration(
+              hintText: 'Search users',
+              icon: Icon(Icons.search),
+            ),
+            onChanged: (val) => source.filterServerSide(val),
+          ),
+        ),
+        const SizedBox(height: 16.0),
+        SelectionArea(
+          child: AdvancedPaginatedDataTable(
+            rowsPerPage: rowsPerPage,
+            showCheckboxColumn: false,
+            showFirstLastButtons: true,
+            addEmptyRows: false,
+            availableRowsPerPage: const [10, 20, 50, 100],
+            sortAscending: sortAsc,
+            sortColumnIndex: sortIndex,
+            onRowsPerPageChanged: (newRowsPerPage) {
+              if (newRowsPerPage != null) {
+                setState(() {
+                  rowsPerPage = newRowsPerPage;
+                });
+              }
+            },
+            columns: [
+              DataColumn(label: const Text('Name'), onSort: setSort),
+              const DataColumn(
+                label: Text('Email'),
+              ),
+              const DataColumn(
+                label: Text('Groups'),
+              ),
+              const DataColumn(
+                label: Text('Last logged in'),
+              ),
+              const DataColumn(
+                label: Padding(
+                  padding: EdgeInsets.only(left: 12.0),
+                  child: Text('Actions'),
+                ),
+              ),
+            ],
+            source: source,
+          ),
+        ),
+      ],
+    );
   }
 
-  void onSortColumn(
-      List<SearchPersonEntry> people, int columnIndex, bool ascending) {
-    setState(() {
-      if (columnIndex == 0) {
-        if (ascending) {
-          people.sort((a, b) {
-            return a.person.name
-                .toLowerCase()
-                .compareTo(b.person.name.toLowerCase());
-          });
-        } else {
-          people.sort((a, b) {
-            return b.person.name
-                .toLowerCase()
-                .compareTo(a.person.name.toLowerCase());
-          });
-        }
-      }
-      if (columnIndex == 1) {
-        if (ascending) {
-          people.sort((a, b) => a.person.email
-              .toLowerCase()
-              .compareTo(b.person.email.toLowerCase()));
-        } else {
-          people.sort((a, b) => b.person.email
-              .toLowerCase()
-              .compareTo(a.person.email.toLowerCase()));
-        }
-      }
-      if (columnIndex == 2) {
-        if (ascending) {
-          people.sort(
-              (a, b) => a.person.groupCount.compareTo(b.person.groupCount));
-        } else {
-          people.sort(
-              (a, b) => b.person.groupCount.compareTo(a.person.groupCount));
-        }
-      }
-      if (columnIndex == 3) {
-        if (ascending) {
-          people.sort((a, b) {
-            if (a.person.whenLastAuthenticated != null &&
-                b.person.whenLastAuthenticated != null) {
-              return a.person.whenLastAuthenticated!
-                  .compareTo(b.person.whenLastAuthenticated!);
-            }
-            return ascending ? 1 : -1;
-          });
-        } else {
-          people.sort((a, b) {
-            if (a.person.whenLastAuthenticated != null &&
-                b.person.whenLastAuthenticated != null) {
-              return b.person.whenLastAuthenticated!
-                  .compareTo(a.person.whenLastAuthenticated!);
-            }
-            return ascending ? -1 : 1;
-          });
-        }
-      }
-      if (sortColumnIndex == columnIndex) {
-        sortToggle = !sortToggle;
-      }
-      sortColumnIndex = columnIndex;
-    });
-  }
+  void setSort(int i, bool asc) => setState(() {
+        sortIndex = i;
+        sortAsc = asc;
+      });
 }
 
 // The "source" of the table
 class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
-  final List<SearchPersonEntry> _data;
-  final BuildContext context;
-  final bool allowedLocalIdentity;
+  String lastSearchTerm = '';
   final ListPersonBloc bloc;
+  final BuildContext context;
 
-  PersonDataTableSource(
-      this._data, this.context, this.allowedLocalIdentity, this.bloc);
+  PersonDataTableSource(this.bloc, this.context);
 
   @override
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => _data.length;
-
-  @override
   int get selectedRowCount => 0;
+
+  void filterServerSide(String filterQuery) {
+    lastSearchTerm = filterQuery.toLowerCase().trim();
+    setNextView();
+  }
 
   @override
   Future<RemoteDataSourceDetails<SearchPersonEntry>> getNextPage(
       NextPageRequest pageRequest) async {
-    var data;
-    bloc.personSearch.listen((event) {
-      data = event;
-    });
-    bloc.triggerSearch('',
-        pageSize: _data[0].totalRecords, startFrom: pageRequest.offset);
-    await Future.delayed(Duration(seconds: 2));
+    final data = await bloc.findPeople(
+        pageRequest.pageSize,
+        pageRequest.offset,
+        lastSearchTerm.isNotEmpty ? lastSearchTerm : null,
+        (pageRequest.sortAscending ?? true) == true
+            ? SortOrder.ASC
+            : SortOrder.DESC);
+    final userList = bloc.transformPeople(data);
     return RemoteDataSourceDetails(
-      data[0].totalRecords,
-      data
-          .skip(pageRequest.offset)
-          .take(pageRequest.pageSize)
-          .toList(),
-      filteredRows:
-          data.length, //the total amount of filtered rows, null by default
+      data.max,
+      userList.toList(),
+      filteredRows: null, //the total amount of filtered rows, null by default
     );
   }
 
   @override
   DataRow getRow(int index) {
-    final _personEntry = _data[index];
+    final _personEntry = lastDetails!.rows[index];
+    final allowedLocalIdentity = bloc.mrClient.identityProviders.hasLocal;
     return DataRow.byIndex(
         index: index,
         cells: [
@@ -268,9 +182,24 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
               onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
                 return bloc.mrClient.person.id!.id == _personEntry.person.id
                     ? cantDeleteYourselfDialog(bloc)
-                    : DeleteDialogWidget(
-                        person: _personEntry.person,
-                        bloc: bloc,
+                    : FHDeleteThingWarningWidget(
+                        thing: "user '${_personEntry.person.name}'",
+                        content:
+                            'This user will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!',
+                        bloc: bloc.mrClient,
+                        deleteSelected: () async {
+                          try {
+                            await bloc.deletePerson(
+                                _personEntry.person.id, true);
+                            setNextView(); // triggers reload from server with latest settings and rebuilds state
+                            bloc.mrClient.addSnackbar(Text(
+                                "User '${_personEntry.person.name}' deleted!"));
+                            return true;
+                          } catch (e, s) {
+                            await bloc.mrClient.dialogError(e, s);
+                            return false;
+                          }
+                        },
                       );
               }),
             ),
@@ -501,9 +430,14 @@ class _ListUserRow extends StatelessWidget {
 class DeleteDialogWidget extends StatelessWidget {
   final SearchPerson person;
   final ListPersonBloc bloc;
+  final PersonDataTableSource source;
 
-  const DeleteDialogWidget({Key? key, required this.person, required this.bloc})
-      : super(key: key);
+  const DeleteDialogWidget({
+    Key? key,
+    required this.person,
+    required this.bloc,
+    required this.source,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -515,7 +449,7 @@ class DeleteDialogWidget extends StatelessWidget {
       deleteSelected: () async {
         try {
           await bloc.deletePerson(person.id, true);
-          bloc.triggerSearch('');
+          ;
           bloc.mrClient.addSnackbar(Text("User '${person.name}' deleted!"));
           return true;
         } catch (e, s) {

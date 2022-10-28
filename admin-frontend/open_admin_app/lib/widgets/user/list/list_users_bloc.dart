@@ -116,6 +116,18 @@ class ListUsersBloc implements Bloc {
     }
   }
 
+  Future<SearchPersonResult> findPeople(pageSize, startAt, filter, sortOrder) async {
+    return _personServiceApi.findPeople(
+        order: sortOrder,
+        filter: filter,
+        countGroups: true,
+        includeGroups: false,
+        includeLastLoggedIn: true,
+        pageSize: pageSize,
+        startAt: startAt,
+        personTypes: [PersonType.person]);
+  }
+
   void _transformPeople(SearchPersonResult data) {
     final results = <SearchPersonEntry>[];
 
@@ -136,6 +148,26 @@ class ListUsersBloc implements Bloc {
 
     // publish it out...
     _personSearchResultSource.add(results);
+  }
+
+  List<SearchPersonEntry> transformPeople(SearchPersonResult data) {
+    final results = <SearchPersonEntry>[];
+
+    final hasLocal = mrClient.identityProviders.hasLocal;
+    final emptyReg = OutstandingRegistration(expired: false, id: '', token: '');
+
+    for (var person in data.summarisedPeople) {
+      final spr = SearchPersonEntry(
+          person,
+          hasLocal
+              ? data.outstandingRegistrations.firstWhere(
+                  (element) => element.id == person.id,
+              orElse: () => emptyReg)
+              : emptyReg, data.max);
+
+      results.add(spr);
+    }
+    return results;
   }
 
   void _transformAdminApiKeys(SearchPersonResult data) {

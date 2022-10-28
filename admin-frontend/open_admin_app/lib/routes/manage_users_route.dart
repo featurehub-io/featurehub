@@ -39,16 +39,6 @@ class ManageUsersRoute extends StatelessWidget {
           )
         ),
         const SizedBox(height: 16.0),
-        Container(
-          constraints: const BoxConstraints(maxWidth: 300),
-          child: TextField(
-            decoration: const InputDecoration(hintText: 'Search users',
-                icon: Icon(Icons.search),
-                ),
-            onChanged: (val) => bloc.triggerSearch(val),
-          ),
-        ),
-        const SizedBox(height: 16.0),
         const PersonListWidget(),
       ],
     );
