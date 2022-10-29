@@ -28,12 +28,12 @@ class _PersonListWidgetState extends State<PersonListWidget> {
   var rowsPerPage = AdvancedPaginatedDataTable.defaultRowsPerPage;
 
   late PersonDataTableSource source;
-  late ListPersonBloc bloc;
+  late ListUsersBloc bloc;
 
   @override
   void initState() {
     super.initState();
-    bloc = BlocProvider.of<ListPersonBloc>(context);
+    bloc = BlocProvider.of<ListUsersBloc>(context);
     source = PersonDataTableSource(bloc, context);
   }
 
@@ -103,7 +103,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
 // The "source" of the table
 class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
   String lastSearchTerm = '';
-  final ListPersonBloc bloc;
+  final ListUsersBloc bloc;
   final BuildContext context;
 
   PersonDataTableSource(this.bloc, this.context);
@@ -128,7 +128,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
         lastSearchTerm.isNotEmpty ? lastSearchTerm : null,
         (pageRequest.sortAscending ?? true) == true
             ? SortOrder.ASC
-            : SortOrder.DESC);
+            : SortOrder.DESC, PersonType.person);
     final userList = bloc.transformPeople(data);
     return RemoteDataSourceDetails(
       data.max,
@@ -213,7 +213,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
         });
   }
 
-  Widget cantDeleteYourselfDialog(ListPersonBloc bloc) {
+  Widget cantDeleteYourselfDialog(ListUsersBloc bloc) {
     return FHAlertDialog(
       title: const Text("You can't delete yourself!"),
       content: const Text(
@@ -232,7 +232,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
 }
 
 class ListUserInfoDialog extends StatelessWidget {
-  final ListPersonBloc bloc;
+  final ListUsersBloc bloc;
   final SearchPersonEntry entry;
 
   const ListUserInfoDialog(this.bloc, this.entry, {Key? key}) : super(key: key);
@@ -259,7 +259,7 @@ class ListUserInfoDialog extends StatelessWidget {
 }
 
 class _ListUserInfo extends StatelessWidget {
-  final ListPersonBloc bloc;
+  final ListUsersBloc bloc;
   final SearchPersonEntry foundPerson;
 
   const _ListUserInfo({Key? key, required this.bloc, required this.foundPerson})
@@ -423,40 +423,6 @@ class _ListUserRow extends StatelessWidget {
         ),
         Expanded(flex: 5, child: child)
       ],
-    );
-  }
-}
-
-class DeleteDialogWidget extends StatelessWidget {
-  final SearchPerson person;
-  final ListPersonBloc bloc;
-  final PersonDataTableSource source;
-
-  const DeleteDialogWidget({
-    Key? key,
-    required this.person,
-    required this.bloc,
-    required this.source,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return FHDeleteThingWarningWidget(
-      thing: "user '${person.name}'",
-      content:
-          'This user will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!',
-      bloc: bloc.mrClient,
-      deleteSelected: () async {
-        try {
-          await bloc.deletePerson(person.id, true);
-          ;
-          bloc.mrClient.addSnackbar(Text("User '${person.name}' deleted!"));
-          return true;
-        } catch (e, s) {
-          await bloc.mrClient.dialogError(e, s);
-          return false;
-        }
-      },
     );
   }
 }

@@ -10,7 +10,7 @@ class ManageUsersRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<ListPersonBloc>(context);
+    final bloc = BlocProvider.of<ListUsersBloc>(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
