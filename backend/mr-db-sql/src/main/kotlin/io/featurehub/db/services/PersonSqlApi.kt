@@ -170,6 +170,13 @@ open class PersonSqlApi @Inject constructor(
     // set the limits
     var search = QDbPerson().setFirstRow(searchOffset).setMaxRows(searchMax)
 
+    // set the filter if anything, make sure it is case insignificant
+    if (filter != null) {
+      val fil = filter.lowercase(Locale.getDefault())
+      // name is mixed case, email is always lower case
+      search = search.or().name.icontains(fil).email.contains(fil).endOr()
+    }
+
     search = if (personTypes.isNotEmpty()) {
       if (personTypes.size == 1) search.personType.eq(personTypes.first()) else search.personType.`in`(personTypes)
     } else {
@@ -188,16 +195,6 @@ open class PersonSqlApi @Inject constructor(
       search = search.whenArchived.isNull
     }
 
-    // give us the count before the filter is applied
-    val futureUnfilteredCount = search.findFutureCount()
-
-    // set the filter if anything, make sure it is case insignificant
-    if (filter != null) {
-      val fil = filter.lowercase(Locale.getDefault())
-      // name is mixed case, email is always lower case
-      search = search.or().name.icontains(fil).email.contains(fil).endOr()
-    }
-
     val futureCount = search.findFutureCount()
     val futureList = search.findFutureList()
 
@@ -211,7 +208,6 @@ open class PersonSqlApi @Inject constructor(
 
       PersonApi.PersonPagination(
         futureCount.get(),
-        futureUnfilteredCount.get(),
         if (opts.contains(FillOpts.CountGroups)) people.map { p -> toSearchPerson(p, peopleGroupCount) } else emptyList(),
         if (!opts.contains(FillOpts.CountGroups)) people else emptyList(),
         dbPeople

@@ -13,7 +13,6 @@ interface PersonApi {
     // used to determine if the database has no user, which is possible if using external auth
     fun noUsersExist(): Boolean
     data class PersonPagination(val max: Int,
-                                val unfilteredMax: Int,
                                 val searchPeople: List<SearchPerson>,
                                 val people: List<Person>,
                                 val personsWithOutstandingTokens: List<PersonToken>,
