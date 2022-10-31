@@ -4,6 +4,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/admin_sdk_service_account/admin_sa_reset_key_dialog_widget.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
@@ -40,59 +41,69 @@ class _AdminServiceAccountsListWidgetState
 
   @override
   Widget build(BuildContext context) {
+    final _debouncer = Debouncer(milliseconds: 500);
     return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Container(
-                    constraints: const BoxConstraints(maxWidth: 300),
-                    child: TextField(
-                      decoration: const InputDecoration(hintText: 'Search Service Accounts', icon: Icon(Icons.search),),
-                      onChanged: (val) => source.filterServerSide(val),
-                    ),
-                  ),
-                  const SizedBox(height: 16.0),
-                  SelectionArea(
-                    child: AdvancedPaginatedDataTable(
-                    rowsPerPage: rowsPerPage,
-                    showCheckboxColumn: false,
-                    showFirstLastButtons: true,
-                    addEmptyRows: false,
-                    availableRowsPerPage: const [10, 20, 50, 100],
-                    sortAscending: sortAsc,
-                    sortColumnIndex: sortIndex,
-                    onRowsPerPageChanged: (newRowsPerPage) {
-                      if (newRowsPerPage != null) {
-                        setState(() {
-                          rowsPerPage = newRowsPerPage;
-                        });
-                      }
-                    },
-                      columns: [
-                        DataColumn(
-                            label: const Text('Name'), onSort: setSort),
-                        const DataColumn(
-                          label: Text('Groups'),
-                        ),
-                        const DataColumn(
-                            label: Padding(
-                              padding: EdgeInsets.only(left: 12.0),
-                              child: Text('Actions'),
-                            ),
-                        ),
-                      ],
-                      source: source,
-                    ),
-                  ),
-                ],
-              );
-            }
-  void setSort(int i, bool asc) => setState(() {
-    sortIndex = i;
-    sortAsc = asc;
-  });
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Container(
+            constraints: const BoxConstraints(maxWidth: 300),
+            child: TextField(
+              decoration: const InputDecoration(
+                hintText: 'Search Service Accounts',
+                icon: Icon(Icons.search),
+              ),
+              onChanged: (val) {
+                _debouncer.run(
+                  () {
+                    source.filterServerSide(val);
+                  },
+                );
+              },
+            )),
+        const SizedBox(height: 16.0),
+        SelectionArea(
+          child: AdvancedPaginatedDataTable(
+            rowsPerPage: rowsPerPage,
+            showCheckboxColumn: false,
+            showFirstLastButtons: true,
+            addEmptyRows: false,
+            availableRowsPerPage: const [10, 20, 50, 100],
+            sortAscending: sortAsc,
+            sortColumnIndex: sortIndex,
+            onRowsPerPageChanged: (newRowsPerPage) {
+              if (newRowsPerPage != null) {
+                setState(() {
+                  rowsPerPage = newRowsPerPage;
+                });
+              }
+            },
+            columns: [
+              DataColumn(label: const Text('Name'), onSort: setSort),
+              const DataColumn(
+                label: Text('Groups'),
+              ),
+              const DataColumn(
+                label: Padding(
+                  padding: EdgeInsets.only(left: 12.0),
+                  child: Text('Actions'),
+                ),
+              ),
+            ],
+            source: source,
+          ),
+        ),
+      ],
+    );
   }
 
-class AdminServiceAccountDataTableSource extends AdvancedDataTableSource<SearchPerson> {
+  void setSort(int i, bool asc) => setState(() {
+        sortIndex = i;
+        sortAsc = asc;
+      });
+}
+
+class AdminServiceAccountDataTableSource
+    extends AdvancedDataTableSource<SearchPerson> {
   String lastSearchTerm = '';
   final ListUsersBloc bloc;
   final BuildContext context;
@@ -119,7 +130,8 @@ class AdminServiceAccountDataTableSource extends AdvancedDataTableSource<SearchP
         lastSearchTerm.isNotEmpty ? lastSearchTerm : null,
         (pageRequest.sortAscending ?? true) == true
             ? SortOrder.ASC
-            : SortOrder.DESC, PersonType.serviceAccount);
+            : SortOrder.DESC,
+        PersonType.serviceAccount);
     final userList = bloc.transformAdminApiKeys(data);
     return RemoteDataSourceDetails(
       data.max,
@@ -133,80 +145,74 @@ class AdminServiceAccountDataTableSource extends AdvancedDataTableSource<SearchP
     final _serviceAccount = lastDetails!.rows[index];
     return DataRow.byIndex(
         index: index,
-        cells: [DataCell(Text(
-          _serviceAccount.name,
-        )),
-        DataCell(Text('${_serviceAccount.groupCount}')),
-        DataCell(Row(children: <Widget>[
-          FHIconButton(
-            icon: const Icon(Icons.info),
-            onPressed: () => bloc.mrClient
-                .addOverlay((BuildContext context) {
-              return ServiceAccountInfoDialog(bloc, _serviceAccount);
-            }),
-          ),
-          FHIconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => {
-                ManagementRepositoryClientBloc
-                    .router
-                    .navigateTo(context,
-                    '/edit-admin-service-account',
-                    params: {
-                      'id': [_serviceAccount.id]
-                    })
+        cells: [
+          DataCell(Text(
+            _serviceAccount.name,
+          )),
+          DataCell(Text('${_serviceAccount.groupCount}')),
+          DataCell(Row(children: <Widget>[
+            FHIconButton(
+              icon: const Icon(Icons.info),
+              onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
+                return ServiceAccountInfoDialog(bloc, _serviceAccount);
               }),
-          // const SizedBox(
-          //   width: 8.0,
-          // ),
-          FHIconButton(
-            icon: const Icon(
-              Icons.refresh,
             ),
-            tooltip: "Reset Admin SDK access token",
-            onPressed: () => bloc.mrClient
-                .addOverlay((BuildContext context) {
-              return AdminSAKeyResetDialogWidget(
-                person: _serviceAccount,
-                bloc: bloc,
-              );
-            }),
-          ),
-          FHIconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () => bloc.mrClient
-                .addOverlay((BuildContext context) {
-              return FHDeleteThingWarningWidget(
-                thing: "service account '${_serviceAccount.name}'",
-                content:
-                'This service account will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!',
-                bloc: bloc.mrClient,
-                deleteSelected: () async {
-                  try {
-                    await bloc.deletePerson(_serviceAccount.id, true);
-                    setNextView(); // triggers reload from server with latest settings and rebuilds state
-                    bloc.mrClient
-                        .addSnackbar(Text("Service account '${_serviceAccount.name}' deleted!"));
-                    return true;
-                  } catch (e, s) {
-                    await bloc.mrClient.dialogError(e, s);
-                    return false;
-                  }
-                },
-              );
-            }),
-          ),
-        ])),
+            FHIconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () => {
+                      ManagementRepositoryClientBloc.router.navigateTo(
+                          context, '/edit-admin-service-account',
+                          params: {
+                            'id': [_serviceAccount.id]
+                          })
+                    }),
+            // const SizedBox(
+            //   width: 8.0,
+            // ),
+            FHIconButton(
+              icon: const Icon(
+                Icons.refresh,
+              ),
+              tooltip: "Reset Admin SDK access token",
+              onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
+                return AdminSAKeyResetDialogWidget(
+                  person: _serviceAccount,
+                  bloc: bloc,
+                );
+              }),
+            ),
+            FHIconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
+                return FHDeleteThingWarningWidget(
+                  thing: "service account '${_serviceAccount.name}'",
+                  content:
+                      'This service account will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!',
+                  bloc: bloc.mrClient,
+                  deleteSelected: () async {
+                    try {
+                      await bloc.deletePerson(_serviceAccount.id, true);
+                      setNextView(); // triggers reload from server with latest settings and rebuilds state
+                      bloc.mrClient.addSnackbar(Text(
+                          "Service account '${_serviceAccount.name}' deleted!"));
+                      return true;
+                    } catch (e, s) {
+                      await bloc.mrClient.dialogError(e, s);
+                      return false;
+                    }
+                  },
+                );
+              }),
+            ),
+          ])),
         ],
         onSelectChanged: (newValue) {
           ManagementRepositoryClientBloc.router
-              .navigateTo(
-              context, '/edit-admin-service-account',
-              params: {
-                'id': [_serviceAccount.id]
-              });
-        }
-    );}
+              .navigateTo(context, '/edit-admin-service-account', params: {
+            'id': [_serviceAccount.id]
+          });
+        });
+  }
 }
 
 class ServiceAccountInfoDialog extends StatelessWidget {
@@ -251,64 +257,64 @@ class _AdminServiceAccountInfo extends StatelessWidget {
         future: bloc.getPerson(foundPerson.id),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-          return const FHLoadingIndicator();
+            return const FHLoadingIndicator();
           } else if (snapshot.connectionState == ConnectionState.active ||
-          snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasError) {
-          return const FHLoadingError();
-          } else if (snapshot.hasData) {
+              snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              return const FHLoadingError();
+            } else if (snapshot.hasData) {
+              final entry = snapshot.data!;
 
-          final entry = snapshot.data!;
+              entry.groups.sort((a, b) => a.name.compareTo(b.name));
 
-          entry.groups.sort((a, b) => a.name.compareTo(b.name));
-
-          return SizedBox(
-            height: 400.0,
-            width: 400.0,
-            child: ListView(
-              children: [
-                _AdminServiceAccountRow(
-                  title: 'Name',
-                  child: Text(entry.name!,
-                      style: Theme.of(context).textTheme.bodyText1),
-                ),
-                const SizedBox(height: 16.0),
-                const FHPageDivider(),
-                const SizedBox(height: 16.0),
-                if (entry.groups.isNotEmpty)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              return SizedBox(
+                height: 400.0,
+                width: 400.0,
+                child: ListView(
+                  children: [
+                    _AdminServiceAccountRow(
+                      title: 'Name',
+                      child: Text(entry.name!,
+                          style: Theme.of(context).textTheme.bodyText1),
+                    ),
+                    const SizedBox(height: 16.0),
+                    const FHPageDivider(),
+                    const SizedBox(height: 16.0),
+                    if (entry.groups.isNotEmpty)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
 //              mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          'Groups',
-                          style: Theme.of(context).textTheme.caption,
-                        ),
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: Text(
+                              'Groups',
+                              style: Theme.of(context).textTheme.caption,
+                            ),
+                          ),
+                          Expanded(
+                              flex: 5,
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (entry.groups.isNotEmpty)
+                                      ...entry.groups
+                                          .map((e) => Text(
+                                                e.name,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyText2,
+                                              ))
+                                          .toList(),
+                                  ]))
+                        ],
                       ),
-                      Expanded(
-                          flex: 5,
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (entry.groups.isNotEmpty)
-                                  ...entry.groups
-                                      .map((e) => Text(
-                                            e.name,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyText2,
-                                          ))
-                                      .toList(),
-                              ]))
-                    ],
-                  ),
-              ],
-            ),
-          );
-        }}
-        return const SizedBox.shrink();
+                  ],
+                ),
+              );
+            }
+          }
+          return const SizedBox.shrink();
         });
   }
 }

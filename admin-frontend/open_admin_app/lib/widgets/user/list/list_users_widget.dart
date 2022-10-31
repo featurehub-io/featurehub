@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:advanced_datatable/advanced_datatable_source.dart';
 import 'package:advanced_datatable/datatable.dart';
 import 'package:bloc_provider/bloc_provider.dart';
@@ -39,6 +41,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final _debouncer = Debouncer(milliseconds: 500);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -49,7 +52,11 @@ class _PersonListWidgetState extends State<PersonListWidget> {
               hintText: 'Search users',
               icon: Icon(Icons.search),
             ),
-            onChanged: (val) => source.filterServerSide(val),
+            onChanged: (val) {
+              _debouncer.run(() {
+                source.filterServerSide(val);
+              });
+            },
           ),
         ),
         const SizedBox(height: 16.0),
@@ -128,7 +135,8 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
         lastSearchTerm.isNotEmpty ? lastSearchTerm : null,
         (pageRequest.sortAscending ?? true) == true
             ? SortOrder.ASC
-            : SortOrder.DESC, PersonType.person);
+            : SortOrder.DESC,
+        PersonType.person);
     final userList = bloc.transformPeople(data);
     return RemoteDataSourceDetails(
       data.max,
