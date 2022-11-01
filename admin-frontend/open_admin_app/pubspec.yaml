@@ -33,7 +33,6 @@ dependencies:
   # do not change this version of animator
   animator: ^3.0.0
   shared_preferences: ^2.0.5
-  plugin_platform_interface: ^2.0.0
   flutter_signin_button: ^2.0.0
   flutter_icons:
     git:
@@ -41,6 +40,7 @@ dependencies:
       branch: null-safety-migration
   auto_size_text: ^3.0.0-nullsafety.0
   collection: ^1.15.0
+  advanced_datatable: ^0.0.8
 
 dev_dependencies:
   flutter_lints: ^1.0.4
