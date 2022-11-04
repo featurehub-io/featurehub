@@ -153,7 +153,7 @@ be `register.url=https://some.domain.info/register-url?token=%s`. _This is honou
 - `portfolio.admin.group.suffix` ("Administrators") - the suffix added to a portfolio group when a portfolio is created
 for the first time, it needs an Admin group. So a portfolio called "Marketing" would get an admin group called "Marketing Administrators"
 created.
-- `web.asset.location=/var/www/html/intranet` - can be set optionally if you are intending to serve the Admin web app on the intranet without public internet access. We supply this application build already preloaded with all necessary assets. Available in FeatureHub v1.5.4 and higher.
+- `web.asset.location=/var/www/html/intranet` - can be set optionally if you are intending to serve the Admin web app on the intranet without public internet access. We supply this application build already preloaded with all necessary assets. Available in FeatureHub v1.5.4 and higher. With 1.5.10 or higher there is - `web.asset.location=/var/www/html/html` - which can be used if there is a lot of mobile use.
 - `cache-control.web.index` - this allows you to set the Cache-Control header on the index.html file. It is set by default to `no-store, max-age=0` preventing any caching, so as new versions roll out, they are correctly picked up.
 - `cache-control.web.other` - this sets the cache control on all of the other content of the website, which is essentially considered to be versioned. This data should never change and it is set by default to `max-age=864000` - or about 10 days.
 
