@@ -3,6 +3,7 @@ package io.featurehub.db.services
 import io.ebean.Database
 import io.ebean.DuplicateKeyException
 import io.ebean.annotation.Transactional
+import io.ebean.annotation.TxType
 import io.featurehub.dacha.model.PublishAction
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.OptimisticLockingException
@@ -198,7 +199,7 @@ class ServiceAccountSqlApi @Inject constructor(
     return convertUtils.toServiceAccount(sa, Opts.empty())
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   override fun cleanupServiceAccountApiKeys() {
     if (QDbServiceAccount()
         .or().apiKeyClientEval
@@ -230,7 +231,7 @@ class ServiceAccountSqlApi @Inject constructor(
     }
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   override fun unpublishServiceAccounts(portfolioId: UUID, serviceAccounts: List<UUID>?): Int {
     var query = QDbServiceAccount().portfolio.id.eq(portfolioId)
     if (serviceAccounts != null) {
@@ -316,17 +317,17 @@ class ServiceAccountSqlApi @Inject constructor(
     return QDbEnvironment().id.`in`(envIds).whenArchived.isNull.findList().associateBy { e -> e.id }
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   private fun save(sa: DbServiceAccount) {
     database.save(sa)
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   private fun updateOnlyServiceAccount(sa: DbServiceAccount) {
     database.update(sa)
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   private fun updateServiceAccount(
     sa: DbServiceAccount,
     deleted: List<DbServiceAccountEnvironment?>,
@@ -359,7 +360,7 @@ class ServiceAccountSqlApi @Inject constructor(
     }
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   override fun delete(deleter: Person, serviceAccountId: UUID): Boolean {
     val sa = QDbServiceAccount().id.eq(serviceAccountId).whenArchived.isNull.findOne()
     if (sa != null) {

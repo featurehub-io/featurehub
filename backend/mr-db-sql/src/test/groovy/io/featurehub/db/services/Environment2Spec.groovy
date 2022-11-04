@@ -18,6 +18,7 @@ import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.SortOrder
 import io.featurehub.mr.model.UpdateEnvironment
+import org.apache.commons.lang3.RandomStringUtils
 import org.jetbrains.annotations.Nullable
 
 class Environment2Spec extends Base2Spec {
@@ -33,6 +34,7 @@ class Environment2Spec extends Base2Spec {
   CacheSource cacheSource
 
   def setup() {
+    db.commitTransaction()
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     cacheSource = Mock(CacheSource)
 
@@ -41,9 +43,9 @@ class Environment2Spec extends Base2Spec {
 
     // now set up the environments we need
     DbOrganization organization = Finder.findDbOrganization()
-    portfolio1 = new DbPortfolio.Builder().name("p1-app-1-env1").whoCreated(dbSuperPerson).organization(organization).build()
+    portfolio1 = new DbPortfolio.Builder().name(RandomStringUtils.randomAlphabetic(8) + "p1-app-1-env1").whoCreated(dbSuperPerson).organization(organization).build()
     db.save(portfolio1)
-    portfolio2 = new DbPortfolio.Builder().name("p1-app-2-env1").whoCreated(dbSuperPerson).organization(organization).build()
+    portfolio2 = new DbPortfolio.Builder().name(RandomStringUtils.randomAlphabetic(8) + "p1-app-2-env1").whoCreated(dbSuperPerson).organization(organization).build()
     db.save(portfolio2)
 
     // create the portfolio group
@@ -56,6 +58,9 @@ class Environment2Spec extends Base2Spec {
     assert app2 != null
     appTreeEnvs = appApi.createApplication(portfolio2.id, new Application().name('app-tree-env'), superPerson)
     assert appTreeEnvs != null
+    if (db.currentTransaction() != null && db.currentTransaction().active) {
+      db.commitTransaction()
+    }
   }
 
   def "i can create, find and then update an existing environment"() {

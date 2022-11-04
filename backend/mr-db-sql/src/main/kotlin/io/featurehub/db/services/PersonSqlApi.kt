@@ -2,6 +2,7 @@ package io.featurehub.db.services
 
 import io.ebean.Database
 import io.ebean.annotation.Transactional
+import io.ebean.annotation.TxType
 import io.featurehub.db.api.*
 import io.featurehub.db.model.DbGroupMember
 import io.featurehub.db.model.DbGroupMemberKey
@@ -309,7 +310,7 @@ open class PersonSqlApi @Inject constructor(
     return personToken
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   override fun createServicePerson(name: String, createdBy: UUID?): CreatedServicePerson? {
     val created = if (createdBy == null) null else convertUtils.byPerson(createdBy)
     if (createdBy != null && created == null) {
@@ -337,7 +338,7 @@ open class PersonSqlApi @Inject constructor(
     return token
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   override fun resetServicePersonToken(serviceAccountId: UUID): CreatedServicePerson? {
     val search = QDbPerson().id.eq(serviceAccountId)
       .personType.eq(PersonType.SERVICEACCOUNT)
@@ -382,7 +383,7 @@ open class PersonSqlApi @Inject constructor(
     }
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   private fun updatePerson(
     p: DbPerson,
     groupChangeCollection: GroupChangeCollection? = null,

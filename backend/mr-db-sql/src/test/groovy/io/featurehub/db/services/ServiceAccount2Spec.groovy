@@ -20,6 +20,7 @@ import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
+import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -39,6 +40,8 @@ class ServiceAccount2Spec extends Base2Spec {
   CacheSource cacheSource
 
   def setup() {
+    db.commitTransaction()
+
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     cacheSource = Mock(CacheSource)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
@@ -48,7 +51,7 @@ class ServiceAccount2Spec extends Base2Spec {
     // now set up the environments we need
     UUID orgUUID = org.id
     DbOrganization organization = Finder.findDbOrganization()
-    portfolio1 = new DbPortfolio.Builder().name("p1-env-1").whoCreated(dbSuperPerson).organization(organization).build()
+    portfolio1 = new DbPortfolio.Builder().name(RandomStringUtils.randomAlphabetic(8) + "p1-env-1").whoCreated(dbSuperPerson).organization(organization).build()
     db.save(portfolio1)
     portfolio1Id = portfolio1.id
     def portfolioGroup = groupSqlApi.createPortfolioGroup(portfolio1Id, new Group().name("group1").admin(true), superPerson)
@@ -70,6 +73,10 @@ class ServiceAccount2Spec extends Base2Spec {
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment3.id),
       ]
     ), false, false, true, Opts.empty())
+
+    if (db.currentTransaction() != null && db.currentTransaction().active) {
+      db.commitTransaction()
+    }
   }
 
   @CompileStatic

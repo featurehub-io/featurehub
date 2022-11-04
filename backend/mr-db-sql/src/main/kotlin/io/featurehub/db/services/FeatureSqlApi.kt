@@ -2,6 +2,7 @@ package io.featurehub.db.services
 
 import io.ebean.Database
 import io.ebean.annotation.Transactional
+import io.ebean.annotation.TxType
 import io.featurehub.db.api.*
 import io.featurehub.db.listener.FeatureUpdateBySDKApi
 import io.featurehub.db.model.DbAcl
@@ -103,7 +104,7 @@ class FeatureSqlApi @Inject constructor(
     return null
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   private fun save(featureValue: DbFeatureValue) {
     database.save(featureValue)
   }
@@ -113,7 +114,7 @@ class FeatureSqlApi @Inject constructor(
     cacheSource.publishFeatureChange(featureValue)
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   override fun deleteFeatureValueForEnvironment(eId: UUID, key: String): Boolean {
       Conversions.nonNullEnvironmentId(eId)
     val strategy = QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).findOne()
@@ -229,7 +230,7 @@ class FeatureSqlApi @Inject constructor(
   }
 
   // we are going to have to put a transaction at this level as we want the whole thing to roll back if there is an issue
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class, RolloutStrategyValidator.InvalidStrategyCombination::class)
   override fun updateAllFeatureValuesForEnvironment(
       eId: UUID,
@@ -423,7 +424,7 @@ class FeatureSqlApi @Inject constructor(
     }
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class, RolloutStrategyValidator.InvalidStrategyCombination::class)
   override fun updateAllFeatureValuesByApplicationForKey(
       id: UUID,

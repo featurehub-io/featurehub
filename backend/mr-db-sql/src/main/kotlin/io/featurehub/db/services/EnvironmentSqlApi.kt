@@ -2,6 +2,7 @@ package io.featurehub.db.services
 
 import io.ebean.Database
 import io.ebean.annotation.Transactional
+import io.ebean.annotation.TxType
 import io.featurehub.dacha.model.PublishAction
 import io.featurehub.db.api.*
 import io.featurehub.db.model.*
@@ -93,7 +94,7 @@ class EnvironmentSqlApi @Inject constructor(
     return null
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   @Throws(
     OptimisticLockingException::class,
     EnvironmentApi.DuplicateEnvironmentException::class,
@@ -257,16 +258,17 @@ class EnvironmentSqlApi @Inject constructor(
     }
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   private fun saveAllFeatures(newFeatures: List<DbFeatureValue>) {
-    newFeatures.forEach { bean: DbFeatureValue -> database.save(bean) }
+    database.saveAll(newFeatures)
+//    newFeatures.forEach { bean: DbFeatureValue -> database.save(bean) }
   }
 
   private fun promotionSortedEnvironments(environments: List<DbEnvironment>?) {
     EnvironmentUtils.sortEnvironments(environments)
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   private fun update(env: DbEnvironment): DbEnvironment {
     database.save(env)
     cacheSource.updateEnvironment(env, PublishAction.UPDATE)
@@ -315,7 +317,7 @@ class EnvironmentSqlApi @Inject constructor(
     } else null
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   override fun unpublishEnvironments(appId: UUID, environments: List<UUID>?): Int {
     var envQ = QDbEnvironment().parentApplication.id.eq(appId)
 
@@ -385,7 +387,7 @@ class EnvironmentSqlApi @Inject constructor(
     return envFinder.findList().map { e: DbEnvironment -> convertUtils.toEnvironment(e, emptyOpts)!! }
   }
 
-  @Transactional
+  @Transactional(type = TxType.REQUIRES_NEW)
   private fun updatePriorEnvironmentIds(envs: Map<UUID?, DbEnvironment?>, environments: List<Environment>) {
     for (e in environments) {
       val env = envs[e.id]

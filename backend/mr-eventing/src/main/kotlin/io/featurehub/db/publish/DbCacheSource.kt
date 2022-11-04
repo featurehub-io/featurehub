@@ -19,14 +19,17 @@ import jakarta.inject.Inject
 import org.glassfish.hk2.api.IterableProvider
 import org.slf4j.LoggerFactory
 import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import java.util.concurrent.*
 import java.util.stream.Collectors
+
 
 /**
  * This allows us to have multiple active broadcasters
  */
-internal class CacheBroadcastProxy(private val broadcasters: List<CacheBroadcast>, private val executor: ExecutorService) : CacheBroadcast {
+internal class CacheBroadcastProxy(
+  private val broadcasters: List<CacheBroadcast>,
+  private val executor: ExecutorService
+) : CacheBroadcast {
 
   override fun publishEnvironment(cacheName: String, eci: PublishEnvironment) {
     broadcasters.forEach { cb ->
@@ -48,9 +51,10 @@ internal class CacheBroadcastProxy(private val broadcasters: List<CacheBroadcast
 }
 
 
-open class DbCacheSource @Inject constructor(private val convertUtils: Conversions, dsConfig: DataSourceConfig,
-                                             private val cacheBroadcasters: IterableProvider<CacheBroadcast>)
-  : CacheSource, CacheApi {
+open class DbCacheSource @Inject constructor(
+  private val convertUtils: Conversions, dsConfig: DataSourceConfig,
+  private val cacheBroadcasters: IterableProvider<CacheBroadcast>
+) : CacheSource, CacheApi {
   private val executor: ExecutorService
 
   @ConfigKey("cache.pool-size")
@@ -77,19 +81,49 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     }
   }
 
-  protected fun executorService() : ExecutorService {
-    return Context.taskWrapping(Executors.newFixedThreadPool(cachePoolSize!!))
+  protected fun executorService(): ExecutorService {
+    val nThreads = cachePoolSize!!
+
+    val tpe = object : ThreadPoolExecutor(
+      nThreads, nThreads,
+      0L, TimeUnit.MILLISECONDS,
+      LinkedBlockingQueue()
+    ) {
+      override fun afterExecute(r: Runnable?, t: Throwable?) {
+        var t = t
+        super.afterExecute(r, t)
+
+        if (t == null && r is Future<*>) {
+          try {
+            val future = r
+            if (future.isDone) {
+              future.get()
+            }
+          } catch (ce: CancellationException) {
+            t = ce
+          } catch (ee: ExecutionException) {
+            t = ee.cause
+          } catch (ie: InterruptedException) {
+            Thread.currentThread().interrupt()
+          }
+        }
+
+        t?.let { log.error("publishing failed", t) }
+      }
+    }
+
+    return Context.taskWrapping(tpe)
   }
 
   override fun publishObjectsAssociatedWithCache(cacheName: String) {
-      val saFuture = executor.submit { publishToCacheServiceAccounts(cacheName, cacheBroadcast) }
-      val envFuture = executor.submit { publishCacheEnvironments(cacheName, cacheBroadcast) }
-      try {
-        saFuture.get()
-        envFuture.get()
-      } catch (e: Exception) {
-        log.error("Failed to publish cache.", e)
-      }
+    val saFuture = executor.submit { publishToCacheServiceAccounts(cacheName, cacheBroadcast) }
+    val envFuture = executor.submit { publishCacheEnvironments(cacheName, cacheBroadcast) }
+    try {
+      saFuture.get()
+      envFuture.get()
+    } catch (e: Exception) {
+      log.error("Failed to publish cache.", e)
+    }
   }
 
   private fun publishToCacheServiceAccounts(cacheName: String, cacheBroadcast: CacheBroadcast) {
@@ -120,10 +154,10 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     }
 
     return finder.select(
-        QDbServiceAccount.Alias.id,
-        QDbServiceAccount.Alias.version,
-        QDbServiceAccount.Alias.apiKeyClientEval,
-        QDbServiceAccount.Alias.apiKeyServerEval,
+      QDbServiceAccount.Alias.id,
+      QDbServiceAccount.Alias.version,
+      QDbServiceAccount.Alias.apiKeyClientEval,
+      QDbServiceAccount.Alias.apiKeyServerEval,
     ).findOne()
   }
 
@@ -161,15 +195,17 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     if (count == 0) {
       log.info("database has no environments, publishing empty environments indicator.")
       val empty = UUID.randomUUID()
-      cacheBroadcast.publishEnvironment(cacheName,
+      cacheBroadcast.publishEnvironment(
+        cacheName,
         PublishEnvironment()
-        .environment(CacheEnvironment().id(empty).version(Long.MAX_VALUE))
-        .organizationId(empty)
-        .applicationId(empty)
-        .portfolioId(empty)
+          .environment(CacheEnvironment().id(empty).version(Long.MAX_VALUE))
+          .organizationId(empty)
+          .applicationId(empty)
+          .portfolioId(empty)
 
-        .action(PublishAction.EMPTY)
-        .count(0))
+          .action(PublishAction.EMPTY)
+          .count(0)
+      )
     } else {
       log.info("publishing {} environments to cache {}", count, cacheName)
       environmentsByCacheName(cacheName, false).findEach { env: DbEnvironment ->
@@ -182,9 +218,9 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   }
 
   private fun fillEnvironmentCacheItem(
-      count: Int,
-      env: DbEnvironment,
-      publishAction: PublishAction
+    count: Int,
+    env: DbEnvironment,
+    publishAction: PublishAction
   ): PublishEnvironment {
     try {
       log.trace("starting env: {} / {} - application features", env.name, env.id)
@@ -192,23 +228,23 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
       val features = QDbApplicationFeature().whenArchived.isNull
         .parentApplication.environments.id.eq(env.id)
         .select(
-            QDbApplicationFeature.Alias.id,
-            QDbApplicationFeature.Alias.key,
-            QDbApplicationFeature.Alias.valueType,
-            QDbApplicationFeature.Alias.version
+          QDbApplicationFeature.Alias.id,
+          QDbApplicationFeature.Alias.key,
+          QDbApplicationFeature.Alias.valueType,
+          QDbApplicationFeature.Alias.version
         ).findList().associate { it.id!! to it!! }.toMutableMap()
 
       val fvFinder = QDbFeatureValue()
         .select(
-            QDbFeatureValue.Alias.id,
-            QDbFeatureValue.Alias.locked,
+          QDbFeatureValue.Alias.id,
+          QDbFeatureValue.Alias.locked,
           QDbFeatureValue.Alias.feature.id,
-            QDbFeatureValue.Alias.rolloutStrategies,
-            QDbFeatureValue.Alias.version,
-            QDbFeatureValue.Alias.retired,
-            QDbFeatureValue.Alias.defaultValue
+          QDbFeatureValue.Alias.rolloutStrategies,
+          QDbFeatureValue.Alias.version,
+          QDbFeatureValue.Alias.retired,
+          QDbFeatureValue.Alias.defaultValue
         ).feature.whenArchived.isNull.feature.fetch(
-              QDbApplicationFeature.Alias.id
+          QDbApplicationFeature.Alias.id
         ).environment.whenArchived.isNull.environment.whenUnpublished.isNull.environment.eq(env)
 
       val eci = PublishEnvironment()
@@ -241,8 +277,8 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   }
 
   private fun toCacheEnvironmentFeature(
-      dfv: DbFeatureValue,
-      features: MutableMap<UUID, DbApplicationFeature>
+    dfv: DbFeatureValue,
+    features: MutableMap<UUID, DbApplicationFeature>
   ): CacheEnvironmentFeature {
     log.trace("cache-environment-feature")
     val feature = features[dfv.feature.id]
@@ -255,10 +291,10 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   // we should select out only the details we need to publish
   private fun findEnvironment(id: UUID): DbEnvironment? {
     return QDbEnvironment().id.eq(id).select(
-        QDbEnvironment.Alias.id,
-        QDbEnvironment.Alias.version,
-        QDbEnvironment.Alias.userEnvironmentInfo,
-        QDbEnvironment.Alias.managementEnvironmentInfo
+      QDbEnvironment.Alias.id,
+      QDbEnvironment.Alias.version,
+      QDbEnvironment.Alias.userEnvironmentInfo,
+      QDbEnvironment.Alias.managementEnvironmentInfo
     ).findOne()
   }
 
@@ -268,7 +304,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
       .id(env.id)
       .version(env.version)
 
-    if (env.userEnvironmentInfo != null ) {
+    if (env.userEnvironmentInfo != null) {
       if (ce.environmentInfo == null) {
         ce.environmentInfo = HashMap(env.userEnvironmentInfo)
       }
@@ -326,39 +362,55 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
       .whenArchived.isNull.whenUnpublished.isNull.parentApplication.portfolio.organization.namedCache.cacheName.eq(
         cacheName
       ).environmentFeatures.feature.fetch().parentApplication.fetch(
-            QDbApplication.Alias.id
+        QDbApplication.Alias.id
       ).parentApplication.portfolio.fetch(QDbPortfolio.Alias.id).parentApplication.portfolio.organization.fetch(
-            QDbOrganization.Alias.id
+        QDbOrganization.Alias.id
       )
 
     return if (wantCount) {
-      envQuery .select(
-          QDbEnvironment.Alias.id,
+      envQuery.select(
+        QDbEnvironment.Alias.id,
       )
     } else {
       envQuery.select(
-          QDbEnvironment.Alias.id,
-          QDbEnvironment.Alias.name,
-          QDbEnvironment.Alias.version,
-          QDbEnvironment.Alias.userEnvironmentInfo,
-          QDbEnvironment.Alias.managementEnvironmentInfo
+        QDbEnvironment.Alias.id,
+        QDbEnvironment.Alias.name,
+        QDbEnvironment.Alias.version,
+        QDbEnvironment.Alias.userEnvironmentInfo,
+        QDbEnvironment.Alias.managementEnvironmentInfo
       )
     }
   }
 
   override fun publishFeatureChange(featureValue: DbFeatureValue) {
     executor.submit {
-      val cacheName = getFeatureValueCacheName(featureValue)
-      innerPublishFeatureValueChange(cacheName, featureValue, cacheBroadcast)
+      try {
+        val cacheName = getFeatureValueCacheName(featureValue)
+        innerPublishFeatureValueChange(cacheName, featureValue, cacheBroadcast)
+      } catch (e: Exception) {
+        log.error("Failed to publish", e)
+      }
     }
   }
 
-  private fun innerPublishFeatureValueChange(cacheName: String, featureValue: DbFeatureValue, cacheBroadcast: CacheBroadcast) {
-    cacheBroadcast.publishFeatures(cacheName,
-      PublishFeatureValues().addFeaturesItem(PublishFeatureValue()
-        .feature(toCacheEnvironmentFeature(featureValue, mutableMapOf(Pair(featureValue.feature.id, featureValue.feature))))
-        .environmentId(featureValue.environment.id)
-        .action(PublishAction.UPDATE))
+  private fun innerPublishFeatureValueChange(
+    cacheName: String,
+    featureValue: DbFeatureValue,
+    cacheBroadcast: CacheBroadcast
+  ) {
+    cacheBroadcast.publishFeatures(
+      cacheName,
+      PublishFeatureValues().addFeaturesItem(
+        PublishFeatureValue()
+          .feature(
+            toCacheEnvironmentFeature(
+              featureValue,
+              mutableMapOf(Pair(featureValue.feature.id, featureValue.feature))
+            )
+          )
+          .environmentId(featureValue.environment.id)
+          .action(PublishAction.UPDATE)
+      )
     )
   }
 
@@ -414,14 +466,17 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     executor.submit {
       val cacheName = QDbNamedCache().organizations.portfolios.applications.eq(feature.parentApplication)
         .findOne()!!.cacheName
-      cacheBroadcast.publishFeatures(cacheName,
-        PublishFeatureValues().addFeaturesItem(PublishFeatureValue()
-          .feature(
-            CacheEnvironmentFeature()
-              .feature(toCacheFeature(feature))
-          )
-          .environmentId(environmentId)
-          .action(PublishAction.DELETE))
+      cacheBroadcast.publishFeatures(
+        cacheName,
+        PublishFeatureValues().addFeaturesItem(
+          PublishFeatureValue()
+            .feature(
+              CacheEnvironmentFeature()
+                .feature(toCacheFeature(feature))
+            )
+            .environmentId(environmentId)
+            .action(PublishAction.DELETE)
+        )
       )
     }
   }
@@ -444,14 +499,15 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
         .map { obj: DbNamedCache -> obj.cacheName }
         .orElse(null)
     if (cacheName != null) {
-        if (publishAction != PublishAction.DELETE) {
-          log.debug("Updating service account {} -> {}", serviceAccount.id, serviceAccount.apiKeyServerEval)
-          cacheBroadcast.publishServiceAccount(cacheName,
-            PublishServiceAccount()
-              .count(serviceAccountsByCacheName(cacheName).findCount())
-              .serviceAccount(fillServiceAccount(serviceAccount))
-              .action(publishAction)
-          )
+      if (publishAction != PublishAction.DELETE) {
+        log.debug("Updating service account {} -> {}", serviceAccount.id, serviceAccount.apiKeyServerEval)
+        cacheBroadcast.publishServiceAccount(
+          cacheName,
+          PublishServiceAccount()
+            .count(serviceAccountsByCacheName(cacheName).findCount())
+            .serviceAccount(fillServiceAccount(serviceAccount))
+            .action(publishAction)
+        )
       } else {
         log.info("can't publish service account, no broadcaster for cache {}", cacheName)
       }
@@ -470,19 +526,20 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
       .map { obj: DbNamedCache -> obj.cacheName }
       .orElse(null)
     if (cacheName != null) {
-        log.debug("Sending delete for service account `{}`", id)
-        cacheBroadcast.publishServiceAccount(cacheName,
-          PublishServiceAccount()
-            .count(serviceAccountsByCacheName(cacheName).findCount() - 1) // now one less
-            .serviceAccount(
-              CacheServiceAccount()
-                .id(id)
-                .apiKeyServerSide("")
-                .apiKeyClientSide("")
-                .version(Long.MAX_VALUE)
-            ) // just send the id, that is all the cache needs
-            .action(PublishAction.DELETE)
-        )
+      log.debug("Sending delete for service account `{}`", id)
+      cacheBroadcast.publishServiceAccount(
+        cacheName,
+        PublishServiceAccount()
+          .count(serviceAccountsByCacheName(cacheName).findCount() - 1) // now one less
+          .serviceAccount(
+            CacheServiceAccount()
+              .id(id)
+              .apiKeyServerSide("")
+              .apiKeyClientSide("")
+              .version(Long.MAX_VALUE)
+          ) // just send the id, that is all the cache needs
+          .action(PublishAction.DELETE)
+      )
     }
   }
 
@@ -497,13 +554,13 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
           .map { obj: DbNamedCache -> obj.cacheName }
           .orElse(null)
       if (cacheName != null) {
-          log.trace("publishing environment {} ({})", environment.name, environment.id)
-          val environmentCacheItem = fillEnvironmentCacheItem(
-            environmentsByCacheName(cacheName, true).findCount(),
-            environment,
-            publishAction
-          )
-          cacheBroadcast.publishEnvironment(cacheName, environmentCacheItem)
+        log.trace("publishing environment {} ({})", environment.name, environment.id)
+        val environmentCacheItem = fillEnvironmentCacheItem(
+          environmentsByCacheName(cacheName, true).findCount(),
+          environment,
+          publishAction
+        )
+        cacheBroadcast.publishEnvironment(cacheName, environmentCacheItem)
       }
     }
   }
@@ -514,17 +571,18 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
         .map { obj: DbNamedCache -> obj.cacheName }
         .orElse(null)
     if (cacheName != null) {
-        log.debug("deleting environment: `{}`", id)
-        val randomUUID = UUID.randomUUID() // we use this to fill in not-nullable fields
-        cacheBroadcast.publishEnvironment(cacheName,
-          PublishEnvironment()
-            .organizationId(randomUUID)
-            .portfolioId(randomUUID)
-            .applicationId(randomUUID)
-            .count(environmentsByCacheName(cacheName, true).findCount() - 1)
-            .environment(CacheEnvironment().id(id).version(Long.MAX_VALUE))
-            .action(PublishAction.DELETE)
-        )
+      log.debug("deleting environment: `{}`", id)
+      val randomUUID = UUID.randomUUID() // we use this to fill in not-nullable fields
+      cacheBroadcast.publishEnvironment(
+        cacheName,
+        PublishEnvironment()
+          .organizationId(randomUUID)
+          .portfolioId(randomUUID)
+          .applicationId(randomUUID)
+          .count(environmentsByCacheName(cacheName, true).findCount() - 1)
+          .environment(CacheEnvironment().id(id).version(Long.MAX_VALUE))
+          .action(PublishAction.DELETE)
+      )
     }
   }
 
@@ -532,45 +590,52 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
    * unlike pushing out feature values one by one as they change, this can represent the deletion of a feature value
    * across the board.
    */
-  private fun publishAppLevelFeatureChange(appFeature: DbApplicationFeature, action: PublishAction, originalKey: String?) {
+  private fun publishAppLevelFeatureChange(
+    appFeature: DbApplicationFeature,
+    action: PublishAction,
+    originalKey: String?
+  ) {
     val cacheName =
       QDbNamedCache().organizations.portfolios.applications.eq(appFeature.parentApplication).findOneOrEmpty()
         .map { obj: DbNamedCache -> obj.cacheName }
         .orElse(null)
     if (cacheName != null) {
-        val featureValues: MutableMap<UUID, DbFeatureValue> = HashMap()
-        if (action != PublishAction.DELETE) {
-          // dont' care about values if deleting
-          QDbFeatureValue().environment.whenArchived.isNull.environment.whenUnpublished.isNull.environment.parentApplication.eq(
-            appFeature.parentApplication
-          ).feature.eq(appFeature).findEach { fe: DbFeatureValue -> featureValues[fe.environment.id] = fe }
-        }
-        val cacheFeature = toCacheFeature(appFeature)
+      val featureValues: MutableMap<UUID, DbFeatureValue> = HashMap()
+      if (action != PublishAction.DELETE) {
+        // dont' care about values if deleting
+        QDbFeatureValue().environment.whenArchived.isNull.environment.whenUnpublished.isNull.environment.parentApplication.eq(
+          appFeature.parentApplication
+        ).feature.eq(appFeature).findEach { fe: DbFeatureValue -> featureValues[fe.environment.id] = fe }
+      }
+      val cacheFeature = toCacheFeature(appFeature)
 
-        // deletes cause the key to change, so this restores it, SDKs should be using the ID in any case
-        if (originalKey != null) {
-          cacheFeature.key = originalKey
-        }
+      // deletes cause the key to change, so this restores it, SDKs should be using the ID in any case
+      if (originalKey != null) {
+        cacheFeature.key = originalKey
+      }
 
-        QDbEnvironment().parentApplication.eq(appFeature.parentApplication)
-          .whenArchived.isNull
-          .whenUnpublished.isNull.findList()
-          .forEach { env: DbEnvironment ->
-            val toCacheFeatureValue = toCacheFeatureValue(featureValues[env.id], appFeature)
-            // deletes cause the key to change, so this restores it, SDKs should be using the ID in any case
-            if (originalKey != null && toCacheFeatureValue != null) {
-              toCacheFeatureValue.key = originalKey
-            }
-            cacheBroadcast.publishFeatures(cacheName,
-              PublishFeatureValues().addFeaturesItem(PublishFeatureValue()
-                  .feature(
-                    CacheEnvironmentFeature()
-                      .feature(cacheFeature)
-                      .value(toCacheFeatureValue)
-                  )
-                  .environmentId(env.id).action(action))
-              )
-            }
+      QDbEnvironment().parentApplication.eq(appFeature.parentApplication)
+        .whenArchived.isNull
+        .whenUnpublished.isNull.findList()
+        .forEach { env: DbEnvironment ->
+          val toCacheFeatureValue = toCacheFeatureValue(featureValues[env.id], appFeature)
+          // deletes cause the key to change, so this restores it, SDKs should be using the ID in any case
+          if (originalKey != null && toCacheFeatureValue != null) {
+            toCacheFeatureValue.key = originalKey
+          }
+          cacheBroadcast.publishFeatures(
+            cacheName,
+            PublishFeatureValues().addFeaturesItem(
+              PublishFeatureValue()
+                .feature(
+                  CacheEnvironmentFeature()
+                    .feature(cacheFeature)
+                    .value(toCacheFeatureValue)
+                )
+                .environmentId(env.id).action(action)
+            )
+          )
+        }
     }
   }
 
@@ -596,14 +661,15 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
         val cacheName = getFeatureValueCacheName(updatedValues[0])
         // they are all the same application and
         // hence the same cache
-          updatedValues.forEach { fv: DbFeatureValue ->
-            executor.submit {
-              innerPublishFeatureValueChange(cacheName,
-                fv,
-                cacheBroadcast
-              )
-            }
+        updatedValues.forEach { fv: DbFeatureValue ->
+          executor.submit {
+            innerPublishFeatureValueChange(
+              cacheName,
+              fv,
+              cacheBroadcast
+            )
           }
+        }
       }
     }
   }
