@@ -78,9 +78,9 @@ class RouteCreator {
   }
 
   Widget users(mrBloc, {Map<String, List<String?>> params = const {}}) {
-    return BlocProvider<ListPersonBloc>(
+    return BlocProvider<ListUsersBloc>(
         creator: (_context, _bag) =>
-            ListPersonBloc(params['search']?.elementAt(0), mrBloc),
+            ListUsersBloc(params['search']?.elementAt(0), mrBloc),
         child: const ManageUsersRoute());
   }
 
@@ -156,9 +156,9 @@ class RouteCreator {
   }
 
   Widget adminServiceAccount(mrBloc, {Map<String, List<String?>> params = const {}}) {
-    return BlocProvider<ListAdminServiceAccount>(
+    return BlocProvider<ListUsersBloc>(
         creator: (_context, _bag) =>
-            ListAdminServiceAccount(params['search']?.elementAt(0), mrBloc),
+            ListUsersBloc(params['search']?.elementAt(0), mrBloc),
         child: const ManageAdminServiceAccountsRoute());
   }
 

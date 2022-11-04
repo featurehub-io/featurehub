@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:html';
+
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
@@ -117,5 +120,17 @@ class FHError {
         exception: e,
         stackTrace: s,
         showDetails: showDetails);
+  }
+}
+
+class Debouncer {
+  Debouncer({required this.milliseconds});
+  final int milliseconds;
+  Timer? _timer;
+  void run(VoidCallback action) {
+    if (_timer?.isActive ?? false) {
+      _timer?.cancel();
+    }
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
   }
 }

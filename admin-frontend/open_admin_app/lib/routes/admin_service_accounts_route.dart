@@ -10,7 +10,7 @@ class ManageAdminServiceAccountsRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<ListAdminServiceAccount>(context);
+    final bloc = BlocProvider.of<ListUsersBloc>(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,14 +37,6 @@ class ManageAdminServiceAccountsRoute extends StatelessWidget {
                 )
             ],
           )
-        ),
-        const SizedBox(height: 16.0),
-        Container(
-          constraints: const BoxConstraints(maxWidth: 300),
-          child: TextField(
-            decoration: const InputDecoration(hintText: 'Search Service Accounts', icon: Icon(Icons.search),),
-            onChanged: (val) => bloc.triggerSearch(val),
-          ),
         ),
         const SizedBox(height: 16.0),
         const AdminServiceAccountsListWidget(),
