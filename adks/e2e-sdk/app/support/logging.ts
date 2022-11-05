@@ -94,7 +94,7 @@ export const responseToRecord = function (response: AxiosResponse) {
 export function axiosLoggingAttachment(axiosInstances: Array<AxiosInstance>) {
   axiosInstances.forEach((axios) => {
     axios.interceptors.response.use((resp: AxiosResponse) => {
-      const responseToLog = responseToRecord(resp)
+      const responseToLog = responseToRecord(resp);
       if (responseToLog !== undefined) {
         logger.log({level: 'verbose', message: 'response:', http: JSON.stringify(responseToLog, undefined, 2)});
       }

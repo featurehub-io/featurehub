@@ -8,6 +8,7 @@ class AdminServiceAccount1Spec extends Base2Spec {
 
   def setup() {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, groupSqlApi)
+    db.commitTransaction()
   }
 
   // this needs to be committed, hence it is isolated
@@ -16,7 +17,6 @@ class AdminServiceAccount1Spec extends Base2Spec {
 
       def sa1 = personSqlApi.createServicePerson("Treebeard", superuser)
       def sa2 = personSqlApi.createServicePerson("Pippin", superuser)
-      db.commitTransaction()
     when: "i search for them as people"
       def people = personSqlApi.search(null, null, 0, 1, Set.of(PersonType.PERSON), Opts.empty())
     and: "i search for them as service accounts"

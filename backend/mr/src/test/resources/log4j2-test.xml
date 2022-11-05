@@ -18,6 +18,7 @@
     <AsyncLogger name="io.ebean.cache.COLL" level="trace"/>
     <AsyncLogger name="io.ebean.cache.NATKEY" level="trace"/>
     <AsyncLogger name="io.featurehub.edge.stats" level="trace"/>
+    <AsyncLogger name="io.featurehub.db.services.FeatureSqlApi" level="trace"/>
 
     <AsyncLogger name="jersey-logging" level="trace"/>
     <AsyncLogger name="io.featurehub.events.pubsub" level="trace"/>

@@ -32,6 +32,7 @@ import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
+import org.apache.commons.lang3.RandomStringUtils
 
 class FeatureSpec extends Base2Spec {
   PersonSqlApi personSqlApi
@@ -51,14 +52,14 @@ class FeatureSpec extends Base2Spec {
   Group adminGroupInPortfolio1
 
   def setup() {
+    db.commitTransaction()
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     serviceAccountSqlApi = new ServiceAccountSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
 
     appApi = new ApplicationSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
 
-
     // now set up the environments we need
-    portfolio1 = new DbPortfolio.Builder().name("p1-app-feature").whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
+    portfolio1 = new DbPortfolio.Builder().name("p1-app-feature" + RandomStringUtils.randomAlphabetic(8) ).whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
     db.save(portfolio1)
     app1 = new DbApplication.Builder().whoCreated(dbSuperPerson).portfolio(portfolio1).name("feature-app-1").build()
     db.save(app1)
@@ -75,18 +76,22 @@ class FeatureSpec extends Base2Spec {
 
     featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv, Mock(StrategyDiffer))
 
-    def averageJoe = new DbPerson.Builder().email("averagejoe-fvs@featurehub.io").name("Average Joe").build()
+    def averageJoe = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) + "averagejoe-fvs@featurehub.io").name("Average Joe").build()
     db.save(averageJoe)
     averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("fsspec-1-p1"), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
 
-    def portfolioAdmin = new DbPerson.Builder().email("pee-admin-fvs@featurehub.io").name("Portfolio Admin p1 fvs").build()
+    def portfolioAdmin = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) + "pee-admin-fvs@featurehub.io").name("Portfolio Admin p1 fvs").build()
     db.save(portfolioAdmin)
     portfolioAdminOfPortfolio1 = convertUtils.toPerson(portfolioAdmin)
 
     adminGroupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().admin(true).name("fsspec-admin-1-p1"), superPerson)
     groupSqlApi.addPersonToGroup(adminGroupInPortfolio1.id, portfolioAdminOfPortfolio1.id.id, Opts.empty())
+
+    if (db.currentTransaction() != null && db.currentTransaction().active) {
+      db.commitTransaction()
+    }
   }
 
   def "when i save a new feature in an application i receive it back as part of the list"() {

@@ -7,12 +7,13 @@ class AdminServiceAccount2Spec extends Base2Spec {
   def setup() {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, groupSqlApi)
     authenticationSqlApi = new AuthenticationSqlApi(db, convertUtils)
+    db.commitTransaction()
   }
 
   def "i cannot perform authentication operations with a service account user"() {
     when: "i have a service account"
       def sa1 = personSqlApi.createServicePerson("Saruman", superuser)
-      db.commitTransaction()
+
     then: "i attempt to login i cannot"
       authenticationSqlApi.login(sa1.person.email, '') == null
     and: "i cannot reset the password of the account"

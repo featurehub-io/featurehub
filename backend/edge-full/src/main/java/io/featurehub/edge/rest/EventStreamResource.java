@@ -58,10 +58,10 @@ public class EventStreamResource {
       @Suspended AsyncResponse response,
       @QueryParam("sdkUrl") List<String> sdkUrls,
       @QueryParam("apiKey") List<String> apiKeys,
-      @QueryParam("contentSha") String contentSha,
+      @QueryParam("contextSha") String contextSha,
       @HeaderParam("x-featurehub") List<String> featureHubAttrs,
       @HeaderParam("if-none-match") String etagHeader) {
-    if (fastlyConfigured && contentSha == null) {
+    if (fastlyConfigured && contextSha == null) {
       throw new WebApplicationException(Response.status(400).header("content-type", "text/plain").entity(
         "Fastly is configured and your SDK is too old to support it and will " +
         "malfunction, please update.").build());
