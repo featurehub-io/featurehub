@@ -6,9 +6,7 @@ import cd.connect.openapi.support.ReturnStatusContainerResponseFilter
 import io.featurehub.info.ApplicationVersionFeatures
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.jersey.config.EndpointLoggingListener
-import io.featurehub.utils.ConfigInjectionResolver
-import io.featurehub.utils.CurrentTime
-import io.featurehub.utils.CurrentTimeSource
+import io.featurehub.utils.*
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
@@ -39,6 +37,9 @@ class CommonFeatureHubFeatures @Inject constructor(private val locator: ServiceL
     context.register(object : AbstractBinder() {
       override fun configure() {
         bind(CurrentTime::class.java).to(CurrentTimeSource::class.java).`in`(
+          Singleton::class.java
+        )
+        bind(ExecutorUtil::class.java).to(ExecutorSupplier::class.java).`in`(
           Singleton::class.java
         )
         bind(ConfigInjectionResolver())

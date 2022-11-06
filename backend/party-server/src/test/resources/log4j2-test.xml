@@ -21,6 +21,10 @@
     <AsyncLogger name="io.featurehub.edge.stats" level="trace"/>
 
     <AsyncLogger name="jersey-logging" level="trace"/>
+    <AsyncLogger name="io.featurehub.events.pubsub" level="trace"/>
+    <AsyncLogger name="io.featurehub.db.publish" level="trace"/>
+    <AsyncLogger name="io.featurehub.db.services.FeatureSqlApi" level="trace"/>
+    <AsyncLogger name="io.featurehub.events" level="trace"/>
 
     <AsyncLogger name="net.stickycode" level="warn"/>
     <AsyncLogger name="org.glassfish.jersey.server.wadl" level="error"/>
