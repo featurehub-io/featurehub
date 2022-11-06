@@ -27,7 +27,7 @@ class Dacha2Feature : Feature {
 
     context.register(object: AbstractBinder() {
       override fun configure() {
-        bind(Dacha2CacheImpl::class.java).to(Dacha2Cache::class.java).to(Dacha2CacheListener::class.java).`in`(Singleton::class.java)
+        bind(Dacha2CacheImpl::class.java).to(Dacha2Cache::class.java).`in`(Singleton::class.java)
         if (FastlyPublisher.fastlyEnabled()) {
           bind(FastlyPublisher::class.java).to(Dacha2CacheListener::class.java).`in`(Singleton::class.java)
         }

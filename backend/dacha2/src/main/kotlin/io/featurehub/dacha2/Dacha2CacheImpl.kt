@@ -17,7 +17,12 @@ data class FeatureCollection(
   val serviceAccountId: UUID
 )
 
-interface Dacha2Cache : Dacha2CacheListener {
+interface Dacha2Cache {
+  // we specifically DON'T want it implementing the Dacha2CacheListener interface
+  fun updateServiceAccount(serviceAccount: PublishServiceAccount)
+  fun updateEnvironment(env: PublishEnvironment)
+  fun updateFeature(feature: PublishFeatureValue)
+
   fun getFeatureCollection(eId: UUID, apiKey: String): FeatureCollection?
   fun findEnvironment(eId: UUID): FeatureValues?
 }

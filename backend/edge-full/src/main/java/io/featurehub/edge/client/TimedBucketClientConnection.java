@@ -152,7 +152,11 @@ public class TimedBucketClientConnection implements ClientConnection {
       }
       eventBuilder.data(data);
       final OutboundEvent event = eventBuilder.build();
-      output.write(event);
+      try  {
+        output.write(event);
+      } catch (IOException e) {
+        close(false);
+      }
     } else {
       notifyHandlersThatTheConnectionHasClosed();
     }

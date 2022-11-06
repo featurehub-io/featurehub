@@ -22,7 +22,7 @@ class DachaFeature : Feature {
 
     context.register(object: AbstractBinder() {
       override fun configure() {
-        bind(InMemoryCache::class.java).to(InternalCache::class.java).to(CacheUpdateListener::class.java).`in`(Singleton::class.java)
+        bind(InMemoryCache::class.java).to(InternalCache::class.java).`in`(Singleton::class.java)
         if (FastlyPublisher.fastlyEnabled()) {
           bind(FastlyPublisher::class.java).to(CacheUpdateListener::class.java).`in`(Singleton::class.java)
         }
