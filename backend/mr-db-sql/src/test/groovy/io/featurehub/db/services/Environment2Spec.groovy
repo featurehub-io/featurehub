@@ -14,6 +14,7 @@ import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
+import io.featurehub.mr.model.EnvironmentSortOrder
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.SortOrder
@@ -66,16 +67,16 @@ class Environment2Spec extends Base2Spec {
   def "i can create, find and then update an existing environment"() {
     when: "i create a new environment"
       Environment e = envApi.create(new Environment().name("env-1-app1").description("desc app 1 env 1"), app1, superPerson)
-      List<Environment> createSearch = envApi.search(app1.id, e.name, SortOrder.ASC, Opts.empty(), superPerson)
+      List<Environment> createSearch = envApi.search(app1.id, e.name, EnvironmentSortOrder.ASC, Opts.empty(), superPerson)
       Environment eGet = envApi.get(e.id, Opts.empty(), superPerson)
     and:
       def originalEnv = envApi.get(e.id, Opts.empty(), superPerson)
       Environment u = envApi.update(e.id, originalEnv.name("env-1-app-1 update").description("new desc"), Opts.empty())
-      List<Environment> updateSearch = envApi.search(app1.id, u.name, SortOrder.ASC, Opts.empty(), superPerson)
+      List<Environment> updateSearch = envApi.search(app1.id, u.name, EnvironmentSortOrder.ASC, Opts.empty(), superPerson)
       Environment uGet = envApi.get(e.id, Opts.empty(), superPerson)
     and:
       boolean success = envApi.delete(u.id)
-      List<Environment> deleteSearch = envApi.search(app1.id, u.name, SortOrder.ASC, Opts.empty(), superPerson)
+      List<Environment> deleteSearch = envApi.search(app1.id, u.name, EnvironmentSortOrder.ASC, Opts.empty(), superPerson)
     then:
       e != null
       createSearch.size() == 1

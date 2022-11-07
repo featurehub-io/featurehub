@@ -512,7 +512,7 @@ class FeatureSqlApi @Inject constructor(
       .feature.whenArchived.isNull
       .feature.key.`in`(featureKeys)
 
-    return featureValueFinder.findList().map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs) }
+    return featureValueFinder.findList().map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs)!! }
   }
 
   /*
@@ -568,7 +568,7 @@ class FeatureSqlApi @Inject constructor(
 
       val features = limitingAppFeatureQuery
         .findList()
-        .map { f: DbApplicationFeature? -> convertUtils.toApplicationFeature(f, empty) }
+        .map { f: DbApplicationFeature? -> convertUtils.toApplicationFeature(f, empty)!! }
 
       val featureKeys = features.map { f -> f.key!! }
 
