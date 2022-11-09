@@ -305,7 +305,7 @@ public class TimedBucketClientConnection implements ClientConnection {
             writeMessage(SSEResultState.FEATURE, data);
           }
         } catch (IOException e) {
-          log.error("Failed to write feature", e);
+          log.debug("Failed to write feature", e);
           close(false);
         }
       }
