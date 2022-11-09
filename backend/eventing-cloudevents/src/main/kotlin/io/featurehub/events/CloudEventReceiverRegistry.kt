@@ -1,12 +1,16 @@
 package io.featurehub.events
 
+import cd.connect.app.config.ConfigKey
+import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.cloudevents.CloudEventUtils
 import cd.connect.cloudevents.TaggedCloudEvent
 import io.cloudevents.CloudEvent
 import io.featurehub.jersey.config.CacheJsonMapper
+import io.featurehub.utils.ExecutorSupplier
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.concurrent.*
 
 /**
  * Creates a central registry for receiving events
@@ -63,7 +67,17 @@ class CloudEventReceiverRegistryMock : CloudEventReceiverRegistryImpl() {
 }
 
 class CloudEventReceiverRegistryProcessor @Inject
-constructor(private val openTelemetryReader: CloudEventsTelemetryReader) : CloudEventReceiverRegistryImpl() {
+constructor(private val openTelemetryReader: CloudEventsTelemetryReader, executorSupplier: ExecutorSupplier) : CloudEventReceiverRegistryImpl() {
+  @ConfigKey("cloudevents.receiver-pool-size")
+  var cachePoolSize: Int? = 20
+  val executorService: ExecutorService
+
+  init {
+    DeclaredConfigResolver.resolve(this)
+
+    executorService = executorSupplier.executorService(cachePoolSize!!)
+  }
+
 
   override fun process(event: CloudEvent) {
     if (event.subject == null || event.type == null) {
@@ -91,8 +105,10 @@ constructor(private val openTelemetryReader: CloudEventsTelemetryReader) : Cloud
           log.trace("cloudevent: incoming message on {}/{} : {}", event.type, event.subject, eventData.toString())
         }
 
-        handlers.parallelStream().forEach { handler ->
-          handler.handler(eventData as TaggedCloudEvent)
+        handlers.forEach { handler ->
+          executorService.submit {
+            handler.handler(eventData as TaggedCloudEvent)
+          }
         }
       } ?: log.error("cloudevent: failed to handle message {} : {}", event.subject, event.type)
     }

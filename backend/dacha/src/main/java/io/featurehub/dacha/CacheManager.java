@@ -12,6 +12,7 @@ import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.metrics.MetricsCollector;
 import io.featurehub.publish.ChannelNames;
 import io.featurehub.publish.NATSSource;
+import io.featurehub.utils.ExecutorSupplier;
 import io.featurehub.utils.FallbackPropertyConfig;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
@@ -60,7 +61,7 @@ public class CacheManager implements MessageHandler, HealthSource {
 
 
   @Inject
-  public CacheManager(InternalCache internalCache, ServerConfig config, NATSSource natsSource) {
+  public CacheManager(InternalCache internalCache, ServerConfig config, NATSSource natsSource, ExecutorSupplier executorSupplier) {
     this.internalCache = internalCache;
     this.config = config;
     this.natsSource = natsSource;
@@ -82,7 +83,7 @@ public class CacheManager implements MessageHandler, HealthSource {
 
     log.info("starting cache: {}:{}", id, mit);
 
-    executor = Context.taskWrapping(Executors.newFixedThreadPool(cachePoolSize));
+    executor = executorSupplier.executorService(cachePoolSize);
 
     internalCache.onCompletion(this::cacheLoaded);
   }
@@ -99,7 +100,7 @@ public class CacheManager implements MessageHandler, HealthSource {
 
   @PostConstruct
   public void init() {
-    final String channelName = ChannelNames.managementChannel(config.name);
+    final String channelName = ChannelNames.managementChannel(config.name());
 
     log.info("subscribing {}:{} to channel `{}`", id, mit, channelName);
 
@@ -118,7 +119,7 @@ public class CacheManager implements MessageHandler, HealthSource {
   }
 
   void shutdown() {
-    final String channelName = ChannelNames.managementChannel(config.name);
+    final String channelName = ChannelNames.managementChannel(config.name());
     log.info("unsubscribing {}:{} from channel `{}`", id, mit, channelName);
     cacheManagerDispatcher.unsubscribe(channelName);
   }
@@ -165,7 +166,7 @@ public class CacheManager implements MessageHandler, HealthSource {
     masterTimer.cancel();
     setCurrentAction(CacheAction.AM_MASTER);
 
-    config.publish(ChannelNames.managementChannel(config.name),
+    config.publish(ChannelNames.managementChannel(config.name()),
       new CacheManagementMessage()
         .cacheState(CacheState.REQUESTED)
         .requestType(CacheRequestType.SEEKING_REFRESH)
@@ -209,7 +210,7 @@ public class CacheManager implements MessageHandler, HealthSource {
         requestMaster();
       } else {
         setCurrentAction(CacheAction.WAITING_FOR_COMPLETE_SOURCE);
-        config.publish(ChannelNames.managementChannel(config.name),
+        config.publish(ChannelNames.managementChannel(config.name()),
           new CacheManagementMessage()
             .cacheState(CacheState.NONE)
             .requestType(CacheRequestType.SEEKING_COMPLETE_CACHE)
@@ -254,7 +255,7 @@ public class CacheManager implements MessageHandler, HealthSource {
   }
 
   private void sendClaimingMaster() {
-    config.publish(ChannelNames.managementChannel(config.name),
+    config.publish(ChannelNames.managementChannel(config.name()),
       new CacheManagementMessage()
         .cacheState(CacheState.NONE)
         .requestType(CacheRequestType.CLAIMING_MASTER)
@@ -280,7 +281,7 @@ public class CacheManager implements MessageHandler, HealthSource {
   }
 
   @Override
-  public void onMessage(Message message) throws InterruptedException {
+  public void onMessage(Message message) {
     managementMessages.inc();
 
     try {
@@ -373,7 +374,7 @@ public class CacheManager implements MessageHandler, HealthSource {
 
   private void responseToCompleteCacheRequestWithMaster(CacheManagementMessage resp) {
     log.info("Cache wants complete cache and we have requested MR publish one but it is not ready: {}:{}", id, mit);
-    config.publish(ChannelNames.managementChannel(config.name),
+    config.publish(ChannelNames.managementChannel(config.name()),
       new CacheManagementMessage()
         .cacheState(CacheState.REQUESTED)
         .requestType(CacheRequestType.CACHE_SOURCE)
@@ -384,7 +385,7 @@ public class CacheManager implements MessageHandler, HealthSource {
 
   private void respondToCompleteCacheRequest(CacheManagementMessage resp) {
     log.info("Cache wants complete cache and we have one: {}:{}", id, mit);
-    config.publish(ChannelNames.managementChannel(config.name),
+    config.publish(ChannelNames.managementChannel(config.name()),
       new CacheManagementMessage()
         .cacheState(CacheState.COMPLETE)
         .requestType(CacheRequestType.CACHE_SOURCE)
@@ -402,13 +403,13 @@ public class CacheManager implements MessageHandler, HealthSource {
 
   private void publishToCacheServiceAccounts() {
     internalCache.serviceAccounts().forEach(sa -> {
-      config.publish(ChannelNames.serviceAccountChannel(config.name), sa, "unable to publish service account");
+      config.publish(ChannelNames.serviceAccountChannel(config.name()), sa, "unable to publish service account");
     });
   }
 
   private void PublishEnvironments() {
     internalCache.environments().forEach(env -> {
-      config.publish(ChannelNames.environmentChannel(config.name), env, "unable to publish environment");
+      config.publish(ChannelNames.environmentChannel(config.name()), env, "unable to publish environment");
     });
   }
 
@@ -416,7 +417,7 @@ public class CacheManager implements MessageHandler, HealthSource {
     actionTimer.cancel();
     currentAction = CacheAction.WAITING_FOR_COMPLETE_CACHE;
 
-    config.publish(ChannelNames.managementChannel(config.name),
+    config.publish(ChannelNames.managementChannel(config.name()),
       new CacheManagementMessage()
         .cacheState(CacheState.NONE)
         .requestType(CacheRequestType.SEEKING_REFRESH)
