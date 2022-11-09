@@ -16,14 +16,18 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |Analytics Support|Y|Y|Y|Y|Y|N|N
 |Google Analytics|Y|Y|Y|Y|Y|N|N
 |Feature Overrides|N|Y|N|N|N|Y|N
-|CDN Support^3^|N|Y|N|N|N|N|Y
+|Fastly Polling Support^3^|Y|Y|N|Y|N|Y|Y
+|Fastly SSE Support|Y|Y|Y|Y|Y|Y|Y
 |===================================
 
 1. Javascript also includes Typescript
 
-2. To apply rollout strategies (targeting and percentage rules) _user context_ is required to be passed to the SDKs and can be evaluated either on the client or server
+2. To apply rollout strategies (targeting and percentage rules) _user context_ is required to be passed to the SDKs and can be evaluated either on the client or server. Percentage rollout requires use of the `session` or `userKey` attributes by default, however
+using the Admin SDK you can configure alternative keys.
 
-3. Fastly CDN is supported for all existing SDKs for client evaluated keys only. As we roll through changes we will note `Y` in the column.
+3. Fastly CDN is supported for all SDKs for streaming (which all SDKs support), and for all SDKs that support Polling.
+Generally Polling is a technique used by client side APIs (such as Dart), so SDKs that only support Streaming (C#, Go)
+do not support Fastly polling. 
 
 
 ==== Web + Mobile focused capabilities for SDKs

@@ -106,7 +106,19 @@ Edge-REST provides only GET and PUT (for updating features for tests) API option
 SDK to poll for updates but not get realtime updates, and will talk directly to the database. It
 can be deployed on its own or as part of party-server-_ish_.
 
-=== SDKs
+=== Fastly
+
+FeatureHub integrates with Fastly. Please contact us on <info@featurehub.io> if you wish to sign up for Fastly, it
+can save costs on deployment infrastructure and make the application stack considerably faster around the world if you need that.
+
+We can provide you with the environment variables you need to setup, and the configuration steps inside the Fastly account
+necessary to make it work with FeatureHub - along with a Pulumi configuration (which can be translated easily into Terraform) if you wish.
+
+We are keeping this information out of the direct documentation as we have tried to organise a reseller agreement with Fastly.
+This does not cost users of FeatureHub any extra, but puts a few cents in our coffers to help us develop this Open Source
+project. Generally we do not know who uses FeatureHub.
+
+== SDKs
 
 The SDKs are provided to create an idiomatic method to connection to the server-side event source of feature data from the Edge server.
 You are welcome to write your own, they are not particularly complicated to write, and we welcome them as contributions!
