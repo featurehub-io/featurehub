@@ -85,6 +85,7 @@ interface Conversions {
   fun toFeatureValue(feature: DbApplicationFeature?, value: DbFeatureValue?): FeatureValue?
   fun toFeatureValue(feature: DbApplicationFeature?, value: DbFeatureValue?, opts: Opts?): FeatureValue?
   fun toRolloutStrategy(rs: DbRolloutStrategy?, opts: Opts?): RolloutStrategyInfo?
+  fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean
 
   companion object {
     const val archivePrefix = ":\\:\\:"

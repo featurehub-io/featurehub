@@ -208,11 +208,11 @@ class AuthenticationSpec extends BaseSpec {
     and: "i create an application in that portfolio"
       def app1 = appApi.createApplication(portfolio1.id, new Application().name("persontest-app1").description("some desc"), superPerson)
     and: "i make the user a portfolio manager"
-      def portfolioGroup = groupSqlApi.createPortfolioGroup(portfolio1.id,
+      def portfolioGroup = groupSqlApi.createGroup(portfolio1.id,
         new Group().name("admin-group").admin(true)
           .applicationRoles([new ApplicationGroupRole().applicationId(app1.id)
                                .roles([ApplicationRoleType.FEATURE_EDIT])]), superPerson)
-      portfolioGroup = groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.members([p2]),
+      groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.members([p2]),
         true, false, false, Opts.empty())
     when: "i login"
       def user = auth.login(p2.email, "hooray")

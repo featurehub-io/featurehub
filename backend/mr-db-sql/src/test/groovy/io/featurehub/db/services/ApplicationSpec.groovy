@@ -44,7 +44,7 @@ class ApplicationSpec extends BaseSpec {
     portfolio1 = Finder.findPortfolioById(p1.id);
     portfolio2 = Finder.findPortfolioById(p2.id);
 
-    p1AdminGroup = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("envtest-appX").admin(true), superPerson)
+    p1AdminGroup = groupSqlApi.createGroup(portfolio1.id, new Group().name("envtest-appX").admin(true), superPerson)
 
   }
 
@@ -96,10 +96,10 @@ class ApplicationSpec extends BaseSpec {
     and: "this person cannot see any apps"
       def notInAnyGroupsAccess = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
     and: "then we give them access to a portfolio group that still has no access"
-      Group group = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("envtest-appX1"), superPerson)
+      Group group = groupSqlApi.createGroup(portfolio1.id, new Group().name("envtest-appX1"), superPerson)
       group = groupSqlApi.addPersonToGroup(group.id, person.id.id, Opts.opts(FillOpts.Members))
     and: "the superuser adds to a group as well"
-      Group superuserGroup = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("envtest-appSuperuser"), superPerson)
+      Group superuserGroup = groupSqlApi.createGroup(portfolio1.id, new Group().name("envtest-appSuperuser"), superPerson)
       superuserGroup = groupSqlApi.addPersonToGroup(superuserGroup.id, superPerson.id.id, Opts.opts(FillOpts.Members))
     and: "with no environment access the two groups have no visibility to applications"
       def stillNotInAnyGroupsPerson = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
@@ -170,12 +170,12 @@ class ApplicationSpec extends BaseSpec {
       def golodryga = new DbPerson.Builder().email("Golodryga@m.com").name("Golodryga").build()
       database.save(golodryga)
       def golodrygaPortfolioMemberButNoApplicationAccess = convertUtils.toPerson(golodryga)
-      groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("Twitchy Group").members([golodrygaPortfolioMemberButNoApplicationAccess]), superPerson)
+      groupSqlApi.createGroup(portfolio1.id, new Group().name("Twitchy Group").members([golodrygaPortfolioMemberButNoApplicationAccess]), superPerson)
     and: "I create a new portfolio group and add in Sverbylo and give her read access to production"
       def sverbylo = new DbPerson.Builder().email("sverbylo@m.com").name("Sverbylo").build()
       database.save(sverbylo)
       def sverbyloHasReadAccess = convertUtils.toPerson(sverbylo)
-      def iGroup = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("Itchy Group"), superPerson)
+      def iGroup = groupSqlApi.createGroup(portfolio1.id, new Group().name("Itchy Group"), superPerson)
       iGroup = groupSqlApi.updateGroup(iGroup.id, iGroup.members([sverbyloHasReadAccess]), true, false, false, Opts.empty())
     when: "i create a new application"
       def newApp = appApi.createApplication(portfolio1.id, new Application().name("app-perm-check-appl1"), superPerson)

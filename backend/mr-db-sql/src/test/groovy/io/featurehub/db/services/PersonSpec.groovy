@@ -10,6 +10,7 @@ import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.SortOrder
+import io.featurehub.mr.model.UpdatePerson
 import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Shared
 
@@ -102,6 +103,31 @@ class PersonSpec extends BaseSpec {
       p == null
   }
 
+  def "when i delete a person i will not be able to search for them"() {
+    given: "we have a person"
+      database.beginTransaction()
+      def prefix = RandomStringUtils.randomAlphabetic(8).toLowerCase()
+      def email = prefix + "deleted@me.com"
+      def p = new DbPerson.Builder().email(email).name(prefix).build()
+      database.save(p)
+      database.currentTransaction().commit()
+    when: "we search for them"
+      def newlyCreatedSearch = personSqlApi.search(email, null, 0, 10, Set.of(PersonType.PERSON), Opts.empty())
+    and: "then delete them"
+      personSqlApi.delete(email)
+    and: "search for them again"
+      def deletedSearch = personSqlApi.search(email, null, 0, 10, Set.of(PersonType.PERSON), Opts.empty())
+    and: "then ask for the search again to include deleted"
+      def archivedSearch = personSqlApi.search(email, null, 0, 10, Set.of(PersonType.PERSON), Opts.opts(FillOpts.Archived))
+    then: "they should be in the newly created search"
+      newlyCreatedSearch.people.find({it.email == email})
+    and: "there should be no-one in the list when we looked for the user and did not include deleted results"
+      deletedSearch.max == 0
+      deletedSearch.people.size() == 0
+    and: "there should not be included the deleted user again"
+      archivedSearch.people.find({it.email == email}).whenArchived != null
+  }
+
   def "when i search for everyone, it will get limited"() {
     given:
       (1..30).each({it ->
@@ -150,8 +176,8 @@ class PersonSpec extends BaseSpec {
       def p1 = portfolioSqlApi.createPortfolio(new Portfolio().name('upd-p-1').organizationId(org.id), Opts.empty(), superPerson)
       def p2 = portfolioSqlApi.createPortfolio(new Portfolio().name('upd-p-2').organizationId(org.id), Opts.empty(), superPerson)
     and: "i create two new groups"
-      def g1 = groupSqlApi.createPortfolioGroup(p1.id, new Group(name: 'upd-g-1'), superPerson)
-      def g2 = groupSqlApi.createPortfolioGroup(p2.id, new Group(name: 'upd-g-2'), superPerson)
+      def g1 = groupSqlApi.createGroup(p1.id, new Group(name: 'upd-g-1'), superPerson)
+      def g2 = groupSqlApi.createGroup(p2.id, new Group(name: 'upd-g-2'), superPerson)
     when:
       def originalPerson = personSqlApi.get(person.id, Opts.empty())
       def resultingPerson = personSqlApi.update(person.id,
@@ -187,15 +213,15 @@ class PersonSpec extends BaseSpec {
       def p1 = portfolioSqlApi.createPortfolio(new Portfolio().name('upd-p-a').organizationId(org.id), Opts.empty(), superPerson)
       def p2 = portfolioSqlApi.createPortfolio(new Portfolio().name('upd-p-b').organizationId(org.id), Opts.empty(), superPerson)
     and: "i create two new groups, one in each portfolio"
-      def g1 = groupSqlApi.createPortfolioGroup(p1.id, new Group(name: 'upd-g-a'), superPerson)
-      def g2 = groupSqlApi.createPortfolioGroup(p2.id, new Group(name: 'upd-g-b'), superPerson)
+      def g1 = groupSqlApi.createGroup(p1.id, new Group(name: 'upd-g-a'), superPerson)
+      def g2 = groupSqlApi.createGroup(p2.id, new Group(name: 'upd-g-b'), superPerson)
     and: "i create a portfolio admin group for portfolio 2"
-      def gPortfolioAdmin = groupSqlApi.createPortfolioGroup(p2.id, new Group().name("admin of p2").admin(true), superPerson)
+      def gPortfolioAdmin = groupSqlApi.createGroup(p2.id, new Group().name("admin of p2").admin(true), superPerson)
     and: "i create a user and make them a membe rof the portfolio admin group"
       def pAdmin = new DbPerson.Builder().name("Frederick Von Brinkenstorm").email("freddy@mailinator.com").build()
       database.save(pAdmin)
       def pAdminId = pAdmin.id
-      groupSqlApi.addPersonToGroup(gPortfolioAdmin.id, pAdminId, Opts.empty())
+      def adminPersonAddedToGroup = groupSqlApi.addPersonToGroup(gPortfolioAdmin.id, pAdminId, Opts.empty())
     when: "the portfolio admin updates the person to add the two groups, but only have access to 1"
       def originalPerson = personSqlApi.get(person.id, Opts.empty())
       def resultingPerson = personSqlApi.update(person.id,
@@ -210,6 +236,7 @@ class PersonSpec extends BaseSpec {
         adminUpdatePerson.copy().name("not you").email("updated22@me.com").groups([g2]), Opts.empty(), pAdminId)
       def foundRemovedGroupsPerson = personSqlApi.get(person.id, Opts.opts(FillOpts.Groups))
     then:
+      adminPersonAddedToGroup != null
       resultingPerson != null
       addGroupsPerson != null
       addGroupsPerson.groups*.id == [g2.id]
@@ -217,5 +244,48 @@ class PersonSpec extends BaseSpec {
       adminUpdatePerson.groups*.id == [g1.id]
       foundRemovedGroupsPerson.groups*.id.intersect([g1.id, g2.id]).size() == 2
       foundRemovedGroupsPerson.name == 'not you'
+  }
+
+  def "when I update the user as a portfolio admin, i can only modify my groups, but can change their name and email using v2 update API "() {
+    given:
+      def person = new DbPerson.Builder().email("updatem2e22@me.com").name("update me").build()
+      database.save(person)
+    and: "i create two new portfolios"
+      def p1 = portfolioSqlApi.createPortfolio(new Portfolio().name('upd-p-a2').organizationId(org.id), Opts.empty(), superPerson)
+      def p2 = portfolioSqlApi.createPortfolio(new Portfolio().name('upd-p-b2').organizationId(org.id), Opts.empty(), superPerson)
+    and: "i create two new groups, one in each portfolio"
+      def g1 = groupSqlApi.createGroup(p1.id, new Group(name: 'upd-g-a2'), superPerson)
+      def g2 = groupSqlApi.createGroup(p2.id, new Group(name: 'upd-g-b2'), superPerson)
+    and: "i create a portfolio admin group for portfolio 2"
+      def gPortfolioAdmin = groupSqlApi.createGroup(p2.id, new Group().name("admin of p2").admin(true), superPerson)
+    and: "i create a user and make them a membe rof the portfolio admin group"
+      def pAdmin = new DbPerson.Builder().name("Frederick Von Brinkenstorm").email(RandomStringUtils.randomAlphabetic(4) + "freddy@mailinator.com").build()
+      database.save(pAdmin)
+      def pAdminId = pAdmin.id
+      def adminPersonAddedToGroup = groupSqlApi.addPersonToGroup(gPortfolioAdmin.id, pAdminId, Opts.empty())
+    when: "the portfolio admin updates the person to add the two groups, but only have access to 1"
+      def originalPerson = personSqlApi.get(person.id, Opts.empty())
+      def resultingPerson = personSqlApi.updateV2(person.id, new UpdatePerson().version(originalPerson.version)
+            .name("not me").email("updated23@me.com").groups([g1.id, g2.id]), pAdminId)
+
+      def addGroupsPerson = personSqlApi.get(person.id, Opts.opts(FillOpts.Groups))
+    and: "then the superuser sets the groups to just g1"
+      def secondUpdate = personSqlApi.updateV2(person.id, new UpdatePerson().groups([g1.id]).version(addGroupsPerson.version), superuser)
+      def adminUpdatePerson = personSqlApi.get(person.id, Opts.opts(FillOpts.Groups))
+    and: "then portfolio admin tries to set just g2 on the user, which should give them g1 and g2"
+      def removeGroupsPerson = personSqlApi.updateV2(person.id,
+        new UpdatePerson().version(adminUpdatePerson.version).groups([g2.id]), pAdminId)
+      def foundRemovedGroupsPerson = personSqlApi.get(person.id, Opts.opts(FillOpts.Groups))
+    then:
+      adminPersonAddedToGroup != null
+      resultingPerson != null
+      addGroupsPerson != null
+      addGroupsPerson.groups*.id == [g2.id]
+      secondUpdate != null
+      adminUpdatePerson != null
+      adminUpdatePerson.groups*.id == [g1.id]
+      removeGroupsPerson != null
+      foundRemovedGroupsPerson.groups*.id.intersect([g1.id, g2.id]).size() == 2
+      foundRemovedGroupsPerson.name == 'not me'
   }
 }

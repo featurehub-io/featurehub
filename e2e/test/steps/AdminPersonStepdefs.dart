@@ -83,6 +83,35 @@ class AdminPersonStepdefs {
     userCommon.tokenized = shared.tokenizedPerson;
   }
 
+  @When(r'^I (cannot|can) find the person when I search for them$')
+  void whenIsearchForThePerson(String condition) async {
+    await common.initialize();
+    final spr = await common.personService.findPeople(filter: shared.person.email);
+    if (condition == 'cannot') {
+      assert(spr.people.isEmpty, 'A search for the user ${shared.person.email} found the user and should not have');
+    } else {
+      assert(spr.people.isNotEmpty, 'A search for the user ${shared.person.email} did not find the user and should have');
+    }
+  }
+
+
+  @When(r'^I can find the when I search for them including archived users$')
+  void whenIsearchForThePersonByType() async {
+    final spr = await common.personService.findPeople(filter: shared.person.email, includeDeactivated: true);
+
+    assert(spr.people.isNotEmpty, 'A search for the user ${shared.person.email} did not find the user and should have');
+    assert(spr.people[0].whenArchived != null, 'The person should be archived');
+
+    //  most up to date version of person
+    shared.person = spr.people[0];
+  }
+
+  @When(r'^I undelete the user$')
+  void whenIUndeletedTheUser() async {
+    await common.personService.updatePersonV2(shared.person.id!.id,
+        UpdatePerson(version: shared.person.version!, unarchive: true));
+  }
+
   // this checks to see if we have  the user already, so it has to belong to the superuser, but
   // the completion of registration is run as a normal user.
   @Given(
