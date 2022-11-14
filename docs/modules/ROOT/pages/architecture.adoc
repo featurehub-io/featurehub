@@ -108,15 +108,11 @@ can be deployed on its own or as part of party-server-_ish_.
 
 === Fastly
 
-FeatureHub integrates with Fastly. Please contact us on <info@featurehub.io> if you wish to sign up for Fastly, it
-can save costs on deployment infrastructure and make the application stack considerably faster around the world if you need that.
+If you would like to serve features faster globally or would like to cache feature flags on CDN, FeatureHub has affiliated with https://www.fastly.com/[Fastly] - real-time content delivery network. Integration with Fastly 
+can save costs on deployment infrastructure and make the FeatureHub application stack considerably faster around the world.
 
-We can provide you with the environment variables you need to setup, and the configuration steps inside the Fastly account
-necessary to make it work with FeatureHub - along with a Pulumi configuration (which can be translated easily into Terraform) if you wish.
-
-We are keeping this information out of the direct documentation as we have tried to organise a reseller agreement with Fastly.
-This does not cost users of FeatureHub any extra, but puts a few cents in our coffers to help us develop this Open Source
-project. Generally we do not know who uses FeatureHub.
+We can provide you with the environment variables, and the configuration steps
+necessary to integrate Fastly with FeatureHub. Pulumi configuration, which can be translated easily into Terraform is also available on demand. Please contact us on info@featurehub.io for further information.
 
 == SDKs
 
