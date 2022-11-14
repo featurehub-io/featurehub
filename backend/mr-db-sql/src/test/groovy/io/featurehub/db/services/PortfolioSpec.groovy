@@ -50,7 +50,7 @@ class PortfolioSpec extends BaseSpec {
   def "a normal person in the portfolio group can see the portfolio"() {
     when: "superuser creates a group"
       Portfolio created = portfolioApi.createPortfolio(new Portfolio().name("normal-port-check1").organizationId(org.getId()), Opts.empty(), superPerson)
-      Group group = groupSqlApi.createPortfolioGroup(created.id, new Group().name(created.name), superPerson)
+      Group group = groupSqlApi.createGroup(created.id, new Group().name(created.name), superPerson)
       groupSqlApi.addPersonToGroup(group.id, normalPerson.id.id, Opts.empty())
     then:
       created != null

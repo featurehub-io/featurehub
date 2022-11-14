@@ -49,7 +49,7 @@ class Environment2Spec extends Base2Spec {
     db.save(portfolio2)
 
     // create the portfolio group
-    groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("p1-app-1-env1-portfolio-group").admin(true), superPerson)
+    groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("p1-app-1-env1-portfolio-group").admin(true), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, superPerson.id.id, Opts.empty())
 
     app1 = appApi.createApplication(portfolio1.id, new Application().name('app-1-env'), superPerson)
@@ -283,7 +283,7 @@ class Environment2Spec extends Base2Spec {
       db.save(averageJoe)
       def averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     and: "i create a general portfolio group"
-      groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("envspec-p1-plain-portfolio-group"), superPerson)
+      groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("envspec-p1-plain-portfolio-group"), superPerson)
       groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
     and: "i have an environment"
       def env = envApi.create(new Environment().name("env-1-perm-1").description("1"), app1, superPerson)

@@ -36,7 +36,7 @@ class UserStateSpec extends BaseSpec {
     database.save(portfolio1)
 
     // create the portfolio group
-    groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("p1-user-spec-admin").admin(true), superPerson)
+    groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("p1-user-spec-admin").admin(true), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, superPerson.id.id, Opts.empty())
 
     app1 = appApi.createApplication(portfolio1.id, new Application().name('app1-user-spec'), superPerson)

@@ -3,9 +3,7 @@ package io.featurehub.db.services
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.mr.model.Group
-import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.Portfolio
-import io.featurehub.mr.model.SortOrder
 
 class Person2Spec extends Base2Spec {
   PersonSqlApi personSqlApi
@@ -22,20 +20,20 @@ class Person2Spec extends Base2Spec {
       def person = personSqlApi.createPerson("millie@i.com", "Millie", "password123", superPerson.id.id, Opts.empty())
     and: "I have two new portfolios"
       def port1 = portfolioSqlApi.createPortfolio(new Portfolio().name("port1").description("port1"), Opts.empty(), superPerson)
-      def groupPort1 = groupSqlApi.createPortfolioGroup(
+      def groupPort1 = groupSqlApi.createGroup(
         port1.id,
         new Group().name('port1').admin(true),
         superPerson
       )
 
       def port2 = portfolioSqlApi.createPortfolio(new Portfolio().name("port2").description("port2"), Opts.empty(), superPerson)
-      def groupPort2 = groupSqlApi.createPortfolioGroup(
+      def groupPort2 = groupSqlApi.createGroup(
         port2.id,
         new Group().name('port2').admin(true),
         superPerson
       )
     and: "i know what the superuser group is"
-      def superuserGroup = groupSqlApi.getSuperuserGroup(convertUtils.organizationId(), superPerson)
+      def superuserGroup = groupSqlApi.getSuperuserGroup(convertUtils.organizationId())
     when: "i update the person to be a superuser"
       person.addGroupsItem(new Group().id(superuserGroup.id))
       def withSuperuserGroup = personSqlApi.update(person.id.id, person, Opts.opts(FillOpts.Groups), superPerson.id.id)

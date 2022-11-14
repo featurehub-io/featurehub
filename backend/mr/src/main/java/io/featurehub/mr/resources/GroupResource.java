@@ -115,7 +115,7 @@ public class GroupResource implements GroupServiceDelegate {
 
     if (authManager.isPortfolioAdmin(id, current, null)) {
       try {
-        return groupApi.createPortfolioGroup(id, group, current);
+        return groupApi.createGroup(id, group, current);
       } catch (GroupApi.DuplicateGroupException e) {
         throw new WebApplicationException(Response.Status.CONFLICT);
       }
@@ -201,7 +201,7 @@ public class GroupResource implements GroupServiceDelegate {
 
   @Override
   public Group getSuperuserGroup(UUID id, SecurityContext securityContext) {
-    Group g = groupApi.getSuperuserGroup(id, authManager.from(securityContext));
+    Group g = groupApi.getSuperuserGroup(id);
 
     if (g == null) {
       throw new NotFoundException();

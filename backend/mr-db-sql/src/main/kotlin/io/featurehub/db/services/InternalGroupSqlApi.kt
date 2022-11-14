@@ -8,6 +8,7 @@ import java.util.*
 // if we just added a person to a group, don't add them again
 class SuperuserChanges(var organization: DbOrganization) {
   val removedSuperusers = mutableListOf<UUID>()
+  val addedSuperuserPersonIds = mutableListOf<UUID>()
   val addedSuperusers = mutableListOf<DbPerson>()
   val ignoredGroups = mutableListOf<UUID>()
 }
@@ -15,4 +16,10 @@ class SuperuserChanges(var organization: DbOrganization) {
 interface InternalGroupSqlApi {
   fun updateSuperusersFromPortfolioGroups(superuserChanges: SuperuserChanges)
   fun superuserGroup(org: DbOrganization): DbGroup?
+
+  /**
+   * This returns an anemic list of groups that is populated ONLY by the "adminGroup" field and the
+   * "owningPortfolio.id" (which might be null on a superuser group)
+   */
+  fun adminGroupsPersonBelongsTo(personId: UUID): List<DbGroup>
 }

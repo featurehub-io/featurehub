@@ -558,6 +558,10 @@ open class ConvertUtils : Conversions {
     return info
   }
 
+  override fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean {
+    return QDbGroup().owningPortfolio.id.eq(portfolioId).groupMembers.person.id.eq(personId).exists()
+  }
+
   override fun byStrategy(id: UUID?): DbRolloutStrategy? {
     return if (id == null) null else QDbRolloutStrategy().id.eq(id).findOne()
   }

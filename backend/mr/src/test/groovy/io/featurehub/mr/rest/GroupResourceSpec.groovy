@@ -54,7 +54,7 @@ class GroupResourceSpec extends Specification {
     when: "i attempt to create said Group"
       gr.createGroup(gid, group, new GroupServiceDelegate.CreateGroupHolder(includePeople: true), sc)
     then:
-      1 * groupApi.createPortfolioGroup(pId, group, person)
+      1 * groupApi.createGroup(pId, group, person)
   }
 
 

@@ -1,6 +1,6 @@
 package io.featurehub.db.services
 
-import io.ebean.DB
+
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.FillOpts
@@ -79,14 +79,14 @@ class FeatureSpec extends Base2Spec {
     def averageJoe = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) + "averagejoe-fvs@featurehub.io").name("Average Joe").build()
     db.save(averageJoe)
     averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
-    groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("fsspec-1-p1"), superPerson)
+    groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("fsspec-1-p1"), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
 
     def portfolioAdmin = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) + "pee-admin-fvs@featurehub.io").name("Portfolio Admin p1 fvs").build()
     db.save(portfolioAdmin)
     portfolioAdminOfPortfolio1 = convertUtils.toPerson(portfolioAdmin)
 
-    adminGroupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().admin(true).name("fsspec-admin-1-p1"), superPerson)
+    adminGroupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new Group().admin(true).name("fsspec-admin-1-p1"), superPerson)
     groupSqlApi.addPersonToGroup(adminGroupInPortfolio1.id, portfolioAdminOfPortfolio1.id.id, Opts.empty())
 
     if (db.currentTransaction() != null && db.currentTransaction().active) {
@@ -319,7 +319,7 @@ class FeatureSpec extends Base2Spec {
           .permissions([new ServiceAccountPermission().environmentId(env1.id).permissions([RoleType.READ])]),
         Opts.empty())
     and: "i allow average joe access to two of the three environments"
-      Group g1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("app2-f1-test"), superPerson)
+      Group g1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("app2-f1-test"), superPerson)
       g1.environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK]).environmentId(env3.id),
@@ -452,7 +452,7 @@ class FeatureSpec extends Base2Spec {
     and: "i have a person"
       def person = personSqlApi.createPerson("lockunlock@mailinator.com", "Locky McLockface", "password123", superuser, Opts.empty())
     and: "a group in the current portfolio"
-      def group = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("lockunlock group"), superPerson)
+      def group = groupSqlApi.createGroup(portfolio1.id, new Group().name("lockunlock group"), superPerson)
     and: "i add permissions and members to the group"
       group.environmentRoles([new EnvironmentGroupRole().environmentId(env1.id).roles([RoleType.LOCK, RoleType.UNLOCK, RoleType.READ])])
       group.members([person])

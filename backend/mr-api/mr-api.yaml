@@ -417,6 +417,11 @@ paths:
           description: "Include last logged in timestamp"
           schema:
             type: boolean
+        - name: includeDeactivated
+          in: query
+          description: "Include people who are no longer active"
+          schema:
+            type: boolean
         - name: personTypes
           in: query
           description: "Filter by person types"
@@ -494,6 +499,41 @@ paths:
           description: "No permission to change"
         401:
           description: "Not authenticated"
+  /mr-api/person/{id}/v2:
+    parameters:
+      - name: id
+        description: "The id of the person to find"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - PersonService
+      description: "Update a person"
+      operationId: updatePersonV2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePerson"
+      responses:
+        204:
+          description: "Resulting person"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden to update that person"
+        404:
+          description: "person not found"
+        422:
+          description: "attempting to update old person record"
   /mr-api/person/{id}:
     parameters:
       - name: id
@@ -2910,6 +2950,35 @@ components:
             whenArchived:
               type: string
               format: date-time
+
+    UpdatePerson:
+      type: object
+      required:
+        - version
+      properties:
+        name:
+          nullable: true
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          nullable: true
+          type: string
+          format: email
+          maxLength: 100
+        version:
+          description: "This keeps track of which person version we are updating in case the user tries to update an old record"
+          type: integer
+          format: int64
+        groups:
+          nullable: true
+          type: array
+          items:
+            type: string
+            format: uuid
+        unarchive:
+          nullable: true
+          type: boolean
     Person:
       type: object
       properties:
@@ -2978,6 +3047,10 @@ components:
           format: date-time
         whenLastSeen:
           description: "This is the timestamp in UTC when they last made a request to the system on their most recent login. If it is null it means they have no current token or have never logged in."
+          type: string
+          format: date-time
+        whenDeactivated:
+          description: "When a person's account was deactivated (if it was) and when"
           type: string
           format: date-time
         groupCount:
@@ -3143,6 +3216,7 @@ components:
         sdkUrlServerEval:
           description: "Optional if they have chosen includeSdkUrl"
           type: string
+
     Group:
       allOf:
         - $ref: "#/components/schemas/Audit"
