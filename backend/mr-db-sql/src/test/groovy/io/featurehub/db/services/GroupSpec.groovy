@@ -72,7 +72,7 @@ class GroupSpec extends BaseSpec {
       def groupUpdated = groupSqlApi.updateGroup(group.id, group.environmentRoles([
         new EnvironmentGroupRole().environmentId(env1App1.id).roles([RoleType.UNLOCK]),
         new EnvironmentGroupRole().environmentId(env2.id).roles([RoleType.CHANGE_VALUE])
-      ]),
+      ]), null,
         false, false, true, Opts.opts(FillOpts.Acls))
     when: "i ask for the permissions only for application 2"
       def groupApp2 = groupSqlApi.getGroup(group.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app2.id), superPerson)
@@ -92,10 +92,10 @@ class GroupSpec extends BaseSpec {
     and: "i create a new group in the common portfolio"
       Group g = groupSqlApi.createGroup(commonPortfolio.id, new Group().name("plain-bob-group"), superPerson)
     and: "i update it with the basic user"
-      groupSqlApi.updateGroup(g.id, g.members([bob]), true, false, false, Opts.empty())
+      groupSqlApi.updateGroup(g.id, g.members([bob]), null, true, false, false, Opts.empty())
     when: "i add jane as a portfolio admin"
       def latestGroup = groupSqlApi.getGroup(portfolioAdminGroup.id, Opts.opts(FillOpts.Members), superPerson)
-      groupSqlApi.updateGroup(portfolioAdminGroup.id, portfolioAdminGroup.addMembersItem(jane), true, false, false, Opts.empty())
+      groupSqlApi.updateGroup(portfolioAdminGroup.id, portfolioAdminGroup.addMembersItem(jane), null, true, false, false, Opts.empty())
     then: "bob can get the group"
       groupSqlApi.getGroup(g.id, Opts.opts(FillOpts.Members), bob)
     and: "jane can get the group"
@@ -201,7 +201,7 @@ class GroupSpec extends BaseSpec {
       groupSqlApi.createGroup(commonPortfolio.id, new Group().name("update-ecks"), superPerson)
     when: "i try and create another group with the same name"
       def g = groupSqlApi.createGroup(commonPortfolio.id, new Group().name("update-ecks1"), superPerson)
-      groupSqlApi.updateGroup(g.id, g.name("update-ecks"), true, true, true, Opts.empty())
+      groupSqlApi.updateGroup(g.id, g.name("update-ecks"), null, true, true, true, Opts.empty())
     then: "it throws a DuplicateGroupException"
       thrown(GroupApi.DuplicateGroupException)
   }
@@ -321,7 +321,7 @@ class GroupSpec extends BaseSpec {
     given: "i have a group"
       Group g = nonAdminGroup().name("new name")
     when: "i rename it"
-      groupSqlApi.updateGroup(g.id, g, true, true, true, Opts.empty())
+      groupSqlApi.updateGroup(g.id, g, null, true, true, true, Opts.empty())
     and: "find it again"
       Group ng = groupSqlApi.getGroup(g.id, Opts.empty(), superPerson)
     then:
@@ -343,14 +343,14 @@ class GroupSpec extends BaseSpec {
         new Person().id(new PersonId().id(p1.id)),
         new Person().id(new PersonId().id(p2.id)),
       ]
-      def g2 = groupSqlApi.updateGroup(g.id, g, true, true, true, new Opts().add(FillOpts.Members))
+      def g2 = groupSqlApi.updateGroup(g.id, g, null, true, true, true, new Opts().add(FillOpts.Members))
     and: "I updated the group to remove Alena and add Toya"
       def g2_copy = g2.copy()
       g2_copy.members = [
         new Person().id(new PersonId().id(p1.id)),
         new Person().id(new PersonId().id(p3.id)),
       ]
-      groupSqlApi.updateGroup(g.id, g2_copy, true, true, true, new Opts().add(FillOpts.Members))
+      groupSqlApi.updateGroup(g.id, g2_copy, null, true, true, true, new Opts().add(FillOpts.Members))
       def g3 = groupSqlApi.getGroup(g.id, new Opts().add(FillOpts.Members), superPerson)
     then:
       g2.members.size() == 2
@@ -363,7 +363,8 @@ class GroupSpec extends BaseSpec {
 
   def "i cannot rename a non-existent group"() {
     when: "i rename it"
-      Group g = groupSqlApi.updateGroup(UUID.randomUUID(), new Group().name("new name"), true, true, true, Opts.empty())
+      Group g = groupSqlApi.updateGroup(UUID.randomUUID(), new Group().name("new name"), null,
+        true, true, true, Opts.empty())
     then:
       g == null
   }
@@ -439,22 +440,22 @@ class GroupSpec extends BaseSpec {
       database.save(env3)
     when: "I update the group to include acls"
       g1.environmentRoles = [new EnvironmentGroupRole().environmentId(env.id).roles([RoleType.CHANGE_VALUE, RoleType.LOCK])]
-      def updGroup = groupSqlApi.updateGroup(g1.id, g1, true, true, true, new Opts().add(FillOpts.Acls))
+      def updGroup = groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, new Opts().add(FillOpts.Acls))
     and: "i get the group with acls requested"
       def getUpd = groupSqlApi.getGroup(g1.id, new Opts().add(FillOpts.Acls), superPerson)
     and: "the i update the roles"
       g1.environmentRoles = [
                 new EnvironmentGroupRole().environmentId(env.id).roles([RoleType.LOCK, RoleType.READ]),
                 new EnvironmentGroupRole().environmentId(env3.id)]
-      def updGroup1 = groupSqlApi.updateGroup(g1.id, g1, true, true, true, new Opts().add(FillOpts.Acls))
+      def updGroup1 = groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, new Opts().add(FillOpts.Acls))
     and: "then i add another environment role and remove the first"
       g1.environmentRoles = [new EnvironmentGroupRole().environmentId(env2.id).roles([RoleType.UNLOCK]), // READ implicit
                              new EnvironmentGroupRole().environmentId(env.id),
                              new EnvironmentGroupRole().environmentId(env3.id) ]
-      def updGroup2 = groupSqlApi.updateGroup(g1.id, g1, true, true, true, new Opts().add(FillOpts.Acls))
+      def updGroup2 = groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, new Opts().add(FillOpts.Acls))
     and: "then i add back in just environment 1 but it should preserve environment 2"
       g1.environmentRoles = [new EnvironmentGroupRole().environmentId(env.id).roles([RoleType.LOCK])] // READ implicit
-      def updGroup3 = groupSqlApi.updateGroup(g1.id, g1, true, true, true, new Opts().add(FillOpts.Acls))
+      def updGroup3 = groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, new Opts().add(FillOpts.Acls))
     and: "i get the env2 with its group roles"
       def fullEnv2 = environmentSqlApi.get(env2.id, Opts.opts(FillOpts.Acls), superPerson)
     then:
@@ -489,7 +490,7 @@ class GroupSpec extends BaseSpec {
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE]).environmentId(env1App1.id).groupId(g1.id)
       ]
       updating.applicationRoles.add(new ApplicationGroupRole().roles([ApplicationRoleType.FEATURE_EDIT]).applicationId(commonApplication2.id))
-      def up1 = groupSqlApi.updateGroup(g1.id, updating, true, true, true, Opts.opts(FillOpts.Acls))
+      def up1 = groupSqlApi.updateGroup(g1.id, updating, null, true, true, true, Opts.opts(FillOpts.Acls))
     when: "i find the group"
       def found1 = groupSqlApi.getGroup(g1.id, Opts.opts(FillOpts.Acls), superPerson)
     then:

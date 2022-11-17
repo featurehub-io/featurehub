@@ -272,6 +272,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
             includeGroupRoles: true,
             includeMembers: false,
             updateMembers: false,
+            applicationId: applicationId,
             updateApplicationGroupRoles: true,
             updateEnvironmentGroupRoles: true)
         .catchError((e, s) {

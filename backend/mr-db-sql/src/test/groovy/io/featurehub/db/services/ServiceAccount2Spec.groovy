@@ -72,7 +72,7 @@ class ServiceAccount2Spec extends Base2Spec {
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment2.id),
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment3.id),
       ]
-    ), false, false, true, Opts.empty())
+    ), null, false, false, true, Opts.empty())
 
     if (db.currentTransaction() != null && db.currentTransaction().active) {
       db.commitTransaction()

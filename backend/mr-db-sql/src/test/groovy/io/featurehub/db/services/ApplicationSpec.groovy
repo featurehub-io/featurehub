@@ -3,11 +3,14 @@ package io.featurehub.db.services
 
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FillOpts
+import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
+import io.featurehub.mr.model.ApplicationGroupRole
+import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Group
@@ -110,10 +113,10 @@ class ApplicationSpec extends BaseSpec {
       group = groupSqlApi.updateGroup(group.id, group.environmentRoles([
 	      new EnvironmentGroupRole().environmentId(app1Env1.id).roles([RoleType.READ]),
 	      new EnvironmentGroupRole().environmentId(app2Env1.id).roles([RoleType.READ])
-      ]), true, true, true, Opts.opts(FillOpts.Members))
+      ]), null, true, true, true, Opts.opts(FillOpts.Members))
       superuserGroup = groupSqlApi.updateGroup(superuserGroup.id, superuserGroup.environmentRoles([
 	      new EnvironmentGroupRole().environmentId(app1Env1.id).roles([RoleType.READ])
-      ]), true, true, true, Opts.opts(FillOpts.Members))
+      ]), null, true, true, true, Opts.opts(FillOpts.Members))
     and: "person should now be able to see two groups"
       def shouldSeeTwoAppsPerson = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
     and: "superperson should now be able to see 1 group"
@@ -153,10 +156,38 @@ class ApplicationSpec extends BaseSpec {
       appApi.findApplications(portfolio1.id, "ghost2", null, Opts.empty(), superPerson, true)
   }
 
+  def "two applications in the same group can have create/feature permissions"() {
+    given: "i create two applications"
+      def app1 = appApi.createApplication(portfolio1.id, new Application().name("loicoudot 1").description("some desc"), superPerson)
+      def app2 = appApi.createApplication(portfolio1.id, new Application().name("loicoudot 2").description("some desc"), superPerson)
+    and: "i have a new group"
+      def group = groupSqlApi.createGroup(portfolio1.id, new Group().name("loicoudot"), superPerson)
+    when:
+      def group1 = groupSqlApi.updateGroup(group.id,
+        group.applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])]),
+        app1.id,
+        false, true, false, Opts.opts(FillOpts.Acls))
+    and:
+      def group2 = groupSqlApi.getGroup(group1.id, Opts.empty(), superPerson)
+      group2.applicationRoles.add(new ApplicationGroupRole().applicationId(app2.id).roles([ApplicationRoleType.FEATURE_EDIT]))
+      def group3 = groupSqlApi.updateGroup(group.id, group2, app2.id, false, true, false,
+        Opts.opts(FillOpts.Acls))
+    and: "i delete the role but just from application 2"
+      def group4 = groupSqlApi.getGroup(group1.id, Opts.empty(), superPerson)
+      def group5 = groupSqlApi.updateGroup(group.id, group4, app2.id, false, true, false,
+        Opts.opts(FillOpts.Acls))
+    then:
+      group3.applicationRoles.size() == 2
+      group3.applicationRoles.find({it.applicationId == app1.id}).roles.contains(ApplicationRoleType.FEATURE_EDIT)
+      group3.applicationRoles.find({it.applicationId == app2.id}).roles.contains(ApplicationRoleType.FEATURE_EDIT)
+      group5.applicationRoles.size() == 1
+      group5.applicationRoles.find({it.applicationId == app2.id}) == null
+  }
+
   // based on this article: https://en.wikipedia.org/wiki/Ukrainian_surnames#Cossack_names
   def "i create an application and give different people access and confirm they have reader access"() {
     given: "i create one Plaksa who cannot access anything"
-      def plaska = new DbPerson.Builder().email("plaska-app1@featurehub.io").name("Plaska").build()
+      def plaska = new DbPerson.Builder().email("plaksa-app1@featurehub.io").name("Plaksa").build()
       database.save(plaska)
       def plaskaNoAccess = convertUtils.toPerson(plaska)
     and: "i create one Prilipko who is a portfolio admin"
@@ -165,7 +196,7 @@ class ApplicationSpec extends BaseSpec {
       def prilipkoPortfolioAdmin = convertUtils.toPerson(prilipko)
       def g = groupSqlApi.getGroup(p1AdminGroup.id, Opts.opts(FillOpts.Members), superPerson)
       g.members.add(prilipkoPortfolioAdmin)
-      groupSqlApi.updateGroup(p1AdminGroup.id, g, true, false, false, Opts.empty())
+      groupSqlApi.updateGroup(p1AdminGroup.id, g, null, true, false, false, Opts.empty())
     and: "I create a new portfolio group and add in Golodryga by he has no permission to an application"
       def golodryga = new DbPerson.Builder().email("Golodryga@m.com").name("Golodryga").build()
       database.save(golodryga)
@@ -176,14 +207,14 @@ class ApplicationSpec extends BaseSpec {
       database.save(sverbylo)
       def sverbyloHasReadAccess = convertUtils.toPerson(sverbylo)
       def iGroup = groupSqlApi.createGroup(portfolio1.id, new Group().name("Itchy Group"), superPerson)
-      iGroup = groupSqlApi.updateGroup(iGroup.id, iGroup.members([sverbyloHasReadAccess]), true, false, false, Opts.empty())
+      iGroup = groupSqlApi.updateGroup(iGroup.id, iGroup.members([sverbyloHasReadAccess]), null, true, false, false, Opts.empty())
     when: "i create a new application"
       def newApp = appApi.createApplication(portfolio1.id, new Application().name("app-perm-check-appl1"), superPerson)
     and: "a new environment"
       def env = environmentSqlApi.create(new Environment().name("production").production(true), newApp, superPerson)
     and: "i grant the iGroup access to it"
       groupSqlApi.updateGroup(iGroup.id, iGroup.environmentRoles(
-        [new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env.id)]), false, false, true, Opts.empty())
+        [new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env.id)]), null, false, false, true, Opts.empty())
     then: "Prilipko is a portfolio admin and can see read the application even with no app direct access"
       appApi.personIsFeatureReader(newApp.id, prilipkoPortfolioAdmin.id.id)
      and: "Golodryga cannot see the application's features"

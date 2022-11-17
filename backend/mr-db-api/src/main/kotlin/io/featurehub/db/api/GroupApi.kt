@@ -48,6 +48,7 @@ interface GroupApi {
   fun updateGroup(
     gid: UUID,
     group: Group,
+    appId: UUID?,
     updateMembers: Boolean,
     updateApplicationGroupRoles: Boolean,
     updateEnvironmentGroupRoles: Boolean,

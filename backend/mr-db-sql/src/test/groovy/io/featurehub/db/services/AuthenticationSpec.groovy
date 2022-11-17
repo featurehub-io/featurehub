@@ -1,6 +1,7 @@
 package io.featurehub.db.services
 
 import io.featurehub.db.api.DBLoginSession
+import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
@@ -212,7 +213,7 @@ class AuthenticationSpec extends BaseSpec {
         new Group().name("admin-group").admin(true)
           .applicationRoles([new ApplicationGroupRole().applicationId(app1.id)
                                .roles([ApplicationRoleType.FEATURE_EDIT])]), superPerson)
-      groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.members([p2]),
+      groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.members([p2]), null,
         true, false, false, Opts.empty())
     when: "i login"
       def user = auth.login(p2.email, "hooray")
