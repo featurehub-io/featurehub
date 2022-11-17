@@ -288,7 +288,7 @@ class GroupResourceSpec extends Specification {
     when:
       Group g = gr.updateGroup(gid, new Group().name("sausage"), new GroupServiceDelegate.UpdateGroupHolder(), sc)
     then:
-      1 * groupApi.updateGroup(gid, { Group g1 -> g1.name == "sausage" }, false, false, false, (Opts)_) >> new Group().name("sausage")
+      1 * groupApi.updateGroup(gid, { Group g1 -> g1.name == "sausage" }, null, false, false, false, (Opts)_) >> new Group().name("sausage")
       g.getName() == "sausage"
   }
 
@@ -297,9 +297,9 @@ class GroupResourceSpec extends Specification {
       def pidOwner = UUID.randomUUID()
       SecurityContext sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), pidOwner, adminUser)
     when:
-      Group g = gr.updateGroup(gid, new Group().name("sausage"), new GroupServiceDelegate.UpdateGroupHolder(updateMembers: true), sc)
+      Group g = gr.updateGroup(gid, new Group().name("sausage"), new GroupServiceDelegate.UpdateGroupHolder(updateMembers: true, applicationId: pidOwner), sc)
     then:
-      1 * groupApi.updateGroup(gid, { Group g1 -> g1.name == "sausage" }, true, false, false, (Opts)_) >> new Group().name("sausage")
+      1 * groupApi.updateGroup(gid, { Group g1 -> g1.name == "sausage" }, pidOwner, true, false, false, (Opts)_) >> new Group().name("sausage")
       g.getName() == "sausage"
   }
 }
