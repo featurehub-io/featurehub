@@ -373,9 +373,9 @@ open class ConvertUtils : Conversions {
       var aclQuery = QDbAcl().group.eq(dbg)
       if (appIdFilter != null) {
         aclQuery = aclQuery
-          .or().environment.parentApplication.id
-          .eq(appIdFilter).application.id
-          .eq(appIdFilter)
+          .or()
+          .environment.parentApplication.id.eq(appIdFilter)
+          .application.id.eq(appIdFilter)
           .endOr()
       }
       aclQuery.findEach { acl: DbAcl ->
@@ -691,7 +691,7 @@ open class ConvertUtils : Conversions {
         if (appIdFilter != null) {
           permQuery = permQuery.environment.parentApplication.id.eq(appIdFilter)
         }
-        account.permissions = permQuery.findList().stream()
+        account.permissions = permQuery.findList()
           .map { sae: DbServiceAccountEnvironment ->
             toServiceAccountPermission(
               sae,
@@ -701,7 +701,6 @@ open class ConvertUtils : Conversions {
             )
           }
           .filter { obj: ServiceAccountPermission? -> Objects.nonNull(obj) }
-          .collect(Collectors.toList())
       }
     }
     return account

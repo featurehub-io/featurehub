@@ -12,7 +12,6 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
 import java.util.*
-import java.util.stream.Collectors
 
 @Singleton
 open class GroupSqlApi @Inject constructor(
@@ -353,6 +352,7 @@ open class GroupSqlApi @Inject constructor(
   override fun updateGroup(
     gid: UUID,
     gp: Group,
+    appId: UUID?,
     updateMembers: Boolean,
     updateApplicationGroupRoles: Boolean,
     updateEnvironmentGroupRoles: Boolean,
@@ -369,7 +369,7 @@ open class GroupSqlApi @Inject constructor(
         group.name = it
       }
 
-      transactionalGroupUpdate(gp, updateMembers, updateApplicationGroupRoles, updateEnvironmentGroupRoles, group)
+      transactionalGroupUpdate(gp, updateMembers, updateApplicationGroupRoles, updateEnvironmentGroupRoles, group, appId)
       return convertUtils.toGroup(group, opts)!!
     }
     return null
@@ -383,7 +383,8 @@ open class GroupSqlApi @Inject constructor(
     updateMembers: Boolean,
     updateApplicationGroupRoles: Boolean,
     updateEnvironmentGroupRoles: Boolean,
-    group: DbGroup
+    group: DbGroup,
+    appId: UUID?
   ) {
     var superuserChanges: SuperuserChanges? = null
     if (gp.members != null && updateMembers) {
@@ -394,7 +395,7 @@ open class GroupSqlApi @Inject constructor(
       aclUpdates = updateEnvironmentMembersOfGroup(gp.environmentRoles, group)
     }
     if (gp.applicationRoles != null && updateApplicationGroupRoles) {
-      updateApplicationMembersOfGroup(gp.applicationRoles, group)
+      updateApplicationMembersOfGroup(gp.applicationRoles, group, appId)
     }
     try {
       updateGroup(group, aclUpdates)
@@ -459,36 +460,40 @@ open class GroupSqlApi @Inject constructor(
   }
 
   private fun updateApplicationMembersOfGroup(
-    updatedApplicationRoles: List<ApplicationGroupRole>?, group: DbGroup
+    updatedApplicationRoles: List<ApplicationGroupRole>?, group: DbGroup, appId: UUID?
   ) {
     val desiredApplications: MutableMap<UUID, ApplicationGroupRole> = HashMap()
     val addedApplications: MutableSet<UUID> = HashSet()
     updatedApplicationRoles!!
       .forEach { role: ApplicationGroupRole ->
-        desiredApplications[role.applicationId] = role
-        addedApplications.add(role.applicationId) // ensure uniqueness
+        if (appId == null || role.applicationId == appId) {
+          desiredApplications[role.applicationId] = role
+          addedApplications.add(role.applicationId) // ensure uniqueness
+        }
       }
-    val removedAcls: MutableList<DbAcl> = ArrayList()
-    group
-      .groupRolesAcl
+
+    var finder = QDbAcl().group.id.eq(group.id)
+
+    if (appId == null) {
+      finder = finder.application.isNotNull
+    } else {
+      finder = finder.application.id.eq(appId!!)
+    }
+
+    finder.findList()
       .forEach { acl: DbAcl ->
-          // leave the application acl's alone
-          if (acl.application != null) {
-            val egr = desiredApplications[acl.application.id]
-            if (egr == null) { // we have it but we don't want it
-              //          log.info("removing acl {}", acl);
-              removedAcls.add(acl)
-            } else {
-              // don't add this one, we already have it
-              addedApplications.remove(egr.applicationId)
-              // change the roles if necessary
-              resetApplicationAcl(acl, egr)
-            }
+          val egr = desiredApplications[acl.application.id]
+          if (egr == null) { // we have it but we don't want it
+            acl.delete()
+//            removedAcls.add(acl)
+          } else {
+            // don't add this one, we already have it
+            addedApplications.remove(egr.applicationId)
+            // change the roles if necessary
+            resetApplicationAcl(acl, egr)
+            acl.update()
           }
         }
-
-    // delete ones that are no longer valid
-    group.groupRolesAcl.removeAll(removedAcls)
 
     // add ones that we want
     for (ae in addedApplications) {
@@ -499,13 +504,13 @@ open class GroupSqlApi @Inject constructor(
           resetApplicationAcl(acl, egr)
         }
 
-        group.groupRolesAcl.add(acl)
+        acl.save()
       }
     }
   }
 
   private fun resetApplicationAcl(acl: DbAcl, egr: ApplicationGroupRole) {
-    val newRoles = egr.roles.map { obj: ApplicationRoleType -> obj.name }.sorted().joinToString { "," }
+    val newRoles = egr.roles.map { obj: ApplicationRoleType -> obj.name }.sorted().joinToString(",")
 
     if (acl.roles == null || newRoles != acl.roles) {
       acl.roles = newRoles
@@ -596,7 +601,7 @@ open class GroupSqlApi @Inject constructor(
   }
 
   private fun resetEnvironmentAcl(acl: DbAcl, egr: EnvironmentGroupRole?) {
-    val newRoles = egr!!.roles.stream().map { obj: RoleType -> obj.name }.sorted().collect(Collectors.joining(","))
+    val newRoles = egr!!.roles.map { obj: RoleType -> obj.name }.sorted().joinToString(",")
     if (acl.roles == null || newRoles != acl.roles) {
       acl.roles = newRoles
     }

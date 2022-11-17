@@ -12,6 +12,7 @@ import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.Group;
 import io.featurehub.mr.model.Person;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
@@ -218,7 +219,7 @@ public class GroupResource implements GroupServiceDelegate {
       isAdminOfGroup(group, securityContext, "No permission to rename group.",  adminGroup -> {
         try {
           groupHolder.group = groupApi.updateGroup(gid, renameDetails,
-            Boolean.TRUE.equals(holder.updateMembers),
+            holder.applicationId, Boolean.TRUE.equals(holder.updateMembers),
             Boolean.TRUE.equals(holder.updateApplicationGroupRoles),
             Boolean.TRUE.equals(holder.updateEnvironmentGroupRoles),
             new Opts().add(FillOpts.Members, holder.includeMembers).add(FillOpts.Acls, holder.includeGroupRoles));

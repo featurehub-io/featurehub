@@ -3,6 +3,7 @@ package io.featurehub.db.services
 import groovy.transform.CompileStatic
 import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FillOpts
+import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
@@ -294,7 +295,7 @@ class Environment2Spec extends Base2Spec {
       def g = groupSqlApi.getGroup(groupInPortfolio1.id, Opts.opts(FillOpts.Members), superPerson)
 //      g.members.add(averageJoeMemberOfPortfolio1)
       g.environmentRoles.add(new EnvironmentGroupRole().environmentId(env.id).roles([RoleType.CHANGE_VALUE]))
-      groupSqlApi.updateGroup(g.id, g, false, false, true, Opts.empty())
+      groupSqlApi.updateGroup(g.id, g, null, false, false, true, Opts.empty())
       def perms2 = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id)
       def permsAdmin = envApi.personRoles(superPerson, env.id)
     then: "the permissions to the portfolio are empty"

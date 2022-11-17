@@ -4,6 +4,7 @@ package io.featurehub.db.services
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.FillOpts
+import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
@@ -326,7 +327,7 @@ class FeatureSpec extends Base2Spec {
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env2.id)
       ])
       g1.members = [averageJoeMemberOfPortfolio1]
-      groupSqlApi.updateGroup(g1.id, g1, true, true, true, Opts.empty());
+      groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, Opts.empty());
     and: "i create a feature value called FEATURE_BUNCH and unlock the feature in all branches"
       String k = 'FEATURE_BUNCH'
       appApi.createApplicationFeature(app2Id, new Feature().name(k).key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
@@ -456,7 +457,7 @@ class FeatureSpec extends Base2Spec {
     and: "i add permissions and members to the group"
       group.environmentRoles([new EnvironmentGroupRole().environmentId(env1.id).roles([RoleType.LOCK, RoleType.UNLOCK, RoleType.READ])])
       group.members([person])
-      group = groupSqlApi.updateGroup(group.id, group, true, false, true, Opts.empty())
+      group = groupSqlApi.updateGroup(group.id, group, null, true, false, true, Opts.empty())
     when: "i try and unlock the feature with the person, it will let me"
       def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
       if (fv == null) {
