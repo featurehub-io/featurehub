@@ -50,15 +50,32 @@ public class ApplicationUtils {
     }
   }
 
-  public ApplicationPermissionCheck featureAdminCheck(SecurityContext securityContext, UUID id) {
+  public ApplicationPermissionCheck featureCreatorCheck(SecurityContext securityContext, UUID appId) {
     Person current = authManager.from(securityContext);
 
-    if (!applicationApi.findFeatureEditors(id).contains(current.getId().getId())) {
-      log.warn("Attempt by person {} to edt features in application {}", current.getId().getId(), id);
+    if (!applicationApi.personIsFeatureCreator(appId, current.getId().getId())) {
+      log.warn("Attempt by person {} to edt features in application {}", current.getId().getId(), appId);
 
-      return check(current, id, Opts.empty());
+      return check(current, appId, Opts.empty());
     } else {
       return new ApplicationPermissionCheck.Builder().current(current).build();
+    }
+  }
+
+  /**
+   * This just checks to see if a person has the Editor/Delete permission and if not, throws an exception. A portfolio
+   * admin or admin will always have it.
+   *
+   * @param securityContext
+   * @param appId
+   */
+  public void featureEditorCheck(SecurityContext securityContext, UUID appId) {
+    Person current = authManager.from(securityContext);
+
+    if (!applicationApi.personIsFeatureEditor(appId, current.getId().getId())) {
+      log.warn("Attempt by person {} to edt features in application {}", current.getId().getId(), appId);
+
+      check(current, appId, Opts.empty());
     }
   }
 

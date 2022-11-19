@@ -185,17 +185,16 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   bool get userIsSuperAdmin => personState.userIsSuperAdmin;
 
-  bool get userIsFeatureAdminOfCurrentApplication {
-    final currentAid = getCurrentAid();
+  bool get userHasFeatureEditRoleInCurrentApplication {
+    return personState.personCanEditFeaturesForApplication(getCurrentAid());
+  }
 
-    final result = person.groups.any((g) => g.applicationRoles.any((ar) =>
-        ar.applicationId == currentAid &&
-        ar.roles.contains(ApplicationRoleType.FEATURE_EDIT)));
+  bool get userHasFeatureCreationRoleInCurrentApplication {
+    return personState.personCanCreateFeaturesForApplication(getCurrentAid());
+  }
 
-    // print(
-    //     "checking featureadmin ${currentAid} and result is ${result} from groups ${person.groups}");
-
-    return result;
+  bool get userHasFeaturePermissionsInCurrentApplication {
+    return personState.personCanAnythingFeaturesForApplication(getCurrentAid());
   }
 
   bool get userIsCurrentPortfolioAdmin =>

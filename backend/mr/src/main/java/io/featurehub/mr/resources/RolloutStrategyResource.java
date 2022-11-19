@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
   private static final Logger log = LoggerFactory.getLogger(RolloutStrategyResource.class);
-  private final AuthManagerService authManager;
   private final ApplicationUtils applicationUtils;
   private final RolloutStrategyApi rolloutStrategyApi;
   private final RolloutStrategyValidator validator;
@@ -36,7 +35,6 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
   @Inject
   public RolloutStrategyResource(AuthManagerService authManager, ApplicationUtils applicationUtils,
                                  RolloutStrategyApi rolloutStrategyApi, RolloutStrategyValidator validator) {
-    this.authManager = authManager;
     this.applicationUtils = applicationUtils;
     this.rolloutStrategyApi = rolloutStrategyApi;
     this.validator = validator;
@@ -46,8 +44,7 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
   public RolloutStrategyInfo createRolloutStrategy(UUID appId, RolloutStrategy rolloutStrategy,
                                                    CreateRolloutStrategyHolder holder,
                                                    SecurityContext securityContext) {
-    applicationUtils.featureAdminCheck(securityContext, appId);
-    Person person = authManager.from(securityContext);
+    Person person = applicationUtils.featureCreatorCheck(securityContext, appId).getCurrent();
 
     cleanStrategy(rolloutStrategy);
 
@@ -70,8 +67,8 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
   @Override
   public RolloutStrategyInfo deleteRolloutStrategy(UUID appId, String strategyIdOrName, DeleteRolloutStrategyHolder holder,
                                                    SecurityContext securityContext) {
-    applicationUtils.featureAdminCheck(securityContext, appId);
-    Person person = authManager.from(securityContext);
+    Person person = applicationUtils.featureCreatorCheck(securityContext, appId).getCurrent();
+
     final RolloutStrategyInfo rolloutStrategyInfo = rolloutStrategyApi.archiveStrategy(appId, strategyIdOrName, person,
       new Opts().add(FillOpts.SimplePeople,
       holder.includeWhoChanged));
@@ -118,8 +115,7 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
   public RolloutStrategyInfo updateRolloutStrategy(UUID appId, String strategyIdOrName, RolloutStrategy rolloutStrategy,
                                                    UpdateRolloutStrategyHolder holder,
                                                    SecurityContext securityContext) {
-    applicationUtils.featureAdminCheck(securityContext, appId);
-    Person person = authManager.from(securityContext);
+    Person person = applicationUtils.featureCreatorCheck(securityContext, appId).getCurrent();
 
     cleanStrategy(rolloutStrategy);
 

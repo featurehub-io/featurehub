@@ -20,6 +20,8 @@ import io.featurehub.db.model.query.QDbApplication;
 import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbGroup;
+import io.featurehub.db.model.query.QDbGroupMember;
+import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.mr.events.common.CacheSource;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.ApplicationGroupRole;
@@ -35,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -104,6 +107,7 @@ public class ApplicationSqlApi implements ApplicationApi {
                   .adminGroup
                   .isTrue()
                   .findOne();
+
           if (adminGroup != null) {
             adminGroup
                 .getGroupRolesAcl()
@@ -111,8 +115,8 @@ public class ApplicationSqlApi implements ApplicationApi {
                     new DbAcl.Builder()
                         .application(aApp)
                         .roles(
-                            GroupSqlApi.appRolesToString(
-                                Collections.singletonList(ApplicationRoleType.FEATURE_EDIT)))
+                            GroupSqlApi.appRolesToString(Arrays.asList(ApplicationRoleType.CREATE,
+                              ApplicationRoleType.EDIT_AND_DELETE)))
                         .build());
           }
           addApplicationFeatureCreationRoleToPortfolioAdminGroup(aApp, adminGroup);
@@ -344,7 +348,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public List<Feature> updateApplicationFeature(UUID appId, String key, Feature feature, @NotNull Opts opts)
+  public List<Feature> updateApplicationFeature(@NotNull UUID appId, String key, Feature feature, @NotNull Opts opts)
       throws DuplicateFeatureException, OptimisticLockingException {
     Conversions.nonNullApplicationId(appId);
 
@@ -489,7 +493,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public List<Feature> deleteApplicationFeature(UUID appId, String key) {
+  public List<Feature> deleteApplicationFeature(@NotNull UUID appId, String key) {
     Conversions.nonNullApplicationId(appId);
 
     AppFeature appFeature = findAppFeature(appId, key);
@@ -507,7 +511,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public Feature getApplicationFeatureByKey(UUID appId, @NotNull String key, @NotNull Opts opts) {
+  public Feature getApplicationFeatureByKey(@NotNull UUID appId, @NotNull String key, @NotNull Opts opts) {
     Conversions.nonNullApplicationId(appId);
 
     AppFeature af = findAppFeature(appId, key);
@@ -519,64 +523,83 @@ public class ApplicationSqlApi implements ApplicationApi {
     return convertUtils.toApplicationFeature(af.appFeature, opts);
   }
 
+  final Set<ApplicationRoleType> editorRoles = Set.of(ApplicationRoleType.EDIT, ApplicationRoleType.EDIT_AND_DELETE);
+  final Set<ApplicationRoleType> creatorRoles = Set.of(ApplicationRoleType.EDIT, ApplicationRoleType.CREATE,
+    ApplicationRoleType.EDIT_AND_DELETE);
+
   // finds all of the groups attached to this application  that have application roles
   // and filters them by the feature edit role, and adds them to the outgoing set.
   @Override
-  public Set<UUID> findFeatureEditors(UUID appId) {
+  public @NotNull Set<UUID> findFeatureEditors(@NotNull UUID appId) {
     Conversions.nonNullApplicationId(appId);
 
-    Set<UUID> featureEditors = new HashSet<>();
-
-    new QDbAcl()
-        .application
-        .id
-        .eq(appId)
-        .group
-        .whenArchived
-        .isNull()
-        .group
-        .groupMembers.person.fetch()
-        .findList()
-        .forEach(
-            acl -> {
-              ApplicationGroupRole agr = convertUtils.applicationGroupRoleFromAcl(acl);
-
-              if (agr.getRoles().contains(ApplicationRoleType.FEATURE_EDIT)) {
-                acl.getGroup()
-                  .getGroupMembers()
-                    .forEach(
-                        p -> {
-                          featureEditors.add(p.getPerson().getId());
-                        });
-              }
-            });
-
-    return featureEditors;
+    return findFeaturePermissionsByType(appId, editorRoles);
   }
 
-  public Set<UUID> findFeatureReaders(UUID appId) {
+  @Override
+  public @NotNull Set<UUID> findFeatureCreators(@NotNull UUID appId) {
+    Conversions.nonNullApplicationId(appId);
+
+    return findFeaturePermissionsByType(appId, creatorRoles);
+  }
+
+  @Override
+  public boolean personIsFeatureEditor(@NotNull UUID appId, @NotNull UUID personId) {
+    return personHoldsOneOfApplicationRoles(appId, personId, editorRoles);
+  }
+
+  @Override
+  public boolean personIsFeatureCreator(@NotNull UUID appId, @NotNull UUID personId) {
+    return personHoldsOneOfApplicationRoles(appId, personId, creatorRoles);
+  }
+
+  private boolean personHoldsOneOfApplicationRoles(@NotNull UUID appId,
+                                                   @NotNull UUID personId, Set<ApplicationRoleType> roles) {
+    return new QDbAcl()
+      .select(QDbAcl.Alias.roles)
+      .application.id.eq(appId)
+      .group.groupMembers.person.id.eq(personId)
+      .findList().stream().anyMatch(acl ->
+      convertUtils.splitApplicationRoles(acl.getRoles()).stream().anyMatch(roles::contains)
+    );
+  }
+
+  private Set<UUID> findFeaturePermissionsByType(UUID appId, Set<ApplicationRoleType> roles) {
+    log.info("searching for permissions for app id {}, roles {}", appId, roles);
+    // find which groups have those roles
+    final List<UUID> groups = new QDbAcl()
+      .select(QDbAcl.Alias.group.id, QDbAcl.Alias.roles)
+      .application.id.eq(appId)
+      .group.whenArchived.isNull()
+      .findList().stream().filter(acl ->
+         convertUtils.splitApplicationRoles(acl.getRoles()).stream().anyMatch(roles::contains)
+      ).map(acl -> acl.getGroup().getId()).collect(Collectors.toList());
+
+    // find which people are in those groups
+    if (!groups.isEmpty()) {
+      final Set<UUID> collect = new QDbPerson()
+        .select(QDbPerson.Alias.id)
+        .groupMembers.group.id.in(groups).findList().stream().map(DbPerson::getId).collect(Collectors.toSet());
+      log.info("and out with {}", collect);
+      return collect;
+    }
+
+    return new HashSet<>();
+  }
+
+  public @NotNull Set<UUID> findFeatureReaders(@NotNull UUID appId) {
     Conversions.nonNullApplicationId(appId);
     Set<UUID> featureReaders = new HashSet<>();
 
     new QDbAcl()
-        .or()
-        .environment
-        .parentApplication
-        .id
-        .eq(appId)
-        .application
-        .id
-        .eq(appId)
-        .endOr()
-        .group
-        .whenArchived
-        .isNull()
-        .group
-        .groupMembers.person
-        .fetch()
-        .findList()
-        .forEach(
-            acl -> {
+      .or()
+        .environment.parentApplication.id.eq(appId)
+        .application.id.eq(appId)
+      .endOr()
+      .group.whenArchived.isNull()
+      .group.groupMembers.person.fetch()
+      .findList()
+      .forEach(acl -> {
               if (acl.getApplication() != null || acl.getRoles().trim().length() > 0) {
                 acl.getGroup()
                     .getGroupMembers()

@@ -40,15 +40,32 @@ class PersonState {
     _personSource.add(p);
   }
 
-  bool personCanEditFeaturesForCurrentApplication(String? appId) {
+  final _featureCreateRoles = [ApplicationRoleType.EDIT, ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE];
+  final _featureEditDeleteRoles = [ApplicationRoleType.EDIT, ApplicationRoleType.EDIT_AND_DELETE];
+
+  bool personCanEditFeaturesForApplication(String? appId) {
+    return _personHasApplicationRoleInApp(appId, _featureEditDeleteRoles );
+  }
+
+  bool personCanCreateFeaturesForApplication(String? appId) {
+    return _personHasApplicationRoleInApp(appId, _featureCreateRoles );
+  }
+
+  // if we add roles that are NOT feature related, this will need to change to exclude them
+  bool personCanAnythingFeaturesForApplication(String? appId) {
+    return _isUserIsSuperAdmin ||
+        person.groups.any((gp) => gp.applicationRoles.any((ar) => ar.applicationId == appId && ar.roles.isNotEmpty));
+  }
+
+  bool _personHasApplicationRoleInApp(String? appId, List<ApplicationRoleType> roles) {
     if (appId == null) {
       return _isUserIsSuperAdmin;
     }
 
     return _isUserIsSuperAdmin ||
-        person.groups.any((gp) => gp.applicationRoles.any((ar) =>
-            ar.roles.contains(ApplicationRoleType.FEATURE_EDIT) &&
-            ar.applicationId == appId));
+        person.groups.any((gp) => gp.applicationRoles.any((ar) => ar.applicationId == appId &&
+            ar.roles.any((roleForAppInGroup) => roles.contains(roleForAppInGroup))
+            ));
   }
 
   bool userHasPortfolioPermission(String? pid) {

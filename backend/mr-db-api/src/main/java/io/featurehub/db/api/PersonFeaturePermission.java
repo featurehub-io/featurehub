@@ -31,15 +31,20 @@ public class PersonFeaturePermission {
   }
 
   public boolean hasWriteRole() {
-    return roles.contains(RoleType.CHANGE_VALUE) || roles.contains(RoleType.UNLOCK) || roles.contains(RoleType.LOCK) || hasCreateFeatureRole();
+    return roles.contains(RoleType.CHANGE_VALUE) || roles.contains(RoleType.UNLOCK) || roles.contains(RoleType.LOCK) || hasCreateFeatureRole() || hasEditFeatureRole();
   }
 
   public boolean hasChangeValueRole() {
     return roles.contains(RoleType.CHANGE_VALUE) || hasCreateFeatureRole();
+
   }
 
   public boolean hasCreateFeatureRole() {
-    return appRoles.contains(ApplicationRoleType.FEATURE_EDIT);
+    return appRoles.contains(ApplicationRoleType.EDIT) || appRoles.contains(ApplicationRoleType.CREATE);
+  }
+
+  public boolean hasEditFeatureRole() {
+    return appRoles.contains(ApplicationRoleType.EDIT) || appRoles.contains(ApplicationRoleType.EDIT_AND_DELETE);
   }
 
   public boolean hasLockRole() {

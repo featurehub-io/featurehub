@@ -209,14 +209,14 @@ open class ConvertUtils : Conversions {
     return sap
   }
 
-  override fun applicationGroupRoleFromAcl(acl: DbAcl?): ApplicationGroupRole? {
+  override fun applicationGroupRoleFromAcl(acl: DbAcl?): ApplicationGroupRole {
     return ApplicationGroupRole()
       .groupId(acl!!.group.id)
       .roles(splitApplicationRoles(acl.roles))
       .applicationId(acl.application.id)
   }
 
-  override fun environmentGroupRoleFromAcl(acl: DbAcl?): EnvironmentGroupRole? {
+  override fun environmentGroupRoleFromAcl(acl: DbAcl?): EnvironmentGroupRole {
     val environmentGroupRole = EnvironmentGroupRole()
       .groupId(acl!!.group.id)
       .roles(splitEnvironmentRoles(acl.roles))
@@ -231,35 +231,34 @@ open class ConvertUtils : Conversions {
     return environmentGroupRole
   }
 
-  override fun splitEnvironmentRoles(roles: String?): List<RoleType> {
+  override fun splitEnvironmentRoles(roles: String?): MutableList<RoleType> {
     val roleTypes = mutableSetOf<RoleType>()
 
     if (roles == null || roles.isEmpty()) {
       return ArrayList(roleTypes)
     }
 
-    for (n in roles.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
+    for (n in roles.split(",").map { it.trim() }.filter { it.isNotBlank() }) {
       try {
         roleTypes.add(RoleType.valueOf(n))
       } catch (ignored: Exception) {
       }
     }
 
-    return ArrayList(roleTypes)
+    return roleTypes.toMutableList()
   }
 
-  override fun splitApplicationRoles(roles: String?): List<ApplicationRoleType> {
+  override fun splitApplicationRoles(roles: String?): MutableList<ApplicationRoleType> {
     val roleTypes = mutableSetOf<ApplicationRoleType>()
     if (roles != null) {
-      for (n in roles.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
+      for (n in roles.split(",").map { it.trim() }.filter { it.isNotBlank() }) {
         try {
           roleTypes.add(ApplicationRoleType.valueOf(n))
-        } catch (e: Exception) {
-          return listOf()
+        } catch (ignored: Exception) {
         }
       }
     }
-    return ArrayList(roleTypes)
+    return roleTypes.toMutableList()
   }
 
   override fun convertEnvironmentAcl(dbAcl: DbAcl?): EnvironmentGroupRole? {
