@@ -1,6 +1,7 @@
 import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
 
 class EditBooleanValueDropDownWidget extends StatefulWidget {
 
@@ -15,7 +16,7 @@ class EditBooleanValueDropDownWidget extends StatefulWidget {
   final bool unlocked;
   final bool editable;
   final RolloutStrategy? rolloutStrategy;
-  final CustomStrategyBloc strBloc;
+  final CustomStrategyBlocV2 strBloc;
 
   @override
   _EditBooleanValueDropDownWidgetState createState() =>

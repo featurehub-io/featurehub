@@ -90,8 +90,10 @@ class PerApplicationFeaturesBloc
     if (applicationId != null) {
       addAppFeatureValuesToStream();
     } else {
+      List<EnvironmentFeatureValues> efv = [];
+      List<Feature> featureList = [];
       _appFeatureValuesBS
-          .add(FeatureStatusFeatures(ApplicationFeatureValues()));
+          .add(FeatureStatusFeatures(ApplicationFeatureValues(applicationId: "", features: featureList, environments: efv, maxFeatures: 0)));
     }
   }
 
@@ -306,5 +308,15 @@ class PerApplicationFeaturesBloc
 
     // get the data again
     _getAllAppValuesDebounceStream.add(true);
+  }
+
+  Future<ApplicationFeatureValues> getApplicationFeatureValuesData(String appId, String searchTerm, List<FeatureValueType> featureTypes, int rowsPerPage, int pageOffset) async {
+    return await _featureServiceApi
+        .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(appId,
+        max: rowsPerPage,
+        page: pageOffset,
+        filter: searchTerm,
+        featureTypes: featureTypes,
+    );
   }
 }

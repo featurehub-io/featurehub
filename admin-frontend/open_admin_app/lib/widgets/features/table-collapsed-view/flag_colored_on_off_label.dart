@@ -9,13 +9,15 @@ class FlagOnOffColoredIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return on
-        ? Text('ON',
-            style: Theme.of(context).textTheme.button!.copyWith(
+        ? Text('true',
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                     color: const Color(0xff11C8B5),
-                    fontWeight: FontWeight.bold))
-        : Text('OFF',
-            style: Theme.of(context).textTheme.button!.copyWith(
+                    // fontWeight: FontWeight.bold
+            ))
+        : Text('false',
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                     color: const Color(0xffF44C49),
-                    fontWeight: FontWeight.bold));
+                    // fontWeight: FontWeight.bold
+            ));
   }
 }

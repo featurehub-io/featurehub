@@ -32,28 +32,28 @@ class ValueCellHolder extends StatelessWidget {
           return Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              LockUnlockSwitch(
-                environmentFeatureValue: environmentFeatureValue,
-                fvBloc: fvBloc,
-              ),
-              StreamBuilder<List<RolloutStrategy>>(
-                  stream: strategyBloc.strategies,
-                  builder: (context, snapshot) {
-                    return Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        StrategyCard(
-                            strBloc: strategyBloc,
-                            featureValueType: featureValueType),
-                        if (snapshot.hasData)
-                          for (RolloutStrategy strategy in snapshot.data!)
-                            StrategyCard(
-                                strBloc: strategyBloc,
-                                rolloutStrategy: strategy,
-                                featureValueType: featureValueType),
-                      ],
-                    );
-                  }),
+              // LockUnlockSwitch(
+              //   environmentFeatureValue: environmentFeatureValue,
+              //   fvBloc: fvBloc,
+              // ),
+              // StreamBuilder<List<RolloutStrategy>>(
+              //     stream: strategyBloc.strategies,
+              //     builder: (context, snapshot) {
+              //       return Column(
+              //         mainAxisSize: MainAxisSize.max,
+              //         children: [
+              //           StrategyCard(
+              //               strBloc: strategyBloc,
+              //               featureValueType: featureValueType),
+              //           if (snapshot.hasData)
+              //             for (RolloutStrategy strategy in snapshot.data!)
+              //               StrategyCard(
+              //                   strBloc: strategyBloc,
+              //                   rolloutStrategy: strategy,
+              //                   featureValueType: featureValueType),
+              //         ],
+              //       );
+              //     }),
               StreamBuilder<bool>(
                   stream: fvBloc.environmentIsLocked(
                       environmentFeatureValue.environmentId!),
@@ -65,14 +65,14 @@ class ValueCellHolder extends StatelessWidget {
                       return Column(
                         children: [
                           const SizedBox(height: 8.0),
-                          AddStrategyButton(
-                              bloc: strategyBloc, editable: editable),
-                          RetireFeatureValueCheckboxWidget(
-                              environmentFeatureValue: environmentFeatureValue,
-                              fvBloc: fvBloc,
-                              editable: editable,
-                              retired: fvBloc.isRetired(
-                                  environmentFeatureValue.environmentId!)),
+                          // AddStrategyButton(
+                          //     bloc: strategyBloc, editable: editable),
+                          // RetireFeatureValueCheckboxWidget(
+                          //     environmentFeatureValue: environmentFeatureValue,
+                          //     fvBloc: fvBloc,
+                          //     editable: editable,
+                          //     retired: fvBloc.isRetired(
+                          //         environmentFeatureValue.environmentId!)),
                           //this is where we need to pass retired from the actual value
                         ],
                       );
@@ -80,9 +80,9 @@ class ValueCellHolder extends StatelessWidget {
                       return Container();
                     }
                   }),
-              FeatureValueUpdatedByCell(
-                strBloc: strategyBloc,
-              ),
+              // FeatureValueUpdatedByCell(
+              //   strBloc: strategyBloc,
+              // ),
             ],
           );
         });

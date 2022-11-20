@@ -1,5 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:open_admin_app/widgets/features/per_feature_state_tracking_blocv2.dart';
 import 'package:rxdart/rxdart.dart';
@@ -7,24 +8,25 @@ import 'package:uuid/uuid.dart';
 
 const _strategyBlocUUidGenerator = Uuid();
 
-class CustomStrategyBloc extends Bloc {
+class CustomStrategyBlocV2 extends Bloc {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
-  final PerFeatureStateTrackingBloc fvBloc;
+  final PerFeatureStateTrackingBlocV2 fvBloc;
   final FeatureValue featureValue;
+  final PerApplicationFeaturesBloc bloc;
 
   final _strategySource =
-      BehaviorSubject<List<RolloutStrategy>>.seeded(<RolloutStrategy>[]);
+  BehaviorSubject<List<RolloutStrategy>>.seeded(<RolloutStrategy>[]);
   final _rolloutStartegyAttributeList =
-      BehaviorSubject<List<RolloutStrategyAttribute>>();
+  BehaviorSubject<List<RolloutStrategyAttribute>>();
   Stream<List<RolloutStrategyAttribute>> get attributes =>
       _rolloutStartegyAttributeList.stream;
 
   Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
 
-  CustomStrategyBloc(this.environmentFeatureValue, this.feature, this.fvBloc)
+  CustomStrategyBlocV2(this.environmentFeatureValue, this.feature, this.fvBloc, this.bloc)
       : featureValue = fvBloc
-            .featureValueByEnvironment(environmentFeatureValue.environmentId!) {
+      .featureValueByEnvironment(environmentFeatureValue.environmentId!) {
     for (var rs in featureValue.rolloutStrategies) {
       if (rs.id != null && rs.id!.length < 30) {
         rs.id = _strategyBlocUUidGenerator.v4();
@@ -112,13 +114,13 @@ class CustomStrategyBloc extends Bloc {
     // we need a list of strategies to send to the server, only 1 of which will be the created
     // one
     var strategies =
-        _strategySource.value!.where((s) => s.id != strategy.id).toList();
+    _strategySource.value!.where((s) => s.id != strategy.id).toList();
 
     strategy.id ??= _strategyBlocUUidGenerator.v4();
 
     strategies.add(strategy);
 
-    return fvBloc.featuresOnTabBloc.featureStatusBloc
-        .validationCheck(strategies, <RolloutStrategyInstance>[]);
+    return bloc.validationCheck(strategies, <RolloutStrategyInstance>[]
+    );
   }
 }

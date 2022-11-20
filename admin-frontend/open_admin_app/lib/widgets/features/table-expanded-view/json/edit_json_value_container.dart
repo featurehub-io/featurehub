@@ -7,6 +7,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_json_editor.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/json/json_viewer_field.dart';
 
 class EditJsonValueContainer extends StatefulWidget {
@@ -21,7 +22,7 @@ class EditJsonValueContainer extends StatefulWidget {
   final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
-  final CustomStrategyBloc strBloc;
+  final CustomStrategyBlocV2 strBloc;
 
   @override
   _EditJsonValueContainerState createState() => _EditJsonValueContainerState();

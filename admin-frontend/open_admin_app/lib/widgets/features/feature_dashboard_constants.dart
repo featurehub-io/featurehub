@@ -13,3 +13,4 @@ const defaultTextColor = Color(0xff4DA1FF);
 const strategyValueColor = Color(0xffE6F7EE);
 const strategyValueColorDark = Color(0xff545669);
 const strategyTextColor = Color(0xff2DCD7A);
+const rowsPerPage = 5;

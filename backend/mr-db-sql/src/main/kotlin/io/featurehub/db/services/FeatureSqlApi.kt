@@ -553,10 +553,10 @@ class FeatureSqlApi @Inject constructor(
       }
 
       if (filter != null) {
-        appFeatureQuery = appFeatureQuery.or().description.icontains(filter).key.icontains(filter).endOr()
+        appFeatureQuery = appFeatureQuery.or().name.icontains(filter).key.icontains(filter).endOr()
       }
 
-      if (featureValueTypes != null) {
+      if (featureValueTypes?.isNotEmpty() == true) {
         appFeatureQuery = appFeatureQuery.valueType.`in`(featureValueTypes)
       }
 

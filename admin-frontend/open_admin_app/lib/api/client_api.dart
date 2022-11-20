@@ -123,8 +123,8 @@ class ManagementRepositoryClientBloc implements Bloc {
   void swapRoutes(RouteChange route) {
     // this is for gross route changes, and causes the widget to redraw
     // for multi-tabbed routes, we don't want this to happen, so we separate the two
-    if (_routerRedrawRouteSource.value == null ||
-        _routerRedrawRouteSource.value?.route != route.route) {
+    if (!_routerRedrawRouteSource.hasValue ||
+        (_routerRedrawRouteSource.hasValue && _routerRedrawRouteSource.value?.route != route.route)) {
       _routerRedrawRouteSource.add(route);
     }
 

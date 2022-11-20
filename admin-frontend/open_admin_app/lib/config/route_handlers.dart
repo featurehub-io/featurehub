@@ -9,6 +9,7 @@ import 'package:open_admin_app/routes/create_user_route.dart';
 import 'package:open_admin_app/routes/edit_admin_service_account_route.dart';
 import 'package:open_admin_app/routes/edit_user_route.dart';
 import 'package:open_admin_app/routes/features_overview_route.dart';
+import 'package:open_admin_app/routes/features_overview_route_v2.dart';
 import 'package:open_admin_app/routes/home_route.dart';
 import 'package:open_admin_app/routes/loading_route.dart';
 import 'package:open_admin_app/routes/manage_app_route.dart';
@@ -176,7 +177,7 @@ class RouteCreator {
     return BlocProvider<PerApplicationFeaturesBloc>(
         creator: (_c, _b) => PerApplicationFeaturesBloc(mrBloc),
         child: Builder(
-            builder: (context) => FeatureStatusRoute(
+            builder: (context) => FeatureStatusRouteV2(
                   createFeature: _actionCreate(params),
                 )));
   }

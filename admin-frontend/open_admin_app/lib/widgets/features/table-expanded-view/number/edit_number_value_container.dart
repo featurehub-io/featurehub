@@ -3,6 +3,7 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
 
 class EditNumberValueContainer extends StatefulWidget {
   const EditNumberValueContainer({
@@ -16,7 +17,7 @@ class EditNumberValueContainer extends StatefulWidget {
   final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
-  final CustomStrategyBloc strBloc;
+  final CustomStrategyBlocV2 strBloc;
 
   @override
   _EditNumberValueContainerState createState() =>
