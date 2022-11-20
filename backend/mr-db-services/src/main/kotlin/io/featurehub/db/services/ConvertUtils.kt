@@ -384,6 +384,15 @@ open class ConvertUtils : Conversions {
           group.addApplicationRolesItem(applicationGroupRoleFromAcl(acl))
         }
       }
+
+      // if this is an admin group and we have no roles, add the create/edit feature roles
+      if (group.admin == true && group.applicationRoles?.isEmpty() == true) {
+        appIdFilter?.let { appId ->
+          group.addApplicationRolesItem(ApplicationGroupRole().groupId(group.id!!).applicationId(appId).roles(
+            mutableListOf(ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE)
+          ))
+        }
+      }
     }
     return group
   }

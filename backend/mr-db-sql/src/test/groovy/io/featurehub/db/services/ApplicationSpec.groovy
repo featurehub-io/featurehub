@@ -185,6 +185,17 @@ class ApplicationSpec extends BaseSpec {
       group5.applicationRoles.find({it.applicationId == app2.id}) == null
   }
 
+  def "the auto-created portfolio group has feature create/edit permissions"() {
+    given: "i create an application"
+      def app1 = appApi.createApplication(portfolio1.id,
+        new Application().name("irinas-perm-create1").description("perm-create"), superPerson)
+    when: "i convert the portfolio group to a model"
+      def group = groupSqlApi.getGroup(adminGroup.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app1.id), superPerson)
+    then:
+      group.applicationRoles.find({ it.applicationId == app1.id }).roles.containsAll([ApplicationRoleType.EDIT_AND_DELETE,
+                                                                                      ApplicationRoleType.CREATE])
+  }
+
   def "application groups can store multiple Acls"() {
     given: "i create an application"
       def app1 = appApi.createApplication(portfolio1.id, new Application().name("perm-create1").description("perm-create"), superPerson)
