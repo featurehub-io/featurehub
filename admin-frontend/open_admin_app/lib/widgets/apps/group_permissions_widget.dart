@@ -160,8 +160,8 @@ class _AdminFeatureRole {
 
 final _adminFeatureRoles = [
   _AdminFeatureRole('none', 'No feature permissions', []),
-  _AdminFeatureRole('creator', 'Feature Creator', [ApplicationRoleType.CREATE]),
-  _AdminFeatureRole('editor', 'Feature Admin', [ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE])
+  _AdminFeatureRole('creator', 'Create features', [ApplicationRoleType.CREATE]),
+  _AdminFeatureRole('editor', 'Create / Edit / Delete features', [ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE])
 ];
 
 final _noFeaturePermissionRole = _adminFeatureRoles[0];
@@ -240,11 +240,25 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                 }
 
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
+                    SizedBox(height: 24),
+                    SelectableText(
+                        'Set feature level permissions',
+                        style: Theme.of(context).textTheme.caption),
+                    // SizedBox(height: 4.0),
                     Row(
                       children: <Widget>[
-                        if (currentGroup?.admin != true) // you cannot change this if they are an admin
-                          DropdownButton<_AdminFeatureRole>(items: _adminFeatureRoles.map((role) {
+                        // if (currentGroup?.admin != true) // you cannot change this if they are an admin
+                          DropdownButton<_AdminFeatureRole>(
+                            icon: const Padding(
+                              padding: EdgeInsets.only(left: 8.0),
+                              child: Icon(
+                                Icons.keyboard_arrow_down,
+                                size: 18,
+                              ),
+                            ),
+                            items: _adminFeatureRoles.map((role) {
                             return DropdownMenuItem<_AdminFeatureRole>(
                               value: role,
                               child: Text(role.name, style: Theme.of(context).textTheme.bodyText2, overflow: TextOverflow.ellipsis, ));
@@ -252,24 +266,15 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             isDense: true,
                             // isExpanded: true,
                             value: adminFeatureRole,
-                            onChanged: (value) {
-                                setState(() {
-                                  adminFeatureRole = value;
-                                });
-                              }),
-                        if (currentGroup?.admin == true) // you can always editing/create/etc if you are in the admin group
-                          SelectableText(
-                              'This admin group can create, edit and delete features for this application',
-                              style: Theme.of(context).textTheme.caption),
+                            onChanged: currentGroup?.admin != true ? (value) => setState(() =>  adminFeatureRole = value) : null,
+                              ),
                       ],
                     ),
                     Container(
-                        padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                        child: Center(
-                          child: SelectableText(
-                              'Set the group access to features for each environment',
-                              style: Theme.of(context).textTheme.caption),
-                        )),
+                        padding: const EdgeInsets.fromLTRB(0, 32, 0, 8),
+                        child: SelectableText(
+                            'Set feature value level permissions per environment',
+                            style: Theme.of(context).textTheme.caption)),
                     Table(children: rows),
                     FHButtonBar(children: [
                       FHFlatButtonTransparent(
