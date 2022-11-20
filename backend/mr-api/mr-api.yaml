@@ -3040,6 +3040,7 @@ components:
         - email
         - personType
         - id
+        - version
       properties:
         id:
           type: string
@@ -3049,6 +3050,9 @@ components:
         email:
           type: string
           format: email
+        version:
+          type: integer
+          format: int64
         personType:
           $ref: "#/components/schemas/PersonType"
         whenLastAuthenticated:

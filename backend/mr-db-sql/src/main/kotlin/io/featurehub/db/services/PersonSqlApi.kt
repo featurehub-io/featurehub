@@ -434,6 +434,7 @@ open class PersonSqlApi @Inject constructor(
         .id(person.id!!.id)
         .email(person.email!!)
         .name(person.name!!)
+        .version(person.version!!)
         .whenLastAuthenticated(person.whenLastAuthenticated)
         .whenDeactivated(person.whenArchived)
         .whenLastSeen(person.whenLastSeen)

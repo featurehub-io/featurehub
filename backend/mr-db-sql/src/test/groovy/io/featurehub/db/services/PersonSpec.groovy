@@ -203,6 +203,7 @@ class PersonSpec extends BaseSpec {
       foundRemovedGroupsPerson.groups[0].id == g2.id
     and:
       search.searchPeople.find({it.id == person.id}).groupCount == 2
+      search.searchPeople.find({it.id == person.id}).version != null
   }
 
   def "when I update the user as a portfolio admin, i can only modify my groups, but can change their name and email"() {
