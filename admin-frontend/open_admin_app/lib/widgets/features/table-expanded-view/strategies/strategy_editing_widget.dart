@@ -9,6 +9,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_outline_button.dart';
 import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
 import 'package:open_admin_app/widgets/features/percentage_utils.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/strategy_utils.dart';
@@ -16,7 +17,7 @@ import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/s
 import 'rollout_strategies_widget.dart';
 
 class StrategyEditingWidget extends StatefulWidget {
-  final CustomStrategyBloc bloc;
+  final CustomStrategyBlocV2 bloc;
   final bool editable;
 
   const StrategyEditingWidget({
@@ -73,10 +74,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     final focusNode = FocusScope.of(context);
     final ScrollController controller = ScrollController();
 
-    return FHAlertDialog(
-      title: Text(
-          widget.editable ? 'Edit split targeting' : 'View split targeting'),
-      content: ScrollConfiguration(
+    return ScrollConfiguration(
         behavior: CustomScrollBehavior(),
         child: SingleChildScrollView(
           controller: controller,
@@ -212,27 +210,31 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                             .textTheme
                             .bodyText2!
                             .copyWith(color: Theme.of(context).errorColor)),
-                  _NaughtyDataEntryWidget(bloc: individualStrategyBloc!)
+                  _NaughtyDataEntryWidget(bloc: individualStrategyBloc!),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Row(
+                      children: [
+                        FHFlatButtonTransparent(
+                          title: 'Cancel',
+                          keepCase: true,
+                          onPressed: () {
+                          }, // TODO dismiss
+                        ),
+                        if (widget.editable)
+                          FHFlatButton(
+                              title: isUpdate ? 'Update' : 'Add',
+                              onPressed: () => _validationAction()),
+                      ],
+                    ),
+                  ),
+
                 ],
               ),
             ),
           ),
         ),
-      ),
-      actions: <Widget>[
-        FHFlatButtonTransparent(
-          title: 'Cancel',
-          keepCase: true,
-          onPressed: () {
-            widget.bloc.fvBloc.mrClient.removeOverlay();
-          },
-        ),
-        if (widget.editable)
-          FHFlatButton(
-              title: isUpdate ? 'Update' : 'Add',
-              onPressed: () => _validationAction()),
-      ],
-    );
+      );
   }
 
   void _validationAction() async {

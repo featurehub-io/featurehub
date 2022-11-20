@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
 
 class DeleteStrategyIconButton extends StatelessWidget {
   const DeleteStrategyIconButton({
@@ -12,7 +13,7 @@ class DeleteStrategyIconButton extends StatelessWidget {
 
   final bool editable;
   final RolloutStrategy rolloutStrategy;
-  final CustomStrategyBloc strBloc;
+  final CustomStrategyBlocV2 strBloc;
 
   @override
   Widget build(BuildContext context) {
