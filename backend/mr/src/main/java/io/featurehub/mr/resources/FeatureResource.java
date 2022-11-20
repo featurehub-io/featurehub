@@ -145,7 +145,8 @@ public class FeatureResource implements FeatureServiceDelegate {
 
   @Override
   public List<Feature> updateFeatureForApplication(UUID id, String key, Feature feature, UpdateFeatureForApplicationHolder holder, SecurityContext securityContext) {
-    applicationUtils.check(securityContext, id);
+    applicationUtils.featureEditorCheck(securityContext, id);
+
     try {
       List<Feature> features = applicationApi.updateApplicationFeature(id, key, feature, Opts.empty().add(FillOpts.MetaData, holder.includeMetaData));
 
