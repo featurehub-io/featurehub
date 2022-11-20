@@ -46,6 +46,7 @@ class ListUsersBloc implements Bloc {
         countGroups: true,
         includeGroups: false,
         includeLastLoggedIn: true,
+        includeDeactivated: true,
         pageSize: pageSize,
         startAt: startAt,
         personTypes: [personType]);
@@ -91,5 +92,11 @@ class ListUsersBloc implements Bloc {
     // cancel subs first
     _globalRefresherSubscriber?.cancel();
     _globalRefresherSubscriber = null;
+  }
+
+  Future<void> activatePerson(String id) async {
+    var person = await getPerson(id);
+    var up = UpdatePerson(version: person.version!, unarchive: true);
+    return await _personServiceApi.updatePersonV2(id, up);
   }
 }

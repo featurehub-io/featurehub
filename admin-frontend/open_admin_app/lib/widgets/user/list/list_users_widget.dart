@@ -12,6 +12,7 @@ import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
@@ -162,8 +163,46 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
           DataCell(Text('${_personEntry.person.groupCount}')),
           DataCell(Text(
               '${_personEntry.person.whenLastAuthenticated?.toLocal() ?? ""}')),
-          DataCell(Row(children: <Widget>[
-            Tooltip(
+
+          if(_personEntry.person.whenDeactivated != null)
+            DataCell(
+              FHIconButton(
+                tooltip: "Activate user",
+                  icon: const Icon(Icons.restart_alt_sharp),
+                onPressed: () =>
+                    bloc.mrClient.addOverlay((BuildContext context) {
+                      return FHAlertDialog(
+                        title: Text("Activate user '${_personEntry.person.name}'"),
+                        content:
+                        Text('Are you sure you want to activate user with email address ${_personEntry.person.email}?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              bloc.mrClient.removeOverlay();
+                            }, child: const Text("Cancel"),
+                          ),
+                          FHFlatButton(
+                          title: 'OK',
+                          onPressed:
+                                () async {
+                                  try {
+                                    await bloc.activatePerson(
+                                        _personEntry.person.id);
+                                    setNextView(); // triggers reload from server with latest settings and rebuilds state
+                                    bloc.mrClient.addSnackbar(Text(
+                                        "User '${_personEntry.person
+                                            .name}' activated!"));
+                                  } catch (e, s) {
+                                    await bloc.mrClient.dialogError(e, s);
+                                  }
+                          },
+                        ),
+                        ]
+                      );
+                    }),),
+            ),
+          if(_personEntry.person.whenDeactivated == null) DataCell(Row(children: <Widget>[
+          Tooltip(
               message: _infoTooltip(_personEntry, allowedLocalIdentity),
               child: FHIconButton(
                 icon: Icon(Icons.info,
@@ -265,6 +304,38 @@ class ListUserInfoDialog extends StatelessWidget {
     );
   }
 }
+
+class ReactivateUserInfoDialog extends StatelessWidget {
+  final ListUsersBloc bloc;
+  final SearchPersonEntry entry;
+
+  const ReactivateUserInfoDialog(this.bloc, this.entry, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FHAlertDialog(
+      title: const Text(
+        'Activate user',
+        style: TextStyle(fontSize: 22.0),
+      ),
+      content: Text(
+        'Are you sure you want to activate user with email address ${entry.person.email}?',
+        style: TextStyle(fontSize: 22.0),
+      ),
+      actions: <Widget>[
+        // usually buttons at the bottom of the dialog
+        FHFlatButton(
+          title: 'OK',
+          onPressed: () {
+            bloc.mrClient.removeOverlay();
+            bloc.activatePerson(entry.person.id);
+          },
+        )
+      ],
+    );
+  }
+}
+
 
 class _ListUserInfo extends StatelessWidget {
   final ListUsersBloc bloc;

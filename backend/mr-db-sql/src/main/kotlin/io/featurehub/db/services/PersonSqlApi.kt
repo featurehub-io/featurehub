@@ -435,6 +435,7 @@ open class PersonSqlApi @Inject constructor(
         .email(person.email!!)
         .name(person.name!!)
         .whenLastAuthenticated(person.whenLastAuthenticated)
+        .whenDeactivated(person.whenArchived)
         .whenLastSeen(person.whenLastSeen)
         .groupCount(groupCountsByPersonId[person.id!!.id] ?: 0)
     }
