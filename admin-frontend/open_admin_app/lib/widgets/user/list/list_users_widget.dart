@@ -182,18 +182,20 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                             }, child: const Text("Cancel"),
                           ),
                           FHFlatButton(
-                          title: 'OK',
+                          title: 'Activate',
                           onPressed:
                                 () async {
                                   try {
                                     await bloc.activatePerson(
-                                        _personEntry.person.id);
+                                        _personEntry.person);
                                     setNextView(); // triggers reload from server with latest settings and rebuilds state
                                     bloc.mrClient.addSnackbar(Text(
                                         "User '${_personEntry.person
                                             .name}' activated!"));
+                                    bloc.mrClient.removeOverlay();
                                   } catch (e, s) {
-                                    await bloc.mrClient.dialogError(e, s);
+                                    bloc.mrClient.removeOverlay();
+                                    bloc.mrClient.dialogError(e, s);
                                   }
                           },
                         ),
@@ -304,38 +306,6 @@ class ListUserInfoDialog extends StatelessWidget {
     );
   }
 }
-
-class ReactivateUserInfoDialog extends StatelessWidget {
-  final ListUsersBloc bloc;
-  final SearchPersonEntry entry;
-
-  const ReactivateUserInfoDialog(this.bloc, this.entry, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return FHAlertDialog(
-      title: const Text(
-        'Activate user',
-        style: TextStyle(fontSize: 22.0),
-      ),
-      content: Text(
-        'Are you sure you want to activate user with email address ${entry.person.email}?',
-        style: TextStyle(fontSize: 22.0),
-      ),
-      actions: <Widget>[
-        // usually buttons at the bottom of the dialog
-        FHFlatButton(
-          title: 'OK',
-          onPressed: () {
-            bloc.mrClient.removeOverlay();
-            bloc.activatePerson(entry.person.id);
-          },
-        )
-      ],
-    );
-  }
-}
-
 
 class _ListUserInfo extends StatelessWidget {
   final ListUsersBloc bloc;

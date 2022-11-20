@@ -94,9 +94,8 @@ class ListUsersBloc implements Bloc {
     _globalRefresherSubscriber = null;
   }
 
-  Future<void> activatePerson(String id) async {
-    var person = await getPerson(id);
-    var up = UpdatePerson(version: person.version!, unarchive: true);
-    return await _personServiceApi.updatePersonV2(id, up);
+  Future<void> activatePerson(SearchPerson person) async {
+    var up = UpdatePerson(version: person.version, unarchive: true);
+    return await _personServiceApi.updatePersonV2(person.id, up);
   }
 }
