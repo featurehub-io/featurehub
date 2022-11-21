@@ -249,7 +249,6 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                     // SizedBox(height: 4.0),
                     Row(
                       children: <Widget>[
-                        // if (currentGroup?.admin != true) // you cannot change this if they are an admin
                           DropdownButton<_AdminFeatureRole>(
                             icon: const Padding(
                               padding: EdgeInsets.only(left: 8.0),
