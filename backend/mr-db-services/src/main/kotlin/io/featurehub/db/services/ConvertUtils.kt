@@ -386,11 +386,21 @@ open class ConvertUtils : Conversions {
       }
 
       // if this is an admin group and we have no roles, add the create/edit feature roles
-      if (group.admin == true && group.applicationRoles?.isEmpty() == true) {
+      if (group.admin == true) {
         appIdFilter?.let { appId ->
-          group.addApplicationRolesItem(ApplicationGroupRole().groupId(group.id!!).applicationId(appId).roles(
-            mutableListOf(ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE)
-          ))
+          val agr = group.applicationRoles?.find { appId == it.applicationId }
+
+          if (agr != null) {
+            if (agr.roles.isEmpty()) {
+              agr.roles = mutableListOf(ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE)
+            }
+          } else {
+            group.addApplicationRolesItem(ApplicationGroupRole().groupId(group.id!!).applicationId(appId).roles(
+              mutableListOf(ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE)
+            ))
+          }
+
+          null
         }
       }
     }
