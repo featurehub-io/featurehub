@@ -49,7 +49,7 @@ class AuthenticationSpec extends BaseSpec {
     and:
       def l = auth.login(email, "yacht")
     when:
-      def couldDelete = personApi.delete(email)
+      def couldDelete = personApi.delete(email, true)
     then:
       l != null
       couldDelete

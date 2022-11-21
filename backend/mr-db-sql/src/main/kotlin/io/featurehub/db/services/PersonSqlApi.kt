@@ -414,11 +414,14 @@ open class PersonSqlApi @Inject constructor(
     }
   }
 
-  override fun delete(email: String): Boolean {
+  override fun delete(email: String, deleteGroups: Boolean): Boolean {
     return QDbPerson().email.eq(email.lowercase(Locale.getDefault())).findOne()?.let { p ->
       archiveStrategy.archivePerson(p)
       // remove all of their tokens
       QDbLogin().person.id.eq(p.id).delete()
+      if (deleteGroups) {
+        QDbGroupMember().person.id.eq(p.id).delete()
+      }
       true
     } ?: false
   }

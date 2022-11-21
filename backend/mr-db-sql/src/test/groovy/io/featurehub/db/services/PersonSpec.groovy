@@ -1,10 +1,11 @@
 package io.featurehub.db.services
 
-
+import groovy.transform.CompileStatic
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonApi
 import io.featurehub.db.model.DbPerson
+import io.featurehub.db.model.query.QDbGroupMember
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonType
@@ -103,6 +104,40 @@ class PersonSpec extends BaseSpec {
       p == null
   }
 
+  @CompileStatic
+  boolean userInGroup(UUID personId, UUID groupId) {
+    return new QDbGroupMember().person.id.eq(personId).group.id.eq(groupId).exists()
+  }
+
+  def "When I assign a person to a group and then delete them saying to include groups, they are no longer in the group"() {
+    given:  "one person to delete completely from group"
+      def person = new DbPerson.Builder().email("del-person-b@mailinator.com").name("del-person").build()
+      person.save()
+      def pers = personSqlApi.get(person.id, Opts.empty())
+    and: "another person to delete but stay in group but hidden"
+      def person2 = new DbPerson.Builder().email("del-person-hidden@mailinator.com").name("del-person").build()
+      person2.save()
+      def pers2 = personSqlApi.get(person2.id, Opts.empty())
+    and: "i create a new portfolio"
+      def p1 = portfolioSqlApi.createPortfolio(new Portfolio().name('del-person1').organizationId(org.id), Opts.empty(), superPerson)
+    and: "i create a new group"
+      def g1 = groupSqlApi.createGroup(p1.id, new Group(name: 'upd-g-1'), superPerson)
+    and: "add the person to the group"
+      g1.members.add(pers)
+      g1.members.add(pers2)
+      def group = groupSqlApi.updateGroup(g1.id, g1, null, true, false, false, Opts.opts(FillOpts.Members))
+    when:
+      personSqlApi.delete(person.email, true)
+    and:
+      personSqlApi.delete(person2.email, false)
+    then:
+      group.members.find({it.id.id == person.id })
+      !groupSqlApi.getGroup(g1.id, Opts.opts(FillOpts.Members), superPerson).members.find({it.id.id == person.id })
+      !userInGroup(person.id, g1.id)
+      !groupSqlApi.getGroup(g1.id, Opts.opts(FillOpts.Members), superPerson).members.find({it.id.id == person2.id })
+      userInGroup(person2.id, g1.id)
+  }
+
   def "when i delete a person i will not be able to search for them"() {
     given: "we have a person"
       database.beginTransaction()
@@ -114,7 +149,7 @@ class PersonSpec extends BaseSpec {
     when: "we search for them"
       def newlyCreatedSearch = personSqlApi.search(email, null, 0, 10, Set.of(PersonType.PERSON), Opts.empty())
     and: "then delete them"
-      personSqlApi.delete(email)
+      personSqlApi.delete(email, true)
     and: "search for them again"
       def deletedSearch = personSqlApi.search(email, null, 0, 10, Set.of(PersonType.PERSON), Opts.empty())
     and: "then ask for the search again to include deleted"

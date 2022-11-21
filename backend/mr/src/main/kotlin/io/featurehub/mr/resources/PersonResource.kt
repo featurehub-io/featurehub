@@ -147,7 +147,7 @@ class PersonResource @Inject constructor(
     if (authManager.isOrgAdmin(authManager.from(securityContext))) {
       val p = getPerson(id.toString(), false, false, securityContext)
       if (p.email != null) {
-        return personApi.delete(p.email!!)
+        return personApi.delete(p.email!!, holder.includeGroups == true)
       }
     }
     throw ForbiddenException("No permission")
