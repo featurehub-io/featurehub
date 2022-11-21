@@ -250,7 +250,7 @@ class ApplicationStepdefs {
         .getPerson("self", includeAcls: true, includeGroups: true);
 
     final theyDo = me.groups.any((gp) => gp.applicationRoles.any((ar) =>
-        ar.roles.contains(api.ApplicationRoleType.FEATURE_EDIT) &&
+    (ar.roles.contains(api.ApplicationRoleType.EDIT) || ar.roles.contains(api.ApplicationRoleType.EDIT_AND_DELETE) ) &&
         ar.applicationId == shared.application.id));
 
     assert(theyDo,

@@ -20,6 +20,7 @@ class BaseSpec extends Specification {
   @Shared UUID superuser
   @Shared DbArchiveStrategy archiveStrategy
   @Shared Organization org
+  @Shared Group adminGroup
 
   def baseSetupSpec() {
     System.setProperty("ebean.ddl.generate", "true")
@@ -48,8 +49,6 @@ class BaseSpec extends Specification {
       org = organizationSqlApi.save(new Organization().name("org1"))
     }
     // ensure the org is created and we have an admin user in an admin group
-
-    Group adminGroup
 
     superPerson = convertUtils.toPerson(dbSuperPerson, Opts.empty())
 

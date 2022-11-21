@@ -34,7 +34,17 @@ public interface ApplicationApi {
   List<Feature> deleteApplicationFeature(@NotNull UUID appId, String key);
   Feature getApplicationFeatureByKey(@NotNull UUID appId, @NotNull String key, @NotNull Opts opts);
 
-  Set<UUID> findFeatureEditors(UUID id);
-  Set<UUID> findFeatureReaders(UUID id);
+  @NotNull Set<UUID> findFeatureEditors(@NotNull UUID appId);
+  boolean personIsFeatureEditor(@NotNull UUID appId, @NotNull UUID personId);
+
+  /**
+   * Those who can create features
+   * @param appId
+   * @return
+   */
+  @NotNull Set<UUID> findFeatureCreators(@NotNull UUID appId);
+  boolean personIsFeatureCreator(@NotNull UUID appId, @NotNull UUID personId);
+
+  @NotNull Set<UUID> findFeatureReaders(@NotNull UUID appId);
   boolean personIsFeatureReader(UUID appId, UUID personId);
 }
