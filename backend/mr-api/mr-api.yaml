@@ -3291,8 +3291,14 @@ components:
             $ref: "#/components/schemas/ApplicationRoleType"
     ApplicationRoleType:
       type: string
+      # FEATURE_EDIT is actually a CRUD role, people asked for the role to be separated into two
+      # FEATURE_CREATE is CR - Create and Read
+      # FEATURE_EDIT_AND_DELETE is RUD - FEATURE_CREATE + FEATURE_EDIT_AND_DELETE == FEATURE_EDIT
+      # eventually FEATURE_EDIT will go away and this transition will start to occur in future versions
       enum:
         - FEATURE_EDIT
+        - FEATURE_CREATE
+        - FEATURE_EDIT_AND_DELETE
     EnvironmentGroupRole:
       required:
         - environmentId

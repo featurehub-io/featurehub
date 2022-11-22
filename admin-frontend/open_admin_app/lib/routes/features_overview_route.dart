@@ -169,7 +169,7 @@ class _CreateFeatureButton extends StatelessWidget {
         stream: bloc.mrClient.streamValley.currentAppIdStream,
         builder: (context, snapshot) {
           final canEdit = bloc.mrClient.personState
-              .personCanEditFeaturesForCurrentApplication(snapshot.data);
+              .personCanCreateFeaturesForApplication(snapshot.data);
           return !canEdit
               ? const SizedBox.shrink()
               : FHFlatButtonAccent(

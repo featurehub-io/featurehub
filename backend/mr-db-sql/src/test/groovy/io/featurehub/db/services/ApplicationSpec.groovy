@@ -1,6 +1,6 @@
 package io.featurehub.db.services
 
-
+import io.featurehub.db.FilterOptType
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.GroupApi
@@ -15,6 +15,7 @@ import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.RoleType
 import spock.lang.Shared
@@ -164,12 +165,12 @@ class ApplicationSpec extends BaseSpec {
       def group = groupSqlApi.createGroup(portfolio1.id, new Group().name("loicoudot"), superPerson)
     when:
       def group1 = groupSqlApi.updateGroup(group.id,
-        group.applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])]),
+        group.applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.EDIT])]),
         app1.id,
         false, true, false, Opts.opts(FillOpts.Acls))
     and:
       def group2 = groupSqlApi.getGroup(group1.id, Opts.empty(), superPerson)
-      group2.applicationRoles.add(new ApplicationGroupRole().applicationId(app2.id).roles([ApplicationRoleType.FEATURE_EDIT]))
+      group2.applicationRoles.add(new ApplicationGroupRole().applicationId(app2.id).roles([ApplicationRoleType.EDIT]))
       def group3 = groupSqlApi.updateGroup(group.id, group2, app2.id, false, true, false,
         Opts.opts(FillOpts.Acls))
     and: "i delete the role but just from application 2"
@@ -178,10 +179,83 @@ class ApplicationSpec extends BaseSpec {
         Opts.opts(FillOpts.Acls))
     then:
       group3.applicationRoles.size() == 2
-      group3.applicationRoles.find({it.applicationId == app1.id}).roles.contains(ApplicationRoleType.FEATURE_EDIT)
-      group3.applicationRoles.find({it.applicationId == app2.id}).roles.contains(ApplicationRoleType.FEATURE_EDIT)
+      group3.applicationRoles.find({it.applicationId == app1.id}).roles.contains(ApplicationRoleType.EDIT)
+      group3.applicationRoles.find({it.applicationId == app2.id}).roles.contains(ApplicationRoleType.EDIT)
       group5.applicationRoles.size() == 1
       group5.applicationRoles.find({it.applicationId == app2.id}) == null
+  }
+
+  def "the auto-created portfolio group has feature create/edit permissions"() {
+    given: "i create an application"
+      def app1 = appApi.createApplication(portfolio1.id,
+        new Application().name("irinas-perm-create1").description("perm-create"), superPerson)
+    when: "i convert the portfolio group to a model"
+      def group = groupSqlApi.getGroup(adminGroup.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app1.id), superPerson)
+    then:
+      group.applicationRoles.find({ it.applicationId == app1.id }).roles.containsAll([ApplicationRoleType.EDIT_AND_DELETE,
+                                                                                      ApplicationRoleType.CREATE])
+  }
+
+  def "application groups can store multiple Acls"() {
+    given: "i create an application"
+      def app1 = appApi.createApplication(portfolio1.id, new Application().name("perm-create1").description("perm-create"), superPerson)
+    and: "i have a new group"
+      def createdGroup = groupSqlApi.createGroup(portfolio1.id, new Group().name("perm-create-group"), superPerson)
+    and: "create a new person to join the group"
+      def deepme = new DbPerson.Builder().email("dj-deepme@featurehub.io").name("DJ DeepMe").build()
+      database.save(deepme)
+      def personIsCreator0 = appApi.personIsFeatureCreator(app1.id, deepme.id)
+      def personIsEditor0 = appApi.personIsFeatureEditor(app1.id, deepme.id)
+      createdGroup.addMembersItem(new Person().id(new PersonId().id(deepme.id)))
+      def group = groupSqlApi.updateGroup(createdGroup.id, createdGroup, null, true, false, false, Opts.opts(FillOpts.Acls))
+    when: "i add create permissions for the app to the group"
+      def groupWithCreatePerms = groupSqlApi.updateGroup(group.id,
+        group.applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.CREATE])]),
+        app1.id,
+        false, true, false, Opts.opts(FillOpts.Acls))
+      def creators1 = appApi.findFeatureCreators(app1.id)
+      def editors1 = appApi.findFeatureEditors(app1.id)
+      def personIsCreator1 = appApi.personIsFeatureCreator(app1.id, deepme.id)
+      def personIsEditor1 = appApi.personIsFeatureEditor(app1.id, deepme.id)
+    and: "i add edit permissions"
+      def group2 = groupSqlApi.getGroup(group.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app1.id), superPerson)
+      group2.applicationRoles[0].roles.add(ApplicationRoleType.EDIT_AND_DELETE)
+      def groupWithEditAndCreatePerms = groupSqlApi.updateGroup(group.id, group2, app1.id, false,
+        true, false, Opts.opts(FillOpts.Acls))
+      def creators2 = appApi.findFeatureCreators(app1.id)
+      def editors2 = appApi.findFeatureEditors(app1.id)
+      def personIsCreator2 = appApi.personIsFeatureCreator(app1.id, deepme.id)
+      def personIsEditor2 = appApi.personIsFeatureEditor(app1.id, deepme.id)
+    and: "i remove the create role"
+      def group3 = groupSqlApi.getGroup(group.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app1.id), superPerson)
+      group3.applicationRoles[0].roles.removeIf { it == ApplicationRoleType.EDIT_AND_DELETE }
+      def groupWithEditPerms = groupSqlApi.updateGroup(group.id, group3, app1.id, false, true, false, Opts.opts(FillOpts.Acls))
+      def creators3 = appApi.findFeatureCreators(app1.id)
+      def editors3 = appApi.findFeatureEditors(app1.id)
+      def personIsCreator3 = appApi.personIsFeatureCreator(app1.id, deepme.id)
+      def personIsEditor3 = appApi.personIsFeatureEditor(app1.id, deepme.id)
+    then:
+      groupWithCreatePerms.applicationRoles.find({it.applicationId == app1.id}).roles.containsAll([ApplicationRoleType.CREATE])
+      groupWithEditAndCreatePerms.applicationRoles.find({it.applicationId == app1.id}).roles.containsAll([ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE])
+      !groupWithEditPerms.applicationRoles.find({it.applicationId == app1.id}).roles.containsAll([ApplicationRoleType.EDIT_AND_DELETE])
+      // admin group always has the superadmin in it with a creator + edit role
+      creators1.size() == 2
+      creators1.contains(deepme.id)
+      editors1.size() == 1
+      !editors1.containsAll(deepme.id)
+      creators2.size() == 2
+      editors2.size() == 2
+      editors2.containsAll(deepme.id)
+      creators3.size() == 2
+      editors3.size() == 1
+      !personIsCreator0
+      personIsCreator1
+      personIsCreator2
+      personIsCreator3
+      !personIsEditor0
+      !personIsEditor1
+      !personIsEditor3
+      personIsEditor2
   }
 
   // based on this article: https://en.wikipedia.org/wiki/Ukrainian_surnames#Cossack_names

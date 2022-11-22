@@ -38,10 +38,10 @@ interface Conversions {
     opt: Opts?
   ): ServiceAccountPermission?
 
-  fun applicationGroupRoleFromAcl(acl: DbAcl?): ApplicationGroupRole?
-  fun environmentGroupRoleFromAcl(acl: DbAcl?): EnvironmentGroupRole?
-  fun splitEnvironmentRoles(roles: String?): List<RoleType>
-  fun splitApplicationRoles(roles: String?): List<ApplicationRoleType>
+  fun applicationGroupRoleFromAcl(acl: DbAcl?): ApplicationGroupRole
+  fun environmentGroupRoleFromAcl(acl: DbAcl?): EnvironmentGroupRole
+  fun splitEnvironmentRoles(roles: String?): MutableList<RoleType>
+  fun splitApplicationRoles(roles: String?): MutableList<ApplicationRoleType>
   fun convertEnvironmentAcl(dbAcl: DbAcl?): EnvironmentGroupRole?
   fun toOff(ldt: LocalDateTime?): OffsetDateTime?
   fun personName(person: DbPerson): String

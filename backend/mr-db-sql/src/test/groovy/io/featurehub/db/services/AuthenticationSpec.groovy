@@ -212,13 +212,13 @@ class AuthenticationSpec extends BaseSpec {
       def portfolioGroup = groupSqlApi.createGroup(portfolio1.id,
         new Group().name("admin-group").admin(true)
           .applicationRoles([new ApplicationGroupRole().applicationId(app1.id)
-                               .roles([ApplicationRoleType.FEATURE_EDIT])]), superPerson)
+                               .roles([ApplicationRoleType.EDIT])]), superPerson)
       groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.members([p2]), null,
         true, false, false, Opts.empty())
     when: "i login"
       def user = auth.login(p2.email, "hooray")
     then: "i have the application role permission to the portfolio"
-      user.groups.find({it.applicationRoles.find({ar -> ar.roles.contains(ApplicationRoleType.FEATURE_EDIT) && ar.applicationId == app1.id})})
+      user.groups.find({it.applicationRoles.find({ar -> ar.roles.contains(ApplicationRoleType.EDIT) && ar.applicationId == app1.id})})
   }
 
   def "We can create a session for a person and then find their session by token"() {

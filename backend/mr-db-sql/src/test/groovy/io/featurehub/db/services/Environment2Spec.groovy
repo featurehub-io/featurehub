@@ -12,6 +12,7 @@ import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbEnvironment
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
+import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
@@ -289,24 +290,29 @@ class Environment2Spec extends Base2Spec {
     and: "i have an environment"
       def env = envApi.create(new Environment().name("env-1-perm-1").description("1"), app1, superPerson)
     when: "i ask for the roles"
-      def perms = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id)
-      def permsWhenNonAdmin = envApi.personRoles(superPerson, env.id)
+      def permsAverageJoe = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id)
+      def permsWhenSuperAdmin = envApi.personRoles(superPerson, env.id)
     and: "I change the perms for the environment"
       def g = groupSqlApi.getGroup(groupInPortfolio1.id, Opts.opts(FillOpts.Members), superPerson)
 //      g.members.add(averageJoeMemberOfPortfolio1)
       g.environmentRoles.add(new EnvironmentGroupRole().environmentId(env.id).roles([RoleType.CHANGE_VALUE]))
       groupSqlApi.updateGroup(g.id, g, null, false, false, true, Opts.empty())
-      def perms2 = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id)
+      def permsAverageJoeAfterAddingPerms = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id)
       def permsAdmin = envApi.personRoles(superPerson, env.id)
+    and: "I make average joe a feature creator"
+      g = groupSqlApi.getGroup(groupInPortfolio1.id, Opts.opts(FillOpts.Acls), superPerson)
+      g.applicationRoles.add(new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.CREATE]))
+      def permsAverageJoeAfterAdminOfApp1 = groupSqlApi.updateGroup(g.id, g, app1.id, false, true, false, Opts.opts(FillOpts.Acls))
     then: "the permissions to the portfolio are empty"
-      perms.environmentRoles.isEmpty()
-      perms.applicationRoles.isEmpty()
-      perms2.applicationRoles.isEmpty()
-      perms2.environmentRoles.containsAll([RoleType.CHANGE_VALUE, RoleType.READ])
-      permsAdmin.applicationRoles.containsAll(ApplicationRoleType.values() as List)
+      permsAverageJoe.environmentRoles.isEmpty()
+      permsAverageJoe.applicationRoles.isEmpty()
+      permsAverageJoeAfterAddingPerms.applicationRoles.isEmpty()
+      permsAverageJoeAfterAddingPerms.environmentRoles.containsAll([RoleType.CHANGE_VALUE, RoleType.READ])
+      permsAdmin.applicationRoles.containsAll([ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE])
       permsAdmin.environmentRoles.containsAll(RoleType.values() as List)
-      permsWhenNonAdmin.applicationRoles.containsAll(ApplicationRoleType.values() as List)
-      permsWhenNonAdmin.environmentRoles.containsAll(RoleType.values() as List)
+      permsWhenSuperAdmin.applicationRoles.containsAll([ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE])
+      permsWhenSuperAdmin.environmentRoles.containsAll(RoleType.values() as List)
+      permsAverageJoeAfterAdminOfApp1.applicationRoles.collect({it.roles}).flatten().containsAll([ApplicationRoleType.CREATE])
   }
 
   def "i create an environment and update it using the update2"() {
