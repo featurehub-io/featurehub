@@ -166,6 +166,7 @@ class PersonResource @Inject constructor(
     val pp = personApi.search(
       holder.filter, holder.order, start, page,
       if (holder.personTypes == null) Set.of(PersonType.PERSON) else HashSet(holder.personTypes),
+      holder.sortBy,
       Opts().add(FillOpts.Groups, holder.includeGroups)
         .add(FillOpts.CountGroups, holder.countGroups)
         .add(FillOpts.Archived, holder.includeDeactivated)
