@@ -79,6 +79,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
             },
             columns: [
               DataColumn(label: const Text('Name'), onSort: setSort),
+              DataColumn(label: Text('Status'), onSort: setSort),
               const DataColumn(
                 label: Text('Email'),
               ),
@@ -137,7 +138,10 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
         (pageRequest.sortAscending ?? true) == true
             ? SortOrder.ASC
             : SortOrder.DESC,
-        PersonType.person);
+        PersonType.person,
+        sortBy: pageRequest.columnSortIndex == 1
+            ? SearchPersonSortBy.activationStatus
+            : SearchPersonSortBy.name);
     final userList = bloc.transformPeople(data);
     return RemoteDataSourceDetails(
       data.max,
@@ -159,100 +163,106 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
               : Text(
                   _personEntry.person.name,
                 )),
+          DataCell(Text(_personEntry.person.whenDeactivated != null
+              ? "deactivated"
+              : "active")),
           DataCell(Text(_personEntry.person.email)),
           DataCell(Text('${_personEntry.person.groupCount}')),
           DataCell(Text(
               '${_personEntry.person.whenLastAuthenticated?.toLocal() ?? ""}')),
-
-          if(_personEntry.person.whenDeactivated != null)
+          if (_personEntry.person.whenDeactivated != null)
             DataCell(
               FHIconButton(
                 tooltip: "Activate user",
-                  icon: const Icon(Icons.restart_alt_sharp),
+                icon: const Icon(
+                  Icons.restart_alt_sharp,
+                  color: Colors.red,
+                ),
                 onPressed: () =>
                     bloc.mrClient.addOverlay((BuildContext context) {
-                      return FHAlertDialog(
-                        title: Text("Activate user '${_personEntry.person.name}'"),
-                        content:
-                        Text('Are you sure you want to activate user with email address ${_personEntry.person.email}?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              bloc.mrClient.removeOverlay();
-                            }, child: const Text("Cancel"),
-                          ),
-                          FHFlatButton(
+                  return FHAlertDialog(
+                      title:
+                          Text("Activate user '${_personEntry.person.name}'"),
+                      content: Text(
+                          'Are you sure you want to activate user with email address ${_personEntry.person.email}?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            bloc.mrClient.removeOverlay();
+                          },
+                          child: const Text("Cancel"),
+                        ),
+                        FHFlatButton(
                           title: 'Activate',
-                          onPressed:
-                                () async {
-                                  try {
-                                    await bloc.activatePerson(
-                                        _personEntry.person);
-                                    setNextView(); // triggers reload from server with latest settings and rebuilds state
-                                    bloc.mrClient.addSnackbar(Text(
-                                        "User '${_personEntry.person
-                                            .name}' activated!"));
-                                    bloc.mrClient.removeOverlay();
-                                  } catch (e, s) {
-                                    bloc.mrClient.removeOverlay();
-                                    bloc.mrClient.dialogError(e, s);
-                                  }
+                          onPressed: () async {
+                            try {
+                              await bloc.activatePerson(_personEntry.person);
+                              setNextView(); // triggers reload from server with latest settings and rebuilds state
+                              bloc.mrClient.addSnackbar(Text(
+                                  "User '${_personEntry.person.name}' activated!"));
+                              bloc.mrClient.removeOverlay();
+                            } catch (e, s) {
+                              bloc.mrClient.removeOverlay();
+                              bloc.mrClient.dialogError(e, s);
+                            }
                           },
                         ),
-                        ]
-                      );
-                    }),),
-            ),
-          if(_personEntry.person.whenDeactivated == null) DataCell(Row(children: <Widget>[
-          Tooltip(
-              message: _infoTooltip(_personEntry, allowedLocalIdentity),
-              child: FHIconButton(
-                icon: Icon(Icons.info,
-                    color: _infoColour(_personEntry, allowedLocalIdentity)),
-                onPressed: () =>
-                    bloc.mrClient.addOverlay((BuildContext context) {
-                  return ListUserInfoDialog(bloc, _personEntry);
+                      ]);
                 }),
               ),
             ),
-            FHIconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () => {
-                      ManagementRepositoryClientBloc.router
-                          .navigateTo(context, '/manage-user', params: {
-                        'id': [_personEntry.person.id]
-                      })
-                    }),
-            // const SizedBox(
-            //   width: 8.0,
-            // ),
-            FHIconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
-                return bloc.mrClient.person.id!.id == _personEntry.person.id
-                    ? cantDeleteYourselfDialog(bloc)
-                    : FHDeleteThingWarningWidget(
-                        thing: "user '${_personEntry.person.name}'",
-                        content:
-                            'This user will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!',
-                        bloc: bloc.mrClient,
-                        deleteSelected: () async {
-                          try {
-                            await bloc.deletePerson(
-                                _personEntry.person.id, true);
-                            setNextView(); // triggers reload from server with latest settings and rebuilds state
-                            bloc.mrClient.addSnackbar(Text(
-                                "User '${_personEntry.person.name}' deleted!"));
-                            return true;
-                          } catch (e, s) {
-                            await bloc.mrClient.dialogError(e, s);
-                            return false;
-                          }
-                        },
-                      );
-              }),
-            ),
-          ])),
+          if (_personEntry.person.whenDeactivated == null)
+            DataCell(Row(children: <Widget>[
+              Tooltip(
+                message: _infoTooltip(_personEntry, allowedLocalIdentity),
+                child: FHIconButton(
+                  icon: Icon(Icons.info,
+                      color: _infoColour(_personEntry, allowedLocalIdentity)),
+                  onPressed: () =>
+                      bloc.mrClient.addOverlay((BuildContext context) {
+                    return ListUserInfoDialog(bloc, _personEntry);
+                  }),
+                ),
+              ),
+              FHIconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () => {
+                        ManagementRepositoryClientBloc.router
+                            .navigateTo(context, '/manage-user', params: {
+                          'id': [_personEntry.person.id]
+                        })
+                      }),
+              // const SizedBox(
+              //   width: 8.0,
+              // ),
+              FHIconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () =>
+                    bloc.mrClient.addOverlay((BuildContext context) {
+                  return bloc.mrClient.person.id!.id == _personEntry.person.id
+                      ? cantDeleteYourselfDialog(bloc)
+                      : FHDeleteThingWarningWidget(
+                          thing: "user '${_personEntry.person.name}'",
+                          content:
+                              'This user will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!',
+                          bloc: bloc.mrClient,
+                          deleteSelected: () async {
+                            try {
+                              await bloc.deletePerson(
+                                  _personEntry.person.id, true);
+                              setNextView(); // triggers reload from server with latest settings and rebuilds state
+                              bloc.mrClient.addSnackbar(Text(
+                                  "User '${_personEntry.person.name}' deleted!"));
+                              return true;
+                            } catch (e, s) {
+                              await bloc.mrClient.dialogError(e, s);
+                              return false;
+                            }
+                          },
+                        );
+                }),
+              ),
+            ])),
         ],
         onSelectChanged: (newValue) {
           ManagementRepositoryClientBloc.router

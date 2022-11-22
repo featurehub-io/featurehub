@@ -17,12 +17,12 @@ class ListUsersBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
   PersonServiceApi _personServiceApi;
 
-
   late StreamSubscription<String?>? _globalRefresherSubscriber;
 
   ListUsersBloc(this.search, this.mrClient)
       : _personServiceApi = PersonServiceApi(mrClient.apiClient) {
-    _globalRefresherSubscriber = mrClient.streamValley.globalRefresherStream.listen((event) {
+    _globalRefresherSubscriber =
+        mrClient.streamValley.globalRefresherStream.listen((event) {
       if (mrClient.userIsSuperAdmin) {
         _personServiceApi = PersonServiceApi(mrClient.apiClient);
       }
@@ -35,11 +35,13 @@ class ListUsersBloc implements Bloc {
   }
 
   Future<String> resetApiKey(SearchPerson person) async {
-    return (await mrClient.personServiceApi.resetSecurityToken(person.id)).token;
+    return (await mrClient.personServiceApi.resetSecurityToken(person.id))
+        .token;
   }
 
-
-  Future<SearchPersonResult> findPeople(pageSize, startAt, filter, sortOrder, personType) async {
+  Future<SearchPersonResult> findPeople(
+      pageSize, startAt, filter, sortOrder, personType,
+      {sortBy}) async {
     return _personServiceApi.findPeople(
         order: sortOrder,
         filter: filter,
@@ -49,7 +51,8 @@ class ListUsersBloc implements Bloc {
         includeDeactivated: true,
         pageSize: pageSize,
         startAt: startAt,
-        personTypes: [personType]);
+        personTypes: [personType],
+        sortBy: sortBy);
   }
 
   List<SearchPersonEntry> transformPeople(SearchPersonResult data) {
@@ -64,8 +67,9 @@ class ListUsersBloc implements Bloc {
           hasLocal
               ? data.outstandingRegistrations.firstWhere(
                   (element) => element.id == person.id,
-              orElse: () => emptyReg)
-              : emptyReg, data.max);
+                  orElse: () => emptyReg)
+              : emptyReg,
+          data.max);
 
       results.add(spr);
     }
@@ -80,7 +84,7 @@ class ListUsersBloc implements Bloc {
 
       results.add(spr);
     }
-   return results;
+    return results;
   }
 
   Future<Person> getPerson(String id) async {
