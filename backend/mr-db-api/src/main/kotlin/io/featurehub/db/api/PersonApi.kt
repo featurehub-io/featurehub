@@ -1,8 +1,6 @@
 package io.featurehub.db.api
 
 import io.featurehub.mr.model.*
-import jakarta.validation.Valid
-import jakarta.validation.constraints.NotNull
 import java.util.*
 
 interface PersonApi {
@@ -25,6 +23,7 @@ interface PersonApi {
   fun search(
     filter: String?, sortOrder: SortOrder?, offset: Int, max: Int,
     personTypes: Set<PersonType?>,
+    sortBy: SearchPersonSortBy?,
     opts: Opts
   ): PersonPagination
 
@@ -36,7 +35,7 @@ interface PersonApi {
   fun create(email: String, name: String?, createdBy: UUID?): PersonToken?
   fun createServicePerson(name: String, createdBy: UUID?): CreatedServicePerson?
   fun resetServicePersonToken(serviceAccountId: UUID): CreatedServicePerson?
-  fun delete(email: String): Boolean
+  fun delete(email: String, deleteGroups: Boolean): Boolean
 
   fun updateV2(personId: UUID, updatePerson: UpdatePerson, updatedBy: UUID): UUID?
 }

@@ -169,6 +169,7 @@ open class PersonSqlApi @Inject constructor(
   override fun search(
     filter: String?, sortOrder: SortOrder?, offset: Int, max: Int,
     personTypes: Set<PersonType?>,
+    sortBy: SearchPersonSortBy?,
     opts: Opts
   ): PersonApi.PersonPagination {
     val searchOffset = offset.coerceAtLeast(0)
@@ -191,10 +192,18 @@ open class PersonSqlApi @Inject constructor(
     }
 
     if (sortOrder != null) {
-      search = if (sortOrder == SortOrder.ASC) {
-        search.orderBy("upper(name) asc")
-      } else {
-        search.orderBy("upper(name) desc")
+      if (sortBy == null || sortBy == SearchPersonSortBy.NAME) {
+        search = if (sortOrder == SortOrder.ASC) {
+          search.orderBy("upper(name) asc")
+        } else {
+          search.orderBy("upper(name) desc")
+        }
+      } else if (sortBy == SearchPersonSortBy.ACTIVATIONSTATUS) {
+        search = if (sortOrder == SortOrder.ASC) {
+          search.orderBy("(case when when_archived is null then 0 else 1 end) asc, upper(name) asc")
+        } else {
+          search.orderBy("(case when when_archived is null then 0 else 1 end) desc, upper(name) desc")
+        }
       }
     }
 
@@ -414,11 +423,14 @@ open class PersonSqlApi @Inject constructor(
     }
   }
 
-  override fun delete(email: String): Boolean {
+  override fun delete(email: String, deleteGroups: Boolean): Boolean {
     return QDbPerson().email.eq(email.lowercase(Locale.getDefault())).findOne()?.let { p ->
       archiveStrategy.archivePerson(p)
       // remove all of their tokens
       QDbLogin().person.id.eq(p.id).delete()
+      if (deleteGroups) {
+        QDbGroupMember().person.id.eq(p.id).delete()
+      }
       true
     } ?: false
   }
@@ -434,7 +446,9 @@ open class PersonSqlApi @Inject constructor(
         .id(person.id!!.id)
         .email(person.email!!)
         .name(person.name!!)
+        .version(person.version!!)
         .whenLastAuthenticated(person.whenLastAuthenticated)
+        .whenDeactivated(person.whenArchived)
         .whenLastSeen(person.whenLastSeen)
         .groupCount(groupCountsByPersonId[person.id!!.id] ?: 0)
     }

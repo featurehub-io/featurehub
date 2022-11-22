@@ -429,6 +429,11 @@ paths:
             type: array
             items:
               $ref: "#/components/schemas/PersonType"
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/SearchPersonSortBy"
       responses:
         200:
           description: "Gets all persons, alphabetically sorted"
@@ -3032,6 +3037,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PersonInfo"
+    SearchPersonSortBy:
+      type: string
+      enum:
+        - name
+        - activationStatus
     SearchPerson:
       type: object
       required:
@@ -3040,6 +3050,7 @@ components:
         - email
         - personType
         - id
+        - version
       properties:
         id:
           type: string
@@ -3049,6 +3060,9 @@ components:
         email:
           type: string
           format: email
+        version:
+          type: integer
+          format: int64
         personType:
           $ref: "#/components/schemas/PersonType"
         whenLastAuthenticated:

@@ -1,14 +1,16 @@
 package io.featurehub.db.services
 
-
+import groovy.transform.CompileStatic
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonApi
 import io.featurehub.db.model.DbPerson
+import io.featurehub.db.model.query.QDbGroupMember
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.Portfolio
+import io.featurehub.mr.model.SearchPersonSortBy
 import io.featurehub.mr.model.SortOrder
 import io.featurehub.mr.model.UpdatePerson
 import org.apache.commons.lang3.RandomStringUtils
@@ -103,6 +105,40 @@ class PersonSpec extends BaseSpec {
       p == null
   }
 
+  @CompileStatic
+  boolean userInGroup(UUID personId, UUID groupId) {
+    return new QDbGroupMember().person.id.eq(personId).group.id.eq(groupId).exists()
+  }
+
+  def "When I assign a person to a group and then delete them saying to include groups, they are no longer in the group"() {
+    given:  "one person to delete completely from group"
+      def person = new DbPerson.Builder().email("del-person-b@mailinator.com").name("del-person").build()
+      person.save()
+      def pers = personSqlApi.get(person.id, Opts.empty())
+    and: "another person to delete but stay in group but hidden"
+      def person2 = new DbPerson.Builder().email("del-person-hidden@mailinator.com").name("del-person").build()
+      person2.save()
+      def pers2 = personSqlApi.get(person2.id, Opts.empty())
+    and: "i create a new portfolio"
+      def p1 = portfolioSqlApi.createPortfolio(new Portfolio().name('del-person1').organizationId(org.id), Opts.empty(), superPerson)
+    and: "i create a new group"
+      def g1 = groupSqlApi.createGroup(p1.id, new Group(name: 'upd-g-1'), superPerson)
+    and: "add the person to the group"
+      g1.members.add(pers)
+      g1.members.add(pers2)
+      def group = groupSqlApi.updateGroup(g1.id, g1, null, true, false, false, Opts.opts(FillOpts.Members))
+    when:
+      personSqlApi.delete(person.email, true)
+    and:
+      personSqlApi.delete(person2.email, false)
+    then:
+      group.members.find({it.id.id == person.id })
+      !groupSqlApi.getGroup(g1.id, Opts.opts(FillOpts.Members), superPerson).members.find({it.id.id == person.id })
+      !userInGroup(person.id, g1.id)
+      !groupSqlApi.getGroup(g1.id, Opts.opts(FillOpts.Members), superPerson).members.find({it.id.id == person2.id })
+      userInGroup(person2.id, g1.id)
+  }
+
   def "when i delete a person i will not be able to search for them"() {
     given: "we have a person"
       database.beginTransaction()
@@ -112,13 +148,13 @@ class PersonSpec extends BaseSpec {
       database.save(p)
       database.currentTransaction().commit()
     when: "we search for them"
-      def newlyCreatedSearch = personSqlApi.search(email, null, 0, 10, Set.of(PersonType.PERSON), Opts.empty())
+      def newlyCreatedSearch = personSqlApi.search(email, null, 0, 10, Set.of(PersonType.PERSON), null, Opts.empty())
     and: "then delete them"
-      personSqlApi.delete(email)
+      personSqlApi.delete(email, true)
     and: "search for them again"
-      def deletedSearch = personSqlApi.search(email, null, 0, 10, Set.of(PersonType.PERSON), Opts.empty())
+      def deletedSearch = personSqlApi.search(email, null, 0, 10, Set.of(PersonType.PERSON), null, Opts.empty())
     and: "then ask for the search again to include deleted"
-      def archivedSearch = personSqlApi.search(email, null, 0, 10, Set.of(PersonType.PERSON), Opts.opts(FillOpts.Archived))
+      def archivedSearch = personSqlApi.search(email, SortOrder.DESC, 0, 10, Set.of(PersonType.PERSON), SearchPersonSortBy.ACTIVATIONSTATUS, Opts.opts(FillOpts.Archived))
     then: "they should be in the newly created search"
       newlyCreatedSearch.people.find({it.email == email})
     and: "there should be no-one in the list when we looked for the user and did not include deleted results"
@@ -134,13 +170,13 @@ class PersonSpec extends BaseSpec {
         database.save(new DbPerson.Builder().email("$it-limited@me.com").name(String.format("limited %02d", it)).build())
       })
     when:
-      PersonApi.PersonPagination p1 = personSqlApi.search('limited', null, 0, 10, Set.of(PersonType.PERSON), Opts.empty())
+      PersonApi.PersonPagination p1 = personSqlApi.search('limited', null, 0, 10, Set.of(PersonType.PERSON), null, Opts.empty())
     and:
-      PersonApi.PersonPagination p2 = personSqlApi.search('limited', SortOrder.ASC, 10, 10, Set.of(PersonType.PERSON), Opts.empty())
+      PersonApi.PersonPagination p2 = personSqlApi.search('limited', SortOrder.ASC, 10, 10, Set.of(PersonType.PERSON), null, Opts.empty())
     and:
-      PersonApi.PersonPagination p3 = personSqlApi.search('limited', SortOrder.DESC, 20, 10, Set.of(PersonType.PERSON), Opts.empty())
+      PersonApi.PersonPagination p3 = personSqlApi.search('limited', SortOrder.DESC, 20, 10, Set.of(PersonType.PERSON), null, Opts.empty())
     and:
-      PersonApi.PersonPagination p4 = personSqlApi.search('limited', null, 30, 10, Set.of(PersonType.PERSON), Opts.empty())
+      PersonApi.PersonPagination p4 = personSqlApi.search('limited', null, 30, 10, Set.of(PersonType.PERSON), null, Opts.empty())
     then:
       p1.people.size() == 10
       p1.max == 30
@@ -160,7 +196,7 @@ class PersonSpec extends BaseSpec {
         database.save(new DbPerson.Builder().email("$it-filtered@me.com").name(String.format("filtered %02d", it)).build())
       })
     when:
-      PersonApi.PersonPagination p1 = personSqlApi.search('filtered 0', SortOrder.ASC, 0, 20, Set.of(PersonType.PERSON), Opts.empty())
+      PersonApi.PersonPagination p1 = personSqlApi.search('filtered 0', SortOrder.ASC, 0, 20, Set.of(PersonType.PERSON), null, Opts.empty())
     then:
       p1.max == 9
       p1.people.size() == 9  // 01-09, 10, 20, 30
@@ -185,7 +221,7 @@ class PersonSpec extends BaseSpec {
     and:
       def addGroupsPerson = personSqlApi.get(person.id, Opts.opts(FillOpts.Groups))
     and: "i search for people and ask for group counts"
-      def search = personSqlApi.search("updated@me.com", SortOrder.ASC, 0, 10, [PersonType.PERSON] as Set, Opts.opts(FillOpts.CountGroups))
+      def search = personSqlApi.search("updated@me.com", SortOrder.ASC, 0, 10, [PersonType.PERSON] as Set, null, Opts.opts(FillOpts.CountGroups))
     and:
       def removeGroupsPerson = personSqlApi.update(person.id,
         addGroupsPerson.copy().name("not you").email("updated@me.com").groups([g2]), Opts.empty(), superuser)
@@ -203,6 +239,7 @@ class PersonSpec extends BaseSpec {
       foundRemovedGroupsPerson.groups[0].id == g2.id
     and:
       search.searchPeople.find({it.id == person.id}).groupCount == 2
+      search.searchPeople.find({it.id == person.id}).version != null
   }
 
   def "when I update the user as a portfolio admin, i can only modify my groups, but can change their name and email"() {
