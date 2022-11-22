@@ -41,14 +41,14 @@ class ListUsersBloc implements Bloc {
 
   Future<SearchPersonResult> findPeople(
       pageSize, startAt, filter, sortOrder, personType,
-      {sortBy}) async {
+      {sortBy, includeDeactivated}) async {
     return _personServiceApi.findPeople(
         order: sortOrder,
         filter: filter,
         countGroups: true,
         includeGroups: false,
         includeLastLoggedIn: true,
-        includeDeactivated: true,
+        includeDeactivated: includeDeactivated ?? false,
         pageSize: pageSize,
         startAt: startAt,
         personTypes: [personType],

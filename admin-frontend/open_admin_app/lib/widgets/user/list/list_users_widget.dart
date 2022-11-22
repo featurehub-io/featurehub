@@ -139,6 +139,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
             ? SortOrder.ASC
             : SortOrder.DESC,
         PersonType.person,
+        includeDeactivated: true,
         sortBy: pageRequest.columnSortIndex == 1
             ? SearchPersonSortBy.activationStatus
             : SearchPersonSortBy.name);
