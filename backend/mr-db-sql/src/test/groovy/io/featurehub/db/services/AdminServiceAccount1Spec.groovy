@@ -1,6 +1,7 @@
 package io.featurehub.db.services
 
 import io.featurehub.db.api.Opts
+import io.featurehub.db.api.PersonApi
 import io.featurehub.mr.model.PersonType
 
 class AdminServiceAccount1Spec extends Base2Spec {
@@ -18,9 +19,9 @@ class AdminServiceAccount1Spec extends Base2Spec {
       def sa1 = personSqlApi.createServicePerson("Treebeard", superuser)
       def sa2 = personSqlApi.createServicePerson("Pippin", superuser)
     when: "i search for them as people"
-      def people = personSqlApi.search(null, null, 0, 1, Set.of(PersonType.PERSON), Opts.empty())
+      def people = personSqlApi.search(null, null, 0, 1, Set.of(PersonType.PERSON), null, Opts.empty())
     and: "i search for them as service accounts"
-      def accounts = personSqlApi.search(null, null, 0, 200, Set.of(PersonType.SERVICEACCOUNT), Opts.empty())
+      def accounts = personSqlApi.search(null, null, 0, 200, Set.of(PersonType.SERVICEACCOUNT), null, Opts.empty())
     then: "i have 0 items on person search"
       people.max > 0
       people.people.size() == 1

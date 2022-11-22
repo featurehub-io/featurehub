@@ -169,6 +169,7 @@ open class PersonSqlApi @Inject constructor(
   override fun search(
     filter: String?, sortOrder: SortOrder?, offset: Int, max: Int,
     personTypes: Set<PersonType?>,
+    sortBy: SearchPersonSortBy?,
     opts: Opts
   ): PersonApi.PersonPagination {
     val searchOffset = offset.coerceAtLeast(0)
@@ -191,10 +192,18 @@ open class PersonSqlApi @Inject constructor(
     }
 
     if (sortOrder != null) {
-      search = if (sortOrder == SortOrder.ASC) {
-        search.orderBy("upper(name) asc")
-      } else {
-        search.orderBy("upper(name) desc")
+      if (sortBy == null || sortBy == SearchPersonSortBy.NAME) {
+        search = if (sortOrder == SortOrder.ASC) {
+          search.orderBy("upper(name) asc")
+        } else {
+          search.orderBy("upper(name) desc")
+        }
+      } else if (sortBy == SearchPersonSortBy.ACTIVATIONSTATUS) {
+        search = if (sortOrder == SortOrder.ASC) {
+          search.orderBy("(case when when_archived is null then 0 else 1 end) asc, upper(name) asc")
+        } else {
+          search.orderBy("(case when when_archived is null then 0 else 1 end) desc, upper(name) desc")
+        }
       }
     }
 

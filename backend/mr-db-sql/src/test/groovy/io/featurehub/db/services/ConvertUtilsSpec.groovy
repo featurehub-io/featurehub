@@ -2,6 +2,7 @@ package io.featurehub.db.services
 
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
+import io.featurehub.db.api.PersonApi
 import io.featurehub.db.model.DbLogin
 import io.featurehub.db.model.DbPerson
 import io.featurehub.mr.model.PersonType
@@ -27,7 +28,7 @@ class ConvertUtilsSpec extends Base2Spec {
       db.save(new DbPerson.Builder().email(email).name(email).build())
       db.commitTransaction()  // have to do this otherwise we can't find them
     when: "i find the person"
-      def people = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), Opts.opts(FillOpts.PersonLastLoggedIn))
+      def people = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), null, Opts.opts(FillOpts.PersonLastLoggedIn))
     then:
       people.people.size() == 1
       people.people[0].whenLastAuthenticated == null
@@ -43,9 +44,9 @@ class ConvertUtilsSpec extends Base2Spec {
       def whenLastAuthenticated = Instant.now()
       authenticationSqlApi.updateLastAuthenticated(person, whenLastAuthenticated)
     when: "i find the person"
-      def people = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), Opts.opts(FillOpts.PersonLastLoggedIn))
+      def people = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), null, Opts.opts(FillOpts.PersonLastLoggedIn))
     and: "i find without the logged in option"
-      def peopleClean = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), Opts.empty())
+      def peopleClean = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), null, Opts.empty())
     then:
       people.people.size() == 1
       people.people[0].whenLastAuthenticated == whenLastAuthenticated.atOffset(ZoneOffset.UTC)
@@ -69,9 +70,9 @@ class ConvertUtilsSpec extends Base2Spec {
     and: "we commit the transaction"
       db.commitTransaction()
     when: "i find the person"
-      def people = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), Opts.opts(FillOpts.PersonLastLoggedIn))
+      def people = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), null, Opts.opts(FillOpts.PersonLastLoggedIn))
     and: "i find them again without the fill opts"
-      def peopleClean = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), Opts.empty())
+      def peopleClean = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), null, Opts.empty())
     then:
       people.people.size() == 1
       people.people[0].whenLastAuthenticated == whenLastAuthenticated.atOffset(ZoneOffset.UTC)
