@@ -53,7 +53,7 @@ else {
 
 == FeatureHub Users
 
-image:docs/images/Ruby_NewLogo_Vertical.png[link="https://www.rubyplaynet.com/", 150] image:docs/images/lovebonito_logo.png[link="https://www.lovebonito.com/",200] image:docs/images/Whistic_Logo.png[link="https://www.whistic.com/",350]
+image:docs/images/Ruby_NewLogo_Vertical.png[link="https://www.rubyplaynet.com/", 150] image:docs/images/lovebonito_logo.png[link="https://www.lovebonito.com/",200] image:docs/images/Whistic_Logo.png[link="https://www.whistic.com/",300] image:docs/images/jio-logo.png[link="https://www.jio.com/",180]
 
 
 == Are you also using FeatureHub?
