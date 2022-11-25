@@ -441,7 +441,7 @@ class FeatureSpec extends Base2Spec {
     and:
       def stored = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
     then:
-      stored.rolloutStrategies == null
+      stored.rolloutStrategies.isEmpty()
   }
 
   def "a plain user in a group that has lock/unlock/read but not change is able to lock and unlock"() {
