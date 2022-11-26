@@ -54,7 +54,7 @@
     <jackson.version.databind>2.13.2.1</jackson.version.databind> <!-- remove once upgraded jackson.version -->
     <sticky.version>1.3</sticky.version>
     <groovy.version>3.0.13</groovy.version>
-    <ebean.version>13.10.1</ebean.version>
+    <ebean.version>13.10.2</ebean.version>
     <h2.version>2.1.214</h2.version>
   </properties>
 
