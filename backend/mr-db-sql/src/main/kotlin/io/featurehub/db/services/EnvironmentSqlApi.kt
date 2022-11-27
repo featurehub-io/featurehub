@@ -98,7 +98,6 @@ class EnvironmentSqlApi @Inject constructor(
     return null
   }
 
-  @Transactional(type = TxType.REQUIRES_NEW)
   @Throws(
     OptimisticLockingException::class,
     EnvironmentApi.DuplicateEnvironmentException::class,
