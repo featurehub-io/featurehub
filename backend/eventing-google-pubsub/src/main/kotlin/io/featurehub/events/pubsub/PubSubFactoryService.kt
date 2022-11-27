@@ -17,6 +17,7 @@ import io.grpc.ManagedChannelBuilder
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.concurrent.ConcurrentHashMap
 
 interface PubSubFactory {
   fun makePublisher(topicName: String): PubSubPublisher
@@ -61,7 +62,7 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
   private val knownSubscribers = mutableListOf<PubSubSubscriber>()
   private var unknownSubscribers = mutableListOf<PubSubSubscriber>()
   private val dynamicSubscriber = mutableListOf<String>()
-  private val publisherCache = mutableMapOf<String, PubSubPublisher>()
+  private val publisherCache = ConcurrentHashMap<String, PubSubPublisher>()
 
   init {
     DeclaredConfigResolver.resolve(this)
