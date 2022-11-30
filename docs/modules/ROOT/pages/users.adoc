@@ -5,7 +5,7 @@ Anyone with an email can be added to your organization. We encourage everyone in
 FeatureHub provides granular user permissions which can be assigned per application and even per environment through user groups and permissions.
 
 == Users
-Users can be added to an organization by members with "Super Admin" permission. Once user is added, they can be assigned a group or multiple groups. User can also be assigned a "Super Admin" role. Editing of users details and deleting users can be performed only by "Super Admins", however assigning those users to portfolio groups or removing them from the groups can also be done by users with "Portfolio Admin" role.
+Users can be added to an organization by members with "Super Admin" permission. Once user is added, they can be assigned a group or multiple groups. User can also be assigned a "Super Admin" role. Editing of users details and deactivating users can be performed only by "Super Admins", however assigning those users to portfolio groups or removing them from the groups can also be done by users with "Portfolio Admin" role.
 
 image::fh_add_user.png[Group permissions, 600]
 
@@ -16,6 +16,8 @@ If you are using default identity option with the self-hosted FeatureHub instanc
 
 image::fh_add_user_link.png[Registration link, 600]
 
+=== Deactivating a user
+If you would like to cancel user access to your FeatureHub app, select a "Delete" option. This will put their account status into "deactivated" state. Note, a user will be removed from all the groups once deactivated. If you decide to provide access to the same user again (with previously used email address), you can choose an option to "activate" a user from the users list. They will be able to log in with their previous credentials, or you can use reset password option to set a temporary password.
 
 === Password reset (only for non-SSO, SAML or social logins)
 
