@@ -64,8 +64,8 @@ class PersonState {
 
     return _isUserIsSuperAdmin ||
         person.groups.any((gp) => gp.applicationRoles.any((ar) => ar.applicationId == appId &&
-            ar.roles.any((roleForAppInGroup) => roles.contains(roleForAppInGroup))
-            ));
+            ( gp.admin == true || ar.roles.any((roleForAppInGroup) => roles.contains(roleForAppInGroup)) )
+        ));
   }
 
   bool userHasPortfolioPermission(String? pid) {
