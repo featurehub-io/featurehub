@@ -9,7 +9,6 @@ import io.featurehub.events.pubsub.GoogleEventFeature;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.publish.NATSFeature;
-import io.featurehub.rest.CacheControlFilter;
 import io.featurehub.rest.CorsFilter;
 import io.featurehub.utils.FallbackPropertyConfig;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -34,8 +33,7 @@ public class Application {
             GoogleEventFeature.class,
             NATSFeature.class,
             EdgeResourceFeature.class,
-            CorsFilter.class,
-            CacheControlFilter.class);
+            CorsFilter.class);
 
       // check if we should list on a different port
       MetricsHealthRegistration.Companion.registerMetrics(config);

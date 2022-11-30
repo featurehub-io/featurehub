@@ -13,7 +13,7 @@ import io.featurehub.mr.events.dacha2.CacheApi
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
-import io.opentelemetry.context.Context
+import io.featurehub.utils.ExecutorSupplier
 import jakarta.annotation.PostConstruct
 import jakarta.inject.Inject
 import org.glassfish.hk2.api.IterableProvider
@@ -53,7 +53,8 @@ internal class CacheBroadcastProxy(
 
 open class DbCacheSource @Inject constructor(
   private val convertUtils: Conversions, dsConfig: DataSourceConfig,
-  private val cacheBroadcasters: IterableProvider<CacheBroadcast>
+  private val cacheBroadcasters: IterableProvider<CacheBroadcast>,
+  executorSupplier: ExecutorSupplier
 ) : CacheSource, CacheApi {
   private val executor: ExecutorService
 
@@ -68,7 +69,7 @@ open class DbCacheSource @Inject constructor(
     }
     DeclaredConfigResolver.resolve(this)
     log.info("Using maximum of {} connections to service request from Dacha", cachePoolSize)
-    executor = executorService()
+    executor = executorSupplier.executorService(cachePoolSize!!)
     cacheBroadcast = CacheBroadcastProxy(emptyList(), executor)
   }
 
@@ -81,39 +82,6 @@ open class DbCacheSource @Inject constructor(
     }
   }
 
-  protected fun executorService(): ExecutorService {
-    val nThreads = cachePoolSize!!
-
-    val tpe = object : ThreadPoolExecutor(
-      nThreads, nThreads,
-      0L, TimeUnit.MILLISECONDS,
-      LinkedBlockingQueue()
-    ) {
-      override fun afterExecute(r: Runnable?, t: Throwable?) {
-        var t = t
-        super.afterExecute(r, t)
-
-        if (t == null && r is Future<*>) {
-          try {
-            val future = r
-            if (future.isDone) {
-              future.get()
-            }
-          } catch (ce: CancellationException) {
-            t = ce
-          } catch (ee: ExecutionException) {
-            t = ee.cause
-          } catch (ie: InterruptedException) {
-            Thread.currentThread().interrupt()
-          }
-        }
-
-        t?.let { log.error("publishing failed", t) }
-      }
-    }
-
-    return Context.taskWrapping(tpe)
-  }
 
   override fun publishObjectsAssociatedWithCache(cacheName: String) {
     val saFuture = executor.submit { publishToCacheServiceAccounts(cacheName, cacheBroadcast) }

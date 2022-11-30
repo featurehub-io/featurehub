@@ -136,7 +136,7 @@ public class OAuth2MRAdapter implements SSOCompletionListener {
         Opts.empty(), person).get(0);
 
       try {
-        groupApi.createPortfolioGroup(portfolio.getId(),
+        groupApi.createGroup(portfolio.getId(),
           new Group().name(portfolioUtils.formatPortfolioAdminGroupName(portfolio)).admin(true), person);
       } catch (GroupApi.DuplicateGroupException e) {
         log.error("If we have this exception, the site is broken.", e);

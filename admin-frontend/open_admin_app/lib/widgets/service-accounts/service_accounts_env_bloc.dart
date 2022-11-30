@@ -33,7 +33,7 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
       if (firstCall) {
         firstCall = false;
         // if we aren't an admin, we won't have called this, so lets call it now
-        if (!_mrClient.userIsFeatureAdminOfCurrentApplication) {
+        if (!_mrClient.userHasFeaturePermissionsInCurrentApplication) {
           // ignore: unawaited_futures
           _mrClient.streamValley.getCurrentApplicationEnvironments();
         }

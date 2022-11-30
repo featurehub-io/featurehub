@@ -60,6 +60,12 @@
       <groupId>cd.connect.common</groupId>
       <artifactId>connect-prometheus-jersey</artifactId>
       <version>4.1</version>
+      <exclusions>
+        <exclusion>
+          <groupId>jakarta.ws.rs</groupId>
+          <artifactId>jakarta.ws.rs-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -71,7 +77,7 @@
     <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
-      <version>3.0.0</version>
+      <version>4.0.0</version>
     </dependency>
 
     <dependency>
@@ -151,9 +157,16 @@
       <artifactId>jersey-proxy-client</artifactId>
       <version>${jersey.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-client</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-server</artifactId>
       <version>${jersey.version}</version>
     </dependency>
 

@@ -61,7 +61,7 @@ public class PortfolioResource implements PortfolioServiceDelegate {
 
       Group group;
       try {
-        group = groupApi.createPortfolioGroup(created.getId(),
+        group = groupApi.createGroup(created.getId(),
           new Group()
             .name(portfolioUtils.formatPortfolioAdminGroupName(portfolio))
             .admin(true)

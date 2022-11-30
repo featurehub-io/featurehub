@@ -43,7 +43,7 @@
   </licenses>
 
   <properties>
-    <cloud-sql-version>1.7.0</cloud-sql-version>
+    <cloud-sql-version>1.7.2</cloud-sql-version>
   </properties>
 
   <dependencies>
@@ -58,19 +58,19 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>42.3.7</version>
+      <version>42.5.1</version>
     </dependency>
 
     <dependency>
       <groupId>org.mariadb.jdbc</groupId>
       <artifactId>mariadb-java-client</artifactId>
-      <version>2.7.5</version>
+      <version>2.7.7</version>
     </dependency>
 
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.30</version>
+      <version>8.0.31</version>
     </dependency>
 
     <dependency>

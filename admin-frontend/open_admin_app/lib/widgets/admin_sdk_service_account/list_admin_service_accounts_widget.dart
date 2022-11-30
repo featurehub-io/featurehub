@@ -125,13 +125,14 @@ class AdminServiceAccountDataTableSource
   Future<RemoteDataSourceDetails<SearchPerson>> getNextPage(
       NextPageRequest pageRequest) async {
     final data = await bloc.findPeople(
-        pageRequest.pageSize,
-        pageRequest.offset,
-        lastSearchTerm.isNotEmpty ? lastSearchTerm : null,
-        (pageRequest.sortAscending ?? true) == true
-            ? SortOrder.ASC
-            : SortOrder.DESC,
-        PersonType.serviceAccount);
+      pageRequest.pageSize,
+      pageRequest.offset,
+      lastSearchTerm.isNotEmpty ? lastSearchTerm : null,
+      (pageRequest.sortAscending ?? true) == true
+          ? SortOrder.ASC
+          : SortOrder.DESC,
+      PersonType.serviceAccount,
+    );
     final userList = bloc.transformAdminApiKeys(data);
     return RemoteDataSourceDetails(
       data.max,

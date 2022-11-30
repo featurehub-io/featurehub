@@ -147,7 +147,7 @@ class PersonResource @Inject constructor(
     if (authManager.isOrgAdmin(authManager.from(securityContext))) {
       val p = getPerson(id.toString(), false, false, securityContext)
       if (p.email != null) {
-        return personApi.delete(p.email!!)
+        return personApi.delete(p.email!!, holder.includeGroups == true)
       }
     }
     throw ForbiddenException("No permission")
@@ -166,8 +166,10 @@ class PersonResource @Inject constructor(
     val pp = personApi.search(
       holder.filter, holder.order, start, page,
       if (holder.personTypes == null) Set.of(PersonType.PERSON) else HashSet(holder.personTypes),
+      holder.sortBy,
       Opts().add(FillOpts.Groups, holder.includeGroups)
         .add(FillOpts.CountGroups, holder.countGroups)
+        .add(FillOpts.Archived, holder.includeDeactivated)
         .add(FillOpts.PersonLastLoggedIn, holder.includeLastLoggedIn)
     )
 
@@ -214,8 +216,7 @@ class PersonResource @Inject constructor(
   ): Person {
     val from = authManager.from(securityContext)
     if (authManager.isAnyAdmin(from)) {
-      var updatedPerson: Person? = null
-      updatedPerson = try {
+      return try {
         personApi.update(
           id, person,
           peopleOpts(holder.includeAcls, holder.includeGroups),
@@ -225,12 +226,33 @@ class PersonResource @Inject constructor(
         throw WebApplicationException(422)
       } catch (iae: IllegalArgumentException) {
         throw BadRequestException()
-      }
-      if (updatedPerson == null) {
-        throw NotFoundException()
-      }
-      return updatedPerson
+      } ?: throw NotFoundException()
     }
+    throw ForbiddenException("Not authorised")
+  }
+
+  override fun updatePersonV2(
+    id: UUID,
+    updatePerson: UpdatePerson,
+    securityContext: SecurityContext
+  ) {
+    val from = authManager.from(securityContext)
+
+    if (authManager.isAnyAdmin(from)) {
+      try {
+        personApi.updateV2(
+          id, updatePerson,
+          from.id!!.id
+        )
+      } catch (e: OptimisticLockingException) {
+        throw WebApplicationException(422)
+      } catch (iae: IllegalArgumentException) {
+        throw BadRequestException()
+      } ?: throw NotFoundException()
+
+      return
+    }
+
     throw ForbiddenException("Not authorised")
   }
 

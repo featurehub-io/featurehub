@@ -54,7 +54,7 @@ class ServiceAccount2Spec extends Base2Spec {
     portfolio1 = new DbPortfolio.Builder().name(RandomStringUtils.randomAlphabetic(8) + "p1-env-1").whoCreated(dbSuperPerson).organization(organization).build()
     db.save(portfolio1)
     portfolio1Id = portfolio1.id
-    def portfolioGroup = groupSqlApi.createPortfolioGroup(portfolio1Id, new Group().name("group1").admin(true), superPerson)
+    def portfolioGroup = groupSqlApi.createGroup(portfolio1Id, new Group().name("group1").admin(true), superPerson)
     application1 = new DbApplication.Builder().name("app-env-1").portfolio(portfolio1).whoCreated(dbSuperPerson).build()
     db.save(application1)
     environment1 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e1").parentApplication(application1).build();
@@ -72,7 +72,7 @@ class ServiceAccount2Spec extends Base2Spec {
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment2.id),
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment3.id),
       ]
-    ), false, false, true, Opts.empty())
+    ), null, false, false, true, Opts.empty())
 
     if (db.currentTransaction() != null && db.currentTransaction().active) {
       db.commitTransaction()

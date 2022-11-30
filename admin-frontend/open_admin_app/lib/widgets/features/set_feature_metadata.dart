@@ -46,8 +46,7 @@ class _SetFeatureMetadataWidgetState extends State<SetFeatureMetadataWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final isReadOnly =
-        !widget.bloc.mrClient.userIsFeatureAdminOfCurrentApplication;
+    final isReadOnly = !widget.bloc.mrClient.userHasFeaturePermissionsInCurrentApplication;
 
     return (FHAlertDialog(
         title: Text(

@@ -1,9 +1,10 @@
 package io.featurehub.db.services
 
-import io.ebean.DB
+
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.FillOpts
+import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
@@ -81,7 +82,7 @@ class FeatureSpec extends Base2Spec {
     def averageJoe = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) + "averagejoe-fvs@featurehub.io").name("Average Joe").build()
     db.save(averageJoe)
     averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
-    groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("fsspec-1-p1"), superPerson)
+    groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("fsspec-1-p1"), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
 
     def averageIrina = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) +"averageirina@featurehub.io").name("Average Irina").build()
@@ -92,7 +93,7 @@ class FeatureSpec extends Base2Spec {
     db.save(portfolioAdmin)
     portfolioAdminOfPortfolio1 = convertUtils.toPerson(portfolioAdmin)
 
-    adminGroupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().admin(true).name("fsspec-admin-1-p1"), superPerson)
+    adminGroupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new Group().admin(true).name("fsspec-admin-1-p1"), superPerson)
     groupSqlApi.addPersonToGroup(adminGroupInPortfolio1.id, portfolioAdminOfPortfolio1.id.id, Opts.empty())
 
     if (db.currentTransaction() != null && db.currentTransaction().active) {
@@ -314,10 +315,10 @@ class FeatureSpec extends Base2Spec {
     given: "i create 1 environment"
       def env1 = environmentSqlApi.create(new Environment().name("production"), new Application().id(app2Id), superPerson)
     and: "i create some features"
-      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_IRINA').key('FEATURE_IRINA').description('Some description').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
-      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_RICHARD').key('FEATURE_RICHARD').description('description2').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
-      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_VIDYA').key('FEATURE_VIDYA').description('not desc').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
-      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_ALEX').key('FEATURE_ALEX').description('not').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('Some description').key('FEATURE_IRINA').description('Some description').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('Some description').key('FEATURE_RICHARD').description('Some description').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('not desc').key('FEATURE_VIDYA').description('not desc').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('not').key('FEATURE_ALEX').description('not').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     when: "i request application features for 'desc'"
       ApplicationFeatureValues withDesc = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, 'desc', null, null, null, null)
     and: 'application features with null'
@@ -405,12 +406,12 @@ class FeatureSpec extends Base2Spec {
     given: "i create 1 environment"
       def env1 = environmentSqlApi.create(new Environment().name("production"), new Application().id(app2Id), superPerson)
     and: "i allow average joe access to access the environment"
-      Group g1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("app2-f1-test"), superPerson)
+      Group g1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("app2-f1-test"), superPerson)
       g1.environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
       ])
       g1.members = [averageJoeMemberOfPortfolio1]
-      groupSqlApi.updateGroup(g1.id, g1, true, true, true, Opts.empty());
+      groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, Opts.empty());
     when: 'application features with null filter'
       ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, null, null, null, null, null)
     then:
@@ -425,17 +426,17 @@ class FeatureSpec extends Base2Spec {
     given: "i create 1 environment"
       def env1 = environmentSqlApi.create(new Environment().name("production"), new Application().id(app2Id), superPerson)
     and: "i create some features"
-      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_IRINA').key('FEATURE_IRINA').description('Some description').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
-      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_RICHARD').key('FEATURE_RICHARD').description('description2').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
-      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_VIDYA').key('FEATURE_VIDYA').description('not desc').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
-      appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_ALEX').key('FEATURE_ALEX').description('not').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('Some description').key('FEATURE_IRINA').description('Some description').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('description2').key('FEATURE_RICHARD').description('description2').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('not desc').key('FEATURE_VIDYA').description('not desc').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app2Id, new Feature().name('not').key('FEATURE_ALEX').description('not').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     and: "i allow average joe access to access the environment"
-      Group g1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("app2-f1-test"), superPerson)
+      Group g1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("app2-f1-test"), superPerson)
       g1.environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
       ])
       g1.members = [averageJoeMemberOfPortfolio1]
-      groupSqlApi.updateGroup(g1.id, g1, true, true, true, Opts.empty());
+      groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, Opts.empty());
     when: "i request application features for 'desc'"
       ApplicationFeatureValues withDesc = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'desc', null, null, null, null)
     and: 'application features with null'
@@ -472,14 +473,14 @@ class FeatureSpec extends Base2Spec {
           .permissions([new ServiceAccountPermission().environmentId(env1.id).permissions([RoleType.READ])]),
         Opts.empty())
     and: "i allow average joe access to two of the three environments"
-      Group g1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("app2-f1-test"), superPerson)
+      Group g1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("app2-f1-test"), superPerson)
       g1.environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK]).environmentId(env3.id),
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env2.id)
       ])
       g1.members = [averageJoeMemberOfPortfolio1]
-      groupSqlApi.updateGroup(g1.id, g1, true, true, true, Opts.empty());
+      groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, Opts.empty());
     and: "i create a feature value called FEATURE_BUNCH and unlock the feature in all branches"
       String k = 'FEATURE_BUNCH'
       appApi.createApplicationFeature(app2Id, new Feature().name(k).key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
@@ -605,11 +606,11 @@ class FeatureSpec extends Base2Spec {
     and: "i have a person"
       def person = personSqlApi.createPerson("lockunlock@mailinator.com", "Locky McLockface", "password123", superuser, Opts.empty())
     and: "a group in the current portfolio"
-      def group = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("lockunlock group"), superPerson)
+      def group = groupSqlApi.createGroup(portfolio1.id, new Group().name("lockunlock group"), superPerson)
     and: "i add permissions and members to the group"
       group.environmentRoles([new EnvironmentGroupRole().environmentId(env1.id).roles([RoleType.LOCK, RoleType.UNLOCK, RoleType.READ])])
       group.members([person])
-      group = groupSqlApi.updateGroup(group.id, group, true, false, true, Opts.empty())
+      group = groupSqlApi.updateGroup(group.id, group, null, true, false, true, Opts.empty())
     when: "i try and unlock the feature with the person, it will let me"
       def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
       if (fv == null) {

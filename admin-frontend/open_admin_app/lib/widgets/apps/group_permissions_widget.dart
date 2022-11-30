@@ -136,11 +136,51 @@ class _GroupPermissionDetailWidget extends StatefulWidget {
   _GroupPermissionDetailState createState() => _GroupPermissionDetailState();
 }
 
+class _AdminFeatureRole {
+  String id;
+  String name;
+  List<ApplicationRoleType> roles;
+
+  _AdminFeatureRole(this.id, this.name, this.roles);
+
+  bool matches(List<ApplicationRoleType> matchRoles) {
+    return roles.length == matchRoles.length && !roles.none((role) => matchRoles.contains(role));
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _AdminFeatureRole &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+}
+
+final _adminFeatureRoles = [
+  _AdminFeatureRole('none', 'No feature permissions', []),
+  _AdminFeatureRole('creator', 'Create features', [ApplicationRoleType.CREATE]),
+  _AdminFeatureRole('editor', 'Create / Edit / Delete features', [ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE])
+];
+
+final _noFeaturePermissionRole = _adminFeatureRoles[0];
+final _editorFeaturePermissionRole = _adminFeatureRoles[2];
+
+_AdminFeatureRole _discoverAdminRoleType(Group currentGroup, String applicationId) {
+  final roles = currentGroup.applicationRoles.firstWhereOrNull((element) => element.applicationId == applicationId)?.roles ?? [];
+  if (roles.length == 1 && roles.contains(ApplicationRoleType.EDIT)) {
+    return _editorFeaturePermissionRole;
+  }
+  return _adminFeatureRoles.firstWhereOrNull((adminRole) => adminRole.matches(roles)) ?? _noFeaturePermissionRole;
+}
+
 class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
   Map<String, EnvironmentGroupRole> newEnvironmentRoles = {};
   Group? currentGroup;
   String? applicationId;
-  bool editAccess = false;
+  _AdminFeatureRole? adminFeatureRole;
+  _AdminFeatureRole? originalAdminFeatureRole;
 
   @override
   Widget build(BuildContext context) {
@@ -176,8 +216,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                       createMap(envSnapshot.data!, groupSnapshot.data!.group);
                   currentGroup = groupSnapshot.data?.group;
                   applicationId = groupSnapshot.data!.applicationId;
-                  editAccess = hasEditPermission(
-                      currentGroup!, widget.bloc.applicationId!);
+                  adminFeatureRole = _discoverAdminRoleType(currentGroup!, widget.bloc.applicationId!);
+                  originalAdminFeatureRole = adminFeatureRole;
                 }
 
                 final rows = <TableRow>[];
@@ -200,30 +240,40 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                 }
 
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
+                    SizedBox(height: 24),
+                    SelectableText(
+                        'Set feature level permissions',
+                        style: Theme.of(context).textTheme.caption),
+                    // SizedBox(height: 4.0),
                     Row(
                       children: <Widget>[
-                        Checkbox(
-                            value: editAccess,
-                            onChanged: (value) {
-                              if (value != null) {
-                                setState(() {
-                                  editAccess = value;
-                                });
-                              }
-                            }),
-                        SelectableText(
-                            'This group can create, edit and delete features for this application',
-                            style: Theme.of(context).textTheme.caption),
+                          DropdownButton<_AdminFeatureRole>(
+                            icon: const Padding(
+                              padding: EdgeInsets.only(left: 8.0),
+                              child: Icon(
+                                Icons.keyboard_arrow_down,
+                                size: 18,
+                              ),
+                            ),
+                            items: _adminFeatureRoles.map((role) {
+                            return DropdownMenuItem<_AdminFeatureRole>(
+                              value: role,
+                              child: Text(role.name, style: Theme.of(context).textTheme.bodyText2, overflow: TextOverflow.ellipsis, ));
+                              }).toList(),
+                            isDense: true,
+                            // isExpanded: true,
+                            value: adminFeatureRole,
+                            onChanged: currentGroup?.admin != true ? (value) => setState(() =>  adminFeatureRole = value) : null,
+                              ),
                       ],
                     ),
                     Container(
-                        padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                        child: Center(
-                          child: SelectableText(
-                              'Set the group access to features for each environment',
-                              style: Theme.of(context).textTheme.caption),
-                        )),
+                        padding: const EdgeInsets.fromLTRB(0, 32, 0, 8),
+                        child: SelectableText(
+                            'Set feature value level permissions per environment',
+                            style: Theme.of(context).textTheme.caption)),
                     Table(children: rows),
                     FHButtonBar(children: [
                       FHFlatButtonTransparent(
@@ -242,10 +292,9 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             });
                             var newGroup = groupSnapshot.data!.group;
                             newGroup.environmentRoles = newList;
-                            newGroup = editAccess
-                                ? addEditPermission(newGroup, applicationId!)
-                                : removeEditPermission(
-                                    newGroup, applicationId!);
+                            if (adminFeatureRole != null && originalAdminFeatureRole != null && originalAdminFeatureRole?.id != adminFeatureRole?.id) {
+                              replaceGroupRoles(newGroup, applicationId!, originalAdminFeatureRole!, adminFeatureRole!);
+                            }
                             widget.bloc
                                 .updateGroupWithEnvironmentRoles(
                                     newGroup.id, newGroup)
@@ -319,7 +368,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
     final agr = group.applicationRoles.firstWhereOrNull(
         (item) => item.applicationId == aid && item.groupId == group.id);
 
-    if (agr == null || !agr.roles.contains(ApplicationRoleType.FEATURE_EDIT)) {
+    if (agr == null || !(agr.roles.contains(ApplicationRoleType.EDIT) || agr.roles.contains(ApplicationRoleType.EDIT_AND_DELETE) )) {
       return false;
     }
     return true;
@@ -330,7 +379,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
       final agr = ApplicationGroupRole(
           applicationId: aid,
           groupId: group.id!,
-          roles: [ApplicationRoleType.FEATURE_EDIT]);
+          roles: [ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE]);
       group.applicationRoles.add(agr);
     }
     return group;
@@ -360,5 +409,17 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
       retMap[environment.id!] = egr;
     }
     return retMap;
+  }
+
+  void replaceGroupRoles(Group newGroup, String appId, _AdminFeatureRole originalAdminFeatureRole, _AdminFeatureRole adminFeatureRole) {
+     final agr = newGroup.applicationRoles.firstWhereOrNull((appGroupRole) => appGroupRole.applicationId == appId);
+     if (agr != null) {
+       final roles = [...agr.roles];
+       roles.removeWhere((role) => originalAdminFeatureRole.roles.contains(role) || adminFeatureRole.roles.contains(role) );
+       roles.addAll(adminFeatureRole.roles);
+       agr.roles = roles;
+     } else {
+       newGroup.applicationRoles.add(ApplicationGroupRole(applicationId: appId, groupId: newGroup.id!, roles: adminFeatureRole.roles));
+     }
   }
 }

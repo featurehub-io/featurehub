@@ -52,12 +52,14 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final isReadOnly =
-        !widget.bloc.mrClient.userIsFeatureAdminOfCurrentApplication;
+    final weAreCreatingANewFeature = (widget.feature == null);
+    final isReadOnly = weAreCreatingANewFeature ? !widget.bloc.mrClient.userHasFeatureCreationRoleInCurrentApplication
+        : !widget.bloc.mrClient.userHasFeatureEditRoleInCurrentApplication;
+
     return Form(
       key: _formKey,
       child: FHAlertDialog(
-        title: Text(widget.feature == null
+        title: Text(weAreCreatingANewFeature
             ? 'Create new feature'
             : (isReadOnly ? 'View feature' : 'Edit feature')),
         content: SizedBox(

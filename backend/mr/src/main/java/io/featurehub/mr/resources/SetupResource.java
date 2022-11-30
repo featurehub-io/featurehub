@@ -190,7 +190,7 @@ public class SetupResource implements SetupServiceDelegate {
       Portfolio portfolio = portfolioApi.createPortfolio(new Portfolio().name(setupSiteAdmin.getPortfolio()).organizationId(organization.getId()), Opts.empty(), person);
 
       if (person != null) {
-        groupApi.createPortfolioGroup(portfolio.getId(),
+        groupApi.createGroup(portfolio.getId(),
           new Group().name(portfolioUtils.formatPortfolioAdminGroupName(portfolio)).admin(true), person);
       }
     } catch (PortfolioApi.DuplicatePortfolioException | GroupApi.DuplicateGroupException e) {

@@ -1,6 +1,7 @@
 package io.featurehub.db.services
 
 import io.featurehub.db.api.DBLoginSession
+import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
@@ -48,7 +49,7 @@ class AuthenticationSpec extends BaseSpec {
     and:
       def l = auth.login(email, "yacht")
     when:
-      def couldDelete = personApi.delete(email)
+      def couldDelete = personApi.delete(email, true)
     then:
       l != null
       couldDelete
@@ -208,16 +209,16 @@ class AuthenticationSpec extends BaseSpec {
     and: "i create an application in that portfolio"
       def app1 = appApi.createApplication(portfolio1.id, new Application().name("persontest-app1").description("some desc"), superPerson)
     and: "i make the user a portfolio manager"
-      def portfolioGroup = groupSqlApi.createPortfolioGroup(portfolio1.id,
+      def portfolioGroup = groupSqlApi.createGroup(portfolio1.id,
         new Group().name("admin-group").admin(true)
           .applicationRoles([new ApplicationGroupRole().applicationId(app1.id)
-                               .roles([ApplicationRoleType.FEATURE_EDIT])]), superPerson)
-      portfolioGroup = groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.members([p2]),
+                               .roles([ApplicationRoleType.EDIT])]), superPerson)
+      groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.members([p2]), null,
         true, false, false, Opts.empty())
     when: "i login"
       def user = auth.login(p2.email, "hooray")
     then: "i have the application role permission to the portfolio"
-      user.groups.find({it.applicationRoles.find({ar -> ar.roles.contains(ApplicationRoleType.FEATURE_EDIT) && ar.applicationId == app1.id})})
+      user.groups.find({it.applicationRoles.find({ar -> ar.roles.contains(ApplicationRoleType.EDIT) && ar.applicationId == app1.id})})
   }
 
   def "We can create a session for a person and then find their session by token"() {

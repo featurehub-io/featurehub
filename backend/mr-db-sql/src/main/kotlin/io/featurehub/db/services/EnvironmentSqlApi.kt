@@ -24,13 +24,17 @@ class EnvironmentSqlApi @Inject constructor(
   private val cacheSource: CacheSource,
   private val archiveStrategy: ArchiveStrategy
 ) : EnvironmentApi {
-  override fun personRoles(current: Person?, eid: UUID?): EnvironmentRoles? {
-    Conversions.nonNullPerson(current)
-    Conversions.nonNullEnvironmentId(eid)
+
+  /**
+   * What roles does this person have in this environment?
+   */
+  override fun personRoles(current: Person, eid: UUID): EnvironmentRoles? {
+
     val environment = convertUtils.byEnvironment(eid, Opts.opts(FillOpts.Applications))
     val p = convertUtils.byPerson(current)
     val roles: MutableSet<RoleType> = HashSet()
     val appRoles: MutableSet<ApplicationRoleType> = HashSet()
+
     if (environment != null && p != null) {
       // is this person a portfolio admin? if so, they have all access to all environments in the portfolio
       if (QDbGroup().adminGroup.isTrue.whenArchived.isNull.groupMembers.person.eq(p).owningPortfolio.applications.environments.eq(
@@ -38,9 +42,10 @@ class EnvironmentSqlApi @Inject constructor(
         ).exists()
       ) {
         return EnvironmentRoles.Builder()
-          .applicationRoles(HashSet(listOf(*ApplicationRoleType.values())))
+          .applicationRoles(mutableSetOf(ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE))
           .environmentRoles(HashSet(listOf(*RoleType.values()))).build()
       }
+
       QDbAcl().environment.eq(environment).group.groupMembers.person.eq(p).findList().forEach { fe: DbAcl ->
         val splitRoles = convertUtils.splitEnvironmentRoles(fe.roles)
         roles.addAll(splitRoles)
@@ -49,13 +54,12 @@ class EnvironmentSqlApi @Inject constructor(
           roles.add(RoleType.READ)
         }
       }
+
       QDbAcl().application.eq(environment.parentApplication).group.groupMembers.person.eq(p).findList().forEach { fe: DbAcl ->
-        val splitRoles = convertUtils.splitApplicationRoles(fe.roles)
-        if (splitRoles.contains(ApplicationRoleType.FEATURE_EDIT)) {
-          appRoles.add(ApplicationRoleType.FEATURE_EDIT)
-        }
+        appRoles.addAll(convertUtils.splitApplicationRoles(fe.roles))
       }
     }
+
     return EnvironmentRoles.Builder().applicationRoles(appRoles).environmentRoles(roles).build()
   }
 
@@ -94,7 +98,6 @@ class EnvironmentSqlApi @Inject constructor(
     return null
   }
 
-  @Transactional(type = TxType.REQUIRES_NEW)
   @Throws(
     OptimisticLockingException::class,
     EnvironmentApi.DuplicateEnvironmentException::class,

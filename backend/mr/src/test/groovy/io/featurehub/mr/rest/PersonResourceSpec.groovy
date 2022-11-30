@@ -9,6 +9,7 @@ import io.featurehub.mr.model.CreatePersonDetails
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.RegistrationUrl
+import io.featurehub.mr.model.UpdatePerson
 import io.featurehub.mr.resources.PersonResource
 import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.ForbiddenException
@@ -105,6 +106,8 @@ class PersonResourceSpec extends Specification {
       thrown ForbiddenException
   }
 
+
+
   def "a person who updates must be an admin"() {
     when: "I try and update a person without being an admin"
       resource.updatePerson(UUID.randomUUID(), new Person(), new PersonServiceDelegate.UpdatePersonHolder(), ctx)
@@ -132,6 +135,36 @@ class PersonResourceSpec extends Specification {
       def person = resource.updatePerson(UUID.randomUUID(),
         new Person().id(new PersonId().id(UUID.randomUUID())),
         new PersonServiceDelegate.UpdatePersonHolder(), ctx)
+    then:
+      thrown NotFoundException
+  }
+
+  def "updateV2: a person who updates must be an admin"() {
+    when: "I try and update a person without being an admin"
+      resource.updatePersonV2(UUID.randomUUID(), new UpdatePerson(), ctx)
+    then:
+      thrown ForbiddenException
+  }
+
+  def "updateV2: an administrator is allowed to update a person"() {
+    given: "we have a person id"
+      def pid = UUID.randomUUID()
+      personApi.updateV2(_, _, _) >> pid
+      authManager.isAnyAdmin((Person)_) >> true
+    when: "I try and update a person and am an admin"
+      resource.updatePersonV2(pid, new UpdatePerson(), ctx)
+    then:
+      1 == 1
+  }
+
+  def "updateV2: an administrator cannot update a non-existent person"() {
+    given: "I have an admin security token"
+      authManager.isAnyAdmin(_) >> true
+    and: "no such person exists"
+      personApi.updateV2(_, _, _) >> null
+    when: "I try and update a person and am an admin"
+      def person = resource.updatePersonV2(UUID.randomUUID(),
+        new UpdatePerson(), ctx)
     then:
       thrown NotFoundException
   }

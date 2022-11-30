@@ -14,22 +14,24 @@ import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.CloudEventReceiverRegistryMock
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.model.FeatureValueType
+import io.featurehub.utils.ExecutorSupplier
 import org.glassfish.hk2.api.IterableProvider
 import spock.lang.Specification
 
 import java.time.OffsetDateTime
+import java.util.concurrent.ExecutorService
 
 class Dacha2CloudEventListenerImplSpec extends Specification {
   CloudEventBuilder builder
   Dacha2CloudEventListenerImpl listener
   Dacha2CacheListener cache
+  Dacha2Cache d2Cache
   CloudEventReceiverRegistry register
   IterableProvider<Dacha2CacheListener> cacheProvider
 
   UUID serviceAccountId
   String apiKeyClientSide
   String apiKeyServerSide
-
 
   CacheServiceAccount basicServiceAccount() {
     return new CacheServiceAccount().id(serviceAccountId)
@@ -38,11 +40,16 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
   }
 
   def setup() {
+    d2Cache = Mock()
     cache = Mock()
     cacheProvider = Mock(IterableProvider)
     cacheProvider.iterator() >> [cache].iterator()
     register = new CloudEventReceiverRegistryMock()
-    listener = new Dacha2CloudEventListenerImpl(cacheProvider, register)
+    def execSupplierMock = Mock(ExecutorSupplier)
+    def execServiceMock = Mock(ExecutorService)
+    execSupplierMock.executorService(_) >> execServiceMock
+    execServiceMock.submit(_) >> { Runnable task -> task.run() }
+    listener = new Dacha2CloudEventListenerImpl(cacheProvider, d2Cache, register, execSupplierMock)
     listener.init()
     serviceAccountId = UUID.randomUUID()
     apiKeyClientSide = "1234*1"
@@ -76,7 +83,8 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
       register.process(builder.build())
     then:
       1 * cache.updateEnvironment(p)
-      0 * _
+      1 * d2Cache.updateEnvironment(p)
+//      0 * _
   }
 
   def "i can send an invalid environment"() {
@@ -103,7 +111,8 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
       register.process(builder.build())
     then:
       1 * cache.updateServiceAccount(s)
-      0 * _
+      1 * d2Cache.updateServiceAccount(s)
+//      0 * _
   }
 
   def "i can send an invalid service account"() {
@@ -146,7 +155,9 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
     then:
       1 * cache.updateFeature(f.features[0])
       1 * cache.updateFeature(f.features[1])
-      0 * _
+      1 * d2Cache.updateFeature(f.features[0])
+      1 * d2Cache.updateFeature(f.features[1])
+//      0 * _
   }
 
   def "i can send an invalid feature set"() {
