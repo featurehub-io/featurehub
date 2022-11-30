@@ -12,7 +12,6 @@ import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
@@ -79,7 +78,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
             },
             columns: [
               DataColumn(label: const Text('Name'), onSort: setSort),
-              DataColumn(label: Text('Status'), onSort: setSort),
+              DataColumn(label: const Text('Status'), onSort: setSort),
               const DataColumn(
                 label: Text('Email'),
               ),
@@ -266,10 +265,14 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
             ])),
         ],
         onSelectChanged: (newValue) {
-          ManagementRepositoryClientBloc.router
-              .navigateTo(context, '/manage-user', params: {
-            'id': [_personEntry.person.id]
-          });
+          if (_personEntry.person.whenDeactivated == null) {
+            ManagementRepositoryClientBloc.router
+                .navigateTo(context, '/manage-user', params: {
+              'id': [_personEntry.person.id]
+            });
+          } else {
+            null;
+          }
         });
   }
 
