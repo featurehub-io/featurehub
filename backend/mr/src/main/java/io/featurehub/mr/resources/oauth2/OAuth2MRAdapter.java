@@ -3,6 +3,7 @@ package io.featurehub.mr.resources.oauth2;
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
 import io.featurehub.db.api.AuthenticationApi;
+import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.GroupApi;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
@@ -68,7 +69,7 @@ public class OAuth2MRAdapter implements SSOCompletionListener {
   public Response successfulCompletion(@Nullable String email, @Nullable String username, boolean userMustBeCreatedFirst,
                                        @Nullable String failureUrl, @Nullable String successUrl, @NotNull String provider) {
     // discover if they are a user and if not, add them
-    Person p = personApi.get(email, Opts.empty());
+    Person p = personApi.get(email, Opts.opts(FillOpts.Archived));
 
     if (p != null && p.getWhenArchived() != null) {
       log.warn("User {} attempted to login and have been deleted.", email);
