@@ -38,7 +38,7 @@ class FeatureSqlApi @Inject constructor(
     DeclaredConfigResolver.resolve(this)
   }
 
-  @Throws(OptimisticLockingException::class, RolloutStrategyValidator.InvalidStrategyCombination::class, FeatureApi.NoAppropriateRole::class)
+  @Throws(OptimisticLockingException::class, RolloutStrategyValidator.InvalidStrategyCombination::class, FeatureApi.NoAppropriateRole::class, LockedException::class)
   override fun createFeatureValueForEnvironment(
       eId: UUID,
       key: String,
@@ -212,7 +212,7 @@ class FeatureSqlApi @Inject constructor(
   }
 
   internal fun updateSelectivelyRetired(person: PersonFeaturePermission, featureValue: FeatureValue, historical: DbFeatureValueVersion, existing: DbFeatureValue): Boolean {
-    if (featureValue.retired != historical.isRetired) { // it changed from historical
+    if (featureValue.retired != historical.isRetired && featureValue.retired != existing.retired) { // it changed from historical & not already the same as existing
       if (historical.isRetired == existing.retired) { // but historical is the same as current
         if (!person.hasEditFeatureRole()) {
           log.debug("trying to change retired and no permission")
@@ -315,6 +315,10 @@ class FeatureSqlApi @Inject constructor(
     return changed
   }
 
+  /**
+   * What we are trying to achieve is that if someone changes the value from what it was on the historical value
+   * and the value hasn't changed between the historical value and the current value, then we can accept the change.
+   */
   internal fun updateSelectivelyDefaultValue(
     feature: DbApplicationFeature,
     featureValue: FeatureValue,
@@ -342,13 +346,18 @@ class FeatureSqlApi @Inject constructor(
         }
       }
 
-    // if it changed from the historical version and it isn't the current default value
+    // they aren't changing this value, so skip out
+    if (defaultValueChanged == existing.defaultValue) {
+      return false // nothing is changing, don't worry about it
+    }
+
+    // if it changed from the historical version
     if (defaultValueChanged != historical.defaultValue) {
-      // did it change but it didn't change between the  historical version and the current version?
+      // it didn't change between the  historical version and the current version?
       if (historical.defaultValue == existing.defaultValue) {
         if (existing.isLocked && !lockChanged) { // if its locked and we didn't change it to locked, we have to reject this change
           log.debug("feature value is locked, you cannot change it")
-          throw OptimisticLockingException() // not really? its just locked so you can't change it
+          throw LockedException() // not really? its just locked so you can't change it
         }
 
         // as the value is different from the historical one, and the historical one is the _same_ as the current one
@@ -380,6 +389,10 @@ class FeatureSqlApi @Inject constructor(
       existing: DbFeatureValue,
       person: PersonFeaturePermission
   ) : Boolean {
+    if (featureValue.locked == existing.isLocked) {
+      return false
+    }
+
     // if we changed the value from the historical version
     if (featureValue.locked != historical.isLocked) {
       // if the existing version is the same as the locked version, we can continue to check
@@ -466,7 +479,7 @@ class FeatureSqlApi @Inject constructor(
     }
   }
 
-  @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class, RolloutStrategyValidator.InvalidStrategyCombination::class)
+  @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class, RolloutStrategyValidator.InvalidStrategyCombination::class, LockedException::class)
   override fun updateFeatureValueForEnvironment(
       eid: UUID,
       key: String,
@@ -494,7 +507,7 @@ class FeatureSqlApi @Inject constructor(
   }
 
   // we are going to have to put a transaction at this level as we want the whole thing to roll back if there is an issue
-  @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class, RolloutStrategyValidator.InvalidStrategyCombination::class)
+  @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class, RolloutStrategyValidator.InvalidStrategyCombination::class, LockedException::class)
   override fun updateAllFeatureValuesForEnvironment(
       eId: UUID,
       featureValues: List<FeatureValue>,
@@ -691,7 +704,7 @@ class FeatureSqlApi @Inject constructor(
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
-  @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class, RolloutStrategyValidator.InvalidStrategyCombination::class)
+  @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class, RolloutStrategyValidator.InvalidStrategyCombination::class, LockedException::class)
   override fun updateAllFeatureValuesByApplicationForKey(
       id: UUID,
       key: String,
