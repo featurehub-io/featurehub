@@ -2,6 +2,7 @@ package io.featurehub.db.services;
 
 import io.ebean.Database;
 import io.ebean.annotation.Transactional;
+import io.ebean.annotation.TxType;
 import io.featurehub.dacha.model.PublishAction;
 import io.featurehub.db.api.ApplicationApi;
 import io.featurehub.db.api.FillOpts;
@@ -52,17 +53,20 @@ public class ApplicationSqlApi implements ApplicationApi {
   private final Conversions convertUtils;
   private final CacheSource cacheSource;
   private final ArchiveStrategy archiveStrategy;
+  private final InternalFeatureSqlApi internalFeatureSqlApi;
 
   @Inject
   public ApplicationSqlApi(
       Database database,
       Conversions convertUtils,
       CacheSource cacheSource,
-      ArchiveStrategy archiveStrategy) {
+      ArchiveStrategy archiveStrategy,
+      InternalFeatureSqlApi internalFeatureSqlApi) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.cacheSource = cacheSource;
     this.archiveStrategy = archiveStrategy;
+    this.internalFeatureSqlApi = internalFeatureSqlApi;
   }
 
   @Override
@@ -335,9 +339,10 @@ public class ApplicationSqlApi implements ApplicationApi {
     cacheSource.publishFeatureChange(appFeature, PublishAction.CREATE);
   }
 
-  @Transactional
+  // this ensures we create the featuers and create initial historical records for them as well
+  @Transactional(type = TxType.REQUIRES_NEW)
   private void saveAllFeatures(List<DbFeatureValue> newFeatures) {
-    newFeatures.forEach(database::save);
+    newFeatures.forEach(internalFeatureSqlApi::saveFeatureValue);
   }
 
   private List<Feature> getAppFeatures(DbApplication app, @NotNull Opts opts) {

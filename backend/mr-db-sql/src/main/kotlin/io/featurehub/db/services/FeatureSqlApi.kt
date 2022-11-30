@@ -23,10 +23,14 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.function.Function
 
+interface InternalFeatureSqlApi {
+  fun saveFeatureValue(featureValue: DbFeatureValue)
+}
+
 class FeatureSqlApi @Inject constructor(
   private val database: Database, private val convertUtils: Conversions, private val cacheSource: CacheSource,
   private val rolloutStrategyValidator: RolloutStrategyValidator, private val strategyDiffer: StrategyDiffer
-) : FeatureApi, FeatureUpdateBySDKApi {
+) : FeatureApi, FeatureUpdateBySDKApi, InternalFeatureSqlApi {
   @ConfigKey("auditing.enable")
   var auditingEnabled: Boolean? = false
 
@@ -117,6 +121,10 @@ class FeatureSqlApi @Inject constructor(
 
   @Transactional(type = TxType.REQUIRES_NEW)
   private fun save(featureValue: DbFeatureValue) {
+    saveFeatureValue(featureValue)
+  }
+
+  override fun saveFeatureValue(featureValue: DbFeatureValue) {
     database.save(featureValue)
 
     if (auditingEnabled!!) {
@@ -201,15 +209,6 @@ class FeatureSqlApi @Inject constructor(
       save(existing)
       publish(existing)
     }
-//
-//
-//    if (dbFeatureValue.whoUpdated == null) {
-//      log.error("Unable to set who updated on dbFeatureValue {}", person.person)
-//    }
-//
-//    if (person.hasChangeValueRole()) {
-//      dbFeatureValue.retired = featureValue.retired
-//    }
   }
 
   internal fun updateSelectivelyRetired(person: PersonFeaturePermission, featureValue: FeatureValue, historical: DbFeatureValueVersion, existing: DbFeatureValue): Boolean {
@@ -495,7 +494,6 @@ class FeatureSqlApi @Inject constructor(
   }
 
   // we are going to have to put a transaction at this level as we want the whole thing to roll back if there is an issue
-  @Transactional(type = TxType.REQUIRES_NEW)
   @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class, RolloutStrategyValidator.InvalidStrategyCombination::class)
   override fun updateAllFeatureValuesForEnvironment(
       eId: UUID,
@@ -545,13 +543,14 @@ class FeatureSqlApi @Inject constructor(
     }
     if (deleteStrategies.isNotEmpty()) {
       publishTheRemovalOfABunchOfStrategies(deleteStrategies)
-      database.deleteAll(deleteStrategies)
     }
+
     return QDbFeatureValue().environment.id.eq(eId).feature.whenArchived.isNull.findList()
       .map { fs: DbFeatureValue -> convertUtils.toFeatureValue(fs)!! }
   }
 
   // can't background this because they will deleted shortly
+  @Transactional(type = TxType.REQUIRES_NEW)
   private fun publishTheRemovalOfABunchOfStrategies(deleteStrategies: Collection<DbFeatureValue?>) {
     if (!deleteStrategies.isEmpty()) {
       deleteStrategies.parallelStream().forEach { strategy: DbFeatureValue? ->
@@ -559,6 +558,8 @@ class FeatureSqlApi @Inject constructor(
           strategy!!.feature, strategy.environment.id
         )
       }
+
+      database.deleteAll(deleteStrategies)
     }
   }
 
