@@ -204,7 +204,8 @@ class TopWidgetSuccess extends StatelessWidget {
               ManagementRepositoryClientBloc.router
                   .navigateTo(context, '/users');
             },
-            title: 'Close'),
+            title: 'Close',
+            keepCase: true),
         FHFlatButton(
             onPressed: () {
               bloc.backToDefault();

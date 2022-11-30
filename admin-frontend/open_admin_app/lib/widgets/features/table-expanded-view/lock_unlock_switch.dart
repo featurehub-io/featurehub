@@ -81,8 +81,8 @@ class _LockUnlockIconButton extends StatelessWidget {
                   : SystemMouseCursors.basic,
               tooltip: onPressed != null
                   ? (lock
-                      ? 'Unlock to edit feature value'
-                      : 'Lock feature value')
+                      ? 'Click the lock to make changes'
+                      : 'Click the lock to prevent further changes')
                   : null,
               icon: Icon(lock ? Icons.lock_outline : Icons.lock_open,
                   size: 20, color: lock ? Colors.orange : Colors.green),
