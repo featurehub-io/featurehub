@@ -34,6 +34,7 @@ import io.featurehub.mr.model.SortOrder;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -227,6 +228,16 @@ public class ApplicationSqlApi implements ApplicationApi {
     }
 
     return false;
+  }
+
+  public @Nullable Application getApplication(@NotNull UUID portfolioId, @NotNull String name) {
+    final DbApplication app = new QDbApplication().name.ieq(name).portfolio.id.eq(portfolioId).findOne();
+
+    if (app != null) {
+      return convertUtils.toApplication(app, Opts.empty());
+    }
+
+    return null;
   }
 
   @Override

@@ -22,8 +22,12 @@ class FeatureAuditingSpec extends Base2Spec {
 //  Feature feature
   FeatureSqlApi featureSqlApi
   EnvironmentSqlApi environmentSqlApi
+  Environment env
   RolloutStrategyValidator rsValidator
   StrategyDiffer strategyDiffer
+
+  static UUID portfolioId = UUID.fromString('16364b24-b4ef-4052-9c33-5eb66b0d1baf')
+//  static UUID
 
   def setup() {
     cacheSource = Mock()
@@ -34,10 +38,26 @@ class FeatureAuditingSpec extends Base2Spec {
     ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true'])
     featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator, strategyDiffer)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
-    p1 = portfolioSqlApi.createPortfolio(new Portfolio().name("basic").description("basic"), Opts.empty(), superPerson)
+    p1 = portfolioSqlApi.getPortfolio("basic")
+
+    if (p1 == null) {
+      p1 = portfolioSqlApi.createPortfolio(new Portfolio().name("basic").description("basic"), Opts.empty(), superPerson)
+    }
+
     applicationSqlApi = new ApplicationSqlApi(db, convertUtils, cacheSource, archiveStrategy, featureSqlApi)
-    app = applicationSqlApi.createApplication(p1.id, new Application().name("app1").description("desc1"), superPerson)
+    app = applicationSqlApi.getApplication(p1.id, "app1")
+
+    if (app == null) {
+      app = applicationSqlApi.createApplication(p1.id, new Application().name("app1").description("desc1"), superPerson)
+    }
+
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
+    env = environmentSqlApi.getEnvironment(app.id, "dev")
+
+    if (env == null) {
+      env = environmentSqlApi.create(new  Environment().name("dev").description("dev"), app, superPerson)
+    }
+
     db.currentTransaction().commit()
   }
 
@@ -45,10 +65,12 @@ class FeatureAuditingSpec extends Base2Spec {
     ThreadLocalConfigurationSource.clearContext()
   }
 
+  def "when i have a string feature and i add alternating strategies at the same history point they work"() {
+
+  }
+
   def "when i update a boolean feature value and then update it again with the historical version, nothing changes"() {
-    given: "i have the feature value"
-      def env = environmentSqlApi.create(new  Environment().name("dev").description("dev"), app, superPerson)
-    and: "i create a feature"
+    given: "i create a feature"
       def feature = applicationSqlApi.createApplicationFeature(app.id,
         new Feature().name("bool-feature").description("bool-feature").key("FBOOL").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
         .find { it.key == 'FBOOL' }

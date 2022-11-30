@@ -13,6 +13,7 @@ import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import jakarta.validation.Valid
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
@@ -398,6 +399,10 @@ class EnvironmentSqlApi @Inject constructor(
       env!!.priorEnvironment = prior
       database.save(env)
     }
+  }
+
+  public fun getEnvironment(appId: UUID, envName: String): Environment? {
+    return QDbEnvironment().parentApplication.id.eq(appId).name.ieq(envName).findOne()?.let { convertUtils.toEnvironment(it, Opts.empty()) }
   }
 
   companion object {
