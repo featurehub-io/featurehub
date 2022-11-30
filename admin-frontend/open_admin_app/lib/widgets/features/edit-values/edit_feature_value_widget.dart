@@ -11,35 +11,44 @@ import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/s
 
 // represents the editing of the states of a single boolean flag on a single environment
 
-class EditFeatureValueWidget extends StatelessWidget {
+class EditFeatureValueWidget extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
-
-  // final PerFeatureStateTrackingBloc fvBloc;
   final FeatureValueType featureValueType;
   final PerApplicationFeaturesBloc perApplicationFeaturesBloc;
   final Feature feature;
   final ApplicationFeatureValues afv;
+  final FeatureValue fv;
 
   const EditFeatureValueWidget(
+
       {Key? key,
+        required this.fv,
       required this.environmentFeatureValue,
-      // required this.fvBloc,
       required this.featureValueType,
       required this.perApplicationFeaturesBloc,
       required this.feature,
-      required this.afv})
+      required this.afv,
+        })
       : super(key: key);
+
+  @override
+  State<EditFeatureValueWidget> createState() => _EditFeatureValueWidgetState();
+}
+
+class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
+
 
   @override
   Widget build(BuildContext context) {
     var fvBloc = PerFeatureStateTrackingBlocV2(
-        feature,
-        perApplicationFeaturesBloc.mrClient,
-        [],
-        perApplicationFeaturesBloc,
-        afv);
+        widget.afv.applicationId,
+        widget.feature,
+        widget.perApplicationFeaturesBloc.mrClient,
+        widget.fv,
+        widget.perApplicationFeaturesBloc,
+        widget.afv);
     final strategyBloc =
-        fvBloc.matchingCustomStrategyBloc(environmentFeatureValue);
+        fvBloc.matchingCustomStrategyBloc(widget.environmentFeatureValue);
 
     return StreamBuilder<List<RolloutStrategy>>(
         stream: strategyBloc.strategies,
@@ -48,7 +57,7 @@ class EditFeatureValueWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             children: [
               LockUnlockSwitch(
-                environmentFeatureValue: environmentFeatureValue,
+                environmentFeatureValue: widget.environmentFeatureValue,
                 fvBloc: fvBloc,
               ),
               StreamBuilder<List<RolloutStrategy>>(
@@ -59,35 +68,33 @@ class EditFeatureValueWidget extends StatelessWidget {
                       children: [
                         StrategyCard(
                             strBloc: strategyBloc,
-                            featureValueType: featureValueType),
+                            featureValueType: widget.featureValueType),
                         if (snapshot.hasData)
                           for (RolloutStrategy strategy in snapshot.data!)
                             StrategyCard(
                                 strBloc: strategyBloc,
                                 rolloutStrategy: strategy,
-                                featureValueType: featureValueType),
+                                featureValueType: widget.featureValueType),
                       ],
                     );
                   }),
-              StreamBuilder<bool>(
-                  stream: fvBloc.environmentIsLocked(
-                      environmentFeatureValue.environmentId!),
+              StreamBuilder<FeatureValue>(
+                  stream: fvBloc.currentFv,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      final canChangeValue = environmentFeatureValue.roles
+                      final canChangeValue = widget.environmentFeatureValue.roles
                           .contains(RoleType.CHANGE_VALUE);
-                      var editable = !snapshot.data! && canChangeValue;
+                      var editable = !snapshot.data!.locked && canChangeValue;
                       return Column(
                         children: [
                           const SizedBox(height: 8.0),
                           AddStrategyButton(
                               bloc: strategyBloc, editable: editable),
                           RetireFeatureValueCheckboxWidget(
-                              environmentFeatureValue: environmentFeatureValue,
+                              environmentFeatureValue: widget.environmentFeatureValue,
                               fvBloc: fvBloc,
                               editable: editable,
-                              retired: fvBloc.isRetired(
-                                  environmentFeatureValue.environmentId!)),
+                              retired: fvBloc.currentFeatureValue!.retired ?? false),
                           //this is where we need to pass retired from the actual value
                         ],
                       );
@@ -98,6 +105,9 @@ class EditFeatureValueWidget extends StatelessWidget {
               FeatureValueUpdatedByCell(
                 strBloc: strategyBloc,
               ),
+              OutlinedButton(onPressed: () {
+                fvBloc.saveFeatureValueUpdates();
+              }, child: Text("Save"))
             ],
           );
         });

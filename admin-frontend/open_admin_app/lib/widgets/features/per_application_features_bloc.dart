@@ -75,11 +75,13 @@ class PerApplicationFeaturesBloc
         .listen(addApplicationsToStream);
     _currentAppId = _mrClient.streamValley.currentAppIdStream.listen(setAppId);
 
-    _getAllAppValuesDebounceStream
-        .debounceTime(const Duration(milliseconds: 300))
-        .listen((event) {
-      _actuallyCallAddAppFeatureValuesToStream();
-    });
+
+    // _getAllAppValuesDebounceStream
+    //     .debounceTime(const Duration(milliseconds: 300))
+    //     .listen((event) {
+    //   _actuallyCallAddAppFeatureValuesToStream();
+    // }
+    // );
   }
 
   @override
@@ -88,7 +90,8 @@ class PerApplicationFeaturesBloc
   void setAppId(String? appId) {
     applicationId = appId;
     if (applicationId != null) {
-      addAppFeatureValuesToStream();
+      print("call add app fv to stream ");
+      _actuallyCallAddAppFeatureValuesToStream();
     } else {
       List<EnvironmentFeatureValues> efv = [];
       List<Feature> featureList = [];
@@ -184,10 +187,10 @@ class PerApplicationFeaturesBloc
     return _shownEnvironmentsSource.value!.contains(envId);
   }
 
-  void addAppFeatureValuesToStream() async {
-    _getAllAppValuesDebounceStream.add(
-        true); // tell it to ask for the data, but debounce it through a 300ms stream
-  }
+  // void addAppFeatureValuesToStream() async {
+  //   _getAllAppValuesDebounceStream.add(
+  //       true); // tell it to ask for the data, but debounce it through a 300ms stream
+  // }
 
   void clearAppFeatureValuesStream() {
     if (!_appFeatureValuesBS.isClosed) {
@@ -250,7 +253,7 @@ class PerApplicationFeaturesBloc
     await _featureServiceApi.createFeaturesForApplication(
         applicationId!, feature);
     unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
-    addAppFeatureValuesToStream();
+    // addAppFeatureValuesToStream();
     _publishNewFeatureSource.add(feature);
   }
 
@@ -266,7 +269,7 @@ class PerApplicationFeaturesBloc
       ..key = newKey;
     await _featureServiceApi.updateFeatureForApplication(
         applicationId!, feature.key!, newFeature);
-    addAppFeatureValuesToStream();
+    // addAppFeatureValuesToStream();
   }
 
   Future<void> getFeatureIncludingMetadata(Feature feature) async {
@@ -288,7 +291,7 @@ class PerApplicationFeaturesBloc
 
   Future<void> deleteFeature(String key) async {
     await _featureServiceApi.deleteFeatureForApplication(applicationId!, key);
-    addAppFeatureValuesToStream();
+    // addAppFeatureValuesToStream();
     unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
   }
 
@@ -307,7 +310,7 @@ class PerApplicationFeaturesBloc
         applicationId!, feature.key!, updates);
 
     // get the data again
-    _getAllAppValuesDebounceStream.add(true);
+    // _getAllAppValuesDebounceStream.add(true);
   }
 
   Future<ApplicationFeatureValues> getApplicationFeatureValuesData(String appId, String searchTerm, List<FeatureValueType> featureTypes, int rowsPerPage, int pageOffset) async {
@@ -318,5 +321,30 @@ class PerApplicationFeaturesBloc
         filter: searchTerm,
         featureTypes: featureTypes,
     );
+  }
+
+  Future<void> saveFeatureValues(
+      {required FeatureValue fv,
+      required locked,
+      required retired,
+      required defaultValue,
+      required stratValues, required Feature feature, required FeatureValueType valueType}) async {
+    fv.locked = locked;
+    fv.retired = retired;
+    fv.rolloutStrategies = stratValues;
+    if (valueType == FeatureValueType.STRING) {
+      fv.valueString = defaultValue;
+    }
+    else if (valueType == FeatureValueType.BOOLEAN) {
+      fv.valueBoolean = defaultValue;
+    }
+    else if (valueType == FeatureValueType.NUMBER) {
+      fv.valueNumber = defaultValue;
+    }
+    else if (valueType == FeatureValueType.JSON) {
+      fv.valueJson = defaultValue;
+    }
+
+    updateAllFeatureValuesByApplicationForKey(feature, [fv]);
   }
 }

@@ -22,14 +22,13 @@ class StrategyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<bool>(
-        stream: strBloc.fvBloc.environmentIsLocked(
-            strBloc.environmentFeatureValue.environmentId!),
+    return StreamBuilder<FeatureValue>(
+        stream: strBloc.fvBloc.currentFv,
         builder: (ctx, snap) {
           if (snap.hasData) {
             final editable = strBloc.environmentFeatureValue.roles
                 .contains(RoleType.CHANGE_VALUE);
-            final unlocked = !snap.data!;
+            final unlocked = !snap.data!.locked;
             return StrategyCardWidget(
               editable: editable,
               strBloc: strBloc,

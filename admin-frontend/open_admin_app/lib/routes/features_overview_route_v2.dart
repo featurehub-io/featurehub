@@ -25,14 +25,14 @@ class FeatureStatusRouteV2 extends StatefulWidget {
 }
 
 class _FeatureStatusState extends State<FeatureStatusRouteV2> {
-  PerApplicationFeaturesBloc? bloc;
-
-  @override
-  void initState() {
-    super.initState();
-
-    bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
-  }
+  // PerApplicationFeaturesBloc? bloc;
+  //
+  // @override
+  // void initState() {
+  //   super.initState();
+  //
+  //   bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +61,6 @@ class _FeatureStatusState extends State<FeatureStatusRouteV2> {
                 child: Row(
                   children: [
                     _filterRow(context, bloc),
-                    // _CreateFeatureButton(bloc: bloc),
                   ],
                 ),
               ),
@@ -113,36 +112,6 @@ class _FeatureStatusState extends State<FeatureStatusRouteV2> {
     );
   }
 
-  // @override
-  // void didUpdateWidget(FeatureStatusRouteV2 oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  //   _createFeatureCheck();
-  // }
-  //
-  // void _createFeatureCheck() {
-  //   if (widget.createFeature && bloc != null) {
-  //     // widget.createFeature = false;
-  //
-  //     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-  //       _createFeature(bloc!);
-  //     });
-  //   }
-  // }
-  //
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  //   _createFeatureCheck();
-  // }
-  //
-  // _createFeature(PerApplicationFeaturesBloc bloc) {
-  //   bloc.mrClient.addOverlay((BuildContext context) {
-  //     //return null;
-  //     return CreateFeatureDialogWidget(
-  //       bloc: bloc,
-  //     );
-  //   });
-  // }
 }
 
 class _FeaturesOverviewHeader extends StatelessWidget {

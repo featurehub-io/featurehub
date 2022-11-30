@@ -17,83 +17,60 @@ class LockUnlockSwitch extends StatefulWidget {
 }
 
 class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
+  bool _locked = false;
+
   @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<bool>(
-        stream: widget.fvBloc
-            .environmentIsLocked(widget.environmentFeatureValue.environmentId!),
-        builder: (ctx, snap) {
-          if (!snap.hasData) {
-            return Container(
-              height: lockHeight,
-            );
-          }
-
-          // must always return the same "shaped" data in a table cell
-          final disabled = (!widget.environmentFeatureValue.roles
-                      .contains(RoleType.UNLOCK) &&
-                  snap.data == true) ||
-              (snap.data == false &&
-                  !widget.environmentFeatureValue.roles
-                      .contains(RoleType.LOCK));
-
-          final locked = snap.hasData ? snap.data : true;
-
-          VoidCallback? pressed;
-          if (!disabled) {
-            pressed = () => widget.fvBloc.dirtyLock(
-                widget.environmentFeatureValue.environmentId!, locked != true);
-          }
-
-          return SizedBox(
-            height: lockHeight,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                _LockUnlockIconButton(lock: locked == true, onPressed: pressed)
-              ],
-            ),
-          );
-        });
+  void initState() {
+    super.initState();
+    _locked = widget.fvBloc.currentFeatureValue!.locked;
   }
-}
-
-class _LockUnlockIconButton extends StatelessWidget {
-  const _LockUnlockIconButton({
-    Key? key,
-    required this.lock,
-    this.onPressed,
-  }) : super(key: key);
-
-  final bool lock;
-  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 36,
-          height: 36,
-          child: IconButton(
-              splashRadius: 20,
-              mouseCursor: onPressed != null
-                  ? SystemMouseCursors.click
-                  : SystemMouseCursors.basic,
-              tooltip: onPressed != null
-                  ? (lock
-                      ? 'Unlock to edit feature value'
-                      : 'Lock feature value')
-                  : null,
-              icon: Icon(lock ? Icons.lock_outline : Icons.lock_open,
-                  size: 20, color: lock ? Colors.orange : Colors.green),
-              onPressed: onPressed),
-        ),
-        Text(
-          lock ? 'Locked' : 'Unlocked',
-          style: Theme.of(context).textTheme.caption,
-        )
-      ],
+    final disabled =
+        (!widget.environmentFeatureValue.roles.contains(RoleType.UNLOCK) &&
+                _locked == true) ||
+            _locked == false &&
+                !widget.environmentFeatureValue.roles.contains(RoleType.LOCK);
+
+    return SizedBox(
+      height: lockHeight,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Row(
+            children: [
+              SizedBox(
+                width: 36,
+                height: 36,
+                child: IconButton(
+                  splashRadius: 20,
+                  mouseCursor: disabled
+                      ? SystemMouseCursors.basic
+                      : SystemMouseCursors.click,
+                  tooltip: disabled
+                      ? null
+                      : (_locked
+                          ? 'Unlock to edit feature value'
+                          : 'Lock feature value'),
+                  icon: Icon(_locked ? Icons.lock_outline : Icons.lock_open,
+                      size: 20, color: _locked ? Colors.orange : Colors.green),
+                  onPressed: () {
+                    setState(() {
+                      _locked = !_locked;
+                    });
+                    widget.fvBloc.updateFeatureValueLockedStatus(_locked);
+                  },
+                ),
+              ),
+              Text(
+                _locked ? 'Locked' : 'Unlocked',
+                style: Theme.of(context).textTheme.caption,
+              )
+            ],
+          )
+        ],
+      ),
     );
   }
 }

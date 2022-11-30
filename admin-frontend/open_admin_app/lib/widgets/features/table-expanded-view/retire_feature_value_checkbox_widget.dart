@@ -45,8 +45,7 @@ class _RetireFeatureValueCheckboxWidgetState
               setState(() {
                 retired = value!;
               });
-              widget.fvBloc.dirtyRetired(
-                  widget.environmentFeatureValue.environmentId!, retired);
+              widget.fvBloc.updateFeatureValueRetiredStatus(value);
             } else {
               null;
             }

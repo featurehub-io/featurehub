@@ -132,9 +132,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
       widget.rolloutStrategy!.value = replacementValue;
       widget.strBloc.updateStrategy();
     } else {
-      widget.strBloc.fvBloc.dirty(
-          widget.strBloc.environmentFeatureValue.environmentId!,
-          (current) => current.value = replacementValue);
+      widget.strBloc.fvBloc.updateFeatureValueDefault(replacementValue);
     }
 
     setState(() {});

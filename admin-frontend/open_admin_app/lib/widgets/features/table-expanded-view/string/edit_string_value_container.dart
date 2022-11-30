@@ -63,11 +63,9 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
             final replacementValue = value.isEmpty ? null : tec.text.trim();
             if (widget.rolloutStrategy != null) {
               widget.rolloutStrategy!.value = replacementValue;
-              widget.strBloc.markDirty();
+              // widget.strBloc.updateStrategy();
             } else {
-              widget.strBloc.fvBloc.dirty(
-                  widget.strBloc.environmentFeatureValue.environmentId!,
-                  (current) => current.value = replacementValue);
+              widget.strBloc.fvBloc.updateFeatureValueDefault(replacementValue);
             }
           },
         ));

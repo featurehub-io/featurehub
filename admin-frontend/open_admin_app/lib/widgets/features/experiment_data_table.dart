@@ -35,16 +35,16 @@ class _ExperimentTableState extends State<ExperimentTable> {
   int _pageOffset = 1;
 
   List<FeatureValueType> _selectedFeatureTypes = [];
-
   List<String> _selectedEnvironmentList = [];
 
   Future generateFeaturesList() async {
+    print("generate features list");
     var appFeatures = await widget.bloc.getApplicationFeatureValuesData(
         widget.bloc.applicationId!,
         _searchTerm,
         _selectedFeatureTypes, rowsPerPage, _pageOffset); //handle if appId is null
     var featuresList = FeatureStatusFeatures(appFeatures);
-    _featuresDataSource = FeaturesDataSource(featuresList, _pageOffset);
+    _featuresDataSource = FeaturesDataSource(featuresList);
     _maxFeatures = appFeatures.maxFeatures;
     return featuresList;
   }
@@ -52,6 +52,7 @@ class _ExperimentTableState extends State<ExperimentTable> {
   @override
   void initState() {
     super.initState();
+    print("in init state");
     _selectedEnvironmentList = widget.data.applicationEnvironments.entries
         .map((e) => e.value.environmentName!)
         .toList();
@@ -80,6 +81,7 @@ class _ExperimentTableState extends State<ExperimentTable> {
     return FutureBuilder(
         future: generateFeaturesList(),
         builder: (context, snapshot) {
+          print("rebuild");
           return snapshot.hasData
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -226,13 +228,8 @@ class _ExperimentTableState extends State<ExperimentTable> {
                           delegate: _featuresDataSource,
                           pageCount: (_maxFeatures / rowsPerPage).ceil().ceilToDouble(),
                           direction: Axis.horizontal,
-                          onPageNavigationEnd: (page) {
-                            setState(() {
-                              _pageOffset = page;
-                            }
-                            );
-                          },
-                        ))
+                        )
+                      )
                   ],
                 )
               : const Center(
@@ -271,11 +268,9 @@ class AggregatedFeatureCellData {
 class FeaturesDataSource extends DataGridSource {
   /// Creates the data source class with required details.
   final FeatureStatusFeatures data;
-  late final int pageOffset;
-  List<FeatureStatusFeatures> paginatedlist = [];
 
 
-  FeaturesDataSource(this.data, this.pageOffset) {
+  FeaturesDataSource(this.data) {
     buildDataGridRows();
   }
 
@@ -301,6 +296,17 @@ class FeaturesDataSource extends DataGridSource {
         ..._cells,
       ]);
     }).toList();
+  }
+
+  @override
+  Future<bool> handlePageChange(int oldPageIndex, int newPageIndex) async {
+    if(oldPageIndex != newPageIndex) {
+      // need to fix this function
+      buildDataGridRows();
+      updateDataGridSource();
+      notifyDataSourceListeners();
+    }
+    return true;
   }
 
   List<DataGridRow> _featuresData = [];

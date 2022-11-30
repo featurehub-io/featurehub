@@ -1,4 +1,3 @@
-import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
@@ -25,7 +24,18 @@ class EditBooleanValueDropDownWidget extends StatefulWidget {
 
 class _EditBooleanValueDropDownWidgetState
     extends State<EditBooleanValueDropDownWidget> {
-  String featureOn = 'Off';
+  String boolFeatureValue = 'Off';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.rolloutStrategy == null) {
+        boolFeatureValue =
+            (widget.strBloc.featureValue.valueBoolean ?? false) ? 'On' : 'Off';
+      } else {
+        boolFeatureValue = widget.rolloutStrategy!.value ? 'On' : 'Off';
+      }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,51 +53,28 @@ class _EditBooleanValueDropDownWidgetState
             ),
           );
         }).toList(),
-        value: featureOn,
+        value: boolFeatureValue,
         onChanged: widget.editable && widget.unlocked
             ? (value) {
                 final replacementBoolean = (value == 'On');
-
-                _notifyDirty(replacementBoolean);
-
+                _updateFeatureValue(replacementBoolean);
                 setState(() {
-                  featureOn = replacementBoolean ? 'On' : 'Off';
+                  boolFeatureValue = replacementBoolean ? 'On' : 'Off';
                 });
               }
             : null,
         disabledHint:
-            Text(featureOn, style: Theme.of(context).textTheme.caption),
+            Text(boolFeatureValue, style: Theme.of(context).textTheme.caption),
       ),
     );
   }
 
-  void _notifyDirty(bool replacementBoolean) {
+  void _updateFeatureValue(bool replacementBoolean) {
     if (widget.rolloutStrategy == null) {
-      widget.strBloc.fvBloc.dirty(
-          widget.strBloc.environmentFeatureValue.environmentId!,
-          (current) => current.value = replacementBoolean);
+      widget.strBloc.fvBloc.updateFeatureValueDefault(replacementBoolean);
+
     } else {
       widget.rolloutStrategy!.value = replacementBoolean;
-      widget.strBloc.markDirty();
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    String newOn;
-    if (widget.rolloutStrategy == null) {
-      newOn =
-          (widget.strBloc.featureValue.valueBoolean ?? false) ? 'On' : 'Off';
-    } else {
-      newOn = widget.rolloutStrategy!.value ? 'On' : 'Off';
-    }
-
-    if (newOn != featureOn) {
-      setState(() {
-        featureOn = newOn;
-      });
     }
   }
 }

@@ -24,9 +24,8 @@ class CustomStrategyBlocV2 extends Bloc {
 
   Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
 
-  CustomStrategyBlocV2(this.environmentFeatureValue, this.feature, this.fvBloc, this.bloc)
-      : featureValue = fvBloc
-      .featureValueByEnvironment(environmentFeatureValue.environmentId!) {
+  CustomStrategyBlocV2(this.environmentFeatureValue, this.feature, this.fvBloc, this.bloc, this.featureValue)
+      {
     for (var rs in featureValue.rolloutStrategies) {
       if (rs.id != null && rs.id!.length < 30) {
         rs.id = _strategyBlocUUidGenerator.v4();
@@ -41,23 +40,22 @@ class CustomStrategyBlocV2 extends Bloc {
     _strategySource.add(featureValue.rolloutStrategies);
   }
 
-  void markDirty() {
-    fvBloc.dirty(environmentFeatureValue.environmentId!, (current) {
-      current.customStrategies = _strategySource.value!;
-    });
-  }
+  // void markDirty() {
+  //   fvBloc.dirty(environmentFeatureValue.environmentId!, (current) {
+  //     current.customStrategies = _strategySource.value!;
+  //   });
+  // }
+
 
   void addStrategy(RolloutStrategy rs) {
     rs.id ??= _strategyBlocUUidGenerator.v4();
     final strategies = _strategySource.value!;
     strategies.add(rs);
-    markDirty();
     _strategySource.add(strategies);
   }
 
   void updateStrategy() {
     final strategies = _strategySource.value!;
-    markDirty();
     _strategySource.add(strategies);
   }
 
@@ -66,7 +64,7 @@ class CustomStrategyBlocV2 extends Bloc {
     rs.id = _strategyBlocUUidGenerator.v4();
     final strategies = _strategySource.value!;
     strategies.removeWhere((e) => e.id == rs.id);
-    markDirty();
+    // markDirty();
     _strategySource.add(strategies);
   }
 

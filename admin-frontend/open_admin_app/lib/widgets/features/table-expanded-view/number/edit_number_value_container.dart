@@ -69,11 +69,8 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
                 value.trim().isEmpty ? null : double.parse(tec.text.trim());
             if (widget.rolloutStrategy != null) {
               widget.rolloutStrategy!.value = replacementValue;
-              widget.strBloc.markDirty();
             } else {
-              widget.strBloc.fvBloc.dirty(
-                  widget.strBloc.environmentFeatureValue.environmentId!,
-                  (current) => current.value = replacementValue);
+              widget.strBloc.fvBloc.updateFeatureValueDefault(replacementValue);
             }
           },
           inputFormatters: [
