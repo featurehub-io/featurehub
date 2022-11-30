@@ -66,6 +66,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
             showCheckboxColumn: false,
             showFirstLastButtons: true,
             addEmptyRows: false,
+            showHorizontalScrollbarAlways: true,
             availableRowsPerPage: const [10, 20, 50, 100],
             sortAscending: sortAsc,
             sortColumnIndex: sortIndex,

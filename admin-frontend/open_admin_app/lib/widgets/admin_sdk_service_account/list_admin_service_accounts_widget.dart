@@ -70,6 +70,7 @@ class _AdminServiceAccountsListWidgetState
             availableRowsPerPage: const [10, 20, 50, 100],
             sortAscending: sortAsc,
             sortColumnIndex: sortIndex,
+            showHorizontalScrollbarAlways: true,
             onRowsPerPageChanged: (newRowsPerPage) {
               if (newRowsPerPage != null) {
                 setState(() {
