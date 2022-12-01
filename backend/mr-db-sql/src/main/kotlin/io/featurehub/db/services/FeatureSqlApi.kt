@@ -319,7 +319,7 @@ class FeatureSqlApi @Inject constructor(
    * What we are trying to achieve is that if someone changes the value from what it was on the historical value
    * and the value hasn't changed between the historical value and the current value, then we can accept the change.
    */
-  internal fun updateSelectivelyDefaultValue(
+  fun updateSelectivelyDefaultValue(
     feature: DbApplicationFeature,
     featureValue: FeatureValue,
     historical: DbFeatureValueVersion,

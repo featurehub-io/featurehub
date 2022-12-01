@@ -33,6 +33,9 @@ public class DbFeatureValue extends DbBaseFeatureValue {
     setRolloutStrategies(builder.rolloutStrategies);
     setRetired(builder.retired);
     setSharedRolloutStrategies(builder.sharedRolloutStrategies);
+    if (builder.version != null) {
+      this.version = builder.version;
+    }
   }
 
   @Id
@@ -132,8 +135,14 @@ public class DbFeatureValue extends DbBaseFeatureValue {
     private Boolean retired; // null == true
     private List<RolloutStrategy> rolloutStrategies;
     private List<DbStrategyForFeatureValue> sharedRolloutStrategies;
+    private Long version;
 
     public Builder() {
+    }
+
+    public Builder version(Long version) {
+      this.version = version;
+      return this;
     }
 
     public Builder retired(Boolean retired) {
