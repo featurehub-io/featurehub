@@ -253,7 +253,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                                   _personEntry.person.id, true);
                               setNextView(); // triggers reload from server with latest settings and rebuilds state
                               bloc.mrClient.addSnackbar(Text(
-                                  "User '${_personEntry.person.name}' deleted!"));
+                                  "User '${_personEntry.person.name}' deactivated!"));
                               return true;
                             } catch (e, s) {
                               await bloc.mrClient.dialogError(e, s);
