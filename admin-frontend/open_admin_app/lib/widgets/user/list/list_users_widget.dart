@@ -245,7 +245,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                       : FHDeleteThingWarningWidget(
                           thing: "user '${_personEntry.person.name}'",
                           content:
-                              'This user will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!',
+                              'This user will be removed from all groups and deactivated in this organization.',
                           bloc: bloc.mrClient,
                           deleteSelected: () async {
                             try {
