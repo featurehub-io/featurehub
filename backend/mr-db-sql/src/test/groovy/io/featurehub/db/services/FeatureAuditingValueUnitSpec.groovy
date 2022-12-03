@@ -25,34 +25,12 @@ import java.time.LocalDateTime
 /**
  * we are testing the methods internally in isolation
  */
-class FeatureAuditingUnitSpec extends Specification {
-  Database database
-  Conversions conversions
-  CacheSource cacheSource
-  RolloutStrategyValidator rolloutStrategyValidator
-  StrategyDiffer strategyDiffer
+class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
 
-  FeatureSqlApi fsApi
-  Person person
-  DbPerson dbPerson
-  DbFeatureValueVersionKey histId
 
-  def setup() {
-    database = Mock()
-    conversions = Mock()
-    cacheSource = Mock()
-    rolloutStrategyValidator = Mock()
-    strategyDiffer = Mock()
-    person = new Person()
-    dbPerson = new DbPerson.Builder().build()
-
-    histId = new DbFeatureValueVersionKey(UUID.randomUUID(), 1)
-
-    fsApi = new FeatureSqlApi(database, conversions, cacheSource, rolloutStrategyValidator, strategyDiffer)
-  }
-
-  final rolesChangeValue = [RoleType.CHANGE_VALUE] as Set<RoleType>
-  final rolesRead = [RoleType.READ] as Set<RoleType>
+  /*
+   * These are the tests around the changing of the value
+   */
 
   def "bool - they pass an update the same as the existing one but different from the historical one"() {
     when:
@@ -148,10 +126,4 @@ class FeatureAuditingUnitSpec extends Specification {
       thrown(FeatureApi.NoAppropriateRole)
   }
 
-  /*
-  class FeatureSqlApi @Inject constructor(
-  private val database: Database, private val convertUtils: Conversions, private val cacheSource: CacheSource,
-  private val rolloutStrategyValidator: RolloutStrategyValidator, private val strategyDiffer: StrategyDiffer
-)
-   */
 }

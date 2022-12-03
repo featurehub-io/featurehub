@@ -38,16 +38,21 @@ class FeatureSqlApi @Inject constructor(
     DeclaredConfigResolver.resolve(this)
   }
 
-  @Throws(OptimisticLockingException::class, RolloutStrategyValidator.InvalidStrategyCombination::class, FeatureApi.NoAppropriateRole::class, LockedException::class)
+  @Throws(
+    OptimisticLockingException::class,
+    RolloutStrategyValidator.InvalidStrategyCombination::class,
+    FeatureApi.NoAppropriateRole::class,
+    LockedException::class
+  )
   override fun createFeatureValueForEnvironment(
-      eId: UUID,
-      key: String,
-      featureValue: FeatureValue,
-      person: PersonFeaturePermission
+    eid: UUID,
+    key: String,
+    featureValue: FeatureValue,
+    person: PersonFeaturePermission
   ): FeatureValue {
     if (!person.hasWriteRole()) {
-      val env = QDbEnvironment().id.eq(eId).whenArchived.isNull.findOne()
-      log.warn("User has no roles for environment {} key {}", eId, key)
+      val env = QDbEnvironment().id.eq(eid).whenArchived.isNull.findOne()
+      log.warn("User has no roles for environment {} key {}", eid, key)
       if (env == null) {
         log.error("could not find environment or environment is archived")
       } else {
@@ -66,7 +71,7 @@ class FeatureSqlApi @Inject constructor(
       featureValue.rolloutStrategyInstances
     ).hasFailedValidation()
 
-    val dbFeatureValue = QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).findOne()
+    val dbFeatureValue = QDbFeatureValue().environment.id.eq(eid).feature.key.eq(key).findOne()
 
     return if (dbFeatureValue != null) {
       if (dbFeatureValue.rolloutStrategies == null) { // ensure this is not null for further calculation
@@ -75,12 +80,12 @@ class FeatureSqlApi @Inject constructor(
       // this is an update not a create, environment + app-feature key exists
       onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue)!!
     } else if (person.hasChangeValueRole() || person.hasLockRole() || person.hasUnlockRole()) {
-      onlyCreateFeatureValueForEnvironment(eId, key, featureValue, person)!!
+      onlyCreateFeatureValueForEnvironment(eid, key, featureValue, person)!!
     } else {
       log.info(
         "roles for person are {} and are not enough for environment {} and key {}",
         person.toString(),
-        eId,
+        eid,
         key
       )
       throw FeatureApi.NoAppropriateRole()
@@ -89,8 +94,8 @@ class FeatureSqlApi @Inject constructor(
 
   @Throws(FeatureApi.NoAppropriateRole::class)
   private fun onlyCreateFeatureValueForEnvironment(
-      eid: UUID, key: String, featureValue: FeatureValue?,
-      person: PersonFeaturePermission
+    eid: UUID, key: String, featureValue: FeatureValue?,
+    person: PersonFeaturePermission
   ): FeatureValue? {
     val environ = convertUtils.byEnvironment(eid)
     if (environ != null) {
@@ -139,9 +144,9 @@ class FeatureSqlApi @Inject constructor(
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
-  override fun deleteFeatureValueForEnvironment(eId: UUID, key: String): Boolean {
-      Conversions.nonNullEnvironmentId(eId)
-    val strategy = QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).findOne()
+  override fun deleteFeatureValueForEnvironment(eid: UUID, key: String): Boolean {
+    Conversions.nonNullEnvironmentId(eid)
+    val strategy = QDbFeatureValue().environment.id.eq(eid).feature.key.eq(key).findOne()
     if (strategy != null) {
       cacheSource.deleteFeatureChange(strategy.feature, strategy.environment.id)
       return database.delete(strategy)
@@ -170,7 +175,7 @@ class FeatureSqlApi @Inject constructor(
         // there is no historical value to compare against and we aren't updating the existing version
         throw OptimisticLockingException()
       }
-      if  (historical == null) {
+      if (historical == null) {
         updateFeatureValue(featureValue, person, existing)
 
         save(existing)
@@ -190,53 +195,78 @@ class FeatureSqlApi @Inject constructor(
   }
 
   @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class)
-  internal fun updateSelectively(featureValue: FeatureValue,
-                                person: PersonFeaturePermission, existing: DbFeatureValue,
-                                historical: DbFeatureValueVersion) {
+  internal fun updateSelectively(
+    featureValue: FeatureValue,
+    person: PersonFeaturePermission, existing: DbFeatureValue,
+    historical: DbFeatureValueVersion
+  ) {
     val feature = existing.feature
 
     val lockChanged = updateSelectivelyLocked(featureValue, historical, existing, person)
 
     // allow them to change the value and lock it at the same time
-    val defaultValueChanged = updateSelectivelyDefaultValue(feature, featureValue, historical, existing, person, lockChanged)
+    val defaultValueChanged =
+      updateSelectivelyDefaultValue(feature, featureValue, historical, existing, person, lockChanged)
 
-    val strategiesChanged = updateSelectivelyRolloutStrategies(person, featureValue, historical, existing)
+    val strategiesChanged = updateSelectivelyRolloutStrategies(person, featureValue, historical, existing, lockChanged)
 
-    val retiredChange = updateSelectivelyRetired(person, featureValue, historical, existing)
+    val retiredChange = updateSelectivelyRetired(person, featureValue, historical, existing, lockChanged)
 
-    if (lockChanged || defaultValueChanged || strategiesChanged || retiredChange ) {
+    if (lockChanged || defaultValueChanged || strategiesChanged || retiredChange) {
       existing.whoUpdated = QDbPerson().id.eq(person.person.id!!.id).findOne()
       save(existing)
       publish(existing)
     }
   }
 
-  internal fun updateSelectivelyRetired(person: PersonFeaturePermission, featureValue: FeatureValue, historical: DbFeatureValueVersion, existing: DbFeatureValue): Boolean {
-    if (featureValue.retired != historical.isRetired && featureValue.retired != existing.retired) { // it changed from historical & not already the same as existing
-      if (historical.isRetired == existing.retired) { // but historical is the same as current
-        if (!person.hasEditFeatureRole()) {
-          log.debug("trying to change retired and no permission")
-          throw FeatureApi.NoAppropriateRole()
-        }
-
-        existing.retired = featureValue.retired
-
-        return true
-      } else {
-        throw OptimisticLockingException()
-      }
-    }
-
-    return false
-  }
-
-  // TODO: the strategies have to support deepEquals in the jersey openapi generator
-  internal fun updateSelectivelyRolloutStrategies(
+  fun updateSelectivelyRetired(
     person: PersonFeaturePermission,
     featureValue: FeatureValue,
     historical: DbFeatureValueVersion,
-    existing: DbFeatureValue
-  ) : Boolean {
+    existing: DbFeatureValue,
+    lockChanged: Boolean
+  ): Boolean {
+    // is it different from what it is now? if not, exit
+    if (featureValue.retired == existing.retired) {
+      return false
+    }
+
+    // did they actually change it? if not, exit
+    if (featureValue.retired == historical.isRetired) {
+      return false
+    }
+
+    if (historical.isRetired == existing.retired) { // but historical is the same as current
+      if (existing.isLocked && !lockChanged) { // if its locked and we didn't change it to locked, we have to reject this change
+        log.debug("feature value is locked, you cannot change it")
+        throw LockedException() // not really? its just locked so you can't change it
+      }
+
+      if (!person.hasChangeValueRole()) {
+        log.debug("trying to change retired and no permission")
+        throw FeatureApi.NoAppropriateRole()
+      }
+
+      existing.retired = featureValue.retired
+
+      return true
+    }
+
+    // otherwise they changed it from historical and existing has already changed
+    throw OptimisticLockingException()
+  }
+
+  /**
+   * here deleting and adding new ones isn't the issue. the issue is checking for updates to existing ones, and
+   * we need to treat them the same as we do for a "default value".
+   */
+  fun updateSelectivelyRolloutStrategies(
+    person: PersonFeaturePermission,
+    featureValue: FeatureValue,
+    historical: DbFeatureValueVersion,
+    existing: DbFeatureValue,
+    lockChanged: Boolean
+  ): Boolean {
     var changed = false
     val personCanChangeValues = person.hasChangeValueRole()
     featureValue.rolloutStrategies?.let { strategies ->
@@ -262,8 +292,9 @@ class FeatureSqlApi @Inject constructor(
             throw FeatureApi.NoAppropriateRole()
           }
 
-          // give it a unique id
-          strategy.id = RandomStringUtils.randomAlphanumeric(strategyIdLength)
+          // give it a unique id if it is null or it clashes or it isn't 4 long
+          if (strategy.id == null || strategy.id?.length != 4 || existing.rolloutStrategies.any({ it.id == strategy.id }))
+            strategy.id = RandomStringUtils.randomAlphanumeric(strategyIdLength)
           while (existing.rolloutStrategies.any { it.id == strategy.id } || historical.rolloutStrategies.any { it.id == strategy.id }) {
             strategy.id = RandomStringUtils.randomAlphanumeric(strategyIdLength)
           }
@@ -283,24 +314,35 @@ class FeatureSqlApi @Inject constructor(
           }
 
           // now we have to detect if they have changed it
-          if (!Objects.deepEquals(strategy, historicalStrategy)) {
-            if (Objects.deepEquals(historicalStrategy, currentStrategy)) { // it hasn't changed from the historical one
-              if (!personCanChangeValues) {
-                log.debug("trying to add strategy and no permission")
-                throw FeatureApi.NoAppropriateRole()
-              }
+          // if the strategy is the same as the CURRENT one - it doesn't matter if they changed it, its the same
+          if (Objects.deepEquals(strategy, currentStrategy)) {
+            continue
+          }
 
-              // ok - its all good to replace this one
-              changed = true
-              existing.rolloutStrategies[existing.rolloutStrategies.indexOfFirst { it.id == strategy.id }] = strategy
-              if (strategy.id!!.length > strategyIdLength) {
-                var newId = RandomStringUtils.randomAlphanumeric(strategyIdLength)
-                while (existing.rolloutStrategies.any { it.id == newId } || historical.rolloutStrategies.any { it.id == newId }) {
-                  newId = RandomStringUtils.randomAlphanumeric(strategyIdLength)
-                }
-                strategy.id = newId
-              }
+          // its the same as the HISTORICAL one, then we have to assume that they haven't changed it
+          if (Objects.deepEquals(strategy, historicalStrategy)) {
+            continue
+          }
+
+          // when they changed it against their historical copy, is it the same as the current version?
+          if (Objects.deepEquals(historicalStrategy, currentStrategy)) { // it hasn't changed from the historical one
+            if (!personCanChangeValues) {
+              log.debug("trying to add strategy and no permission")
+              throw FeatureApi.NoAppropriateRole()
             }
+
+            // ok - its all good to replace this one
+            changed = true
+            existing.rolloutStrategies[existing.rolloutStrategies.indexOfFirst { it.id == strategy.id }] = strategy
+            if (strategy.id!!.length > strategyIdLength) {
+              var newId = RandomStringUtils.randomAlphanumeric(strategyIdLength)
+              while (existing.rolloutStrategies.any { it.id == newId } || historical.rolloutStrategies.any { it.id == newId }) {
+                newId = RandomStringUtils.randomAlphanumeric(strategyIdLength)
+              }
+              strategy.id = newId
+            }
+          } else {
+            throw OptimisticLockingException() // it has changed since its history and user wants to change it again
           }
         }
       }
@@ -310,6 +352,10 @@ class FeatureSqlApi @Inject constructor(
           changed = true
         }
       }
+    }
+
+    if (changed && existing.isLocked && !lockChanged) {
+      throw LockedException()
     }
 
     return changed
@@ -326,7 +372,7 @@ class FeatureSqlApi @Inject constructor(
     existing: DbFeatureValue,
     person: PersonFeaturePermission,
     lockChanged: Boolean
-  ) : Boolean {
+  ): Boolean {
     val defaultValueChanged: String? =
       when (feature.valueType!!) {
         FeatureValueType.NUMBER -> {
@@ -352,30 +398,30 @@ class FeatureSqlApi @Inject constructor(
     }
 
     // if it changed from the historical version
-    if (defaultValueChanged != historical.defaultValue) {
-      // it didn't change between the  historical version and the current version?
-      if (historical.defaultValue == existing.defaultValue) {
-        if (existing.isLocked && !lockChanged) { // if its locked and we didn't change it to locked, we have to reject this change
-          log.debug("feature value is locked, you cannot change it")
-          throw LockedException() // not really? its just locked so you can't change it
-        }
-
-        // as the value is different from the historical one, and the historical one is the _same_ as the current one
-        // there must be an update, so we now check permissions
-        if (!person.hasChangeValueRole()) {
-          log.debug("Attempted to change value and has no permission")
-          throw FeatureApi.NoAppropriateRole()
-        }
-
-        existing.defaultValue = defaultValueChanged
-
-        return true
-      } else { // someone changed it in the meantime so they can't change it
-        throw OptimisticLockingException()
+    if (defaultValueChanged == historical.defaultValue) {
+      return false
+    }
+    // it didn't change between the  historical version and the current version?
+    if (historical.defaultValue == existing.defaultValue) {
+      if (existing.isLocked && !lockChanged) { // if its locked and we didn't change it to locked, we have to reject this change
+        log.debug("feature value is locked, you cannot change it")
+        throw LockedException() // not really? its just locked so you can't change it
       }
-    } // didn't change, ignore it
 
-    return false
+      // as the value is different from the historical one, and the historical one is the _same_ as the current one
+      // there must be an update, so we now check permissions
+      if (!person.hasChangeValueRole()) {
+        log.debug("Attempted to change value and has no permission")
+        throw FeatureApi.NoAppropriateRole()
+      }
+
+      existing.defaultValue = defaultValueChanged
+
+      return true
+    }
+
+    // someone changed it in the meantime so they can't change it
+    throw OptimisticLockingException()
   }
 
   // if they  are trying to change the locked status from the version they were on
@@ -383,12 +429,12 @@ class FeatureSqlApi @Inject constructor(
   // change locked  permissions and reject them if they can't.
   // if they aren't changing the lock value from what it used to be, or they are changing it to
   // the value it currently is, it doesn't matter
-  internal fun updateSelectivelyLocked(
-      featureValue: FeatureValue,
-      historical: DbFeatureValueVersion,
-      existing: DbFeatureValue,
-      person: PersonFeaturePermission
-  ) : Boolean {
+  fun updateSelectivelyLocked(
+    featureValue: FeatureValue,
+    historical: DbFeatureValueVersion,
+    existing: DbFeatureValue,
+    person: PersonFeaturePermission
+  ): Boolean {
     if (featureValue.locked == existing.isLocked) {
       return false
     }
@@ -410,6 +456,7 @@ class FeatureSqlApi @Inject constructor(
 
         return true
       } else {
+        // i can't actually see how this can happen
         throw OptimisticLockingException()
       }
     } // else didn't change it
@@ -418,35 +465,41 @@ class FeatureSqlApi @Inject constructor(
   }
 
 
+  /**
+   * this is the original logic - do not touch
+   */
   @Throws(FeatureApi.NoAppropriateRole::class)
   private fun updateFeatureValue(
-      featureValue: FeatureValue,
-      person: PersonFeaturePermission,
-      dbFeatureValue: DbFeatureValue
+    featureValue: FeatureValue,
+    person: PersonFeaturePermission,
+    dbFeatureValue: DbFeatureValue
   ) {
     val feature = dbFeatureValue.feature
     if (person.hasChangeValueRole() && (!dbFeatureValue.isLocked || java.lang.Boolean.FALSE == featureValue.locked && person.hasUnlockRole())) {
       when (feature.valueType!!) {
-          FeatureValueType.NUMBER -> {
-            dbFeatureValue.defaultValue =
-              if (featureValue.valueNumber == null) null else featureValue.valueNumber.toString()
-          }
-          FeatureValueType.STRING -> {
-            dbFeatureValue.defaultValue = featureValue.valueString
-          }
-          FeatureValueType.JSON -> {
-            dbFeatureValue.defaultValue = featureValue.valueJson
-          }
-          FeatureValueType.BOOLEAN -> {
-            dbFeatureValue.defaultValue =
-              if (featureValue.valueBoolean == null) java.lang.Boolean.FALSE.toString() else featureValue.valueBoolean.toString()
-          }
+        FeatureValueType.NUMBER -> {
+          dbFeatureValue.defaultValue =
+            if (featureValue.valueNumber == null) null else featureValue.valueNumber.toString()
+        }
+
+        FeatureValueType.STRING -> {
+          dbFeatureValue.defaultValue = featureValue.valueString
+        }
+
+        FeatureValueType.JSON -> {
+          dbFeatureValue.defaultValue = featureValue.valueJson
+        }
+
+        FeatureValueType.BOOLEAN -> {
+          dbFeatureValue.defaultValue =
+            if (featureValue.valueBoolean == null) java.lang.Boolean.FALSE.toString() else featureValue.valueBoolean.toString()
+        }
       }
       if (featureValue.rolloutStrategies != null) {
         featureValue.rolloutStrategies!!.forEach { strategy: RolloutStrategy ->
           if (strategy.id == null) {
             strategy.id = RandomStringUtils.randomAlphanumeric(4)
-            while (dbFeatureValue.rolloutStrategies.any { it.id == strategy.id } ) {
+            while (dbFeatureValue.rolloutStrategies.any { it.id == strategy.id }) {
               strategy.id = RandomStringUtils.randomAlphanumeric(4)
             }
           }
@@ -479,41 +532,51 @@ class FeatureSqlApi @Inject constructor(
     }
   }
 
-  @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class, RolloutStrategyValidator.InvalidStrategyCombination::class, LockedException::class)
+  @Throws(
+    OptimisticLockingException::class,
+    FeatureApi.NoAppropriateRole::class,
+    RolloutStrategyValidator.InvalidStrategyCombination::class,
+    LockedException::class
+  )
   override fun updateFeatureValueForEnvironment(
-      eid: UUID,
-      key: String,
-      featureValue: FeatureValue,
-      person: PersonFeaturePermission
+    eid: UUID,
+    key: String,
+    featureValue: FeatureValue,
+    person: PersonFeaturePermission
   ): FeatureValue {
     return createFeatureValueForEnvironment(eid, key, featureValue, person)
   }
 
   override fun getFeatureValueForEnvironment(eid: UUID, key: String): FeatureValue? {
-      Conversions.nonNullEnvironmentId(eid)
+    Conversions.nonNullEnvironmentId(eid)
     val strategy =
       QDbFeatureValue().environment.id.eq(eid).feature.key.eq(key).sharedRolloutStrategies.fetch().findOne()
     return if (strategy == null) null else convertUtils.toFeatureValue(strategy)
   }
 
-  override fun getAllFeatureValuesForEnvironment(eId: UUID): EnvironmentFeaturesResult {
-      Conversions.nonNullEnvironmentId(eId)
+  override fun getAllFeatureValuesForEnvironment(eid: UUID): EnvironmentFeaturesResult {
+    Conversions.nonNullEnvironmentId(eid)
     return EnvironmentFeaturesResult()
       .featureValues(
-        QDbFeatureValue().environment.id.eq(eId).feature.whenArchived.isNull.findList()
+        QDbFeatureValue().environment.id.eq(eid).feature.whenArchived.isNull.findList()
           .map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs) }
-          )
-      .environments(listOf(convertUtils.toEnvironment(QDbEnvironment().id.eq(eId).findOne(), Opts.empty())))
+      )
+      .environments(listOf(convertUtils.toEnvironment(QDbEnvironment().id.eq(eid).findOne(), Opts.empty())))
   }
 
   // we are going to have to put a transaction at this level as we want the whole thing to roll back if there is an issue
-  @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class, RolloutStrategyValidator.InvalidStrategyCombination::class, LockedException::class)
+  @Throws(
+    OptimisticLockingException::class,
+    FeatureApi.NoAppropriateRole::class,
+    RolloutStrategyValidator.InvalidStrategyCombination::class,
+    LockedException::class
+  )
   override fun updateAllFeatureValuesForEnvironment(
-      eId: UUID,
-      featureValues: List<FeatureValue>,
-      person: PersonFeaturePermission
+    eid: UUID,
+    featureValues: List<FeatureValue>,
+    requireRoleCheck: PersonFeaturePermission
   ): List<FeatureValue> {
-      Conversions.nonNullEnvironmentId(eId)
+    Conversions.nonNullEnvironmentId(eid)
     require(
       featureValues.size == featureValues.map { obj: FeatureValue -> obj.key }.toSet().size
     ) { "Invalid update dataset" }
@@ -524,7 +587,7 @@ class FeatureSqlApi @Inject constructor(
       rolloutStrategyValidator.validateStrategies(fv.rolloutStrategies, fv.rolloutStrategyInstances, failure)
     }
     failure.hasFailedValidation()
-    val existing = QDbFeatureValue().environment.id.eq(eId).feature.whenArchived.isNull.findList()
+    val existing = QDbFeatureValue().environment.id.eq(eid).feature.whenArchived.isNull.findList()
     val newValues = featureValues.associateBy({ it.key }, { it }).toMutableMap()
 
     // take them all and remove all fv's we were passed, leaving only EFS's we want to remove
@@ -544,7 +607,7 @@ class FeatureSqlApi @Inject constructor(
       } else {
         val fv = newValues.remove(strategy.feature.key)
         if (fv != null) {
-          onlyUpdateFeatureValueForEnvironment(fv, person, strategy)
+          onlyUpdateFeatureValueForEnvironment(fv, requireRoleCheck, strategy)
         }
       }
     }
@@ -552,13 +615,13 @@ class FeatureSqlApi @Inject constructor(
     // now for the creates
     for (key in newValues.keys) {
       val fv = newValues[key]
-      onlyCreateFeatureValueForEnvironment(eId, key, fv, person)
+      onlyCreateFeatureValueForEnvironment(eid, key, fv, requireRoleCheck)
     }
     if (deleteStrategies.isNotEmpty()) {
       publishTheRemovalOfABunchOfStrategies(deleteStrategies)
     }
 
-    return QDbFeatureValue().environment.id.eq(eId).feature.whenArchived.isNull.findList()
+    return QDbFeatureValue().environment.id.eq(eid).feature.whenArchived.isNull.findList()
       .map { fs: DbFeatureValue -> convertUtils.toFeatureValue(fs)!! }
   }
 
@@ -581,7 +644,7 @@ class FeatureSqlApi @Inject constructor(
     sdkUrl: String, envId: UUID, featureKey: String, updatingValue: Boolean,
     buildFeatureValue: Function<FeatureValueType, FeatureValue>
   ) {
-      Conversions.nonNullEnvironmentId(envId)
+    Conversions.nonNullEnvironmentId(envId)
 
     // not checking permissions, edge checks those
     val feature = QDbApplicationFeature().parentApplication.environments.id.eq(envId).key.eq(featureKey)
@@ -605,9 +668,11 @@ class FeatureSqlApi @Inject constructor(
       when (fv!!.feature.valueType!!) {
         FeatureValueType.BOOLEAN -> fv.defaultValue =
           if (newValue.valueBoolean == null) java.lang.Boolean.FALSE.toString() else newValue.valueBoolean.toString()
+
         FeatureValueType.STRING -> fv.defaultValue = newValue.valueString
         FeatureValueType.NUMBER -> fv.defaultValue =
           if (newValue.valueNumber == null) null else newValue.valueNumber.toString()
+
         FeatureValueType.JSON -> fv.defaultValue = newValue.valueJson
       }
     }
@@ -618,31 +683,32 @@ class FeatureSqlApi @Inject constructor(
     publish(fv)
   }
 
-  internal class EnvironmentsAndStrategies(
-      var featureValues: MutableMap<UUID, DbFeatureValue>,
-      var roles: Map<UUID, List<RoleType>>,
-      var environments: Map<UUID, DbEnvironment>,
-      var appRolesForThisPerson: Set<ApplicationRoleType>
+  internal class EnvironmentsAndFeatureValues(
+    var featureValues: MutableMap<UUID, DbFeatureValue>,
+    var roles: Map<UUID, List<RoleType>>,
+    var environments: Map<UUID, DbEnvironment>,
+    var appRolesForThisPerson: Set<ApplicationRoleType>
   )
 
-  private fun strategiesUserCanAccess(appId: UUID, key: String, person: Person): EnvironmentsAndStrategies? {
+  private fun featureValuesUserCanAccess(appId: UUID, key: String, person: Person): EnvironmentsAndFeatureValues? {
     val dbPerson = convertUtils.byPerson(person)
     val app = convertUtils.byApplication(appId)
     if (app == null || app.whenArchived != null || dbPerson == null || dbPerson.whenArchived != null) {
       return null
     }
-    val strategiesResult: MutableMap<UUID, DbFeatureValue> = mutableMapOf()
+    val featureValuesResult: MutableMap<UUID, DbFeatureValue> = mutableMapOf()
     val roles: MutableMap<UUID, List<RoleType>> = mutableMapOf()
     val environments: MutableMap<UUID, DbEnvironment> = mutableMapOf()
     val personAdmin = convertUtils.isPersonApplicationAdmin(dbPerson, app)
-    val strategies = QDbFeatureValue().feature.key.eq(key).feature.parentApplication
+    val featureValues = QDbFeatureValue().feature.key.eq(key).feature.parentApplication
       .eq(app)
       .findList()
-      .associateBy( {it.environment.id}, {it}).toMutableMap()
+      .associateBy({ it.environment.id }, { it }).toMutableMap()
 
     val adminRoles = listOf(*RoleType.values())
     if (!personAdmin) { // is they aren't a portfolio admin, figure out what their permissions are to each environment
-      QDbAcl().environment.parentApplication.eq(app).group.groupMembers.person.eq(dbPerson).findList().forEach { fe: DbAcl ->
+      QDbAcl().environment.parentApplication.eq(app).group.groupMembers.person.eq(dbPerson).findList()
+        .forEach { fe: DbAcl ->
           log.debug(
             "Found environment `{}`, app `{}`, group `{}`, roles `{}`",
             if (fe.environment == null) "<none>" else fe.environment.name,
@@ -654,9 +720,8 @@ class FeatureSqlApi @Inject constructor(
             val envId = fe.environment.id
             roles[envId] = roleTypes
             environments[envId] = fe.environment
-            val strategy = strategies.remove(envId)
-            if (strategy != null) {
-              strategiesResult[envId] = strategy
+            featureValues.remove(envId)?.let { fv ->
+              featureValuesResult[envId] = fv
             }
           }
         }
@@ -670,9 +735,8 @@ class FeatureSqlApi @Inject constructor(
           environments[env.id] = env
           roles[env.id] = if (personAdmin) adminRoles else emptyRoles
           if (personAdmin) {
-            val strategy = strategies.remove(env.id)
-            if (strategy != null) {
-              strategiesResult[env.id] = strategy
+            val strategy = featureValues.remove(env.id)?.let { fv ->
+              featureValuesResult[env.id] = fv
             }
           }
         }
@@ -685,32 +749,38 @@ class FeatureSqlApi @Inject constructor(
       .map { appAcl: DbAcl -> convertUtils.splitApplicationRoles(appAcl.roles) }
       .flatten().toSet()
 
-    return EnvironmentsAndStrategies(strategiesResult, roles, environments, appRoles)
+    return EnvironmentsAndFeatureValues(featureValuesResult, roles, environments, appRoles)
   }
 
   override fun getFeatureValuesForApplicationForKeyForPerson(
-      appId: UUID,
-      key: String,
-      person: Person
+    appId: UUID,
+    key: String,
+    person: Person
   ): List<FeatureEnvironment> {
-      Conversions.nonNullApplicationId(appId)
-    val result = strategiesUserCanAccess(appId, key, person) ?: return emptyList()
+    Conversions.nonNullApplicationId(appId)
+    val result = featureValuesUserCanAccess(appId, key, person) ?: return emptyList()
 
     return result.environments.keys.map { e ->
-      convertUtils.toFeatureEnvironment(result.featureValues[e], result.roles[e]!!,
+      convertUtils.toFeatureEnvironment(
+        result.featureValues[e], result.roles[e]!!,
         result.environments[e]!!, Opts.opts(FillOpts.ServiceAccounts)
       )
     }
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
-  @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class, RolloutStrategyValidator.InvalidStrategyCombination::class, LockedException::class)
+  @Throws(
+    OptimisticLockingException::class,
+    FeatureApi.NoAppropriateRole::class,
+    RolloutStrategyValidator.InvalidStrategyCombination::class,
+    LockedException::class
+  )
   override fun updateAllFeatureValuesByApplicationForKey(
-      id: UUID,
-      key: String,
-      featureValue: List<FeatureValue>,
-      person: Person,
-      removeValuesNotPassed: Boolean
+    id: UUID,
+    key: String,
+    featureValue: List<FeatureValue>,
+    from: Person,
+    removeValuesNotPassed: Boolean
   ) {
     val failure = RolloutStrategyValidator.ValidationFailure()
 
@@ -718,7 +788,7 @@ class FeatureSqlApi @Inject constructor(
       rolloutStrategyValidator.validateStrategies(fv.rolloutStrategies, fv.rolloutStrategyInstances, failure)
     }
     failure.hasFailedValidation()
-    val result = strategiesUserCanAccess(id, key, person)
+    val result = featureValuesUserCanAccess(id, key, from)
     if (result != null) {
       // environment id -> role in that environment
       val environmentToRoleMap = result.roles
@@ -741,7 +811,7 @@ class FeatureSqlApi @Inject constructor(
         createFeatureValueForEnvironment(
           fv.environmentId!!, key, fv,
           PersonFeaturePermission.Builder()
-            .person(person)
+            .person(from)
             .appRoles(result.appRolesForThisPerson)
             .roles(HashSet(roles)).build()
         )
@@ -763,7 +833,7 @@ class FeatureSqlApi @Inject constructor(
 
   private fun environmentToFeatureValues(acl: DbAcl, personIsAdmin: Boolean): EnvironmentFeatureValues? {
     val roles: List<RoleType> = if (personIsAdmin) {
-        listOf(*RoleType.values())
+      listOf(*RoleType.values())
     } else {
       convertUtils.splitEnvironmentRoles(acl.roles)
     }
@@ -781,11 +851,11 @@ class FeatureSqlApi @Inject constructor(
   }
 
   override fun findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
-      appId: UUID,
-      person: Person
+    appId: UUID,
+    person: Person
   ): ApplicationFeatureValues? {
-      Conversions.nonNullApplicationId(appId)
-      Conversions.nonNullPerson(person)
+    Conversions.nonNullApplicationId(appId)
+    Conversions.nonNullPerson(person)
     val dbPerson = convertUtils.byPerson(person)
     val app = convertUtils.byApplication(appId)
     if (app != null && dbPerson != null && app.whenArchived == null && dbPerson.whenArchived == null) {
@@ -801,8 +871,8 @@ class FeatureSqlApi @Inject constructor(
           .environment.parentApplication.groupRolesAcl.fetch()
           .group.whenArchived.isNull
           .group.groupMembers.person.eq(
-          dbPerson
-        ).findList()
+            dbPerson
+          ).findList()
           .onEach { acl: DbAcl -> environmentOrderingMap[acl.environment.id] = acl.environment }
           .map { acl: DbAcl -> environmentToFeatureValues(acl, personAdmin) }
           .filterNotNull()
@@ -869,8 +939,8 @@ class FeatureSqlApi @Inject constructor(
       // to all of them, so we will lose the sort order if we try and order them
       // so we get them all, sort them, and then pick them out of the map one by one
       val sortingEnvironments: List<DbEnvironment> =
-          ArrayList(QDbEnvironment().select(QDbEnvironment.Alias.id).parentApplication.id.eq(appId).findList())
-        EnvironmentUtils.sortEnvironments(sortingEnvironments)
+        ArrayList(QDbEnvironment().select(QDbEnvironment.Alias.id).parentApplication.id.eq(appId).findList())
+      EnvironmentUtils.sortEnvironments(sortingEnvironments)
       val finalValues: MutableList<EnvironmentFeatureValues> = ArrayList()
       sortingEnvironments.forEach { e: DbEnvironment ->
         val efv = envs[e.id]
@@ -892,6 +962,6 @@ class FeatureSqlApi @Inject constructor(
   companion object {
     private val log = LoggerFactory.getLogger(FeatureSqlApi::class.java)
 
-    const val strategyIdLength  = 4
+    const val strategyIdLength = 4
   }
 }
