@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="fh_fv_version" pkName="pk_fh_fv_version">
+            <column name="id" type="uuid" notnull="true" primaryKey="true"/>
+            <column name="version" type="bigint" notnull="true" primaryKey="true"/>
+            <column name="fk_who_updated" type="uuid" references="fh_person.id" foreignKeyName="fk_fh_fv_version_fk_who_updated" foreignKeyIndex="ix_fh_fv_version_fk_who_updated" foreignKeyOnDelete="SET_NULL" foreignKeyOnUpdate="RESTRICT"/>
+            <column name="feature_state" type="varchar(8)" checkConstraint="check ( feature_state in ('DISABLED','READY','ENABLED'))" checkConstraintName="ck_fh_fv_version_feature_state"/>
+            <column name="default_value" type="clob"/>
+            <column name="locked" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="rollout_strat" type="json"/>
+            <column name="retired" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="shared_strat" type="json"/>
+            <column name="when_created" type="localdatetime" notnull="true"/>
+        </createTable>
+    </changeSet>
+    <changeSet type="pendingDrops">
+        <dropColumn columnName="what_updated" tableName="fh_env_feature_strategy"/>
+    </changeSet>
+</migration>
