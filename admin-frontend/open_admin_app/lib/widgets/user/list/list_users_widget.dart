@@ -12,7 +12,6 @@ import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
@@ -67,6 +66,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
             showCheckboxColumn: false,
             showFirstLastButtons: true,
             addEmptyRows: false,
+            showHorizontalScrollbarAlways: true,
             availableRowsPerPage: const [10, 20, 50, 100],
             sortAscending: sortAsc,
             sortColumnIndex: sortIndex,
@@ -79,7 +79,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
             },
             columns: [
               DataColumn(label: const Text('Name'), onSort: setSort),
-              DataColumn(label: Text('Status'), onSort: setSort),
+              DataColumn(label: const Text('Status'), onSort: setSort),
               const DataColumn(
                 label: Text('Email'),
               ),
@@ -245,7 +245,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                       : FHDeleteThingWarningWidget(
                           thing: "user '${_personEntry.person.name}'",
                           content:
-                              'This user will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!',
+                              'This user will be removed from all groups and deactivated in this organization.',
                           bloc: bloc.mrClient,
                           deleteSelected: () async {
                             try {
@@ -253,7 +253,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                                   _personEntry.person.id, true);
                               setNextView(); // triggers reload from server with latest settings and rebuilds state
                               bloc.mrClient.addSnackbar(Text(
-                                  "User '${_personEntry.person.name}' deleted!"));
+                                  "User '${_personEntry.person.name}' deactivated!"));
                               return true;
                             } catch (e, s) {
                               await bloc.mrClient.dialogError(e, s);
@@ -266,10 +266,14 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
             ])),
         ],
         onSelectChanged: (newValue) {
-          ManagementRepositoryClientBloc.router
-              .navigateTo(context, '/manage-user', params: {
-            'id': [_personEntry.person.id]
-          });
+          if (_personEntry.person.whenDeactivated == null) {
+            ManagementRepositoryClientBloc.router
+                .navigateTo(context, '/manage-user', params: {
+              'id': [_personEntry.person.id]
+            });
+          } else {
+            null;
+          }
         });
   }
 

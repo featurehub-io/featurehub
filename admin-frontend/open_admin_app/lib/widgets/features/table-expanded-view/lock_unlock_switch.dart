@@ -51,8 +51,8 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
                   tooltip: disabled
                       ? null
                       : (_locked
-                          ? 'Unlock to edit feature value'
-                          : 'Lock feature value'),
+                          ? 'Click the lock to make changes'
+                          : 'Click the lock to prevent further changes'),
                   icon: Icon(_locked ? Icons.lock_outline : Icons.lock_open,
                       size: 20, color: _locked ? Colors.orange : Colors.green),
                   onPressed: () {
