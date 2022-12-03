@@ -1,10 +1,9 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
-
-const _strategyBlocUUidGenerator = Uuid();
 
 class CustomStrategyBloc extends Bloc {
   final EnvironmentFeatureValues environmentFeatureValue;
@@ -25,12 +24,10 @@ class CustomStrategyBloc extends Bloc {
       : featureValue = fvBloc
             .featureValueByEnvironment(environmentFeatureValue.environmentId!) {
     for (var rs in featureValue.rolloutStrategies) {
-      if (rs.id != null && rs.id!.length < 30) {
-        rs.id = _strategyBlocUUidGenerator.v4();
-      }
+      rs.id ??= makeStrategyId(existing: featureValue.rolloutStrategies);
       if (rs.attributes.isNotEmpty == true) {
         for (var rsa in rs.attributes) {
-          rsa.id = _strategyBlocUUidGenerator.v4();
+          rsa.id = makeStrategyId();
         }
       }
     }
@@ -45,7 +42,7 @@ class CustomStrategyBloc extends Bloc {
   }
 
   void addStrategy(RolloutStrategy rs) {
-    rs.id ??= _strategyBlocUUidGenerator.v4();
+    rs.id ??= makeStrategyId(existing: _strategySource.value!);
     final strategies = _strategySource.value!;
     strategies.add(rs);
     markDirty();
@@ -60,7 +57,7 @@ class CustomStrategyBloc extends Bloc {
 
   void removeStrategy(RolloutStrategy rs) {
     // tag it to ensure it has a number so we can remove it
-    rs.id = _strategyBlocUUidGenerator.v4();
+    rs.id ??= makeStrategyId();
     final strategies = _strategySource.value!;
     strategies.removeWhere((e) => e.id == rs.id);
     markDirty();
@@ -70,7 +67,7 @@ class CustomStrategyBloc extends Bloc {
   void addStrategyAttribute() {
     // _strategySource.value
     final rsa = RolloutStrategyAttribute();
-    rsa.id = _strategyBlocUUidGenerator.v4();
+    rsa.id = makeStrategyId(existing: _strategySource.value!);
     final attributes = _strategySource.value!.last.attributes;
     attributes.add(rsa);
     _rolloutStartegyAttributeList.add(attributes);
@@ -100,7 +97,7 @@ class CustomStrategyBloc extends Bloc {
 
     for (var s in strategies) {
       if (s.id == null) {
-        s.id = _strategyBlocUUidGenerator.v4();
+        s.id = makeStrategyId(existing: strategies);
         strategiesById[s.id!] = s;
       }
     }
@@ -113,11 +110,15 @@ class CustomStrategyBloc extends Bloc {
     var strategies =
         _strategySource.value!.where((s) => s.id != strategy.id).toList();
 
-    strategy.id ??= _strategyBlocUUidGenerator.v4();
+    strategy.id ??= makeStrategyId(existing: strategies);
 
     strategies.add(strategy);
 
     return fvBloc.featuresOnTabBloc.featureStatusBloc
         .validationCheck(strategies, <RolloutStrategyInstance>[]);
+  }
+
+  uniqueStrategyId() {
+    return makeStrategyId(existing: _strategySource.value!);
   }
 }
