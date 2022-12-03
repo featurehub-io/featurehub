@@ -21,7 +21,7 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
   private final DbFeatureValueVersionKey id;
 
   public DbFeatureValueVersion(@NotNull DbFeatureValueVersionKey id, @NotNull LocalDateTime whenCreated,
-                               @NotNull DbPerson whoCreated, @NotNull FeatureState featureState,
+                               DbPerson whoCreated, @NotNull FeatureState featureState,
                                @Nullable String defaultValue, boolean locked, boolean retired,
                                List<RolloutStrategy> rolloutStrategies,
                                List<SharedRolloutStrategyVersion> sharedRolloutStrategies ) {
@@ -64,7 +64,7 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
       new DbFeatureValueVersionKey(from.getId(), from.getVersion()),
         from.getVersion() == 1L ? from.getWhenCreated() : from.getWhenUpdated(),
         from.getWhoUpdated(),
-        from.getFeatureState(),
+        from.getFeatureState() == null ? FeatureState.READY : from.getFeatureState(),
         from.getDefaultValue(),
         from.isLocked(),
         from.getRetired() == Boolean.TRUE,

@@ -4,6 +4,7 @@ import cd.connect.app.config.ThreadLocalConfigurationSource
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyValidator
+import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.RoleType
 import io.featurehub.db.services.strategies.StrategyDiffer
 import io.featurehub.mr.events.common.CacheSource
@@ -12,6 +13,7 @@ import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Portfolio
+import io.featurehub.mr.model.RolloutStrategy
 
 class FeatureAuditingSpec extends Base2Spec {
   PortfolioSqlApi portfolioSqlApi
@@ -25,11 +27,13 @@ class FeatureAuditingSpec extends Base2Spec {
   Environment env
   RolloutStrategyValidator rsValidator
   StrategyDiffer strategyDiffer
+  PersonFeaturePermission perms
 
   static UUID portfolioId = UUID.fromString('16364b24-b4ef-4052-9c33-5eb66b0d1baf')
 //  static UUID
 
   def setup() {
+    perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK] as Set<RoleType>)
     cacheSource = Mock()
     rsValidator = Mock()
     strategyDiffer = Mock()
@@ -51,14 +55,14 @@ class FeatureAuditingSpec extends Base2Spec {
       app = applicationSqlApi.createApplication(p1.id, new Application().name("app1").description("desc1"), superPerson)
     }
 
+    db.currentTransaction().commit()
+
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
     env = environmentSqlApi.getEnvironment(app.id, "dev")
 
     if (env == null) {
       env = environmentSqlApi.create(new  Environment().name("dev").description("dev"), app, superPerson)
     }
-
-    db.currentTransaction().commit()
   }
 
   def cleanup() {
@@ -66,7 +70,28 @@ class FeatureAuditingSpec extends Base2Spec {
   }
 
   def "when i have a string feature and i add alternating strategies at the same history point they work"() {
-
+    given: "i create a string feature"
+      def feature = applicationSqlApi.createApplicationFeature(app.id,
+        new Feature().name("str1-feature").description("str1-feature").key("FSTR1").valueType(FeatureValueType.STRING), superPerson, Opts.empty())
+        .find { it.key == 'FSTR1' }
+    and: "i set the value of the feature"
+      def fv1 = featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key, new FeatureValue().locked(false).valueString("fred"), perms)
+      def fv2 = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
+    when: "i update the value of the feature and update the rollout strategies"
+      def fvUpdated = featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key, fv1.valueString("mary").rolloutStrategies([
+        new RolloutStrategy().name("rs1").percentage(20).value(10)
+      ]), perms)
+    and: "i update the value of the feature and add another rollout strategy"
+      def fvFromHistory = featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key, fv2.rolloutStrategies([
+        new RolloutStrategy().name("rs2").percentage(15).value(6)
+      ]), perms)
+    then:
+      fvFromHistory.rolloutStrategies.size() == 2
+      fvFromHistory.rolloutStrategies.find({it.name == 'rs1'}).percentage == 20
+      fvFromHistory.rolloutStrategies.find({it.name == 'rs1'}).value == 10
+      fvFromHistory.rolloutStrategies.find({it.name == 'rs2'}).value == 6
+      fvFromHistory.rolloutStrategies.find({it.name == 'rs2'}).percentage == 15
+      fvFromHistory.valueString == 'mary'
   }
 
   def "when i update a boolean feature value and then update it again with the historical version, nothing changes"() {
@@ -77,7 +102,6 @@ class FeatureAuditingSpec extends Base2Spec {
     and: "i get the feature value"
       def fv = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
-      def perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK] as Set<RoleType>)
     when: "i update the  feature"
       fv.valueBoolean( false).locked(false)
       def firstUpdate = featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key, fv, perms)

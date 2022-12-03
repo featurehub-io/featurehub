@@ -466,7 +466,7 @@ class FeatureSqlApi @Inject constructor(
 
 
   /**
-   * this is the original logic - do not touch
+   * this is the original logic - do not touch, it is also used for the creation of the feature value the first time
    */
   @Throws(FeatureApi.NoAppropriateRole::class)
   private fun updateFeatureValue(
