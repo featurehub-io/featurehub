@@ -11,6 +11,7 @@ import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
+import io.featurehub.db.model.DbEnvironment;
 import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbGroup;
 import io.featurehub.db.model.DbPerson;
@@ -330,9 +331,10 @@ public class ApplicationSqlApi implements ApplicationApi {
 
   private void createDefaultBooleanFeatureValuesForAllEnvironments(
       DbApplicationFeature appFeature, DbApplication app, Person person) {
+    final List<DbEnvironment> appEnvironments = new QDbEnvironment()
+      .whenArchived.isNull().parentApplication.eq(app).findList();
     final List<DbFeatureValue> newFeatures =
-        new QDbEnvironment()
-            .whenArchived.isNull().parentApplication.eq(app).findList().stream()
+        appEnvironments.stream()
                 .map(
                     env ->
                         new DbFeatureValue.Builder()

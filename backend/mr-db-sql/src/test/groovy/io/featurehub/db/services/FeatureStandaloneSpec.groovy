@@ -12,7 +12,7 @@ class FeatureStandaloneSpec extends Base2Spec {
   ApplicationSqlApi appApi
 
   def setup() {
-    appApi = new ApplicationSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
+    appApi = new ApplicationSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureSqlApi))
   }
 
   def "i cannot overwrite another feature with the same name when i update"() {

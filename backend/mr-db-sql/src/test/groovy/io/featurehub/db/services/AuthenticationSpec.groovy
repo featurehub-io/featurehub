@@ -27,7 +27,7 @@ class AuthenticationSpec extends BaseSpec {
     auth = new AuthenticationSqlApi(database, convertUtils)
     personApi = new PersonSqlApi(database, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     portfolioApi = new PortfolioSqlApi(database, convertUtils, archiveStrategy)
-    appApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
+    appApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureSqlApi))
   }
 
   def "I should be able to register a new user"() {

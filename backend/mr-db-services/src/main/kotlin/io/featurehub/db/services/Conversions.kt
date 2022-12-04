@@ -67,6 +67,7 @@ interface Conversions {
   fun toPortfolio(p: DbPortfolio?, opts: Opts?): Portfolio?
   fun toOrganization(org: DbOrganization?, opts: Opts?): Organization?
   fun isPersonApplicationAdmin(dbPerson: DbPerson?, app: DbApplication?): Boolean
+  fun isPersonApplicationAdmin(personId: UUID, appId: UUID): Boolean
   fun toServiceAccount(sa: DbServiceAccount?, opts: Opts?): ServiceAccount?
   fun toServiceAccount(
     sa: DbServiceAccount?, opts: Opts?, environmentsUserHasAccessTo: List<DbAcl?>?

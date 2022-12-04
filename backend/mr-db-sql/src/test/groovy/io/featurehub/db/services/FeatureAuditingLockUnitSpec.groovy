@@ -2,16 +2,23 @@ package io.featurehub.db.services
 
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.PersonFeaturePermission
+import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersion
 import io.featurehub.db.model.FeatureState
 import io.featurehub.mr.model.FeatureValue
+import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.RoleType
 
 import java.time.LocalDateTime
 
 class FeatureAuditingLockUnitSpec extends FeatureAuditingBaseUnitSpec {
+  DbApplicationFeature feature
+
+  def setup() {
+    feature = new DbApplicationFeature.Builder().valueType(FeatureValueType.BOOLEAN).build()
+  }
 
   boolean locked(boolean current, boolean historical, boolean changing) {
     return locked(current, historical, changing, rolesRead)
@@ -20,7 +27,7 @@ class FeatureAuditingLockUnitSpec extends FeatureAuditingBaseUnitSpec {
   boolean locked(boolean current, boolean historical, boolean changing, Set<RoleType> roles) {
     return fsApi.updateSelectivelyLocked(
       new FeatureValue().locked(changing),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, FeatureState.READY, "y", historical, false, [], []),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, FeatureState.READY, "y", historical, false, [], [], feature),
       new DbFeatureValue.Builder().defaultValue("y").locked(current).build(),
       new PersonFeaturePermission(new Person(), roles)
     )

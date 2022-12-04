@@ -4,7 +4,6 @@ import io.ebean.Database
 import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.model.DbFeatureValueVersionKey
 import io.featurehub.db.model.DbPerson
-import io.featurehub.db.services.strategies.StrategyDiffer
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.RoleType
@@ -15,7 +14,6 @@ class FeatureAuditingBaseUnitSpec extends Specification {
   Conversions conversions
   CacheSource cacheSource
   RolloutStrategyValidator rolloutStrategyValidator
-  StrategyDiffer strategyDiffer
 
   FeatureSqlApi fsApi
   Person person
@@ -27,13 +25,12 @@ class FeatureAuditingBaseUnitSpec extends Specification {
     conversions = Mock()
     cacheSource = Mock()
     rolloutStrategyValidator = Mock()
-    strategyDiffer = Mock()
     person = new Person()
     dbPerson = new DbPerson.Builder().build()
 
     histId = new DbFeatureValueVersionKey(UUID.randomUUID(), 1)
 
-    fsApi = new FeatureSqlApi(database, conversions, cacheSource, rolloutStrategyValidator, strategyDiffer)
+    fsApi = new FeatureSqlApi(database, conversions, cacheSource, rolloutStrategyValidator)
   }
 
   final rolesChangeValue = [RoleType.CHANGE_VALUE] as Set<RoleType>

@@ -102,10 +102,13 @@ public class OAuth2MRAdapter implements SSOCompletionListener {
     URI uri = URI.create(successUrl);
     // add cookie
     return Response.status(Response.Status.FOUND).cookie(
-      new NewCookie("bearer-token", token, "/",
-        cookieDomain.isEmpty() ? null : cookieDomain, DEFAULT_VERSION, null,
-        DEFAULT_MAX_AGE, null, cookieSecure,
-        false))
+      new NewCookie.Builder("bearer-token").value(token).path("/")
+        .domain(cookieDomain.isEmpty() ? null : cookieDomain)
+        .version(DEFAULT_VERSION)
+        .maxAge(DEFAULT_MAX_AGE)
+        .secure(cookieSecure)
+        .httpOnly(false).build()
+      )
       .location(uri).build();
   }
 

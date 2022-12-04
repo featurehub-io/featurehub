@@ -3,10 +3,12 @@ package io.featurehub.db.services
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.LockedException
 import io.featurehub.db.api.PersonFeaturePermission
+import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersion
 import io.featurehub.db.model.FeatureState
 import io.featurehub.mr.model.FeatureValue
+import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RoleType
 
 import java.time.LocalDateTime
@@ -15,18 +17,20 @@ class FeatureAuditingRetiredUnitSpec extends FeatureAuditingBaseUnitSpec {
   Set<RoleType> roles
   boolean locked
   boolean changingLocked
+  DbApplicationFeature feature
 
   def setup() {
     roles = rolesChangeValue
     locked = false
     changingLocked = false
+    feature = new DbApplicationFeature.Builder().valueType(FeatureValueType.BOOLEAN).build()
   }
 
   boolean update(boolean currentRetired, boolean historicalRetired, boolean changingRetired) {
     return fsApi.updateSelectivelyRetired(
       new PersonFeaturePermission(person, roles),
       new FeatureValue().retired(changingRetired),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, FeatureState.READY, "y", locked, historicalRetired, [], []),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, FeatureState.READY, "y", locked, historicalRetired, [], [], feature),
       new DbFeatureValue.Builder().retired(currentRetired).locked(locked).build(),
       changingLocked
     )

@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,20 +25,27 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
                                DbPerson whoCreated, @NotNull FeatureState featureState,
                                @Nullable String defaultValue, boolean locked, boolean retired,
                                List<RolloutStrategy> rolloutStrategies,
-                               List<SharedRolloutStrategyVersion> sharedRolloutStrategies ) {
+                               List<SharedRolloutStrategyVersion> sharedRolloutStrategies,
+                               DbApplicationFeature feature) {
 
     this.id = id;
     this.whenCreated = whenCreated;
+
+    this.retired = retired;
+    this.sharedRolloutStrategies = sharedRolloutStrategies;
+    this.feature = feature;
+
     setWhoUpdated(whoCreated);
     setFeatureState(featureState);
     setDefaultValue(defaultValue);
     setLocked(locked);
-    setRetired(retired);
     setRolloutStrategies(rolloutStrategies);
-    setSharedRolloutStrategies(sharedRolloutStrategies);
   }
 
-  boolean retired;
+  private boolean retired;
+
+  @ManyToOne(optional = false)
+  private DbApplicationFeature feature;
 
   @DbJson
   @Column(name = "shared_strat")
@@ -47,16 +55,16 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
     return sharedRolloutStrategies;
   }
 
-  public void setSharedRolloutStrategies(List<SharedRolloutStrategyVersion> sharedRolloutStrategies) {
-    this.sharedRolloutStrategies = sharedRolloutStrategies;
-  }
-
   public boolean isRetired() {
     return retired;
   }
 
-  public void setRetired(boolean retired) {
-    this.retired = retired;
+  public DbApplicationFeature getFeature() {
+    return feature;
+  }
+
+  public DbFeatureValueVersionKey getId() {
+    return id;
   }
 
   public static DbFeatureValueVersion fromDbFeatureValue(DbFeatureValue from) {
@@ -69,7 +77,8 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
         from.isLocked(),
         from.getRetired() == Boolean.TRUE,
         from.getRolloutStrategies(),
-        transformSharedStrategies(from.getSharedRolloutStrategies())
+        transformSharedStrategies(from.getSharedRolloutStrategies()),
+        from.getFeature()
       );
   }
 

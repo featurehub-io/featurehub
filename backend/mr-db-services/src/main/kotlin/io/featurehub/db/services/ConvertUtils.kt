@@ -649,14 +649,19 @@ open class ConvertUtils : Conversions {
 
   /** is this person a superuser or portfolio admin for this application  */
   override fun isPersonApplicationAdmin(dbPerson: DbPerson?, app: DbApplication?): Boolean {
+    if (dbPerson == null || app == null) return false
+
+    return isPersonApplicationAdmin(dbPerson.id, app.id)
+  }
+
+  override fun isPersonApplicationAdmin(personId: UUID, appId: UUID): Boolean {
     // if a person is in a null portfolio group or portfolio group
-    return QDbGroup().groupMembers.person
-      .eq(dbPerson).owningOrganization
-      .eq(app!!.portfolio.organization).adminGroup
-      .isTrue
-      .or().owningPortfolio
-      .isNull.owningPortfolio
-      .eq(app.portfolio)
+    return QDbGroup()
+      .groupMembers.person.id.eq(personId)
+      .adminGroup.isTrue
+      .or()
+        .owningPortfolio.isNull
+        .owningPortfolio.applications.id.eq(appId)
       .endOr()
       .exists()
   }

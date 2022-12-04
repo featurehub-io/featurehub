@@ -24,7 +24,6 @@ public class DbBaseFeatureValue extends Model {
   @Column(name = "when_created")
   protected LocalDateTime whenCreated;
 
-
   @ManyToOne
   @Column(name = "fk_who_updated", nullable = true)
   @JoinColumn(name = "fk_who_updated")

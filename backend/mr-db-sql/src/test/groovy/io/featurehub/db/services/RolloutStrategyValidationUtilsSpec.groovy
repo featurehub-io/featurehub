@@ -2,6 +2,7 @@ package io.featurehub.db.services
 
 
 import io.featurehub.db.services.strategies.RolloutStrategyValidationUtils
+import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
@@ -13,7 +14,6 @@ import spock.lang.Specification
 class RolloutStrategyValidationUtilsSpec extends Specification {
   RolloutStrategyValidationUtils validator
 
-
   def setup() {
     validator = new RolloutStrategyValidationUtils()
   }
@@ -24,7 +24,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
         [new RolloutStrategy().name('too high').percentage(765400),
          new RolloutStrategy().name('2high2').percentage(653400)]
     when: "i attempt to update"
-      def validations = validator.validateStrategies(fv, [])
+      def validations = validator.validateStrategies(FeatureValueType.STRING, fv, [])
     then:
       validations.isInvalid()
       validations.customStrategyViolations.isEmpty()
@@ -36,7 +36,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
     given: "i have a feature value with a negative percentage"
       def fv = [new RolloutStrategy().name('neg %').percentage(-7654)]
     when: "i attempt to update"
-      def validations = validator.validateStrategies(fv, [])
+      def validations = validator.validateStrategies(FeatureValueType.STRING, fv, [])
     then:
       validations.isInvalid()
       !validations.customStrategyViolations.isEmpty()
@@ -45,7 +45,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
 
   def "when we specify all attributes is ok"() {
     when: "attr has everything field"
-      def validations = validator.validateStrategies([new RolloutStrategy().name("fred").attributes([
+      def validations = validator.validateStrategies(FeatureValueType.STRING,[new RolloutStrategy().name("fred").attributes([
         new RolloutStrategyAttribute().values(['x'])
           .type(RolloutStrategyFieldType.STRING)
           .conditional(RolloutStrategyAttributeConditional.LESS_EQUALS)
@@ -61,7 +61,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
       def fv = [new RolloutStrategy().name("fred").attributes([
         new RolloutStrategyAttribute().id(id).values(['x'])
       ])]
-      def validations = validator.validateStrategies(fv, [])
+      def validations = validator.validateStrategies(FeatureValueType.STRING,fv, [])
     then:
       validations.isInvalid()
       !validations.customStrategyViolations.isEmpty()
@@ -101,7 +101,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
           .fieldName("fred")
           .values([value])
       ])]
-      def validations = validator.validateStrategies(fv, [])
+      def validations = validator.validateStrategies(FeatureValueType.STRING,fv, [])
     then:
       validations.isInvalid()
       !validations.customStrategyViolations.isEmpty()
@@ -134,7 +134,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
           .values(values)
       ])]
 
-      def validations = validator.validateStrategies(fv, [])
+      def validations = validator.validateStrategies(FeatureValueType.STRING,fv, [])
     then:
       validations.isInvalid()
       !validations.customStrategyViolations.isEmpty()
@@ -164,7 +164,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
           .fieldName("fred")
           .values([value])
       ])]
-      def validations = validator.validateStrategies(fv, [])
+      def validations = validator.validateStrategies(FeatureValueType.STRING,fv, [])
     then:
       !validations.isInvalid()
     where:
@@ -187,7 +187,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
 
   def "we define a bunch of valid array values and they pass validation"() {
       when: "attr has everything field"
-        def validations = validator.validateStrategies([new RolloutStrategy().name("fred").attributes([
+        def validations = validator.validateStrategies(FeatureValueType.STRING,[new RolloutStrategy().name("fred").attributes([
           new RolloutStrategyAttribute()
             .type(fieldType)
             .conditional(RolloutStrategyAttributeConditional.LESS_EQUALS)

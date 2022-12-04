@@ -3,10 +3,12 @@ package io.featurehub.db.services
 import io.featurehub.db.api.LockedException
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.PersonFeaturePermission
+import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersion
 import io.featurehub.db.model.FeatureState
 import io.featurehub.mr.model.FeatureValue
+import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.RolloutStrategy
 
@@ -14,6 +16,7 @@ import java.time.LocalDateTime
 
 class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
   DbFeatureValue currentFeature
+  DbApplicationFeature feature
   boolean lockChanged
   Set<RoleType> defaultRoles
   boolean currentLock
@@ -22,6 +25,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
     lockChanged = false
     currentLock = false
     defaultRoles = rolesChangeValue
+    feature = new DbApplicationFeature.Builder().valueType(FeatureValueType.BOOLEAN).build()
   }
 
   boolean updateStrategies(List<RolloutStrategy> current, List<RolloutStrategy> historical, List<RolloutStrategy> updated) {
@@ -30,7 +34,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
     return fsApi.updateSelectivelyRolloutStrategies(
       new PersonFeaturePermission(person, defaultRoles),
       new FeatureValue().rolloutStrategies(updated),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, FeatureState.READY, "y", false, false, historical, []),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, FeatureState.READY, "y", false, false, historical, [], feature),
       currentFeature, lockChanged
     )
   }

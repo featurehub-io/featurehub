@@ -6,7 +6,6 @@ import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.RoleType
-import io.featurehub.db.services.strategies.StrategyDiffer
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.Environment
@@ -26,7 +25,6 @@ class FeatureAuditingSpec extends Base2Spec {
   EnvironmentSqlApi environmentSqlApi
   Environment env
   RolloutStrategyValidator rsValidator
-  StrategyDiffer strategyDiffer
   PersonFeaturePermission perms
 
   static UUID portfolioId = UUID.fromString('16364b24-b4ef-4052-9c33-5eb66b0d1baf')
@@ -36,11 +34,10 @@ class FeatureAuditingSpec extends Base2Spec {
     perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK] as Set<RoleType>)
     cacheSource = Mock()
     rsValidator = Mock()
-    strategyDiffer = Mock()
-    rsValidator.validateStrategies(_, _) >> new RolloutStrategyValidator.ValidationFailure()
     rsValidator.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
+    rsValidator.validateStrategies(_, _, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true'])
-    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator, strategyDiffer)
+    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     p1 = portfolioSqlApi.getPortfolio("basic")
 
@@ -92,6 +89,7 @@ class FeatureAuditingSpec extends Base2Spec {
       fvFromHistory.rolloutStrategies.find({it.name == 'rs2'}).value == 6
       fvFromHistory.rolloutStrategies.find({it.name == 'rs2'}).percentage == 15
       fvFromHistory.valueString == 'mary'
+      fvUpdated.valueString == 'mary'
   }
 
   def "when i update a boolean feature value and then update it again with the historical version, nothing changes"() {

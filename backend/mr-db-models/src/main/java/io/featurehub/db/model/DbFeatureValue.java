@@ -33,16 +33,14 @@ public class DbFeatureValue extends DbBaseFeatureValue {
     setRolloutStrategies(builder.rolloutStrategies);
     setRetired(builder.retired);
     setSharedRolloutStrategies(builder.sharedRolloutStrategies);
-    if (builder.version != null) {
-      this.version = builder.version;
-    }
+    setVersion(builder.version);
   }
 
   @Id
   private UUID id;
 
   @Version
-  private long version;
+  private Long version;
 
   /**
    * historically this field didn't exist, so we can't force it to non-null.
@@ -70,7 +68,7 @@ public class DbFeatureValue extends DbBaseFeatureValue {
     this.retired = retired;
   }
 
-  public long getVersion() {
+  public Long getVersion() {
     return version;
   }
 
@@ -78,6 +76,10 @@ public class DbFeatureValue extends DbBaseFeatureValue {
 
   public void setId(UUID id) {
     this.id = id;
+  }
+
+  public void setVersion(Long version) {
+    this.version = version;
   }
 
   // in sql, create a unique index on these two

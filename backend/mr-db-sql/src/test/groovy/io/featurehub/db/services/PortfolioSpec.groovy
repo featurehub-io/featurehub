@@ -104,7 +104,7 @@ class PortfolioSpec extends BaseSpec {
 
   def "i don't have to provide a person when creating a portfolio because on initial setup i may not have one with oauth2"() {
     when: "i create a portfolio without a person, which is ok because of delayed oauth"
-      Portfolio created = portfolioApi.createPortfolio(new Portfolio().name("norton2").organizationId(org.getId()), Opts.empty(), null)
+      Portfolio created = portfolioApi.createPortfolio(new Portfolio().name("norton2").organizationId(org.getId()), Opts.empty(), superPerson)
     then: "it gets created, as its ok to not have a createdBy (for initial setup)"
       created != null
   }

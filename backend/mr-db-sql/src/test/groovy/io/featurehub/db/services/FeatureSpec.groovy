@@ -1,10 +1,8 @@
 package io.featurehub.db.services
 
-
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.FillOpts
-import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
@@ -14,7 +12,6 @@ import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.db.services.strategies.StrategyDiffer
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationFeatureValues
 import io.featurehub.mr.model.ApplicationRoleType
@@ -57,7 +54,11 @@ class FeatureSpec extends Base2Spec {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     serviceAccountSqlApi = new ServiceAccountSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
 
-    appApi = new ApplicationSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
+    def rsv = Mock(RolloutStrategyValidator)
+    rsv.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
+
+    featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv)
+    appApi = new ApplicationSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, featureSqlApi)
 
     // now set up the environments we need
     portfolio1 = new DbPortfolio.Builder().name("p1-app-feature" + RandomStringUtils.randomAlphabetic(8) ).whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
@@ -71,11 +72,6 @@ class FeatureSpec extends Base2Spec {
 
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
     envIdApp1 = environmentSqlApi.create(new Environment().name("feature-app-1-env-1"), new Application().id(appId), superPerson).id
-
-    def rsv = Mock(RolloutStrategyValidator)
-    rsv.validateStrategies(_, _) >> new RolloutStrategyValidator.ValidationFailure()
-
-    featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv, Mock(StrategyDiffer))
 
     def averageJoe = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) + "averagejoe-fvs@featurehub.io").name("Average Joe").build()
     db.save(averageJoe)
@@ -199,7 +195,7 @@ class FeatureSpec extends Base2Spec {
       def features = appApi.createApplicationFeature(appId, new Feature().name("x").key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set the feature value"
-      def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k);
+      def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
       // it already exists, so we have  to unlock it
       f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.locked(false), pers)
       assert(!f.locked && !f.valueBoolean);
