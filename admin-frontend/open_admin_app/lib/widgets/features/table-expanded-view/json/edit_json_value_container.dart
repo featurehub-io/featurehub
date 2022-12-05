@@ -81,7 +81,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
             padding: const EdgeInsets.all(4.0),
             decoration: myBoxDecoration(),
             child: Align(
-              alignment: Alignment.centerLeft,
+              // alignment: Alignment.centerLeft,
               child: ConfigurationViewerField(
                   text: tec.text,
                   canEdit: widget.canEdit,

@@ -23,23 +23,21 @@ class FeatureValueUpdatedByCell extends StatelessWidget {
       whoUpdated = strBloc.featureValue.whoUpdated!.name!;
     }
 
-    return Container(
-        padding: const EdgeInsets.only(top: 16.0, left: 8, right: 8),
-        child: Column(
-          children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(updatedBy,
-                    style: Theme.of(context)
-                        .textTheme
-                        .caption!
-                        .copyWith(color: Theme.of(context).colorScheme.primary)),
-                Text(whoUpdated, style: Theme.of(context).textTheme.bodyText1),
-              ],
-            ),
-            Text(whenUpdated, style: Theme.of(context).textTheme.caption)
-          ],
-        ));
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(updatedBy,
+              style: Theme.of(context)
+                  .textTheme
+                  .caption!
+                  .copyWith(color: Theme.of(context).colorScheme.primary)),
+          Text(whoUpdated, style: Theme.of(context).textTheme.bodyText1),
+          const SizedBox(width: 8.0),
+          Text(whenUpdated, style: Theme.of(context).textTheme.caption)
+        ],
+      ),
+    );
   }
 }

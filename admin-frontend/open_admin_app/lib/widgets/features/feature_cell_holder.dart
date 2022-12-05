@@ -86,7 +86,7 @@ class FeatureCellHolder extends StatelessWidget {
                   },
                   itemBuilder: (BuildContext context) {
                     var isEditor = bloc.mrClient
-                        .userIsFeatureAdminOfCurrentApplication;
+                        .userHasFeatureEditRoleInCurrentApplication;
                     return [
                       PopupMenuItem(
                           value: 'edit',

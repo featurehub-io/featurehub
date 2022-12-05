@@ -219,7 +219,8 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                           title: 'Cancel',
                           keepCase: true,
                           onPressed: () {
-                          }, // TODO dismiss
+                            Navigator.pop(context);
+                          },
                         ),
                         if (widget.editable)
                           FHFlatButton(

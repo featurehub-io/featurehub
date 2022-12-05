@@ -142,7 +142,7 @@ class CreateFeatureButton extends StatelessWidget {
         stream: bloc.mrClient.streamValley.currentAppIdStream,
         builder: (context, snapshot) {
           final canEdit = bloc.mrClient.personState
-              .personCanEditFeaturesForCurrentApplication(snapshot.data);
+              .personCanEditFeaturesForApplication(snapshot.data);
           return !canEdit
               ? const SizedBox.shrink()
               : ElevatedButton(

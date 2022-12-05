@@ -35,7 +35,6 @@ class _RetireFeatureValueCheckboxWidgetState
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Checkbox(
           value: retired,

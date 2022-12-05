@@ -1,4 +1,4 @@
-
+import 'package:async/async.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -29,10 +29,11 @@ class ExperimentTable extends StatefulWidget {
 class _ExperimentTableState extends State<ExperimentTable> {
   late FeaturesDataSource _featuresDataSource;
   List<FeatureStatusFeatures> featuresList = [];
+  final AsyncMemoizer _memoizer = AsyncMemoizer();
 
   String _searchTerm = '';
   int _maxFeatures = 0;
-  int _pageOffset = 1;
+  int _pageOffset = 0;
 
   List<FeatureValueType> _selectedFeatureTypes = [];
   List<String> _selectedEnvironmentList = [];
@@ -49,211 +50,218 @@ class _ExperimentTableState extends State<ExperimentTable> {
     return featuresList;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    print("in init state");
-    _selectedEnvironmentList = widget.data.applicationEnvironments.entries
-        .map((e) => e.value.environmentName!)
-        .toList();
-  }
+//   return this._memoizer.runOnce(() async {
+//   print("generate features list");
+//   var appFeatures = await widget.bloc.getApplicationFeatureValuesData(
+//   widget.bloc.applicationId!,
+//   _searchTerm,
+//   _selectedFeatureTypes,
+//   rowsPerPage,
+//   _pageOffset); //handle if appId is null
+//   var featuresList = FeatureStatusFeatures(appFeatures);
+//   _featuresDataSource = FeaturesDataSource(featuresList);
+//   _maxFeatures = appFeatures.maxFeatures;
+//   return featuresList;
+// });
 
-  final CustomColumnSizer _customColumnSizer = CustomColumnSizer();
+      @override
+      void initState() {
+        super.initState();
+        print("in init state");
+        _selectedEnvironmentList = widget.data.applicationEnvironments.entries
+            .map((e) => e.value.environmentName!)
+            .toList();
+      }
 
-  @override
-  Widget build(BuildContext context) {
-    final _debouncer = Debouncer(milliseconds: 500);
+      final CustomColumnSizer _customColumnSizer = CustomColumnSizer();
 
-    var gridColumnsList = widget.data.applicationEnvironments.entries
-        .map(
-          (entry) => GridColumn(
+      @override
+      Widget build(BuildContext context) {
+        final _debouncer = Debouncer(milliseconds: 500);
+
+        var gridColumnsList = widget.data.applicationEnvironments.entries
+            .map(
+              (entry) => GridColumn(
             columnName: "env",
             label: Container(
                 padding: const EdgeInsets.all(8.0),
                 alignment: Alignment.center,
                 child: Text(entry.value.environmentName!)),
             visible:
-                _selectedEnvironmentList.contains(entry.value.environmentName),
+            _selectedEnvironmentList.contains(entry.value.environmentName),
           ),
         )
-        .toList();
+            .toList();
 
-    return FutureBuilder(
-        future: generateFeaturesList(),
-        builder: (context, snapshot) {
-          print("rebuild");
-          return snapshot.hasData
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        CreateFeatureButton(
-                          bloc: widget.bloc,
-                          featuresDataSource: _featuresDataSource,
-                        ),
-                        const SizedBox(
-                          width: 16.0,
-                        ),
-                        Container(
-                          constraints: const BoxConstraints(maxWidth: 300),
-                          child: TextField(
-                            decoration: const InputDecoration(
-                              hintText: 'Search features',
-                              icon: Icon(Icons.search),
-                            ),
-                            onChanged: (val) {
-                              _debouncer.run(() {
-                                setState(() {
-                                  _searchTerm = val;
-                                });
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    // Padding(
-                    //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    //   child: TextButton(
-                    //       onPressed: () {
-                    //         _featuresDataSource.sortedColumns.add(
-                    //             const SortColumnDetails(
-                    //                 name: 'features name',
-                    //                 sortDirection:
-                    //                     DataGridSortDirection.ascending));
-                    //         _featuresDataSource.sort();
-                    //       },
-                    //       child: const Text('Apply sort')),
-                    // ),
-                    const SizedBox(height: 24.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Container(
-                          constraints: const BoxConstraints(maxWidth: 600, maxHeight: 70),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Select environments to display", style: Theme.of(context).textTheme.caption),
-                              SizedBox(height: 8.0),
-                              DropDownMultiSelect(
-                                  hint: Text("Select environments to display",
-                                      style:
-                                      Theme.of(context).textTheme.bodyMedium),
-                                  onChanged: (List<String> x) {
-                                    setState(() {
-                                      _selectedEnvironmentList = x;
-                                    });
-                                  },
-                                  icon: const Icon(
-                                    Icons.visibility_sharp,
-                                    size: 18,
-                                  ),
-                                  options: widget
-                                      .data.applicationEnvironments.entries
-                                      .map((e) => e.value.environmentName!)
-                                      .toList(),
-                                  selectedValues: _selectedEnvironmentList
-                                // whenEmpty: 'Select Something',
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Container(
-                          constraints: const BoxConstraints(maxWidth: 300),
-                          child: DropDownMultiSelect(
-                            icon: const Icon(
-                              Icons.filter_alt,
-                              size: 18,
-                            ),
-                            hint: const Text("Filter by feature type"),
-                            onChanged: (List<String> x) {
-                              setState(() {
-                                _selectedFeatureTypes = x
-                                    .map((e) => convertToFeatureValueType(e))
-                                    .toList();
-                              });
-                            },
-                            options: FeatureValueType.values
-                                .map((e) => e.name!)
-                                .toList(),
-                            selectedValues: _selectedFeatureTypes
-                                .map((e) => e.name!)
-                                .toList(),
-                            // whenEmpty: 'Select Something',
-                          ),
-                        ),
-
-                      ],
-                    ),
-                    const SizedBox(height: 16.0),
-                    Container(
-                      height: 600,
-                      child: SfDataGrid(
-                        source: _featuresDataSource,
-                        // columnWidthMode: ColumnWidthMode.lastColumnFill,
-                        isScrollbarAlwaysShown: true,
-                        // allowSorting: true,
-                        rowsPerPage: rowsPerPage,
-                        defaultColumnWidth: 150,
-                        columnSizer: _customColumnSizer,
-                        frozenColumnsCount: 1,
-                        onQueryRowHeight: (details) {
-                          return details
-                              .getIntrinsicRowHeight(details.rowIndex);
-                        },
-                        columns: <GridColumn>[
-                          GridColumn(
-                              minimumWidth: 200,
-                              columnName: 'features name',
-                              label: Container(
-                                  padding: const EdgeInsets.all(16.0),
-                                  alignment: Alignment.center,
-                                  child: const Text(
-                                    "Features name",
-                                  )),
-                          ),
-                          ...gridColumnsList,
-                        ],
+        return FutureBuilder(
+            future: generateFeaturesList(),
+            builder: (context, snapshot) {
+              print("rebuild");
+              return snapshot.hasData
+                  ? Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CreateFeatureButton(
+                        bloc: widget.bloc,
+                        featuresDataSource: _featuresDataSource,
                       ),
-                    ),
-                    if (_maxFeatures > rowsPerPage) // only display paginator if needed
+                      const SizedBox(
+                        width: 16.0,
+                      ),
                       Container(
-                        // height: _dataPagerHeight,
+                        constraints: const BoxConstraints(maxWidth: 300),
+                        child: TextField(
+                          decoration: const InputDecoration(
+                            hintText: 'Search features',
+                            icon: Icon(Icons.search),
+                          ),
+                          onChanged: (val) {
+                            _debouncer.run(() {
+                              setState(() {
+                                _searchTerm = val;
+                              });
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        constraints: const BoxConstraints(
+                            maxWidth: 600, maxHeight: 70),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Select environments to display",
+                                style: Theme.of(context).textTheme.caption),
+                            SizedBox(height: 8.0),
+                            DropDownMultiSelect(
+                                hint: Text("Select environments to display",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium),
+                                onChanged: (List<String> x) {
+                                  setState(() {
+                                    _selectedEnvironmentList = x;
+                                  });
+                                },
+                                icon: const Icon(
+                                  Icons.visibility_sharp,
+                                  size: 18,
+                                ),
+                                options: widget
+                                    .data.applicationEnvironments.entries
+                                    .map((e) => e.value.environmentName!)
+                                    .toList(),
+                                selectedValues: _selectedEnvironmentList
+                              // whenEmpty: 'Select Something',
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Container(
+                        constraints: const BoxConstraints(maxWidth: 300),
+                        child: DropDownMultiSelect(
+                          icon: const Icon(
+                            Icons.filter_alt,
+                            size: 18,
+                          ),
+                          hint: const Text("Filter by feature type"),
+                          onChanged: (List<String> x) {
+                            setState(() {
+                              _selectedFeatureTypes = x
+                                  .map((e) => convertToFeatureValueType(e))
+                                  .toList();
+                            });
+                          },
+                          options: FeatureValueType.values
+                              .map((e) => e.name!)
+                              .toList(),
+                          selectedValues: _selectedFeatureTypes
+                              .map((e) => e.name!)
+                              .toList(),
+                          // whenEmpty: 'Select Something',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16.0),
+                  Container(
+                    height: 600,
+                    child: SfDataGrid(
+                      source: _featuresDataSource,
+                      // columnWidthMode: ColumnWidthMode.lastColumnFill,
+                      isScrollbarAlwaysShown: true,
+                      // allowSorting: true,
+                      rowsPerPage: rowsPerPage,
+                      defaultColumnWidth: 150,
+                      columnSizer: _customColumnSizer,
+                      frozenColumnsCount: 1,
+                      onQueryRowHeight: (details) {
+                        return details
+                            .getIntrinsicRowHeight(details.rowIndex);
+                      },
+                      columns: <GridColumn>[
+                        GridColumn(
+                          minimumWidth: 200,
+                          columnName: 'features name',
+                          label: Container(
+                              padding: const EdgeInsets.all(16.0),
+                              alignment: Alignment.center,
+                              child: const Text(
+                                "Features name",
+                              )),
+                        ),
+                        ...gridColumnsList,
+                      ],
+                    ),
+                  ),
+                  if (_maxFeatures >
+                      rowsPerPage) // only display paginator if needed
+                    Container(
+                      // height: _dataPagerHeight,
                         child: SfDataPager(
                           delegate: _featuresDataSource,
-                          pageCount: (_maxFeatures / rowsPerPage).ceil().ceilToDouble(),
+                          pageCount:
+                          (_maxFeatures / rowsPerPage).ceil().ceilToDouble(),
                           direction: Axis.horizontal,
-                        )
-                      )
-                  ],
-                )
-              : const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                  ),
-                );
-        });
-  }
-}
+                          onPageNavigationEnd: (page) {
+                            _pageOffset=page;
+                          },
+                        ))
+                ],
+              )
+                  : const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                ),
+              );
+            });
+      }
+    }
 
-FeatureValueType convertToFeatureValueType(String value) {
-  switch (value) {
-    case "BOOLEAN":
+        FeatureValueType convertToFeatureValueType(String value) {
+      switch (value) {
+        case "BOOLEAN":
+          return FeatureValueType.BOOLEAN;
+        case "STRING":
+          return FeatureValueType.STRING;
+        case "NUMBER":
+          return FeatureValueType.NUMBER;
+        case "JSON":
+          return FeatureValueType.JSON;
+      }
       return FeatureValueType.BOOLEAN;
-    case "STRING":
-      return FeatureValueType.STRING;
-    case "NUMBER":
-      return FeatureValueType.NUMBER;
-    case "JSON":
-      return FeatureValueType.JSON;
-  }
-  return FeatureValueType.BOOLEAN;
-}
+    }
 
 class AggregatedFeatureCellData {
   final EnvironmentFeatureValues efv;
@@ -268,7 +276,6 @@ class AggregatedFeatureCellData {
 class FeaturesDataSource extends DataGridSource {
   /// Creates the data source class with required details.
   final FeatureStatusFeatures data;
-
 
   FeaturesDataSource(this.data) {
     buildDataGridRows();
@@ -298,16 +305,18 @@ class FeaturesDataSource extends DataGridSource {
     }).toList();
   }
 
-  @override
-  Future<bool> handlePageChange(int oldPageIndex, int newPageIndex) async {
-    if(oldPageIndex != newPageIndex) {
-      // need to fix this function
-      buildDataGridRows();
-      updateDataGridSource();
-      notifyDataSourceListeners();
-    }
-    return true;
-  }
+  // @override
+  // Future<bool> handlePageChange(int oldPageIndex, int newPageIndex) async {
+  //   if(oldPageIndex != newPageIndex) {
+  //     // need to fix this function
+  //     // buildDataGridRows();
+  //     // updateDataGridSource();
+  //     // notifyDataSourceListeners();
+  //     return Future<bool>.value(true);
+  //   }
+  //   return Future<bool>.value(false);
+  //
+  // }
 
   List<DataGridRow> _featuresData = [];
 
@@ -323,7 +332,12 @@ class FeaturesDataSource extends DataGridSource {
         return FeatureCellHolder(feature: feature); // adapt feature column
       } else {
         AggregatedFeatureCellData fv = dataGridCell.value;
-        return ValueCellHolder(efv: fv.efv, feature: fv.feature, fv: fv.fv, afv: fv.afv, ); // adapt environments value columns
+        return ValueCellHolder(
+            efv: fv.efv,
+            feature: fv.feature,
+            fv: fv.fv,
+            afv: fv.afv,
+            featuresDataSource: this); // adapt environments value columns
       }
     }).toList());
   }
@@ -357,4 +371,3 @@ class CustomColumnSizer extends ColumnSizer {
     return height + defaultCellHeight + cellInfoIconsHeight;
   }
 }
-

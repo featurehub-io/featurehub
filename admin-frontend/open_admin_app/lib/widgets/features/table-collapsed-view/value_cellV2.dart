@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/features/experiment_data_table.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/feature_value_status_tags.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
@@ -17,13 +18,14 @@ class ValueCellHolder extends StatelessWidget {
   final EnvironmentFeatureValues efv;
   final Feature feature;
   final ApplicationFeatureValues afv;
+  final FeaturesDataSource featuresDataSource;
 
   const ValueCellHolder(
       {Key? key,
       this.fv,
       required this.efv,
       required this.feature,
-      required this.afv})
+      required this.afv, required this.featuresDataSource})
       : super(key: key);
 
   @override
@@ -33,7 +35,7 @@ class ValueCellHolder extends StatelessWidget {
         feature: feature,
         fv: fv,
         efv: efv,
-        afv: afv,
+        afv: afv, featuresDataSource: featuresDataSource,
       );
     }
     if ((fv?.id == null) && efv.roles.isEmpty) {
@@ -48,27 +50,17 @@ class _ValueContainer extends StatelessWidget {
   final FeatureValue? fv;
   final EnvironmentFeatureValues efv;
   final ApplicationFeatureValues afv;
+  final FeaturesDataSource featuresDataSource;
 
   const _ValueContainer(
       {required this.feature,
       required this.fv,
       required this.efv,
-      required this.afv});
+      required this.afv, required this.featuresDataSource});
 
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
-
-    // onPressed: () => {
-    //   fvBloc.mrClient.addOverlay((BuildContext context) {
-    //     return BlocProvider(
-    //       creator: (_c, _b) => IndividualStrategyBloc(
-    //           strBloc.environmentFeatureValue, rolloutStrategy),
-    //       child:
-    //       StrategyEditingWidget(bloc: strBloc, editable: editable),
-    //     );
-    //   })
-    // });
     if (fv != null) {
       return InkWell(
         onTap: () => SideSheet.right(
@@ -78,18 +70,33 @@ class _ValueContainer extends StatelessWidget {
                 featureValueType: feature.valueType!,
                 perApplicationFeaturesBloc: bloc,
                 feature: feature,
-                afv: afv),
+                afv: afv,
+                featuresDataSource: featuresDataSource,
+            ),
+            width: MediaQuery.of(context).size.width * 0.3,
             context: context),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            if (fv!.retired != null && fv!.retired == true)
-              const RetiredIndicator(),
-            if (fv!.locked) const LockedIndicator(),
-            _ValueCard(feature: feature, fv: fv!),
-            if (fv!.rolloutStrategies.isNotEmpty)
-              _StrategiesList(feature: feature, fv: fv!),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            // crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (fv!.retired != null && fv!.retired == true)
+                    const RetiredIndicator(),
+                    if (fv!.locked) const LockedIndicator(),
+                  ],
+                ),
+              _ValueCard(feature: feature, fv: fv!),
+              if (fv!.rolloutStrategies.isNotEmpty)
+                _StrategiesList(feature: feature, fv: fv!),
+            ],
+          ),
         ),
       );
     } else {
@@ -105,19 +112,13 @@ class LockedIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: cellWidth - 1,
-      child: Align(
-        alignment: Alignment.topLeft,
-        child: Container(
-          padding: const EdgeInsets.all(8.0),
+    return Container(
+      padding: const EdgeInsets.all(8.0),
 //          color: Colors.black.withOpacity(0.1),
-          child: const Tooltip(
-              message: "Locked",
-              child:
-                  Icon(Icons.lock_outline, size: 16.0, color: Colors.orange)),
-        ),
-      ),
+      child: const Tooltip(
+          message: "Locked",
+          child:
+              Icon(Icons.lock_outline, size: 16.0, color: Colors.orange)),
     );
   }
 }
@@ -127,18 +128,12 @@ class RetiredIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: cellWidth - 1,
-      child: Align(
-        alignment: Alignment.topLeft,
-        child: Container(
-          padding: const EdgeInsets.all(8.0),
-          child: const Tooltip(
-              message: "Retired",
-              child: Icon(MaterialIcons.do_not_disturb,
-                  size: 16.0, color: Colors.red)),
-        ),
-      ),
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      child: const Tooltip(
+          message: "Retired",
+          child: Icon(MaterialIcons.do_not_disturb,
+              size: 16.0, color: Colors.red)),
     );
   }
 }
@@ -181,7 +176,7 @@ class _ValueCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
       child: Container(
-        constraints: BoxConstraints(maxWidth: 150, minWidth: 80),
+        constraints: const BoxConstraints(maxWidth: 150, minWidth: 80),
         height: 30,
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         decoration: BoxDecoration(
@@ -210,7 +205,7 @@ class _ValueCard extends StatelessWidget {
                             .textTheme
                             .bodyText2
                             ?.copyWith(color: const Color(0xff11C8B5))),
-            SizedBox(width: 4.0),
+            const SizedBox(width: 4.0),
             Container(
               decoration: BoxDecoration(
                 color: rolloutStrategy == null

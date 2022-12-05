@@ -57,7 +57,7 @@ class _CreateFeatureDialogWidgetV2State extends State<CreateFeatureDialogWidgetV
   @override
   Widget build(BuildContext context) {
     final isReadOnly =
-        !widget.bloc.mrClient.userIsFeatureAdminOfCurrentApplication;
+        !widget.bloc.mrClient.userHasFeatureEditRoleInCurrentApplication;
     return Form(
       key: _formKey,
       child: FHAlertDialog(

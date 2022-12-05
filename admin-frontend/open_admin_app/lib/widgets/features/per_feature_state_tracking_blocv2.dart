@@ -37,14 +37,14 @@ class PerFeatureStateTrackingBlocV2 implements Bloc {
   late EnvironmentServiceApi _environmentServiceApi;
   late FeatureServiceApi _featureServiceApi;
 
-  // environment id, FeatureValue - there may be values in here that are not used, we honour `_dirty` to determine if we use them
   final _newFeatureValues = <String, FeatureValue>{};
   final _originalFeatureValues = <String, FeatureValue>{};
   final _fvUpdates = <String, FeatureValue>{};
   final ApplicationFeatureValues applicationFeatureValues;
   final PerApplicationFeaturesBloc _featureStatusBloc;
-  // final FeaturesOnThisTabTrackerBloc featuresOnTabBloc;
-  final _customStrategyBlocs = <EnvironmentFeatureValues, CustomStrategyBlocV2>{};
+
+  final _customStrategyBlocs =
+      <EnvironmentFeatureValues, CustomStrategyBlocV2>{};
 
   FeatureValue? currentFeatureValue;
 
@@ -61,14 +61,9 @@ class PerFeatureStateTrackingBlocV2 implements Bloc {
     _featureServiceApi = FeatureServiceApi(mrClient.apiClient);
     currentFeatureValue = featureValue;
     addFeatureValueToStream(featureValue);
-
-    // ..value = fv
-    // ..customStrategies = fv.rolloutStrategies
-    // ..sharedStrategies = fv.rolloutStrategyInstances;
   }
 
-  updateFeatureValueLockedStatus(
-      bool locked) {
+  updateFeatureValueLockedStatus(bool locked) {
     currentFeatureValue!.locked = locked;
     addFeatureValueToStream(currentFeatureValue!);
   }
@@ -96,21 +91,22 @@ class PerFeatureStateTrackingBlocV2 implements Bloc {
     addFeatureValueToStream(currentFeatureValue!);
   }
 
-
-
-  CustomStrategyBlocV2 matchingCustomStrategyBloc(EnvironmentFeatureValues efv) {
+  CustomStrategyBlocV2 matchingCustomStrategyBloc(
+      EnvironmentFeatureValues efv) {
     return _customStrategyBlocs.putIfAbsent(
-        efv, () => CustomStrategyBlocV2(efv, feature, this, _featureStatusBloc, currentFeatureValue!));
+        efv,
+        () => CustomStrategyBlocV2(
+            efv, feature, this, _featureStatusBloc, currentFeatureValue!));
   }
 
   final _currentFv = BehaviorSubject<FeatureValue>();
-  get currentFv => _currentFv.stream;
 
+  get currentFv => _currentFv.stream;
 
   PerApplicationFeaturesBloc get perApplicationFeaturesBloc =>
       _featureStatusBloc;
 
-  addFeatureValueToStream(FeatureValue fv){
+  addFeatureValueToStream(FeatureValue fv) {
     _currentFv.add(fv);
   }
 
@@ -129,18 +125,12 @@ class PerFeatureStateTrackingBlocV2 implements Bloc {
     });
   }
 
-
   // the cells control their own state, but they are affected by whether they become locked or unlocked while they
   // exist
   // need for v2
 
-
-
   @override
   void dispose() {
-
-
-
     for (var b in _customStrategyBlocs.values) {
       b.dispose();
     }
@@ -180,7 +170,4 @@ class PerFeatureStateTrackingBlocV2 implements Bloc {
     await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(
         applicationId, feature.key!, [currentFeatureValue!]);
   }
-
-
-
 }

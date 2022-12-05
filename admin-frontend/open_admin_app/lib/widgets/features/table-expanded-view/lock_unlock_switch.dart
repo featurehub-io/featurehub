@@ -36,7 +36,6 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
     return SizedBox(
       height: lockHeight,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Row(
             children: [

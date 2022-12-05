@@ -96,7 +96,9 @@ class PerApplicationFeaturesBloc
       List<EnvironmentFeatureValues> efv = [];
       List<Feature> featureList = [];
       _appFeatureValuesBS
-          .add(FeatureStatusFeatures(ApplicationFeatureValues(applicationId: "", features: featureList, environments: efv, maxFeatures: 0)));
+          .add(FeatureStatusFeatures(ApplicationFeatureValues(applicationId: "", features: featureList, environments: efv,
+          maxFeatures: 0
+      )));
     }
   }
 
