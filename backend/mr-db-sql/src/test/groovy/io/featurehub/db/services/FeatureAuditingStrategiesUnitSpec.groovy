@@ -141,4 +141,39 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
     then:
       result
   }
+
+  def "when I pass in a strategy update that contains historical strategies that have been deleted, these don't get re-added"() {
+    given:
+      def deleted = new RolloutStrategy().id('dele').name('deleted')
+      def editing = new RolloutStrategy().id('edit').name('susan')
+    when:
+      def result = updateStrategies([new RolloutStrategy().id('edit').name('susan')],
+        [editing, deleted],
+        [new RolloutStrategy().id('edit').name('susan2'), deleted]
+      )
+    then:
+      result
+      currentFeature.rolloutStrategies.size() == 1
+      currentFeature.rolloutStrategies[0].name == 'susan2'
+  }
+
+  def "when I delete one that has already been deleted, that is ok"() {
+    when:
+      def result = updateStrategies([new RolloutStrategy().id('edit').name('susan')],
+        [new RolloutStrategy().id('edit').name('susan'), new RolloutStrategy().id('dele').name('susan')],
+        [new RolloutStrategy().id('edit').name('susan')]
+      )
+    then:
+      !result
+  }
+
+  def "when I change one that has been deleted, thats a optimistic locking issue"() {
+    when:
+      def result = updateStrategies([new RolloutStrategy().id('edit').name('susan')],
+        [new RolloutStrategy().id('edit').name('susan'), new RolloutStrategy().id('dele').name('susan')],
+        [new RolloutStrategy().id('edit').name('susan'), new RolloutStrategy().id('dele').name('susan2')]
+      )
+    then:
+      thrown(OptimisticLockingException)
+  }
 }

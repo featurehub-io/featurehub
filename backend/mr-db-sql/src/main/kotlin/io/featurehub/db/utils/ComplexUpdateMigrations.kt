@@ -34,6 +34,7 @@ class ComplexUpdateMigrations : ContainerLifecycleListener {
   }
 
   private fun processJob(job: DbAfterMigrationJob, injector: ServiceLocator) {
+    log.info("attempting to process job {}", job.jobName)
     if (job.jobName == "upgrade-rollout-strategies") {
       injector.getService(FeatureApi::class.java).release1_5_11_strategy_update()
     }

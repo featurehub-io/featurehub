@@ -291,20 +291,21 @@ class FeatureSqlApi @Inject constructor(
             existing.rolloutStrategies.add(index, strategy)
           }
         } else {
+          // its the same as the HISTORICAL one, then we have to assume that they haven't changed it, so we skip it
+          if (Objects.deepEquals(strategy, historicalStrategy)) {
+            continue
+          }
+
+          // if this criteria matches, they have changed one that has been deleted, so thats a locking issue
           val currentStrategy = existing.rolloutStrategies.find { it.id == strategy.id }
-          if (currentStrategy == null) { // historically it existed
+          if (currentStrategy == null) { // historically it existed, but its been deleted, so ignore it
             log.debug("feature value strategy was deleted")
             throw OptimisticLockingException() // it's been deleted
           }
 
           // now we have to detect if they have changed it
-          // if the strategy is the same as the CURRENT one - it doesn't matter if they changed it, its the same
+          // if the strategy is the same as the CURRENT one - it doesn't matter if they changed it, its the same as the current one
           if (Objects.deepEquals(strategy, currentStrategy)) {
-            continue
-          }
-
-          // its the same as the HISTORICAL one, then we have to assume that they haven't changed it
-          if (Objects.deepEquals(strategy, historicalStrategy)) {
             continue
           }
 
