@@ -2,13 +2,13 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/edit-values/edit_feature_value_widget.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/edit_feature_value_widget.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/feature_value_status_tags.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
-import 'package:open_admin_app/widgets/features/table-collapsed-view/flag_colored_on_off_label.dart';
-import 'package:open_admin_app/widgets/features/table-collapsed-view/tooltip.dart';
-import 'package:open_admin_app/widgets/features/table-collapsed-view/value_not_set_container.dart';
+import 'package:open_admin_app/widgets/features/cell-view/flag_colored_on_off_label.dart';
+import 'package:open_admin_app/widgets/features/cell-view/strategy_tooltip.dart';
+import 'package:open_admin_app/widgets/features/cell-view/value_not_set_container.dart';
 import 'package:side_sheet/side_sheet.dart';
 
 
@@ -61,7 +61,6 @@ class _ValueContainer extends StatelessWidget {
     if (fv != null) {
       return InkWell(
         onTap: () {
-          print("before open" + fv.toString());
           SideSheet.right(
             body: EditFeatureValueWidget(
                 fv: fv!,

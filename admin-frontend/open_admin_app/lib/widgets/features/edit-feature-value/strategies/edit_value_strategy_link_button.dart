@@ -1,7 +1,7 @@
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/strategy_editing_widget.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/strategy_editing_widget.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';

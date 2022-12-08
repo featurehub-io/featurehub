@@ -2,7 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_outline_button.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
 
 import 'attribute_strategy_widget.dart';
 

@@ -2,8 +2,8 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/strategy_utils.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/strategy_utils.dart';
 
 import 'add_attribute_strategy_widget.dart';
 

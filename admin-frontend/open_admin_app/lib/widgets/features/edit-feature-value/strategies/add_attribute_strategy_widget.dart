@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/multiselect_dropdown.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/transform_strategy_conditions.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/transform_strategy_type_field.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/multiselect_dropdown.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/transform_strategy_conditions.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/transform_strategy_type_field.dart';
 
 import 'attribute_value_chip_widget.dart';
 import 'matchers.dart';

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/feature_value_updated_by.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/lock_unlock_switch.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/retire_feature_value_checkbox_widget.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/split_rollout_button.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/strategy_card.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/feature_value_updated_by.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/lock_unlock_switch.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/retire_feature_value_checkbox_widget.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/split_rollout_button.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/strategy_card.dart';
 
 
 class EditFeatureValueWidget extends StatefulWidget {

@@ -8,7 +8,7 @@ import 'package:open_admin_app/widgets/features/feature_cell_holder.dart';
 import 'package:open_admin_app/widgets/features/features_overview_table_widget.dart';
 
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
-import 'package:open_admin_app/widgets/features/table-collapsed-view/value_cell.dart';
+import 'package:open_admin_app/widgets/features/cell-view/value_cell.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 import 'feature_dashboard_constants.dart';

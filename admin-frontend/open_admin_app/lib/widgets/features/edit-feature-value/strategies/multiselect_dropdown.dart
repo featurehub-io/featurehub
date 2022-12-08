@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/attribute_value_chip_widget.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/attribute_value_chip_widget.dart';
 
 typedef MultiSelectMapEnumToDisplayName = String Function(dynamic value);
 typedef MultiSelectMapEnumToJson = String Function(dynamic value);
