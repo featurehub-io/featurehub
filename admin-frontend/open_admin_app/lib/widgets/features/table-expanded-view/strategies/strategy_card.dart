@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/boolean/edit_boolean_value_dropdown_widget.dart';
+import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';import 'package:open_admin_app/widgets/features/table-expanded-view/boolean/edit_boolean_value_dropdown_widget.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/json/edit_json_value_container.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/number/edit_number_value_container.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/strategy_card_widget.dart';
@@ -9,7 +8,7 @@ import 'package:open_admin_app/widgets/features/table-expanded-view/string/edit_
 
 class StrategyCard extends StatelessWidget {
   final RolloutStrategy? rolloutStrategy;
-  final CustomStrategyBlocV2 strBloc;
+  final CustomStrategyBloc strBloc;
   final FeatureValueType featureValueType;
 
   const StrategyCard(
@@ -55,7 +54,7 @@ class EditValueContainer extends StatelessWidget {
   final bool editable;
   final bool unlocked;
   final RolloutStrategy? rolloutStrategy;
-  final CustomStrategyBlocV2 strBloc;
+  final CustomStrategyBloc strBloc;
 
   const EditValueContainer(
       {Key? key,

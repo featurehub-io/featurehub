@@ -5,8 +5,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';import 'package:rxdart/rxdart.dart';
 
 import 'per_application_features_bloc.dart';
 
@@ -25,7 +24,7 @@ class FeatureValueDirtyHolder {
   List<RolloutStrategyInstance> sharedStrategies = [];
 }
 
-class PerFeatureStateTrackingBlocV2 implements Bloc {
+class PerFeatureStateTrackingBloc implements Bloc {
   final Feature feature;
   final String applicationId;
 
@@ -41,11 +40,11 @@ class PerFeatureStateTrackingBlocV2 implements Bloc {
   final PerApplicationFeaturesBloc _featureStatusBloc;
 
   final _customStrategyBlocs =
-      <EnvironmentFeatureValues, CustomStrategyBlocV2>{};
+      <EnvironmentFeatureValues, CustomStrategyBloc>{};
 
   FeatureValue? currentFeatureValue;
 
-  PerFeatureStateTrackingBlocV2(
+  PerFeatureStateTrackingBloc(
       this.applicationId,
       this.feature,
       this.mrClient,
@@ -89,11 +88,11 @@ class PerFeatureStateTrackingBlocV2 implements Bloc {
     addFeatureValueToStream(currentFeatureValue!);
   }
 
-  CustomStrategyBlocV2 matchingCustomStrategyBloc(
+  CustomStrategyBloc matchingCustomStrategyBloc(
       EnvironmentFeatureValues efv) {
     return _customStrategyBlocs.putIfAbsent(
         efv,
-        () => CustomStrategyBlocV2(
+        () => CustomStrategyBloc(
             efv, feature, this, _featureStatusBloc, currentFeatureValue!));
   }
 

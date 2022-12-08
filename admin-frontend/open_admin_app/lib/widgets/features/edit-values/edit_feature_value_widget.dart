@@ -1,16 +1,13 @@
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/experiment_data_table.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
-import 'package:open_admin_app/widgets/features/per_feature_state_tracking_blocv2.dart';
+import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/feature_value_updated_by.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/lock_unlock_switch.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/retire_feature_value_checkbox_widget.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/split_rollout_button.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/strategy_card.dart';
 
-// represents the editing of the states of a single boolean flag on a single environment
 
 class EditFeatureValueWidget extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
@@ -19,7 +16,6 @@ class EditFeatureValueWidget extends StatefulWidget {
   final Feature feature;
   final ApplicationFeatureValues afv;
   final FeatureValue fv;
-  final FeaturesDataSource featuresDataSource;
 
   const EditFeatureValueWidget(
 
@@ -29,7 +25,7 @@ class EditFeatureValueWidget extends StatefulWidget {
       required this.featureValueType,
       required this.perApplicationFeaturesBloc,
       required this.feature,
-      required this.afv, required this.featuresDataSource,
+      required this.afv,
         })
       : super(key: key);
 
@@ -42,7 +38,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
 
   @override
   Widget build(BuildContext context) {
-    var fvBloc = PerFeatureStateTrackingBlocV2(
+    var fvBloc = PerFeatureStateTrackingBloc(
         widget.afv.applicationId,
         widget.feature,
         widget.perApplicationFeaturesBloc.mrClient,
@@ -119,8 +115,6 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                   child: OutlinedButton(onPressed: () {
                     fvBloc.saveFeatureValueUpdates();
                     Navigator.pop(context); //close the side panel
-                    widget.featuresDataSource.buildDataGridRows();
-                    widget.featuresDataSource.updateDataGridSource();
                   }, child: const Text("Save")),
                 )
               ],

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
-
+import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 class EditStringValueContainer extends StatefulWidget {
   const EditStringValueContainer({
     Key? key,
@@ -14,7 +13,7 @@ class EditStringValueContainer extends StatefulWidget {
   final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
-  final CustomStrategyBlocV2 strBloc;
+  final CustomStrategyBloc strBloc;
 
   @override
   _EditStringValueContainerState createState() =>

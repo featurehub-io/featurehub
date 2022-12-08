@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/edit-values/edit_feature_value_widget.dart';
-import 'package:open_admin_app/widgets/features/experiment_data_table.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/feature_value_status_tags.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
@@ -18,14 +17,13 @@ class ValueCellHolder extends StatelessWidget {
   final EnvironmentFeatureValues efv;
   final Feature feature;
   final ApplicationFeatureValues afv;
-  final FeaturesDataSource featuresDataSource;
 
   const ValueCellHolder(
       {Key? key,
       this.fv,
       required this.efv,
       required this.feature,
-      required this.afv, required this.featuresDataSource})
+      required this.afv})
       : super(key: key);
 
   @override
@@ -35,7 +33,7 @@ class ValueCellHolder extends StatelessWidget {
         feature: feature,
         fv: fv,
         efv: efv,
-        afv: afv, featuresDataSource: featuresDataSource,
+        afv: afv
       );
     }
     if ((fv?.id == null) && efv.roles.isEmpty) {
@@ -50,13 +48,12 @@ class _ValueContainer extends StatelessWidget {
   final FeatureValue? fv;
   final EnvironmentFeatureValues efv;
   final ApplicationFeatureValues afv;
-  final FeaturesDataSource featuresDataSource;
 
   const _ValueContainer(
       {required this.feature,
       required this.fv,
       required this.efv,
-      required this.afv, required this.featuresDataSource});
+      required this.afv});
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +70,6 @@ class _ValueContainer extends StatelessWidget {
                 perApplicationFeaturesBloc: bloc,
                 feature: feature,
                 afv: afv,
-                featuresDataSource: featuresDataSource,
             ),
             width: MediaQuery.of(context).size.width * 0.3,
             context: context);

@@ -1,31 +1,29 @@
-import 'package:async/async.dart';
 import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:mrapi/api.dart';
 import 'package:multiselect/multiselect.dart';
-import 'package:open_admin_app/routes/features_overview_route_v2.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/features/feature_cell_holder.dart';
-import 'package:open_admin_app/widgets/features/features_overview_table_widgetv2.dart';
+import 'package:open_admin_app/widgets/features/features_overview_table_widget.dart';
 
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
-import 'package:open_admin_app/widgets/features/table-collapsed-view/value_cellV2.dart';
+import 'package:open_admin_app/widgets/features/table-collapsed-view/value_cell.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 import 'feature_dashboard_constants.dart';
 
-class ExperimentTable extends StatefulWidget {
-  ExperimentTable({Key? key, this.title, required this.bloc}) : super(key: key);
+class FeaturesDataTable extends StatefulWidget {
+  const FeaturesDataTable({Key? key, this.title, required this.bloc})
+      : super(key: key);
   final String? title;
   final PerApplicationFeaturesBloc bloc;
 
   @override
-  _ExperimentTableState createState() => _ExperimentTableState();
+  _FeaturesDataTableState createState() => _FeaturesDataTableState();
 }
 
-class _ExperimentTableState extends State<ExperimentTable> {
+class _FeaturesDataTableState extends State<FeaturesDataTable> {
   late FeaturesDataSource _featuresDataSource;
   List<FeatureStatusFeatures> featuresList = [];
 
@@ -131,8 +129,8 @@ class _ExperimentTableState extends State<ExperimentTable> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Container(
-                        constraints: const BoxConstraints(
-                            maxWidth: 600, maxHeight: 70),
+                        constraints:
+                            const BoxConstraints(maxWidth: 600, maxHeight: 70),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -141,9 +139,8 @@ class _ExperimentTableState extends State<ExperimentTable> {
                             SizedBox(height: 8.0),
                             DropDownMultiSelect(
                                 hint: Text("Select environments to display",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium),
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium),
                                 onChanged: (List<String> selectedValues) {
                                   setState(() {
                                     _selectedEnvironmentList = selectedValues;
@@ -206,8 +203,7 @@ class _ExperimentTableState extends State<ExperimentTable> {
                       columnSizer: _customColumnSizer,
                       frozenColumnsCount: 1,
                       onQueryRowHeight: (details) {
-                        return details
-                            .getIntrinsicRowHeight(details.rowIndex);
+                        return details.getIntrinsicRowHeight(details.rowIndex);
                       },
                       columns: <GridColumn>[
                         GridColumn(
@@ -236,12 +232,9 @@ class _ExperimentTableState extends State<ExperimentTable> {
                     ))
                 ],
               );
-            }
-
-            else if (snapshot.hasData && snapshot.data!.features.isEmpty) {
-                return const NoFeaturesMessage();
-            }
-            else {
+            } else if (snapshot.hasData && snapshot.data!.features.isEmpty) {
+              return const NoFeaturesMessage();
+            } else {
               return const Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 3,
@@ -309,7 +302,10 @@ class FeaturesDataSource extends DataGridSource {
                   feature: feature,
                   fv: entry.value.features
                       .firstWhere((fv) => fv.key == feature.key, orElse: () {
-                    return FeatureValue(key: feature.key!, locked: false, environmentId: entry.value.environmentId);
+                    return FeatureValue(
+                        key: feature.key!,
+                        locked: false,
+                        environmentId: entry.value.environmentId); // workaround for feature values that are not set yet and are null
                   }))))
           .toList();
       return DataGridRow(cells: [
@@ -347,15 +343,12 @@ class FeaturesDataSource extends DataGridSource {
         return FeatureCellHolder(feature: feature); // adapt feature column
       } else {
         AggregatedFeatureCellData fv = dataGridCell.value;
-        if(fv.feature.valueType == FeatureValueType.NUMBER) {
-          print(fv.fv);
-        }
         return ValueCellHolder(
-            efv: fv.efv,
-            feature: fv.feature,
-            fv: fv.fv,
-            afv: fv.afv,
-            featuresDataSource: this); // adapt environments value columns
+          efv: fv.efv,
+          feature: fv.feature,
+          fv: fv.fv,
+          afv: fv.afv,
+        ); // adapt environments value columns
       }
     }).toList());
   }

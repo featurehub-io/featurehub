@@ -76,7 +76,6 @@ class PerApplicationFeaturesBloc
   Stream<Feature> get publishNewFeatureStream =>
       _publishNewFeatureSource.stream;
 
-  final _getAllAppValuesDebounceStream = BehaviorSubject<bool>();
   final _featureMetadataStream = BehaviorSubject<Feature?>();
 
   Stream<Feature?> get featureMetadataStream => _featureMetadataStream.stream;
@@ -91,13 +90,6 @@ class PerApplicationFeaturesBloc
     _currentPid = _mrClient.streamValley.currentPortfolioIdStream
         .listen(addApplicationsToStream);
     _currentAppId = _mrClient.streamValley.currentAppIdStream.listen(setAppId);
-
-    // _getAllAppValuesDebounceStream
-    //     .debounceTime(const Duration(milliseconds: 300))
-    //     .listen((event) {
-    //   _actuallyCallAddAppFeatureValuesToStream();
-    // }
-    // );
   }
 
   @override
@@ -206,11 +198,6 @@ class PerApplicationFeaturesBloc
   bool environmentVisible(String envId) {
     return _shownEnvironmentsSource.value!.contains(envId);
   }
-
-  // void addAppFeatureValuesToStream() async {
-  //   _getAllAppValuesDebounceStream.add(
-  //       true); // tell it to ask for the data, but debounce it through a 300ms stream
-  // }
 
   void clearAppFeatureValuesStream() {
     if (!_appFeatureValuesBS.isClosed) {

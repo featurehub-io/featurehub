@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/per_feature_state_tracking_blocv2.dart';
+import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 
 class RetireFeatureValueCheckboxWidget extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
-  final PerFeatureStateTrackingBlocV2 fvBloc;
+  final PerFeatureStateTrackingBloc fvBloc;
   final bool editable;
   final bool retired;
 

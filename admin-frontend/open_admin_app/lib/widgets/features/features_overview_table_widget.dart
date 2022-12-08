@@ -4,13 +4,13 @@ import 'package:logging/logging.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
-import 'package:open_admin_app/widgets/features/experiment_data_table.dart';
+import 'package:open_admin_app/widgets/features/features_data_table.dart';
 import 'per_application_features_bloc.dart';
 
 final _log = Logger('FeaturesOverviewTable');
 
-class FeaturesOverviewTableWidgetV2 extends StatelessWidget {
-  const FeaturesOverviewTableWidgetV2({Key? key}) : super(key: key);
+class FeaturesOverviewTableWidget extends StatelessWidget {
+  const FeaturesOverviewTableWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,7 @@ class FeaturesOverviewTableWidgetV2 extends StatelessWidget {
                 snapshot.data!.applicationFeatureValues.features.isEmpty) {
               return const NoFeaturesMessage();
             } else {
-              return ExperimentTable(bloc: bloc);
+              return FeaturesDataTable(bloc: bloc);
             }
             // else {
             //   return const NoFeaturesMessage();

@@ -1,6 +1,5 @@
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
-import 'package:open_admin_app/widgets/features/per_feature_state_tracking_blocv2.dart';
+import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/strategy_editing_widget.dart';
 import 'package:bloc_provider/bloc_provider.dart';
@@ -17,9 +16,9 @@ class EditValueStrategyLinkButton extends StatelessWidget {
   }) : super(key: key);
 
   final bool editable;
-  final PerFeatureStateTrackingBlocV2 fvBloc;
+  final PerFeatureStateTrackingBloc fvBloc;
   final RolloutStrategy rolloutStrategy;
-  final CustomStrategyBlocV2 strBloc;
+  final CustomStrategyBloc strBloc;
 
   @override
   Widget build(BuildContext context) {

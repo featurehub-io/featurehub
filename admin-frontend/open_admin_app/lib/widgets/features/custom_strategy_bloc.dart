@@ -1,16 +1,16 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
-import 'package:open_admin_app/widgets/features/per_feature_state_tracking_blocv2.dart';
+import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
 
 const _strategyBlocUUidGenerator = Uuid();
 
-class CustomStrategyBlocV2 extends Bloc {
+class CustomStrategyBloc extends Bloc {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
-  final PerFeatureStateTrackingBlocV2 fvBloc;
+  final PerFeatureStateTrackingBloc fvBloc;
   final FeatureValue featureValue;
   final PerApplicationFeaturesBloc bloc;
 
@@ -23,7 +23,7 @@ class CustomStrategyBlocV2 extends Bloc {
 
   Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
 
-  CustomStrategyBlocV2(this.environmentFeatureValue, this.feature, this.fvBloc, this.bloc, this.featureValue)
+  CustomStrategyBloc(this.environmentFeatureValue, this.feature, this.fvBloc, this.bloc, this.featureValue)
       {
     for (var rs in featureValue.rolloutStrategies) {
       if (rs.id != null && rs.id!.length < 30) {
@@ -38,12 +38,6 @@ class CustomStrategyBlocV2 extends Bloc {
 
     _strategySource.add(featureValue.rolloutStrategies);
   }
-
-  // void markDirty() {
-  //   fvBloc.dirty(environmentFeatureValue.environmentId!, (current) {
-  //     current.customStrategies = _strategySource.value!;
-  //   });
-  // }
 
 
   void addStrategy(RolloutStrategy rs) {
@@ -63,12 +57,10 @@ class CustomStrategyBlocV2 extends Bloc {
     rs.id = _strategyBlocUUidGenerator.v4();
     final strategies = _strategySource.value;
     strategies.removeWhere((e) => e.id == rs.id);
-    // markDirty();
     _strategySource.add(strategies);
   }
 
   void addStrategyAttribute() {
-    // _strategySource.value
     final rsa = RolloutStrategyAttribute();
     rsa.id = _strategyBlocUUidGenerator.v4();
     final attributes = _strategySource.value!.last.attributes;

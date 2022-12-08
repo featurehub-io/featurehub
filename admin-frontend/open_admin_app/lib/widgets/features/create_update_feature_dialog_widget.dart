@@ -12,6 +12,7 @@ class CreateFeatureDialogWidget extends StatefulWidget {
   final Feature? feature;
   final PerApplicationFeaturesBloc bloc;
 
+
   const CreateFeatureDialogWidget({
     Key? key,
     required this.bloc,
@@ -36,6 +37,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
   bool isError = false;
   FeatureValueType? _dropDownFeatureTypeValue;
 
+
   @override
   void initState() {
     super.initState();
@@ -52,14 +54,12 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final weAreCreatingANewFeature = (widget.feature == null);
-    final isReadOnly = weAreCreatingANewFeature ? !widget.bloc.mrClient.userHasFeatureCreationRoleInCurrentApplication
-        : !widget.bloc.mrClient.userHasFeatureEditRoleInCurrentApplication;
-
+    final isReadOnly =
+        !widget.bloc.mrClient.userHasFeatureEditRoleInCurrentApplication;
     return Form(
       key: _formKey,
       child: FHAlertDialog(
-        title: Text(weAreCreatingANewFeature
+        title: Text(widget.feature == null
             ? 'Create new feature'
             : (isReadOnly ? 'View feature' : 'Edit feature')),
         content: SizedBox(
@@ -195,6 +195,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                 title: isUpdate ? 'Update' : 'Create',
                 keepCase: true,
                 onPressed: (() async {
+                  print("widget update");
                   if (_formKey.currentState!.validate()) {
                     try {
                       if (isUpdate) {
@@ -206,6 +207,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                             _featureLink.text,
                         _featureDesc.text);
                         widget.bloc.mrClient.removeOverlay();
+                        await widget.bloc.updateApplicationFeatureValuesStream();
                         widget.bloc.mrClient.addSnackbar(
                             Text('Feature ${_featureName.text} updated!'));
                       } else {
@@ -218,6 +220,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                               _featureLink.text,
                               _featureDesc.text);
                           widget.bloc.mrClient.removeOverlay();
+                          widget.bloc.updateApplicationFeatureValuesStream();
                           widget.bloc.mrClient.addSnackbar(
                               Text('Feature ${_featureName.text} created!'));
                         } else {

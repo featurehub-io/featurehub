@@ -7,15 +7,14 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_outline_button.dart';
 import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
-import 'package:open_admin_app/widgets/features/percentage_utils.dart';
+import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';import 'package:open_admin_app/widgets/features/percentage_utils.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/strategy_utils.dart';
 
 import 'rollout_strategies_widget.dart';
 
 class StrategyEditingWidget extends StatefulWidget {
-  final CustomStrategyBlocV2 bloc;
+  final CustomStrategyBloc bloc;
   final bool editable;
 
   const StrategyEditingWidget({
