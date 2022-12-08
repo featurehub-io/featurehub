@@ -40,7 +40,7 @@ class Environment2Spec extends Base2Spec {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     cacheSource = Mock(CacheSource)
 
-    appApi = new ApplicationSqlApi(db, convertUtils, cacheSource, archiveStrategy)
+    appApi = new ApplicationSqlApi(db, convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureSqlApi))
     envApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
 
     // now set up the environments we need

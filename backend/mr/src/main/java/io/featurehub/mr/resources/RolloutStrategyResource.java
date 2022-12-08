@@ -144,14 +144,14 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
   public RolloutStrategyValidationResponse validate(UUID appId, RolloutStrategyValidationRequest req,
                                                     SecurityContext securityContext) {
     final RolloutStrategyValidator.ValidationFailure validationFailure =
-      validator.validateStrategies(req.getCustomStrategies(), req.getSharedStrategies());
+      validator.validateStrategies(null ,req.getCustomStrategies(), req.getSharedStrategies());
 
     return
       new RolloutStrategyValidationResponse()
         .customStategyViolations(
-          validationFailure.customStrategyViolations.entrySet().stream().map(e ->
+          validationFailure.getCustomStrategyViolations().entrySet().stream().map(e ->
             new CustomRolloutStrategyViolation().strategy(e.getKey()).violations(new ArrayList<>(e.getValue()))
           ).collect(Collectors.toList()))
-        .violations(new ArrayList<>(validationFailure.collectionViolationType));
+        .violations(new ArrayList<>(validationFailure.getCollectionViolationType()));
   }
 }

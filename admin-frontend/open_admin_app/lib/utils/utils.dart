@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:html';
+import 'dart:math';
 
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
@@ -11,6 +12,30 @@ bool validateEmail(String? email) {
           r'(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|'
           r'(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$')
       .hasMatch(email);
+}
+
+final _characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+final _charactersLength = _characters.length - 1;
+final _strategyRandom = Random();
+
+String _generateRandomStrategyId() {
+  var result           = '';
+
+  for ( var i = 0; i < 4; i++ ) {
+    result += _characters[_strategyRandom.nextInt(_charactersLength)];
+  }
+
+  return result;
+}
+
+String makeStrategyId({List<RolloutStrategy> existing = const []}) {
+  // cycle round loop until we generate a unique id
+  while (true) {
+    final gen = _generateRandomStrategyId();
+    if (!existing.any((st) => st.id == gen)) {
+      return gen;
+    }
+  }
 }
 
 bool validateUrl(String? url) {

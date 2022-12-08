@@ -119,27 +119,24 @@ open class ConvertUtils : Conversions {
     }
     if (opts.contains(FillOpts.Features)) {
       if (features != null) {
-        environment.features = features.stream()
+        environment.features = features
           .map { ef: DbApplicationFeature? -> toApplicationFeature(ef, Opts.empty()) }
-          .collect(Collectors.toList())
       } else {
-        environment.features = env.environmentFeatures.stream()
+        environment.features = env.environmentFeatures
           .filter { f: DbFeatureValue ->
             (opts.contains(FillOpts.Archived)
               || f.feature.whenArchived == null)
           }
           .map { ef: DbFeatureValue -> toApplicationFeature(ef.feature, Opts.empty()) }
-          .collect(Collectors.toList())
       }
     }
     if (opts.contains(FillOpts.ServiceAccounts) || opts.contains(FillOpts.SdkURL)) {
-      environment.serviceAccountPermission = env.serviceAccountEnvironments.stream()
+      environment.serviceAccountPermission = env.serviceAccountEnvironments
         .filter { sae: DbServiceAccountEnvironment ->
           (opts.contains(FillOpts.Archived)
             || sae.serviceAccount.whenArchived == null)
         }
         .map { sae: DbServiceAccountEnvironment? -> toServiceAccountPermission(sae, null, false, opts) }
-        .collect(Collectors.toList())
     }
 
     // collect all the ACls for all the groups for this environment?
@@ -359,13 +356,12 @@ open class ConvertUtils : Conversions {
     if (opts!!.contains(FillOpts.Members)) {
       val org = if (dbg.owningOrganization == null) dbg.owningPortfolio.organization else dbg.owningOrganization
       group.members = QDbPerson()
-        .order().name.asc().whenArchived.isNull.groupMembers.group.eq(dbg).findList().stream()
+        .order().name.asc().whenArchived.isNull.groupMembers.group.eq(dbg).findList()
         .map { p: DbPerson? ->
           this.toPerson(
             p, org, opts.minus(FillOpts.Members, FillOpts.Acls, FillOpts.Groups)
           )
         }
-        .collect(Collectors.toList())
     }
     if (opts.contains(FillOpts.Acls)) {
       val appIdFilter = opts.id(FilterOptType.Application)
@@ -420,9 +416,8 @@ open class ConvertUtils : Conversions {
       .portfolioId(app.portfolio.id)
     if (opts!!.contains(FillOpts.Environments)) {
       application.environments =
-        QDbEnvironment().whenArchived.isNull.parentApplication.eq(app).findList().stream()
+        QDbEnvironment().whenArchived.isNull.parentApplication.eq(app).findList()
           .map { env: DbEnvironment? -> toEnvironment(env, opts) }
-          .collect(Collectors.toList())
 
       val envIds = application.environments!!.associate { it.id to it.id }
 
@@ -436,9 +431,8 @@ open class ConvertUtils : Conversions {
     }
     if (opts.contains(FillOpts.Features)) {
       application.features =
-        QDbApplicationFeature().whenArchived.isNull.parentApplication.eq(app).findList().stream()
+        QDbApplicationFeature().whenArchived.isNull.parentApplication.eq(app).findList()
           .map { af: DbApplicationFeature? -> toApplicationFeature(af, opts) }
-          .collect(Collectors.toList())
     }
     return application
   }
@@ -488,7 +482,7 @@ open class ConvertUtils : Conversions {
       .key(stripArchived(appFeature.key, appFeature.whenArchived)!!)
       .locked(fs.isLocked)
       .id(fs.id)
-      .retired(fs.retired)
+      .retired(true == fs.retired)
       .version(fs.version)
     if (appFeature.valueType == FeatureValueType.BOOLEAN) {
       featureValue.valueBoolean(
@@ -509,7 +503,7 @@ open class ConvertUtils : Conversions {
     featureValue.environmentId = fs.environment.id
     if (opts.contains(FillOpts.RolloutStrategies)) {
       featureValue.rolloutStrategies = fs.rolloutStrategies
-      featureValue.rolloutStrategyInstances = fs.sharedRolloutStrategies.stream()
+      featureValue.rolloutStrategyInstances = fs.sharedRolloutStrategies
         .map { srs: DbStrategyForFeatureValue ->
           val rolloutStrategy = srs.rolloutStrategy
           RolloutStrategyInstance()
@@ -522,7 +516,6 @@ open class ConvertUtils : Conversions {
             .disabled(if (srs.isEnabled) null else true)
             .strategyId(rolloutStrategy.id)
         }
-        .collect(Collectors.toList())
     }
 
     // this is an indicator it is for the UI not for the cache.
@@ -602,15 +595,13 @@ open class ConvertUtils : Conversions {
     }
     if (opts.contains(FillOpts.Groups)) {
       portfolio.groups =
-        QDbGroup().whenArchived.isNull.owningPortfolio.eq(p).order().name.asc().findList().stream()
+        QDbGroup().whenArchived.isNull.owningPortfolio.eq(p).order().name.asc().findList()
           .map { g: DbGroup? -> toGroup(g, opts) }
-          .collect(Collectors.toList())
     }
     if (opts.contains(FillOpts.Applications)) {
       portfolio.applications =
-        QDbApplication().whenArchived.isNull.portfolio.eq(p).order().name.asc().findList().stream()
+        QDbApplication().whenArchived.isNull.portfolio.eq(p).order().name.asc().findList()
           .map { a: DbApplication? -> toApplication(a, opts) }
-          .collect(Collectors.toList())
     }
     return portfolio
   }
@@ -658,14 +649,19 @@ open class ConvertUtils : Conversions {
 
   /** is this person a superuser or portfolio admin for this application  */
   override fun isPersonApplicationAdmin(dbPerson: DbPerson?, app: DbApplication?): Boolean {
+    if (dbPerson == null || app == null) return false
+
+    return isPersonApplicationAdmin(dbPerson.id, app.id)
+  }
+
+  override fun isPersonApplicationAdmin(personId: UUID, appId: UUID): Boolean {
     // if a person is in a null portfolio group or portfolio group
-    return QDbGroup().groupMembers.person
-      .eq(dbPerson).owningOrganization
-      .eq(app!!.portfolio.organization).adminGroup
-      .isTrue
-      .or().owningPortfolio
-      .isNull.owningPortfolio
-      .eq(app.portfolio)
+    return QDbGroup()
+      .groupMembers.person.id.eq(personId)
+      .adminGroup.isTrue
+      .or()
+        .owningPortfolio.isNull
+        .owningPortfolio.applications.id.eq(appId)
       .endOr()
       .exists()
   }

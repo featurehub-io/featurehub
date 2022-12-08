@@ -47,12 +47,12 @@ open class GroupSqlApi @Inject constructor(
     } else null
   }
 
-  override fun groupsPersonOrgAdminOf(pId: UUID): List<Group> {
+  override fun groupsPersonOrgAdminOf(personId: UUID): List<Group> {
     return QDbGroup().whenArchived
       .isNull.owningPortfolio
       .isNull.adminGroup
       .eq(true).groupMembers.person.id
-      .eq(pId)
+      .eq(personId)
       .findList()
       .map { g: DbGroup? -> convertUtils.toGroup(g, Opts.empty())!! }
   }
@@ -365,7 +365,7 @@ open class GroupSqlApi @Inject constructor(
         throw OptimisticLockingException()
       }
 
-      gp.name?.let {
+      gp.name.let {
         group.name = it
       }
 
@@ -477,7 +477,7 @@ open class GroupSqlApi @Inject constructor(
     if (appId == null) {
       finder = finder.application.isNotNull
     } else {
-      finder = finder.application.id.eq(appId!!)
+      finder = finder.application.id.eq(appId)
     }
 
     finder.findList()

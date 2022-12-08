@@ -16,7 +16,6 @@ import jakarta.ws.rs.core.Response
 import jakarta.ws.rs.core.SecurityContext
 import org.slf4j.LoggerFactory
 import java.util.*
-import java.util.Set
 import java.util.stream.Collectors
 
 class PersonResource @Inject constructor(
@@ -165,7 +164,7 @@ class PersonResource @Inject constructor(
 
     val pp = personApi.search(
       holder.filter, holder.order, start, page,
-      if (holder.personTypes == null) Set.of(PersonType.PERSON) else HashSet(holder.personTypes),
+      if (holder.personTypes == null) setOf(PersonType.PERSON) else holder.personTypes.toSet(),
       holder.sortBy,
       Opts().add(FillOpts.Groups, holder.includeGroups)
         .add(FillOpts.CountGroups, holder.countGroups)

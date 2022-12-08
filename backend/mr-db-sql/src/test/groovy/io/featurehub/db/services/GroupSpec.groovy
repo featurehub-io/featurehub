@@ -47,7 +47,7 @@ class GroupSpec extends BaseSpec {
 
     user = dbSuperPerson
 
-    applicationSqlApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
+    applicationSqlApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureSqlApi))
     commonPortfolio = portfolioApi.createPortfolio(new Portfolio().name("acl common portfolio").organizationId(org.id), Opts.empty(), superPerson)
     commonApplication1 = applicationSqlApi.createApplication(commonPortfolio.id, new Application().name("acl common app").description("acl common app"), superPerson)
     env1App1 = environmentSqlApi.create(new Environment().name("acl common app env1"), commonApplication1, superPerson)

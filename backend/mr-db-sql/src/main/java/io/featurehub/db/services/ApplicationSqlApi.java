@@ -2,6 +2,7 @@ package io.featurehub.db.services;
 
 import io.ebean.Database;
 import io.ebean.annotation.Transactional;
+import io.ebean.annotation.TxType;
 import io.featurehub.dacha.model.PublishAction;
 import io.featurehub.db.api.ApplicationApi;
 import io.featurehub.db.api.FillOpts;
@@ -10,6 +11,7 @@ import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
+import io.featurehub.db.model.DbEnvironment;
 import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbGroup;
 import io.featurehub.db.model.DbPerson;
@@ -33,6 +35,7 @@ import io.featurehub.mr.model.SortOrder;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,17 +55,20 @@ public class ApplicationSqlApi implements ApplicationApi {
   private final Conversions convertUtils;
   private final CacheSource cacheSource;
   private final ArchiveStrategy archiveStrategy;
+  private final InternalFeatureSqlApi internalFeatureSqlApi;
 
   @Inject
   public ApplicationSqlApi(
       Database database,
       Conversions convertUtils,
       CacheSource cacheSource,
-      ArchiveStrategy archiveStrategy) {
+      ArchiveStrategy archiveStrategy,
+      InternalFeatureSqlApi internalFeatureSqlApi) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.cacheSource = cacheSource;
     this.archiveStrategy = archiveStrategy;
+    this.internalFeatureSqlApi = internalFeatureSqlApi;
   }
 
   @Override
@@ -225,6 +231,16 @@ public class ApplicationSqlApi implements ApplicationApi {
     return false;
   }
 
+  public @Nullable Application getApplication(@NotNull UUID portfolioId, @NotNull String name) {
+    final DbApplication app = new QDbApplication().name.ieq(name).portfolio.id.eq(portfolioId).findOne();
+
+    if (app != null) {
+      return convertUtils.toApplication(app, Opts.empty());
+    }
+
+    return null;
+  }
+
   @Override
   public Application getApplication(@NotNull UUID appId, @NotNull Opts opts) {
     Conversions.nonNullApplicationId(appId);
@@ -315,9 +331,10 @@ public class ApplicationSqlApi implements ApplicationApi {
 
   private void createDefaultBooleanFeatureValuesForAllEnvironments(
       DbApplicationFeature appFeature, DbApplication app, Person person) {
+    final List<DbEnvironment> appEnvironments = new QDbEnvironment()
+      .whenArchived.isNull().parentApplication.eq(app).findList();
     final List<DbFeatureValue> newFeatures =
-        new QDbEnvironment()
-            .whenArchived.isNull().parentApplication.eq(app).findList().stream()
+        appEnvironments.stream()
                 .map(
                     env ->
                         new DbFeatureValue.Builder()
@@ -335,9 +352,10 @@ public class ApplicationSqlApi implements ApplicationApi {
     cacheSource.publishFeatureChange(appFeature, PublishAction.CREATE);
   }
 
-  @Transactional
+  // this ensures we create the featuers and create initial historical records for them as well
+  @Transactional(type = TxType.REQUIRES_NEW)
   private void saveAllFeatures(List<DbFeatureValue> newFeatures) {
-    newFeatures.forEach(database::save);
+    newFeatures.forEach(internalFeatureSqlApi::saveFeatureValue);
   }
 
   private List<Feature> getAppFeatures(DbApplication app, @NotNull Opts opts) {
