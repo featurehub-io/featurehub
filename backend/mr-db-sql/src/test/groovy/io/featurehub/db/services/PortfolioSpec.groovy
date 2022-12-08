@@ -14,6 +14,8 @@ import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.SortOrder
 import spock.lang.Shared
 
+import java.time.LocalDateTime
+
 class PortfolioSpec extends BaseSpec {
   @Shared PortfolioSqlApi portfolioApi
   @Shared Person normalPerson
@@ -153,7 +155,10 @@ class PortfolioSpec extends BaseSpec {
 
   def "I can filter my searches for portfolios"() {
     given: "i delete all portfolios"
-      new QDbPortfolio().findList().each({ DbPortfolio p -> database.delete(p)})
+      new QDbPortfolio().findList().each({ DbPortfolio p ->
+        p.setWhenArchived(LocalDateTime.now())
+        p.save()
+      })
     and: "i have three portfolios"
       portfolioApi.createPortfolio(new Portfolio().name("crispy").organizationId(org.getId()), Opts.empty(), superPerson)
       portfolioApi.createPortfolio(new Portfolio().name("crispy2").organizationId(org.getId()), Opts.empty(), superPerson)

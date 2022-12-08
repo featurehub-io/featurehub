@@ -1,5 +1,6 @@
 package io.featurehub.db.services
 
+import cd.connect.app.config.ThreadLocalConfigurationSource
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.FillOpts
@@ -48,13 +49,14 @@ class FeatureSpec extends Base2Spec {
   Person portfolioAdminOfPortfolio1
   Group groupInPortfolio1
   Group adminGroupInPortfolio1
+  RolloutStrategyValidator rsv
 
   def setup() {
     db.commitTransaction()
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     serviceAccountSqlApi = new ServiceAccountSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
 
-    def rsv = Mock(RolloutStrategyValidator)
+    rsv = Mock(RolloutStrategyValidator)
     rsv.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
 
     featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv)
@@ -387,12 +389,13 @@ class FeatureSpec extends Base2Spec {
 
 
   def "updates to custom rollout strategies are persisted as expected"() {
-    given: "i create an environment (in app2)"
+    setup:
+      ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true'])
+      featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv)
+    when: "i update the fv with the custom strategy"
       def env1 = environmentSqlApi.create(new Environment().name("rstrat-test-env1"), new Application().id(app2Id), superPerson)
-    and: "i have a boolean feature (which will automatically create a feature value in each environment)"
       def key = 'FEATURE_MISINTERPRET'
       appApi.createApplicationFeature(app2Id, new Feature().name(key).key(key).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
-    when: "i update the fv with the custom strategy"
       def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
       def strat = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
         .value(Boolean.FALSE).attributes([
@@ -408,10 +411,14 @@ class FeatureSpec extends Base2Spec {
       def updated = featureSqlApi.updateFeatureValueForEnvironment(env1.id, key, fv, perms)
     and:
       def stored = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+    and:
+      def deleted = appApi.deleteApplicationFeature(app2Id, key)
     then:
       stored.rolloutStrategies.size() == 1
       updated.rolloutStrategies.size() == 1
       stored.rolloutStrategies[0] == strat
+    cleanup:
+      ThreadLocalConfigurationSource.clearContext()
   }
 
   def "if a feature is locked the custom strategies will not update"() {
