@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/delete_strategy_icon_button.dart';

@@ -23,6 +23,7 @@ class FeatureDeleteDialogWidget extends StatelessWidget {
       deleteSelected: () async {
         try {
           await bloc.deleteFeature(feature.key!);
+          await bloc.updateApplicationFeatureValuesStream();
           bloc.mrClient.removeOverlay();
           bloc.mrClient.addSnackbar(Text("Feature '${feature.name}' deleted!"));
           return true;

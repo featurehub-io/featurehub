@@ -6,7 +6,6 @@ import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_json_editor.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/json/json_viewer_field.dart';
 
@@ -93,8 +92,10 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
 
   void _viewJsonEditor(BuildContext context, bool enabled) {
     var initialValue = tec.text;
-    widget.strBloc.fvBloc.mrClient
-        .addOverlay((BuildContext context) => FHAlertDialog(
+    showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
               content: FHJsonEditorWidget(
                 controller: tec,
                 formKey: _formKey,
@@ -105,7 +106,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
                 FHFlatButtonTransparent(
                   onPressed: () {
                     tec.text = initialValue;
-                    widget.strBloc.fvBloc.mrClient.removeOverlay();
+                    Navigator.pop(context);
                   },
                   title: 'Cancel',
                   keepCase: true,
@@ -116,12 +117,14 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
                         onPressed: (() {
                           if (_formKey.currentState!.validate()) {
                             _valueChanged();
-                            widget.strBloc.fvBloc.mrClient.removeOverlay();
+                            Navigator.pop(context);
                           }
                         }))
                     : Container(),
               ],
-            ));
+            );
+        }
+    );
   }
 
   void _valueChanged() {
@@ -134,7 +137,5 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
     } else {
       widget.strBloc.fvBloc.updateFeatureValueDefault(replacementValue);
     }
-
-    setState(() {});
   }
 }

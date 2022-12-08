@@ -4,11 +4,8 @@ import 'dart:math';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
-import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
-import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'per_application_features_bloc.dart';
@@ -52,7 +49,6 @@ class PerFeatureStateTrackingBlocV2 implements Bloc {
       this.applicationId,
       this.feature,
       this.mrClient,
-      // this.featuresOnTabBloc,
       FeatureValue featureValue,
       PerApplicationFeaturesBloc featureStatusBloc,
       this.applicationFeatureValues)
@@ -60,6 +56,7 @@ class PerFeatureStateTrackingBlocV2 implements Bloc {
     _environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient);
     _featureServiceApi = FeatureServiceApi(mrClient.apiClient);
     currentFeatureValue = featureValue;
+    print("Current FV" + currentFeatureValue.toString());
     addFeatureValueToStream(featureValue);
   }
 
@@ -82,6 +79,7 @@ class PerFeatureStateTrackingBlocV2 implements Bloc {
         currentFeatureValue!.valueString = replacementValue;
         break;
       case FeatureValueType.NUMBER:
+        print(currentFeatureValue);
         currentFeatureValue!.valueNumber = replacementValue;
         break;
       case FeatureValueType.JSON:
@@ -125,10 +123,6 @@ class PerFeatureStateTrackingBlocV2 implements Bloc {
     });
   }
 
-  // the cells control their own state, but they are affected by whether they become locked or unlocked while they
-  // exist
-  // need for v2
-
   @override
   void dispose() {
     for (var b in _customStrategyBlocs.values) {
@@ -169,5 +163,7 @@ class PerFeatureStateTrackingBlocV2 implements Bloc {
   saveFeatureValueUpdates() async {
     await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(
         applicationId, feature.key!, [currentFeatureValue!]);
+    await _featureStatusBloc.updateApplicationFeatureValuesStream();
+
   }
 }

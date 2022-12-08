@@ -8,7 +8,6 @@ import 'package:open_admin_app/routes/create_admin_service_accounts_route.dart';
 import 'package:open_admin_app/routes/create_user_route.dart';
 import 'package:open_admin_app/routes/edit_admin_service_account_route.dart';
 import 'package:open_admin_app/routes/edit_user_route.dart';
-import 'package:open_admin_app/routes/features_overview_route.dart';
 import 'package:open_admin_app/routes/features_overview_route_v2.dart';
 import 'package:open_admin_app/routes/home_route.dart';
 import 'package:open_admin_app/routes/loading_route.dart';

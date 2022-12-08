@@ -7,10 +7,7 @@ import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_accent.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/link_to_applications_page.dart';
-import 'package:open_admin_app/widgets/features/create_update_feature_dialog_widget.dart';
 import 'package:open_admin_app/widgets/features/create_update_feature_dialog_widgetV2.dart';
-import 'package:open_admin_app/widgets/features/experiment_data_table.dart';
-import 'package:open_admin_app/widgets/features/features_overview_table_widget.dart';
 import 'package:open_admin_app/widgets/features/features_overview_table_widgetv2.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 
@@ -61,6 +58,7 @@ class _FeatureStatusState extends State<FeatureStatusRouteV2> {
                 child: Row(
                   children: [
                     _filterRow(context, bloc),
+                    CreateFeatureButton(bloc: bloc),
                   ],
                 ),
               ),
@@ -129,11 +127,10 @@ class _FeaturesOverviewHeader extends StatelessWidget {
 
 class CreateFeatureButton extends StatelessWidget {
   final PerApplicationFeaturesBloc bloc;
-  final FeaturesDataSource featuresDataSource;
 
   const CreateFeatureButton({
     Key? key,
-    required this.bloc, required this.featuresDataSource,
+    required this.bloc,
   }) : super(key: key);
 
   @override
@@ -143,6 +140,7 @@ class CreateFeatureButton extends StatelessWidget {
         builder: (context, snapshot) {
           final canEdit = bloc.mrClient.personState
               .personCanEditFeaturesForApplication(snapshot.data);
+          print("can edit is: $canEdit");
           return !canEdit
               ? const SizedBox.shrink()
               : ElevatedButton(
@@ -150,9 +148,9 @@ class CreateFeatureButton extends StatelessWidget {
                   onPressed: () =>
                       bloc.mrClient.addOverlay((BuildContext context) {
                     //return null;
+                        print("calling update");
                     return CreateFeatureDialogWidgetV2(
                       bloc: bloc,
-                      featuresDataSource: featuresDataSource
                     );
                   }), child: Text('Create new feature')
                 );

@@ -1,4 +1,5 @@
 import 'package:async/async.dart';
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +8,7 @@ import 'package:multiselect/multiselect.dart';
 import 'package:open_admin_app/routes/features_overview_route_v2.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/features/feature_cell_holder.dart';
+import 'package:open_admin_app/widgets/features/features_overview_table_widgetv2.dart';
 
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:open_admin_app/widgets/features/table-collapsed-view/value_cellV2.dart';
@@ -15,12 +17,9 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'feature_dashboard_constants.dart';
 
 class ExperimentTable extends StatefulWidget {
-  ExperimentTable(
-      {Key? key, this.title, required this.bloc, required this.data})
-      : super(key: key);
+  ExperimentTable({Key? key, this.title, required this.bloc}) : super(key: key);
   final String? title;
   final PerApplicationFeaturesBloc bloc;
-  final FeatureStatusFeatures data;
 
   @override
   _ExperimentTableState createState() => _ExperimentTableState();
@@ -29,85 +28,76 @@ class ExperimentTable extends StatefulWidget {
 class _ExperimentTableState extends State<ExperimentTable> {
   late FeaturesDataSource _featuresDataSource;
   List<FeatureStatusFeatures> featuresList = [];
-  final AsyncMemoizer _memoizer = AsyncMemoizer();
 
   String _searchTerm = '';
+  bool _loading = true;
   int _maxFeatures = 0;
-  int _pageOffset = 0;
-
+  int _pageIndex = 0;
   List<FeatureValueType> _selectedFeatureTypes = [];
   List<String> _selectedEnvironmentList = [];
+  final CustomColumnSizer _customColumnSizer = CustomColumnSizer();
 
-  Future generateFeaturesList() async {
-    print("generate features list");
-    var appFeatures = await widget.bloc.getApplicationFeatureValuesData(
-        widget.bloc.applicationId!,
-        _searchTerm,
-        _selectedFeatureTypes, rowsPerPage, _pageOffset); //handle if appId is null
-    var featuresList = FeatureStatusFeatures(appFeatures);
-    _featuresDataSource = FeaturesDataSource(featuresList);
-    _maxFeatures = appFeatures.maxFeatures;
-    return featuresList;
+  @override
+  void initState() {
+    super.initState();
+    final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
+
+    bloc.appFeatureValuesStream.listen((features) {
+      if (mounted) {
+        if (features != null) {
+          setState(() {
+            _selectedEnvironmentList =
+                features.environments.map((e) => e.environmentName!).toList();
+            var featuresList = FeatureStatusFeatures(features);
+            _featuresDataSource = FeaturesDataSource(
+                featuresList, widget.bloc, _searchTerm, _selectedFeatureTypes);
+            _maxFeatures = features.maxFeatures;
+            _loading = false;
+          });
+        } else {
+          setState(() {
+            _loading = true;
+          });
+        }
+      }
+    });
   }
 
-//   return this._memoizer.runOnce(() async {
-//   print("generate features list");
-//   var appFeatures = await widget.bloc.getApplicationFeatureValuesData(
-//   widget.bloc.applicationId!,
-//   _searchTerm,
-//   _selectedFeatureTypes,
-//   rowsPerPage,
-//   _pageOffset); //handle if appId is null
-//   var featuresList = FeatureStatusFeatures(appFeatures);
-//   _featuresDataSource = FeaturesDataSource(featuresList);
-//   _maxFeatures = appFeatures.maxFeatures;
-//   return featuresList;
-// });
-
-      @override
-      void initState() {
-        super.initState();
-        print("in init state");
-        _selectedEnvironmentList = widget.data.applicationEnvironments.entries
-            .map((e) => e.value.environmentName!)
-            .toList();
-      }
-
-      final CustomColumnSizer _customColumnSizer = CustomColumnSizer();
-
-      @override
-      Widget build(BuildContext context) {
-        final _debouncer = Debouncer(milliseconds: 500);
-
-        var gridColumnsList = widget.data.applicationEnvironments.entries
-            .map(
-              (entry) => GridColumn(
-            columnName: "env",
-            label: Container(
-                padding: const EdgeInsets.all(8.0),
-                alignment: Alignment.center,
-                child: Text(entry.value.environmentName!)),
-            visible:
-            _selectedEnvironmentList.contains(entry.value.environmentName),
-          ),
-        )
-            .toList();
-
-        return FutureBuilder(
-            future: generateFeaturesList(),
-            builder: (context, snapshot) {
+  @override
+  Widget build(BuildContext context) {
+    final _debouncer = Debouncer(milliseconds: 500);
+    if (!_loading) {
+      List<GridColumn> gridColumnsList = [];
+      return StreamBuilder<ApplicationFeatureValues?>(
+          stream: widget.bloc.appFeatureValuesStream,
+          builder: (context, snapshot) {
+            if (snapshot.hasData && snapshot.data!.features.isNotEmpty) {
               print("rebuild");
-              return snapshot.hasData
-                  ? Column(
+              gridColumnsList = snapshot.data!.environments
+                  .map(
+                    (entry) => GridColumn(
+                      columnName: "env",
+                      label: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          alignment: Alignment.center,
+                          child: Text(entry.environmentName!)),
+                      visible: _selectedEnvironmentList
+                          .contains(entry.environmentName),
+                    ),
+                  )
+                  .toList();
+
+              var featuresList = FeatureStatusFeatures(snapshot.data!);
+              _featuresDataSource = FeaturesDataSource(featuresList,
+                  widget.bloc, _searchTerm, _selectedFeatureTypes);
+              _maxFeatures = snapshot.data!.maxFeatures;
+
+              return Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      CreateFeatureButton(
-                        bloc: widget.bloc,
-                        featuresDataSource: _featuresDataSource,
-                      ),
                       const SizedBox(
                         width: 16.0,
                       ),
@@ -122,6 +112,12 @@ class _ExperimentTableState extends State<ExperimentTable> {
                             _debouncer.run(() {
                               setState(() {
                                 _searchTerm = val;
+                                widget.bloc.getApplicationFeatureValuesData(
+                                    widget.bloc.applicationId!,
+                                    _searchTerm,
+                                    _selectedFeatureTypes,
+                                    rowsPerPage,
+                                    _pageIndex);
                               });
                             });
                           },
@@ -148,22 +144,21 @@ class _ExperimentTableState extends State<ExperimentTable> {
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium),
-                                onChanged: (List<String> x) {
+                                onChanged: (List<String> selectedValues) {
                                   setState(() {
-                                    _selectedEnvironmentList = x;
+                                    _selectedEnvironmentList = selectedValues;
                                   });
                                 },
                                 icon: const Icon(
                                   Icons.visibility_sharp,
                                   size: 18,
                                 ),
-                                options: widget
-                                    .data.applicationEnvironments.entries
-                                    .map((e) => e.value.environmentName!)
+                                options: snapshot.data!.environments
+                                    .map((e) => e.environmentName!)
                                     .toList(),
                                 selectedValues: _selectedEnvironmentList
-                              // whenEmpty: 'Select Something',
-                            ),
+                                // whenEmpty: 'Select Something',
+                                ),
                           ],
                         ),
                       ),
@@ -176,12 +171,18 @@ class _ExperimentTableState extends State<ExperimentTable> {
                             size: 18,
                           ),
                           hint: const Text("Filter by feature type"),
-                          onChanged: (List<String> x) {
+                          onChanged: (List<String> selection) {
                             setState(() {
-                              _selectedFeatureTypes = x
+                              _selectedFeatureTypes = selection
                                   .map((e) => convertToFeatureValueType(e))
                                   .toList();
                             });
+                            widget.bloc.getApplicationFeatureValuesData(
+                                widget.bloc.applicationId!,
+                                _searchTerm,
+                                _selectedFeatureTypes,
+                                rowsPerPage,
+                                _pageIndex);
                           },
                           options: FeatureValueType.values
                               .map((e) => e.name!)
@@ -195,13 +196,11 @@ class _ExperimentTableState extends State<ExperimentTable> {
                     ],
                   ),
                   const SizedBox(height: 16.0),
-                  Container(
+                  SizedBox(
                     height: 600,
                     child: SfDataGrid(
                       source: _featuresDataSource,
-                      // columnWidthMode: ColumnWidthMode.lastColumnFill,
                       isScrollbarAlwaysShown: true,
-                      // allowSorting: true,
                       rowsPerPage: rowsPerPage,
                       defaultColumnWidth: 150,
                       columnSizer: _customColumnSizer,
@@ -228,40 +227,51 @@ class _ExperimentTableState extends State<ExperimentTable> {
                   if (_maxFeatures >
                       rowsPerPage) // only display paginator if needed
                     Container(
-                      // height: _dataPagerHeight,
+                        // height: _dataPagerHeight,
                         child: SfDataPager(
-                          delegate: _featuresDataSource,
-                          pageCount:
+                      delegate: _featuresDataSource,
+                      pageCount:
                           (_maxFeatures / rowsPerPage).ceil().ceilToDouble(),
-                          direction: Axis.horizontal,
-                          onPageNavigationEnd: (page) {
-                            _pageOffset=page;
-                          },
-                        ))
+                      direction: Axis.horizontal,
+                    ))
                 ],
-              )
-                  : const Center(
+              );
+            }
+
+            else if (snapshot.hasData && snapshot.data!.features.isEmpty) {
+                return const NoFeaturesMessage();
+            }
+            else {
+              return const Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 3,
                 ),
               );
-            });
-      }
+            }
+          });
+    } else {
+      return const Center(
+        child: CircularProgressIndicator(
+          strokeWidth: 3,
+        ),
+      );
     }
+  }
+}
 
-        FeatureValueType convertToFeatureValueType(String value) {
-      switch (value) {
-        case "BOOLEAN":
-          return FeatureValueType.BOOLEAN;
-        case "STRING":
-          return FeatureValueType.STRING;
-        case "NUMBER":
-          return FeatureValueType.NUMBER;
-        case "JSON":
-          return FeatureValueType.JSON;
-      }
+FeatureValueType convertToFeatureValueType(String value) {
+  switch (value) {
+    case "BOOLEAN":
       return FeatureValueType.BOOLEAN;
-    }
+    case "STRING":
+      return FeatureValueType.STRING;
+    case "NUMBER":
+      return FeatureValueType.NUMBER;
+    case "JSON":
+      return FeatureValueType.JSON;
+  }
+  return FeatureValueType.BOOLEAN;
+}
 
 class AggregatedFeatureCellData {
   final EnvironmentFeatureValues efv;
@@ -276,8 +286,12 @@ class AggregatedFeatureCellData {
 class FeaturesDataSource extends DataGridSource {
   /// Creates the data source class with required details.
   final FeatureStatusFeatures data;
+  final PerApplicationFeaturesBloc bloc;
+  final String searchTerm;
+  final List<FeatureValueType> selectedFeatureTypes;
 
-  FeaturesDataSource(this.data) {
+  FeaturesDataSource(
+      this.data, this.bloc, this.searchTerm, this.selectedFeatureTypes) {
     buildDataGridRows();
   }
 
@@ -295,7 +309,7 @@ class FeaturesDataSource extends DataGridSource {
                   feature: feature,
                   fv: entry.value.features
                       .firstWhere((fv) => fv.key == feature.key, orElse: () {
-                    return FeatureValue(key: feature.key!, locked: false);
+                    return FeatureValue(key: feature.key!, locked: false, environmentId: entry.value.environmentId);
                   }))))
           .toList();
       return DataGridRow(cells: [
@@ -305,18 +319,19 @@ class FeaturesDataSource extends DataGridSource {
     }).toList();
   }
 
-  // @override
-  // Future<bool> handlePageChange(int oldPageIndex, int newPageIndex) async {
-  //   if(oldPageIndex != newPageIndex) {
-  //     // need to fix this function
-  //     // buildDataGridRows();
-  //     // updateDataGridSource();
-  //     // notifyDataSourceListeners();
-  //     return Future<bool>.value(true);
-  //   }
-  //   return Future<bool>.value(false);
-  //
-  // }
+  @override
+  Future<bool> handlePageChange(int oldPageIndex, int newPageIndex) async {
+    if (oldPageIndex != newPageIndex) {
+      // need to fix this function
+      bloc.getApplicationFeatureValuesData(bloc.applicationId!, searchTerm,
+          selectedFeatureTypes, rowsPerPage, newPageIndex);
+      buildDataGridRows();
+      updateDataGridSource();
+      notifyDataSourceListeners();
+      return Future<bool>.value(true);
+    }
+    return Future<bool>.value(false);
+  }
 
   List<DataGridRow> _featuresData = [];
 
@@ -332,6 +347,9 @@ class FeaturesDataSource extends DataGridSource {
         return FeatureCellHolder(feature: feature); // adapt feature column
       } else {
         AggregatedFeatureCellData fv = dataGridCell.value;
+        if(fv.feature.valueType == FeatureValueType.NUMBER) {
+          print(fv.fv);
+        }
         return ValueCellHolder(
             efv: fv.efv,
             feature: fv.feature,

@@ -12,13 +12,12 @@ import 'per_application_features_bloc.dart';
 class CreateFeatureDialogWidgetV2 extends StatefulWidget {
   final Feature? feature;
   final PerApplicationFeaturesBloc bloc;
-  final FeaturesDataSource featuresDataSource;
 
 
   const CreateFeatureDialogWidgetV2({
     Key? key,
     required this.bloc,
-    this.feature, required this.featuresDataSource,
+    this.feature,
   }) : super(key: key);
 
   @override
@@ -197,6 +196,7 @@ class _CreateFeatureDialogWidgetV2State extends State<CreateFeatureDialogWidgetV
                 title: isUpdate ? 'Update' : 'Create',
                 keepCase: true,
                 onPressed: (() async {
+                  print("widget update");
                   if (_formKey.currentState!.validate()) {
                     try {
                       if (isUpdate) {
@@ -208,8 +208,7 @@ class _CreateFeatureDialogWidgetV2State extends State<CreateFeatureDialogWidgetV
                             _featureLink.text,
                         _featureDesc.text);
                         widget.bloc.mrClient.removeOverlay();
-                        widget.featuresDataSource.buildDataGridRows();
-                        widget.featuresDataSource.updateDataGridSource();
+                        await widget.bloc.updateApplicationFeatureValuesStream();
                         widget.bloc.mrClient.addSnackbar(
                             Text('Feature ${_featureName.text} updated!'));
                       } else {
@@ -222,6 +221,7 @@ class _CreateFeatureDialogWidgetV2State extends State<CreateFeatureDialogWidgetV
                               _featureLink.text,
                               _featureDesc.text);
                           widget.bloc.mrClient.removeOverlay();
+                          widget.bloc.updateApplicationFeatureValuesStream();
                           widget.bloc.mrClient.addSnackbar(
                               Text('Feature ${_featureName.text} created!'));
                         } else {

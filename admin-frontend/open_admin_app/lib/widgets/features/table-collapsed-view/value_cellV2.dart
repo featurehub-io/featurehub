@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/features/edit-values/edit_feature_value_widget.dart';
 import 'package:open_admin_app/widgets/features/experiment_data_table.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/feature_value_status_tags.dart';
@@ -11,7 +12,6 @@ import 'package:open_admin_app/widgets/features/table-collapsed-view/tooltip.dar
 import 'package:open_admin_app/widgets/features/table-collapsed-view/value_not_set_container.dart';
 import 'package:side_sheet/side_sheet.dart';
 
-import '../edit-values/edit_feature_value_widget.dart';
 
 class ValueCellHolder extends StatelessWidget {
   final FeatureValue? fv;
@@ -63,7 +63,9 @@ class _ValueContainer extends StatelessWidget {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
     if (fv != null) {
       return InkWell(
-        onTap: () => SideSheet.right(
+        onTap: () {
+          print("before open" + fv.toString());
+          SideSheet.right(
             body: EditFeatureValueWidget(
                 fv: fv!,
                 environmentFeatureValue: efv,
@@ -74,7 +76,8 @@ class _ValueContainer extends StatelessWidget {
                 featuresDataSource: featuresDataSource,
             ),
             width: MediaQuery.of(context).size.width * 0.3,
-            context: context),
+            context: context);
+        },
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(

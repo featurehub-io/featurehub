@@ -6,9 +6,12 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/mr_client_aware.dart';
 import 'package:rxdart/rxdart.dart' hide Notification;
 
+import 'feature_dashboard_constants.dart';
+
 class FeatureStatusFeatures {
   final ApplicationFeatureValues applicationFeatureValues;
   List<String> sortedByNameEnvironmentIds = [];
+
   // envId, EnvironmentFeatureValues mapping - so it is done only once not once per line in table
   Map<String, EnvironmentFeatureValues> applicationEnvironments = {};
 
@@ -40,16 +43,30 @@ class PerApplicationFeaturesBloc
   late FeatureServiceApi _featureServiceApi;
 
   final _appSearchResultSource = BehaviorSubject<List<Application>?>();
+
+  String searchFieldTerm = '';
+  int totalFeatures = 0;
+  int currentPageIndex = 0;
+  List<FeatureValueType> selectedFeatureTypesByUser = [];
+
   Stream<List<Application>?> get applications => _appSearchResultSource.stream;
 
   final _shownEnvironmentsSource = BehaviorSubject<List<String>>.seeded([]);
+
   Stream<List<String>> get shownEnvironmentsStream =>
       _shownEnvironmentsSource.stream;
 
   final _appFeatureValuesBS = BehaviorSubject<FeatureStatusFeatures?>();
+
   Stream<FeatureStatusFeatures?> get appFeatureValues =>
       _appFeatureValuesBS.stream;
+
   // feature-id, environments for feature
+
+  final _appFeatureValues = BehaviorSubject<ApplicationFeatureValues>();
+
+  Stream<ApplicationFeatureValues?> get appFeatureValuesStream =>
+      _appFeatureValues.stream;
 
   late StreamSubscription<String?> _currentPid;
   late StreamSubscription<String?> _currentAppId;
@@ -61,8 +78,8 @@ class PerApplicationFeaturesBloc
 
   final _getAllAppValuesDebounceStream = BehaviorSubject<bool>();
   final _featureMetadataStream = BehaviorSubject<Feature?>();
-  Stream<Feature?> get featureMetadataStream =>
-      _featureMetadataStream.stream;
+
+  Stream<Feature?> get featureMetadataStream => _featureMetadataStream.stream;
 
   PerApplicationFeaturesBloc(this._mrClient) {
     _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
@@ -74,7 +91,6 @@ class PerApplicationFeaturesBloc
     _currentPid = _mrClient.streamValley.currentPortfolioIdStream
         .listen(addApplicationsToStream);
     _currentAppId = _mrClient.streamValley.currentAppIdStream.listen(setAppId);
-
 
     // _getAllAppValuesDebounceStream
     //     .debounceTime(const Duration(milliseconds: 300))
@@ -92,13 +108,15 @@ class PerApplicationFeaturesBloc
     if (applicationId != null) {
       print("call add app fv to stream ");
       _actuallyCallAddAppFeatureValuesToStream();
+      getApplicationFeatureValuesData(applicationId!, "", [], 5, 0);
     } else {
       List<EnvironmentFeatureValues> efv = [];
       List<Feature> featureList = [];
-      _appFeatureValuesBS
-          .add(FeatureStatusFeatures(ApplicationFeatureValues(applicationId: "", features: featureList, environments: efv,
-          maxFeatures: 0
-      )));
+      _appFeatureValuesBS.add(FeatureStatusFeatures(ApplicationFeatureValues(
+          applicationId: "",
+          features: featureList,
+          environments: efv,
+          maxFeatures: 0)));
     }
   }
 
@@ -245,13 +263,12 @@ class PerApplicationFeaturesBloc
       String featureLink,
       String featureDescription) async {
     final feature = Feature(
-      name: name,
-      valueType: featureValueType,
-      key: key,
-      alias: featureAlias,
-      link: featureLink,
-      description: featureDescription
-    );
+        name: name,
+        valueType: featureValueType,
+        key: key,
+        alias: featureAlias,
+        link: featureLink,
+        description: featureDescription);
     await _featureServiceApi.createFeaturesForApplication(
         applicationId!, feature);
     unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
@@ -259,8 +276,13 @@ class PerApplicationFeaturesBloc
     _publishNewFeatureSource.add(feature);
   }
 
-  Future<void> updateFeature(Feature feature, String newName, String newKey,
-      String newFeatureAlias, String newFeatureLink, String newFeatureDescription) async {
+  Future<void> updateFeature(
+      Feature feature,
+      String newName,
+      String newKey,
+      String newFeatureAlias,
+      String newFeatureLink,
+      String newFeatureDescription) async {
     final currentFeature =
         await _featureServiceApi.getFeatureByKey(applicationId!, feature.key!);
     final newFeature = currentFeature
@@ -276,16 +298,15 @@ class PerApplicationFeaturesBloc
 
   Future<void> getFeatureIncludingMetadata(Feature feature) async {
     _featureMetadataStream.add(null);
-    final currentFeature =
-    await _featureServiceApi.getFeatureByKey(applicationId!, feature.key!, includeMetaData: true);
+    final currentFeature = await _featureServiceApi
+        .getFeatureByKey(applicationId!, feature.key!, includeMetaData: true);
     _featureMetadataStream.add(currentFeature);
   }
 
   Future<void> updateFeatureMetadata(Feature feature, String metaData) async {
-    final currentFeature =
-    await _featureServiceApi.getFeatureByKey(applicationId!, feature.key!, includeMetaData: true);
-    final newFeature = currentFeature
-      ..metaData = metaData;
+    final currentFeature = await _featureServiceApi
+        .getFeatureByKey(applicationId!, feature.key!, includeMetaData: true);
+    final newFeature = currentFeature..metaData = metaData;
     await _featureServiceApi.updateFeatureForApplication(
         applicationId!, feature.key!, newFeature);
     await getFeatureIncludingMetadata(newFeature);
@@ -315,35 +336,60 @@ class PerApplicationFeaturesBloc
     // _getAllAppValuesDebounceStream.add(true);
   }
 
-  Future<ApplicationFeatureValues> getApplicationFeatureValuesData(String appId, String searchTerm, List<FeatureValueType> featureTypes, int rowsPerPage, int pageOffset) async {
-    return await _featureServiceApi
-        .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(appId,
-        max: rowsPerPage,
-        page: pageOffset,
-        filter: searchTerm,
-        featureTypes: featureTypes,
+   getApplicationFeatureValuesData(
+      String appId,
+      String searchTerm,
+      List<FeatureValueType> featureTypes,
+      int rowsPerPage,
+      int pageOffset) async {
+      var allFeatureValues = await _featureServiceApi
+        .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
+      appId,
+      max: rowsPerPage,
+      page: pageOffset,
+      filter: searchTerm,
+      featureTypes: featureTypes,
     );
+      _appFeatureValues.add(allFeatureValues);
+      // set current values
+      searchFieldTerm = searchTerm;
+      totalFeatures = allFeatureValues.maxFeatures;
+      currentPageIndex = pageOffset;
+      selectedFeatureTypesByUser = featureTypes;
   }
+
+  updateApplicationFeatureValuesStream() async {
+    var allFeatureValues = await _featureServiceApi
+        .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
+      applicationId!,
+      max: rowsPerPage,
+      page: currentPageIndex,
+      filter: searchFieldTerm,
+      featureTypes: selectedFeatureTypesByUser,
+    );
+    _appFeatureValues.add(allFeatureValues);
+
+  }
+
 
   Future<void> saveFeatureValues(
       {required FeatureValue fv,
       required locked,
       required retired,
       required defaultValue,
-      required stratValues, required Feature feature, required FeatureValueType valueType}) async {
+      required stratValues,
+      required Feature feature,
+      required FeatureValueType valueType}) async {
     fv.locked = locked;
     fv.retired = retired;
     fv.rolloutStrategies = stratValues;
     if (valueType == FeatureValueType.STRING) {
       fv.valueString = defaultValue;
-    }
-    else if (valueType == FeatureValueType.BOOLEAN) {
+    } else if (valueType == FeatureValueType.BOOLEAN) {
       fv.valueBoolean = defaultValue;
-    }
-    else if (valueType == FeatureValueType.NUMBER) {
+    } else if (valueType == FeatureValueType.NUMBER) {
       fv.valueNumber = defaultValue;
-    }
-    else if (valueType == FeatureValueType.JSON) {
+    } else if (valueType == FeatureValueType.JSON) {
       fv.valueJson = defaultValue;
     }
 

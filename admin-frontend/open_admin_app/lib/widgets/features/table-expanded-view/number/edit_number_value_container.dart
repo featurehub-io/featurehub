@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
 
 class EditNumberValueContainer extends StatefulWidget {
@@ -67,11 +66,8 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
           onChanged: (value) {
             final replacementValue =
                 value.trim().isEmpty ? null : double.parse(tec.text.trim());
-            if (widget.rolloutStrategy != null) {
-              widget.rolloutStrategy!.value = replacementValue;
-            } else {
-              widget.strBloc.fvBloc.updateFeatureValueDefault(replacementValue);
-            }
+            _updateFeatureValue(replacementValue);
+
           },
           inputFormatters: [
             DecimalTextInputFormatter(
@@ -79,4 +75,12 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
           ],
         ));
   }
+    void _updateFeatureValue(double? replacementValue) {
+    if (widget.rolloutStrategy == null) {
+    widget.strBloc.fvBloc.updateFeatureValueDefault(replacementValue);
+
+    } else {
+    widget.rolloutStrategy!.value = replacementValue;
+    }
+    }
 }

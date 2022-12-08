@@ -8,10 +8,11 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 
-import 'package:open_admin_app/widgets/features/create_update_feature_dialog_widget.dart';
 import 'package:open_admin_app/widgets/features/delete_feature_widget.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:open_admin_app/widgets/features/set_feature_metadata.dart';
+
+import 'create_update_feature_dialog_widgetV2.dart';
 
 
 class FeatureCellHolder extends StatelessWidget {
@@ -63,7 +64,7 @@ class FeatureCellHolder extends StatelessWidget {
                     if (value == 'edit') {
                       bloc.mrClient.addOverlay(
                               (BuildContext context) =>
-                              CreateFeatureDialogWidget(
+                              CreateFeatureDialogWidgetV2(
                                   bloc: bloc,
                                   feature: feature));
                     }

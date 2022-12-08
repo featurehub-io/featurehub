@@ -1,7 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
-import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:open_admin_app/widgets/features/per_feature_state_tracking_blocv2.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
@@ -49,20 +48,20 @@ class CustomStrategyBlocV2 extends Bloc {
 
   void addStrategy(RolloutStrategy rs) {
     rs.id ??= _strategyBlocUUidGenerator.v4();
-    final strategies = _strategySource.value!;
+    final strategies = _strategySource.value;
     strategies.add(rs);
     _strategySource.add(strategies);
   }
 
   void updateStrategy() {
-    final strategies = _strategySource.value!;
+    final strategies = _strategySource.value;
     _strategySource.add(strategies);
   }
 
   void removeStrategy(RolloutStrategy rs) {
     // tag it to ensure it has a number so we can remove it
     rs.id = _strategyBlocUUidGenerator.v4();
-    final strategies = _strategySource.value!;
+    final strategies = _strategySource.value;
     strategies.removeWhere((e) => e.id == rs.id);
     // markDirty();
     _strategySource.add(strategies);
@@ -112,7 +111,7 @@ class CustomStrategyBlocV2 extends Bloc {
     // we need a list of strategies to send to the server, only 1 of which will be the created
     // one
     var strategies =
-    _strategySource.value!.where((s) => s.id != strategy.id).toList();
+    _strategySource.value.where((s) => s.id != strategy.id).toList();
 
     strategy.id ??= _strategyBlocUUidGenerator.v4();
 

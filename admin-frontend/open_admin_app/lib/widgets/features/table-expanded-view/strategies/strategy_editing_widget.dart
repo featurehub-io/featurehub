@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
-import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_outline_button.dart';
 import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_blocV2.dart';
 import 'package:open_admin_app/widgets/features/percentage_utils.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
@@ -260,11 +258,12 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     final validationCheck = await widget.bloc.validationCheck(updatedStrategy);
 
     if (isValidationOk(validationCheck)) {
+      print("strategy checked");
       individualStrategyBloc!.rolloutStrategy
         ..name = _strategyName.text
         ..percentageFromText = _strategyPercentage.text;
       widget.bloc.updateStrategy();
-      widget.bloc.fvBloc.mrClient.removeOverlay();
+      Navigator.pop(context);
     } else {
       layoutValidationFailures(validationCheck, updatedStrategy);
     }
@@ -298,9 +297,10 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     final validationCheck = await widget.bloc.validationCheck(newStrategy);
 
     if (isValidationOk(validationCheck)) {
+      print("strategy checked2");
       newStrategy.id = null;
       widget.bloc.addStrategy(newStrategy);
-      widget.bloc.fvBloc.mrClient.removeOverlay();
+      Navigator.pop(context);
     } else {
       layoutValidationFailures(validationCheck, newStrategy);
     }
