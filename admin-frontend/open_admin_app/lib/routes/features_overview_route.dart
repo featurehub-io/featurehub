@@ -10,17 +10,17 @@ import 'package:open_admin_app/widgets/features/create_update_feature_dialog_wid
 import 'package:open_admin_app/widgets/features/features_overview_table_widget.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 
-class FeatureStatusRouteV2 extends StatefulWidget {
+class FeatureStatusRoute extends StatefulWidget {
   final bool createFeature;
 
-  const FeatureStatusRouteV2({Key? key, required this.createFeature})
+  const FeatureStatusRoute({Key? key, required this.createFeature})
       : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _FeatureStatusState();
 }
 
-class _FeatureStatusState extends State<FeatureStatusRouteV2> {
+class _FeatureStatusState extends State<FeatureStatusRoute> {
   // PerApplicationFeaturesBloc? bloc;
   //
   // @override
