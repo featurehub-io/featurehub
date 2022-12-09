@@ -1,28 +1,11 @@
-import 'dart:async';
-import 'dart:math';
-
 import 'package:bloc_provider/bloc_provider.dart';
-import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';import 'package:rxdart/rxdart.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
+import 'package:rxdart/rxdart.dart';
 
-import 'per_application_features_bloc.dart';
 
-typedef DirtyCallback = bool Function(FeatureValue original);
-typedef DirtyFeatureHolderCallback = void Function(
-    FeatureValueDirtyHolder current);
-
-///
-/// this allows us to keep track of the things that can change
-/// which include the value, the custom strategies, their order or values
-/// and any linked shared strategies
-///
-class FeatureValueDirtyHolder {
-  dynamic value;
-  List<RolloutStrategy> customStrategies = [];
-  List<RolloutStrategyInstance> sharedStrategies = [];
-}
 
 class PerFeatureStateTrackingBloc implements Bloc {
   final Feature feature;
@@ -30,11 +13,9 @@ class PerFeatureStateTrackingBloc implements Bloc {
 
   // final String applicationId;
   final ManagementRepositoryClientBloc mrClient;
-  late EnvironmentServiceApi _environmentServiceApi;
   late FeatureServiceApi _featureServiceApi;
 
   final _newFeatureValues = <String, FeatureValue>{};
-  final _originalFeatureValues = <String, FeatureValue>{};
   final _fvUpdates = <String, FeatureValue>{};
   final ApplicationFeatureValues applicationFeatureValues;
   final PerApplicationFeaturesBloc _featureStatusBloc;
@@ -52,7 +33,6 @@ class PerFeatureStateTrackingBloc implements Bloc {
       PerApplicationFeaturesBloc featureStatusBloc,
       this.applicationFeatureValues)
       : _featureStatusBloc = featureStatusBloc {
-    _environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient);
     _featureServiceApi = FeatureServiceApi(mrClient.apiClient);
     currentFeatureValue = featureValue;
     print("Current FV" + currentFeatureValue.toString());
@@ -127,36 +107,6 @@ class PerFeatureStateTrackingBloc implements Bloc {
     for (var b in _customStrategyBlocs.values) {
       b.dispose();
     }
-  }
-
-  bool hasValue(FeatureEnvironment fe) {
-    return _newFeatureValues[fe.environment!.id]?.valueBoolean != null ||
-        _newFeatureValues[fe.environment!.id]?.valueString != null ||
-        _newFeatureValues[fe.environment!.id]?.valueJson != null ||
-        _newFeatureValues[fe.environment!.id]?.valueNumber != null;
-  }
-
-  void resetValue(FeatureEnvironment fe) {
-    _newFeatureValues[fe.environment!.id]?.valueBoolean = null;
-    _newFeatureValues[fe.environment!.id]?.valueString = null;
-    _newFeatureValues[fe.environment!.id]?.valueJson = null;
-    _newFeatureValues[fe.environment!.id]?.valueNumber = null;
-  }
-
-  Future<Environment> getEnvironment(String envId) async {
-    return _environmentServiceApi
-        .getEnvironment(envId,
-            includeServiceAccounts: true, includeSdkUrl: true)
-        .catchError((e, s) {
-      mrClient.dialogError(e, s);
-    });
-  }
-
-  void reset() {
-    _originalFeatureValues.forEach((key, value) {
-      final original = value.copyWith();
-      _newFeatureValues[key] = original;
-    });
   }
 
   saveFeatureValueUpdates() async {

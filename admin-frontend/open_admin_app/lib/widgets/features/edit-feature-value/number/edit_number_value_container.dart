@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';
 class EditNumberValueContainer extends StatefulWidget {
   const EditNumberValueContainer({
     Key? key,

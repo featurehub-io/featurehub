@@ -6,7 +6,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
-import 'per_application_features_bloc.dart';
+import '../per_application_features_bloc.dart';
 
 class CreateFeatureDialogWidget extends StatefulWidget {
   final Feature? feature;

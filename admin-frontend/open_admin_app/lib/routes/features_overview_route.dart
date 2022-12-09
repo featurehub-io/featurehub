@@ -6,7 +6,7 @@ import 'package:open_admin_app/widgets/common/application_drop_down.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/link_to_applications_page.dart';
-import 'package:open_admin_app/widgets/features/create_update_feature_dialog_widget.dart';
+import 'package:open_admin_app/widgets/features/edit-feature/create_update_feature_dialog_widget.dart';
 import 'package:open_admin_app/widgets/features/features_overview_table_widget.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 

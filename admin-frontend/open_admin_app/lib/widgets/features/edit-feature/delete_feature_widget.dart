@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
-import 'per_application_features_bloc.dart';
+import '../per_application_features_bloc.dart';
 
 class FeatureDeleteDialogWidget extends StatelessWidget {
   final Feature feature;

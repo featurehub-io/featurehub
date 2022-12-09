@@ -11,7 +11,6 @@ import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/st
 
 class EditFeatureValueWidget extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
-  final FeatureValueType featureValueType;
   final PerApplicationFeaturesBloc perApplicationFeaturesBloc;
   final Feature feature;
   final ApplicationFeatureValues afv;
@@ -22,7 +21,6 @@ class EditFeatureValueWidget extends StatefulWidget {
       {Key? key,
         required this.fv,
       required this.environmentFeatureValue,
-      required this.featureValueType,
       required this.perApplicationFeaturesBloc,
       required this.feature,
       required this.afv,
@@ -69,13 +67,13 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                         children: [
                           StrategyCard(
                               strBloc: strategyBloc,
-                              featureValueType: widget.featureValueType),
+                              featureValueType: widget.feature.valueType!),
                           if (snapshot.hasData)
                             for (RolloutStrategy strategy in snapshot.data!)
                               StrategyCard(
                                   strBloc: strategyBloc,
                                   rolloutStrategy: strategy,
-                                  featureValueType: widget.featureValueType),
+                                  featureValueType: widget.feature.valueType!),
                         ],
                       );
                     }),

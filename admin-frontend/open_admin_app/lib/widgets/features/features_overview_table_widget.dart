@@ -4,8 +4,8 @@ import 'package:logging/logging.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
-import 'package:open_admin_app/widgets/features/features_data_table.dart';
-import 'per_application_features_bloc.dart';
+import 'package:open_admin_app/widgets/features/feature-data-table/features_data_table.dart';
+import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 
 final _log = Logger('FeaturesOverviewTable');
 

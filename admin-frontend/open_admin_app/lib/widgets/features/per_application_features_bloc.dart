@@ -36,7 +36,6 @@ class PerApplicationFeaturesBloc
   String? applicationId;
   final ManagementRepositoryClientBloc _mrClient;
   late ApplicationServiceApi _appServiceApi;
-  late EnvironmentServiceApi _environmentServiceApi;
   late UserStateServiceApi _userStateServiceApi;
   late RolloutStrategyServiceApi _rolloutStrategyServiceApi;
 
@@ -83,7 +82,6 @@ class PerApplicationFeaturesBloc
   PerApplicationFeaturesBloc(this._mrClient) {
     _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
     _featureServiceApi = FeatureServiceApi(_mrClient.apiClient);
-    _environmentServiceApi = EnvironmentServiceApi(_mrClient.apiClient);
     _userStateServiceApi = UserStateServiceApi(_mrClient.apiClient);
     _rolloutStrategyServiceApi = RolloutStrategyServiceApi(_mrClient.apiClient);
 
@@ -98,9 +96,8 @@ class PerApplicationFeaturesBloc
   void setAppId(String? appId) {
     applicationId = appId;
     if (applicationId != null) {
-      print("call add app fv to stream ");
       _actuallyCallAddAppFeatureValuesToStream();
-      getApplicationFeatureValuesData(applicationId!, "", [], 5, 0);
+      getApplicationFeatureValuesData(applicationId!, "", [], rowsPerPage, 0);
     } else {
       List<EnvironmentFeatureValues> efv = [];
       List<Feature> featureList = [];
@@ -125,14 +122,6 @@ class PerApplicationFeaturesBloc
         ));
   }
 
-  Future<Environment> getEnvironment(String envId) async {
-    return _environmentServiceApi
-        .getEnvironment(envId,
-            includeServiceAccounts: true, includeSdkUrl: true)
-        .catchError((e, s) {
-      mrClient.dialogError(e, s);
-    });
-  }
 
   void _sortApplicationFeatureValues(
       ApplicationFeatureValues appFeatureValues) {
@@ -196,7 +185,7 @@ class PerApplicationFeaturesBloc
   }
 
   bool environmentVisible(String envId) {
-    return _shownEnvironmentsSource.value!.contains(envId);
+    return _shownEnvironmentsSource.value.contains(envId);
   }
 
   void clearAppFeatureValuesStream() {
@@ -314,15 +303,6 @@ class PerApplicationFeaturesBloc
     _currentAppId.cancel();
   }
 
-  Future<void> updateAllFeatureValuesByApplicationForKey(
-      Feature feature, List<FeatureValue> updates) async {
-    await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(
-        applicationId!, feature.key!, updates);
-
-    // get the data again
-    // _getAllAppValuesDebounceStream.add(true);
-  }
-
    getApplicationFeatureValuesData(
       String appId,
       String searchTerm,
@@ -355,31 +335,5 @@ class PerApplicationFeaturesBloc
       featureTypes: selectedFeatureTypesByUser,
     );
     _appFeatureValues.add(allFeatureValues);
-
-  }
-
-
-  Future<void> saveFeatureValues(
-      {required FeatureValue fv,
-      required locked,
-      required retired,
-      required defaultValue,
-      required stratValues,
-      required Feature feature,
-      required FeatureValueType valueType}) async {
-    fv.locked = locked;
-    fv.retired = retired;
-    fv.rolloutStrategies = stratValues;
-    if (valueType == FeatureValueType.STRING) {
-      fv.valueString = defaultValue;
-    } else if (valueType == FeatureValueType.BOOLEAN) {
-      fv.valueBoolean = defaultValue;
-    } else if (valueType == FeatureValueType.NUMBER) {
-      fv.valueNumber = defaultValue;
-    } else if (valueType == FeatureValueType.JSON) {
-      fv.valueJson = defaultValue;
-    }
-
-    updateAllFeatureValuesByApplicationForKey(feature, [fv]);
   }
 }

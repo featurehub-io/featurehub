@@ -32,43 +32,40 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
             _locked == false &&
                 !widget.environmentFeatureValue.roles.contains(RoleType.LOCK);
 
-    return SizedBox(
-      height: lockHeight,
-      child: Row(
-        children: <Widget>[
-          Row(
-            children: [
-              SizedBox(
-                width: 36,
-                height: 36,
-                child: IconButton(
-                  splashRadius: 20,
-                  mouseCursor: disabled
-                      ? SystemMouseCursors.basic
-                      : SystemMouseCursors.click,
-                  tooltip: disabled
-                      ? null
-                      : (_locked
-                          ? 'Click the lock to make changes'
-                          : 'Click the lock to prevent further changes'),
-                  icon: Icon(_locked ? Icons.lock_outline : Icons.lock_open,
-                      size: 20, color: _locked ? Colors.orange : Colors.green),
-                  onPressed: () {
-                    setState(() {
-                      _locked = !_locked;
-                    });
-                    widget.fvBloc.updateFeatureValueLockedStatus(_locked);
-                  },
-                ),
+    return Row(
+      children: <Widget>[
+        Row(
+          children: [
+            SizedBox(
+              width: 36,
+              height: 36,
+              child: IconButton(
+                splashRadius: 20,
+                mouseCursor: disabled
+                    ? SystemMouseCursors.basic
+                    : SystemMouseCursors.click,
+                tooltip: disabled
+                    ? null
+                    : (_locked
+                        ? 'Click the lock to make changes'
+                        : 'Click the lock to prevent further changes'),
+                icon: Icon(_locked ? Icons.lock_outline : Icons.lock_open,
+                    size: 20, color: _locked ? Colors.orange : Colors.green),
+                onPressed: () {
+                  setState(() {
+                    _locked = !_locked;
+                  });
+                  widget.fvBloc.updateFeatureValueLockedStatus(_locked);
+                },
               ),
-              Text(
-                _locked ? 'Locked' : 'Unlocked',
-                style: Theme.of(context).textTheme.caption,
-              )
-            ],
-          )
-        ],
-      ),
+            ),
+            Text(
+              _locked ? 'Locked' : 'Unlocked',
+              style: Theme.of(context).textTheme.caption,
+            )
+          ],
+        )
+      ],
     );
   }
 }

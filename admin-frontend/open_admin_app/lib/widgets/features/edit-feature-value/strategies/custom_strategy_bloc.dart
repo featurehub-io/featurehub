@@ -16,10 +16,10 @@ class CustomStrategyBloc extends Bloc {
 
   final _strategySource =
   BehaviorSubject<List<RolloutStrategy>>.seeded(<RolloutStrategy>[]);
-  final _rolloutStartegyAttributeList =
+  final _rolloutStrategyAttributeList =
   BehaviorSubject<List<RolloutStrategyAttribute>>();
   Stream<List<RolloutStrategyAttribute>> get attributes =>
-      _rolloutStartegyAttributeList.stream;
+      _rolloutStrategyAttributeList.stream;
 
   Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
 
@@ -63,9 +63,9 @@ class CustomStrategyBloc extends Bloc {
   void addStrategyAttribute() {
     final rsa = RolloutStrategyAttribute();
     rsa.id = _strategyBlocUUidGenerator.v4();
-    final attributes = _strategySource.value!.last.attributes;
+    final attributes = _strategySource.value.last.attributes;
     attributes.add(rsa);
-    _rolloutStartegyAttributeList.add(attributes);
+    _rolloutStrategyAttributeList.add(attributes);
   }
 
   void updateAttribute(attribute) {}
@@ -77,10 +77,6 @@ class CustomStrategyBloc extends Bloc {
   /// unique based on this specific feature value
   void ensureStrategiesAreUnique() {
     final strategies = _strategySource.value;
-
-    if (strategies == null) {
-      return;
-    }
 
     final strategiesById = <String, RolloutStrategy>{};
 

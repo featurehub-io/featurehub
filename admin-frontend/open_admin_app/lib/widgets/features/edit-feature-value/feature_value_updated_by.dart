@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';import 'package:timeago/timeago.dart' as timeago;
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';import 'package:timeago/timeago.dart' as timeago;
 
 
 class FeatureValueUpdatedByCell extends StatelessWidget {

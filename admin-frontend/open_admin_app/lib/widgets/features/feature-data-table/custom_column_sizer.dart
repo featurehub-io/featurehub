@@ -1,0 +1,28 @@
+import 'package:flutter/material.dart';
+import 'package:open_admin_app/widgets/features/feature-data-table/features_data_source.dart';
+import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+
+class CustomColumnSizer extends ColumnSizer {
+  @override
+  double computeCellHeight(GridColumn column, DataGridRow row,
+      Object? cellValue, TextStyle textStyle) {
+    double cellInfoIconsHeight = 40;
+    double defaultCellHeight = 60;
+    double height = 0;
+
+    if (column.columnName == 'env') {
+      row.getCells().forEach((cell) {
+        if (cell.value is AggregatedFeatureCellData) {
+          var typedCellData = cell.value as AggregatedFeatureCellData;
+          if (typedCellData.fv != null) {
+            var stratLength = typedCellData.fv!.rolloutStrategies.length;
+            if (stratLength * defaultCellHeight > height) {
+              height = stratLength * defaultCellHeight;
+            }
+          }
+        }
+      });
+    }
+    return height + defaultCellHeight + cellInfoIconsHeight;
+  }
+}
