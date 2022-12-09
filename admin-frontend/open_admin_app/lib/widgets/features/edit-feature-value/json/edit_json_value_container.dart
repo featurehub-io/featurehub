@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_json_editor.dart';
@@ -66,7 +65,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
     }
 
     return SizedBox(
-      width: 123,
+      width: 200,
       height: 30,
       child: InkWell(
         canRequestFocus: false,
@@ -81,7 +80,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
             decoration: myBoxDecoration(),
             child: Align(
               // alignment: Alignment.centerLeft,
-              child: ConfigurationViewerField(
+              child: JsonViewerField(
                   text: tec.text,
                   canEdit: widget.canEdit,
                   unlocked: widget.unlocked),

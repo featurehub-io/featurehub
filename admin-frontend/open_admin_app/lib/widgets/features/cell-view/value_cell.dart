@@ -146,7 +146,7 @@ class _StrategiesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      // crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (RolloutStrategy rsi in fv.rolloutStrategies)
           _ValueCard(rolloutStrategy: rsi, fv: fv, feature: feature)
@@ -174,7 +174,7 @@ class _ValueCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 150, minWidth: 80),
+        constraints: const BoxConstraints(maxWidth: 200, minWidth: 80),
         height: 30,
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         decoration: BoxDecoration(
@@ -190,49 +190,60 @@ class _ValueCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             feature.valueType == FeatureValueType.BOOLEAN
-                ? FlagOnOffColoredIndicator(
-                    on: rolloutStrategy != null
-                        ? rolloutStrategy!.value
-                        : fv.valueBoolean)
-                : Text(displayValue.isEmpty ? 'not set' : displayValue,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    style: displayValue.isEmpty
-                        ? Theme.of(context).textTheme.caption
-                        : Theme.of(context)
-                            .textTheme
-                            .bodyText2
-                            ?.copyWith(color: const Color(0xff11C8B5))),
-            const SizedBox(width: 4.0),
-            Container(
-              decoration: BoxDecoration(
-                color: rolloutStrategy == null
-                    ? defaultTextColor.withOpacity(0.3)
-                    : strategyTextColor.withOpacity(0.3),
-                borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-              ),
-              child: rolloutStrategy != null
-                  ? Tooltip(
-                      message: generateTooltipMessage(rolloutStrategy),
-                      child: rolloutStrategy == null
-                          ? const SizedBox.shrink()
-                          : Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: Text(rolloutStrategy!.name,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .overline!
-                                      .copyWith(color: strategyTextColor)),
-                            ),
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Text('default',
-                          style: Theme.of(context)
+                ? Flexible(
+              fit: FlexFit.loose,
+                  child: FlagOnOffColoredIndicator(
+                      on: rolloutStrategy != null
+                          ? rolloutStrategy!.value
+                          : fv.valueBoolean),
+                )
+                : Flexible(
+              fit: FlexFit.loose,
+                  child: Text(displayValue.isEmpty ? 'not set' : displayValue,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: displayValue.isEmpty
+                          ? Theme.of(context).textTheme.caption
+                          : Theme.of(context)
                               .textTheme
-                              .labelSmall!
-                              .copyWith(color: defaultTextColor)),
-                    ),
+                              .bodyText2
+                              ?.copyWith(color: const Color(0xff11C8B5))),
+                ),
+            const SizedBox(width: 4.0),
+            Flexible(
+              fit: FlexFit.loose,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: rolloutStrategy == null
+                      ? defaultTextColor.withOpacity(0.3)
+                      : strategyTextColor.withOpacity(0.3),
+                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                ),
+                child: rolloutStrategy != null
+                    ? Tooltip(
+                        message: generateTooltipMessage(rolloutStrategy),
+                        child: rolloutStrategy == null
+                            ? const SizedBox.shrink()
+                            : Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Text(rolloutStrategy!.name,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .overline!
+                                        .copyWith(color: strategyTextColor)),
+                              ),
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Text('default',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall!
+                                .copyWith(color: defaultTextColor)),
+                      ),
+              ),
             ),
           ],
         ),

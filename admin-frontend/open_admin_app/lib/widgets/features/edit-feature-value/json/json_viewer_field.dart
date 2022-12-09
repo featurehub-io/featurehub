@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class ConfigurationViewerField extends StatelessWidget {
+class JsonViewerField extends StatelessWidget {
   final String text;
   final bool canEdit;
   final bool unlocked;
 
-  const ConfigurationViewerField({
+  const JsonViewerField({
     Key? key,
     required this.text,
     required this.canEdit,
@@ -21,8 +21,7 @@ class ConfigurationViewerField extends StatelessWidget {
           Flexible(
             flex: 4,
             child: Text(
-              text.replaceAll('\n', ''),
-              style: const TextStyle(fontFamily: 'SourceCodePro', fontSize: 12),
+              text.replaceAll('\n', '').replaceAll(' ',''),
               overflow: TextOverflow.ellipsis,
             ),
           ),

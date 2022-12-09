@@ -36,7 +36,7 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-        width: 123,
+        width: 200,
         height: 30,
         child: TextField(
           style: Theme.of(context).textTheme.bodyText1,

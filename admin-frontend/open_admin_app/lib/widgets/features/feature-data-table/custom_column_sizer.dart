@@ -7,7 +7,7 @@ class CustomColumnSizer extends ColumnSizer {
   double computeCellHeight(GridColumn column, DataGridRow row,
       Object? cellValue, TextStyle textStyle) {
     double cellInfoIconsHeight = 40;
-    double defaultCellHeight = 60;
+    double defaultCellHeight = 56;
     double height = 0;
 
     if (column.columnName == 'env') {
