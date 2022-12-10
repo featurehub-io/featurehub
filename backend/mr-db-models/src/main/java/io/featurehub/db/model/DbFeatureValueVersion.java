@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,7 +77,7 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
         from.getDefaultValue(),
         from.isLocked(),
         from.getRetired() == Boolean.TRUE,
-        from.getRolloutStrategies(),
+        from.getRolloutStrategies() == null ? Collections.emptyList() : from.getRolloutStrategies(),
         transformSharedStrategies(from.getSharedRolloutStrategies()),
         from.getFeature()
       );

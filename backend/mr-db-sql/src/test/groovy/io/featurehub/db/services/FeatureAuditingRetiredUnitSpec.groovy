@@ -26,7 +26,7 @@ class FeatureAuditingRetiredUnitSpec extends FeatureAuditingBaseUnitSpec {
     feature = new DbApplicationFeature.Builder().valueType(FeatureValueType.BOOLEAN).build()
   }
 
-  boolean update(boolean currentRetired, boolean historicalRetired, boolean changingRetired) {
+  boolean update(Boolean currentRetired, boolean historicalRetired, boolean changingRetired) {
     return fsApi.updateSelectivelyRetired(
       new PersonFeaturePermission(person, roles),
       new FeatureValue().retired(changingRetired),
@@ -34,6 +34,13 @@ class FeatureAuditingRetiredUnitSpec extends FeatureAuditingBaseUnitSpec {
       new DbFeatureValue.Builder().retired(currentRetired).locked(locked).build(),
       changingLocked
     )
+  }
+
+  def "if the existing retired is null and the new retired is set to true, it will update"() {
+    when:
+      def result = update(null, false, true)
+    then:
+      result
   }
 
   def "i cannot update a locked retired setting"() {
