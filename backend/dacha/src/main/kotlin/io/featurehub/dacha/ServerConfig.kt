@@ -10,6 +10,11 @@ import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValue
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.dacha.resource.DachaEdgeNATSAdapter
+import io.featurehub.enriched.model.EnricherPing
+import io.featurehub.enricher.EnricherConfig
+import io.featurehub.enricher.FeatureEnricher
+import io.featurehub.events.CloudEventReceiverRegistry
+import io.featurehub.events.nats.NatsCloudEventQueueListener
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.metrics.MetricsCollector
 import io.featurehub.mr.model.DachaNATSRequest
@@ -26,13 +31,20 @@ import kotlin.system.exitProcess
 class ServerConfig @Inject constructor(
   caches: IterableProvider<CacheUpdateListener>,
   private val natsServer: NATSSource, edgeNatsAdapter: DachaEdgeNATSAdapter,
-  private val internalCache: InternalCache
+  private val internalCache: InternalCache,
+  private val featureEnricher: FeatureEnricher,
+  private val cloudEventsRegistry: CloudEventReceiverRegistry
 ) {
   private val caches: MutableList<CacheUpdateListener> = ArrayList()
   private val edgeNatsAdapter: DachaEdgeNATSAdapter
 
   @ConfigKey("cache.name")
   var name = ChannelConstants.DEFAULT_CACHE_NAME
+
+  // only NATS is available for dacha1 anyway
+  @ConfigKey("dacha1.inbound.nats.channel-name")
+  var ceChannel: String? = "featurehub-dacha1-cloudevents";
+
   private val shutdownSubscriptionRunners: MutableList<Runnable> = ArrayList()
   private val serviceAccountCounter = MetricsCollector.counter(
     "dacha_service_account_msg_counter", "Service Account Messages received"
@@ -60,6 +72,12 @@ class ServerConfig @Inject constructor(
     listenForFeatureValues()
     listenForServiceAccounts()
     listenForFeatureRequests()
+
+    listenForCloudEvents()
+
+    if (EnricherConfig.enabled()) {
+      listenAsQueueForFeatureRequestsForEnrichment()
+    }
 
     ApplicationLifecycleManager.registerListener { trans: LifecycleTransition ->
       if (trans.next == LifecycleStatus.TERMINATING) {
@@ -90,6 +108,20 @@ class ServerConfig @Inject constructor(
     }
   }
 
+  private fun listenForCloudEvents() {
+    val cloudeventListener = NatsCloudEventQueueListener(natsServer, ceChannel!!, "dacha1-queue") { ce ->
+      cloudEventsRegistry.process(ce) // the standard logic should pick up any CE messages that a Dacha is happy to process
+    }
+
+    cloudEventsRegistry.listen(EnricherPing::class.java) { ep, ce ->
+      featureEnricher.enricherPing(ce, ep)
+    }
+
+    shutdownSubscriptionRunners.add(
+      Runnable { cloudeventListener.close() }
+    )
+  }
+
   private fun listenForServiceAccounts() {
     listen(
       { message: Message ->
@@ -105,6 +137,23 @@ class ServerConfig @Inject constructor(
       },
       ChannelNames.serviceAccountChannel(name)
     )
+  }
+
+  /**
+   * if called, we want to listen to the feature stream again but as a queue
+   */
+  private fun listenAsQueueForFeatureRequestsForEnrichment() {
+    log.info("enricher: listening for feature updates on queue")
+    val dispatcher = natsServer.connection.createDispatcher({ message ->
+      val fv = CacheJsonMapper.readFromZipBytes(message.data, PublishFeatureValue::class.java)
+      featureEnricher.processFeature(fv)
+    })
+
+    val subject = ChannelNames.featureValueChannel(name)
+    val subscribe = dispatcher.subscribe(subject, "enricher-queue")
+
+    shutdownSubscriptionRunners.add(
+      Runnable { subscribe.unsubscribe(subject) })
   }
 
   private fun listenForFeatureValues() {

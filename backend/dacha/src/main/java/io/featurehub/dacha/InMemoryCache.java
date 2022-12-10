@@ -9,6 +9,8 @@ import io.featurehub.dacha.model.PublishAction;
 import io.featurehub.dacha.model.PublishEnvironment;
 import io.featurehub.dacha.model.PublishFeatureValue;
 import io.featurehub.dacha.model.PublishServiceAccount;
+import io.featurehub.enricher.EnrichmentEnvironment;
+import io.featurehub.enricher.FeatureEnrichmentCache;
 import io.featurehub.metrics.MetricsCollector;
 import io.prometheus.client.Gauge;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class InMemoryCache implements InternalCache {
+public class InMemoryCache implements InternalCache, FeatureEnrichmentCache {
   private static final Logger log = LoggerFactory.getLogger(InMemoryCache.class);
   private boolean wasServiceAccountComplete;
   private boolean wasEnvironmentComplete;
@@ -390,6 +392,8 @@ public class InMemoryCache implements InternalCache {
           eci.getFeatureValues().remove(indexOfExistingPublishedCacheEnvironmentFeature);
           eci.getFeatureValues().add(fv.getFeature());
           return;
+        } else if (existingValue.getValue() == newValue.getVersion()) {
+          return; // ignore
         }
       }
 
@@ -423,5 +427,22 @@ public class InMemoryCache implements InternalCache {
   @Override
   public PublishEnvironment findEnvironment(UUID environmentId) {
     return environments.get(environmentId);
+  }
+
+  @NotNull
+  @Override
+  public EnrichmentEnvironment getEnrichableEnvironment(@NotNull UUID eId) {
+    final EnvironmentFeatures efeat = environmentFeatures.get(eId);
+
+    if (efeat == null) {
+      throw new RuntimeException("no such environment");
+    }
+
+    return new EnrichmentEnvironment(efeat.getFeatures(), efeat.getEnvironment());
+  }
+
+  @Override
+  public void updateFeature(@NotNull PublishFeatureValue feature) {
+    updateFeatureValue(feature);
   }
 }

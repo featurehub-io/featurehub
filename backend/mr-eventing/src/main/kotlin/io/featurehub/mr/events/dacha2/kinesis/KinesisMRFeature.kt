@@ -3,9 +3,14 @@ package io.featurehub.mr.events.dacha2.kinesis
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.cloudevents.CloudEvent
+import io.featurehub.dacha.model.PublishEnvironment
+import io.featurehub.dacha.model.PublishFeatureValues
+import io.featurehub.dacha.model.PublishServiceAccount
+import io.featurehub.enriched.model.EnricherPing
+import io.featurehub.events.CloudEventChannelMetric
+import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.kinesis.*
-import io.featurehub.mr.events.common.CloudEventsDachaChannel
-import io.featurehub.mr.events.common.CloudEventsEdgeChannel
+import io.featurehub.mr.events.common.CacheMetrics
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
@@ -20,8 +25,7 @@ class KinesisMRFeature : Feature {
 
     context.register(object: AbstractBinder() {
       override fun configure() {
-        bind(KinesisEdgeStream::class.java).to(CloudEventsEdgeChannel::class.java).`in`(Singleton::class.java)
-        bind(KinesisDacha2Stream::class.java).to(CloudEventsDachaChannel::class.java).`in`(Singleton::class.java)
+        bind(KinesisMROutboundStream::class.java).to(KinesisMROutboundStream::class.java).`in`(Immediate::class.java)
         bind(MrAppNameProvider::class.java).to(KinesisAppNameProvider::class.java).`in`(Singleton::class.java)
         bind(KinesisListenAllTheThings::class.java).to(KinesisListenAllTheThings::class.java).`in`(Immediate::class.java)
       }
@@ -35,10 +39,10 @@ class MrAppNameProvider : KinesisAppNameProvider {
   override fun name(): String = "management-repository"
 }
 
-class KinesisEdgeStream @Inject constructor(kinesisFactory: KinesisFactory) : CloudEventsEdgeChannel {
-  @ConfigKey("cloudevents.mr-edge.kinesis.stream-name")
-  private var streamName: String? = "featurehub-mr-edge"
-  @ConfigKey("cloudevents.mr-edge.kinesis.randomise-partition-key")
+class KinesisMROutboundStream @Inject constructor(kinesisFactory: KinesisFactory, cloudEventsPublisher: CloudEventPublisher) {
+  @ConfigKey("cloudevents.outbound.kinesis.stream-name")
+  private var streamName: String? = "featurehub-mr-stream"
+  @ConfigKey("cloudevents.outbound.kinesis.randomise-partition-key")
   private var randomisePartitionKey: Boolean? = false
 
   private var publisher: KinesisCloudEventsPublisher
@@ -48,9 +52,23 @@ class KinesisEdgeStream @Inject constructor(kinesisFactory: KinesisFactory) : Cl
     DeclaredConfigResolver.resolve(this)
 
     publisher = kinesisFactory.makePublisher(streamName!!)
-  }
 
-  override fun encodePureJson(): Boolean = true
+    cloudEventsPublisher.registerForPublishing(
+      EnricherPing.CLOUD_EVENT_TYPE,
+      CloudEventChannelMetric(CacheMetrics.featureFailureCounter, CacheMetrics.featureGram), false, this::publishEvent)
+
+    cloudEventsPublisher.registerForPublishing(
+      PublishFeatureValues.CLOUD_EVENT_TYPE,
+      CloudEventChannelMetric(CacheMetrics.featureFailureCounter, CacheMetrics.featureGram), false, this::publishEvent)
+
+    cloudEventsPublisher.registerForPublishing(
+      PublishServiceAccount.CLOUD_EVENT_TYPE,
+      CloudEventChannelMetric(CacheMetrics.serviceAccountCounter, CacheMetrics.serviceAccountsGram), false, this::publishEvent)
+
+    cloudEventsPublisher.registerForPublishing(
+      PublishEnvironment.CLOUD_EVENT_TYPE,
+      CloudEventChannelMetric(CacheMetrics.environmentCounter, CacheMetrics.environmentGram), false, this::publishEvent)
+  }
 
   private fun partitionKey() : String {
     return if (randomisePartitionKey == true) {
@@ -60,39 +78,7 @@ class KinesisEdgeStream @Inject constructor(kinesisFactory: KinesisFactory) : Cl
     }
   }
 
-  override fun publishEvent(event: CloudEvent) {
-    publisher.publish(event, partitionKey() )
-  }
-}
-
-class KinesisDacha2Stream @Inject constructor(kinesisFactory: KinesisFactory) : CloudEventsDachaChannel {
-  @ConfigKey("cloudevents.mr-dacha2.kinesis.stream-name")
-  private var streamName: String? = "featurehub-mr-dacha2"
-  @ConfigKey("cloudevents.mr-dacha2.kinesis.randomise-partition-key")
-  private var randomisePartitionKey: Boolean? = false
-
-  private var publisher: KinesisCloudEventsPublisher
-  val uniqueAppKinesisPartitionId = UUID.randomUUID().toString()
-
-  init {
-    DeclaredConfigResolver.resolve(this)
-
-    publisher = kinesisFactory.makePublisher(streamName!!)
-  }
-
-  override fun dacha2Enabled(): Boolean = true
-
-  override fun encodePureJson(): Boolean = true
-
-  private fun partitionKey() : String {
-    return if (randomisePartitionKey == true) {
-      UUID.randomUUID().toString()
-    } else {
-      uniqueAppKinesisPartitionId
-    }
-  }
-
-  override fun publishEvent(event: CloudEvent) {
-    publisher.publish(event, partitionKey() )
+   private fun publishEvent(event: CloudEvent) {
+     publisher.publish(event, partitionKey() )
   }
 }

@@ -31,6 +31,7 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.featurehub.utils.FallbackPropertyConfig;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,6 +90,15 @@ public class SetupResource implements SetupServiceDelegate {
 
         sr.redirectUrl(provider.getRedirectUrl());
       }
+
+      boolean enricherEnabled = "true".equalsIgnoreCase(FallbackPropertyConfig.Companion.getConfig("enricher.enabled"
+        , "false"));
+      boolean webhooksEnabled = "true".equalsIgnoreCase(FallbackPropertyConfig.Companion.getConfig("webhooks.features.enabled"
+        , "false"));
+
+      sr.capabilityInfo(
+        Map.of("webhook.features", (enricherEnabled && webhooksEnabled) ? "true" : "false" )
+      );
 
       return sr;
     }

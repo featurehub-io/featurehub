@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="fh_webhook" identityType="external" pkName="pk_fh_webhook">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="environment_id" type="uuid" notnull="true" references="fh_environment.id" foreignKeyName="fk_fh_webhook_environment_id" foreignKeyIndex="ix_fh_webhook_environment_id"/>
+            <column name="when_sent" type="timestamp" notnull="true"/>
+            <column name="method" type="varchar(7)" notnull="true"/>
+            <column name="status" type="integer" notnull="true"/>
+            <column name="ce_type" type="varchar(100)" notnull="true"/>
+            <column name="whce_type" type="varchar(100)" notnull="true"/>
+            <column name="json" type="clob" notnull="true"/>
+        </createTable>
+        <createIndex indexName="idx_webhook" tableName="fh_webhook" columns="environment_id,when_sent"/>
+        <createIndex indexName="idx_webhook_type" tableName="fh_webhook" columns="environment_id,when_sent,whce_type"/>
+    </changeSet>
+</migration>

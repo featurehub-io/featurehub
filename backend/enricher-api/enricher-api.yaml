@@ -1,0 +1,53 @@
+openapi: 3.0.1
+info:
+  title: Cache (Dache) API
+  description: This is used by the Edge servers to access features and environments quickly.
+  version: "1.1.1"
+paths:
+  /v2/fake:
+    get:
+      operationId: fakeApi
+      tags:
+        - EnricherService
+      description: "this is just a holder, it is not generated"
+      responses:
+        200:
+          description: "yay"
+components:
+  schemas:
+    EnricherPing:
+      type: object
+      x-cloudevent-type: enricher-ping-v1
+      x-cloudevent-subject: io.featurehub.events.enricher
+      x-package: io.featurehub.enriched.model
+      required:
+        - environment
+        - cloudEventProcessor
+      properties:
+        environment:
+          description: "The environment to extract from Dacha"
+          type: string
+          format: uuid
+        cloudEventProcessor:
+          description: "Include this field with the enriched features to indicate which client should be processing the request if a specific ping to determine if that client is working"
+          type: string
+    EnrichedFeatures:
+      x-cloudevent-type: enriched-feature-v1
+      x-cloudevent-subject: io.featurehub.events.enricher
+      x-package: io.featurehub.enriched.model
+      description: "A full environment with all of its features. This will filter out any management environmentInfo data"
+      required:
+        - environment
+        - featureKeys
+      properties:
+        targetEnrichmentDestination:
+          description: "If there is a specific target for the data, everything else _should_ ignore it"
+          type: string
+        environment:
+          $ref: "#/components/schemas/PublishEnvironment"
+        featureKeys:
+          description: "These are the keys of the features that were updated"
+          type: array
+          items:
+            type: string
+

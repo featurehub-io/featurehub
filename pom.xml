@@ -47,6 +47,12 @@
   </licenses>
 
   <modules>
+    <module>backend/mr-webhook-listener</module>
+    <module>backend/webhook-api</module>
+    <module>backend/webhook-feature-update</module>
+    <module>backend/webhook-common</module>
+    <module>backend/enricher-api</module>
+    <module>backend/enricher-processor</module>
     <module>backend/security-oauth</module>
     <module>backend/security-saml</module>
     <module>backend/security-common</module>

@@ -1,0 +1,81 @@
+openapi: 3.0.1
+info:
+  title: Webhook Messaging API
+  description: This provides a generic way for webhook results to be sent back to the host
+  version: "1.1.1"
+#  CRUD for portfolios, environments, features, service account, people, and groups (edited)
+#  roles are fixed
+#  then people<->group association
+#  and group<->role association
+paths:
+  /fake:
+    get:
+      tags:
+        - WebhookServicce
+      description: "This is fake exists for generating components"
+      operationId: updateFeature
+      responses:
+        "200":
+          description: "The superuser group presuming the organization exists"
+          content:
+            application/json:
+              schema:
+                type: string
+components:
+  schemas:
+    WebhookMethod:
+      type: string
+      enum:
+        - POST
+        - PUT
+        - GET
+        - DELETE
+    WebhookEnvironmentResult:
+      x-cloudevent-type: webhook-environment-result-v1
+      x-cloudevent-subject: io.featurehub.webhooks
+      type: object
+      description: "This provides a generic way for webhooks to send their per-environment hook data back to MR"
+      required:
+        - environmentId
+        - status
+        - url
+        - whenSent
+        - method
+        - cloudEventType
+        - url
+        - outboundHeaders
+        - sourceSystem
+        - content
+      properties:
+        environmentId:
+          description: "The environment this webhook was for"
+          type: string
+          format: UUID
+        whenSent:
+          type: string
+          format: date-time
+        status:
+          description: "The status of the webhook call"
+          type: integer
+        method:
+          $ref: "#/components/schemas/WebhookMethod"
+        content:
+          type: string
+        sourceSystem:
+          type: string
+        cloudEventType:
+          type: string
+        url:
+          description: "The URL requested"
+          type: string
+        outboundHeaders:
+          description: "The headers we set on the outbound call"
+          additionalProperties:
+            type: string
+        incomingHeaders:
+          description: "The headers that came back"
+          additionalProperties:
+            type: string
+        result:
+          description: "The body as a string if any, truncated to 1k"
+          type: string

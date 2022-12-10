@@ -45,6 +45,11 @@
       <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
+      <groupId>io.featurehub.webhook</groupId>
+      <artifactId>webhook-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-common</artifactId>
       <version>[1.1, 2)</version>
@@ -68,7 +73,7 @@
       <plugin>
         <groupId>io.repaint.maven</groupId>
         <artifactId>tiles-maven-plugin</artifactId>
-        <version>2.23</version>
+        <version>2.32</version>
         <extensions>true</extensions>
         <configuration>
           <filtering>false</filtering>

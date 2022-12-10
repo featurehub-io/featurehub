@@ -62,6 +62,7 @@
                 <file>${project.basedir}/end2end-common.yaml</file>
                 <file>${project.basedir}/info.yaml</file>
                 <file>${project.basedir}/user.yaml</file>
+                <file>${project.basedir}/webhook-api.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
             </configuration>
@@ -112,7 +113,7 @@
       <plugin>
         <groupId>io.repaint.maven</groupId>
         <artifactId>tiles-maven-plugin</artifactId>
-        <version>2.23</version>
+        <version>2.32</version>
         <extensions>true</extensions>
         <configuration>
           <filtering>false</filtering>

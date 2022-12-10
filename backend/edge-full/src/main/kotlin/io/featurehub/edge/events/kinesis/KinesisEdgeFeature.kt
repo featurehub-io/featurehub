@@ -2,14 +2,16 @@ package io.featurehub.edge.events.kinesis
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import io.cloudevents.CloudEvent
-import io.featurehub.edge.events.CloudEventsEdgePublisher
 import io.featurehub.edge.events.EdgeSubscriber
-import io.featurehub.events.kinesis.KinesisCloudEventsPublisher
+import io.featurehub.edge.events.StreamingEventPublisher
+import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.kinesis.KinesisFactory
+import io.featurehub.mr.messaging.StreamedFeatureUpdate
+import io.featurehub.webhook.common.WebhookCommonFeature
+import io.featurehub.webhook.events.WebhookEnvironmentResult
+import io.features.webhooks.features.WebhookFeature
 import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
 import org.glassfish.hk2.api.Immediate
@@ -25,7 +27,7 @@ class KinesisEdgeFeature : Feature {
       override fun configure() {
         // start listening immediately on wiring finishing
         bind(KinesisFeaturesListener::class.java).to(KinesisFeaturesListener::class.java).`in`(Immediate::class.java)
-        bind(KinesisFeatureUpdatePublisher::class.java).to(CloudEventsEdgePublisher::class.java).`in`(Singleton::class.java)
+        bind(KinesisFeatureUpdatePublisher::class.java).to(KinesisFeatureUpdatePublisher::class.java).`in`(Immediate::class.java)
       }
     })
 
@@ -49,24 +51,33 @@ class KinesisFeaturesListener @Inject constructor(
   }
 }
 
-class KinesisFeatureUpdatePublisher @Inject constructor(kinesisFactory: KinesisFactory) : CloudEventsEdgePublisher {
+class KinesisFeatureUpdatePublisher @Inject constructor(kinesisFactory: KinesisFactory, cloudEventPublisher: CloudEventPublisher) {
   @ConfigKey("cloudevents.edge-mr.kinesis.stream-name")
   private val updateStreamName: String = "featurehub-edge-updates"
   @ConfigKey("cloudevents.edge-mr.kinesis.randomise")
   private var randomise: Boolean? = true
-  private var publisher: KinesisCloudEventsPublisher
 
   init {
     DeclaredConfigResolver.resolve(this)
 
-    publisher = kinesisFactory.makePublisher(updateStreamName)
-  }
+    val publisher = kinesisFactory.makePublisher(updateStreamName)
 
-  override fun encodeAsJson() = false
+    cloudEventPublisher.registerForPublishing(
+      StreamedFeatureUpdate.CLOUD_EVENT_TYPE,
+      StreamingEventPublisher.channelMetric, false) { msg ->
+      publisher.publish(msg, publishKey())
+    }
+
+    // if we are registered for webhooks, send the results back on the same channel
+    if (WebhookFeature.enabled) {
+      cloudEventPublisher.registerForPublishing(
+        WebhookEnvironmentResult.CLOUD_EVENT_TYPE,
+        WebhookCommonFeature.channelMetric, false) { msg ->
+        publisher.publish(msg, publishKey())
+      }
+    }
+  }
 
   private fun publishKey() = if (randomise!!) UUID.randomUUID().toString() else "edge-client"
 
-  override fun publish(event: CloudEvent) {
-    publisher.publish(event, publishKey()) // scatter gun them across the listeners
-  }
 }

@@ -9,11 +9,15 @@ import java.util.*
 
 class DachaEnvironmentResource @Inject constructor(private val cache: Dacha2Cache) : DachaEnvironmentService {
   override fun getEnvironmentStructure(eId: UUID): DachaStructureResponse {
-    val env = cache.findEnvironment(eId)?.environment ?: throw NotFoundException()
+    try {
+      val env = cache.findEnvironment(eId).environment
 
-    return DachaStructureResponse()
-      .organizationId(env.organizationId)
-      .portfolioId(env.portfolioId)
-      .applicationId(env.applicationId)
+      return DachaStructureResponse()
+        .organizationId(env.organizationId)
+        .portfolioId(env.portfolioId)
+        .applicationId(env.applicationId)
+    } catch (e: Exception) {
+      throw NotFoundException()
+    }
   }
 }

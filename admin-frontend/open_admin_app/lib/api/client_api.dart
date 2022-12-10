@@ -61,9 +61,11 @@ class ManagementRepositoryClientBloc implements Bloc {
   late PortfolioServiceApi portfolioServiceApi;
   late ServiceAccountServiceApi serviceAccountServiceApi;
   late EnvironmentServiceApi environmentServiceApi;
+  late Environment2ServiceApi environment2ServiceApi;
   late FeatureServiceApi featureServiceApi;
   late ApplicationServiceApi applicationServiceApi;
   late GroupServiceApi groupServiceApi;
+  late WebhookServiceApi webhookServiceApi;
   static late FHRouter router;
 
   // this reflects actual requests to change the route driven externally, so a user clicks on
@@ -84,7 +86,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   final _stepperOpened = BehaviorSubject<bool>.seeded(false);
   late Uri _basePath;
   late StreamSubscription<Portfolio?> _personPermissionInPortfolioChanged;
-  late IdentityProviders identityProviders;
+  late ServerCapabilities identityProviders;
 
   StreamSubscription<Person>? personStreamListener;
 
@@ -252,9 +254,11 @@ class ManagementRepositoryClientBloc implements Bloc {
     portfolioServiceApi = PortfolioServiceApi(client);
     serviceAccountServiceApi = ServiceAccountServiceApi(client);
     environmentServiceApi = EnvironmentServiceApi(client);
+    environment2ServiceApi = Environment2ServiceApi(apiClient);
     featureServiceApi = FeatureServiceApi(client);
     applicationServiceApi = ApplicationServiceApi(client);
     groupServiceApi = GroupServiceApi(client);
+    webhookServiceApi = WebhookServiceApi(client);
     _errorSource.add(null);
     streamValley.apiClient = this;
 
@@ -277,9 +281,9 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   ApiClient get apiClient => _client;
 
-  IdentityProviders setupIdentityProviders(
+  ServerCapabilities setupIdentityProviders(
       ManagementRepositoryClientBloc bloc) {
-    return IdentityProviders(this, _client);
+    return ServerCapabilities(this, _client);
   }
 
   Future<void> init() async {
@@ -301,6 +305,9 @@ class ManagementRepositoryClientBloc implements Bloc {
       final bearerToken = getBearerCookie();
       organization = setupResponse.organization;
       identityProviders.identityProviders = setupResponse.providers;
+      identityProviders.capabilities = setupResponse.capabilityInfo;
+      print("capabilities are ${setupResponse.capabilityInfo}");
+      print("are we webhook enabled? ${identityProviders.capabilityWebhooks}");
       if (setupResponse.providerInfo != null) {
         identityProviders.identityInfo = setupResponse.providerInfo;
       }

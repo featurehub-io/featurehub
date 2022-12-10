@@ -7,7 +7,7 @@ import {
   PortfolioServiceApi,
   RoleType,
   ServiceAccount,
-  ServiceAccountPermission, ServiceAccountServiceApi
+  ServiceAccountPermission, ServiceAccountServiceApi, UpdateEnvironment
 } from 'featurehub-javascript-admin-sdk';
 import { makeid, sleep } from '../support/random';
 import { EdgeFeatureHubConfig, FeatureHubPollingClient } from 'featurehub-javascript-node-sdk';
@@ -37,6 +37,29 @@ Given(/^I create an application$/, async function () {
   expect(aCreate.data.environments.length).to.eq(1);
   this.application = aCreate.data;
   this.environment = aCreate.data.environments[0];
+});
+
+Given(/^I update the environment for feature webhooks$/, async function() {
+  const world = this as SdkWorld;
+
+  if (world.environment === undefined) {
+    const app = await world.applicationApi.getApplication(world.application.id, true);
+    world.application = app.data;
+    world.environment = app.data.environments[0];
+  }
+
+  const env = world.environment;
+
+  await world.environment2Api.updateEnvironmentV2(env.id, new UpdateEnvironment({
+    version: env.version,
+    environmentInfo: {
+      'webhook.features.enabled': 'true',
+      'webhook.features.endpoint': 'http://localhost:4567',
+      'webhook.features.headers': 'x-foof=muddy'
+    }
+  }));
+
+  world.environment = (await world.applicationApi.getApplication(world.application.id, true)).data.environments[0];
 });
 
 Given(/^I create a new environment$/, async function () {

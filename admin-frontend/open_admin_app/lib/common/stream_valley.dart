@@ -60,6 +60,7 @@ class StreamValley {
   late EnvironmentServiceApi environmentServiceApi;
   late FeatureServiceApi featureServiceApi;
   late ApplicationServiceApi applicationServiceApi;
+  late WebhookServiceApi webhookServiceApi;
 
   late StreamSubscription<ReleasedPortfolio?>
       currentPortfolioAdminOrSuperAdminSubscription;
@@ -72,6 +73,8 @@ class StreamValley {
       BehaviorSubject<ReleasedPortfolio>.seeded(nullPortfolio);
   final _routeCheckPortfolioSource = BehaviorSubject<Portfolio?>();
 
+  final _webhookTypesSource = BehaviorSubject<List<WebhookTypeDetail>?>();
+  Stream<List<WebhookTypeDetail>?> get webhookTypeStream => _webhookTypesSource.stream;
   final _currentAppSource = BehaviorSubject.seeded(nullApplication);
   String? get currentAppId => _currentAppSource.value.application.id;
   Stream<String?> get currentAppIdStream => _currentAppSource.stream
@@ -152,9 +155,27 @@ class StreamValley {
     environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient);
     featureServiceApi = FeatureServiceApi(mrClient.apiClient);
     applicationServiceApi = ApplicationServiceApi(mrClient.apiClient);
+    webhookServiceApi = WebhookServiceApi(mrClient.apiClient);
+
+    _webhookTypesSource.add(null);
+  }
+
+  Future<void> refreshWebhookTypes() async {
+    if (_webhookTypesSource.value == null) {
+      _webhookTypesSource.add((await webhookServiceApi.getWebhookTypes()).types);
+    }
+  }
+
+  WebhookTypeDetail? get firstWebhookType {
+    if (_webhookTypesSource.value?.isNotEmpty == true) {
+      return _webhookTypesSource.value![0];
+    }
+
+    return null;
   }
 
   void dispose() {
+    _webhookTypesSource.close();
     currentPortfolioSubscription.cancel();
     currentPortfolioAdminOrSuperAdminSubscription.cancel();
   }

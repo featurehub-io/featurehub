@@ -9,6 +9,7 @@ import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/widgets/apps/group_permissions_widget.dart';
 import 'package:open_admin_app/widgets/apps/manage_app_bloc.dart';
 import 'package:open_admin_app/widgets/apps/service_account_permissions_widget.dart';
+import 'package:open_admin_app/widgets/apps/webhook/webhook_panel_widget.dart';
 import 'package:open_admin_app/widgets/common/application_drop_down.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
@@ -141,7 +142,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
   void initState() {
     super.initState();
 
-    _controller = TabController(vsync: this, length: 3);
+    _controller = TabController(vsync: this, length: 4);
     _controller?.addListener(tabChangeListener);
   }
 
@@ -159,6 +160,11 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
     } else if (_controller?.index == 2) {
       rc.params = {
         'tab': ['service-accounts']
+      };
+    } else if (_controller?.index == 3) {
+      // this is gonna get awkward once we have multiple optional server flags
+      rc.params = {
+        'tab': ['webhooks']
       };
     }
     bloc?.notifyExternalRouteChange(rc);
@@ -181,6 +187,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
     final ScrollController controllerTab1 = ScrollController();
     final ScrollController controllerTab2 = ScrollController();
     final ScrollController controllerTab3 = ScrollController();
+    final ScrollController controllerTab4 = ScrollController(); // webhooks
 
     return Column(
       children: <Widget>[
@@ -209,6 +216,10 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
                   ),
                 ),
               ),
+              if (bloc.mrClient.identityProviders.capabilityWebhooks)
+                const Tab(
+                  child: Text("Webhooks")
+                )
             ],
           ),
         ),
@@ -261,6 +272,19 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
                   ),
                 ),
               ),
+              if (bloc.mrClient.identityProviders.capabilityWebhooks)
+                ScrollConfiguration(
+                  behavior: CustomScrollBehavior(),
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    controller: controllerTab4,
+                    child: Column(
+                      children: const <Widget>[
+                        WebhooksPanelWidget(),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
         )
@@ -278,7 +302,8 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
       _routeChange!.cancel();
     }
 
-    _routeChange = BlocProvider.of<ManagementRepositoryClientBloc>(context)
+    var mrClient = BlocProvider.of<ManagementRepositoryClientBloc>(context);
+    _routeChange = mrClient
         .routeChangedStream
         .listen((routeChange) {
       if (routeChange?.route == '/app-settings') {
@@ -291,6 +316,13 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
             break;
           case 'service-accounts':
             _controller!.animateTo(2);
+            break;
+          case 'webhooks':
+            if (mrClient.identityProviders.capabilityWebhooks) {
+              _controller!.animateTo(3);
+            } else {
+              _controller!.animateTo(0);
+            }
             break;
           default:
             _controller!.animateTo(0);

@@ -4,6 +4,7 @@ import io.featurehub.mr.model.*
 import java.util.*
 
 interface EnvironmentApi {
+  fun portfolioEnvironmentBelongsTo(eId: UUID): UUID?
   fun personRoles(current: Person, eid: UUID): EnvironmentRoles?
   fun setOrdering(app: Application, environments: List<Environment>): List<Environment>?
   class DuplicateEnvironmentException : Exception()

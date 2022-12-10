@@ -6,8 +6,9 @@ import io.featurehub.dacha.resource.DachaApiKeyResource
 import io.featurehub.dacha.resource.DachaEdgeNATSAdapter
 import io.featurehub.dacha.resource.DachaEnvironmentResource
 import io.featurehub.dacha.resource.DacheEdgeNATSAdapterService
+import io.featurehub.enricher.FeatureEnrichmentCache
+import io.featurehub.enricher.EnrichmentProcessingFeature
 import io.featurehub.health.HealthSource
-import io.featurehub.jersey.FeatureHubJerseyHost
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
@@ -16,13 +17,16 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class DachaFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
+    context.register(EnrichmentProcessingFeature::class.java)
+
     arrayOf(
       DachaApiKeyResource::class.java,
       DachaEnvironmentResource::class.java).forEach { clazz -> context.register(clazz) }
 
     context.register(object: AbstractBinder() {
       override fun configure() {
-        bind(InMemoryCache::class.java).to(InternalCache::class.java).`in`(Singleton::class.java)
+        bind(InMemoryCache::class.java).to(InternalCache::class.java).to(
+          FeatureEnrichmentCache::class.java).`in`(Singleton::class.java)
         if (FastlyPublisher.fastlyEnabled()) {
           bind(FastlyPublisher::class.java).to(CacheUpdateListener::class.java).`in`(Singleton::class.java)
         }

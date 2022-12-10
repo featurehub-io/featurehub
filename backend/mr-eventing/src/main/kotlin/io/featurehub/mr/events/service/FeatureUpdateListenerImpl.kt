@@ -16,7 +16,7 @@ open class FeatureUpdateListenerImpl @Inject constructor(
 ) : FeatureUpdateListener {
 
   init {
-    cloudEventReceiverRegistry.listen(StreamedFeatureUpdate::class.java) {
+    cloudEventReceiverRegistry.listen(StreamedFeatureUpdate::class.java) { it, ce ->
       processUpdate(it)
     }
   }

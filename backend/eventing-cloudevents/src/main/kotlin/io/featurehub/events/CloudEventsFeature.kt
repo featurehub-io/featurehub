@@ -12,6 +12,7 @@ class CloudEventsFeature : Feature {
         bind(CloudEventReceiverRegistryProcessor::class.java).to(CloudEventReceiverRegistry::class.java).`in`(Singleton::class.java)
         bind(CloudEventsTelemetryWriterImpl::class.java).to(CloudEventsTelemetryWriter::class.java).`in`(Singleton::class.java)
         bind(CloudEventsTelemetryReaderImpl::class.java).to(CloudEventsTelemetryReader::class.java).`in`(Singleton::class.java)
+        bind(CloudEventPublisherRegistry::class.java).to(CloudEventPublisher::class.java).`in`(Singleton::class.java)
       }
     })
     return true

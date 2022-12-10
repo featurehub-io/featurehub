@@ -2,11 +2,13 @@ package io.featurehub.dacha2
 
 import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.caching.FastlyPublisher
-import io.featurehub.dacha2.kinesis.KinesisDachaEventsListener
+import io.featurehub.dacha2.kinesis.KinesisDachaCloudEvents
 import io.featurehub.dacha2.nats.NatsDachaEventsListener
-import io.featurehub.dacha2.pubsub.PubsubDachaEventsListener
+import io.featurehub.dacha2.pubsub.PubsubDachaCloudEvents
 import io.featurehub.dacha2.resource.DachaApiKeyResource
 import io.featurehub.dacha2.resource.DachaEnvironmentResource
+import io.featurehub.enricher.FeatureEnrichmentCache
+import io.featurehub.enricher.EnrichmentProcessingFeature
 import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.pubsub.GoogleEventFeature
 import jakarta.inject.Singleton
@@ -20,6 +22,7 @@ class Dacha2Feature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     context.register(DachaApiKeyResource::class.java)
     context.register(DachaEnvironmentResource::class.java)
+    context.register(EnrichmentProcessingFeature::class.java)
 
     if (NatsDachaEventsListener.isEnabled()) {
       context.register(NatsDachaEventsListener::class.java)
@@ -27,7 +30,8 @@ class Dacha2Feature : Feature {
 
     context.register(object: AbstractBinder() {
       override fun configure() {
-        bind(Dacha2CacheImpl::class.java).to(Dacha2Cache::class.java).`in`(Singleton::class.java)
+        bind(Dacha2CacheImpl::class.java).to(Dacha2Cache::class.java).to(
+          FeatureEnrichmentCache::class.java).`in`(Singleton::class.java)
         if (FastlyPublisher.fastlyEnabled()) {
           bind(FastlyPublisher::class.java).to(Dacha2CacheListener::class.java).`in`(Singleton::class.java)
         }
@@ -37,11 +41,11 @@ class Dacha2Feature : Feature {
 
         if (GoogleEventFeature.isEnabled()) {
           // bind and start listening immediately
-          bind(PubsubDachaEventsListener::class.java).to(PubsubDachaEventsListener::class.java).`in`(Immediate::class.java)
+          bind(PubsubDachaCloudEvents::class.java).to(PubsubDachaCloudEvents::class.java).`in`(Immediate::class.java)
         }
 
         if (KinesisEventFeature.isEnabled()) {
-          bind(KinesisDachaEventsListener::class.java).to(KinesisDachaEventsListener::class.java).`in`(Immediate::class.java)
+          bind(KinesisDachaCloudEvents::class.java).to(KinesisDachaCloudEvents::class.java).`in`(Immediate::class.java)
         }
       }
     })

@@ -4,10 +4,13 @@ import cd.connect.app.config.ConfigKey
 import com.google.common.cache.*
 import io.featurehub.dacha.model.*
 import io.featurehub.dacha2.api.Dacha2ServiceClient
+import io.featurehub.enricher.EnrichmentEnvironment
+import io.featurehub.enricher.FeatureEnrichmentCache
 import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.lang.RuntimeException
 import java.util.*
 
 
@@ -24,11 +27,16 @@ interface Dacha2Cache {
   fun updateFeature(feature: PublishFeatureValue)
 
   fun getFeatureCollection(eId: UUID, apiKey: String): FeatureCollection?
-  fun findEnvironment(eId: UUID): FeatureValues?
+
+  /**
+   * This will throw an exception if it can't be found
+   */
+  fun findEnvironment(eId: UUID): FeatureValues
 }
 
 class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2ServiceClient,
-                                          private val featureValueFactory: FeatureValuesFactory) : Dacha2Cache {
+                                          private val featureValueFactory: FeatureValuesFactory) : Dacha2Cache,
+  FeatureEnrichmentCache {
   private val log: Logger = LoggerFactory.getLogger(Dacha2CacheImpl::class.java)
   private val serviceAccountApiKeyCache: LoadingCache<String, CacheServiceAccount>
   private val serviceAccountCache: Cache<UUID, CacheServiceAccount>
@@ -171,7 +179,21 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
     }
   }
 
-  override fun findEnvironment(eId: UUID): FeatureValues? = environmentCache.getIfPresent(eId)
+  override fun findEnvironment(eId: UUID): FeatureValues {
+    environmentMissCache.getIfPresent(eId)?.let {
+      throw RuntimeException()
+    }
+
+    return environmentCache.get(eId)
+  }
+
+  fun isEnvironmentPresent(eId: UUID): Boolean {
+    environmentMissCache.getIfPresent(eId)?.let {
+      return false
+    }
+
+    return environmentCache.getIfPresent(eId) != null
+  }
 
   override fun updateEnvironment(env: PublishEnvironment) {
     if (env.action == PublishAction.EMPTY) return
@@ -253,6 +275,11 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
     }
   }
 
+  override fun getEnrichableEnvironment(eId: UUID): EnrichmentEnvironment {
+    val envFeatures = findEnvironment(eId)
+    return EnrichmentEnvironment(envFeatures.getFeatures(), envFeatures.environment)
+  }
+
   override fun updateFeature(feature: PublishFeatureValue) {
     if (feature.action == PublishAction.EMPTY) {
       return
@@ -290,6 +317,8 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
           if (existingValue == null || existingValue.version < newValue.version) {
             ef.setFeatureValue(feature.feature)
             return
+          } else if (existingValue.version == newValue.version) {
+            return // just ignore it
           }
         }
 

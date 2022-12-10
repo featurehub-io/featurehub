@@ -14,6 +14,7 @@ import io.featurehub.db.api.ServiceAccountApi;
 import io.featurehub.db.api.SessionApi;
 import io.featurehub.db.api.SetupApi;
 import io.featurehub.db.api.UserStateApi;
+import io.featurehub.db.api.WebhookApi;
 import io.featurehub.db.listener.FeatureUpdateBySDKApi;
 import io.featurehub.db.services.ApplicationSqlApi;
 import io.featurehub.db.services.ArchiveStrategy;
@@ -33,6 +34,7 @@ import io.featurehub.db.services.RolloutStrategySqlApi;
 import io.featurehub.db.services.ServiceAccountSqlApi;
 import io.featurehub.db.services.SetupSqlApi;
 import io.featurehub.db.services.UserStateSqlApi;
+import io.featurehub.db.services.WebhookSqlApi;
 import io.featurehub.db.services.strategies.RolloutStrategyValidationUtils;
 import jakarta.inject.Singleton;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
@@ -55,5 +57,6 @@ public class ApiToSqlApiBinder extends AbstractBinder {
     bind(UserStateSqlApi.class).to(UserStateApi.class).in(Singleton.class);
     bind(RolloutStrategyValidationUtils.class).to(RolloutStrategyValidator.class).in(Singleton.class);
     bind(RolloutStrategySqlApi.class).to(RolloutStrategyApi.class).in(Singleton.class);
+    bind(WebhookSqlApi.class).to(WebhookApi.class).in(Singleton.class);
   }
 }

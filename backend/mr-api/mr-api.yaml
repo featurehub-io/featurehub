@@ -2518,6 +2518,9 @@ components:
           type: object
           additionalProperties:
             $ref: "#/components/schemas/IdentityProviderInfo"
+        capabilityInfo:
+          additionalProperties:
+            type: string
         redirectUrl:
           description: "Set if there is only one external provider and no local. Allows immediate redirect to provider. It assumes it will be used immediate (e.g. state in oauth2 url)"
           type: string

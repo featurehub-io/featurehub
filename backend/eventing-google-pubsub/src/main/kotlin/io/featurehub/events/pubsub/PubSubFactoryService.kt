@@ -13,6 +13,7 @@ import com.google.protobuf.Duration
 import com.google.pubsub.v1.*
 import io.cloudevents.CloudEvent
 import io.featurehub.health.HealthSource
+import io.featurehub.utils.FallbackPropertyConfig
 import io.grpc.ManagedChannelBuilder
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.Logger
@@ -22,13 +23,32 @@ import java.util.concurrent.ConcurrentHashMap
 interface PubSubFactory {
   fun makePublisher(topicName: String): PubSubPublisher
 
+  fun makePublisherFromConfig(keyForName: String, defaultName: String): PubSubPublisher
+
+  /**
+   * This is designed to take care of the pattern where we want to be able to publish one type of message
+   * and have multiple queues consume it. Whereas NATS can deal with that, each topic subscriber can create its
+   * own queue around a name, Google PubSub cannot, and so we have to publish the message on multiple topics, each with their
+   * own bunch of subscribers. Applications need to be careful when listening to two queues which are the sources of the same
+   * message, as they will get it twice and possibly process it twice (or more).
+   */
+  fun makePublishersFromConfig(
+    keyForList: String,
+    keyPrefixForIndividual: String,
+    defaultTopic: String?
+  ): Map<String, PubSubPublisher>
+
   fun makeSubscriber(subscriber: String, message: (msg: CloudEvent) -> Boolean): PubSubSubscriber
   fun makeSubscriber(subscriber: String, message: MessageReceiver): PubSubSubscriber
 
   fun getTopics(): List<String>
   fun getGoogleProjectId(): String
 
-  fun makeUniqueSubscriber(topicName: String, subscriptionPrefix: String, message: (msg: CloudEvent) -> Boolean): PubSubSubscriber
+  fun makeUniqueSubscriber(
+    topicName: String,
+    subscriptionPrefix: String,
+    message: (msg: CloudEvent) -> Boolean
+  ): PubSubSubscriber
 }
 
 interface PubSubLocalEnricher {
@@ -36,7 +56,7 @@ interface PubSubLocalEnricher {
   fun enrichSubscriberClient(subscriptionBuilder: Subscriber.Builder)
 }
 
-class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
+class PubSubFactoryService : PubSubFactory, PubSubLocalEnricher, HealthSource {
   private val log: Logger = LoggerFactory.getLogger(PubSubFactoryService::class.java)
 
   @ConfigKey("cloudevents.pubsub.local.host")
@@ -157,7 +177,7 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
     val topics = topicAdminClient.listTopics(ProjectName.of(projectId)).iterateAll().toList()
     val desiredTopics =
       pubSubTopics.map { TopicName.of(projectId, it).toString() }
-        .filter { wantedTopic -> topics.find { existingTopic -> existingTopic.name == wantedTopic  } == null }
+        .filter { wantedTopic -> topics.find { existingTopic -> existingTopic.name == wantedTopic } == null }
 
     desiredTopics.forEach { log.info("pubsub-local: creating topic `{}`", it) }
 
@@ -225,6 +245,40 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
     return publisherCache.computeIfAbsent(topicName) { PubSubPublisherImpl(projectId, topicName, this) }
   }
 
+  override fun makePublisherFromConfig(keyForName: String, defaultName: String): PubSubPublisher {
+    return FallbackPropertyConfig.getConfig(keyForName, defaultName).let { topicName ->
+      makePublisher(topicName)
+    }
+  }
+
+  override fun makePublishersFromConfig(
+    keyForList: String,
+    keyPrefixForIndividual: String,
+    defaultTopic: String?
+  ): Map<String, PubSubPublisher> {
+    val publishers = mutableMapOf<String, PubSubPublisher>()
+
+    FallbackPropertyConfig.getConfig(keyForList)?.let { channels ->
+      channels
+        .split(",")
+        .filter { it.trim().isNotEmpty() }
+        .map { "${keyPrefixForIndividual}.${it.trim()}" }
+        .forEach { channelKey ->
+          FallbackPropertyConfig.getConfig(channelKey)?.let { topicName ->
+            publishers[channelKey] = makePublisher(topicName)
+          }
+        }
+    }
+
+    defaultTopic?.let {
+      if (publishers.isEmpty()) {
+        publishers["default"] = makePublisher(it)
+      }
+    }
+
+    return publishers
+  }
+
   override fun makeSubscriber(subscriber: String, message: (msg: CloudEvent) -> Boolean): PubSubSubscriber {
     return makeSubscriber(subscriber, PubSubscriberMessageReceiver(message))
   }
@@ -244,13 +298,19 @@ class PubSubFactoryService  : PubSubFactory, PubSubLocalEnricher, HealthSource {
     return sub
   }
 
-  override fun makeUniqueSubscriber(topicName: String, subscriptionPrefix: String, message: (msg: CloudEvent) -> Boolean): PubSubSubscriber {
-    val subscriptionName =  subscriptionPrefix + "-" + RandomStringUtils.randomAlphabetic(12).lowercase()
+  override fun makeUniqueSubscriber(
+    topicName: String,
+    subscriptionPrefix: String,
+    message: (msg: CloudEvent) -> Boolean
+  ): PubSubSubscriber {
+    val subscriptionName = subscriptionPrefix + "-" + RandomStringUtils.randomAlphabetic(12).lowercase()
     log.info("pubsub: making dynamic subscription for {} to topic {}", subscriptionName, topicName)
-    makeSubscription(ProjectSubscriptionName.of(projectId, subscriptionName).toString(),
-      ProjectTopicName.of(projectId, topicName).toString())
+    makeSubscription(
+      ProjectSubscriptionName.of(projectId, subscriptionName).toString(),
+      ProjectTopicName.of(projectId, topicName).toString()
+    )
     if (dynamicSubscriber.isEmpty()) {
-      Runtime.getRuntime().addShutdownHook(object: Thread() {
+      Runtime.getRuntime().addShutdownHook(object : Thread() {
         override fun run() {
           deleteDynamicSubscribers()
         }

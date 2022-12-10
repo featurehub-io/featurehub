@@ -2,31 +2,33 @@ package io.featurehub.edge.events.nats
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import io.cloudevents.CloudEvent
-import io.featurehub.edge.events.CloudEventsEdgePublisher
-import io.featurehub.events.nats.NatsCloudEventsPublisher
+import io.featurehub.edge.events.StreamingEventPublisher
+import io.featurehub.events.CloudEventPublisher
+import io.featurehub.mr.messaging.StreamedFeatureUpdate
 import io.featurehub.publish.NATSSource
+import io.featurehub.webhook.common.WebhookCommonFeature
+import io.featurehub.webhook.events.WebhookEnvironmentResult
+import io.features.webhooks.features.WebhookFeature
 import jakarta.inject.Inject
 
 class NatsFeatureUpdatePublisher @Inject constructor(
   natsSource: NATSSource,
-) : CloudEventsEdgePublisher {
-  private val publisher: NatsCloudEventsPublisher
-
+  cloudEventPublisher: CloudEventPublisher
+)  {
   @ConfigKey("cloudevents.edge-mr.nats.channel-name")
   private val updatesSubject: String = "featurehub/mr-updates-queue"
 
   init {
     DeclaredConfigResolver.resolve(this)
 
-    publisher = natsSource.createPublisher(updatesSubject!!)
-  }
+    val publisher = natsSource.createPublisher(updatesSubject)
 
-  override fun encodeAsJson(): Boolean {
-    return false
-  }
+    cloudEventPublisher.registerForPublishing(StreamedFeatureUpdate.CLOUD_EVENT_TYPE,
+      StreamingEventPublisher.channelMetric, true, publisher::publish)
 
-  override fun publish(event: CloudEvent) {
-    publisher.publish(event)
+    if (WebhookFeature.enabled) {
+      cloudEventPublisher.registerForPublishing(WebhookEnvironmentResult.CLOUD_EVENT_TYPE,
+        WebhookCommonFeature.channelMetric, true, publisher::publish)
+    }
   }
 }

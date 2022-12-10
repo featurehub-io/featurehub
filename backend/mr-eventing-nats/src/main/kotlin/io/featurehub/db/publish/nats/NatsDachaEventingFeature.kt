@@ -2,10 +2,7 @@ package io.featurehub.db.publish.nats
 
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CloudEventCacheBroadcaster
-import io.featurehub.mr.events.common.CloudEventsDachaChannel
-import io.featurehub.mr.events.common.CloudEventsEdgeChannel
-import io.featurehub.mr.events.nats.NatsCloudEventsDachaChannel
-import io.featurehub.mr.events.nats.NatsCloudEventsEdgeChannel
+import io.featurehub.mr.events.nats.NatsCloudEventsPublishers
 import io.featurehub.mr.events.nats.NatsMRCloudEventsQueueUpdateListener
 import io.featurehub.publish.NATSFeature
 import io.featurehub.utils.FallbackPropertyConfig
@@ -31,11 +28,10 @@ class NatsDachaEventingFeature : Feature {
     if (NATSFeature.isNatsConfigured()) {
       context.register(object : AbstractBinder() {
         override fun configure() {
-          // initial requests come in via REST, we only publish changes
-          bind(NatsCloudEventsEdgeChannel::class.java).to(CloudEventsEdgeChannel::class.java)
-            .`in`(Singleton::class.java)
-          bind(NatsCloudEventsDachaChannel::class.java).to(CloudEventsDachaChannel::class.java)
-            .`in`(Singleton::class.java)
+          // this binds all of the respective cloud events to appropriate outbound channels
+          bind(NatsCloudEventsPublishers::class.java).to(NatsCloudEventsPublishers::class.java)
+            .`in`(Immediate::class.java)
+
           // the broadcaster will determine if dacha2 is enabled and not publish to that channel if not
           bind(CloudEventCacheBroadcaster::class.java).to(CacheBroadcast::class.java).`in`(Singleton::class.java)
 

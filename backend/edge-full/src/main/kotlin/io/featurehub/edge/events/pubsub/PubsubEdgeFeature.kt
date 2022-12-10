@@ -2,14 +2,16 @@ package io.featurehub.edge.events.pubsub
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import io.cloudevents.CloudEvent
-import io.featurehub.edge.events.CloudEventsEdgePublisher
 import io.featurehub.edge.events.EdgeSubscriber
+import io.featurehub.edge.events.StreamingEventPublisher
+import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.events.pubsub.PubSubFactory
-import io.featurehub.events.pubsub.PubSubPublisher
+import io.featurehub.mr.messaging.StreamedFeatureUpdate
+import io.featurehub.webhook.common.WebhookCommonFeature
+import io.featurehub.webhook.events.WebhookEnvironmentResult
+import io.features.webhooks.features.WebhookFeature
 import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
 import org.glassfish.hk2.api.Immediate
@@ -26,7 +28,7 @@ class PubsubEdgeFeature : Feature {
         bind(PubsubFeaturesListener::class.java)
           .to(PubsubFeaturesListener::class.java).`in`(Immediate::class.java)
         bind(PubsubFeatureUpdatePublisher::class.java)
-          .to(CloudEventsEdgePublisher::class.java).`in`(Singleton::class.java)
+          .to(PubsubFeatureUpdatePublisher::class.java).`in`(Immediate::class.java)
       }
     })
 
@@ -58,20 +60,26 @@ class PubsubFeaturesListener @Inject constructor(
   }
 }
 
-class PubsubFeatureUpdatePublisher @Inject constructor(pubsubFactory: PubSubFactory) : CloudEventsEdgePublisher {
+class PubsubFeatureUpdatePublisher @Inject constructor(pubsubFactory: PubSubFactory, cloudEventPublisher: CloudEventPublisher) {
   @ConfigKey("cloudevents.edge-mr.pubsub.topic-name")
   private val updateChannelName: String = "featurehub-edge-updates"
-  private var publisher: PubSubPublisher
 
   init {
     DeclaredConfigResolver.resolve(this)
 
-    publisher = pubsubFactory.makePublisher(updateChannelName)
-  }
+    val publisher = pubsubFactory.makePublisher(updateChannelName)
 
-  override fun encodeAsJson() = false
+    cloudEventPublisher.registerForPublishing(
+      StreamedFeatureUpdate.CLOUD_EVENT_TYPE,
+      StreamingEventPublisher.channelMetric, true, publisher::publish)
 
-  override fun publish(event: CloudEvent) {
-    publisher.publish(event)
+    if (WebhookFeature.enabled) {
+      cloudEventPublisher.registerForPublishing(
+        WebhookEnvironmentResult.CLOUD_EVENT_TYPE,
+        WebhookCommonFeature.channelMetric, true
+      ) {
+        publisher.publish(it)
+      }
+    }
   }
 }
