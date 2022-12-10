@@ -10,7 +10,6 @@ import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-
 class FeaturesDataTable extends StatefulWidget {
   const FeaturesDataTable({Key? key, this.title, required this.bloc})
       : super(key: key);
@@ -29,6 +28,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
   bool _loading = true;
   int _maxFeatures = 0;
   int _pageIndex = 0;
+  int _rowsPerPage = 5;
   List<FeatureValueType> _selectedFeatureTypes = [];
   List<String> _selectedEnvironmentList = [];
   final CustomColumnSizer _customColumnSizer = CustomColumnSizer();
@@ -45,8 +45,8 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
             _selectedEnvironmentList =
                 features.environments.map((e) => e.environmentName!).toList();
             var featuresList = FeatureStatusFeatures(features);
-            _featuresDataSource = FeaturesDataSource(
-                featuresList, widget.bloc, _searchTerm, _selectedFeatureTypes);
+            _featuresDataSource = FeaturesDataSource(featuresList, widget.bloc,
+                _searchTerm, _selectedFeatureTypes, _rowsPerPage);
             _maxFeatures = features.maxFeatures;
             _loading = false;
           });
@@ -83,8 +83,12 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                   .toList();
 
               var featuresList = FeatureStatusFeatures(snapshot.data!);
-              _featuresDataSource = FeaturesDataSource(featuresList,
-                  widget.bloc, _searchTerm, _selectedFeatureTypes);
+              _featuresDataSource = FeaturesDataSource(
+                  featuresList,
+                  widget.bloc,
+                  _searchTerm,
+                  _selectedFeatureTypes,
+                  _rowsPerPage);
               _maxFeatures = snapshot.data!.maxFeatures;
 
               return Column(
@@ -96,11 +100,11 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                     runSpacing: 4.0,
                     children: [
                       Container(
-                        constraints: const BoxConstraints(maxWidth: 400, maxHeight: 40),
+                        constraints:
+                            const BoxConstraints(maxWidth: 400, maxHeight: 40),
                         child: DropDownMultiSelect(
                             hint: Text("Select environments to display",
-                                style:
-                                Theme.of(context).textTheme.bodyMedium),
+                                style: Theme.of(context).textTheme.bodyMedium),
                             onChanged: (List<String> selectedValues) {
                               setState(() {
                                 _selectedEnvironmentList = selectedValues;
@@ -114,18 +118,22 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                                 .map((e) => e.environmentName!)
                                 .toList(),
                             selectedValues: _selectedEnvironmentList
-                          // whenEmpty: 'Select Something',
-                        ),
+                            // whenEmpty: 'Select Something',
+                            ),
                       ),
                       Container(
-                        constraints: const BoxConstraints(maxWidth: 300, maxHeight: 40, minWidth: 30,),
+                        constraints: const BoxConstraints(
+                          maxWidth: 300,
+                          maxHeight: 40,
+                          minWidth: 30,
+                        ),
                         child: DropDownMultiSelect(
                           icon: const Icon(
                             Icons.filter_alt,
                             size: 18,
                           ),
-                          hint: Text("Filter by feature type", style:
-                          Theme.of(context).textTheme.bodyMedium),
+                          hint: Text("Filter by feature type",
+                              style: Theme.of(context).textTheme.bodyMedium),
                           onChanged: (List<String> selection) {
                             setState(() {
                               _selectedFeatureTypes = selection
@@ -149,12 +157,12 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                         ),
                       ),
                       Container(
-                        constraints: const BoxConstraints(maxWidth: 300, minWidth: 150, maxHeight: 40),
+                        constraints: const BoxConstraints(
+                            maxWidth: 300, minWidth: 150, maxHeight: 40),
                         child: TextField(
                           decoration: InputDecoration(
                             hintText: 'Search features',
-                            hintStyle:
-            Theme.of(context).textTheme.bodyMedium,
+                            hintStyle: Theme.of(context).textTheme.bodyMedium,
                             suffixIcon: const Icon(Icons.search, size: 18),
                             border: const OutlineInputBorder(),
                           ),
@@ -166,7 +174,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                                     widget.bloc.applicationId!,
                                     _searchTerm,
                                     _selectedFeatureTypes,
-                                    rowsPerPage,
+                                    _rowsPerPage,
                                     _pageIndex);
                               });
                             });
@@ -210,8 +218,18 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                     SfDataPager(
                       delegate: _featuresDataSource,
                       pageCount:
-                      (_maxFeatures / rowsPerPage).ceil().ceilToDouble(),
+                          (_maxFeatures / _rowsPerPage).ceil().ceilToDouble(),
                       direction: Axis.horizontal,
+                      onRowsPerPageChanged: (rpp) {
+                        _rowsPerPage = rpp ?? 5;
+                        widget.bloc.getApplicationFeatureValuesData(
+                            widget.bloc.applicationId!,
+                            _searchTerm,
+                            _selectedFeatureTypes,
+                            _rowsPerPage,
+                            _pageIndex);
+                      },
+                      availableRowsPerPage: const [5, 10, 15, 20],
                     )
                 ],
               );
@@ -246,4 +264,3 @@ FeatureValueType convertToFeatureValueType(String value) {
   }
   return FeatureValueType.BOOLEAN;
 }
-

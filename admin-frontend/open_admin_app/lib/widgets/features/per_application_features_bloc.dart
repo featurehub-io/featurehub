@@ -46,6 +46,7 @@ class PerApplicationFeaturesBloc
   String searchFieldTerm = '';
   int totalFeatures = 0;
   int currentPageIndex = 0;
+  int currentRowsPerPage = 5;
   List<FeatureValueType> selectedFeatureTypesByUser = [];
 
   Stream<List<Application>?> get applications => _appSearchResultSource.stream;
@@ -323,6 +324,7 @@ class PerApplicationFeaturesBloc
       totalFeatures = allFeatureValues.maxFeatures;
       currentPageIndex = pageOffset;
       selectedFeatureTypesByUser = featureTypes;
+      currentRowsPerPage = rowsPerPage;
   }
 
   updateApplicationFeatureValuesStream() async {

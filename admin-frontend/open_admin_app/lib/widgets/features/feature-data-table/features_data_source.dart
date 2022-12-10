@@ -1,7 +1,6 @@
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/cell-view/value_cell.dart';
 import 'package:open_admin_app/widgets/features/edit-feature/feature_cell_holder.dart';
-import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:flutter/material.dart';
@@ -13,9 +12,10 @@ class FeaturesDataSource extends DataGridSource {
   final PerApplicationFeaturesBloc bloc;
   final String searchTerm;
   final List<FeatureValueType> selectedFeatureTypes;
+  final int rowsPerPage;
 
   FeaturesDataSource(
-      this.data, this.bloc, this.searchTerm, this.selectedFeatureTypes) {
+      this.data, this.bloc, this.searchTerm, this.selectedFeatureTypes, this.rowsPerPage) {
     buildDataGridRows();
   }
 
