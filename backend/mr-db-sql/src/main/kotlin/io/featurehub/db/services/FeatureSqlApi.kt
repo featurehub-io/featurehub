@@ -217,8 +217,10 @@ class FeatureSqlApi @Inject constructor(
     existing: DbFeatureValue,
     lockChanged: Boolean
   ): Boolean {
+    val existingRetired = (existing.retired == true) // it can be null, which is also false
+
     // is it different from what it is now? if not, exit
-    if (featureValue.retired == existing.retired) {
+    if (featureValue.retired == existingRetired) {
       return false
     }
 
@@ -227,7 +229,7 @@ class FeatureSqlApi @Inject constructor(
       return false
     }
 
-    if (historical.isRetired == existing.retired) { // but historical is the same as current
+    if (historical.isRetired == existingRetired) { // but historical is the same as current
       if (existing.isLocked && !lockChanged) { // if its locked and we didn't change it to locked, we have to reject this change
         log.debug("feature value is locked, you cannot change it")
         throw LockedException() // not really? its just locked so you can't change it
