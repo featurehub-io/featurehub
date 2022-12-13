@@ -7,6 +7,7 @@ import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/features/feature-data-table/custom_column_sizer.dart';
 import 'package:open_admin_app/widgets/features/feature-data-table/features_data_source.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
+import 'package:open_admin_app/widgets/features/feature-data-table/handle_validation_messages.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
@@ -25,7 +26,6 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
   List<FeatureStatusFeatures> featuresList = [];
 
   String _searchTerm = '';
-  bool _loading = true;
   int _maxFeatures = 0;
   int _pageIndex = 0;
   int _rowsPerPage = 5;
@@ -39,22 +39,16 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
     bloc.appFeatureValuesStream.listen((features) {
-      if (mounted) {
-        if (features != null) {
+      if (mounted && features != null) {
           setState(() {
             _selectedEnvironmentList =
-                features.environments.map((e) => e.environmentName!).toList();
+                features!.environments.map((e) => e.environmentName!).toList();
             var featuresList = FeatureStatusFeatures(features);
+            _selectedFeatureTypes = bloc.selectedFeatureTypesByUser;
             _featuresDataSource = FeaturesDataSource(featuresList, widget.bloc,
                 _searchTerm, _selectedFeatureTypes, _rowsPerPage);
             _maxFeatures = features.maxFeatures;
-            _loading = false;
           });
-        } else {
-          setState(() {
-            _loading = true;
-          });
-        }
       }
     });
   }
@@ -62,12 +56,25 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
   @override
   Widget build(BuildContext context) {
     final _debouncer = Debouncer(milliseconds: 500);
-    if (!_loading) {
+    // if (!_loading) {
       List<GridColumn> gridColumnsList = [];
       return StreamBuilder<ApplicationFeatureValues?>(
           stream: widget.bloc.appFeatureValuesStream,
           builder: (context, snapshot) {
-            if (snapshot.hasData) {
+            if (snapshot.hasData &&
+                snapshot.data!.environments.isEmpty) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const <Widget>[
+                  NoEnvironmentMessage(),
+                ],
+              );
+            }
+            else if (snapshot.hasData &&
+                snapshot.data!.features.isEmpty) {
+              return const NoFeaturesMessage();
+            }
+            else if (snapshot.hasData) {
               gridColumnsList = snapshot.data!.environments
                   .map(
                     (entry) => GridColumn(
@@ -241,14 +248,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
               );
             }
           });
-    } else {
-      return const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 3,
-        ),
-      );
     }
-  }
 }
 
 FeatureValueType convertToFeatureValueType(String value) {

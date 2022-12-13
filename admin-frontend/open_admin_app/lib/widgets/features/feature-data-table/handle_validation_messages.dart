@@ -1,54 +1,10 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
-import 'package:open_admin_app/widgets/features/feature-data-table/features_data_table.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 
-final _log = Logger('FeaturesOverviewTable');
-
-class FeaturesOverviewTableWidget extends StatelessWidget {
-  const FeaturesOverviewTableWidget({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
-
-    try {
-      return StreamBuilder<FeatureStatusFeatures?>(
-          stream: bloc.appFeatureValues,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const SizedBox.shrink();
-            }
-
-            if (snapshot.hasData &&
-                snapshot.data!.sortedByNameEnvironmentIds.isEmpty) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const <Widget>[
-                  NoEnvironmentMessage(),
-                ],
-              );
-            }
-            if (snapshot.hasData &&
-                snapshot.data!.applicationFeatureValues.features.isEmpty) {
-              return const NoFeaturesMessage();
-            } else {
-              return FeaturesDataTable(bloc: bloc);
-            }
-            // else {
-            //   return const NoFeaturesMessage();
-            // }
-          });
-    } catch (e, s) {
-      _log.shout('Failed to render, $e\n$s\n');
-      return const SizedBox.shrink();
-    }
-  }
-}
 
 class NoEnvironmentMessage extends StatelessWidget {
   const NoEnvironmentMessage({

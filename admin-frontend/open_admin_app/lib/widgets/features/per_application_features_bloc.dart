@@ -56,14 +56,10 @@ class PerApplicationFeaturesBloc
   Stream<List<String>> get shownEnvironmentsStream =>
       _shownEnvironmentsSource.stream;
 
-  final _appFeatureValuesBS = BehaviorSubject<FeatureStatusFeatures?>();
-
-  Stream<FeatureStatusFeatures?> get appFeatureValues =>
-      _appFeatureValuesBS.stream;
 
   // feature-id, environments for feature
 
-  final _appFeatureValues = BehaviorSubject<ApplicationFeatureValues>();
+  final _appFeatureValues = BehaviorSubject<ApplicationFeatureValues?>();
 
   Stream<ApplicationFeatureValues?> get appFeatureValuesStream =>
       _appFeatureValues.stream;
@@ -97,16 +93,7 @@ class PerApplicationFeaturesBloc
   void setAppId(String? appId) {
     applicationId = appId;
     if (applicationId != null) {
-      _actuallyCallAddAppFeatureValuesToStream();
       getApplicationFeatureValuesData(applicationId!, "", [], rowsPerPage, 0);
-    } else {
-      List<EnvironmentFeatureValues> efv = [];
-      List<Feature> featureList = [];
-      _appFeatureValuesBS.add(FeatureStatusFeatures(ApplicationFeatureValues(
-          applicationId: "",
-          features: featureList,
-          environments: efv,
-          maxFeatures: 0)));
     }
   }
 
@@ -123,42 +110,6 @@ class PerApplicationFeaturesBloc
         ));
   }
 
-
-  void _sortApplicationFeatureValues(
-      ApplicationFeatureValues appFeatureValues) {
-//    appFeatureValues.environments.sort((a, b) => a.environmentName.compareTo(b.environmentName));
-    appFeatureValues.features.sort((a, b) => a.name.compareTo(b.name));
-  }
-
-  void _actuallyCallAddAppFeatureValuesToStream() async {
-    if (applicationId != null) {
-      final appId = applicationId!;
-      try {
-        final environments =
-            await _userStateServiceApi.getHiddenEnvironments(appId);
-        final appFeatureValues = await _featureServiceApi
-            .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(appId);
-        if (!_appFeatureValuesBS.isClosed) {
-          _sortApplicationFeatureValues(appFeatureValues);
-
-          if (environments.environmentIds.isEmpty) {
-            if (appFeatureValues.environments.isNotEmpty) {
-              environments.environmentIds = [
-                appFeatureValues.environments.first.environmentId!
-              ];
-              await _updateShownEnvironments(environments.environmentIds);
-            }
-          } else {
-            _shownEnvironmentsSource.add(environments.environmentIds);
-          }
-
-          _appFeatureValuesBS.add(FeatureStatusFeatures(appFeatureValues));
-        }
-      } catch (e, s) {
-        await mrClient.dialogError(e, s);
-      }
-    }
-  }
 
   Future<void> _updateShownEnvironments(List<String> environmentIds) async {
     final envs = await _userStateServiceApi.saveHiddenEnvironments(
@@ -190,8 +141,8 @@ class PerApplicationFeaturesBloc
   }
 
   void clearAppFeatureValuesStream() {
-    if (!_appFeatureValuesBS.isClosed) {
-      _appFeatureValuesBS.add(null);
+    if (!_appFeatureValues.isClosed) {
+      _appFeatureValues.add(null);
     }
   }
 
@@ -298,8 +249,8 @@ class PerApplicationFeaturesBloc
   @override
   void dispose() {
     _appSearchResultSource.close();
-    _appFeatureValuesBS.close();
     _featureMetadataStream.close();
+    _appFeatureValues.close();
     _currentPid.cancel();
     _currentAppId.cancel();
   }
