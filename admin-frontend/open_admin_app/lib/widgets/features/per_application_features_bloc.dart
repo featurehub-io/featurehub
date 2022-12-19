@@ -48,6 +48,7 @@ class PerApplicationFeaturesBloc
   int currentPageIndex = 0;
   int currentRowsPerPage = 5;
   List<FeatureValueType> selectedFeatureTypesByUser = [];
+  List<String> selectedEnvironmentNamesByUser = [];
 
   Stream<List<Application>?> get applications => _appSearchResultSource.stream;
 
@@ -90,10 +91,10 @@ class PerApplicationFeaturesBloc
   @override
   ManagementRepositoryClientBloc get mrClient => _mrClient;
 
-  void setAppId(String? appId) {
+  Future<void> setAppId(String? appId) async {
     applicationId = appId;
     if (applicationId != null) {
-      getApplicationFeatureValuesData(applicationId!, "", [], rowsPerPage, 0);
+      await getApplicationFeatureValuesData(applicationId!, "", [], rowsPerPage, 0);
     }
   }
 
@@ -111,33 +112,21 @@ class PerApplicationFeaturesBloc
   }
 
 
-  Future<void> _updateShownEnvironments(List<String> environmentIds) async {
+  Future<void> updateShownEnvironments(List<String> environmentNames) async {
+    List<String> envIds = [];
+    if (_appFeatureValues.value != null) {
+    envIds = _appFeatureValues.value!.environments.where((env) =>
+        environmentNames.contains(env.environmentName)).map((e) =>
+    e.environmentId!).toList();
+    }
+
     final envs = await _userStateServiceApi.saveHiddenEnvironments(
         applicationId!,
         HiddenEnvironments(
-          environmentIds: environmentIds,
+          environmentIds: envIds,
         ));
     _shownEnvironmentsSource.add(envs.environmentIds);
-  }
-
-  Future<void> addShownEnvironment(String envId) async {
-    final envs = <String>[..._shownEnvironmentsSource.value!];
-    envs.add(envId);
-    // ignore: unawaited_futures
-    _updateShownEnvironments(envs);
-  }
-
-  Future<void> removeShownEnvironment(String envId) async {
-    final envs = <String>[..._shownEnvironmentsSource.value!];
-
-    if (envs.remove(envId)) {
-      // ignore: unawaited_futures
-      _updateShownEnvironments(envs);
-    }
-  }
-
-  bool environmentVisible(String envId) {
-    return _shownEnvironmentsSource.value.contains(envId);
+    selectedEnvironmentNamesByUser = environmentNames;
   }
 
   void clearAppFeatureValuesStream() {
@@ -200,7 +189,6 @@ class PerApplicationFeaturesBloc
     await _featureServiceApi.createFeaturesForApplication(
         applicationId!, feature);
     unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
-    // addAppFeatureValuesToStream();
     _publishNewFeatureSource.add(feature);
   }
 
@@ -269,6 +257,7 @@ class PerApplicationFeaturesBloc
       filter: searchTerm,
       featureTypes: featureTypes,
     );
+      await getShownEnvironmentNames(allFeatureValues);
       _appFeatureValues.add(allFeatureValues);
       // set current values
       searchFieldTerm = searchTerm;
@@ -288,5 +277,16 @@ class PerApplicationFeaturesBloc
       featureTypes: selectedFeatureTypesByUser,
     );
     _appFeatureValues.add(allFeatureValues);
+  }
+
+  Future<void> getShownEnvironmentNames(ApplicationFeatureValues allFeatureValues) async {
+    HiddenEnvironments envs = await _userStateServiceApi.getHiddenEnvironments(applicationId!);
+    List<String> envNames = [];
+    if (envs.environmentIds.isNotEmpty) {
+      envNames = allFeatureValues.environments.where((env) =>
+          envs.environmentIds.contains(env.environmentId)).toList().map((e) =>
+      e.environmentName!).toList();
+    }
+    selectedEnvironmentNamesByUser = envNames;
   }
 }

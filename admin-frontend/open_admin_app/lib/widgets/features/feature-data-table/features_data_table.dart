@@ -42,7 +42,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
       if (mounted && features != null) {
           setState(() {
             _selectedEnvironmentList =
-                features!.environments.map((e) => e.environmentName!).toList();
+                bloc.selectedEnvironmentNamesByUser;
             var featuresList = FeatureStatusFeatures(features);
             _selectedFeatureTypes = bloc.selectedFeatureTypesByUser;
             _featuresDataSource = FeaturesDataSource(featuresList, widget.bloc,
@@ -116,6 +116,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                               setState(() {
                                 _selectedEnvironmentList = selectedValues;
                               });
+                              widget.bloc.updateShownEnvironments(selectedValues);
                             },
                             icon: const Icon(
                               Icons.visibility_sharp,
