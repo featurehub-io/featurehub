@@ -11,7 +11,6 @@ import 'package:open_admin_app/widgets/features/cell-view/strategy_tooltip.dart'
 import 'package:open_admin_app/widgets/features/cell-view/value_not_set_container.dart';
 import 'package:side_sheet/side_sheet.dart';
 
-
 class ValueCellHolder extends StatelessWidget {
   final FeatureValue? fv;
   final EnvironmentFeatureValues efv;
@@ -172,10 +171,10 @@ class _ValueCard extends StatelessWidget {
     var displayValue = _findDisplayValue();
     var lightTheme = Theme.of(context).brightness == Brightness.light;
     return Padding(
-      padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
+      padding: const EdgeInsets.only(top: strategyCardPadding),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 200, minWidth: 80),
-        height: 30,
+        height: strategyCardHeight,
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         decoration: BoxDecoration(
           color: lightTheme ? Colors.white70 : Colors.black12,

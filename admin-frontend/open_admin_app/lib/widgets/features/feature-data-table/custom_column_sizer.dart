@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/widgets/features/feature-data-table/features_data_source.dart';
+import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+
 
 class CustomColumnSizer extends ColumnSizer {
   @override
   double computeCellHeight(GridColumn column, DataGridRow row,
       Object? cellValue, TextStyle textStyle) {
     double cellInfoIconsHeight = 40;
-    double defaultCellHeight = 56;
+    double defaultCellHeight = strategyCardHeight + strategyCardPadding;
     double height = 0;
 
     if (column.columnName == 'env') {
@@ -23,6 +25,6 @@ class CustomColumnSizer extends ColumnSizer {
         }
       });
     }
-    return height + defaultCellHeight + cellInfoIconsHeight;
+    return height + defaultCellHeight + cellInfoIconsHeight + featureNameBoxExtraHeightForFeatureType;
   }
 }

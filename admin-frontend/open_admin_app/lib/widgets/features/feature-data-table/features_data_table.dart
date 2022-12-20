@@ -56,7 +56,6 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
   @override
   Widget build(BuildContext context) {
     final _debouncer = Debouncer(milliseconds: 500);
-    // if (!_loading) {
       List<GridColumn> gridColumnsList = [];
       return StreamBuilder<ApplicationFeatureValues?>(
           stream: widget.bloc.appFeatureValuesStream,
@@ -70,10 +69,6 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                 ],
               );
             }
-            else if (snapshot.hasData &&
-                snapshot.data!.features.isEmpty) {
-              return const NoFeaturesMessage();
-            }
             else if (snapshot.hasData) {
               gridColumnsList = snapshot.data!.environments
                   .map(
@@ -82,7 +77,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                       label: Container(
                           padding: const EdgeInsets.all(8.0),
                           alignment: Alignment.center,
-                          child: Text(entry.environmentName!)),
+                          child: Text(entry.environmentName! ,style: const TextStyle(fontWeight: FontWeight.bold))),
                       visible: _selectedEnvironmentList
                           .contains(entry.environmentName),
                     ),
@@ -103,8 +98,8 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Wrap(
-                    spacing: 4.0,
-                    runSpacing: 4.0,
+                    spacing: 8.0,
+                    runSpacing: 8.0,
                     children: [
                       Container(
                         constraints:
@@ -214,7 +209,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                               padding: const EdgeInsets.all(16.0),
                               alignment: Alignment.center,
                               child: const Text(
-                                "Features name",
+                                "Features", style: TextStyle(fontWeight: FontWeight.bold)
                               )),
                         ),
                         ...gridColumnsList,
