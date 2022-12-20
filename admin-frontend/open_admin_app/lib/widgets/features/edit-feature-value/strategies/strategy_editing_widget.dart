@@ -257,7 +257,6 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     final validationCheck = await widget.bloc.validationCheck(updatedStrategy);
 
     if (isValidationOk(validationCheck)) {
-      print("strategy checked");
       individualStrategyBloc!.rolloutStrategy
         ..name = _strategyName.text
         ..percentageFromText = _strategyPercentage.text;
@@ -296,7 +295,6 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     final validationCheck = await widget.bloc.validationCheck(newStrategy);
 
     if (isValidationOk(validationCheck)) {
-      print("strategy checked2");
       newStrategy.id = null;
       widget.bloc.addStrategy(newStrategy);
       Navigator.pop(context);

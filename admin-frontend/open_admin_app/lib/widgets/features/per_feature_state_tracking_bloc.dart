@@ -11,7 +11,6 @@ class PerFeatureStateTrackingBloc implements Bloc {
   final Feature feature;
   final String applicationId;
 
-  // final String applicationId;
   final ManagementRepositoryClientBloc mrClient;
   late FeatureServiceApi _featureServiceApi;
 
@@ -35,7 +34,6 @@ class PerFeatureStateTrackingBloc implements Bloc {
       : _featureStatusBloc = featureStatusBloc {
     _featureServiceApi = FeatureServiceApi(mrClient.apiClient);
     currentFeatureValue = featureValue;
-    print("Current FV" + currentFeatureValue.toString());
     addFeatureValueToStream(featureValue);
   }
 

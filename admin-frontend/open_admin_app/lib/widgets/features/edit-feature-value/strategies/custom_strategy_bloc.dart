@@ -42,7 +42,7 @@ class CustomStrategyBloc extends Bloc {
 
   void addStrategy(RolloutStrategy rs) {
     rs.id ??= _strategyBlocUUidGenerator.v4();
-    final strategies = _strategySource.value;
+    List<RolloutStrategy> strategies = _strategySource.value;
     strategies.add(rs);
     _strategySource.add(strategies);
   }
