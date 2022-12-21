@@ -195,7 +195,6 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                 title: isUpdate ? 'Update' : 'Create',
                 keepCase: true,
                 onPressed: (() async {
-                  print("widget update");
                   if (_formKey.currentState!.validate()) {
                     try {
                       if (isUpdate) {

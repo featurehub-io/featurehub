@@ -56,8 +56,10 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Feature: ${widget.feature.name}', style: Theme.of(context).textTheme.titleLarge,),
-                  Text('Environment: ${widget.environmentFeatureValue.environmentName}', style: Theme.of(context).textTheme.titleLarge),
+                  Text(widget.feature.name, style: Theme.of(context).textTheme.titleLarge,),
+                  const SizedBox(height: 8.0),
+                  Text('${widget.environmentFeatureValue.environmentName}'),
+                  const SizedBox(height: 16.0),
                   LockUnlockSwitch(
                     environmentFeatureValue: widget.environmentFeatureValue,
                     fvBloc: fvBloc,
@@ -110,13 +112,29 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                     strBloc: strategyBloc,
                   ),
                   const SizedBox(height: 24.0),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: OutlinedButton(onPressed: () {
-                      fvBloc.saveFeatureValueUpdates();
+                  ButtonBar(
+                    alignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(onPressed: () {
                       Navigator.pop(context); //close the side panel
-                    }, child: const Text("Save")),
-                  )
+                  }, child: const Text("Cancel")),
+                      ElevatedButton(onPressed: () async {
+                        try {
+                          await fvBloc.saveFeatureValueUpdates();
+                          Navigator.pop(context); //close the side panel
+                          fvBloc.mrClient.addSnackbar(Text(
+                              'Feature ${widget.feature.name.toUpperCase()} '
+                                  'in the environment ${widget
+                                  .environmentFeatureValue
+                                  .environmentName?.toUpperCase()} has been updated!'));
+                        }
+                        catch (e, s) {
+                          fvBloc.mrClient.dialogError(e, s);
+                        }
+                    },
+                    child: const Text("Save")
+                      ),
+                  ])
                 ],
               ),
             );

@@ -56,7 +56,6 @@ class PerFeatureStateTrackingBloc implements Bloc {
         currentFeatureValue!.valueString = replacementValue;
         break;
       case FeatureValueType.NUMBER:
-        print(currentFeatureValue);
         currentFeatureValue!.valueNumber = replacementValue;
         break;
       case FeatureValueType.JSON:
