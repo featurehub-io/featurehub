@@ -7,6 +7,8 @@ import io.featurehub.mr.model.SortOrder;
 import java.util.List;
 import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 /**
  * This exposes the functionality of the Database version of the Portfolio API. It assumes
  * that
@@ -23,7 +25,7 @@ public interface PortfolioApi {
    */
   @NotNull List<Portfolio> findPortfolios(String filter, SortOrder ordering, Opts opts, Person currentPerson);
 
-  Portfolio createPortfolio(Portfolio portfolio, Opts opts, Person createdBy) throws DuplicatePortfolioException;
+  Portfolio createPortfolio(Portfolio portfolio, Opts opts, @NotNull Person createdBy) throws DuplicatePortfolioException;
   Portfolio getPortfolio(UUID id, Opts opts, Person currentPerson);
   Portfolio updatePortfolio(Portfolio portfolio, Opts opts) throws DuplicatePortfolioException, OptimisticLockingException;
   void deletePortfolio(UUID id);

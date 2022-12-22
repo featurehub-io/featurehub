@@ -59,10 +59,10 @@ public class ApplyFeature {
           if (percentage <= (useBasePercentage + rsi.getPercentage())) {
             if (!rsi.getAttributes().isEmpty()) {
               if (matchAttributes(cac, rsi)) {
-                return new Applied(true, rsi.getValue());
+                return new Applied(true, rsi.getId(), rsi.getValue());
               }
             } else {
-              return new Applied(true, rsi.getValue());
+              return new Applied(true, rsi.getId(), rsi.getValue());
             }
           }
 
@@ -75,13 +75,13 @@ public class ApplyFeature {
         if ((rsi.getPercentage() == null || rsi.getPercentage() == 0) &&
           !rsi.getAttributes().isEmpty()) {
           if (matchAttributes(cac, rsi)) {
-            return new Applied(true, rsi.getValue());
+            return new Applied(true, rsi.getId(), rsi.getValue());
           }
         }
       }
     }
 
-    return new Applied(false, null);
+    return Applied.noMatch();
   }
 
   // This applies the rules as an AND. If at any point it fails it jumps out.

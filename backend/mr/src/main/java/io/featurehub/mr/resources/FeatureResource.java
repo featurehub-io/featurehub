@@ -133,7 +133,7 @@ public class FeatureResource implements FeatureServiceDelegate {
       log.warn("User attempted to update feature they had no access to", noAppropriateRole);
       throw new BadRequestException(noAppropriateRole);
     } catch (RolloutStrategyValidator.InvalidStrategyCombination bad) {
-      throw new WebApplicationException(Response.status(422).entity(bad.failure).build()); // can't do anything with it
+      throw new WebApplicationException(Response.status(422).entity(bad.getFailure()).build()); // can't do anything with it
     }
 
     final List<FeatureEnvironment> featureValues =

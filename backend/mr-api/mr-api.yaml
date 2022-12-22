@@ -2749,6 +2749,7 @@ components:
       type: string
       enum:
         - percentage_adds_over_100_percent
+        - boolean_has_no_value
     ResetApiKeyType:
       type: string
       enum:

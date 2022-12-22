@@ -56,5 +56,5 @@ interface GroupApi {
   ): Group?
 
   fun findGroups(portfolioId: UUID, filter: String?, ordering: SortOrder?, opts: Opts): List<Group>
-  fun updateAdminGroupForPortfolio(id: UUID, name: String)
+  fun updateAdminGroupForPortfolio(portfolioId: UUID, name: String)
 }

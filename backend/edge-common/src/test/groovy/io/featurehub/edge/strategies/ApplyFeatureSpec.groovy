@@ -27,6 +27,7 @@ class ApplyFeatureSpec extends Specification {
     given: "we have rollout strategies set"
       def rollout = [
         new FeatureRolloutStrategy()
+          .id("1234")
           .percentage(underPercent)
           .value("blue")
       ]
@@ -108,6 +109,7 @@ class ApplyFeatureSpec extends Specification {
     given: "we have a strategy set"
       def rollout = [
         new FeatureRolloutStrategy().value("sausage")
+          .id("1234")
           .percentage(0)
           .attributes([
             new FeatureRolloutStrategyAttribute()

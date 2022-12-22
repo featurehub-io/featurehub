@@ -24,6 +24,7 @@ import io.featurehub.db.services.DbArchiveStrategy;
 import io.featurehub.db.services.EnvironmentSqlApi;
 import io.featurehub.db.services.FeatureSqlApi;
 import io.featurehub.db.services.GroupSqlApi;
+import io.featurehub.db.services.InternalFeatureSqlApi;
 import io.featurehub.db.services.InternalGroupSqlApi;
 import io.featurehub.db.services.OrganizationSqlApi;
 import io.featurehub.db.services.PersonSqlApi;
@@ -33,8 +34,6 @@ import io.featurehub.db.services.ServiceAccountSqlApi;
 import io.featurehub.db.services.SetupSqlApi;
 import io.featurehub.db.services.UserStateSqlApi;
 import io.featurehub.db.services.strategies.RolloutStrategyValidationUtils;
-import io.featurehub.db.services.strategies.StrategyDiffer;
-import io.featurehub.db.services.strategies.StrategyDifferUtils;
 import jakarta.inject.Singleton;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
@@ -51,11 +50,10 @@ public class ApiToSqlApiBinder extends AbstractBinder {
     bind(ServiceAccountSqlApi.class).to(ServiceAccountApi.class).in(Singleton.class);
     bind(ApplicationSqlApi.class).to(ApplicationApi.class).in(Singleton.class);
     bind(EnvironmentSqlApi.class).to(EnvironmentApi.class).in(Singleton.class);
-    bind(FeatureSqlApi.class).to(FeatureApi.class).to(FeatureUpdateBySDKApi.class).in(Singleton.class);
+    bind(FeatureSqlApi.class).to(InternalFeatureSqlApi.class).to(FeatureApi.class).to(FeatureUpdateBySDKApi.class).in(Singleton.class);
     bind(DbArchiveStrategy.class).to(ArchiveStrategy.class).in(Singleton.class);
     bind(UserStateSqlApi.class).to(UserStateApi.class).in(Singleton.class);
     bind(RolloutStrategyValidationUtils.class).to(RolloutStrategyValidator.class).in(Singleton.class);
-    bind(StrategyDifferUtils.class).to(StrategyDiffer.class).in(Singleton.class);
     bind(RolloutStrategySqlApi.class).to(RolloutStrategyApi.class).in(Singleton.class);
   }
 }

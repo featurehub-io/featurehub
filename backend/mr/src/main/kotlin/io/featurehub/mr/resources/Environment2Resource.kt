@@ -38,7 +38,7 @@ class Environment2Resource @Inject constructor(
           eid, updateEnvironment, Opts().add(
             FillOpts.Acls,
             holder.includeAcls
-          ).add(FillOpts.Features, holder!!.includeFeatures).add(FillOpts.Details, holder!!.includeDetails)
+          ).add(FillOpts.Features, holder.includeFeatures).add(FillOpts.Details, holder.includeDetails)
         )
       } catch (e: OptimisticLockingException) {
         throw WebApplicationException(422)

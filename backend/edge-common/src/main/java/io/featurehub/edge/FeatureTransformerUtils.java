@@ -71,6 +71,8 @@ public class FeatureTransformerUtils implements FeatureTransformer {
               applied.isMatched()
                   ? applied.getValue()
                   : (rf.getValue() == null ? null : rf.getValue().getValue()));
+          // return
+          fs.v(applied.getStrategyId());
         }
       }
     }

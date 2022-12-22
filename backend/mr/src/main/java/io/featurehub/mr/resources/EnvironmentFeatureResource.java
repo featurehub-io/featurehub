@@ -57,7 +57,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
     } catch (RolloutStrategyValidator.InvalidStrategyCombination bad) {
-      throw new WebApplicationException(Response.status(422).entity(bad.failure).build()); // can't do anything with it
+      throw new WebApplicationException(Response.status(422).entity(bad.getFailure()).build()); // can't do anything with it
     }
 
     if (featureForEnvironment == null) {
@@ -122,7 +122,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
     } catch (RolloutStrategyValidator.InvalidStrategyCombination bad) {
-      throw new WebApplicationException(Response.status(422).entity(bad.failure).build()); // can't do anything with it
+      throw new WebApplicationException(Response.status(422).entity(bad.getFailure()).build()); // can't do anything with it
     }
 
     if (updated == null) {
@@ -143,7 +143,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
     } catch (RolloutStrategyValidator.InvalidStrategyCombination bad) {
-      throw new WebApplicationException(Response.status(422).entity(bad.failure).build()); // can't do anything with it
+      throw new WebApplicationException(Response.status(422).entity(bad.getFailure()).build()); // can't do anything with it
     }
   }
 }
