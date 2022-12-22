@@ -4,7 +4,6 @@ import 'package:open_admin_app/widgets/features/per_application_features_bloc.da
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:uuid/uuid.dart';
 
 class CustomStrategyBloc extends Bloc {
   final EnvironmentFeatureValues environmentFeatureValue;
@@ -38,10 +37,16 @@ class CustomStrategyBloc extends Bloc {
 
 
   void addStrategy(RolloutStrategy rs) {
-    rs.id ??= makeStrategyId(existing: _strategySource.value!);
-    final strategies = _strategySource.value!;
-    strategies.add(rs);
-    _strategySource.add(strategies);
+    rs.id ??= makeStrategyId(existing: _strategySource.value);
+    List<RolloutStrategy> strategies = _strategySource.value;
+    if(strategies.isNotEmpty) {
+      strategies.add(rs);
+      _strategySource.add(strategies);
+    }
+    else {
+      _strategySource.add([rs]);
+      strategies = [rs];
+    }
     fvBloc.updateFeatureValueStrategies(strategies);
   }
 
@@ -53,14 +58,14 @@ class CustomStrategyBloc extends Bloc {
   void removeStrategy(RolloutStrategy rs) {
     // tag it to ensure it has a number so we can remove it
     rs.id ??= makeStrategyId();
-    final strategies = _strategySource.value!;
+    final strategies = _strategySource.value;
     strategies.removeWhere((e) => e.id == rs.id);
     _strategySource.add(strategies);
   }
 
   void addStrategyAttribute() {
     final rsa = RolloutStrategyAttribute();
-    rsa.id = makeStrategyId(existing: _strategySource.value!);
+    rsa.id = makeStrategyId(existing: _strategySource.value);
     final attributes = _strategySource.value.last.attributes;
     attributes.add(rsa);
     _rolloutStrategyAttributeList.add(attributes);
@@ -108,6 +113,6 @@ class CustomStrategyBloc extends Bloc {
   }
 
   uniqueStrategyId() {
-    return makeStrategyId(existing: _strategySource.value!);
+    return makeStrategyId(existing: _strategySource.value);
   }
 }
