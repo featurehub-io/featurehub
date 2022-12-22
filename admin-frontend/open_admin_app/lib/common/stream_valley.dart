@@ -73,7 +73,7 @@ class StreamValley {
   final _routeCheckPortfolioSource = BehaviorSubject<Portfolio?>();
 
   final _currentAppSource = BehaviorSubject.seeded(nullApplication);
-  String? get currentAppId => _currentAppSource.value!.application.id;
+  String? get currentAppId => _currentAppSource.value.application.id;
   Stream<String?> get currentAppIdStream => _currentAppSource.stream
       .map((app) => app.isNull() ? null : app.application.id);
   final _currentPortfolioApplicationsSource =
@@ -91,7 +91,7 @@ class StreamValley {
   Stream<List<Portfolio>> get portfolioListStream => _portfoliosSource.stream;
   Stream<ReleasedPortfolio> get currentPortfolioStream =>
       _currentPortfolioSource.stream;
-  ReleasedPortfolio get currentPortfolio => _currentPortfolioSource.value!;
+  ReleasedPortfolio get currentPortfolio => _currentPortfolioSource.value;
 
   String? get currentPortfolioId => currentPortfolio.portfolio.id;
 
@@ -160,7 +160,7 @@ class StreamValley {
   }
 
   void _refreshApplicationIdChanged() {
-    if (!_currentAppSource.value!.isNull()) {
+    if (!_currentAppSource.value.isNull()) {
       if (_currentApplicationFeaturesSource.hasListener) {
         getCurrentApplicationFeatures();
       }
@@ -179,10 +179,10 @@ class StreamValley {
       _routeCheckPortfolioSource.add(null); // no portfolio
     } else {
       Portfolio? found =
-          _portfoliosSource.value?.firstWhereOrNull((p) => p.id == value);
+          _portfoliosSource.value.firstWhereOrNull((p) => p.id == value);
       if (found == null) {
         _log.fine("attempting to swap to portfolio that doesnt exist $value");
-      } else if (_currentPortfolioSource.value?.portfolio.id != value) {
+      } else if (_currentPortfolioSource.value.portfolio.id != value) {
         _log.fine('Accepted portfolio id change, triggering');
         _currentPortfolioSource.add(ReleasedPortfolio(
             portfolio: found,
@@ -198,10 +198,10 @@ class StreamValley {
 
   Stream<ReleasedApplication> get currentAppStream => _currentAppSource.stream;
 
-  ReleasedApplication get currentApp => _currentAppSource.value!;
+  ReleasedApplication get currentApp => _currentAppSource.value;
 
   set currentAppId(String? value) {
-    if (value != _currentAppSource.value!.application.id) {
+    if (value != _currentAppSource.value.application.id) {
       if (value == null) {
         _currentAppSource.add(nullApplication);
       } else {
@@ -338,7 +338,7 @@ class StreamValley {
       }
     }
 
-    return _currentPortfolioGroupsSource.value!;
+    return _currentPortfolioGroupsSource.value;
   }
 
   String? _lastPortfolioIdServiceAccountChecked;
@@ -364,7 +364,7 @@ class StreamValley {
   Future<List<Environment>> getCurrentApplicationEnvironments() async {
     var envList = <Environment>[];
 
-    if (!_currentAppSource.value!.isNull()) {
+    if (!_currentAppSource.value.isNull()) {
       envList = await environmentServiceApi
           .findEnvironments(currentAppId!, includeAcls: true)
           .catchError((e, s) {
@@ -431,7 +431,7 @@ class StreamValley {
 
   bool containsPid(String? pid) {
     if (pid == null) return false;
-    return _portfoliosSource.value?.any((p) => p.id == pid) ?? false;
+    return _portfoliosSource.value.any((p) => p.id == pid);
   }
 
   /*

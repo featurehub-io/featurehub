@@ -40,11 +40,18 @@ class CustomStrategyBloc extends Bloc {
   }
 
 
-  void addStrategy(RolloutStrategy rs) {
+  addStrategy(RolloutStrategy rs) {
     rs.id ??= _strategyBlocUUidGenerator.v4();
     List<RolloutStrategy> strategies = _strategySource.value;
-    strategies.add(rs);
-    _strategySource.add(strategies);
+    if(strategies.isNotEmpty) {
+      strategies.add(rs);
+      _strategySource.add(strategies);
+    }
+    else {
+      _strategySource.add([rs]);
+      strategies = [rs];
+    }
+    fvBloc.updateFeatureValueStrategies(strategies);
   }
 
   void updateStrategy() {

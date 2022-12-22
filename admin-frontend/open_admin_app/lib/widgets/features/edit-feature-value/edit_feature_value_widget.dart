@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
-import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/feature_value_updated_by.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/lock_unlock_switch.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/retire_feature_value_checkbox_widget.dart';
@@ -13,7 +12,6 @@ class EditFeatureValueWidget extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final PerApplicationFeaturesBloc perApplicationFeaturesBloc;
   final Feature feature;
-  final ApplicationFeatureValues afv;
   final FeatureValue fv;
 
   const EditFeatureValueWidget(
@@ -23,7 +21,6 @@ class EditFeatureValueWidget extends StatefulWidget {
       required this.environmentFeatureValue,
       required this.perApplicationFeaturesBloc,
       required this.feature,
-      required this.afv,
         })
       : super(key: key);
 
@@ -36,13 +33,10 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
 
   @override
   Widget build(BuildContext context) {
-    var fvBloc = PerFeatureStateTrackingBloc(
-        widget.afv.applicationId,
+    var fvBloc = widget.perApplicationFeaturesBloc.perFeatureStateTrackingBloc(
         widget.feature,
-        widget.perApplicationFeaturesBloc.mrClient,
         widget.fv,
-        widget.perApplicationFeaturesBloc,
-        widget.afv);
+       );
     final strategyBloc =
         fvBloc.matchingCustomStrategyBloc(widget.environmentFeatureValue);
 
@@ -122,14 +116,14 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                         try {
                           await fvBloc.saveFeatureValueUpdates();
                           Navigator.pop(context); //close the side panel
-                          fvBloc.mrClient.addSnackbar(Text(
+                          widget.perApplicationFeaturesBloc.mrClient.addSnackbar(Text(
                               'Feature ${widget.feature.name.toUpperCase()} '
                                   'in the environment ${widget
                                   .environmentFeatureValue
                                   .environmentName?.toUpperCase()} has been updated!'));
                         }
                         catch (e, s) {
-                          fvBloc.mrClient.dialogError(e, s);
+                          widget.perApplicationFeaturesBloc.mrClient.dialogError(e, s);
                         }
                     },
                     child: const Text("Save")

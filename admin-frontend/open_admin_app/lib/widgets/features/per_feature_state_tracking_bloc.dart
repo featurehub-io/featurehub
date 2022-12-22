@@ -1,6 +1,5 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:rxdart/rxdart.dart';
@@ -11,7 +10,6 @@ class PerFeatureStateTrackingBloc implements Bloc {
   final Feature feature;
   final String applicationId;
 
-  final ManagementRepositoryClientBloc mrClient;
   late FeatureServiceApi _featureServiceApi;
 
   final _newFeatureValues = <String, FeatureValue>{};
@@ -27,13 +25,12 @@ class PerFeatureStateTrackingBloc implements Bloc {
   PerFeatureStateTrackingBloc(
       this.applicationId,
       this.feature,
-      this.mrClient,
       FeatureValue featureValue,
       PerApplicationFeaturesBloc featureStatusBloc,
       this.applicationFeatureValues)
       : _featureStatusBloc = featureStatusBloc {
-    _featureServiceApi = FeatureServiceApi(mrClient.apiClient);
-    currentFeatureValue = featureValue;
+    _featureServiceApi = FeatureServiceApi(featureStatusBloc.mrClient.apiClient);
+    currentFeatureValue = FeatureValue.fromJson(featureValue.toJson()); // keeping original featureValue cached for resets
     addFeatureValueToStream(featureValue);
   }
 
@@ -44,6 +41,11 @@ class PerFeatureStateTrackingBloc implements Bloc {
 
   void updateFeatureValueRetiredStatus(bool? retired) {
     currentFeatureValue!.retired = retired;
+    addFeatureValueToStream(currentFeatureValue!);
+  }
+
+  void updateFeatureValueStrategies(List<RolloutStrategy> strategies) {
+    currentFeatureValue!.rolloutStrategies = strategies;
     addFeatureValueToStream(currentFeatureValue!);
   }
 
@@ -104,6 +106,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
     for (var b in _customStrategyBlocs.values) {
       b.dispose();
     }
+    _currentFv.close();
   }
 
   saveFeatureValueUpdates() async {

@@ -67,7 +67,6 @@ class _ValueContainer extends StatelessWidget {
                 environmentFeatureValue: efv,
                 perApplicationFeaturesBloc: bloc,
                 feature: feature,
-                afv: afv,
             ),
             width: MediaQuery.of(context).size.width * 0.3,
             context: context);

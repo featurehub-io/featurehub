@@ -21,7 +21,7 @@ class IndividualStrategyBloc extends Bloc {
       _rolloutStrategyAttributeSource.stream;
 
   List<RolloutStrategyAttribute> get currentAttributes =>
-      _rolloutStrategyAttributeSource.value!;
+      _rolloutStrategyAttributeSource.value;
 
   IndividualStrategyBloc(this.environmentFeatureValue, this.rolloutStrategy)
       : _violationSource =

@@ -4,6 +4,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/mr_client_aware.dart';
+import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:rxdart/rxdart.dart' hide Notification;
 
 import 'feature_dashboard_constants.dart';
@@ -288,5 +289,14 @@ class PerApplicationFeaturesBloc
       e.environmentName!).toList();
     }
     selectedEnvironmentNamesByUser = envNames;
+  }
+
+  PerFeatureStateTrackingBloc perFeatureStateTrackingBloc(Feature feature, FeatureValue featureValue) {
+    return PerFeatureStateTrackingBloc(
+        applicationId!,
+        feature,
+        featureValue,
+        this,
+        _appFeatureValues.value!);
   }
 }

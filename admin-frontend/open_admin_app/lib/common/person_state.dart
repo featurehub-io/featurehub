@@ -17,13 +17,13 @@ class PersonState {
   Stream<Person> get personStream => _personSource.stream;
 
   String? lastOrgId;
-  Person get person => _personSource.value!;
+  Person get person => _personSource.value;
   bool get isLoggedIn => _personSource.value != _unauthenticatedPerson;
 
   bool _isUserIsSuperAdmin = false;
 
   bool get userIsSuperAdmin => _isUserIsSuperAdmin;
-  List<Group> get groupList => _personSource.value!.groups;
+  List<Group> get groupList => _personSource.value.groups;
 
   bool _userIsAnyPortfolioOrSuperAdmin = false;
   bool get userIsAnyPortfolioOrSuperAdmin => _userIsAnyPortfolioOrSuperAdmin;

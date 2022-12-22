@@ -31,7 +31,7 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
 
     final valueSource = widget.rolloutStrategy != null
         ? widget.rolloutStrategy!.value
-        : widget.strBloc.featureValue.valueNumber;
+        : widget.strBloc.fvBloc.currentFeatureValue?.valueNumber;
     tec.text = (valueSource ?? '').toString();
   }
 
