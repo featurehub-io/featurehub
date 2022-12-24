@@ -759,7 +759,7 @@ class FeatureSqlApi @Inject constructor(
               featureValuesResult[envId] = fv
             }
           }
-      }
+        }
     }
 
     // they have at least one environment or they are an admin
@@ -981,9 +981,7 @@ class FeatureSqlApi @Inject constructor(
             dbPerson
           ).findList()
           .onEach { acl: DbAcl -> environmentOrderingMap[acl.environment.id] = acl.environment }
-          .mapNotNull { acl: DbAcl -> environmentToFeatureValues(acl, personAdmin) }
-          .map { acl: DbAcl -> environmentToFeatureValues(acl, personAdmin, featureKeys) }
-          .filterNotNull()
+          .mapNotNull { acl: DbAcl -> environmentToFeatureValues(acl, personAdmin, featureKeys) }
           .filter { efv: EnvironmentFeatureValues? ->
             efv!!.roles!!.isNotEmpty()
           }

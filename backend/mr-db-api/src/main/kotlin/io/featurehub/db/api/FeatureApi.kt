@@ -20,7 +20,12 @@ interface FeatureApi {
 
   fun findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
     appId: UUID,
-    current: Person
+    current: Person,
+    filter: String?,
+    maxFeatures: Int?,
+    startingPage: Int?,
+    featureValueTypes: List<FeatureValueType>?,
+    sortOrder: SortOrder?
   ): ApplicationFeatureValues?
 
   class NoAppropriateRole : Exception()
