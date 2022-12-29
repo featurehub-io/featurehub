@@ -17,12 +17,12 @@ dependencies:
   flutter:
     sdk: flutter
 
-  rxdart: ^0.26.0
+  rxdart: ^0.27.0
   bloc_provider: ^0.8.0
   logging: ^1.0.1
   mrapi:
     path: ../app_mr_layer
-  openapi_dart_common: ^4.1.0
+  openapi_dart_common: ^4.1.2
   uuid: ^3.0.4
   zxcvbn: ^1.0.0
   universal_html: ^2.0.8
@@ -41,6 +41,11 @@ dependencies:
   auto_size_text: ^3.0.0-nullsafety.0
   collection: ^1.15.0
   advanced_datatable: ^0.0.8
+  multi_select_flutter: ^4.1.3
+  syncfusion_flutter_datagrid: ^20.3.52
+  multiselect: ^0.0.7
+  side_sheet: ^1.0.3
+  async: ^2.9.0
 
 dev_dependencies:
   flutter_lints: ^1.0.4

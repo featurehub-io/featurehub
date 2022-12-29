@@ -21,7 +21,7 @@ interface EnvironmentApi {
 
   @Throws(DuplicateEnvironmentException::class, InvalidEnvironmentChangeException::class)
   fun create(env: Environment?, app: Application?, whoCreated: Person?): Environment?
-  fun search(appId: UUID?, filter: String?, order: SortOrder?, opts: Opts?, current: Person?): List<Environment?>?
+    fun search(appId: UUID?, filter: String?, order: EnvironmentSortOrder?, opts: Opts?, current: Person?): List<Environment?>?
   fun findPortfolio(envId: UUID?): Portfolio?
   fun unpublishEnvironments(appId: UUID, environments: List<UUID>?): Int
   fun updateEnvironment(eid: UUID, env: UpdateEnvironment, opts: Opts): Environment?

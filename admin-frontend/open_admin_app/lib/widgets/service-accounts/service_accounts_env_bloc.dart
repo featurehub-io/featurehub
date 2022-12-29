@@ -59,7 +59,7 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
     return _serviceAccountServiceApi
         .resetApiKey(id, apiKeyType: keyType)
         .then((sa) {
-      _envUpdate(_serviceAccountEnvironmentsSource.value!.environments);
+      _envUpdate(_serviceAccountEnvironmentsSource.value.environments);
       return true;
     })
         .catchError((e, s) {

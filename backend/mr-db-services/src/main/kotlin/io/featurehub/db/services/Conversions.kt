@@ -25,6 +25,8 @@ interface Conversions {
   fun byApplication(id: UUID?): DbApplication?
   fun byGroup(gid: UUID?, opts: Opts?): DbGroup?
   fun personIsNotSuperAdmin(person: DbPerson?): Boolean
+
+  fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean
   fun personIsSuperAdmin(person: DbPerson?): Boolean
   fun getSuperuserGroup(opts: Opts?): Group?
   fun limitLength(s: String?, len: Int): String?
@@ -86,7 +88,6 @@ interface Conversions {
   fun toFeatureValue(feature: DbApplicationFeature?, value: DbFeatureValue?): FeatureValue?
   fun toFeatureValue(feature: DbApplicationFeature?, value: DbFeatureValue?, opts: Opts?): FeatureValue?
   fun toRolloutStrategy(rs: DbRolloutStrategy?, opts: Opts?): RolloutStrategyInfo?
-  fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean
 
   companion object {
     const val archivePrefix = ":\\:\\:"

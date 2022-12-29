@@ -1434,6 +1434,36 @@ paths:
           type: string
           format: uuid
         required: true
+      - name: filter
+        description: "A filter to apply to the features - partial match of key or description"
+        in: query
+        schema:
+          type: string
+        required: false
+      - name: max
+        description: "The maximum number of features to get for this page"
+        in: query
+        schema:
+          type: integer
+        required: false
+      - name: page
+        description: "The page number of the results. 0 indexed."
+        in: query
+        schema:
+          type: integer
+        required: false
+      - name: featureTypes
+        in: query
+        schema:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureValueType"
+        required: false
+      - name: sortOrder
+        in: query
+        schema:
+          $ref: "#/components/schemas/SortOrder"
+        required: false
     get:
       security:
         - bearerAuth: [ ]
@@ -1517,7 +1547,7 @@ paths:
           in: query
           description: "how to order the results"
           schema:
-            $ref: "#/components/schemas/SortOrder"
+            $ref: "#/components/schemas/EnvironmentSortOrder"
         - name: filter
           in: query
           description: "What to filter the results by"
@@ -2741,6 +2771,11 @@ components:
           items:
             $ref: "#/components/schemas/ServiceAccount"
     ApplicationFeatureValues:
+      required:
+        - applicationId
+        - features
+        - environments
+        - maxFeatures
       properties:
         applicationId:
           type: string
@@ -2753,6 +2788,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/EnvironmentFeatureValues"
+        maxFeatures:
+          type: integer
     EnvironmentFeatureValues:
       properties:
         environmentId:
@@ -2890,6 +2927,12 @@ components:
         whenUpdated:
           type: string
           format: date-time
+    EnvironmentSortOrder:
+      type: string
+      enum:
+        - ASC
+        - DESC
+        - PRIORITY
     SortOrder:
       type: string
       enum:

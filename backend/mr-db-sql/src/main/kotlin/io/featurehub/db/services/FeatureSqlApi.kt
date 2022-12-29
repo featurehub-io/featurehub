@@ -21,6 +21,7 @@ import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.function.Function
+import kotlin.math.max
 
 interface InternalFeatureSqlApi {
   fun saveFeatureValue(featureValue: DbFeatureValue)
@@ -32,6 +33,8 @@ class FeatureSqlApi @Inject constructor(
 ) : FeatureApi, FeatureUpdateBySDKApi, InternalFeatureSqlApi {
   @ConfigKey("auditing.enable")
   var auditingEnabled: Boolean? = false
+  @ConfigKey("features.max-per-page")
+  private var maxPagination: Int? = 10000
 
   init {
     DeclaredConfigResolver.resolve(this)
@@ -756,7 +759,7 @@ class FeatureSqlApi @Inject constructor(
               featureValuesResult[envId] = fv
             }
           }
-      }
+        }
     }
 
     // they have at least one environment or they are an admin
@@ -877,13 +880,14 @@ class FeatureSqlApi @Inject constructor(
     }
   }
 
-  private fun environmentToFeatureValues(acl: DbAcl, personIsAdmin: Boolean): EnvironmentFeatureValues? {
+  private fun environmentToFeatureValues(acl: DbAcl, personIsAdmin: Boolean, featureKeys: List<String>): EnvironmentFeatureValues? {
     val roles: List<RoleType> = if (personIsAdmin) {
       listOf(*RoleType.values())
     } else {
       convertUtils.splitEnvironmentRoles(acl.roles)
     }
 
+    // we are never called where the environment is archived
     return if (roles.isEmpty()) {
       null
     } else EnvironmentFeatureValues()
@@ -891,22 +895,81 @@ class FeatureSqlApi @Inject constructor(
       .environmentName(acl.environment.name)
       .priorEnvironmentId(if (acl.environment.priorEnvironment == null) null else acl.environment.priorEnvironment.id)
       .roles(roles)
-      .features(
-        QDbFeatureValue().environment.eq(acl.environment).environment.whenArchived.isNull.feature.whenArchived.isNull
-          .findList().map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs) })
+      .features(featuresForEnvironment(acl.environment, featureKeys))
   }
 
+  private fun featuresForEnvironment(environment: DbEnvironment, featureKeys: List<String>): List<FeatureValue> {
+    val featureValueFinder = QDbFeatureValue()
+      .environment.eq(environment)
+      .environment.whenArchived.isNull
+      .feature.whenArchived.isNull
+      .feature.key.`in`(featureKeys)
+
+    return featureValueFinder.findList().map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs)!! }
+  }
+
+  /*
+   * This is the main call that the "features" page users to get data back
+   */
   override fun findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
     appId: UUID,
-    current: Person
+    current: Person,
+    filter: String?,
+    maxFeatures: Int?,
+    startingPage: Int?,
+    featureValueTypes: List<FeatureValueType>?,
+    sortOrder: SortOrder?
   ): ApplicationFeatureValues? {
     val dbPerson = convertUtils.byPerson(current)
     val app = convertUtils.byApplication(appId)
     if (app != null && dbPerson != null && app.whenArchived == null && dbPerson.whenArchived == null) {
+      // they don't have permission, so deny them.
+      if (!convertUtils.isPersonMemberOfPortfolioGroup(app.portfolio.id, dbPerson.id)) {
+        return null
+      }
+
+      val max = if (maxFeatures != null) max(maxFeatures, 1).coerceAtMost(maxPagination!!) else maxPagination!!
+      val page = if (startingPage != null && startingPage >= 0) startingPage else 0
+      val sort = sortOrder ?: SortOrder.ASC
       val empty = Opts.empty()
+
+      var appFeatureQuery = QDbApplicationFeature()
+        .whenArchived.isNull
+        .parentApplication.eq(app)
+
+      if (sort == SortOrder.ASC) {
+        appFeatureQuery = appFeatureQuery.order().key.asc()
+      } else {
+        appFeatureQuery = appFeatureQuery.order().key.desc()
+      }
+
+      if (filter != null) {
+        appFeatureQuery = appFeatureQuery.or().name.icontains(filter).key.icontains(filter).endOr()
+      }
+
+      if (featureValueTypes?.isNotEmpty() == true) {
+        appFeatureQuery = appFeatureQuery.valueType.`in`(featureValueTypes)
+      }
+
+      // this does not work with findFutureCount for some reason
+      val totalFeatureCount = appFeatureQuery.findCount()
+
+      val limitingAppFeatureQuery = appFeatureQuery.setFirstRow(page * max)
+        .setMaxRows(max)
+
+      val features = limitingAppFeatureQuery
+        .findList()
+        .map { f: DbApplicationFeature? -> convertUtils.toApplicationFeature(f, empty)!! }
+
+      val featureKeys = features.map { f -> f.key!! }
+
+      // because we need to know what features there are on what pages, we grab the application features we are going
+      // to use *first*
       val personAdmin = convertUtils.isPersonApplicationAdmin(dbPerson, app)
       val environmentOrderingMap: MutableMap<UUID, DbEnvironment> = HashMap()
-      // the requirement is that we only send back environments they have at least READ access to
+
+      // the requirement is that we only send back environments they have at least READ access to, so
+      // this finds the environments their group has access to
       val permEnvs =
         QDbAcl()
           .environment.whenArchived.isNull
@@ -918,12 +981,16 @@ class FeatureSqlApi @Inject constructor(
             dbPerson
           ).findList()
           .onEach { acl: DbAcl -> environmentOrderingMap[acl.environment.id] = acl.environment }
-          .mapNotNull { acl: DbAcl -> environmentToFeatureValues(acl, personAdmin) }
+          .mapNotNull { acl: DbAcl -> environmentToFeatureValues(acl, personAdmin, featureKeys) }
           .filter { efv: EnvironmentFeatureValues? ->
             efv!!.roles!!.isNotEmpty()
           }
 
-//      Set<String> envs = permEnvs.stream().map(EnvironmentFeatureValues::getEnvironmentId).distinct().collect(Collectors.toSet());
+      // the user has no permission to any environments and they aren't an admin, they shouldn't see anything
+      if (permEnvs.isEmpty() && !personAdmin) {
+        return null
+      }
+
       val envs: MutableMap<UUID?, EnvironmentFeatureValues?> = HashMap()
 
       // merge any duplicates, this occurs because the database query can return duplicate lines
@@ -967,12 +1034,7 @@ class FeatureSqlApi @Inject constructor(
               .priorEnvironmentId(if (e.priorEnvironment == null) null else e.priorEnvironment.id)
               .environmentId(e.id)
               .roles(roles) // all access (as admin)
-              .features(if (!personAdmin) ArrayList() else QDbFeatureValue().feature.whenArchived.isNull.environment.eq(
-                e
-              )
-                .findList()
-                .map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs) }
-              )
+              .features(if (!personAdmin) ArrayList() else featuresForEnvironment(e, featureKeys))
             envs[e1.environmentId] = e1
           }
         }
@@ -991,13 +1053,12 @@ class FeatureSqlApi @Inject constructor(
           finalValues.add(efv)
         }
       }
+
       return ApplicationFeatureValues()
         .applicationId(appId)
-        .features(
-          QDbApplicationFeature().whenArchived.isNull.parentApplication.eq(app)
-            .findList()
-            .map { f: DbApplicationFeature? -> convertUtils.toApplicationFeature(f, empty) })
+        .features(features)
         .environments(finalValues)
+        .maxFeatures(totalFeatureCount)
     }
     return null
   }

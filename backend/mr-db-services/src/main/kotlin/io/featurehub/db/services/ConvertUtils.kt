@@ -82,6 +82,10 @@ open class ConvertUtils : Conversions {
       .exists()
   }
 
+  override fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean {
+    return QDbGroup().owningPortfolio.id.eq(portfolioId).groupMembers.person.id.eq(personId).exists()
+  }
+
   override fun limitLength(s: String?, len: Int): String? {
     return if (s == null) null else if (s.length > len) s.substring(0, len) else s
   }
@@ -567,10 +571,6 @@ open class ConvertUtils : Conversions {
       info.changedBy(toPerson(rs.whoChanged))
     }
     return info
-  }
-
-  override fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean {
-    return QDbGroup().owningPortfolio.id.eq(portfolioId).groupMembers.person.id.eq(personId).exists()
   }
 
   override fun byStrategy(id: UUID?): DbRolloutStrategy? {

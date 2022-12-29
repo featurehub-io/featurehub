@@ -73,10 +73,13 @@ public class FeatureResource implements FeatureServiceDelegate {
 
   @Override
   public ApplicationFeatureValues findAllFeatureAndFeatureValuesForEnvironmentsByApplication(UUID id,
+                                                                                             FindAllFeatureAndFeatureValuesForEnvironmentsByApplicationHolder holder,
                                                                                              SecurityContext securityContext) {
     Person current = authManager.from(securityContext);
 
-    final ApplicationFeatureValues allFeatureAndFeatureValuesForEnvironmentsByApplication = featureApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(id, current);
+    final ApplicationFeatureValues allFeatureAndFeatureValuesForEnvironmentsByApplication =
+      featureApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(id, current, holder.filter,
+        holder.max, holder.page, holder.featureTypes, holder.sortOrder);
 
     if (allFeatureAndFeatureValuesForEnvironmentsByApplication == null) {
       throw new NotFoundException();
