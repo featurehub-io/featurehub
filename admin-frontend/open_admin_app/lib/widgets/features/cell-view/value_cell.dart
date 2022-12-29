@@ -78,15 +78,18 @@ class _ValueContainer extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (fv!.retired != null && fv!.retired == true)
-                    const RetiredIndicator(),
-                    if (fv!.locked) const LockedIndicator(),
-                  ],
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (fv!.retired != null && fv!.retired == true)
+                      const RetiredIndicator(),
+                      if (fv!.locked) const LockedIndicator(),
+                    ],
+                  ),
                 ),
               _ValueCard(feature: feature, fv: fv!),
               if (fv!.rolloutStrategies.isNotEmpty)
@@ -108,14 +111,11 @@ class LockedIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-//          color: Colors.black.withOpacity(0.1),
-      child: const Tooltip(
-          message: "Locked",
-          child:
-              Icon(Icons.lock_outline, size: 16.0, color: Colors.orange)),
-    );
+    var lightTheme = Theme.of(context).brightness == Brightness.light;
+    return Tooltip(
+        message: "Locked",
+        child:
+            Icon(Icons.lock_outline, size: 14.0, color: lightTheme ? Colors.black26 : Colors.white70));
   }
 }
 
@@ -124,12 +124,16 @@ class RetiredIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var lightTheme = Theme.of(context).brightness == Brightness.light;
     return Container(
-      padding: const EdgeInsets.all(8.0),
-      child: const Tooltip(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: Tooltip(
           message: "Retired",
           child: Icon(MaterialIcons.do_not_disturb,
-              size: 16.0, color: Colors.red)),
+              size: 14.0,
+            color: lightTheme ? Colors.black26 : Colors.white70,
+          ),
+      ),
     );
   }
 }
