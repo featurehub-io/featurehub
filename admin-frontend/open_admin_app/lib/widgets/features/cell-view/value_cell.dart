@@ -88,6 +88,8 @@ class _ValueContainer extends StatelessWidget {
                       if (fv!.retired != null && fv!.retired == true)
                       const RetiredIndicator(),
                       if (fv!.locked) const LockedIndicator(),
+                      if (!fv!.locked && (fv!.retired == null || (fv!.retired != null && fv!.retired == false)))
+                        const SizedBox(height: 14.0)
                     ],
                   ),
                 ),
