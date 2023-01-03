@@ -254,66 +254,20 @@ class _AppTotals extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          if (application.environments.length.toString().isNotEmpty)
+          if (application.environments.isNotEmpty)
             _NumberAndIcon(
               tooltipText: 'Environments',
               text: application.environments.length.toString(),
               icon: const Icon(AntDesign.bars,
                   size: 16.0, color: Colors.deepPurpleAccent),
             ),
-          if (application.features
-              .where((element) => element.valueType == FeatureValueType.BOOLEAN)
-              .toList()
-              .isNotEmpty)
+          if (application.features.isNotEmpty)
             _NumberAndIcon(
               tooltipText: 'Feature flags',
               text: application.features
-                  .where((element) =>
-                      element.valueType == FeatureValueType.BOOLEAN)
-                  .toList()
                   .length
                   .toString(),
               icon: const Icon(Icons.flag, size: 16.0, color: Colors.green),
-            ),
-          if ((application.features
-                  .where(
-                      (element) => element.valueType == FeatureValueType.STRING)
-                  .toList()
-                  .isNotEmpty) ||
-              (application.features
-                  .where(
-                      (element) => element.valueType == FeatureValueType.NUMBER)
-                  .toList()
-                  .isNotEmpty))
-            _NumberAndIcon(
-              tooltipText: 'Feature values',
-              icon: const Icon(Icons.code, size: 16.0, color: Colors.blue),
-              text: (((application.features
-                          .where((element) =>
-                              element.valueType == FeatureValueType.STRING)
-                          .toList()
-                          .length) +
-                      (application.features
-                          .where((element) =>
-                              element.valueType == FeatureValueType.NUMBER)
-                          .toList()
-                          .length))
-                  .toString()),
-            ),
-          if (application.features
-              .where((element) => element.valueType == FeatureValueType.JSON)
-              .toList()
-              .isNotEmpty)
-            _NumberAndIcon(
-              text: application.features
-                  .where(
-                      (element) => element.valueType == FeatureValueType.JSON)
-                  .toList()
-                  .length
-                  .toString(),
-              tooltipText: 'Configurations',
-              icon: const Icon(Icons.device_hub,
-                  size: 16.0, color: Colors.orange),
             ),
         ],
       ),
@@ -340,7 +294,7 @@ class _NumberAndIcon extends StatelessWidget {
       child: Column(
         children: [
           _NumberContainer(
-            child: Text(text),
+            child: Text(text, style: Theme.of(context).textTheme.titleMedium),
           ),
           const SizedBox(height: 2.0),
           icon,
