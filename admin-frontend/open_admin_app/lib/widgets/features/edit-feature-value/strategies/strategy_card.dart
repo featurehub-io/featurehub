@@ -29,7 +29,7 @@ class StrategyCard extends StatelessWidget {
                 .contains(RoleType.CHANGE_VALUE);
             final unlocked = !snap.data!.locked;
             return StrategyCardWidget(
-              editable: editable,
+              editable: editable && unlocked,
               strBloc: strBloc,
               rolloutStrategy: rolloutStrategy,
               editableHolderWidget: EditValueContainer(
