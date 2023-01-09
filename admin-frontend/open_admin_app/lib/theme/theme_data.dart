@@ -38,11 +38,11 @@ final ThemeData myTheme = ThemeData(
     textButtonTheme: TextButtonThemeData(
         // style: TextButton.styleFrom(primary: Color(0xff473e8f)),
         style: TextButton.styleFrom(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             textStyle: const TextStyle(wordSpacing: 0.8, letterSpacing: 0.8))),
     elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             textStyle: const TextStyle(wordSpacing: 0.8, letterSpacing: 0.8))),
     outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -185,11 +185,11 @@ final ThemeData darkTheme = ThemeData(
   textButtonTheme: TextButtonThemeData(
       // style: TextButton.styleFrom(primary: Color(0xff473e8f)),
       style: TextButton.styleFrom(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(18),
           textStyle: const TextStyle(wordSpacing: 0.8, letterSpacing: 0.8))),
   elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(18),
           textStyle: const TextStyle(wordSpacing: 0.8, letterSpacing: 0.8))),
   outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(

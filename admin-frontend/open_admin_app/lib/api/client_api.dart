@@ -570,14 +570,14 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   @override
   void dispose() {
-    _errorSource.close();
-    _overlaySource.close();
-    _snackbarSource.close();
     _personPermissionInPortfolioChanged.cancel();
-    personState.dispose();
     streamValley.currentPortfolioAdminOrSuperAdminSubscription.cancel();
     personStreamListener?.cancel();
     portfolioListStreamListener?.cancel();
+    _errorSource.close();
+    _overlaySource.close();
+    _snackbarSource.close();
+    personState.dispose();
   }
 
   void _setPidSharedPrefs(String? pid) async {

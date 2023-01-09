@@ -190,7 +190,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
             indicatorSize: TabBarIndicatorSize.label,
             controller: _controller,
             labelStyle: MediaQuery.of(context).size.width > 400
-                ? const TextStyle(fontSize: 18.0) : const TextStyle(fontSize: 12.0),
+                ? const TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold) : const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold),
             tabs: [
               const Tab(
                 child: Text("Environments"),

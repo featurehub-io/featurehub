@@ -119,9 +119,6 @@ class StepperBloc implements Bloc {
 
   @override
   void dispose() {
-    _portfoliosBS.close();
-    _appsBS.close();
-    _fhStepperBS.close();
     _currentAppIdSubscriber.cancel();
     _currentPortfolioServiceAccountsSubscriber.cancel();
     _currentPortfolioGroupsSubscriber.cancel();
@@ -129,5 +126,8 @@ class StepperBloc implements Bloc {
     _currentApplicationFeaturesSubscriber.cancel();
     _currentEnvironmentServiceAccountsSubscriber.cancel();
     _currentPortfolioApplicationsSubscriber.cancel();
+    _portfoliosBS.close();
+    _appsBS.close();
+    _fhStepperBS.close();
   }
 }

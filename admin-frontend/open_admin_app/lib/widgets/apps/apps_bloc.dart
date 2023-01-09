@@ -75,7 +75,7 @@ class AppsBloc implements Bloc {
   @override
   void dispose() {
     mrClient.streamValley.includeEnvironmentsInApplicationRequest = false;
-    _currentApplicationsStream.close();
     _currentApplicationsListListener.cancel();
+    _currentApplicationsStream.close();
   }
 }

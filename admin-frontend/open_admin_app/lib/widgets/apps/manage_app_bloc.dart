@@ -67,6 +67,10 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   @override
   void dispose() {
+    _currentAppIdSubscription.cancel();
+    _currentApplicationWithEnvironmentSubscription.cancel();
+    _currentPortfolioGroupsSubscription.cancel();
+    _currentPortfolioSubscription.cancel();
     _environmentBS.close();
     _pageStateBS.close();
     _groupWithRolesPS.close();
@@ -74,10 +78,6 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     _serviceAccountsBS.close();
     _serviceAccountPS.close();
     _applicationWithEnvironmentsBS.close();
-    _currentAppIdSubscription.cancel();
-    _currentApplicationWithEnvironmentSubscription.cancel();
-    _currentPortfolioGroupsSubscription.cancel();
-    _currentPortfolioSubscription.cancel();
   }
 
   final _applicationWithEnvironmentsBS = BehaviorSubject<Application?>();
