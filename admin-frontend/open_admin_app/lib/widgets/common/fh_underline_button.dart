@@ -23,7 +23,7 @@ class FHUnderlineButton extends StatelessWidget {
       mouseCursor: SystemMouseCursors.click,
       onTap: onPressed,
       child: Container(
-        padding: const EdgeInsets.all(2.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.centerLeft,
         child: TranslateOnHover(
           child: Text(

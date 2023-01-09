@@ -127,7 +127,7 @@ class CreateFeatureButton extends StatelessWidget {
               .personCanEditFeaturesForApplication(snapshot.data);
           return !canEdit
               ? const SizedBox.shrink()
-              : ElevatedButton(
+              : ElevatedButton.icon(
                   // keepCase: true,
                   onPressed: () =>
                       bloc.mrClient.addOverlay((BuildContext context) {
@@ -135,7 +135,9 @@ class CreateFeatureButton extends StatelessWidget {
                           bloc: bloc,
                         );
                       }),
-                  child: const Text('Create new feature'));
+                  icon: Icon(Icons.add),
+                  label: const Text('Create New Feature'));
+
         });
   }
 }

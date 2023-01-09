@@ -237,11 +237,12 @@ class PerApplicationFeaturesBloc
 
   @override
   void dispose() {
+    _currentPid.cancel();
+    _currentAppId.cancel();
     _appSearchResultSource.close();
     _featureMetadataStream.close();
     _appFeatureValues.close();
-    _currentPid.cancel();
-    _currentAppId.cancel();
+
   }
 
    getApplicationFeatureValuesData(
