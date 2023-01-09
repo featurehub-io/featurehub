@@ -48,6 +48,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
             _featuresDataSource = FeaturesDataSource(featuresList, widget.bloc,
                 _searchTerm, _selectedFeatureTypes, _rowsPerPage);
             _maxFeatures = features.maxFeatures;
+            _pageIndex = bloc.currentPageIndex-1;
           });
       }
     });
