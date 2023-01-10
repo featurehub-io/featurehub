@@ -153,10 +153,14 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     await _appServiceApi
         .getApplication(applicationId!, includeEnvironments: true)
         .then((value) async {
-      _applicationWithEnvironmentsBS.add(value);
-      if (_pageStateBS.value == ManageAppPageState.loadingState) {
-        _pageStateBS.add(ManageAppPageState.initialState);
-      }
+          if(!_applicationWithEnvironmentsBS.isClosed) {
+            _applicationWithEnvironmentsBS.add(value);
+          }
+          if(!_pageStateBS.isClosed) {
+            if (_pageStateBS.value == ManageAppPageState.loadingState) {
+              _pageStateBS.add(ManageAppPageState.initialState);
+            }
+          }
     }).catchError((e, s) {
       if (!(e is ApiException && e.code == 404)) {
         _mrClient.dialogError(e, s);
@@ -235,10 +239,11 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
 
         // the downstream needs to know which application this group is paired with
         // so it knows when to refresh its internal state
-        _groupWithRolesPS.add(ApplicationGroupRoles(group, applicationId!));
+        if(!_groupWithRolesPS.isClosed) {
+          _groupWithRolesPS.add(ApplicationGroupRoles(group, applicationId!));
+        }
       } catch (e, s) {
         // print("this group has failed");
-        await _mrClient.dialogError(e, s);
         _groupWithRolesPS.add(null);
       }
     }
