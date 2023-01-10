@@ -35,9 +35,7 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
       children: <Widget>[
         Row(
           children: [
-            SizedBox(
-              width: 36,
-              height: 36,
+            Material(
               child: IconButton(
                 splashRadius: 20,
                 mouseCursor: disabled

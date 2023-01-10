@@ -35,14 +35,21 @@ class FeatureCellHolder extends StatelessWidget {
                   child: SizedBox(
                     width: featureNameBoxWidth,
                     // given full column width is 200
-                    child: Text(feature.name,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        // minFontSize: 8.0,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyText1!
-                            .copyWith(fontWeight: FontWeight.bold)),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Tooltip(
+                        message: feature.name,
+                        verticalOffset: 8.0,
+                        child: Text(feature.name,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                            // minFontSize: 8.0,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyText1!
+                                .copyWith(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
                   ),
                 ),
                 PopupMenuButton(
