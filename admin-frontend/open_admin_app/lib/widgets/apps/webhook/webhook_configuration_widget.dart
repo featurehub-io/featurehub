@@ -327,6 +327,8 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
 
   Future<void> _save() async {
     if (_formKey.currentState!.validate()) {
+      // make sure the map is modifiable
+      widget.environment.environmentInfo = {}..addAll(widget.environment.environmentInfo);
       widget.environment.environmentInfo['${widget.type.envPrefix}.enabled'] =
           enabled.toString();
       widget.environment.environmentInfo['${widget.type.envPrefix}.endpoint'] =
