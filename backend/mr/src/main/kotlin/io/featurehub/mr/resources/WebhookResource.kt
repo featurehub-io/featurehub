@@ -42,7 +42,7 @@ class WebhookResource @Inject constructor(
           WebhookTypeDetail()
             .messageType(WebhookEnvironmentResult.CLOUD_EVENT_TYPE)
             .envPrefix("webhook.features")
-            .description("Any feature change for an environment")
+            .description("Feature updates")
         )
       )
   }

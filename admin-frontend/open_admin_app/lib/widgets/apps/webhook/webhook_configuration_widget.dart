@@ -73,10 +73,10 @@ class _WebhookTableDataSource extends DataGridSource {
         child: TextField(
           autofocus: true,
           controller: editingController..text = displayText,
-          textAlign: TextAlign.right,
+          textAlign: TextAlign.left,
           decoration: const InputDecoration(
-              contentPadding: EdgeInsets.all(0),
-              border: InputBorder.none,
+              contentPadding: EdgeInsets.all(8),
+              // border: InputBorder.none,
               isDense: true),
           keyboardType: TextInputType.text,
           onChanged: (String value) {
@@ -130,7 +130,9 @@ class _WebhookTableDataSource extends DataGridSource {
         cells: row
             .getCells()
             .map((e) =>
-                Container(alignment: Alignment.bottomLeft, child: Text(e.value)))
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                    alignment: Alignment.centerLeft, child: Tooltip(message: "Click to edit",child: Text(e.value))))
             .toList());
   }
 
@@ -217,20 +219,19 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: const [
-                Text('Webhook Configuration'),
+                Text('Webhook Configuration', style:
+                TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                FHIconButton(
-                    icon: const Icon(Icons.reset_tv),
+                TextButton(
                     onPressed: () => _revert(),
-                    tooltip: 'Revert'),
-                FHIconButton(
-                    icon: const Icon(Icons.save_alt),
+                    child: const Text("Cancel"),),
+                ElevatedButton(
                     onPressed: () => _save(),
-                    tooltip: 'Save'),
+                    child: const Text('Save')),
                 if (enabled && _url.text.isNotEmpty)
                   FHIconButton(
                       icon: const Icon(Icons.send),
@@ -273,21 +274,26 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
                   const SizedBox(height: 24.0,),
                   Row(
                     children: [
-                      FHIconButton(icon: const Icon(Icons.add), onPressed: () => _headers.addRow()),
-                      FHIconButton(icon: const Icon(Icons.delete), onPressed: () => _deleteSelected()),
+                      TextButton.icon(icon: const Icon(Icons.add), label: const Text("Add HTTP Header"), onPressed: () => _headers.addRow()),
+                      FHIconButton(tooltip: "Remove selected HTTP header", icon: const Icon(Icons.delete), onPressed: () => _deleteSelected()),
                     ],
                   ),
                   Row(
                     children: [
                       Expanded(
                         child: SfDataGrid(
+                          defaultColumnWidth: 240,
                             source: _headers,
                             allowColumnsResizing: true,
                             allowPullToRefresh: false,
                             showCheckboxColumn: true,
+                            checkboxColumnSettings:
+                            const DataGridCheckboxColumnSettings(showCheckboxOnHeader: false),
                             selectionMode: SelectionMode.single,
                             navigationMode: GridNavigationMode.cell,
                             controller: _dataGridController,
+                            gridLinesVisibility: GridLinesVisibility.both,
+                            headerGridLinesVisibility: GridLinesVisibility.both,
                             allowEditing: true,
                             columns: [
                               GridColumn(
@@ -295,15 +301,15 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
                                   allowEditing: true,
                                   label: Container(
                                       // padding: EdgeInsets.all(16.0),
-                                      alignment: Alignment.centerLeft,
-                                      child: const Text('HTTP Header'))),
+                                      alignment: Alignment.center,
+                                      child: const Text('HTTP Header', style: TextStyle(fontWeight: FontWeight.bold),))),
                               GridColumn(
                                   columnName: 'value',
                                   allowEditing: true,
                                   label: Container(
                                       padding: const EdgeInsets.all(8.0),
-                                      alignment: Alignment.centerLeft,
-                                      child: const Text('Value')))
+                                      alignment: Alignment.center,
+                                      child: const Text('Value', style: TextStyle(fontWeight: FontWeight.bold))))
                             ]),
                       ),
                     ],
