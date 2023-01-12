@@ -3,10 +3,11 @@ import 'dart:async';
 import 'package:advanced_datatable/advanced_datatable_source.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/apps/webhook/webhook_detail_table_widget.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
+import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
-
-
 
 class WebhookTableSource extends AdvancedDataTableSource<WebhookSummaryItem> {
   final WebhookEnvironmentBloc bloc;
@@ -64,11 +65,30 @@ class WebhookTableSource extends AdvancedDataTableSource<WebhookSummaryItem> {
     return DataRow.byIndex(index: index, cells: [
       DataCell(Text(item.type ?? _filter ?? '')),
       DataCell(Text(item.method)),
-      DataCell(Text(item.status.toString())),
+      DataCell(Text(item.status == 0 ? "undelivered" : item.status.toString())),
       DataCell(Text(item.whenSent.toIso8601String())),
-      DataCell(FHIconButton(icon: Icon(Icons.search), onPressed: () {
-        bloc.viewItem = item.id;
-      }, tooltip: "View"))
+      DataCell(FHIconButton(
+          icon: const Icon(Icons.info, color: Colors.green),
+          onPressed: () {
+            bloc.viewItem = item.id;
+            bloc.mrBloc.addOverlay((context) => StreamBuilder<WebhookDetail?>(
+                stream: bloc.viewWebhookStream,
+                builder: (context, snapshot) {
+                  if (snapshot.data == null) {
+                    return const SizedBox.shrink();
+                  }
+                  return FHAlertDialog(
+                    content: WebhookDetailTable(snapshot.data!, bloc),
+                    title: const Text("Webhook details"),
+                    actions: [
+                      FHFlatButton(
+                          onPressed: () => bloc.viewItem = null,
+                          title: 'Close'),
+                    ],
+                  );
+                }));
+          },
+          tooltip: "View webhook details"))
     ]);
   }
 

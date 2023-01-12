@@ -5,6 +5,7 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_detail_table_widget.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_environment_table_widget.dart';
+import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 
@@ -46,7 +47,7 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
                 ),
                 if (bloc.environments.isNotEmpty == true)
                   selectEnvironment(bloc.environments),
-                if (bloc.environments.isNotEmpty != true) Text("no environments")
+                if (bloc.environments.isNotEmpty != true) const Text("no environments")
               ],
             ),
             const SizedBox(
@@ -67,23 +68,13 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
             stream: bloc.environmentStream,
             builder: (context, snapshot) {
               if (snapshot.data == null || _currentWebhookType == null) {
-                return SizedBox.shrink();
+                return const SizedBox.shrink();
               }
-
               return WebhookEnvironmentTable(snapshot.data!, bloc);
             },
           ),
         ],
       ),
-      StreamBuilder<WebhookDetail?>(
-          stream: bloc.viewWebhookStream,
-          builder: (context, snapshot) {
-            if (snapshot.data == null) {
-              return SizedBox.shrink();
-            }
-
-            return WebhookDetailTable(snapshot.data!, bloc);
-          })
     ]);
   }
 
@@ -106,7 +97,7 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
               }
             }
 
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           },
         ),
       ),

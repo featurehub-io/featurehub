@@ -214,7 +214,7 @@ class _ApplicationSettings extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return Column(children: <Widget>[
-              FHMenuItem(
+              const FHMenuItem(
                   name: 'Environments',
                   iconData: AntDesign.bars,
                   path: '/app-settings',
@@ -222,7 +222,7 @@ class _ApplicationSettings extends StatelessWidget {
                   params: {
                     'tab': ['environments']
                   }),
-              FHMenuItem(
+              const FHMenuItem(
                   name: 'Group permissions',
                   iconData: MaterialCommunityIcons.check_box_multiple_outline,
                   path: '/app-settings',
@@ -230,7 +230,7 @@ class _ApplicationSettings extends StatelessWidget {
                   params: {
                     'tab': ['group-permissions']
                   }),
-              FHMenuItem(
+              const FHMenuItem(
                   name: 'Service account permissions',
                   iconData: MaterialCommunityIcons.cogs,
                   path: '/app-settings',
@@ -239,9 +239,9 @@ class _ApplicationSettings extends StatelessWidget {
                     'tab': ['service-accounts']
                   }),
               if (mrClient.identityProviders.capabilityWebhooks)
-                FHMenuItem(
+                const FHMenuItem(
                     name: 'Webhooks',
-                    iconData: MaterialCommunityIcons.cogs,
+                    iconData: MaterialCommunityIcons.webhook,
                     path: '/app-settings',
                     permissionType: PermissionType.portfolioadmin,
                     params: {

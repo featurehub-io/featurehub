@@ -18,7 +18,7 @@ class WebhookEnvironmentTable extends StatefulWidget {
 }
 
 class _WebhookEnvironmentTableState extends State<WebhookEnvironmentTable> {
-  late WebhookTableSource tableSauce;
+  late WebhookTableSource tableSource;
   var rowsPerPage = 5;
   var tab = 0;
 
@@ -26,7 +26,7 @@ class _WebhookEnvironmentTableState extends State<WebhookEnvironmentTable> {
   void initState() {
     super.initState();
 
-    tableSauce = WebhookTableSource(widget.bloc);
+    tableSource = WebhookTableSource(widget.bloc);
   }
 
   @override
@@ -34,15 +34,14 @@ class _WebhookEnvironmentTableState extends State<WebhookEnvironmentTable> {
     // we want a tab-bar, but its a tab-bar in a tab-bar and on a web page that doesn't layout properly,
     return Column(
       children: [
-        SizedBox(height: 24.0,),
+        const SizedBox(height: 24.0,),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            FHIconButton(icon: Icon(Icons.window), tooltip: "Webhook History", onPressed: () => setState(() {
+            FHIconButton(icon: const Icon(Icons.window), tooltip: "Webhook History", onPressed: () => setState(() {
               tab = 0;
             })),
-            Text("|"),
-            FHIconButton(icon: Icon(Icons.build), tooltip: "Webhook Configuration", onPressed: () => setState(() {
+            FHIconButton(icon: const Icon(Icons.build), tooltip: "Webhook Configuration", onPressed: () => setState(() {
               tab = 1;
             }))
           ],
@@ -53,7 +52,7 @@ class _WebhookEnvironmentTableState extends State<WebhookEnvironmentTable> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  FHFlatButtonGreen(onPressed: () => tableSauce.refresh(), title: 'Refresh')
+                  FHFlatButtonGreen(onPressed: () => tableSource.refresh(), title: 'Refresh')
                 ],
               ),
               SelectionArea(
@@ -80,7 +79,7 @@ class _WebhookEnvironmentTableState extends State<WebhookEnvironmentTable> {
                     DataColumn(label: Text('When Sent')),
                     DataColumn(label: Text('Actions'))
                   ],
-                  source: tableSauce,
+                  source: tableSource,
                 ),
               )
             ],
@@ -90,9 +89,8 @@ class _WebhookEnvironmentTableState extends State<WebhookEnvironmentTable> {
             stream: widget.bloc.environmentStream,
             builder: (context, snapshot) {
               if (snapshot.data == null || snapshot.data!.environment == null || snapshot.data!.type == null) {
-                return SizedBox.shrink();
+                return const SizedBox.shrink();
               }
-
               return WebhookConfiguration(snapshot.data!.environment!, snapshot.data!.type!, widget.bloc);
             },),
       ]);

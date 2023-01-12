@@ -8,40 +8,40 @@ class WebhookDetailTable extends StatelessWidget {
   final WebhookEnvironmentBloc bloc;
   final WebhookDetail data;
 
-  WebhookDetailTable(this.data, this.bloc, {Key? key})
+  const WebhookDetailTable(this.data, this.bloc, {Key? key})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            FHFlatButtonGreen(
-                onPressed: () => bloc.viewItem = null, title: 'Close'),
-            for(var count = 0; count < 9; count ++)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    if (count != 8)
-                      SizedBox(
-                        width: 120,
-                        child: Text(byRow(count)),
-                      ),
-                    Expanded(
-                        child: Text(byRowContent(count), softWrap: false,
-                          overflow: TextOverflow.ellipsis, maxLines: 100,)),
-                    if (count == 8)
-                      FHCopyToClipboard(
-                          copyString: byRowContent(count),
-                          tooltipMessage: 'Copy Content')
-                  ],
-                ),
-              )
-          ],
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 800),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            children: [
+              for(var count = 0; count < 9; count ++)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      if (count != 8)
+                        SizedBox(
+                          width: 120,
+                          child: Text(byRow(count), style: Theme.of(context).textTheme.caption),
+                        ),
+                      Expanded(
+                          child: Text(byRowContent(count), softWrap: false,
+                            overflow: TextOverflow.ellipsis, maxLines: 100,)),
+                      if (count == 8)
+                        FHCopyToClipboard(
+                            copyString: byRowContent(count),
+                            tooltipMessage: 'Copy Content')
+                    ],
+                  ),
+                )
+            ],
+          ),
         ),
       ),
     );
@@ -50,21 +50,21 @@ class WebhookDetailTable extends StatelessWidget {
   String byRow(int index) {
     switch (index) {
       case 0:
-        return 'When Sent';
+        return 'When sent';
       case 1:
-        return 'Webhook Cloud Event Type';
+        return 'Webhook Cloud Event type';
       case 2:
         return 'URL';
       case 3:
         return 'Method';
       case 4:
-        return 'HTTP Status';
+        return 'HTTP status';
       case 5:
-        return 'Cloud Event Type';
+        return 'Cloud Event type';
       case 6:
-        return 'Incoming Headers';
+        return 'Incoming headers';
       case 7:
-        return 'Outgoing Headers';
+        return 'Outgoing headers';
     }
 
     return 'Webhook Content';
