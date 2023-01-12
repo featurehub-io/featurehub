@@ -135,7 +135,7 @@ class CreateFeatureButton extends StatelessWidget {
                           bloc: bloc,
                         );
                       }),
-                  icon: Icon(Icons.add),
+                  icon: const Icon(Icons.add),
                   label: const Text('Create New Feature'));
 
         });

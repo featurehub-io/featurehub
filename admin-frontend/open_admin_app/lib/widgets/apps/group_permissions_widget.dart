@@ -242,7 +242,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                     SelectableText(
                         'Set feature level permissions',
                         style: Theme.of(context).textTheme.caption),
