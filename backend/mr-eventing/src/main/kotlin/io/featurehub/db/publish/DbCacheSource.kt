@@ -275,6 +275,8 @@ open class DbCacheSource @Inject constructor(
     if (env.userEnvironmentInfo != null) {
       if (ce.environmentInfo == null) {
         ce.environmentInfo = HashMap(env.userEnvironmentInfo)
+      } else {
+        ce.environmentInfo?.putAll(env.userEnvironmentInfo)
       }
     }
 

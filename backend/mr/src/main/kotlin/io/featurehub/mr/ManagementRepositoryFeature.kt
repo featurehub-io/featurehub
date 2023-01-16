@@ -11,6 +11,7 @@ import io.featurehub.mr.resources.*
 import io.featurehub.mr.resources.oauth2.OAuth2MRAdapter
 import io.featurehub.mr.utils.ApplicationUtils
 import io.featurehub.mr.utils.PortfolioUtils
+import io.featurehub.mr.webhook.ManagementRepositoryWebhookFeature
 import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
 import io.featurehub.web.security.oauth.*
@@ -26,6 +27,7 @@ class ManagementRepositoryFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     listOf( //ValidationFeature.class,
       ApplicationServiceDelegator::class.java,
+      WebhookServiceDelegator::class.java,
       AuthServiceDelegator::class.java,
       EnvironmentFeatureServiceDelegator::class.java,
       EnvironmentServiceDelegator::class.java,
@@ -56,6 +58,7 @@ class ManagementRepositoryFeature : Feature {
     context.register(ApiToSqlApiBinder())
     context.register(ComplexUpdateMigrations())
     context.register(EventingFeature::class.java)
+    context.register(ManagementRepositoryWebhookFeature::class.java)
 
     context.register(object : AbstractBinder() {
       override fun configure() {
@@ -75,6 +78,7 @@ class ManagementRepositoryFeature : Feature {
           Singleton::class.java
         )
         bind(AuthResource::class.java).to(AuthServiceDelegate::class.java).`in`(Singleton::class.java)
+        bind(WebhookResource::class.java).to(WebhookServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(EnvironmentFeatureResource::class.java).to(
           EnvironmentFeatureServiceDelegate::class.java
         ).`in`(Singleton::class.java)

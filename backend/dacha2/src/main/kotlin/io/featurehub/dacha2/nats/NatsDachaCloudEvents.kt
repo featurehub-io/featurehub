@@ -2,6 +2,9 @@ package io.featurehub.dacha2.nats
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
+import io.featurehub.enriched.model.EnrichedFeatures
+import io.featurehub.enricher.FeatureEnricher
+import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.nats.NatsListener
 import io.featurehub.publish.NATSFeature
@@ -31,18 +34,27 @@ class NatsDachaEventsListener : Feature {
   }
 }
 
-class Dacha2NatsListener @Inject constructor(natsSource: NATSSource, private val eventListener: CloudEventReceiverRegistry) {
+class Dacha2NatsListener @Inject constructor(
+  natsSource: NATSSource,
+  private val eventListener: CloudEventReceiverRegistry,
+  featureEnricher: FeatureEnricher
+  ) {
   @ConfigKey("cloudevents.mr-dacha2.nats.channel-name")
   private var dachaChannelName: String? = "featurehub/mr-dacha2-channel"
 
   private val log: Logger = LoggerFactory.getLogger(Dacha2NatsListener::class.java)
   private val dachaListener: NatsListener
+  private var enricherListener: NatsListener? = null
 
   init {
     DeclaredConfigResolver.resolve(this)
 
-    dachaListener = natsSource.createTopicListener(dachaChannelName!!) {
-      eventListener.process(it)
+    dachaListener = natsSource.createTopicListener(dachaChannelName!!, eventListener::process)
+
+    if (featureEnricher.isEnabled()) {
+      enricherListener = natsSource.createQueueListener(dachaChannelName!!, "enricher", featureEnricher::enrich)
+
+      log.info("nats: dacha enricher enabled (listen)")
     }
 
     log.info("nats: cloud event listener started and listening to {}", dachaChannelName)
@@ -51,5 +63,6 @@ class Dacha2NatsListener @Inject constructor(natsSource: NATSSource, private val
   @PreDestroy
   fun shutdown() {
     dachaListener.close()
+    enricherListener?.close()
   }
 }

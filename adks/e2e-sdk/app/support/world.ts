@@ -3,7 +3,7 @@ import {
   Application,
   ApplicationServiceApi,
   AuthServiceApi,
-  Configuration, Environment,
+  Configuration, Environment, Environment2ServiceApi,
   EnvironmentFeatureServiceApi,
   EnvironmentServiceApi,
   Feature,
@@ -44,6 +44,7 @@ export class SdkWorld extends World {
   public readonly portfolioApi: PortfolioServiceApi;
   public readonly applicationApi: ApplicationServiceApi;
   public readonly environmentApi: EnvironmentServiceApi;
+  public readonly environment2Api: Environment2ServiceApi;
   public readonly featureApi: FeatureServiceApi;
   public readonly loginApi: AuthServiceApi;
   public readonly serviceAccountApi: ServiceAccountServiceApi;
@@ -63,6 +64,7 @@ export class SdkWorld extends World {
     this.portfolioApi = new PortfolioServiceApi(this.adminApiConfig);
     this.applicationApi = new ApplicationServiceApi(this.adminApiConfig);
     this.environmentApi = new EnvironmentServiceApi(this.adminApiConfig);
+    this.environment2Api = new Environment2ServiceApi(this.adminApiConfig);
     this.featureApi = new FeatureServiceApi(this.adminApiConfig);
     this.loginApi = new AuthServiceApi(this.adminApiConfig); // too noisy in logs
     this.serviceAccountApi = new ServiceAccountServiceApi(this.adminApiConfig);

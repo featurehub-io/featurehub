@@ -1,9 +1,8 @@
 package io.featurehub.edge.events
 
-import io.cloudevents.CloudEvent
 import io.cloudevents.core.builder.CloudEventBuilder
 import io.featurehub.edge.rest.FeatureUpdatePublisher
-import io.featurehub.jersey.config.CacheJsonMapper
+import io.featurehub.events.CloudEventPublisher
 import io.featurehub.mr.messaging.StreamedFeatureUpdate
 import jakarta.inject.Inject
 import org.slf4j.Logger
@@ -12,12 +11,8 @@ import java.net.URI
 import java.time.OffsetDateTime
 import java.util.*
 
-interface CloudEventsEdgePublisher {
-  fun encodeAsJson(): Boolean
-  fun publish(event: CloudEvent)
-}
 
-class CloudEventsFeatureUpdatePublisherImpl @Inject constructor(private val cloudEventsPublisher: CloudEventsEdgePublisher) : FeatureUpdatePublisher {
+class CloudEventsFeatureUpdatePublisherImpl @Inject constructor(private val cloudEventsPublisher: CloudEventPublisher) : FeatureUpdatePublisher {
   private val log: Logger = LoggerFactory.getLogger(CloudEventsFeatureUpdatePublisherImpl::class.java)
 
   override fun publishFeatureChangeRequest(featureUpdate: StreamedFeatureUpdate, namedCache: String) {
@@ -29,13 +24,7 @@ class CloudEventsFeatureUpdatePublisherImpl @Inject constructor(private val clou
     event.withContextAttribute("cachename", namedCache)
     event.withTime(OffsetDateTime.now())
 
-    CacheJsonMapper.toEventData(event, featureUpdate, !cloudEventsPublisher.encodeAsJson())
-
-    try {
-      cloudEventsPublisher.publish(event.build())
-    } catch (e: Exception) {
-      log.error("failed to publish event update", e)
-    }
+    cloudEventsPublisher.publish(StreamedFeatureUpdate.CLOUD_EVENT_TYPE, featureUpdate, event)
   }
 
 }

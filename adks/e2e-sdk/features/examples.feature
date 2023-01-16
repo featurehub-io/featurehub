@@ -3,6 +3,7 @@ Feature: I setup the example features to be able to run the examples
   Background:
     Given I create a new portfolio
     And I create an application
+    And I update the environment for feature webhooks
     And I create a service account and full permissions based on the application environments
     And I connect to the feature server
 

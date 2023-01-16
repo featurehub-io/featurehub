@@ -70,6 +70,18 @@
     </dependency>
 
     <dependency>
+      <groupId>io.featurehub.enricher</groupId>
+      <artifactId>enricher-processor</artifactId>
+      <version>1.1-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>software.amazon.kinesis</groupId>
+          <artifactId>amazon-kinesis-client</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
       <groupId>io.featurehub.events</groupId>
       <artifactId>eventing-nats</artifactId>
       <version>1.1-SNAPSHOT</version>
@@ -93,7 +105,7 @@
       <plugin>
         <groupId>io.repaint.maven</groupId>
         <artifactId>tiles-maven-plugin</artifactId>
-        <version>2.23</version>
+        <version>2.32</version>
         <extensions>true</extensions>
         <configuration>
           <filtering>false</filtering>

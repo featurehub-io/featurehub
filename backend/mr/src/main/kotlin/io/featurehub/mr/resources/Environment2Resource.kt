@@ -7,7 +7,7 @@ import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
 import io.featurehub.mr.api.Environment2ServiceDelegate
-import io.featurehub.mr.auth.AuthManager
+import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.UpdateEnvironment
 import jakarta.inject.Inject
@@ -18,7 +18,7 @@ import jakarta.ws.rs.core.SecurityContext
 import java.util.*
 
 class Environment2Resource @Inject constructor(
-  private val authManager: AuthManager,
+  private val authManager: AuthManagerService,
   private val environmentApi: EnvironmentApi
 ) : Environment2ServiceDelegate {
   override fun updateEnvironmentV2(

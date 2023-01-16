@@ -4,6 +4,8 @@ import cd.connect.app.config.ConfigKey
 import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
+import io.featurehub.enriched.model.EnricherPing
+import io.featurehub.enricher.FeatureEnricher
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.utils.ExecutorSupplier
 import jakarta.annotation.PostConstruct
@@ -20,6 +22,7 @@ import java.util.concurrent.ExecutorService
 class Dacha2CloudEventListenerImpl @Inject constructor(
   private val dacha2Caches: IterableProvider<Dacha2CacheListener>,
   private val dacha2Cache: Dacha2Cache,
+  featureEnricher: FeatureEnricher,
   register: CloudEventReceiverRegistry,
   executorSupplier: ExecutorSupplier
 ) {
@@ -31,7 +34,15 @@ class Dacha2CloudEventListenerImpl @Inject constructor(
 
   init {
     executorService = executorSupplier.executorService(nThreads!!)
-    register.listen(PublishEnvironment::class.java) { env ->
+
+    if (featureEnricher.isEnabled()) {
+      register.listen(EnricherPing::class.java) { ep, ce ->
+        featureEnricher.enricherPing(ce, ep)
+      }
+    }
+
+
+    register.listen(PublishEnvironment::class.java) { env, ce ->
       log.trace("received environment {}", env)
       dacha2Cache.updateEnvironment(env)
       dacha2CacheList.forEach { dl ->
@@ -41,7 +52,7 @@ class Dacha2CloudEventListenerImpl @Inject constructor(
       }
     }
 
-    register.listen(PublishServiceAccount::class.java) { serviceAccount ->
+    register.listen(PublishServiceAccount::class.java) { serviceAccount, ce ->
       log.trace("received service account {}", serviceAccount)
       dacha2Cache.updateServiceAccount(serviceAccount)
       dacha2CacheList.forEach { dl ->
@@ -51,10 +62,10 @@ class Dacha2CloudEventListenerImpl @Inject constructor(
       }
     }
 
-    register.listen(PublishFeatureValues::class.java) { features ->
+    register.listen(PublishFeatureValues::class.java) { features, ce ->
       log.trace("received feature values {}", features)
       for (feature in features.features) {
-        dacha2Cache?.updateFeature(feature)
+        dacha2Cache.updateFeature(feature)
         dacha2CacheList.forEach { dl ->
           executorService.submit {
             dl.updateFeature(feature)

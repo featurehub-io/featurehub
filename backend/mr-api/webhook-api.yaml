@@ -1,0 +1,247 @@
+openapi: 3.0.1
+info:
+  title: ManagementResourceApi
+  description: This describes the API clients use for accessing features. This reflects the API from 1.5.7 onwards.
+  version: "1.1.9"
+#  CRUD for portfolios, environments, features, service account, people, and groups (edited)
+#  roles are fixed
+#  then people<->group association
+#  and group<->role association
+paths:
+  /mr-api/webhooks:
+    get:
+      description: "Gets a list of well known webhook types"
+      operationId: getWebhookTypes
+      tags:
+        - WebhookService
+      responses:
+        "200":
+          description: "the webhook type details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookTypeDetails"
+        "404":
+          description: "no such url"
+    post:
+      security:
+        -  bearerAuth: []
+      tags:
+        - WebhookService
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookCheck"
+      description: "Send a ping webhook to see if everything is working"
+      operationId: testWebhook
+      responses:
+        "204":
+          description: "the webhook type details"
+        "401":
+          description: "no permission to anything"
+        "403":
+          description: "no permission to any data"
+        "404":
+          description: "no such environment"
+  /mr-api/webhooks/{envId}/{id}:
+    parameters:
+      - name: envId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: UUID
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: UUID
+    get:
+      security:
+        -  bearerAuth: []
+      description: "Gets a specific webhook to show its details based on whats allowed"
+      operationId: getWebhookDetails
+      tags:
+        - WebhookService
+      responses:
+        "200":
+          description: "the webhook details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookDetail"
+        "401":
+          description: "no permission to anything"
+        "403":
+          description: "no permission to any data"
+        "404":
+          description: "no such environment"
+
+  /mr-api/webhooks/{envId}:
+    parameters:
+      - name: envId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: UUID
+      - name: max
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: "where to start"
+      - name: startAt
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: "what position in the results to start at"
+      - name: filter
+        in: query
+        description: "what types of webhooks to look for"
+        schema:
+          type: string
+        required: false
+    get:
+      security:
+        -  bearerAuth: []
+      description: "Provides a pagination API for listing webhooks for a specific environment"
+      operationId: listWebhooks
+      tags:
+        - WebhookService
+      responses:
+        "200":
+          description: "the webhook results"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookSummary"
+        "401":
+          description: "no permission to anything"
+        "403":
+          description: "no permission to environment"
+        "404":
+          description: "no such environment"
+components:
+  schemas:
+    WebhookSummaryItem:
+      type: object
+      required:
+        - id
+        - method
+        - whenSent
+        - status
+      properties:
+        id:
+          description: "event id as stored in the database (not webhook cloudevent id)"
+          type: string
+          format: uuid
+        type:
+          description: "webhook type, empty if the filter is specified as it is just repeated data"
+          type: string
+        method:
+          description: "POST, PUT, etc"
+          type: string
+        whenSent:
+          description: "When the hook was posted"
+          type: string
+          format: date-time
+        status:
+          description: "HTTP status code"
+          type: integer
+    WebhookSummary:
+      type: object
+      required:
+        - max
+        - results
+      properties:
+        max:
+          type: integer
+          format: int64
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookSummaryItem"
+    WebhookDetail:
+      type: object
+      description: "webhook data"
+      required:
+        - status
+        - cloudEventType
+        - method
+      properties:
+        whenSent:
+          type: string
+          format: date-time
+        status:
+          description: "The status of the webhook call"
+          type: integer
+        method:
+          type: string
+        sourceSystem:
+          type: string
+        deliveredDataCloudEventType:
+          type: string
+        cloudEventType:
+          type: string
+        content:
+          type: string
+        url:
+          description: "The URL requested, only if Admin"
+          type: string
+        outboundHeaders:
+          description: "The headers we set on the outbound call, only if Admin"
+          additionalProperties:
+            type: string
+        incomingHeaders:
+          description: "The headers that came back, only if Admin"
+          additionalProperties:
+            type: string
+        result:
+          description: "The body as a string if any, truncated to 1k"
+          type: string
+    WebhookTypeDetail:
+      type: object
+      required:
+        - messageType
+        - description
+        - envPrefix
+      properties:
+        messageType:
+          description: "The cloud event message type "
+          type: string
+        description:
+          description: "What this cloud event is for"
+          type: string
+        envPrefix:
+          description: "the prefix to apply in the environmentInfo field to extract the enabled/headers/url data"
+          type: string
+    WebhookTypeDetails:
+      type: object
+      required:
+        - types
+      properties:
+        types:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebhookTypeDetail"
+    WebhookCheck:
+      type: object
+      required:
+        - messageType
+        - envId
+        - config
+      properties:
+        messageType:
+          type: string
+        envId:
+          type: string
+          format: UUID
+        config:
+          description: "Any configuration to pass to the check, e.g. webhook.feature.url, headers, etc - this ensures the updates get to the destination and are used. They get merged info the envInfo, replacing anything there"
+          additionalProperties:
+            type: string

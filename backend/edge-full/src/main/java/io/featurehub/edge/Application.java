@@ -11,6 +11,7 @@ import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.publish.NATSFeature;
 import io.featurehub.rest.CorsFilter;
 import io.featurehub.utils.FallbackPropertyConfig;
+import io.features.webhooks.features.WebhookFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spi.Container;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
@@ -35,8 +36,12 @@ public class Application {
             EdgeResourceFeature.class,
             CorsFilter.class);
 
+    if (WebhookFeature.Companion.getEnabled()) {
+      config.register(WebhookFeature.class);
+    }
+
       // check if we should list on a different port
-      MetricsHealthRegistration.Companion.registerMetrics(config);
+    MetricsHealthRegistration.Companion.registerMetrics(config);
 
     if (FallbackPropertyConfig.Companion.getConfig("cache.name") != null) {
       config.register(new ContainerLifecycleListener() {

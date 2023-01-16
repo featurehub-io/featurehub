@@ -1,0 +1,15 @@
+== Webhook -> Features
+
+This provides the ability for a listener of the enriched feature stream to send webhooks based on configuration
+in individual Environments in FeatureHub MR.
+
+It expects that:
+
+- the webhook for features is enabled
+- there is an endpoint
+- there may be one or more headers, they are `,` separated, with `=` separating their key and value pairs. Both
+sides of the kv pair must be url-encoded so they don't conflict with the `,` and `=`.
+
+The listener will `POST` the event as a CloudEvent (hand coded until 2.5+ of the cloudevents library is released),
+with appropriate custom headers. The results of the POST and any exception will cause a new event to be posted 
+back to the MR so it can keep a record of events sent for a specific environment. 

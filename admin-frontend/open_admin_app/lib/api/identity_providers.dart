@@ -5,11 +5,13 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
-class IdentityProviders {
+class ServerCapabilities {
   List<String> _identityProviders = <String>['local'];
   Map<String, IdentityProviderInfo> identityInfo = {};
+  Map<String, String> _capabilities = {};
 
   set identityProviders(List<String> val) => _identityProviders = val;
+  set capabilities(Map<String, String> val)  => _capabilities = val;
 
   bool get hasLocal => _identityProviders.contains('local');
   bool get has3rdParty =>
@@ -26,7 +28,7 @@ class IdentityProviders {
   AuthServiceApi? _authServiceApi;
   final ApiClient apiClient;
 
-  IdentityProviders(this.bloc, this.apiClient);
+  ServerCapabilities(this.bloc, this.apiClient);
 
   void authenticateViaProvider(String provider) {
     _authServiceApi ??= AuthServiceApi(apiClient);
@@ -37,4 +39,9 @@ class IdentityProviders {
       bloc.dialogError(e, s);
     });
   }
+
+  /**
+   * the server supports webhooks if it returns this
+   */
+  bool get capabilityWebhooks => _capabilities['webhook.features'] == 'true';
 }

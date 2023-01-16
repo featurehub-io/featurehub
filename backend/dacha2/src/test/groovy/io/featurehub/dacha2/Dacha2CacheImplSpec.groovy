@@ -271,8 +271,7 @@ class Dacha2CacheImplSpec extends Specification {
     and: "we send a delete for the environment"
       cache.updateEnvironment(new PublishEnvironment().action(PublishAction.DELETE)
           .environment(new CacheEnvironment().id(envId)))
-      def result = cache.getFeatureCollection(envId, apiKeyServerSide)
-      def foundEnv = cache.findEnvironment(envId)
+      def result = cache.isEnvironmentPresent(envId)
     and: "we republish the environment"
       cache.updateEnvironment(new PublishEnvironment().action(PublishAction.UPDATE)
           .environment(new CacheEnvironment().id(envId))
@@ -280,12 +279,10 @@ class Dacha2CacheImplSpec extends Specification {
       )
       def resultWith = cache.getFeatureCollection(envId, apiKeyServerSide)
     then:
-      result == null
-      foundEnv == null
+      !result
       resultWith != null
       1 * api.getEnvironment(envId, null) >> pubEnv
       1 * api.getServiceAccount(apiKeyServerSide, null) >> serviceAccount
-
   }
 
   def "sending updates to service accounts works as expected"() {

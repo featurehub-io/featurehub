@@ -1,5 +1,6 @@
 package io.featurehub.mr.auth;
 
+import io.featurehub.db.api.EnvironmentApi;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.GroupApi;
 import io.featurehub.db.api.Opts;
@@ -13,6 +14,7 @@ import io.featurehub.mr.model.ServiceAccount;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.SecurityContext;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,11 +24,13 @@ import java.util.function.Consumer;
 public class AuthManager implements AuthManagerService {
   private final GroupApi groupApi;
   private final PortfolioApi portfolioApi;
+  private final EnvironmentApi environmentApi;
 
   @Inject
-  public AuthManager(GroupApi groupApi, PortfolioApi portfolioApi) {
+  public AuthManager(GroupApi groupApi, PortfolioApi portfolioApi, EnvironmentApi environmentApi) {
     this.groupApi = groupApi;
     this.portfolioApi = portfolioApi;
+    this.environmentApi = environmentApi;
   }
 
   @Override
@@ -145,6 +149,17 @@ public class AuthManager implements AuthManagerService {
     return group.getMembers().stream().map(Person::getId).anyMatch(uid -> uid.getId().equals(userId));
   }
 
+
+  @Override
+  public boolean isPortfolioAdminOfEnvironment(@NotNull UUID envId, @NotNull Person person) {
+    final UUID portfolioId = environmentApi.portfolioEnvironmentBelongsTo(envId);
+
+    if (portfolioId == null) {
+      return false;
+    }
+
+    return isPortfolioAdmin(portfolioId, person);
+  }
 
   @Override
   public Person from(SecurityContext context) {

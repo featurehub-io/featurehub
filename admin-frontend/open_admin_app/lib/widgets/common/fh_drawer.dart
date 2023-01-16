@@ -206,14 +206,15 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
 class _ApplicationSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    var mrClient = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     return StreamBuilder<String?>(
-        stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
+        stream: mrClient
             .streamValley
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return Column(children: const <Widget>[
-              FHMenuItem(
+            return Column(children: <Widget>[
+              const FHMenuItem(
                   name: 'Environments',
                   iconData: AntDesign.bars,
                   path: '/app-settings',
@@ -221,7 +222,7 @@ class _ApplicationSettings extends StatelessWidget {
                   params: {
                     'tab': ['environments']
                   }),
-              FHMenuItem(
+              const FHMenuItem(
                   name: 'Group permissions',
                   iconData: MaterialCommunityIcons.check_box_multiple_outline,
                   path: '/app-settings',
@@ -229,7 +230,7 @@ class _ApplicationSettings extends StatelessWidget {
                   params: {
                     'tab': ['group-permissions']
                   }),
-              FHMenuItem(
+              const FHMenuItem(
                   name: 'Service account permissions',
                   iconData: MaterialCommunityIcons.cogs,
                   path: '/app-settings',
@@ -237,6 +238,15 @@ class _ApplicationSettings extends StatelessWidget {
                   params: {
                     'tab': ['service-accounts']
                   }),
+              if (mrClient.identityProviders.capabilityWebhooks)
+                const FHMenuItem(
+                    name: 'Webhooks',
+                    iconData: MaterialCommunityIcons.webhook,
+                    path: '/app-settings',
+                    permissionType: PermissionType.portfolioadmin,
+                    params: {
+                      'tab': ['webhooks']
+                    }),
             ]);
           } else {
             return const SizedBox.shrink();

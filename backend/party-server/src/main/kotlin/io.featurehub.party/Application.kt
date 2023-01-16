@@ -19,13 +19,7 @@ import io.featurehub.publish.NATSFeature
 import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info.Companion.APPLICATION_NAME_PROPERTY
-import io.featurehub.web.security.oauth.AuthProviderCollection
-import io.featurehub.web.security.oauth.AuthProviders
-import io.featurehub.web.security.oauth.NoAuthProviders
-import io.featurehub.web.security.oauth.OAuth2Feature
-import io.featurehub.web.security.saml.SamlEnvironmentalFeature
-import jakarta.inject.Singleton
-import org.glassfish.jersey.internal.inject.AbstractBinder
+import io.features.webhooks.features.WebhookFeature
 import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.spi.Container
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener
@@ -59,6 +53,10 @@ class Application {
       TelemetryFeature::class.java,
       CacheControlFilter::class.java,
     )
+
+    if (WebhookFeature.enabled) {
+      config.register(WebhookFeature::class.java)
+    }
 
     config.register(object: ContainerLifecycleListener {
       override fun onStartup(container: Container) {

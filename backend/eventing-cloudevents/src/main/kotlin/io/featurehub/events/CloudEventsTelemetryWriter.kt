@@ -49,12 +49,14 @@ class CloudEventsTelemetryWriterImpl @Inject constructor(private val openTelemet
           span.setStatus(StatusCode.OK)
         } catch (e: Exception) {
           log.error("Failed to send message", e)
+          metrics.failures.inc()
           span.setStatus(StatusCode.ERROR, e.message ?: "failed to send message")
         } finally {
           span.end()
         }
       }
     } catch (e: Exception) {
+      metrics.failures.inc()
       log.error("Unable to publish {}", subject, e)
     } finally {
       timer.observeDuration()

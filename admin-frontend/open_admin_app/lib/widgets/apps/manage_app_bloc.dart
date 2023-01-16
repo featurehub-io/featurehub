@@ -60,6 +60,8 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
       _updateCurrentlySelectedGroupPermissions();
       _refreshServiceAccountsOnApplicationChange(app);
     });
+
+    _mrClient.streamValley.refreshWebhookTypes();
   }
 
   @override

@@ -26,6 +26,12 @@ class EnvironmentSqlApi @Inject constructor(
   private val archiveStrategy: ArchiveStrategy
 ) : EnvironmentApi {
 
+  override fun portfolioEnvironmentBelongsTo(eId: UUID): UUID? {
+    return QDbEnvironment()
+      .select(QDbEnvironment.Alias.parentApplication.portfolio.id)
+      .id.eq(eId).findOne()?.parentApplication?.portfolio?.id
+  }
+
   /**
    * What roles does this person have in this environment?
    */
