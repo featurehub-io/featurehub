@@ -58,7 +58,7 @@ class WebhookFeature : Feature {
     val enabled: Boolean
 
     init {
-      enabled = FallbackPropertyConfig.getConfig("webhooks.features.enabled")?.lowercase() == "true"
+      enabled = FallbackPropertyConfig.getConfig("webhooks.features.enabled")?.lowercase() != "false"
     }
   }
 }

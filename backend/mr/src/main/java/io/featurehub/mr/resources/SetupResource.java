@@ -92,9 +92,9 @@ public class SetupResource implements SetupServiceDelegate {
       }
 
       boolean enricherEnabled = "true".equalsIgnoreCase(FallbackPropertyConfig.Companion.getConfig("enricher.enabled"
-        , "false"));
+        , "true"));
       boolean webhooksEnabled = "true".equalsIgnoreCase(FallbackPropertyConfig.Companion.getConfig("webhooks.features.enabled"
-        , "false"));
+        , "true"));
 
       sr.capabilityInfo(
         Map.of("webhook.features", (enricherEnabled && webhooksEnabled) ? "true" : "false" )
