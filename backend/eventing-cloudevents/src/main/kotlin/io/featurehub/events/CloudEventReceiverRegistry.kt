@@ -11,6 +11,7 @@ import io.featurehub.utils.ExecutorSupplier
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.net.URI
 import java.time.OffsetDateTime
 import java.util.concurrent.*
 
@@ -66,7 +67,7 @@ class CloudEventReceiverRegistryMock : CloudEventReceiverRegistryImpl() {
 
     handlers.parallelStream().forEach { handler ->
       handler.handler(obj,
-        CloudEventBuilder().newBuilder().withType(subject).withId("1").withTime(OffsetDateTime.now()).withSubject(subject).build())
+        CloudEventBuilder().newBuilder().withType(subject).withSource(URI.create("/fred")).withId("1").withTime(OffsetDateTime.now()).withSubject(subject).build())
     }
   }
 }
