@@ -95,7 +95,7 @@ class WebhookEnricherListener @Inject constructor(
   }
 
   fun process(ef: EnrichedFeatures, ce: CloudEvent) {
-    log.info("enriched: checking for environment info")
+    log.debug("enriched: checking for environment info")
     val conf = ef.environment.environment.environmentInfo
 
     log.debug("webhook: environment info is {}", conf)

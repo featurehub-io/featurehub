@@ -169,6 +169,34 @@
               </configOptions>
             </configuration>
           </execution>
+          <execution>
+            <id>internal-enricher-api</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <output>${project.basedir}/target/generated-sources/api</output>
+              <apiPackage>io.featurehub.enriched.api</apiPackage>
+              <!-- we overlap the models -->
+              <modelPackage>io.featurehub.mr.model</modelPackage>
+              <inputSpec>${project.basedir}/internal-enricher-api.yaml</inputSpec>
+              <generatorName>jersey3-api</generatorName>
+              <generateApis>false</generateApis>
+
+              <additionalProperties>
+                <additionalProperty>openApiNullable=false</additionalProperty>
+                <additionalProperty>prometheus=true</additionalProperty>
+              </additionalProperties>
+
+              <configOptions>
+                <configOption>
+                  <name>useBeanValidation</name>
+                  <value>true</value>
+                </configOption>
+              </configOptions>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 

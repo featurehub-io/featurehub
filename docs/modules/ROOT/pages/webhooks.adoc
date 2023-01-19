@@ -1,0 +1,162 @@
+= Webhooks
+
+With the 1.6.0 release comes a new feature of Webhooks. This allows you to configure a URL endpoint 
+and appropriate authorisation or configuration headers, and the application will deliver the complete
+set of features on change to that endpoint.
+
+If there are features you would like, please consider lodging them on our Issues register.
+
+Configuration is done per environment. 
+
+== Use
+
+Webhooks exist on a per environment level - you can have one Webhook per environment. The system
+allows you to configure, enable/disable and test your webhook, and see what the results of the webhook
+are. All attempts at delivery are captured and stored in the system.
+
+image:webhooks_menu.png[Webhook Menu]
+
+Selecting Webhooks will give you a panel that allows you to see the webhook traffic for this environment.
+It shows you a summary set of information 
+
+image:webhook_view.png[Webhook Summary traffic]
+
+and lets you click in to view the details of an individual delivery.
+
+image:webhook_details.png[Webhook Delivery details]
+
+To configure a webhook, choose the second panel (identified by the wrench). From here you are able to
+configure the enabled status, the url destination, and any extra headers you need. Once you have
+saved it, you can test it and the result will show up on the Webhook Traffic page.
+
+image:webhook_config.png[Webhook Configuration]
+
+== Data Format
+
+The data is formatted in an OpenAPI document. The finding the latest release 
+is in the `releases.json` file at http://api.dev.featurehub.io/webhooks/releases.json[API Releases].
+To find the actual OpenAPI document, replace `releases.json` with the version.yaml, e.g.
+http://api.dev.featurehub.io/webhooks/1.1.1.yaml[Version 1.1.1]
+
+At the top level, it looks like this, where the full details of features are available, along with an array of features that actually changed.
+
+----
+components:
+  schemas:
+    EnrichedFeatures:
+      description: A full environment with all of its features. This will filter out any management environmentInfo data
+      required: [ environment, featureKeys ]
+      properties:
+        targetEnrichmentDestination: { description: 'If there is a specific target
+            for the data, everything else _should_ ignore it', type: string }
+        environment: { $ref: '#/components/schemas/PublishEnvironment' }
+        featureKeys:
+          description: These are the keys of the features that were updated
+          type: array
+          items: { type: string }
+
+----
+
+== Setup
+
+=== Architecture Overview
+
+We use CloudEvents to ship our any asynchronous events around. 
+
+image::webhooks_overview_architecture.png[Webhook Architecture]
+
+=== General Configuration
+
+==== Number of tries before disabling
+
+When webhooks fail to connect and deliver their result - basically any HTTPS status outside of the 
+200 range (including 0 - where a connection is refused for some reason), then the system begins a
+countdown, where after X number of retries, it will automatically disable the webhook. This can be
+configured site-wide.
+
+----
+webhook.features.max-fails=5
+----
+
+Five is the default value, it is recommended you set it higher, but it is designed to not continually
+spam a service that isn't capable of receiving. 
+
+==== Disabling
+
+As of 1.6.0, Webhooks are turned on by default. If you don't wish to use them, you can turn them off.
+Internally it uses a feature called the enrichment pipeline, of which Webhooks are the first to use it,
+so disabling either works. Disabling webhooks specifically you need to set an environment variable or
+system property as such:
+
+----
+webhooks.features.enabled=false
+----
+
+The enricher pipeline will also be active. This will lead to unnecessary "work" if you aren't using it, so
+you can disable this with:
+
+----
+enricher.enabled=false
+----
+
+=== Configuring your messaging system
+
+==== NATS
+If your installation is using NATS, then you do not have to do anything, NATS will automatically start
+processing updates for environments marked for Webhooks.
+
+==== Google Pub/Sub
+
+PubSub because it is a Queueing system rather than true PubSub requires more configuration.
+
+====
+*Dacha2*
+
+For PubSub, when feature updates travel from MR -> Dacha2, Dacha2 will take the well known topic
+and create its own subscription dynamically, and will destroy it on shutting down.
+
+Webhooks use the new Feature Enrichment pipeline, which will take the single
+feature update (e.g. a feature changed, was added or was deleted), and pull all of the environment's
+data out of the cache and then publish the complete set of Feature data for that environment. But
+you only want *one* of the Dacha2 instances processing that. As such, you need to a new subscriber 
+just for the enrichment pipeline.
+====
+
+----
+cloudevents.enricher.pubsub.subscription-name=enricher-updates-sub
+----
+
+====
+*Publishing Events*
+
+Once Dacha2 has enriched the data, it needs to publish it back out again on one or more new topics. 
+This allows you to easily create pools of topic/subscriber pairs. As such, we only actually have one
+topic, but it is configured to support further listeners to the enrichment pipeline - you can add your
+own if you wish to have an application being updated via a subscription for example.
+
+The configuration uses the fairly standard list of keys, and then uses those keys to look for
+further configuration.
+
+In the example below `featurehub-enriched-events-webhooks` is the name of the Topic that
+Dacha2 will attempt to publish the enriched data on.
+====
+
+----
+# when pubsub publishes the enriched data, it needs to specify one or more topics to publish on.
+cloudevents.enricher.pubsub.channels=webhooks
+cloudevents.enricher.pubsub.channel.webhooks=featurehub-enriched-events-webhooks
+----
+
+====
+*Edge Listening for Enrichment data*
+
+Edge is currently the application that listens for webhook related enriched data. You need
+to create a topic/subscription pairing and use that subscription pair on the configuration below.
+Here we have assumed your infrastructure-as-code has provided you a name like `featurehub-enriched-events` 
+as the subscription. 
+====
+
+----
+# this is "edge" - listening to the cloudevents.enricher.channel-name
+cloudevents.enricher.pubsub.enriched-subscription-name=featurehub-enriched-events
+-----
