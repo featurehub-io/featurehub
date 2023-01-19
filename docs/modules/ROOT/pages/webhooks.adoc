@@ -2,38 +2,34 @@
 
 With the 1.6.0 release comes a new feature of Webhooks. This allows you to configure a URL endpoint 
 and appropriate authorisation or configuration headers, and the application will deliver the complete
-set of features on change to that endpoint.
-
-If there are features you would like, please consider lodging them on our Issues register.
+set of feature flags on change to that endpoint.
 
 Configuration is done per environment. 
 
 == Use
 
-Webhooks exist on a per environment level - you can have one Webhook per environment. The system
+Webhooks are designed to be per environment - you can have one Webhook per environment. The system
 allows you to configure, enable/disable and test your webhook, and see what the results of the webhook
 are. All attempts at delivery are captured and stored in the system.
 
 image:webhooks_menu.png[Webhook Menu]
 
-Selecting Webhooks will give you a panel that allows you to see the webhook traffic for this environment.
-It shows you a summary set of information 
+The Webhook UI allows you to see the webhook traffic for a given environment.
 
 image:webhook_view.png[Webhook Summary traffic]
 
-and lets you click in to view the details of an individual delivery.
+You can also drill down into the details of an individual request.
 
 image:webhook_details.png[Webhook Delivery details]
 
-To configure a webhook, choose the second panel (identified by the wrench). From here you are able to
-configure the enabled status, the url destination, and any extra headers you need. Once you have
-saved it, you can test it and the result will show up on the Webhook Traffic page.
+You can configure a webhook as shown on the screen below: the enabled status, the url destination, and any extra headers you need. Once you have
+saved it, you can test it and the result will show up on the Webhook Traffic page. Test button will only appear if webhook is enabled.
 
 image:webhook_config.png[Webhook Configuration]
 
 == Data Format
 
-The data is formatted in an OpenAPI document. The finding the latest release 
+The data is formatted in an OpenAPI document. The latest release 
 is in the `releases.json` file at http://api.dev.featurehub.io/webhooks/releases.json[API Releases].
 To find the actual OpenAPI document, replace `releases.json` with the version.yaml, e.g.
 http://api.dev.featurehub.io/webhooks/1.1.1.yaml[Version 1.1.1]
@@ -61,7 +57,7 @@ components:
 
 === Architecture Overview
 
-We use CloudEvents to ship our any asynchronous events around. 
+We use CloudEvents to ship any asynchronous events. 
 
 image::webhooks_overview_architecture.png[Webhook Architecture]
 
@@ -70,7 +66,7 @@ image::webhooks_overview_architecture.png[Webhook Architecture]
 ==== Number of tries before disabling
 
 When webhooks fail to connect and deliver their result - basically any HTTPS status outside of the 
-200 range (including 0 - where a connection is refused for some reason), then the system begins a
+200 range (including 0 - where a connection is refused for some reason), then the FeatureHub app begins a
 countdown, where after X number of retries, it will automatically disable the webhook. This can be
 configured site-wide.
 
@@ -107,7 +103,7 @@ processing updates for environments marked for Webhooks.
 
 ==== Google Pub/Sub
 
-PubSub because it is a Queueing system rather than true PubSub requires more configuration.
+Because Pub/Sub is a Queueing system rather than true PubSub requires more configuration.
 
 ====
 *Dacha2*
