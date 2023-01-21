@@ -156,6 +156,13 @@ created.
 - `web.asset.location=/var/www/html/intranet` - can be set optionally if you are intending to serve the Admin web app on the intranet without public internet access. We supply this application build already preloaded with all necessary assets. Available in FeatureHub v1.5.4 and higher. With 1.5.10 or higher there is - `web.asset.location=/var/www/html/html` - which can be used if there is a lot of mobile use.
 - `cache-control.web.index` - this allows you to set the Cache-Control header on the index.html file. It is set by default to `no-store, max-age=0` preventing any caching, so as new versions roll out, they are correctly picked up.
 - `cache-control.web.other` - this sets the cache control on all of the other content of the website, which is essentially considered to be versioned. This data should never change and it is set by default to `max-age=864000` - or about 10 days.
+- `webhooks.features.enabled` - enables webhooks functionality. True by default.
+Note, internally webhooks are dependent on enrichment pipeline, see below for `enricher.enabled` property. If this property is set to false, then it will override `webhooks.features.enabled` property. To disable webhooks, set  `webhooks.features.enabled=false` This will remove webhooks functionality from the Admin UI. Depending on the installation option, webhooks may require additional configuration as described  link:webhooks-configuration[here]
+- `webhook.features.max-fails` - number of webhook retries before disabling. When webhooks fail to connect and deliver their result - any HTTPS status outside of the
+200 range (including 0 - where a connection is refused) then the FeatureHub app begins a
+countdown, where after n number of retries, it will automatically disable the webhook. Default value is 5. To change, set to the desired number: `webhook.features.max-fails=10`
+- `enricher.enabled` - The enricher pipeline, currently only required to be enabled for webhooks to work. True by default. To reduce unnecessary "load" if you do not use webhooks, disable as follows: `enricher.enabled=false`
+
 
 === Dacha1 Config
 

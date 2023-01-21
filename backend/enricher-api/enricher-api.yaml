@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
-  title: Cache (Dache) API
-  description: This is used by the Edge servers to access features and environments quickly.
+  title: Enricher API
+  description: This is an OpenAPI document for enriched data. It is used by Webhook Features directly.
   version: "1.1.1"
 paths:
   /v2/fake:
@@ -15,22 +15,6 @@ paths:
           description: "yay"
 components:
   schemas:
-    EnricherPing:
-      type: object
-      x-cloudevent-type: enricher-ping-v1
-      x-cloudevent-subject: io.featurehub.events.enricher
-      x-package: io.featurehub.enriched.model
-      required:
-        - environment
-        - cloudEventProcessor
-      properties:
-        environment:
-          description: "The environment to extract from Dacha"
-          type: string
-          format: uuid
-        cloudEventProcessor:
-          description: "Include this field with the enriched features to indicate which client should be processing the request if a specific ping to determine if that client is working"
-          type: string
     EnrichedFeatures:
       x-cloudevent-type: enriched-feature-v1
       x-cloudevent-subject: io.featurehub.events.enricher

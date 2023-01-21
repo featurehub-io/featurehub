@@ -7,6 +7,7 @@
 ** xref:strategies.adoc[Rollout Strategy and User Targeting]
 ** xref:service-accounts.adoc[Service Accounts & API Keys]
 ** xref:users.adoc[Users & User Groups Permissions]
+** xref:webhooks.adoc[Webhooks]
 ** xref:app_setup_helper.adoc[Quick Setup Helper]
 
 * FeatureHub Management Via an API
@@ -18,6 +19,7 @@
 ** xref:evaluation.adoc[Evaluating FeatureHub]
 ** xref:installation.adoc[Installation]
 ** xref:configuration.adoc[Configuration]
+** xref:webhooks-configuration.adoc[Webhooks Configuration]
 ** xref:identity.adoc[Identity, authentication, OAuth2 and SAML options]
 ** xref:metrics.adoc[Monitoring your Installation]
 

@@ -1,0 +1,58 @@
+= Webhooks
+
+With the 1.6.0 release comes a new feature of Webhooks. This allows you to configure a URL endpoint
+and appropriate authorisation or configuration headers, and the application will deliver the complete
+set of feature flags changes to that endpoint. E.g. changes of feature values, adding or deleting features.
+Configuration is done per environment.
+
+== Usage
+
+Webhooks are designed to be per environment - you can have one webhook per environment. The system
+allows you to configure, enable/disable and test your webhook, and see what the results of the webhook
+are. All attempts at delivery are captured and stored in the system.
+
+image:webhooks_menu.png[Webhook Menu]
+
+The Webhook UI allows you to see the webhook traffic for a given environment.
+
+image:webhook_view.png[Webhook Summary traffic]
+
+You can also drill down into the details of an individual request.
+
+image:webhook_details.png[Webhook Delivery details]
+
+You can configure a webhook as shown on the screen below: the enabled status, the url destination, and any extra headers you need. Once you have
+saved it, you can test it and the result will show up on the Webhook Traffic page. Test button will only appear if webhook is enabled.
+
+image:webhook_config.png[Webhook Configuration]
+
+== Data Format
+
+The data is formatted in an OpenAPI document. The latest release
+is in the `releases.json` file at http://api.dev.featurehub.io/webhooks/releases.json[API Releases].
+To find the actual OpenAPI document, replace `releases.json` with the version.yaml, e.g.
+http://api.dev.featurehub.io/webhooks/1.1.1.yaml[Version 1.1.1]
+
+At the top level, it looks like this, where the full details of features are available, along with an array of features that actually changed.
+
+----
+components:
+  schemas:
+    EnrichedFeatures:
+      description: A full environment with all of its features. This will filter out any management environmentInfo data
+      required: [ environment, featureKeys ]
+      properties:
+        targetEnrichmentDestination: { description: 'If there is a specific target
+            for the data, everything else _should_ ignore it', type: string }
+        environment: { $ref: '#/components/schemas/PublishEnvironment' }
+        featureKeys:
+          description: These are the keys of the features that were updated
+          type: array
+          items: { type: string }
+
+----
+
+
+
+
+
