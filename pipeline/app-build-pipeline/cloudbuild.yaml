@@ -75,7 +75,7 @@ steps:
     volumes:
       - name: user.home
         path: /root
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/flutter-build:1.8'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/flutter-build:1.9'
     # the version of flutter-build refers to the commit message. It is the base image used to build the front end. This will *only build the artifacts and
     # not generate the installable file required to build the docker images. That is not done in this pipeline (only when building the actual docker images)
     entrypoint: '/bin/sh'
