@@ -1,0 +1,61 @@
+= Webhooks configuration
+
+This section explains if additional configuration is needed to support webhooks functionality.
+
+NOTE: If your installation is using NATS, you are not required to do any additional configuration, NATS will automatically start
+processing updates for environments/features relevant to the webhooks.
+
+If your installation is using Pub/Sub, you will need to do additional configuration as described below.
+
+== Dacha2
+
+For PubSub, when feature updates travel from MR -> Dacha2, Dacha2 will take the well known topic
+and create its own subscription dynamically, and will destroy it on shutting down.
+
+Webhooks use the new Feature Enrichment pipeline, which will take the single
+feature update (e.g. a feature changed, was added or was deleted), and pull all of the environment's
+data out of the cache and then publish the complete set of Feature data for that environment. But
+you only want *one* of the Dacha2 instances processing that. As such, you need to a new subscriber
+just for the enrichment pipeline.
+
+----
+cloudevents.enricher.pubsub.subscription-name=enricher-updates-sub
+----
+
+== Publishing Events
+
+Once Dacha2 has enriched the data, it needs to publish it back out again on one or more new topics.
+This allows you to easily create pools of topic/subscriber pairs. As such, we only actually have one
+topic, but it is configured to support further listeners to the enrichment pipeline - you can add your
+own if you wish to have an application being updated via a subscription for example.
+
+The configuration uses the fairly standard list of keys, and then uses those keys to look for
+further configuration.
+
+In the example below `featurehub-enriched-events-webhooks` is the name of the Topic that
+Dacha2 will attempt to publish the enriched data on.
+
+----
+# when pubsub publishes the enriched data, it needs to specify one or more topics to publish on.
+cloudevents.enricher.pubsub.channels=webhooks
+cloudevents.enricher.pubsub.channel.webhooks=featurehub-enriched-events-webhooks
+----
+
+== Edge
+
+Edge is currently the application that listens for webhook related enriched data. You need
+to create a topic/subscription pairing and use that subscription pair on the configuration below.
+Here we have assumed your infrastructure-as-code has provided you a name like `featurehub-enriched-events`
+as the subscription.
+
+----
+# "edge" listening to the cloudevents.enricher.channel-name topic
+
+cloudevents.enricher.pubsub.enriched-subscription-name=featurehub-enriched-events
+----
+
+== Architecture Overview
+
+FeatureHub uses CloudEvents to ship any asynchronous events.
+
+image::webhooks_overview_architecture.png[Webhook Architecture]
