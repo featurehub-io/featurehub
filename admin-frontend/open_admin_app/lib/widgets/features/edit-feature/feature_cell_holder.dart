@@ -40,14 +40,31 @@ class FeatureCellHolder extends StatelessWidget {
                       child: Tooltip(
                         message: feature.name,
                         verticalOffset: 8.0,
-                        child: Text(feature.name,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                            // minFontSize: 8.0,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyText1!
-                                .copyWith(fontWeight: FontWeight.bold)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              fit: FlexFit.loose,
+                              child: Text(feature.name,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                  // minFontSize: 8.0,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText1!
+                                      .copyWith(fontWeight: FontWeight.bold)),
+                            ),
+                            if (feature.link?.isNotEmpty == true)
+                              IconButton(
+                                tooltip: feature.link!,
+                                splashRadius: 20,
+                                icon: const Icon(Feather.external_link),
+                                onPressed: () {
+                                  window.open(feature.link!, 'new tab');
+                                },
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -109,22 +126,9 @@ class FeatureCellHolder extends StatelessWidget {
                           fontFamily: 'SourceCodePro',
                           fontSize: 10,
                           letterSpacing: 0.5)),
-                  Row(
-                    children: [
-                      FHCopyToClipboard(
-                          tooltipMessage: "Copy feature key to clipboard",
-                          copyString: feature.key!),
-                      if (feature.link?.isNotEmpty == true)
-                        IconButton(
-                          tooltip: feature.link!,
-                          splashRadius: 20,
-                          icon: const Icon(Feather.external_link),
-                          onPressed: () {
-                            window.open(feature.link!, 'new tab');
-                          },
-                        ),
-                    ],
-                  ),
+                  FHCopyToClipboard(
+                      tooltipMessage: "Copy feature key to clipboard",
+                      copyString: feature.key!),
                 ],
               ),
             ],

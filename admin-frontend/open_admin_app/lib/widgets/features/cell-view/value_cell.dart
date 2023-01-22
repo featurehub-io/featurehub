@@ -28,16 +28,10 @@ class ValueCellHolder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (efv.roles.isNotEmpty) {
-      return _ValueContainer(
-        feature: feature,
-        fv: fv,
-        efv: efv,
-        afv: afv
-      );
+      return _ValueContainer(feature: feature, fv: fv, efv: efv, afv: afv);
     }
     if ((fv?.id == null) && efv.roles.isEmpty) {
-      return const FHTagWidget(
-          text: 'NO ACCESS', state: TagStatus.disabled);
+      return const FHTagWidget(text: 'NO ACCESS', state: TagStatus.disabled);
     }
     return const SizedBox.shrink();
   }
@@ -62,37 +56,38 @@ class _ValueContainer extends StatelessWidget {
       return InkWell(
         onTap: () {
           SideSheet.right(
-            body: EditFeatureValueWidget(
+              body: EditFeatureValueWidget(
                 fv: fv!,
                 environmentFeatureValue: efv,
                 perApplicationFeaturesBloc: bloc,
                 feature: feature,
-            ),
-            width: MediaQuery.of(context).size.width * 0.3,
-            context: context);
+              ),
+              width: MediaQuery.of(context).size.width * 0.3,
+              context: context);
         },
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
-            // crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (fv!.retired != null && fv!.retired == true)
+              Align(
+                alignment: Alignment.topRight,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (fv!.retired != null && fv!.retired == true)
                       const RetiredIndicator(),
-                      if (fv!.locked) const LockedIndicator(),
-                      if (!fv!.locked && (fv!.retired == null || (fv!.retired != null && fv!.retired == false)))
-                        const SizedBox(height: 14.0)
-                    ],
-                  ),
+                    if (fv!.locked) const LockedIndicator(),
+                    if (!fv!.locked &&
+                        (fv!.retired == null ||
+                            (fv!.retired != null && fv!.retired == false)))
+                      const SizedBox(height: 14.0)
+                  ],
                 ),
+              ),
               _ValueCard(feature: feature, fv: fv!),
               if (fv!.rolloutStrategies.isNotEmpty)
                 _StrategiesList(feature: feature, fv: fv!),
@@ -116,8 +111,8 @@ class LockedIndicator extends StatelessWidget {
     var lightTheme = Theme.of(context).brightness == Brightness.light;
     return Tooltip(
         message: "Locked",
-        child:
-            Icon(Icons.lock_outline, size: 14.0, color: lightTheme ? Colors.black26 : Colors.white70));
+        child: Icon(Icons.lock_outline,
+            size: 14.0, color: lightTheme ? Colors.black26 : Colors.white70));
   }
 }
 
@@ -130,11 +125,12 @@ class RetiredIndicator extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.only(right: 8.0),
       child: Tooltip(
-          message: "Retired",
-          child: Icon(MaterialIcons.do_not_disturb,
-              size: 14.0,
-            color: lightTheme ? Colors.black26 : Colors.white70,
-          ),
+        message: "Retired",
+        child: Icon(
+          MaterialIcons.do_not_disturb,
+          size: 14.0,
+          color: lightTheme ? Colors.black26 : Colors.white70,
+        ),
       ),
     );
   }
@@ -178,50 +174,29 @@ class _ValueCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: strategyCardPadding),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 200, minWidth: 80),
         height: strategyCardHeight,
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
         decoration: BoxDecoration(
           color: lightTheme ? Colors.white70 : Colors.black12,
           borderRadius: const BorderRadius.all(Radius.circular(4.0)),
           border: Border.all(
             color: Colors.black12,
-            width: 1.0,
+            width: 0.5,
           ),
         ),
         child: Row(
-          // mainAxisAlignment: MainAxisAlignment.spaceAround,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.max,
           children: [
-            feature.valueType == FeatureValueType.BOOLEAN
-                ? Flexible(
-              fit: FlexFit.loose,
-                  child: FlagOnOffColoredIndicator(
-                      on: rolloutStrategy != null
-                          ? rolloutStrategy!.value
-                          : fv.valueBoolean),
-                )
-                : Flexible(
-              fit: FlexFit.loose,
-                  child: Text(displayValue.isEmpty ? 'not set' : displayValue,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      style: displayValue.isEmpty
-                          ? Theme.of(context).textTheme.caption
-                          : Theme.of(context)
-                              .textTheme
-                              .bodyText2
-                              ?.copyWith(color: const Color(0xff11C8B5))),
-                ),
-            const SizedBox(width: 4.0),
             Flexible(
-              fit: FlexFit.loose,
+              fit: FlexFit.tight,
               child: Container(
                 decoration: BoxDecoration(
                   color: rolloutStrategy == null
-                      ? defaultTextColor.withOpacity(0.3)
-                      : strategyTextColor.withOpacity(0.3),
-                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                      ? defaultTextColor.withOpacity(0.2)
+                      : strategyTextColor.withOpacity(0.2),
+                  borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(4.0),
+                      bottomLeft: Radius.circular(4.0)),
                 ),
                 child: rolloutStrategy != null
                     ? Tooltip(
@@ -229,26 +204,47 @@ class _ValueCard extends StatelessWidget {
                         child: rolloutStrategy == null
                             ? const SizedBox.shrink()
                             : Padding(
-                                padding: const EdgeInsets.all(4.0),
+                                padding: const EdgeInsets.all(6.0),
                                 child: Text(rolloutStrategy!.name,
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .overline!
+                                        .bodyMedium!
                                         .copyWith(color: strategyTextColor)),
                               ),
                       )
                     : Padding(
-                        padding: const EdgeInsets.all(4.0),
+                        padding: const EdgeInsets.all(6.0),
                         child: Text('default',
                             style: Theme.of(context)
                                 .textTheme
-                                .labelSmall!
+                                .bodyMedium!
                                 .copyWith(color: defaultTextColor)),
                       ),
               ),
             ),
+            const SizedBox(width: 4.0),
+            feature.valueType == FeatureValueType.BOOLEAN
+                ? Flexible(
+                    fit: FlexFit.tight,
+                    child: FlagOnOffColoredIndicator(
+                        on: rolloutStrategy != null
+                            ? rolloutStrategy!.value
+                            : fv.valueBoolean),
+                  )
+                : Flexible(
+                    fit: FlexFit.tight,
+                    child: Text(displayValue.isEmpty ? 'not set' : displayValue,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: displayValue.isEmpty
+                            ? Theme.of(context).textTheme.bodyMedium
+                            : Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: const Color(0xff11C8B5))),
+                  ),
           ],
         ),
       ),

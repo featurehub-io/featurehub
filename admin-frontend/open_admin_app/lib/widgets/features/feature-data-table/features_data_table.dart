@@ -10,6 +10,8 @@ import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart
 import 'package:open_admin_app/widgets/features/feature-data-table/handle_validation_messages.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+import 'package:syncfusion_flutter_core/theme.dart';
+
 
 class FeaturesDataTable extends StatefulWidget {
   const FeaturesDataTable({Key? key, this.title, required this.bloc})
@@ -188,33 +190,40 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                     ],
                   ),
                   const SizedBox(height: 24.0),
-                  SizedBox(
-                    height: tableHeight,
-                    child: SfDataGrid(
-                      source: _featuresDataSource,
-                      gridLinesVisibility: GridLinesVisibility.both,
-                      headerGridLinesVisibility: GridLinesVisibility.both,
-                      isScrollbarAlwaysShown: true,
-                      rowsPerPage: rowsPerPage,
-                      defaultColumnWidth: featureValueCellWidth,
-                      columnSizer: _customColumnSizer,
-                      frozenColumnsCount: 1,
-                      onQueryRowHeight: (details) {
-                        return details.getIntrinsicRowHeight(details.rowIndex);
-                      },
-                      columns: <GridColumn>[
-                        GridColumn(
-                          minimumWidth: featureNameCellWidth,
-                          columnName: 'features name',
-                          label: Container(
-                              padding: const EdgeInsets.all(16.0),
-                              alignment: Alignment.center,
-                              child: const Text(
-                                "Features", style: TextStyle(fontWeight: FontWeight.bold)
-                              )),
+                  Container(
+                    color: Theme.of(context).cardColor,
+                    child: SizedBox(
+                      height: tableHeight,
+                      child: SfDataGridTheme(
+                        data: SfDataGridThemeData(headerColor: Theme.of(context).backgroundColor),
+                        child: SfDataGrid(
+                          source: _featuresDataSource,
+                          gridLinesVisibility: GridLinesVisibility.both,
+                          headerGridLinesVisibility: GridLinesVisibility.both,
+                          isScrollbarAlwaysShown: true,
+                          rowsPerPage: rowsPerPage,
+                          defaultColumnWidth: featureValueCellWidth,
+                          columnSizer: _customColumnSizer,
+                          frozenColumnsCount: 1,
+                          onQueryRowHeight: (details) {
+                            return details.getIntrinsicRowHeight(details.rowIndex);
+                          },
+                          columns: <GridColumn>[
+                            GridColumn(
+                              // minimumWidth: featureNameCellWidth,
+                              // maximumWidth: featureNameCellWidth,
+                              columnName: 'features name',
+                              label: Container(
+                                  padding: const EdgeInsets.all(16.0),
+                                  alignment: Alignment.center,
+                                  child: const Text(
+                                    "Features", style: TextStyle(fontWeight: FontWeight.bold)
+                                  )),
+                            ),
+                            ...gridColumnsList,
+                          ],
                         ),
-                        ...gridColumnsList,
-                      ],
+                      ),
                     ),
                   ),
                   if (_maxFeatures >
