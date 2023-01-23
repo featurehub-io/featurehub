@@ -132,7 +132,8 @@ update install repository with the latest images and issue tags on that reposito
 == Coming soon
 
 * Feature auditing
-* SDK's : Ruby
+* Surface analytics
+* SDK's : Swift
 * Yaml remote configuration support
 
 For more details please refer to https://github.com/featurehub-io/featurehub/issues?q=is%3Aissue+is%3Aopen+label%3Aroadmap[Roadmap tickets]
