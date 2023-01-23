@@ -22,8 +22,13 @@ class EditValueStrategyLinkButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FHUnderlineButton(
-        title: rolloutStrategy.name,
+    return Material(
+        type: MaterialType.transparency,
+        child: IconButton(
+        splashRadius: 20,
+        mouseCursor:
+        editable ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        icon: const Icon(Icons.edit, size: 16),
         onPressed: () => showDialog(
             context: context,
             builder: (_) {
@@ -37,6 +42,6 @@ class EditValueStrategyLinkButton extends StatelessWidget {
                     child: StrategyEditingWidget(
                         bloc: strBloc, editable: editable),
                   ));
-            }));
+            })));
   }
 }

@@ -37,12 +37,13 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
   Widget build(BuildContext context) {
     return SizedBox(
         width: 200,
-        height: 30,
+        height: 36,
         child: TextField(
           style: Theme.of(context).textTheme.bodyText1,
           enabled: widget.unlocked && widget.canEdit,
           controller: tec,
           decoration: InputDecoration(
+              border: const OutlineInputBorder(),
               contentPadding:
                   const EdgeInsets.only(left: 4.0, right: 4.0, bottom: 8.0),
               enabledBorder: OutlineInputBorder(

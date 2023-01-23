@@ -55,13 +55,24 @@ class FeatureCellHolder extends StatelessWidget {
                                       .copyWith(fontWeight: FontWeight.bold)),
                             ),
                             if (feature.link?.isNotEmpty == true)
-                              IconButton(
-                                tooltip: feature.link!,
-                                splashRadius: 20,
-                                icon: const Icon(Feather.external_link),
-                                onPressed: () {
-                                  window.open(feature.link!, 'new tab');
-                                },
+                              Row(
+                                children: [
+                                  Material(
+                                    type: MaterialType
+                                        .transparency,
+                                    child: IconButton(
+                                      splashRadius: 20,
+                                      tooltip: feature.link!,
+                                      icon: const Icon(Feather.external_link),
+                                      onPressed: () {
+                                        window.open(feature.link!, 'new tab');
+                                      },
+                                    ),
+                                  ),
+                                  FHCopyToClipboard(
+                                      tooltipMessage: "Copy feature key to clipboard",
+                                      copyString: feature.key!),
+                                ],
                               ),
                           ],
                         ),
@@ -69,68 +80,64 @@ class FeatureCellHolder extends StatelessWidget {
                     ),
                   ),
                 ),
-                PopupMenuButton(
-                  splashRadius: 20,
-                  tooltip: 'Show more',
-                  icon: const Icon(Icons.more_vert),
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      bloc.mrClient.addOverlay((BuildContext context) =>
-                          CreateFeatureDialogWidget(
-                              bloc: bloc, feature: feature));
-                    }
-                    if (value == 'delete') {
-                      bloc.mrClient.addOverlay((BuildContext context) =>
-                          FeatureDeleteDialogWidget(
-                              bloc: bloc, feature: feature));
-                    }
-                    if (value == 'metadata') {
-                      bloc.getFeatureIncludingMetadata(feature);
-                      bloc.mrClient.addOverlay(
-                          (BuildContext context) => SetFeatureMetadataWidget(
-                                bloc: bloc,
-                              ));
-                    }
-                  },
-                  itemBuilder: (BuildContext context) {
-                    var isEditor = bloc
-                        .mrClient.userHasFeatureEditRoleInCurrentApplication;
-                    return [
-                      PopupMenuItem(
-                          value: 'edit',
-                          child: Text(
-                              isEditor ? 'Edit details' : 'View details',
-                              style: Theme.of(context).textTheme.bodyText2)),
-                      PopupMenuItem(
-                        value: 'metadata',
-                        child: Text(
-                            isEditor ? 'Edit metadata' : 'View metadata',
-                            style: Theme.of(context).textTheme.bodyText2),
-                      ),
-                      if (isEditor)
+                Material(
+                  type: MaterialType
+                      .transparency,
+                  child: PopupMenuButton(
+                    splashRadius: 20,
+                    tooltip: 'Show more',
+                    icon: const Icon(Icons.more_vert),
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        bloc.mrClient.addOverlay((BuildContext context) =>
+                            CreateFeatureDialogWidget(
+                                bloc: bloc, feature: feature));
+                      }
+                      if (value == 'delete') {
+                        bloc.mrClient.addOverlay((BuildContext context) =>
+                            FeatureDeleteDialogWidget(
+                                bloc: bloc, feature: feature));
+                      }
+                      if (value == 'metadata') {
+                        bloc.getFeatureIncludingMetadata(feature);
+                        bloc.mrClient.addOverlay(
+                            (BuildContext context) => SetFeatureMetadataWidget(
+                                  bloc: bloc,
+                                ));
+                      }
+                    },
+                    itemBuilder: (BuildContext context) {
+                      var isEditor = bloc
+                          .mrClient.userHasFeatureEditRoleInCurrentApplication;
+                      return [
                         PopupMenuItem(
-                          value: 'delete',
-                          child: Text('Delete',
+                            value: 'edit',
+                            child: Text(
+                                isEditor ? 'Edit details' : 'View details',
+                                style: Theme.of(context).textTheme.bodyText2)),
+                        PopupMenuItem(
+                          value: 'metadata',
+                          child: Text(
+                              isEditor ? 'Edit metadata' : 'View metadata',
                               style: Theme.of(context).textTheme.bodyText2),
                         ),
-                    ];
-                  },
+                        if (isEditor)
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Text('Delete',
+                                style: Theme.of(context).textTheme.bodyText2),
+                          ),
+                      ];
+                    },
+                  ),
                 ),
               ]),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Text(feature.valueType.toString().split('.').last,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontFamily: 'SourceCodePro',
-                          fontSize: 10,
-                          letterSpacing: 0.5)),
-                  FHCopyToClipboard(
-                      tooltipMessage: "Copy feature key to clipboard",
-                      copyString: feature.key!),
-                ],
-              ),
+              Text(feature.valueType.toString().split('.').last,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontFamily: 'SourceCodePro',
+                      fontSize: 10,
+                      letterSpacing: 0.5)),
             ],
           ),
         ),
