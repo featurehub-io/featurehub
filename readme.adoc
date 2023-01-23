@@ -49,7 +49,9 @@ else {
 
 ```
 
+== FeatureHub API
 
+https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[Headless API] is available to manage FeatureHub app if you require automation or prefer not to use Admin Console to manage features. API is provided in OpenAPI format and can be imported into Postman. Follow https://docs.featurehub.io/featurehub/latest/admin-service-accounts.html[this documentation] to generate access tokens.
 
 == FeatureHub Users
 
@@ -69,7 +71,7 @@ We are looking for companies that have successfully adopted FeatureHub to help u
 * Unlimited features
 * Unlimited clients requesting features
 * Unlimited Applications and Environments
-* Unlimited scalability. FeatureHub is the only open source platform that can scale for large enterprises needs
+* Unlimited scalability. FeatureHub is the only open source and cloud native platform that can scale for large enterprises needs
 
 
 === Feature flags, A/B testing, experimentation and analytics support
@@ -80,7 +82,7 @@ We are looking for companies that have successfully adopted FeatureHub to help u
 
 === Easy to use
 
-* Control features from an easy to use console
+* Control features from an easy to use console or headless API
 * View how your features are setup across each environment from the main console
 * Environments promotion order - to help you see and order features by environment
 * With "smart lock" only enable feature state updates when they are ready
