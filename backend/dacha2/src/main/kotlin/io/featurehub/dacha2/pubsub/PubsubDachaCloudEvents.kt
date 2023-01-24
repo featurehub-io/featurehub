@@ -14,16 +14,13 @@ import org.slf4j.LoggerFactory
 class PubsubDachaCloudEvents @Inject constructor(
   pubSubFactory: PubSubFactory,
   eventListener: CloudEventReceiverRegistry,
-  featureEnricher: FeatureEnricher,
-  cloudEventPublisher: CloudEventPublisher) {
+  featureEnricher: FeatureEnricher) {
   @ConfigKey("cloudevents.mr-dacha2.pubsub.topic-name")
   var topicName: String? = "featurehub-mr-dacha2"
   @ConfigKey("cloudevents.enricher.pubsub.subscription-name")
   var enricherSubscriptionName: String? = "enricher-updates-sub"
   @ConfigKey("cloudevents.mr-dacha2.pubsub.subscription-prefix")
   var subscriptionPrefix: String? = "featurehub-dacha2-listener"
-  @ConfigKey("cloudevents.enricher.channel-name")
-  private var enricherChannelName: String? = "featurehub-enriched-events"
 
   private val log: Logger = LoggerFactory.getLogger(PubsubDachaCloudEvents::class.java)
 
@@ -44,13 +41,8 @@ class PubsubDachaCloudEvents @Inject constructor(
       pubSubFactory.makeSubscriber(enricherSubscriptionName!!) {
         featureEnricher.enrich(it)
       }
-      val publisher = pubSubFactory.makePublisher(enricherChannelName!!)
-      cloudEventPublisher.registerForPublishing(
-        EnrichedFeatures.CLOUD_EVENT_TYPE,
-        featureEnricher.metric(), true, publisher::publish)
 
-      log.info("pubsub: dacha enricher enabled (listen & publish)")
-
+      log.info("pubsub: dacha enricher enabled (listen)")
     }
 
     log.info("dacha2: pubsub listening to {}", topicName)
