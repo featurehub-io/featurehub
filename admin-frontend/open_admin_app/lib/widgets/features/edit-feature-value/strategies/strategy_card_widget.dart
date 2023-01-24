@@ -42,21 +42,31 @@ class StrategyCardWidget extends StatelessWidget {
                                 .textTheme
                                 .caption!
                                 .copyWith(color: defaultTextColor))
-                        : EditValueStrategyLinkButton(
+                        : Text(
+                            rolloutStrategy!.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelLarge
+                          )),
+                Flexible(flex: 6, child: editableHolderWidget),
+                Expanded(
+                  flex: 3,
+                  child: rolloutStrategy != null
+                      ? Row(
+                        children: [
+                          EditValueStrategyLinkButton(
                             editable: editable,
                             rolloutStrategy: rolloutStrategy!,
                             fvBloc: strBloc.fvBloc,
                             strBloc: strBloc,
-                          )),
-                Flexible(flex: 5, child: editableHolderWidget),
-                Expanded(
-                  flex: 2,
-                  child: rolloutStrategy != null
-                      ? DeleteStrategyIconButton(
-                          editable: editable,
-                          rolloutStrategy: rolloutStrategy!,
-                          strBloc: strBloc,
-                        )
+                          ),
+                          DeleteStrategyIconButton(
+                            editable: editable,
+                            rolloutStrategy: rolloutStrategy!,
+                            strBloc: strBloc,
+                          ),
+                        ],
+                      )
                       : const SizedBox.shrink(),
                 )
               ]),
