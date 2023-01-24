@@ -37,6 +37,7 @@ components:
       description: "This provides a generic way for webhooks to send their per-environment hook data back to MR"
       required:
         - environmentId
+        - organisationId
         - status
         - url
         - whenSent
@@ -47,6 +48,10 @@ components:
         - sourceSystem
         - content
       properties:
+        organisationId:
+          description: "The organisation this webhook was for"
+          type: string
+          format: UUID
         environmentId:
           description: "The environment this webhook was for"
           type: string

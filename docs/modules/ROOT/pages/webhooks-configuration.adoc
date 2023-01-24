@@ -32,8 +32,19 @@ own if you wish to have an application being updated via a subscription for exam
 The configuration uses the fairly standard list of keys, and then uses those keys to look for
 further configuration.
 
+If you are using NATS or Kinesis, you can configure the name of the channel that FeatureHub
+publishes changes on using the configuration setting. For NATS you can just leave it as is
+and it will create it as required:
+
+----
+cloudevents.enricher.channel-name=
+----
+
+For Google PubSub, because of the way it works, we support multiple publishable topics. You can
+specify them as a list and then use those names to further specify your topic name. 
+
 In the example below `featurehub-enriched-events-webhooks` is the name of the Topic that
-Dacha2 will attempt to publish the enriched data on.
+Dacha2 will attempt to publish the enriched data on (for Google PubSub).
 
 ----
 # when pubsub publishes the enriched data, it needs to specify one or more topics to publish on.

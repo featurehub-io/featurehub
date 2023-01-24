@@ -157,6 +157,7 @@ class WebhookEnricherListener @Inject constructor(
 
         val data = WebhookEnvironmentResult()
           .environmentId(ef.environment.environment.id)
+          .organisationId(ef.environment.organizationId)
           .method(WebhookMethod.POST)
           .sourceSystem(SOURCE_SYSTEM)
           .cloudEventType(EnrichedFeatures.CLOUD_EVENT_TYPE)
