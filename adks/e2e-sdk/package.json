@@ -11,24 +11,22 @@
   },
   "author": "FeatureHub.io",
   "dependencies": {
-    "@cucumber/cucumber": "^7.3.1",
-    "@types/node": "^14.14.31",
-    "axios": "^0.24.0",
-    "chai": "^4.3.4",
-    "featurehub-javascript-admin-sdk": "file:../admin-typescript/typescript-admin-client",
-    "featurehub-javascript-node-sdk": "^1.1.2",
+    "@cucumber/cucumber": "^8.10.0",
+    "@types/node": "^18.0.0",
+    "@types/restify": "^8.5.5",
+    "axios": "^1.2.4",
+    "chai": "^4.3.7",
+    "featurehub-javascript-admin-sdk": "file:../../../javascript-adk/admin-sdk",
+    "featurehub-javascript-webhooks": "file:../../../javascript-adk/webhook-sdk",
     "featurehub-javascript-client-sdk": "^1.1.2",
-    "nats": "^2.4.0",
+    "featurehub-javascript-node-sdk": "^1.1.2",
+    "nats": "^2.11.0",
+    "restify": "^11.0.0",
     "wait-for-expect": "^3.0.2",
     "winston": "^3.3.3"
   },
   "devDependencies": {
     "ts-node": "8.10.2",
-    "eslint": "^7.16.0",
-    "eslint-plugin-filenames-simple": "^0.6.0",
-    "@typescript-eslint/eslint-plugin": "^4.11.0",
-    "@typescript-eslint/parser": "^4.11.0",
-    "@typescript-eslint/typescript-estree": "^4.11.0",
-    "typescript": "^4.5.4"
+    "typescript": "^4.9.4"
   }
 }

@@ -15,3 +15,4 @@ Feature: I setup the example features to be able to run the examples
     And There is a number feature named FEATURE_NUMBER
     And There is a json feature named FEATURE_JSON
     Then I write out a feature-examples config file
+

@@ -14,6 +14,7 @@ import { EdgeFeatureHubConfig, FeatureHubPollingClient } from 'featurehub-javasc
 import waitForExpect from 'wait-for-expect';
 import { logger } from '../support/logging';
 import { SdkWorld } from '../support/world';
+import { getWebserverExternalAddress } from '../support/make_me_a_webserver';
 
 Given(/^I create a new portfolio$/, async function () {
   const world = this as SdkWorld;
@@ -50,12 +51,13 @@ Given(/^I update the environment for feature webhooks$/, async function() {
 
   const env = world.environment;
 
+  const webhookAddress = getWebserverExternalAddress();
   await world.environment2Api.updateEnvironmentV2(env.id, new UpdateEnvironment({
     version: env.version,
     environmentInfo: {
       'webhook.features.enabled': 'true',
-      'webhook.features.endpoint': 'http://localhost:4567',
-      'webhook.features.headers': 'x-foof=muddy'
+      'webhook.features.endpoint': `${webhookAddress}/webhook`,
+      'webhook.features.headers': 'x-foof=muddy,authorisation=bearer 12345'
     }
   }));
 
@@ -141,7 +143,7 @@ Given(/^I create a service account and (full|read) permissions based on the appl
 Given('the edge connection is no longer available', async function () {
   const world = this as SdkWorld;
 
-  waitForExpect(async () => {
+  await waitForExpect(async () => {
     const url = `${world.featureUrl}/features?apiKey=${this.serviceAccountPermission.sdkUrlClientEval}`;
 
     logger.info('Waiting for failed connection to feature server at `%s`', url);
@@ -158,11 +160,11 @@ Given('the edge connection is no longer available', async function () {
   });
 });
 
-Given(/^I connect to the feature server$/, function () {
+Given(/^I connect to the feature server$/, async function () {
   const serviceAccountPerm: ServiceAccountPermission = this.serviceAccountPermission;
   const world = this as SdkWorld;
 
-  waitForExpect(async () => {
+  await waitForExpect(async () => {
     const url = `${world.featureUrl}/features?apiKey=${serviceAccountPerm.sdkUrlClientEval}`;
 
     logger.info('Waiting for successful connection to feature server at `%s`', url);
