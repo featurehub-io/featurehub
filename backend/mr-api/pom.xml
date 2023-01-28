@@ -70,6 +70,26 @@
         </executions>
       </plugin>
 
+      <plugin>
+        <groupId>io.featurehub.tooling</groupId>
+        <artifactId>maven-openapi-publisher</artifactId>
+        <version>1.1-SNAPSHOT</version>
+        <executions>
+          <execution>
+            <id>export</id>
+            <goals><goal>reconcile</goal></goals>
+            <phase>initialize</phase>
+            <configuration>
+              <alwaysIncludeTagValues>
+                <alwaysIncludeTagValue>mr-api</alwaysIncludeTagValue>
+              </alwaysIncludeTagValues>
+              <apiSource>${project.basedir}/final.yaml</apiSource>
+              <releaseFolder>${project.basedir}/../../infra/api-bucket/files/mrapi</releaseFolder>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- here we attach the artifact as the only output so things can depend on this project and pull the full API -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

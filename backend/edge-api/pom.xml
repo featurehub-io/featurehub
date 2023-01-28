@@ -88,6 +88,28 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>io.featurehub.tooling</groupId>
+        <artifactId>maven-openapi-publisher</artifactId>
+        <version>1.1-SNAPSHOT</version>
+        <executions>
+          <execution>
+            <id>export</id>
+            <goals><goal>reconcile</goal></goals>
+            <phase>initialize</phase>
+            <configuration>
+              <alwaysIncludeTagValues>
+                <alwaysIncludeTagValue>edge</alwaysIncludeTagValue>
+              </alwaysIncludeTagValues>
+              <apiSource>${project.build.directory}/final.yaml</apiSource>
+              <releaseFolder>${project.basedir}/../../infra/api-bucket/files/edge</releaseFolder>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>

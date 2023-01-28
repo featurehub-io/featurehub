@@ -89,6 +89,7 @@ components:
         - REGEX
     StrategyAttributeWellKnownNames:
       x-package: io.featurehub.mr.model
+      x-publish-include: mr-api,edge
       type: string
       enum:
         - device
@@ -99,6 +100,7 @@ components:
         - version
     StrategyAttributeDeviceName:
       x-package: io.featurehub.mr.model
+      x-publish-include: mr-api,edge
       type: string
       enum:
         - browser
@@ -109,6 +111,7 @@ components:
         - embedded
     StrategyAttributePlatformName:
       x-package: io.featurehub.mr.model
+      x-publish-include: mr-api,edge
       type: string
       enum:
         - linux
@@ -118,6 +121,7 @@ components:
         - ios
     StrategyAttributeCountryName:
       x-package: io.featurehub.mr.model
+      x-publish-include: mr-api,edge
       type: string
       description: "https://www.britannica.com/topic/list-of-countries-1993160 - we put these in API so everyone can have the same list"
       enum:
