@@ -19,7 +19,7 @@ steps:
     volumes:
       - name: user.home
         path: /root
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
     entrypoint: '/bin/sh'
     id: tile-install
     args:
@@ -28,7 +28,7 @@ steps:
     volumes:
       - name: user.home
         path: /root
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
     entrypoint: '/bin/sh'
     args:
       - '-c'
@@ -38,7 +38,7 @@ steps:
     volumes:
       - name: user.home
         path: /root
-#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
 #    entrypoint: '/bin/sh'
 #    secretEnv: ['REGISTRY_USERNAME', 'REGISTRY_PASSWORD']
 #    args:

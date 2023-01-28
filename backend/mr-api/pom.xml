@@ -77,6 +77,38 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>api-update</id>
+      <activation>
+        <property>
+          <name>!app-release</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.featurehub.tooling</groupId>
+            <artifactId>maven-openapi-publisher</artifactId>
+            <version>1.1</version>
+            <executions>
+              <execution>
+                <id>export</id>
+                <goals><goal>reconcile</goal></goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <alwaysIncludeTagValues>
+                    <alwaysIncludeTagValue>mr-api</alwaysIncludeTagValue>
+                  </alwaysIncludeTagValues>
+                  <apiSource>${project.basedir}/final.yaml</apiSource>
+                  <releaseFolder>${project.basedir}/../../infra/api-bucket/files/mrapi</releaseFolder>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
   </profiles>
 
   <build>
@@ -101,26 +133,6 @@
                 <file>${project.basedir}/webhook-api.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>io.featurehub.tooling</groupId>
-        <artifactId>maven-openapi-publisher</artifactId>
-        <version>1.1</version>
-        <executions>
-          <execution>
-            <id>export</id>
-            <goals><goal>reconcile</goal></goals>
-            <phase>initialize</phase>
-            <configuration>
-              <alwaysIncludeTagValues>
-                <alwaysIncludeTagValue>mr-api</alwaysIncludeTagValue>
-              </alwaysIncludeTagValues>
-              <apiSource>${project.basedir}/final.yaml</apiSource>
-              <releaseFolder>${project.basedir}/../../infra/api-bucket/files/mrapi</releaseFolder>
             </configuration>
           </execution>
         </executions>

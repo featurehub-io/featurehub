@@ -77,6 +77,37 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>api-update</id>
+      <activation>
+        <property>
+          <name>!app-release</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.featurehub.tooling</groupId>
+            <artifactId>maven-openapi-publisher</artifactId>
+            <version>1.1</version>
+            <executions>
+              <execution>
+                <id>export</id>
+                <goals><goal>reconcile</goal></goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <alwaysIncludeTagValues>
+                    <alwaysIncludeTagValue>edge</alwaysIncludeTagValue>
+                  </alwaysIncludeTagValues>
+                  <apiSource>${project.build.directory}/final.yaml</apiSource>
+                  <releaseFolder>${project.basedir}/../../infra/api-bucket/files/edge</releaseFolder>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
   <dependencies>
@@ -121,26 +152,6 @@
                 <file>${project.basedir}/sse-api.yaml</file>
               </files>
               <finalYaml>${project.basedir}/target/final.yaml</finalYaml>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>io.featurehub.tooling</groupId>
-        <artifactId>maven-openapi-publisher</artifactId>
-        <version>1.1</version>
-        <executions>
-          <execution>
-            <id>export</id>
-            <goals><goal>reconcile</goal></goals>
-            <phase>initialize</phase>
-            <configuration>
-              <alwaysIncludeTagValues>
-                <alwaysIncludeTagValue>edge</alwaysIncludeTagValue>
-              </alwaysIncludeTagValues>
-              <apiSource>${project.build.directory}/final.yaml</apiSource>
-              <releaseFolder>${project.basedir}/../../infra/api-bucket/files/edge</releaseFolder>
             </configuration>
           </execution>
         </executions>

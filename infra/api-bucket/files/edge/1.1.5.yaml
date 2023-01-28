@@ -473,6 +473,18 @@ components:
         lock:
           type: boolean
           description: "set only if you wish to lock or unlock, otherwise null"
+    SSEResultState:
+      type: string
+      description: error is an inherent state
+      enum:
+      - ack
+      - bye
+      - failure
+      - features
+      - feature
+      - delete_feature
+      - config
+      - error
     FeatureEnvironmentCollection:
       required:
       - id

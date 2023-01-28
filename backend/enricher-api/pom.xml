@@ -102,6 +102,39 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>api-update</id>
+      <activation>
+        <property>
+          <name>!app-release</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.featurehub.tooling</groupId>
+            <artifactId>maven-openapi-publisher</artifactId>
+            <version>1.1</version>
+            <executions>
+              <execution>
+                <id>export</id>
+                <goals><goal>reconcile</goal></goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <alwaysIncludeTagValues>
+                    <alwaysIncludeTagValue>enricher</alwaysIncludeTagValue>
+                  </alwaysIncludeTagValues>
+                  <apiSource>${project.build.directory}/final.yaml</apiSource>
+                  <releaseFolder>${project.basedir}/../../infra/api-bucket/files/webhooks</releaseFolder>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+
   </profiles>
 
   <build>
@@ -167,39 +200,6 @@
       </plugin>
 
       <plugin>
-        <groupId>io.featurehub.tooling</groupId>
-        <artifactId>maven-openapi-publisher</artifactId>
-        <version>1.1</version>
-        <executions>
-          <execution>
-            <id>export</id>
-            <goals><goal>reconcile</goal></goals>
-            <phase>initialize</phase>
-            <configuration>
-              <alwaysIncludeTagValues>
-                <alwaysIncludeTagValue>enricher</alwaysIncludeTagValue>
-              </alwaysIncludeTagValues>
-              <apiSource>${project.build.directory}/final.yaml</apiSource>
-              <releaseFolder>${project.basedir}/../../infra/api-bucket/files/webhooks</releaseFolder>
-            </configuration>
-          </execution>
-          <execution>
-            <id>use</id>
-            <goals><goal>reconcile</goal></goals>
-            <phase>initialize</phase>
-            <configuration>
-              <alwaysIncludeTagValues>
-                <alwaysIncludeTagValue>enricher</alwaysIncludeTagValue>
-              </alwaysIncludeTagValues>
-              <apiSource>${project.build.directory}/final.yaml</apiSource>
-              <reconciledApi>${project.build.directory}/reconciled.yaml</reconciledApi>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-
-      <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
         <version>6.0.1</version>
@@ -222,7 +222,7 @@
               <apiPackage>io.featurehub.enriched.api</apiPackage>
               <!-- we overlap the models -->
               <modelPackage>io.featurehub.mr.model</modelPackage>
-              <inputSpec>${project.basedir}/target/reconciled.yaml</inputSpec>
+              <inputSpec>${project.basedir}/target/final.yaml</inputSpec>
               <generatorName>jersey3-api</generatorName>
               <generateApis>false</generateApis>
 
