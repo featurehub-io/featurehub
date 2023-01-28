@@ -18,7 +18,7 @@ Given(/^I test the webhook$/, async function () {
 
 Then(/^we receive a webhook with (.*) flag that is (locked|unlocked) and (off|on)$/, async function(flagName: string, lockedStatus: string, flag: string) {
   await waitForExpect(async () => {
-    const webhookData = getWebhookData() as any;
+    const webhookData = getWebhookData();
     expect(webhookData).to.not.be.undefined;
     expect(webhookData.environment).to.not.be.undefined;
     expect(webhookData.environment.fv).to.not.be.undefined;

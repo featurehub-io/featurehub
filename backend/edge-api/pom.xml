@@ -42,6 +42,43 @@
     <tag>sse-edge-api-1.1</tag>
   </scm>
 
+
+  <profiles>
+    <profile>
+      <id>app-release</id>
+      <!-- otherwise don't active in tiles -->
+      <activation>
+        <property>
+          <name>app-release</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.featurehub.tooling</groupId>
+            <artifactId>maven-openapi-publisher</artifactId>
+            <version>1.1</version>
+            <executions>
+              <execution>
+                <id>export</id>
+                <goals><goal>publish</goal></goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <alwaysIncludeTagValues>
+                    <alwaysIncludeTagValue>edge</alwaysIncludeTagValue>
+                  </alwaysIncludeTagValues>
+                  <apiSource>${project.build.directory}/final.yaml</apiSource>
+                  <releaseFolder>${project.basedir}/../../infra/api-bucket/files/edge</releaseFolder>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
   <dependencies>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
@@ -92,7 +129,7 @@
       <plugin>
         <groupId>io.featurehub.tooling</groupId>
         <artifactId>maven-openapi-publisher</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.1</version>
         <executions>
           <execution>
             <id>export</id>
