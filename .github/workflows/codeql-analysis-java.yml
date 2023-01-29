@@ -11,6 +11,10 @@ on:
     paths:
       - 'backend/**'
 
+permissions:
+  # required for all workflows
+  security-events: write
+
 jobs:
   analyze:
     name: Build & Analyze
@@ -22,10 +26,10 @@ jobs:
         language: [ 'java' ]
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      uses: github/codeql-action/init@v2
       with:
         languages: java
 
@@ -34,4 +38,4 @@ jobs:
       run: cd backend && mvn -f pom-first.xml clean install -Dfindbugs.skip -Dcheckstyle.skip -Dpmd.skip=true -Denforcer.skip -Dmaven.javadoc.skip -DskipTests -Dmaven.test.skip.exec -Dlicense.skip=true -Drat.skip=true && cd .. &&  mvn  clean install -Dfindbugs.skip -Dcheckstyle.skip -Dpmd.skip=true -Denforcer.skip -Dmaven.javadoc.skip -DskipTests -Dmaven.test.skip.exec -Dlicense.skip=true -Drat.skip=true
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      uses: github/codeql-action/analyze@v2

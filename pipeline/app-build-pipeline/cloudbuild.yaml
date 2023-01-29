@@ -35,7 +35,7 @@ steps:
     volumes:
       - name: user.home
         path: /root
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
     entrypoint: '/bin/sh'
     env:
       - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
@@ -47,7 +47,7 @@ steps:
         path: /root
 # this next section deals with the Admin front-end. This is expensive to build every time, so we need to detect if
 # it or its upstream dependencies have changed and only build it then
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
     entrypoint: '/bin/sh'
     # if anything in the front-end list of stuff has changed, touch the file `build-frontend` and the next two
     # steps will cause everything necessary to build. The pom-front-end.xml is just a dependency tree and change checker.
@@ -56,7 +56,7 @@ steps:
     args:
       - '-c'
       - 'cd featurehub && mvn -s pipeline/m2/settings.xml --no-transfer-progress validate -f pom-front-end.xml && touch front-end-changed.projects && _CHANGED=`wc -l < front-end-changed.projects|xargs` && if [ "$_CHANGED" != "0" ]; then touch build-frontend; fi'
-#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
 #    entrypoint: '/bin/sh'
 #    args:
 #      - '-c'
@@ -64,7 +64,7 @@ steps:
     volumes:
       - name: user.home
         path: /root
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
     entrypoint: '/bin/sh'
     env:
       - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
@@ -85,7 +85,7 @@ steps:
     volumes:
       - name: user.home
         path: /root
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
     env:
       - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
     entrypoint: '/bin/sh'
@@ -95,7 +95,7 @@ steps:
     volumes:
       - name: user.home
         path: /root
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
     # run partial build if special "all-build" file is missing
     env:
       - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3

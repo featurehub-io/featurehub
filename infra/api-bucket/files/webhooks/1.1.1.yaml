@@ -1,223 +1,264 @@
 openapi: 3.0.1
-info: {title: Enricher API, description: This is an OpenAPI document for enriched data. It is used by Webhook Features directly.,
-  version: 1.1.1}
+info:
+  title: Enricher API
+  description: This is an OpenAPI document for enriched data. It is used by Webhook
+    Features directly.
+  version: 1.1.1
+servers:
+- url: /
 paths:
   /v2/fake:
     get:
+      tags:
+      - EnricherService
+      description: "this is just a holder, it is not generated"
       operationId: fakeApi
-      tags: [EnricherService]
-      description: this is just a holder, it is not generated - it has to be here for compliance to the spec. Choose to not generate apis in your OpenAPI generator.
       responses:
-        200: {description: yay}
+        "200":
+          description: yay
 components:
   schemas:
     EnrichedFeatures:
-      x-cloudevent-type: enriched-feature-v1
-      x-cloudevent-subject: io.featurehub.events.enricher
-      x-package: io.featurehub.enriched.model
-      description: A full environment with all of its features. This will filter out any management environmentInfo data
-      required: [environment, featureKeys]
+      required:
+      - environment
+      - featureKeys
       properties:
-        targetEnrichmentDestination: {description: 'If there is a specific target
-            for the data, everything else _should_ ignore it', type: string}
-        environment: {$ref: '#/components/schemas/PublishEnvironment'}
+        targetEnrichmentDestination:
+          type: string
+          description: "If there is a specific target for the data, everything else\
+            \ _should_ ignore it"
+        environment:
+          $ref: '#/components/schemas/PublishEnvironment'
         featureKeys:
+          type: array
           description: These are the keys of the features that were updated
-          type: array
-          items: {type: string}
+          items:
+            type: string
+      description: A full environment with all of its features. This will filter out
+        any management environmentInfo data
     PublishAction:
-      x-package: io.featurehub.dacha.model
       type: string
-      description: Indicates what type of update this is. If CREATE, it is a new record, if UPDATE it updates an existing one, if DELETE you should delete the record. If EMPTY then it indicates there are no records of this type and you shouldn't expect to see any further. EMPTY is used to indicate that the Master process is complete.
-      enum: [CREATE, UPDATE, DELETE, EMPTY]
-    PublishFeatureValues:
-      x-package: io.featurehub.dacha.model
-      x-cloudevent-type: publish-feature-v1
-      x-cloudevent-subject: io.featurehub.events.feature-values
-      type: object
-      description: A collection of features that updated at once
-      required: [features]
-      properties:
-        features:
-          type: array
-          items: {$ref: '#/components/schemas/PublishFeatureValue'}
-    PublishFeatureValue:
-      x-package: io.featurehub.dacha.model
-      type: object
-      description: This is the item that gets published from MR originally
-      required: [action, environmentId, feature]
-      properties:
-        action: {$ref: '#/components/schemas/PublishAction'}
-        environmentId: {description: this needs to be passed because the feature value may be null,
-          type: string, format: uuid}
-        feature: {$ref: '#/components/schemas/CacheEnvironmentFeature'}
+      description: "Indicates what type of update this is. If CREATE, it is a new\
+        \ record, if UPDATE it updates an existing one, if DELETE you should delete\
+        \ the record. If EMPTY then it indicates there are no records of this type\
+        \ and you shouldn't expect to see any further. EMPTY is used to indicate that\
+        \ the Master process is complete."
+      enum:
+      - CREATE
+      - UPDATE
+      - DELETE
+      - EMPTY
     PublishEnvironment:
-      x-cloudevent-type: publish-environment-v1
-      x-cloudevent-subject: io.featurehub.events.environment
-      x-package: io.featurehub.dacha.model
-      description: Even a EMPTY message must set all the data to junk as it is an unusual situation
-      required: [action, featureValues, environment, serviceAccounts, organizationId,
-        applicationId, portfolioId, count]
+      required:
+      - action
+      - environment
+      - oId
+      - pId
+      - aId
+      - fv
+      - sa
+      - c
       properties:
-        environment: {$ref: '#/components/schemas/CacheEnvironment'}
-        organizationId: {x-basename: oId, type: string, format: uuid}
-        portfolioId: {x-basename: pId, type: string, format: uuid}
-        applicationId: {x-basename: aId, type: string, format: uuid}
-        featureValues:
-          x-basename: fv
+        environment:
+          $ref: '#/components/schemas/CacheEnvironment'
+        action:
+          $ref: '#/components/schemas/PublishAction'
+        oId:
+          type: string
+          description: organizationId
+          format: uuid
+        pId:
+          type: string
+          description: portfolioId
+          format: uuid
+        aId:
+          type: string
+          description: applicationId
+          format: uuid
+        fv:
           type: array
-          items: {$ref: '#/components/schemas/CacheEnvironmentFeature'}
-        serviceAccounts:
-          x-basename: sa
+          description: featureValues
+          items:
+            $ref: '#/components/schemas/CacheEnvironmentFeature'
+        sa:
           type: array
-          items: {type: string, format: UUID}
-        action: {$ref: '#/components/schemas/PublishAction'}
-        count: {x-basename: c, type: integer}
+          description: serviceAccounts
+          items:
+            type: string
+            format: UUID
+        c:
+          type: integer
+          description: count
+      description: Even a EMPTY message must set all the data to junk as it is an
+        unusual situation
     CacheEnvironment:
-      x-package: io.featurehub.dacha.model
+      required:
+      - id
+      - version
       type: object
-      required: [id, version]
       properties:
-        id: {type: string, format: uuid}
-        version: {type: integer, format: int64}
-        environmentInfo:
-          description: Allows extensibility for the environment
-          x-basename: eInf
-          additionalProperties: {type: string}
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+        eInf:
+          type: object
+          additionalProperties:
+            type: string
+          description: (environmentInfo) - Allows extensibility for the environment
     CacheEnvironmentFeature:
-      x-package: io.featurehub.dacha.model
+      required:
+      - feature
       type: object
+      properties:
+        feature:
+          $ref: '#/components/schemas/CacheFeature'
+        value:
+          $ref: '#/components/schemas/CacheFeatureValue'
       description: A feature and its possible value (which could be null)
-      required: [feature]
-      properties:
-        feature: {$ref: '#/components/schemas/CacheFeature'}
-        value: {$ref: '#/components/schemas/CacheFeatureValue'}
     CacheFeature:
-      x-package: io.featurehub.dacha.model
+      required:
+      - id
+      - key
+      - valueType
+      - version
       type: object
-      required: [id, key, valueType, version]
       properties:
-        id: {type: string, format: uuid}
-        key: {type: string, description: Unique within this application}
-        valueType: {$ref: '#/components/schemas/FeatureValueType'}
-        version: {description: used for optimistic locking when renaming a feature,
-          type: integer, format: int64}
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+          description: Unique within this application
+        valueType:
+          $ref: '#/components/schemas/FeatureValueType'
+        version:
+          type: integer
+          description: used for optimistic locking when renaming a feature
+          format: int64
     CacheFeatureValue:
-      x-package: io.featurehub.dacha.model
-      required: [key, locked, id, version]
+      required:
+      - id
+      - key
+      - locked
+      - version
       properties:
-        id: {type: string, format: uuid}
-        key: {type: string}
-        locked: {type: boolean}
-        value: {description: default value if no strategy matches. interpreted by type in parent}
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        locked:
+          type: boolean
+        value:
+          description: default value if no strategy matches. interpreted by type in
+            parent
         rolloutStrategies:
-          description: These are custom rollout strategies that only apply to this feature value.
           type: array
-          items: {$ref: '#/components/schemas/CacheRolloutStrategy'}
-        version: {description: used for optimistic locking, type: integer, format: int64}
-        retired: {type: boolean, description: 'if true or null, this feature will
-            visible on edge. if false, it will not be passed to the client'}
-
+          description: These are custom rollout strategies that only apply to this
+            feature value.
+          items:
+            $ref: '#/components/schemas/CacheRolloutStrategy'
+        version:
+          type: integer
+          description: used for optimistic locking
+          format: int64
+        retired:
+          type: boolean
+          description: "if true or null, this feature will visible on edge. if false,\
+            \ it will not be passed to the client"
     CacheRolloutStrategy:
-      x-package: io.featurehub.dacha.model
-      description: This is the model for the rollout strategy as required by Dacha and Edge
+      description: This is the model for the rollout strategy as required by Dacha
+        and Edge
       allOf:
-      - {$ref: '#/components/schemas/BaseRolloutStrategy'}
-      - type: object
-        required: [id, attributes]
+      - $ref: '#/components/schemas/BaseRolloutStrategy'
+      - required:
+        - attributes
+        - id
+        type: object
         properties:
           attributes:
             type: array
-            items: {$ref: '#/components/schemas/CacheRolloutStrategyAttribute'}
+            items:
+              $ref: '#/components/schemas/CacheRolloutStrategyAttribute'
     CacheRolloutStrategyAttribute:
-      x-package: io.featurehub.dacha.model
       allOf:
-      - {$ref: '#/components/schemas/BaseRolloutStrategyAttribute'}
-      - type: object
-        required: [conditional, fieldName, type]
+      - $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
+      - required:
+        - conditional
+        - fieldName
+        - type
+        type: object
     FeatureValueType:
-      x-package: io.featurehub.mr.model
       type: string
-      enum: [BOOLEAN, STRING, NUMBER, JSON]
-    RoleType:
-      x-package: io.featurehub.mr.model
-      type: string
-      enum: [READ, LOCK, UNLOCK, CHANGE_VALUE]
+      enum:
+      - BOOLEAN
+      - STRING
+      - NUMBER
+      - JSON
     BaseRolloutStrategy:
-      x-package: io.featurehub.mr.model
-      description: if the feature in an environment is different from its default, this will be the reason for it. a rollout strategy is defined at the Application level and then applied to a specific feature value. When they are copied to the cache layer they are cloned and the feature value for that strategy is inserted into the clone and those are published.
       properties:
-        id: {type: string}
-        percentage: {description: value between 0 and 1000000 - for four decimal places,
-          type: integer}
+        id:
+          type: string
+        percentage:
+          type: integer
+          description: value between 0 and 1000000 - for four decimal places
         percentageAttributes:
           type: array
-          description: if you don't wish to apply percentage based on user id, you can use one or more attributes defined here
-          items: {type: string}
-        value: {description: when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge.}
+          description: "if you don't wish to apply percentage based on user id, you\
+            \ can use one or more attributes defined here"
+          items:
+            type: string
+        value:
+          description: when we attach the RolloutStrategy for Dacha or SSE this lets
+            us push the value out. Only visible in SDK and SSE Edge.
         attributes:
           type: array
-          items: {$ref: '#/components/schemas/BaseRolloutStrategyAttribute'}
+          items:
+            $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
+      description: "if the feature in an environment is different from its default,\
+        \ this will be the reason for it. a rollout strategy is defined at the Application\
+        \ level and then applied to a specific feature value. When they are copied\
+        \ to the cache layer they are cloned and the feature value for that strategy\
+        \ is inserted into the clone and those are published."
     BaseRolloutStrategyAttribute:
-      x-package: io.featurehub.mr.model
       properties:
-        conditional: {$ref: '#/components/schemas/RolloutStrategyAttributeConditional'}
-        fieldName: {type: string}
+        conditional:
+          $ref: '#/components/schemas/RolloutStrategyAttributeConditional'
+        fieldName:
+          type: string
         values:
-          description: the value(s) associated with this rule
           type: array
-          items: {$ref: '#/components/schemas/RolloutStrategyArrayType'}
-        type: {$ref: '#/components/schemas/RolloutStrategyFieldType'}
-    RolloutStrategyArrayType: {x-package: io.featurehub.mr.model, description: values depend on the field type}
+          description: the value(s) associated with this rule
+          items:
+            $ref: '#/components/schemas/RolloutStrategyArrayType'
+        type:
+          $ref: '#/components/schemas/RolloutStrategyFieldType'
+    RolloutStrategyArrayType:
+      description: values depend on the field type
     RolloutStrategyFieldType:
-      x-package: io.featurehub.mr.model
       type: string
-      enum: [STRING, SEMANTIC_VERSION, NUMBER, DATE, DATETIME, BOOLEAN, IP_ADDRESS]
+      enum:
+      - STRING
+      - SEMANTIC_VERSION
+      - NUMBER
+      - DATE
+      - DATETIME
+      - BOOLEAN
+      - IP_ADDRESS
     RolloutStrategyAttributeConditional:
-      x-package: io.featurehub.mr.model
       type: string
-      enum: [EQUALS, ENDS_WITH, STARTS_WITH, GREATER, GREATER_EQUALS, LESS, LESS_EQUALS,
-        NOT_EQUALS, INCLUDES, EXCLUDES, REGEX]
-    StrategyAttributeWellKnownNames:
-      x-package: io.featurehub.mr.model
-      type: string
-      enum: [device, country, platform, userkey, session, version]
-    StrategyAttributeDeviceName:
-      x-package: io.featurehub.mr.model
-      type: string
-      enum: [browser, mobile, desktop, server, watch, embedded]
-    StrategyAttributePlatformName:
-      x-package: io.featurehub.mr.model
-      type: string
-      enum: [linux, windows, macos, android, ios]
-    StrategyAttributeCountryName:
-      x-package: io.featurehub.mr.model
-      type: string
-      description: https://www.britannica.com/topic/list-of-countries-1993160 - we put these in API so everyone can have the same list
-      enum: [afghanistan, albania, algeria, andorra, angola, antigua_and_barbuda,
-        argentina, armenia, australia, austria, azerbaijan, the_bahamas, bahrain,
-        bangladesh, barbados, belarus, belgium, belize, benin, bhutan, bolivia, bosnia_and_herzegovina,
-        botswana, brazil, brunei, bulgaria, burkina_faso, burundi, cabo_verde, cambodia,
-        cameroon, canada, central_african_republic, chad, chile, china, colombia,
-        comoros, congo_democratic_republic_of_the, congo_republic_of_the, costa_rica,
-        cote_divoire, croatia, cuba, cyprus, czech_republic, denmark, djibouti, dominica,
-        dominican_republic, east_timor, ecuador, egypt, el_salvador, equatorial_guinea,
-        eritrea, estonia, eswatini, ethiopia, fiji, finland, france, gabon, the_gambia,
-        georgia, germany, ghana, greece, grenada, guatemala, guinea, guinea_bissau,
-        guyana, haiti, honduras, hungary, iceland, india, indonesia, iran, iraq, ireland,
-        israel, italy, jamaica, japan, jordan, kazakhstan, kenya, kiribati, korea_north,
-        korea_south, kosovo, kuwait, kyrgyzstan, laos, latvia, lebanon, lesotho, liberia,
-        libya, liechtenstein, lithuania, luxembourg, madagascar, malawi, malaysia,
-        maldives, mali, malta, marshall_islands, mauritania, mauritius, mexico, micronesia_federated_states_of,
-        moldova, monaco, mongolia, montenegro, morocco, mozambique, myanmar, namibia,
-        nauru, nepal, netherlands, new_zealand, nicaragua, niger, nigeria, north_macedonia,
-        norway, oman, pakistan, palau, panama, papua_new_guinea, paraguay, peru, philippines,
-        poland, portugal, qatar, romania, russia, rwanda, saint_kitts_and_nevis, saint_lucia,
-        saint_vincent_and_the_grenadines, samoa, san_marino, sao_tome_and_principe,
-        saudi_arabia, senegal, serbia, seychelles, sierra_leone, singapore, slovakia,
-        slovenia, solomon_islands, somalia, south_africa, spain, sri_lanka, sudan,
-        sudan_south, suriname, sweden, switzerland, syria, taiwan, tajikistan, tanzania,
-        thailand, togo, tonga, trinidad_and_tobago, tunisia, turkey, turkmenistan,
-        tuvalu, uganda, ukraine, united_arab_emirates, united_kingdom, united_states,
-        uruguay, uzbekistan, vanuatu, vatican_city, venezuela, vietnam, yemen, zambia,
-        zimbabwe]
+      enum:
+      - EQUALS
+      - ENDS_WITH
+      - STARTS_WITH
+      - GREATER
+      - GREATER_EQUALS
+      - LESS
+      - LESS_EQUALS
+      - NOT_EQUALS
+      - INCLUDES
+      - EXCLUDES
+      - REGEX

@@ -18,6 +18,7 @@ components:
     EnrichedFeatures:
       x-cloudevent-type: enriched-feature-v1
       x-cloudevent-subject: io.featurehub.events.enricher
+      x-publish-include: enricher
       x-package: io.featurehub.enriched.model
       description: "A full environment with all of its features. This will filter out any management environmentInfo data"
       required:

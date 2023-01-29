@@ -13,7 +13,8 @@ import {
   PortfolioServiceApi,
   ServiceAccountPermission,
   ServiceAccountServiceApi,
-  TokenizedPerson
+  TokenizedPerson,
+  WebhookServiceApi
 } from 'featurehub-javascript-admin-sdk';
 import { axiosLoggingAttachment, logger } from './logging';
 import globalAxios from 'axios';
@@ -49,6 +50,8 @@ export class SdkWorld extends World {
   public readonly loginApi: AuthServiceApi;
   public readonly serviceAccountApi: ServiceAccountServiceApi;
   public readonly featureValueApi: EnvironmentFeatureServiceApi;
+
+  public readonly webhookApi: WebhookServiceApi;
   private _clientContext: ClientContext;
   public sdkUrlClientEval: string;
   public sdkUrlServerEval: string;
@@ -69,6 +72,7 @@ export class SdkWorld extends World {
     this.loginApi = new AuthServiceApi(this.adminApiConfig); // too noisy in logs
     this.serviceAccountApi = new ServiceAccountServiceApi(this.adminApiConfig);
     this.featureValueApi = new EnvironmentFeatureServiceApi(this.adminApiConfig);
+    this.webhookApi = new WebhookServiceApi(this.adminApiConfig);
 
     axiosLoggingAttachment([this.adminApiConfig.axiosInstance]);
   }
@@ -134,9 +138,10 @@ export class SdkWorld extends World {
 
   async getFeature(): Promise<FeatureValue> {
     try {
-      const fValueResult = await this.featureValueApi.getFeatureForEnvironment(this.serviceAccountPermission.environmentId, this.feature.key);
+      const fValueResult = await this.featureValueApi.getFeatureForEnvironment(this.environment.id, this.feature.key);
       return fValueResult.data;
     } catch (e) {
+      console.log(e);
       expect(e.response.status).to.eq(404); // null value
 
       if (e.response.status === 404) {
@@ -148,7 +153,7 @@ export class SdkWorld extends World {
   async updateFeature(fValue: FeatureValue) {
     fValue.whenUpdated = undefined;
     fValue.whoUpdated = undefined;
-    const uResult = await this.featureValueApi.updateFeatureForEnvironment(this.serviceAccountPermission.environmentId, this.feature.key, fValue);
+    const uResult = await this.featureValueApi.updateFeatureForEnvironment(this.environment.id, this.feature.key, fValue);
     expect(uResult.status).to.eq(200);
   }
 }

@@ -14,6 +14,8 @@ import { makeid } from './random';
 import { expect } from 'chai';
 import { SdkWorld } from './world';
 import { discover } from './discovery';
+import { startWebServer, terminateServer } from './make_me_a_webserver';
+import { lstat } from 'fs';
 
 const superuserEmailAddress = 'irina@i.com';
 // const superuserEmailAddress = 'superuser@mailinator.com';
@@ -69,8 +71,10 @@ After(function () {
     this.edgeServer.close();
     console.log('edge connection closed');
   }
+  terminateServer();
 });
 
 BeforeAll(async function() {
+  startWebServer();
   await discover();
 });

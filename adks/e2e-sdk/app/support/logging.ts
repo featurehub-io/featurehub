@@ -1,4 +1,4 @@
-import globalAxios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import * as winston from 'winston';
 import { MESSAGE } from 'triple-beam';
 import stringify from 'safe-stable-stringify';
@@ -106,7 +106,7 @@ export function axiosLoggingAttachment(axiosInstances: Array<AxiosInstance>) {
       return Promise.reject(error);
     });
 
-    axios.interceptors.request.use((reqConfig: AxiosRequestConfig) => {
+    axios.interceptors.request.use((reqConfig: InternalAxiosRequestConfig) => {
       const req = {
         type: 'request',
         headers: reqConfig.headers,
