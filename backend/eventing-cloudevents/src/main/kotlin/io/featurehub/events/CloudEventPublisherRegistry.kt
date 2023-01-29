@@ -59,6 +59,9 @@ class CloudEventPublisherRegistry @Inject constructor(
       ) { evt ->
         val event = eventBuilder.build()
         threadPool.submit {
+          if (log.isTraceEnabled) {
+            log.trace("cloudevent publish: {}", event)
+          }
           handler.handler(event)
         }
       }

@@ -1,3 +1,4 @@
+@needs-webserver
 Feature: Webhooks work as expected
 
   @webhook
@@ -10,4 +11,6 @@ Feature: Webhooks work as expected
     Then we receive a webhook with FEATURE_TITLE_TO_UPPERCASE flag that is locked and off
     And I set the feature flag to unlocked and on
     Then we receive a webhook with FEATURE_TITLE_TO_UPPERCASE flag that is unlocked and on
+    And I set the feature flag to unlocked and off
+    Then we receive a webhook with FEATURE_TITLE_TO_UPPERCASE flag that is unlocked and off
     And we should have 3 messages in the list of webhooks

@@ -32,9 +32,6 @@ class NatsDachaEventingFeature : Feature {
           bind(NatsCloudEventsPublishers::class.java).to(NatsCloudEventsPublishers::class.java)
             .`in`(Immediate::class.java)
 
-          // the broadcaster will determine if dacha2 is enabled and not publish to that channel if not
-          bind(CloudEventCacheBroadcaster::class.java).to(CacheBroadcast::class.java).`in`(Singleton::class.java)
-
           // always listen for Edge updates in Cloud Events format
           bind(NatsMRCloudEventsQueueUpdateListener::class.java).to(NatsMRCloudEventsQueueUpdateListener::class.java)
             .`in`(Immediate::class.java)
