@@ -27,15 +27,6 @@ for (const name of Object.keys(nets)) {
   }
 }
 
-const server = restify.createServer({
-  name: 'myapp',
-  version: '1.0.0'
-});
-
-server.use(restify.plugins.acceptParser(server.acceptable));
-server.use(restify.plugins.queryParser());
-server.use(restify.plugins.bodyParser());
-
 let webhookData: EnrichedFeatures | undefined;
 let webhookHeaders: IncomingHttpHeaders;
 
@@ -47,25 +38,61 @@ export function getWebserverExternalAddress(): string | undefined {
   return networkName ? `http://${results[networkName][0]}:3000` : undefined;
 }
 
-export function startWebServer(): string | undefined {
-  server.listen(3000, function () {
-    console.log('%s listening at %s', server.name, server.url);
+let server: restify.Server;
+
+function setupServer() {
+  server.use(restify.plugins.acceptParser(server.acceptable));
+  server.use(restify.plugins.queryParser());
+  server.use(restify.plugins.bodyParser());
+
+  server.post('/webhook', function (req, res, next) {
+    webhookData = req.body as EnrichedFeatures;
+    webhookHeaders =  req.headers;
+    logger.log({level: 'info', message: `received webhook ${JSON.stringify(webhookData)}`});
+
+    res.send( 200,'Ok');
+    return next();
   });
-
-  return networkName;
 }
 
-export function terminateServer() {
-  server.close();
+export function startWebServer(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    server = restify.createServer({
+      name: 'myapp',
+      version: '1.0.0'
+    });
+
+    setupServer();
+
+    try {
+      server.listen(3000, function () {
+        console.log('%s listening at %s', server.name, server.url);
+        resolve();
+      });
+    } catch (e) {
+      server = undefined;
+      console.error("Failed to listen", e);
+      reject(e);
+    }
+  });
 }
 
-server.post('/webhook', function (req, res, next) {
-  webhookData = req.body as EnrichedFeatures;
-  webhookHeaders =  req.headers;
-  logger.log({level: 'info', message: `received webhook ${JSON.stringify(webhookData)}`});
+export function terminateServer(): Promise<void> {
+  console.log("terminating webserver");
+  return new Promise((resolve, reject) => {
+    if (server) {
+      try {
+        server.close(() => { resolve(); });
+        server = undefined;
+      } catch (e) {
+        console.error("Failed to close server", e);
+        reject(e);
+      }
+    } else {
+      resolve();
+    }
+  });
+}
 
-  res.send( 200,'Ok');
-  return next();
-});
 
 

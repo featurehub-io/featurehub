@@ -10,7 +10,7 @@ import {
   ServiceAccountPermission, ServiceAccountServiceApi, UpdateEnvironment
 } from 'featurehub-javascript-admin-sdk';
 import { makeid, sleep } from '../support/random';
-import { EdgeFeatureHubConfig, FeatureHubPollingClient } from 'featurehub-javascript-node-sdk';
+import { EdgeFeatureHubConfig, FeatureHubPollingClient, FHLog } from 'featurehub-javascript-node-sdk';
 import waitForExpect from 'wait-for-expect';
 import { logger } from '../support/logging';
 import { SdkWorld } from '../support/world';
@@ -182,6 +182,9 @@ Given(/^I connect to the feature server$/, async function () {
     expect(found, `${serviceAccountPerm.sdkUrlClientEval} failed to connect`).to.be.true;
     logger.info('Successfully completed poll');
     const edge = new EdgeFeatureHubConfig(world.featureUrl, serviceAccountPerm.sdkUrlClientEval);
+    FHLog.fhLog.trace = (...args: any[]) => {
+      console.error(args);
+    };
     this.sdkUrlClientEval = serviceAccountPerm.sdkUrlClientEval;
     this.sdkUrlServerEval = serviceAccountPerm.sdkUrlServerEval;
     //edge.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, 200));

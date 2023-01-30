@@ -71,10 +71,16 @@ After(function () {
     this.edgeServer.close();
     console.log('edge connection closed');
   }
-  terminateServer();
+});
+
+Before('@needs-webserver', async function() {
+  await startWebServer();
+});
+
+After('@needs-webserver', async function() {
+  await terminateServer();
 });
 
 BeforeAll(async function() {
-  startWebServer();
   await discover();
 });

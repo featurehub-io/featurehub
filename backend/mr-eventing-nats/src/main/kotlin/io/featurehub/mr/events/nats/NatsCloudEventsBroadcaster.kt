@@ -38,7 +38,7 @@ class NatsCloudEventsPublishers @Inject constructor(nats: NATSSource, cloudEvent
   fun publishFeaturesToEdge(nats: NATSSource, cloudEventsPublisher: CloudEventPublisher) {
     val natsChannel = nats.createPublisher(edgeChannelName!!)
 
-    cloudEventsPublisher.registerForPublishing(PublishFeatureValues.CLOUD_EVENT_SUBJECT,
+    cloudEventsPublisher.registerForPublishing(PublishFeatureValues.CLOUD_EVENT_TYPE,
       CloudEventChannelMetric(CacheMetrics.featureFailureCounter, CacheMetrics.featureGram), true) { msg ->
       natsChannel.publish(msg)
     }

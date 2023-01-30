@@ -39,7 +39,9 @@ abstract class CloudEventReceiverRegistryImpl : CloudEventReceiverRegistry {
     val handlerList = eventHandlers.getOrPut(type) { mutableMapOf() }.getOrPut(subject) { mutableListOf() }
     handlerList.add(CallbackHolder(clazz) { msg, ce: CloudEvent -> handler(msg as T, ce ) })
 
-    log.info("cloudevent: receiving {} / {}", subject, type)
+    if (log.isTraceEnabled) {
+      log.trace("cloudevent: receiving {} / {}", subject, type)
+    }
   }
 }
 
@@ -91,7 +93,9 @@ constructor(private val openTelemetryReader: CloudEventsTelemetryReader, executo
       return
     }
 
-    log.info("cloudevent: {}", event.subject)
+    if (log.isTraceEnabled) {
+      log.debug("cloudevent: {}", event.subject)
+    }
 
     val handlers = eventHandlers[event.type]?.get(event.subject!!)
 

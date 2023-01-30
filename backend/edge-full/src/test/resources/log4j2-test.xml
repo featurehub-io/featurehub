@@ -10,6 +10,7 @@
 		<AsyncLogger name="io.featurehub" level="debug"/>
 		<AsyncLogger name="org.glassfish" level="debug"/>
 		<AsyncLogger name="jersey-logging" level="trace"/>
+    <AsyncLogger name="io.featurehub.events" level="trace"/>
 
 		<AsyncRoot level="info">
 			<AppenderRef ref="STDOUT"/>

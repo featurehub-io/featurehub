@@ -4,6 +4,8 @@ import { makeid } from '../support/random';
 import { expect } from 'chai';
 import waitForExpect from 'wait-for-expect';
 import { FeatureStateHolder, Readyness } from 'featurehub-javascript-node-sdk';
+import { logger } from '../support/logging';
+import { SdkWorld } from '../support/world';
 
 Given(/^There is a new feature flag$/, async function () {
   const name = makeid(5).toUpperCase();
@@ -32,12 +34,14 @@ Given(/^There is a feature flag with the key (.*)$/, async function (key: string
 });
 
 Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (lockedStatus, value) {
+  const world = this as SdkWorld;
   await waitForExpect(() => {
-    expect(this.repository).to.not.be.undefined;
-    expect(this.repository.readyness).to.eq(Readyness.Ready);
-    const f = this.featureState(this.feature.key) as FeatureStateHolder;
-    // console.log('key is val', this.feature.key, f.getBoolean(), value, f.isLocked(), lockedStatus);
-    // logger.info('the feature %s is value %s and locked status %s', this.feature.key, f.valueBoolean, f.locked);
+    expect(world.repository).to.not.be.undefined;
+    expect(world.repository.readyness).to.eq(Readyness.Ready);
+    // const f = this.featureState(this.feature.key) as FeatureStateHolder;
+    const f = this.featureState(world.feature.key) as FeatureStateHolder;
+    console.log('key is val', world.feature.key, f.getBoolean(), value, f.isLocked(), lockedStatus);
+    logger.info('the feature %s is value %s and locked status %s', this.feature.key, f.getBoolean(), f.locked);
     expect(f.getBoolean()).to.eq(value === 'on');
     expect(f.isLocked()).to.eq(lockedStatus === 'locked');
   }, 4000, 500);

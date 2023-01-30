@@ -9,20 +9,22 @@
   <Loggers>
 
     <AsyncLogger name="io.featurehub" level="debug"/>
-    <AsyncLogger name="io.ebean.SQL" level="trace"/>
-    <AsyncLogger name="io.ebean.TXN" level="trace"/>
-    <AsyncLogger name="io.ebean.SUM" level="trace"/>
-    <AsyncLogger name="io.ebean.DDL" level="trace"/>
-    <AsyncLogger name="io.ebean.cache.QUERY" level="trace"/>
-    <AsyncLogger name="io.ebean.cache.BEAN" level="trace"/>
-    <AsyncLogger name="io.ebean.cache.COLL" level="trace"/>
-    <AsyncLogger name="io.ebean.cache.NATKEY" level="trace"/>
-    <AsyncLogger name="io.featurehub.edge.stats" level="trace"/>
-    <AsyncLogger name="io.featurehub.db.services.FeatureSqlApi" level="trace"/>
+<!--    <AsyncLogger name="io.ebean.SQL" level="trace"/>-->
+<!--    <AsyncLogger name="io.ebean.TXN" level="trace"/>-->
+<!--    <AsyncLogger name="io.ebean.SUM" level="trace"/>-->
+<!--    <AsyncLogger name="io.ebean.DDL" level="trace"/>-->
+<!--    <AsyncLogger name="io.ebean.cache.QUERY" level="trace"/>-->
+<!--    <AsyncLogger name="io.ebean.cache.BEAN" level="trace"/>-->
+<!--    <AsyncLogger name="io.ebean.cache.COLL" level="trace"/>-->
+<!--    <AsyncLogger name="io.ebean.cache.NATKEY" level="trace"/>-->
+<!--    <AsyncLogger name="io.featurehub.edge.stats" level="trace"/>-->
+<!--    <AsyncLogger name="io.featurehub.db.services.FeatureSqlApi" level="trace"/>-->
 
     <AsyncLogger name="jersey-logging" level="trace"/>
-    <AsyncLogger name="io.featurehub.events.pubsub" level="trace"/>
+<!--    <AsyncLogger name="io.featurehub.events.pubsub" level="trace"/>-->
     <AsyncLogger name="io.featurehub.db.publish" level="trace"/>
+    <AsyncLogger name="io.featurehub.events" level="trace"/>
+    <AsyncLogger name="io.featurehub.mr.events" level="trace"/>
     <AsyncLogger name="io.featurehub.edge.features" level="debug"/>
     <AsyncLogger name="net.stickycode" level="warn"/>
     <AsyncLogger name="org.glassfish.jersey.server.wadl" level="error"/>
