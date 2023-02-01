@@ -20,6 +20,7 @@ content:
         - v1.5.8
         - v1.5.9
         - v1.5.10
+        - v1.6.0
       start_path: docs
 urls:
   latest_version_segment: latest
