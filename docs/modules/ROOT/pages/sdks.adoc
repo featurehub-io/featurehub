@@ -15,6 +15,7 @@ ga('send', 'pageview');
 The client SDKs for FeatureHub are designed to allow various supported languages to connect to the Edge server and receive updates on the features.
 Each different SDK is designed to be idiomatic to that language, but also each different SDK is expected to be used for a different purpose, and so capability varies.
 
+[#_receiving_feature_updates]
 == Receiving Feature Updates
 
 The SDK is broken into three main API calls:
