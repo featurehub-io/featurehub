@@ -306,8 +306,7 @@ class ManagementRepositoryClientBloc implements Bloc {
       organization = setupResponse.organization;
       identityProviders.identityProviders = setupResponse.providers;
       identityProviders.capabilities = setupResponse.capabilityInfo;
-      // print("capabilities are ${setupResponse.capabilityInfo}");
-      // print("are we webhook enabled? ${identityProviders.capabilityWebhooks}");
+      
       if (setupResponse.providerInfo != null) {
         identityProviders.identityInfo = setupResponse.providerInfo;
       }
