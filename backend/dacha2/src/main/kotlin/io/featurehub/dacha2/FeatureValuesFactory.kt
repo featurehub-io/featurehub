@@ -2,6 +2,8 @@ package io.featurehub.dacha2
 
 import io.featurehub.dacha.model.CacheEnvironmentFeature
 import io.featurehub.dacha.model.PublishEnvironment
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.*
 
 interface FeatureValues {
@@ -12,6 +14,7 @@ interface FeatureValues {
 }
 
 class EnvironmentFeatures(override val environment: PublishEnvironment) : FeatureValues {
+  private val log: Logger = LoggerFactory.getLogger(EnvironmentFeatures::class.java)
   // Feature::id, CacheFeatureValue
   private val features: MutableMap<UUID, CacheEnvironmentFeature>
   private var etag: String
@@ -45,10 +48,12 @@ class EnvironmentFeatures(override val environment: PublishEnvironment) : Featur
 
     val existed = features.containsKey(id)
     if (!existed) { // this is just a "just in case", the main code never creates this situation
+      log.trace("Key {} didn't exist, so adding the feature", id)
       features[id] = feature
       environment.featureValues.add(feature)
     } else {
       environment.featureValues.find { it.feature.id == id }?.let {
+        log.trace("replacing feature {} with {}", it.value, feature.value)
         it.value = feature.value
       }
     }
