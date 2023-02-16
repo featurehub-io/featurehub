@@ -281,6 +281,10 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
   }
 
   override fun updateFeature(feature: PublishFeatureValue) {
+    if (log.isTraceEnabled) {
+      log.trace("feature update: {}", feature)
+    }
+
     if (feature.action == PublishAction.EMPTY) {
       return
     }
@@ -291,6 +295,7 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
 
       if (feature.action == PublishAction.DELETE) {
         ef.remove(newFeature.id)
+        log.trace("removed feature")
         return
       }
 
@@ -300,6 +305,7 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
 
       // new feature entirely, so skip out
       if (existingCachedFeature == null) {
+        log.trace("received feature we didn't know about before")
         receivedNewFeatureForExistingEnvironmentFeatureCache(feature, ef)
         return
       }
@@ -310,15 +316,20 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
 
       if (feature.action == PublishAction.CREATE || feature.action == PublishAction.UPDATE) {
         if (existingFeature.version < newFeature.version) {
+          log.trace("feature itself updated, storing the updated feature")
           ef.setFeature(feature.feature)
         }
 
         if (newValue != null) {  // values once set are never null as we cannot support versioning if so
           if (existingValue == null || existingValue.version < newValue.version) {
+            log.trace("feature value updated, storing new value")
             ef.setFeatureValue(feature.feature)
             return
           } else if (existingValue.version == newValue.version) {
+            log.trace("feature value didn't change, ignoring")
             return // just ignore it
+          } else {
+            log.trace("feature value situation unknown existing {} vs new {}", existingValue, newValue)
           }
         }
 
