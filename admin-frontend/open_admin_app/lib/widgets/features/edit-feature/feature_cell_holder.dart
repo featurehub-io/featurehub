@@ -54,9 +54,10 @@ class FeatureCellHolder extends StatelessWidget {
                                       .bodyText1!
                                       .copyWith(fontWeight: FontWeight.bold)),
                             ),
-                            if (feature.link?.isNotEmpty == true)
+
                               Row(
                                 children: [
+                                  if (feature.link?.isNotEmpty == true)
                                   Material(
                                     type: MaterialType
                                         .transparency,
