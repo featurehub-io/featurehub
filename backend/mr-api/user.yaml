@@ -66,6 +66,9 @@ components:
     HiddenEnvironments:
       type: object
       properties:
+        noneSelected:
+          type: boolean
+          description: "If this is set to true, then the user in fact as no selected environments"
         environmentIds:
           type: array
           items:

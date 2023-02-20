@@ -121,9 +121,15 @@ class PerApplicationFeaturesBloc
     e.environmentId!).toList();
     }
 
+    // this is a deliberate act
+    if (envIds.isEmpty) {
+
+    }
+
     final envs = await _userStateServiceApi.saveHiddenEnvironments(
         applicationId!,
         HiddenEnvironments(
+          noneSelected: envIds.isEmpty,
           environmentIds: envIds,
         ));
     _shownEnvironmentsSource.add(envs.environmentIds);
@@ -283,13 +289,13 @@ class PerApplicationFeaturesBloc
 
   Future<void> getShownEnvironmentNames(ApplicationFeatureValues allFeatureValues) async {
     HiddenEnvironments envs = await _userStateServiceApi.getHiddenEnvironments(applicationId!);
-    List<String> envNames = [];
-    if (envs.environmentIds.isNotEmpty) {
-      envNames = allFeatureValues.environments.where((env) =>
-          envs.environmentIds.contains(env.environmentId)).toList().map((e) =>
+
+    // if they haven't chosen a list of environments to show, show them all
+    final candidateEnvs = (envs.environmentIds.isEmpty && (envs.noneSelected != true)) ? allFeatureValues.environments : allFeatureValues.environments.where((env) =>
+        envs.environmentIds.contains(env.environmentId)).toList();
+
+    selectedEnvironmentNamesByUser = candidateEnvs.map((e) =>
       e.environmentName!).toList();
-    }
-    selectedEnvironmentNamesByUser = envNames;
   }
 
   PerFeatureStateTrackingBloc perFeatureStateTrackingBloc(Feature feature, FeatureValue featureValue) {

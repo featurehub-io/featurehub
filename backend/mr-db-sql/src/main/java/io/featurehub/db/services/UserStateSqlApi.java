@@ -65,7 +65,8 @@ public class UserStateSqlApi implements UserStateApi {
       return;
     }
 
-    if (environments == null || environments.getEnvironmentIds() == null || environments.getEnvironmentIds().isEmpty()) {
+    if (environments == null || environments.getEnvironmentIds() == null ||
+        (environments.getEnvironmentIds().isEmpty() && environments.getNoneSelected() != Boolean.TRUE)) {
       userStateFinder(currentPerson, application.getId(), UserState.HIDDEN_FEATURES).delete();
       return;
     }
