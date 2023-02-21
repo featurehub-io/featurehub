@@ -32,3 +32,11 @@
 
 * Contributing to FeatureHub
 ** xref:developers.adoc[Contributors Documentation]
+
+.FeatureHub SaaS (Hosted)
+
+* xref:hosted:index.adoc[Overview]
+
+* xref:hosted:saml.adoc[SSO / SAML Configuration]
+
+* xref:hosted:pricing.adoc[Pricing & Billing]

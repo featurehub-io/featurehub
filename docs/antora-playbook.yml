@@ -4,7 +4,7 @@ site:
   start_page: featurehub::index.adoc
   robots: allow
   keys:
-    google_analytics: UA-173153929-1
+    google_analytics: 'UA-173153929-1'
 antora:
   extensions:
     - require: '@antora/lunr-extension'
@@ -21,6 +21,10 @@ content:
         - v1.5.9
         - v1.5.10
         - v1.6.0
+      start_path: docs
+    - url: https://github.com/featurehub-io/featurehub-saas-docs
+      branches:
+        - master
       start_path: docs
 urls:
   latest_version_segment: latest
