@@ -72,7 +72,8 @@ Given(/^I connect to the Edge server using (sse-client-eval|poll-client-eval|pol
 });
 
 Then('I write out a feature-examples config file', function () {
-  const buf = `#!/bin/sh\nexport FEATUREHUB_CLIENT_API_KEY=${this.sdkUrlClientEval}\nexport FEATUREHUB_EDGE_URL=${this.featureUrl}\nexport FEATUREHUB_BASE_URL=${this.adminUrl}\n`;
+  const world = this as SdkWorld;
+  const buf = `#!/bin/sh\nexport FEATUREHUB_SERVER_API_KEY=${world.sdkUrlServerEval}\nexport FEATUREHUB_CLIENT_API_KEY="${world.sdkUrlClientEval}"\nexport FEATUREHUB_EDGE_URL=${world.featureUrl}\nexport FEATUREHUB_BASE_URL=${this.adminUrl}\n`;
 
   fs.writeFileSync('./example-test.sh', buf);
 });
