@@ -3011,6 +3011,10 @@ components:
           type: array
           items:
             type: string
+        capabilityInfo:
+          type: object
+          additionalProperties:
+            type: string
         providerInfo:
           type: object
           additionalProperties:

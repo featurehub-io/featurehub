@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -37,10 +35,7 @@ class _AppsRouteState extends State<AppsRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<AppsBloc>(context);
-    var ga = getGA();
-    if(ga != null) {
-      ga.sendScreenView(window.location.pathname!);
-    }
+    FHAnalytics.sendWindowPath();
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
         child: Column(

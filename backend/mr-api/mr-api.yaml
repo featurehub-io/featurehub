@@ -2544,6 +2544,9 @@ components:
           type: array
           items:
             type: string
+        capabilityInfo:
+          additionalProperties:
+            type: string
         providerInfo:
           type: object
           additionalProperties:

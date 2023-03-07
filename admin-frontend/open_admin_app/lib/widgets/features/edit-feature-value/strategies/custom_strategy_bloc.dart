@@ -1,7 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:open_admin_app/utils/utils.dart';
+import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 

@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
@@ -40,10 +38,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = this.bloc!;
-    var ga = getGA();
-    if(ga != null) {
-      ga.sendScreenView(window.location.pathname!);
-    }
+    FHAnalytics.sendWindowPath();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[

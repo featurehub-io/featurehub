@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/widgets.dart';
 import 'package:open_admin_app/api/client_api.dart';
@@ -13,10 +11,7 @@ class SigninWrapperWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final client = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-    var ga = getGA();
-    if(ga != null) {
-      ga.sendScreenView(window.location.pathname!);
-    }
+    FHAnalytics.sendWindowPath();
     return FHScaffoldWidget(
       bodyMainAxisAlignment: MainAxisAlignment.center,
       body: Center(

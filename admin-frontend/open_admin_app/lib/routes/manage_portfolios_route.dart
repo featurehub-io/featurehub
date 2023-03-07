@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/common/ga_id.dart';
@@ -15,10 +13,7 @@ class PortfolioRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PortfolioBloc>(context);
-    var ga = getGA();
-    if(ga != null) {
-      ga.sendScreenView(window.location.pathname!);
-    }
+    FHAnalytics.sendWindowPath();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

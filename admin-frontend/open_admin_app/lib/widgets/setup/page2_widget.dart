@@ -1,8 +1,8 @@
-import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/setup/setup_bloc.dart';
-import 'package:flutter/material.dart';
 
 class SetupPage2Widget extends StatefulWidget {
   final SetupBloc bloc;
