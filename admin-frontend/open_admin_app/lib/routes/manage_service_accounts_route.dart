@@ -1,5 +1,8 @@
+import 'dart:html';
+
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
 import 'package:open_admin_app/widgets/apps/service_account_list_widget.dart';
@@ -31,7 +34,10 @@ class _ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManageServiceAccountsBloc>(context);
-
+    var ga = getGA();
+    if(ga != null) {
+      ga.sendScreenView(window.location.pathname!);
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[

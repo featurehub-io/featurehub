@@ -1,6 +1,9 @@
+import 'dart:html';
+
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/common/application_drop_down.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
@@ -24,6 +27,10 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
+    var ga = getGA();
+    if(ga != null) {
+      ga.sendScreenView(window.location.pathname!);
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
