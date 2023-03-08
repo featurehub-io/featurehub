@@ -200,8 +200,12 @@ class _ValueCard extends StatelessWidget {
                 ),
                 child: rolloutStrategy != null
                     ? Tooltip(
-                        message: generateTooltipMessage(rolloutStrategy),
-                        child: rolloutStrategy == null
+                        richMessage: TextSpan(
+                children: [
+                  TextSpan(text: rolloutStrategy!.name),
+                  TextSpan(text: generateTooltipMessage(rolloutStrategy))]
+                        ),
+                  child: rolloutStrategy == null
                             ? const SizedBox.shrink()
                             : Padding(
                                 padding: const EdgeInsets.all(6.0),

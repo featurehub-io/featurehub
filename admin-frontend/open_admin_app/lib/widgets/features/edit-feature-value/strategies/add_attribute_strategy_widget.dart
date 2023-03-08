@@ -99,7 +99,8 @@ class _EditAttributeStrategyWidgetState
       return TextFormField(
           controller: _fieldName,
           decoration: InputDecoration(
-              labelText: 'Custom rule name',
+              labelText: 'Custom key',
+              helperText: 'e.g. "warehouse-id"',
               labelStyle: Theme.of(context).textTheme.bodyText1!.copyWith(
                   fontSize: 12.0,
                   color: Theme.of(context).buttonTheme.colorScheme?.primary)),

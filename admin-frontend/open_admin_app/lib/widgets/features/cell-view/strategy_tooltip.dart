@@ -50,6 +50,6 @@ String generateTooltipMessage(RolloutStrategy? rolloutStrategy) {
   }
 
   var finalString =
-      '\n-- Applied rules -- \n\n$percentageMessage$userKeyMessage$countryNameMessage$platformNameMessage$deviceNameMessage$versionNameMessage$customNameMessage';
+      '\n\n-- Applied rules -- \n$percentageMessage$userKeyMessage$countryNameMessage$platformNameMessage$deviceNameMessage$versionNameMessage$customNameMessage';
   return finalString;
 }
