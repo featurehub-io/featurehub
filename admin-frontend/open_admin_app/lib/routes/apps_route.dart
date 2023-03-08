@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/config/route_names.dart';
 import 'package:open_admin_app/widgets/apps/app_delete_dialog_widget.dart';
@@ -28,13 +29,13 @@ class _AppsRouteState extends State<AppsRoute> {
   @override
   void initState() {
     super.initState();
-
     bloc = BlocProvider.of<AppsBloc>(context);
   }
 
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<AppsBloc>(context);
+    FHAnalytics.sendWindowPath();
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
         child: Column(

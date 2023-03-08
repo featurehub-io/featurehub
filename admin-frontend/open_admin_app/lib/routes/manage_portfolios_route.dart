@@ -1,5 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_widget.dart';
@@ -12,6 +13,7 @@ class PortfolioRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PortfolioBloc>(context);
+    FHAnalytics.sendWindowPath();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -53,6 +53,9 @@ public class SetupResource implements SetupServiceDelegate {
   @ConfigKey("auth.disable-login")
   protected Boolean loginDisabled = Boolean.FALSE;
 
+  @ConfigKey("ga.tracking-id")
+  public String googleTrackingId = "";
+
   @Inject
   public SetupResource(SetupApi setupApi, AuthenticationApi authenticationApi, OrganizationApi organizationApi,
                        PortfolioApi portfolioApi, GroupApi groupApi, AuthenticationRepository authRepository,
@@ -97,7 +100,8 @@ public class SetupResource implements SetupServiceDelegate {
         , "true"));
 
       sr.capabilityInfo(
-        Map.of("webhook.features", (enricherEnabled && webhooksEnabled) ? "true" : "false" )
+        Map.of("webhook.features", (enricherEnabled && webhooksEnabled) ? "true" : "false" ,
+          "trackingId", googleTrackingId)
       );
 
       return sr;
@@ -105,6 +109,7 @@ public class SetupResource implements SetupServiceDelegate {
 
     final SetupMissingResponse setupMissingResponse =
       new SetupMissingResponse()
+        .capabilityInfo(Map.of("trackingId", googleTrackingId))
         .providers(providerCodes)
         .providerInfo(fillProviderInfo());
 
