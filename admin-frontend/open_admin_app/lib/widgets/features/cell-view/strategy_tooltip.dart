@@ -1,5 +1,5 @@
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/percentage_utils.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/percentage_utils.dart';
 
 String generateTooltipMessage(RolloutStrategy? rolloutStrategy) {
   if (rolloutStrategy == null) {

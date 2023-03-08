@@ -1,9 +1,9 @@
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
 
 enum CreateUserForm { defaultState, successState, loadingState }

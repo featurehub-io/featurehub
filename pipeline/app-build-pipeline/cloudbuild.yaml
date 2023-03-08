@@ -18,7 +18,7 @@ steps:
         git checkout -b pr && git merge pr-source/$_HEAD_BRANCH -m "merge" && (git log -10 | cat)
     volumes:
       - name: user.home
-        path: /root
+        path: /root/.m2
     # now we need to get the maven and jib caches
   - waitFor: ['-']
     name: gcr.io/cloud-builders/gsutil
@@ -34,7 +34,7 @@ steps:
         ) || echo 'Cache not found'
     volumes:
       - name: user.home
-        path: /root
+        path: /root/.m2
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
     entrypoint: '/bin/sh'
     env:
@@ -44,7 +44,7 @@ steps:
       - 'cd featurehub/backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress install -f pom-first.xml'
     volumes:
       - name: user.home
-        path: /root
+        path: /root/.m2
 # this next section deals with the Admin front-end. This is expensive to build every time, so we need to detect if
 # it or its upstream dependencies have changed and only build it then
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
@@ -63,7 +63,7 @@ steps:
 #      - 'cd featurehub && ls -l'
     volumes:
       - name: user.home
-        path: /root
+        path: /root/.m2
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
     entrypoint: '/bin/sh'
     env:
@@ -74,7 +74,7 @@ steps:
       - 'cd featurehub && if [ -f build-frontend ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f admin-frontend/app_mr_layer/pom.xml; else true; fi'
     volumes:
       - name: user.home
-        path: /root
+        path: /root/.m2
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/flutter-build:1.9'
     # the version of flutter-build refers to the commit message. It is the base image used to build the front end. This will *only build the artifacts and
     # not generate the installable file required to build the docker images. That is not done in this pipeline (only when building the actual docker images)
@@ -84,7 +84,7 @@ steps:
       - 'cd featurehub && chmod u+x admin-frontend/pipeline-build.sh && admin-frontend/pipeline-build.sh'
     volumes:
       - name: user.home
-        path: /root
+        path: /root/.m2
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
     env:
       - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
@@ -94,7 +94,7 @@ steps:
       - 'cd featurehub && if [ -f all-build ]; then mvn -T4C -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml; else true; fi'
     volumes:
       - name: user.home
-        path: /root
+        path: /root/.m2
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
     # run partial build if special "all-build" file is missing
     env:
@@ -105,7 +105,7 @@ steps:
       - 'cd featurehub && if [ ! -f all-build ]; then mvn -T4C -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=main -f pom.xml; else true; fi'
     volumes:
       - name: user.home
-        path: /root
+        path: /root/.m2
   # Saves the files to the GCS cache, but NEVER STORE OUR OWN
   - name: gcr.io/cloud-builders/gsutil
     dir: /root
@@ -119,7 +119,7 @@ steps:
         gsutil cp /tmp/m2-cache.tar.gz gs://${_GCS_CACHE_BUCKET}/fh-m2-cache.tar.gz
     volumes:
       - name: user.home
-        path: /root
+        path: /root/.m2
 options:
   machineType: 'N1_HIGHCPU_8'
 

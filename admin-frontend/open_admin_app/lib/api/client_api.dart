@@ -14,6 +14,7 @@ import 'package:open_admin_app/api/web_interface/url_handler_stub.dart'
     if (dart.library.io) 'package:open_admin_app/api/web_interface/io_url_handler.dart'
     if (dart.library.html) 'package:open_admin_app/api/web_interface/web_url_handler.dart';
 import 'package:open_admin_app/common/fh_shared_prefs.dart';
+import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/common/person_state.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/config/routes.dart';
@@ -306,7 +307,9 @@ class ManagementRepositoryClientBloc implements Bloc {
       organization = setupResponse.organization;
       identityProviders.identityProviders = setupResponse.providers;
       identityProviders.capabilities = setupResponse.capabilityInfo;
-      
+
+      FHAnalytics.setGA(setupResponse.capabilityInfo['trackingId']);
+
       if (setupResponse.providerInfo != null) {
         identityProviders.identityInfo = setupResponse.providerInfo;
       }
@@ -332,6 +335,7 @@ class ManagementRepositoryClientBloc implements Bloc {
           if (smr.providerInfo != null) {
             identityProviders.identityInfo = smr.providerInfo;
           }
+          FHAnalytics.setGA(smr.capabilityInfo['trackingId']);
           routeSlot(RouteSlot.setup);
         } else {
           dialogError(e, s);

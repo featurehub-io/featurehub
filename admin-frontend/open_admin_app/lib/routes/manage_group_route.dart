@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/third_party/chips_input.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
@@ -37,7 +38,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = this.bloc!;
-
+    FHAnalytics.sendWindowPath();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[

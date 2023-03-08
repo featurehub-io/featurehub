@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
+import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/widgets/apps/group_permissions_widget.dart';
 import 'package:open_admin_app/widgets/apps/manage_app_bloc.dart';
@@ -38,6 +39,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManageAppBloc>(context);
+    FHAnalytics.sendWindowPath();
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
         child: Column(

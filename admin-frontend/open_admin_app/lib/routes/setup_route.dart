@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/widgets.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/widgets/common/fh_scaffold.dart';
 import 'package:open_admin_app/widgets/setup/setup_bloc.dart';
 import 'package:open_admin_app/widgets/setup/setup_widget.dart';
@@ -11,7 +12,7 @@ class SetupWrapperWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final client = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-
+    FHAnalytics.sendWindowPath();
     return FHScaffoldWidget(
       bodyMainAxisAlignment: MainAxisAlignment.center,
       body: Center(
