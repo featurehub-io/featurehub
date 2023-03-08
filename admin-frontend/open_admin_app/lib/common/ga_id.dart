@@ -18,7 +18,7 @@ class FHAnalytics {
   }
 
   static setGA(String? id) {
-    if (id?.trim().isNotEmpty ==  true) {
+    if (id?.trim().isNotEmpty == true && ga?.trackingId != id) {
       ga = AnalyticsHtml(id!, 'ga_test', '3.0');
     }
   }
