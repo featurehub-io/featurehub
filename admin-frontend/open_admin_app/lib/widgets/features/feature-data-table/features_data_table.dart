@@ -100,8 +100,8 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Wrap(
-                    spacing: 8.0,
-                    runSpacing: 8.0,
+                    spacing: 16.0,
+                    runSpacing: 16.0,
                     children: [
                       Container(
                         constraints:

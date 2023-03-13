@@ -42,15 +42,18 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
                       builder: (context, snapshot) {
                         if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                           return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Wrap(
+                                  spacing: 16.0,
+                                  runSpacing: 16.0,
                                   children: [
                                     ApplicationDropDown(
                                         applications: snapshot.data!,
                                         bloc: bloc),
-                                    const SizedBox(width: 16.0),
                                     CreateFeatureButton(bloc: bloc)
                                   ],
                                 ),
