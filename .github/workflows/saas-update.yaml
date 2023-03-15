@@ -1,0 +1,23 @@
+name: saas-update
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - 'admin-frontend/**'
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    name: "📦 Trigger SaaS FHOS Ref Update"
+    steps:
+      - uses: passeidireto/trigger-external-workflow-action@main
+        env:
+          PAYLOAD_AUTHOR: ${{ github.author }}
+        with:
+          repository: featurehub-io/featurehub-saas
+          event: fhos_update
+          github_pat: ${{ secrets.SAAS_WORKFLOW_TRIGGER_PAT }}
