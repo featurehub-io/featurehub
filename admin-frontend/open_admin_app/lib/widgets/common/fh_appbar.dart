@@ -49,7 +49,7 @@ class FHappBar extends StatelessWidget {
                     'assets/logo/FeatureHub-icon.png',
                   ),
           ),
-          Padding(
+          if (appVersion != 'main') Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
               ' (v$appVersion)',

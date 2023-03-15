@@ -47,89 +47,91 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
           builder: (streamCtx, snap) {
             return Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.feature.name, style: Theme.of(context).textTheme.titleLarge,),
-                  const SizedBox(height: 8.0),
-                  Text('${widget.environmentFeatureValue.environmentName}'),
-                  const SizedBox(height: 16.0),
-                  LockUnlockSwitch(
-                    environmentFeatureValue: widget.environmentFeatureValue,
-                    fvBloc: fvBloc,
-                  ),
-                  StreamBuilder<List<RolloutStrategy>>(
-                      stream: strategyBloc.strategies,
-                      builder: (context, snapshot) {
-                        return Column(
-                          children: [
-                            StrategyCard(
-                                strBloc: strategyBloc,
-                                featureValueType: widget.feature.valueType!),
-                            if (snapshot.hasData)
-                              for (RolloutStrategy strategy in snapshot.data!)
-                                StrategyCard(
-                                    strBloc: strategyBloc,
-                                    rolloutStrategy: strategy,
-                                    featureValueType: widget.feature.valueType!),
-                          ],
-                        );
-                      }),
-                  StreamBuilder<FeatureValue>(
-                      stream: fvBloc.currentFv,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          final canChangeValue = widget.environmentFeatureValue.roles
-                              .contains(RoleType.CHANGE_VALUE);
-                          var editable = !snapshot.data!.locked && canChangeValue;
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.feature.name, style: Theme.of(context).textTheme.titleLarge,),
+                    const SizedBox(height: 8.0),
+                    Text('${widget.environmentFeatureValue.environmentName}'),
+                    const SizedBox(height: 16.0),
+                    LockUnlockSwitch(
+                      environmentFeatureValue: widget.environmentFeatureValue,
+                      fvBloc: fvBloc,
+                    ),
+                    StreamBuilder<List<RolloutStrategy>>(
+                        stream: strategyBloc.strategies,
+                        builder: (context, snapshot) {
                           return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const SizedBox(height: 16.0),
-                              AddStrategyButton(
-                                  bloc: strategyBloc, editable: editable),
-                              const SizedBox(height: 16.0),
-                              RetireFeatureValueCheckboxWidget(
-                                  environmentFeatureValue: widget.environmentFeatureValue,
-                                  fvBloc: fvBloc,
-                                  editable: editable,
-                                  retired: fvBloc.currentFeatureValue!.retired ?? false),
-                              //this is where we need to pass retired from the actual value
+                              StrategyCard(
+                                  strBloc: strategyBloc,
+                                  featureValueType: widget.feature.valueType!),
+                              if (snapshot.hasData)
+                                for (RolloutStrategy strategy in snapshot.data!)
+                                  StrategyCard(
+                                      strBloc: strategyBloc,
+                                      rolloutStrategy: strategy,
+                                      featureValueType: widget.feature.valueType!),
                             ],
                           );
-                        } else {
-                          return Container();
-                        }
-                      }),
-                  const SizedBox(height: 16.0),
-                  FeatureValueUpdatedByCell(
-                    strBloc: strategyBloc,
-                  ),
-                  const SizedBox(height: 24.0),
-                  ButtonBar(
-                    alignment: MainAxisAlignment.center,
-                    children: [
-                      TextButton(onPressed: () {
-                      Navigator.pop(context); //close the side panel
-                  }, child: const Text("Cancel")),
-                      ElevatedButton(onPressed: () async {
-                        try {
-                          await fvBloc.saveFeatureValueUpdates();
-                          Navigator.pop(context); //close the side panel
-                          widget.perApplicationFeaturesBloc.mrClient.addSnackbar(Text(
-                              'Feature ${widget.feature.name.toUpperCase()} '
-                                  'in the environment ${widget
-                                  .environmentFeatureValue
-                                  .environmentName?.toUpperCase()} has been updated!'));
-                        }
-                        catch (e, s) {
-                          widget.perApplicationFeaturesBloc.mrClient.dialogError(e, s);
-                        }
-                    },
-                    child: const Text("Save")
-                      ),
-                  ])
-                ],
+                        }),
+                    StreamBuilder<FeatureValue>(
+                        stream: fvBloc.currentFv,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            final canChangeValue = widget.environmentFeatureValue.roles
+                                .contains(RoleType.CHANGE_VALUE);
+                            var editable = !snapshot.data!.locked && canChangeValue;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 16.0),
+                                AddStrategyButton(
+                                    bloc: strategyBloc, editable: editable),
+                                const SizedBox(height: 16.0),
+                                RetireFeatureValueCheckboxWidget(
+                                    environmentFeatureValue: widget.environmentFeatureValue,
+                                    fvBloc: fvBloc,
+                                    editable: editable,
+                                    retired: fvBloc.currentFeatureValue!.retired ?? false),
+                                //this is where we need to pass retired from the actual value
+                              ],
+                            );
+                          } else {
+                            return Container();
+                          }
+                        }),
+                    const SizedBox(height: 16.0),
+                    FeatureValueUpdatedByCell(
+                      strBloc: strategyBloc,
+                    ),
+                    const SizedBox(height: 24.0),
+                    ButtonBar(
+                      alignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton(onPressed: () {
+                        Navigator.pop(context); //close the side panel
+                    }, child: const Text("Cancel")),
+                        ElevatedButton(onPressed: () async {
+                          try {
+                            await fvBloc.saveFeatureValueUpdates();
+                            Navigator.pop(context); //close the side panel
+                            widget.perApplicationFeaturesBloc.mrClient.addSnackbar(Text(
+                                'Feature ${widget.feature.name.toUpperCase()} '
+                                    'in the environment ${widget
+                                    .environmentFeatureValue
+                                    .environmentName?.toUpperCase()} has been updated!'));
+                          }
+                          catch (e, s) {
+                            widget.perApplicationFeaturesBloc.mrClient.dialogError(e, s);
+                          }
+                      },
+                      child: const Text("Save")
+                        ),
+                    ])
+                  ],
+                ),
               ),
             );
           }),

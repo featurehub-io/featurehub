@@ -8,7 +8,6 @@ image::docs/modules/ROOT/images/fh_primary_navy.png[Feature Hub,500]
 FeatureHub is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.
 This is the primary source code repository for FeatureHub.
 
-https://demo.featurehub.io[Try FeatureHub demo now]
 
 **Install with Docker (evaluation mode)**
 
