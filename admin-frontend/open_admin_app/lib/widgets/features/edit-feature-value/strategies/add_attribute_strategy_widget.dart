@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
-import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/multiselect_dropdown.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/transform_strategy_conditions.dart';
@@ -345,10 +344,6 @@ class _EditAttributeStrategyWidgetState
       case RolloutStrategyFieldType.NUMBER:
         labelText = 'Number(s)';
         helperText = 'e.g. 6, 7.87543';
-        inputFormatters = [
-          DecimalTextInputFormatter(
-              decimalRange: 6, activatedNegativeValues: true)
-        ];
         break;
       case RolloutStrategyFieldType.DATE:
         labelText = 'Date(s) - YYYY-MM-DD';
@@ -407,7 +402,7 @@ class _EditAttributeStrategyWidgetState
             ));
       case RolloutStrategyFieldType.IP_ADDRESS:
         labelText = 'IP Address(es) with or without CIDR';
-        helperText = 'e.g. 168.192.54.3 or 192.168.86.1/8 or 10.34.0.0/32';
+        helperText = 'e.g. 168.192.54.3 or 192.168.86.1/8';
         break;
       default:
         return Container(); // nothing until they have chosen one
@@ -479,23 +474,35 @@ class _EditAttributeStrategyWidgetState
     final val = v.trim();
     if (val.isEmpty) {
       return;
-    } else if (_attributeType == RolloutStrategyFieldType.NUMBER) {
-      try {
-        final num = double.parse(val);
-        if (!widget.attribute.values.contains(num)) {
+    } else {
+      List<String> valuesList = val.split(",")
+          .map((name) => name.trim())
+          .toList();
+      if (_attributeType == RolloutStrategyFieldType.NUMBER) {
+        valuesList.forEach((element) {
+          try {
+            final num = double.parse(element);
+            if (!widget.attribute.values.contains(num)) {
+              setState(() {
+                widget.attribute.values.add(num);
+                _value.text = '';
+              });
+            }
+
+            // ignore: empty_catches
+          } catch (e) {}
+        });
+      }
+
+      else {
+        if (!widget.attribute.values.contains(val)) {
           setState(() {
-            widget.attribute.values.add(num);
+            valuesList.forEach((element) {
+              widget.attribute.values.add(element);
+            });
             _value.text = '';
           });
         }
-        // ignore: empty_catches
-      } catch (e) {}
-    } else {
-      if (!widget.attribute.values.contains(val)) {
-        setState(() {
-          widget.attribute.values.add(val);
-          _value.text = '';
-        });
       }
     }
   }
