@@ -342,11 +342,24 @@ class FeatureSqlApi @Inject constructor(
           changed = true
         }
       }
+
+      // ok, now just honour the order of the incoming strategies and keep track if they actually changed
+      val newlyOrderedList = featureValue.rolloutStrategies?.map { newStrat -> existing.rolloutStrategies.find { it.id == newStrat.id } }?.filterNotNull()?.toMutableList() ?: mutableListOf()
+      val newlyOrderedListIds = newlyOrderedList.map { it.id }
+      newlyOrderedList.addAll(existing.rolloutStrategies.filter { !newlyOrderedListIds.contains(it.id) })
+      val reorderedList = newlyOrderedList.map { it.id }
+
+      if (existing.rolloutStrategies?.map { it.id } != reorderedList) {
+        changed = true
+      }
+
+      existing.rolloutStrategies = newlyOrderedList
     }
 
     if (changed && existing.isLocked && !lockChanged) {
       throw LockedException()
     }
+
 
     return changed
   }

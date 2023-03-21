@@ -28,6 +28,13 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
     feature = new DbApplicationFeature.Builder().valueType(FeatureValueType.BOOLEAN).build()
   }
 
+  /**
+   *
+   * @param current - these are the strategies in the database now
+   * @param historical - these are the ones as at the time we were updating
+   * @param updated - these are the strategies we are laying on top of historical to be applied to current
+   * @return - current should be updated with the results of updated
+   */
   boolean updateStrategies(List<RolloutStrategy> current, List<RolloutStrategy> historical, List<RolloutStrategy> updated) {
     currentFeature = new DbFeatureValue.Builder().locked(currentLock).rolloutStrategies(current).build()
 
@@ -175,5 +182,21 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       )
     then:
       thrown(OptimisticLockingException)
+  }
+
+  def "i can reorder the strategies even if i haven't changed them"() {
+    given:
+      def a = new RolloutStrategy().id('a').name('irina')
+      def b = new RolloutStrategy().id('b').name('isaac')
+      def c = new RolloutStrategy().id('c').name('seb')
+    when:
+      def oldOrder = [a, b, c]
+      def newWorldOrder = [c, b, a]
+      def result = updateStrategies(oldOrder, oldOrder, newWorldOrder)
+    then:
+      result
+      currentFeature.rolloutStrategies[0] == c
+      currentFeature.rolloutStrategies[1] == b
+      currentFeature.rolloutStrategies[2] == a
   }
 }
