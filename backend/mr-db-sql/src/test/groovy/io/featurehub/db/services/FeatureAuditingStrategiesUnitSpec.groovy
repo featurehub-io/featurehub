@@ -199,4 +199,37 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       currentFeature.rolloutStrategies[1] == b
       currentFeature.rolloutStrategies[2] == a
   }
+
+  def "i can reorder a record when there has been another one added"() {
+    given:
+      def a = new RolloutStrategy().id('a').name('irina')
+      def b = new RolloutStrategy().id('b').name('isaac')
+      def c = new RolloutStrategy().id('c').name('seb')
+    when:
+      def current = [a, b, c]
+      def newWorldOrder = [b, a]
+      def historical = [a, b]
+      def result = updateStrategies(current, historical, newWorldOrder)
+    then:
+      result
+      currentFeature.rolloutStrategies[0] == b
+      currentFeature.rolloutStrategies[1] == a
+      currentFeature.rolloutStrategies[2] == c
+  }
+
+  def "i can reorder a record when one has been deleted"() {
+    given:
+      def a = new RolloutStrategy().id('a').name('irina')
+      def b = new RolloutStrategy().id('b').name('isaac')
+      def c = new RolloutStrategy().id('c').name('seb')
+    when:
+      def current = [c, b]
+      def newWorldOrder = [b, a]
+      def historical = [a, b]
+      def result = updateStrategies(current, historical, newWorldOrder)
+    then:
+      result
+      currentFeature.rolloutStrategies[0] == b
+      currentFeature.rolloutStrategies[1] == c
+  }
 }
