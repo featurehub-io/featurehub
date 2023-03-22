@@ -35,150 +35,161 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
     final strategyBloc =
         fvBloc.matchingCustomStrategyBloc(widget.environmentFeatureValue);
 
+    final canSave =
+        widget.environmentFeatureValue.roles.contains(RoleType.CHANGE_VALUE) ||
+            widget.environmentFeatureValue.roles.contains(RoleType.LOCK) ||
+            widget.environmentFeatureValue.roles.contains(RoleType.UNLOCK);
+
     return Container(
-      color: Theme.of(context).canvasColor,
-      child: StreamBuilder<List<RolloutStrategy>>(
-          stream: strategyBloc.strategies,
-          builder: (streamCtx, snap) {
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.feature.name,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8.0),
-                    Text('${widget.environmentFeatureValue.environmentName}'),
-                    const SizedBox(height: 16.0),
-                    LockUnlockSwitch(
-                      environmentFeatureValue: widget.environmentFeatureValue,
-                      fvBloc: fvBloc,
-                    ),
-                    StreamBuilder<List<RolloutStrategy>>(
-                        stream: strategyBloc.strategies,
-                        builder: (context, snapshot) {
-                          List<Widget> _widgets = [];
-                          if (snapshot.hasData) {
-                            _widgets =
-                                snapshot.data!.map((RolloutStrategy strategy) {
-                              return StrategyCard(
-                                  key: ValueKey(strategy),
-                                  strBloc: strategyBloc,
-                                  rolloutStrategy: strategy,
-                                  featureValueType: widget.feature.valueType!);
-                            }).toList();
-                          }
-                          return Column(
-                            children: [
-                              StrategyCard(
-                                  strBloc: strategyBloc,
-                                  featureValueType: widget.feature.valueType!),
-                              if (snapshot.hasData)
-                                SizedBox(
-                                  height: 300,
-                                  child: ReorderableListView(
-                                    buildDefaultDragHandles: false,
-                                    children: <Widget>[
-                                      for (Widget wid in _widgets)
-                                        ReorderableDragStartListener(
-                                            key: ValueKey(wid),
-                                            child: wid,
-                                            index: _widgets.indexOf(wid))
-                                    ],
-                                    onReorder: (int oldIndex, int newIndex) {
-                                      if (newIndex > oldIndex) {
-                                        newIndex -= 1;
+        color: Theme.of(context).canvasColor,
+        child: StreamBuilder<List<RolloutStrategy>>(
+            stream: strategyBloc.strategies,
+            builder: (streamCtx, strategiesLatest) {
+              return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                              Text(
+                                widget.feature.name,
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                              const SizedBox(height: 8.0),
+                              Text(
+                                  '${widget.environmentFeatureValue.environmentName}'),
+                              const SizedBox(height: 16.0),
+                              LockUnlockSwitch(
+                                environmentFeatureValue:
+                                    widget.environmentFeatureValue,
+                                fvBloc: fvBloc,
+                              ),
+                              StreamBuilder<FeatureValue>(
+                                  stream: fvBloc.currentFv,
+                                  builder: (context, featureValueLatest) {
+                                    if (featureValueLatest.hasData) {
+                                      final canChangeValue = widget
+                                          .environmentFeatureValue.roles
+                                          .contains(RoleType.CHANGE_VALUE);
+                                      var editable =
+                                          !featureValueLatest.data!.locked &&
+                                              canChangeValue;
+                                      List<Widget> _widgets = [];
+                                      if (strategiesLatest.hasData) {
+                                        _widgets = strategiesLatest.data!
+                                            .map((RolloutStrategy strategy) {
+                                          return StrategyCard(
+                                              key: ValueKey(strategy),
+                                              strBloc: strategyBloc,
+                                              rolloutStrategy: strategy,
+                                              featureValueType:
+                                                  widget.feature.valueType!);
+                                        }).toList();
                                       }
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          StrategyCard(
+                                              strBloc: strategyBloc,
+                                              featureValueType:
+                                                  widget.feature.valueType!),
+                                          if (strategiesLatest.hasData)
+                                            ReorderableListView(
+                                              shrinkWrap: true,
+                                              buildDefaultDragHandles: false,
+                                              children: <Widget>[
+                                                for (Widget wid in _widgets)
+                                                  ReorderableDragStartListener(
+                                                      key: ValueKey(wid),
+                                                      enabled: !featureValueLatest
+                                                              .data!.locked &&
+                                                          canChangeValue,
+                                                      child: wid,
+                                                      index: _widgets.indexOf(wid))
+                                              ],
+                                              onReorder:
+                                                  (int oldIndex, int newIndex) {
+                                                if (newIndex > oldIndex) {
+                                                  newIndex -= 1;
+                                                }
+                                                final items = strategiesLatest
+                                                    .data![oldIndex];
 
-// First get the items at the old index
-                                      final items = snapshot.data![oldIndex];
+                                                strategiesLatest.data!
+                                                  ..removeWhere((element) =>
+                                                      element.id == items.id)
+                                                  ..insert(newIndex, items);
 
-//Then remove it from the old position and insert it at the new one
-//                                       List<RolloutStrategy> reorderedList =
-//                                           List.from(snapshot.data!)
-//                                             ..removeWhere((element) =>
-//                                                 element.id == items.id)
-//                                             ..insert(newIndex, items);
-
-                                      (snapshot.data!)
-                                        ..removeWhere((element) =>
-                                        element.id == items.id)
-                                        ..insert(newIndex, items);
-
-                                      strategyBloc
-                                          .updateStrategyAndFeatureValue();
-                                    },
-                                  ),
-                                )
-                            ],
-                          );
-                        }),
-                    StreamBuilder<FeatureValue>(
-                        stream: fvBloc.currentFv,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            final canChangeValue = widget
-                                .environmentFeatureValue.roles
-                                .contains(RoleType.CHANGE_VALUE);
-                            var editable =
-                                !snapshot.data!.locked && canChangeValue;
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 16.0),
-                                AddStrategyButton(
-                                    bloc: strategyBloc, editable: editable),
-                                const SizedBox(height: 16.0),
-                                RetireFeatureValueCheckboxWidget(
-                                    environmentFeatureValue:
-                                        widget.environmentFeatureValue,
-                                    fvBloc: fvBloc,
-                                    editable: editable,
-                                    retired:
-                                        fvBloc.currentFeatureValue!.retired ??
-                                            false),
-                                //this is where we need to pass retired from the actual value
-                              ],
-                            );
-                          } else {
-                            return Container();
-                          }
-                        }),
-                    const SizedBox(height: 16.0),
-                    FeatureValueUpdatedByCell(
-                      strBloc: strategyBloc,
-                    ),
-                    const SizedBox(height: 24.0),
-                    ButtonBar(alignment: MainAxisAlignment.center, children: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.pop(context); //close the side panel
-                          },
-                          child: const Text("Cancel")),
-                      ElevatedButton(
-                          onPressed: () async {
-                            try {
-                              await fvBloc.saveFeatureValueUpdates();
-                              Navigator.pop(context); //close the side panel
-                              widget.perApplicationFeaturesBloc.mrClient
-                                  .addSnackbar(Text(
-                                      'Feature ${widget.feature.name.toUpperCase()} '
-                                      'in the environment ${widget.environmentFeatureValue.environmentName?.toUpperCase()} has been updated!'));
-                            } catch (e, s) {
-                              widget.perApplicationFeaturesBloc.mrClient
-                                  .dialogError(e, s);
-                            }
-                          },
-                          child: const Text("Save")),
-                    ])
-                  ],
-                ),
-              ),
-            );
-          }),
-    );
+                                                strategyBloc
+                                                    .updateStrategyAndFeatureValue();
+                                              },
+                                            ),
+                                          const SizedBox(height: 16.0),
+                                          AddStrategyButton(
+                                              bloc: strategyBloc,
+                                              editable: editable),
+                                          const SizedBox(height: 16.0),
+                                          RetireFeatureValueCheckboxWidget(
+                                              environmentFeatureValue:
+                                                  widget.environmentFeatureValue,
+                                              fvBloc: fvBloc,
+                                              editable: editable,
+                                              retired: fvBloc.currentFeatureValue!
+                                                      .retired ??
+                                                  false),
+                                          //this is where we need to pass retired from the actual value
+                                          const SizedBox(height: 16.0),
+                                          FeatureValueUpdatedByCell(
+                                            strBloc: strategyBloc,
+                                          ),
+                                          const SizedBox(height: 24.0),
+                                          ButtonBar(
+                                              alignment: MainAxisAlignment.end,
+                                              children: [
+                                                TextButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(
+                                                          context); //close the side panel
+                                                    },
+                                                    child: const Text("Cancel")),
+                                                ElevatedButton(
+                                                    onPressed: canSave ? () async {
+                                                            try {
+                                                              await fvBloc
+                                                                  .saveFeatureValueUpdates();
+                                                              Navigator.pop(
+                                                                  context); //close the side panel
+                                                              widget
+                                                                  .perApplicationFeaturesBloc
+                                                                  .mrClient
+                                                                  .addSnackbar(Text(
+                                                                      'Feature ${widget.feature.name.toUpperCase()} '
+                                                                      'in the environment ${widget.environmentFeatureValue.environmentName?.toUpperCase()} has been updated!'));
+                                                            } catch (e, s) {
+                                                              widget
+                                                                  .perApplicationFeaturesBloc
+                                                                  .mrClient
+                                                                  .dialogError(
+                                                                      e, s);
+                                                            }
+                                                          }
+                                                        : null,
+                                                    child: const Text("Save")),
+                                              ])
+                                        ],
+                                      );
+                                    } else {
+                                      return const SizedBox.shrink();
+                                    }
+                                  }),
+                            ])),
+                      ),
+                    ],
+                  ));
+            }));
   }
 }
