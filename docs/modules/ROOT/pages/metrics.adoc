@@ -42,6 +42,9 @@ All API endpoints have Histogram metric around them The names of the endpoints a
 the <<admin-development-kit.adoc#_openapi_files,OpenAPI document>>, and will not have a prefix unless you specify the system property or
 environment variable of `prometheus.jersey.prefix`.
 
+You can turn these endpoint metrics off if you wish, by setting the env var `prometheus.jersey.none=true`. This will keep the metrics around response codes, but not put a histogram around 
+every API endpoint.
+
 For example, if you wanted to create a metric around the `login` method in case of repeated attempts at logging in,
 then looking at the metrics you would see this:
 
