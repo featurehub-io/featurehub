@@ -24,53 +24,56 @@ class StrategyCardWidget extends StatelessWidget {
     var light = Theme.of(context).brightness == Brightness.light;
     return SizedBox(
       height: 50,
-      child: Card(
-        color: rolloutStrategy == null
-            ? (light ? defaultValueColor : defaultValueColorDark)
-            : (light ? strategyValueColor : strategyValueColorDark),
-        child: Padding(
-          padding: const EdgeInsets.only(left: 8.0, right: 2.0),
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Expanded(
+      child: InkWell(
+        mouseCursor: rolloutStrategy == null ? null : SystemMouseCursors.grab,
+        child: Card(
+          color: rolloutStrategy == null
+              ? (light ? defaultValueColor : defaultValueColorDark)
+              : (light ? strategyValueColor : strategyValueColorDark),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8.0, right: 2.0),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Expanded(
+                      flex: 3,
+                      child: rolloutStrategy == null
+                          ? Text('default',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .caption!
+                                  .copyWith(color: defaultTextColor))
+                          : Text(
+                              rolloutStrategy!.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.labelLarge
+                            )),
+                  Flexible(flex: 6, child: editableHolderWidget),
+                  Expanded(
                     flex: 3,
-                    child: rolloutStrategy == null
-                        ? Text('default',
-                            style: Theme.of(context)
-                                .textTheme
-                                .caption!
-                                .copyWith(color: defaultTextColor))
-                        : Text(
-                            rolloutStrategy!.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.labelLarge
-                          )),
-                Flexible(flex: 6, child: editableHolderWidget),
-                Expanded(
-                  flex: 3,
-                  child: rolloutStrategy != null
-                      ? Row(
-                        children: [
-                          EditValueStrategyLinkButton(
-                            editable: editable,
-                            rolloutStrategy: rolloutStrategy!,
-                            fvBloc: strBloc.fvBloc,
-                            strBloc: strBloc,
-                          ),
-                          DeleteStrategyIconButton(
-                            editable: editable,
-                            rolloutStrategy: rolloutStrategy!,
-                            strBloc: strBloc,
-                          ),
-                        ],
-                      )
-                      : const SizedBox.shrink(),
-                )
-              ]),
+                    child: rolloutStrategy != null
+                        ? Row(
+                          children: [
+                            EditValueStrategyLinkButton(
+                              editable: editable,
+                              rolloutStrategy: rolloutStrategy!,
+                              fvBloc: strBloc.fvBloc,
+                              strBloc: strBloc,
+                            ),
+                            DeleteStrategyIconButton(
+                              editable: editable,
+                              rolloutStrategy: rolloutStrategy!,
+                              strBloc: strBloc,
+                            ),
+                          ],
+                        )
+                        : const SizedBox.shrink(),
+                  )
+                ]),
+          ),
         ),
       ),
     );

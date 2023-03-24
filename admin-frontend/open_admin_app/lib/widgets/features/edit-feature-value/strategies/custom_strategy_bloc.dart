@@ -55,6 +55,12 @@ class CustomStrategyBloc extends Bloc {
     _strategySource.add(strategies);
   }
 
+  void updateStrategyAndFeatureValue() {
+    final strategies = _strategySource.value;
+    _strategySource.add(strategies);
+    fvBloc.updateFeatureValueStrategies(strategies);
+  }
+
   void removeStrategy(RolloutStrategy rs) {
     // tag it to ensure it has a number so we can remove it
     rs.id ??= makeStrategyId();
