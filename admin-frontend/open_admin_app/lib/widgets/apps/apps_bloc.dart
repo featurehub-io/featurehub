@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:rxdart/rxdart.dart';
@@ -17,6 +18,11 @@ class AppsBloc implements Bloc {
         .streamValley.currentPortfolioApplicationsStream
         .listen(_getCurrentPortfolioApplications);
     mrClient.streamValley.includeEnvironmentsInApplicationRequest = true;
+
+
+    // this tells the mrClient to run any callback code after the page has finished loading
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => this.mrClient.processLandingActions());
   }
 
   // make sure we load apps with the features

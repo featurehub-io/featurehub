@@ -39,6 +39,7 @@ typedef InitializedCheckState = String;
 bool overrideOrigin = true;
 
 typedef TokenizedPersonHook = void Function(TokenizedPerson person);
+typedef LandingAction = void Function(ManagementRepositoryClientBloc bloc);
 
 List<TokenizedPersonHook> tokenizedPersonHooks = <TokenizedPersonHook>[];
 
@@ -122,6 +123,24 @@ class ManagementRepositoryClientBloc implements Bloc {
       _routerRedrawRouteSource.stream;
 
   RouteChange? get currentRoute => _routerSource.value;
+
+  /*
+   * Landing actions are actions relevant to landing on the main page after login.
+   * When a user gets to the AppsBloc it should check here
+   */
+  List<LandingAction> _landingActions = [];
+
+  void registerLandingAction(LandingAction la) {
+    _landingActions.add(la);
+  }
+
+  void processLandingActions() {
+    final la = _landingActions;
+
+    _landingActions = [];
+
+    la.forEach((action) { action(this); });
+  }
 
   void swapRoutes(RouteChange route) {
     // this is for gross route changes, and causes the widget to redraw
