@@ -71,7 +71,7 @@ class EditUserBloc implements Bloc {
 
   Future<void> updatePersonDetails(String email, String name) async {
     if (person != null) {
-      _updateDetails(UpdatePerson(version: person!.version!, email: email), name);
+      await _updateDetails(UpdatePerson(version: person!.version!, email: email), name);
     }
   }
 
