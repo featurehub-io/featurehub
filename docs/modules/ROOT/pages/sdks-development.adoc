@@ -354,6 +354,10 @@ this makes the header:
 city=Istanbul+City,country=turkey,device=mobile,family=Bambam%2cDJ+Elif,platform=ios,session=session-key,userkey=tv-show,version=6.2.3
 ----
 
+The key replacements in attributes is that `=` must be replaced with `%3D`, and `,` with `%2C` as they are the delimeters and how the server will split the attributes up to be evaluated. 
+
+You should sort the headers by key name, at least to make testing easier.
+
 === Percentage Rollout
 
 For percentage rollout, we apply the Murmur3 Hash to the user's key (by default) and the feature's ID and spread it out

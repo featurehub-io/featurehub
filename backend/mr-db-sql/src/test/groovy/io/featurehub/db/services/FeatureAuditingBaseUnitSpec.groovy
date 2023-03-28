@@ -33,8 +33,8 @@ class FeatureAuditingBaseUnitSpec extends Specification {
     fsApi = new FeatureSqlApi(database, conversions, cacheSource, rolloutStrategyValidator)
   }
 
-  final rolesChangeValue = [RoleType.CHANGE_VALUE] as Set<RoleType>
-  final rolesLock = [RoleType.LOCK] as Set<RoleType>
-  final rolesUnlock = [RoleType.UNLOCK] as Set<RoleType>
-  final rolesRead = [RoleType.READ] as Set<RoleType>
+  static final rolesChangeValue = [RoleType.CHANGE_VALUE] as Set<RoleType>
+  static final rolesLock = [RoleType.LOCK] as Set<RoleType>
+  static final rolesUnlock = [RoleType.UNLOCK] as Set<RoleType>
+  static final rolesRead = [RoleType.READ] as Set<RoleType>
 }
