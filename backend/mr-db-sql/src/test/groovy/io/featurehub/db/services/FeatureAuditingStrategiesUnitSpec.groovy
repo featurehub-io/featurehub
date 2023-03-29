@@ -1,5 +1,6 @@
 package io.featurehub.db.services
 
+import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.LockedException
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.PersonFeaturePermission
@@ -36,10 +37,14 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
    * @return - current should be updated with the results of updated
    */
   boolean updateStrategies(List<RolloutStrategy> current, List<RolloutStrategy> historical, List<RolloutStrategy> updated) {
+    return updateStrategies(current, historical, updated, new PersonFeaturePermission(person, defaultRoles))
+  }
+
+  boolean updateStrategies(List<RolloutStrategy> current, List<RolloutStrategy> historical, List<RolloutStrategy> updated, PersonFeaturePermission person) {
     currentFeature = new DbFeatureValue.Builder().locked(currentLock).rolloutStrategies(current).build()
 
     return fsApi.updateSelectivelyRolloutStrategies(
-      new PersonFeaturePermission(person, defaultRoles),
+      person,
       new FeatureValue().rolloutStrategies(updated),
       new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, FeatureState.READY, "y", false, false, historical, [], feature),
       currentFeature, lockChanged
@@ -52,6 +57,18 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
     then:
       result
       currentFeature.rolloutStrategies.find({it.id == 'x123'})
+  }
+
+  def "when i have no permissions, i can't add strategies"() {
+    when:
+      updateStrategies([], [], [new RolloutStrategy().id("x123")], new PersonFeaturePermission(person, testRoles))
+    then:
+      thrown(FeatureApi.NoAppropriateRole)
+    where:
+      testRoles   | _
+      rolesRead   | _
+      rolesLock   | _
+      rolesUnlock | _
   }
 
   def "if i pass a strategy and the existing one has strategies, they don't get deleted"() {
@@ -81,6 +98,45 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       currentFeature.rolloutStrategies.find({it.id == '2345'})
   }
 
+  def "delete historical strategy by replacement and don't have permission"() {
+    when:
+      def existingStrategy = new RolloutStrategy().id('1234')
+      updateStrategies([existingStrategy], [existingStrategy], [new RolloutStrategy().id('2345')], new PersonFeaturePermission(person, testRoles))
+    then:
+      thrown(FeatureApi.NoAppropriateRole)
+    where:
+      testRoles   | _
+      rolesRead   | _
+      rolesLock   | _
+      rolesUnlock | _
+  }
+
+  def "delete historical strategy by removal and don't have permission"() {
+    when:
+      def existingStrategy = new RolloutStrategy().id('1234')
+      updateStrategies([existingStrategy], [existingStrategy], [], new PersonFeaturePermission(person, testRoles))
+    then:
+      thrown(FeatureApi.NoAppropriateRole)
+    where:
+      testRoles   | _
+      rolesRead   | _
+      rolesLock   | _
+      rolesUnlock | _
+  }
+
+  def "reorder strategies and no permission"() {
+    when:
+      def existingStrategies = [new RolloutStrategy().id('1234'), new RolloutStrategy().id('23451')]
+      updateStrategies(existingStrategies, existingStrategies, [existingStrategies[1], existingStrategies[0]], new PersonFeaturePermission(person, testRoles))
+    then:
+      thrown(FeatureApi.NoAppropriateRole)
+    where:
+      testRoles   | _
+      rolesRead   | _
+      rolesLock   | _
+      rolesUnlock | _
+  }
+
   def "current and historical do not match the same strategy id and we change it"() {
     when:
       updateStrategies([new RolloutStrategy().id('1234').name('fred')],
@@ -102,6 +158,21 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       currentFeature.rolloutStrategies.size() == 2
       currentFeature.rolloutStrategies.findIndexOf {it.id == '1234' } == 0
       currentFeature.rolloutStrategies[0].name == 'ex'
+  }
+
+  def "replace value with invalid permissions should fail"() {
+    when:
+      def existingStrategy = new RolloutStrategy().id('1234')
+      updateStrategies([existingStrategy], [existingStrategy], [
+        new RolloutStrategy().id('1234').name('ex'),
+        new RolloutStrategy().id('2345')], new PersonFeaturePermission(person, testRoles))
+    then:
+      thrown(FeatureApi.NoAppropriateRole)
+    where:
+      testRoles   | _
+      rolesRead   | _
+      rolesLock   | _
+      rolesUnlock | _
   }
 
   def "add and delete at the same time from historical"() {
