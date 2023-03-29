@@ -102,7 +102,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                 padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                 child: Text(
                   'To create a new user please first provide their email address',
-                  style: Theme.of(context).textTheme.caption,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
               Container(
@@ -135,7 +135,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                 padding: const EdgeInsets.only(top: 30.0),
                 child: Text(
                   'Add user to some portfolio groups or leave it blank to add them later',
-                  style: Theme.of(context).textTheme.caption,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
               const PortfolioGroupSelector(),
@@ -159,8 +159,8 @@ class TopWidgetSuccess extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text('User created! \n',
-              style: Theme.of(context).textTheme.headline6),
-          Text(bloc.email ?? '', style: Theme.of(context).textTheme.bodyText1),
+              style: Theme.of(context).textTheme.titleLarge),
+          Text(bloc.email ?? '', style: Theme.of(context).textTheme.bodyLarge),
         ],
       ),
       if (hasLocal)
@@ -170,10 +170,10 @@ class TopWidgetSuccess extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text('Registration URL',
-                  style: Theme.of(context).textTheme.subtitle2),
+                  style: Theme.of(context).textTheme.titleSmall),
               Text(
                 bloc.client.registrationUrl(bloc.registrationUrl!.token),
-                style: Theme.of(context).textTheme.caption,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
           ),
@@ -190,12 +190,12 @@ class TopWidgetSuccess extends StatelessWidget {
       if (hasLocal)
         Text(
           'You will need to email this URL to the new user, so they can complete their registration and set their password.',
-          style: Theme.of(context).textTheme.caption,
+          style: Theme.of(context).textTheme.bodySmall,
         ),
       if (!hasLocal)
         Text(
           'The user can now sign in and they will be able to access the system.',
-          style: Theme.of(context).textTheme.caption,
+          style: Theme.of(context).textTheme.bodySmall,
         ),
       FHButtonBar(children: [
         FHFlatButtonTransparent(

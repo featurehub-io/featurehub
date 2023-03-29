@@ -14,8 +14,8 @@ bool validateEmail(String? email) {
       .hasMatch(email);
 }
 
-final _characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-final _charactersLength = _characters.length - 1;
+const _characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const _charactersLength = _characters.length - 1;
 final _strategyRandom = Random();
 
 String _generateRandomStrategyId() {

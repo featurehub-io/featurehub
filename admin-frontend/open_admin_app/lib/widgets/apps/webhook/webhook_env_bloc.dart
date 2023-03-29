@@ -46,10 +46,10 @@ class WebhookEnvironmentBloc extends Bloc {
     _environmentSource.close();
   }
 
-  Environment? get current => _environmentSource.value!.environment;
-  WebhookTypeDetail? get currentWebhookType => _environmentSource.value!.type;
+  Environment? get current => _environmentSource.value.environment;
+  WebhookTypeDetail? get currentWebhookType => _environmentSource.value.type;
 
-  EnvironmentAndWebhookType get _currentSource => _environmentSource.value!;
+  EnvironmentAndWebhookType get _currentSource => _environmentSource.value;
 
   // we can't use the list from the ManageAppBloc as it doesn't contain the environmentInfo details
   // so we need to grab it and hold onto and use that one

@@ -121,7 +121,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                           }).toList()
                         : null,
                     hint: Text('Select group',
-                        style: Theme.of(context).textTheme.bodyText1),
+                        style: Theme.of(context).textTheme.bodyLarge),
                     onChanged: (String? value) {
                       if (value != null) {
                         setState(() {
@@ -173,7 +173,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                             child: Text(dropDownStringItem.name));
                       }).toList(),
                       hint: Text('Select portfolio',
-                          style: Theme.of(context).textTheme.bodyText1),
+                          style: Theme.of(context).textTheme.bodyLarge),
                       onChanged: (String? value) {
                         if (value != null) {
                           setState(() {

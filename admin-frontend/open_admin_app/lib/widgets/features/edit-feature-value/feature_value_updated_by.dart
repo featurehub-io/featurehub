@@ -25,16 +25,15 @@ class FeatureValueUpdatedByCell extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(updatedBy,
               style: Theme.of(context)
                   .textTheme
-                  .caption!
+                  .bodySmall!
                   .copyWith(color: Theme.of(context).colorScheme.primary)),
-          Text(whoUpdated, style: Theme.of(context).textTheme.bodyText1),
+          Text(whoUpdated, style: Theme.of(context).textTheme.bodyLarge),
           const SizedBox(width: 8.0),
-          Text(whenUpdated, style: Theme.of(context).textTheme.caption)
+          Text(whenUpdated, style: Theme.of(context).textTheme.bodySmall)
         ],
       ),
     );

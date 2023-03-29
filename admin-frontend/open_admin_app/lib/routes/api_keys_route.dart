@@ -23,95 +23,93 @@ class ApiKeysRoute extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ServiceAccountEnvBloc>(context);
     FHAnalytics.sendWindowPath();
-    return Container(
-        padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
-            Widget>[
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Wrap(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: const FHHeader(
-                      title: 'API Keys',
-                    ),
-                  ),
-                ],
+    return Column(crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Wrap(
+            children: const [
+              FHHeader(
+                title: 'API Keys',
               ),
-              Row(
-                children: [
-                  StreamBuilder<List<Application>>(
-                      stream: bloc.mrClient.streamValley
-                          .currentPortfolioApplicationsStream,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                          return Container(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: ApplicationDropDown(
-                                  applications: snapshot.data!, bloc: bloc));
-                        } else {
-                          return const SizedBox.shrink();
-                        }
-                      }),
-                  StreamBuilder<ReleasedPortfolio?>(
-                      stream: bloc.mrClient.streamValley.currentPortfolioStream,
-                      builder: (context, snapshot) {
-                        if (snapshot.data != null &&
-                            (snapshot.data!.currentPortfolioOrSuperAdmin ==
-                                true)) {
-                          return Padding(
-                            padding:
-                                const EdgeInsets.only(left: 8.0, bottom: 8.0),
-                            child: FHUnderlineButton(
-                                keepCase: true,
-                                title: 'Go to service accounts settings',
-                                onPressed: () => {
-                                      ManagementRepositoryClientBloc.router
-                                          .navigateTo(
-                                        context,
-                                        '/service-accounts',
-                                      )
-                                    }),
-                          );
-                        } else {
-                          return const SizedBox.shrink();
-                        }
-                      }),
-                ],
-              ),
-              const FHPageDivider(),
-              const SizedBox(
-                height: 16.0,
-              ),
-              StreamBuilder<ServiceAccountEnvironments>(
-                  stream: bloc.serviceAccountEnvironmentsStream,
-                  builder: (context, envSnapshot) {
-                    if (envSnapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const FHLoadingIndicator();
-                    } else if (envSnapshot.connectionState ==
-                            ConnectionState.active ||
-                        envSnapshot.connectionState == ConnectionState.done) {
-                      if (envSnapshot.hasError) {
-                        return const FHLoadingError();
-                      } else if (envSnapshot.hasData) {
-                        if (envSnapshot.data!.serviceAccounts.isEmpty) {
-                          return Text('No service accounts available',
-                              style: Theme.of(context).textTheme.caption);
-                        } else {
-                          return _ApiKeysDisplayWidget(
-                              serviceAccountEnvs: envSnapshot.data!,
-                              bloc: bloc);
-                        }
-                      }
+            ],
+          ),
+          const SizedBox(
+            height: 8.0,
+          ),
+          Row(
+            children: [
+              StreamBuilder<List<Application>>(
+                  stream: bloc.mrClient.streamValley
+                      .currentPortfolioApplicationsStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                      return ApplicationDropDown(
+                          applications: snapshot.data!, bloc: bloc);
+                    } else {
+                      return const SizedBox.shrink();
                     }
-                    return const SizedBox.shrink();
+                  }),
+              StreamBuilder<ReleasedPortfolio?>(
+                  stream: bloc.mrClient.streamValley.currentPortfolioStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.data != null &&
+                        (snapshot.data!.currentPortfolioOrSuperAdmin ==
+                            true)) {
+                      return Padding(
+                        padding:
+                            const EdgeInsets.only(left: 8.0),
+                        child: FHUnderlineButton(
+                            title: 'Go to service accounts settings',
+                            onPressed: () => {
+                                  ManagementRepositoryClientBloc.router
+                                      .navigateTo(
+                                    context,
+                                    '/service-accounts',
+                                  )
+                                }),
+                      );
+                    } else {
+                      return const SizedBox.shrink();
+                    }
                   }),
             ],
           ),
-        ]));
+          const SizedBox(
+            height: 8.0,
+          ),
+          const FHPageDivider(),
+          const SizedBox(
+            height: 16.0,
+          ),
+          StreamBuilder<ServiceAccountEnvironments>(
+              stream: bloc.serviceAccountEnvironmentsStream,
+              builder: (context, envSnapshot) {
+                if (envSnapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return const FHLoadingIndicator();
+                } else if (envSnapshot.connectionState ==
+                        ConnectionState.active ||
+                    envSnapshot.connectionState == ConnectionState.done) {
+                  if (envSnapshot.hasError) {
+                    return const FHLoadingError();
+                  } else if (envSnapshot.hasData) {
+                    if (envSnapshot.data!.serviceAccounts.isEmpty) {
+                      return Text('No service accounts available',
+                          style: Theme.of(context).textTheme.bodySmall);
+                    } else {
+                      return _ApiKeysDisplayWidget(
+                          serviceAccountEnvs: envSnapshot.data!,
+                          bloc: bloc);
+                    }
+                  }
+                }
+                return const SizedBox.shrink();
+              }),
+        ],
+      ),
+    ]);
   }
 }
 
@@ -231,7 +229,7 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
                                             child: SelectableText(env.name,
                                                 style: Theme.of(context)
                                                     .textTheme
-                                                    .bodyText2),
+                                                    .bodyMedium),
                                           ),
                                           Expanded(
                                               flex: 3,
@@ -289,7 +287,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
                       fontSize: 12,
                       letterSpacing: 1.0))
               : Text('No permissions defined',
-                  style: Theme.of(context).textTheme.caption)),
+                  style: Theme.of(context).textTheme.bodySmall)),
     );
   }
 }
@@ -320,7 +318,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                 children: [
                   Text(
                     'Client eval API Key ',
-                    style: Theme.of(context).textTheme.caption,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                   FHCopyToClipboard(
                       copyString: saPermission.sdkUrlClientEval!,
@@ -336,7 +334,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                 children: [
                   Text(
                     'Server eval API Key',
-                    style: Theme.of(context).textTheme.caption,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                   FHCopyToClipboard(
                       copyString: saPermission.sdkUrlServerEval!,

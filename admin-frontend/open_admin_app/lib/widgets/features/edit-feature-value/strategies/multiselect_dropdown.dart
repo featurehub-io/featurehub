@@ -47,9 +47,8 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
     return Container(
       padding: const EdgeInsets.all(4.0),
       margin: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-        color: Theme.of(context).cardColor,
+      decoration: const BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(6.0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,10 +98,10 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
                 .map((e) => DropdownMenuItem(
                 value: e,
                 child: Text(widget.enumToDisplayNameMapper(e),
-                    style: Theme.of(context).textTheme.bodyText2)))
+                    style: Theme.of(context).textTheme.bodyMedium)))
                 .toList(),
             hint:
-            Text(widget.hint, style: Theme.of(context).textTheme.subtitle2),
+            Text(widget.hint, style: Theme.of(context).textTheme.titleSmall),
             onChanged: (dynamic value) {
               var readOnly = false; //TODO parametrise this if needed
               if (!readOnly) {

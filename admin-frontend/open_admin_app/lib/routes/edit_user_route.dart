@@ -120,7 +120,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                   padding: const EdgeInsets.only(top: 30.0),
                   child: Text(
                     'Remove user from a group or add a new one',
-                    style: Theme.of(context).textTheme.caption,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
               ],
@@ -196,7 +196,7 @@ class _UserPasswordUpdateDialogWidgetState
             children: <Widget>[
               Text(
                 'After you reset the password below, make sure you email the new password to the user.',
-                style: Theme.of(context).textTheme.bodyText2,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               TextFormField(
                   controller: _password,

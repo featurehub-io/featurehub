@@ -50,7 +50,7 @@ class FeatureCellHolder extends StatelessWidget {
                                   // minFontSize: 8.0,
                                   style: Theme.of(context)
                                       .textTheme
-                                      .bodyText1!
+                                      .bodyLarge!
                                       .copyWith(fontWeight: FontWeight.bold)),
                             ),
 
@@ -114,18 +114,18 @@ class FeatureCellHolder extends StatelessWidget {
                             value: 'edit',
                             child: Text(
                                 isEditor ? 'Edit details' : 'View details',
-                                style: Theme.of(context).textTheme.bodyText2)),
+                                style: Theme.of(context).textTheme.bodyMedium)),
                         PopupMenuItem(
                           value: 'metadata',
                           child: Text(
                               isEditor ? 'Edit metadata' : 'View metadata',
-                              style: Theme.of(context).textTheme.bodyText2),
+                              style: Theme.of(context).textTheme.bodyMedium),
                         ),
                         if (isEditor)
                           PopupMenuItem(
                             value: 'delete',
                             child: Text('Delete',
-                                style: Theme.of(context).textTheme.bodyText2),
+                                style: Theme.of(context).textTheme.bodyMedium),
                           ),
                       ];
                     },

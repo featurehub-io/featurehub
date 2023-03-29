@@ -84,12 +84,12 @@ class RegisterURLState extends State<RegisterURLRoute> {
         children: <Widget>[
           Text(
             'Welcome to FeatureHub',
-            style: Theme.of(context).textTheme.headline6,
+            style: Theme.of(context).textTheme.titleLarge,
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
             child: Text('To register please complete the following details',
-                style: Theme.of(context).textTheme.subtitle2),
+                style: Theme.of(context).textTheme.titleSmall),
           ),
           TextFormField(
             enabled: false,

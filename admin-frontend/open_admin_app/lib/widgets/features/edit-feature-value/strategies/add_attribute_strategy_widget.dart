@@ -89,10 +89,7 @@ class _EditAttributeStrategyWidgetState
   Widget _nameField() {
     if (_wellKnown != null) {
       return Text(_nameFieldMap[_wellKnown!]!,
-          style: Theme.of(context).textTheme.subtitle2!.copyWith(
-            color: Theme.of(context).brightness == Brightness.light
-                ? Theme.of(context).buttonTheme.colorScheme?.primary
-                : Theme.of(context).colorScheme.secondary,
+          style: Theme.of(context).textTheme.titleSmall!.copyWith(
           ));
     } else {
       return TextFormField(
@@ -100,7 +97,7 @@ class _EditAttributeStrategyWidgetState
           decoration: InputDecoration(
               labelText: 'Custom key',
               helperText: 'e.g. "warehouse-id"',
-              labelStyle: Theme.of(context).textTheme.bodyText1!.copyWith(
+              labelStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   fontSize: 12.0,
                   color: Theme.of(context).buttonTheme.colorScheme?.primary)),
           style: const TextStyle(fontSize: 14.0),
@@ -124,9 +121,7 @@ class _EditAttributeStrategyWidgetState
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-        color: Theme.of(context).brightness == Brightness.light
-            ? Theme.of(context).selectedRowColor
-            : Theme.of(context).primaryColorLight.withOpacity(0.1),
+        color: Theme.of(context).colorScheme.secondaryContainer
       ),
       child: Row(
         children: [
@@ -171,9 +166,9 @@ class _EditAttributeStrategyWidgetState
               child: Container(
                 padding: const EdgeInsets.all(4.0),
                 // margin: EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-                    color: Theme.of(context).cardColor),
+                decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                ),
                 height: 42,
                 child: OutlinedButton(
                   onPressed: () => {},
@@ -192,10 +187,10 @@ class _EditAttributeStrategyWidgetState
                             child: Text(
                                 transformStrategyAttributeConditionalValueToString(
                                     dropDownStringItem),
-                                style: Theme.of(context).textTheme.bodyText2));
+                                style: Theme.of(context).textTheme.bodyMedium));
                       }).toList(),
                       hint: Text('Select condition',
-                          style: Theme.of(context).textTheme.subtitle2),
+                          style: Theme.of(context).textTheme.titleSmall),
                       onChanged: (RolloutStrategyAttributeConditional? value) {
                         var readOnly = false; //TODO parametrise this if needed
                         if (!readOnly && value != null) {
@@ -275,9 +270,9 @@ class _EditAttributeStrategyWidgetState
     return Container(
       padding: const EdgeInsets.all(4.0),
       margin: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-          color: Theme.of(context).cardColor),
+      decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+      ),
       height: 42,
       child: OutlinedButton(
         onPressed: () => {},
@@ -295,10 +290,10 @@ class _EditAttributeStrategyWidgetState
                   child: Text(
                       transformRolloutStrategyTypeFieldToString(
                           dropDownStringItem),
-                      style: Theme.of(context).textTheme.bodyText2));
+                      style: Theme.of(context).textTheme.bodyMedium));
             }).toList(),
             hint: Text('Select value type',
-                style: Theme.of(context).textTheme.subtitle2),
+                style: Theme.of(context).textTheme.titleSmall),
             onChanged: (RolloutStrategyFieldType? value) {
               if (value != null) {
                 setState(() {
@@ -359,9 +354,9 @@ class _EditAttributeStrategyWidgetState
             child: Container(
               padding: const EdgeInsets.all(4.0),
               margin: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-                  color: Theme.of(context).cardColor),
+              decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
+              ),
               height: 42,
               child: OutlinedButton(
                 onPressed: () => {},
@@ -382,7 +377,7 @@ class _EditAttributeStrategyWidgetState
                         value: value,
                         child: Text(
                           value,
-                          style: Theme.of(context).textTheme.bodyText2,
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       );
                     }).toList(),
@@ -395,7 +390,7 @@ class _EditAttributeStrategyWidgetState
                       });
                     },
                     hint: Text('Select value',
-                        style: Theme.of(context).textTheme.subtitle2),
+                        style: Theme.of(context).textTheme.titleSmall),
                   ),
                 ),
               ),
@@ -411,9 +406,9 @@ class _EditAttributeStrategyWidgetState
     return Container(
       padding: const EdgeInsets.all(4.0),
       margin: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-          color: Theme.of(context).cardColor),
+      decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,7 +424,7 @@ class _EditAttributeStrategyWidgetState
                       border: const OutlineInputBorder(),
                       labelText: labelText,
                       helperText: helperText,
-                      labelStyle: Theme.of(context).textTheme.bodyText1!),
+                      labelStyle: Theme.of(context).textTheme.bodyLarge!),
                   // readOnly: !widget.widget.editable,
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),

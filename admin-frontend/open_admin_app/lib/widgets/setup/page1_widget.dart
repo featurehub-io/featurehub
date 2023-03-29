@@ -70,7 +70,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
 
     final stateText = Text(state,
         style:
-            Theme.of(context).textTheme.caption!.copyWith(color: stateColor));
+            Theme.of(context).textTheme.bodySmall!.copyWith(color: stateColor));
     setState(() {
       _passwordStrength = stateText;
     });
@@ -97,13 +97,13 @@ class _SetupPage1State extends State<SetupPage1Widget> {
             ),
             Text(
               'Lets get this party started!',
-              style: Theme.of(context).textTheme.headline6,
+              style: Theme.of(context).textTheme.titleLarge,
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),
               child: Text(
                   "Well done, FeatureHub is up and running.  You'll be the first 'Organization super admin' of your FeatureHub account.",
-                  style: Theme.of(context).textTheme.bodyText1),
+                  style: Theme.of(context).textTheme.bodyLarge),
             ),
             if (external)
               _SetupPage1ThirdPartyProviders(
@@ -118,7 +118,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                   Padding(
                       padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
                       child: Text('or register by providing the details below',
-                          style: Theme.of(context).textTheme.caption)),
+                          style: Theme.of(context).textTheme.bodySmall)),
                 ],
               ),
             if (local)

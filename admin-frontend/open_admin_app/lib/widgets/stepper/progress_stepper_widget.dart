@@ -24,7 +24,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
   @override
   Widget build(BuildContext context) {
     var bloc = BlocProvider.of<StepperBloc>(context);
-    final captionStyle = Theme.of(context).textTheme.caption;
+    final captionStyle = Theme.of(context).textTheme.bodySmall;
     final cardWidgetTextPart =
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
       const SizedBox(height: 16),
@@ -80,7 +80,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                         applicationDropDown(bloc),
                                         FHUnderlineButton(
                                           title: 'Go to Applications',
-                                          keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -107,7 +106,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                         const SizedBox(height: 4.0),
                                         FHUnderlineButton(
                                           title: 'Go to Groups',
-                                          keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -132,7 +130,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                         const SizedBox(height: 4.0),
                                         FHUnderlineButton(
                                           title: 'Go to Service Accounts',
-                                          keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -160,7 +157,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                         const SizedBox(height: 4.0),
                                         FHUnderlineButton(
                                           title: 'Go to Environments',
-                                          keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -195,7 +191,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                         const SizedBox(height: 4.0),
                                         FHUnderlineButton(
                                           title: 'Go to Group Permissions',
-                                          keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -234,7 +229,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                         FHUnderlineButton(
                                           title:
                                               'Go to Service Account Permissions',
-                                          keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -268,7 +262,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                         const SizedBox(height: 4.0),
                                         FHUnderlineButton(
                                           title: 'Go to Features',
-                                          keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -310,7 +303,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Text('Select application or create a new one by following the link below',
-                      style: Theme.of(context).textTheme.caption),
+                      style: Theme.of(context).textTheme.bodySmall),
                   Container(
                       constraints: const BoxConstraints(maxWidth: 200),
                       child: applicationsDropdown(snapshot.data!, bloc))
@@ -333,15 +326,15 @@ class _StepperState extends State<FHSetupProgressStepper> {
           ),
         ),
         isExpanded: true,
-        style: Theme.of(context).textTheme.bodyText1,
+        style: Theme.of(context).textTheme.bodyLarge,
         items: applications.map((Application application) {
           return DropdownMenuItem<String>(
               value: application.id,
               child: Text(application.name,
-                  style: Theme.of(context).textTheme.bodyText2));
+                  style: Theme.of(context).textTheme.bodyMedium));
         }).toList(),
         hint: Text('Select application',
-            style: Theme.of(context).textTheme.subtitle2),
+            style: Theme.of(context).textTheme.titleSmall),
         onChanged: (String? value) {
           setState(() {
             bloc.mrClient.setCurrentAid(value);

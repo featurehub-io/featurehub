@@ -13,7 +13,6 @@ import 'package:open_admin_app/widgets/apps/service_account_permissions_widget.d
 import 'package:open_admin_app/widgets/apps/webhook/webhook_panel_widget.dart';
 import 'package:open_admin_app/widgets/common/application_drop_down.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
-import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/link_to_applications_page.dart';
 import 'package:open_admin_app/widgets/environments/env_list_widget.dart';
@@ -67,7 +66,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                         child: Row(
                           children: [
                             SelectableText('There are no applications in this portfolio',
-                                style: Theme.of(context).textTheme.caption),
+                                style: Theme.of(context).textTheme.bodySmall),
                             const Padding(
                               padding: EdgeInsets.only(left: 8.0),
                               child: LinkToApplicationsPage(),
@@ -85,7 +84,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: const <Widget>[
-                        FHCardWidget(child: ManageAppWidget()),
+                        ManageAppWidget(),
                       ],
                     );
                   } else if (envSnapshot.data ==
@@ -191,106 +190,109 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
     final ScrollController controllerTab3 = ScrollController();
     final ScrollController controllerTab4 = ScrollController(); // webhooks
 
-    return Column(
-      children: <Widget>[
-        ScrollConfiguration(
-          behavior: CustomScrollBehavior(),
-          child: TabBar(
-            indicatorSize: TabBarIndicatorSize.label,
-            controller: _controller,
-            labelStyle: MediaQuery.of(context).size.width > 400
-                ? const TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold) : const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold),
-            tabs: [
-              const Tab(
-                child: Text("Environments"),
-              ),
-              const Tab(
-                child: Text("Group Permissions"),
-              ),
-              Tab(
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: const Align(
-                    alignment: Alignment.center,
-                    child: Text("Service Account Permissions"),
-                  ),
-                ),
-              ),
-              if (bloc.mrClient.identityProviders.capabilityWebhooks)
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: <Widget>[
+          ScrollConfiguration(
+            behavior: CustomScrollBehavior(),
+            child: TabBar(
+              indicatorSize: TabBarIndicatorSize.label,
+              controller: _controller,
+              labelStyle: MediaQuery.of(context).size.width > 400
+                  ? const TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold) : const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold),
+              tabs: [
                 const Tab(
-                  child: Text("Webhooks")
-                )
-            ],
+                  child: Text("Environments"),
+                ),
+                const Tab(
+                  child: Text("Group Permissions"),
+                ),
+                Tab(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: const Align(
+                      alignment: Alignment.center,
+                      child: Text("Service Account Permissions"),
+                    ),
+                  ),
+                ),
+                if (bloc.mrClient.identityProviders.capabilityWebhooks)
+                  const Tab(
+                    child: Text("Webhooks")
+                  )
+              ],
+            ),
           ),
-        ),
-        SizedBox(
-          height: MediaQuery.of(context).size.height - 265,
-          child: TabBarView(
-            physics: const NeverScrollableScrollPhysics(),
-            controller: _controller,
-            children: [
-              //Environments
-              ScrollConfiguration(
-                behavior: CustomScrollBehavior(),
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  controller: controllerTab1,
-                  child: Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12.0),
-                        child: addEnvWidget(context, bloc),
-                      ),
-                      const EnvListWidget()
-                    ],
-                  ),
-                ),
-              ),
-              // Groups permissions
-              ScrollConfiguration(
-                behavior: CustomScrollBehavior(),
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  controller: controllerTab2,
-                  child: Column(
-                    children: const <Widget>[
-                      GroupPermissionsWidget(),
-                    ],
-                  ),
-                ),
-              ),
-              // Service accounts
-              ScrollConfiguration(
-                behavior: CustomScrollBehavior(),
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  controller: controllerTab3,
-                  child: Column(
-                    children: const <Widget>[
-                      ServiceAccountPermissionsWidget(),
-                    ],
-                  ),
-                ),
-              ),
-              if (bloc.mrClient.identityProviders.capabilityWebhooks)
+          SizedBox(
+            height: MediaQuery.of(context).size.height - 265,
+            child: TabBarView(
+              physics: const NeverScrollableScrollPhysics(),
+              controller: _controller,
+              children: [
+                //Environments
                 ScrollConfiguration(
                   behavior: CustomScrollBehavior(),
                   child: SingleChildScrollView(
                     physics: const ClampingScrollPhysics(),
-                    controller: controllerTab4,
+                    controller: controllerTab1,
                     child: Column(
-                      children: const <Widget>[
-                        WebhooksPanelWidget(),
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12.0),
+                          child: addEnvWidget(context, bloc),
+                        ),
+                        const EnvListWidget()
                       ],
                     ),
                   ),
                 ),
-            ],
-          ),
-        )
-      ],
+                // Groups permissions
+                ScrollConfiguration(
+                  behavior: CustomScrollBehavior(),
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    controller: controllerTab2,
+                    child: Column(
+                      children: const <Widget>[
+                        GroupPermissionsWidget(),
+                      ],
+                    ),
+                  ),
+                ),
+                // Service accounts
+                ScrollConfiguration(
+                  behavior: CustomScrollBehavior(),
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    controller: controllerTab3,
+                    child: Column(
+                      children: const <Widget>[
+                        ServiceAccountPermissionsWidget(),
+                      ],
+                    ),
+                  ),
+                ),
+                if (bloc.mrClient.identityProviders.capabilityWebhooks)
+                  ScrollConfiguration(
+                    behavior: CustomScrollBehavior(),
+                    child: SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      controller: controllerTab4,
+                      child: Column(
+                        children: const <Widget>[
+                          WebhooksPanelWidget(),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 

@@ -27,7 +27,7 @@ class FHLinkWidget extends StatelessWidget {
           child: Text(text,
               style: Theme.of(context)
                   .textTheme
-                  .button!
+                  .labelLarge!
                   .merge(TextStyle(color: Theme.of(context).primaryColor))),
         ),
       ),

@@ -42,7 +42,7 @@ class RolloutStrategiesWidget extends StatelessWidget {
 
             return Row(
               children: [
-                Text('Add rule', style: Theme.of(context).textTheme.caption),
+                Text('Add rule', style: Theme.of(context).textTheme.bodySmall),
                 for (var e in StrategyAttributeWellKnownNames.values)
                   if (e != StrategyAttributeWellKnownNames.session &&
                       !snapshot.data!.any((rsa) =>
@@ -63,7 +63,7 @@ class RolloutStrategiesWidget extends StatelessWidget {
       ),
       Row(
         children: [
-          Text('Add custom rule', style: Theme.of(context).textTheme.caption),
+          Text('Add custom rule', style: Theme.of(context).textTheme.bodySmall),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: FHOutlineButton(

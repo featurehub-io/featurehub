@@ -44,7 +44,7 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
               Text(caption!,
                   style: Theme.of(context)
                       .textTheme
-                      .subtitle2!
+                      .titleSmall!
                       ),
         ],
       ),

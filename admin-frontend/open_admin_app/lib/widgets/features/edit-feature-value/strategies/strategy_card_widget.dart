@@ -43,7 +43,7 @@ class StrategyCardWidget extends StatelessWidget {
                           ? Text('default',
                               style: Theme.of(context)
                                   .textTheme
-                                  .caption!
+                                  .bodySmall!
                                   .copyWith(color: defaultTextColor))
                           : Text(
                               rolloutStrategy!.name,

@@ -47,12 +47,10 @@ class StepperRocketButton extends StatelessWidget {
           if (snapshot.data != null &&
               (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
             return IconButton(
-              splashRadius: 20,
               tooltip: 'Open quick setup',
-              icon: const Icon(
+              icon: Icon(
                 MaterialCommunityIcons.rocket,
-//                color: Theme.of(context).primaryColor,
-                size: 18.0,
+               color: Theme.of(context).colorScheme.primary,
               ),
               onPressed: () => mrBloc.stepperOpened = true,
             );

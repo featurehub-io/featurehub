@@ -49,7 +49,7 @@ class _RetireFeatureValueCheckboxWidgetState
             }
           },
         ),
-        Text("Retired", style: Theme.of(context).textTheme.caption),
+        Text("Retired", style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }

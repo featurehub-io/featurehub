@@ -53,13 +53,13 @@ class _SetupPage2State extends State<SetupPage2Widget> {
             ),
             Text(
               'Set organization and a portfolio',
-              style: Theme.of(context).textTheme.headline6,
+              style: Theme.of(context).textTheme.titleLarge,
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
               child: Text(
                   'Nice work. Next step, before we can add an application we need a "Portfolio" to give your applications a home.',
-                  style: Theme.of(context).textTheme.bodyText1),
+                  style: Theme.of(context).textTheme.bodyLarge),
             ),
             TextFormField(
               controller: _org,
@@ -68,7 +68,7 @@ class _SetupPage2State extends State<SetupPage2Widget> {
               textInputAction: TextInputAction.next,
               decoration: InputDecoration(
                   hintText: 'The name of your organization',
-                  hintStyle: Theme.of(context).textTheme.caption,
+                  hintStyle: Theme.of(context).textTheme.bodySmall,
                   labelText: 'Organization Name'),
               validator: (v) => v == null || v.isEmpty
                   ? "Please enter your organization's name"
@@ -79,7 +79,7 @@ class _SetupPage2State extends State<SetupPage2Widget> {
 //              onFieldSubmitted: (_) => _handleSubmitted(),
               decoration: InputDecoration(
                   hintText: 'The name of your first grouping of applications',
-                  hintStyle: Theme.of(context).textTheme.caption,
+                  hintStyle: Theme.of(context).textTheme.bodySmall,
                   labelText: 'Portfolio'),
               textInputAction: TextInputAction.done,
               validator: (v) => v == null || v.isEmpty

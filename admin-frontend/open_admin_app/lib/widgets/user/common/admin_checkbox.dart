@@ -38,7 +38,7 @@ class AdminCheckboxWidgetState extends State<AdminCheckboxWidget> {
             child: CheckboxListTile(
                 title: Text(
                   'Set this user as organization super admin.',
-                  style: Theme.of(context).textTheme.caption,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 value: isAdmin,
                 onChanged: (bool? value) {

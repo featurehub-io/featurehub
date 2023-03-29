@@ -208,7 +208,7 @@ class _ValueCard extends StatelessWidget {
                   child: rolloutStrategy == null
                             ? const SizedBox.shrink()
                             : Padding(
-                                padding: const EdgeInsets.all(6.0),
+                                padding: const EdgeInsets.all(4.0),
                                 child: Text(rolloutStrategy!.name,
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,

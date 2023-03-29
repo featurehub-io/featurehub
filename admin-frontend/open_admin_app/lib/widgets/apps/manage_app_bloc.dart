@@ -244,7 +244,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         if(!_groupWithRolesPS.isClosed) {
           _groupWithRolesPS.add(ApplicationGroupRoles(group, applicationId!));
         }
-      } catch (e, s) {
+      } catch (e) {
         // print("this group has failed");
         _groupWithRolesPS.add(null);
       }

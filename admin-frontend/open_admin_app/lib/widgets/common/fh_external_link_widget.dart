@@ -28,9 +28,6 @@ class FHExternalLinkWidget extends StatelessWidget {
             },
             label: Text(
               label,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimary,
-              ),
             )),
       ),
     ]);

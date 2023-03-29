@@ -41,7 +41,7 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
         width: 200,
         height: 36,
         child: TextField(
-          style: Theme.of(context).textTheme.bodyText1,
+          style: Theme.of(context).textTheme.bodyLarge,
           enabled: widget.canEdit && widget.unlocked,
           controller: tec,
           decoration: InputDecoration(
@@ -59,7 +59,7 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
             hintText:
                 widget.canEdit ?
                 widget.unlocked ? 'Enter number value' : 'Unlock to edit' : 'No editing rights',
-            hintStyle: Theme.of(context).textTheme.caption,
+            hintStyle: Theme.of(context).textTheme.bodySmall,
             errorText:
                 validateNumber(tec.text) != null ? 'Not a valid number' : null,
           ),

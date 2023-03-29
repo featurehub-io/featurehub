@@ -111,7 +111,7 @@ class _TopAdminSAWidgetDefaultState extends State<TopAdminSAWidgetDefault> {
                 padding: const EdgeInsets.only(top: 30.0),
                 child: Text(
                   'Assign to some portfolio groups or leave it blank to add them later',
-                  style: Theme.of(context).textTheme.caption,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
               const PortfolioGroupSelector(),
@@ -130,7 +130,7 @@ class TopAdminSAWidgetSuccess extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text('Admin Service Account "${bloc.name}" created! \n',
-              style: Theme.of(context).textTheme.headline6),
+              style: Theme.of(context).textTheme.titleLarge),
           AdminAccessKeyDisplayWidget(token: bloc.registrationUrl!.token),
           FHButtonBar(children: [
             FHFlatButtonTransparent(

@@ -22,7 +22,7 @@ class AppsBloc implements Bloc {
 
     // this tells the mrClient to run any callback code after the page has finished loading
     WidgetsBinding.instance
-        .addPostFrameCallback((_) => this.mrClient.processLandingActions());
+        .addPostFrameCallback((_) => mrClient.processLandingActions());
   }
 
   // make sure we load apps with the features

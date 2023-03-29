@@ -91,7 +91,7 @@ class _MenuContainer extends StatelessWidget {
                                       left: 16.0, top: 32.0, bottom: 8.0),
                                   child: Text(
                                     'Application Settings',
-                                    style: Theme.of(context).textTheme.caption,
+                                    style: Theme.of(context).textTheme.bodySmall,
                                   ),
                                 ),
                                 _ApplicationSettings(),
@@ -104,7 +104,7 @@ class _MenuContainer extends StatelessWidget {
                                       child: Text(
                                         'Portfolio Settings',
                                         style:
-                                            Theme.of(context).textTheme.caption,
+                                            Theme.of(context).textTheme.bodySmall,
                                       ),
                                     ),
                                     _MenuPortfolioAdminOptionsWidget(),
@@ -123,7 +123,7 @@ class _MenuContainer extends StatelessWidget {
                                   left: 16.0, top: 32.0, bottom: 8.0),
                               child: Text(
                                 'Organization Settings',
-                                style: Theme.of(context).textTheme.caption,
+                                style: Theme.of(context).textTheme.bodySmall,
                               ),
                             ),
                             _SiteAdminOptionsWidget(),
@@ -328,7 +328,7 @@ class FHMenuItem extends StatelessWidget {
       canRequestFocus: false,
       mouseCursor: SystemMouseCursors.click,
       hoverColor: light
-          ? Theme.of(context).selectedRowColor
+          ? Theme.of(context).colorScheme.secondaryContainer
           : Theme.of(context).colorScheme.secondary.withOpacity(0.2),
       onTap: () {
         if (menuOkForThisUser) {
@@ -363,7 +363,7 @@ class FHMenuItem extends StatelessWidget {
                     padding:
                         const EdgeInsets.only(left: 12.0),
                     child: Text(' $name',
-                        style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                             fontWeight:
                                 selected ? FontWeight.bold : FontWeight.normal,
                             color: light

@@ -15,7 +15,7 @@ class FHTagWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     var labelColor = Theme.of(context).dividerColor;
     if (state == TagStatus.active) {
-      labelColor = Theme.of(context).toggleableActiveColor;
+      labelColor = Theme.of(context).primaryColor;
     }
     if (state == TagStatus.inactive) {
       labelColor = Theme.of(context).disabledColor;
@@ -37,7 +37,7 @@ class FHTagWidget extends StatelessWidget {
         child: Text(
           text,
           style: style ??
-              Theme.of(context).textTheme.bodyText2!.copyWith(
+              Theme.of(context).textTheme.bodyMedium!.copyWith(
                     color: Theme.of(context).colorScheme.onPrimary,
                     fontSize: 13,
                   ),

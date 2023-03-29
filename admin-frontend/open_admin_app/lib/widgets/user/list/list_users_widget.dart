@@ -160,7 +160,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
         cells: [
           DataCell(_personEntry.person.name == "No name"
               ? Text('Not yet registered',
-                  style: Theme.of(context).textTheme.caption)
+                  style: Theme.of(context).textTheme.bodySmall)
               : Text(
                   _personEntry.person.name,
                 )),
@@ -355,13 +355,13 @@ class _ListUserInfo extends StatelessWidget {
                     _ListUserRow(
                       title: 'Name',
                       child: Text(foundPerson.person.name,
-                          style: Theme.of(context).textTheme.bodyText1),
+                          style: Theme.of(context).textTheme.bodyLarge),
                     ),
                     const SizedBox(height: 8),
                     _ListUserRow(
                       title: 'Email',
                       child: Text(foundPerson.person.email,
-                          style: Theme.of(context).textTheme.bodyText1),
+                          style: Theme.of(context).textTheme.bodyLarge),
                     ),
                     if (allowedLocalIdentity &&
                         !foundPerson.registration.expired &&
@@ -375,7 +375,7 @@ class _ListUserInfo extends StatelessWidget {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               'Registration URL',
-                              style: Theme.of(context).textTheme.caption,
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ),
                         ],
@@ -437,7 +437,7 @@ class _ListUserInfo extends StatelessWidget {
                             flex: 1,
                             child: Text(
                               'Groups',
-                              style: Theme.of(context).textTheme.caption,
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ),
                           Expanded(
@@ -451,7 +451,7 @@ class _ListUserInfo extends StatelessWidget {
                                                 e.name,
                                                 style: Theme.of(context)
                                                     .textTheme
-                                                    .bodyText2,
+                                                    .bodyMedium,
                                               ))
                                           .toList(),
                                   ]))
@@ -482,7 +482,7 @@ class _ListUserRow extends StatelessWidget {
           flex: 1,
           child: Text(
             title,
-            style: Theme.of(context).textTheme.caption,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
         Expanded(flex: 5, child: child)

@@ -31,16 +31,16 @@ class JsonViewerField extends StatelessWidget {
     } else if (canEdit && unlocked) {
       return Text(
         'Edit value',
-        style: Theme.of(context).textTheme.caption,
+        style: Theme.of(context).textTheme.bodySmall,
       );
     } else if (canEdit && !unlocked) {
       return Text(
         'Unlock to edit',
-        style: Theme.of(context).textTheme.caption,
+        style: Theme.of(context).textTheme.bodySmall,
       );
     }
     return Text('No editing rights',
-        style: Theme.of(context).textTheme.caption,
+        style: Theme.of(context).textTheme.bodySmall,
         overflow: TextOverflow.ellipsis);
   }
 }

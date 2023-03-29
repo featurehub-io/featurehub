@@ -10,7 +10,7 @@ class FHInfoCardWidget extends StatelessWidget {
     return Tooltip(
       textStyle: Theme.of(context)
           .textTheme
-          .bodyText2!
+          .bodyMedium!
           .copyWith(color: Theme.of(context).primaryColor),
       message: message,
       padding: const EdgeInsets.all(20),

@@ -118,11 +118,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                     decoration: BoxDecoration(
                         borderRadius:
                             const BorderRadius.all(Radius.circular(6.0)),
-                        color: Theme.of(context).brightness == Brightness.light
-                            ? Theme.of(context).selectedRowColor
-                            : Theme.of(context)
-                                .primaryColorLight
-                                .withOpacity(0.1)),
+                        color: Theme.of(context).colorScheme.secondaryContainer),
                     child: Column(children: [
                       if ((individualStrategyBloc!.rolloutStrategy.percentage !=
                               null) ||
@@ -188,7 +184,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                   Row(
                     children: [
                       Text('Add percentage rollout rule',
-                          style: Theme.of(context).textTheme.caption),
+                          style: Theme.of(context).textTheme.bodySmall),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: FHOutlineButton(
@@ -206,8 +202,8 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                         'Your percentage total across all rollout values cannot be over 100%. Please enter different value.',
                         style: Theme.of(context)
                             .textTheme
-                            .bodyText2!
-                            .copyWith(color: Theme.of(context).errorColor)),
+                            .bodyMedium!
+                            .copyWith(color: Theme.of(context).colorScheme.error)),
                   _NaughtyDataEntryWidget(bloc: individualStrategyBloc!),
                   Align(
                     alignment: Alignment.bottomRight,

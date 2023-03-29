@@ -435,12 +435,12 @@ class _CustomStepperState extends State<CustomStepper>
       case CustomStepState.indexed:
       case CustomStepState.editing:
       case CustomStepState.complete:
-        return textTheme.bodyText2!;
+        return textTheme.bodyMedium!;
       case CustomStepState.disabled:
-        return textTheme.bodyText2!
+        return textTheme.bodyMedium!
             .copyWith(color: _isDark() ? _kDisabledDark : _kDisabledLight);
       case CustomStepState.error:
-        return textTheme.bodyText2!
+        return textTheme.bodyMedium!
             .copyWith(color: _isDark() ? _kErrorDark : _kErrorLight);
     }
   }
@@ -453,12 +453,12 @@ class _CustomStepperState extends State<CustomStepper>
       case CustomStepState.indexed:
       case CustomStepState.editing:
       case CustomStepState.complete:
-        return textTheme.caption!;
+        return textTheme.bodySmall!;
       case CustomStepState.disabled:
-        return textTheme.caption!
+        return textTheme.bodySmall!
             .copyWith(color: _isDark() ? _kDisabledDark : _kDisabledLight);
       case CustomStepState.error:
-        return textTheme.caption!
+        return textTheme.bodySmall!
             .copyWith(color: _isDark() ? _kErrorDark : _kErrorLight);
     }
   }

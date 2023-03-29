@@ -63,6 +63,7 @@ flutter:
   assets:
     - assets/logo/FeatureHub-icon.png
     - assets/logo/FeatureHubPrimaryWhite.png
+    - assets/logo/FeatureHub-primary-navy.png
     - assets/logo/FlowerDarkBackground.png
     - assets/images/meditation.png
 

@@ -229,7 +229,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
                 TextButton(
                     onPressed: () => _revert(),
                     child: const Text("Cancel"),),
-                ElevatedButton(
+                FilledButton(
                     onPressed: () => _save(),
                     child: const Text('Save')),
                 if (enabled && _url.text.isNotEmpty)

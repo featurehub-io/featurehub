@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button_green.dart';
 import 'package:open_admin_app/widgets/user/signin/signin_provider_button.dart';
 import 'package:open_admin_app/widgets/user/update/password_reset_widget.dart';
 import 'package:openapi_dart_common/openapi.dart';
@@ -117,7 +116,7 @@ class _SigninState extends State<SigninWidget> {
               height: 48.0,
               child: Text(
                 'Sign in to FeatureHub\n\n',
-                style: Theme.of(context).textTheme.headline5,
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
             ),
             if (widget.bloc.identityProviders.has3rdParty)
@@ -134,7 +133,7 @@ class _SigninState extends State<SigninWidget> {
                   Padding(
                       padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
                       child: Text('or sign in with a username and password',
-                          style: Theme.of(context).textTheme.caption)),
+                          style: Theme.of(context).textTheme.bodySmall)),
                 ],
               ),
             if (widget.bloc.identityProviders.hasLocal)
@@ -168,8 +167,8 @@ class _SigninState extends State<SigninWidget> {
                           'Incorrect email address or password',
                           style: Theme.of(context)
                               .textTheme
-                              .bodyText2!
-                              .copyWith(color: Theme.of(context).errorColor),
+                              .bodyMedium!
+                              .copyWith(color: Theme.of(context).colorScheme.error),
                         )
                       : Container()),
             if (widget.bloc.identityProviders.hasLocal)
@@ -185,11 +184,10 @@ class _SigninState extends State<SigninWidget> {
 //                      keepCase: true,
 //                    ),
                     Expanded(
-                      child: FHFlatButtonGreen(
-                          title: 'Sign in',
+                      child: FilledButton(
                           onPressed: () {
                             _handleSubmitted();
-                          }),
+                          }, child: const Text('Sign in'),),
                     )
                   ],
                 ),

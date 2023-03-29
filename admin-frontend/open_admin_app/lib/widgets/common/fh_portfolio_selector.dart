@@ -35,7 +35,7 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Your current portfolio',
-                            style: Theme.of(context).textTheme.caption),
+                            style: Theme.of(context).textTheme.bodySmall),
                         const SizedBox(height: 4.0),
                         InkWell(
                           mouseCursor: SystemMouseCursors.click,
@@ -50,7 +50,7 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                                     size: 18,
                                   ),
                                 ),
-                                style: Theme.of(context).textTheme.bodyText1,
+                                style: Theme.of(context).textTheme.bodyLarge,
                                 isDense: true,
                                 isExpanded: true,
                                 items:
@@ -64,7 +64,7 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                                 }).toList(),
                                 hint: Text('Select portfolio',
                                     style:
-                                        Theme.of(context).textTheme.bodyText2),
+                                        Theme.of(context).textTheme.bodyMedium),
                                 onChanged: (String? value) {
                                   setState(() {
                                     bloc.setCurrentPid(value);

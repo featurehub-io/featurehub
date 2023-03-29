@@ -18,12 +18,12 @@ class AdminAccessKeyDisplayWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text('Access token',
-                    style: Theme.of(context).textTheme.subtitle2),
+                    style: Theme.of(context).textTheme.titleSmall),
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                   child: SelectableText(
                     token,
-                    style: Theme.of(context).textTheme.caption,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
               ],
@@ -36,7 +36,7 @@ class AdminAccessKeyDisplayWidget extends StatelessWidget {
           const SizedBox(height: 8.0),
           Text(
             'For security, you will not be able to view the access token once you close this window.',
-            style: Theme.of(context).textTheme.caption,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ]);
   }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:multiselect/multiselect.dart';
 import 'package:open_admin_app/utils/utils.dart';
+import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/features/feature-data-table/custom_column_sizer.dart';
 import 'package:open_admin_app/widgets/features/feature-data-table/features_data_source.dart';
 import 'package:open_admin_app/widgets/features/feature-data-table/handle_validation_messages.dart';
@@ -189,38 +190,40 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                     ],
                   ),
                   const SizedBox(height: 24.0),
-                  Container(
-                    color: Theme.of(context).cardColor,
-                    child: SizedBox(
-                      height: tableHeight,
-                      child: SfDataGridTheme(
-                        data: SfDataGridThemeData(headerColor: Theme.of(context).backgroundColor),
-                        child: SfDataGrid(
-                          source: _featuresDataSource,
-                          gridLinesVisibility: GridLinesVisibility.both,
-                          headerGridLinesVisibility: GridLinesVisibility.both,
-                          isScrollbarAlwaysShown: true,
-                          rowsPerPage: rowsPerPage,
-                          defaultColumnWidth: featureValueCellWidth,
-                          columnSizer: _customColumnSizer,
-                          frozenColumnsCount: 1,
-                          onQueryRowHeight: (details) {
-                            return details.getIntrinsicRowHeight(details.rowIndex);
-                          },
-                          columns: <GridColumn>[
-                            GridColumn(
-                              // minimumWidth: featureNameCellWidth,
-                              // maximumWidth: featureNameCellWidth,
-                              columnName: 'features name',
-                              label: Container(
-                                  padding: const EdgeInsets.all(16.0),
-                                  alignment: Alignment.center,
-                                  child: const Text(
-                                    "Features", style: TextStyle(fontWeight: FontWeight.bold)
-                                  )),
-                            ),
-                            ...gridColumnsList,
-                          ],
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        height: tableHeight,
+                        child: SfDataGridTheme(
+                          data: SfDataGridThemeData(headerColor: Theme.of(context).colorScheme.secondaryContainer),
+                          child: SfDataGrid(
+                            source: _featuresDataSource,
+                            gridLinesVisibility: GridLinesVisibility.both,
+                            headerGridLinesVisibility: GridLinesVisibility.both,
+                            isScrollbarAlwaysShown: true,
+                            rowsPerPage: rowsPerPage,
+                            defaultColumnWidth: featureValueCellWidth,
+                            columnSizer: _customColumnSizer,
+                            frozenColumnsCount: 1,
+                            onQueryRowHeight: (details) {
+                              return details.getIntrinsicRowHeight(details.rowIndex);
+                            },
+                            columns: <GridColumn>[
+                              GridColumn(
+                                // minimumWidth: featureNameCellWidth,
+                                // maximumWidth: featureNameCellWidth,
+                                columnName: 'features name',
+                                label: Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text(
+                                      "Features", style: TextStyle(fontWeight: FontWeight.bold)
+                                    )),
+                              ),
+                              ...gridColumnsList,
+                            ],
+                          ),
                         ),
                       ),
                     ),

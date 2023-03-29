@@ -156,7 +156,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                           context); //close the side panel
                                                     },
                                                     child: const Text("Cancel")),
-                                                ElevatedButton(
+                                                FilledButton(
                                                     onPressed: canSave ? () async {
                                                             try {
                                                               await fvBloc

@@ -179,7 +179,7 @@ class _ServiceAccountEnvironment extends StatelessWidget {
     // are any app env ids in the perm envs?
     final found = appEnvs.any((appEnvId) => permEnvs.contains(appEnvId));
     return Card(
-      color: Theme.of(context).backgroundColor,
+      color: Theme.of(context).colorScheme.background,
       elevation: 4.0,
       child: SizedBox(
         width: 240,
@@ -195,7 +195,7 @@ class _ServiceAccountEnvironment extends StatelessWidget {
                   found
                       ? 'The service account has permissions to one or more environments in this application'
                       : 'The service account has no permissions to any environments in this application',
-                  style: Theme.of(context).textTheme.caption),
+                  style: Theme.of(context).textTheme.bodySmall),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -239,13 +239,13 @@ class _ServiceAccountDescription extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(serviceAccount.name,
-              style: Theme.of(context).textTheme.subtitle1!.copyWith(
+              style: Theme.of(context).textTheme.titleMedium!.copyWith(
                   color: light
                       ? Theme.of(context).primaryColor
                       : Theme.of(context).colorScheme.secondary)),
           Text(
             serviceAccount.description ?? '',
-            style: Theme.of(context).textTheme.caption,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
       ),

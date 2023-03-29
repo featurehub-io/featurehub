@@ -134,40 +134,40 @@ class _EnvWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return ReorderableDragStartListener(
       index: index,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-        decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            border: Border.all(color: Theme.of(context).dividerColor)),
+      child: Card(
+        color: Theme.of(context).colorScheme.surface,
         child: InkWell(
           mouseCursor: SystemMouseCursors.grab,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Row(
-                children: [
-                  Container(
-                      padding: const EdgeInsets.only(right: 30),
-                      child: const Icon(
-                        Icons.drag_handle,
-                        size: 24.0,
-                      )),
-                  Row(
-                    children: <Widget>[
-                      SelectableText(env.name),
-                      Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: (env.production == true)
-                              ? _ProductionEnvironmentIndicatorWidget()
-                              : Container()),
-                    ],
-                  ),
-                ],
-              ),
-              bloc.mrClient.isPortfolioOrSuperAdmin(bloc.portfolio?.id)
-                  ? _adminFunctions(context)
-                  : Container()
-            ],
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Row(
+                  children: [
+                    Container(
+                        padding: const EdgeInsets.only(right: 30),
+                        child: const Icon(
+                          Icons.drag_handle,
+                          size: 24.0,
+                        )),
+                    Row(
+                      children: <Widget>[
+                        SelectableText(env.name),
+                        Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: (env.production == true)
+                                ? _ProductionEnvironmentIndicatorWidget()
+                                : Container()),
+                      ],
+                    ),
+                  ],
+                ),
+                bloc.mrClient.isPortfolioOrSuperAdmin(bloc.portfolio?.id)
+                    ? _adminFunctions(context)
+                    : Container()
+              ],
+            ),
           ),
         ),
       ),
@@ -307,7 +307,7 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                   })),
               CheckboxListTile(
                 title: Text('Mark as production environment',
-                    style: Theme.of(context).textTheme.caption),
+                    style: Theme.of(context).textTheme.bodySmall),
                 value: _isProduction,
                 onChanged: (bool? val) {
                   setState(() {
@@ -370,7 +370,7 @@ Widget addEnvWidget(BuildContext context, ManageAppBloc bloc) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             if (bloc.mrClient.isPortfolioOrSuperAdmin(bloc.portfolio?.id))
-              TextButton.icon(
+              FilledButton.icon(
                 icon: const Icon(Icons.add),
                 label: const Text('Create new environment'),
                 onPressed: () =>

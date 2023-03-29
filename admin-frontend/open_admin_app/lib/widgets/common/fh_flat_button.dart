@@ -14,7 +14,7 @@ class FHFlatButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
+    return FilledButton(
       onPressed: () => onPressed.call(),
       child: Text(title),
     );

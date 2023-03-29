@@ -78,7 +78,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                           Flexible(flex: 1, child: _getAdminActions(bloc)),
                           Flexible(
                             flex: 4,
-                            child: TextButton.icon(
+                            child: FloatingActionButton.extended(
                               icon: const Icon(Icons.add),
                               label: const Text('Create new group'),
                               onPressed: () => _createGroup(bloc),
@@ -100,100 +100,94 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Container(
-                            child: bloc.mrClient.isPortfolioOrSuperAdmin(
-                                    snapshot.data!.portfolioId!)
-                                ? TextButton.icon(
-                                    icon: const Icon(Icons.add),
-                                    label: const Text('Add members'),
-                                    onPressed: () => bloc.mrClient
-                                        .addOverlay((BuildContext context) {
-                                      return AddMembersDialogWidget(
-                                        bloc: bloc,
-                                        group: snapshot.data!,
-                                      );
-                                    }),
-                                  )
-                                : Container(),
-                          )
+                      if (bloc.mrClient.isPortfolioOrSuperAdmin(
+                              snapshot.data!.portfolioId!))
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: FilledButton.icon(
+                                icon: const Icon(Icons.add),
+                                label: const Text('Add members'),
+                                onPressed: () => bloc.mrClient
+                                    .addOverlay((BuildContext context) {
+                                  return AddMembersDialogWidget(
+                                    bloc: bloc,
+                                    group: snapshot.data!,
+                                  );
+                                }),
+                              ),
+                          ),
+                      Card(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: SelectionArea(
+                              child: DataTable(
+                        showCheckboxColumn: false,
+                        sortAscending: sortToggle,
+                        sortColumnIndex: sortColumnIndex,
+                        columns: [
+                              DataColumn(
+                                  label: const Text('Name'),
+                                  onSort: (columnIndex, ascending) {
+                                    onSortColumn(
+                                        snapshot.data!.members, columnIndex, ascending);
+                                  }),
+                              DataColumn(
+                                label: const Text('Email'),
+                                onSort: (columnIndex, ascending) {
+                                  onSortColumn(
+                                      snapshot.data!.members, columnIndex, ascending);
+                                },
+                              ),
+                              DataColumn(
+                                label: const Text(
+                                    'Type (User or Admin Service Account)'),
+                                onSort: (columnIndex, ascending) {
+                                  onSortColumn(
+                                      snapshot.data!.members, columnIndex, ascending);
+                                },
+                              ),
+                              DataColumn(
+                                  label: const Padding(
+                                    padding: EdgeInsets.only(left: 12.0),
+                                    child: Text('Actions'),
+                                  ),
+                                  onSort: (i, a) => {}),
+                        ],
+                        rows: [
+                              for (Person member in snapshot.data!.members)
+                                DataRow(cells: [
+                                  DataCell(
+                                    Text(member.name ?? ''),
+                                  ),
+                                  DataCell(Text(member.personType == PersonType.person ? member.email! : "")),
+                                  DataCell(Text(
+                                      member.personType == PersonType.person
+                                          ? 'User'
+                                          : 'Service Account')),
+                                  DataCell(bloc.mrClient.isPortfolioOrSuperAdmin(
+                                          snapshot.data!.portfolioId!)
+                                      ? Tooltip(
+                                      message: "Remove from group",
+                                        child: FHIconButton(
+                                            icon: const Icon(Icons.delete),
+                                            onPressed: () {
+                                              try {
+                                                bloc.removeFromGroup(
+                                                    snapshot.data!, member);
+                                                bloc.mrClient.addSnackbar(Text(
+                                                    "'${member.name}' removed from group '${snapshot.data!.name}'"));
+                                              } catch (e, s) {
+                                                bloc.mrClient.dialogError(e, s);
+                                              }
+                                            },
+                                          ),
+                                      )
+                                      : const Text(''))
+                                ])
                         ],
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Card(
-                              child: SelectionArea(
-                                child: DataTable(
-                            showCheckboxColumn: false,
-                            sortAscending: sortToggle,
-                            sortColumnIndex: sortColumnIndex,
-                            columns: [
-                                DataColumn(
-                                    label: const Text('Name'),
-                                    onSort: (columnIndex, ascending) {
-                                      onSortColumn(
-                                          snapshot.data!.members, columnIndex, ascending);
-                                    }),
-                                DataColumn(
-                                  label: const Text('Email'),
-                                  onSort: (columnIndex, ascending) {
-                                    onSortColumn(
-                                        snapshot.data!.members, columnIndex, ascending);
-                                  },
-                                ),
-                                DataColumn(
-                                  label: const Text(
-                                      'Type (User or Admin Service Account)'),
-                                  onSort: (columnIndex, ascending) {
-                                    onSortColumn(
-                                        snapshot.data!.members, columnIndex, ascending);
-                                  },
-                                ),
-                                DataColumn(
-                                    label: const Padding(
-                                      padding: EdgeInsets.only(left: 12.0),
-                                      child: Text('Actions'),
-                                    ),
-                                    onSort: (i, a) => {}),
-                            ],
-                            rows: [
-                                for (Person member in snapshot.data!.members)
-                                  DataRow(cells: [
-                                    DataCell(
-                                      Text(member.name ?? ''),
-                                    ),
-                                    DataCell(Text(member.personType == PersonType.person ? member.email! : "")),
-                                    DataCell(Text(
-                                        member.personType == PersonType.person
-                                            ? 'User'
-                                            : 'Service Account')),
-                                    DataCell(bloc.mrClient.isPortfolioOrSuperAdmin(
-                                            snapshot.data!.portfolioId!)
-                                        ? Tooltip(
-                                        message: "Remove from group",
-                                          child: FHIconButton(
-                                              icon: const Icon(Icons.delete),
-                                              onPressed: () {
-                                                try {
-                                                  bloc.removeFromGroup(
-                                                      snapshot.data!, member);
-                                                  bloc.mrClient.addSnackbar(Text(
-                                                      "'${member.name}' removed from group '${snapshot.data!.name}'"));
-                                                } catch (e, s) {
-                                                  bloc.mrClient.dialogError(e, s);
-                                                }
-                                              },
-                                            ),
-                                        )
-                                        : const Text(''))
-                                  ])
-                            ],
-                          ),
-                              )),
-                        ],
-                      )
+                            ),
+                          ))
                     ],
                   );
                 } else {
@@ -295,7 +289,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
             children: <Widget>[
               Text(
                 'Portfolio groups',
-                style: Theme.of(context).textTheme.caption,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
               InkWell(
                 mouseCursor: SystemMouseCursors.click,
@@ -315,12 +309,12 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                       return DropdownMenuItem<String>(
                           value: group.id,
                           child: Text(group.name,
-                              style: Theme.of(context).textTheme.bodyText2,
+                              style: Theme.of(context).textTheme.bodyMedium,
                               overflow: TextOverflow.ellipsis));
                     }).toList(),
                     hint: Text(
                       'Select group',
-                      style: Theme.of(context).textTheme.subtitle2,
+                      style: Theme.of(context).textTheme.titleSmall,
                     ),
                     onChanged: (value) {
                       setState(() {
