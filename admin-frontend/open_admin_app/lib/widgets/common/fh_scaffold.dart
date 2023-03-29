@@ -66,13 +66,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
             preferredSize: Size(double.infinity, kToolbarHeight),
             child: FHappBar()),
         body: Stack(children: [
-          Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-//              mainAxisSize: MainAxisSize.max,
-              children: [
-                _excludeFocusOnMainContent(mrBloc),
-              ]),
+          _excludeFocusOnMainContent(mrBloc),
           StreamBuilder<Widget?>(
               stream: mrBloc.snackbarStream,
               builder: (BuildContext context, AsyncSnapshot<Widget?> snapshot) {
@@ -96,7 +90,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
               builder: (BuildContext context,
                   AsyncSnapshot<WidgetBuilder?> snapshot) {
                 if (snapshot.hasData) {
-                  return snapshot.data!(context);
+                  return BlocProvider.fromBloc(bloc: mrBloc, child:snapshot.data!(context));
                 }
                 return Container();
               }),
@@ -112,21 +106,20 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
         ]));
   }
 
+  // we tell the main content that its focus will be excluded
   Widget _excludeFocusOnMainContent(ManagementRepositoryClientBloc mrBloc) {
     return StreamBuilder<WidgetBuilder?>(
         stream: mrBloc.overlayStream,
         builder:
             (BuildContext context, AsyncSnapshot<WidgetBuilder?> snapshot) {
-          if (snapshot.hasData) {
-            return ExcludeFocus(
-              child: _mainContent(context),
-              excluding: true,
-            );
-          }
-
           return ExcludeFocus(
-            child: _mainContent(context),
-            excluding: false,
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _mainContent(context),
+                ]),
+            excluding: snapshot.hasData,
           );
         });
   }
