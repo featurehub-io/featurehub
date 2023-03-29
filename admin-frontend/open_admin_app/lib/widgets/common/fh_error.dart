@@ -23,6 +23,7 @@ class FHErrorWidget extends StatelessWidget {
         ),
       ),
       FHAlertDialog(
+          escKey: () => mrBloc.addError(null),
           title: Text(error.humanErrorMessage),
           content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
