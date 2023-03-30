@@ -55,7 +55,6 @@ final _log = Logger('mr_bloc');
 class ManagementRepositoryClientBloc implements Bloc {
   final ApiClient _client;
   PersonState personState = PersonState();
-  FHSharedPrefs? sharedPreferences;
 
   late SetupServiceApi setupApi;
   late PersonServiceApi personServiceApi;
@@ -91,8 +90,6 @@ class ManagementRepositoryClientBloc implements Bloc {
   late ServerCapabilities identityProviders;
 
   StreamSubscription<Person>? personStreamListener;
-
-  StreamSubscription<List<Portfolio>>? portfolioListStreamListener;
 
   BehaviorSubject<bool> get stepperOpened => _stepperOpened;
 
@@ -152,9 +149,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     // this is for fine grained route changes, like tab changes
     _routerSource.add(route);
-    if (sharedPreferences != null) {
-      sharedPreferences!.saveString('current-route', route.toJson());
-    }
+    prefs.saveCurrentRoute(route.toJson());
   }
 
   void _initializeRouteStreams() {
@@ -258,11 +253,6 @@ class ManagementRepositoryClientBloc implements Bloc {
     personStreamListener = personState.personStream.listen((personUpdate) {
       personUpdated(personUpdate);
     });
-
-    portfolioListStreamListener =
-        streamValley.portfolioListStream.listen((portfolioList) async {
-      await portfolioListUpdated(portfolioList);
-    });
   }
 
   void setupFeaturehubClientApis(ApiClient client) {
@@ -307,7 +297,6 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   Future<void> init() async {
-    sharedPreferences = await FHSharedPrefs.getSharedInstance();
     await isInitialized();
   }
 
@@ -430,14 +419,11 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   void setCurrentAid(String? aid) {
     streamValley.currentAppId = aid;
-    _setAidSharedPrefs(aid);
   }
 
   void setCurrentPid(String? pid) {
     // do this first so that the permissions are set up
     streamValley.currentPortfolioId = pid;
-    _setAidSharedPrefs(null);
-    _setPidSharedPrefs(pid);
   }
 
   String? getCurrentPid() {
@@ -456,40 +442,6 @@ class ManagementRepositoryClientBloc implements Bloc {
   // currently empty
   void personUpdated(Person person) {}
 
-  // the portfolio list just updated - might be because we loaded the person
-  // or refreshed the person. Lets go look for suggested
-  Future<void> portfolioListUpdated(List<Portfolio> portfolios) async {
-    var foundValidStoredPortfolio = false;
-
-    if (!streamValley.hasCurrentPortfolio) {
-      if (await sharedPreferences!.getString('currentPid') != null) {
-        final aid = await sharedPreferences!.getString('currentAid');
-        final pid = await sharedPreferences!.getString('currentPid');
-        final portfolio = portfolios.firstWhereOrNull((p) => p.id == pid);
-        if (portfolio != null) {
-          // print("found pid, updating");
-          setCurrentPid(pid);
-          foundValidStoredPortfolio = true;
-          if (aid != null) {
-            setCurrentAid(aid);
-          } else {
-            setCurrentAid(portfolio.applications.isEmpty
-                ? null
-                : portfolio.applications.first.id);
-          }
-        }
-      }
-
-      // if we didn't have one tucked away,
-      if (!foundValidStoredPortfolio && portfolios.isNotEmpty) {
-        var firstPortfolio = portfolios.first;
-        setCurrentPid(firstPortfolio.id.toString());
-        setCurrentAid(firstPortfolio.applications.isEmpty
-            ? null
-            : firstPortfolio.applications.first.id);
-      }
-    }
-  }
 
   bool isPortfolioOrSuperAdminForCurrentPid() {
     return currentPid == null ? false : isPortfolioOrSuperAdmin(currentPid!);
@@ -566,15 +518,6 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     setBearerToken(tp.accessToken);
 
-    final previousPerson = await lastUsername();
-
-    // if we are swapping users, remove all shared preferences (including last portfolio, route, etc)
-    if (person.email != previousPerson) {
-      await sharedPreferences!.clear();
-    }
-
-    setLastUsername(person.email!);
-
     setPerson(person);
     routeSlot(RouteSlot.portfolio);
   }
@@ -602,36 +545,12 @@ class ManagementRepositoryClientBloc implements Bloc {
     _personPermissionInPortfolioChanged.cancel();
     streamValley.currentPortfolioAdminOrSuperAdminSubscription.cancel();
     personStreamListener?.cancel();
-    portfolioListStreamListener?.cancel();
     _errorSource.close();
     _overlaySource.close();
     _snackbarSource.close();
     personState.dispose();
   }
 
-  void _setPidSharedPrefs(String? pid) async {
-    if (pid == null) {
-      await sharedPreferences!.delete('currentPid');
-    } else {
-      await sharedPreferences!.saveString('currentPid', pid);
-    }
-  }
-
-  void _setAidSharedPrefs(String? aid) async {
-    if (aid == null) {
-      await sharedPreferences!.delete('currentAid');
-    } else {
-      await sharedPreferences!.saveString('currentAid', aid);
-    }
-  }
-
-  Future<String?> lastUsername() async {
-    return await sharedPreferences!.getString('lastUsername');
-  }
-
-  void setLastUsername(String lastUsername) async {
-    await sharedPreferences!.saveString('lastUsername', lastUsername);
-  }
 
   String registrationUrl(String token) {
     var tokenizedPart = 'register-url?token=$token';
