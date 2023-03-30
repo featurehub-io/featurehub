@@ -196,7 +196,8 @@ class FeatureSqlApi @Inject constructor(
   ) {
     val feature = existing.feature
 
-    val lockChanged = updateSelectivelyLocked(featureValue, historical, existing, person)
+    val lockUpdate = updateSelectivelyLocked(featureValue, historical, existing, person)
+    val lockChanged = lockUpdate.hasChanged
 
     // allow them to change the value and lock it at the same time
     val defaultValueChanged =
@@ -447,34 +448,39 @@ class FeatureSqlApi @Inject constructor(
     historical: DbFeatureValueVersion,
     existing: DbFeatureValue,
     person: PersonFeaturePermission
-  ): Boolean {
-    if (featureValue.locked == existing.isLocked) {
-      return false
+  ): SingleFeatureValueUpdate<Boolean> {
+    val lockUpdate = SingleFeatureValueUpdate<Boolean>()
+    val updatedValue = featureValue.locked
+    if (updatedValue == existing.isLocked) {
+      return lockUpdate
     }
 
     // if we changed the value from the historical version
-    if (featureValue.locked != historical.isLocked) {
+    if (updatedValue != historical.isLocked) {
       // if the existing version is the same as the locked version, we can continue to check
       if (existing.isLocked == historical.isLocked) {
-        if (featureValue.locked && !person.hasLockRole()) {
+        if (updatedValue && !person.hasLockRole()) {
           log.debug("User is trying to lock a feature value and does not have lock permission")
           throw FeatureApi.NoAppropriateRole()
         }
-        if (!featureValue.locked && !person.hasUnlockRole()) {
+        if (!updatedValue && !person.hasUnlockRole()) {
           log.debug("User is trying to unlock feature  value and does not have permission")
           throw FeatureApi.NoAppropriateRole()
         }
 
-        existing.isLocked = featureValue.locked
+        existing.isLocked = updatedValue
 
-        return true
+        lockUpdate.hasChanged = true
+        lockUpdate.updated = updatedValue
+        lockUpdate.previous = historical.isLocked
+        return lockUpdate
       } else {
         // i can't actually see how this can happen
         throw OptimisticLockingException()
       }
     } // else didn't change it
 
-    return false
+    return lockUpdate
   }
 
 

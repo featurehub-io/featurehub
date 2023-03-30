@@ -3,6 +3,9 @@ package io.featurehub.db.api
 import io.featurehub.mr.model.*
 import java.util.*
 
+data class SingleFeatureValueUpdate<T>(var hasChanged: Boolean=false, var updated: T? = null, var previous: T? = null)
+data class MultiFeatureValueUpdate<T>(val hasChanged: Boolean=false, val updated: List<T>, val previous: List<T>)
+
 class LockedException : RuntimeException()
 
 interface FeatureApi {
