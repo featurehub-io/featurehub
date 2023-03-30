@@ -1,4 +1,5 @@
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:multiselect/multiselect.dart';
@@ -206,6 +207,8 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                             defaultColumnWidth: featureValueCellWidth,
                             columnSizer: _customColumnSizer,
                             frozenColumnsCount: 1,
+                            horizontalScrollPhysics: const ClampingScrollPhysics(),
+                            verticalScrollPhysics: const ClampingScrollPhysics(),
                             onQueryRowHeight: (details) {
                               return details.getIntrinsicRowHeight(details.rowIndex);
                             },

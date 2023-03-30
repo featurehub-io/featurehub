@@ -13,13 +13,8 @@ class FHCardWidget extends StatelessWidget {
       constraints: BoxConstraints(maxWidth: width),
       padding: const EdgeInsets.only(top: 10.0),
       child: Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            side: BorderSide(
-              color: Theme.of(context).colorScheme.outline,
-            ),
-            borderRadius: const BorderRadius.all(Radius.circular(12)),
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(3.0)),
           child: Padding(padding: const EdgeInsets.all(20.0), child: child)),
     );
   }

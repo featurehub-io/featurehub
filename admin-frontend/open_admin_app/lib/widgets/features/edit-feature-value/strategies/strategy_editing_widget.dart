@@ -84,29 +84,25 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    decoration: BoxDecoration(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(6.0)),
-                        color: Theme.of(context)
-                            .primaryColorLight
-                            .withOpacity(0.3)),
-                    child: TextFormField(
-                        controller: _strategyName,
-                        decoration: const InputDecoration(
-                            labelText: 'Split strategy name',
-                            helperText: 'E.g. 20% rollout'),
-                        readOnly: !widget.editable,
-                        textInputAction: TextInputAction.next,
-                        autofocus: true,
-                        onFieldSubmitted: (_) => focusNode.nextFocus(),
-                        validator: ((v) {
-                          if (v == null || v.isEmpty) {
-                            return 'Strategy name required';
-                          }
-                          return null;
-                        })),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextFormField(
+                          controller: _strategyName,
+                          decoration: const InputDecoration(
+                              labelText: 'Split strategy name',
+                              helperText: 'E.g. 20% rollout'),
+                          readOnly: !widget.editable,
+                          textInputAction: TextInputAction.next,
+                          autofocus: true,
+                          onFieldSubmitted: (_) => focusNode.nextFocus(),
+                          validator: ((v) {
+                            if (v == null || v.isEmpty) {
+                              return 'Strategy name required';
+                            }
+                            return null;
+                          })),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   const RolloutStrategiesWidget(),

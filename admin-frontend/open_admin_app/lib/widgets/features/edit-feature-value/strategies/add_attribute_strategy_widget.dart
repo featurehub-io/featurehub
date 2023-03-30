@@ -116,40 +116,35 @@ class _EditAttributeStrategyWidgetState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-        color: Theme.of(context).colorScheme.secondaryContainer
-      ),
-      child: Row(
-        children: [
-          Expanded(flex: 1, child: _nameField()),
-          Expanded(flex: 7, child: _buildCondition(context)),
-          Expanded(
-            flex: 1,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Material(
-                    type: MaterialType.transparency,
-                    shape: const CircleBorder(),
-                    child: IconButton(
-                        tooltip: 'Delete rule',
-                        icon: const Icon(
-                          Icons.delete_forever_sharp,
-                          color: Colors.red,
-                          size: 20.0,
-                        ),
-                        hoverColor: Theme.of(context).primaryColorLight,
-                        splashRadius: 20,
-                        onPressed: () =>
-                            widget.bloc.deleteAttribute(widget.attribute))),
-              ],
-            ),
-          )
-        ],
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Expanded(flex: 1, child: _nameField()),
+            Expanded(flex: 7, child: _buildCondition(context)),
+            Expanded(
+              flex: 1,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Material(
+                      type: MaterialType.transparency,
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                          tooltip: 'Delete rule',
+                          icon: const Icon(
+                            Icons.delete_forever_sharp,
+                            color: Colors.red,
+                            size: 20.0,
+                          ),
+                          onPressed: () =>
+                              widget.bloc.deleteAttribute(widget.attribute))),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -435,9 +430,9 @@ class _EditAttributeStrategyWidgetState
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Tooltip(
                   message: 'Add value',
-                  child: FHUnderlineButton(
+                  child: TextButton.icon(
                       onPressed: () => _valueFieldChanged(_value.text),
-                      title: '+Add'),
+                    icon: const Icon(Icons.add_outlined, size: 16.0), label: const Text("Add"),),
                 ),
               )
             ],

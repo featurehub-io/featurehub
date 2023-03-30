@@ -119,10 +119,10 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                 final items = strategiesLatest
                                                     .data![oldIndex];
 
-                                                strategiesLatest.data!
-                                                  ..removeWhere((element) =>
-                                                      element.id == items.id)
-                                                  ..insert(newIndex, items);
+                                            strategiesLatest.data!
+                                              ..removeWhere((element) =>
+                                                  element.id == items.id)
+                                              ..insert(newIndex, items);
 
                                                 strategyBloc
                                                     .updateStrategyAndFeatureValue();

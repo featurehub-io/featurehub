@@ -66,7 +66,6 @@ class _MenuContainer extends StatelessWidget {
                   if (!snapshot.hasData || !mrBloc.personState.isLoggedIn) {
                     return const SizedBox.shrink();
                   }
-
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -82,7 +81,6 @@ class _MenuContainer extends StatelessWidget {
                                 !snapshot.data!.currentPortfolioOrSuperAdmin) {
                               return const SizedBox.shrink();
                             }
-
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -326,10 +324,6 @@ class FHMenuItem extends StatelessWidget {
 
     return InkWell(
       canRequestFocus: false,
-      mouseCursor: SystemMouseCursors.click,
-      hoverColor: light
-          ? Theme.of(context).colorScheme.secondaryContainer
-          : Theme.of(context).colorScheme.secondary.withOpacity(0.2),
       onTap: () {
         if (menuOkForThisUser) {
           ManagementRepositoryClientBloc.router

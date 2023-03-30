@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/widgets/admin_sdk_service_account/list_admin_service_accounts_widget.dart';
+import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 
@@ -16,30 +17,26 @@ class ManageAdminServiceAccountsRoute extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              const FHHeader(
-                title: 'Manage admin SDK service accounts',
-              ),
-              if (bloc.mrClient.userIsSuperAdmin == true)
-                Padding(
-                  padding: const EdgeInsets.only(top: 12.0),
-                  child: TextButton.icon(
-                    icon: const Icon(Icons.add),
-                    label: const Text('Create Admin Service Account'),
-                    onPressed: () {
-                      ManagementRepositoryClientBloc.router
-                          .navigateTo(context, '/create-admin-api-key');
-                    },
-                  ),
-                )
-            ],
-          )
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            const FHHeader(
+              title: 'Manage admin SDK service accounts',
+            ),
+            if (bloc.mrClient.userIsSuperAdmin == true)
+              FilledButton.icon(
+                icon: const Icon(Icons.add),
+                label: const Text('Create Admin Service Account'),
+                onPressed: () {
+                  ManagementRepositoryClientBloc.router
+                      .navigateTo(context, '/create-admin-api-key');
+                },
+              )
+          ],
         ),
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 8.0),
+        const FHPageDivider(),
+        const SizedBox(height: 8.0),
         const AdminServiceAccountsListWidget(),
       ],
     );

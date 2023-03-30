@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
+import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/features/edit-feature/create_update_feature_dialog_widget.dart';
 import 'package:open_admin_app/widgets/features/edit-feature/delete_feature_widget.dart';
 import 'package:open_admin_app/widgets/features/edit-feature/set_feature_metadata.dart';
@@ -57,17 +58,12 @@ class FeatureCellHolder extends StatelessWidget {
                               Row(
                                 children: [
                                   if (feature.link?.isNotEmpty == true)
-                                  Material(
-                                    type: MaterialType
-                                        .transparency,
-                                    child: IconButton(
-                                      splashRadius: 20,
-                                      tooltip: feature.link!,
-                                      icon: const Icon(Feather.external_link),
-                                      onPressed: () {
-                                        window.open(feature.link!, 'new tab');
-                                      },
-                                    ),
+                                  FHIconButton(
+                                    tooltip: feature.link!,
+                                    icon: const Icon(Feather.external_link),
+                                    onPressed: () {
+                                      window.open(feature.link!, 'new tab');
+                                    },
                                   ),
                                   FHCopyToClipboard(
                                       tooltipMessage: "Copy feature key to clipboard",
@@ -80,56 +76,51 @@ class FeatureCellHolder extends StatelessWidget {
                     ),
                   ),
                 ),
-                Material(
-                  type: MaterialType
-                      .transparency,
-                  child: PopupMenuButton(
-                    splashRadius: 20,
-                    tooltip: 'Show more',
-                    icon: const Icon(Icons.more_vert),
-                    onSelected: (value) {
-                      if (value == 'edit') {
-                        bloc.mrClient.addOverlay((BuildContext context) =>
-                            CreateFeatureDialogWidget(
-                                bloc: bloc, feature: feature));
-                      }
-                      if (value == 'delete') {
-                        bloc.mrClient.addOverlay((BuildContext context) =>
-                            FeatureDeleteDialogWidget(
-                                bloc: bloc, feature: feature));
-                      }
-                      if (value == 'metadata') {
-                        bloc.getFeatureIncludingMetadata(feature);
-                        bloc.mrClient.addOverlay(
-                            (BuildContext context) => SetFeatureMetadataWidget(
-                                  bloc: bloc,
-                                ));
-                      }
-                    },
-                    itemBuilder: (BuildContext context) {
-                      var isEditor = bloc
-                          .mrClient.userHasFeatureEditRoleInCurrentApplication;
-                      return [
-                        PopupMenuItem(
-                            value: 'edit',
-                            child: Text(
-                                isEditor ? 'Edit details' : 'View details',
-                                style: Theme.of(context).textTheme.bodyMedium)),
-                        PopupMenuItem(
-                          value: 'metadata',
+                PopupMenuButton(
+                  tooltip: 'Show more',
+                  icon:Icon(Icons.more_vert, color: Theme.of(context).colorScheme.primary),
+                  onSelected: (value) {
+                    if (value == 'edit') {
+                      bloc.mrClient.addOverlay((BuildContext context) =>
+                          CreateFeatureDialogWidget(
+                              bloc: bloc, feature: feature));
+                    }
+                    if (value == 'delete') {
+                      bloc.mrClient.addOverlay((BuildContext context) =>
+                          FeatureDeleteDialogWidget(
+                              bloc: bloc, feature: feature));
+                    }
+                    if (value == 'metadata') {
+                      bloc.getFeatureIncludingMetadata(feature);
+                      bloc.mrClient.addOverlay(
+                          (BuildContext context) => SetFeatureMetadataWidget(
+                                bloc: bloc,
+                              ));
+                    }
+                  },
+                  itemBuilder: (BuildContext context) {
+                    var isEditor = bloc
+                        .mrClient.userHasFeatureEditRoleInCurrentApplication;
+                    return [
+                      PopupMenuItem(
+                          value: 'edit',
                           child: Text(
-                              isEditor ? 'Edit metadata' : 'View metadata',
+                              isEditor ? 'Edit details' : 'View details',
+                              style: Theme.of(context).textTheme.bodyMedium)),
+                      PopupMenuItem(
+                        value: 'metadata',
+                        child: Text(
+                            isEditor ? 'Edit metadata' : 'View metadata',
+                            style: Theme.of(context).textTheme.bodyMedium),
+                      ),
+                      if (isEditor)
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Text('Delete',
                               style: Theme.of(context).textTheme.bodyMedium),
                         ),
-                        if (isEditor)
-                          PopupMenuItem(
-                            value: 'delete',
-                            child: Text('Delete',
-                                style: Theme.of(context).textTheme.bodyMedium),
-                          ),
-                      ];
-                    },
-                  ),
+                    ];
+                  },
                 ),
               ]),
               Text(feature.valueType.toString().split('.').last,

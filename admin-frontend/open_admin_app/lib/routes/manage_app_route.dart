@@ -39,62 +39,58 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManageAppBloc>(context);
     FHAnalytics.sendWindowPath();
-    return Container(
-        padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: const FHHeader(
-                title: 'Application settings',
-              ),
-            ),
-            StreamBuilder<List<Application>>(
-                stream: bloc
-                    .mrClient.streamValley.currentPortfolioApplicationsStream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                    return Container(
-                        padding: const EdgeInsets.only(left: 8, bottom: 8),
-                        child: ApplicationDropDown(
-                            applications: snapshot.data!, bloc: bloc));
-                  } else {
-                    bloc.setApplicationId(bloc.mrClient.currentAid);
-                    return Container(
-                        padding: const EdgeInsets.only(left: 8, top: 15),
-                        child: Row(
-                          children: [
-                            SelectableText('There are no applications in this portfolio',
-                                style: Theme.of(context).textTheme.bodySmall),
-                            const Padding(
-                              padding: EdgeInsets.only(left: 8.0),
-                              child: LinkToApplicationsPage(),
-                            ),
-                          ],
-                        ));
-                  }
-                }),
-            const FHPageDivider(),
-            StreamBuilder(
-                stream: bloc.pageStateStream,
-                builder: (context, envSnapshot) {
-                  //check we have all the initial data like Application and Environments
-                  if (envSnapshot.data == ManageAppPageState.initialState) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: const <Widget>[
-                        ManageAppWidget(),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const FHHeader(
+          title: 'Application settings',
+        ),
+        const SizedBox(height: 8.0),
+        StreamBuilder<List<Application>>(
+            stream: bloc
+                .mrClient.streamValley.currentPortfolioApplicationsStream,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                return Container(
+                    padding: const EdgeInsets.only(left: 8, bottom: 8),
+                    child: ApplicationDropDown(
+                        applications: snapshot.data!, bloc: bloc));
+              } else {
+                bloc.setApplicationId(bloc.mrClient.currentAid);
+                return Container(
+                    padding: const EdgeInsets.only(left: 8, top: 15),
+                    child: Row(
+                      children: [
+                        SelectableText('There are no applications in this portfolio',
+                            style: Theme.of(context).textTheme.bodySmall),
+                        const Padding(
+                          padding: EdgeInsets.only(left: 8.0),
+                          child: LinkToApplicationsPage(),
+                        ),
                       ],
-                    );
-                  } else if (envSnapshot.data ==
-                      ManageAppPageState.loadingState) {
-                    return Container();
-                  }
-                  return Container();
-                }),
-          ],
-        ));
+                    ));
+              }
+            }),
+        const FHPageDivider(),
+        StreamBuilder(
+            stream: bloc.pageStateStream,
+            builder: (context, envSnapshot) {
+              //check we have all the initial data like Application and Environments
+              if (envSnapshot.data == ManageAppPageState.initialState) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: const <Widget>[
+                    ManageAppWidget(),
+                  ],
+                );
+              } else if (envSnapshot.data ==
+                  ManageAppPageState.loadingState) {
+                return Container();
+              }
+              return Container();
+            }),
+      ],
+    );
   }
 
   @override
