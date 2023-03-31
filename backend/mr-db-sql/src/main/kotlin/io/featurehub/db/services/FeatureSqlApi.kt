@@ -200,10 +200,12 @@ class FeatureSqlApi @Inject constructor(
     val lockChanged = lockUpdate.hasChanged
 
     // allow them to change the value and lock it at the same time
-    val defaultValueChanged =
+    val defaultValueUpdate =
       updateSelectivelyDefaultValue(feature, featureValue, historical, existing, person, lockChanged)
+    val defaultValueChanged = defaultValueUpdate.hasChanged
 
-    val strategiesChanged = updateSelectivelyRolloutStrategies(person, featureValue, historical, existing, lockChanged)
+    val strategyUpdates = updateSelectivelyRolloutStrategies(person, featureValue, historical, existing, lockChanged)
+    val strategiesChanged = strategyUpdates.hasChanged
 
     val retiredChange = updateSelectivelyRetired(person, featureValue, historical, existing, lockChanged)
 
@@ -263,7 +265,8 @@ class FeatureSqlApi @Inject constructor(
     historical: DbFeatureValueVersion,
     existing: DbFeatureValue,
     lockChanged: Boolean
-  ): Boolean {
+  ): MultiFeatureValueUpdate<RolloutStrategyUpdate> {
+    val strategyUpdates = MultiFeatureValueUpdate<RolloutStrategyUpdate>()
     var changed = false
     val personCanChangeValues = person.hasChangeValueRole()
     featureValue.rolloutStrategies?.let { strategies ->
@@ -296,6 +299,7 @@ class FeatureSqlApi @Inject constructor(
             // try and insert this new strategy where they have placed it
             existing.rolloutStrategies.add(index, strategy)
           }
+          addToStrategyUpdates(type = "add", newStrategy = strategy, strategyUpdates = strategyUpdates)
         } else {
           // its the same as the HISTORICAL one, then we have to assume that they haven't changed it, so we skip it
           if (Objects.deepEquals(strategy, historicalStrategy)) {
@@ -332,6 +336,7 @@ class FeatureSqlApi @Inject constructor(
               }
               strategy.id = newId
             }
+            addToStrategyUpdates(type = "change", newStrategy = strategy, oldStrategy = historicalStrategy, strategyUpdates = strategyUpdates)
           } else {
             throw OptimisticLockingException() // it has changed since its history and user wants to change it again
           }
@@ -344,13 +349,19 @@ class FeatureSqlApi @Inject constructor(
           throw FeatureApi.NoAppropriateRole()
         }
 
-        if (existing.rolloutStrategies.removeIf { existing -> strategiesToDelete.contains(existing.id) }) {
-          changed = true
-        }
+        // Collect strategies to delete and add to the strategy updates list
+        existing.rolloutStrategies.filter { existing -> strategiesToDelete.contains(existing.id) }
+          .forEach { strategyToDelete ->
+            changed = true
+            existing.rolloutStrategies.remove(strategyToDelete)
+            addToStrategyUpdates(type = "delete", oldStrategy = strategyToDelete, strategyUpdates = strategyUpdates)
+          }
       }
 
       // ok, now just honour the order of the incoming strategies and keep track if they actually changed
-      val newlyOrderedList = featureValue.rolloutStrategies?.map { newStrat -> existing.rolloutStrategies.find { it.id == newStrat.id } }?.filterNotNull()?.toMutableList() ?: mutableListOf()
+      val newlyOrderedList =
+        featureValue.rolloutStrategies?.mapNotNull { newStrategy -> existing.rolloutStrategies.find { it.id == newStrategy.id } }
+        ?.toMutableList() ?: mutableListOf()
       val newlyOrderedListIds = newlyOrderedList.map { it.id }
       newlyOrderedList.addAll(existing.rolloutStrategies.filter { !newlyOrderedListIds.contains(it.id) })
       val reorderedList = newlyOrderedList.map { it.id }
@@ -360,7 +371,7 @@ class FeatureSqlApi @Inject constructor(
           log.debug("trying to reorder strategies and no change value permission")
           throw FeatureApi.NoAppropriateRole()
         }
-
+        // figure out how to capture the reorder here
         changed = true
       }
 
@@ -372,7 +383,15 @@ class FeatureSqlApi @Inject constructor(
     }
 
 
-    return changed
+    return strategyUpdates
+  }
+
+  private fun addToStrategyUpdates(
+    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate>,
+    type: String, newStrategy: RolloutStrategy? = null, oldStrategy: RolloutStrategy? = null ) {
+    strategyUpdates.hasChanged = true
+    val rollingStrategyUpdate = RolloutStrategyUpdate(type = type, new = newStrategy, old = oldStrategy)
+    strategyUpdates.updated.add(rollingStrategyUpdate)
   }
 
   /**
@@ -386,7 +405,8 @@ class FeatureSqlApi @Inject constructor(
     existing: DbFeatureValue,
     person: PersonFeaturePermission,
     lockChanged: Boolean
-  ): Boolean {
+  ): SingleFeatureValueUpdate<String> {
+    val defaultValueUpdate = SingleFeatureValueUpdate<String>()
     val defaultValueChanged: String? =
       when (feature.valueType!!) {
         FeatureValueType.NUMBER -> {
@@ -408,12 +428,12 @@ class FeatureSqlApi @Inject constructor(
 
     // they aren't changing this value, so skip out
     if (defaultValueChanged == existing.defaultValue) {
-      return false // nothing is changing, don't worry about it
+      return defaultValueUpdate // nothing is changing, don't worry about it
     }
 
     // if it changed from the historical version
     if (defaultValueChanged == historical.defaultValue) {
-      return false
+      return defaultValueUpdate
     }
     // it didn't change between the  historical version and the current version?
     if (historical.defaultValue == existing.defaultValue) {
@@ -431,7 +451,10 @@ class FeatureSqlApi @Inject constructor(
 
       existing.defaultValue = defaultValueChanged
 
-      return true
+      defaultValueUpdate.hasChanged = true
+      defaultValueUpdate.updated = defaultValueChanged
+      defaultValueUpdate.previous = historical.defaultValue
+      return defaultValueUpdate
     }
 
     // someone changed it in the meantime so they can't change it
