@@ -338,6 +338,11 @@ class FeatureSqlApi @Inject constructor(
       }
 
       if (strategiesToDelete.isNotEmpty()) {
+        if (!personCanChangeValues) {
+          log.debug("trying to delete strategies and no permission")
+          throw FeatureApi.NoAppropriateRole()
+        }
+
         if (existing.rolloutStrategies.removeIf { existing -> strategiesToDelete.contains(existing.id) }) {
           changed = true
         }
@@ -350,6 +355,11 @@ class FeatureSqlApi @Inject constructor(
       val reorderedList = newlyOrderedList.map { it.id }
 
       if (existing.rolloutStrategies?.map { it.id } != reorderedList) {
+        if (!personCanChangeValues) {
+          log.debug("trying to reorder strategies and no change value permission")
+          throw FeatureApi.NoAppropriateRole()
+        }
+
         changed = true
       }
 
