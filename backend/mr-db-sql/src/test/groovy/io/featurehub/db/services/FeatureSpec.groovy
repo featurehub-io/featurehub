@@ -61,6 +61,9 @@ class FeatureSpec extends Base2Spec {
     rsv = Mock(RolloutStrategyValidator)
     rsv.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
 
+    //  these ones generally assume auditing will be off
+    ThreadLocalConfigurationSource.createContext(['auditing.enable': 'false'])
+
     featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv)
     appApi = new ApplicationSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, featureSqlApi)
 
@@ -97,6 +100,10 @@ class FeatureSpec extends Base2Spec {
     if (db.currentTransaction() != null && db.currentTransaction().active) {
       db.commitTransaction()
     }
+  }
+
+  def cleanup() {
+    ThreadLocalConfigurationSource.clearContext()
   }
 
   def "when i save a new feature in an application i receive it back as part of the list"() {
@@ -576,6 +583,7 @@ class FeatureSpec extends Base2Spec {
 
   def "if a feature is locked the custom strategies will not update"() {
     given: "i create an environment (in app2)"
+      ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true'])
       def env1 = environmentSqlApi.create(new Environment().name("rstrat-test-env2"), new Application().id(app2Id), superPerson)
     and: "i have a boolean feature (which will automatically create a feature value in each environment)"
       def key = 'FEATURE_NOT_WHEN_LOCKED'
