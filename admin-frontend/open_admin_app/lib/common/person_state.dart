@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -9,6 +10,8 @@ List<SetPersonHook> setPersonHooks = <SetPersonHook>[];
 // avoids a null person, this is a person with no permission to anything
 Person _unauthenticatedPerson =
     Person(id: PersonId(id: ''), name: '', email: '');
+
+var _log = Logger("personState");
 
 class PersonState {
   final BehaviorSubject<Person> _personSource =
@@ -69,6 +72,7 @@ class PersonState {
   }
 
   bool userHasPortfolioPermission(String? pid) {
+    // _log.finer("portfolio permission: ${pid} -> person ${person.groups}");
     if (pid == null) return false;
 
     // if any of their groups have that portfolio, they have permission to at least see it
