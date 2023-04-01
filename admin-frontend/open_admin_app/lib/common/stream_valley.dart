@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/common/fh_shared_prefs.dart';
 import 'package:open_admin_app/common/person_state.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -94,7 +95,7 @@ class StreamValley {
   Stream<List<Portfolio>> get portfolioListStream => _portfoliosSource.stream;
   Stream<ReleasedPortfolio> get currentPortfolioStream =>
       _currentPortfolioSource.stream;
-  ReleasedPortfolio get currentPortfolio => _currentPortfolioSource.value;
+  ReleasedPortfolio get currentPortfolio => _currentPortfolioSource.hasValue ? _currentPortfolioSource.value : nullPortfolio;
 
   String? get currentPortfolioId => currentPortfolio.portfolio.id;
 
@@ -110,7 +111,7 @@ class StreamValley {
       }
     });
 
-    currentPortfolioStream.listen((portfolioUpdate) {
+    currentPortfolioStream.listen((portfolioUpdate) async {
       _isCurrentPortfolioAdminOrSuperAdmin =
           portfolioUpdate.currentPortfolioOrSuperAdmin;
 
@@ -118,9 +119,11 @@ class StreamValley {
         getCurrentPortfolioApplications();
 
         // the portfolio has changed and the app isn't in the portfolio
+        final appId = await prefs.currentApplicationId();
         if (_currentAppSource.hasValue &&
             !portfolioUpdate.portfolio.applications
-                .any((app) => app.id == currentAppId)) {
+                .any((app) => app.id == currentAppId || app.id == appId)) {
+          _log.fine("resetting appid here as ${currentAppId} not in ${portfolioUpdate.portfolio.applications.map((e) => e.id)}");
           if (portfolioUpdate.portfolio.applications.isEmpty) {
             currentAppId = null;
           } else {
@@ -196,6 +199,7 @@ class StreamValley {
     _log.fine('Attempting to set portfolio at $value');
     if (value == null) {
       _log.fine('Portfolio request was null, storing null.');
+      prefs.setPortfolioAndApplicationId(null, null);
       _currentPortfolioSource.add(nullPortfolio);
       _routeCheckPortfolioSource.add(null); // no portfolio
     } else {
@@ -204,13 +208,25 @@ class StreamValley {
       if (found == null) {
         _log.fine("attempting to swap to portfolio that doesnt exist $value");
       } else if (_currentPortfolioSource.value.portfolio.id != value) {
-        _log.fine('Accepted portfolio id change, triggering');
-        _currentPortfolioSource.add(ReleasedPortfolio(
-            portfolio: found,
-            currentPortfolioOrSuperAdmin:
-                personState.isPersonSuperUserOrPortfolioAdmin(found.id)));
-        _routeCheckPortfolioSource.add(found);
+        _portfolioChanged(found);
       }
+    }
+  }
+
+  Future<void> _portfolioChanged(Portfolio found) async {
+    _log.fine('Accepted portfolio id change, triggering');
+
+    final app = await prefs.setPortfolio(found);
+    _currentPortfolioSource.add(ReleasedPortfolio(
+        portfolio: found,
+        currentPortfolioOrSuperAdmin:
+        personState.isPersonSuperUserOrPortfolioAdmin(found.id)));
+
+    _routeCheckPortfolioSource.add(found);
+
+    if (currentAppId != app?.id) {
+      _log.fine("setting to ${app?.id}");
+      currentAppId = app?.id;
     }
   }
 
@@ -223,6 +239,9 @@ class StreamValley {
 
   set currentAppId(String? value) {
     if (value != _currentAppSource.value.application.id) {
+      _log.fine("Application ID set to ${value}");
+      prefs.setCurrentApplicationId(value);
+
       if (value == null) {
         _currentAppSource.add(nullApplication);
       } else {
@@ -427,32 +446,54 @@ class StreamValley {
   // this is triggered when a person is loaded (i.e. changed)
   // or when new portfolios are created
   Future<List<Portfolio>> loadPortfolios() async {
+    _log.finer("loading portfolios");
     final portfolios = await portfolioServiceApi.findPortfolios(
         includeApplications: true, order: SortOrder.ASC);
 
-    // print("loaded portfolios are $portfolios");
-
     _portfoliosSource.add(portfolios);
 
+    final storedPortfolioId = await prefs.currentPortfolioId();
+    final matchingPortfolio = storedPortfolioId == null ? null : portfolios.firstWhereOrNull((p) => p.id == storedPortfolioId);
+
+    _log.fine("loaded portfolios, stored portfolios are ${storedPortfolioId}, matching is ${matchingPortfolio}");
+
+    // if the portfolios are empty, there is no
     if (portfolios.isEmpty) {
+      _log.fine("no portfolios, current is empty");
       currentPortfolioId = null;
-    } else if (!portfolios.any((p) => currentPortfolio.portfolio.id == p.id)) {
-      // current portfolio no access?
-      currentPortfolioId = portfolios.first.id;
-    } else if (_currentPortfolioSource.hasValue &&
-        !personState.userHasPortfolioPermission(currentPortfolioId)) {
-      _currentPortfolioSource.add(nullPortfolio);
-    } else if (_currentAppSource.hasValue &&
-        !personState.userHasApplicationPermission(currentAppId)) {
-      currentAppId = null;
+    } else if (matchingPortfolio != null) { // they have an existing portfolio they want to be looking at
+      _log.fine("we matched one");
+      if (!personState.userHasPortfolioPermission(storedPortfolioId)) {
+        _log.fine("no permissions to it");
+        prefs.setPortfolioAndApplicationId(null, null);
+        await _findPossiblePortfolio(portfolios);
+      } else {
+        _log.fine("matched and storing");
+        currentPortfolioId = matchingPortfolio.id;
+      }
+    } else {
+      _log.fine("lets see if we can find something");
+      await _findPossiblePortfolio(portfolios);
     }
 
     return portfolios;
   }
 
+  Future<void> _findPossiblePortfolio(List<Portfolio> portfolios) async {
+    // if the current portfolio isn't one of the available ones, we have to change
+    if (!portfolios.any((p) => currentPortfolio.portfolio.id == p.id)) {
+      _log.fine("no current portfolio");
+      // current portfolio no access?
+      final portfolio = portfolios.first;
+      currentPortfolioId = portfolio.id;
+    } else if (!personState.userHasPortfolioPermission(currentPortfolioId)) {
+      currentPortfolioId = null;
+    }
+  }
+
   bool containsPid(String? pid) {
     if (pid == null) return false;
-    return _portfoliosSource.value.any((p) => p.id == pid);
+    return _portfoliosSource.hasValue && _portfoliosSource.value.any((p) => p.id == pid);
   }
 
   /*
