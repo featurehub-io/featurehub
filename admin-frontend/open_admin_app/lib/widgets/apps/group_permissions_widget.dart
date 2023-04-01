@@ -51,7 +51,7 @@ class GroupPermissionsWidget extends StatelessWidget {
                     ),
                     const SizedBox(width: 16.0),
                     FHUnderlineButton(
-                      title: 'Go to groups settings',
+                      title: 'Go to manage group members',
                       keepCase: true,
                       onPressed: () {
                         ManagementRepositoryClientBloc.router
