@@ -207,9 +207,10 @@ class FeatureSqlApi @Inject constructor(
     val strategyUpdates = updateSelectivelyRolloutStrategies(person, featureValue, historical, existing, lockChanged)
     val strategiesChanged = strategyUpdates.hasChanged
 
-    val retiredChange = updateSelectivelyRetired(person, featureValue, historical, existing, lockChanged)
+    val retiredUpdate = updateSelectivelyRetired(person, featureValue, historical, existing, lockChanged)
+    val retiredChanged = retiredUpdate.hasChanged
 
-    if (lockChanged || defaultValueChanged || strategiesChanged || retiredChange) {
+    if (lockChanged || defaultValueChanged || strategiesChanged || retiredChanged) {
       existing.whoUpdated = QDbPerson().id.eq(person.person.id!!.id).findOne()
       save(existing)
       publish(existing)
@@ -222,17 +223,18 @@ class FeatureSqlApi @Inject constructor(
     historical: DbFeatureValueVersion,
     existing: DbFeatureValue,
     lockChanged: Boolean
-  ): Boolean {
+  ): SingleFeatureValueUpdate<Boolean> {
+    val retiredFeatureValueUpdate = SingleFeatureValueUpdate<Boolean>()
     val existingRetired = (existing.retired == true) // it can be null, which is also false
 
     // is it different from what it is now? if not, exit
     if (featureValue.retired == existingRetired) {
-      return false
+      return retiredFeatureValueUpdate
     }
 
     // did they actually change it? if not, exit
     if (featureValue.retired == historical.isRetired) {
-      return false
+      return retiredFeatureValueUpdate
     }
 
     if (historical.isRetired == existingRetired) { // but historical is the same as current
@@ -248,7 +250,10 @@ class FeatureSqlApi @Inject constructor(
 
       existing.retired = featureValue.retired
 
-      return true
+      val updated = featureValue.retired ?: false
+      updateSingleFeatureValueUpdate(retiredFeatureValueUpdate, updated, historical.isRetired)
+
+      return retiredFeatureValueUpdate
     }
 
     // otherwise they changed it from historical and existing has already changed
@@ -382,7 +387,7 @@ class FeatureSqlApi @Inject constructor(
       throw LockedException()
     }
 
-
+    strategyUpdates.previous =  historical.rolloutStrategies
     return strategyUpdates
   }
 
@@ -392,6 +397,14 @@ class FeatureSqlApi @Inject constructor(
     strategyUpdates.hasChanged = true
     val rollingStrategyUpdate = RolloutStrategyUpdate(type = type, new = newStrategy, old = oldStrategy)
     strategyUpdates.updated.add(rollingStrategyUpdate)
+  }
+
+  private fun <T> updateSingleFeatureValueUpdate(
+    featureValueUpdate: SingleFeatureValueUpdate<T>, updated: T?, previous: T? ): SingleFeatureValueUpdate<T> {
+    featureValueUpdate.hasChanged = true
+    featureValueUpdate.updated = updated
+    featureValueUpdate.previous = previous
+    return featureValueUpdate
   }
 
   /**
@@ -451,10 +464,7 @@ class FeatureSqlApi @Inject constructor(
 
       existing.defaultValue = defaultValueChanged
 
-      defaultValueUpdate.hasChanged = true
-      defaultValueUpdate.updated = defaultValueChanged
-      defaultValueUpdate.previous = historical.defaultValue
-      return defaultValueUpdate
+      return updateSingleFeatureValueUpdate(defaultValueUpdate, defaultValueChanged, historical.defaultValue)
     }
 
     // someone changed it in the meantime so they can't change it
@@ -493,10 +503,7 @@ class FeatureSqlApi @Inject constructor(
 
         existing.isLocked = updatedValue
 
-        lockUpdate.hasChanged = true
-        lockUpdate.updated = updatedValue
-        lockUpdate.previous = historical.isLocked
-        return lockUpdate
+        return updateSingleFeatureValueUpdate(lockUpdate, updatedValue, historical.isLocked)
       } else {
         // i can't actually see how this can happen
         throw OptimisticLockingException()

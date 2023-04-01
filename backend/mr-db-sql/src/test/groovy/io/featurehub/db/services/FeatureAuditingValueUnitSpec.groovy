@@ -37,7 +37,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
       )
     then:
-      !result
+      !result.hasChanged
   }
 
   def "bool - they pass an update the same as the historical one but different from the existing one"() {
@@ -52,7 +52,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
       )
     then:
-      !result
+      !result.hasChanged
   }
 
   def "string - they pass an update the same as the historical one but different from the existing one"() {
@@ -67,23 +67,28 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
       )
     then:
-      !result
+      !result.hasChanged
   }
 
   def "string - they pass an update the different to the historical one and historical is the same as existing one"() {
     given:
-      def existing = new DbFeatureValue.Builder().defaultValue("y").build()
+      def historicalValue = "y"
+      def existing = new DbFeatureValue.Builder().defaultValue(historicalValue).build()
       def feat = new DbApplicationFeature.Builder().valueType(FeatureValueType.STRING).build()
+
+    def newFeatureValue = "x"
     when:
       def result = fsApi.updateSelectivelyDefaultValue(
         feat,
-        new FeatureValue().valueString("x"),
-        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, FeatureState.READY, "y", false, false, [], [], feat),
+        new FeatureValue().valueString(newFeatureValue),
+        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, FeatureState.READY, historicalValue, false, false, [], [], feat),
         existing,
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
       )
     then:
-      result
+      result.hasChanged
+      result.updated == newFeatureValue
+      result.previous == historicalValue
       existing.defaultValue == 'x'
   }
 
