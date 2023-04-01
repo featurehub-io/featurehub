@@ -46,7 +46,8 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
                             child: Wrap(
                               spacing: 16.0,
                               runSpacing: 16.0,
@@ -117,7 +118,7 @@ class CreateFeatureButton extends StatelessWidget {
         stream: bloc.mrClient.streamValley.currentAppIdStream,
         builder: (context, snapshot) {
           final canEdit = bloc.mrClient.personState
-              .personCanEditFeaturesForApplication(snapshot.data);
+              .personCanCreateFeaturesForApplication(snapshot.data);
           return !canEdit
               ? const SizedBox.shrink()
               : FilledButton.icon(
@@ -131,7 +132,6 @@ class CreateFeatureButton extends StatelessWidget {
                   },
                   icon: const Icon(Icons.add),
                   label: const Text('Create New Feature'));
-
         });
   }
 }
