@@ -35,7 +35,7 @@ public class PersonFeaturePermission {
   }
 
   public boolean hasChangeValueRole() {
-    return roles.contains(RoleType.CHANGE_VALUE) || hasCreateFeatureRole();
+    return roles.contains(RoleType.CHANGE_VALUE);
 
   }
 
