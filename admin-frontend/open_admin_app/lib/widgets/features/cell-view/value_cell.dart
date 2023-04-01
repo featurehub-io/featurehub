@@ -214,16 +214,16 @@ class _ValueCard extends StatelessWidget {
                                     maxLines: 1,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .bodyMedium!
+                                        .labelLarge!
                                         .copyWith(color: strategyTextColor)),
                               ),
                       )
                     : Padding(
-                        padding: const EdgeInsets.all(6.0),
+                        padding: const EdgeInsets.all(4.0),
                         child: Text('default',
                             style: Theme.of(context)
                                 .textTheme
-                                .bodyMedium!
+                                .labelLarge!
                                 .copyWith(color: defaultTextColor)),
                       ),
               ),
