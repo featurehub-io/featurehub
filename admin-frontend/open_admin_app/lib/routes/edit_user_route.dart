@@ -141,11 +141,11 @@ class _EditUserFormState extends State<EditUserFormWidget> {
             Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: FHFlatButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
                         try {
-                          bloc.updatePersonDetails(_email.text, _name.text);
+                          await bloc.updatePersonDetails(_email.text, _name.text);
                           bloc.mrClient.addSnackbar(Text(
                               'User ${bloc.person!.name!} has been updated'));
                           ManagementRepositoryClientBloc.router
