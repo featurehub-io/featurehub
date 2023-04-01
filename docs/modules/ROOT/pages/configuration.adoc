@@ -71,6 +71,51 @@ you will need to set the environment variable:
 You do not need to configure anything further for NATS for Dacha1 or Dacha2. NATS supports request/reply,
 true pub/sub and pub/queues in a single product.
 
+==== Channels
+
+If you use NATs outside of FeatureHub, you are likely to have secured it and if you do this, you need
+to know what channels FeatureHub use.
+
+If you are using Dacha1, the following channels are used (and contain gzipped json data). They
+are published from MR and listened to from Dacha1.
+
+- `default/feature-updates-v2` - this is used to send any updates to individual features
+- `default/environment-updates-v2` - this is used to send environment updates
+- `default/service-account-channel-v2` - this is used to send service account updates
+- `default/cache-management-v2` - this is used by the Dacha1 cache as a management layer, to communicate with MR and the other Dacha instances usually when seeking a full cache.
+
+If you are using Dacha2, it uses CloudEvents, so the channel is (published from MR, listened to
+from Dacha2):
+
+- `featurehub/mr-dacha2-channel` - but its name can be configured using the environment variable `cloudevents.mr-dacha2.nats.channel-name`. Dacha2 will listen to this channel both as a Pub/Sub style
+listener (i.e. a topic listener) and as a Pub/Queue style (a shared subscription), for the purposes
+of the Enricher process used by the Webhooks.
+
+Dacha1 and Dacha2 publish enriched events (if this is turned on) on the following channel, Edge listens
+to this:
+- `featurehub/enriched-events` - configured using `cloudevents.enricher.channel-name`
+
+Edge listens to the following channels (published from MR):
+
+- `featurehub/mr-edge-channel` - configured using `cloudevents.mr-edge.nats.channel-name` - this is broadcast on by MR. It is a stream of feature updates.
+
+Edge publishes on the following channels (and consumed by MR):
+
+- `featurehub/mr-updates-queue` - configured using `cloudevents.edge-mr.nats.channel-name`. This sends
+back updates from PUT requests on the FeatureApi by valid ApiKeys who have write permissions, and also
+any other traffic (e.g. webhook status data). 
+
+Edge publishes on the Stats channel only if you have turned it on:
+- `featurehub/edge-stats` - configured using `cloudevents.stats.nats.channel-name`
+
+We have a Usage Service which stores this data but haven't exposed the data as yet on the front
+end so aren't releasing it (the tool is postgres only).
+
+If Edge communicates with Dacha (1 or 2) over NATS, there is an extra channel:
+
+- `default/edge_v2` - this is a request/reply channel for requests from Edge to get data from  the Dacha cache.
+
+
 === Google's Pub/Sub
 
 For Google's PubSub, you will need to turn NATS *off*. We consider Google Pub/Sub to be production ready as of 1.5.9.
