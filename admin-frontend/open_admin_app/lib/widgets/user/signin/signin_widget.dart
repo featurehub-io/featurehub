@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:animator/animator.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/common/fh_shared_prefs.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/user/signin/signin_provider_button.dart';
@@ -34,7 +35,7 @@ class _SigninState extends State<SigninWidget> {
 
     // when we are here we know that there are either (a) multiple sign-in providers or (b) at least a local option
 
-    widget.bloc.lastUsername().then((lu) {
+    prefs.getEmail().then((lu) {
       if (lu != null && _email.text.isEmpty) {
         setState(() {
           _email.text = lu;
