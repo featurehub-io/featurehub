@@ -196,6 +196,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       rolesUnlock | _
   }
 
+  // TODO Fix this test - Possibly implementation is wrong rather than the test
   def "add and delete at the same time from historical"() {
     def newStrategy = new RolloutStrategy().id('1111').name('sandra')
     def deletedStrategy = new RolloutStrategy().id('2343').name('mary')
