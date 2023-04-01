@@ -68,10 +68,10 @@ class FHSharedPrefs extends FHSharedPrefsContract {
   void saveCurrentRoute(String json) => _prefs?.saveCurrentRoute(json);
 }
 
-const _KEY_EMAIL = 'lastUsername';
-const _KEY_APPLICATION_ID = 'currentAid';
-const _KEY_PORTFOLIO_ID = 'currentPid';
-const _KEY_CURRENT_ROUTE = 'current-route';
+const _keyEmail = 'lastUsername';
+const _keyApplicationId = 'currentAid';
+const _keyPortfolioId = 'currentPid';
+const _keyCurrentRoute = 'current-route';
 
 class _FHSharedPrefs extends FHSharedPrefsContract {
   final SharedPreferences _prefs;
@@ -89,7 +89,7 @@ class _FHSharedPrefs extends FHSharedPrefsContract {
   }
 
   Future<String?> getEmail() async {
-    return await _prefs.getString(_KEY_EMAIL);
+    return await _prefs.getString(_keyEmail);
   }
 
   Future<void> setEmail(String value) async {
@@ -99,7 +99,7 @@ class _FHSharedPrefs extends FHSharedPrefsContract {
       await clear();
     }
 
-    await _prefs.setString(_KEY_EMAIL, value);
+    await _prefs.setString(_keyEmail, value);
   }
 
   @override
@@ -124,27 +124,27 @@ class _FHSharedPrefs extends FHSharedPrefsContract {
 
   @override
   Future<String?> currentApplicationId() async =>
-    await _prefs.getString(_KEY_APPLICATION_ID);
+    await _prefs.getString(_keyApplicationId);
 
 
   @override
-  Future<String?> currentPortfolioId() async => await _prefs.getString(_KEY_PORTFOLIO_ID);
+  Future<String?> currentPortfolioId() async => await _prefs.getString(_keyPortfolioId);
 
   @override
   Future<void> setCurrentApplicationId(String? id) async {
     if (id == null) {
-      await _prefs.remove(_KEY_APPLICATION_ID);
+      await _prefs.remove(_keyApplicationId);
     } else {
-      await _prefs.setString(_KEY_APPLICATION_ID, id);
+      await _prefs.setString(_keyApplicationId, id);
     }
   }
 
   @override
   Future<void> setCurrentPortfolioId(String? id) async {
     if (id == null) {
-      await _prefs.remove(_KEY_PORTFOLIO_ID);
+      await _prefs.remove(_keyPortfolioId);
     } else {
-      await _prefs.setString(_KEY_PORTFOLIO_ID, id);
+      await _prefs.setString(_keyPortfolioId, id);
     }
   }
 
@@ -174,6 +174,6 @@ class _FHSharedPrefs extends FHSharedPrefsContract {
   }
 
   saveCurrentRoute(String json) {
-    _prefs.setString(_KEY_CURRENT_ROUTE, json);
+    _prefs.setString(_keyCurrentRoute, json);
   }
 }

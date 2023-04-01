@@ -123,7 +123,7 @@ class StreamValley {
         if (_currentAppSource.hasValue &&
             !portfolioUpdate.portfolio.applications
                 .any((app) => app.id == currentAppId || app.id == appId)) {
-          _log.fine("resetting appid here as ${currentAppId} not in ${portfolioUpdate.portfolio.applications.map((e) => e.id)}");
+          _log.fine("resetting appid here as $currentAppId not in ${portfolioUpdate.portfolio.applications.map((e) => e.id)}");
           if (portfolioUpdate.portfolio.applications.isEmpty) {
             currentAppId = null;
           } else {
@@ -239,7 +239,7 @@ class StreamValley {
 
   set currentAppId(String? value) {
     if (value != _currentAppSource.value.application.id) {
-      _log.fine("Application ID set to ${value}");
+      _log.fine("Application ID set to $value");
       prefs.setCurrentApplicationId(value);
 
       if (value == null) {
@@ -455,7 +455,7 @@ class StreamValley {
     final storedPortfolioId = await prefs.currentPortfolioId();
     final matchingPortfolio = storedPortfolioId == null ? null : portfolios.firstWhereOrNull((p) => p.id == storedPortfolioId);
 
-    _log.fine("loaded portfolios, stored portfolios are ${storedPortfolioId}, matching is ${matchingPortfolio}");
+    _log.fine("loaded portfolios, stored portfolios are $storedPortfolioId, matching is $matchingPortfolio");
 
     // if the portfolios are empty, there is no
     if (portfolios.isEmpty) {

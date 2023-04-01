@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:open_admin_app/utils/translate_on_hover.dart';
 
 class FHUnderlineButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -14,6 +13,6 @@ class FHUnderlineButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton.icon(onPressed: onPressed, icon: Text(title), label: Icon(Icons.arrow_forward_rounded));
+    return TextButton.icon(onPressed: onPressed, icon: Text(title), label: const Icon(Icons.arrow_forward_rounded));
   }
 }

@@ -40,8 +40,6 @@ class ServerCapabilities {
     });
   }
 
-  /**
-   * the server supports webhooks if it returns this
-   */
+  ///the server supports webhooks if it returns this
   bool get capabilityWebhooks => _capabilities['webhook.features'] == 'true';
 }

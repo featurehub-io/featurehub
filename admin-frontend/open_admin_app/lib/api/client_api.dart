@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:html';
 
 import 'package:bloc_provider/bloc_provider.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
@@ -136,7 +135,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     _landingActions = [];
 
-    la.forEach((action) { action(this); });
+    for (var action in la) { action(this); }
   }
 
   void swapRoutes(RouteChange route) {
