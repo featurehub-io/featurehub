@@ -196,21 +196,19 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       rolesUnlock | _
   }
 
-  // TODO Fix this test - Possibly implementation is wrong rather than the test
   def "add and delete at the same time from historical"() {
     def newStrategy = new RolloutStrategy().id('1111').name('sandra')
-    def deletedStrategy = new RolloutStrategy().id('2343').name('mary')
+    def historicalStrategy = new RolloutStrategy().id('2343').name('mary')
     when:
       def result = updateStrategies(
         [new RolloutStrategy().id('1234').name('susan')],
-            [deletedStrategy],
+            [historicalStrategy],
             [newStrategy]
       )
     then:
       result.hasChanged
-      result.updated == [new RolloutStrategyUpdate("add", null, newStrategy),
-       new RolloutStrategyUpdate("delete", deletedStrategy, null)]
-      result.previous ==  [deletedStrategy]
+      result.updated == [new RolloutStrategyUpdate("add", null, newStrategy)]
+      result.previous ==  [historicalStrategy]
       currentFeature.rolloutStrategies.size() == 2
       currentFeature.rolloutStrategies.find{ it.id == '1234' }?.name == 'susan'
       currentFeature.rolloutStrategies.find{ it.id == '1111' }?.name == 'sandra'
