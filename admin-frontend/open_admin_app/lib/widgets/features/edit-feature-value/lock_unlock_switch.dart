@@ -48,12 +48,14 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
                         : 'Click the lock to prevent further changes'),
                 icon: Icon(_locked ? Icons.lock_outline : Icons.lock_open,
                     size: 20, color: _locked ? Colors.orange : Colors.green),
-                onPressed: () {
-                  setState(() {
-                    _locked = !_locked;
-                  });
-                  widget.fvBloc.updateFeatureValueLockedStatus(_locked);
-                },
+                onPressed: disabled
+                    ? null
+                    : () {
+                        setState(() {
+                          _locked = !_locked;
+                        });
+                        widget.fvBloc.updateFeatureValueLockedStatus(_locked);
+                      },
               ),
             ),
             Text(

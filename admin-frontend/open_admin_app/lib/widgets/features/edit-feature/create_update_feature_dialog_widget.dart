@@ -12,7 +12,6 @@ class CreateFeatureDialogWidget extends StatefulWidget {
   final Feature? feature;
   final PerApplicationFeaturesBloc bloc;
 
-
   const CreateFeatureDialogWidget({
     Key? key,
     required this.bloc,
@@ -37,7 +36,6 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
   bool isError = false;
   FeatureValueType? _dropDownFeatureTypeValue;
 
-
   @override
   void initState() {
     super.initState();
@@ -54,8 +52,17 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final isReadOnly =
-        !widget.bloc.mrClient.userHasFeatureEditRoleInCurrentApplication;
+    var isReadOnly = false;
+
+    // only let this screen to be editable if right permissions exist
+    if (isUpdate) {
+      isReadOnly =
+          !widget.bloc.mrClient.userHasFeatureEditRoleInCurrentApplication;
+    } else {
+      isReadOnly =
+          !widget.bloc.mrClient.userHasFeatureCreationRoleInCurrentApplication;
+    }
+
     return Form(
       key: _formKey,
       child: FHAlertDialog(
@@ -204,9 +211,10 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                             _featureKey.text,
                             _featureAlias.text,
                             _featureLink.text,
-                        _featureDesc.text);
+                            _featureDesc.text);
                         widget.bloc.mrClient.removeOverlay();
-                        await widget.bloc.updateApplicationFeatureValuesStream();
+                        await widget.bloc
+                            .updateApplicationFeatureValuesStream();
                         widget.bloc.mrClient.addSnackbar(
                             Text('Feature ${_featureName.text} updated!'));
                       } else {
