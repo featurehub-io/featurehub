@@ -32,7 +32,7 @@ class FeatureSqlApi @Inject constructor(
   private val rolloutStrategyValidator: RolloutStrategyValidator
 ) : FeatureApi, FeatureUpdateBySDKApi, InternalFeatureSqlApi {
   @ConfigKey("auditing.enable")
-  var auditingEnabled: Boolean? = false
+  var auditingEnabled: Boolean? = true
   @ConfigKey("features.max-per-page")
   private var maxPagination: Int? = 10000
 
