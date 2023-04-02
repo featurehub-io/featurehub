@@ -334,7 +334,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       result.hasChanged
       result.updated == []
       result.reordered == [b,a,c]
-      result.previous == current
+      result.previous == historical
       currentFeature.rolloutStrategies[0] == b
       currentFeature.rolloutStrategies[1] == a
       currentFeature.rolloutStrategies[2] == c
@@ -354,7 +354,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       result.hasChanged
       result.updated == []
       result.reordered == [b, c]
-      result.previous == [c, b]
+      result.previous == historical
       currentFeature.rolloutStrategies[0] == b
       currentFeature.rolloutStrategies[1] == c
   }

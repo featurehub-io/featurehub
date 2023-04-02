@@ -277,7 +277,6 @@ class FeatureSqlApi @Inject constructor(
 
     val historicalStrategies = historical.rolloutStrategies
     val existingStrategies = existing.rolloutStrategies
-    val previousStategies = existingStrategies.toMutableList()
 
     featureValue.rolloutStrategies?.let { strategies ->
       rationaliseStrategyIdsAndAttributeIds(strategies)
@@ -381,7 +380,7 @@ class FeatureSqlApi @Inject constructor(
           log.debug("trying to reorder strategies and no change value permission")
           throw FeatureApi.NoAppropriateRole()
         }
-        addToStrategyReorders(strategyUpdates, newlyOrderedList, previousStategies)
+        addToStrategyReorders(strategyUpdates, newlyOrderedList, historicalStrategies)
         changed = true
       }
 
