@@ -19,3 +19,19 @@ const fhOwner = new gcp.storage.DefaultObjectAccessControl("featurehub-openapi-b
     role: "OWNER",
     entity: "allAuthenticatedUsers",
 });
+
+const apiDocsBucket = new gcp.storage.Bucket("featurehub-openapi-docs-bucket", {
+  name: "featurehubapidocs",
+  location: bucketRegion,
+  forceDestroy: config.get("bucketDestroy") === "true",
+});
+const bucketPublicRule = new gcp.storage.DefaultObjectAccessControl("featurehub-openapi-docs-bucket-rule", {
+  bucket: apiDocsBucket.name,
+  role: "READER",
+  entity: "allUsers",
+});
+const bucketFhOwner = new gcp.storage.DefaultObjectAccessControl("featurehub-openapi-docs-bucket-owner-rule", {
+  bucket: apiDocsBucket.name,
+  role: "OWNER",
+  entity: "allAuthenticatedUsers",
+});
