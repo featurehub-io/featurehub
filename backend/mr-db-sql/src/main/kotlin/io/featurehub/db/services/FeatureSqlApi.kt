@@ -270,24 +270,29 @@ class FeatureSqlApi @Inject constructor(
     historical: DbFeatureValueVersion,
     existing: DbFeatureValue,
     lockChanged: Boolean
-  ): MultiFeatureValueUpdate<RolloutStrategyUpdate> {
-    val strategyUpdates = MultiFeatureValueUpdate<RolloutStrategyUpdate>()
+  ): MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy> {
+    val strategyUpdates = MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>()
     var changed = false
     val personCanChangeValues = person.hasChangeValueRole()
+
+    val historicalStrategies = historical.rolloutStrategies
+    val existingStrategies = existing.rolloutStrategies
+    val previousStategies = existingStrategies.toMutableList()
+
     featureValue.rolloutStrategies?.let { strategies ->
       rationaliseStrategyIdsAndAttributeIds(strategies)
 
       // we need a map of the existing strategies in the historical version, and as we
       // loop over the passed strategies, we will detect if they are in  the map and if so, remove them.
       // this leaves us with a map of strategies in the historical entry that are deleted.
-      val strategiesToDelete = historical.rolloutStrategies.map { it.id }.associateBy { it }.toMutableMap()
+      val strategiesToDelete = historicalStrategies.map { it.id }.associateBy { it }.toMutableMap()
 
       for ((index, strategy) in strategies.withIndex()) {
         // we found this one, so remove it from the list
         strategiesToDelete.remove(strategy.id)
 
         // if the id = null, then there won't be one, otherwise try and match it
-        val historicalStrategy = historical.rolloutStrategies?.find { it.id == strategy.id }
+        val historicalStrategy = historicalStrategies?.find { it.id == strategy.id }
 
         // is this strategy  new? if so, it won't be in the list. the client adds ids, but only to associate
         // errors - we need to make sure they adhere to our rules now
@@ -298,11 +303,11 @@ class FeatureSqlApi @Inject constructor(
           }
 
           changed = true
-          if (index >= existing.rolloutStrategies.size) {
-            existing.rolloutStrategies.add(strategy)
+          if (index >= existingStrategies.size) {
+            existingStrategies.add(strategy)
           } else {
             // try and insert this new strategy where they have placed it
-            existing.rolloutStrategies.add(index, strategy)
+            existingStrategies.add(index, strategy)
           }
           addToStrategyUpdates(type = "add", newStrategy = strategy, strategyUpdates = strategyUpdates)
         } else {
@@ -312,7 +317,7 @@ class FeatureSqlApi @Inject constructor(
           }
 
           // if this criteria matches, they have changed one that has been deleted, so thats a locking issue
-          val currentStrategy = existing.rolloutStrategies.find { it.id == strategy.id }
+          val currentStrategy = existingStrategies.find { it.id == strategy.id }
           if (currentStrategy == null) { // historically it existed, but its been deleted, so ignore it
             log.debug("feature value strategy was deleted")
             throw OptimisticLockingException() // it's been deleted
@@ -333,10 +338,10 @@ class FeatureSqlApi @Inject constructor(
 
             // ok - its all good to replace this one
             changed = true
-            existing.rolloutStrategies[existing.rolloutStrategies.indexOfFirst { it.id == strategy.id }] = strategy
+            existingStrategies[existingStrategies.indexOfFirst { it.id == strategy.id }] = strategy
             if (strategy.id!!.length > strategyIdLength) {
               var newId = RandomStringUtils.randomAlphanumeric(strategyIdLength)
-              while (existing.rolloutStrategies.any { it.id == newId } || historical.rolloutStrategies.any { it.id == newId }) {
+              while (existingStrategies.any { it.id == newId } || historicalStrategies.any { it.id == newId }) {
                 newId = RandomStringUtils.randomAlphanumeric(strategyIdLength)
               }
               strategy.id = newId
@@ -355,28 +360,28 @@ class FeatureSqlApi @Inject constructor(
         }
 
         // Collect strategies to delete and add to the strategy updates list
-        existing.rolloutStrategies.filter { existing -> strategiesToDelete.contains(existing.id) }
+        existingStrategies.filter { existing -> strategiesToDelete.contains(existing.id) }
           .forEach { strategyToDelete ->
             changed = true
-            existing.rolloutStrategies.remove(strategyToDelete)
+            existingStrategies.remove(strategyToDelete)
             addToStrategyUpdates(type = "delete", oldStrategy = strategyToDelete, strategyUpdates = strategyUpdates)
           }
       }
 
       // ok, now just honour the order of the incoming strategies and keep track if they actually changed
       val newlyOrderedList =
-        featureValue.rolloutStrategies?.mapNotNull { newStrategy -> existing.rolloutStrategies.find { it.id == newStrategy.id } }
+        featureValue.rolloutStrategies?.mapNotNull { newStrategy -> existingStrategies.find { it.id == newStrategy.id } }
         ?.toMutableList() ?: mutableListOf()
       val newlyOrderedListIds = newlyOrderedList.map { it.id }
-      newlyOrderedList.addAll(existing.rolloutStrategies.filter { !newlyOrderedListIds.contains(it.id) })
+      newlyOrderedList.addAll(existingStrategies.filter { !newlyOrderedListIds.contains(it.id) })
       val reorderedList = newlyOrderedList.map { it.id }
 
-      if (existing.rolloutStrategies?.map { it.id } != reorderedList) {
+      if (existingStrategies?.map { it.id } != reorderedList) {
         if (!personCanChangeValues) {
           log.debug("trying to reorder strategies and no change value permission")
           throw FeatureApi.NoAppropriateRole()
         }
-        // figure out how to capture the reorder here
+        addToStrategyReorders(strategyUpdates, newlyOrderedList, previousStategies)
         changed = true
       }
 
@@ -387,16 +392,22 @@ class FeatureSqlApi @Inject constructor(
       throw LockedException()
     }
 
-    strategyUpdates.previous =  historical.rolloutStrategies
     return strategyUpdates
   }
 
   private fun addToStrategyUpdates(
-    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate>,
+    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
     type: String, newStrategy: RolloutStrategy? = null, oldStrategy: RolloutStrategy? = null ) {
     strategyUpdates.hasChanged = true
     val rollingStrategyUpdate = RolloutStrategyUpdate(type = type, new = newStrategy, old = oldStrategy)
     strategyUpdates.updated.add(rollingStrategyUpdate)
+  }
+
+  private fun addToStrategyReorders(strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
+    reordered: MutableList<RolloutStrategy>, previous: MutableList<RolloutStrategy>) {
+    strategyUpdates.hasChanged = true
+    strategyUpdates.reordered = reordered
+    strategyUpdates.previous = previous
   }
 
   private fun <T> updateSingleFeatureValueUpdate(
