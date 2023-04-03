@@ -202,15 +202,12 @@ class FeatureSqlApi @Inject constructor(
     // allow them to change the value and lock it at the same time
     val defaultValueUpdate =
       updateSelectivelyDefaultValue(feature, featureValue, historical, existing, person, lockChanged)
-    val defaultValueChanged = defaultValueUpdate.hasChanged
 
     val strategyUpdates = updateSelectivelyRolloutStrategies(person, featureValue, historical, existing, lockChanged)
-    val strategiesChanged = strategyUpdates.hasChanged
 
     val retiredUpdate = updateSelectivelyRetired(person, featureValue, historical, existing, lockChanged)
-    val retiredChanged = retiredUpdate.hasChanged
 
-    if (lockChanged || defaultValueChanged || strategiesChanged || retiredChanged) {
+    if (lockChanged || defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged) {
       existing.whoUpdated = QDbPerson().id.eq(person.person.id!!.id).findOne()
       save(existing)
       publish(existing)
