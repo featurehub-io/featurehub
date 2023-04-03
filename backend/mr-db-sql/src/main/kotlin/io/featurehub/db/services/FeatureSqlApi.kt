@@ -196,17 +196,18 @@ class FeatureSqlApi @Inject constructor(
   ) {
     val feature = existing.feature
 
-    val lockChanged = updateSelectivelyLocked(featureValue, historical, existing, person)
+    val lockUpdate = updateSelectivelyLocked(featureValue, historical, existing, person)
+    val lockChanged = lockUpdate.hasChanged
 
     // allow them to change the value and lock it at the same time
-    val defaultValueChanged =
+    val defaultValueUpdate =
       updateSelectivelyDefaultValue(feature, featureValue, historical, existing, person, lockChanged)
 
-    val strategiesChanged = updateSelectivelyRolloutStrategies(person, featureValue, historical, existing, lockChanged)
+    val strategyUpdates = updateSelectivelyRolloutStrategies(person, featureValue, historical, existing, lockChanged)
 
-    val retiredChange = updateSelectivelyRetired(person, featureValue, historical, existing, lockChanged)
+    val retiredUpdate = updateSelectivelyRetired(person, featureValue, historical, existing, lockChanged)
 
-    if (lockChanged || defaultValueChanged || strategiesChanged || retiredChange) {
+    if (lockChanged || defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged) {
       existing.whoUpdated = QDbPerson().id.eq(person.person.id!!.id).findOne()
       save(existing)
       publish(existing)
@@ -219,17 +220,18 @@ class FeatureSqlApi @Inject constructor(
     historical: DbFeatureValueVersion,
     existing: DbFeatureValue,
     lockChanged: Boolean
-  ): Boolean {
+  ): SingleFeatureValueUpdate<Boolean> {
+    val retiredFeatureValueUpdate = SingleFeatureValueUpdate<Boolean>()
     val existingRetired = (existing.retired == true) // it can be null, which is also false
 
     // is it different from what it is now? if not, exit
     if (featureValue.retired == existingRetired) {
-      return false
+      return retiredFeatureValueUpdate
     }
 
     // did they actually change it? if not, exit
     if (featureValue.retired == historical.isRetired) {
-      return false
+      return retiredFeatureValueUpdate
     }
 
     if (historical.isRetired == existingRetired) { // but historical is the same as current
@@ -245,7 +247,10 @@ class FeatureSqlApi @Inject constructor(
 
       existing.retired = featureValue.retired
 
-      return true
+      val updated = featureValue.retired ?: false
+      updateSingleFeatureValueUpdate(retiredFeatureValueUpdate, updated, historical.isRetired)
+
+      return retiredFeatureValueUpdate
     }
 
     // otherwise they changed it from historical and existing has already changed
@@ -262,23 +267,28 @@ class FeatureSqlApi @Inject constructor(
     historical: DbFeatureValueVersion,
     existing: DbFeatureValue,
     lockChanged: Boolean
-  ): Boolean {
+  ): MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy> {
+    val strategyUpdates = MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>()
     var changed = false
     val personCanChangeValues = person.hasChangeValueRole()
+
+    val historicalStrategies = historical.rolloutStrategies
+    val existingStrategies = existing.rolloutStrategies
+
     featureValue.rolloutStrategies?.let { strategies ->
       rationaliseStrategyIdsAndAttributeIds(strategies)
 
       // we need a map of the existing strategies in the historical version, and as we
       // loop over the passed strategies, we will detect if they are in  the map and if so, remove them.
       // this leaves us with a map of strategies in the historical entry that are deleted.
-      val strategiesToDelete = historical.rolloutStrategies.map { it.id }.associateBy { it }.toMutableMap()
+      val strategiesToDelete = historicalStrategies.map { it.id }.associateBy { it }.toMutableMap()
 
       for ((index, strategy) in strategies.withIndex()) {
         // we found this one, so remove it from the list
         strategiesToDelete.remove(strategy.id)
 
         // if the id = null, then there won't be one, otherwise try and match it
-        val historicalStrategy = historical.rolloutStrategies?.find { it.id == strategy.id }
+        val historicalStrategy = historicalStrategies?.find { it.id == strategy.id }
 
         // is this strategy  new? if so, it won't be in the list. the client adds ids, but only to associate
         // errors - we need to make sure they adhere to our rules now
@@ -289,12 +299,13 @@ class FeatureSqlApi @Inject constructor(
           }
 
           changed = true
-          if (index >= existing.rolloutStrategies.size) {
-            existing.rolloutStrategies.add(strategy)
+          if (index >= existingStrategies.size) {
+            existingStrategies.add(strategy)
           } else {
             // try and insert this new strategy where they have placed it
-            existing.rolloutStrategies.add(index, strategy)
+            existingStrategies.add(index, strategy)
           }
+          addToStrategyUpdates(type = "add", newStrategy = strategy, strategyUpdates = strategyUpdates)
         } else {
           // its the same as the HISTORICAL one, then we have to assume that they haven't changed it, so we skip it
           if (Objects.deepEquals(strategy, historicalStrategy)) {
@@ -302,7 +313,7 @@ class FeatureSqlApi @Inject constructor(
           }
 
           // if this criteria matches, they have changed one that has been deleted, so thats a locking issue
-          val currentStrategy = existing.rolloutStrategies.find { it.id == strategy.id }
+          val currentStrategy = existingStrategies.find { it.id == strategy.id }
           if (currentStrategy == null) { // historically it existed, but its been deleted, so ignore it
             log.debug("feature value strategy was deleted")
             throw OptimisticLockingException() // it's been deleted
@@ -323,14 +334,15 @@ class FeatureSqlApi @Inject constructor(
 
             // ok - its all good to replace this one
             changed = true
-            existing.rolloutStrategies[existing.rolloutStrategies.indexOfFirst { it.id == strategy.id }] = strategy
+            existingStrategies[existingStrategies.indexOfFirst { it.id == strategy.id }] = strategy
             if (strategy.id!!.length > strategyIdLength) {
               var newId = RandomStringUtils.randomAlphanumeric(strategyIdLength)
-              while (existing.rolloutStrategies.any { it.id == newId } || historical.rolloutStrategies.any { it.id == newId }) {
+              while (existingStrategies.any { it.id == newId } || historicalStrategies.any { it.id == newId }) {
                 newId = RandomStringUtils.randomAlphanumeric(strategyIdLength)
               }
               strategy.id = newId
             }
+            addToStrategyUpdates(type = "change", newStrategy = strategy, oldStrategy = historicalStrategy, strategyUpdates = strategyUpdates)
           } else {
             throw OptimisticLockingException() // it has changed since its history and user wants to change it again
           }
@@ -343,23 +355,29 @@ class FeatureSqlApi @Inject constructor(
           throw FeatureApi.NoAppropriateRole()
         }
 
-        if (existing.rolloutStrategies.removeIf { existing -> strategiesToDelete.contains(existing.id) }) {
-          changed = true
-        }
+        // Collect strategies to delete and add to the strategy updates list
+        existingStrategies.filter { existing -> strategiesToDelete.contains(existing.id) }
+          .forEach { strategyToDelete ->
+            changed = true
+            existingStrategies.remove(strategyToDelete)
+            addToStrategyUpdates(type = "delete", oldStrategy = strategyToDelete, strategyUpdates = strategyUpdates)
+          }
       }
 
       // ok, now just honour the order of the incoming strategies and keep track if they actually changed
-      val newlyOrderedList = featureValue.rolloutStrategies?.map { newStrat -> existing.rolloutStrategies.find { it.id == newStrat.id } }?.filterNotNull()?.toMutableList() ?: mutableListOf()
+      val newlyOrderedList =
+        featureValue.rolloutStrategies?.mapNotNull { newStrategy -> existingStrategies.find { it.id == newStrategy.id } }
+        ?.toMutableList() ?: mutableListOf()
       val newlyOrderedListIds = newlyOrderedList.map { it.id }
-      newlyOrderedList.addAll(existing.rolloutStrategies.filter { !newlyOrderedListIds.contains(it.id) })
+      newlyOrderedList.addAll(existingStrategies.filter { !newlyOrderedListIds.contains(it.id) })
       val reorderedList = newlyOrderedList.map { it.id }
 
-      if (existing.rolloutStrategies?.map { it.id } != reorderedList) {
+      if (existingStrategies?.map { it.id } != reorderedList) {
         if (!personCanChangeValues) {
           log.debug("trying to reorder strategies and no change value permission")
           throw FeatureApi.NoAppropriateRole()
         }
-
+        addToStrategyReorders(strategyUpdates, newlyOrderedList, historicalStrategies)
         changed = true
       }
 
@@ -370,8 +388,30 @@ class FeatureSqlApi @Inject constructor(
       throw LockedException()
     }
 
+    return strategyUpdates
+  }
 
-    return changed
+  private fun addToStrategyUpdates(
+    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
+    type: String, newStrategy: RolloutStrategy? = null, oldStrategy: RolloutStrategy? = null ) {
+    strategyUpdates.hasChanged = true
+    val rollingStrategyUpdate = RolloutStrategyUpdate(type = type, new = newStrategy, old = oldStrategy)
+    strategyUpdates.updated.add(rollingStrategyUpdate)
+  }
+
+  private fun addToStrategyReorders(strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
+    reordered: MutableList<RolloutStrategy>, previous: MutableList<RolloutStrategy>) {
+    strategyUpdates.hasChanged = true
+    strategyUpdates.reordered = reordered
+    strategyUpdates.previous = previous
+  }
+
+  private fun <T> updateSingleFeatureValueUpdate(
+    featureValueUpdate: SingleFeatureValueUpdate<T>, updated: T?, previous: T? ): SingleFeatureValueUpdate<T> {
+    featureValueUpdate.hasChanged = true
+    featureValueUpdate.updated = updated
+    featureValueUpdate.previous = previous
+    return featureValueUpdate
   }
 
   /**
@@ -385,7 +425,8 @@ class FeatureSqlApi @Inject constructor(
     existing: DbFeatureValue,
     person: PersonFeaturePermission,
     lockChanged: Boolean
-  ): Boolean {
+  ): SingleFeatureValueUpdate<String> {
+    val defaultValueUpdate = SingleFeatureValueUpdate<String>()
     val defaultValueChanged: String? =
       when (feature.valueType!!) {
         FeatureValueType.NUMBER -> {
@@ -407,12 +448,12 @@ class FeatureSqlApi @Inject constructor(
 
     // they aren't changing this value, so skip out
     if (defaultValueChanged == existing.defaultValue) {
-      return false // nothing is changing, don't worry about it
+      return defaultValueUpdate // nothing is changing, don't worry about it
     }
 
     // if it changed from the historical version
     if (defaultValueChanged == historical.defaultValue) {
-      return false
+      return defaultValueUpdate
     }
     // it didn't change between the  historical version and the current version?
     if (historical.defaultValue == existing.defaultValue) {
@@ -430,7 +471,7 @@ class FeatureSqlApi @Inject constructor(
 
       existing.defaultValue = defaultValueChanged
 
-      return true
+      return updateSingleFeatureValueUpdate(defaultValueUpdate, defaultValueChanged, historical.defaultValue)
     }
 
     // someone changed it in the meantime so they can't change it
@@ -447,34 +488,36 @@ class FeatureSqlApi @Inject constructor(
     historical: DbFeatureValueVersion,
     existing: DbFeatureValue,
     person: PersonFeaturePermission
-  ): Boolean {
-    if (featureValue.locked == existing.isLocked) {
-      return false
+  ): SingleFeatureValueUpdate<Boolean> {
+    val lockUpdate = SingleFeatureValueUpdate<Boolean>()
+    val updatedValue = featureValue.locked
+    if (updatedValue == existing.isLocked) {
+      return lockUpdate
     }
 
     // if we changed the value from the historical version
-    if (featureValue.locked != historical.isLocked) {
+    if (updatedValue != historical.isLocked) {
       // if the existing version is the same as the locked version, we can continue to check
       if (existing.isLocked == historical.isLocked) {
-        if (featureValue.locked && !person.hasLockRole()) {
+        if (updatedValue && !person.hasLockRole()) {
           log.debug("User is trying to lock a feature value and does not have lock permission")
           throw FeatureApi.NoAppropriateRole()
         }
-        if (!featureValue.locked && !person.hasUnlockRole()) {
+        if (!updatedValue && !person.hasUnlockRole()) {
           log.debug("User is trying to unlock feature  value and does not have permission")
           throw FeatureApi.NoAppropriateRole()
         }
 
-        existing.isLocked = featureValue.locked
+        existing.isLocked = updatedValue
 
-        return true
+        return updateSingleFeatureValueUpdate(lockUpdate, updatedValue, historical.isLocked)
       } else {
         // i can't actually see how this can happen
         throw OptimisticLockingException()
       }
     } // else didn't change it
 
-    return false
+    return lockUpdate
   }
 
 

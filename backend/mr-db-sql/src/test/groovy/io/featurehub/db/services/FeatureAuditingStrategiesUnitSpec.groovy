@@ -2,8 +2,10 @@ package io.featurehub.db.services
 
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.LockedException
+import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.PersonFeaturePermission
+import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersion
@@ -12,6 +14,7 @@ import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.RolloutStrategy
+import scala.collection.mutable.MutableList
 
 import java.time.LocalDateTime
 
@@ -36,11 +39,11 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
    * @param updated - these are the strategies we are laying on top of historical to be applied to current
    * @return - current should be updated with the results of updated
    */
-  boolean updateStrategies(List<RolloutStrategy> current, List<RolloutStrategy> historical, List<RolloutStrategy> updated) {
+  MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy> updateStrategies(List<RolloutStrategy> current, List<RolloutStrategy> historical, List<RolloutStrategy> updated) {
     return updateStrategies(current, historical, updated, new PersonFeaturePermission(person, defaultRoles))
   }
 
-  boolean updateStrategies(List<RolloutStrategy> current, List<RolloutStrategy> historical, List<RolloutStrategy> updated, PersonFeaturePermission person) {
+  MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy> updateStrategies(List<RolloutStrategy> current, List<RolloutStrategy> historical, List<RolloutStrategy> updated, PersonFeaturePermission person) {
     currentFeature = new DbFeatureValue.Builder().locked(currentLock).rolloutStrategies(current).build()
 
     return fsApi.updateSelectivelyRolloutStrategies(
@@ -52,10 +55,13 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
   }
 
   def "when i add strategies i can"() {
+    def newRolloutStrategy = new RolloutStrategy().id("x123")
     when:
-      def result = updateStrategies([], [], [new RolloutStrategy().id("x123")])
+      def result = updateStrategies([], [], [newRolloutStrategy])
     then:
-      result
+      result.hasChanged
+      result.updated == [new RolloutStrategyUpdate("add", null, newRolloutStrategy)]
+      result.previous == []
       currentFeature.rolloutStrategies.find({it.id == 'x123'})
   }
 
@@ -72,10 +78,15 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
   }
 
   def "if i pass a strategy and the existing one has strategies, they don't get deleted"() {
+    def newRolloutStrategy = new RolloutStrategy().id('2345')
+    def existingStrategy = new RolloutStrategy().id('1234')
     when:
-      def result = updateStrategies([new RolloutStrategy().id('1234')], [], [new RolloutStrategy().id('2345')])
+      def result = updateStrategies([existingStrategy], [], [newRolloutStrategy])
     then:
-      result
+      result.hasChanged
+      result.updated == [new RolloutStrategyUpdate("add", null, newRolloutStrategy)]
+      result.previous == []
+      result.reordered == []
       currentFeature.rolloutStrategies.find({it.id == '1234'})
       currentFeature.rolloutStrategies.find({it.id == '2345'})
   }
@@ -84,16 +95,21 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
     when:
       def result = updateStrategies([new RolloutStrategy().id('1234')], [], [])
     then:
-      !result
+      !result.hasChanged
   }
 
   def "current matches historical and i delete a strategy"() {
     given:
       def existingStrategy = new RolloutStrategy().id('1234')
+      def updatedStrategy = new RolloutStrategy().id('2345')
     when:
-      def result = updateStrategies([existingStrategy], [existingStrategy], [new RolloutStrategy().id('2345')])
+      def result = updateStrategies([existingStrategy], [existingStrategy], [updatedStrategy])
     then:
-      result
+      result.hasChanged
+      result.updated == [new RolloutStrategyUpdate("add", null, updatedStrategy),
+                         new RolloutStrategyUpdate("delete", existingStrategy, null)]
+      result.previous == []
+      result.reordered == []
       currentFeature.rolloutStrategies.size() == 1
       currentFeature.rolloutStrategies.find({it.id == '2345'})
   }
@@ -149,12 +165,20 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
   def "current and historical are the same and we want to change it, should be in exactly the same location and updated"() {
     given:
       def existingStrategy = new RolloutStrategy().id('1234')
+
+    def updatedStrategy = new RolloutStrategy().id('1234').name('ex')
+    def newStrategy = new RolloutStrategy().id('2345')
+    def strategies = [
+      updatedStrategy,
+      newStrategy]
     when:
-      def result = updateStrategies([existingStrategy], [existingStrategy], [
-        new RolloutStrategy().id('1234').name('ex'),
-        new RolloutStrategy().id('2345')])
+      def result = updateStrategies([existingStrategy], [existingStrategy], strategies)
     then:
-      result
+      result.hasChanged
+      result.updated == [new RolloutStrategyUpdate("change",existingStrategy, updatedStrategy),
+      new RolloutStrategyUpdate("add", null, newStrategy)]
+      result.previous == []
+      result.reordered == []
       currentFeature.rolloutStrategies.size() == 2
       currentFeature.rolloutStrategies.findIndexOf {it.id == '1234' } == 0
       currentFeature.rolloutStrategies[0].name == 'ex'
@@ -176,26 +200,41 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
   }
 
   def "add and delete at the same time from historical"() {
+    def newStrategy = new RolloutStrategy().id('1111').name('sandra')
+    def historicalStrategy = new RolloutStrategy().id('2343').name('mary')
     when:
-      def result = updateStrategies([new RolloutStrategy().id('1234').name('susan')],
-            [new RolloutStrategy().id('2343').name('mary')],
-            [new RolloutStrategy().id('1111').name('sandra')]
+      def result = updateStrategies(
+        [new RolloutStrategy().id('1234').name('susan')],
+            [historicalStrategy],
+            [newStrategy]
       )
     then:
-      result
+      result.hasChanged
+      result.updated == [new RolloutStrategyUpdate("add", null, newStrategy)]
+      result.previous ==  []
+      result.reordered == []
       currentFeature.rolloutStrategies.size() == 2
       currentFeature.rolloutStrategies.find{ it.id == '1234' }?.name == 'susan'
       currentFeature.rolloutStrategies.find{ it.id == '1111' }?.name == 'sandra'
   }
 
   def "add and delete at the same time from historical and current"() {
+    def existingStrategies = [new RolloutStrategy().id('1234').name('susan'), new RolloutStrategy().id('2222').name('wilbur')]
+    def historicalStrategies = [new RolloutStrategy().id('2343').name('mary'), new RolloutStrategy().id('2222').name('wilbur')]
+    def newStrategy = new RolloutStrategy().id('1111').name('sandra')
     when:
-      def result = updateStrategies([new RolloutStrategy().id('1234').name('susan'), new RolloutStrategy().id('2222').name('wilbur')],
-            [new RolloutStrategy().id('2343').name('mary'), new RolloutStrategy().id('2222').name('wilbur')],
-            [new RolloutStrategy().id('1111').name('sandra')]
+      def result = updateStrategies(existingStrategies,
+        historicalStrategies,
+            [newStrategy]
       )
     then:
-      result
+      result.hasChanged
+      result.updated == [
+        new RolloutStrategyUpdate("add", null, newStrategy),
+        new RolloutStrategyUpdate("delete", new RolloutStrategy().id('2222').name('wilbur') , null)
+      ]
+      result.reordered == []
+      result.previous == []
       currentFeature.rolloutStrategies.size() == 2
       currentFeature.rolloutStrategies.find{ it.id == '1234' }?.name == 'susan'
       currentFeature.rolloutStrategies.find{ it.id == '1111' }?.name == 'sandra'
@@ -214,23 +253,30 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
     given:
       currentLock = true
       lockChanged = true
+    def newStrategy = new RolloutStrategy().id('1234')
     when:
-      def result = updateStrategies([], [], [new RolloutStrategy().id('1234')])
+      def result = updateStrategies([], [], [newStrategy])
     then:
-      result
+      result.hasChanged
+      result.updated == [new RolloutStrategyUpdate("add", null, newStrategy)]
+      result.reordered == []
+      result.previous == []
   }
 
   def "when I pass in a strategy update that contains historical strategies that have been deleted, these don't get re-added"() {
     given:
       def deleted = new RolloutStrategy().id('dele').name('deleted')
       def editing = new RolloutStrategy().id('edit').name('susan')
+     def edited = new RolloutStrategy().id('edit').name('susan2')
     when:
-      def result = updateStrategies([new RolloutStrategy().id('edit').name('susan')],
+      def result = updateStrategies(
+        [new RolloutStrategy().id('edit').name('susan')],
         [editing, deleted],
-        [new RolloutStrategy().id('edit').name('susan2'), deleted]
+        [edited, deleted]
       )
     then:
-      result
+      result.hasChanged
+      result.updated == [new RolloutStrategyUpdate("change", editing, edited )]
       currentFeature.rolloutStrategies.size() == 1
       currentFeature.rolloutStrategies[0].name == 'susan2'
   }
@@ -242,7 +288,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
         [new RolloutStrategy().id('edit').name('susan')]
       )
     then:
-      !result
+      !result.hasChanged
   }
 
   def "when I change one that has been deleted, thats a optimistic locking issue"() {
@@ -265,7 +311,10 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       def newWorldOrder = [c, b, a]
       def result = updateStrategies(oldOrder, oldOrder, newWorldOrder)
     then:
-      result
+      result.hasChanged
+      result.updated == []
+      result.reordered == newWorldOrder
+      result.previous == oldOrder
       currentFeature.rolloutStrategies[0] == c
       currentFeature.rolloutStrategies[1] == b
       currentFeature.rolloutStrategies[2] == a
@@ -282,7 +331,10 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       def historical = [a, b]
       def result = updateStrategies(current, historical, newWorldOrder)
     then:
-      result
+      result.hasChanged
+      result.updated == []
+      result.reordered == [b,a,c]
+      result.previous == historical
       currentFeature.rolloutStrategies[0] == b
       currentFeature.rolloutStrategies[1] == a
       currentFeature.rolloutStrategies[2] == c
@@ -299,7 +351,10 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       def historical = [a, b]
       def result = updateStrategies(current, historical, newWorldOrder)
     then:
-      result
+      result.hasChanged
+      result.updated == []
+      result.reordered == [b, c]
+      result.previous == historical
       currentFeature.rolloutStrategies[0] == b
       currentFeature.rolloutStrategies[1] == c
   }

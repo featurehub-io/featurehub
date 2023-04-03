@@ -3,6 +3,7 @@ package io.featurehub.db.services
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.LockedException
 import io.featurehub.db.api.PersonFeaturePermission
+import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersion
@@ -26,7 +27,7 @@ class FeatureAuditingRetiredUnitSpec extends FeatureAuditingBaseUnitSpec {
     feature = new DbApplicationFeature.Builder().valueType(FeatureValueType.BOOLEAN).build()
   }
 
-  boolean update(Boolean currentRetired, boolean historicalRetired, boolean changingRetired) {
+  SingleFeatureValueUpdate<Boolean> update(Boolean currentRetired, boolean historicalRetired, boolean changingRetired) {
     return fsApi.updateSelectivelyRetired(
       new PersonFeaturePermission(person, roles),
       new FeatureValue().retired(changingRetired),
@@ -65,20 +66,22 @@ class FeatureAuditingRetiredUnitSpec extends FeatureAuditingBaseUnitSpec {
     when:
       def result = update(false, true, false)
     then:
-      !result
+      !result.hasChanged
   }
 
   def "updating it its historical value results in no change"() {
     when:
       def result = update(false, true, true)
     then:
-      !result
+      !result.hasChanged
   }
 
   def "updating from its historical and existing value with the right permissions is ok"() {
     when:
       def result = update(false, false, true)
     then:
-      result
+      result.hasChanged
+      result.updated
+      !result.previous
   }
 }
