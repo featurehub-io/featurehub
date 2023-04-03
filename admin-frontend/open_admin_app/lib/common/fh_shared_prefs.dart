@@ -6,6 +6,8 @@ abstract class FHSharedPrefsContract {
   Future<int?> getInt(String key);
   Future<bool?> getBool(String key);
   Future<void> saveBool(String key, bool value);
+  Future<String?> getString(String key);
+  Future<void> saveString(String key, String? value);
 
   Future<String?> getEmail();
   Future<void> setEmail(String value);
@@ -66,6 +68,12 @@ class FHSharedPrefs extends FHSharedPrefsContract {
   Future<Application?> setPortfolio(Portfolio portfolio) async => await _prefs?.setPortfolio(portfolio);
 
   void saveCurrentRoute(String json) => _prefs?.saveCurrentRoute(json);
+
+  @override
+  Future<String?> getString(String key) async => await _prefs?.getString(key);
+
+  @override
+  Future<void> saveString(String key, String? value) async => _prefs?.saveString(key, value);
 }
 
 const _KEY_EMAIL = 'lastUsername';
@@ -175,5 +183,17 @@ class _FHSharedPrefs extends FHSharedPrefsContract {
 
   saveCurrentRoute(String json) {
     _prefs.setString(_KEY_CURRENT_ROUTE, json);
+  }
+
+  @override
+  Future<String?> getString(String key) async => _prefs.getString(key);
+
+  @override
+  Future<void> saveString(String key, String? value) async {
+    if (value == null) {
+      _prefs.remove(key);
+    } else {
+      _prefs.setString(key, value);
+    }
   }
 }
