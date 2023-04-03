@@ -40,3 +40,5 @@
 * xref:hosted:saml.adoc[SSO / SAML Configuration]
 
 * xref:hosted:pricing.adoc[Pricing & Billing]
+
+* xref:hosted:sdks.adoc[SDKs usage]
