@@ -42,7 +42,7 @@ class IndividualStrategyBloc extends Bloc {
 
   void createAttribute({StrategyAttributeWellKnownNames? type}) {
     final rs = RolloutStrategyAttribute(
-      id: _individualBlocUUidGenerator.v4(),
+      id: makeStrategyId(),
       fieldName: type?.name,
     );
 
@@ -66,7 +66,7 @@ class IndividualStrategyBloc extends Bloc {
   }
 
   void addAttribute(RolloutStrategyAttribute rs) {
-    rs.id ??= _individualBlocUUidGenerator.v4();
+    rs.id ??= makeStrategyId();
     rolloutStrategy.attributes.add(rs);
     _rolloutStrategyAttributeSource.add(rolloutStrategy.attributes);
   }
