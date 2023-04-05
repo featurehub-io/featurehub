@@ -78,7 +78,7 @@ class WebhookDetailTable extends StatelessWidget {
       case 2:
         return data.url ?? '';
       case 3:
-        return data.method ?? '';
+        return data.method;
       case 4:
         return data.status.toString();
       case 5:

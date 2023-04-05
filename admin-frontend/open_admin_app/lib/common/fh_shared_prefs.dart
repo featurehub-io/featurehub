@@ -89,9 +89,10 @@ class _FHSharedPrefs extends FHSharedPrefsContract {
   }
 
   Future<String?> getEmail() async {
-    return await _prefs.getString(_keyEmail);
+    return _prefs.getString(_keyEmail);
   }
 
+  @override
   Future<void> setEmail(String value) async {
     final previousPerson = await getEmail();
 
@@ -124,11 +125,11 @@ class _FHSharedPrefs extends FHSharedPrefsContract {
 
   @override
   Future<String?> currentApplicationId() async =>
-    await _prefs.getString(_keyApplicationId);
+    _prefs.getString(_keyApplicationId);
 
 
   @override
-  Future<String?> currentPortfolioId() async => await _prefs.getString(_keyPortfolioId);
+  Future<String?> currentPortfolioId() async => _prefs.getString(_keyPortfolioId);
 
   @override
   Future<void> setCurrentApplicationId(String? id) async {

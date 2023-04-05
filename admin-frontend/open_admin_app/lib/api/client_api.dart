@@ -84,7 +84,6 @@ class ManagementRepositoryClientBloc implements Bloc {
   final _routerRedrawRouteSource = BehaviorSubject<RouteChange?>();
   final _menuOpened = BehaviorSubject<bool>.seeded(true);
   final _stepperOpened = BehaviorSubject<bool>.seeded(false);
-  late Uri _basePath;
   late StreamSubscription<Portfolio?> _personPermissionInPortfolioChanged;
   late ServerCapabilities identityProviders;
 
@@ -242,7 +241,6 @@ class ManagementRepositoryClientBloc implements Bloc {
   ManagementRepositoryClientBloc({String? basePathUrl})
       : _client = ApiClient(basePath: basePathUrl ?? homeUrl()) {
     streamValley = StreamValley(personState);
-    _basePath = Uri.parse(_client.basePath);
     webInterface.setOrigin();
 
     _client.passErrorsAsApiResponses = true;
@@ -317,9 +315,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
       FHAnalytics.setGA(setupResponse.capabilityInfo['trackingId']);
 
-      if (setupResponse.providerInfo != null) {
-        identityProviders.identityInfo = setupResponse.providerInfo;
-      }
+      identityProviders.identityInfo = setupResponse.providerInfo;
 
       // yes its initialised, we may not have logged in yet
       if (bearerToken != null) {
@@ -339,9 +335,7 @@ class ManagementRepositoryClientBloc implements Bloc {
                   jsonDecode(e.message!), 'SetupMissingResponse')
               as SetupMissingResponse;
           identityProviders.identityProviders = smr.providers;
-          if (smr.providerInfo != null) {
-            identityProviders.identityInfo = smr.providerInfo;
-          }
+          identityProviders.identityInfo = smr.providerInfo;
           FHAnalytics.setGA(smr.capabilityInfo['trackingId']);
           routeSlot(RouteSlot.setup);
         } else {

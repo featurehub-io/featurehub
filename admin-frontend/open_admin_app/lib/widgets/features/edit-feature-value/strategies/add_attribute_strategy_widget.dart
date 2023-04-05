@@ -468,7 +468,7 @@ class _EditAttributeStrategyWidgetState
           .map((name) => name.trim())
           .toList();
       if (_attributeType == RolloutStrategyFieldType.NUMBER) {
-        valuesList.forEach((element) {
+        for (var element in valuesList) {
           try {
             final num = double.parse(element);
             if (!widget.attribute.values.contains(num)) {
@@ -480,15 +480,15 @@ class _EditAttributeStrategyWidgetState
 
             // ignore: empty_catches
           } catch (e) {}
-        });
+        }
       }
 
       else {
         if (!widget.attribute.values.contains(val)) {
           setState(() {
-            valuesList.forEach((element) {
+            for (var element in valuesList) {
               widget.attribute.values.add(element);
-            });
+            }
             _value.text = '';
           });
         }

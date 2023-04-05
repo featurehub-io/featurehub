@@ -56,28 +56,29 @@ class GroupBloc implements Bloc {
 
   Future<void> getGroup(String? groupId) async {
     if (groupId != null && groupId.length > 1) {
-      final fetchedGroup = await _groupServiceApi
-          .getGroup(groupId, includeMembers: true)
-          .catchError((e, s) {
-        // print("this group has failed XXXX");
+      try {
+        final fetchedGroup = await _groupServiceApi
+            .getGroup(groupId, includeMembers: true);
+        // publish it out...
+        group = fetchedGroup;
+        _groupSource.add(fetchedGroup);
+      } catch (e,s) {
         mrClient.dialogError(e, s);
-      });
-      // publish it out...
-      group = fetchedGroup;
-      _groupSource.add(fetchedGroup);
+      }
     }
   }
 
   Future<void> deleteGroup(String groupId, bool includeMembers) async {
-    await _groupServiceApi
-        .deleteGroup(groupId, includeMembers: includeMembers)
-        .catchError((e, s) {
+    try {
+      await _groupServiceApi
+          .deleteGroup(groupId, includeMembers: includeMembers);
+      group = null;
+      this.groupId = null;
+      _groupSource.add(null);
+      await mrClient.streamValley.getCurrentPortfolioGroups(force: true);
+    } catch (e, s) {
       mrClient.dialogError(e, s);
-    });
-    group = null;
-    this.groupId = null;
-    _groupSource.add(null);
-    await mrClient.streamValley.getCurrentPortfolioGroups(force: true);
+    }
   }
 
   void removeFromGroup(Group group, Person person) async {

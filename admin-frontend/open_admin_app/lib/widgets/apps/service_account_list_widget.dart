@@ -269,18 +269,22 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
           'All applications using this service account will no longer have access to features! \n\nThis cannot be undone!',
       bloc: bloc.mrClient,
       deleteSelected: () async {
-        final success = await bloc
-            .deleteServiceAccount(serviceAccount.id!)
-            .catchError((e, s) {
+        var success = false;
+        try {
+          success = await bloc
+              .deleteServiceAccount(serviceAccount.id!);
+
+          if (success) {
+            bloc.mrClient.removeOverlay();
+            bloc.mrClient.addSnackbar(
+                Text("Service account '${serviceAccount.name}' deleted!"));
+          }
+        } catch (e,s) {
           bloc.mrClient.dialogError(e, s,
               messageTitle:
-                  "Couldn't delete service account ${serviceAccount.name}");
-        });
-        if (success) {
-          bloc.mrClient.removeOverlay();
-          bloc.mrClient.addSnackbar(
-              Text("Service account '${serviceAccount.name}' deleted!"));
+              "Couldn't delete service account ${serviceAccount.name}");
         }
+
         return success;
       },
     );

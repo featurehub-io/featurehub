@@ -302,7 +302,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                                     newGroup.id, newGroup)
                                 .then((group) => widget.bloc.mrClient
                                     .addSnackbar(
-                                        Text("Group '${group.name}' updated!")))
+                                        Text("Group '${group?.name ?? '<unknown>'}' updated!")))
                                 .catchError((e, s) {
                               widget.bloc.mrClient.dialogError(e, s);
                             });

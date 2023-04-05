@@ -315,6 +315,7 @@ class StreamValley {
       if (findApp != null) {
         appList = await findApp(currentPortfolioId!).catchError((e, s) {
           mrClient.dialogError(e, s);
+          return <Application>[];
         });
       } else {
         appList = await applicationServiceApi
@@ -324,6 +325,7 @@ class StreamValley {
                 includeFeatures: _includeEnvironmentsInApplicationRequest)
             .catchError((e, s) {
           mrClient.dialogError(e, s);
+          return <Application>[];
         });
       }
 
@@ -394,6 +396,7 @@ class StreamValley {
             .then((accounts) => currentPortfolioServiceAccounts = accounts)
             .catchError((e, s) {
           mrClient.dialogError(e, s);
+          return <ServiceAccount>[];
         });
       } else {
         currentPortfolioServiceAccounts = [];
@@ -409,6 +412,7 @@ class StreamValley {
           .findEnvironments(currentAppId!, includeAcls: true)
           .catchError((e, s) {
         mrClient.dialogError(e, s);
+        return <Environment>[];
       });
     }
 
@@ -422,6 +426,7 @@ class StreamValley {
           .getAllFeaturesForApplication(currentApp.application.id!)
           .catchError((e, s) {
         mrClient.dialogError(e, s);
+        return <Feature>[];
       });
       currentApplicationFeatures = featureList;
     } else {
@@ -436,6 +441,7 @@ class StreamValley {
               includePermissions: true, applicationId: currentAppId!)
           .catchError((e, s) {
         mrClient.dialogError(e, s);
+        return <ServiceAccount>[];
       });
       currentEnvironmentServiceAccount = saList;
     } else {

@@ -41,17 +41,18 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
       _serviceAccountEnvironmentsSource
           .add(ServiceAccountEnvironments(<Environment>[], <ServiceAccount>[]));
     } else {
-      final serviceAccounts = await _serviceAccountServiceApi
-          .searchServiceAccountsInPortfolio(_mrClient.currentPortfolio!.id!,
-              applicationId: envs[0].applicationId,
-              includePermissions: true,
-              includeSdkUrls: true)
-          .catchError((e, s) {
-        _mrClient.dialogError(e, s);
-      });
+      try {
+        final serviceAccounts = await _serviceAccountServiceApi
+            .searchServiceAccountsInPortfolio(_mrClient.currentPortfolio!.id!,
+            applicationId: envs[0].applicationId,
+            includePermissions: true,
+            includeSdkUrls: true);
 
-      _serviceAccountEnvironmentsSource
-          .add(ServiceAccountEnvironments(envs, serviceAccounts));
+        _serviceAccountEnvironmentsSource
+            .add(ServiceAccountEnvironments(envs, serviceAccounts));
+      } catch (e, s) {
+        _mrClient.dialogError(e, s);
+      }
     }
   }
 
