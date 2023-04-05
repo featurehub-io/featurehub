@@ -155,6 +155,11 @@ class _AdminFeatureRole {
 
   @override
   int get hashCode => id.hashCode;
+
+  @override
+  String toString() {
+    return "id: ${id}, name: ${name}, roles: ${roles}";
+  }
 }
 
 final _adminFeatureRoles = [
@@ -287,12 +292,12 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                         keepCase: true,
                       ),
                       FHFlatButton(
-                          onPressed: () {
+                          onPressed: () async {
                             final newList = <EnvironmentGroupRole>[];
                             newEnvironmentRoles.forEach((key, value) {
                               newList.add(value);
                             });
-                            var newGroup = groupSnapshot.data!.group;
+                            var newGroup = currentGroup!;
                             newGroup.environmentRoles = newList;
                             if (adminFeatureRole != null && originalAdminFeatureRole != null && originalAdminFeatureRole?.id != adminFeatureRole?.id) {
                               replaceGroupRoles(newGroup, applicationId!, originalAdminFeatureRole!, adminFeatureRole!);
@@ -300,7 +305,10 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             widget.bloc
                                 .updateGroupWithEnvironmentRoles(
                                     newGroup.id, newGroup)
-                                .then((group) => widget.bloc.mrClient
+                                .then((group) {
+                                  currentGroup = group;
+                                  originalAdminFeatureRole = _discoverAdminRoleType(currentGroup!, widget.bloc.applicationId!);
+                                  widget.bloc.mrClient
                                     .addSnackbar(
                                         Text("Group '${group?.name ?? '<unknown>'}' updated!")))
                                 .catchError((e, s) {
@@ -426,7 +434,9 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
   void replaceGroupRoles(Group newGroup, String appId, _AdminFeatureRole originalAdminFeatureRole, _AdminFeatureRole adminFeatureRole) {
      final agr = newGroup.applicationRoles.firstWhereOrNull((appGroupRole) => appGroupRole.applicationId == appId);
      if (agr != null) {
+       // these are the roles they have
        final roles = [...agr.roles];
+       // if the new feature
        roles.removeWhere((role) => originalAdminFeatureRole.roles.contains(role) || adminFeatureRole.roles.contains(role) );
        roles.addAll(adminFeatureRole.roles);
        agr.roles = roles;

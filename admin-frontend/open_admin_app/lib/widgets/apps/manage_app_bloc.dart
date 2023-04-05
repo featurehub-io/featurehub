@@ -285,7 +285,13 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
           updateMembers: false,
           applicationId: applicationId,
           updateApplicationGroupRoles: true,
-          updateEnvironmentGroupRoles: true);
+            updateEnvironmentGroupRoles: true)
+        .catchError((e, s) {
+      _mrClient.dialogError(e, s);
+    });
+
+    _groupWithRolesPS.add(ApplicationGroupRoles(updatedGroup, applicationId!));
+
       // we need to do this to ensure the list of environments has the right set of ACLs
       if (_mrClient.rocketOpened) {
         await _mrClient.streamValley.getCurrentApplicationEnvironments();

@@ -27,7 +27,7 @@ class CustomStrategyBloc extends Bloc {
       rs.id ??= makeStrategyId(existing: featureValue.rolloutStrategies);
       if (rs.attributes.isNotEmpty == true) {
         for (var rsa in rs.attributes) {
-          rsa.id = makeStrategyId();
+          rsa.id ??= makeStrategyId();
         }
       }
     }
@@ -71,7 +71,7 @@ class CustomStrategyBloc extends Bloc {
 
   void addStrategyAttribute() {
     final rsa = RolloutStrategyAttribute();
-    rsa.id = makeStrategyId(existing: _strategySource.value);
+    rsa.id ??= makeStrategyId(existing: _strategySource.value);
     final attributes = _strategySource.value.last.attributes;
     attributes.add(rsa);
     _rolloutStrategyAttributeList.add(attributes);

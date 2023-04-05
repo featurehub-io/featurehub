@@ -1,4 +1,4 @@
-timeout: 900s
+timeout: 1800s
 
 substitutions:
   _GCS_CACHE_BUCKET: demohub-build-cache
