@@ -306,11 +306,14 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                                 .updateGroupWithEnvironmentRoles(
                                     newGroup.id, newGroup)
                                 .then((group) {
-                                  currentGroup = group;
-                                  originalAdminFeatureRole = _discoverAdminRoleType(currentGroup!, widget.bloc.applicationId!);
-                                  widget.bloc.mrClient
-                                    .addSnackbar(
-                                        Text("Group '${group?.name ?? '<unknown>'}' updated!")))
+                              currentGroup = group;
+                              originalAdminFeatureRole = _discoverAdminRoleType(
+                                  currentGroup!, widget.bloc.applicationId!);
+                              widget.bloc.mrClient
+                                  .addSnackbar(
+                                  Text("Group '${group?.name ??
+                                      '<unknown>'}' updated!"));
+                            })
                                 .catchError((e, s) {
                               widget.bloc.mrClient.dialogError(e, s);
                             });
