@@ -7,7 +7,7 @@ class FeatureListStrategyCommand extends Command {
 
   @override
   Future<void> run() async {
-    final login = await (Login(globalResults)).login();
+    await (Login(globalResults)).login();
   }
 }
 
@@ -21,7 +21,7 @@ class FeatureGetStrategyCommand extends Command {
 
   @override
   Future<void> run() async {
-    final login = await (Login(globalResults)).login();
+    await (Login(globalResults)).login();
   }
 }
 
@@ -36,6 +36,6 @@ class FeatureSetStrategyCommand extends Command {
 
   @override
   Future<void> run() async {
-    final login = await (Login(globalResults)).login();
+    await (Login(globalResults)).login();
   }
 }

@@ -37,7 +37,7 @@ class AdminServiceAccountStepdefs {
   void iCannotResetTheAdminServiceAccountToken() async {
     var failed = true;
     try {
-      final token = await common.personService.resetSecurityToken(
+      await common.personService.resetSecurityToken(
           shared.person.id!.id);
     } catch (e) {
       failed = false;

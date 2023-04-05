@@ -54,8 +54,8 @@ class Login {
 
     await identity.login();
 
-    if (argResults!.wasParsed('write-config')) {
-      await _writeConfig(identity.username, identity.password, host.apiHost,
+    if (argResults!.wasParsed('write-config') && identity.username != null && identity.password != null) {
+      await _writeConfig(identity.username!, identity.password!, host.apiHost,
           config == null ? defaultConfigFileName : config!);
     }
   }
