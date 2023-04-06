@@ -21,6 +21,7 @@ import io.featurehub.mr.model.SetupMissingResponse;
 import io.featurehub.mr.model.SetupResponse;
 import io.featurehub.mr.model.SetupSiteAdmin;
 import io.featurehub.mr.model.TokenizedPerson;
+import io.featurehub.mr.utils.ConfigurationUtils;
 import io.featurehub.mr.utils.PortfolioUtils;
 import io.featurehub.web.security.oauth.AuthProviderCollection;
 import io.featurehub.web.security.oauth.AuthProviderSource;
@@ -94,14 +95,13 @@ public class SetupResource implements SetupServiceDelegate {
         sr.redirectUrl(provider.getRedirectUrl());
       }
 
-      boolean enricherEnabled = "true".equalsIgnoreCase(FallbackPropertyConfig.Companion.getConfig("enricher.enabled"
-        , "true"));
-      boolean webhooksEnabled = "true".equalsIgnoreCase(FallbackPropertyConfig.Companion.getConfig("webhooks.features.enabled"
-        , "true"));
+      boolean enricherEnabled = ConfigurationUtils.Companion.getEnricherEnabled();
+      boolean webhooksEnabled = ConfigurationUtils.Companion.getWebhooksEnabled();
+      boolean dacha1Enabled = ConfigurationUtils.Companion.getDacha1Enabled();
 
       sr.capabilityInfo(
         Map.of("webhook.features", (enricherEnabled && webhooksEnabled) ? "true" : "false" ,
-          "trackingId", googleTrackingId)
+          "trackingId", googleTrackingId, "dacha1Enabled", dacha1Enabled ? "true" : "false")
       );
 
       return sr;

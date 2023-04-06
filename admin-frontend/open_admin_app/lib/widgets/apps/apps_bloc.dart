@@ -84,4 +84,15 @@ class AppsBloc implements Bloc {
     _currentApplicationsListListener.cancel();
     _currentApplicationsStream.close();
   }
+
+  void refreshPortfolioCache() {
+    final id = mrClient.streamValley.currentPortfolio.portfolio.id;
+    if (id != null) {
+      CacheServiceApi(mrClient.apiClient).cacheRefresh(CacheRefreshRequest(portfolioId: [id]));
+    }
+  }
+
+  void refreshApplicationCache(String appId) {
+    CacheServiceApi(mrClient.apiClient).cacheRefresh(CacheRefreshRequest(applicationId: [appId]));
+  }
 }

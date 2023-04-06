@@ -9,7 +9,7 @@ interface CacheSource {
   /**
    * publish all environments, service accounts and features associated with this cache
    */
-  fun publishObjectsAssociatedWithCache(cacheName: String)
+  fun publishObjectsAssociatedWithCache()
 
   fun deleteFeatureChange(feature: DbApplicationFeature, environmentId: UUID)
 

@@ -1,14 +1,51 @@
 openapi: 3.0.1
 info:
   title: ManagementResourceApi
-  description: This describes the API clients use for accessing features. This reflects the API from 1.5.7 onwards.
+  description: This describes the API clients use for accessing features. This reflects the API from 1.6.1 onwards.
   version: "1.1.11"
 #  CRUD for portfolios, environments, features, service account, people, and groups (edited)
 #  roles are fixed
 #  then people<->group association
 #  and group<->role association
 paths:
+  /mr-api/dacha1/cache:
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - CacheService
+      description: "Allows superusers to refresh the global Dacha1 cache (if it exists)."
+      operationId: cacheRefresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CacheRefreshRequest"
+      responses:
+        200:
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CacheRefreshResponse"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "Dacha1 is not being used and API does not exist"
   /mr-api/organization/{id}/group:
+    parameters:
+      - name: id
+        required: true
+        in: path
+        description: "the id of the organisation"
+        schema:
+          type: string
+          format: uuid
     get:
       security:
         - bearerAuth: [ ]
@@ -16,14 +53,6 @@ paths:
         - GroupService
       description: "Gets the superuser group for this organisation. There is no other way to ascertain which org you are dealing with"
       operationId: getSuperuserGroup
-      parameters:
-        - name: id
-          required: true
-          in: path
-          description: "the id of the organisation"
-          schema:
-            type: string
-            format: uuid
       responses:
         200:
           description: "The superuser group presuming the organization exists"
@@ -3333,7 +3362,34 @@ components:
         sdkUrlServerEval:
           description: "Optional if they have chosen includeSdkUrl"
           type: string
-
+    CacheRefreshRequest:
+      type: object
+      properties:
+        allTheThings:
+          description: "refresh the whole cache"
+          type: boolean
+        applicationId:
+          description: "if provided these applications will be refreshed"
+          type: array
+          items:
+            type: string
+            format: UUID
+        portfolioId:
+          type: array
+          items:
+            type: string
+            format: UUID
+    CacheRefreshResponse:
+      type: object
+      properties:
+        applicationsRefreshed:
+          type: integer
+        portfoliosRefreshed:
+          type: integer
+        environmentsRefreshed:
+          type: integer
+        serviceAccountsRefreshed:
+          type: integer
     Group:
       allOf:
         - $ref: "#/components/schemas/Audit"

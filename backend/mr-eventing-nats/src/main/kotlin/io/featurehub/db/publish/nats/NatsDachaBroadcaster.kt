@@ -7,6 +7,7 @@ import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CacheMetric
 import io.featurehub.mr.events.common.CacheMetrics
+import io.featurehub.publish.ChannelConstants
 import io.featurehub.publish.ChannelNames
 import io.featurehub.publish.NATSSource
 import jakarta.inject.Inject
@@ -17,22 +18,23 @@ class NatsDachaBroadcaster @Inject constructor(private val  nats: NATSSource) : 
   private val envChannelNameCache = mutableMapOf<String, String>()
   private val serviceAccountChannelNameCache = mutableMapOf<String, String>()
   private val featureChannelNameCache = mutableMapOf<String, String>()
+  private val cacheName = ChannelConstants.DEFAULT_CACHE_NAME
 
-  override fun publishEnvironment(cacheName: String, eci: PublishEnvironment) {
+  override fun publishEnvironment(eci: PublishEnvironment) {
     publish(
       envChannelNameCache.getOrPut(cacheName) { ChannelNames.environmentChannel(cacheName) },
       eci, "environment", CacheMetrics.environments)
 
   }
 
-  override fun publishServiceAccount(cacheName: String, saci: PublishServiceAccount) {
+  override fun publishServiceAccount(saci: PublishServiceAccount) {
     publish(
       serviceAccountChannelNameCache.getOrPut(cacheName) { ChannelNames.serviceAccountChannel(cacheName) },
       saci, "service account", CacheMetrics.services
     )
   }
 
-  override fun publishFeatures(cacheName: String, features: PublishFeatureValues) {
+  override fun publishFeatures(features: PublishFeatureValues) {
     val subject = featureChannelNameCache.getOrPut(cacheName) { ChannelNames.featureValueChannel(cacheName) }
 
     // splits out the old way

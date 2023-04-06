@@ -2,6 +2,8 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
+import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_widget.dart';
@@ -40,17 +42,57 @@ class PortfolioRoute extends StatelessWidget {
         const SizedBox(height: 8.0),
         const FHPageDivider(),
         const SizedBox(height: 8.0),
-        Container(
-          constraints: const BoxConstraints(maxWidth: 300),
-          child: TextField(
-            decoration: const InputDecoration(hintText: 'Search portfolios',
-                icon: Icon(Icons.search)),
-            onChanged: (val) => bloc.triggerSearch(val),
-          ),
+        Row(
+
+          children: [
+            Container(
+              constraints: const BoxConstraints(maxWidth: 300),
+              child: TextField(
+                decoration: const InputDecoration(hintText: 'Search portfolios',
+                    icon: Icon(Icons.search)),
+                onChanged: (val) => bloc.triggerSearch(val),
+              ),
+            ),
+            if (bloc.mrClient.identityProviders.dacha1Enabled && bloc.mrClient.personState.userIsSuperAdmin)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Align(alignment: Alignment.topRight,
+                      child: OutlinedButton.icon(onPressed: () => _refreshWholeCacheConfirm(bloc), icon: const Icon(Icons.cached), label: const Text('Republish system cache'))),
+                ),
+              )
+          ],
         ),
         const SizedBox(height: 16.0),
         const PortfolioListWidget(),
       ],
     );
+  }
+
+  _refreshWholeCacheConfirm(PortfolioBloc bloc) {
+    bloc.mrClient.addOverlay((BuildContext context) {
+      return FHAlertDialog(
+        title: const Text(
+          "Warning: Intensive system operation" ,
+          style: TextStyle(fontSize: 22.0),
+        ),
+        content: const Text("Are you sure you want to republish the entire cache?"),
+        actions: <Widget>[
+          FHFlatButton(
+            title: 'OK',
+            onPressed: () {
+              bloc.refreshSystemCache();
+              bloc.mrClient.removeOverlay();
+            },
+          ),
+          FHFlatButton(
+            title: 'Cancel',
+            onPressed: () {
+              bloc.mrClient.removeOverlay();
+            },
+          )
+        ],
+      );
+    });
   }
 }

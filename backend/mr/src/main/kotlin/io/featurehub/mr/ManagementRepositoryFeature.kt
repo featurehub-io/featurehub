@@ -10,6 +10,7 @@ import io.featurehub.mr.events.EventingFeature
 import io.featurehub.mr.resources.*
 import io.featurehub.mr.resources.oauth2.OAuth2MRAdapter
 import io.featurehub.mr.utils.ApplicationUtils
+import io.featurehub.mr.utils.ConfigurationUtils
 import io.featurehub.mr.utils.PortfolioUtils
 import io.featurehub.mr.webhook.ManagementRepositoryWebhookFeature
 import io.featurehub.rest.CacheControlFilter
@@ -49,6 +50,10 @@ class ManagementRepositoryFeature : Feature {
       AuthProvidersFeature::class.java
     ).forEach { componentClass: Class<out Any?>? -> context.register(componentClass) }
 
+    if (ConfigurationUtils.dacha1Enabled) {
+      context.register(CacheServiceDelegator::class.java)
+    }
+
     // only mount the dacha2 endpoints on the public API if the keys exist to protect it.
     if (Dacha2Feature.dacha2ApiKeysExist()) {
       context.register(Dacha2Feature::class.java)
@@ -77,6 +82,9 @@ class ManagementRepositoryFeature : Feature {
         bind(ApplicationResource::class.java).to(ApplicationServiceDelegate::class.java).`in`(
           Singleton::class.java
         )
+        if (ConfigurationUtils.dacha1Enabled) {
+          bind(CacheResource::class.java).to(CacheServiceDelegate::class.java).`in`(Singleton::class.java)
+        }
         bind(AuthResource::class.java).to(AuthServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(WebhookResource::class.java).to(WebhookServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(EnvironmentFeatureResource::class.java).to(
