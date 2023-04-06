@@ -139,7 +139,7 @@ how you can use a different URL to serve traffic for feature consumers from your
 
 `docker compose up`
 
-There is also a helm chart available for production Kubernetes deployment for this option. Please follow documentation link:https://github.com/featurehub-io/featurehub-install/tree/master/helm[here]. It doesn't include a Postgres or NATs server as generally your cloud
+There is also a helm chart available for production Kubernetes deployment for this option. Please follow documentation link:https://github.com/featurehub-io/featurehub-helm[here]. It doesn't include a Postgres or NATs server as generally your cloud
 provider will have a managed Postgres service, and NATs have their own Kubernetes Helm charts for scalable, reliable deploys.
 
 === Option 2b - Non-Streaming Scalable Deployment
