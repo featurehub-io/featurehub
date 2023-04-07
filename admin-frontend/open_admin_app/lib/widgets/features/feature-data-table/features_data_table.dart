@@ -194,41 +194,38 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                     color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                     surfaceTintColor: Colors.transparent,
                     shadowColor: Colors.transparent,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        height: tableHeight,
-                        child: SfDataGridTheme(
-                          data: SfDataGridThemeData(headerColor: Theme.of(context).colorScheme.tertiaryContainer),
-                          child: SfDataGrid(
-                            source: _featuresDataSource,
-                            gridLinesVisibility: GridLinesVisibility.both,
-                            headerGridLinesVisibility: GridLinesVisibility.both,
-                            isScrollbarAlwaysShown: true,
-                            rowsPerPage: rowsPerPage,
-                            defaultColumnWidth: featureValueCellWidth,
-                            columnSizer: _customColumnSizer,
-                            frozenColumnsCount: 1,
-                            horizontalScrollPhysics: const ClampingScrollPhysics(),
-                            verticalScrollPhysics: const ClampingScrollPhysics(),
-                            onQueryRowHeight: (details) {
-                              return details.getIntrinsicRowHeight(details.rowIndex);
-                            },
-                            columns: <GridColumn>[
-                              GridColumn(
-                                // minimumWidth: featureNameCellWidth,
-                                // maximumWidth: featureNameCellWidth,
-                                columnName: 'features name',
-                                label: Container(
-                                    padding: const EdgeInsets.all(16.0),
-                                    alignment: Alignment.center,
-                                    child: const Text(
-                                      "Features", style: TextStyle(fontWeight: FontWeight.bold)
-                                    )),
-                              ),
-                              ...gridColumnsList,
-                            ],
-                          ),
+                    child: SizedBox(
+                      height: tableHeight,
+                      child: SfDataGridTheme(
+                        data: SfDataGridThemeData(headerColor: Theme.of(context).colorScheme.secondaryContainer),
+                        child: SfDataGrid(
+                          source: _featuresDataSource,
+                          gridLinesVisibility: GridLinesVisibility.both,
+                          headerGridLinesVisibility: GridLinesVisibility.both,
+                          isScrollbarAlwaysShown: true,
+                          rowsPerPage: rowsPerPage,
+                          defaultColumnWidth: featureValueCellWidth,
+                          columnSizer: _customColumnSizer,
+                          frozenColumnsCount: 1,
+                          horizontalScrollPhysics: const ClampingScrollPhysics(),
+                          verticalScrollPhysics: const ClampingScrollPhysics(),
+                          onQueryRowHeight: (details) {
+                            return details.getIntrinsicRowHeight(details.rowIndex);
+                          },
+                          columns: <GridColumn>[
+                            GridColumn(
+                              // minimumWidth: featureNameCellWidth,
+                              // maximumWidth: featureNameCellWidth,
+                              columnName: 'features name',
+                              label: Container(
+                                  padding: const EdgeInsets.all(16.0),
+                                  alignment: Alignment.center,
+                                  child: const Text(
+                                    "Features", style: TextStyle(fontWeight: FontWeight.bold)
+                                  )),
+                            ),
+                            ...gridColumnsList,
+                          ],
                         ),
                       ),
                     ),

@@ -51,7 +51,7 @@ class FeatureCellHolder extends StatelessWidget {
                                   // minFontSize: 8.0,
                                   style: Theme.of(context)
                                       .textTheme
-                                      .bodyLarge!
+                                      .bodyMedium!
                                       .copyWith(fontWeight: FontWeight.bold)),
                             ),
 

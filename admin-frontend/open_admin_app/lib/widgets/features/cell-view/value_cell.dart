@@ -112,7 +112,7 @@ class LockedIndicator extends StatelessWidget {
     return Tooltip(
         message: "Locked",
         child: Icon(Icons.lock_outline,
-            size: 14.0, color: lightTheme ? Colors.black26 : Colors.white70));
+            size: 14.0, color: lightTheme ? Colors.black54 : Colors.white70));
   }
 }
 
@@ -129,7 +129,7 @@ class RetiredIndicator extends StatelessWidget {
         child: Icon(
           MaterialIcons.do_not_disturb,
           size: 14.0,
-          color: lightTheme ? Colors.black26 : Colors.white70,
+          color: lightTheme ? Colors.black54 : Colors.white70,
         ),
       ),
     );
