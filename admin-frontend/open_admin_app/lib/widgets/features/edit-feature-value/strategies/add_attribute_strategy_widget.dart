@@ -497,12 +497,6 @@ class _EditAttributeStrategyWidgetState
   }
 }
 
-_countryNameReverseMapper(val) {
-  return (val is String)
-      ? StrategyAttributeCountryNameExtension.fromJson(val)
-      : val;
-}
-
 String _countryNameMapper(dynamic val) {
   return ((val is StrategyAttributeCountryName)
       ? val.toJson().toString()
@@ -519,18 +513,6 @@ String _deviceNameMapper(dynamic val) {
   return (val is StrategyAttributeDeviceName)
       ? val.toJson().toString()
       : val.toString();
-}
-
-_deviceNameReverseMapper(val) {
-  return (val is String)
-      ? StrategyAttributeDeviceNameExtension.fromJson(val)
-      : val;
-}
-
-_platformNameReverseMapper(val) {
-  return (val is String)
-      ? StrategyAttributePlatformNameExtension.fromJson(val)
-      : val;
 }
 
 String _platformNameMapper(dynamic val) {

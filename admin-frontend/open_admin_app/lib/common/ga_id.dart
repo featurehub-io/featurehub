@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:logging/logging.dart';
 import 'package:open_admin_app/analytics/analytics_event.dart';
 import 'package:open_admin_app/analytics/g4_analytics_service.dart';

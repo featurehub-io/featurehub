@@ -1,11 +1,8 @@
 
 
-import 'package:meta/meta.dart';
 import 'analytics_event.dart';
-import 'analytics_service.dart';
 import 'g4_analytics_service.dart';
 
-@internal
 G4AnalyticsService createGoogleAnalytics4Service({
   required String measurementId,
 }) =>

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:html';
+import 'dart:html'; // ignore: avoid_web_libraries_in_flutter
 import 'dart:math';
 
 import 'package:mrapi/api.dart';

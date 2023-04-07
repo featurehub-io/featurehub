@@ -27,8 +27,7 @@ class AnalyticsPageView extends AnalyticsEvent {
       'page_title': title,
       if (window.location.pathname != null)
         'page_path': window.location.pathname,
-      if (window.location.origin != null)
-        'page_location': window.location.origin,
+      'page_location': window.location.origin,
       ...super.toJson(),
       ...additionalParams,
     };

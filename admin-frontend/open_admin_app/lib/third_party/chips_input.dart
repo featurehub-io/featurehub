@@ -379,12 +379,11 @@ class AlwaysDisabledFocusNode extends FocusNode {
 class _TextCaret extends StatefulWidget {
   const _TextCaret({
     Key? key,
-    this.duration = const Duration(milliseconds: 500),
     this.resumed = false,
   }) : super(key: key);
 
-  final Duration duration;
-  final bool resumed;
+  final Duration duration = const Duration(milliseconds: 500);
+  final bool resumed ;
 
   @override
   _TextCursorState createState() => _TextCursorState();

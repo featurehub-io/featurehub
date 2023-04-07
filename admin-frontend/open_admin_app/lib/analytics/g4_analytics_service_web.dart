@@ -4,7 +4,6 @@ import 'dart:html'; // ignore: avoid_web_libraries_in_flutter
 import 'dart:js' as js; // ignore: avoid_web_libraries_in_flutter
 
 import 'package:logging/logging.dart';
-import 'package:meta/meta.dart';
 
 import 'analytics_event.dart';
 import 'g4_analytics_service.dart';
@@ -17,7 +16,6 @@ const _function = 'gtag';
 
 var _logger = Logger("google-tag");
 
-@internal
 G4AnalyticsService createGoogleAnalytics4Service({
   required String measurementId,
 }) =>
