@@ -342,10 +342,8 @@ class FHMenuItem extends StatelessWidget {
                 equalsParams(snapshot.data!.params);
             return Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
-              color: selected
-                  ? (light
-                      ? Theme.of(context).primaryColorLight
-                      : Theme.of(context).colorScheme.secondary)
+              color: selected ?
+              Theme.of(context).colorScheme.primaryContainer.withOpacity(0.6)
                   : null,
               child: Row(
                 children: <Widget>[
@@ -360,11 +358,7 @@ class FHMenuItem extends StatelessWidget {
                         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                             fontWeight:
                                 selected ? FontWeight.bold : FontWeight.normal,
-                            color: light
-                                ? null
-                                : (selected
-                                    ? Theme.of(context).primaryColor
-                                    : null))),
+                        )),
                   )
                 ],
               ),

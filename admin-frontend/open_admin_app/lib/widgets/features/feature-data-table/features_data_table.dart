@@ -190,12 +190,16 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                   ),
                   const SizedBox(height: 24.0),
                   Card(
+                    elevation: 1,
+                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                    surfaceTintColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: SizedBox(
                         height: tableHeight,
                         child: SfDataGridTheme(
-                          data: SfDataGridThemeData(headerColor: Theme.of(context).colorScheme.secondaryContainer),
+                          data: SfDataGridThemeData(headerColor: Theme.of(context).colorScheme.tertiaryContainer),
                           child: SfDataGrid(
                             source: _featuresDataSource,
                             gridLinesVisibility: GridLinesVisibility.both,
