@@ -35,4 +35,6 @@ interface InternalCache {
   fun updateEnvironment(e: PublishEnvironment)
   fun updateFeatureValue(fv: PublishFeatureValue)
 
+  fun getEnvironmentSize(): Int
+  fun getServiceAccountSize(): Int
 }

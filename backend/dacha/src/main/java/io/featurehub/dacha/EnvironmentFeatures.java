@@ -3,6 +3,7 @@ package io.featurehub.dacha;
 import io.featurehub.dacha.model.CacheEnvironmentFeature;
 import io.featurehub.dacha.model.PublishEnvironment;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -40,11 +41,22 @@ public class EnvironmentFeatures implements InternalCache.FeatureValues {
 
   public void set(CacheEnvironmentFeature feature) {
     features.put(feature.getFeature().getId(), feature);
+
+    // modify the copy so no sync issues
+    final List<CacheEnvironmentFeature> featureValues = new ArrayList<>(env.getFeatureValues());
+
+    featureValues.removeIf((f) -> f.getFeature().getId().equals(feature.getFeature().getId()));
+    featureValues.add(feature);
+
+    env.setFeatureValues(featureValues);
     calculateEtag();
   }
 
   public void remove(UUID id) {
     features.remove(id);
+    final List<CacheEnvironmentFeature> featureValues = new ArrayList<>(env.getFeatureValues());
+    featureValues.removeIf((f) -> f.getFeature().getId().equals(id));
+    env.setFeatureValues(featureValues);
     calculateEtag();
   }
 

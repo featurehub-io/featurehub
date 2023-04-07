@@ -90,4 +90,14 @@ public class MrInMemoryCache implements InternalCache {
   public PublishEnvironment findEnvironment(UUID environmentId) {
     return environments.get(environmentId);
   }
+
+  @Override
+  public int getEnvironmentSize() {
+    return environments.size();
+  }
+
+  @Override
+  public int getServiceAccountSize() {
+    return serviceAccounts.size();
+  }
 }
