@@ -13,7 +13,7 @@ class ManageUsersRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ListUsersBloc>(context);
-    FHAnalytics.sendWindowPath();
+    FHAnalytics.sendScreenView("user-management");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[

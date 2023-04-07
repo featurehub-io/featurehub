@@ -21,7 +21,7 @@ class ApiKeysRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ServiceAccountEnvBloc>(context);
-    FHAnalytics.sendWindowPath();
+    FHAnalytics.sendScreenView("api-keys");
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[

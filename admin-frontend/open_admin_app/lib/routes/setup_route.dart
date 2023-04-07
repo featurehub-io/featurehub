@@ -12,7 +12,7 @@ class SetupWrapperWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final client = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-    FHAnalytics.sendWindowPath();
+    FHAnalytics.sendScreenView("fhos-setup");
     return FHScaffoldWidget(
       bodyMainAxisAlignment: MainAxisAlignment.center,
       body: Center(

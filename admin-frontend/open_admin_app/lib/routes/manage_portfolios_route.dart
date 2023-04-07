@@ -14,7 +14,7 @@ class PortfolioRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PortfolioBloc>(context);
-    FHAnalytics.sendWindowPath();
+    FHAnalytics.sendScreenView("portfolio-management");
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

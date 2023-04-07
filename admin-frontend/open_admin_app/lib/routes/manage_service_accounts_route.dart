@@ -33,7 +33,7 @@ class _ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManageServiceAccountsBloc>(context);
-    FHAnalytics.sendWindowPath();
+    FHAnalytics.sendScreenView("serviceaccount-management");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[

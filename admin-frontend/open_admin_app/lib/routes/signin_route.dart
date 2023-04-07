@@ -11,7 +11,7 @@ class SigninWrapperWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final client = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-    FHAnalytics.sendWindowPath();
+    FHAnalytics.sendScreenView("signin");
     return FHScaffoldWidget(
       bodyMainAxisAlignment: MainAxisAlignment.center,
       body: Center(

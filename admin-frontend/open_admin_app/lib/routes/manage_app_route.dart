@@ -38,7 +38,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManageAppBloc>(context);
-    FHAnalytics.sendWindowPath();
+    FHAnalytics.sendScreenView("app-editing");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[

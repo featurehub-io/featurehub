@@ -158,7 +158,7 @@ class _AdminFeatureRole {
 
   @override
   String toString() {
-    return "id: ${id}, name: ${name}, roles: ${roles}";
+    return "id: $id, name: $name, roles: $roles";
   }
 }
 

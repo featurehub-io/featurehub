@@ -96,6 +96,7 @@ class _FHSharedPrefs extends FHSharedPrefsContract {
     await _prefs.clear();
   }
 
+  @override
   Future<String?> getEmail() async {
     return _prefs.getString(_keyEmail);
   }

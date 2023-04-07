@@ -38,7 +38,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = this.bloc!;
-    FHAnalytics.sendWindowPath();
+    FHAnalytics.sendScreenView("group-management");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[

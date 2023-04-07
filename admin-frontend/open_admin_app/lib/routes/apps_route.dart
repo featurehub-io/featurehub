@@ -35,7 +35,7 @@ class _AppsRouteState extends State<AppsRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<AppsBloc>(context);
-    FHAnalytics.sendWindowPath();
+    FHAnalytics.sendScreenView("apps-dashboard");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[

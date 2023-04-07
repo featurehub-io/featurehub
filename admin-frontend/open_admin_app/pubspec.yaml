@@ -45,9 +45,9 @@ dependencies:
   multiselect: ^0.0.7
   side_sheet: ^1.0.3
   async: ^2.9.0
-  usage: ^4.1.0
 
 dev_dependencies:
+  meta: ^1.8.0
   flutter_lints: ^1.0.4
   flutter_test:
     sdk: flutter

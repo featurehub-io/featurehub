@@ -13,7 +13,7 @@ class ManageAdminServiceAccountsRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ListUsersBloc>(context);
-    FHAnalytics.sendWindowPath();
+    FHAnalytics.sendScreenView("admin-service-accounts");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[

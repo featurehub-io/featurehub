@@ -279,18 +279,17 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     group.members = [];
 
     try {
-      final updatedGroup = await _groupServiceApi.updateGroup(gid, group,
-          includeGroupRoles: true,
-          includeMembers: false,
-          updateMembers: false,
-          applicationId: applicationId,
-          updateApplicationGroupRoles: true,
-            updateEnvironmentGroupRoles: true)
-        .catchError((e, s) {
-      _mrClient.dialogError(e, s);
-    });
+      final updatedGroup = await _groupServiceApi
+          .updateGroup(gid, group,
+              includeGroupRoles: true,
+              includeMembers: false,
+              updateMembers: false,
+              applicationId: applicationId,
+              updateApplicationGroupRoles: true,
+              updateEnvironmentGroupRoles: true);
 
-    _groupWithRolesPS.add(ApplicationGroupRoles(updatedGroup, applicationId!));
+      _groupWithRolesPS
+          .add(ApplicationGroupRoles(updatedGroup, applicationId!));
 
       // we need to do this to ensure the list of environments has the right set of ACLs
       if (_mrClient.rocketOpened) {
@@ -308,8 +307,12 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   Future<ServiceAccount?> updateServiceAccountPermissions(
       String sid, ServiceAccount serviceAccount) async {
     try {
-      final updatedServiceAccount = await _serviceAccountServiceApi
-          .updateServiceAccount(sid, serviceAccount, includePermissions: true,);
+      final updatedServiceAccount =
+          await _serviceAccountServiceApi.updateServiceAccount(
+        sid,
+        serviceAccount,
+        includePermissions: true,
+      );
 
       unawaited(
           _mrClient.streamValley.getEnvironmentServiceAccountPermissions());
@@ -346,11 +349,11 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   Future<void> updateEnvs(String appId, List<Environment> envs) async {
     try {
-      environmentsList = await _environmentServiceApi
-          .environmentOrdering(appId, envs);
+      environmentsList =
+          await _environmentServiceApi.environmentOrdering(appId, envs);
       _environmentBS.add(environmentsList);
     } catch (e, s) {
-    _mrClient.dialogError(e, s);
+      _mrClient.dialogError(e, s);
     }
   }
 

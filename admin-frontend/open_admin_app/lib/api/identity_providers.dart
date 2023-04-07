@@ -37,6 +37,7 @@ class ServerCapabilities {
       return window.location.href = value.redirectUrl!;
     }).catchError((e, s) {
       bloc.dialogError(e, s);
+      return '';
     });
   }
 

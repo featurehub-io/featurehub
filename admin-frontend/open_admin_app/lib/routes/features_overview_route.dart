@@ -25,7 +25,7 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
-    FHAnalytics.sendWindowPath();
+    FHAnalytics.sendScreenView("features-dashboard");
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
