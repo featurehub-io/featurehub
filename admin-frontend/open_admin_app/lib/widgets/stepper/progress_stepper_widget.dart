@@ -228,7 +228,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                         const SizedBox(height: 4.0),
                                         FHUnderlineButton(
                                           title:
-                                              'Go to Service Account Permissions',
+                                              'Go to SA Permissions',
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
