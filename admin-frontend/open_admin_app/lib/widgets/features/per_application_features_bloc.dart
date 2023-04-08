@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/mr_client_aware.dart';
@@ -8,6 +9,8 @@ import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.
 import 'package:rxdart/rxdart.dart' hide Notification;
 
 import 'feature_dashboard_constants.dart';
+
+var _log = Logger("per-app-features");
 
 class FeatureStatusFeatures {
   final ApplicationFeatureValues applicationFeatureValues;
@@ -58,7 +61,6 @@ class PerApplicationFeaturesBloc
   Stream<List<String>> get shownEnvironmentsStream =>
       _shownEnvironmentsSource.stream;
 
-
   // feature-id, environments for feature
 
   final _appFeatureValues = BehaviorSubject<ApplicationFeatureValues?>();
@@ -86,16 +88,36 @@ class PerApplicationFeaturesBloc
 
     _currentPid = _mrClient.streamValley.currentPortfolioIdStream
         .listen(addApplicationsToStream);
+
     _currentAppId = _mrClient.streamValley.currentAppIdStream.listen(setAppId);
   }
+
+  final appProcessing = <Future<void>>[];
 
   @override
   ManagementRepositoryClientBloc get mrClient => _mrClient;
 
-  Future<void> setAppId(String? appId) async {
+  void setAppId(String? appId)  {
+    if (appProcessing.isNotEmpty) {
+      final last = appProcessing.last;
+      last.whenComplete(() {
+        _setAppId(appId);
+        appProcessing.remove(last);
+      });
+    } else {
+      _setAppId(appId);
+    }
+  }
+
+  Future<void> _setAppId(String? appId) async {
+    _log.fine("setAppId: $appId");
     applicationId = appId;
     if (applicationId != null) {
-      await getApplicationFeatureValuesData(applicationId!, "", [], rowsPerPage, 0);
+      final nextFuture = getApplicationFeatureValuesData(
+          applicationId!, "", [], rowsPerPage, 0);
+      appProcessing.add(nextFuture);
+      // make sure we remove ourselves
+      nextFuture.whenComplete(() => appProcessing.remove(nextFuture));
     }
   }
 
@@ -112,19 +134,18 @@ class PerApplicationFeaturesBloc
         ));
   }
 
-
   Future<void> updateShownEnvironments(List<String> environmentNames) async {
     List<String> envIds = [];
-    if (_appFeatureValues.value != null) {
-    envIds = _appFeatureValues.value!.environments.where((env) =>
-        environmentNames.contains(env.environmentName)).map((e) =>
-    e.environmentId!).toList();
+
+    if (_appFeatureValues.hasValue && _appFeatureValues.value != null) {
+      envIds = _appFeatureValues.value!.environments
+          .where((env) => environmentNames.contains(env.environmentName))
+          .map((e) => e.environmentId!)
+          .toList();
     }
 
     // this is a deliberate act
-    if (envIds.isEmpty) {
-
-    }
+    if (envIds.isEmpty) {}
 
     final envs = await _userStateServiceApi.saveHiddenEnvironments(
         applicationId!,
@@ -248,16 +269,16 @@ class PerApplicationFeaturesBloc
     _appSearchResultSource.close();
     _featureMetadataStream.close();
     _appFeatureValues.close();
-
   }
 
-   getApplicationFeatureValuesData(
+  Future<void> getApplicationFeatureValuesData(
       String appId,
       String searchTerm,
       List<FeatureValueType> featureTypes,
       int rowsPerPage,
       int pageOffset) async {
-      var allFeatureValues = await _featureServiceApi
+    _log.fine("started: getApplicationFeatureValuesData with $appId search $searchTerm");
+    var allFeatureValues = await _featureServiceApi
         .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
       appId,
       max: rowsPerPage,
@@ -265,14 +286,15 @@ class PerApplicationFeaturesBloc
       filter: searchTerm,
       featureTypes: featureTypes,
     );
-      await getShownEnvironmentNames(allFeatureValues);
-      _appFeatureValues.add(allFeatureValues);
-      // set current values
-      searchFieldTerm = searchTerm;
-      totalFeatures = allFeatureValues.maxFeatures;
-      currentPageIndex = pageOffset;
-      selectedFeatureTypesByUser = featureTypes;
-      currentRowsPerPage = rowsPerPage;
+    await getShownEnvironmentNames(allFeatureValues);
+    _appFeatureValues.add(allFeatureValues);
+    // set current values
+    searchFieldTerm = searchTerm;
+    totalFeatures = allFeatureValues.maxFeatures;
+    currentPageIndex = pageOffset;
+    selectedFeatureTypesByUser = featureTypes;
+    currentRowsPerPage = rowsPerPage;
+    _log.fine("finished: getApplicationFeatureValuesData with $appId search $searchTerm");
   }
 
   updateApplicationFeatureValuesStream() async {
@@ -284,26 +306,31 @@ class PerApplicationFeaturesBloc
       filter: searchFieldTerm,
       featureTypes: selectedFeatureTypesByUser,
     );
+    _log.fine(
+        "update application stream with $applicationId and filter $searchFieldTerm");
     _appFeatureValues.add(allFeatureValues);
   }
 
-  Future<void> getShownEnvironmentNames(ApplicationFeatureValues allFeatureValues) async {
-    HiddenEnvironments envs = await _userStateServiceApi.getHiddenEnvironments(applicationId!);
+  Future<void> getShownEnvironmentNames(
+      ApplicationFeatureValues allFeatureValues) async {
+    HiddenEnvironments envs =
+        await _userStateServiceApi.getHiddenEnvironments(applicationId!);
 
     // if they haven't chosen a list of environments to show, show them all
-    final candidateEnvs = (envs.environmentIds.isEmpty && (envs.noneSelected != true)) ? allFeatureValues.environments : allFeatureValues.environments.where((env) =>
-        envs.environmentIds.contains(env.environmentId)).toList();
+    final candidateEnvs =
+        (envs.environmentIds.isEmpty && (envs.noneSelected != true))
+            ? allFeatureValues.environments
+            : allFeatureValues.environments
+                .where((env) => envs.environmentIds.contains(env.environmentId))
+                .toList();
 
-    selectedEnvironmentNamesByUser = candidateEnvs.map((e) =>
-      e.environmentName!).toList();
+    selectedEnvironmentNamesByUser =
+        candidateEnvs.map((e) => e.environmentName!).toList();
   }
 
-  PerFeatureStateTrackingBloc perFeatureStateTrackingBloc(Feature feature, FeatureValue featureValue) {
+  PerFeatureStateTrackingBloc perFeatureStateTrackingBloc(
+      Feature feature, FeatureValue featureValue) {
     return PerFeatureStateTrackingBloc(
-        applicationId!,
-        feature,
-        featureValue,
-        this,
-        _appFeatureValues.value!);
+        applicationId!, feature, featureValue, this, _appFeatureValues.value!);
   }
 }
