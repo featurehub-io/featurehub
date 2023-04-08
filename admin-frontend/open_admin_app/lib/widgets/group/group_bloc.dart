@@ -24,9 +24,8 @@ class GroupBloc implements Bloc {
       final ourGroup = groups.firstWhereOrNull((g) => g.id == groupId);
       if (ourGroup == null) {
         if (groups.isNotEmpty) {
-          // print("no matching groups, choosing first");
-          groupId = groups[0].id;
-          group = groups[0];
+          group = groups.first;
+          groupId = group!.id;
           _groupSource.add(group);
           getGroup(groupId);
         } else {
@@ -35,7 +34,6 @@ class GroupBloc implements Bloc {
           _groupSource.add(null);
         }
       } else {
-        // print("matching group");
         // in case something changed
         group = ourGroup;
         _groupSource.add(group);

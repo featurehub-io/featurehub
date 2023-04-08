@@ -26,29 +26,36 @@ class ManageServiceAccountsBloc implements Bloc {
   }
 
   Future<void> addServiceAccountsToStream(String? portfolio) async {
-    portfolioId = portfolio;
-    if (portfolioId != null && (mrClient.userIsCurrentPortfolioAdmin || mrClient.userIsSuperAdmin)) {
-      try {
-        final serviceAccounts = await _serviceAccountServiceApi
-            .searchServiceAccountsInPortfolio(portfolioId!,
-            includePermissions: true);
+    _currentPidSubscription.pause();
 
-        if (!_serviceAccountSearchResultSource.isClosed) {
-          _serviceAccountSearchResultSource.add(serviceAccounts);
+    try {
+      portfolioId = portfolio;
+      if (portfolioId != null &&
+          (mrClient.userIsCurrentPortfolioAdmin || mrClient.userIsSuperAdmin)) {
+        try {
+          final serviceAccounts = await _serviceAccountServiceApi
+              .searchServiceAccountsInPortfolio(portfolioId!,
+              includePermissions: true);
+
+          if (!_serviceAccountSearchResultSource.isClosed) {
+            _serviceAccountSearchResultSource.add(serviceAccounts);
+          }
+        } catch (e, s) {
+          mrClient.dialogError(e, s);
         }
-      } catch (e, s) {
-        mrClient.dialogError(e, s);
-      }
 
-      // we need to fill up a list of applications down to environments
-      // ignore: unawaited_futures
-      mrClient.portfolioServiceApi
-          .getPortfolio(portfolioId!,
-              includeApplications: true, includeEnvironments: true)
-          .then((portfolio) {
-        portfolio.applications.sort((a1, a2) => a1.name.compareTo(a2.name));
-        _applicationsSubject.add(portfolio);
-      });
+        // we need to fill up a list of applications down to environments
+        // ignore: unawaited_futures
+        mrClient.portfolioServiceApi
+            .getPortfolio(portfolioId!,
+            includeApplications: true, includeEnvironments: true)
+            .then((portfolio) {
+          portfolio.applications.sort((a1, a2) => a1.name.compareTo(a2.name));
+          _applicationsSubject.add(portfolio);
+        });
+      }
+    } finally {
+      _currentPidSubscription.resume();
     }
   }
 

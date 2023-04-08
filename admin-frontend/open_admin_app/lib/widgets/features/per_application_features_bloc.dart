@@ -92,32 +92,21 @@ class PerApplicationFeaturesBloc
     _currentAppId = _mrClient.streamValley.currentAppIdStream.listen(setAppId);
   }
 
-  final appProcessing = <Future<void>>[];
-
   @override
   ManagementRepositoryClientBloc get mrClient => _mrClient;
 
-  void setAppId(String? appId)  {
-    if (appProcessing.isNotEmpty) {
-      final last = appProcessing.last;
-      last.whenComplete(() {
-        _setAppId(appId);
-        appProcessing.remove(last);
-      });
-    } else {
-      _setAppId(appId);
-    }
-  }
+  Future<void> setAppId(String? appId) async {
+    _currentAppId.pause(); // as we are async, we tell the subscription to not let any other requests thru
+    try {
+      _log.fine("setAppId: $appId");
+      applicationId = appId;
 
-  Future<void> _setAppId(String? appId) async {
-    _log.fine("setAppId: $appId");
-    applicationId = appId;
-    if (applicationId != null) {
-      final nextFuture = getApplicationFeatureValuesData(
-          applicationId!, "", [], rowsPerPage, 0);
-      appProcessing.add(nextFuture);
-      // make sure we remove ourselves
-      nextFuture.whenComplete(() => appProcessing.remove(nextFuture));
+      if (applicationId != null) {
+        await getApplicationFeatureValuesData(
+            applicationId!, "", [], rowsPerPage, 0);
+      }
+    } finally {
+      _currentAppId.resume();
     }
   }
 
@@ -173,23 +162,28 @@ class PerApplicationFeaturesBloc
   }
 
   Future<void> addApplicationsToStream(String? pid) async {
-    portfolioId = pid;
-    clearAppFeatureValuesStream();
+    _currentPid.pause();
+    try {
+      portfolioId = pid;
+      clearAppFeatureValuesStream();
 
-    if (pid != null) {
-      List<Application>? appList;
-      try {
-        appList = await _appServiceApi.findApplications(portfolioId!,
-            order: SortOrder.ASC);
-        if (!_appSearchResultSource.isClosed) {
-          _appSearchResultSource.add(appList);
+      if (pid != null) {
+        List<Application>? appList;
+        try {
+          appList = await _appServiceApi.findApplications(portfolioId!,
+              order: SortOrder.ASC);
+          if (!_appSearchResultSource.isClosed) {
+            _appSearchResultSource.add(appList);
+          }
+        } catch (e, s) {
+          await mrClient.dialogError(e, s);
         }
-      } catch (e, s) {
-        await mrClient.dialogError(e, s);
+        if (appList != null && applicationId != null) {
+          checkApplicationIdIsLegit(appList);
+        }
       }
-      if (appList != null && applicationId != null) {
-        checkApplicationIdIsLegit(appList);
-      }
+    } finally {
+      _currentPid.resume();
     }
   }
 

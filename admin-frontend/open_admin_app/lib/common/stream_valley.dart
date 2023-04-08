@@ -75,9 +75,13 @@ class StreamValley {
   final _routeCheckPortfolioSource = BehaviorSubject<Portfolio?>();
 
   final _webhookTypesSource = BehaviorSubject<List<WebhookTypeDetail>?>();
-  Stream<List<WebhookTypeDetail>?> get webhookTypeStream => _webhookTypesSource.stream;
+
+  Stream<List<WebhookTypeDetail>?> get webhookTypeStream =>
+      _webhookTypesSource.stream;
   final _currentAppSource = BehaviorSubject.seeded(nullApplication);
+
   String? get currentAppId => _currentAppSource.value.application.id;
+
   Stream<String?> get currentAppIdStream => _currentAppSource.stream
       .map((app) => app.isNull() ? null : app.application.id);
   final _currentPortfolioApplicationsSource =
@@ -92,10 +96,15 @@ class StreamValley {
 
   Stream<Portfolio?> get routeCheckPortfolioStream =>
       _routeCheckPortfolioSource;
+
   Stream<List<Portfolio>> get portfolioListStream => _portfoliosSource.stream;
+
   Stream<ReleasedPortfolio> get currentPortfolioStream =>
       _currentPortfolioSource.stream;
-  ReleasedPortfolio get currentPortfolio => _currentPortfolioSource.hasValue ? _currentPortfolioSource.value : nullPortfolio;
+
+  ReleasedPortfolio get currentPortfolio => _currentPortfolioSource.hasValue
+      ? _currentPortfolioSource.value
+      : nullPortfolio;
 
   String? get currentPortfolioId => currentPortfolio.portfolio.id;
 
@@ -103,43 +112,59 @@ class StreamValley {
 
   Stream<String?> get globalRefresherStream => _globalRefresherSource.stream;
 
+  late StreamSubscription<Person> _personStateListener;
+  late StreamSubscription<ReleasedPortfolio> _currentPortfolioListener;
+
   StreamValley(this.personState) {
-    personState.personStream.listen((person) async {
-      // print("streamvalley got $person");
-      if (personState.isLoggedIn) {
-        await loadPortfolios();
+    _personStateListener = personState.personStream.listen((person) async {
+      _personStateListener
+          .pause(); // async method so we need to pause the stream
+      try {
+        // print("streamvalley got $person");
+        if (personState.isLoggedIn) {
+          await loadPortfolios();
+        }
+      } finally {
+        _personStateListener.resume();
       }
     });
 
-    currentPortfolioStream.listen((portfolioUpdate) async {
-      _isCurrentPortfolioAdminOrSuperAdmin =
-          portfolioUpdate.currentPortfolioOrSuperAdmin;
+    _currentPortfolioListener =
+        currentPortfolioStream.listen((portfolioUpdate) async {
+      _currentPortfolioListener.pause();
+      try {
+        _isCurrentPortfolioAdminOrSuperAdmin =
+            portfolioUpdate.currentPortfolioOrSuperAdmin;
 
-      if (portfolioUpdate != nullPortfolio) {
-        getCurrentPortfolioApplications();
+        if (portfolioUpdate != nullPortfolio) {
+          getCurrentPortfolioApplications();
 
-        // the portfolio has changed and the app isn't in the portfolio
-        final appId = await prefs.currentApplicationId();
-        if (_currentAppSource.hasValue &&
-            !portfolioUpdate.portfolio.applications
-                .any((app) => app.id == currentAppId || app.id == appId)) {
-          _log.fine("resetting appid here as $currentAppId not in ${portfolioUpdate.portfolio.applications.map((e) => e.id)}");
-          if (portfolioUpdate.portfolio.applications.isEmpty) {
-            currentAppId = null;
-          } else {
-            currentAppId = portfolioUpdate.portfolio.applications.first.id;
+          // the portfolio has changed and the app isn't in the portfolio
+          final appId = await prefs.currentApplicationId();
+          if (_currentAppSource.hasValue &&
+              !portfolioUpdate.portfolio.applications
+                  .any((app) => app.id == currentAppId || app.id == appId)) {
+            _log.fine(
+                "resetting appid here as $currentAppId not in ${portfolioUpdate.portfolio.applications.map((e) => e.id)}");
+            if (portfolioUpdate.portfolio.applications.isEmpty) {
+              currentAppId = null;
+            } else {
+              currentAppId = portfolioUpdate.portfolio.applications.first.id;
+            }
           }
         }
-      }
 
-      if (_isCurrentPortfolioAdminOrSuperAdmin) {
-        getCurrentPortfolioGroups();
-        getCurrentPortfolioServiceAccounts();
-      } else {
-        _currentPortfolioGroupsSource.add([]);
-        currentPortfolioServiceAccounts = [];
-        _lastPortfolioIdServiceAccountChecked = null;
-        _lastPortfolioIdGroupChecked = null;
+        if (_isCurrentPortfolioAdminOrSuperAdmin) {
+          getCurrentPortfolioGroups();
+          getCurrentPortfolioServiceAccounts();
+        } else {
+          _currentPortfolioGroupsSource.add([]);
+          currentPortfolioServiceAccounts = [];
+          _lastPortfolioIdServiceAccountChecked = null;
+          _lastPortfolioIdGroupChecked = null;
+        }
+      } finally {
+        _currentPortfolioListener.pause();
       }
     });
   }
@@ -165,7 +190,8 @@ class StreamValley {
 
   Future<void> refreshWebhookTypes() async {
     if (_webhookTypesSource.value == null) {
-      _webhookTypesSource.add((await webhookServiceApi.getWebhookTypes()).types);
+      _webhookTypesSource
+          .add((await webhookServiceApi.getWebhookTypes()).types);
     }
   }
 
@@ -181,6 +207,8 @@ class StreamValley {
     _webhookTypesSource.close();
     currentPortfolioSubscription.cancel();
     currentPortfolioAdminOrSuperAdminSubscription.cancel();
+    _currentPortfolioListener.cancel();
+    _personStateListener.cancel();
   }
 
   void _refreshApplicationIdChanged() {
@@ -220,7 +248,7 @@ class StreamValley {
     _currentPortfolioSource.add(ReleasedPortfolio(
         portfolio: found,
         currentPortfolioOrSuperAdmin:
-        personState.isPersonSuperUserOrPortfolioAdmin(found.id)));
+            personState.isPersonSuperUserOrPortfolioAdmin(found.id)));
 
     _routeCheckPortfolioSource.add(found);
 
@@ -352,7 +380,6 @@ class StreamValley {
           } else {
             currentApplicationEnvironments = [];
           }
-
         }
       }
     } else {
@@ -361,6 +388,7 @@ class StreamValley {
   }
 
   String? _lastPortfolioIdGroupChecked;
+
   Future<List<Group>> getCurrentPortfolioGroups({bool force = false}) async {
     if (currentPortfolioId != _lastPortfolioIdGroupChecked ||
         _lastPortfolioIdGroupChecked == null ||
@@ -384,6 +412,7 @@ class StreamValley {
   }
 
   String? _lastPortfolioIdServiceAccountChecked;
+
   Future<void> getCurrentPortfolioServiceAccounts({bool force = false}) async {
     if (currentPortfolioId != _lastPortfolioIdServiceAccountChecked ||
         _lastPortfolioIdServiceAccountChecked == null ||
@@ -459,15 +488,19 @@ class StreamValley {
     _portfoliosSource.add(portfolios);
 
     final storedPortfolioId = await prefs.currentPortfolioId();
-    final matchingPortfolio = storedPortfolioId == null ? null : portfolios.firstWhereOrNull((p) => p.id == storedPortfolioId);
+    final matchingPortfolio = storedPortfolioId == null
+        ? null
+        : portfolios.firstWhereOrNull((p) => p.id == storedPortfolioId);
 
-    _log.fine("loaded portfolios, stored portfolios are $storedPortfolioId, matching is $matchingPortfolio");
+    _log.fine(
+        "loaded portfolios, stored portfolios are $storedPortfolioId, matching is $matchingPortfolio");
 
     // if the portfolios are empty, there is no
     if (portfolios.isEmpty) {
       _log.fine("no portfolios, current is empty");
       currentPortfolioId = null;
-    } else if (matchingPortfolio != null) { // they have an existing portfolio they want to be looking at
+    } else if (matchingPortfolio != null) {
+      // they have an existing portfolio they want to be looking at
       _log.fine("we matched one");
       if (!personState.userHasPortfolioPermission(storedPortfolioId)) {
         _log.fine("no permissions to it");
@@ -499,7 +532,8 @@ class StreamValley {
 
   bool containsPid(String? pid) {
     if (pid == null) return false;
-    return _portfoliosSource.hasValue && _portfoliosSource.value.any((p) => p.id == pid);
+    return _portfoliosSource.hasValue &&
+        _portfoliosSource.value.any((p) => p.id == pid);
   }
 
   /*
