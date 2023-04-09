@@ -164,7 +164,7 @@ class StreamValley {
           _lastPortfolioIdGroupChecked = null;
         }
       } finally {
-        _currentPortfolioListener.pause();
+        _currentPortfolioListener.resume();
       }
     });
   }
