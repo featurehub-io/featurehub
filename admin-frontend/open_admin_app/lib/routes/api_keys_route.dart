@@ -166,7 +166,6 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
               if (!serviceAccount.permissions
                   .every((element) => element.permissions.isEmpty)) {
                 return Card(
-                  color: Theme.of(context).cardColor,
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(

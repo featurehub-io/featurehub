@@ -197,7 +197,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                     child: SizedBox(
                       height: tableHeight,
                       child: SfDataGridTheme(
-                        data: SfDataGridThemeData(headerColor: Theme.of(context).colorScheme.secondaryContainer),
+                        data: SfDataGridThemeData(headerColor: Theme.of(context).colorScheme.primaryContainer),
                         child: SfDataGrid(
                           source: _featuresDataSource,
                           gridLinesVisibility: GridLinesVisibility.both,

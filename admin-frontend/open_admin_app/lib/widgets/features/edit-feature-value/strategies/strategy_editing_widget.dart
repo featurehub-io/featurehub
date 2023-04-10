@@ -109,72 +109,70 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                   const SizedBox(height: 16.0),
                   const FHPageDivider(),
                   const SizedBox(height: 16.0),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    decoration: BoxDecoration(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(6.0)),
-                        color: Theme.of(context).colorScheme.secondaryContainer),
-                    child: Column(children: [
-                      if ((individualStrategyBloc!.rolloutStrategy.percentage !=
-                              null) ||
-                          showPercentageField)
-                        Row(
-                          children: [
-                            Flexible(
-                              child: TextFormField(
-                                controller: _strategyPercentage,
-                                decoration: const InputDecoration(
-                                    labelText: 'Percentage value',
-                                    helperText:
-                                        'You can enter a value with up to 4 decimal points, e.g. 0.0005 %'),
-                                readOnly: !widget.editable,
-                                autofocus: true,
-                                onFieldSubmitted: (_) {
-                                  // do nothing, we don't want to move to the next field
-                                  // as thats "delete" and it triggers it immediately which
-                                  // deletes the percentage
-                                },
-                                inputFormatters: [
-                                  DecimalTextInputFormatter(
-                                      decimalRange: 4,
-                                      activatedNegativeValues: false)
-                                ],
-                                validator: ((v) {
-                                  if (v == null || v.isEmpty) {
-                                    return 'Percentage value required';
-                                  }
-                                  return null;
-                                }),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Column(children: [
+                        if ((individualStrategyBloc!.rolloutStrategy.percentage !=
+                                null) ||
+                            showPercentageField)
+                          Row(
+                            children: [
+                              Flexible(
+                                child: TextFormField(
+                                  controller: _strategyPercentage,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Percentage value',
+                                      helperText:
+                                          'You can enter a value with up to 4 decimal points, e.g. 0.0005 %'),
+                                  readOnly: !widget.editable,
+                                  autofocus: true,
+                                  onFieldSubmitted: (_) {
+                                    // do nothing, we don't want to move to the next field
+                                    // as thats "delete" and it triggers it immediately which
+                                    // deletes the percentage
+                                  },
+                                  inputFormatters: [
+                                    DecimalTextInputFormatter(
+                                        decimalRange: 4,
+                                        activatedNegativeValues: false)
+                                  ],
+                                  validator: ((v) {
+                                    if (v == null || v.isEmpty) {
+                                      return 'Percentage value required';
+                                    }
+                                    return null;
+                                  }),
+                                ),
                               ),
-                            ),
-                            Flexible(
-                              child: Material(
-                                  type: MaterialType.transparency,
-                                  shape: const CircleBorder(),
-                                  child: IconButton(
-                                      icon: const Icon(
-                                        Icons.delete_forever_sharp,
-                                        color: Colors.red,
-                                        size: 20.0,
-                                      ),
-                                      hoverColor:
-                                          Theme.of(context).primaryColorLight,
-                                      splashRadius: 20,
-                                      onPressed: () {
-                                        setState(() {
-                                          _strategyPercentage.text = '';
-                                          individualStrategyBloc!
-                                              .rolloutStrategy
-                                              .percentage = null;
-                                          showPercentageField = false;
-                                          widget.bloc.updateStrategy();
-                                        });
-                                      })),
-                            )
-                          ],
-                        ),
-                    ]),
+                              Flexible(
+                                child: Material(
+                                    type: MaterialType.transparency,
+                                    shape: const CircleBorder(),
+                                    child: IconButton(
+                                        icon: const Icon(
+                                          Icons.delete_forever_sharp,
+                                          color: Colors.red,
+                                          size: 20.0,
+                                        ),
+                                        hoverColor:
+                                            Theme.of(context).primaryColorLight,
+                                        splashRadius: 20,
+                                        onPressed: () {
+                                          setState(() {
+                                            _strategyPercentage.text = '';
+                                            individualStrategyBloc!
+                                                .rolloutStrategy
+                                                .percentage = null;
+                                            showPercentageField = false;
+                                            widget.bloc.updateStrategy();
+                                          });
+                                        })),
+                              )
+                            ],
+                          ),
+                      ]),
+                    ),
                   ),
                   const SizedBox(height: 8.0),
                   Row(
@@ -201,9 +199,10 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                             .bodyMedium!
                             .copyWith(color: Theme.of(context).colorScheme.error)),
                   _NaughtyDataEntryWidget(bloc: individualStrategyBloc!),
+                  const SizedBox(height: 8.0),
                   Align(
                     alignment: Alignment.bottomRight,
-                    child: Row(
+                    child: ButtonBar(
                       children: [
                         FHFlatButtonTransparent(
                           title: 'Cancel',
