@@ -57,6 +57,7 @@ class StepperBloc implements Bloc {
     _rocketTriggerSubscriber.pause();
 
     await _getSummary(applicationId);
+    _fhStepperBS.add(fhStepper);
 
     _rocketTriggerSubscriber.resume();
   }

@@ -302,7 +302,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             if (adminFeatureRole != null && originalAdminFeatureRole != null && originalAdminFeatureRole?.id != adminFeatureRole?.id) {
                               replaceGroupRoles(newGroup, applicationId!, originalAdminFeatureRole!, adminFeatureRole!);
                             }
-                            widget.bloc
+                            await widget.bloc
                                 .updateGroupWithEnvironmentRoles(
                                     newGroup.id, newGroup)
                                 .then((group) {
@@ -317,6 +317,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                                 .catchError((e, s) {
                               widget.bloc.mrClient.dialogError(e, s);
                             });
+                            print("triggering rocket");
+                            widget.bloc.mrClient.streamValley.triggerRocket();
                           },
                           title: 'Update'),
                     ])
