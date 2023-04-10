@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:html';
 
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/stepper/fh_stepper.dart';
 import 'package:rxdart/rxdart.dart';
 
+
+var _log = Logger("stepper");
 
 class StepperBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
@@ -26,13 +30,9 @@ class StepperBloc implements Bloc {
   late StreamSubscription<List<Group>> _currentPortfolioGroupsSubscriber;
   late StreamSubscription<List<ServiceAccount>>
       _currentPortfolioServiceAccountsSubscriber;
-  late StreamSubscription<List<Environment>>
-      _currentApplicationEnvironmentsSubscriber;
-  late StreamSubscription<List<Feature>> _currentApplicationFeaturesSubscriber;
-  late StreamSubscription<List<ServiceAccount>>
-      _currentEnvironmentServiceAccountsSubscriber;
   late StreamSubscription<List<Application>>
       _currentPortfolioApplicationsSubscriber;
+  late StreamSubscription<bool> _rocketTriggerSubscriber;
 
   StepperBloc(this.mrClient) {
     _setStreamListeners();
@@ -41,6 +41,7 @@ class StepperBloc implements Bloc {
   void _setStreamListeners() {
     _currentAppIdSubscriber =
         mrClient.streamValley.currentAppIdStream.listen(_getCurrentApplication);
+    _rocketTriggerSubscriber = mrClient.streamValley.rocketTrigger.listen(_rocketTrigger);
     _currentPortfolioGroupsSubscriber = mrClient
         .streamValley.currentPortfolioGroupsStream
         .listen(_getPortfolioGroups);
@@ -50,29 +51,51 @@ class StepperBloc implements Bloc {
     _currentPortfolioApplicationsSubscriber = mrClient
         .streamValley.currentPortfolioApplicationsStream
         .listen(_getPortfolioApplications);
-    _currentApplicationEnvironmentsSubscriber = mrClient
-        .streamValley.currentApplicationEnvironmentsStream
-        .listen(_getApplicationEnvironments);
-    _currentApplicationFeaturesSubscriber = mrClient
-        .streamValley.currentApplicationFeaturesStream
-        .listen(_getApplicationFeatures);
-    _currentEnvironmentServiceAccountsSubscriber = mrClient
-        .streamValley.currentEnvironmentServiceAccountStream
-        .listen(_getEnvironmentServiceAccountPermissions);
+  }
+
+  void _rocketTrigger(bool val) async {
+    _rocketTriggerSubscriber.pause();
+
+    await _getSummary(applicationId);
+
+    _rocketTriggerSubscriber.resume();
   }
 
   //this is called each time current app ID stream from mrBloc emits a value
   void _getCurrentApplication(String? id) async {
-    if (id != null) {
-      fhStepper.application = true;
-    } else {
-      fhStepper.application = false;
+    _currentAppIdSubscriber.pause();
+
+    try {
+      applicationId = id;
+
+      if (id != null) {
+        fhStepper.application = true;
+        await _getSummary(id);
+      } else {
+        fhStepper.application = false;
+      }
+
+      _fhStepperBS.add(fhStepper);
+    } finally {
+      _currentAppIdSubscriber.resume();
     }
-    _fhStepperBS.add(fhStepper);
-    applicationId = id;
   }
 
-  Future<void> _getPortfolioApplications(List<Application> appList) async {
+  Future<void> _getSummary(String? id) async {
+    if (id == null) return;
+
+    try {
+      final summary = await mrClient.applicationServiceApi.summaryApplication(id);
+      fhStepper.groupPermission = summary.groupsHavePermission;
+      fhStepper.environment = summary.environmentCount > 0;
+      fhStepper.feature = summary.featureCount > 0;
+      fhStepper.serviceAccountPermission = summary.serviceAccountsHavePermission;
+    } catch (e, s) {
+      _log.severe("failed to request application details $e $s");
+    }
+  }
+
+  void _getPortfolioApplications(List<Application> appList) {
     _appsBS.add(appList);
   }
 
@@ -86,45 +109,12 @@ class StepperBloc implements Bloc {
     _fhStepperBS.add(fhStepper);
   }
 
-  void _getApplicationEnvironments(List<Environment> envList) {
-    if (applicationId != null) //maybe check with app id from mr
-    {
-      fhStepper.environment = envList.isNotEmpty;
-      if (envList.isNotEmpty) {
-        fhStepper.groupPermission =
-            envList.any((env) => env.groupRoles.isNotEmpty);
-      }
-      _fhStepperBS.add(fhStepper);
-    }
-  }
-
-  void _getApplicationFeatures(List<Feature> featureList) {
-    if (applicationId != null) {
-      fhStepper.feature = featureList.isNotEmpty;
-      _fhStepperBS.add(fhStepper);
-    }
-  }
-
-  Future<void> _getEnvironmentServiceAccountPermissions(
-      List<ServiceAccount> saList) async {
-    if (saList.isNotEmpty) {
-      fhStepper.serviceAccountPermission =
-          saList.any((sa) => sa.permissions.isNotEmpty);
-    } else {
-      fhStepper.serviceAccountPermission = false;
-    }
-
-    _fhStepperBS.add(fhStepper);
-  }
-
   @override
   void dispose() {
+    _rocketTriggerSubscriber.cancel();
     _currentAppIdSubscriber.cancel();
     _currentPortfolioServiceAccountsSubscriber.cancel();
     _currentPortfolioGroupsSubscriber.cancel();
-    _currentApplicationEnvironmentsSubscriber.cancel();
-    _currentApplicationFeaturesSubscriber.cancel();
-    _currentEnvironmentServiceAccountsSubscriber.cancel();
     _currentPortfolioApplicationsSubscriber.cancel();
     _portfoliosBS.close();
     _appsBS.close();

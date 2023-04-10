@@ -96,7 +96,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     if (!oldVal && value) {
       // Rocket needs the full story
-      streamValley.getCurrentApplicationEnvironments();
+      streamValley.triggerRocket();
     }
 
     _stepperOpened.add(value);
@@ -428,6 +428,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void setPerson(Person p) {
+    prefs.setEmail(p.email!);
     // print("set person $p and org $organization");
     personState.updatePerson(p, organization?.id); //
   }

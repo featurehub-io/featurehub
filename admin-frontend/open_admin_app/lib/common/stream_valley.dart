@@ -73,7 +73,7 @@ class StreamValley {
   final _currentPortfolioSource =
       BehaviorSubject<ReleasedPortfolio>.seeded(nullPortfolio);
   final _routeCheckPortfolioSource = BehaviorSubject<Portfolio?>();
-
+  final _rocketTriggerSource = BehaviorSubject<bool>.seeded(false);
   final _webhookTypesSource = BehaviorSubject<List<WebhookTypeDetail>?>();
 
   Stream<List<WebhookTypeDetail>?> get webhookTypeStream =>
@@ -82,6 +82,7 @@ class StreamValley {
 
   String? get currentAppId => _currentAppSource.value.application.id;
 
+  Stream<bool> get rocketTrigger => _rocketTriggerSource.stream;
   Stream<String?> get currentAppIdStream => _currentAppSource.stream
       .map((app) => app.isNull() ? null : app.application.id);
   final _currentPortfolioApplicationsSource =
@@ -89,8 +90,6 @@ class StreamValley {
   final _currentPortfolioGroupsSource = BehaviorSubject<List<Group>>.seeded([]);
   final _currentApplicationEnvironmentsSource =
       BehaviorSubject<List<Environment>>.seeded([]);
-  final _currentApplicationFeaturesSource =
-      BehaviorSubject<List<Feature>>.seeded([]);
   final _currentEnvironmentServiceAccountSource =
       BehaviorSubject<List<ServiceAccount>>.seeded([]);
 
@@ -188,6 +187,10 @@ class StreamValley {
     _webhookTypesSource.add(null);
   }
 
+  void triggerRocket() {
+    _rocketTriggerSource.add(false);
+  }
+
   Future<void> refreshWebhookTypes() async {
     if (_webhookTypesSource.value == null) {
       _webhookTypesSource
@@ -213,10 +216,6 @@ class StreamValley {
 
   void _refreshApplicationIdChanged() {
     if (!_currentAppSource.value.isNull()) {
-      if (_currentApplicationFeaturesSource.hasListener) {
-        getCurrentApplicationFeatures();
-      }
-
       if (_currentApplicationEnvironmentsSource.hasListener) {
         getCurrentApplicationEnvironments();
       }
@@ -306,21 +305,14 @@ class StreamValley {
   }
 
   Stream<List<Environment>> get currentApplicationEnvironmentsStream =>
-      _currentApplicationEnvironmentsSource;
+      _currentApplicationEnvironmentsSource.stream;
 
   set currentApplicationEnvironments(List<Environment> value) {
     _currentApplicationEnvironmentsSource.add(value);
   }
 
-  Stream<List<Feature>> get currentApplicationFeaturesStream =>
-      _currentApplicationFeaturesSource;
-
-  set currentApplicationFeatures(List<Feature> value) {
-    _currentApplicationFeaturesSource.add(value);
-  }
-
   Stream<List<ServiceAccount>> get currentEnvironmentServiceAccountStream =>
-      _currentEnvironmentServiceAccountSource;
+      _currentEnvironmentServiceAccountSource.stream;
 
   set currentEnvironmentServiceAccount(List<ServiceAccount> value) {
     _currentEnvironmentServiceAccountSource.add(value);
@@ -370,16 +362,11 @@ class StreamValley {
       }
 
       if (currentAppId != null) {
-        if (mrClient.rocketOpened) {
-          // we need more info
-          await getCurrentApplicationEnvironments();
+        final app = appList.firstWhereOrNull((app) => app.id == currentAppId);
+        if (app != null) {
+          currentApplicationEnvironments = app.environments;
         } else {
-          final app = appList.firstWhereOrNull((app) => app.id == currentAppId);
-          if (app != null) {
-            currentApplicationEnvironments = app.environments;
-          } else {
-            currentApplicationEnvironments = [];
-          }
+          currentApplicationEnvironments = [];
         }
       }
     } else {
@@ -449,20 +436,6 @@ class StreamValley {
     return envList;
   }
 
-  Future<void> getCurrentApplicationFeatures() async {
-    if (!currentApp.isNull()) {
-      final featureList = await featureServiceApi
-          .getAllFeaturesForApplication(currentApp.application.id!)
-          .catchError((e, s) {
-        mrClient.dialogError(e, s);
-        return <Feature>[];
-      });
-      currentApplicationFeatures = featureList;
-    } else {
-      currentApplicationFeatures = [];
-    }
-  }
-
   Future<void> getEnvironmentServiceAccountPermissions() async {
     if (!currentApp.isNull() && !currentPortfolio.isNull()) {
       final saList = await serviceAccountServiceApi
@@ -470,6 +443,7 @@ class StreamValley {
               includePermissions: true, applicationId: currentAppId!)
           .catchError((e, s) {
         mrClient.dialogError(e, s);
+        currentEnvironmentServiceAccount = [];
         return <ServiceAccount>[];
       });
       currentEnvironmentServiceAccount = saList;

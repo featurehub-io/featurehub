@@ -45,7 +45,7 @@ class ServiceAccount2Spec extends Base2Spec {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     cacheSource = Mock(CacheSource)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
-    applicationSqlApi = new ApplicationSqlApi(db, convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureSqlApi))
+    applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureSqlApi))
     sapi = new ServiceAccountSqlApi(db, convertUtils, cacheSource, archiveStrategy)
 
     // now set up the environments we need
@@ -136,6 +136,7 @@ class ServiceAccount2Spec extends Base2Spec {
       sa.permissions.size() == 2
       saFiltered.permissions.size() == 1
       saFiltered.permissions[0].permissions.containsAll([RoleType.READ, RoleType.CHANGE_VALUE])
+      applicationSqlApi.getApplicationSummary(app2.id).serviceAccountsHavePermission
   }
 
   def "i can create a service account with no environments"() {

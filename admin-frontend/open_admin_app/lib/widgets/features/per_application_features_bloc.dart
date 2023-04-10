@@ -210,7 +210,7 @@ class PerApplicationFeaturesBloc
         description: featureDescription);
     await _featureServiceApi.createFeaturesForApplication(
         applicationId!, feature);
-    unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
+    mrClient.streamValley.triggerRocket();
     _publishNewFeatureSource.add(feature);
   }
 
@@ -253,7 +253,7 @@ class PerApplicationFeaturesBloc
   Future<void> deleteFeature(String key) async {
     await _featureServiceApi.deleteFeatureForApplication(applicationId!, key);
     // addAppFeatureValuesToStream();
-    unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
+    mrClient.streamValley.triggerRocket();
   }
 
   @override

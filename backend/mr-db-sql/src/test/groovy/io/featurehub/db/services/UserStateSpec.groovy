@@ -26,7 +26,7 @@ class UserStateSpec extends BaseSpec {
     baseSetupSpec()
     personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
 
-    appApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureSqlApi))
+    appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureSqlApi))
     envApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
     userStateApi = new UserStateSqlApi(convertUtils, database)
 

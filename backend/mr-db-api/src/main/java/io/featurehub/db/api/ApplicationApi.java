@@ -1,6 +1,7 @@
 package io.featurehub.db.api;
 
 import io.featurehub.mr.model.Application;
+import io.featurehub.mr.model.ApplicationSummary;
 import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.SortOrder;
@@ -12,6 +13,9 @@ import java.util.Set;
 import java.util.UUID;
 
 public interface ApplicationApi {
+
+  @Nullable
+  ApplicationSummary getApplicationSummary(@NotNull UUID appId);
 
   class DuplicateApplicationException extends Exception {}
   class DuplicateFeatureException extends Exception {}

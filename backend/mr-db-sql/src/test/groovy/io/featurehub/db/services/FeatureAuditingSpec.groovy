@@ -45,7 +45,7 @@ class FeatureAuditingSpec extends Base2Spec {
       p1 = portfolioSqlApi.createPortfolio(new Portfolio().name("basic").description("basic"), Opts.empty(), superPerson)
     }
 
-    applicationSqlApi = new ApplicationSqlApi(db, convertUtils, cacheSource, archiveStrategy, featureSqlApi)
+    applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, featureSqlApi)
     app = applicationSqlApi.getApplication(p1.id, "app1")
 
     if (app == null) {

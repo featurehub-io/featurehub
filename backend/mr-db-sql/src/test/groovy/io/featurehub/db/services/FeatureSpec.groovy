@@ -65,7 +65,7 @@ class FeatureSpec extends Base2Spec {
     ThreadLocalConfigurationSource.createContext(['auditing.enable': 'false'])
 
     featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv)
-    appApi = new ApplicationSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, featureSqlApi)
+    appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, featureSqlApi)
 
     // now set up the environments we need
     portfolio1 = new DbPortfolio.Builder().name("p1-app-feature" + RandomStringUtils.randomAlphabetic(8) ).whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
@@ -114,6 +114,7 @@ class FeatureSpec extends Base2Spec {
     then:
       features.find({ it -> it.key == 'FEATURE_ONE'}) != null
       foundFeatures.find({ it -> it.key == 'FEATURE_ONE'}) != null
+      appApi.getApplicationSummary(appId).featureCount == 1
   }
 
   def "i can't create an application feature with the same name in the same application"() {
