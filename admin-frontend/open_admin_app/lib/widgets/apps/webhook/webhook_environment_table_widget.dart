@@ -51,7 +51,10 @@ class _WebhookEnvironmentTableState extends State<WebhookEnvironmentTable> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  FilledButton(onPressed: () => tableSource.refresh(), child: const Text('Refresh'),)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: FilledButton(onPressed: () => tableSource.refresh(), child: const Text('Refresh'),),
+                  )
                 ],
               ),
               SelectionArea(

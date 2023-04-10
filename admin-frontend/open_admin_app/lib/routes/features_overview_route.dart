@@ -47,7 +47,7 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
                         children: [
                           Padding(
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
                             child: Wrap(
                               spacing: 16.0,
                               runSpacing: 16.0,

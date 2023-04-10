@@ -35,45 +35,45 @@ class ApiKeysRoute extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(
-                height: 8.0,
-              ),
-              Row(
-                children: [
-                  StreamBuilder<List<Application>>(
-                      stream: bloc.mrClient.streamValley
-                          .currentPortfolioApplicationsStream,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                          return ApplicationDropDown(
-                              applications: snapshot.data!, bloc: bloc);
-                        } else {
-                          return const SizedBox.shrink();
-                        }
-                      }),
-                  StreamBuilder<ReleasedPortfolio?>(
-                      stream: bloc.mrClient.streamValley.currentPortfolioStream,
-                      builder: (context, snapshot) {
-                        if (snapshot.data != null &&
-                            (snapshot.data!.currentPortfolioOrSuperAdmin ==
-                                true)) {
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: FHUnderlineButton(
-                                title: 'Go to service accounts settings',
-                                onPressed: () => {
-                                      ManagementRepositoryClientBloc.router
-                                          .navigateTo(
-                                        context,
-                                        '/service-accounts',
-                                      )
-                                    }),
-                          );
-                        } else {
-                          return const SizedBox.shrink();
-                        }
-                      }),
-                ],
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                child: Row(
+                  children: [
+                    StreamBuilder<List<Application>>(
+                        stream: bloc.mrClient.streamValley
+                            .currentPortfolioApplicationsStream,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                            return ApplicationDropDown(
+                                applications: snapshot.data!, bloc: bloc);
+                          } else {
+                            return const SizedBox.shrink();
+                          }
+                        }),
+                    StreamBuilder<ReleasedPortfolio?>(
+                        stream: bloc.mrClient.streamValley.currentPortfolioStream,
+                        builder: (context, snapshot) {
+                          if (snapshot.data != null &&
+                              (snapshot.data!.currentPortfolioOrSuperAdmin ==
+                                  true)) {
+                            return Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: FHUnderlineButton(
+                                  title: 'Go to service accounts settings',
+                                  onPressed: () => {
+                                        ManagementRepositoryClientBloc.router
+                                            .navigateTo(
+                                          context,
+                                          '/service-accounts',
+                                        )
+                                      }),
+                            );
+                          } else {
+                            return const SizedBox.shrink();
+                          }
+                        }),
+                  ],
+                ),
               ),
               const SizedBox(
                 height: 8.0,
@@ -166,6 +166,8 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
               if (!serviceAccount.permissions
                   .every((element) => element.permissions.isEmpty)) {
                 return Card(
+                  elevation: 4.0,
+                  shadowColor: Colors.transparent,
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(
@@ -201,9 +203,7 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
                                           Expanded(
                                             flex: 2,
                                             child: SelectableText(env.name,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyMedium),
+                                            ),
                                           ),
                                           Expanded(
                                               flex: 3,

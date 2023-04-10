@@ -39,6 +39,7 @@ class _AppsRouteState extends State<AppsRoute> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
+        const SizedBox(height: 8.0),
         Wrap(
           children: [
             const FHHeader(
@@ -147,9 +148,6 @@ class _ApplicationCard extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Card(
         elevation: 4.0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
         color: Theme.of(context).brightness == Brightness.light
             ? Theme.of(context).colorScheme.background
             : null,

@@ -45,7 +45,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
         const FHHeader(
           title: 'Application settings',
         ),
-        const SizedBox(height: 8.0),
+        const SizedBox(height: 16.0),
         StreamBuilder<List<Application>>(
             stream: bloc
                 .mrClient.streamValley.currentPortfolioApplicationsStream,
@@ -71,6 +71,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                     ));
               }
             }),
+        const SizedBox(height: 8.0),
         const FHPageDivider(),
         StreamBuilder(
             stream: bloc.pageStateStream,

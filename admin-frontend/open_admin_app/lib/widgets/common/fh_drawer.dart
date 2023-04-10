@@ -316,8 +316,6 @@ class FHMenuItem extends StatelessWidget {
     final menuOkForThisUser =
         ManagementRepositoryClientBloc.router.canUseRoute(path);
 
-    var light = Theme.of(context).brightness == Brightness.light;
-
     if (!menuOkForThisUser) {
       return const SizedBox.shrink();
     }

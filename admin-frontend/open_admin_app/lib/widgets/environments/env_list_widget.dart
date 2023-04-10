@@ -363,32 +363,32 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
 
 Widget addEnvWidget(BuildContext context, ManageAppBloc bloc) {
   return Column(children: <Widget>[
-    Container(
-        padding: const EdgeInsets.fromLTRB(0, 10, 30, 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            if (bloc.mrClient.isPortfolioOrSuperAdmin(bloc.portfolio?.id))
-              FilledButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('Create new environment'),
-                onPressed: () =>
-                    bloc.mrClient.addOverlay((BuildContext context) {
-                  return EnvUpdateDialogWidget(
-                    bloc: bloc,
-                  );
-                }),
-              ),
-            const FHInfoCardWidget(
-              message: '''
+    Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        if (bloc.mrClient.isPortfolioOrSuperAdmin(bloc.portfolio?.id))
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: FilledButton.icon(
+              icon: const Icon(Icons.add),
+              label: const Text('Create new environment'),
+              onPressed: () =>
+                  bloc.mrClient.addOverlay((BuildContext context) {
+                return EnvUpdateDialogWidget(
+                  bloc: bloc,
+                );
+              }),
+            ),
+          ),
+        const FHInfoCardWidget(
+          message: '''
 Ordering your environments,
 showing the path to production (top to bottom)
 will be reflected on the "Features" dashboard.\n
 It helps your teams see their changes
 per environment in the correct order.''',
-            ),
-          ],
-        ))
+        ),
+      ],
+    )
   ]);
 }

@@ -19,6 +19,7 @@ class PortfolioRoute extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
+        const SizedBox(height: 8.0),
         Wrap(
           children: [
             const FHHeader(
