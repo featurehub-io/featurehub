@@ -1,0 +1,190 @@
+openapi: 3.0.1
+info:
+  title: Feature Messaging API
+  description: This is an OpenAPI document for featurehub messaging data. It is used to publish feature updates to messaging listeners.
+  version: "1.1.1"
+paths:
+  /v2/fake:
+    get:
+      operationId: fakeApi
+      tags:
+        - FeatureMessagingService
+      description: "this is just a holder, it is not generated"
+      responses:
+        200:
+          description: "yay"
+components:
+  schemas:
+    FeatureMessagingUpdate:
+      x-cloudevent-type: messaging-feature-v1
+      x-cloudevent-subject: io.featurehub.events.messaging
+      x-publish-include: messaging
+      x-package: io.featurehub.messaging.model
+      description: "Changes made to a specific feature and who changed it"
+      type: object
+      required:
+        - environmentId
+        - applicationId
+        - whenUpdated
+        - whoUpdated
+        - featureKey
+        - whatUpdated
+      properties:
+        targetDestination:
+          description: "If there is a specific target for the data, everything else _should_ ignore it"
+          type: string
+        environmentId:
+          x-basename: eId
+          type: string
+          format: uuid
+        portfolioId:
+          x-basename: pId
+          type: string
+          format: uuid
+        organizationId:
+          x-basename: oId
+          type: string
+          format: uuid
+        applicationId:
+          x-basename: aId
+          type: string
+          format: uuid
+        whenUpdated:
+          type: string
+          format: date-time
+        whoUpdated:
+          type: string
+          description: Name of the user who made the change to the feature
+        featureKey:
+          description: "Feature key that got updated"
+          type: string
+        featureValueUpdated:
+          description: "Feature value changes"
+          $ref: '#/components/schemas/MessagingFeatureValueUpdate'
+        lockUpdated:
+          description: "Lock changes"
+          $ref: '#/components/schemas/MessagingLockUpdate'
+        retiredUpdated:
+          description: "Retired changes"
+          $ref: '#/components/schemas/MessagingRetiredUpdate'
+        strategiesUpdated:
+          description: "Strategies changes"
+          type: array
+          items:
+            $ref: '#/components/schemas/MessagingStrategyUpdate'
+        strategiesReordered:
+          description: "Strategies reorder changes"
+          $ref: '#/components/schemas/MessagingStrategiesReorder'
+        additionalInfo:
+          description: "Any additional info, webhook headers etc"
+          type: array
+          items:
+            type: string
+
+    MessagingFeatureValueUpdate:
+      x-package: io.featurehub.messaging.model
+      type: object
+      description: "Feature value changes, if any"
+      required:
+        - valueType
+        - updated
+        - previous
+      properties:
+        valueType:
+          $ref: "#/components/schemas/FeatureValueType"
+        updated:
+          description: "Updated feature value"
+        previous:
+          description: "Previous feature value"
+    MessagingLockUpdate:
+      x-package: io.featurehub.messaging.model
+      type: object
+      description: "Lock value changes, if any"
+      required:
+        - updated
+        - previous
+      properties:
+        updated:
+          type: boolean
+          description: "Updated lock value"
+        previous:
+          type: boolean
+          description: "Previous lock value"
+    MessagingRetiredUpdate:
+      x-package: io.featurehub.messaging.model
+      type: object
+      description: "Retired value changes, if any"
+      required:
+        - updated
+        - previous
+      properties:
+        updated:
+          type: boolean
+          description: "Updated retired value"
+        previous:
+          type: boolean
+          description: "Previous retired value"
+
+    MessagingStrategiesReorder:
+      x-package: io.featurehub.messaging.model
+      type: object
+      description: "Strategies reorders, if any"
+      required:
+        - reordered
+        - previous
+      properties:
+        reordered:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessagingRolloutStrategy'
+          description: "Reordered strategies"
+        previous:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessagingRolloutStrategy'
+          description: "Previous strategies"
+
+    MessagingStrategyUpdate:
+      x-package: io.featurehub.messaging.model
+      type: object
+      required:
+        - updateType
+      properties:
+        updateType:
+          $ref: '#/components/schemas/StrategyUpdateType'
+        oldStrategy:
+          $ref: '#/components/schemas/MessagingRolloutStrategy'
+        newStrategy:
+          $ref: '#/components/schemas/MessagingRolloutStrategy'
+    StrategyUpdateType:
+      x-package: io.featurehub.messaging.model
+      type: string
+      enum:
+        - ADDED
+        - CHANGED
+        - DELETED
+
+    MessagingRolloutStrategy:
+      x-package: io.featurehub.messaging.model
+      description: "Updated rollout strategy"
+      allOf:
+        - $ref: "#/components/schemas/BaseRolloutStrategy"
+        - type: object
+          required:
+            - id
+            - attributes
+          properties:
+            attributes:
+              type: array
+              items:
+                $ref: "#/components/schemas/MessagingRolloutStrategyAttribute"
+
+    MessagingRolloutStrategyAttribute:
+      x-package: io.featurehub.messaging.model
+      allOf:
+        - $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
+        - type: object
+          required:
+            - conditional
+            - fieldName
+            - type
