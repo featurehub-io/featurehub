@@ -15,6 +15,7 @@ import io.featurehub.db.model.DbFeatureValueVersion
 import io.featurehub.db.model.query.*
 import io.featurehub.db.utils.EnvironmentUtils
 import io.featurehub.mr.events.common.CacheSource
+import io.featurehub.mr.events.common.converter.FeatureMessagingConverter
 import io.featurehub.mr.model.*
 import jakarta.inject.Inject
 import org.apache.commons.lang3.RandomStringUtils
@@ -30,6 +31,7 @@ interface InternalFeatureSqlApi {
 class FeatureSqlApi @Inject constructor(
   private val database: Database, private val convertUtils: Conversions, private val cacheSource: CacheSource,
   private val rolloutStrategyValidator: RolloutStrategyValidator
+  private val featureMessagingConverter: FeatureMessagingConverter
 ) : FeatureApi, FeatureUpdateBySDKApi, InternalFeatureSqlApi {
   @ConfigKey("auditing.enable")
   var auditingEnabled: Boolean? = true
@@ -211,7 +213,19 @@ class FeatureSqlApi @Inject constructor(
       existing.whoUpdated = QDbPerson().id.eq(person.person.id!!.id).findOne()
       save(existing)
       publish(existing)
+      publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
     }
+  }
+
+  private fun publishChangesForMessaging(
+    featureValue: DbFeatureValue,
+    lockUpdate: SingleFeatureValueUpdate<Boolean>,
+    defaultValueUpdate: SingleFeatureValueUpdate<String>,
+    retiredUpdate: SingleFeatureValueUpdate<Boolean>,
+    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>
+  ) {
+    val featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(featureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
+
   }
 
   fun updateSelectivelyRetired(
