@@ -22,7 +22,7 @@ final ThemeData darkTheme = ThemeData(
 // These ColorScheme objects require Flutter 3.7 or later.
 const ColorScheme flexSchemeLight = ColorScheme(
   brightness: Brightness.light,
-  primary: Color(0xff1565c0),
+  primary: Color(0xff536DFE),
   onPrimary: Color(0xffffffff),
   primaryContainer: Color(0xffb8d5f7),
   onPrimaryContainer: Color(0xff101214),
@@ -56,7 +56,7 @@ const ColorScheme flexSchemeLight = ColorScheme(
 
 const ColorScheme flexSchemeDark = ColorScheme(
   brightness: Brightness.dark,
-  primary: Color(0xff72a2d9),
+  primary: Color(0xff64a1f1),
   onPrimary: Color(0xff0c1014),
   primaryContainer: Color(0xff2a435f),
   onPrimaryContainer: Color(0xffe6eaee),
