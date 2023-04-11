@@ -50,13 +50,14 @@ class PortfolioSqlApi @Inject constructor(
         pFinder = pFinder.order().name.desc()
       }
     }
-    if (convertUtils.personIsNotSuperAdmin(personDoingFind)) {
+    val personIsNotSuperAdmin = convertUtils.personIsNotSuperAdmin(personDoingFind)
+    if (personIsNotSuperAdmin) {
       pFinder = pFinder.groups.groupMembers.person.id.eq(personDoingFind.id)
     }
     pFinder = finder(pFinder, opts)
 
     return pFinder.findList()
-      .map { p -> convertUtils.toPortfolio(p, opts)!! }
+      .map { p -> convertUtils.toPortfolio(p, opts, currentPerson, personIsNotSuperAdmin)!! }
   }
 
   private fun finder(pFinder: QDbPortfolio, opts: Opts): QDbPortfolio {
@@ -104,16 +105,15 @@ class PortfolioSqlApi @Inject constructor(
 
   @Transactional(readOnly = true)
   override fun getPortfolio(id: UUID, opts: Opts, currentPerson: Person): Portfolio? {
-    Conversions.nonNullPortfolioId(id)
-    Conversions.nonNullPerson(currentPerson)
     val personDoingFind = convertUtils.byPerson(currentPerson) ?: return null
     var finder = finder(QDbPortfolio().id.eq(id), opts)
-    if (convertUtils.personIsNotSuperAdmin(personDoingFind)) {
+    val personIsNotSuperAdmin = convertUtils.personIsNotSuperAdmin(personDoingFind)
+    if (personIsNotSuperAdmin) {
       finder = finder.groups.groupMembers.person.id.eq(personDoingFind.id)
     }
 
     return finder.findOne()?.let { portf ->
-      convertUtils.toPortfolio(portf, opts)
+      convertUtils.toPortfolio(portf, opts, currentPerson, personIsNotSuperAdmin)
     }
   }
 

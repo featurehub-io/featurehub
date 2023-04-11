@@ -578,6 +578,10 @@ open class ConvertUtils : Conversions {
   }
 
   override fun toPortfolio(p: DbPortfolio?, opts: Opts?): Portfolio? {
+    return toPortfolio(p, opts, null, true)
+  }
+
+  override fun toPortfolio(p: DbPortfolio?, opts: Opts?, person: Person?, personNotSuperAdmin: Boolean): Portfolio? {
     if (p == null) {
       return null
     }
@@ -599,8 +603,20 @@ open class ConvertUtils : Conversions {
           .map { g: DbGroup? -> toGroup(g, opts) }
     }
     if (opts.contains(FillOpts.Applications)) {
-      portfolio.applications =
-        QDbApplication().whenArchived.isNull.portfolio.eq(p).order().name.asc().findList()
+      var appFinder = QDbApplication()
+        .whenArchived.isNull
+        .portfolio.eq(p)
+        .order().name.asc()
+
+      person?.let {
+        if (personNotSuperAdmin && !isPersonMemberOfPortfolioGroup(portfolio.id!!, it.id!!.id)) {
+          appFinder = appFinder.or()
+            .environments.groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id)
+            .groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id).endOr()
+        }
+      }
+
+      portfolio.applications = appFinder.findList()
           .map { a: DbApplication? -> toApplication(a, opts) }
     }
     return portfolio
