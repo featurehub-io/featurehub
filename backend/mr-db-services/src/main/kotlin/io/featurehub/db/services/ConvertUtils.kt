@@ -86,6 +86,14 @@ open class ConvertUtils : Conversions {
     return QDbGroup().owningPortfolio.id.eq(portfolioId).groupMembers.person.id.eq(personId).exists()
   }
 
+  override fun isPersonMemberOfPortfolioAdminGroup(portfolioId: UUID, personId: UUID): Boolean {
+    return QDbGroup()
+      .owningPortfolio.id.eq(portfolioId)
+      .adminGroup.isTrue
+      .groupMembers.person.id.eq(personId)
+      .exists()
+  }
+
   override fun limitLength(s: String?, len: Int): String? {
     return if (s == null) null else if (s.length > len) s.substring(0, len) else s
   }
@@ -609,7 +617,8 @@ open class ConvertUtils : Conversions {
         .order().name.asc()
 
       person?.let {
-        if (personNotSuperAdmin && !isPersonMemberOfPortfolioGroup(portfolio.id!!, it.id!!.id)) {
+        val portAdmin = isPersonMemberOfPortfolioAdminGroup(portfolio.id!!, it.id!!.id)
+        if (personNotSuperAdmin && !isPersonMemberOfPortfolioAdminGroup(portfolio.id!!, it.id!!.id)) {
           appFinder = appFinder.or()
             .environments.groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id)
             .groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id).endOr()
