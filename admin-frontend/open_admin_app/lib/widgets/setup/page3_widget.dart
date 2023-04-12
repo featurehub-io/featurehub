@@ -51,7 +51,7 @@ class _FinalSetupPageOverlayWidget extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                   child: Text(
                       'Ok, next step is to create your first application, an environment and add some features. You can follow the progress stepper by clicking the "rocket" icon on the right of the app bar.',
-                      style: Theme.of(context).textTheme.bodyText1),
+                      style: Theme.of(context).textTheme.bodyLarge),
                 ),
                   actions: <Widget>[
                     FHFlatButton(
@@ -87,7 +87,7 @@ class _FinalSetupPageOverlayWidget extends StatelessWidget {
             ],
           ),
         ),
-        Text('All set!', style: Theme.of(context).textTheme.headline6),
+        Text('All set!', style: Theme.of(context).textTheme.titleLarge),
       ],
     );
   }

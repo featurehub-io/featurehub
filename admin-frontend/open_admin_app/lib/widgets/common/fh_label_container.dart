@@ -14,6 +14,6 @@ class FHLabelContainer extends StatelessWidget {
           borderRadius: const BorderRadius.all(Radius.circular(6.0)),
           color: Theme.of(context).primaryColorLight,
         ),
-        child: Text(text, style: Theme.of(context).textTheme.overline));
+        child: Text(text, style: Theme.of(context).textTheme.labelSmall));
   }
 }

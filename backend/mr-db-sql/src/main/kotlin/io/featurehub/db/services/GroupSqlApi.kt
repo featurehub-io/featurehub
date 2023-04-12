@@ -25,13 +25,7 @@ open class GroupSqlApi @Inject constructor(
   }
 
   private fun isPersonMemberOfPortfolioAdminGroup(portfolio: DbPortfolio?, personId: UUID): Boolean {
-    return if (portfolio == null) {
-      false
-    } else QDbGroup().owningPortfolio
-      .eq(portfolio).adminGroup
-      .isTrue.groupMembers.person.id
-      .eq(personId)
-      .exists()
+    return if (portfolio == null) false else convertUtils.isPersonMemberOfPortfolioAdminGroup(portfolio.id, personId)
   }
 
   override fun getSuperuserGroup(orgId: UUID): Group? {

@@ -1,4 +1,4 @@
-import 'dart:html';
+import 'dart:html'; // ignore: avoid_web_libraries_in_flutter
 
 import 'package:flutter/material.dart';
 
@@ -28,9 +28,6 @@ class FHExternalLinkWidget extends StatelessWidget {
             },
             label: Text(
               label,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimary,
-              ),
             )),
       ),
     ]);

@@ -37,11 +37,10 @@ class ServerCapabilities {
       return window.location.href = value.redirectUrl!;
     }).catchError((e, s) {
       bloc.dialogError(e, s);
+      return '';
     });
   }
 
-  /**
-   * the server supports webhooks if it returns this
-   */
+  ///the server supports webhooks if it returns this
   bool get capabilityWebhooks => _capabilities['webhook.features'] == 'true';
 }

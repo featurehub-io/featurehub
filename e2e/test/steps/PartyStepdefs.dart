@@ -53,7 +53,7 @@ class PartyStepdefs {
     table.forEach((line) {
       final key = line['feature'].toString();
       FeatureStateHolder fsh = eventsCommon.repository!.getFeatureState(key);
-      assert(fsh != null, 'Did not find feature $key');
+
       assert(fsh.key == key, 'Keys do not match! $key vs ${fsh.key}');
       if (line['valueBoolean'] != null &&
           line['valueBoolean'].toString().trim().isNotEmpty) {

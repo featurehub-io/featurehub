@@ -34,7 +34,7 @@ class FeatureSetCommand extends Command {
 
   @override
   Future<void> run() async {
-    final login = await (Login(globalResults)).login();
+    await (Login(globalResults)).login();
   }
 }
 

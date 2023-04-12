@@ -41,7 +41,7 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
               children: [
                 Text(
                   'Environment',
-                  style: Theme.of(context).textTheme.caption,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 if (bloc.environments.isNotEmpty == true)
                   selectEnvironment(bloc.environments),
@@ -56,7 +56,7 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
               children: [
                 Text(
                   'Webhook Type',
-                  style: Theme.of(context).textTheme.caption,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 selectWebhookTypeDetail(),
               ],
@@ -122,7 +122,7 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
             value: whType,
             child: Text(
               whType.description,
-              style: Theme.of(context).textTheme.bodyText2,
+              style: Theme.of(context).textTheme.bodyMedium,
               overflow: TextOverflow.ellipsis,
             ));
       }).toList(),
@@ -160,7 +160,7 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
                 value: environment.id,
                 child: Text(
                   environment.name,
-                  style: Theme.of(context).textTheme.bodyText2,
+                  style: Theme.of(context).textTheme.bodyMedium,
                   overflow: TextOverflow.ellipsis,
                 ));
           }).toList(),

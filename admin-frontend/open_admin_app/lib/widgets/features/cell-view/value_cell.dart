@@ -112,7 +112,7 @@ class LockedIndicator extends StatelessWidget {
     return Tooltip(
         message: "Locked",
         child: Icon(Icons.lock_outline,
-            size: 14.0, color: lightTheme ? Colors.black26 : Colors.white70));
+            size: 14.0, color: lightTheme ? Colors.black54 : Colors.white70));
   }
 }
 
@@ -129,7 +129,7 @@ class RetiredIndicator extends StatelessWidget {
         child: Icon(
           MaterialIcons.do_not_disturb,
           size: 14.0,
-          color: lightTheme ? Colors.black26 : Colors.white70,
+          color: lightTheme ? Colors.black54 : Colors.white70,
         ),
       ),
     );
@@ -208,22 +208,22 @@ class _ValueCard extends StatelessWidget {
                   child: rolloutStrategy == null
                             ? const SizedBox.shrink()
                             : Padding(
-                                padding: const EdgeInsets.all(6.0),
+                                padding: const EdgeInsets.all(4.0),
                                 child: Text(rolloutStrategy!.name,
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .bodyMedium!
+                                        .labelLarge!
                                         .copyWith(color: strategyTextColor)),
                               ),
                       )
                     : Padding(
-                        padding: const EdgeInsets.all(6.0),
+                        padding: const EdgeInsets.all(4.0),
                         child: Text('default',
                             style: Theme.of(context)
                                 .textTheme
-                                .bodyMedium!
+                                .labelLarge!
                                 .copyWith(color: defaultTextColor)),
                       ),
               ),

@@ -10,6 +10,7 @@ import io.featurehub.db.api.Opts;
 import io.featurehub.mr.api.ApplicationServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.Application;
+import io.featurehub.mr.model.ApplicationSummary;
 import io.featurehub.mr.model.Environment;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.utils.ApplicationPermissionCheck;
@@ -88,15 +89,14 @@ public class ApplicationResource implements ApplicationServiceDelegate {
       holder.filter, holder.order, new Opts().add(FillOpts.Environments, holder.includeEnvironments).add(FillOpts.Features, holder.includeFeatures), from,
       authManager.isOrgAdmin(from) || authManager.isPortfolioAdmin(id, from, null));
 
-    if (applications == null) {
-      throw new NotFoundException();
-    }
-
     return applications;
   }
 
   @Override
   public Application getApplication(UUID appId, GetApplicationHolder holder, SecurityContext securityContext) {
+    // they must be at least able to read features
+    applicationUtils.featureReadCheck(securityContext, appId);
+
     final Application app = applicationApi.getApplication(appId, new Opts().add(FillOpts.Environments,
       holder.includeEnvironments));
 
@@ -105,6 +105,14 @@ public class ApplicationResource implements ApplicationServiceDelegate {
     }
 
     return app;
+  }
+
+  @Override
+  public ApplicationSummary summaryApplication(UUID appId, SecurityContext securityContext) {
+    // they must be at least able to read features
+    applicationUtils.featureReadCheck(securityContext, appId);
+
+    return applicationApi.getApplicationSummary(appId);
   }
 
   @Override

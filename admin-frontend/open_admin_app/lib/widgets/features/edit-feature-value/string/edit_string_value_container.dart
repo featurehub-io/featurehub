@@ -39,7 +39,7 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
         width: 200,
         height: 36,
         child: TextField(
-          style: Theme.of(context).textTheme.bodyText1,
+          style: Theme.of(context).textTheme.bodyLarge,
           enabled: widget.unlocked && widget.canEdit,
           controller: tec,
           decoration: InputDecoration(
@@ -57,7 +57,7 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
               hintText:
                 widget.canEdit ?
                 widget.unlocked ? 'Enter string value' : 'Unlock to edit' : 'No editing rights',
-              hintStyle: Theme.of(context).textTheme.caption),
+              hintStyle: Theme.of(context).textTheme.bodySmall),
           onChanged: (value) {
             final replacementValue = value.isEmpty ? null : tec.text.trim();
             if (widget.rolloutStrategy != null) {

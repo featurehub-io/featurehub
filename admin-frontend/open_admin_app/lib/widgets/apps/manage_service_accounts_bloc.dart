@@ -26,39 +26,51 @@ class ManageServiceAccountsBloc implements Bloc {
   }
 
   Future<void> addServiceAccountsToStream(String? portfolio) async {
-    portfolioId = portfolio;
-    if (portfolioId != null && (mrClient.userIsCurrentPortfolioAdmin || mrClient.userIsSuperAdmin)) {
-      final serviceAccounts = await _serviceAccountServiceApi
-          .searchServiceAccountsInPortfolio(portfolioId!,
-              includePermissions: true)
-          .catchError((e, s) {
-        mrClient.dialogError(e, s);
-      });
-      if (!_serviceAccountSearchResultSource.isClosed) {
-        _serviceAccountSearchResultSource.add(serviceAccounts);
-      }
+    _currentPidSubscription.pause();
 
-      // we need to fill up a list of applications down to environments
-      // ignore: unawaited_futures
-      mrClient.portfolioServiceApi
-          .getPortfolio(portfolioId!,
-              includeApplications: true, includeEnvironments: true)
-          .then((portfolio) {
-        portfolio.applications.sort((a1, a2) => a1.name.compareTo(a2.name));
-        _applicationsSubject.add(portfolio);
-      });
+    try {
+      portfolioId = portfolio;
+      if (portfolioId != null &&
+          (mrClient.userIsCurrentPortfolioAdmin || mrClient.userIsSuperAdmin)) {
+        try {
+          final serviceAccounts = await _serviceAccountServiceApi
+              .searchServiceAccountsInPortfolio(portfolioId!,
+              includePermissions: true);
+
+          if (!_serviceAccountSearchResultSource.isClosed) {
+            _serviceAccountSearchResultSource.add(serviceAccounts);
+          }
+        } catch (e, s) {
+          mrClient.dialogError(e, s);
+        }
+
+        // we need to fill up a list of applications down to environments
+        // ignore: unawaited_futures
+        mrClient.portfolioServiceApi
+            .getPortfolio(portfolioId!,
+            includeApplications: true, includeEnvironments: true)
+            .then((portfolio) {
+          portfolio.applications.sort((a1, a2) => a1.name.compareTo(a2.name));
+          _applicationsSubject.add(portfolio);
+        });
+      }
+    } finally {
+      _currentPidSubscription.resume();
     }
   }
 
   Future<bool> deleteServiceAccount(String sid) async {
-    final result = await _serviceAccountServiceApi
-        .deleteServiceAccount(sid)
-        .catchError((e, s) {
+    try {
+      final result = await _serviceAccountServiceApi
+          .deleteServiceAccount(sid);
+      await addServiceAccountsToStream(portfolioId);
+      await mrClient.streamValley.getCurrentPortfolioServiceAccounts(
+          force: true);
+      return result;
+    } catch (e,s) {
       mrClient.dialogError(e, s);
-    });
-    await addServiceAccountsToStream(portfolioId);
-    await mrClient.streamValley.getCurrentPortfolioServiceAccounts(force: true);
-    return result;
+      return false;
+    }
   }
 
   Future<void> updateServiceAccount(ServiceAccount serviceAccount,

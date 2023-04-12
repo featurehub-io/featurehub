@@ -85,7 +85,7 @@ class _ServiceAccountPermissionState
                       children: [
                         Text(
                           'Service account',
-                          style: Theme.of(context).textTheme.caption,
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                         serviceAccountDropdown(snapshot.data!, bloc),
                       ],
@@ -131,7 +131,7 @@ with only 'Read' permission for service accounts.'''),
                       value: serviceAccount.id,
                       child: Text(
                         serviceAccount.name,
-                        style: Theme.of(context).textTheme.bodyText2,
+                        style: Theme.of(context).textTheme.bodyMedium,
                         overflow: TextOverflow.ellipsis,
                       ));
                 }).toList(),
@@ -212,22 +212,17 @@ class _ServiceAccountPermissionDetailState
                 rows.add(getHeader());
                 for (var env in envSnapshot.data!) {
                   rows.add(TableRow(
-                      decoration: BoxDecoration(
-                          border: Border(
-                              bottom: BorderSide(
-                                  color: Theme.of(context).dividerColor))),
                       children: [
-                        Container(
-                            padding: const EdgeInsets.fromLTRB(5, 15, 0, 0),
-                            child: SelectableText(env.name)),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SelectableText(env.name),
+                        ),
                         getPermissionCheckbox(env.id!, RoleType.READ),
                         getPermissionCheckbox(env.id!, RoleType.LOCK),
                         getPermissionCheckbox(env.id!, RoleType.UNLOCK),
                         getPermissionCheckbox(env.id!, RoleType.CHANGE_VALUE),
                       ]));
                 }
-
-                Widget table = Table(children: rows);
 
                 return Column(
                   mainAxisSize: MainAxisSize.min,
@@ -237,9 +232,15 @@ class _ServiceAccountPermissionDetailState
                         child: Center(
                           child: SelectableText(
                               'Set the service account access to features for each environment',
-                              style: Theme.of(context).textTheme.caption),
+                              style: Theme.of(context).textTheme.bodySmall),
                         )),
-                    table,
+                    Card(
+                      child: Table(
+                      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                      border: TableBorder(horizontalInside: BorderSide(
+                      color: Theme.of(context).dividerColor.withOpacity(0.5))),
+                      children: rows),
+                    ),
                     FHButtonBar(children: [
                       FHFlatButtonTransparent(
                         onPressed: () {
@@ -263,7 +264,7 @@ class _ServiceAccountPermissionDetailState
                                     newSa.id!, saSnapshot.data!)
                                 .then((serviceAccount) => widget.bloc.mrClient
                                     .addSnackbar(Text(
-                                        "Service account '${serviceAccount.name}' updated!")))
+                                        "Service account '${serviceAccount?.name ?? '<unknown>'}' updated!")))
                                 .catchError((e, s) {
                               widget.bloc.mrClient.dialogError(e, s);
                             });
@@ -277,56 +278,66 @@ class _ServiceAccountPermissionDetailState
   }
 
   TableRow getHeader() {
+    var headerStyle = Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold);
     return TableRow(
-        decoration: BoxDecoration(
-            border: Border(
-                bottom: BorderSide(color: Theme.of(context).dividerColor))),
         children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(5, 0, 0, 15),
-            child: const Text(
-              '',
-            ),
+          const Text(
+            '',
           ),
           Center(
-              child: Text(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
             'Read',
-            style: Theme.of(context).textTheme.subtitle2,
-          )),
+                  style: headerStyle,
+          ),
+              )),
           Center(
-              child: Text(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
             'Lock',
-            style: Theme.of(context).textTheme.subtitle2,
-          )),
+                  style: headerStyle,
+          ),
+              )),
           Center(
-              child: Text(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
             'Unlock',
-            style: Theme.of(context).textTheme.subtitle2,
-          )),
+                  style: headerStyle,
+          ),
+              )),
           Center(
-              child: Text(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
             'Change value / Retire',
-            style: Theme.of(context).textTheme.subtitle2,
-          )),
+                  style: headerStyle,
+          ),
+              )),
         ]);
   }
 
-  Checkbox getPermissionCheckbox(String envId, RoleType permissionType) {
-    return Checkbox(
-      value: newServiceAccountPermission[envId]!
-          .permissions
-          .contains(permissionType),
-      onChanged: (bool? value) {
-        setState(() {
-          if (value == true) {
-            newServiceAccountPermission[envId]!.permissions.add(permissionType);
-          } else {
-            newServiceAccountPermission[envId]!
-                .permissions
-                .remove(permissionType);
-          }
-        });
-      },
+  Widget getPermissionCheckbox(String envId, RoleType permissionType) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Checkbox(
+        value: newServiceAccountPermission[envId]!
+            .permissions
+            .contains(permissionType),
+        onChanged: (bool? value) {
+          setState(() {
+            if (value == true) {
+              newServiceAccountPermission[envId]!.permissions.add(permissionType);
+            } else {
+              newServiceAccountPermission[envId]!
+                  .permissions
+                  .remove(permissionType);
+            }
+          });
+        },
+      ),
     );
   }
 

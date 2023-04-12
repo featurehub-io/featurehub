@@ -78,7 +78,7 @@ class Base3Spec extends Specification {
     featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
-    applicationSqlApi = new ApplicationSqlApi(db, convertUtils, cacheSource, archiveStrategy, featureSqlApi)
+    applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, featureSqlApi)
 
     portfolio = portfolioSqlApi.createPortfolio(new Portfolio().name("port1-base3").description("desc1"), Opts.empty(), superPerson)
     app1 = applicationSqlApi.createApplication(portfolio.id, new Application().name("app1").description("app1"), superPerson)

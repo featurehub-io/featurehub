@@ -48,7 +48,7 @@ class _EditBooleanValueDropDownWidgetState
             value: value,
             child: Text(
               value,
-              style: Theme.of(context).textTheme.bodyText2,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           );
         }).toList(),
@@ -63,7 +63,7 @@ class _EditBooleanValueDropDownWidgetState
               }
             : null,
         disabledHint:
-            Text(boolFeatureValue, style: Theme.of(context).textTheme.caption),
+            Text(boolFeatureValue, style: Theme.of(context).textTheme.bodySmall),
       ),
     );
   }

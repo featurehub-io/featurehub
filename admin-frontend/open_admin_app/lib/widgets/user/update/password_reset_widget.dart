@@ -46,7 +46,7 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
               ),
               Text(
                 'Reset your temporary password\n\n',
-                style: Theme.of(context).textTheme.headline5,
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
               Column(
                 children: <Widget>[

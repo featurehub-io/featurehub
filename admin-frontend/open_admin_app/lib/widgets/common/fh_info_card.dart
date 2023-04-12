@@ -10,7 +10,7 @@ class FHInfoCardWidget extends StatelessWidget {
     return Tooltip(
       textStyle: Theme.of(context)
           .textTheme
-          .bodyText2!
+          .bodyMedium!
           .copyWith(color: Theme.of(context).primaryColor),
       message: message,
       padding: const EdgeInsets.all(20),
@@ -19,7 +19,7 @@ class FHInfoCardWidget extends StatelessWidget {
         borderRadius: const BorderRadius.all(Radius.circular(4)),
       ),
       verticalOffset: 20,
-      waitDuration: const Duration(milliseconds: 600),
+      waitDuration: const Duration(milliseconds: 400),
       child: InkWell(
         mouseCursor: SystemMouseCursors.click,
         radius: 36.0,

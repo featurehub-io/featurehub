@@ -20,7 +20,7 @@ class NotSetContainer extends StatelessWidget {
           ),
           child: Text('not set',
               style: GoogleFonts.openSans(
-                  textStyle: Theme.of(context).textTheme.bodyText1))),
+                  textStyle: Theme.of(context).textTheme.bodyLarge))),
     );
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/multiselect_dropdown.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/transform_strategy_conditions.dart';
@@ -89,10 +88,7 @@ class _EditAttributeStrategyWidgetState
   Widget _nameField() {
     if (_wellKnown != null) {
       return Text(_nameFieldMap[_wellKnown!]!,
-          style: Theme.of(context).textTheme.subtitle2!.copyWith(
-            color: Theme.of(context).brightness == Brightness.light
-                ? Theme.of(context).buttonTheme.colorScheme?.primary
-                : Theme.of(context).colorScheme.secondary,
+          style: Theme.of(context).textTheme.titleSmall!.copyWith(
           ));
     } else {
       return TextFormField(
@@ -100,7 +96,7 @@ class _EditAttributeStrategyWidgetState
           decoration: InputDecoration(
               labelText: 'Custom key',
               helperText: 'e.g. "warehouse-id"',
-              labelStyle: Theme.of(context).textTheme.bodyText1!.copyWith(
+              labelStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   fontSize: 12.0,
                   color: Theme.of(context).buttonTheme.colorScheme?.primary)),
           style: const TextStyle(fontSize: 14.0),
@@ -119,42 +115,35 @@ class _EditAttributeStrategyWidgetState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-        color: Theme.of(context).brightness == Brightness.light
-            ? Theme.of(context).selectedRowColor
-            : Theme.of(context).primaryColorLight.withOpacity(0.1),
-      ),
-      child: Row(
-        children: [
-          Expanded(flex: 1, child: _nameField()),
-          Expanded(flex: 7, child: _buildCondition(context)),
-          Expanded(
-            flex: 1,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Material(
-                    type: MaterialType.transparency,
-                    shape: const CircleBorder(),
-                    child: IconButton(
-                        tooltip: 'Delete rule',
-                        icon: const Icon(
-                          Icons.delete_forever_sharp,
-                          color: Colors.red,
-                          size: 20.0,
-                        ),
-                        hoverColor: Theme.of(context).primaryColorLight,
-                        splashRadius: 20,
-                        onPressed: () =>
-                            widget.bloc.deleteAttribute(widget.attribute))),
-              ],
-            ),
-          )
-        ],
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Expanded(flex: 1, child: _nameField()),
+            Expanded(flex: 7, child: _buildCondition(context)),
+            Expanded(
+              flex: 1,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Material(
+                      type: MaterialType.transparency,
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                          tooltip: 'Delete rule',
+                          icon: const Icon(
+                            Icons.delete_forever_sharp,
+                            color: Colors.red,
+                            size: 20.0,
+                          ),
+                          onPressed: () =>
+                              widget.bloc.deleteAttribute(widget.attribute))),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -171,9 +160,9 @@ class _EditAttributeStrategyWidgetState
               child: Container(
                 padding: const EdgeInsets.all(4.0),
                 // margin: EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-                    color: Theme.of(context).cardColor),
+                decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                ),
                 height: 42,
                 child: OutlinedButton(
                   onPressed: () => {},
@@ -192,10 +181,10 @@ class _EditAttributeStrategyWidgetState
                             child: Text(
                                 transformStrategyAttributeConditionalValueToString(
                                     dropDownStringItem),
-                                style: Theme.of(context).textTheme.bodyText2));
+                                style: Theme.of(context).textTheme.bodyMedium));
                       }).toList(),
                       hint: Text('Select condition',
-                          style: Theme.of(context).textTheme.subtitle2),
+                          style: Theme.of(context).textTheme.titleSmall),
                       onChanged: (RolloutStrategyAttributeConditional? value) {
                         var readOnly = false; //TODO parametrise this if needed
                         if (!readOnly && value != null) {
@@ -275,9 +264,9 @@ class _EditAttributeStrategyWidgetState
     return Container(
       padding: const EdgeInsets.all(4.0),
       margin: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-          color: Theme.of(context).cardColor),
+      decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+      ),
       height: 42,
       child: OutlinedButton(
         onPressed: () => {},
@@ -295,10 +284,10 @@ class _EditAttributeStrategyWidgetState
                   child: Text(
                       transformRolloutStrategyTypeFieldToString(
                           dropDownStringItem),
-                      style: Theme.of(context).textTheme.bodyText2));
+                      style: Theme.of(context).textTheme.bodyMedium));
             }).toList(),
             hint: Text('Select value type',
-                style: Theme.of(context).textTheme.subtitle2),
+                style: Theme.of(context).textTheme.titleSmall),
             onChanged: (RolloutStrategyFieldType? value) {
               if (value != null) {
                 setState(() {
@@ -359,9 +348,9 @@ class _EditAttributeStrategyWidgetState
             child: Container(
               padding: const EdgeInsets.all(4.0),
               margin: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-                  color: Theme.of(context).cardColor),
+              decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
+              ),
               height: 42,
               child: OutlinedButton(
                 onPressed: () => {},
@@ -382,7 +371,7 @@ class _EditAttributeStrategyWidgetState
                         value: value,
                         child: Text(
                           value,
-                          style: Theme.of(context).textTheme.bodyText2,
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       );
                     }).toList(),
@@ -395,7 +384,7 @@ class _EditAttributeStrategyWidgetState
                       });
                     },
                     hint: Text('Select value',
-                        style: Theme.of(context).textTheme.subtitle2),
+                        style: Theme.of(context).textTheme.titleSmall),
                   ),
                 ),
               ),
@@ -411,9 +400,9 @@ class _EditAttributeStrategyWidgetState
     return Container(
       padding: const EdgeInsets.all(4.0),
       margin: const EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(6.0)),
-          color: Theme.of(context).cardColor),
+      decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,7 +418,7 @@ class _EditAttributeStrategyWidgetState
                       border: const OutlineInputBorder(),
                       labelText: labelText,
                       helperText: helperText,
-                      labelStyle: Theme.of(context).textTheme.bodyText1!),
+                      labelStyle: Theme.of(context).textTheme.bodyLarge!),
                   // readOnly: !widget.widget.editable,
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
@@ -440,9 +429,9 @@ class _EditAttributeStrategyWidgetState
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Tooltip(
                   message: 'Add value',
-                  child: FHUnderlineButton(
+                  child: TextButton.icon(
                       onPressed: () => _valueFieldChanged(_value.text),
-                      title: '+Add'),
+                    icon: const Icon(Icons.add_outlined, size: 16.0), label: const Text("Add"),),
                 ),
               )
             ],
@@ -479,7 +468,7 @@ class _EditAttributeStrategyWidgetState
           .map((name) => name.trim())
           .toList();
       if (_attributeType == RolloutStrategyFieldType.NUMBER) {
-        valuesList.forEach((element) {
+        for (var element in valuesList) {
           try {
             final num = double.parse(element);
             if (!widget.attribute.values.contains(num)) {
@@ -491,27 +480,21 @@ class _EditAttributeStrategyWidgetState
 
             // ignore: empty_catches
           } catch (e) {}
-        });
+        }
       }
 
       else {
         if (!widget.attribute.values.contains(val)) {
           setState(() {
-            valuesList.forEach((element) {
+            for (var element in valuesList) {
               widget.attribute.values.add(element);
-            });
+            }
             _value.text = '';
           });
         }
       }
     }
   }
-}
-
-_countryNameReverseMapper(val) {
-  return (val is String)
-      ? StrategyAttributeCountryNameExtension.fromJson(val)
-      : val;
 }
 
 String _countryNameMapper(dynamic val) {
@@ -530,18 +513,6 @@ String _deviceNameMapper(dynamic val) {
   return (val is StrategyAttributeDeviceName)
       ? val.toJson().toString()
       : val.toString();
-}
-
-_deviceNameReverseMapper(val) {
-  return (val is String)
-      ? StrategyAttributeDeviceNameExtension.fromJson(val)
-      : val;
-}
-
-_platformNameReverseMapper(val) {
-  return (val is String)
-      ? StrategyAttributePlatformNameExtension.fromJson(val)
-      : val;
 }
 
 String _platformNameMapper(dynamic val) {

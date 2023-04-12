@@ -35,47 +35,41 @@ class _AppsRouteState extends State<AppsRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<AppsBloc>(context);
-    FHAnalytics.sendWindowPath();
-    return Container(
-        padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Wrap(
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: const FHHeader(
-                    title: 'Applications',
-                  ),
-                ),
-                StreamBuilder<ReleasedPortfolio?>(
-                    stream: bloc.mrClient.streamValley.currentPortfolioStream,
-                    builder: (context, snapshot) {
-                      if (snapshot.data != null &&
-                          (snapshot.data!.currentPortfolioOrSuperAdmin ==
-                              true)) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: TextButton.icon(
-                            icon: const Icon(Icons.add),
-                            label: const Text('Create new application'),
-                            onPressed: () => _createApp(bloc),
-                          ),
-                        );
-                      } else {
-                        return const SizedBox.shrink();
-                      }
-                    }),
-              ],
+    FHAnalytics.sendScreenView("apps-dashboard");
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const SizedBox(height: 8.0),
+        Wrap(
+          children: [
+            const FHHeader(
+              title: 'Applications',
             ),
-            const FHPageDivider(),
-            const SizedBox(height: 8.0),
-            _ApplicationsCardsList(
-              bloc: bloc,
-            )
+            StreamBuilder<ReleasedPortfolio?>(
+                stream: bloc.mrClient.streamValley.currentPortfolioStream,
+                builder: (context, snapshot) {
+                  if (snapshot.data != null &&
+                      (snapshot.data!.currentPortfolioOrSuperAdmin ==
+                          true)) {
+                    return FilledButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: const Text('Create new application'),
+                      onPressed: () => _createApp(bloc),
+                    );
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                }),
           ],
-        ));
+        ),
+        const SizedBox(height: 8.0),
+        const FHPageDivider(),
+        const SizedBox(height: 8.0),
+        _ApplicationsCardsList(
+          bloc: bloc,
+        )
+      ],
+    );
   }
 
   @override
@@ -154,11 +148,8 @@ class _ApplicationCard extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Card(
         elevation: 4.0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
         color: Theme.of(context).brightness == Brightness.light
-            ? Theme.of(context).backgroundColor
+            ? Theme.of(context).colorScheme.background
             : null,
         child: InkWell(
           mouseCursor: SystemMouseCursors.click,
@@ -193,7 +184,7 @@ class _ApplicationCard extends StatelessWidget {
                                 maxLines: 2,
                                 style: Theme.of(context)
                                     .textTheme
-                                    .bodyText2!
+                                    .bodyMedium!
                                     .copyWith(
                                         color: Theme.of(context).brightness ==
                                                 Brightness.light
@@ -203,7 +194,7 @@ class _ApplicationCard extends StatelessWidget {
                             Text(application.description!,
                                 maxLines: 2,
 //                              overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.caption),
+                                style: Theme.of(context).textTheme.bodySmall),
                           ],
                         ),
                       ),
@@ -368,15 +359,15 @@ class _PopUpAdminMenu extends StatelessWidget {
           PopupMenuItem(
               value: 'features',
               child: Text('Features',
-                  style: Theme.of(context).textTheme.bodyText2)),
+                  style: Theme.of(context).textTheme.bodyMedium)),
           PopupMenuItem(
               value: 'edit',
               child:
-                  Text('Edit', style: Theme.of(context).textTheme.bodyText2)),
+                  Text('Edit', style: Theme.of(context).textTheme.bodyMedium)),
           PopupMenuItem(
               value: 'delete',
               child: Text('Delete',
-                  style: Theme.of(context).textTheme.bodyText2))
+                  style: Theme.of(context).textTheme.bodyMedium))
         ];
       },
     );

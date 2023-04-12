@@ -85,7 +85,7 @@ class _FHJsonEditorState extends State<FHJsonEditorWidget> {
               Text(
                 'JSON Value',
                 textAlign: TextAlign.left,
-                style: Theme.of(context).textTheme.caption,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             Expanded(
               child: Form(

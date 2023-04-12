@@ -1091,6 +1091,37 @@ paths:
       explode: true
       schema:
         type: boolean
+  /mr-api/application/{appId}/summary:
+    get:
+      tags:
+      - ApplicationService
+      description: Geta summary of the application status
+      operationId: summaryApplication
+      responses:
+        "200":
+          description: Resulting application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationSummary'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: no application
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: appId
+      in: path
+      description: The id of the application to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
   /mr-api/application/{appId}/rollout-strategy:
     get:
       tags:
@@ -3459,6 +3490,22 @@ components:
           whenArchived:
             type: string
             format: date-time
+    ApplicationSummary:
+      required:
+      - environmentCount
+      - featureCount
+      - groupsHavePermission
+      - serviceAccountsHavePermission
+      type: object
+      properties:
+        groupsHavePermission:
+          type: boolean
+        serviceAccountsHavePermission:
+          type: boolean
+        featureCount:
+          type: integer
+        environmentCount:
+          type: integer
     Application:
       allOf:
       - $ref: '#/components/schemas/Audit'

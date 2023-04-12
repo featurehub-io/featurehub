@@ -44,7 +44,8 @@ class FHappBar extends StatelessWidget {
           SizedBox(
             height: kToolbarHeight - 20,
             child: isWide
-                ? Image.asset('assets/logo/FeatureHubPrimaryWhite.png')
+                ? ( Theme.of(context).brightness == Brightness.light ?
+            Image.asset('assets/logo/FeatureHub-primary-navy.png') : Image.asset('assets/logo/FeatureHubPrimaryWhite.png'))
                 : Image.asset(
                     'assets/logo/FeatureHub-icon.png',
                   ),
@@ -78,20 +79,14 @@ class FHappBar extends StatelessWidget {
                       if (isWide) const SizedBox(
                         width: 32.0,
                       ),
-                      if (isWide) VerticalDivider(
-                        width: 1.0,
-                        color: Theme.of(context).cardColor,
-                      ),
-                      if (isWide) const SizedBox(
-                        width: 16.0,
-                      ),
                       widgetCreator.externalDocsLinksWidget(),
                       if (isWide) const SizedBox(
                         width: 16.0,
                       ),
                       IconButton(
-                          splashRadius: 20,
+                          // splashRadius: 20,
                           tooltip: light ? 'Dark mode' : 'Light mode',
+                          color: Theme.of(context).colorScheme.primary,
                           icon: Icon(light
                               ? MaterialCommunityIcons.weather_night
                               : Feather.sun),
@@ -101,12 +96,12 @@ class FHappBar extends StatelessWidget {
                           }),
                       StepperRocketButton(mrBloc: mrBloc),
                       IconButton(
-                          splashRadius: 20,
                           onPressed: () async {
                             await mrBloc.logout();
                             ManagementRepositoryClientBloc.router
                                 .navigateTo(context, '/');
                           },
+                          color: Theme.of(context).colorScheme.primary,
                           icon: const Icon(Icons.exit_to_app),
                           tooltip: 'Sign out'),
                     ],

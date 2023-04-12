@@ -44,7 +44,7 @@ class GroupPermissionsWidget extends StatelessWidget {
                       children: [
                         Text(
                           'Group',
-                          style: Theme.of(context).textTheme.caption,
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                         _GroupsDropdown(groups: snapshot.data!, bloc: bloc),
                       ],
@@ -52,7 +52,6 @@ class GroupPermissionsWidget extends StatelessWidget {
                     const SizedBox(width: 16.0),
                     FHUnderlineButton(
                       title: 'Go to manage group members',
-                      keepCase: true,
                       onPressed: () {
                         ManagementRepositoryClientBloc.router
                             .navigateTo(context, '/groups', params: {
@@ -103,7 +102,7 @@ class __GroupsDropdownState extends State<_GroupsDropdown> {
                 value: group.id,
                 child: Text(
                   group.name,
-                  style: Theme.of(context).textTheme.bodyText2,
+                  style: Theme.of(context).textTheme.bodyMedium,
                   overflow: TextOverflow.ellipsis,
                 ));
           }).toList(),
@@ -159,7 +158,7 @@ class _AdminFeatureRole {
 
   @override
   String toString() {
-    return "id: ${id}, name: ${name}, roles: ${roles}";
+    return "id: $id, name: $name, roles: $roles";
   }
 }
 
@@ -229,14 +228,11 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                 rows.add(getHeader());
                 for (var env in envSnapshot.data!) {
                   rows.add(TableRow(
-                      decoration: BoxDecoration(
-                          border: Border(
-                              bottom: BorderSide(
-                                  color: Theme.of(context).dividerColor))),
                       children: [
-                        Container(
-                            padding: const EdgeInsets.fromLTRB(5, 15, 0, 0),
-                            child: SelectableText(env.name)),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SelectableText(env.name),
+                        ),
                         getPermissionCheckbox(env.id!, RoleType.READ),
                         getPermissionCheckbox(env.id!, RoleType.LOCK),
                         getPermissionCheckbox(env.id!, RoleType.UNLOCK),
@@ -250,7 +246,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                     const SizedBox(height: 24),
                     SelectableText(
                         'Set feature level permissions',
-                        style: Theme.of(context).textTheme.caption),
+                        style: Theme.of(context).textTheme.bodySmall),
                     // SizedBox(height: 4.0),
                     Row(
                       children: <Widget>[
@@ -265,7 +261,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             items: _adminFeatureRoles.map((role) {
                             return DropdownMenuItem<_AdminFeatureRole>(
                               value: role,
-                              child: Text(role.name, style: Theme.of(context).textTheme.bodyText2, overflow: TextOverflow.ellipsis, ));
+                              child: Text(role.name, style: Theme.of(context).textTheme.bodyMedium, overflow: TextOverflow.ellipsis, ));
                               }).toList(),
                             isDense: true,
                             // isExpanded: true,
@@ -274,12 +270,18 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                               ),
                       ],
                     ),
-                    Container(
-                        padding: const EdgeInsets.fromLTRB(0, 32, 0, 8),
-                        child: SelectableText(
-                            'Set feature value level permissions per environment',
-                            style: Theme.of(context).textTheme.caption)),
-                    Table(children: rows),
+                    Center(
+                      child: Container(
+                          padding: const EdgeInsets.fromLTRB(0, 32, 0, 8),
+                          child: SelectableText(
+                              'Set feature value level permissions per environment',
+                              style: Theme.of(context).textTheme.bodySmall)),
+                    ),
+                    Card(child: Table(
+                        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                      border: TableBorder(horizontalInside: BorderSide(
+                          color: Theme.of(context).dividerColor.withOpacity(0.5))),
+                        children: rows)),
                     FHButtonBar(children: [
                       FHFlatButtonTransparent(
                         onPressed: () {
@@ -300,19 +302,23 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             if (adminFeatureRole != null && originalAdminFeatureRole != null && originalAdminFeatureRole?.id != adminFeatureRole?.id) {
                               replaceGroupRoles(newGroup, applicationId!, originalAdminFeatureRole!, adminFeatureRole!);
                             }
-                            widget.bloc
+                            await widget.bloc
                                 .updateGroupWithEnvironmentRoles(
                                     newGroup.id, newGroup)
                                 .then((group) {
-                                  currentGroup = group;
-                                  originalAdminFeatureRole = _discoverAdminRoleType(currentGroup!, widget.bloc.applicationId!);
-                                  widget.bloc.mrClient
-                                    .addSnackbar(
-                                        Text("Group '${group.name}' updated!"));
-                                })
+                              currentGroup = group;
+                              originalAdminFeatureRole = _discoverAdminRoleType(
+                                  currentGroup!, widget.bloc.applicationId!);
+                              widget.bloc.mrClient
+                                  .addSnackbar(
+                                  Text("Group '${group?.name ??
+                                      '<unknown>'}' updated!"));
+                            })
                                 .catchError((e, s) {
                               widget.bloc.mrClient.dialogError(e, s);
                             });
+                            print("triggering rocket");
+                            widget.bloc.mrClient.streamValley.triggerRocket();
                           },
                           title: 'Update'),
                     ])
@@ -323,53 +329,63 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
   }
 
   TableRow getHeader() {
+    var headerStyle = Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold);
     return TableRow(
-        decoration: BoxDecoration(
-            border: Border(
-                bottom: BorderSide(color: Theme.of(context).dividerColor))),
         children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(5, 0, 0, 15),
-            child: const Text(
-              '',
-            ),
+          const Text(
+            '',
           ),
           Center(
-              child: Text(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
             'Read',
-            style: Theme.of(context).textTheme.subtitle2,
-          )),
+            style: headerStyle,
+          ),
+              )),
           Center(
-              child: Text(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
             'Lock',
-            style: Theme.of(context).textTheme.subtitle2,
-          )),
+            style: headerStyle,
+          ),
+              )),
           Center(
-              child: Text(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
             'Unlock',
-            style: Theme.of(context).textTheme.subtitle2,
-          )),
+            style: headerStyle,
+          ),
+              )),
           Center(
-              child: Text(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(
             'Change value / Retire',
-            style: Theme.of(context).textTheme.subtitle2,
-          )),
+            style: headerStyle,
+          ),
+              )),
         ]);
   }
 
-  Checkbox getPermissionCheckbox(String envId, RoleType roleType) {
-    return Checkbox(
-      value: newEnvironmentRoles.containsKey(envId) &&
-          newEnvironmentRoles[envId]!.roles.contains(roleType),
-      onChanged: (value) {
-        setState(() {
-          if (value == true) {
-            newEnvironmentRoles[envId]!.roles.add(roleType);
-          } else {
-            newEnvironmentRoles[envId]!.roles.remove(roleType);
-          }
-        });
-      },
+  Widget getPermissionCheckbox(String envId, RoleType roleType) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Checkbox(
+        value: newEnvironmentRoles.containsKey(envId) &&
+            newEnvironmentRoles[envId]!.roles.contains(roleType),
+        onChanged: (value) {
+          setState(() {
+            if (value == true) {
+              newEnvironmentRoles[envId]!.roles.add(roleType);
+            } else {
+              newEnvironmentRoles[envId]!.roles.remove(roleType);
+            }
+          });
+        },
+      ),
     );
   }
 

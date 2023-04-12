@@ -66,7 +66,6 @@ class _MenuContainer extends StatelessWidget {
                   if (!snapshot.hasData || !mrBloc.personState.isLoggedIn) {
                     return const SizedBox.shrink();
                   }
-
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -82,7 +81,6 @@ class _MenuContainer extends StatelessWidget {
                                 !snapshot.data!.currentPortfolioOrSuperAdmin) {
                               return const SizedBox.shrink();
                             }
-
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -91,7 +89,7 @@ class _MenuContainer extends StatelessWidget {
                                       left: 16.0, top: 32.0, bottom: 8.0),
                                   child: Text(
                                     'Application Settings',
-                                    style: Theme.of(context).textTheme.caption,
+                                    style: Theme.of(context).textTheme.bodySmall,
                                   ),
                                 ),
                                 _ApplicationSettings(),
@@ -104,7 +102,7 @@ class _MenuContainer extends StatelessWidget {
                                       child: Text(
                                         'Portfolio Settings',
                                         style:
-                                            Theme.of(context).textTheme.caption,
+                                            Theme.of(context).textTheme.bodySmall,
                                       ),
                                     ),
                                     _MenuPortfolioAdminOptionsWidget(),
@@ -123,7 +121,7 @@ class _MenuContainer extends StatelessWidget {
                                   left: 16.0, top: 32.0, bottom: 8.0),
                               child: Text(
                                 'Organization Settings',
-                                style: Theme.of(context).textTheme.caption,
+                                style: Theme.of(context).textTheme.bodySmall,
                               ),
                             ),
                             _SiteAdminOptionsWidget(),
@@ -318,18 +316,12 @@ class FHMenuItem extends StatelessWidget {
     final menuOkForThisUser =
         ManagementRepositoryClientBloc.router.canUseRoute(path);
 
-    var light = Theme.of(context).brightness == Brightness.light;
-
     if (!menuOkForThisUser) {
       return const SizedBox.shrink();
     }
 
     return InkWell(
       canRequestFocus: false,
-      mouseCursor: SystemMouseCursors.click,
-      hoverColor: light
-          ? Theme.of(context).selectedRowColor
-          : Theme.of(context).colorScheme.secondary.withOpacity(0.2),
       onTap: () {
         if (menuOkForThisUser) {
           ManagementRepositoryClientBloc.router
@@ -348,10 +340,8 @@ class FHMenuItem extends StatelessWidget {
                 equalsParams(snapshot.data!.params);
             return Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
-              color: selected
-                  ? (light
-                      ? Theme.of(context).primaryColorLight
-                      : Theme.of(context).colorScheme.secondary)
+              color: selected ?
+              Theme.of(context).colorScheme.primaryContainer.withOpacity(0.6)
                   : null,
               child: Row(
                 children: <Widget>[
@@ -363,14 +353,10 @@ class FHMenuItem extends StatelessWidget {
                     padding:
                         const EdgeInsets.only(left: 12.0),
                     child: Text(' $name',
-                        style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                             fontWeight:
                                 selected ? FontWeight.bold : FontWeight.normal,
-                            color: light
-                                ? null
-                                : (selected
-                                    ? Theme.of(context).primaryColor
-                                    : null))),
+                        )),
                   )
                 ],
               ),

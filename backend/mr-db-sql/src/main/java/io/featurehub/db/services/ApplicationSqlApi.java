@@ -1,6 +1,5 @@
 package io.featurehub.db.services;
 
-import io.ebean.Database;
 import io.ebean.annotation.Transactional;
 import io.ebean.annotation.TxType;
 import io.featurehub.dacha.model.PublishAction;
@@ -22,12 +21,12 @@ import io.featurehub.db.model.query.QDbApplication;
 import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbGroup;
-import io.featurehub.db.model.query.QDbGroupMember;
 import io.featurehub.db.model.query.QDbPerson;
+import io.featurehub.db.model.query.QDbServiceAccountEnvironment;
 import io.featurehub.mr.events.common.CacheSource;
 import io.featurehub.mr.model.Application;
-import io.featurehub.mr.model.ApplicationGroupRole;
 import io.featurehub.mr.model.ApplicationRoleType;
+import io.featurehub.mr.model.ApplicationSummary;
 import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.mr.model.Person;
@@ -41,7 +40,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,7 +49,6 @@ import java.util.stream.Collectors;
 @Singleton
 public class ApplicationSqlApi implements ApplicationApi {
   private static final Logger log = LoggerFactory.getLogger(ApplicationSqlApi.class);
-  private final Database database;
   private final Conversions convertUtils;
   private final CacheSource cacheSource;
   private final ArchiveStrategy archiveStrategy;
@@ -59,16 +56,30 @@ public class ApplicationSqlApi implements ApplicationApi {
 
   @Inject
   public ApplicationSqlApi(
-      Database database,
       Conversions convertUtils,
       CacheSource cacheSource,
       ArchiveStrategy archiveStrategy,
       InternalFeatureSqlApi internalFeatureSqlApi) {
-    this.database = database;
     this.convertUtils = convertUtils;
     this.cacheSource = cacheSource;
     this.archiveStrategy = archiveStrategy;
     this.internalFeatureSqlApi = internalFeatureSqlApi;
+  }
+
+  @Override
+  public @Nullable ApplicationSummary getApplicationSummary(@NotNull UUID appId) {
+    if (!new QDbApplication().id.eq(appId).exists()) {
+      return null;
+    }
+
+    return new ApplicationSummary()
+      .groupsHavePermission(
+        new QDbAcl().environment.parentApplication.id.eq(appId).roles.isNotNull().roles.notEqualTo("").exists())
+      .environmentCount(new QDbEnvironment().parentApplication.id.eq(appId).whenArchived.isNull().findCount())
+      .featureCount(new QDbApplicationFeature().parentApplication.id.eq(appId).whenArchived.isNull().findCount())
+      .serviceAccountsHavePermission(new QDbServiceAccountEnvironment().environment.parentApplication.id.eq(appId)
+        .permissions.isNotNull().permissions.notEqualTo("").exists())
+      ;
   }
 
   @Override
@@ -140,16 +151,16 @@ public class ApplicationSqlApi implements ApplicationApi {
   @Transactional
   private void addApplicationFeatureCreationRoleToPortfolioAdminGroup(
       DbApplication aApp, DbGroup adminGroup) {
-    database.save(aApp);
+    aApp.save();;
 
     if (adminGroup != null) {
-      database.save(adminGroup);
+      adminGroup.save();
     }
   }
 
   @Transactional
   private void saveApp(DbApplication app) {
-    database.save(app);
+    app.save();
   }
 
   @Override
@@ -445,12 +456,12 @@ public class ApplicationSqlApi implements ApplicationApi {
 
   @Transactional
   private void updateApplicationFeature(DbApplicationFeature appFeature) {
-    database.update(appFeature);
+    appFeature.update();
   }
 
   @Transactional
   private void saveApplicationFeature(DbApplicationFeature f) {
-    database.save(f);
+    f.save();
   }
 
   @Override

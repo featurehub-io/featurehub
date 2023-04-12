@@ -244,7 +244,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
             Text(
               text,
               style: widget.textStyle ??
-                  theme.textTheme.subtitle1!.copyWith(height: 1.5),
+                  theme.textTheme.titleMedium!.copyWith(height: 1.5),
             ),
             _TextCaret(
               resumed: _focusNode?.hasFocus == true,
@@ -359,6 +359,16 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   void showToolbar() {
     // TODO: implement showToolbar
   }
+
+  @override
+  void didChangeInputControl(TextInputControl? oldControl, TextInputControl? newControl) {
+    // TODO: implement didChangeInputControl
+  }
+
+  @override
+  void performSelector(String selectorName) {
+    // TODO: implement performSelector
+  }
 }
 
 class AlwaysDisabledFocusNode extends FocusNode {
@@ -369,12 +379,11 @@ class AlwaysDisabledFocusNode extends FocusNode {
 class _TextCaret extends StatefulWidget {
   const _TextCaret({
     Key? key,
-    this.duration = const Duration(milliseconds: 500),
     this.resumed = false,
   }) : super(key: key);
 
-  final Duration duration;
-  final bool resumed;
+  final Duration duration = const Duration(milliseconds: 500);
+  final bool resumed ;
 
   @override
   _TextCursorState createState() => _TextCursorState();
@@ -429,7 +438,7 @@ class _SuggestionsBoxController {
   void open() {
     if (_isOpened) return;
     if (_overlayEntry != null) {
-      Overlay.of(context)?.insert(_overlayEntry!);
+      Overlay.of(context).insert(_overlayEntry!);
       _isOpened = true;
     }
   }

@@ -277,7 +277,7 @@ class _AdminServiceAccountInfo extends StatelessWidget {
                     _AdminServiceAccountRow(
                       title: 'Name',
                       child: Text(entry.name!,
-                          style: Theme.of(context).textTheme.bodyText1),
+                          style: Theme.of(context).textTheme.bodyLarge),
                     ),
                     const SizedBox(height: 16.0),
                     const FHPageDivider(),
@@ -291,7 +291,7 @@ class _AdminServiceAccountInfo extends StatelessWidget {
                             flex: 1,
                             child: Text(
                               'Groups',
-                              style: Theme.of(context).textTheme.caption,
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ),
                           Expanded(
@@ -305,7 +305,7 @@ class _AdminServiceAccountInfo extends StatelessWidget {
                                                 e.name,
                                                 style: Theme.of(context)
                                                     .textTheme
-                                                    .bodyText2,
+                                                    .bodyMedium,
                                               ))
                                           .toList(),
                                   ]))
@@ -337,7 +337,7 @@ class _AdminServiceAccountRow extends StatelessWidget {
           flex: 1,
           child: Text(
             title,
-            style: Theme.of(context).textTheme.caption,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
         Expanded(flex: 5, child: child)

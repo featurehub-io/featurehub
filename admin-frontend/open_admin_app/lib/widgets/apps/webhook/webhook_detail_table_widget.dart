@@ -27,7 +27,7 @@ class WebhookDetailTable extends StatelessWidget {
                       if (count != 8)
                         SizedBox(
                           width: 120,
-                          child: Text(byRow(count), style: Theme.of(context).textTheme.caption),
+                          child: Text(byRow(count), style: Theme.of(context).textTheme.bodySmall),
                         ),
                       Expanded(
                           child: Text(byRowContent(count), softWrap: false,
@@ -78,7 +78,7 @@ class WebhookDetailTable extends StatelessWidget {
       case 2:
         return data.url ?? '';
       case 3:
-        return data.method ?? '';
+        return data.method;
       case 4:
         return data.status.toString();
       case 5:

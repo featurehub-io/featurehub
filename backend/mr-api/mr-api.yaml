@@ -983,8 +983,35 @@ paths:
           description: "forbidden"
         404:
           description: "not found"
-
-
+  /mr-api/application/{appId}/summary:
+    parameters:
+      - name: appId
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - ApplicationService
+      description: "Geta summary of the application status"
+      operationId: summaryApplication
+      responses:
+        200:
+          description: "Resulting application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationSummary"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "no application"
   /mr-api/application/{appId}/rollout-strategy:
     parameters:
       - name: appId
@@ -2978,6 +3005,22 @@ components:
             whenArchived:
               type: string
               format: date-time
+    ApplicationSummary:
+      type: object
+      required:
+        - groupsHavePermission
+        - serviceAccountsHavePermission
+        - featureCount
+        - environmentCount
+      properties:
+        groupsHavePermission:
+          type: boolean
+        serviceAccountsHavePermission:
+          type: boolean
+        featureCount:
+          type: integer
+        environmentCount:
+          type: integer
     Application:
       allOf:
         - $ref: "#/components/schemas/Audit"

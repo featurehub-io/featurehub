@@ -72,7 +72,7 @@ class _PortfolioWidget extends StatelessWidget {
                 Text(portfolio.name),
                 Text(
                   portfolio.description ?? '',
-                  style: Theme.of(context).textTheme.caption,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             )),

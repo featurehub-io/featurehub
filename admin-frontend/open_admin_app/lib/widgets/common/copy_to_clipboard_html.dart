@@ -44,7 +44,7 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
               Text(caption!,
                   style: Theme.of(context)
                       .textTheme
-                      .subtitle2!
+                      .titleSmall!
                       ),
         ],
       ),
@@ -74,7 +74,7 @@ class FHCopyToClipboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FHIconButton(
-      icon: const Icon(Icons.content_copy, size: 16.0),
+      icon: const Icon(Icons.content_copy),
       tooltip: tooltipMessage,
       onPressed: () async {
         await Clipboard.setData(ClipboardData(text: copyString));

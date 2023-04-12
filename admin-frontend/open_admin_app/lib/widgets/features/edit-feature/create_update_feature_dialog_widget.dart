@@ -96,7 +96,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                   decoration: InputDecoration(
                       labelText: 'Feature key',
                       hintText: 'To be used in the code with FeatureHub SDK',
-                      hintStyle: Theme.of(context).textTheme.caption),
+                      hintStyle: Theme.of(context).textTheme.bodySmall),
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
@@ -116,7 +116,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
 //                      labelText: 'Alias key (optional)',
 //                      hintText:
 //                          "Use alias key as a 'secret' alternative to the feature key",
-//                      hintStyle: Theme.of(context).textTheme.caption),
+//                      hintStyle: Theme.of(context).textTheme.bodySmall),
 //                  validator: ((v) {
 //                    if (v.isNotEmpty && !validateFeatureKey(v)) {
 //                      return ('Can only include letters, numbers and underscores');
@@ -130,7 +130,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                 decoration: InputDecoration(
                     labelText: 'Description (optional)',
                     hintText: 'Some information about feature',
-                    hintStyle: Theme.of(context).textTheme.caption),
+                    hintStyle: Theme.of(context).textTheme.bodySmall),
               ),
               TextFormField(
                 readOnly: isReadOnly,
@@ -140,7 +140,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                     labelText: 'Reference link (optional)',
                     hintText:
                         'Optional link to external tracking system, e.g. Jira',
-                    hintStyle: Theme.of(context).textTheme.caption),
+                    hintStyle: Theme.of(context).textTheme.bodySmall),
               ),
               if (!isUpdate)
                 Padding(
@@ -162,10 +162,10 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                             value: dropDownStringItem,
                             child: Text(
                                 _transformValuesToString(dropDownStringItem),
-                                style: Theme.of(context).textTheme.bodyText2));
+                                style: Theme.of(context).textTheme.bodyMedium));
                       }).toList(),
                       hint: Text('Select feature type',
-                          style: Theme.of(context).textTheme.subtitle2),
+                          style: Theme.of(context).textTheme.titleSmall),
                       onChanged: (Object? value) {
                         if (!isReadOnly) {
                           setState(() {
@@ -183,8 +183,8 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                   'Select feature type',
                   style: Theme.of(context)
                       .textTheme
-                      .bodyText2!
-                      .copyWith(color: Theme.of(context).errorColor),
+                      .bodyMedium!
+                      .copyWith(color: Theme.of(context).colorScheme.error),
                 ),
             ],
           ),

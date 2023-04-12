@@ -25,96 +25,84 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
-    FHAnalytics.sendWindowPath();
+    FHAnalytics.sendScreenView("features-dashboard");
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Container(
-            padding: const EdgeInsets.fromLTRB(0, 8, 30, 10),
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const _FeaturesOverviewHeader(),
-                  StreamBuilder<List<Application>?>(
-                      stream: bloc.applications,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Padding(
+        Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const FHHeader(
+              title: 'Features console',
+              ),
+              StreamBuilder<List<Application>?>(
+                  stream: bloc.applications,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Wrap(
-                                  spacing: 16.0,
-                                  runSpacing: 16.0,
-                                  children: [
-                                    ApplicationDropDown(
-                                        applications: snapshot.data!,
-                                        bloc: bloc),
-                                    CreateFeatureButton(bloc: bloc)
-                                  ],
-                                ),
-                              ),
-                              const FHPageDivider(),
-                              const SizedBox(height: 16.0),
-                              FeaturesDataTable(bloc: bloc)
-                            ],
-                          );
-                        }
-                        if (snapshot.hasData && snapshot.data!.isEmpty) {
-                          return StreamBuilder<ReleasedPortfolio?>(
-                              stream: bloc
-                                  .mrClient.streamValley.currentPortfolioStream,
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData &&
-                                    snapshot
-                                        .data!.currentPortfolioOrSuperAdmin) {
-                                  return Row(
-                                    children: <Widget>[
-                                      SelectableText(
-                                          'There are no applications in this portfolio',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .caption),
-                                      const Padding(
-                                        padding: EdgeInsets.only(left: 8.0),
-                                        child: LinkToApplicationsPage(),
-                                      ),
-                                    ],
-                                  );
-                                } else {
-                                  return SelectableText(
-                                      "Either there are no applications in this portfolio or you don't have access to any of the applications.\n"
-                                      'Please contact your administrator.',
-                                      style:
-                                          Theme.of(context).textTheme.caption);
-                                }
-                              });
-                        }
-                        return const SizedBox.shrink();
-                      }),
-                ])),
+                                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                            child: Wrap(
+                              spacing: 16.0,
+                              runSpacing: 16.0,
+                              children: [
+                                ApplicationDropDown(
+                                    applications: snapshot.data!,
+                                    bloc: bloc),
+                                CreateFeatureButton(bloc: bloc)
+                              ],
+                            ),
+                          ),
+                          const FHPageDivider(),
+                          const SizedBox(height: 16.0),
+                          FeaturesDataTable(bloc: bloc)
+                        ],
+                      );
+                    }
+                    if (snapshot.hasData && snapshot.data!.isEmpty) {
+                      return StreamBuilder<ReleasedPortfolio?>(
+                          stream: bloc
+                              .mrClient.streamValley.currentPortfolioStream,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData &&
+                                snapshot
+                                    .data!.currentPortfolioOrSuperAdmin) {
+                              return Row(
+                                children: <Widget>[
+                                  SelectableText(
+                                      'There are no applications in this portfolio',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall),
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 8.0),
+                                    child: LinkToApplicationsPage(),
+                                  ),
+                                ],
+                              );
+                            } else {
+                              return SelectableText(
+                                  "Either there are no applications in this portfolio or you don't have access to any of the applications.\n"
+                                  'Please contact your administrator.',
+                                  style:
+                                      Theme.of(context).textTheme.bodySmall);
+                            }
+                          });
+                    }
+                    return const SizedBox.shrink();
+                  }),
+            ]),
       ],
     );
   }
 }
 
-class _FeaturesOverviewHeader extends StatelessWidget {
-  const _FeaturesOverviewHeader({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const FHHeader(
-      title: 'Features console',
-    );
-  }
-}
 
 class CreateFeatureButton extends StatelessWidget {
   final PerApplicationFeaturesBloc bloc;
@@ -133,14 +121,15 @@ class CreateFeatureButton extends StatelessWidget {
               .personCanCreateFeaturesForApplication(snapshot.data);
           return !canEdit
               ? const SizedBox.shrink()
-              : ElevatedButton.icon(
+              : FilledButton.icon(
                   // keepCase: true,
-                  onPressed: () =>
-                      bloc.mrClient.addOverlay((BuildContext context) {
+                  onPressed: () {
+                    bloc.mrClient.addOverlay((BuildContext context) {
                         return CreateFeatureDialogWidget(
                           bloc: bloc,
                         );
-                      }),
+                      });
+                  },
                   icon: const Icon(Icons.add),
                   label: const Text('Create New Feature'));
         });

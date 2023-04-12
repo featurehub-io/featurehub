@@ -33,9 +33,12 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   List<Environment> environmentsList = [];
 
   ApplicationServiceApi get _appServiceApi => _mrClient.applicationServiceApi;
+
   EnvironmentServiceApi get _environmentServiceApi =>
       _mrClient.environmentServiceApi;
+
   GroupServiceApi get _groupServiceApi => _mrClient.groupServiceApi;
+
   ServiceAccountServiceApi get _serviceAccountServiceApi =>
       _mrClient.serviceAccountServiceApi;
 
@@ -155,14 +158,14 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     await _appServiceApi
         .getApplication(applicationId!, includeEnvironments: true)
         .then((value) async {
-          if(!_applicationWithEnvironmentsBS.isClosed) {
-            _applicationWithEnvironmentsBS.add(value);
-          }
-          if(!_pageStateBS.isClosed) {
-            if (_pageStateBS.value == ManageAppPageState.loadingState) {
-              _pageStateBS.add(ManageAppPageState.initialState);
-            }
-          }
+      if (!_applicationWithEnvironmentsBS.isClosed) {
+        _applicationWithEnvironmentsBS.add(value);
+      }
+      if (!_pageStateBS.isClosed) {
+        if (_pageStateBS.value == ManageAppPageState.loadingState) {
+          _pageStateBS.add(ManageAppPageState.initialState);
+        }
+      }
     }).catchError((e, s) {
       if (!(e is ApiException && e.code == 404)) {
         _mrClient.dialogError(e, s);
@@ -241,10 +244,10 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
 
         // the downstream needs to know which application this group is paired with
         // so it knows when to refresh its internal state
-        if(!_groupWithRolesPS.isClosed) {
+        if (!_groupWithRolesPS.isClosed) {
           _groupWithRolesPS.add(ApplicationGroupRoles(group, applicationId!));
         }
-      } catch (e, s) {
+      } catch (e) {
         // print("this group has failed");
         _groupWithRolesPS.add(null);
       }
@@ -271,44 +274,55 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  Future<Group> updateGroupWithEnvironmentRoles(gid, Group group) async {
+  Future<Group?> updateGroupWithEnvironmentRoles(gid, Group group) async {
     // make sure members are null or they all get removed
     group.members = [];
-    final updatedGroup = await _groupServiceApi
-        .updateGroup(gid, group,
-            includeGroupRoles: true,
-            includeMembers: false,
-            updateMembers: false,
-            applicationId: applicationId,
-            updateApplicationGroupRoles: true,
-            updateEnvironmentGroupRoles: true)
-        .catchError((e, s) {
+
+    try {
+      final updatedGroup = await _groupServiceApi
+          .updateGroup(gid, group,
+              includeGroupRoles: true,
+              includeMembers: false,
+              updateMembers: false,
+              applicationId: applicationId,
+              updateApplicationGroupRoles: true,
+              updateEnvironmentGroupRoles: true);
+
+      _groupWithRolesPS
+          .add(ApplicationGroupRoles(updatedGroup, applicationId!));
+
+      // we need to do this to ensure the list of environments has the right set of ACLs
+      if (_mrClient.rocketOpened) {
+        await _mrClient.streamValley.getCurrentApplicationEnvironments();
+      }
+
+      return updatedGroup;
+    } catch (e, s) {
       _mrClient.dialogError(e, s);
-    });
-
-    _groupWithRolesPS.add(ApplicationGroupRoles(updatedGroup, applicationId!));
-
-    // we need to do this to ensure the list of environments has the right set of ACLs
-    if (_mrClient.rocketOpened) {
-      await _mrClient.streamValley.getCurrentApplicationEnvironments();
     }
 
-    return updatedGroup;
+    return null;
   }
 
-  Future<ServiceAccount> updateServiceAccountPermissions(
+  Future<ServiceAccount?> updateServiceAccountPermissions(
       String sid, ServiceAccount serviceAccount) async {
-    final updatedServiceAccount = await _serviceAccountServiceApi
-        .updateServiceAccount(
-      sid,
-      serviceAccount,
-      includePermissions: true,
-    )
-        .catchError((e, s) {
+    try {
+      final updatedServiceAccount =
+          await _serviceAccountServiceApi.updateServiceAccount(
+        sid,
+        serviceAccount,
+        includePermissions: true,
+      );
+
+      unawaited(
+          _mrClient.streamValley.getEnvironmentServiceAccountPermissions());
+
+      return updatedServiceAccount;
+    } catch (e, s) {
       _mrClient.dialogError(e, s);
-    });
-    unawaited(_mrClient.streamValley.getEnvironmentServiceAccountPermissions());
-    return updatedServiceAccount;
+    }
+
+    return null;
   }
 
   Future<bool> deleteEnv(String eid) async {
@@ -334,22 +348,24 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   }
 
   Future<void> updateEnvs(String appId, List<Environment> envs) async {
-    environmentsList = await _environmentServiceApi
-        .environmentOrdering(appId, envs)
-        .catchError((e, s) {
+    try {
+      environmentsList =
+          await _environmentServiceApi.environmentOrdering(appId, envs);
+      _environmentBS.add(environmentsList);
+    } catch (e, s) {
       _mrClient.dialogError(e, s);
-    });
-    _environmentBS.add(environmentsList);
+    }
   }
 
   Future<void> updateEnv(Environment env, String name) async {
-    env.name = name;
-    await _environmentServiceApi
-        .updateEnvironment(env.id!, env)
-        .then((e) => _refreshApplication())
-        .catchError((e, s) {
+    try {
+      env.name = name;
+      await _environmentServiceApi
+          .updateEnvironment(env.id!, env)
+          .then((e) => _refreshApplication());
+    } catch (e, s) {
       _mrClient.dialogError(e, s);
-    });
+    }
   }
 
   Future<void> createEnv(String name, bool _isProduction) async {

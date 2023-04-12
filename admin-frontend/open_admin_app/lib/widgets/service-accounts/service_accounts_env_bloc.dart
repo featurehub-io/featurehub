@@ -29,29 +29,36 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
   }
 
   void _envUpdate(List<Environment> envs) async {
-    if (envs.isEmpty) {
-      if (firstCall) {
-        firstCall = false;
-        // if we aren't an admin, we won't have called this, so lets call it now
-        if (!_mrClient.userHasFeaturePermissionsInCurrentApplication) {
-          // ignore: unawaited_futures
-          _mrClient.streamValley.getCurrentApplicationEnvironments();
+    envListener.pause();
+    try {
+      if (envs.isEmpty) {
+        if (firstCall) {
+          firstCall = false;
+          // if we aren't an admin, we won't have called this, so lets call it now
+          if (!_mrClient.userHasFeaturePermissionsInCurrentApplication) {
+            // ignore: unawaited_futures
+            _mrClient.streamValley.getCurrentApplicationEnvironments();
+          }
         }
-      }
-      _serviceAccountEnvironmentsSource
-          .add(ServiceAccountEnvironments(<Environment>[], <ServiceAccount>[]));
-    } else {
-      final serviceAccounts = await _serviceAccountServiceApi
-          .searchServiceAccountsInPortfolio(_mrClient.currentPortfolio!.id!,
+        _serviceAccountEnvironmentsSource
+            .add(
+            ServiceAccountEnvironments(<Environment>[], <ServiceAccount>[]));
+      } else {
+        try {
+          final serviceAccounts = await _serviceAccountServiceApi
+              .searchServiceAccountsInPortfolio(_mrClient.currentPortfolio!.id!,
               applicationId: envs[0].applicationId,
               includePermissions: true,
-              includeSdkUrls: true)
-          .catchError((e, s) {
-        _mrClient.dialogError(e, s);
-      });
+              includeSdkUrls: true);
 
-      _serviceAccountEnvironmentsSource
-          .add(ServiceAccountEnvironments(envs, serviceAccounts));
+          _serviceAccountEnvironmentsSource
+              .add(ServiceAccountEnvironments(envs, serviceAccounts));
+        } catch (e, s) {
+          _mrClient.dialogError(e, s);
+        }
+      }
+    } finally {
+      envListener.resume();
     }
   }
 

@@ -42,13 +42,13 @@ class _ApplicationDropDownState extends State<ApplicationDropDown> {
                               value: application.id,
                               child: Text(
                                 application.name,
-                                style: Theme.of(context).textTheme.bodyText2,
+                                style: Theme.of(context).textTheme.bodyMedium,
                                 overflow: TextOverflow.ellipsis,
                               ));
                         }).toList()
                       : null,
                   hint: Text('Select application',
-                      style: Theme.of(context).textTheme.subtitle2),
+                      style: Theme.of(context).textTheme.titleSmall),
                   onChanged: (String? value) {
                     if (value != null) {
                       setState(() {

@@ -1,25 +1,22 @@
-import 'dart:html';
+import 'package:logging/logging.dart';
+import 'package:open_admin_app/analytics/analytics_event.dart';
+import 'package:open_admin_app/analytics/g4_analytics_service.dart';
 
-import 'package:usage/usage_html.dart';
+import '../analytics/analytics_service.dart';
 
+var _log = Logger('g4');
 
 class FHAnalytics {
-  static Analytics? ga;
-
-  static sendWindowPath() {
-    var path = window.location.pathname;
-    if (path != null) {
-      ga?.sendScreenView(path);
-    }
-  }
+  static AnalyticsService? ga;
 
   static sendScreenView(String viewName, {Map<String, String>? parameters}) {
-    ga?.sendScreenView(viewName);
+    ga?.send(AnalyticsPageView(title: viewName, additionalParams: parameters ?? const {}));
   }
 
   static setGA(String? id) {
-    if (id?.trim().isNotEmpty == true && ga?.trackingId != id) {
-      ga = AnalyticsHtml(id!, 'ga_test', '3.0');
+    if (id?.trim().isNotEmpty == true && ga == null) {
+      _log.fine('received g4 tracking is as $id - initializing');
+      ga = G4AnalyticsService(measurementId: id!);
     }
   }
 }

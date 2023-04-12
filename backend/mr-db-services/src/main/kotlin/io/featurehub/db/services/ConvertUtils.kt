@@ -86,6 +86,14 @@ open class ConvertUtils : Conversions {
     return QDbGroup().owningPortfolio.id.eq(portfolioId).groupMembers.person.id.eq(personId).exists()
   }
 
+  override fun isPersonMemberOfPortfolioAdminGroup(portfolioId: UUID, personId: UUID): Boolean {
+    return QDbGroup()
+      .owningPortfolio.id.eq(portfolioId)
+      .adminGroup.isTrue
+      .groupMembers.person.id.eq(personId)
+      .exists()
+  }
+
   override fun limitLength(s: String?, len: Int): String? {
     return if (s == null) null else if (s.length > len) s.substring(0, len) else s
   }
@@ -578,6 +586,10 @@ open class ConvertUtils : Conversions {
   }
 
   override fun toPortfolio(p: DbPortfolio?, opts: Opts?): Portfolio? {
+    return toPortfolio(p, opts, null, true)
+  }
+
+  override fun toPortfolio(p: DbPortfolio?, opts: Opts?, person: Person?, personNotSuperAdmin: Boolean): Portfolio? {
     if (p == null) {
       return null
     }
@@ -599,8 +611,21 @@ open class ConvertUtils : Conversions {
           .map { g: DbGroup? -> toGroup(g, opts) }
     }
     if (opts.contains(FillOpts.Applications)) {
-      portfolio.applications =
-        QDbApplication().whenArchived.isNull.portfolio.eq(p).order().name.asc().findList()
+      var appFinder = QDbApplication()
+        .whenArchived.isNull
+        .portfolio.eq(p)
+        .order().name.asc()
+
+      person?.let {
+        val portAdmin = isPersonMemberOfPortfolioAdminGroup(portfolio.id!!, it.id!!.id)
+        if (personNotSuperAdmin && !isPersonMemberOfPortfolioAdminGroup(portfolio.id!!, it.id!!.id)) {
+          appFinder = appFinder.or()
+            .environments.groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id)
+            .groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id).endOr()
+        }
+      }
+
+      portfolio.applications = appFinder.findList()
           .map { a: DbApplication? -> toApplication(a, opts) }
     }
     return portfolio

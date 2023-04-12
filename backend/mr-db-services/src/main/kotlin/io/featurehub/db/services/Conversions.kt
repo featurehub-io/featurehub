@@ -27,6 +27,7 @@ interface Conversions {
   fun personIsNotSuperAdmin(person: DbPerson?): Boolean
 
   fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean
+  fun isPersonMemberOfPortfolioAdminGroup(portfolioId: UUID, personId: UUID): Boolean
   fun personIsSuperAdmin(person: DbPerson?): Boolean
   fun getSuperuserGroup(opts: Opts?): Group?
   fun limitLength(s: String?, len: Int): String?
@@ -67,6 +68,7 @@ interface Conversions {
   fun toFeatureValue(fs: DbFeatureValue?): FeatureValue?
   fun toFeatureValue(fs: DbFeatureValue?, opts: Opts?): FeatureValue?
   fun toPortfolio(p: DbPortfolio?, opts: Opts?): Portfolio?
+  fun toPortfolio(p: DbPortfolio?, opts: Opts?, person: Person?, personNotSuperAdmin: Boolean): Portfolio?
   fun toOrganization(org: DbOrganization?, opts: Opts?): Organization?
   fun isPersonApplicationAdmin(dbPerson: DbPerson?, app: DbApplication?): Boolean
   fun isPersonApplicationAdmin(personId: UUID, appId: UUID): Boolean

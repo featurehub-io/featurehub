@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 
 import 'host.dart';
@@ -18,7 +19,7 @@ class FeatureWu {
 
   FeatureValueType type = FeatureValueType.STRING;
   bool value = false;
-  String sValue = null;
+  String? sValue = null;
 
   List<StrategyWu> strategies = [];
 
@@ -31,7 +32,7 @@ class FeatureWu {
 }
 
 class FeatureWuParser {
-  List<dynamic> json;
+  List<dynamic> json = [];
   final Map<String, FeatureWu> features = {};
 
   FeatureWuParser(this.json);
@@ -72,7 +73,7 @@ class FeatureWuParser {
             if (parts.length == 2 && value == 'ALL') {
               // strategy is fully enabled
               feature.sValue = 'enabled';
-            } else if (parts.length == 3 && value != null) {
+            } else if (parts.length == 3) {
               feature.strategies.add(StrategyWu(
                   parts[2],
                   value.toString().split(","),
@@ -86,7 +87,7 @@ class FeatureWuParser {
               // strategy is fully disabled
               feature.strategies.add(StrategyWu('disable', ['matching'],
                   'enabled', RolloutStrategyAttributeConditional.EXCLUDES));
-            } else if (parts.length == 3 && value != null) {
+            } else if (parts.length == 3) {
               feature.strategies.add(StrategyWu(
                   parts[2],
                   value.toString().split(","),
@@ -138,19 +139,16 @@ class FeaturesWuCommand {
 
     // now find all the environments and start pushing the values of the features
     final envs =
-        await envApi.findEnvironments(application.id, includeFeatures: true);
+        await envApi.findEnvironments(application.id!, includeFeatures: true);
 
     for (final env in envs) {
-      final featureVals = (await envFeatApi.getFeaturesForEnvironment(env.id))
+      final featureVals = (await envFeatApi.getFeaturesForEnvironment(env.id!))
           .featureValues
           .toList();
 
       for (final feat in parser.features.values) {
         final fv = featureVals.firstWhere((f) => f.key == feat.name,
-            orElse: () => FeatureValue()
-              ..locked = false
-              ..rolloutStrategies = []
-              ..key = feat.name);
+            orElse: () => FeatureValue(key: feat.name, locked: false, rolloutStrategies: []));
 
         if (fv.id == null) {
           featureVals.add(fv);
@@ -164,14 +162,13 @@ class FeaturesWuCommand {
 
         if (feat.strategies.isNotEmpty) {
           feat.strategies.forEach((readStrategy) {
-            RolloutStrategy existingRS = fv.rolloutStrategies.firstWhere(
+            RolloutStrategy? existingRS = fv.rolloutStrategies.firstWhereOrNull(
                 (rs) =>
                     rs.attributes.length == 1 &&
                     rs.attributes[0].fieldName == readStrategy.name,
-                orElse: () => null);
+                );
 
-            var updatingRS = existingRS ?? RolloutStrategy()
-              ..name = readStrategy.name;
+            var updatingRS = existingRS ?? RolloutStrategy(name: readStrategy.name);
 
             if (existingRS == null) {
               fv.rolloutStrategies.add(updatingRS);
@@ -191,27 +188,22 @@ class FeaturesWuCommand {
 
       print(
           "updating features for environment ${env.name} in application ${application.name}");
-      await envFeatApi.updateAllFeaturesForEnvironment(env.id, featureVals);
+      await envFeatApi.updateAllFeaturesForEnvironment(env.id!, featureVals);
     }
   }
 
-  Future<Feature> createFeature(
+  Future<Feature?> createFeature(
       Application app, String featureName, FeatureValueType type) async {
-    final newFeature = Feature()
-      ..name = featureName
-      ..key = featureName
-      ..valueType = type;
+    final newFeature = Feature(name: featureName, key: featureName, valueType: type);
 
-    final features = await api.createFeaturesForApplication(app.id, newFeature);
+    final features = await api.createFeaturesForApplication(app.id!, newFeature);
 
-    return features.firstWhere((f) => f.name == featureName,
-        orElse: () => null);
+    return features.firstWhereOrNull((f) => f.name == featureName);
   }
 
-  Future<Feature> findFeature(Application app, String featureName) async {
-    final features = await api.getAllFeaturesForApplication(app.id);
+  Future<Feature?> findFeature(Application app, String featureName) async {
+    final features = await api.getAllFeaturesForApplication(app.id!);
 
-    return features.firstWhere((f) => f.name == featureName,
-        orElse: () => null);
+    return features.firstWhereOrNull((f) => f.name == featureName);
   }
 }

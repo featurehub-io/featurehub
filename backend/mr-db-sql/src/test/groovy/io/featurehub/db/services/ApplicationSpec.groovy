@@ -5,12 +5,14 @@ import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
+import io.featurehub.db.api.PortfolioApi
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
+import io.featurehub.mr.model.ApplicationSummary
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Group
@@ -18,6 +20,7 @@ import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.RoleType
+import io.featurehub.mr.model.SortOrder
 import spock.lang.Shared
 
 class ApplicationSpec extends BaseSpec {
@@ -28,6 +31,7 @@ class ApplicationSpec extends BaseSpec {
   @Shared EnvironmentSqlApi environmentSqlApi
   @Shared Person portfolioPerson
   @Shared Group p1AdminGroup
+  @Shared PortfolioApi portfolioApi
 
   def setupSpec() {
     baseSetupSpec()
@@ -36,14 +40,14 @@ class ApplicationSpec extends BaseSpec {
 
     environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
 
-    appApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureSqlApi))
+    appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureSqlApi))
 
     // go create a new person and then portfolios and add this person as a portfolio admin
     portfolioPerson = personSqlApi.createPerson("appspec@mailinator.com", "AppSpec", "appspec", superPerson.id.id, Opts.empty());
 
-    def portfolioSqlApi = new PortfolioSqlApi(database, convertUtils, Mock(ArchiveStrategy))
-    def p1 = portfolioSqlApi.createPortfolio(new Portfolio().name("p1-app-1"), Opts.empty(), superPerson);
-    def p2 = portfolioSqlApi.createPortfolio(new Portfolio().name("p1-app-2"), Opts.empty(), superPerson);
+    portfolioApi = new PortfolioSqlApi(database, convertUtils, Mock(ArchiveStrategy))
+    def p1 = portfolioApi.createPortfolio(new Portfolio().name("p1-app-1"), Opts.empty(), superPerson);
+    def p2 = portfolioApi.createPortfolio(new Portfolio().name("p1-app-2"), Opts.empty(), superPerson);
 
     portfolio1 = Finder.findPortfolioById(p1.id);
     portfolio2 = Finder.findPortfolioById(p2.id);
@@ -57,6 +61,8 @@ class ApplicationSpec extends BaseSpec {
       Application app =  appApi.createApplication(portfolio1.id, new Application().name("ghost").description("some desc"), superPerson)
     and: "i find it"
       List<Application> found = appApi.findApplications(portfolio1.id, 'ghost', null, Opts.empty(), superPerson, true)
+    and: "i get the summary"
+      ApplicationSummary summary = appApi.getApplicationSummary(app.id)
     and: "i update it"
       Application updated = appApi.updateApplication(app.id, app.name("ghosty"), Opts.empty())
     and: "i delete it"
@@ -73,6 +79,10 @@ class ApplicationSpec extends BaseSpec {
       deleted == Boolean.TRUE
       afterDelete.size() == 0
       afterDeleteWithArchives.size() == 1
+      summary.environmentCount == 0
+      summary.featureCount == 0
+      !summary.groupsHavePermission
+      !summary.serviceAccountsHavePermission
   }
 
 
@@ -102,12 +112,14 @@ class ApplicationSpec extends BaseSpec {
     and: "then we give them access to a portfolio group that still has no access"
       Group group = groupSqlApi.createGroup(portfolio1.id, new Group().name("envtest-appX1"), superPerson)
       group = groupSqlApi.addPersonToGroup(group.id, person.id.id, Opts.opts(FillOpts.Members))
+      def portfoliosNoPerms = portfolioApi.findPortfolios(null, SortOrder.ASC, Opts.opts(FillOpts.Applications), person)
     and: "the superuser adds to a group as well"
       Group superuserGroup = groupSqlApi.createGroup(portfolio1.id, new Group().name("envtest-appSuperuser"), superPerson)
       superuserGroup = groupSqlApi.addPersonToGroup(superuserGroup.id, superPerson.id.id, Opts.opts(FillOpts.Members))
     and: "with no environment access the two groups have no visibility to applications"
       def stillNotInAnyGroupsPerson = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
       def stillNotInAnyGroupsSuperuser = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), superPerson, false)
+      def summaryApp1NoPerms = appApi.getApplicationSummary(app1.id)
     and: "i add an environment to each application and add group permissions"
       def app1Env1 = environmentSqlApi.create(new Environment().name("dev"), app1, superPerson)
       def app2Env1 = environmentSqlApi.create(new Environment().name("dev"), app2, superPerson)
@@ -118,17 +130,25 @@ class ApplicationSpec extends BaseSpec {
       superuserGroup = groupSqlApi.updateGroup(superuserGroup.id, superuserGroup.environmentRoles([
 	      new EnvironmentGroupRole().environmentId(app1Env1.id).roles([RoleType.READ])
       ]), null, true, true, true, Opts.opts(FillOpts.Members))
+      def summaryApp1Perms = appApi.getApplicationSummary(app1.id)
+      def portfoliosPerms = portfolioApi.findPortfolios(null, SortOrder.ASC, Opts.opts(FillOpts.Applications), person)
     and: "person should now be able to see two groups"
       def shouldSeeTwoAppsPerson = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
     and: "superperson should now be able to see 1 group"
       def shouldSeeOneAppsSuperperson = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), superPerson, false)
     then:
+      portfoliosNoPerms[0].applications.size() == 0
+      portfoliosPerms[0].applications.size() > 0
       notInAnyGroupsAccess.size() == 0
       stillNotInAnyGroupsPerson.size() == 0
       stillNotInAnyGroupsSuperuser.size() == 0
       superuserFoundApps.size() == 2
       shouldSeeTwoAppsPerson.size() == 2
       shouldSeeOneAppsSuperperson.size() == 1
+      !summaryApp1NoPerms.groupsHavePermission
+      summaryApp1NoPerms.environmentCount == 0
+      summaryApp1Perms.groupsHavePermission
+      summaryApp1Perms.environmentCount == 1
   }
 
   def "i cannot create two applications with the same name"() {

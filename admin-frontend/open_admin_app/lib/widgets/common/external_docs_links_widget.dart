@@ -7,13 +7,11 @@ class ExternalDocsLinksWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
+    return Row(children: const [
       FHExternalLinkWidget(label: 'Docs', tooltipMessage: 'Documentation',
-        link: 'https://docs.featurehub.io', icon: Icon(Feather.external_link,
-            color: Theme.of(context).colorScheme.onPrimary)),
+        link: 'https://docs.featurehub.io', icon: Icon(Feather.external_link)),
       FHExternalLinkWidget(label: 'GitHub', tooltipMessage: 'GitHub', link: 'https://github.com/featurehub-io/featurehub',
-      icon: Icon(AntDesign.github,
-          color: Theme.of(context).colorScheme.onPrimary)),
+      icon: Icon(AntDesign.github)),
     ]);
   }
 }

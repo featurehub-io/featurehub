@@ -39,15 +39,15 @@ dependencies:
       url: https://github.com/adarsh-technocrat/flutter-icons.git
       branch: null-safety-migration
   auto_size_text: ^3.0.0-nullsafety.0
-  collection: ^1.15.0
+  collection: ^1.1.0
   advanced_datatable: ^0.0.8
   syncfusion_flutter_datagrid: ^20.3.52
   multiselect: ^0.0.7
   side_sheet: ^1.0.3
   async: ^2.9.0
-  usage: ^4.1.0
 
 dev_dependencies:
+  meta: ^1.8.0
   flutter_lints: ^1.0.4
   flutter_test:
     sdk: flutter
@@ -63,6 +63,7 @@ flutter:
   assets:
     - assets/logo/FeatureHub-icon.png
     - assets/logo/FeatureHubPrimaryWhite.png
+    - assets/logo/FeatureHub-primary-navy.png
     - assets/logo/FlowerDarkBackground.png
     - assets/images/meditation.png
 

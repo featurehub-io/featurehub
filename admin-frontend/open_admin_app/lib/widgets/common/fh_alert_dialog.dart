@@ -38,10 +38,7 @@ class _FHAlertDialogState extends State<FHAlertDialog> {
             if (widget.escKey != null) {
               widget.escKey!();
             } else {
-              final bloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-              if (bloc != null) {
-                bloc.removeOverlay();
-              }
+              BlocProvider.of<ManagementRepositoryClientBloc>(context).removeOverlay();
             }
           }
         },

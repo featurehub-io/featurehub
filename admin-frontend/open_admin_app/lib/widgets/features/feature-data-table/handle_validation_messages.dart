@@ -21,7 +21,7 @@ class NoEnvironmentMessage extends StatelessWidget {
         children: <Widget>[
           SelectableText(
               'Either there are no environments defined for this application or you don\'t have permissions to access any of them',
-              style: Theme.of(context).textTheme.caption),
+              style: Theme.of(context).textTheme.bodySmall),
           StreamBuilder<ReleasedPortfolio?>(
               stream: bloc.mrClient.streamValley.currentPortfolioStream,
               builder: (context, snapshot) {
@@ -31,7 +31,6 @@ class NoEnvironmentMessage extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 8.0),
                     child: FHUnderlineButton(
                         title: 'Go to environments settings',
-                        keepCase: true,
                         onPressed: () => ManagementRepositoryClientBloc.router
                                 .navigateTo(context, '/app-settings', params: {
                               'id': [bloc.applicationId!],
@@ -60,7 +59,7 @@ class NoFeaturesMessage extends StatelessWidget {
       child: Column(
         children: <Widget>[
           SelectableText('There are no features defined for this application',
-              style: Theme.of(context).textTheme.caption),
+              style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
     );

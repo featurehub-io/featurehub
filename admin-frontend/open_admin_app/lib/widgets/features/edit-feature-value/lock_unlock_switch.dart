@@ -60,7 +60,7 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
             ),
             Text(
               _locked ? 'Locked' : 'Unlocked',
-              style: Theme.of(context).textTheme.caption,
+              style: Theme.of(context).textTheme.bodySmall,
             )
           ],
         )

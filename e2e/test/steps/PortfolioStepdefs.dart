@@ -26,7 +26,7 @@ class PortfolioStepdefs {
   void iAddAGroupToSharedPortfolio(String groupName) async {
     Portfolio? p = shared.portfolio;
 
-    assert(p != null, 'The portfolio must be set');
+
 
     Group group = new Group(name: groupName);
     final createdGroup = await userCommon.groupService.createGroup(p.id!, group);
@@ -187,6 +187,7 @@ class PortfolioStepdefs {
               app.id!, new Environment(name: envName, description: envName))
           .catchError((e, s) {
         print("error creating environment: " + e.toString());
+        throw e;
       });
     }
     assert(environment != null, 'Failed to create environment');

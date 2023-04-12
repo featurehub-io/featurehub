@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:html';
+import 'dart:html'; // ignore: avoid_web_libraries_in_flutter
 
 import 'package:bloc_provider/bloc_provider.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
@@ -85,7 +84,6 @@ class ManagementRepositoryClientBloc implements Bloc {
   final _routerRedrawRouteSource = BehaviorSubject<RouteChange?>();
   final _menuOpened = BehaviorSubject<bool>.seeded(true);
   final _stepperOpened = BehaviorSubject<bool>.seeded(false);
-  late Uri _basePath;
   late StreamSubscription<Portfolio?> _personPermissionInPortfolioChanged;
   late ServerCapabilities identityProviders;
 
@@ -98,7 +96,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     if (!oldVal && value) {
       // Rocket needs the full story
-      streamValley.getCurrentApplicationEnvironments();
+      streamValley.triggerRocket();
     }
 
     _stepperOpened.add(value);
@@ -136,7 +134,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     _landingActions = [];
 
-    la.forEach((action) { action(this); });
+    for (var action in la) { action(this); }
   }
 
   void swapRoutes(RouteChange route) {
@@ -243,7 +241,6 @@ class ManagementRepositoryClientBloc implements Bloc {
   ManagementRepositoryClientBloc({String? basePathUrl})
       : _client = ApiClient(basePath: basePathUrl ?? homeUrl()) {
     streamValley = StreamValley(personState);
-    _basePath = Uri.parse(_client.basePath);
     webInterface.setOrigin();
 
     _client.passErrorsAsApiResponses = true;
@@ -318,9 +315,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
       FHAnalytics.setGA(setupResponse.capabilityInfo['trackingId']);
 
-      if (setupResponse.providerInfo != null) {
-        identityProviders.identityInfo = setupResponse.providerInfo;
-      }
+      identityProviders.identityInfo = setupResponse.providerInfo;
 
       // yes its initialised, we may not have logged in yet
       if (bearerToken != null) {
@@ -340,9 +335,7 @@ class ManagementRepositoryClientBloc implements Bloc {
                   jsonDecode(e.message!), 'SetupMissingResponse')
               as SetupMissingResponse;
           identityProviders.identityProviders = smr.providers;
-          if (smr.providerInfo != null) {
-            identityProviders.identityInfo = smr.providerInfo;
-          }
+          identityProviders.identityInfo = smr.providerInfo;
           FHAnalytics.setGA(smr.capabilityInfo['trackingId']);
           routeSlot(RouteSlot.setup);
         } else {
@@ -435,6 +428,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void setPerson(Person p) {
+    prefs.setEmail(p.email!);
     // print("set person $p and org $organization");
     personState.updatePerson(p, organization?.id); //
   }

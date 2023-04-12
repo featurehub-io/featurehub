@@ -95,7 +95,7 @@ class _EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
                   padding: const EdgeInsets.only(top: 30.0),
                   child: Text(
                     'Remove Admin Service Account from a group or add a new one',
-                    style: Theme.of(context).textTheme.caption,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
               ],

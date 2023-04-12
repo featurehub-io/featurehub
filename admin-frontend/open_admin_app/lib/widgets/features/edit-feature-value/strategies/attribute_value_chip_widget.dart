@@ -21,7 +21,6 @@ class AttributeValueChipWidget extends StatelessWidget {
             onDeleted: () => onSelected(value),
             label: Text(
               label,
-              style: Theme.of(context).textTheme.bodyText1,
             )),
         const FHLabelContainer(text: 'OR')
       ],

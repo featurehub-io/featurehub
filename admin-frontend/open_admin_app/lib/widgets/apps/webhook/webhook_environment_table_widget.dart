@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_configuration_widget.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_environment_page_tablesource.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button_green.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 
 
@@ -52,7 +51,10 @@ class _WebhookEnvironmentTableState extends State<WebhookEnvironmentTable> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  FHFlatButtonGreen(onPressed: () => tableSource.refresh(), title: 'Refresh')
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: FilledButton(onPressed: () => tableSource.refresh(), child: const Text('Refresh'),),
+                  )
                 ],
               ),
               SelectionArea(

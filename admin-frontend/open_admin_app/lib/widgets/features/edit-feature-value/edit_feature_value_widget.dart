@@ -119,10 +119,10 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                 final items = strategiesLatest
                                                     .data![oldIndex];
 
-                                                strategiesLatest.data!
-                                                  ..removeWhere((element) =>
-                                                      element.id == items.id)
-                                                  ..insert(newIndex, items);
+                                            strategiesLatest.data!
+                                              ..removeWhere((element) =>
+                                                  element.id == items.id)
+                                              ..insert(newIndex, items);
 
                                                 strategyBloc
                                                     .updateStrategyAndFeatureValue();
@@ -156,7 +156,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                           context); //close the side panel
                                                     },
                                                     child: const Text("Cancel")),
-                                                ElevatedButton(
+                                                FilledButton(
                                                     onPressed: canSave ? () async {
                                                             try {
                                                               await fvBloc

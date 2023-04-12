@@ -9,7 +9,6 @@ class LinkToApplicationsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return FHUnderlineButton(
         title: 'Go to applications',
-        keepCase: true,
         onPressed: () => ManagementRepositoryClientBloc.router
             .navigateTo(context, '/applications'));
   }

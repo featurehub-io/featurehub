@@ -38,10 +38,10 @@ class AttributeStrategyWidget extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius:
                           const BorderRadius.all(Radius.circular(6.0)),
-                      color: Theme.of(context).primaryColorLight,
+                      color: Theme.of(context).colorScheme.secondaryContainer,
                     ),
                     child: Text('AND',
-                        style: Theme.of(context).textTheme.overline)),
+                        style: Theme.of(context).textTheme.labelSmall)),
               EditAttributeStrategyWidget(
                 attribute: attribute,
                 attributeIsFirst: attributeIsFirst,
@@ -52,8 +52,8 @@ class AttributeStrategyWidget extends StatelessWidget {
                 Text(violation.violation.toDescription(),
                     style: Theme.of(context)
                         .textTheme
-                        .bodyText2!
-                        .copyWith(color: Theme.of(context).errorColor))
+                        .bodyMedium!
+                        .copyWith(color: Theme.of(context).colorScheme.error))
             ]);
           } catch (e) {
             return const SizedBox.shrink();
