@@ -5,22 +5,15 @@ import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.messaging.model.FeatureMessagingUpdate
-import io.featurehub.messaging.model.MessagingRolloutStrategy
-import io.featurehub.messaging.model.MessagingRolloutStrategyAttribute
-import io.featurehub.messaging.model.MessagingStrategyUpdate
 import io.featurehub.mr.model.RolloutStrategy
-import io.featurehub.mr.model.RolloutStrategyAttribute
 
 interface FeatureMessagingConverter {
   fun toFeatureMessagingUpdate(
     featureValue: DbFeatureValue,
-    lockUpdate: SingleFeatureValueUpdate<Boolean>,
-    defaultValueUpdate: SingleFeatureValueUpdate<String>,
-    retiredUpdate: SingleFeatureValueUpdate<Boolean>,
-    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>
+    lockUpdate: SingleFeatureValueUpdate<Boolean>?,
+    defaultValueUpdate: SingleFeatureValueUpdate<String>?,
+    retiredUpdate: SingleFeatureValueUpdate<Boolean>?,
+    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>?
   ): FeatureMessagingUpdate
 
-  fun toMessaginStrategyUpdate(rolloutStrategyUpdate: RolloutStrategyUpdate): MessagingStrategyUpdate
-  fun toMessagingRolloutStrategy(rolloutStrategy: RolloutStrategy): MessagingRolloutStrategy
-  fun toRolloutStrategyAttribute(rolloutStrategyAttribute: RolloutStrategyAttribute): MessagingRolloutStrategyAttribute
 }

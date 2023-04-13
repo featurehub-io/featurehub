@@ -14,53 +14,72 @@ import java.util.ArrayList
 class FeatureMessagingConverterImpl : FeatureMessagingConverter{
   override fun toFeatureMessagingUpdate(
     featureValue: DbFeatureValue,
-    lockUpdate: SingleFeatureValueUpdate<Boolean>,
-    defaultValueUpdate: SingleFeatureValueUpdate<String>,
-    retiredUpdate: SingleFeatureValueUpdate<Boolean>,
-    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>
+    lockUpdate: SingleFeatureValueUpdate<Boolean>?,
+    defaultValueUpdate: SingleFeatureValueUpdate<String>?,
+    retiredUpdate: SingleFeatureValueUpdate<Boolean>?,
+    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>?
   ): FeatureMessagingUpdate {
 
+    val environment = featureValue.environment
+    val parentApplication = environment.parentApplication
+    val portfolio = parentApplication.portfolio
     return FeatureMessagingUpdate()
       .featureKey(featureValue.feature.key)
-      .environmentId(featureValue.environment.id)
+      .environmentId(environment.id)
       .whoUpdated(featureValue.whoUpdated.name)
       .whenUpdated(featureValue.whenUpdated.atOffset(ZoneOffset.UTC))
-      .applicationId(featureValue.environment.parentApplication.id)
+      .applicationId(parentApplication.id)
+      .portfolioId(portfolio.id)
+      .organizationId(portfolio.organization.id)
       .let {
-        if (defaultValueUpdate.hasChanged) it.featureValueUpdated(
+        val defaultValueUpdated = defaultValueUpdate?.updated
+        val defaultValuePrevious = defaultValueUpdate?.previous
+        if (defaultValueUpdate?.hasChanged == true && defaultValueUpdated != null && defaultValuePrevious != null) it.featureValueUpdated(
           MessagingFeatureValueUpdate()
-            .updated(defaultValueUpdate.updated)
-            .previous(defaultValueUpdate.previous)
+            .valueType(featureValue.feature.valueType)
+            .updated(defaultValueUpdated)
+            .previous(defaultValuePrevious)
         )
         else it
       }
       .let {
-        if (lockUpdate.hasChanged) it.lockUpdated(
-          MessagingLockUpdate()
-            .updated(lockUpdate.updated!!)
-            .previous(lockUpdate.previous!!)
+        val lockUpdated = lockUpdate?.updated
+        val lockPrevious = lockUpdate?.previous
+        if (lockUpdate?.hasChanged == true && lockUpdated != null && lockPrevious != null)
+          it.lockUpdated(MessagingLockUpdate()
+            .updated(lockUpdated)
+            .previous(lockPrevious)
         ) else it
       }
       .let {
-        if (retiredUpdate.hasChanged) it.retiredUpdated(
-          MessagingRetiredUpdate()
-            .updated(retiredUpdate.updated!!)
-            .previous(retiredUpdate.previous!!)
+        val retiredUpdated = retiredUpdate?.updated
+        val retiredPrevious = retiredUpdate?.previous
+        if (retiredUpdate?.hasChanged == true && retiredUpdated != null && retiredPrevious != null)
+          it.retiredUpdated(MessagingRetiredUpdate()
+            .updated(retiredUpdated)
+            .previous(retiredPrevious)
         ) else it
       }
       .let {
-        if (strategyUpdates.hasChanged && strategyUpdates.updated.isNotEmpty())
-          it.strategiesUpdated(strategyUpdates.updated.map { rolloutStrategyUpdate ->  toMessaginStrategyUpdate(rolloutStrategyUpdate) })
-        if (strategyUpdates.hasChanged && strategyUpdates.reordered.isNotEmpty())
-          it.strategiesReordered(MessagingStrategiesReorder().reordered(
-            strategyUpdates.reordered.map { rolloutStrategy -> toMessagingRolloutStrategy(rolloutStrategy) }
+        val messagingStrategiesReorder = MessagingStrategiesReorder()
+        if (strategyUpdates?.hasChanged == true && strategyUpdates.updated.isNotEmpty())
+          it.strategiesUpdated(strategyUpdates.updated.map { rolloutStrategyUpdate ->  toMessagingStrategyUpdate(rolloutStrategyUpdate) })
+        if (strategyUpdates?.hasChanged == true && strategyUpdates.reordered.isNotEmpty())
+          it.strategiesReordered(
+            messagingStrategiesReorder.reordered(
+          strategyUpdates.reordered.map { rolloutStrategy -> toMessagingRolloutStrategy(rolloutStrategy) }
+        ))
+        if (strategyUpdates?.hasChanged == true && strategyUpdates.previous.isNotEmpty())
+          it.strategiesReordered(
+            messagingStrategiesReorder.previous(
+            strategyUpdates.previous.map { rolloutStrategy -> toMessagingRolloutStrategy(rolloutStrategy) }
           ))
         else it
       }
 
   }
 
-  override fun toMessaginStrategyUpdate(rolloutStrategyUpdate: RolloutStrategyUpdate): MessagingStrategyUpdate {
+  private fun toMessagingStrategyUpdate(rolloutStrategyUpdate: RolloutStrategyUpdate): MessagingStrategyUpdate {
     val new = rolloutStrategyUpdate.new
     val old = rolloutStrategyUpdate.old
     return MessagingStrategyUpdate()
@@ -69,7 +88,7 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
       .updateType(StrategyUpdateType.fromValue(rolloutStrategyUpdate.type))
   }
 
-  override fun toMessagingRolloutStrategy(rolloutStrategy: RolloutStrategy): MessagingRolloutStrategy {
+  private fun toMessagingRolloutStrategy(rolloutStrategy: RolloutStrategy): MessagingRolloutStrategy {
     val attributes = rolloutStrategy.attributes
     return MessagingRolloutStrategy()
       .id(rolloutStrategy.id ?: "rs-id")
@@ -79,7 +98,7 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
       .attributes(attributes?.map { rsa: RolloutStrategyAttribute -> toRolloutStrategyAttribute(rsa) } ?: ArrayList())
   }
 
-  override fun toRolloutStrategyAttribute(rolloutStrategyAttribute: RolloutStrategyAttribute): MessagingRolloutStrategyAttribute {
+  private fun toRolloutStrategyAttribute(rolloutStrategyAttribute: RolloutStrategyAttribute): MessagingRolloutStrategyAttribute {
     return MessagingRolloutStrategyAttribute()
       .conditional(rolloutStrategyAttribute.conditional!!)
       .values(rolloutStrategyAttribute.values)
