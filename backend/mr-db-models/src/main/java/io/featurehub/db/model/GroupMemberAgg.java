@@ -3,8 +3,8 @@ package io.featurehub.db.model;
 import io.ebean.annotation.Aggregation;
 import io.ebean.annotation.View;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import java.util.UUID;
 
 @Entity

@@ -3,8 +3,8 @@ package io.featurehub.db.model;
 import io.ebean.Model;
 import org.jetbrains.annotations.NotNull;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import java.util.Objects;
 import java.util.UUID;
 

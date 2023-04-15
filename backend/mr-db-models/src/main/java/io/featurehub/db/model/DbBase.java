@@ -4,9 +4,9 @@ import io.ebean.Model;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 import java.util.UUID;
 

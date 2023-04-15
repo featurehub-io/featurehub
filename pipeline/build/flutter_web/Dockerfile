@@ -11,7 +11,7 @@ LABEL io.featurehub.flutter.name="debian linux image for Flutter web" \
 
 WORKDIR /
 
-RUN apt-get update -y
+RUN apt-get update -y && apt-get upgrade
 RUN apt-get install -y \
   git \
   wget \
@@ -25,7 +25,7 @@ ARG cachebust=1
 # Install Flutter.
 ENV FLUTTER_ROOT="/opt/flutter"
 ENV FLUTTER="/opt/flutter"
-ARG FLUTTER_VERSION=3.3.10
+ARG FLUTTER_VERSION=3.7.10
 RUN git clone --depth=1 --branch $FLUTTER_VERSION https://github.com/flutter/flutter "${FLUTTER_ROOT}"
 ENV PATH="${FLUTTER_ROOT}/bin:${PATH}"
 

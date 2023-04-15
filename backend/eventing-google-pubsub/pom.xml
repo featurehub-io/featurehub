@@ -38,7 +38,7 @@
   </licenses>
 
   <properties>
-    <google-pubsub.version>1.122.1</google-pubsub.version>
+    <google-pubsub.version>1.123.9</google-pubsub.version>
   </properties>
 
   <dependencies>

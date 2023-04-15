@@ -52,7 +52,7 @@
     <dependency>
       <groupId>com.bluetrainsoftware.bathe</groupId>
       <artifactId>bathe-booter</artifactId>
-      <version>[3.1, 4)</version>
+      <version>3.2</version>
     </dependency>
 
     <!-- reads system properties from -Pfilenane and the main jump class from -R -->
@@ -121,7 +121,7 @@
     <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
-      <version>1.33</version>
+      <version>2.0</version>
     </dependency>
 
     <!-- allows us to extract data from env variables and put it into the logs -->

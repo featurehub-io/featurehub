@@ -37,7 +37,7 @@
   </licenses>
 
   <properties>
-    <cloudevents.version>2.4.0</cloudevents.version>
+    <cloudevents.version>2.4.2</cloudevents.version>
   </properties>
 
   <dependencies>
@@ -50,19 +50,19 @@
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>1.19.0</version>
+      <version>1.24.0</version>
     </dependency>
 
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-sdk</artifactId>
-      <version>1.19.0</version>
+      <version>1.24.0</version>
     </dependency>
 
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-sdk-trace</artifactId>
-      <version>1.19.0</version>
+      <version>1.24.0</version>
     </dependency>
 
     <dependency>
