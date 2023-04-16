@@ -75,12 +75,6 @@
     </dependency>
 
     <dependency>
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
-      <version>4.0.0</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.glassfish.jersey.ext</groupId>
       <artifactId>jersey-bean-validation</artifactId>
       <version>${jersey.version}</version>
@@ -106,6 +100,12 @@
       <groupId>cd.connect.jersey</groupId>
       <artifactId>connect-jersey-common</artifactId>
       <version>2.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-common</artifactId>
+      <version>1.2-SNAPSHOT</version>
     </dependency>
 
     <dependency>
