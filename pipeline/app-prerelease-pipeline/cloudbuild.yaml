@@ -1,0 +1,86 @@
+timeout: 1800s
+
+substitutions:
+  _GCS_CACHE_BUCKET: demohub-build-cache
+
+steps:
+  - waitFor: ['-']
+    name: gcr.io/cloud-builders/gsutil
+    dir: /root
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        (
+          gsutil cp gs://${_GCS_CACHE_BUCKET}/fh-m2-cache.tar.gz /tmp/m2-cache.tar.gz &&
+          tar -xzf /tmp/m2-cache.tar.gz
+        ) || echo 'Cache not found'
+    volumes:
+      - name: user.home
+        path: /root
+  - name: 'gcr.io/cloud-builders/docker'
+    id: docker-login
+    secretEnv: ['REGISTRY_USERNAME', 'REGISTRY_PASSWORD']
+    args:
+      - login
+      - -u
+      - $REGISTRY_USERNAME
+      - --password
+      - $REGISTRY_PASSWORD
+    volumes:
+      - name: user.docker
+        path: /root/.docker
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
+    entrypoint: '/bin/sh'
+    id: tile-install
+    args:
+      - '-c'
+      - 'cd backend && mvn -T4C -s ../pipeline/m2/settings.xml -Dmaven.wagon.http.retryHandler.count=3 --no-transfer-progress install -f pom-first.xml'
+    volumes:
+      - name: user.home
+        path: /root
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
+    entrypoint: '/bin/sh'
+    args:
+      - '-c'
+      - 'mvn -s pipeline/m2/settings.xml -T4C --no-transfer-progress -Dmaven.wagon.http.retryHandler.count=3 -DaltDeploymentRepository=artifact-registry::default::artifactregistry://us-central1-maven.pkg.dev/demohub-283022/fh-build-repo deploy -f pom.xml'
+    waitFor:
+      - tile-install
+    volumes:
+      - name: user.home
+        path: /root
+      - name: user.docker
+        path: /root/.docker
+#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
+#    entrypoint: '/bin/sh'
+#    secretEnv: ['REGISTRY_USERNAME', 'REGISTRY_PASSWORD']
+#    args:
+#      - '-c'
+#      - 'cd backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress -Dmaven.wagon.http.retryHandler.count=3 -DaltDeploymentRepository=artifact-registry::default::artifactregistry://us-central1-maven.pkg.dev/demohub-283022/fh-build-repo -Ddocker.goal=build -f pom-packages.xml -DskipTests -Ddocker-cloud-build=true -Dbuild.version=$_RC_BUILD_NO clean install'
+#    volumes:
+#      - name: user.home
+#        path: /root
+
+  # Saves the files to the GCS cache, but NEVER STORE OUR OWN
+  - name: gcr.io/cloud-builders/gsutil
+    dir: /root
+    entrypoint: bash
+    # Caches the local Maven repository.
+    args:
+      - -c
+      - |
+        rm -rf ~/.m2/repository/io/featurehub &&
+        tar -czf /tmp/m2-cache.tar.gz .m2 &&
+        gsutil cp /tmp/m2-cache.tar.gz gs://${_GCS_CACHE_BUCKET}/fh-m2-cache.tar.gz
+    volumes:
+      - name: user.home
+        path: /root
+availableSecrets:
+  secretManager:
+    - versionName: projects/676228694437/secrets/DOCKERHUB_USER_NAME/versions/latest
+      env: 'REGISTRY_USERNAME'
+    - versionName: projects/676228694437/secrets/DOCKERHUB_PASSWORD/versions/latest
+      env: 'REGISTRY_PASSWORD'
+options:
+  machineType: 'N1_HIGHCPU_8'
+

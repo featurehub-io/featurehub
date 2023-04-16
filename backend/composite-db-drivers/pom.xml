@@ -43,7 +43,7 @@
   </licenses>
 
   <properties>
-    <cloud-sql-version>1.7.2</cloud-sql-version>
+    <cloud-sql-version>1.11.1</cloud-sql-version>
   </properties>
 
   <dependencies>
@@ -58,7 +58,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>42.5.1</version>
+      <version>42.6.0</version>
     </dependency>
 
     <dependency>
@@ -68,9 +68,9 @@
     </dependency>
 
     <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.31</version>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <version>8.0.32</version>
     </dependency>
 
     <dependency>
@@ -84,18 +84,6 @@
       <groupId>com.google.cloud.sql</groupId>
       <artifactId>mysql-socket-factory-connector-j-8</artifactId>
       <version>${cloud-sql-version}</version>
-      <exclusions>
-        <exclusion> <!-- remove this when the library itself updates -->
-          <groupId>com.google.oauth-client</groupId>
-          <artifactId>google-oauth-client</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.oauth-client</groupId>
-      <artifactId>google-oauth-client</artifactId>
-      <version>1.34.1</version>
     </dependency>
 
     <dependency>

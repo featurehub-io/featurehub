@@ -42,6 +42,28 @@ class FeatureStepdefs {
         environment.id!, featureKey, featureValue..valueBoolean = b);
   }
 
+  @And(
+      r'I cannot set the boolean feature value as {string} for environment {string} for feature {string}')
+  void iCannotSetTheBooleanFeatureValueAsTrue(
+      String value, String env, String featureKey) async {
+    Environment? environment =
+        await userCommon.findExactEnvironment(env, shared.application.id);
+    String boolAsString;
+    boolAsString = value;
+    bool b = boolAsString == 'true';
+
+    FeatureValue featureValue = await userCommon.environmentFeatureServiceApi
+        .getFeatureForEnvironment(environment!.id!, featureKey);
+
+    try {
+      await userCommon.environmentFeatureServiceApi.updateFeatureForEnvironment(
+          environment.id!, featureKey, featureValue..valueBoolean = b);
+
+      throw Exception("Was able to set feature value and should not be able to");
+    } catch (e) {
+    }
+  }
+
   @And(r'I choose the application {string} in portfolio {string}')
   void iGetAllOfTheFeatureValuesForTheApplicationInPortfolio(
       String app, String portfolio) async {

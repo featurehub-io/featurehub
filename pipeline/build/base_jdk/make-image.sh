@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build -t featurehub/base_jdk:1.11 .
+docker build --platform linux/amd64 -t featurehub/base_jdk:1.12 .

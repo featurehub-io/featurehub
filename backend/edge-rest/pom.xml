@@ -96,7 +96,7 @@
             <tile>io.featurehub.tiles:tile-app:[1.1,2)</tile>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
             <tile>org.avaje.tile:java-compile:11</tile>
-            <tile>io.ebean.tile:enhancement:${ebean.version}</tile>
+            <tile>io.ebean.tile:enhancement:${ebean.tile.version}</tile>
           </tiles>
         </configuration>
       </plugin>

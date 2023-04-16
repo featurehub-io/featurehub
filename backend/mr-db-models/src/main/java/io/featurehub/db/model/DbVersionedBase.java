@@ -1,7 +1,7 @@
 package io.featurehub.db.model;
 
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Version;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Version;
 
 @MappedSuperclass
 public class DbVersionedBase extends DbBase {

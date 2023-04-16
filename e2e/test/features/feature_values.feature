@@ -69,13 +69,13 @@ Feature: Create feature values
     And I create an environment "dev"
     And I create a feature flag "FEATURE_CAN_CHANGE"
     And all feature flags for environment "dev" should be "false"
-    And I set the boolean feature value as "true" for environment "dev" for feature "FEATURE_CAN_CHANGE"
+    And I cannot set the boolean feature value as "true" for environment "dev" for feature "FEATURE_CAN_CHANGE"
     And all feature flags for environment "dev" should be "false"
     And I unlock the feature value for environment "dev" for feature "FEATURE_CAN_CHANGE"
     And I set the boolean feature value as "true" for environment "dev" for feature "FEATURE_CAN_CHANGE"
     And all feature flags for environment "dev" should be "true"
     And I lock the feature value for environment "dev" for feature "FEATURE_CAN_CHANGE"
-    And I set the boolean feature value as "false" for environment "dev" for feature "FEATURE_CAN_CHANGE"
+    And I cannot set the boolean feature value as "false" for environment "dev" for feature "FEATURE_CAN_CHANGE"
     And all feature flags for environment "dev" should be "true"
 
 
