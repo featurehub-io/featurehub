@@ -7,13 +7,15 @@ import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.mr.model.RolloutStrategy
 
+data class FeatureMessagingParameter(
+  val featureValue: DbFeatureValue,
+  val lockUpdate: SingleFeatureValueUpdate<Boolean>?,
+  val defaultValueUpdate: SingleFeatureValueUpdate<String>?,
+  val retiredUpdate: SingleFeatureValueUpdate<Boolean>?,
+  val strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>?
+)
+
 interface FeatureMessagingConverter {
-  fun toFeatureMessagingUpdate(
-    featureValue: DbFeatureValue,
-    lockUpdate: SingleFeatureValueUpdate<Boolean>?,
-    defaultValueUpdate: SingleFeatureValueUpdate<String>?,
-    retiredUpdate: SingleFeatureValueUpdate<Boolean>?,
-    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>?
-  ): FeatureMessagingUpdate
+  fun toFeatureMessagingUpdate(featureMessagingParameter: FeatureMessagingParameter): FeatureMessagingUpdate
 
 }

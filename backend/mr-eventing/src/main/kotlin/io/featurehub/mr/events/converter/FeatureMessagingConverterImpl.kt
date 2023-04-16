@@ -1,11 +1,9 @@
 package io.featurehub.mr.events.converter
 
-import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
-import io.featurehub.db.api.SingleFeatureValueUpdate
-import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.messaging.model.*
 import io.featurehub.mr.events.common.converter.FeatureMessagingConverter
+import io.featurehub.mr.events.common.converter.FeatureMessagingParameter
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import java.time.ZoneOffset
@@ -13,13 +11,10 @@ import java.util.ArrayList
 
 class FeatureMessagingConverterImpl : FeatureMessagingConverter{
   override fun toFeatureMessagingUpdate(
-    featureValue: DbFeatureValue,
-    lockUpdate: SingleFeatureValueUpdate<Boolean>?,
-    defaultValueUpdate: SingleFeatureValueUpdate<String>?,
-    retiredUpdate: SingleFeatureValueUpdate<Boolean>?,
-    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>?
+    featureMessagingParameter: FeatureMessagingParameter
   ): FeatureMessagingUpdate {
 
+    val featureValue = featureMessagingParameter.featureValue
     val environment = featureValue.environment
     val parentApplication = environment.parentApplication
     val portfolio = parentApplication.portfolio
@@ -32,6 +27,7 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
       .portfolioId(portfolio.id)
       .organizationId(portfolio.organization.id)
       .let {
+        val defaultValueUpdate = featureMessagingParameter.defaultValueUpdate
         val defaultValueUpdated = defaultValueUpdate?.updated
         val defaultValuePrevious = defaultValueUpdate?.previous
         if (defaultValueUpdate?.hasChanged == true && defaultValueUpdated != null && defaultValuePrevious != null) it.featureValueUpdated(
@@ -43,18 +39,18 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
         else it
       }
       .let {
-        val lockUpdated = lockUpdate?.updated
-        val lockPrevious = lockUpdate?.previous
-        if (lockUpdate?.hasChanged == true && lockUpdated != null && lockPrevious != null)
+        val lockUpdated = featureMessagingParameter.lockUpdate?.updated
+        val lockPrevious = featureMessagingParameter.lockUpdate?.previous
+        if (featureMessagingParameter.lockUpdate?.hasChanged == true && lockUpdated != null && lockPrevious != null)
           it.lockUpdated(MessagingLockUpdate()
             .updated(lockUpdated)
             .previous(lockPrevious)
         ) else it
       }
       .let {
-        val retiredUpdated = retiredUpdate?.updated
-        val retiredPrevious = retiredUpdate?.previous
-        if (retiredUpdate?.hasChanged == true && retiredUpdated != null && retiredPrevious != null)
+        val retiredUpdated = featureMessagingParameter.retiredUpdate?.updated
+        val retiredPrevious = featureMessagingParameter.retiredUpdate?.previous
+        if (featureMessagingParameter.retiredUpdate?.hasChanged == true && retiredUpdated != null && retiredPrevious != null)
           it.retiredUpdated(MessagingRetiredUpdate()
             .updated(retiredUpdated)
             .previous(retiredPrevious)
@@ -62,6 +58,7 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
       }
       .let {
         val messagingStrategiesReorder = MessagingStrategiesReorder()
+        val strategyUpdates = featureMessagingParameter.strategyUpdates
         if (strategyUpdates?.hasChanged == true && strategyUpdates.updated.isNotEmpty())
           it.strategiesUpdated(strategyUpdates.updated.map { rolloutStrategyUpdate ->  toMessagingStrategyUpdate(rolloutStrategyUpdate) })
         if (strategyUpdates?.hasChanged == true && strategyUpdates.reordered.isNotEmpty())

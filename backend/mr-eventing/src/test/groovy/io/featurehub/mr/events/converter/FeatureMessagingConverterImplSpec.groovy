@@ -3,29 +3,28 @@ package io.featurehub.mr.events.converter
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
-import io.featurehub.db.model.DbApplication
-import io.featurehub.db.model.DbApplicationFeature
-import io.featurehub.db.model.DbEnvironment
-import io.featurehub.db.model.DbFeatureValue
-import io.featurehub.db.model.DbOrganization
-import io.featurehub.db.model.DbPerson
-import io.featurehub.db.model.DbPortfolio
 import io.featurehub.messaging.model.MessagingRolloutStrategy
 import io.featurehub.messaging.model.MessagingRolloutStrategyAttribute
 import io.featurehub.messaging.model.StrategyUpdateType
-import io.featurehub.mr.events.common.converter.FeatureMessagingConverter
+import io.featurehub.mr.events.common.FeatureSetup
+import io.featurehub.mr.events.common.converter.FeatureMessagingParameter
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
+import spock.lang.Shared
 import spock.lang.Specification
 
-import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 class FeatureMessagingConverterImplSpec extends Specification {
     FeatureMessagingConverterImpl featureMessagingConverter
+    @Shared FeatureSetup featureSetup
+
+    def setupSpec(){
+      featureSetup = new FeatureSetup()
+    }
 
     def setup() {
       featureMessagingConverter = new FeatureMessagingConverterImpl()
@@ -61,146 +60,75 @@ class FeatureMessagingConverterImplSpec extends Specification {
     }
 
     def "should convert data to FeatureMessagingUpdate"() {
-      given:
-      def applicationId = UUID.randomUUID()
-      def environmentId = UUID.randomUUID()
-      def dbFeatureId = UUID.randomUUID()
-      def orgId = UUID.randomUUID()
-      def portfolioId = UUID.randomUUID()
-      def org = new DbOrganization.Builder().name("OrgA").build()
-      org.setId(orgId)
-      def portfolio = new DbPortfolio.Builder()
-        .name("portfolio")
-        .organization(org).build()
-      portfolio.setId(portfolioId)
-      def application = new DbApplication.Builder()
-        .portfolio(portfolio)
-        .build()
-      application.setId(applicationId)
-      def environment = new DbEnvironment.Builder()
-        .parentApplication(application)
-        .build()
-      environment.setId(environmentId)
+      given: "i have the db feature value"
+        def oldFeatureValue = "old"
+        def dbFeatureValue =  featureSetup.createFeature()
+      and: "i have the feature messaging parameter"
+        def lockUpdate = new SingleFeatureValueUpdate<Boolean>(
+          true, true, false)
 
-      def person = new DbPerson.Builder().name("Alfie").build()
-
-      def featureKey = "featureKey"
-      def featureName = "slackUpdate"
-      def oldFeatureValue = "old"
-      def newFeatureValue = "new"
-      def whenUpdated = LocalDateTime.now()
-      def feature = new DbApplicationFeature.Builder()
-        .name(featureName)
-        .key(featureKey)
-        .valueType(FeatureValueType.STRING)
-        .build()
-      def dbFeatureValue =  Mock(DbFeatureValue)
-      dbFeatureValue.environment >> environment
-      dbFeatureValue.defaultValue >> newFeatureValue
-      dbFeatureValue.feature >> feature
-      dbFeatureValue.whoUpdated >> person
-      dbFeatureValue.whenUpdated >> whenUpdated
-      dbFeatureValue.id >> dbFeatureId
-
-      def lockUpdate = new SingleFeatureValueUpdate<Boolean>(
-        true, true, false)
-
-      def defaultValueUpdate = new SingleFeatureValueUpdate<String>(
-        true, newFeatureValue, oldFeatureValue)
-      def retiredUpdate = new SingleFeatureValueUpdate<Boolean>(
-        true, false, true)
-      def newStrategy = createRolloutStrategy()
-      def addStrategyUpdate = new RolloutStrategyUpdate(
-        StrategyUpdateType.ADDED.name(), null, newStrategy)
-      def strategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(true, [addStrategyUpdate], [], [])
+        def defaultValueUpdate = new SingleFeatureValueUpdate<String>(
+          true, dbFeatureValue.defaultValue, oldFeatureValue)
+        def retiredUpdate = new SingleFeatureValueUpdate<Boolean>(
+          true, false, true)
+        def newStrategy = createRolloutStrategy()
+        def addStrategyUpdate = new RolloutStrategyUpdate(
+          StrategyUpdateType.ADDED.name(), null, newStrategy)
+        def strategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(true, [addStrategyUpdate], [], [])
+        def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
 
       when:
-      def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
-        dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates
-      )
+        def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
+          featureMessagingParameter
+        )
       then:
-      featureMessagingUpdate.whoUpdated == dbFeatureValue.whoUpdated.name
-      featureMessagingUpdate.featureKey == featureKey
-      featureMessagingUpdate.applicationId == applicationId
-      featureMessagingUpdate.environmentId == environmentId
-      featureMessagingUpdate.portfolioId == portfolioId
-      featureMessagingUpdate.organizationId == orgId
-      featureMessagingUpdate.featureValueUpdated.valueType == FeatureValueType.STRING
-      featureMessagingUpdate.featureValueUpdated.updated == newFeatureValue
-      featureMessagingUpdate.featureValueUpdated.previous == oldFeatureValue
-      featureMessagingUpdate.whenUpdated == whenUpdated.atOffset(ZoneOffset.UTC)
-      featureMessagingUpdate.lockUpdated.updated
-      !featureMessagingUpdate.lockUpdated.previous
-      !featureMessagingUpdate.retiredUpdated.updated
-      featureMessagingUpdate.retiredUpdated.previous
-      featureMessagingUpdate.strategiesUpdated[0].newStrategy == toMessagingRolloutStrategy(newStrategy)
-      featureMessagingUpdate.strategiesUpdated[0].updateType == StrategyUpdateType.ADDED
-
+        with(featureMessagingUpdate) {
+          whoUpdated == dbFeatureValue.whoUpdated.name
+          featureKey == dbFeatureValue.feature.key
+          applicationId == dbFeatureValue.environment.parentApplication.id
+          environmentId == dbFeatureValue.environment.id
+          portfolioId == dbFeatureValue.environment.parentApplication.portfolio.id
+          organizationId == dbFeatureValue.environment.parentApplication.portfolio.organization.id
+          featureValueUpdated.valueType == FeatureValueType.STRING
+          featureValueUpdated.updated == dbFeatureValue.defaultValue
+          featureValueUpdated.previous == oldFeatureValue
+          whenUpdated == dbFeatureValue.whenUpdated.atOffset(ZoneOffset.UTC)
+          lockUpdated.updated
+          !lockUpdated.previous
+          !retiredUpdated.updated
+          retiredUpdated.previous
+          strategiesUpdated[0].newStrategy == toMessagingRolloutStrategy(newStrategy)
+          strategiesUpdated[0].updateType == StrategyUpdateType.ADDED
+        }
     }
 
   def "should convert strategy reorder data to FeatureMessagingUpdate"() {
-    given:
-    def applicationId = UUID.randomUUID()
-    def environmentId = UUID.randomUUID()
-    def dbFeatureId = UUID.randomUUID()
-    def orgId = UUID.randomUUID()
-    def portfolioId = UUID.randomUUID()
-    def org = new DbOrganization.Builder().name("OrgA").build()
-    org.setId(orgId)
-    def portfolio = new DbPortfolio.Builder()
-      .name("portfolio")
-      .organization(org).build()
-    portfolio.setId(portfolioId)
-    def application = new DbApplication.Builder()
-      .portfolio(portfolio)
-      .build()
-    application.setId(applicationId)
-    def environment = new DbEnvironment.Builder()
-      .parentApplication(application)
-      .build()
-    environment.setId(environmentId)
-
-    def person = new DbPerson.Builder().name("Alfie").build()
-
-    def featureKey = "featureKey"
-    def featureName = "slackUpdate"
-    def defaultValue = "same"
-    def whenUpdated = LocalDateTime.now()
-    def feature = new DbApplicationFeature.Builder()
-      .name(featureName)
-      .key(featureKey)
-      .valueType(FeatureValueType.STRING)
-      .build()
-    def dbFeatureValue =  Mock(DbFeatureValue)
-    dbFeatureValue.environment >> environment
-    dbFeatureValue.defaultValue >> defaultValue
-    dbFeatureValue.feature >> feature
-    dbFeatureValue.whoUpdated >> person
-    dbFeatureValue.whenUpdated >> whenUpdated
-    dbFeatureValue.id >> dbFeatureId
-
-    def one = createRolloutStrategy("1")
-    def two = createRolloutStrategy("2")
-    def reordered = [two, one]
-    def previous = [one, two]
-    def strategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(true, [], reordered, previous)
-
+    given: "i have the db feature value"
+      def dbFeatureValue = featureSetup.createFeature()
+    and: "i have the rollout startegies"
+      def one = createRolloutStrategy("1")
+      def two = createRolloutStrategy("2")
+    and: "i have the feature messaging parameter"
+      def reordered = [two, one]
+      def previous = [one, two]
+      def strategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(true, [], reordered, previous)
+      def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, null, null, null, strategyUpdates)
     when:
-    def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
-      dbFeatureValue, null, null, null, strategyUpdates
-    )
+      def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(featureMessagingParameter)
     then:
-    featureMessagingUpdate.whoUpdated == dbFeatureValue.whoUpdated.name
-    featureMessagingUpdate.featureKey == featureKey
-    featureMessagingUpdate.applicationId == applicationId
-    featureMessagingUpdate.environmentId == environmentId
-    featureMessagingUpdate.portfolioId == portfolioId
-    featureMessagingUpdate.organizationId == orgId
-
-    featureMessagingUpdate.featureValueUpdated == null
-    featureMessagingUpdate.whenUpdated == whenUpdated.atOffset(ZoneOffset.UTC)
-    featureMessagingUpdate.lockUpdated == null
-    featureMessagingUpdate.retiredUpdated == null
+    with(featureMessagingUpdate) {
+      whoUpdated == dbFeatureValue.whoUpdated.name
+      featureKey == dbFeatureValue.feature.key
+      featureKey == dbFeatureValue.feature.key
+      applicationId == dbFeatureValue.environment.parentApplication.id
+      environmentId == dbFeatureValue.environment.id
+      portfolioId == dbFeatureValue.environment.parentApplication.portfolio.id
+      organizationId == dbFeatureValue.environment.parentApplication.portfolio.organization.id
+      featureValueUpdated == null
+      whenUpdated == dbFeatureValue.whenUpdated.atOffset(ZoneOffset.UTC)
+      lockUpdated == null
+      retiredUpdated == null
+    }
 
     def messagingRolloutStrategyOne = toMessagingRolloutStrategy(one)
     def messagingRolloutStrategyTwo = toMessagingRolloutStrategy(two)
