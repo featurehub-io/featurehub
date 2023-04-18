@@ -9,10 +9,10 @@ import io.featurehub.mr.model.RolloutStrategy
 
 data class FeatureMessagingParameter(
   val featureValue: DbFeatureValue,
-  val lockUpdate: SingleFeatureValueUpdate<Boolean>?,
-  val defaultValueUpdate: SingleFeatureValueUpdate<String>?,
-  val retiredUpdate: SingleFeatureValueUpdate<Boolean>?,
-  val strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>?
+  val lockUpdate: SingleFeatureValueUpdate<Boolean>,
+  val defaultValueUpdate: SingleFeatureValueUpdate<String?>,
+  val retiredUpdate: SingleFeatureValueUpdate<Boolean>,
+  val strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>
 )
 
 interface FeatureMessagingConverter {

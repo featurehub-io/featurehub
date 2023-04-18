@@ -26,31 +26,31 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
       .applicationId(parentApplication.id)
       .portfolioId(portfolio.id)
       .organizationId(portfolio.organization.id)
+      .featureValueType(featureValue.feature.valueType)
       .let {
         val defaultValueUpdate = featureMessagingParameter.defaultValueUpdate
-        val defaultValueUpdated = defaultValueUpdate?.updated
-        val defaultValuePrevious = defaultValueUpdate?.previous
-        if (defaultValueUpdate?.hasChanged == true && defaultValueUpdated != null && defaultValuePrevious != null) it.featureValueUpdated(
+        val defaultValueUpdated = defaultValueUpdate.updated
+        val defaultValuePrevious = defaultValueUpdate.previous
+        if (defaultValueUpdate.hasChanged) it.featureValueUpdated(
           MessagingFeatureValueUpdate()
-            .valueType(featureValue.feature.valueType)
             .updated(defaultValueUpdated)
             .previous(defaultValuePrevious)
         )
         else it
       }
       .let {
-        val lockUpdated = featureMessagingParameter.lockUpdate?.updated
-        val lockPrevious = featureMessagingParameter.lockUpdate?.previous
-        if (featureMessagingParameter.lockUpdate?.hasChanged == true && lockUpdated != null && lockPrevious != null)
+        val lockUpdated = featureMessagingParameter.lockUpdate.updated
+        val lockPrevious = featureMessagingParameter.lockUpdate.previous
+        if (featureMessagingParameter.lockUpdate.hasChanged && lockUpdated != null && lockPrevious != null)
           it.lockUpdated(MessagingLockUpdate()
             .updated(lockUpdated)
             .previous(lockPrevious)
         ) else it
       }
       .let {
-        val retiredUpdated = featureMessagingParameter.retiredUpdate?.updated
-        val retiredPrevious = featureMessagingParameter.retiredUpdate?.previous
-        if (featureMessagingParameter.retiredUpdate?.hasChanged == true && retiredUpdated != null && retiredPrevious != null)
+        val retiredUpdated = featureMessagingParameter.retiredUpdate.updated
+        val retiredPrevious = featureMessagingParameter.retiredUpdate.previous
+        if (featureMessagingParameter.retiredUpdate.hasChanged && retiredUpdated != null && retiredPrevious != null)
           it.retiredUpdated(MessagingRetiredUpdate()
             .updated(retiredUpdated)
             .previous(retiredPrevious)
@@ -59,19 +59,24 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
       .let {
         val messagingStrategiesReorder = MessagingStrategiesReorder()
         val strategyUpdates = featureMessagingParameter.strategyUpdates
-        if (strategyUpdates?.hasChanged == true && strategyUpdates.updated.isNotEmpty())
-          it.strategiesUpdated(strategyUpdates.updated.map { rolloutStrategyUpdate ->  toMessagingStrategyUpdate(rolloutStrategyUpdate) })
-        if (strategyUpdates?.hasChanged == true && strategyUpdates.reordered.isNotEmpty())
-          it.strategiesReordered(
-            messagingStrategiesReorder.reordered(
-          strategyUpdates.reordered.map { rolloutStrategy -> toMessagingRolloutStrategy(rolloutStrategy) }
-        ))
-        if (strategyUpdates?.hasChanged == true && strategyUpdates.previous.isNotEmpty())
-          it.strategiesReordered(
-            messagingStrategiesReorder.previous(
-            strategyUpdates.previous.map { rolloutStrategy -> toMessagingRolloutStrategy(rolloutStrategy) }
-          ))
-        else it
+        if (strategyUpdates.hasChanged) {
+          if (strategyUpdates.updated.isNotEmpty())
+            it.strategiesUpdated(
+              strategyUpdates.updated.map { rolloutStrategyUpdate -> toMessagingStrategyUpdate(rolloutStrategyUpdate) })
+
+          if (strategyUpdates.reordered.isNotEmpty())
+            it.strategiesReordered(
+              messagingStrategiesReorder.reordered(
+                strategyUpdates.reordered.map { rolloutStrategy -> toMessagingRolloutStrategy(rolloutStrategy) }
+              ))
+
+          if (strategyUpdates.previous.isNotEmpty())
+            it.strategiesReordered(
+              messagingStrategiesReorder.previous(
+                strategyUpdates.previous.map { rolloutStrategy -> toMessagingRolloutStrategy(rolloutStrategy) }
+              ))
+        }
+        it
       }
 
   }

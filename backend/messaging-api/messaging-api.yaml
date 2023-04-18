@@ -28,6 +28,7 @@ components:
         - whenUpdated
         - whoUpdated
         - featureKey
+        - featureValueType
         - whatUpdated
       properties:
         targetDestination:
@@ -58,6 +59,9 @@ components:
         featureKey:
           description: "Feature key that got updated"
           type: string
+        featureValueType:
+          description: "Type of the feature value"
+          $ref: "#/components/schemas/FeatureValueType"
         featureValueUpdated:
           description: "Feature value changes"
           $ref: '#/components/schemas/MessagingFeatureValueUpdate'
@@ -86,12 +90,9 @@ components:
       type: object
       description: "Feature value changes, if any"
       required:
-        - valueType
         - updated
         - previous
       properties:
-        valueType:
-          $ref: "#/components/schemas/FeatureValueType"
         updated:
           description: "Updated feature value"
         previous:

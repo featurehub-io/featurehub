@@ -16,7 +16,6 @@ import io.featurehub.db.model.query.*
 import io.featurehub.db.utils.EnvironmentUtils
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.events.common.FeatureMessagingCloudEventPublisher
-import io.featurehub.mr.events.common.converter.FeatureMessagingConverter
 import io.featurehub.mr.events.common.converter.FeatureMessagingParameter
 import io.featurehub.mr.model.*
 import jakarta.inject.Inject
@@ -222,7 +221,7 @@ class FeatureSqlApi @Inject constructor(
   private fun publishChangesForMessaging(
     featureValue: DbFeatureValue,
     lockUpdate: SingleFeatureValueUpdate<Boolean>,
-    defaultValueUpdate: SingleFeatureValueUpdate<String>,
+    defaultValueUpdate: SingleFeatureValueUpdate<String?>,
     retiredUpdate: SingleFeatureValueUpdate<Boolean>,
     strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>
   ) {
@@ -443,8 +442,8 @@ class FeatureSqlApi @Inject constructor(
     existing: DbFeatureValue,
     person: PersonFeaturePermission,
     lockChanged: Boolean
-  ): SingleFeatureValueUpdate<String> {
-    val defaultValueUpdate = SingleFeatureValueUpdate<String>()
+  ): SingleFeatureValueUpdate<String?> {
+    val defaultValueUpdate = SingleFeatureValueUpdate<String?>()
     val defaultValueChanged: String? =
       when (feature.valueType!!) {
         FeatureValueType.NUMBER -> {
