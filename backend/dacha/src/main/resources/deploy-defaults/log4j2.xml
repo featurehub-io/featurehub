@@ -13,6 +13,7 @@
 
 <AsyncLogger name="jersey-logging" level="trace"/>
 -->
+      <AsyncLogger name="io.featurehub.dacha.InMemoryCache" level="trace"/>
       <AsyncLogger name="io.featurehub.edge.features" level="debug"/>
       <AsyncLogger name="net.stickycode" level="warn"/>
       <AsyncLogger name="org.glassfish.jersey.server.wadl" level="error"/>

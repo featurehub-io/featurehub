@@ -349,22 +349,6 @@ public class InMemoryCache implements InternalCache, FeatureEnrichmentCache {
 
     CacheEnvironmentFeature existingCachedFeature = envFeatureBundle.get(newFeature.getId());
 
-    // yuk
-    int indexOfExistingPublishedCacheEnvironmentFeature = -1;
-    int pos = 0;
-    for(CacheEnvironmentFeature cef : eci.getFeatureValues()) {
-      if (cef.getFeature().getId().equals(newFeature.getId())) {
-        indexOfExistingPublishedCacheEnvironmentFeature = pos;
-        break;
-      }
-
-      pos ++;
-    }
-
-    if (indexOfExistingPublishedCacheEnvironmentFeature == -1) {
-      log.debug("received new feature {}, adding to the environment", fv );
-    }
-
     if (existingCachedFeature == null) {
       receivedNewFeatureForExistingEnvironmentFeatureCache(fv, envFeatureBundle);
       eci.getFeatureValues().add(fv.getFeature());
@@ -381,16 +365,12 @@ public class InMemoryCache implements InternalCache, FeatureEnrichmentCache {
       // if the feature itself changed, thats enough, change the contents
       if (existingFeature.getVersion() < newFeature.getVersion()) {
         envFeatureBundle.set(fv.getFeature());
-        eci.getFeatureValues().remove(indexOfExistingPublishedCacheEnvironmentFeature);
-        eci.getFeatureValues().add(fv.getFeature());
         return;
       }
 
       if (newValue != null) {
         if (existingValue == null || existingValue.getVersion() < newValue.getVersion()) {
           envFeatureBundle.set(fv.getFeature());
-          eci.getFeatureValues().remove(indexOfExistingPublishedCacheEnvironmentFeature);
-          eci.getFeatureValues().add(fv.getFeature());
           return;
         } else if (existingValue.getValue() == newValue.getVersion()) {
           return; // ignore
@@ -404,7 +384,6 @@ public class InMemoryCache implements InternalCache, FeatureEnrichmentCache {
         fv.getEnvironmentId());
 
       envFeatureBundle.remove(newFeature.getId());
-      eci.getFeatureValues().remove(indexOfExistingPublishedCacheEnvironmentFeature);
     }
   }
 
@@ -444,5 +423,15 @@ public class InMemoryCache implements InternalCache, FeatureEnrichmentCache {
   @Override
   public void updateFeature(@NotNull PublishFeatureValue feature) {
     updateFeatureValue(feature);
+  }
+
+  @Override
+  public int getEnvironmentSize() {
+    return environments.size();
+  }
+
+  @Override
+  public int getServiceAccountSize() {
+    return serviceAccounts.size();
   }
 }

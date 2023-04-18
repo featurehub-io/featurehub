@@ -14,16 +14,16 @@ class NATSConnectionSource : NATSSource {
   private val log: Logger = LoggerFactory.getLogger(NATSConnectionSource::class.java)
 
   @ConfigKey("nats.urls")
-  var natsServer = "nats://localhost:4222"
+  var natsServers: List<String> = listOf("nats://localhost:4222")
   val natsConnection: io.nats.client.Connection
 
   init {
     DeclaredConfigResolver.resolve(this)
 
-    val options = io.nats.client.Options.Builder().server(natsServer).build()
+    val options = io.nats.client.Options.Builder().servers(natsServers.toTypedArray()).build()
     natsConnection = try {
       val conn = io.nats.client.Nats.connect(options)
-      log.info("NATS connection successfully established")
+      log.info("NATS connection successfully established $natsServers")
       conn
     } catch (e: IOException) {
       // should fail if we can't connect

@@ -55,6 +55,7 @@ class EnvironmentFeatures(override val environment: PublishEnvironment) : Featur
       environment.featureValues.find { it.feature.id == id }?.let {
         log.trace("replacing feature {} with {}", it.value, feature.value)
         it.value = feature.value
+        it.feature = feature.feature
       }
     }
 

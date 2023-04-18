@@ -2,12 +2,9 @@ package io.featurehub.dacha
 
 import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.caching.FastlyPublisher
-import io.featurehub.dacha.resource.DachaApiKeyResource
-import io.featurehub.dacha.resource.DachaEdgeNATSAdapter
-import io.featurehub.dacha.resource.DachaEnvironmentResource
-import io.featurehub.dacha.resource.DacheEdgeNATSAdapterService
-import io.featurehub.enricher.FeatureEnrichmentCache
+import io.featurehub.dacha.resource.*
 import io.featurehub.enricher.EnrichmentProcessingFeature
+import io.featurehub.enricher.FeatureEnrichmentCache
 import io.featurehub.health.HealthSource
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
@@ -21,6 +18,7 @@ class DachaFeature : Feature {
 
     arrayOf(
       DachaApiKeyResource::class.java,
+      PublishCacheResource::class.java,
       DachaEnvironmentResource::class.java).forEach { clazz -> context.register(clazz) }
 
     context.register(object: AbstractBinder() {
