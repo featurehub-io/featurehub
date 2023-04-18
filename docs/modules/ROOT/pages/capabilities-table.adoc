@@ -4,20 +4,22 @@ If you are considering helping us by writing a new SDK for your favourite langua
 
 [options="header"]
 |===================================
-||Java|Javascript^1^|Go|Dart^2^|C#|Python|Ruby
-|Event Streaming|Y|Y|Y|Y|Y|Y|Y
-|Rollout Strategies - Server Evaluated^2^|Y|Y|N|Y|Y|Y|Y
-|Rollout Strategies - Client Evaluated^2^|Y|Y|Y|N|Y|Y|Y
-|Background Start|Y|Y|Y|Y|Y|Y|Y
-|Block until Start|N|N|Y|N|N|N|N
-|Readyness Listeners|Y|Y|Y|Y|Y|N|N
-|Feature Listeners|Y|Y|Y|Y|Y|N|N
-|Feature Listener Removal|N|Y|Y|Y|Y|N|N
-|Analytics Support|Y|Y|Y|Y|Y|N|N
-|Google Analytics|Y|Y|Y|Y|Y|N|N
-|Feature Overrides|N|Y|N|N|N|Y|N
-|Fastly Polling Support^3^|Y|Y|N|Y|N|Y|Y
-|Fastly SSE Support|Y|Y|Y|Y|Y|Y|Y
+||Java|Javascript^1^|Go|Dart^2^|C#|Python|Ruby|Swift
+|Event Streaming|Y|Y|Y|Y|Y|Y|Y|N
+|REST-updates by timer polling^5^|N|Y|N|N|N|Y|Y|N
+|REST-updates by usage/timeout^4^|N|Y|N|N|N|Y|Y|Y
+|Rollout Strategies - Server Evaluated^2^|Y|Y|N|Y|Y|Y|Y|Y
+|Rollout Strategies - Client Evaluated^2^|Y|Y|Y|N|Y|Y|Y|N
+|Background Start|Y|Y|Y|Y|Y|Y|Y|Y
+|Block until Start|N|N|Y|N|N|N|N|N
+|Readyness Listeners|Y|Y|Y|Y|Y|N|N|N
+|Feature Listeners|Y|Y|Y|Y|Y|N|N|N
+|Feature Listener Removal|N|Y|Y|Y|Y|N|N|N
+|Analytics Support|Y|Y|Y|Y|Y|N|N|N
+|Google Analytics|Y|Y|Y|Y|Y|N|N|N
+|Feature Overrides|N|Y|N|N|N|Y|N|N
+|Fastly Polling Support^3^|Y|Y|N|Y|N|Y|Y|Y
+|Fastly SSE Support|Y|Y|Y|Y|Y|Y|Y|N
 |===================================
 
 1. Javascript also includes Typescript
@@ -29,6 +31,15 @@ using the Admin SDK you can configure alternative keys.
 Generally Polling is a technique used by client side APIs (such as Dart), so SDKs that only support Streaming (C#, Go)
 do not support Fastly polling. 
 
+4. REST-updates by usage/timeout means that there is a timeout period on the client, but it will only
+update if the features are evaluated. If a request is made for a feature and the timeout period has
+expired, the SDK will update the features in the background. This is ideal for situations where
+a user can be inactive for periods of time - e.g. Mobile or Web.
+
+4. REST-updates by timer polling means there is a timeout period on the client, and at the end of the
+timeout it will always go and get an update, regardless of activity on the client. This is best for
+situations like Web where you want active updates. A user of your software would not sit on your website
+for a long time and you want it to update fairly quickly.
 
 ==== Web + Mobile focused capabilities for SDKs
 
