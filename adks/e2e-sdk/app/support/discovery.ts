@@ -88,6 +88,9 @@ export abstract class BackendDiscovery {
   }
 
   static async discover(): Promise<void> {
+    if (process.env.REMOTE_BACKEND) {
+      return;
+    }
     if (!BackendDiscovery._discovered) {
       if (!await this.mrPortCheck(8903)) { // local run port
         if (!await this.mrPortCheck(8085)) { // normal docker port
@@ -105,13 +108,20 @@ export async function discover() {
 }
 
 export function mrHost() {
-  return `http://localhost:${BackendDiscovery.mrPort}`;
+  return  process.env.REMOTE_BACKEND || `http://localhost:${BackendDiscovery.mrPort}`;
 }
 
 export function edgeHost() {
+  if (process.env.REMOTE_BACKEND) {
+    const backend = process.env.REMOTE_BACKEND;
+
+    if (backend.includes('/pistachio/')) {
+      return backend.substring(0, backend.lastIndexOf('/'));
+    }
+  }
   return `http://localhost:${BackendDiscovery.featuresPort}`;
 }
 
 export function supportsSSE() {
-  return BackendDiscovery.supportsSSE;
+  return process.env.REMOTE_BACKEND ? true : BackendDiscovery.supportsSSE;
 }
