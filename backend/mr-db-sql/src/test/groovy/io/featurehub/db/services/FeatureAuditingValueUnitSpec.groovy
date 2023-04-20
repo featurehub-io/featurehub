@@ -2,7 +2,7 @@ package io.featurehub.db.services
 
 
 import io.featurehub.db.api.FeatureApi
-import io.featurehub.db.api.LockedException
+import io.featurehub.db.api.FeatureApi.LockedException
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.model.DbApplicationFeature

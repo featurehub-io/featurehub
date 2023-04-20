@@ -44,7 +44,7 @@ class FeatureSqlApi @Inject constructor(
     OptimisticLockingException::class,
     RolloutStrategyValidator.InvalidStrategyCombination::class,
     FeatureApi.NoAppropriateRole::class,
-    LockedException::class
+    FeatureApi.LockedException::class
   )
   override fun createFeatureValueForEnvironment(
     eid: UUID,
@@ -237,7 +237,7 @@ class FeatureSqlApi @Inject constructor(
     if (historical.isRetired == existingRetired) { // but historical is the same as current
       if (existing.isLocked && !lockChanged) { // if its locked and we didn't change it to locked, we have to reject this change
         log.debug("feature value is locked, you cannot change it")
-        throw LockedException() // not really? its just locked so you can't change it
+        throw FeatureApi.LockedException() // not really? its just locked so you can't change it
       }
 
       if (!person.hasChangeValueRole()) {
@@ -385,7 +385,7 @@ class FeatureSqlApi @Inject constructor(
     }
 
     if (changed && existing.isLocked && !lockChanged) {
-      throw LockedException()
+      throw FeatureApi.LockedException()
     }
 
     return strategyUpdates
@@ -459,7 +459,7 @@ class FeatureSqlApi @Inject constructor(
     if (historical.defaultValue == existing.defaultValue) {
       if (existing.isLocked && !lockChanged) { // if its locked and we didn't change it to locked, we have to reject this change
         log.debug("feature value is locked, you cannot change it")
-        throw LockedException() // not really? its just locked so you can't change it
+        throw FeatureApi.LockedException() // not really? its just locked so you can't change it
       }
 
       // as the value is different from the historical one, and the historical one is the _same_ as the current one
@@ -612,7 +612,7 @@ class FeatureSqlApi @Inject constructor(
     OptimisticLockingException::class,
     FeatureApi.NoAppropriateRole::class,
     RolloutStrategyValidator.InvalidStrategyCombination::class,
-    LockedException::class
+    FeatureApi.LockedException::class
   )
   override fun updateFeatureValueForEnvironment(
     eid: UUID,
@@ -645,7 +645,7 @@ class FeatureSqlApi @Inject constructor(
     OptimisticLockingException::class,
     FeatureApi.NoAppropriateRole::class,
     RolloutStrategyValidator.InvalidStrategyCombination::class,
-    LockedException::class
+    FeatureApi.LockedException::class
   )
   override fun updateAllFeatureValuesForEnvironment(
     eid: UUID,
@@ -783,7 +783,7 @@ class FeatureSqlApi @Inject constructor(
     var appRolesForThisPerson: Set<ApplicationRoleType>
   )
 
-  private fun featureValuesUserCanAccess(appId: UUID, key: String, person: Person): EnvironmentsAndFeatureValues? {
+  private fun featureValuesUserCanAccess(appId: UUID, key: String, person: Person): EnvironmentsAndFeatureValues {
     val feature = QDbApplicationFeature()
       .key.eq(key)
       .parentApplication.id.eq(appId)
@@ -861,7 +861,7 @@ class FeatureSqlApi @Inject constructor(
     person: Person
   ): List<FeatureEnvironment> {
     Conversions.nonNullApplicationId(appId)
-    val result = featureValuesUserCanAccess(appId, key, person) ?: return emptyList()
+    val result = featureValuesUserCanAccess(appId, key, person)
 
     return result.environments.keys.map { e ->
       convertUtils.toFeatureEnvironment(
@@ -876,7 +876,7 @@ class FeatureSqlApi @Inject constructor(
     OptimisticLockingException::class,
     FeatureApi.NoAppropriateRole::class,
     RolloutStrategyValidator.InvalidStrategyCombination::class,
-    LockedException::class
+    FeatureApi.LockedException::class
   )
   override fun updateAllFeatureValuesByApplicationForKey(
     id: UUID,
@@ -887,62 +887,60 @@ class FeatureSqlApi @Inject constructor(
   ) {
     val result = featureValuesUserCanAccess(id, key, from)
 
-    if (result != null) {
-      val failure = RolloutStrategyValidator.ValidationFailure()
+    val failure = RolloutStrategyValidator.ValidationFailure()
 
-      // environment id -> role in that environment
-      val environmentToRoleMap = result.envIdToRolePermissions
-      for (fv in featureValue) {
-        // feature exists but it is the wrong environment?
-        val envId = fv.environmentId
-        if (envId == null) {
-          log.warn("Trying to update for environment `{}` and environment id is invalid.", fv.environmentId)
-          throw FeatureApi.NoAppropriateRole()
-        }
+    // environment id -> role in that environment
+    val environmentToRoleMap = result.envIdToRolePermissions
+    for (fv in featureValue) {
+      // feature exists but it is the wrong environment?
+      val envId = fv.environmentId
+      if (envId == null) {
+        log.warn("Trying to update for environment `{}` and environment id is invalid.", fv.environmentId)
+        throw FeatureApi.NoAppropriateRole()
+      }
 
-        val roles = environmentToRoleMap[envId]
+      val roles = environmentToRoleMap[envId]
 
-        if (roles == null || (roles.size == 1 && roles.contains(RoleType.READ))) {
-          log.warn(
-            "Trying to update for environment `{}` and environment id has no roles (no permissions).",
-            envId
-          )
-          throw FeatureApi.NoAppropriateRole()
-        }
-
-        rolloutStrategyValidator.validateStrategies(
-          result.feature.valueType,
-          fv.rolloutStrategies ?: listOf(),
-          fv.rolloutStrategyInstances ?: listOf(), failure
+      if (roles == null || (roles.size == 1 && roles.contains(RoleType.READ))) {
+        log.warn(
+          "Trying to update for environment `{}` and environment id has no roles (no permissions).",
+          envId
         )
+        throw FeatureApi.NoAppropriateRole()
       }
 
-      // ok, they are allowed to update the stuff they are sending, but is it bad? this will throw an InvalidStrategyCombination
-      failure.hasFailedValidation()
+      rolloutStrategyValidator.validateStrategies(
+        result.feature.valueType,
+        fv.rolloutStrategies ?: listOf(),
+        fv.rolloutStrategyInstances ?: listOf(), failure
+      )
+    }
 
-      // environment -> feature value
-      val featureValuesToDelete = result.envIdToDbFeatureValue
-      for (fv in featureValue) {
-        createFeatureValueForEnvironment(
-          fv.environmentId!!, key, fv,
-          PersonFeaturePermission.Builder()
-            .person(from)
-            .appRoles(result.appRolesForThisPerson)
-            .roles(HashSet(environmentToRoleMap[fv.environmentId!!]!!)).build()
-        )
+    // ok, they are allowed to update the stuff they are sending, but is it bad? this will throw an InvalidStrategyCombination
+    failure.hasFailedValidation()
 
-        featureValuesToDelete.remove(fv.environmentId) // we processed this environment ok, didn't throw a wobbly
-      }
+    // environment -> feature value
+    val featureValuesToDelete = result.envIdToDbFeatureValue
+    for (fv in featureValue) {
+      createFeatureValueForEnvironment(
+        fv.environmentId!!, key, fv,
+        PersonFeaturePermission.Builder()
+          .person(from)
+          .appRoles(result.appRolesForThisPerson)
+          .roles(HashSet(environmentToRoleMap[fv.environmentId!!]!!)).build()
+      )
 
-      // now remove any ability to remove feature values that are flags
-      val invalidDeletions = featureValuesToDelete.keys
-        .filter { u: UUID -> featureValuesToDelete[u]!!.feature.valueType != FeatureValueType.BOOLEAN }
+      featureValuesToDelete.remove(fv.environmentId) // we processed this environment ok, didn't throw a wobbly
+    }
 
-      invalidDeletions.forEach { featureValuesToDelete.remove(it) }
+    // now remove any ability to remove feature values that are flags
+    val invalidDeletions = featureValuesToDelete.keys
+      .filter { u: UUID -> featureValuesToDelete[u]!!.feature.valueType != FeatureValueType.BOOLEAN }
 
-      if (removeValuesNotPassed) {
-        publishTheRemovalOfABunchOfStrategies(featureValuesToDelete.values)
-      }
+    invalidDeletions.forEach { featureValuesToDelete.remove(it) }
+
+    if (removeValuesNotPassed) {
+      publishTheRemovalOfABunchOfStrategies(featureValuesToDelete.values)
     }
   }
 

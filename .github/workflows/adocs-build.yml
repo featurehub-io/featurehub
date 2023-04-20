@@ -10,11 +10,11 @@ on:
 
 jobs:
   adoc_build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     name: docs
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: "Generate site using antora site action"
         uses: bfranske/antora-site-action@master
         with:

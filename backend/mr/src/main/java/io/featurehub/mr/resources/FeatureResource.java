@@ -132,6 +132,9 @@ public class FeatureResource implements FeatureServiceDelegate {
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       log.warn("User attempted to update feature they had no access to", noAppropriateRole);
       throw new BadRequestException(noAppropriateRole);
+    } catch (FeatureApi.LockedException locked) {
+      log.warn("User attempted to change a locked value", locked);
+      throw new BadRequestException(locked);
     } catch (RolloutStrategyValidator.InvalidStrategyCombination bad) {
       throw new WebApplicationException(Response.status(422).entity(bad.getFailure()).build()); // can't do anything with it
     }

@@ -7,7 +7,6 @@ data class SingleFeatureValueUpdate<T>(var hasChanged: Boolean=false, var update
 data class MultiFeatureValueUpdate<T, V>(var hasChanged: Boolean=false, var updated: MutableList<T> = mutableListOf(), var reordered: MutableList<V> = mutableListOf(), var previous: MutableList<V> = mutableListOf())
 data class RolloutStrategyUpdate(val type: String, val old: RolloutStrategy? = null, val new: RolloutStrategy? = null)
 
-class LockedException : RuntimeException()
 
 interface FeatureApi {
   @Throws(
@@ -34,6 +33,7 @@ interface FeatureApi {
 
   class NoAppropriateRole : Exception()
   class NoSuchFeature : Exception()
+  class LockedException : RuntimeException()
 
   @Throws(
     OptimisticLockingException::class,
