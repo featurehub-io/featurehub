@@ -1,6 +1,8 @@
 package io.featurehub.mr.events.service
 
+import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
+import io.featurehub.db.api.SingleNullableFeatureValueUpdate
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.messaging.model.MessagingFeatureValueUpdate
@@ -35,8 +37,11 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
     given:
     def dbFeature = featureSetup.createFeature()
     def oldFeatureValue = "old"
-    def defaultValueUpdate = new SingleFeatureValueUpdate<String>(
+    def defaultValueUpdate = new SingleNullableFeatureValueUpdate<String>(
       true, dbFeature.defaultValue, oldFeatureValue)
+    def lockUpdate = new SingleFeatureValueUpdate(false, false, false)
+    def retiredUpdate = new SingleFeatureValueUpdate(false, false, false)
+    def strategiesUpdate = new MultiFeatureValueUpdate(false, [], [], [])
     def featureMessagingUpdate = new FeatureMessagingUpdate()
       .whoUpdated("Alfie")
       .whenUpdated(LocalDateTime.now().atOffset(ZoneOffset.UTC))
@@ -46,7 +51,7 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
       .featureValueUpdated(new MessagingFeatureValueUpdate()
         .updated(dbFeature.defaultValue)
         .previous(oldFeatureValue))
-    def featureMessagingParameter = new FeatureMessagingParameter(dbFeature, null, defaultValueUpdate, null, null)
+    def featureMessagingParameter = new FeatureMessagingParameter(dbFeature, lockUpdate, defaultValueUpdate, retiredUpdate, strategiesUpdate)
 
     when:
     featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate(featureMessagingParameter)

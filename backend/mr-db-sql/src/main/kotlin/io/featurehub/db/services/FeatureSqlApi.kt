@@ -221,7 +221,7 @@ class FeatureSqlApi @Inject constructor(
   private fun publishChangesForMessaging(
     featureValue: DbFeatureValue,
     lockUpdate: SingleFeatureValueUpdate<Boolean>,
-    defaultValueUpdate: SingleFeatureValueUpdate<String?>,
+    defaultValueUpdate: SingleNullableFeatureValueUpdate<String?>,
     retiredUpdate: SingleFeatureValueUpdate<Boolean>,
     strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>
   ) {
@@ -238,7 +238,7 @@ class FeatureSqlApi @Inject constructor(
     existing: DbFeatureValue,
     lockChanged: Boolean
   ): SingleFeatureValueUpdate<Boolean> {
-    val retiredFeatureValueUpdate = SingleFeatureValueUpdate<Boolean>()
+    val retiredFeatureValueUpdate = SingleFeatureValueUpdate(updated = false, previous = false)
     val existingRetired = (existing.retired == true) // it can be null, which is also false
 
     // is it different from what it is now? if not, exit
@@ -424,7 +424,7 @@ class FeatureSqlApi @Inject constructor(
   }
 
   private fun <T> updateSingleFeatureValueUpdate(
-    featureValueUpdate: SingleFeatureValueUpdate<T>, updated: T?, previous: T? ): SingleFeatureValueUpdate<T> {
+    featureValueUpdate: SingleFeatureValueUpdate<T>, updated: T, previous: T ): SingleFeatureValueUpdate<T> {
     featureValueUpdate.hasChanged = true
     featureValueUpdate.updated = updated
     featureValueUpdate.previous = previous
@@ -442,8 +442,8 @@ class FeatureSqlApi @Inject constructor(
     existing: DbFeatureValue,
     person: PersonFeaturePermission,
     lockChanged: Boolean
-  ): SingleFeatureValueUpdate<String?> {
-    val defaultValueUpdate = SingleFeatureValueUpdate<String?>()
+  ): SingleNullableFeatureValueUpdate<String?> {
+    val defaultValueUpdate = SingleNullableFeatureValueUpdate<String?>()
     val defaultValueChanged: String? =
       when (feature.valueType!!) {
         FeatureValueType.NUMBER -> {
@@ -488,7 +488,10 @@ class FeatureSqlApi @Inject constructor(
 
       existing.defaultValue = defaultValueChanged
 
-      return updateSingleFeatureValueUpdate(defaultValueUpdate, defaultValueChanged, historical.defaultValue)
+      defaultValueUpdate.hasChanged = true
+      defaultValueUpdate.updated = defaultValueChanged
+      defaultValueUpdate.previous = historical.defaultValue
+      return defaultValueUpdate
     }
 
     // someone changed it in the meantime so they can't change it
@@ -506,7 +509,7 @@ class FeatureSqlApi @Inject constructor(
     existing: DbFeatureValue,
     person: PersonFeaturePermission
   ): SingleFeatureValueUpdate<Boolean> {
-    val lockUpdate = SingleFeatureValueUpdate<Boolean>()
+    val lockUpdate = SingleFeatureValueUpdate(updated = false, previous = false)
     val updatedValue = featureValue.locked
     if (updatedValue == existing.isLocked) {
       return lockUpdate

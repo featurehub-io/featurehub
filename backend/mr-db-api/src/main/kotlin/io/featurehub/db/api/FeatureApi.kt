@@ -3,7 +3,8 @@ package io.featurehub.db.api
 import io.featurehub.mr.model.*
 import java.util.*
 
-data class SingleFeatureValueUpdate<T>(var hasChanged: Boolean=false, var updated: T? = null, var previous: T? = null)
+data class SingleNullableFeatureValueUpdate<T>(var hasChanged: Boolean=false, var updated: T? = null, var previous: T? = null)
+data class SingleFeatureValueUpdate<T>(var hasChanged: Boolean=false, var updated: T, var previous: T)
 data class MultiFeatureValueUpdate<T, V>(var hasChanged: Boolean=false, var updated: MutableList<T> = mutableListOf(), var reordered: MutableList<V> = mutableListOf(), var previous: MutableList<V> = mutableListOf())
 data class RolloutStrategyUpdate(val type: String, val old: RolloutStrategy? = null, val new: RolloutStrategy? = null)
 

@@ -41,7 +41,7 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
       .let {
         val lockUpdated = featureMessagingParameter.lockUpdate.updated
         val lockPrevious = featureMessagingParameter.lockUpdate.previous
-        if (featureMessagingParameter.lockUpdate.hasChanged && lockUpdated != null && lockPrevious != null)
+        if (featureMessagingParameter.lockUpdate.hasChanged)
           it.lockUpdated(MessagingLockUpdate()
             .updated(lockUpdated)
             .previous(lockPrevious)
@@ -50,7 +50,7 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
       .let {
         val retiredUpdated = featureMessagingParameter.retiredUpdate.updated
         val retiredPrevious = featureMessagingParameter.retiredUpdate.previous
-        if (featureMessagingParameter.retiredUpdate.hasChanged && retiredUpdated != null && retiredPrevious != null)
+        if (featureMessagingParameter.retiredUpdate.hasChanged)
           it.retiredUpdated(MessagingRetiredUpdate()
             .updated(retiredUpdated)
             .previous(retiredPrevious)
