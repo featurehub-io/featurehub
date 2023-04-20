@@ -1,0 +1,33 @@
+Azure AD SSO/SAML setup
+
+1. Create FeatureHub application in the "Enterprise Applications" page and go to the Single Sign-On setup screen.
+
+image::azure5.png[Azure-saml-featurehub,600]
+
+2. Provide the following URls in the Basic SAML configuration section. Note, we used "banana" here as an example, this is usually your organisation name:
+
+image::azure3.png[Azure-saml-featurehub,600]
+
+3. Provide the following additional details in Attributes & Claims section:
+
+image::azure4.png[Azure-saml-featurehub,600]
+
+
+4. Make sure the correct option is selected for the certificate setting:
+
+image::azure1.png[Azure-saml-featurehub,600]
+
+5. Copy the following URLs and a certificate and insert them in your FeatureHub Saml/SSO settings page. Suffix field is usually your organization name:
+
+image::azure2.png[Azure-saml-featurehub,600]
+
+image::saml-urls.png[Azure-saml-featurehub,600]
+
+Certificate example:
+
+image::saml2-cert.png[Azure-saml-featurehub,600]
+
+
+6. Once you save the settings, copy the Sign In URL from the page, this will be where your users should go to sign in.
+
+image::saml1.png[Azure-saml-featurehub,600]
