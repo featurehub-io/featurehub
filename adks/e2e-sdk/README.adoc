@@ -16,3 +16,19 @@ Running the `create-demo.sh` file will cause only those tests to run against the
 create the right features and then output the configuration necessary to stdout. These environment variables
 can be copied into the appropriate run.sh files in the example directories.
 
+== Running against a remote server
+
+This assumes that SSE is enabled. 
+
+Set `REMOTE_BEARER_TOKEN` to a Superuser level Admin level bearer token.
+
+Set `REMOTE_BACKEND` to the https://X full location of your server.
+
+if you want to test the webhook, use ngrok or similar and set the env var
+EXTERNAL_NGROK and make sure it comes back to port 3000 e.g., `./ngrok 3000`
+
+If you want to override the portfolio name when using ./create-demo.sh, use
+`PORTFOLIO_NAME=pancakes ./create-demo.sh` (replace pancakes with whatever you
+like, it needs to be unique for each run).
+
+

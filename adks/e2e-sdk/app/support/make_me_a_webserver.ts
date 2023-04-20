@@ -35,6 +35,10 @@ export function getWebhookData(): EnrichedFeatures | undefined {
 }
 
 export function getWebserverExternalAddress(): string | undefined {
+  if (process.env.EXTERNAL_NGROK) {
+    return process.env.EXTERNAL_NGROK;
+  }
+
   return networkName ? `http://${results[networkName][0]}:3000` : undefined;
 }
 

@@ -60,10 +60,15 @@ export class SdkWorld extends World {
   constructor(props) {
     super(props);
 
+    if (process.env.REMOTE_BEARER_TOKEN) {
+      apiKey = process.env.REMOTE_BEARER_TOKEN;
+      console.log('api key is ', apiKey);
+    }
+
     this.adminUrl = mrHost();
     this.featureUrl = edgeHost();
 
-    this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey, axiosInstance: globalAxios.create() });
+    this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey, axiosInstance: globalAxios.create(), accessToken: apiKey });
     this.portfolioApi = new PortfolioServiceApi(this.adminApiConfig);
     this.applicationApi = new ApplicationServiceApi(this.adminApiConfig);
     this.environmentApi = new EnvironmentServiceApi(this.adminApiConfig);

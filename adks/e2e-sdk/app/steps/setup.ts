@@ -21,7 +21,7 @@ Given(/^I create a new portfolio$/, async function () {
   world.reset();
   const portfolioService: PortfolioServiceApi = world.portfolioApi;
 
-  const name = makeid(12);
+  const name = process.env.PORTFOLIO_NAME || makeid(12);
   const pCreate = await portfolioService.createPortfolio(new Portfolio({ name: name, description: name }));
   expect(pCreate.status).to.eq(200);
   this.portfolio = pCreate.data;
