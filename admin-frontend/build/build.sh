@@ -1,8 +1,7 @@
 #!/bin/bash
 #tar xf *.tar
 ls -l
-set -x
-set -eo pipefile
+set -exo pipefail
 if [ "$OSTYPE" == 'darwin'* ]; then
   gsed --help > /dev/null
   alias sed=gsed
