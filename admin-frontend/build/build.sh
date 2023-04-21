@@ -19,7 +19,7 @@ rename_main_dart() {
   MAIN_SHA=`sha256sum main.dart.js | awk '{print $1}'`
   echo Generated SHA is $MAIN_SHA
   MAIN="main-$MAIN_SHA.js"
-  if [ "$OSTYPE" == 'darwin'* ]; then
+  if [[ "$OSTYPE" == 'darwin'* ]]; then
     gsed -i s/main.dart.js/$MAIN/ index.html
   else
     sed -i s/main.dart.js/$MAIN/ index.html
