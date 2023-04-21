@@ -2,10 +2,6 @@
 #tar xf *.tar
 ls -l
 set -exo pipefail
-if [ "$OSTYPE" == 'darwin'* ]; then
-  gsed --help > /dev/null
-  alias sed=gsed
-fi
 echo flutter home is $FLUTTER
 #echo "1.21.0-8.0.pre.110" > $FLUTTER_ROOT/version
 #ls -la $FLUTTER
@@ -23,7 +19,11 @@ rename_main_dart() {
   MAIN_SHA=`sha256sum main.dart.js | awk '{print $1}'`
   echo Generated SHA is $MAIN_SHA
   MAIN="main-$MAIN_SHA.js"
-  sed -i s/main.dart.js/$MAIN/ index.html
+  if [ "$OSTYPE" == 'darwin'* ]; then
+    gsed -i s/main.dart.js/$MAIN/ index.html
+  else
+    sed -i s/main.dart.js/$MAIN/ index.html
+  fi
   mv main.dart.js $MAIN
   if test -f "main.dart.js.map"; then
     mv main.dart.js.map $MAIN.map
