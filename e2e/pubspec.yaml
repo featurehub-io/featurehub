@@ -10,7 +10,7 @@ dependencies:
   logging: ^1.0.1
   dio: ^4.0.0
   mrapi:
-    path: ../admin-frontend/app_mr_layer
+    path: app_mr_layer
   openapi_dart_common: ^4.0.0
   collection: ^1.15.0
   featurehub_client_sdk: ^1.4.0
