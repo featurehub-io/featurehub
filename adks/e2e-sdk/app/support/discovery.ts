@@ -118,6 +118,8 @@ export function edgeHost() {
     if (backend.includes('/pistachio/')) {
       return backend.substring(0, backend.lastIndexOf('/'));
     }
+
+    return backend;
   }
   return `http://localhost:${BackendDiscovery.featuresPort}`;
 }
