@@ -27,7 +27,7 @@ class FeatureMessagingCloudEventPublisherImpl(
       event.withTime(OffsetDateTime.now())
       cloudEventPublisher.publish(FeatureMessagingUpdate.CLOUD_EVENT_TYPE, featureMessagingUpdate, event)
     } catch (e: Exception) {
-      log.error("Failed to publish messaging update for feature {} ", featureMessagingParameter.featureValue)
+      log.error("Failed to publish messaging update for feature {}", featureMessagingParameter.featureValue, e)
     }
   }
 }

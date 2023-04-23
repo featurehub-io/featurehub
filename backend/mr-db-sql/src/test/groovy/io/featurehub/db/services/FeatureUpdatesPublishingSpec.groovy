@@ -5,8 +5,6 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.RolloutStrategyValidator
-import io.featurehub.messaging.model.MessagingRolloutStrategy
-import io.featurehub.messaging.model.MessagingRolloutStrategyAttribute
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.events.common.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.events.common.converter.FeatureMessagingParameter
@@ -20,6 +18,8 @@ import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
+import io.featurehub.utils.ExecutorSupplier
+import java.util.concurrent.ExecutorService
 
 class FeatureUpdatesPublishingSpec extends Base2Spec {
   PortfolioSqlApi portfolioSqlApi
@@ -35,9 +35,10 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
   PersonFeaturePermission perms
   RolloutStrategyValidator rsv
   FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
-  ApplicationSqlApi appApi
   UUID envIdApp1
   UUID appId
+  ExecutorSupplier executorSupplier
+  ExecutorService executor
 
   def setup() {
     perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK] as Set<RoleType>)
@@ -45,13 +46,18 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     rsValidator = Mock()
     rsValidator.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     rsValidator.validateStrategies(_, _, _, _) >> new RolloutStrategyValidator.ValidationFailure()
-    ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true'])
+    ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true', 'messaging.publisher.thread-pool': "1"])
 
-    rsv = Mock(RolloutStrategyValidator)
+    rsv = Mock()
     rsv.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     featureMessagingCloudEventPublisher = Mock()
-    featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv, featureMessagingCloudEventPublisher)
+    executorSupplier = Mock()
+    executor = Mock()
+    1 * executorSupplier.executorService(_) >> executor
+    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsv, featureMessagingCloudEventPublisher, executorSupplier)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
+    applicationSqlApi = new ApplicationSqlApi(db, convertUtils, cacheSource, archiveStrategy, featureSqlApi)
 
     p1 = portfolioSqlApi.getPortfolio("basic")
 
@@ -59,7 +65,6 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
       p1 = portfolioSqlApi.createPortfolio(new Portfolio().name("basic").description("basic"), Opts.empty(), superPerson)
     }
 
-    applicationSqlApi = new ApplicationSqlApi(db, convertUtils, cacheSource, archiveStrategy, featureSqlApi)
     app = applicationSqlApi.getApplication(p1.id, "app1")
 
     if (app == null) {
@@ -69,15 +74,12 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
 
     db.currentTransaction().commit()
 
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
     env = environmentSqlApi.getEnvironment(app.id, "dev")
 
     if (env == null) {
       env = environmentSqlApi.create(new  Environment().name("dev").description("dev"), app, superPerson)
     }
     envIdApp1 = env.id
-    appApi = new ApplicationSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, featureSqlApi)
-
 
   }
 
@@ -88,16 +90,17 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
   def "feature updates are published when i create the feature value"() {
     given: "i have a feature"
     String featureKey = "FEATURE_FV1"
-    def features = appApi.createApplicationFeature(appId, new Feature().name("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+    applicationSqlApi.createApplicationFeature(appId, new Feature().name("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
 
     when: "i set the feature value"
     def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey)
-    print(f.valueBoolean)
+
     // it already exists, so we have  to unlock it
-    def f2 = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.valueBoolean(true).locked(false), pers)
+    featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.valueBoolean(true).locked(false), pers)
 
     then: "feature update is published"
+    1 * executor.submit(_) >> { Runnable task -> task.run() }
     1 * featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate({ FeatureMessagingParameter param ->
       with(param) {
         !lockUpdate.updated
@@ -110,12 +113,15 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
         !strategyUpdates.hasChanged
       }
     })
+    1 * cacheSource.publishFeatureChange(_)
+
   }
+
 
   def "feature updates are published when i update the feature value"() {
     given: "i have a feature"
     String featureKey = "FEATURE_FV2"
-    def features = appApi.createApplicationFeature(appId, new Feature().name("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+    def features = applicationSqlApi.createApplicationFeature(appId, new Feature().name("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
 
     when: "i unlock the feature"
@@ -124,6 +130,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.locked(false), pers)
 
     then: "feature update is published"
+    1 * executor.submit(_) >> { Runnable task -> task.run() }
     1 * featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate({ FeatureMessagingParameter param ->
       with(param) {
         !lockUpdate.updated
@@ -138,9 +145,10 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     })
 
     when: "i set the feature value "
-    def f2 = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.valueBoolean(true).locked(true), pers)
+    featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.valueBoolean(true).locked(true), pers)
 
     then: "feature update is published"
+    1 * executor.submit(_) >> { Runnable task -> task.run() }
     1 * featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate({ FeatureMessagingParameter param ->
       with(param) {
         lockUpdate.updated
@@ -160,6 +168,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, fv, pers)
 
     then: "feature update is published"
+    1 * executor.submit(_) >> { Runnable task -> task.run() }
     1 * featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate({ FeatureMessagingParameter param ->
       with(param) {
         !lockUpdate.updated
@@ -177,7 +186,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
   def "feature updates are published when i add rollout strategies"() {
     given: "i have a feature"
     String featureKey = "FEATURE_FV3"
-    def features = appApi.createApplicationFeature(appId, new Feature().name("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+    applicationSqlApi.createApplicationFeature(appId, new Feature().name("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
 
     and: "i have a rollout strategy"
@@ -196,6 +205,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.locked(false), pers)
 
     then: "feature update is published"
+    1 * executor.submit(_) >> { Runnable task -> task.run() }
     1 * featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate({ FeatureMessagingParameter param ->
       with(param) {
         !lockUpdate.updated
@@ -213,9 +223,10 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
 
     fv.locked(false)
     fv.rolloutStrategies([rolloutStrategy])
-    def updated = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, fv, perms)
+    featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, fv, perms)
 
     then: "feature update is published"
+    1 * executor.submit(_) >> { Runnable task -> task.run() }
     1 * featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate({ FeatureMessagingParameter param ->
       with(param) {
         !lockUpdate.updated

@@ -27,8 +27,8 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
   }
 
   void setup() {
-    cloudEventPublisher = Mock(CloudEventPublisher)
-    featureMessagingConverter = Mock(FeatureMessagingConverter)
+    cloudEventPublisher = Mock()
+    featureMessagingConverter = Mock()
     featureMessagingCloudEventPublisher = new FeatureMessagingCloudEventPublisherImpl(featureMessagingConverter, cloudEventPublisher)
   }
 
@@ -59,5 +59,6 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
     then:
     1 * featureMessagingConverter.toFeatureMessagingUpdate(featureMessagingParameter) >> featureMessagingUpdate
     1 * cloudEventPublisher.publish(FeatureMessagingUpdate.CLOUD_EVENT_TYPE, featureMessagingUpdate, _)
+    0 * _
   }
 }

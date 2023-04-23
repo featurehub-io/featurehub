@@ -20,6 +20,8 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
     val portfolio = parentApplication.portfolio
     return FeatureMessagingUpdate()
       .featureKey(featureValue.feature.key)
+      .featureId(featureValue.feature.id)
+      .featureValueId(featureValue.id)
       .environmentId(environment.id)
       .whoUpdated(featureValue.whoUpdated.name)
       .whenUpdated(featureValue.whenUpdated.atOffset(ZoneOffset.UTC))
@@ -93,7 +95,7 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
   private fun toMessagingRolloutStrategy(rolloutStrategy: RolloutStrategy): MessagingRolloutStrategy {
     val attributes = rolloutStrategy.attributes
     return MessagingRolloutStrategy()
-      .id(rolloutStrategy.id ?: "rs-id")
+      .id(rolloutStrategy.id!!)
       .percentage(rolloutStrategy.percentage)
       .percentageAttributes(rolloutStrategy.percentageAttributes)
       .value(rolloutStrategy.value)

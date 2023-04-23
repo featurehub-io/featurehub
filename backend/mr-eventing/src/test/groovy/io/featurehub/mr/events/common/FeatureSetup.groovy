@@ -14,6 +14,8 @@ import java.time.LocalDateTime
  class FeatureSetup extends  Specification{
    DbFeatureValue createFeature() {
     def applicationId = UUID.randomUUID()
+    def featureId = UUID.randomUUID()
+    def featureValueId = UUID.randomUUID()
     def environmentId = UUID.randomUUID()
     def dbFeatureId = UUID.randomUUID()
     def orgId = UUID.randomUUID()
@@ -43,9 +45,11 @@ import java.time.LocalDateTime
       .key(featureKey)
       .valueType(FeatureValueType.STRING)
       .build()
-
+    feature.setId(featureId)
     DbFeatureValue dbFeatureValue = Mock()
     dbFeatureValue.environment >> environment
+     dbFeatureValue.id >> featureValueId
+
     dbFeatureValue.defaultValue >> newFeatureValue
     dbFeatureValue.feature >> feature
     dbFeatureValue.whoUpdated >> person

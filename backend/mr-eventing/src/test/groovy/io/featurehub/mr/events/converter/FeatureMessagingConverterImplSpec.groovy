@@ -80,6 +80,8 @@ class FeatureMessagingConverterImplSpec extends Specification {
         with(featureMessagingUpdate) {
           whoUpdated == dbFeatureValue.whoUpdated.name
           featureKey == dbFeatureValue.feature.key
+          featureId == dbFeatureValue.feature.id
+          featureValueId == dbFeatureValue.id
           applicationId == dbFeatureValue.environment.parentApplication.id
           environmentId == dbFeatureValue.environment.id
           portfolioId == dbFeatureValue.environment.parentApplication.portfolio.id
@@ -115,6 +117,8 @@ class FeatureMessagingConverterImplSpec extends Specification {
     with(featureMessagingUpdate) {
       whoUpdated == dbFeatureValue.whoUpdated.name
       featureKey == dbFeatureValue.feature.key
+      featureId == dbFeatureValue.feature.id
+      featureValueId == dbFeatureValue.id
       applicationId == dbFeatureValue.environment.parentApplication.id
       environmentId == dbFeatureValue.environment.id
       portfolioId == dbFeatureValue.environment.parentApplication.portfolio.id
@@ -129,6 +133,102 @@ class FeatureMessagingConverterImplSpec extends Specification {
     }
   }
 
+  def "should set strategy updates when a new strategy is added"() {
+    given: "i have the db feature value"
+    def dbFeatureValue =  featureSetup.createFeature()
+    def existingStrategy = createRolloutStrategy()
+    dbFeatureValue.setRolloutStrategies([existingStrategy])
+
+    and: "i have the feature messaging parameter"
+    def lockUpdate = new SingleFeatureValueUpdate<Boolean>(
+      false, false, false)
+    def defaultValueUpdate = new SingleNullableFeatureValueUpdate<String>(false, dbFeatureValue.defaultValue, dbFeatureValue.defaultValue)
+    def retiredUpdate = new SingleFeatureValueUpdate<Boolean>(
+      false, false, false)
+    def newStrategy = createRolloutStrategy()
+
+    def addStrategyUpdate = new RolloutStrategyUpdate(
+      StrategyUpdateType.ADDED.name(), null, newStrategy)
+
+    def strategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(true, [addStrategyUpdate], [], [])
+
+    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
+
+    when:
+    def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
+      featureMessagingParameter
+    )
+    then:
+    with(featureMessagingUpdate) {
+      whoUpdated == dbFeatureValue.whoUpdated.name
+      featureKey == dbFeatureValue.feature.key
+      featureId == dbFeatureValue.feature.id
+      featureValueId == dbFeatureValue.id
+      applicationId == dbFeatureValue.environment.parentApplication.id
+      environmentId == dbFeatureValue.environment.id
+      portfolioId == dbFeatureValue.environment.parentApplication.portfolio.id
+      organizationId == dbFeatureValue.environment.parentApplication.portfolio.organization.id
+      featureValueType == FeatureValueType.STRING
+      featureValueUpdated == null
+      whenUpdated == dbFeatureValue.whenUpdated.atOffset(ZoneOffset.UTC)
+      lockUpdated == null
+      retiredUpdated == null
+      strategiesUpdated.size() == 1
+      strategiesUpdated[0].newStrategy == toMessagingRolloutStrategy(newStrategy)
+      strategiesUpdated[0].updateType == StrategyUpdateType.ADDED
+      strategiesUpdated[0].oldStrategy == null
+      strategiesReordered == null
+    }
+  }
+
+  def "should set strategy updates when a strategy is changed"() {
+    given: "i have the db feature value"
+    def dbFeatureValue =  featureSetup.createFeature()
+    def existingStrategy = createRolloutStrategy()
+    dbFeatureValue.setRolloutStrategies([existingStrategy])
+
+    and: "i have the feature messaging parameter"
+    def lockUpdate = new SingleFeatureValueUpdate<Boolean>(
+      false, false, false)
+    def defaultValueUpdate = new SingleNullableFeatureValueUpdate<String>(false, dbFeatureValue.defaultValue, dbFeatureValue.defaultValue)
+    def retiredUpdate = new SingleFeatureValueUpdate<Boolean>(
+      false, false, false)
+    def changedStrategy = createRolloutStrategy()
+    def oldStrategy = createRolloutStrategy()
+
+    def changedStrategyUpdate = new RolloutStrategyUpdate(
+      StrategyUpdateType.CHANGED.name(), oldStrategy, changedStrategy)
+
+    def strategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(true, [changedStrategyUpdate], [], [])
+
+    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
+
+    when:
+    def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
+      featureMessagingParameter
+    )
+    then:
+    with(featureMessagingUpdate) {
+      whoUpdated == dbFeatureValue.whoUpdated.name
+      featureKey == dbFeatureValue.feature.key
+      featureId == dbFeatureValue.feature.id
+      featureValueId == dbFeatureValue.id
+      applicationId == dbFeatureValue.environment.parentApplication.id
+      environmentId == dbFeatureValue.environment.id
+      portfolioId == dbFeatureValue.environment.parentApplication.portfolio.id
+      organizationId == dbFeatureValue.environment.parentApplication.portfolio.organization.id
+      featureValueType == FeatureValueType.STRING
+      featureValueUpdated == null
+      whenUpdated == dbFeatureValue.whenUpdated.atOffset(ZoneOffset.UTC)
+      lockUpdated == null
+      retiredUpdated == null
+      strategiesUpdated.size() == 1
+      strategiesUpdated[0].newStrategy == toMessagingRolloutStrategy(changedStrategy)
+      strategiesUpdated[0].updateType == StrategyUpdateType.CHANGED
+      strategiesUpdated[0].oldStrategy == toMessagingRolloutStrategy(oldStrategy)
+      strategiesReordered == null
+    }
+  }
 
   def "should set strategy updates when strategies are added, updated and deleted"() {
     given: "i have the db feature value"
@@ -161,6 +261,8 @@ class FeatureMessagingConverterImplSpec extends Specification {
     with(featureMessagingUpdate) {
       whoUpdated == dbFeatureValue.whoUpdated.name
       featureKey == dbFeatureValue.feature.key
+      featureId == dbFeatureValue.feature.id
+      featureValueId == dbFeatureValue.id
       applicationId == dbFeatureValue.environment.parentApplication.id
       environmentId == dbFeatureValue.environment.id
       portfolioId == dbFeatureValue.environment.parentApplication.portfolio.id
@@ -178,6 +280,7 @@ class FeatureMessagingConverterImplSpec extends Specification {
       strategiesUpdated[1].updateType == StrategyUpdateType.CHANGED
       strategiesUpdated[2].oldStrategy == toMessagingRolloutStrategy(deletedStrategy)
       strategiesUpdated[2].updateType == StrategyUpdateType.DELETED
+      strategiesReordered == null
 
     }
   }
@@ -202,7 +305,8 @@ class FeatureMessagingConverterImplSpec extends Specification {
     with(featureMessagingUpdate) {
       whoUpdated == dbFeatureValue.whoUpdated.name
       featureKey == dbFeatureValue.feature.key
-      featureKey == dbFeatureValue.feature.key
+      featureId == dbFeatureValue.feature.id
+      featureValueId == dbFeatureValue.id
       applicationId == dbFeatureValue.environment.parentApplication.id
       environmentId == dbFeatureValue.environment.id
       portfolioId == dbFeatureValue.environment.parentApplication.portfolio.id

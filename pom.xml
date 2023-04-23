@@ -89,6 +89,7 @@
     <module>backend/mr-db-services</module>
     <module>backend/mr-eventing</module>
     <module>backend/mr-eventing-common</module>
+    <module>backend/messaging-api</module>
     <module>backend/mr-eventing-nats</module>
     <module>backend/edge-feature-update-async-api</module>
     <module>backend/eventing-nats</module>

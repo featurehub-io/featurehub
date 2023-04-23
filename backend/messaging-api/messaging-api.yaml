@@ -25,9 +25,13 @@ components:
       required:
         - environmentId
         - applicationId
+        - portfolioId
+        - organizationId
         - whenUpdated
         - whoUpdated
         - featureKey
+        - featureId
+        - featureValueId
         - featureValueType
         - whatUpdated
       properties:
@@ -59,6 +63,14 @@ components:
         featureKey:
           description: "Feature key that got updated"
           type: string
+        featureId:
+          description: "Id of the Feature that got updated"
+          type: string
+          format: uuid
+        featureValueId:
+          description: "Id of Feature value that got updated"
+          type: string
+          format: uuid
         featureValueType:
           description: "Type of the feature value"
           $ref: "#/components/schemas/FeatureValueType"
