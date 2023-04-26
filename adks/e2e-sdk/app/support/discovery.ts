@@ -88,7 +88,7 @@ export abstract class BackendDiscovery {
   }
 
   static async discover(): Promise<void> {
-    if (process.env.REMOTE_BACKEND) {
+    if (process.env.REMOTE_BACKEND || process.env.FEATUREHUB_BASE_URL) {
       return;
     }
     if (!BackendDiscovery._discovered) {
@@ -108,10 +108,14 @@ export async function discover() {
 }
 
 export function mrHost() {
-  return  process.env.REMOTE_BACKEND || `http://localhost:${BackendDiscovery.mrPort}`;
+  return  process.env.FEATUREHUB_BASE_URL || process.env.REMOTE_BACKEND || `http://localhost:${BackendDiscovery.mrPort}`;
 }
 
 export function edgeHost() {
+  if (process.env.FEATUREHUB_EDGE_URL) {
+    return process.env.FEATUREHUB_EDGE_URL;
+  }
+
   if (process.env.REMOTE_BACKEND) {
     const backend = process.env.REMOTE_BACKEND;
 
@@ -125,5 +129,5 @@ export function edgeHost() {
 }
 
 export function supportsSSE() {
-  return process.env.REMOTE_BACKEND ? true : BackendDiscovery.supportsSSE;
+  return (process.env.REMOTE_BACKEND || process.env.FEATUREHUB_BASE_URL) ? true : BackendDiscovery.supportsSSE;
 }
