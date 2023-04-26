@@ -6,15 +6,17 @@ import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.mr.events.common.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.events.common.converter.FeatureMessagingConverter
 import io.featurehub.mr.events.common.converter.FeatureMessagingParameter
+import jakarta.inject.Inject
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.time.OffsetDateTime
 import java.util.*
 
-class FeatureMessagingCloudEventPublisherImpl(
+class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
   private val featureMessagingConverter: FeatureMessagingConverter,
   private val cloudEventPublisher: CloudEventPublisher
 ) : FeatureMessagingCloudEventPublisher{
+
   private val log = LoggerFactory.getLogger(FeatureMessagingCloudEventPublisherImpl::class.java)
   override fun publishFeatureMessagingUpdate(featureMessagingParameter: FeatureMessagingParameter) {
     try {

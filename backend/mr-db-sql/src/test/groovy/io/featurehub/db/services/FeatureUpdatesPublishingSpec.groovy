@@ -27,7 +27,6 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
   ApplicationSqlApi applicationSqlApi
   Application app
   CacheSource cacheSource
-//  Feature feature
   FeatureSqlApi featureSqlApi
   EnvironmentSqlApi environmentSqlApi
   Environment env
@@ -57,7 +56,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsv, featureMessagingCloudEventPublisher, executorSupplier)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
-    applicationSqlApi = new ApplicationSqlApi(db, convertUtils, cacheSource, archiveStrategy, featureSqlApi)
+    applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, featureSqlApi)
 
     p1 = portfolioSqlApi.getPortfolio("basic")
 
