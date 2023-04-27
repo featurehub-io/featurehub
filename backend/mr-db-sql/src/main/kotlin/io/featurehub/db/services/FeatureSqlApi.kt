@@ -37,13 +37,18 @@ class FeatureSqlApi @Inject constructor(
   private val featureMessagingCloudEventPublisher: FeatureMessagingCloudEventPublisher,
   executorSupplier: ExecutorSupplier
 ) : FeatureApi, FeatureUpdateBySDKApi, InternalFeatureSqlApi {
+
   @ConfigKey("messaging.publisher.thread-pool")
   val threadPoolSize: Int? = 4
+
+  @ConfigKey("messaging.publish.enabled")
+  val messagingPublishEnabled: Boolean? = false
 
   private val executor: ExecutorService
 
   @ConfigKey("auditing.enable")
   var auditingEnabled: Boolean? = true
+
   @ConfigKey("features.max-per-page")
   private var maxPagination: Int? = 10000
 
@@ -223,7 +228,9 @@ class FeatureSqlApi @Inject constructor(
       existing.whoUpdated = QDbPerson().id.eq(person.person.id!!.id).findOne()
       save(existing)
       publish(existing)
-      publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
+      if (messagingPublishEnabled!!) {
+        publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
+      }
     }
   }
 
@@ -236,25 +243,12 @@ class FeatureSqlApi @Inject constructor(
   ) {
     log.trace("publishing feature messaging update for {}", featureValue)
     executor.submit {
-      publishMessageConcurrently(featureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
-    }
-  }
-
-  internal fun publishMessageConcurrently(
-    featureValue: DbFeatureValue,
-    lockUpdate: SingleFeatureValueUpdate<Boolean>,
-    defaultValueUpdate: SingleNullableFeatureValueUpdate<String?>,
-    retiredUpdate: SingleFeatureValueUpdate<Boolean>,
-    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>
-  ) {
-    try {
-      val featureMessagingParameter = FeatureMessagingParameter(
-        featureValue,
-        lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates
-      )
-      featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate(featureMessagingParameter)
-    } catch (e: Exception) {
-      log.error("Failed to publish feature messaging update {}", featureValue, e)
+      try {
+        val featureMessagingParameter = FeatureMessagingParameter(featureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
+        featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate(featureMessagingParameter)
+      } catch (e: Exception) {
+        log.error("Failed to publish feature messaging update {}", featureValue, e)
+      }
     }
   }
 
