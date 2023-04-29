@@ -14,7 +14,6 @@ import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.events.common.FeatureMessagingCloudEventPublisher
-import io.featurehub.mr.events.common.converter.FeatureMessagingParameter
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationFeatureValues
 import io.featurehub.mr.model.ApplicationRoleType
@@ -33,9 +32,9 @@ import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
+import io.featurehub.mr.model.SortOrder
 import io.featurehub.utils.ExecutorSupplier
 import org.apache.commons.lang3.RandomStringUtils
-import io.featurehub.mr.model.SortOrder
 
 import java.util.concurrent.ExecutorService
 
@@ -74,12 +73,12 @@ class FeatureSpec extends Base2Spec {
     featureMessagingCloudEventPublisher = Mock()
     executorSupplier = Mock()
     executorService = Mock()
-    1 * executorSupplier.executorService(_) >> executorService
+    executorSupplier.executorService(_) >> executorService
     featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv, featureMessagingCloudEventPublisher, executorSupplier)
-    appApi = new ApplicationSqlApi( convertUtils, Mock(CacheSource), archiveStrategy, featureSqlApi)
+    appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, featureSqlApi)
 
     // now set up the environments we need
-    portfolio1 = new DbPortfolio.Builder().name("p1-app-feature" + RandomStringUtils.randomAlphabetic(8) ).whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
+    portfolio1 = new DbPortfolio.Builder().name("p1-app-feature" + RandomStringUtils.randomAlphabetic(8)).whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
     db.save(portfolio1)
     app1 = new DbApplication.Builder().whoCreated(dbSuperPerson).portfolio(portfolio1).name("feature-app-1").build()
     db.save(app1)
@@ -97,11 +96,11 @@ class FeatureSpec extends Base2Spec {
     groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("fsspec-1-p1"), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
 
-    def averageIrina = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) +"averageirina@featurehub.io").name("Average Irina").build()
+    def averageIrina = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) + "averageirina@featurehub.io").name("Average Irina").build()
     db.save(averageIrina)
     averageIrinaNotPortfolioMember = convertUtils.toPerson(averageIrina)
 
-    def portfolioAdmin = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) +"pee-admin-fvs@featurehub.io").name("Portfolio Admin p1 fvs").build()
+    def portfolioAdmin = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) + "pee-admin-fvs@featurehub.io").name("Portfolio Admin p1 fvs").build()
     db.save(portfolioAdmin)
     portfolioAdminOfPortfolio1 = convertUtils.toPerson(portfolioAdmin)
 
@@ -123,8 +122,8 @@ class FeatureSpec extends Base2Spec {
     when:
       def foundFeatures = appApi.getApplicationFeatures(appId, Opts.empty())
     then:
-      features.find({ it -> it.key == 'FEATURE_ONE'}) != null
-      foundFeatures.find({ it -> it.key == 'FEATURE_ONE'}) != null
+      features.find({ it -> it.key == 'FEATURE_ONE' }) != null
+      foundFeatures.find({ it -> it.key == 'FEATURE_ONE' }) != null
       appApi.getApplicationSummary(appId).featureCount == 1
   }
 
@@ -141,8 +140,8 @@ class FeatureSpec extends Base2Spec {
       def app1Features = appApi.createApplicationFeature(appId, new Feature().name("x").key("FEATURE_THREE"), superPerson, Opts.empty())
       def app2Features = appApi.createApplicationFeature(app2Id, new Feature().name("y").key("FEATURE_THREE"), superPerson, Opts.empty())
     then:
-      app1Features.find({it -> it.key == 'FEATURE_THREE'}) != null
-      app2Features.find({it -> it.key == 'FEATURE_THREE'}) != null
+      app1Features.find({ it -> it.key == 'FEATURE_THREE' }) != null
+      app2Features.find({ it -> it.key == 'FEATURE_THREE' }) != null
   }
 
   def "if i try and update without passing the version i am updating, i will get a optimistic locking exception"() {
@@ -156,13 +155,13 @@ class FeatureSpec extends Base2Spec {
   def "i can update an existing feature toggle to a new name"() {
     when:
       def app1Features = appApi.createApplicationFeature(appId, new Feature().name("x").key("FEATURE_UPD1"), superPerson, Opts.empty())
-      def feature = app1Features.find({it -> it.key == 'FEATURE_UPD1'}).copy()
+      def feature = app1Features.find({ it -> it.key == 'FEATURE_UPD1' }).copy()
       def updatedFeatures = appApi.updateApplicationFeature(appId, "FEATURE_UPD1",
         feature.name("Drunks trying to be Quiet").alias("ssssshhhh"), Opts.empty())
     then:
-      app1Features.find({it -> it.key == 'FEATURE_UPD1'}).alias == null
-      updatedFeatures.find({it -> it.key == 'FEATURE_UPD1'}).alias == 'ssssshhhh'
-      updatedFeatures.find({it -> it.key == 'FEATURE_UPD1'}).name == 'Drunks trying to be Quiet'
+      app1Features.find({ it -> it.key == 'FEATURE_UPD1' }).alias == null
+      updatedFeatures.find({ it -> it.key == 'FEATURE_UPD1' }).alias == 'ssssshhhh'
+      updatedFeatures.find({ it -> it.key == 'FEATURE_UPD1' }).name == 'Drunks trying to be Quiet'
   }
 
 
@@ -180,15 +179,15 @@ class FeatureSpec extends Base2Spec {
       def deletedList = appApi.deleteApplicationFeature(appId, 'FEATURE_DELUROLO')
       def getList = appApi.getApplicationFeatures(appId, Opts.empty())
     then:
-      features.find({it.key  == 'FEATURE_DELUROLO'}) != null
+      features.find({ it.key == 'FEATURE_DELUROLO' }) != null
       deletedList == getList
-      getList.find({it.key  == 'FEATURE_DELUROLO'}) == null
+      getList.find({ it.key == 'FEATURE_DELUROLO' }) == null
   }
 
   def "i can set and retrieve meta-data on a feature"() {
     when: "i create the feature with meta-data"
       def features = appApi.createApplicationFeature(appId, new Feature().name("m-people").key("m-people").metaData("yaml:"), superPerson,
-          Opts.opts(FillOpts.MetaData))
+        Opts.opts(FillOpts.MetaData))
     then:
       features[0].metaData == 'yaml:'
       appApi.getApplicationFeatures(appId, Opts.opts(FillOpts.MetaData))[0].metaData == "yaml:"
@@ -225,9 +224,9 @@ class FeatureSpec extends Base2Spec {
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
       // it already exists, so we have  to unlock it
       f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.locked(false), pers)
-      assert(!f.locked && !f.valueBoolean);
+      assert (!f.locked && !f.valueBoolean);
       def f2 = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
-      assert(f2.valueBoolean && f2.locked);
+      assert (f2.valueBoolean && f2.locked);
     and: "i get the FV"
       def fvEnv1 = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues
     and: "i update the feature value"
@@ -238,9 +237,9 @@ class FeatureSpec extends Base2Spec {
       featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, fv, pers)
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
     then:
-      fvEnv1.find({it.key == "FEATURE_FV1"})
-      fvEnv1.find({it.key == "FEATURE_FV1"}).valueBoolean
-      fvEnv1.find({it.key == "FEATURE_FV1"}).locked
+      fvEnv1.find({ it.key == "FEATURE_FV1" })
+      fvEnv1.find({ it.key == "FEATURE_FV1" }).valueBoolean
+      fvEnv1.find({ it.key == "FEATURE_FV1" }).locked
       !fv2.locked
       !fv2.valueBoolean
       fv2.valueString == null
@@ -253,7 +252,7 @@ class FeatureSpec extends Base2Spec {
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set the feature value"
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k);
-    // unlock it so we can change it in  the next step
+      // unlock it so we can change it in  the next step
       f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.locked(false), pers)
       featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
     and: "i update the feature value as unlock permission only"
@@ -290,12 +289,12 @@ class FeatureSpec extends Base2Spec {
       names.each { k -> appApi.createApplicationFeature(appId, new Feature().name(k).key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty()) }
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i get all the features"
-      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')})
+      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FBU') })
     and: "remove update none"
       List<FeatureValue> remaining = featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, [], pers)
     then:
-      found.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')}).size() == 5
-      remaining.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')}).size() == 5
+      found.findAll({ fv -> fv.key.startsWith('FEATURE_FBU') }).size() == 5
+      remaining.findAll({ fv -> fv.key.startsWith('FEATURE_FBU') }).size() == 5
   }
 
   def "i can block update a bunch of features for an environment"() {
@@ -305,27 +304,27 @@ class FeatureSpec extends Base2Spec {
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set two of those values"
       def updatesForCreate = [new FeatureValue().key('FEATURE_FVU_1').valueString('h').locked(true),
-                              new FeatureValue().key( 'FEATURE_FVU_2').valueString('h').locked(true)]
+                              new FeatureValue().key('FEATURE_FVU_2').valueString('h').locked(true)]
       featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updatesForCreate, pers)
     and:
-      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
+      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU') })
     and:
-      def updating = new ArrayList<>(found.findAll({k -> k.key == 'FEATURE_FVU_1'}).collect({it.copy().locked(false).valueString('z')}))
+      def updating = new ArrayList<>(found.findAll({ k -> k.key == 'FEATURE_FVU_1' }).collect({ it.copy().locked(false).valueString('z') }))
 //      updating.add(found.find({it.key == 'FEATURE_FVU_3'}).valueBoolean(true).locked(true))
 //      updating.add(found.find({it.key == 'FEATURE_FVU_4'}).valueBoolean(true).locked(true))
       updating.addAll([new FeatureValue().key('FEATURE_FVU_3').valueString('h').locked(true),
                        new FeatureValue().key('FEATURE_FVU_4').valueString('h').locked(true)])
       featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updating, pers)
-      def foundUpdating = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
+      def foundUpdating = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU') })
     then:
       found.size() == 2
       foundUpdating.size() == 3
-      !foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).locked
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).valueString == 'z'
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).valueString == 'h'
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).valueString == 'h'
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).locked
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).locked
+      !foundUpdating.find({ fv -> fv.key == 'FEATURE_FVU_1' }).locked
+      foundUpdating.find({ fv -> fv.key == 'FEATURE_FVU_1' }).valueString == 'z'
+      foundUpdating.find({ fv -> fv.key == 'FEATURE_FVU_3' }).valueString == 'h'
+      foundUpdating.find({ fv -> fv.key == 'FEATURE_FVU_4' }).valueString == 'h'
+      foundUpdating.find({ fv -> fv.key == 'FEATURE_FVU_4' }).locked
+      foundUpdating.find({ fv -> fv.key == 'FEATURE_FVU_3' }).locked
   }
 
   def "as admin i can filter what features I want for an application"() {
@@ -370,7 +369,7 @@ class FeatureSpec extends Base2Spec {
       appApi.createApplicationFeature(app2Id, new Feature().name('FEATURE_ALEX').key('FEATURE_ALEX').description('not').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     when: "i request pages of 2"
       def pageOne = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null,
-          1, 0, null, null)
+        1, 0, null, null)
       def pageTwo = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null,
         1, 1, null, null)
       def pageOneReverse = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null,
@@ -525,47 +524,47 @@ class FeatureSpec extends Base2Spec {
       List<FeatureEnvironment> envs1 = featureSqlApi.getFeatureValuesForApplicationForKeyForPerson(app2Id, k, superPerson)
       List<FeatureEnvironment> envsAverageJoe = featureSqlApi.getFeatureValuesForApplicationForKeyForPerson(app2Id, k, averageJoeMemberOfPortfolio1)
 
-        //
+      //
     then:
       envs.size() == 4
-      envs.find({e -> e.environment.id == env1.id}).featureValue.locked
-      envs.find({e -> e.environment.id == env1.id}).featureValue.valueBoolean
-      envs.find({e -> e.environment.id == env1.id}).serviceAccounts[0].id == serviceA1.id
-      envs.find({e -> e.environment.id == env2.id}).featureValue == null
-      envs.find({e -> e.environment.id == env3.id}).featureValue.locked
-      envs.find({e -> e.environment.id == env3.id}).featureValue.valueBoolean == false
+      envs.find({ e -> e.environment.id == env1.id }).featureValue.locked
+      envs.find({ e -> e.environment.id == env1.id }).featureValue.valueBoolean
+      envs.find({ e -> e.environment.id == env1.id }).serviceAccounts[0].id == serviceA1.id
+      envs.find({ e -> e.environment.id == env2.id }).featureValue == null
+      envs.find({ e -> e.environment.id == env3.id }).featureValue.locked
+      envs.find({ e -> e.environment.id == env3.id }).featureValue.valueBoolean == false
       envs1.size() == 4
       envsAverageJoe.size() == 4
       envsAverageJoe.find({ FeatureEnvironment e -> e.environment.id == env4.id }).roles.size() == 0
       envsAverageJoe.find({ FeatureEnvironment e -> e.environment.id == env1.id }).roles.size() == 3
-      envs1.find({e -> e.environment.id == env3.id}).featureValue == null
+      envs1.find({ e -> e.environment.id == env3.id }).featureValue == null
       !envs1.find({ e -> e.environment.id == env1.id }).featureValue.locked
-      afv.features.find({it.key == k}).valueType == FeatureValueType.BOOLEAN
+      afv.features.find({ it.key == k }).valueType == FeatureValueType.BOOLEAN
       afv.environments.size() == 4
-      afv.environments.find({it.environmentName == 'app2-dev-f1'}).roles == Arrays.asList(RoleType.values())
-      afv.environments.find({it.environmentName == 'app2-dev-f1'}).features[0].locked
-      afv.environments.find({it.environmentName == 'app2-staging-f1'}).features[0].locked
-      afv.environments.find({it.environmentName == 'app2-staging-f1'}).roles == Arrays.asList(RoleType.values())
-      afv.environments.find({it.environmentName == 'app2-test-f1'}).roles == Arrays.asList(RoleType.values())
-      afv.environments.find({it.environmentName == 'app2-test-f1'}).features.size() == 0
-      afv.environments.find({it.environmentName == 'app2-production-f1'}).features.size() == 1
-      afv.environments.find({it.environmentName == 'app2-production-f1'}).roles == Arrays.asList(RoleType.values()) // because superuser, otherwise would have no access
+      afv.environments.find({ it.environmentName == 'app2-dev-f1' }).roles == Arrays.asList(RoleType.values())
+      afv.environments.find({ it.environmentName == 'app2-dev-f1' }).features[0].locked
+      afv.environments.find({ it.environmentName == 'app2-staging-f1' }).features[0].locked
+      afv.environments.find({ it.environmentName == 'app2-staging-f1' }).roles == Arrays.asList(RoleType.values())
+      afv.environments.find({ it.environmentName == 'app2-test-f1' }).roles == Arrays.asList(RoleType.values())
+      afv.environments.find({ it.environmentName == 'app2-test-f1' }).features.size() == 0
+      afv.environments.find({ it.environmentName == 'app2-production-f1' }).features.size() == 1
+      afv.environments.find({ it.environmentName == 'app2-production-f1' }).roles == Arrays.asList(RoleType.values()) // because superuser, otherwise would have no access
       afvAverageJoe.environments.size() == 4
-      !afvAverageJoe.environments.find({it.environmentName == 'app2-dev-f1'}).roles.disjoint([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK])
-      afvAverageJoe.environments.find({it.environmentName == 'app2-production-f1'}).roles.isEmpty()
-    // portfolio admin can read in every environment
+      !afvAverageJoe.environments.find({ it.environmentName == 'app2-dev-f1' }).roles.disjoint([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK])
+      afvAverageJoe.environments.find({ it.environmentName == 'app2-production-f1' }).roles.isEmpty()
+      // portfolio admin can read in every environment
       afvPortfolioAdminOfPortfolio1.environments.size() == 4
       afvPortfolioAdminOfPortfolio1.environments.roles.each { it -> assert it == Arrays.asList(RoleType.values()) }
-      afvPortfolioAdminOfPortfolio1.environments.find({it.environmentName == 'app2-dev-f1'}).features[0].locked
+      afvPortfolioAdminOfPortfolio1.environments.find({ it.environmentName == 'app2-dev-f1' }).features[0].locked
   }
 
 
   def "updates to custom rollout strategies are persisted as expected"() {
     setup:
       ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true', 'messaging.publisher.thread-pool': "1"])
-      1 * executorSupplier.executorService(_) >> executorService
+      executorSupplier.executorService(_) >> executorService
 
-    featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv, featureMessagingCloudEventPublisher,executorSupplier)
+      featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv, featureMessagingCloudEventPublisher, executorSupplier)
     when: "i update the fv with the custom strategy"
       def env1 = environmentSqlApi.create(new Environment().name("rstrat-test-env1"), new Application().id(app2Id), superPerson)
       def key = 'FEATURE_MISINTERPRET'
@@ -573,12 +572,12 @@ class FeatureSpec extends Base2Spec {
       def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
       def strat = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
         .value(Boolean.FALSE).attributes([
-          new RolloutStrategyAttribute()
-              .values(['ios'])
-              .fieldName('platform')
-              .conditional(RolloutStrategyAttributeConditional.EQUALS)
-              .type(RolloutStrategyFieldType.STRING)
-        ])
+        new RolloutStrategyAttribute()
+          .values(['ios'])
+          .fieldName('platform')
+          .conditional(RolloutStrategyAttributeConditional.EQUALS)
+          .type(RolloutStrategyFieldType.STRING)
+      ])
       fv.locked(false)
       fv.rolloutStrategies([strat])
       def perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
@@ -646,5 +645,15 @@ class FeatureSpec extends Base2Spec {
     then:
       !fv.locked
       fv.valueString == null
+  }
+
+  def "i can enable the message publisher"() {
+    given: "i have enabled the message publisher for changes"
+      ThreadLocalConfigurationSource.createContext(["messaging.publish.enabled": "true", "messaging.publisher.thread-pool": "17"])
+    when:
+      featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv, featureMessagingCloudEventPublisher, executorSupplier)
+    then:
+      featureSqlApi.messagingPublishEnabled
+      featureSqlApi.threadPoolSize == 17
   }
 }

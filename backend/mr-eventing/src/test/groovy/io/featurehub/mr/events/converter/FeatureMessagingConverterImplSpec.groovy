@@ -4,25 +4,28 @@ import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.api.SingleNullableFeatureValueUpdate
+import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.messaging.model.MessagingRolloutStrategy
 import io.featurehub.messaging.model.MessagingRolloutStrategyAttribute
 import io.featurehub.messaging.model.StrategyUpdateType
-import io.featurehub.mr.events.common.BaseSpecificationWithFeatureSetup
+import io.featurehub.mr.events.common.DbFeatureTestProvider
 import io.featurehub.mr.events.common.converter.FeatureMessagingParameter
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
-import spock.lang.Shared
+import spock.lang.Specification
 
 import java.time.ZoneOffset
 
-class FeatureMessagingConverterImplSpec extends BaseSpecificationWithFeatureSetup {
-    FeatureMessagingConverterImpl featureMessagingConverter
+class FeatureMessagingConverterImplSpec extends Specification {
+  FeatureMessagingConverterImpl featureMessagingConverter
+  DbFeatureValue dbFeatureValue
 
     def setup() {
       featureMessagingConverter = new FeatureMessagingConverterImpl()
+      dbFeatureValue = DbFeatureTestProvider.provideFeatureValue()
     }
 
     def createRolloutStrategy(String id = null) {

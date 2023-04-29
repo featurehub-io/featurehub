@@ -8,16 +8,14 @@ import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.mr.model.FeatureValueType
-import spock.lang.Specification
 
 import java.time.LocalDateTime
- class BaseSpecificationWithFeatureSetup extends  Specification {
-   DbFeatureValue dbFeatureValue
 
-   def setup() {
+class DbFeatureTestProvider {
+
+  static DbFeatureValue provideFeatureValue() {
     def applicationId = UUID.randomUUID()
     def featureId = UUID.randomUUID()
-    def featureValueId = UUID.randomUUID()
     def environmentId = UUID.randomUUID()
     def dbFeatureId = UUID.randomUUID()
     def orgId = UUID.randomUUID()
@@ -48,15 +46,18 @@ import java.time.LocalDateTime
       .valueType(FeatureValueType.STRING)
       .build()
     feature.setId(featureId)
-    dbFeatureValue = Mock()
-    dbFeatureValue.environment >> environment
-     dbFeatureValue.id >> featureValueId
 
-    dbFeatureValue.defaultValue >> newFeatureValue
-    dbFeatureValue.feature >> feature
-    dbFeatureValue.whoUpdated >> person
-    dbFeatureValue.whenUpdated >> whenUpdated
-    dbFeatureValue.id >> dbFeatureId
+    // we can create a full database object without issues, because no
+    // one is trying to save it. It won't be checked for integrity unless
+    // someone tries to save or update it.
+    def dbFeatureValue = new DbFeatureValue()
+    dbFeatureValue.environment = environment
+    dbFeatureValue.id = dbFeatureId
+
+    dbFeatureValue.defaultValue = newFeatureValue
+    dbFeatureValue.feature = feature
+    dbFeatureValue.whoUpdated = person
+    dbFeatureValue.whenUpdated = whenUpdated
+    return dbFeatureValue
   }
-
 }
