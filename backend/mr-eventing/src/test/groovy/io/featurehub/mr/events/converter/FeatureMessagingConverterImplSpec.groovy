@@ -7,7 +7,7 @@ import io.featurehub.db.api.SingleNullableFeatureValueUpdate
 import io.featurehub.messaging.model.MessagingRolloutStrategy
 import io.featurehub.messaging.model.MessagingRolloutStrategyAttribute
 import io.featurehub.messaging.model.StrategyUpdateType
-import io.featurehub.mr.events.common.FeatureSetup
+import io.featurehub.mr.events.common.BaseSpecificationWithFeatureSetup
 import io.featurehub.mr.events.common.converter.FeatureMessagingParameter
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
@@ -15,16 +15,11 @@ import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
 import spock.lang.Shared
-import spock.lang.Specification
+
 import java.time.ZoneOffset
 
-class FeatureMessagingConverterImplSpec extends Specification {
+class FeatureMessagingConverterImplSpec extends BaseSpecificationWithFeatureSetup {
     FeatureMessagingConverterImpl featureMessagingConverter
-    @Shared FeatureSetup featureSetup
-
-    def setupSpec(){
-      featureSetup = new FeatureSetup()
-    }
 
     def setup() {
       featureMessagingConverter = new FeatureMessagingConverterImpl()
@@ -62,7 +57,7 @@ class FeatureMessagingConverterImplSpec extends Specification {
     def "should set updated and previous on featureValueUpdated when default value has changed"() {
       given: "i have the db feature value"
         def oldFeatureValue = "old"
-        def dbFeatureValue =  featureSetup.createFeature()
+
       and: "i have the feature messaging parameter"
         def lockUpdate = new SingleFeatureValueUpdate<Boolean>(
           true, true, false)
@@ -99,7 +94,7 @@ class FeatureMessagingConverterImplSpec extends Specification {
 
   def "should set previous and updated on retiredUpdated when retired value has changed"() {
     given: "i have the db feature value"
-    def dbFeatureValue =  featureSetup.createFeature()
+
     and: "i have the feature messaging parameter"
     def lockUpdate = new SingleFeatureValueUpdate<Boolean>(
       false, false, false)
@@ -135,7 +130,7 @@ class FeatureMessagingConverterImplSpec extends Specification {
 
   def "should set strategy updates when a new strategy is added"() {
     given: "i have the db feature value"
-    def dbFeatureValue =  featureSetup.createFeature()
+
     def existingStrategy = createRolloutStrategy()
     dbFeatureValue.setRolloutStrategies([existingStrategy])
 
@@ -183,7 +178,7 @@ class FeatureMessagingConverterImplSpec extends Specification {
 
   def "should set strategy updates when a strategy is changed"() {
     given: "i have the db feature value"
-    def dbFeatureValue =  featureSetup.createFeature()
+
     def existingStrategy = createRolloutStrategy()
     dbFeatureValue.setRolloutStrategies([existingStrategy])
 
@@ -232,7 +227,7 @@ class FeatureMessagingConverterImplSpec extends Specification {
 
   def "should set strategy updates when strategies are added, updated and deleted"() {
     given: "i have the db feature value"
-    def dbFeatureValue =  featureSetup.createFeature()
+
     and: "i have the feature messaging parameter"
     def lockUpdate = new SingleFeatureValueUpdate<Boolean>(
       false, false, false)
@@ -287,7 +282,7 @@ class FeatureMessagingConverterImplSpec extends Specification {
 
   def "should set strategyUpdates reordered and previous when strategies are reordered"() {
     given: "i have the db feature value"
-      def dbFeatureValue = featureSetup.createFeature()
+
     and: "i have the rollout startegies"
       def one = createRolloutStrategy("1")
       def two = createRolloutStrategy("2")

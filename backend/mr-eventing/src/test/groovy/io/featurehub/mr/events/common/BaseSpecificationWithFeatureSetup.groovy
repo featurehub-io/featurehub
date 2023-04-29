@@ -11,8 +11,10 @@ import io.featurehub.mr.model.FeatureValueType
 import spock.lang.Specification
 
 import java.time.LocalDateTime
- class FeatureSetup extends  Specification{
-   DbFeatureValue createFeature() {
+ class BaseSpecificationWithFeatureSetup extends  Specification {
+   DbFeatureValue dbFeatureValue
+
+   def setup() {
     def applicationId = UUID.randomUUID()
     def featureId = UUID.randomUUID()
     def featureValueId = UUID.randomUUID()
@@ -46,7 +48,7 @@ import java.time.LocalDateTime
       .valueType(FeatureValueType.STRING)
       .build()
     feature.setId(featureId)
-    DbFeatureValue dbFeatureValue = Mock()
+    dbFeatureValue = Mock()
     dbFeatureValue.environment >> environment
      dbFeatureValue.id >> featureValueId
 
@@ -55,7 +57,6 @@ import java.time.LocalDateTime
     dbFeatureValue.whoUpdated >> person
     dbFeatureValue.whenUpdated >> whenUpdated
     dbFeatureValue.id >> dbFeatureId
-    return dbFeatureValue
   }
 
 }

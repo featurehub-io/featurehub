@@ -6,7 +6,7 @@ import io.featurehub.db.api.SingleNullableFeatureValueUpdate
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.messaging.model.MessagingFeatureValueUpdate
-import io.featurehub.mr.events.common.FeatureSetup
+import io.featurehub.mr.events.common.BaseSpecificationWithFeatureSetup
 import io.featurehub.mr.events.common.converter.FeatureMessagingConverter
 import io.featurehub.mr.events.common.converter.FeatureMessagingParameter
 import spock.lang.Shared
@@ -15,18 +15,12 @@ import spock.lang.Specification
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
+class FeatureMessagingCloudEventPublisherImplSpec extends BaseSpecificationWithFeatureSetup {
   FeatureMessagingCloudEventPublisherImpl featureMessagingCloudEventPublisher
   CloudEventPublisher cloudEventPublisher
   FeatureMessagingConverter featureMessagingConverter
-  @Shared
-  FeatureSetup featureSetup
 
-  def setupSpec() {
-    featureSetup = new FeatureSetup()
-  }
-
-  void setup() {
+  def setup() {
     cloudEventPublisher = Mock()
     featureMessagingConverter = Mock()
     featureMessagingCloudEventPublisher = new FeatureMessagingCloudEventPublisherImpl(featureMessagingConverter, cloudEventPublisher)
@@ -35,23 +29,22 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
 
   def "should publish FeatureMessagingUpdate cloud event"() {
     given:
-    def dbFeature = featureSetup.createFeature()
     def oldFeatureValue = "old"
     def defaultValueUpdate = new SingleNullableFeatureValueUpdate<String>(
-      true, dbFeature.defaultValue, oldFeatureValue)
+      true, dbFeatureValue.defaultValue, oldFeatureValue)
     def lockUpdate = new SingleFeatureValueUpdate(false, false, false)
     def retiredUpdate = new SingleFeatureValueUpdate(false, false, false)
     def strategiesUpdate = new MultiFeatureValueUpdate(false, [], [], [])
     def featureMessagingUpdate = new FeatureMessagingUpdate()
       .whoUpdated("Alfie")
       .whenUpdated(LocalDateTime.now().atOffset(ZoneOffset.UTC))
-      .portfolioId(dbFeature.environment.parentApplication.portfolio.id)
-      .environmentId(dbFeature.environment.id)
-      .applicationId(dbFeature.environment.parentApplication.id)
+      .portfolioId(dbFeatureValue.environment.parentApplication.portfolio.id)
+      .environmentId(dbFeatureValue.environment.id)
+      .applicationId(dbFeatureValue.environment.parentApplication.id)
       .featureValueUpdated(new MessagingFeatureValueUpdate()
-        .updated(dbFeature.defaultValue)
+        .updated(dbFeatureValue.defaultValue)
         .previous(oldFeatureValue))
-    def featureMessagingParameter = new FeatureMessagingParameter(dbFeature, lockUpdate, defaultValueUpdate, retiredUpdate, strategiesUpdate)
+    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategiesUpdate)
 
     when:
     featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate(featureMessagingParameter)
