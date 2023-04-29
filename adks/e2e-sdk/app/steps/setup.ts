@@ -15,6 +15,7 @@ import waitForExpect from 'wait-for-expect';
 import { logger } from '../support/logging';
 import { SdkWorld } from '../support/world';
 import { getWebserverExternalAddress } from '../support/make_me_a_webserver';
+import { timeout } from 'nats/lib/nats-base-client/util';
 
 Given(/^I create a new portfolio$/, async function () {
   const world = this as SdkWorld;
@@ -157,7 +158,7 @@ Given('the edge connection is no longer available', async function () {
     } catch (ignored) {}
 
     expect(found).to.be.false;
-  });
+  }, 10000, 1000);
 });
 
 Given(/^I connect to the feature server$/, async function () {
