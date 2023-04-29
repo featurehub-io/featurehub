@@ -7,6 +7,7 @@ import io.featurehub.db.publish.nats.NatsDachaEventingFeature
 import io.featurehub.events.CloudEventsFeature
 import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.pubsub.GoogleEventFeature
+import io.featurehub.messaging.MessagingFeature
 import io.featurehub.mr.events.common.*
 import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
 import io.featurehub.mr.events.dacha2.CacheApi
@@ -26,6 +27,7 @@ class EventingFeature : Feature {
     context.register(CloudEventsFeature::class.java)
     context.register(PubsubMRFeature::class.java) // this will in fact not register anything if it is not enabled
     context.register(KinesisMRFeature::class.java)
+    context.register(MessagingFeature::class.java)
 
     if (NatsDachaEventingFeature.isEnabled()) {
       context.register(NatsDachaEventingFeature::class.java)
@@ -42,6 +44,7 @@ class EventingFeature : Feature {
             .`in`(
               Singleton::class.java
             )
+
         } else {
           bind(DummyPublisher::class.java).to(CacheSource::class.java).`in`(
             Singleton::class.java
