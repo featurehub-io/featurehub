@@ -57,6 +57,37 @@
       <groupId>io.ebean</groupId>
       <artifactId>ebean</artifactId>
       <version>${ebean.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>io.ebean</groupId>
+          <artifactId>ebean-platform-all</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>io.ebean</groupId>
+      <artifactId>ebean-platform-h2</artifactId>
+      <version>13.17.0-jakarta</version>
+    </dependency>
+    <dependency>
+      <groupId>io.ebean</groupId>
+      <artifactId>ebean-platform-mysql</artifactId>
+      <version>13.17.0-jakarta</version>
+    </dependency>
+    <dependency>
+      <groupId>io.ebean</groupId>
+      <artifactId>ebean-platform-mariadb</artifactId>
+      <version>13.17.0-jakarta</version>
+    </dependency>
+    <dependency>
+      <groupId>io.ebean</groupId>
+      <artifactId>ebean-platform-oracle</artifactId>
+      <version>13.17.0-jakarta</version>
+    </dependency>
+    <dependency>
+      <groupId>io.ebean</groupId>
+      <artifactId>ebean-platform-postgres</artifactId>
+      <version>13.17.0-jakarta</version>
     </dependency>
     <dependency>
       <groupId>io.ebean</groupId>

@@ -10,6 +10,8 @@ import 'package:open_admin_app/widgets/apps/app_delete_dialog_widget.dart';
 import 'package:open_admin_app/widgets/apps/app_update_dialog_widget.dart';
 import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
+import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
@@ -64,6 +66,22 @@ class _AppsRouteState extends State<AppsRoute> {
         ),
         const SizedBox(height: 8.0),
         const FHPageDivider(),
+
+        if (bloc.mrClient.identityProviders.dacha1Enabled && bloc.mrClient.personState.userIsSuperAdmin)
+          StreamBuilder<List<Application>>(
+            stream: bloc.currentApplicationsStream,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Align(alignment: Alignment.topRight,
+                      child: OutlinedButton.icon(onPressed: () => _refreshPortfolioConfirm(bloc), icon: const Icon(Icons.cached), label: const Text('Republish portfolio cache'))),
+                );
+              }
+
+              return const SizedBox.shrink();
+            }
+          ),
         const SizedBox(height: 8.0),
         _ApplicationsCardsList(
           bloc: bloc,
@@ -76,6 +94,33 @@ class _AppsRouteState extends State<AppsRoute> {
   void didUpdateWidget(AppsRoute oldWidget) {
     super.didUpdateWidget(oldWidget);
     _createAppCheck();
+  }
+
+  void _refreshPortfolioConfirm(AppsBloc bloc) {
+    bloc.mrClient.addOverlay((BuildContext context) {
+      return FHAlertDialog(
+        title: const Text(
+          "Warning: Intensive system operation" ,
+          style: TextStyle(fontSize: 22.0),
+        ),
+        content: const Text("Are you sure you want to republish this entire portfolio's cache?"),
+        actions: <Widget>[
+          FHFlatButton(
+            title: 'OK',
+            onPressed: () {
+              bloc.refreshPortfolioCache();
+              bloc.mrClient.removeOverlay();
+            },
+          ),
+          FHFlatButton(
+            title: 'Cancel',
+            onPressed: () {
+              bloc.mrClient.removeOverlay();
+            },
+          )
+        ],
+      );
+    });
   }
 
   void _createAppCheck() {
@@ -353,9 +398,12 @@ class _PopUpAdminMenu extends StatelessWidget {
             routeNameFeatureDashboard,
           );
         }
+        if (value == 'publish') {
+          bloc.refreshApplicationCache(application.id!);
+        }
       },
       itemBuilder: (BuildContext context) {
-        return [
+        var items = <PopupMenuItem>[
           PopupMenuItem(
               value: 'features',
               child: Text('Features',
@@ -367,8 +415,13 @@ class _PopUpAdminMenu extends StatelessWidget {
           PopupMenuItem(
               value: 'delete',
               child: Text('Delete',
-                  style: Theme.of(context).textTheme.bodyMedium))
+                  style: Theme.of(context).textTheme.bodyMedium)),
         ];
+        if (bloc.mrClient.identityProviders.dacha1Enabled && bloc.mrClient.personState.userIsSuperAdmin) {
+          items.add(
+              PopupMenuItem(value: 'publish', child: Text('Republish cache for this app', style: Theme.of(context).textTheme.bodyMedium)));
+        }
+        return items;
       },
     );
   }

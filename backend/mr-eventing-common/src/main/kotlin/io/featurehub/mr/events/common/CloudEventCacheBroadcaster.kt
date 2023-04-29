@@ -17,7 +17,6 @@ class CloudEventCacheBroadcaster @Inject constructor(
   private val log: Logger = LoggerFactory.getLogger(CloudEventCacheBroadcaster::class.java)
 
   fun publish(
-    cacheName: String,
     subject: String,
     data: Any,
     id: String?,
@@ -29,7 +28,6 @@ class CloudEventCacheBroadcaster @Inject constructor(
       event.withId(id ?: "000")
       event.withType(type)
       event.withSource(URI("http://management-service"))
-      event.withContextAttribute("cachename", cacheName)
       event.withTime(OffsetDateTime.now())
 
       cloudEventsPublisher.publish(type, data, event)
@@ -38,19 +36,18 @@ class CloudEventCacheBroadcaster @Inject constructor(
     }
   }
 
-  override fun publishEnvironment(cacheName: String, eci: PublishEnvironment) {
+  override fun publishEnvironment(eci: PublishEnvironment) {
     if (cloudEventsPublisher.hasListeners(PublishEnvironment.CLOUD_EVENT_TYPE)) {
       log.trace("cloudevent: publish environment {}", eci)
-      publish(cacheName, PublishEnvironment.CLOUD_EVENT_SUBJECT, eci, eci.environment.id.toString(),
+      publish(PublishEnvironment.CLOUD_EVENT_SUBJECT, eci, eci.environment.id.toString(),
         PublishEnvironment.CLOUD_EVENT_TYPE)
     }
   }
 
-  override fun publishServiceAccount(cacheName: String, saci: PublishServiceAccount) {
+  override fun publishServiceAccount(saci: PublishServiceAccount) {
     if (cloudEventsPublisher.hasListeners(PublishServiceAccount.CLOUD_EVENT_TYPE)) {
       log.trace("cloudevent: publish service account {}", saci)
       publish(
-        cacheName,
         PublishServiceAccount.CLOUD_EVENT_SUBJECT,
         saci,
         saci.serviceAccount?.id.toString(),
@@ -59,7 +56,7 @@ class CloudEventCacheBroadcaster @Inject constructor(
     }
   }
 
-  override fun publishFeatures(cacheName: String, features: PublishFeatureValues) {
+  override fun publishFeatures(features: PublishFeatureValues) {
     if (features.features.isNotEmpty() && cloudEventsPublisher.hasListeners(PublishFeatureValues.CLOUD_EVENT_TYPE)) {
       // all updates are the same type for the same environment, not that it really matters
       val firstFeature = features.features[0]
@@ -67,7 +64,7 @@ class CloudEventCacheBroadcaster @Inject constructor(
       log.trace("cloudevent: publish features {}", features)
 
       publish(
-        cacheName, PublishFeatureValues.CLOUD_EVENT_SUBJECT, features,
+        PublishFeatureValues.CLOUD_EVENT_SUBJECT, features,
         "${firstFeature.environmentId}/${firstFeature.feature.feature.key}", PublishFeatureValues.CLOUD_EVENT_TYPE
       )
     }

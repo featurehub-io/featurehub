@@ -78,7 +78,7 @@ class NatsDachaCacheFiller @Inject constructor(val cacheName: String, val nats: 
       if (cmm.requestType == CacheRequestType.SEEKING_COMPLETE_CACHE) {
         sayHelloToNewNamedCache()
       } else if (id == cmm.destId && cmm.requestType == CacheRequestType.SEEKING_REFRESH) {
-        cacheSource.publishObjectsAssociatedWithCache(cacheName)
+        cacheSource.publishObjectsAssociatedWithCache()
       }
     } catch (e: Exception) {
       log.error("Malformed cache management message", e)

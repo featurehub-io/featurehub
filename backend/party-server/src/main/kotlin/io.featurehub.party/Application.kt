@@ -29,13 +29,6 @@ import org.slf4j.LoggerFactory
 class Application {
   private val log = LoggerFactory.getLogger(io.featurehub.Application::class.java)
 
-  @ConfigKey("cache.name")
-  var name = ChannelConstants.DEFAULT_CACHE_NAME
-
-  init {
-    DeclaredConfigResolver.resolve(this)
-  }
-
   @Throws(Exception::class)
   private fun run() {
     // register our resources, try and tag them as singleton as they are instantiated faster
@@ -63,7 +56,7 @@ class Application {
         FeatureHubJerseyHost.withServiceLocator(container) { injector ->
           // make sure Edge talks directly to Dacha for the current cache
           val dachaServiceRegistry = injector.getService(DachaClientServiceRegistry::class.java)
-          dachaServiceRegistry.registerApiKeyService(name, injector.getService(DachaApiKeyService::class.java) )
+          dachaServiceRegistry.registerApiKeyService(ChannelConstants.DEFAULT_CACHE_NAME, injector.getService(DachaApiKeyService::class.java) )
         }
       }
 

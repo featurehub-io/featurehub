@@ -104,4 +104,8 @@ class PortfolioBloc implements Bloc {
   Future refreshPortfolios() async {
     await mrClient.refreshPortfolios();
   }
+
+  void refreshSystemCache() {
+    CacheServiceApi(mrClient.apiClient).cacheRefresh(CacheRefreshRequest(allTheThings: true));
+  }
 }

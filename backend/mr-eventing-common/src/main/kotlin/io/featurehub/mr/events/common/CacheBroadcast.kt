@@ -5,7 +5,7 @@ import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
 
 interface CacheBroadcast {
-    fun publishEnvironment(cacheName: String, eci: PublishEnvironment)
-    fun publishServiceAccount(cacheName: String, saci: PublishServiceAccount)
-    fun publishFeatures(cacheName: String, features: PublishFeatureValues)
+    fun publishEnvironment(eci: PublishEnvironment)
+    fun publishServiceAccount(saci: PublishServiceAccount)
+    fun publishFeatures(features: PublishFeatureValues)
 }

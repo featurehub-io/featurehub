@@ -28,13 +28,6 @@ import org.slf4j.LoggerFactory
 class Application {
   private val log = LoggerFactory.getLogger(io.featurehub.Application::class.java)
 
-  @ConfigKey("cache.name")
-  var name = ChannelConstants.DEFAULT_CACHE_NAME
-
-  init {
-    DeclaredConfigResolver.resolve(this)
-  }
-
   @Throws(Exception::class)
   private fun run() {
     log.info("starting party-server-ish, wish me luck!")
@@ -47,7 +40,7 @@ class Application {
       TelemetryFeature::class.java,
       CacheControlFilter::class.java
     )
-    
+
     // check if we should list on a different port
     registerMetrics(config)
 

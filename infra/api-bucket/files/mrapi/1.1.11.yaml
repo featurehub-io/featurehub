@@ -8,6 +8,35 @@ info:
 servers:
 - url: /
 paths:
+  /mr-api/dacha1/cache:
+    post:
+      tags:
+      - CacheService
+      description: Allows superusers to refresh the global Dacha1 cache (if it exists).
+      operationId: cacheRefresh
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CacheRefreshRequest'
+        required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CacheRefreshResponse'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: Dacha1 is not being used and API does not exist
+      security:
+      - bearerAuth: []
   /mr-api/organization/{id}/group:
     get:
       tags:
@@ -15,16 +44,6 @@ paths:
       description: Gets the superuser group for this organisation. There is no other
         way to ascertain which org you are dealing with
       operationId: getSuperuserGroup
-      parameters:
-      - name: id
-        in: path
-        description: the id of the organisation
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-          format: uuid
       responses:
         "200":
           description: The superuser group presuming the organization exists
@@ -40,6 +59,16 @@ paths:
           description: not found
       security:
       - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: the id of the organisation
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
   /mr-api/portfolio:
     get:
       tags:
@@ -3830,6 +3859,34 @@ components:
         sdkUrlServerEval:
           type: string
           description: Optional if they have chosen includeSdkUrl
+    CacheRefreshRequest:
+      type: object
+      properties:
+        allTheThings:
+          type: boolean
+          description: refresh the whole cache
+        applicationId:
+          type: array
+          description: if provided these applications will be refreshed
+          items:
+            type: string
+            format: UUID
+        portfolioId:
+          type: array
+          items:
+            type: string
+            format: UUID
+    CacheRefreshResponse:
+      type: object
+      properties:
+        applicationsRefreshed:
+          type: integer
+        portfoliosRefreshed:
+          type: integer
+        environmentsRefreshed:
+          type: integer
+        serviceAccountsRefreshed:
+          type: integer
     Group:
       allOf:
       - $ref: '#/components/schemas/Audit'
