@@ -13,6 +13,8 @@ import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.mr.events.common.CacheSource
+import io.featurehub.mr.events.common.FeatureMessagingCloudEventPublisher
+import io.featurehub.mr.events.common.converter.FeatureMessagingParameter
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationFeatureValues
 import io.featurehub.mr.model.ApplicationRoleType
@@ -31,8 +33,11 @@ import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
+import io.featurehub.utils.ExecutorSupplier
 import org.apache.commons.lang3.RandomStringUtils
 import io.featurehub.mr.model.SortOrder
+
+import java.util.concurrent.ExecutorService
 
 class FeatureSpec extends Base2Spec {
   PersonSqlApi personSqlApi
@@ -52,6 +57,9 @@ class FeatureSpec extends Base2Spec {
   Group groupInPortfolio1
   Group adminGroupInPortfolio1
   RolloutStrategyValidator rsv
+  FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
+  ExecutorSupplier executorSupplier
+  ExecutorService executorService
 
   def setup() {
     db.commitTransaction()
@@ -62,10 +70,13 @@ class FeatureSpec extends Base2Spec {
     rsv.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
 
     //  these ones generally assume auditing will be off
-    ThreadLocalConfigurationSource.createContext(['auditing.enable': 'false'])
-
-    featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv)
-    appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, featureSqlApi)
+    ThreadLocalConfigurationSource.createContext(['auditing.enable': 'false', 'messaging.publisher.thread-pool': "1"])
+    featureMessagingCloudEventPublisher = Mock()
+    executorSupplier = Mock()
+    executorService = Mock()
+    1 * executorSupplier.executorService(_) >> executorService
+    featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv, featureMessagingCloudEventPublisher, executorSupplier)
+    appApi = new ApplicationSqlApi( convertUtils, Mock(CacheSource), archiveStrategy, featureSqlApi)
 
     // now set up the environments we need
     portfolio1 = new DbPortfolio.Builder().name("p1-app-feature" + RandomStringUtils.randomAlphabetic(8) ).whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
@@ -551,8 +562,10 @@ class FeatureSpec extends Base2Spec {
 
   def "updates to custom rollout strategies are persisted as expected"() {
     setup:
-      ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true'])
-      featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv)
+      ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true', 'messaging.publisher.thread-pool': "1"])
+      1 * executorSupplier.executorService(_) >> executorService
+
+    featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv, featureMessagingCloudEventPublisher,executorSupplier)
     when: "i update the fv with the custom strategy"
       def env1 = environmentSqlApi.create(new Environment().name("rstrat-test-env1"), new Application().id(app2Id), superPerson)
       def key = 'FEATURE_MISINTERPRET'

@@ -4,6 +4,7 @@ import cd.connect.app.config.ThreadLocalConfigurationSource
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyValidator
+import io.featurehub.mr.events.common.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.events.common.CacheSource
@@ -13,6 +14,9 @@ import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.RolloutStrategy
+import io.featurehub.utils.ExecutorSupplier
+
+import java.util.concurrent.ExecutorService
 
 class FeatureAuditingSpec extends Base2Spec {
   PortfolioSqlApi portfolioSqlApi
@@ -26,6 +30,9 @@ class FeatureAuditingSpec extends Base2Spec {
   Environment env
   RolloutStrategyValidator rsValidator
   PersonFeaturePermission perms
+  FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
+  ExecutorSupplier executorSupplier
+  ExecutorService executor
 
   static UUID portfolioId = UUID.fromString('16364b24-b4ef-4052-9c33-5eb66b0d1baf')
 //  static UUID
@@ -37,7 +44,11 @@ class FeatureAuditingSpec extends Base2Spec {
     rsValidator.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     rsValidator.validateStrategies(_, _, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true'])
-    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator)
+    featureMessagingCloudEventPublisher = Mock()
+    executorSupplier = Mock()
+    executor = Mock()
+    1 * executorSupplier.executorService(_) >> executor
+    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher, executorSupplier)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     p1 = portfolioSqlApi.getPortfolio("basic")
 

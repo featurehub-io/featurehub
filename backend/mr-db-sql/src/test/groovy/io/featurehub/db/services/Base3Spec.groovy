@@ -6,12 +6,14 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.model.DbPerson
 import io.featurehub.mr.events.common.CacheSource
+import io.featurehub.mr.events.common.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.Portfolio
+import io.featurehub.utils.ExecutorSupplier
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -33,6 +35,9 @@ class Base3Spec extends Specification {
   @Shared Portfolio portfolio
   @Shared Application app1
   @Shared Environment env1
+  @Shared FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
+  @Shared ExecutorSupplier executorSupplier
+
 
   def setupSpec() {
     db = DB.getDefault()
@@ -74,8 +79,9 @@ class Base3Spec extends Specification {
     groupSqlApi.addPersonToGroup(adminGroup.id, superuser, Opts.empty())
 
     rsValidator = Mock()
-
-    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator)
+    featureMessagingCloudEventPublisher = Mock()
+    executorSupplier = Mock()
+    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher, executorSupplier)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, featureSqlApi)

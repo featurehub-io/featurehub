@@ -15,11 +15,15 @@ import io.featurehub.db.model.DbFeatureValueVersion
 import io.featurehub.db.model.query.*
 import io.featurehub.db.utils.EnvironmentUtils
 import io.featurehub.mr.events.common.CacheSource
+import io.featurehub.mr.events.common.FeatureMessagingCloudEventPublisher
+import io.featurehub.mr.events.common.converter.FeatureMessagingParameter
 import io.featurehub.mr.model.*
+import io.featurehub.utils.ExecutorSupplier
 import jakarta.inject.Inject
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.concurrent.ExecutorService
 import java.util.function.Function
 import kotlin.math.max
 
@@ -29,15 +33,28 @@ interface InternalFeatureSqlApi {
 
 class FeatureSqlApi @Inject constructor(
   private val database: Database, private val convertUtils: Conversions, private val cacheSource: CacheSource,
-  private val rolloutStrategyValidator: RolloutStrategyValidator
+  private val rolloutStrategyValidator: RolloutStrategyValidator,
+  private val featureMessagingCloudEventPublisher: FeatureMessagingCloudEventPublisher,
+  executorSupplier: ExecutorSupplier
 ) : FeatureApi, FeatureUpdateBySDKApi, InternalFeatureSqlApi {
+
+  @ConfigKey("messaging.publisher.thread-pool")
+  val threadPoolSize: Int? = 4
+
+  @ConfigKey("messaging.publish.enabled")
+  val messagingPublishEnabled: Boolean? = false
+
+  private val executor: ExecutorService
+
   @ConfigKey("auditing.enable")
   var auditingEnabled: Boolean? = true
+
   @ConfigKey("features.max-per-page")
   private var maxPagination: Int? = 10000
 
   init {
     DeclaredConfigResolver.resolve(this)
+    executor = executorSupplier.executorService(threadPoolSize!!)
   }
 
   @Throws(
@@ -211,6 +228,27 @@ class FeatureSqlApi @Inject constructor(
       existing.whoUpdated = QDbPerson().id.eq(person.person.id!!.id).findOne()
       save(existing)
       publish(existing)
+      if (messagingPublishEnabled!!) {
+        publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
+      }
+    }
+  }
+
+  private fun publishChangesForMessaging(
+    featureValue: DbFeatureValue,
+    lockUpdate: SingleFeatureValueUpdate<Boolean>,
+    defaultValueUpdate: SingleNullableFeatureValueUpdate<String?>,
+    retiredUpdate: SingleFeatureValueUpdate<Boolean>,
+    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>
+  ) {
+    log.trace("publishing feature messaging update for {}", featureValue)
+    executor.submit {
+      try {
+        val featureMessagingParameter = FeatureMessagingParameter(featureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
+        featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate(featureMessagingParameter)
+      } catch (e: Exception) {
+        log.error("Failed to publish feature messaging update {}", featureValue, e)
+      }
     }
   }
 
@@ -221,7 +259,7 @@ class FeatureSqlApi @Inject constructor(
     existing: DbFeatureValue,
     lockChanged: Boolean
   ): SingleFeatureValueUpdate<Boolean> {
-    val retiredFeatureValueUpdate = SingleFeatureValueUpdate<Boolean>()
+    val retiredFeatureValueUpdate = SingleFeatureValueUpdate(updated = false, previous = false)
     val existingRetired = (existing.retired == true) // it can be null, which is also false
 
     // is it different from what it is now? if not, exit
@@ -407,7 +445,7 @@ class FeatureSqlApi @Inject constructor(
   }
 
   private fun <T> updateSingleFeatureValueUpdate(
-    featureValueUpdate: SingleFeatureValueUpdate<T>, updated: T?, previous: T? ): SingleFeatureValueUpdate<T> {
+    featureValueUpdate: SingleFeatureValueUpdate<T>, updated: T, previous: T ): SingleFeatureValueUpdate<T> {
     featureValueUpdate.hasChanged = true
     featureValueUpdate.updated = updated
     featureValueUpdate.previous = previous
@@ -425,8 +463,8 @@ class FeatureSqlApi @Inject constructor(
     existing: DbFeatureValue,
     person: PersonFeaturePermission,
     lockChanged: Boolean
-  ): SingleFeatureValueUpdate<String> {
-    val defaultValueUpdate = SingleFeatureValueUpdate<String>()
+  ): SingleNullableFeatureValueUpdate<String?> {
+    val defaultValueUpdate = SingleNullableFeatureValueUpdate<String?>()
     val defaultValueChanged: String? =
       when (feature.valueType!!) {
         FeatureValueType.NUMBER -> {
@@ -471,7 +509,10 @@ class FeatureSqlApi @Inject constructor(
 
       existing.defaultValue = defaultValueChanged
 
-      return updateSingleFeatureValueUpdate(defaultValueUpdate, defaultValueChanged, historical.defaultValue)
+      defaultValueUpdate.hasChanged = true
+      defaultValueUpdate.updated = defaultValueChanged
+      defaultValueUpdate.previous = historical.defaultValue
+      return defaultValueUpdate
     }
 
     // someone changed it in the meantime so they can't change it
@@ -489,7 +530,7 @@ class FeatureSqlApi @Inject constructor(
     existing: DbFeatureValue,
     person: PersonFeaturePermission
   ): SingleFeatureValueUpdate<Boolean> {
-    val lockUpdate = SingleFeatureValueUpdate<Boolean>()
+    val lockUpdate = SingleFeatureValueUpdate(updated = false, previous = false)
     val updatedValue = featureValue.locked
     if (updatedValue == existing.isLocked) {
       return lockUpdate

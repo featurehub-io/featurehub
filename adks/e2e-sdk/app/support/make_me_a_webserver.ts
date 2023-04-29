@@ -3,7 +3,7 @@ import * as restify from 'restify';
 
 import { networkInterfaces } from 'os';
 import { IncomingHttpHeaders } from 'http';
-import { EnrichedFeatures } from '../../../../../javascript-adk/webhook-sdk/app';
+import { EnrichedFeatures } from 'featurehub-javascript-webhooks';
 import { logger } from './logging';
 
 const nets = networkInterfaces();

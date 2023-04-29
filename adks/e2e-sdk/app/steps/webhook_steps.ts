@@ -1,6 +1,6 @@
 import { Given, Then } from '@cucumber/cucumber';
 import { SdkWorld } from '../support/world';
-import { WebhookCheck } from '../../../../../javascript-adk/admin-sdk';
+import { WebhookCheck } from 'featurehub-javascript-admin-sdk';
 import waitForExpect from 'wait-for-expect';
 import { getWebhookData } from '../support/make_me_a_webserver';
 import { expect } from 'chai';
