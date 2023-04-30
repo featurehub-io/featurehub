@@ -84,7 +84,7 @@
 
     <dependency>
       <groupId>io.featurehub.messaging</groupId>
-      <artifactId>messaging-processor</artifactId>
+      <artifactId>mr-messaging-processor</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 

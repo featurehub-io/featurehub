@@ -1,7 +1,6 @@
 package io.featurehub.mr.events
 
 import io.featurehub.db.api.CacheRefresherApi
-import io.featurehub.mr.events.service.FeatureMessagingCloudEventPublisherImpl
 import io.featurehub.db.publish.DbCacheSource
 import io.featurehub.db.publish.DummyPublisher
 import io.featurehub.db.publish.nats.NatsDachaEventingFeature
