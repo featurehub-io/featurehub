@@ -65,7 +65,7 @@ class CloudEventsTelemetryReaderImpl @Inject constructor(private val openTelemet
     val extractedContext =
       openTelemetry.propagators.textMapPropagator.extract(Context.current(), event, telemetryGetter)
 
-    val runnable = Runnable {
+    extractedContext.makeCurrent().use {
       val span = tracer.spanBuilder(event.subject ?: "generic-cloud-event")
         .setSpanKind(SpanKind.CONSUMER)
         .startSpan()
@@ -79,7 +79,5 @@ class CloudEventsTelemetryReaderImpl @Inject constructor(private val openTelemet
         span.end()
       }
     }
-
-    extractedContext.wrap(runnable).run()
   }
 }
