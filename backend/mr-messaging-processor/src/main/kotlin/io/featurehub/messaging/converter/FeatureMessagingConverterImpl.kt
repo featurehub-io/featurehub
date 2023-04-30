@@ -1,9 +1,7 @@
-package io.featurehub.mr.events.converter
+package io.featurehub.messaging.converter
 
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.messaging.model.*
-import io.featurehub.mr.events.common.converter.FeatureMessagingConverter
-import io.featurehub.mr.events.common.converter.FeatureMessagingParameter
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import java.time.ZoneOffset

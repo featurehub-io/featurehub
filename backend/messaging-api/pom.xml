@@ -60,6 +60,76 @@
       <version>[1.1, 2)</version>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>app-release</id>
+      <!-- otherwise don't active in tiles -->
+      <activation>
+        <property>
+          <name>app-release</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.featurehub.tooling</groupId>
+            <artifactId>maven-openapi-publisher</artifactId>
+            <version>1.1</version>
+            <executions>
+              <execution>
+                <id>publish</id>
+                <goals><goal>publish</goal></goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <alwaysIncludeTagValues>
+                    <alwaysIncludeTagValue>messaging</alwaysIncludeTagValue>
+                  </alwaysIncludeTagValues>
+                  <apiSource>${project.build.directory}/final.yaml</apiSource>
+                  <releaseFolder>${project.basedir}/../../infra/api-bucket/files/messaging</releaseFolder>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>api-update</id>
+      <activation>
+        <property>
+          <name>!app-release</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.featurehub.tooling</groupId>
+            <artifactId>maven-openapi-publisher</artifactId>
+            <version>1.1</version>
+            <executions>
+              <execution>
+                <id>export</id>
+                <goals><goal>reconcile</goal></goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <alwaysIncludeTagValues>
+                    <alwaysIncludeTagValue>messaging</alwaysIncludeTagValue>
+                  </alwaysIncludeTagValues>
+                  <apiSource>${project.build.directory}/final.yaml</apiSource>
+                  <releaseFolder>${project.basedir}/../../infra/api-bucket/files/messaging</releaseFolder>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+        </plugins>
+      </build>
+    </profile>
+
+  </profiles>
+
   <build>
     <plugins>
       <plugin>

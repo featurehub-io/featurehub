@@ -1,7 +1,6 @@
 package io.featurehub.mr.events
 
 import io.featurehub.db.api.CacheRefresherApi
-import io.featurehub.mr.events.service.FeatureMessagingCloudEventPublisherImpl
 import io.featurehub.db.publish.DbCacheSource
 import io.featurehub.db.publish.DummyPublisher
 import io.featurehub.db.publish.nats.NatsDachaEventingFeature
@@ -9,9 +8,7 @@ import io.featurehub.events.CloudEventsFeature
 import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.mr.events.common.*
-import io.featurehub.mr.events.common.converter.FeatureMessagingConverter
 import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
-import io.featurehub.mr.events.converter.FeatureMessagingConverterImpl
 import io.featurehub.mr.events.dacha2.CacheApi
 import io.featurehub.mr.events.dacha2.kinesis.KinesisMRFeature
 import io.featurehub.mr.events.dacha2.pubsub.PubsubMRFeature
@@ -49,8 +46,6 @@ class EventingFeature : Feature {
             .`in`(
               Singleton::class.java
             )
-          bind(FeatureMessagingConverterImpl::class.java).to(FeatureMessagingConverter::class.java).`in`(Singleton::class.java)
-          bind(FeatureMessagingCloudEventPublisherImpl::class.java).to(FeatureMessagingCloudEventPublisher::class.java).`in`(Singleton::class.java)
 
         } else {
           bind(DummyPublisher::class.java).to(CacheSource::class.java).`in`(

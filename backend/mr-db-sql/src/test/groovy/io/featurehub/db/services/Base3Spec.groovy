@@ -6,7 +6,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.model.DbPerson
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.mr.events.common.FeatureMessagingCloudEventPublisher
+import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.Group
@@ -80,8 +80,8 @@ class Base3Spec extends Specification {
 
     rsValidator = Mock()
     featureMessagingCloudEventPublisher = Mock()
-    executorSupplier = Mock()
-    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher, executorSupplier)
+
+    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, featureSqlApi)

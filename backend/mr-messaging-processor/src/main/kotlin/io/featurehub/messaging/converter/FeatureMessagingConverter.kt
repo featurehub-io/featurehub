@@ -1,4 +1,4 @@
-package io.featurehub.mr.events.common.converter
+package io.featurehub.messaging.converter
 
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate

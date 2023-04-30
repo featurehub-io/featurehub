@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>io.featurehub.composites</groupId>
-    <artifactId>composite-parent</artifactId>
-    <version>1.2-SNAPSHOT</version>
-    <relativePath>../composite-parent</relativePath>
-  </parent>
-  <groupId>io.featurehub.mr</groupId>
-  <artifactId>mr-db-sql</artifactId>
+
+  <groupId>io.featurehub.messaging</groupId>
+  <artifactId>mr-messaging-processor</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>mr-db-sql</name>
+  <name>messaging-processor</name>
 
   <description>
-    Management Registry Database API.
+    This artifact simply deals with extracting the feature messaging update cloud events and dropping them into the cloud event
+    registry. It can be included into any end application that needs to listen to the stream
   </description>
 
   <url>https://featurehub.io</url>
@@ -42,24 +38,32 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-db-models</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.common</groupId>
-      <artifactId>common-db</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
       <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-ebean</artifactId>
+      <artifactId>composite-app</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-eventing</artifactId>
+      <groupId>io.featurehub.events</groupId>
+      <artifactId>eventing-nats</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.events</groupId>
+      <artifactId>eventing-google-pubsub</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.events</groupId>
+      <artifactId>eventing-kinesis</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.api</groupId>
+      <artifactId>messaging-api</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
@@ -70,24 +74,11 @@
     </dependency>
 
     <dependency>
-      <groupId>io.featurehub.edge</groupId>
-      <artifactId>edge-feature-update-async-api</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.common</groupId>
-      <artifactId>common-db-test</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-test</artifactId>
+      <version>[1.1, 2)</version>
       <scope>test</scope>
     </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.messaging</groupId>
-      <artifactId>mr-messaging-processor</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
   </dependencies>
 
   <build>
@@ -101,8 +92,6 @@
           <filtering>false</filtering>
           <tiles>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
-            <tile>org.avaje.tile:java-compile:1.1</tile>
-            <tile>io.ebean.tile:enhancement:${ebean.tile.version}</tile>
           </tiles>
         </configuration>
       </plugin>

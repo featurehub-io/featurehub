@@ -14,16 +14,14 @@ import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersion
 import io.featurehub.db.model.query.*
 import io.featurehub.db.utils.EnvironmentUtils
+import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
+import io.featurehub.messaging.converter.FeatureMessagingParameter
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.mr.events.common.FeatureMessagingCloudEventPublisher
-import io.featurehub.mr.events.common.converter.FeatureMessagingParameter
 import io.featurehub.mr.model.*
-import io.featurehub.utils.ExecutorSupplier
 import jakarta.inject.Inject
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
 import java.util.*
-import java.util.concurrent.ExecutorService
 import java.util.function.Function
 import kotlin.math.max
 
@@ -35,16 +33,7 @@ class FeatureSqlApi @Inject constructor(
   private val database: Database, private val convertUtils: Conversions, private val cacheSource: CacheSource,
   private val rolloutStrategyValidator: RolloutStrategyValidator,
   private val featureMessagingCloudEventPublisher: FeatureMessagingCloudEventPublisher,
-  executorSupplier: ExecutorSupplier
 ) : FeatureApi, FeatureUpdateBySDKApi, InternalFeatureSqlApi {
-
-  @ConfigKey("messaging.publisher.thread-pool")
-  val threadPoolSize: Int? = 4
-
-  @ConfigKey("messaging.publish.enabled")
-  val messagingPublishEnabled: Boolean? = false
-
-  private val executor: ExecutorService
 
   @ConfigKey("auditing.enable")
   var auditingEnabled: Boolean? = true
@@ -54,7 +43,6 @@ class FeatureSqlApi @Inject constructor(
 
   init {
     DeclaredConfigResolver.resolve(this)
-    executor = executorSupplier.executorService(threadPoolSize!!)
   }
 
   @Throws(
@@ -228,9 +216,7 @@ class FeatureSqlApi @Inject constructor(
       existing.whoUpdated = QDbPerson().id.eq(person.person.id!!.id).findOne()
       save(existing)
       publish(existing)
-      if (messagingPublishEnabled!!) {
-        publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
-      }
+      publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
     }
   }
 
@@ -241,14 +227,11 @@ class FeatureSqlApi @Inject constructor(
     retiredUpdate: SingleFeatureValueUpdate<Boolean>,
     strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>
   ) {
-    log.trace("publishing feature messaging update for {}", featureValue)
-    executor.submit {
-      try {
-        val featureMessagingParameter = FeatureMessagingParameter(featureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
-        featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate(featureMessagingParameter)
-      } catch (e: Exception) {
-        log.error("Failed to publish feature messaging update {}", featureValue, e)
-      }
+    try {
+      val featureMessagingParameter = FeatureMessagingParameter(featureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
+      featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate(featureMessagingParameter)
+    } catch (e: Exception) {
+      log.error("Failed to publish feature messaging update {}", featureValue, e)
     }
   }
 
