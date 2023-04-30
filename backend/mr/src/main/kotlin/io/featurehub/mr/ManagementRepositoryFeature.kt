@@ -3,6 +3,7 @@ package io.featurehub.mr
 import io.featurehub.app.db.utils.CommonDbFeature
 import io.featurehub.db.utils.ApiToSqlApiBinder
 import io.featurehub.db.utils.ComplexUpdateMigrations
+import io.featurehub.messaging.MessagingFeature
 import io.featurehub.mr.api.*
 import io.featurehub.mr.auth.*
 import io.featurehub.mr.dacha2.Dacha2Feature
@@ -63,6 +64,7 @@ class ManagementRepositoryFeature : Feature {
     context.register(ApiToSqlApiBinder())
     context.register(ComplexUpdateMigrations())
     context.register(EventingFeature::class.java)
+    context.register(MessagingFeature::class.java)
     context.register(ManagementRepositoryWebhookFeature::class.java)
 
     context.register(object : AbstractBinder() {
