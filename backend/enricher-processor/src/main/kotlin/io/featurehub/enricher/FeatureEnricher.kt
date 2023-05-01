@@ -14,6 +14,7 @@ import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.CloudEventsTelemetryReader
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.metrics.MetricsCollector
+import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
 import jakarta.validation.constraints.NotNull
 import org.slf4j.Logger
@@ -45,6 +46,7 @@ class FeatureEnricherProcessor @Inject constructor(
 ) : FeatureEnricher {
   private val log: Logger = LoggerFactory.getLogger(FeatureEnricherProcessor::class.java)
 
+  val publishOnlyWhenEnvironmentNotEmpty = FallbackPropertyConfig.getConfig("enricher.ignore-when-empty", "true").lowercase() == "true"
   val publishFeatureMetric: CloudEventChannelMetric
 
   init {
@@ -113,6 +115,10 @@ class FeatureEnricherProcessor @Inject constructor(
   ) {
     try {
       val env = cache.getEnrichableEnvironment(envId)
+
+      if (env.environment.environment.environmentInfo?.isEmpty() == true && publishOnlyWhenEnvironmentNotEmpty) {
+        return
+      }
 
       val data = EnrichedFeatures()
         .targetEnrichmentDestination(targetProcessor)

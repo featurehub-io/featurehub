@@ -10,7 +10,7 @@ import {
   ServiceAccountPermission, ServiceAccountServiceApi, UpdateEnvironment
 } from 'featurehub-javascript-admin-sdk';
 import { makeid, sleep } from '../support/random';
-import { EdgeFeatureHubConfig, FeatureHubPollingClient, FHLog } from 'featurehub-javascript-node-sdk';
+import { EdgeFeatureHubConfig, FeatureHubPollingClient, Readyness } from 'featurehub-javascript-node-sdk';
 import waitForExpect from 'wait-for-expect';
 import { logger } from '../support/logging';
 import { SdkWorld } from '../support/world';
@@ -183,9 +183,6 @@ Given(/^I connect to the feature server$/, async function () {
     expect(found, `${serviceAccountPerm.sdkUrlClientEval} failed to connect`).to.be.true;
     logger.info('Successfully completed poll');
     const edge = new EdgeFeatureHubConfig(world.featureUrl, serviceAccountPerm.sdkUrlClientEval);
-    FHLog.fhLog.trace = (...args: any[]) => {
-      console.error(args);
-    };
     this.sdkUrlClientEval = serviceAccountPerm.sdkUrlClientEval;
     this.sdkUrlServerEval = serviceAccountPerm.sdkUrlServerEval;
     //edge.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, 200));
@@ -194,6 +191,13 @@ Given(/^I connect to the feature server$/, async function () {
     // give it time to connect
     sleep(200);
     world.repository = edge.repository();
+    // its important we wait for it to become ready before stuffing data into it otherwise we can create features at the same
+    // time we are waiting for a result back and miss the 1st feature
+    await waitForExpect(() => {
+      expect(world.repository).to.not.be.undefined;
+      expect(world.repository.readyness).to.eq(Readyness.Ready);
+      logger.info('repository is ready for action');
+    }, 2000, 500);
   }, 4000, 200);
 });
 

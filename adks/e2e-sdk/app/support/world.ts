@@ -180,7 +180,6 @@ export class SdkWorld extends World {
       const fValueResult = await this.featureValueApi.getFeatureForEnvironment(this.environment.id, this.feature.key);
       return fValueResult.data;
     } catch (e) {
-      console.log(e);
       expect(e.response.status).to.eq(404); // null value
 
       if (e.response.status === 404) {
