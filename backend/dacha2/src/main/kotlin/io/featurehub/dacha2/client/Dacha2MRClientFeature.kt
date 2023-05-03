@@ -1,7 +1,6 @@
 package io.featurehub.dacha2.client
 
 import cd.connect.openapi.support.ApiClient
-import io.featurehub.dacha2.api.Dacha2Service
 import io.featurehub.dacha2.api.Dacha2ServiceClient
 import io.featurehub.dacha2.api.impl.Dacha2ServiceServiceImpl
 import io.featurehub.utils.FallbackPropertyConfig

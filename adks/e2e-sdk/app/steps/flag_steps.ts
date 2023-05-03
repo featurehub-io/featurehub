@@ -38,12 +38,15 @@ Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (loc
   await waitForExpect(() => {
     expect(world.repository).to.not.be.undefined;
     expect(world.repository.readyness).to.eq(Readyness.Ready);
+  }, 2000, 500);
+
+  await waitForExpect(() => {
     // const f = this.featureState(this.feature.key) as FeatureStateHolder;
     const f = this.featureState(world.feature.key) as FeatureStateHolder;
     console.log('key is val', world.feature.key, f.getBoolean(), value, f.isLocked(), lockedStatus);
     logger.info('the feature %s is value %s and locked status %s', this.feature.key, f.getBoolean(), f.locked);
-    expect(f.getBoolean()).to.eq(value === 'on');
-    expect(f.isLocked()).to.eq(lockedStatus === 'locked');
+    expect(f.getBoolean(), `${f.key} flag is >${f.flag}< and expected to have a value >${value == 'on'}<`).to.eq(value === 'on');
+    expect(f.isLocked(), `${f.key} locked ${f.locked} and expected ${lockedStatus}`).to.eq(lockedStatus === 'locked');
   }, 4000, 500);
 });
 

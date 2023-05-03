@@ -1,4 +1,6 @@
 #!/bin/sh
+mkdir -p logs
+rm -rf logs/*
 if [ $# -eq 0 ]
   then
   echo DEBUG=true npm run test

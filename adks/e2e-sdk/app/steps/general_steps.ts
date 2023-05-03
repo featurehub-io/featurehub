@@ -75,7 +75,9 @@ Then('I write out a feature-examples config file', function () {
   const world = this as SdkWorld;
   const buf = `#!/bin/sh\nexport FEATUREHUB_SERVER_API_KEY=${world.sdkUrlServerEval}\nexport FEATUREHUB_CLIENT_API_KEY="${world.sdkUrlClientEval}"\nexport FEATUREHUB_EDGE_URL=${world.featureUrl}\nexport FEATUREHUB_BASE_URL=${this.adminUrl}\n`;
 
-  fs.writeFileSync('./example-test.sh', buf);
+  // we allow the config to be written in a specific location to share it in the docker overrides
+  // for automated testing
+  fs.writeFileSync((process.env.WRITE_CONFIG || '.') + '/example-test.sh', buf);
 });
 
 Then(/^there are (\d+) features$/, async function (numberOfFeatures) {

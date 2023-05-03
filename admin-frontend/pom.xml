@@ -62,6 +62,9 @@
               <arguments>
                 <argument>${build.version}</argument>
               </arguments>
+              <environmentVariables>
+                <BUILD_VERSION>${build.version}</BUILD_VERSION>
+              </environmentVariables>
             </configuration>
           </execution>
         </executions>

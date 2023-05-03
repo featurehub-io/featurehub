@@ -1,7 +1,7 @@
 #!/bin/bash
-cd /opt/app
 #tar xf *.tar
 ls -l
+set -exo pipefail
 echo flutter home is $FLUTTER
 #echo "1.21.0-8.0.pre.110" > $FLUTTER_ROOT/version
 #ls -la $FLUTTER
@@ -19,10 +19,8 @@ rename_main_dart() {
   MAIN_SHA=`sha256sum main.dart.js | awk '{print $1}'`
   echo Generated SHA is $MAIN_SHA
   MAIN="main-$MAIN_SHA.js"
-  if [ "$OSTYPE" == 'darwin'* ]; then
-    sed s/main.dart.js/$MAIN/ index.html > index2.html
-    mv index.html index-old.html
-    mv index2.html index.html
+  if [[ "$OSTYPE" == 'darwin'* ]]; then
+    gsed -i s/main.dart.js/$MAIN/ index.html
   else
     sed -i s/main.dart.js/$MAIN/ index.html
   fi

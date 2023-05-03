@@ -1,7 +1,5 @@
 package io.featurehub.party
 
-import cd.connect.app.config.ConfigKey
-import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.api.DachaClientFeature
 import io.featurehub.dacha.api.DachaClientServiceRegistry

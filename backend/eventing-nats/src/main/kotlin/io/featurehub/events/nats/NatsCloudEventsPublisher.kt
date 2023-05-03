@@ -15,6 +15,7 @@ class NatsCloudEventsPublisher constructor(private val natsSource: NATSSource, p
 
   fun publish(event: CloudEvent) {
     try {
+      log.trace("publishing event on channel {}: {} / {}", subject, event.type, event.subject)
       natsSource.connection.publish(
         NatsMessageFactory.createWriter(subject).writeBinary(event)
       )

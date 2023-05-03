@@ -24,6 +24,7 @@ import jakarta.inject.Singleton
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
 import java.time.Instant
+import java.time.LocalDateTime
 import java.util.*
 
 @Singleton
@@ -334,6 +335,7 @@ class ServiceAccountSqlApi @Inject constructor(
     updated: List<DbServiceAccountEnvironment?>,
     created: List<DbServiceAccountEnvironment?>
   ) : MutableMap<UUID, DbEnvironment> {
+    sa.markAsDirty() // ensure version is changed
     database.update(sa)
     database.updateAll(updated)
     database.deleteAll(deleted)
@@ -342,6 +344,10 @@ class ServiceAccountSqlApi @Inject constructor(
     deleted.forEach { e: DbServiceAccountEnvironment? -> changed[e!!.environment.id] = e.environment }
     updated.forEach { e: DbServiceAccountEnvironment? -> changed[e!!.environment.id] = e.environment }
     created.forEach { e: DbServiceAccountEnvironment? -> changed[e!!.environment.id] = e.environment }
+    changed.values.forEach { e ->
+      e.markAsDirty()
+      e.update()
+    }
     return changed
   }
 
