@@ -33,14 +33,11 @@ class EventingFeature : Feature {
 
     context.register(object: AbstractBinder() {
       override fun configure() {
-        bind(FeatureMessagingConverterImpl::class.java).to(FeatureMessagingConverter::class.java).`in`(Singleton::class.java)
-        bind(FeatureMessagingCloudEventPublisherImpl::class.java).to(FeatureMessagingCloudEventPublisher::class.java).`in`(Singleton::class.java)
+        bind(FeatureUpdateListenerImpl::class.java).to(FeatureUpdateListener::class.java).`in`(Immediate::class.java)
 
         if (amPublishing) {
           // the broadcaster will determine if dacha2 is enabled and not publish to that channel if not
           bind(CloudEventCacheBroadcaster::class.java).to(CacheBroadcast::class.java).`in`(Singleton::class.java)
-
-          bind(FeatureUpdateListenerImpl::class.java).to(FeatureUpdateListener::class.java).`in`(Immediate::class.java)
           bind(DbCacheSource::class.java).to(CacheSource::class.java).to(CacheApi::class.java).to(CacheRefresherApi::class.java)
             .`in`(
               Singleton::class.java
