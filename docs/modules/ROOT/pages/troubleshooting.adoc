@@ -1,0 +1,94 @@
+= Troubleshooting your FeatureHub install
+
+While FeatureHub is intended to be as robust as possible, it can encounter issues and this section is intended to document a few of these. We will continue to add documentation here as we help users resolve issues.
+
+== NATS goes down completely
+
+You should be running at least 3 NATS nodes, and generally NATS communicates those connections back to the client.
+The `nats.urls` configuration option lets you specify a list of NATS servers, so the application if it loses connection to one will connect and continue on with another. 
+
+But it could go down because of a network failure or resource starvation issue in your cluster.
+
+The default NATS install does not run the JetStream option, so it is *possible* that your cache (Dacha1 or Dacha2) can get outdated. If this happens, then you need to ensure you refresh your caches.
+
+=== Solution
+
+- use more than one NATS instance, and use the official NATS installation (e.g. helm chart)
+- if your cluster suffers a lot of jitter, consider using JetStream to make your messages extra reliable
+- ensure your clients point to all of the nats instances running with nats.urls if possible
+
+== Caches are poisoned by some event
+
+Various things can cause cache poisoning, they are normally related to a strain on resources or some portion of the cluster going down - something outside the architectural control of FeatureHub.  
+
+=== Solution Dacha1
+In Dacha1, 
+
+- System Administrators can trigger a full cache restore using the UI from 1.6.1 onwards. You can refresh applications, portfolios or the whole system. 
+- If you are using an earlier version, you can trigger individual environments to trigger by manually associating and disassciating a service account with them. This association process causes both the attached environments and service accounts to fully refresh.
+- Alternatively you can scale your Dacha1 instances to 0 but this will cause an outage. 
+
+Further, in Dacha1 (as of 1.6.1+) you can ask the cache what it contains using a simple API call. 
+
+- 'GET /dacha1/cache' - this will  give you all of the environments and service accounts that the server holds, along with their counts.
+- 'GET /dacha1/cache/apiKeys' - this will give you a list of all the API keys combinations that this server
+is capable of serving.
+
+==== Solution Dacha2
+
+In Dacha2, the instances are completely isolated from each other and cache only what they have received or have requested. When they start, they are empty and only fill as new updates come through or if API Keys are requested. If you are in this situation with Dacha2, get a list of the running instances and replace them one by one, there will be no outage. Dacha2 is the *default* for Helm installs as of the 4.x chart.
+
+== I am getting a lot of 404s on my X service!
+
+There is no _specific_ solution to this, its important to understand where the 404s are coming from. Not Found errors (404s) occurring on Edge are normally script-kiddies or other scrapers trying to get into your Edge servers. On MR, the API occasionally uses them to determine if something is available, but they are fairly rare and are also more likely to be unwanted activity. 
+
+Not Found errors on Dacha are the result of a request for an API key that doesn't exist, and this is unusual - your clients are expected to be only requesting valid API keys.
+
+To help diagnose what is going wrong, you need to turn on REST trace logging, and this is normally turned off
+as it is quite noisy. 
+
+=== Solution
+Assuming you are using the Helm charts, there is a section that looks something like this:
+
+[source,yaml]
+----
+  extraCommonConfigFiles:
+    - configMapSuffix: log4j2-xml
+      fileName: log4j2.xml
+      content: |-
+        <Configuration packages="cd.connect.logging" monitorInterval="30" verbose="true">
+           <Appenders>
+             <Console name="STDOUT" target="SYSTEM_OUT">
+               <ConnectJsonLayout/>
+             </Console>
+           </Appenders>
+
+           <Loggers>
+             <AsyncLogger name="io.featurehub" level="debug"/>
+             <!--
+             <AsyncLogger name="io.ebean.SQL" level="trace"/>
+             <AsyncLogger name="io.ebean.TXN" level="trace"/>
+             <AsyncLogger name="io.ebean.SUM" level="trace"/>
+             <AsyncLogger name="io.ebean.DDL" level="trace"/>
+             <AsyncLogger name="io.ebean.cache.QUERY" level="trace"/>
+             <AsyncLogger name="io.ebean.cache.BEAN" level="trace"/>
+             <AsyncLogger name="io.ebean.cache.COLL" level="trace"/>
+             <AsyncLogger name="io.ebean.cache.NATKEY" level="trace"/>
+
+             <AsyncLogger name="jersey-logging" level="trace"/>
+             <AsyncLogger name="io.featurehub.db" level="trace"/>
+             -->
+             <AsyncLogger name="io.featurehub.edge.features" level="debug"/>
+----
+
+The section in between the `<--` and `-->` is a comment, and it turns on all kinds of detailed logging, 
+but the one we are interested in for REST logging is this one:
+
+[source,xml]
+----
+<AsyncLogger name="jersey-logging" level="trace"/>
+----
+
+It needs to move outside the comments. Once you do that, all of the details (except auth tokens) will
+start flowing into your logs.
+
