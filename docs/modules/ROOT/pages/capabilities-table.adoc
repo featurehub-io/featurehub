@@ -12,7 +12,7 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |Rollout Strategies - Client Evaluated^2^|Y|Y|Y|N|Y|Y|Y|N
 |Background Start|Y|Y|Y|Y|Y|Y|Y|Y
 |Block until Start|N|N|Y|N|N|N|N|N
-|Readyness Listeners|Y|Y|Y|Y|Y|N|N|N
+|Readiness Listeners|Y|Y|Y|Y|Y|N|N|N
 |Feature Listeners|Y|Y|Y|Y|Y|N|N|N
 |Feature Listener Removal|N|Y|Y|Y|Y|N|N|N
 |Analytics Support|Y|Y|Y|Y|Y|N|N|N
@@ -36,10 +36,10 @@ update if the features are evaluated. If a request is made for a feature and the
 expired, the SDK will update the features in the background. This is ideal for situations where
 a user can be inactive for periods of time - e.g. Mobile or Web.
 
-4. REST-updates by timer polling means there is a timeout period on the client, and at the end of the
+5. REST-updates by timer polling means there is a timeout period on the client, and at the end of the
 timeout it will always go and get an update, regardless of activity on the client. This is best for
 situations like Web where you want active updates. A user of your software would not sit on your website
-for a long time and you want it to update fairly quickly.
+for a long time, and you want it to update fairly quickly.
 
 ==== Web + Mobile focused capabilities for SDKs
 
@@ -62,6 +62,6 @@ for a long time and you want it to update fairly quickly.
 This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
 - *(2)* Dart and Flutter are supported by Dart libraries available at https://pub.dev/publishers/featurehub.io/packages[pub.dev].
 - *(3)* Java is supported by libraries from https://search.maven.org/artifact/io.featurehub.sdk/java-client-core[Apache Maven Central].
-You will need to chose an https://search.maven.org/artifact/io.featurehub.sdk/java-client-android[OKHttp] or https://search.maven.org/artifact/io.featurehub.sdk/java-client-jersey[Jersey] client.
+You will need to choose an https://search.maven.org/artifact/io.featurehub.sdk/java-client-android[OKHttp] or https://search.maven.org/artifact/io.featurehub.sdk/java-client-jersey[Jersey] client.
 - *(4)* C# and .NET is supported by libraries from nuget. https://www.nuget.org/packages/FeatureHub.SDK/1.1.0[Nuget.org]
 
