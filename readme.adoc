@@ -17,7 +17,7 @@ $ docker run -p 8085:8085 --user 999:999 -v $HOME/party:/db featurehub/party-ser
 
 Once installed, head to http://localhost:8085 to see FeatureHub Admin Console in action
 
-image::docs/images/fh-features-console-dark.png[FeatureHub console demo,800]
+image::docs/images/features-console-v2.png[FeatureHub console demo,800]
 
 **Connect to FeatureHub in your app via SDK**
 
@@ -90,7 +90,7 @@ We are looking for companies that have successfully adopted FeatureHub to help u
 === Enterprise ready
 
 * Run on your own infrastructure (self-hosted)
-* Social login support - Google, Microsoft, GitHub, Keycloak
+* External auth support - login with Google, Microsoft, GitHub, Keycloak
 * Access control levels to allow different teams/groups permissions.
 * Multiple portfolios (department) support
 
@@ -128,14 +128,9 @@ Note: We have a separate https://github.com/featurehub-io/featurehub-install[ins
 We selectively take cuts of the main repository and build them into docker image sets. We then
 update install repository with the latest images and issue tags on that repository.
 
-== Coming soon
+== Roadmap
 
-* Feature auditing
-* Surface analytics
-* SDK's : Swift
-* Yaml remote configuration support
-
-For more details please refer to https://github.com/featurehub-io/featurehub/issues?q=is%3Aissue+is%3Aopen+label%3Aroadmap[Roadmap tickets]
+FeatureHub roadmap can be found https://github.com/orgs/featurehub-io/projects/3[here]
 
 
 == Contributing
