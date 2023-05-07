@@ -1,6 +1,7 @@
 package io.featurehub.mr.events.common
 
 import io.cloudevents.core.builder.CloudEventBuilder
+import io.featurehub.dacha.model.PublishAction
 import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
@@ -21,13 +22,14 @@ class CloudEventCacheBroadcaster @Inject constructor(
     data: Any,
     id: String?,
     type: String,
+    action: PublishAction
   ) {
     try {
       val event = CloudEventBuilder.v1().newBuilder()
       event.withSubject(subject)
       event.withId(id ?: "000")
       event.withType(type)
-      event.withSource(URI("http://management-service"))
+      event.withSource(URI("http://management-service/${action.toString()}"))
       event.withTime(OffsetDateTime.now())
 
       cloudEventsPublisher.publish(type, data, event)
@@ -40,7 +42,7 @@ class CloudEventCacheBroadcaster @Inject constructor(
     if (cloudEventsPublisher.hasListeners(PublishEnvironment.CLOUD_EVENT_TYPE)) {
       log.trace("cloudevent: publish environment {}", eci)
       publish(PublishEnvironment.CLOUD_EVENT_SUBJECT, eci, eci.environment.id.toString(),
-        PublishEnvironment.CLOUD_EVENT_TYPE)
+        PublishEnvironment.CLOUD_EVENT_TYPE, eci.action)
     }
   }
 
@@ -51,7 +53,7 @@ class CloudEventCacheBroadcaster @Inject constructor(
         PublishServiceAccount.CLOUD_EVENT_SUBJECT,
         saci,
         saci.serviceAccount?.id.toString(),
-        PublishServiceAccount.CLOUD_EVENT_TYPE
+        PublishServiceAccount.CLOUD_EVENT_TYPE, saci.action
       )
     }
   }
@@ -65,7 +67,7 @@ class CloudEventCacheBroadcaster @Inject constructor(
 
       publish(
         PublishFeatureValues.CLOUD_EVENT_SUBJECT, features,
-        "${firstFeature.environmentId}/${firstFeature.feature.feature.key}", PublishFeatureValues.CLOUD_EVENT_TYPE
+        "${firstFeature.environmentId}/${firstFeature.feature.feature.key}", PublishFeatureValues.CLOUD_EVENT_TYPE, firstFeature.action
       )
     }
   }

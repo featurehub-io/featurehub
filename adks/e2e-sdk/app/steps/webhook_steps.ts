@@ -1,9 +1,15 @@
-import { Given, Then } from '@cucumber/cucumber';
+import { Given, Then, When } from '@cucumber/cucumber';
 import { SdkWorld } from '../support/world';
 import { WebhookCheck } from 'featurehub-javascript-admin-sdk';
 import waitForExpect from 'wait-for-expect';
 import { getWebhookData } from '../support/make_me_a_webserver';
 import { expect } from 'chai';
+import { sleep } from '../support/random';
+
+
+When('I wait for {int} seconds', async function (seconds: number) {
+  await sleep(seconds * 1000);
+});
 
 Given(/^I test the webhook$/, async function () {
   const world = this as SdkWorld;
@@ -34,11 +40,14 @@ Then(/^we receive a webhook with (.*) flag that is (locked|unlocked) and (off|on
   }, 10000, 200);
 });
 
-Then(/^we should have 3 messages in the list of webhooks$/, async function() {
+Then(/^we should have (\d+) messages in the list of webhooks$/, async function(resultCount: number) {
   if (!process.env.EXTERNAL_NGROK && process.env.REMOTE_BACKEND) {
     return;
   }
-  const world = this as SdkWorld;
-  const hookResults = (await world.webhookApi.listWebhooks(world.environment.id)).data;
-  expect(hookResults.results.length).to.eq(3);
+
+  await waitForExpect(async () => {
+    const world = this as SdkWorld;
+    const hookResults = (await world.webhookApi.listWebhooks(world.environment.id)).data;
+    expect(hookResults.results.length).to.eq(3);
+  }, 2000, 200);
 });

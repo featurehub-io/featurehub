@@ -40,7 +40,7 @@ class FeatureEnricherProcessorSpec extends Specification {
   }
 
   def setup() {
-    ThreadLocalConfigurationSource.createContext(['enricher.enabled': 'true'])
+    ThreadLocalConfigurationSource.createContext(['enricher.enabled': 'true', 'enricher.ignore-when-empty': 'false'])
     telemetryReader = Spy(FakeTelemetryReader)
     cache = Mock()
     publisher = Mock()

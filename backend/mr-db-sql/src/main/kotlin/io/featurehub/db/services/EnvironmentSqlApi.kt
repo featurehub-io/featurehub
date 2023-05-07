@@ -237,7 +237,7 @@ class EnvironmentSqlApi @Inject constructor(
         .productionEnvironment(java.lang.Boolean.TRUE == env.production)
         .build()
       val createdEnvironment = update(newEnv)
-      cacheSource.updateEnvironment(createdEnvironment, PublishAction.CREATE)
+//      cacheSource.updateEnvironment(createdEnvironment, PublishAction.CREATE)
       discoverMissingBooleanApplicationFeaturesForThisEnvironment(createdEnvironment, whoCreated)
       return convertUtils.toEnvironment(createdEnvironment, Opts.empty())
     }
@@ -280,6 +280,7 @@ class EnvironmentSqlApi @Inject constructor(
 
   @Transactional(type = TxType.REQUIRES_NEW)
   private fun update(env: DbEnvironment): DbEnvironment {
+    env.markAsDirty()
     database.save(env)
     cacheSource.updateEnvironment(env, PublishAction.UPDATE)
     return env

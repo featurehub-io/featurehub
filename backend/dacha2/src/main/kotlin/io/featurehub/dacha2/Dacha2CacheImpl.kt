@@ -91,6 +91,7 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
             val env = mrDacha2Api.getEnvironment(id, apiKey).env
             return featureValueFactory.create(env)
           } catch (nfe: NotFoundException) {
+            log.trace("environment id {} does not exist", id)
             environmentMissCache.put(id, true)
             throw nfe
           } catch (e: Exception) {
@@ -122,6 +123,7 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
             serviceAccountCache.put(serviceAccount.id, serviceAccount)
             return serviceAccount
           } catch (nfe: NotFoundException) {
+            log.trace("service account {} does not exist", key)
             serviceAccountMissCache.put(key, true)
             throw nfe
           }
