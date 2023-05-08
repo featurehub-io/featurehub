@@ -55,7 +55,7 @@ for a long time and you want it to update fairly quickly.
 |===================================
 |Dev/Test Capability|Java|Javascript^1^|Go|Dart^2^|C#|Python|Ruby|Swift
 |Test Client|Y|Y|N|Y|Y|N|N|N
-|Feature Interceptors|Y|Y|N|Y|N|Y|Y|N
+|Feature Interceptors|Y|Y|N|Y|N|Y|Y|Y
 |===================================
 
 - *(1)* Javascript and Typescript are supported via a Typescript library.
