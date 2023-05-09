@@ -106,6 +106,10 @@ class StreamingFeatureSource @Inject constructor(
    * this tells the clients that there are messages for them
    */
   override fun updateFeatures(features: PublishFeatureValues) {
+    if (log.isTraceEnabled) {
+      log.trace("received features {}", features)
+    }
+
     if (features.features.isEmpty()) {
       return
     }

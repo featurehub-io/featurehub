@@ -1,26 +1,13 @@
 package io.featurehub.party
 
-import cd.connect.app.config.ConfigKey
-import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.edge.EdgeGetFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
-import io.featurehub.mr.dacha2.Dacha2Feature
-import io.featurehub.publish.ChannelConstants
 import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info
-import io.featurehub.web.security.oauth.AuthProviderCollection
-import io.featurehub.web.security.oauth.AuthProviders
-import io.featurehub.web.security.oauth.NoAuthProviders
-import io.featurehub.web.security.oauth.OAuth2Feature
-import io.featurehub.web.security.oauth.OAuth2Feature.Companion.oauth2ProvidersExist
-import io.featurehub.web.security.saml.SamlEnvironmentalFeature
-import io.featurehub.web.security.saml.SamlEnvironmentalFeature.Companion.samlProvidersExist
-import jakarta.inject.Singleton
-import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.glassfish.jersey.server.ResourceConfig
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

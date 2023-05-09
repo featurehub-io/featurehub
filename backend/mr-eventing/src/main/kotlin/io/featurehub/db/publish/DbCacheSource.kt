@@ -157,7 +157,7 @@ open class DbCacheSource @Inject constructor(
   }
 
   private fun publishCacheEnvironments(cacheBroadcast: CacheBroadcast) {
-    val count = allEnvironments( true).findCount()
+    val count = allEnvironments(true).findCount()
     if (count == 0) {
       log.info("database has no environments, publishing empty environments indicator.")
       val empty = UUID.randomUUID()
@@ -425,8 +425,6 @@ open class DbCacheSource @Inject constructor(
 
   override fun deleteFeatureChange(feature: DbApplicationFeature, environmentId: UUID) {
     executor.submit {
-      val cacheName = QDbNamedCache().organizations.portfolios.applications.eq(feature.parentApplication)
-        .findOne()!!.cacheName
       cacheBroadcast.publishFeatures(
         PublishFeatureValues().addFeaturesItem(
           PublishFeatureValue()
@@ -447,24 +445,16 @@ open class DbCacheSource @Inject constructor(
   }
 
   private fun internalUpdateServiceAccount(serviceAccount: DbServiceAccount, publishAction: PublishAction) {
-    val cacheName =
-      QDbNamedCache().organizations.portfolios.serviceAccounts.id.eq(serviceAccount.id).findOneOrEmpty()
-        .map { obj: DbNamedCache -> obj.cacheName }
-        .orElse(null)
-    if (cacheName != null) {
-      if (publishAction != PublishAction.DELETE) {
-        log.debug("Updating service account {} -> {}", serviceAccount.id, serviceAccount.apiKeyServerEval)
-        cacheBroadcast.publishServiceAccount(
-          PublishServiceAccount()
-            .count(allServiceAccounts().findCount())
-            .serviceAccount(fillServiceAccount(serviceAccount))
-            .action(publishAction)
-        )
-      } else {
-        log.info("can't publish service account, no broadcaster for cache {}", cacheName)
-      }
+    if (publishAction != PublishAction.DELETE) {
+      log.debug("Updating service account {} -> {}", serviceAccount.id, serviceAccount.apiKeyServerEval)
+      cacheBroadcast.publishServiceAccount(
+        PublishServiceAccount()
+          .count(allServiceAccounts().findCount())
+          .serviceAccount(fillServiceAccount(serviceAccount))
+          .action(publishAction)
+      )
     } else {
-      log.info("Can't published service account, no cache")
+      log.info("can't publish service account, no broadcaster")
     }
   }
 
@@ -474,24 +464,19 @@ open class DbCacheSource @Inject constructor(
   }
 
   private fun internalDeleteServiceAccount(id: UUID) {
-    val cacheName = QDbNamedCache().organizations.portfolios.serviceAccounts.id.eq(id).findOneOrEmpty()
-      .map { obj: DbNamedCache -> obj.cacheName }
-      .orElse(null)
-    if (cacheName != null) {
-      log.debug("Sending delete for service account `{}`", id)
-      cacheBroadcast.publishServiceAccount(
-        PublishServiceAccount()
-          .count(allServiceAccounts().findCount() - 1) // now one less
-          .serviceAccount(
-            CacheServiceAccount()
-              .id(id)
-              .apiKeyServerSide("")
-              .apiKeyClientSide("")
-              .version(Long.MAX_VALUE)
-          ) // just send the id, that is all the cache needs
-          .action(PublishAction.DELETE)
-      )
-    }
+    log.debug("Sending delete for service account `{}`", id)
+    cacheBroadcast.publishServiceAccount(
+      PublishServiceAccount()
+        .count(allServiceAccounts().findCount() - 1) // now one less
+        .serviceAccount(
+          CacheServiceAccount()
+            .id(id)
+            .apiKeyServerSide("")
+            .apiKeyClientSide("")
+            .version(Long.MAX_VALUE)
+        ) // just send the id, that is all the cache needs
+        .action(PublishAction.DELETE)
+    )
   }
 
   override fun updateEnvironment(environment: DbEnvironment, publishAction: PublishAction) {
@@ -500,40 +485,28 @@ open class DbCacheSource @Inject constructor(
 
   private fun internalUpdateEnvironment(environment: DbEnvironment?, publishAction: PublishAction) {
     if (environment != null) {
-      val cacheName =
-        QDbNamedCache().organizations.portfolios.applications.environments.eq(environment).findOneOrEmpty()
-          .map { obj: DbNamedCache -> obj.cacheName }
-          .orElse(null)
-      if (cacheName != null) {
-        log.trace("publishing environment {} ({})", environment.name, environment.id)
-        val environmentCacheItem = fillEnvironmentCacheItem(
-          allEnvironments(true).findCount(),
-          environment,
-          publishAction
-        )
-        cacheBroadcast.publishEnvironment(environmentCacheItem)
-      }
+      log.trace("publishing environment {} ({})", environment.name, environment.id)
+      val environmentCacheItem = fillEnvironmentCacheItem(
+        allEnvironments(true).findCount(),
+        environment,
+        publishAction
+      )
+      cacheBroadcast.publishEnvironment(environmentCacheItem)
     }
   }
 
   override fun deleteEnvironment(id: UUID) {
-    val cacheName =
-      QDbNamedCache().organizations.portfolios.applications.environments.id.eq(id).findOneOrEmpty()
-        .map { obj: DbNamedCache -> obj.cacheName }
-        .orElse(null)
-    if (cacheName != null) {
-      log.debug("deleting environment: `{}`", id)
-      val randomUUID = UUID.randomUUID() // we use this to fill in not-nullable fields
-      cacheBroadcast.publishEnvironment(
-        PublishEnvironment()
-          .organizationId(randomUUID)
-          .portfolioId(randomUUID)
-          .applicationId(randomUUID)
-          .count(allEnvironments(true).findCount() - 1)
-          .environment(CacheEnvironment().id(id).version(Long.MAX_VALUE))
-          .action(PublishAction.DELETE)
-      )
-    }
+    log.debug("deleting environment: `{}`", id)
+    val randomUUID = UUID.randomUUID() // we use this to fill in not-nullable fields
+    cacheBroadcast.publishEnvironment(
+      PublishEnvironment()
+        .organizationId(randomUUID)
+        .portfolioId(randomUUID)
+        .applicationId(randomUUID)
+        .count(allEnvironments(true).findCount() - 1)
+        .environment(CacheEnvironment().id(id).version(Long.MAX_VALUE))
+        .action(PublishAction.DELETE)
+    )
   }
 
   /**
@@ -545,47 +518,41 @@ open class DbCacheSource @Inject constructor(
     action: PublishAction,
     originalKey: String?
   ) {
-    val cacheName =
-      QDbNamedCache().organizations.portfolios.applications.eq(appFeature.parentApplication).findOneOrEmpty()
-        .map { obj: DbNamedCache -> obj.cacheName }
-        .orElse(null)
-    if (cacheName != null) {
-      val featureValues: MutableMap<UUID, DbFeatureValue> = HashMap()
-      if (action != PublishAction.DELETE) {
-        // dont' care about values if deleting
-        QDbFeatureValue().environment.whenArchived.isNull.environment.whenUnpublished.isNull.environment.parentApplication.eq(
-          appFeature.parentApplication
-        ).feature.eq(appFeature).findEach { fe: DbFeatureValue -> featureValues[fe.environment.id] = fe }
-      }
-      val cacheFeature = toCacheFeature(appFeature)
-
-      // deletes cause the key to change, so this restores it, SDKs should be using the ID in any case
-      if (originalKey != null) {
-        cacheFeature.key = originalKey
-      }
-
-      QDbEnvironment().parentApplication.eq(appFeature.parentApplication)
-        .whenArchived.isNull
-        .whenUnpublished.isNull.findList()
-        .forEach { env: DbEnvironment ->
-          val toCacheFeatureValue = toCacheFeatureValue(featureValues[env.id], appFeature)
-          // deletes cause the key to change, so this restores it, SDKs should be using the ID in any case
-          if (originalKey != null && toCacheFeatureValue != null) {
-            toCacheFeatureValue.key = originalKey
-          }
-          cacheBroadcast.publishFeatures(
-            PublishFeatureValues().addFeaturesItem(
-              PublishFeatureValue()
-                .feature(
-                  CacheEnvironmentFeature()
-                    .feature(cacheFeature)
-                    .value(toCacheFeatureValue)
-                )
-                .environmentId(env.id).action(action)
-            )
-          )
-        }
+    val featureValues: MutableMap<UUID, DbFeatureValue> = HashMap()
+    if (action != PublishAction.DELETE) {
+      // dont' care about values if deleting
+      QDbFeatureValue().environment.whenArchived.isNull.environment.whenUnpublished.isNull.environment.parentApplication.eq(
+        appFeature.parentApplication
+      ).feature.eq(appFeature).findEach { fe: DbFeatureValue -> featureValues[fe.environment.id] = fe }
     }
+    val cacheFeature = toCacheFeature(appFeature)
+
+    // deletes cause the key to change, so this restores it, SDKs should be using the ID in any case
+    if (originalKey != null) {
+      cacheFeature.key = originalKey
+    }
+
+    QDbEnvironment().parentApplication.eq(appFeature.parentApplication)
+      .whenArchived.isNull
+      .whenUnpublished.isNull.findList()
+      .forEach { env: DbEnvironment ->
+        val toCacheFeatureValue = toCacheFeatureValue(featureValues[env.id], appFeature)
+        // deletes cause the key to change, so this restores it, SDKs should be using the ID in any case
+        if (originalKey != null && toCacheFeatureValue != null) {
+          toCacheFeatureValue.key = originalKey
+        }
+        cacheBroadcast.publishFeatures(
+          PublishFeatureValues().addFeaturesItem(
+            PublishFeatureValue()
+              .feature(
+                CacheEnvironmentFeature()
+                  .feature(cacheFeature)
+                  .value(toCacheFeatureValue)
+              )
+              .environmentId(env.id).action(action)
+          )
+        )
+      }
   }
 
   override fun publishFeatureChange(appFeature: DbApplicationFeature, action: PublishAction) {
@@ -638,7 +605,7 @@ open class DbCacheSource @Inject constructor(
   }
 
   override fun refreshPortfolios(portfolioIds: List<UUID>) {
-    val count = allEnvironments( true).findCount()
+    val count = allEnvironments(true).findCount()
     allEnvironments(false).parentApplication.portfolio.id.`in`(portfolioIds).findEach {
       executor.submit {
         val eci = fillEnvironmentCacheItem(count, it, PublishAction.UPDATE)
@@ -661,7 +628,7 @@ open class DbCacheSource @Inject constructor(
   }
 
   override fun refreshApplications(applicationIds: List<UUID>) {
-    val count = allEnvironments( true).findCount()
+    val count = allEnvironments(true).findCount()
     allEnvironments(false).parentApplication.id.`in`(applicationIds).findEach {
       executor.submit {
         val eci = fillEnvironmentCacheItem(count, it, PublishAction.UPDATE)

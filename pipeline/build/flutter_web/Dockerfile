@@ -26,7 +26,7 @@ ARG cachebust=1
 ENV FLUTTER_ROOT="/opt/flutter"
 ENV FLUTTER="/opt/flutter"
 ARG FLUTTER_VERSION=3.7.10
-RUN git clone --depth=1 --branch $FLUTTER_VERSION https://github.com/flutter/flutter "${FLUTTER_ROOT}"
+RUN git clone --depth=1 --single-branch --branch $FLUTTER_VERSION https://github.com/flutter/flutter "${FLUTTER_ROOT}"
 ENV PATH="${FLUTTER_ROOT}/bin:${PATH}"
 
 # reset to known point as docker image is always 0.0, this is a stable version for us. Disable analytics and crash reporting on the builder.

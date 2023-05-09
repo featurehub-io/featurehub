@@ -17,7 +17,7 @@ import {
   WebhookServiceApi
 } from 'featurehub-javascript-admin-sdk';
 import { axiosLoggingAttachment, logger } from './logging';
-import globalAxios from 'axios';
+import globalAxios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import {
   ClientContext,
   EdgeFeatureHubConfig,
@@ -55,7 +55,7 @@ export class SdkWorld extends World {
   private _clientContext: ClientContext;
   public sdkUrlClientEval: string;
   public sdkUrlServerEval: string;
-
+  private scenarioId: string;
 
   constructor(props) {
     super(props);
@@ -80,6 +80,40 @@ export class SdkWorld extends World {
     this.webhookApi = new WebhookServiceApi(this.adminApiConfig);
 
     axiosLoggingAttachment([this.adminApiConfig.axiosInstance]);
+    const self = this;
+    this.attachBaggageInterceptors(() => {
+      return self.baggageHeader();
+    }, [this.adminApiConfig.axiosInstance])
+  }
+
+  private attachBaggageInterceptors(baggageHeader: () => string | undefined, axiosInstances: Array<AxiosInstance>): void {
+    axiosInstances.forEach((axios) => {
+      axios.interceptors.request.use((reqConfig: InternalAxiosRequestConfig) => {
+        const header = baggageHeader();
+
+        if (header) {
+          reqConfig.headers['baggage'] = header;
+        }
+
+        return reqConfig;
+      }, (error) => Promise.reject(error));
+    });
+  }
+
+  private baggageHeader(): string | undefined {
+    const headers = [];
+
+    if (this.scenarioId) {
+      headers.push(`cucumberScenarioId=${this.scenarioId}`);
+    }
+
+    return headers.length == 0 ? undefined : headers.join(',');
+  }
+
+  public setScenarioId(id: string) {
+    this.scenarioId = id;
+    logger.info('session id is %s', this.scenarioId);
+    this.attach(`scenarioId=${id}`, 'text/plain');
   }
 
   public reset(): void {
@@ -146,7 +180,6 @@ export class SdkWorld extends World {
       const fValueResult = await this.featureValueApi.getFeatureForEnvironment(this.environment.id, this.feature.key);
       return fValueResult.data;
     } catch (e) {
-      console.log(e);
       expect(e.response.status).to.eq(404); // null value
 
       if (e.response.status === 404) {

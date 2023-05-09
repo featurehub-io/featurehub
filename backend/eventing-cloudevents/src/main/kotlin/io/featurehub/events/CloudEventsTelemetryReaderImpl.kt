@@ -39,6 +39,7 @@ class CloudEventsTelemetryReaderImpl @Inject constructor(private val openTelemet
   private val telemetryGetter = CloudEventTextMapGetter()
 
   private val failedEvent = MetricsCollector.counter("cloudevent_failures", "General cloud event failures")
+  private val log: Logger = LoggerFactory.getLogger(CloudEventsTelemetryReaderImpl::class.java)
 
   override fun receive(subject: String, event: CloudEvent, metrics: CloudEventChannelMetric, process: (event: CloudEvent) -> Unit) {
     val extractedContext =
@@ -73,7 +74,7 @@ class CloudEventsTelemetryReaderImpl @Inject constructor(private val openTelemet
         process(event)
       } catch (e: Exception) {
         failedEvent.inc()
-        throw e
+        log.error("failed to process event {}", event, e)
       } finally {
         span.end()
       }

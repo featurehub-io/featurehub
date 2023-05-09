@@ -1,7 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 if [ ! -f build-frontend ]; then
   echo "No front-end to build, existing"
   exit 0
+fi
+if which gsed >/dev/null; then
+  alias sed=gsed
 fi
 echo flutter home is $FLUTTER
 #echo "1.21.0-8.0.pre.110" > $FLUTTER_ROOT/version

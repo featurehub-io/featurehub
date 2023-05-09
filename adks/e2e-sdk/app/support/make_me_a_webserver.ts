@@ -70,26 +70,26 @@ export function startWebServer(): Promise<void> {
 
     try {
       server.listen(3000, function () {
-        console.log('%s listening at %s', server.name, server.url);
+        logger.info(`${server.name} listening at ${server.url}`);
         resolve();
       });
     } catch (e) {
       server = undefined;
-      console.error("Failed to listen", e);
+      logger.error("Failed to listen", e);
       reject(e);
     }
   });
 }
 
 export function terminateServer(): Promise<void> {
-  console.log("terminating webserver");
+  logger.debug("terminating webserver");
   return new Promise((resolve, reject) => {
     if (server) {
       try {
         server.close(() => { resolve(); });
         server = undefined;
       } catch (e) {
-        console.error("Failed to close server", e);
+        logger.error("Failed to close server", e);
         reject(e);
       }
     } else {

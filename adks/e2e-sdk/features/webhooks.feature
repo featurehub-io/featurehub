@@ -6,7 +6,9 @@ Feature: Webhooks work as expected
     Given I create a new portfolio
     And I create an application
     When There is a feature flag with the key FEATURE_TITLE_TO_UPPERCASE
+    And I wait for 5 seconds
     And I update the environment for feature webhooks
+    And I wait for 5 seconds
     And I test the webhook
     Then we receive a webhook with FEATURE_TITLE_TO_UPPERCASE flag that is locked and off
     And I set the feature flag to unlocked and on

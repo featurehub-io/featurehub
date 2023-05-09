@@ -20,7 +20,9 @@ class NATSConnectionSource : NATSSource {
   init {
     DeclaredConfigResolver.resolve(this)
 
-    val options = io.nats.client.Options.Builder().servers(natsServers.toTypedArray()).build()
+    val options = io.nats.client.Options.Builder()
+      .errorListener(NATSErrorListener())
+      .servers(natsServers.toTypedArray()).build()
     natsConnection = try {
       val conn = io.nats.client.Nats.connect(options)
       log.info("NATS connection successfully established $natsServers")

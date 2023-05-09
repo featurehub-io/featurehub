@@ -1,21 +1,9 @@
-import { After, AfterAll, Before, BeforeAll } from '@cucumber/cucumber';
-import {
-  Application,
-  AuthServiceApi,
-  Portfolio,
-  PortfolioServiceApi,
-  RoleType,
-  ServiceAccount,
-  ServiceAccountPermission,
-  SetupServiceApi,
-  UserCredentials
-} from 'featurehub-javascript-admin-sdk';
+import { After, Before, BeforeAll } from '@cucumber/cucumber';
+import { AuthServiceApi, PortfolioServiceApi, SetupServiceApi, UserCredentials } from 'featurehub-javascript-admin-sdk';
 import { makeid } from './random';
-import { expect } from 'chai';
 import { SdkWorld } from './world';
 import { discover } from './discovery';
 import { startWebServer, terminateServer } from './make_me_a_webserver';
-import { lstat } from 'fs';
 
 const superuserEmailAddress = 'irina@i.com';
 // const superuserEmailAddress = 'superuser@mailinator.com';
@@ -63,6 +51,10 @@ async function ensureLoggedIn(world: SdkWorld) {
 
 Before(async function () {
   await ensureLoggedIn(this as SdkWorld);
+});
+
+Before(function () {
+  this.setScenarioId(makeid(30));
 });
 
 After(function () {

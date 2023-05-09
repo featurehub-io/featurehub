@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 
 class NatsCloudEventTopicListener constructor(
   private val natsSource: NATSSource,
-  subject: String,
+  private val subject: String,
   private val handler: (event: CloudEvent) -> Unit) : NatsListener {
   private val subscription: Subscription
   private val dispatcher: Dispatcher = natsSource.connection.createDispatcher()
@@ -25,6 +25,7 @@ class NatsCloudEventTopicListener constructor(
   }
 
   override fun close() {
+    log.trace("NATS connection closed for subject {}", subject)
     natsSource.connection.closeDispatcher(dispatcher)
   }
 

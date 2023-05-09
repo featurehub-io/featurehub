@@ -12,8 +12,12 @@ import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
 import jakarta.ws.rs.core.GenericType
 import org.glassfish.hk2.api.Immediate
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.lang.IllegalStateException
 
 class StatsFeature : Feature {
+  private val log: Logger = LoggerFactory.getLogger(StatsFeature::class.java)
   @ConfigKey("edge.stats-publisher")
   var whichStatsPublisherToUse: String = "nats"
 
@@ -30,9 +34,6 @@ class StatsFeature : Feature {
           .to(StatsOrchestrator::class.java)
           .`in`(Singleton::class.java)
 
-        bind(StatDisruptor::class.java).to(StatRecorder::class.java).`in`(Immediate::class.java)
-        bind(StatPublisherImpl::class.java).to(StatPublisher::class.java).`in`(Singleton::class.java)
-
         if (NATSFeature.isNatsConfigured()) {
           bind(NATSStatPublisher::class.java).to(CloudEventStatPublisher::class.java).`in`(Singleton::class.java)
         }
@@ -45,6 +46,13 @@ class StatsFeature : Feature {
           bind(KinesisStatsPublisher::class.java).to(CloudEventStatPublisher::class.java).`in`(Singleton::class.java)
         }
 
+        if (!NATSFeature.isNatsConfigured() && !GoogleEventFeature.isEnabled() && !KinesisEventFeature.isEnabled()) {
+          log.error("No messaging platform configured for stat publishing")
+          throw IllegalStateException("No messaging platform configured for stat publishing")
+        }
+
+        bind(StatPublisherImpl::class.java).to(StatPublisher::class.java).`in`(Singleton::class.java)
+
         bind(StatsCollectionOrchestrator::class.java).to(StatsOrchestrator::class.java).`in`(
           Singleton::class.java
         )
@@ -53,6 +61,7 @@ class StatsFeature : Feature {
           Singleton::class.java
         )
 
+        bind(StatDisruptor::class.java).to(StatRecorder::class.java).`in`(Immediate::class.java)
         bind(StatTimeTrigger::class.java).to(StatTimeTrigger::class.java).`in`(Immediate::class.java)
       }
     })
