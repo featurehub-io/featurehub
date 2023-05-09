@@ -6,6 +6,7 @@ fi
 rm -rf target/build_web
 mkdir -p target/build_web
 cp build/build.sh target
+chmod ugo+x target/build.sh
 cd target
 tar xvf *.tar
 if which flutter >/dev/null; then
