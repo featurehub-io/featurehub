@@ -29,7 +29,7 @@ using the Admin SDK you can configure alternative keys.
 
 3. Fastly CDN is supported for all SDKs for streaming (which all SDKs support), and for all SDKs that support Polling.
 Generally Polling is a technique used by client side APIs (such as Dart), so SDKs that only support Streaming (C#, Go)
-do not support Fastly polling. 
+do not support Fastly polling.
 
 4. REST-updates by usage/timeout means that there is a timeout period on the client, but it will only
 update if the features are evaluated. If a request is made for a feature and the timeout period has
@@ -45,17 +45,17 @@ for a long time, and you want it to update fairly quickly.
 
 [options="header"]
 |===================================
-|Web + Mobile Support|Java|Javascript^1^|Go|Dart^2^|C#
-|Catch & Release|N|Y|N|Y|N
+|Web + Mobile Support|Java|Javascript^1^|Go|Dart^2^|C#|Python|Ruby|Swift
+|Catch & Release|N|Y|N|Y|N|N|N|N
 |===================================
 
 ==== Development and Test capabilities for SDKs
 
 [options="header"]
 |===================================
-|Dev/Test Capability|Java|Javascript^1^|Go|Dart^2^|C#|Python
-|Test Client|Y|Y|N|Y|Y|N
-|Feature Interceptors|Y|Y|N|Y|N|Y
+|Dev/Test Capability|Java|Javascript^1^|Go|Dart^2^|C#|Python|Ruby|Swift
+|Test Client|Y|Y|N|Y|Y|N|N|N
+|Feature Interceptors|Y|Y|N|Y|N|Y|Y|Y
 |===================================
 
 - *(1)* Javascript and Typescript are supported via a Typescript library.
