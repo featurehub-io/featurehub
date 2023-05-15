@@ -93,7 +93,7 @@ The table below highlights the differences between the two key options.
 
 |===================================
 
-(*) when request is made to get features from FH server, it can, for example, be visible from the client's browser Dev tools, including the request url, that consists of environment id and API Key. As Server evaluated key doesn't return any sensitive information, it doesn't need to be treated as "secret". On contrary, Client evaluated keys should be kept "secret" because they return the data that contains all the features and rollout strategy information which can be sensitive (e.g. user id's, emails, etc.)
+(*) when a request is made to get features from FH server, it can, for example, be visible from the client's browser Dev tools, including the request url, that consists of environment id and API Key. As Server evaluated key doesn't return any sensitive information, it doesn't need to be treated as "secret". On contrary, Client evaluated keys should be kept "secret" because they return the data that contains all the features and rollout strategy information which can be sensitive (e.g. user id's, emails, etc.)
 
 FeatureHub SDKs use a _Context first API_. This means you define information about who is using the features (including anonymous users), and the SDK will evaluate the feature values based on that information.
 
