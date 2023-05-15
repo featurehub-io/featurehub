@@ -314,6 +314,9 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         includePermissions: true,
       );
 
+      _serviceAccountPS
+          .add(updatedServiceAccount);
+
       unawaited(
           _mrClient.streamValley.getEnvironmentServiceAccountPermissions());
 
