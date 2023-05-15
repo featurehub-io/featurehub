@@ -7,7 +7,7 @@ one where updates to feature values are streamed out to listening clients in nea
 Since its release, other patterns for use
 have emerged and we are, with the 1.5.0 release, making a few additions and alterations to match these expectations.
 
-With the 1.5.9 release we have moved to using Cloud Events and supporting an increased number of async layers - 
+With the 1.5.9 release we have moved to using Cloud Events and supporting an increased number of async layers -
 NATS (preferred), Google PubSub (Release), AWS Kinesis (beta).
 
 [#_streaming]
@@ -16,7 +16,7 @@ FeatureHub is available as a bundle (for streaming this is the Party Server) or 
 pieces for better scalability and isolation of your Administration side from your applications that require their
 features.
 
-The extended streaming deployment is designed to scale to millions, even billions of requests, while mostly isolating 
+The extended streaming deployment is designed to scale to millions, even billions of requests, while mostly isolating
 your backend system from being overwhelmed by requests. With release 1.5.9 we have moved to the preferred "Dacha2" Lazy Cache system,
 and deployed it conceptually looks like this:
 
@@ -43,7 +43,7 @@ and what each part is for.
 
 === The Management Repository (MR, the FeatureHub Server)
 
-This is the main admin server and is the source of truth for the application. All users login here (via local, OAuth2 or SAML), 
+This is the main admin server and is the source of truth for the application. All users login here (via local, OAuth2 or SAML),
 all portfolios, applications, environments, groups, features, etc are all controlled via this. This is always bundled with a UI
 and backend server and is configured to talk to some external database.
 
@@ -108,15 +108,9 @@ can be deployed on its own or as part of party-server-_ish_.
 
 === Fastly
 
-If you would like to serve features faster globally or would like to cache feature flags on CDN, FeatureHub has affiliated with https://www.fastly.com/[Fastly] - real-time content delivery network. Integration with Fastly 
+If you would like to serve features faster globally or would like to cache feature flags on CDN, FeatureHub has affiliated with https://www.fastly.com/[Fastly] - real-time content delivery network. Integration with Fastly
 can save costs on deployment infrastructure and make the FeatureHub application stack considerably faster around the world.
 
 We can provide you with the environment variables, and the configuration steps
 necessary to integrate Fastly with FeatureHub. Pulumi configuration, which can be translated easily into Terraform is also available on demand. Please contact us on info@featurehub.io for further information.
 
-== SDKs
-
-The SDKs are provided to create an idiomatic method to connection to the server-side event source of feature data from the Edge server.
-You are welcome to write your own, they are not particularly complicated to write, and we welcome them as contributions!
-
-View documentation and read more about SDK's link:sdks{outfilesuffix}[here]
