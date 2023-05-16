@@ -317,7 +317,6 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                                 .catchError((e, s) {
                               widget.bloc.mrClient.dialogError(e, s);
                             });
-                            print("triggering rocket");
                             widget.bloc.mrClient.streamValley.triggerRocket();
                           },
                           title: 'Update'),
