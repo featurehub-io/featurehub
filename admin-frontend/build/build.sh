@@ -1,5 +1,5 @@
 #!/bin/bash
-#tar xf *.tar
+echo started
 ls -l
 set -exo pipefail
 echo flutter home is $FLUTTER

@@ -134,9 +134,10 @@ class FeatureSqlApi @Inject constructor(
   }
 
   override fun saveFeatureValue(featureValue: DbFeatureValue) {
+    val originalVersion = featureValue.version
     database.save(featureValue)
 
-    if (auditingEnabled!!) {
+    if (auditingEnabled!! && originalVersion != featureValue.version) { // have we got auditing enabled and did the feature change
       // now saved a versioned copy
       database.save(DbFeatureValueVersion.fromDbFeatureValue(featureValue))
     }
