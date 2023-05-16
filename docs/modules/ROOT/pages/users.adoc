@@ -55,11 +55,13 @@ You can also add Admin Service Accounts to the user groups for programmatic cont
 For each application environment, there are permissions you can assign to portfolio groups
 
 ==== Feature level permissions
-* `CREATE/EDITED/DELETE features`. This permission allows all operations on a feature for a given application, including creating, updating and deleting entire feature. (Updating a feature includes feature properties updates: `name`, `key`, `description`, `reference_link`, `metadata`.)
+* `CREATE/EDIT/DELETE features` This permission allows all operations on a feature for a given application, including creating, updating and deleting entire feature. (Updating a feature includes feature properties updates: `name`, `key`, `description`, `reference_link`, `metadata`.)
 
 NOTE: Once feature is created, feature values will be automatically created with default values in every environment for a given application.
 
-* `CREATE feature`. Only allows to create features, editing and deleting of features is not permitted.
+* `CREATE feature` Only allows to create features, editing and deleting of features is not permitted.
+
+* `NO FEATURE PERMISSIONS` Creating, editing and deleting of features is not permitted.
 
 ==== Feature value level permissions
 
@@ -68,7 +70,7 @@ Following permissions are to control feature values and can be set per each envi
 * `READ` Can see the value of a feature, feature value strategies assigned, feature properties, lock/unlock status, retirement status and feature auditing
 * `LOCK` Can lock a feature, so it's value can't be changed, this gives us a
 safety net when deploying incomplete code into production.
-(Typically developers and testers keep features locked until they are finished and ready to be set)
+(Typically, developers and testers keep features locked until they are finished and ready to be set by business people)
 * `UNLOCK` Can unlock a feature, so it's value can be changed
 * `CHANGE_VALUE` Can change the value of a feature or can "retire" a feature
 

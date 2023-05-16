@@ -2,8 +2,8 @@
 
 == Rollout strategies
 
-Rollout strategies provide an ability to rollout features to a limited audience based on targeting rules, for example imagine you have a feature flag of type string which controls a _"button color"_ that can be in multiple states,
-e.g green, blue, red etc. With rollout strategies, you can serve a `green` value to users on `iOS` devices,
+Rollout strategies provide an ability to roll out features to a limited audience based on targeting rules, for example imagine you have a feature flag of type string which controls a _"button color"_ that can be in multiple states,
+e.g. green, blue, red etc. With rollout strategies, you can serve a `green` value to users on `iOS` devices,
 `blue` value to users whose emails ending with `gmail.com` and `red` value to users whose location is
 `New Zealand or United States or United Kingdom`. You can also use percentage based rollouts and for example, turn your feature "on" only to 50% of the audience.
 
@@ -84,7 +84,7 @@ Note, if you do not set the value in the _user context_ in the SDK, and the rule
 
 == Percentage split rule
 
-As well as setting up targeting rules you can also setup a special rule type - percentage split. Percentage rules lets you rollout a feature value to an approximate percentage of your user base.
+As well as setting up targeting rules you can also set up a special rule type - percentage split. Percentage rules lets you roll out a feature value to an approximate percentage of your user base.
 
 A typical scenario for a flag for example would be a "soft launch". The "default value" of your flag would be `off` and you set some arbitrary percentage
 to `on` (e.g. 20%). Then you would analyse how your feature is performing for those 20%, collect any user feedback, monitor your logging for any issues and if you are happy you will start
@@ -103,8 +103,13 @@ For Percentage rule to work you need to set a `Context` with `sessionId` or `use
 
 
 NOTE: It is important to note that the percentages are an approximation, the algorithm works by taking user _Context_ data you provide
-in SDK in the client side (either a `sessionId` or a `userKey`, ideally consistent for the user across platforms) and it uses
+in SDK in the client side (either a `sessionId` or a `userKey`, ideally consistent for the user across platforms). It uses
 an algorithm to spread that across a range giving you control down to four decimal points, but the algorithm is more accurate
-the greater the number of clients you have. i.e. you can rollout to 0.0001% of your usage base if you wish.
+the greater the number of clients you have. i.e. you can roll out to 0.0001% of your usage base if you wish.
 If you only have five users, this probably won't turn it on for anyone, if you have a million it will
 be more accurate.
+
+== Rollout strategies order
+As you can assign multiple rollout strategies to a feature, the order of the strategies becomes important. The SDK applies the strategies  in order from first to last, and stops when it hits a matching one. Strategies order can be set by dragging them in the Admin UI console - feature editing panel.
+
+image::fh_reorder_strategies.png[Split targeting,500]
