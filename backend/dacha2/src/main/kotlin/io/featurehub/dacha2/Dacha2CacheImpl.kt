@@ -247,6 +247,14 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
           stashServiceAccount(sa, sId)
         }
       } else if (sa.version >= existing.version) {
+        if (existing.apiKeyServerSide != sa.apiKeyServerSide) {
+          serviceAccountMissCache.put(existing.apiKeyServerSide, true)
+          serviceAccountApiKeyCache.invalidate(existing.apiKeyServerSide)
+        }
+        if (existing.apiKeyClientSide != sa.apiKeyClientSide) {
+          serviceAccountMissCache.put(existing.apiKeyClientSide, true)
+          serviceAccountApiKeyCache.invalidate(existing.apiKeyClientSide)
+        }
         serviceAccountMissCache.invalidateAll(listOf(sa.apiKeyServerSide, sa.apiKeyClientSide))
         stashServiceAccount(sa, sId)
 
