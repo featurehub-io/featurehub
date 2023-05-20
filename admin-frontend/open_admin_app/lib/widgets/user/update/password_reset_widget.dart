@@ -72,9 +72,9 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
                           const InputDecoration(labelText: 'Confirm password')),
                 ],
               ),
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: const <Widget>[],
+                children: <Widget>[],
               ),
               Container(
                 padding: const EdgeInsets.only(top: 20),

@@ -64,9 +64,9 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
           builder: (context, snapshot) {
             if (snapshot.hasData &&
                 snapshot.data!.environments.isEmpty) {
-              return Column(
+              return const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const <Widget>[
+                children: <Widget>[
                   NoEnvironmentMessage(),
                 ],
               );
@@ -196,7 +196,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                         ],
                       ),
                       const SizedBox(height: 24.0),
-                      if(featuresList.applicationFeatureValues.features.isEmpty) Text("No features to display"),
+                      if(featuresList.applicationFeatureValues.features.isEmpty) const Text("No features to display"),
                       if(featuresList.applicationFeatureValues.features.isNotEmpty) SizedBox(
                         height: tableHeight,
                         child: SfDataGridTheme(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_font_icons/flutter_font_icons.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:mrapi/api.dart';
 

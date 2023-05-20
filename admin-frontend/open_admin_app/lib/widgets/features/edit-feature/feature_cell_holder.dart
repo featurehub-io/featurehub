@@ -2,7 +2,7 @@ import 'dart:html'; // ignore: avoid_web_libraries_in_flutter
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_font_icons/flutter_font_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';

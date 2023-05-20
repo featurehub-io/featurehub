@@ -67,9 +67,9 @@ class _EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const <Widget>[
+            children: <Widget>[
               FHHeader(
                 title: 'Edit admin SDK service account',
                 children: <Widget>[],

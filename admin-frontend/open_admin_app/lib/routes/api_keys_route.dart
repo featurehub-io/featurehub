@@ -1,6 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_font_icons/flutter_font_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/ga_id.dart';
@@ -28,8 +28,8 @@ class ApiKeysRoute extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Wrap(
-                children: const [
+              const Wrap(
+                children: [
                   FHHeader(
                     title: 'API Keys',
                   ),
@@ -127,10 +127,10 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
     return Column(
       children: [
         widgetCreator.edgeUrlCopyWidget(bloc.mrClient),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
+        const Padding(
+          padding: EdgeInsets.all(8.0),
           child: Row(
-            children: const [
+            children: [
               Expanded(
                 flex: 3,
                 child: Align(
