@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class NotSetContainer extends StatelessWidget {
   const NotSetContainer({Key? key}) : super(key: key);
@@ -18,9 +17,7 @@ class NotSetContainer extends StatelessWidget {
               width: 1,
             ),
           ),
-          child: Text('not set',
-              style: GoogleFonts.openSans(
-                  textStyle: Theme.of(context).textTheme.bodyLarge))),
+          child: const Text('not set')),
     );
   }
 }

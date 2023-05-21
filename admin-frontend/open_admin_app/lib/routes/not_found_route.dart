@@ -41,7 +41,7 @@ class _NotFoundRouteState extends State<NotFoundRoute>
                   height: 200, width: 200, fit: BoxFit.scaleDown),
             ),
           ),
-          Positioned(
+          const Positioned(
             top: 150,
             bottom: 0,
             left: 24,
@@ -49,7 +49,7 @@ class _NotFoundRouteState extends State<NotFoundRoute>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: const [
+              children: [
                 Text(
                   '404',
                   textAlign: TextAlign.center,

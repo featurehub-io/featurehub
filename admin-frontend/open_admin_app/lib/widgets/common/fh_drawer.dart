@@ -1,7 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_font_icons/flutter_font_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
@@ -161,7 +161,7 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
             const FHMenuItem(
                 name: 'Admin Service Accounts',
                 permissionType: PermissionType.portfolioadmin,
-                iconData: AntDesign.API,
+                iconData: AntDesign.api,
                 path: '/admin-service-accounts',
                 params: {}),
           ];
@@ -180,7 +180,7 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return Column(children: const <Widget>[
+            return const Column(children: <Widget>[
               FHMenuItem(
                   name: 'Groups',
                   iconData: MaterialIcons.people_outline,
@@ -258,8 +258,8 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: const [
+    return const Column(
+      children: [
         FHMenuItem(
           name: 'Applications',
           iconData: Feather.grid,

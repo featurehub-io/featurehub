@@ -1,6 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_font_icons/flutter_font_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_tag.dart';
 import 'package:open_admin_app/widgets/features/cell-view/flag_colored_on_off_label.dart';

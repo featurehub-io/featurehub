@@ -216,9 +216,9 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.start,
-              children: const [
+              children: [
                 Text('Webhook Configuration', style:
                 TextStyle(fontWeight: FontWeight.bold)),
               ],

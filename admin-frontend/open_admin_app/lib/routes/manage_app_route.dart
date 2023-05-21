@@ -78,9 +78,9 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
             builder: (context, envSnapshot) {
               //check we have all the initial data like Application and Environments
               if (envSnapshot.data == ManageAppPageState.initialState) {
-                return Column(
+                return const Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: const <Widget>[
+                  children: <Widget>[
                     ManageAppWidget(),
                   ],
                 );
@@ -252,8 +252,8 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
                   child: SingleChildScrollView(
                     physics: const ClampingScrollPhysics(),
                     controller: controllerTab2,
-                    child: Column(
-                      children: const <Widget>[
+                    child: const Column(
+                      children: <Widget>[
                         GroupPermissionsWidget(),
                       ],
                     ),
@@ -265,8 +265,8 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
                   child: SingleChildScrollView(
                     physics: const ClampingScrollPhysics(),
                     controller: controllerTab3,
-                    child: Column(
-                      children: const <Widget>[
+                    child: const Column(
+                      children: <Widget>[
                         ServiceAccountPermissionsWidget(),
                       ],
                     ),
@@ -278,8 +278,8 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
                     child: SingleChildScrollView(
                       physics: const ClampingScrollPhysics(),
                       controller: controllerTab4,
-                      child: Column(
-                        children: const <Widget>[
+                      child: const Column(
+                        children: <Widget>[
                           WebhooksPanelWidget(),
                         ],
                       ),
