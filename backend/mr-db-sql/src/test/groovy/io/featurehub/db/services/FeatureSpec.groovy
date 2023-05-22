@@ -111,6 +111,28 @@ class FeatureSpec extends Base2Spec {
     ThreadLocalConfigurationSource.clearContext()
   }
 
+  def "i should be able to make a feature the parent of a second feature"() {
+    given: "i create an application"
+      Application app =  appApi.createApplication(portfolio1.id, new Application().name("umber").description("some desc"), superPerson)
+    and: "i create a feature"
+      def features = appApi.createApplicationFeature(app.id, new Feature().key("FEATURE_PARENT").name("The neo feature"), superPerson, Opts.empty())
+      def parent = features[0]
+    when: "i make second feature and make it the child of the first feature"
+      def all = appApi.createApplicationFeature(app.id, new Feature().key("FEATURE_CHILD").parentFeatureId(parent.id).name("The child feature"), superPerson, Opts.empty())
+      def child = all.find({it.key == 'FEATURE_CHILD' && it.parentFeatureId == parent.id})
+    then:
+      all.find({it.key == 'FEATURE_CHILD' && it.parentFeatureId == parent.id})
+    when: "i try and update the parent and make it a child of the child, I cannot"
+      appApi.updateApplicationFeature(app.id, parent.key, parent.parentFeatureId(child.id), Opts.empty())
+    then:
+      thrown ApplicationApi.InvalidParentException
+    when: "i try and delete the parent, I cannot because it has a child"
+      appApi.deleteApplicationFeature(app.id, parent.key)
+    then:
+      thrown ApplicationApi.InvalidParentException
+  }
+
+
   def "when i save a new feature in an application i receive it back as part of the list"() {
     given: "i create a new feature"
       def features = appApi.createApplicationFeature(appId, new Feature().key("FEATURE_ONE").name("The neo feature"), superPerson, Opts.empty())

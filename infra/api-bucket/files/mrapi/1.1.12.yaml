@@ -1,0 +1,4503 @@
+openapi: 3.0.1
+info:
+  title: ManagementResourceApi
+  description: This describes the API clients use for accessing features. This reflects
+    the API from 1.5.7 onwards.
+  version: 1.1.12
+  x-version-api: fragment of version API
+servers:
+- url: /
+paths:
+  /mr-api/dacha1/cache:
+    post:
+      tags:
+      - CacheService
+      description: Allows superusers to refresh the global Dacha1 cache (if it exists).
+      operationId: cacheRefresh
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CacheRefreshRequest'
+        required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CacheRefreshResponse'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: Dacha1 is not being used and API does not exist
+      security:
+      - bearerAuth: []
+  /mr-api/organization/{id}/group:
+    get:
+      tags:
+      - GroupService
+      description: Gets the superuser group for this organisation. There is no other
+        way to ascertain which org you are dealing with
+      operationId: getSuperuserGroup
+      responses:
+        "200":
+          description: The superuser group presuming the organization exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: the id of the organisation
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+  /mr-api/portfolio:
+    get:
+      tags:
+      - PortfolioService
+      description: Gets a list of portfolios.
+      operationId: findPortfolios
+      parameters:
+      - name: order
+        in: query
+        description: how to order the results
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/SortOrder'
+      - name: filter
+        in: query
+        description: What to filter the results by
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: parentPortfolioId
+        in: query
+        description: "The parent portfolio to search under. If none is provided, use\
+          \ the top level one"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "Gets all portfolios, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Portfolio'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - PortfolioService
+      description: Create a new portfolio
+      operationId: createPortfolio
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Portfolio'
+        required: true
+      responses:
+        "200":
+          description: Resulting portfolio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden to create portfolio
+        "404":
+          description: unable to create portfolio
+        "409":
+          description: duplicate portfolio
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: includeGroups
+      in: query
+      description: Include groups for this this portfolio in results
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+    - name: includeApplications
+      in: query
+      description: Include applications for this portfolio in results
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/portfolio/{id}:
+    get:
+      tags:
+      - PortfolioService
+      description: Get portfolio
+      operationId: getPortfolio
+      responses:
+        "200":
+          description: Resulting portfolio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - PortfolioService
+      description: Update a portfolio
+      operationId: updatePortfolio
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Portfolio'
+        required: true
+      responses:
+        "200":
+          description: Resulting portfolio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: no permission to update portfolio
+        "404":
+          description: cannot find portfolio to update
+        "409":
+          description: duplicate portfolio name
+        "422":
+          description: updating old portfolio
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - PortfolioService
+      description: Delete a portfolio
+      operationId: deletePortfolio
+      responses:
+        "200":
+          description: How many portfolios were deleted.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: The id of the portfolio to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: includeGroups
+      in: query
+      description: Include groups for this this portfolio in results
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+    - name: includeApplications
+      in: query
+      description: Include applications for this portfolio in results
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+    - name: includeEnvironments
+      in: query
+      description: Include the environments inside the applications
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/portfolio/{id}/application:
+    get:
+      tags:
+      - ApplicationService
+      description: Gets a list of applications.
+      operationId: findApplications
+      parameters:
+      - name: order
+        in: query
+        description: how to order the results
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/SortOrder'
+      - name: filter
+        in: query
+        description: What to filter the results by
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "Gets all portfolios, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Application'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: none found
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - ApplicationService
+      description: Create a new application
+      operationId: createApplication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+        required: true
+      responses:
+        "200":
+          description: Resulting application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "409":
+          description: duplicates
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: The id of the portfolio to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: includeEnvironments
+      in: query
+      description: Include the environments in the result
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+    - name: includeFeatures
+      in: query
+      description: Include the features in the result
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/portfolio/{id}/group:
+    get:
+      tags:
+      - GroupService
+      description: Gets a list of groups.
+      operationId: findGroups
+      parameters:
+      - name: order
+        in: query
+        description: how to order the results
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/SortOrder'
+      - name: filter
+        in: query
+        description: What to filter the results by
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "Gets groups, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Group'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - GroupService
+      description: Create a new group
+      operationId: createGroup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Group'
+        required: true
+      responses:
+        "200":
+          description: Resulting group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: no permission
+        "409":
+          description: duplicate
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: The id of the portfolio to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: includePeople
+      in: query
+      description: include people in each group
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/person:
+    get:
+      tags:
+      - PersonService
+      description: Gets a list of matching people.
+      operationId: findPeople
+      parameters:
+      - name: countGroups
+        in: query
+        description: Return the number of groups
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: order
+        in: query
+        description: how to order the results
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/SortOrder'
+      - name: filter
+        in: query
+        description: What to filter the results by
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: startAt
+        in: query
+        description: Where in the results to start
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: pageSize
+        in: query
+        description: How many results to return
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: includeLastLoggedIn
+        in: query
+        description: Include last logged in timestamp
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: includeDeactivated
+        in: query
+        description: Include people who are no longer active
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: personTypes
+        in: query
+        description: Filter by person types
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonType'
+      - name: sortBy
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/SearchPersonSortBy'
+      responses:
+        "200":
+          description: "Gets all persons, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPersonResult'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: only admins can call this API
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - PersonService
+      description: Create a new person
+      operationId: createPerson
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePersonDetails'
+        required: true
+      responses:
+        "200":
+          description: Registration url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationUrl'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden to only admins
+        "409":
+          description: person already exists
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: includeGroups
+      in: query
+      description: Include groups in result
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/person/{id}/token-reset:
+    post:
+      tags:
+      - PersonService
+      description: Reset security token of supported person type (usually service
+        accounts only)
+      operationId: resetSecurityToken
+      parameters:
+      - name: id
+        in: path
+        description: The id of the person to find
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: New security token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminServiceResetTokenResponse'
+        "404":
+          description: Service account not found
+        "403":
+          description: No permission to change
+        "401":
+          description: Not authenticated
+      security:
+      - bearerAuth: []
+  /mr-api/person/{id}/v2:
+    put:
+      tags:
+      - PersonService
+      description: Update a person
+      operationId: updatePersonV2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePerson'
+        required: true
+      responses:
+        "204":
+          description: Resulting person
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden to update that person
+        "404":
+          description: person not found
+        "422":
+          description: attempting to update old person record
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: The id of the person to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+  /mr-api/person/{id}:
+    get:
+      tags:
+      - PersonService
+      description: Get person
+      operationId: getPerson
+      parameters:
+      - name: id
+        in: path
+        description: The id of the person to find
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Resulting person
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - PersonService
+      description: Update a person
+      operationId: updatePerson
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+        required: true
+      responses:
+        "200":
+          description: Resulting person
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden to update that person
+        "404":
+          description: person not found
+        "422":
+          description: attempting to update old person record
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - PersonService
+      description: Delete a person
+      operationId: deletePerson
+      responses:
+        "200":
+          description: How many people were deleted.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: The id of the person to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: includeGroups
+      in: query
+      description: Include groups in result
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+    - name: includeAcls
+      in: query
+      description: include acls for each group
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/authentication:
+    post:
+      tags:
+      - AuthService
+      description: Create a new user
+      operationId: registerPerson
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonRegistrationDetails'
+        required: true
+      responses:
+        "200":
+          description: Tokenized person
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenizedPerson'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: person already registered who is using this token or cannot
+            find person to register
+  /mr-api/external-provider/{provider}:
+    get:
+      tags:
+      - AuthService
+      description: Gets a login URL for this specified provider if it is supported
+        by the server
+      operationId: getLoginUrlForProvider
+      responses:
+        "200":
+          description: The information required to redirect
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderRedirect'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: not found
+    parameters:
+    - name: provider
+      in: path
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+  /mr-api/login:
+    post:
+      tags:
+      - AuthService
+      description: Login to Feature Hub
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCredentials'
+        required: true
+      responses:
+        "200":
+          description: Successfully logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenizedPerson'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: login is disabled for this instance
+        "404":
+          description: user is not found
+  /mr-api/logout:
+    get:
+      tags:
+      - AuthService
+      description: Get person by token
+      operationId: logout
+      responses:
+        "204":
+          description: Token deactivated
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+      security:
+      - bearerAuth: []
+  /mr-api/authentication/{id}/replaceTempPassword:
+    put:
+      tags:
+      - AuthService
+      description: Replace temporary password
+      operationId: replaceTempPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+        required: true
+      responses:
+        "200":
+          description: Successfully reset temporary password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenizedPerson'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+      security:
+      - bearerAuth: []
+      x-java-annotations: '@io.featurehub.mr.api.AllowedDuringPasswordReset'
+    parameters:
+    - name: id
+      in: path
+      description: The id of the person to replace temporary password for
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+  /mr-api/authentication/{email}/expiredTokenReset:
+    post:
+      tags:
+      - AuthService
+      description: Allows an administrator to reset a user's expired token so they
+        can login
+      operationId: resetExpiredToken
+      parameters:
+      - name: email
+        in: path
+        description: The email address of the person whose expired token to reset
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: The token of the expired person
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationUrl'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+      security:
+      - bearerAuth: []
+  /mr-api/authentication/{id}/changePassword:
+    put:
+      tags:
+      - AuthService
+      description: Change password
+      operationId: changePassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordUpdate'
+        required: true
+      responses:
+        "200":
+          description: Successfully updated password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: The id of the person to change password for
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+  /mr-api/authentication/{token}:
+    get:
+      tags:
+      - AuthService
+      description: Get person by token
+      operationId: personByToken
+      parameters:
+      - name: token
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Get user by token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: not found
+  /mr-api/authentication/{id}/resetPassword:
+    put:
+      tags:
+      - AuthService
+      description: Reset password
+      operationId: resetPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+        required: true
+      responses:
+        "200":
+          description: Successfully reset password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: The id of the person to reset password for
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+  /mr-api/application/{appId}:
+    get:
+      tags:
+      - ApplicationService
+      description: Get application
+      operationId: getApplication
+      responses:
+        "200":
+          description: Resulting application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: no application
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - ApplicationService
+      description: Update an application
+      operationId: updateApplication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+        required: true
+      responses:
+        "200":
+          description: Resulting portfolio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: app not found
+        "409":
+          description: Duplicate application
+        "422":
+          description: Trying to save old record
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - ApplicationService
+      description: Delete an application
+      operationId: deleteApplication
+      responses:
+        "200":
+          description: Did we delete the application
+          content:
+            application/json:
+              schema:
+                type: boolean
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: appId
+      in: path
+      description: The id of the application to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: includeEnvironments
+      in: query
+      description: Include the environments in the result
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/application/{appId}/summary:
+    get:
+      tags:
+      - ApplicationService
+      description: Geta summary of the application status
+      operationId: summaryApplication
+      responses:
+        "200":
+          description: Resulting application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationSummary'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: no application
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: appId
+      in: path
+      description: The id of the application to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+  /mr-api/application/{appId}/rollout-strategy:
+    get:
+      tags:
+      - RolloutStrategyService
+      operationId: listApplicationRolloutStrategies
+      parameters:
+      - name: includeArchived
+        in: query
+        description: Include archived strategies
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: "Get all strategies for this application, regardless if they\
+            \ are in use"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RolloutStrategyInfo'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - RolloutStrategyService
+      operationId: createRolloutStrategy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RolloutStrategy'
+        required: true
+      responses:
+        "201":
+          description: The created rollout strategy for this application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolloutStrategyInfo'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden to create
+        "409":
+          description: duplicate name
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: appId
+      in: path
+      description: The id of the application to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: includeWhoChanged
+      in: query
+      description: include who changed
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/application/{appId}/rollout-strategy-validation:
+    post:
+      tags:
+      - RolloutStrategyService
+      description: Provide server validation responses for this group of rollout strategies
+      operationId: validate
+      parameters:
+      - name: appId
+        in: path
+        description: The id of the application to find
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RolloutStrategyValidationRequest'
+        required: true
+      responses:
+        "200":
+          description: validation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolloutStrategyValidationResponse'
+        "400":
+          description: invalid body
+        "401":
+          description: no permission
+      security:
+      - bearerAuth: []
+  /mr-api/application/{appId}/rollout-strategy/{strategyIdOrName}:
+    get:
+      tags:
+      - RolloutStrategyService
+      operationId: getRolloutStrategy
+      responses:
+        "200":
+          description: The rollout strategy for this application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolloutStrategyInfo'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: If there is no rollout strategy by that id or name
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - RolloutStrategyService
+      operationId: updateRolloutStrategy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RolloutStrategy'
+        required: true
+      responses:
+        "200":
+          description: The created rollout strategy for this application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolloutStrategyInfo'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+        "409":
+          description: duplicate strategy name
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - RolloutStrategyService
+      operationId: deleteRolloutStrategy
+      responses:
+        "200":
+          description: The deleted rollout strategy for this application including
+            its archive date
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolloutStrategyInfo'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: "strategy not found, could not delete"
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: appId
+      in: path
+      description: The id of the application to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: strategyIdOrName
+      in: path
+      description: The id of the strategy or the unique name of it
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    - name: includeWhoChanged
+      in: query
+      description: include who changed
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/application/{id}/features:
+    get:
+      tags:
+      - FeatureService
+      description: get all features available in this application
+      operationId: getAllFeaturesForApplication
+      responses:
+        "200":
+          description: "Gets all features, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feature'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - FeatureService
+      description: "add a new feature to this application, returns all features."
+      operationId: createFeaturesForApplication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Feature'
+        required: true
+      responses:
+        "200":
+          description: "All features, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feature'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "409":
+          description: Duplicate feature
+        "418":
+          description: Invalid parent
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: The id of the application to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: includeMetaData
+      in: query
+      description: Include the metadata in the returned feature objects. Can be large.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/application/{id}/features/{key}:
+    get:
+      tags:
+      - FeatureService
+      description: get an individual feature
+      operationId: getFeatureByKey
+      responses:
+        "200":
+          description: "All features, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feature'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - FeatureService
+      description: "updates all named features in this application, returns all features."
+      operationId: updateFeatureForApplication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Feature'
+        required: true
+      responses:
+        "200":
+          description: "All features, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feature'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: not found
+        "409":
+          description: duplicate feature
+        "418":
+          description: Invalid parent
+        "422":
+          description: other feature updated already
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - FeatureService
+      description: "updates all named features in this application, returns all features."
+      operationId: deleteFeatureForApplication
+      responses:
+        "200":
+          description: "All features, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feature'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: none found
+        "418":
+          description: feature is a parent and children still exist
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: The id of the application to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: key
+      in: path
+      description: The named unique key of the associated feature
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    - name: includeMetaData
+      in: query
+      description: Include the metadata in the returned feature objects. Can be large.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/application/{id}/feature-environments/{key}:
+    get:
+      tags:
+      - FeatureService
+      description: Get a list of all environments and features and their values that
+        this user has access to
+      operationId: getAllFeatureValuesByApplicationForKey
+      responses:
+        "200":
+          description: Gets all feature values for all environments for an application
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureEnvironment'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - FeatureService
+      description: Update a list of all environments and features and their values
+        that this user has access to
+      operationId: updateAllFeatureValuesByApplicationForKey
+      parameters:
+      - name: removeValuesNotPassed
+        in: query
+        description: The id of the application to find
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/FeatureValue'
+        required: true
+      responses:
+        "200":
+          description: Gets all feature values for all environments for an application
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureEnvironment'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "409":
+          description: "Conflict in trying to save, someone else updated a record\
+            \ first"
+        "422":
+          description: There were validation failures in the rollout strategies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolloutStrategyValidationResponse'
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: The id of the application to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: key
+      in: path
+      description: The key of the associated feature
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+  /mr-api/application/{id}/all-feature-environment:
+    get:
+      tags:
+      - FeatureService
+      description: Get a list of all environments and features and their values that
+        this user has access to
+      operationId: findAllFeatureAndFeatureValuesForEnvironmentsByApplication
+      responses:
+        "200":
+          description: "Gets all portfolios, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationFeatureValues'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: The id of the application to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: filter
+      in: query
+      description: A filter to apply to the features - partial match of key or description
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+    - name: max
+      in: query
+      description: The maximum number of features to get for this page
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: integer
+    - name: page
+      in: query
+      description: The page number of the results. 0 indexed.
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: integer
+    - name: featureTypes
+      in: query
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/FeatureValueType'
+    - name: sortOrder
+      in: query
+      required: false
+      style: form
+      explode: true
+      schema:
+        $ref: '#/components/schemas/SortOrder'
+  /mr-api/application/{id}/environment-ordering:
+    post:
+      tags:
+      - EnvironmentService
+      description: this api is designed to update the ordering of environments. it
+        will error on circular references or environments that don't exist.
+      operationId: environmentOrdering
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Environment'
+        required: true
+      responses:
+        "200":
+          description: returns all environments with no particular sort order.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Environment'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: The id of the application to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+  /mr-api/application/{id}/environment:
+    get:
+      tags:
+      - EnvironmentService
+      description: Gets a list of environments.
+      operationId: findEnvironments
+      parameters:
+      - name: order
+        in: query
+        description: how to order the results
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/EnvironmentSortOrder'
+      - name: filter
+        in: query
+        description: What to filter the results by
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: includeAcls
+        in: query
+        description: Include the acls attached to this environment
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: includeFeatures
+        in: query
+        description: Include the features attached to this environment
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: includeDetails
+        in: query
+        description: Include all environment details
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: "Gets all environments, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Environment'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - EnvironmentService
+      description: Create a new environment
+      operationId: createEnvironment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Environment'
+        required: true
+      responses:
+        "200":
+          description: Resulting environment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: application not found
+        "409":
+          description: duplicate environment
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: The id of the application to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+  /mr-api/environment/{eid}/v2:
+    put:
+      tags:
+      - Environment2Service
+      description: Update an environment
+      operationId: updateEnvironmentV2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEnvironment'
+        required: true
+      responses:
+        "200":
+          description: Resulting environment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: No environment found to update
+        "409":
+          description: Duplicate environment
+        "422":
+          description: Updating old environment
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: eid
+      in: path
+      description: The id of the environment to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: includeAcls
+      in: query
+      description: Include the acls attached to this environment
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+    - name: includeFeatures
+      in: query
+      description: Include the features attached to this environment
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+    - name: includeDetails
+      in: query
+      description: Include all environment details
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/environment/{eid}:
+    get:
+      tags:
+      - EnvironmentService
+      description: Get environment
+      operationId: getEnvironment
+      parameters:
+      - name: includeSdkUrl
+        in: query
+        description: include the sdk url
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: includeServiceAccounts
+        in: query
+        description: Include the service accounts attached to this environment
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Resulting environment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - EnvironmentService
+      description: Update an environment. Please use updateEnvironment2 as that has
+        the fields that can actually be updated
+      operationId: updateEnvironment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Environment'
+        required: true
+      responses:
+        "200":
+          description: Resulting environment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: "No environment found to update TODO: fix, should be 404 or\
+            \ 403"
+        "409":
+          description: Duplicate environment
+        "422":
+          description: Updating old environment
+      deprecated: true
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - EnvironmentService
+      description: Delete an environment
+      operationId: deleteEnvironment
+      responses:
+        "200":
+          description: Did we delete the environment.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: eid
+      in: path
+      description: The id of the environment to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: includeAcls
+      in: query
+      description: Include the acls attached to this environment
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+    - name: includeFeatures
+      in: query
+      description: Include the features attached to this environment
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+    - name: includeDetails
+      in: query
+      description: Include all environment details
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/features/{eid}:
+    get:
+      tags:
+      - EnvironmentFeatureService
+      description: Get all features for this environment
+      operationId: getFeaturesForEnvironment
+      parameters:
+      - name: filter
+        in: query
+        description: Filter the feature names by this filter.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Resulting features
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentFeaturesResult'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - EnvironmentFeatureService
+      description: Update all features for this environment
+      operationId: updateAllFeaturesForEnvironment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/FeatureValue'
+        required: true
+      responses:
+        "200":
+          description: Resulting features
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureValue'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: "Forbidden, no permission to change role"
+        "404":
+          description: not found
+        "409":
+          description: "Conflict in trying to save, someone else updated a record\
+            \ first"
+        "422":
+          description: There were validation failures in the rollout strategies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolloutStrategyValidationResponse'
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: eid
+      in: path
+      description: The id of the environment to find features or 'latest'
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+  /mr-api/features/{eid}/feature/{key}:
+    get:
+      tags:
+      - EnvironmentFeatureService
+      description: Update a specific feature in this environment.
+      operationId: getFeatureForEnvironment
+      responses:
+        "200":
+          description: Resulting feature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureValue'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - EnvironmentFeatureService
+      description: Update a specific feature in this environment.
+      operationId: updateFeatureForEnvironment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureValue'
+        required: true
+      responses:
+        "200":
+          description: Resulting features
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureValue'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "409":
+          description: "Conflict in trying to save, someone else updated a record\
+            \ first"
+        "422":
+          description: There were validation failures in the rollout strategies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolloutStrategyValidationResponse'
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - EnvironmentFeatureService
+      description: Create a specific feature in this environment.
+      operationId: createFeatureForEnvironment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureValue'
+        required: true
+      responses:
+        "200":
+          description: Resulting features
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureValue'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: No permission to change role
+        "404":
+          description: No feature for that environment found
+        "409":
+          description: "Conflict in trying to save, someone else updated a record\
+            \ first"
+        "422":
+          description: There were validation failures in the rollout strategies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolloutStrategyValidationResponse'
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - EnvironmentFeatureService
+      description: Delete a specific feature in this environment.
+      operationId: deleteFeatureForEnvironment
+      responses:
+        "204":
+          description: No data returned.
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: eid
+      in: path
+      description: The id of the environment to find features
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: key
+      in: path
+      description: The key of the relevant feature
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+  /mr-api/group/{gid}:
+    get:
+      tags:
+      - GroupService
+      description: Get group
+      operationId: getGroup
+      parameters:
+      - name: byApplicationId
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Resulting group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - GroupService
+      description: Update a group
+      operationId: updateGroup
+      parameters:
+      - name: updateMembers
+        in: query
+        description: "update members, deleting those that are not passed"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: updateEnvironmentGroupRoles
+        in: query
+        description: "update environment group roles, deleting any not passed"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: updateApplicationGroupRoles
+        in: query
+        description: "update application group roles, deleting any not passed"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      - name: applicationId
+        in: query
+        description: "if updating the application group roles, and the application\
+          \ id is passed, then the changes are limited to that application"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Group'
+        required: true
+      responses:
+        "200":
+          description: Resulting group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+        "409":
+          description: duplicate user or duplicate group
+        "422":
+          description: version conflict
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - GroupService
+      description: Delete a group
+      operationId: deleteGroup
+      responses:
+        "200":
+          description: Did we delete the group?
+          content:
+            application/json:
+              schema:
+                type: boolean
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: gid
+      in: path
+      description: The id of the group to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: includeMembers
+      in: query
+      description: include people in each group
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+    - name: includeGroupRoles
+      in: query
+      description: include environment and application roles in each group
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/group/{gid}/person/{pId}:
+    post:
+      tags:
+      - GroupService
+      description: Add a person to a group
+      operationId: addPersonToGroup
+      responses:
+        "200":
+          description: Resulting group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: group or person not found
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - GroupService
+      description: Remove a person from a group
+      operationId: deletePersonFromGroup
+      responses:
+        "200":
+          description: Resulting group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: gid
+      in: path
+      description: The id of the group to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: pId
+      in: path
+      description: The id of the person to add/delete
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: includeMembers
+      in: query
+      description: include people in each group
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/portfolio/{id}/service-account:
+    get:
+      tags:
+      - ServiceAccountService
+      description: Get list of all service accounts this user can see
+      operationId: searchServiceAccountsInPortfolio
+      parameters:
+      - name: filter
+        in: query
+        description: include environments for each account
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: applicationId
+        in: query
+        description: Application ID to filter on
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: uuid
+      - name: includeSdkUrls
+        in: query
+        description: Include the SDKs for environments the user has access to
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: List of service accounts found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceAccount'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - ServiceAccountService
+      description: Add a new service account
+      operationId: createServiceAccountInPortfolio
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceAccount'
+        required: true
+      responses:
+        "200":
+          description: Newly created service account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAccount'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "409":
+          description: duplicate
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: the portfolio this service account belongs to
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: includePermissions
+      in: query
+      description: include permissions in return
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/service-account/{id}:
+    get:
+      tags:
+      - ServiceAccountService
+      description: Get service account by id or 'self' if authenticated as this service
+        account
+      operationId: getServiceAccount
+      parameters:
+      - name: byApplicationId
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Details of service account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAccount'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - ServiceAccountService
+      description: "Update this service account, overwiting any attached environment\
+        \ permissions this user has access to"
+      operationId: updateServiceAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceAccount'
+        required: true
+      responses:
+        "200":
+          description: Details of service account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAccount'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: trying to update SA that doesn't exist
+        "422":
+          description: trying to update old version
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - ServiceAccountService
+      description: "Delete this service account, cascade removes all permissions"
+      operationId: deleteServiceAccount
+      responses:
+        "200":
+          description: Details of service account
+          content:
+            application/json:
+              schema:
+                type: boolean
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: id
+      in: path
+      description: the id for the service account to get
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: includePermissions
+      in: query
+      description: include permissions in return
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
+  /mr-api/service-account/{id}/reset-api-key:
+    post:
+      tags:
+      - ServiceAccountService
+      description: Causes a new API Key to be generated. Ensure you confirm this with
+        the user.
+      operationId: resetApiKey
+      parameters:
+      - name: id
+        in: path
+        description: the id for the service account to get
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uuid
+      - name: apiKeyType
+        in: query
+        description: Type of the API key
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/ResetApiKeyType'
+      responses:
+        "200":
+          description: Details of service account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAccount'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "403":
+          description: forbidden
+        "404":
+          description: not found
+      security:
+      - bearerAuth: []
+  /mr-api/initialize:
+    get:
+      tags:
+      - SetupService
+      description: Ping Feature Hub
+      operationId: isInstalled
+      responses:
+        "200":
+          description: Hello from Feature Hub
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetupResponse'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "404":
+          description: Feature Hub not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetupMissingResponse'
+    post:
+      tags:
+      - SetupService
+      description: Setup site admin
+      operationId: setupSiteAdmin
+      requestBody:
+        description: setupSiteAdmin
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetupSiteAdmin'
+        required: true
+      responses:
+        "200":
+          description: Successfully setup site admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenizedPerson'
+        "400":
+          description: Bad Request
+        "401":
+          description: no permission
+        "409":
+          description: duplicate
+  /info/version:
+    get:
+      tags:
+      - InfoService
+      description: Gets information as to what this server is.
+      operationId: getInfoVersion
+      responses:
+        "200":
+          description: The basic  information on this server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationVersionInfo'
+  /mr-api/user-data/state/{appId}/hidden-environments:
+    get:
+      tags:
+      - UserStateService
+      description: Gets information on which environments are hidden for this user
+      operationId: getHiddenEnvironments
+      responses:
+        "200":
+          description: the current set of hidden environments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HiddenEnvironments'
+        "401":
+          description: no permission to anything
+        "403":
+          description: no permission to environment
+        "404":
+          description: no such application
+        "422":
+          description: "couldn't process request, something wrong"
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - UserStateService
+      description: Saves information on which environments should be hidden for this
+        user
+      operationId: saveHiddenEnvironments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HiddenEnvironments'
+        required: true
+      responses:
+        "200":
+          description: the current set of hidden environments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HiddenEnvironments'
+        "401":
+          description: no permission to anything
+        "403":
+          description: no permission to environment
+        "404":
+          description: no such application
+        "422":
+          description: "update invalid, old"
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: appId
+      in: path
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+  /mr-api/webhooks:
+    get:
+      tags:
+      - WebhookService
+      description: Gets a list of well known webhook types
+      operationId: getWebhookTypes
+      responses:
+        "200":
+          description: the webhook type details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookTypeDetails'
+        "404":
+          description: no such url
+    post:
+      tags:
+      - WebhookService
+      description: Send a ping webhook to see if everything is working
+      operationId: testWebhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookCheck'
+        required: true
+      responses:
+        "204":
+          description: the webhook type details
+        "401":
+          description: no permission to anything
+        "403":
+          description: no permission to any data
+        "404":
+          description: no such environment
+      security:
+      - bearerAuth: []
+  /mr-api/webhooks/{envId}/{id}:
+    get:
+      tags:
+      - WebhookService
+      description: Gets a specific webhook to show its details based on whats allowed
+      operationId: getWebhookDetails
+      responses:
+        "200":
+          description: the webhook details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookDetail'
+        "401":
+          description: no permission to anything
+        "403":
+          description: no permission to any data
+        "404":
+          description: no such environment
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: envId
+      in: path
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: UUID
+    - name: id
+      in: path
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: UUID
+  /mr-api/webhooks/{envId}:
+    get:
+      tags:
+      - WebhookService
+      description: Provides a pagination API for listing webhooks for a specific environment
+      operationId: listWebhooks
+      responses:
+        "200":
+          description: the webhook results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookSummary'
+        "401":
+          description: no permission to anything
+        "403":
+          description: no permission to environment
+        "404":
+          description: no such environment
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: envId
+      in: path
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: UUID
+    - name: max
+      in: query
+      description: where to start
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: integer
+    - name: startAt
+      in: query
+      description: what position in the results to start at
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: integer
+    - name: filter
+      in: query
+      description: what types of webhooks to look for
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+components:
+  schemas:
+    EnvironmentFeaturesResult:
+      properties:
+        featureValues:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureValue'
+        environments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Environment'
+        applications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Application'
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/Feature'
+    SearchPersonResult:
+      required:
+      - max
+      properties:
+        max:
+          type: integer
+        people:
+          type: array
+          description: This is for backwards compatibility
+          items:
+            $ref: '#/components/schemas/Person'
+        summarisedPeople:
+          type: array
+          description: "If we return the new result type, we are returning a summarised\
+            \ person for less data"
+          items:
+            $ref: '#/components/schemas/SearchPerson'
+        outstandingRegistrations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OutstandingRegistration'
+    OutstandingRegistration:
+      required:
+      - expired
+      - id
+      - token
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        token:
+          type: string
+        expired:
+          type: boolean
+    SetupSiteAdmin:
+      required:
+      - organizationName
+      - portfolio
+      type: object
+      properties:
+        portfolio:
+          type: string
+        organizationName:
+          type: string
+        emailAddress:
+          type: string
+          description: User's email or blank if using oauth/saml
+          format: email
+        password:
+          type: string
+          description: User's password or blank if using oauth/saml
+        name:
+          type: string
+          description: user's name. Will be take from external provider if using oauth/saml
+        authProvider:
+          type: string
+          description: "If the site is using external providers, this is the key of\
+            \ the provider chosen. If there is only one, it can be blank."
+    SetupResponse:
+      type: object
+      properties:
+        organization:
+          $ref: '#/components/schemas/Organization'
+        providers:
+          type: array
+          items:
+            type: string
+        providerInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/IdentityProviderInfo'
+        capabilityInfo:
+          type: object
+          additionalProperties:
+            type: string
+        redirectUrl:
+          type: string
+          description: Set if there is only one external provider and no local. Allows
+            immediate redirect to provider. It assumes it will be used immediate (e.g.
+            state in oauth2 url)
+    IdentityProviderInfo:
+      required:
+      - buttonBackgroundColor
+      - buttonIcon
+      - buttonText
+      type: object
+      properties:
+        buttonIcon:
+          type: string
+        buttonBackgroundColor:
+          type: string
+        buttonText:
+          type: string
+    SetupMissingResponse:
+      type: object
+      properties:
+        providers:
+          type: array
+          items:
+            type: string
+        capabilityInfo:
+          type: object
+          additionalProperties:
+            type: string
+        providerInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/IdentityProviderInfo'
+    ProviderRedirect:
+      type: object
+      properties:
+        redirectUrl:
+          type: string
+    TokenizedPerson:
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        redirectUrl:
+          type: string
+        person:
+          $ref: '#/components/schemas/Person'
+    RegistrationUrl:
+      required:
+      - personId
+      - token
+      properties:
+        registrationUrl:
+          type: string
+        personId:
+          type: string
+          format: uuid
+        token:
+          type: string
+    PersonRegistrationDetails:
+      required:
+      - confirmPassword
+      - email
+      - name
+      - password
+      - registrationToken
+      properties:
+        name:
+          maxLength: 100
+          minLength: 1
+          type: string
+        email:
+          maxLength: 100
+          minLength: 1
+          type: string
+          format: email
+        password:
+          maxLength: 40
+          minLength: 1
+          type: string
+          format: password
+        confirmPassword:
+          maxLength: 40
+          minLength: 1
+          type: string
+          format: password
+        registrationToken:
+          type: string
+    AdminServiceResetTokenResponse:
+      required:
+      - token
+      properties:
+        token:
+          type: string
+    CreatePersonDetails:
+      properties:
+        email:
+          maxLength: 100
+          minLength: 1
+          type: string
+          format: email
+        personType:
+          $ref: '#/components/schemas/PersonType'
+        name:
+          maxLength: 100
+          minLength: 1
+          type: string
+        groupIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    UserCredentials:
+      required:
+      - email
+      - password
+      properties:
+        email:
+          maxLength: 100
+          type: string
+          format: email
+        password:
+          maxLength: 100
+          type: string
+          format: password
+    PasswordReset:
+      required:
+      - password
+      properties:
+        password:
+          type: string
+        reactivate:
+          type: boolean
+    PasswordUpdate:
+      required:
+      - newPassword
+      - oldPassword
+      properties:
+        oldPassword:
+          maxLength: 100
+          type: string
+          format: password
+        newPassword:
+          maxLength: 100
+          type: string
+          format: password
+    RolloutStrategyInfo:
+      required:
+      - rolloutStrategy
+      properties:
+        rolloutStrategy:
+          $ref: '#/components/schemas/RolloutStrategy'
+        whenArchived:
+          type: string
+          format: date-time
+        changedBy:
+          $ref: '#/components/schemas/Person'
+    RolloutStrategyValidationRequest:
+      type: object
+      properties:
+        customStrategies:
+          type: array
+          items:
+            $ref: '#/components/schemas/RolloutStrategy'
+        sharedStrategies:
+          type: array
+          items:
+            $ref: '#/components/schemas/RolloutStrategyInstance'
+      description: A collection of strategies to validate together to see if it violates
+        any rules
+    CustomRolloutStrategyViolation:
+      type: object
+      properties:
+        strategy:
+          $ref: '#/components/schemas/RolloutStrategy'
+        violations:
+          type: array
+          items:
+            $ref: '#/components/schemas/RolloutStrategyViolation'
+    SharedRolloutStrategyViolation:
+      type: object
+      properties:
+        strategy:
+          $ref: '#/components/schemas/RolloutStrategyInstance'
+        violation:
+          type: array
+          items:
+            $ref: '#/components/schemas/RolloutStrategyViolation'
+    RolloutStrategyValidationResponse:
+      type: object
+      properties:
+        customStategyViolations:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomRolloutStrategyViolation'
+        sharedStrategyViolations:
+          type: array
+          items:
+            $ref: '#/components/schemas/SharedRolloutStrategyViolation'
+        violations:
+          type: array
+          items:
+            $ref: '#/components/schemas/RolloutStrategyCollectionViolationType'
+    RolloutStrategyViolation:
+      required:
+      - violation
+      type: object
+      properties:
+        id:
+          type: string
+          description: The id of the attribute (if any)
+        violation:
+          $ref: '#/components/schemas/RolloutStrategyViolationType'
+    RolloutStrategyViolationType:
+      type: string
+      enum:
+      - no_name
+      - name_too_long
+      - empty_match_criteria
+      - negative_percentage
+      - percentage_over_100_percent
+      - array_attribute_no_values
+      - attr_invalid_well_known_enum
+      - attr_missing_value
+      - attr_missing_conditional
+      - attr_missing_field_name
+      - attr_missing_field_type
+      - attr_val_not_semantic_version
+      - attr_val_not_number
+      - attr_val_not_date
+      - attr_val_not_date_time
+      - attr_val_not_cidr
+      - attr_unknown_failure
+    RolloutStrategyCollectionViolationType:
+      type: string
+      enum:
+      - percentage_adds_over_100_percent
+      - boolean_has_no_value
+    ResetApiKeyType:
+      type: string
+      enum:
+      - client_eval_only
+      - server_eval_only
+    FeatureEnvironment:
+      properties:
+        environment:
+          $ref: '#/components/schemas/Environment'
+        roles:
+          type: array
+          description: the roles of this person in this environment
+          items:
+            $ref: '#/components/schemas/RoleType'
+        featureValue:
+          $ref: '#/components/schemas/FeatureValue'
+        serviceAccounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceAccount'
+    ApplicationFeatureValues:
+      required:
+      - applicationId
+      - environments
+      - features
+      - maxFeatures
+      properties:
+        applicationId:
+          type: string
+          format: uuid
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/Feature'
+        environments:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnvironmentFeatureValues'
+        maxFeatures:
+          type: integer
+    EnvironmentFeatureValues:
+      properties:
+        environmentId:
+          type: string
+          format: uuid
+        environmentName:
+          type: string
+        priorEnvironmentId:
+          type: string
+          format: uuid
+        features:
+          type: array
+          description: the values of the features depending on access
+          items:
+            $ref: '#/components/schemas/FeatureValue'
+        roles:
+          type: array
+          description: the roles of this person in this environment
+          items:
+            $ref: '#/components/schemas/RoleType'
+    Feature:
+      required:
+      - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+          description: Unique within this application
+        alias:
+          type: string
+          description: "use this in code, as then people cannot guess your new features\
+            \ from their names"
+        link:
+          type: string
+        name:
+          type: string
+          description: description if any
+        valueType:
+          $ref: '#/components/schemas/FeatureValueType'
+        version:
+          type: integer
+          description: used for optimistic locking when renaming a feature
+          format: int64
+        whenArchived:
+          type: string
+          format: date-time
+        secret:
+          type: boolean
+          description: should the config remain invisible to users without secret
+            permission
+        description:
+          maxLength: 300
+          type: string
+        metaData:
+          type: string
+          description: Metadata that may need to be stored. Intended for ADK use.
+            No data limit (stored as CLOB)
+        parentFeatureId:
+          type: string
+          description: "If this is a dependent feature, which feature is the parent"
+          format: uuid
+      description: exists simply to hold the name of the feature as it exists across
+        all environments
+    FeatureValue:
+      required:
+      - key
+      - locked
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        locked:
+          type: boolean
+        valueString:
+          type: string
+          description: default value if no strategy matches. interpreted by type in
+            parent
+        valueNumber:
+          type: number
+        valueBoolean:
+          type: boolean
+        valueJson:
+          type: string
+        retired:
+          type: boolean
+          description: "if false or null, this feature will visible on edge. if true,\
+            \ it will not be passed to the client"
+        valueIfParentEnabled:
+          description: Value if the parent is set on the feature. Cannot have rollout
+            strategies of any kind if  there is a parent
+        rolloutStrategyInstances:
+          type: array
+          items:
+            $ref: '#/components/schemas/RolloutStrategyInstance'
+        rolloutStrategies:
+          type: array
+          description: These are custom rollout strategies that only apply to this
+            feature value.
+          items:
+            $ref: '#/components/schemas/RolloutStrategy'
+        sharedRolloutStrategies:
+          type: array
+          description: "This is list is either provided empty (when publishing) or\
+            \ anemic so the MR will client will understand which shared strategies\
+            \ are attached without having to back-call. If provided then it will mirror\
+            \ rolloutStrategyInstances and only enabled ones will be passed back.\
+            \ The value from the rolloutStrategyInstance will be embedded. This field\
+            \ will _always_ be ignored when being sent back to the server, only rolloutStrategyInstances\
+            \ is used."
+          items:
+            $ref: '#/components/schemas/RolloutStrategy'
+        environmentId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          description: used for optimistic locking
+          format: int64
+        whoUpdated:
+          $ref: '#/components/schemas/Person'
+        whenUpdated:
+          type: string
+          format: date-time
+        whatUpdated:
+          type: string
+    RolloutStrategyInstance:
+      properties:
+        name:
+          type: string
+          description: "This is copied from the shared rollout strategy on return,\
+            \ it is read only from the client perspective"
+        strategyId:
+          type: string
+          format: uuid
+        value:
+          description: the value for this rollout strategy for this feature value
+        disabled:
+          type: boolean
+    Audit:
+      properties:
+        createdBy:
+          allOf:
+          - $ref: '#/components/schemas/Person'
+        updatedBy:
+          allOf:
+          - $ref: '#/components/schemas/Person'
+        whenCreated:
+          type: string
+          format: date-time
+        whenUpdated:
+          type: string
+          format: date-time
+    EnvironmentSortOrder:
+      type: string
+      enum:
+      - ASC
+      - DESC
+      - PRIORITY
+    SortOrder:
+      type: string
+      enum:
+      - ASC
+      - DESC
+    Portfolio:
+      allOf:
+      - $ref: '#/components/schemas/Audit'
+      - required:
+        - name
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          name:
+            maxLength: 200
+            minLength: 1
+            type: string
+          description:
+            maxLength: 400
+            type: string
+          version:
+            type: integer
+            format: int64
+          organizationId:
+            type: string
+            format: uuid
+          groups:
+            type: array
+            items:
+              $ref: '#/components/schemas/Group'
+          applications:
+            type: array
+            items:
+              $ref: '#/components/schemas/Application'
+          whenArchived:
+            type: string
+            format: date-time
+    ApplicationSummary:
+      required:
+      - environmentCount
+      - featureCount
+      - groupsHavePermission
+      - serviceAccountsHavePermission
+      type: object
+      properties:
+        groupsHavePermission:
+          type: boolean
+        serviceAccountsHavePermission:
+          type: boolean
+        featureCount:
+          type: integer
+        environmentCount:
+          type: integer
+    Application:
+      allOf:
+      - $ref: '#/components/schemas/Audit'
+      - required:
+        - name
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          name:
+            maxLength: 100
+            type: string
+          description:
+            maxLength: 400
+            type: string
+          portfolioId:
+            type: string
+            format: uuid
+          version:
+            type: integer
+            format: int64
+          groups:
+            type: array
+            items:
+              $ref: '#/components/schemas/Group'
+          features:
+            type: array
+            items:
+              $ref: '#/components/schemas/Feature'
+          environments:
+            type: array
+            items:
+              $ref: '#/components/schemas/Environment'
+          whenArchived:
+            type: string
+            format: date-time
+    UpdatePerson:
+      required:
+      - version
+      type: object
+      properties:
+        name:
+          maxLength: 150
+          minLength: 1
+          type: string
+          nullable: true
+        email:
+          maxLength: 100
+          type: string
+          format: email
+          nullable: true
+        version:
+          type: integer
+          description: This keeps track of which person version we are updating in
+            case the user tries to update an old record
+          format: int64
+        groups:
+          type: array
+          nullable: true
+          items:
+            type: string
+            format: uuid
+        unarchive:
+          type: boolean
+          nullable: true
+    Person:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/PersonId'
+        name:
+          maxLength: 150
+          minLength: 1
+          type: string
+        email:
+          maxLength: 100
+          type: string
+          format: email
+        personType:
+          $ref: '#/components/schemas/PersonType'
+        other:
+          type: string
+        source:
+          type: string
+        version:
+          type: integer
+          format: int64
+        passwordRequiresReset:
+          type: boolean
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+        whenArchived:
+          type: string
+          format: date-time
+        whenLastAuthenticated:
+          type: string
+          description: This is the timestamp in UTC when they last logged into the
+            system
+          format: date-time
+        whenLastSeen:
+          type: string
+          description: This is the timestamp in UTC when they last made a request
+            to the system on their most recent login. If it is null it means they
+            have no current token or have never logged in.
+          format: date-time
+        additional:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonInfo'
+    SearchPersonSortBy:
+      type: string
+      enum:
+      - name
+      - activationStatus
+    SearchPerson:
+      required:
+      - email
+      - groupCount
+      - id
+      - name
+      - personType
+      - version
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        version:
+          type: integer
+          format: int64
+        personType:
+          $ref: '#/components/schemas/PersonType'
+        whenLastAuthenticated:
+          type: string
+          description: This is the timestamp in UTC when they last logged into the
+            system
+          format: date-time
+        whenLastSeen:
+          type: string
+          description: This is the timestamp in UTC when they last made a request
+            to the system on their most recent login. If it is null it means they
+            have no current token or have never logged in.
+          format: date-time
+        whenDeactivated:
+          type: string
+          description: When a person's account was deactivated (if it was) and when
+          format: date-time
+        groupCount:
+          type: integer
+    PersonInfo:
+      required:
+      - key
+      - value
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+    PersonType:
+      type: string
+      enum:
+      - person
+      - serviceAccount
+      default: person
+    PersonId:
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          format: uuid
+    Environment:
+      allOf:
+      - $ref: '#/components/schemas/Audit'
+      - required:
+        - name
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          applicationId:
+            type: string
+            format: uuid
+          name:
+            maxLength: 150
+            minLength: 1
+            type: string
+          priorEnvironmentId:
+            type: string
+            format: uuid
+          version:
+            type: integer
+            format: int64
+          description:
+            maxLength: 400
+            type: string
+          production:
+            type: boolean
+            description: is this a production environment?
+          groupRoles:
+            type: array
+            items:
+              $ref: '#/components/schemas/EnvironmentGroupRole'
+          features:
+            type: array
+            items:
+              $ref: '#/components/schemas/Feature'
+          environmentInfo:
+            type: object
+            additionalProperties:
+              type: string
+            nullable: true
+          serviceAccountPermission:
+            type: array
+            items:
+              $ref: '#/components/schemas/ServiceAccountPermission'
+          whenArchived:
+            type: string
+            format: date-time
+    UpdateEnvironment:
+      required:
+      - version
+      type: object
+      properties:
+        version:
+          type: integer
+          description: "Version of the record, included for attempting to update out\
+            \ of date records"
+          format: int64
+        name:
+          maxLength: 150
+          minLength: 1
+          type: string
+          nullable: true
+        description:
+          maxLength: 400
+          type: string
+          nullable: true
+        production:
+          type: boolean
+          description: is this a production environment?
+          nullable: true
+        environmentInfo:
+          type: object
+          additionalProperties:
+            type: string
+          description: Allows some settings that affect the behaviour of this environment.
+            Currently `cacheControl` if set will be passed and set on the responses
+            to GET requests.
+          nullable: true
+        priorEnvironmentId:
+          type: string
+          format: uuid
+          nullable: true
+    ServiceAccount:
+      required:
+      - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          maxLength: 70
+          minLength: 1
+          type: string
+        portfolioId:
+          type: string
+          format: uuid
+        description:
+          maxLength: 400
+          type: string
+        version:
+          type: integer
+          format: int64
+        apiKeyClientSide:
+          maxLength: 400
+          type: string
+          description: "this is a read only field, it denotes an api key where the\
+            \ eval is done client side"
+        apiKeyServerSide:
+          maxLength: 400
+          type: string
+          description: "this is a read only field, it denotes an api key where the\
+            \ eval is done server side"
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceAccountPermission'
+        whenArchived:
+          type: string
+          format: date-time
+    ServiceAccountPermission:
+      required:
+      - environmentId
+      - permissions
+      properties:
+        id:
+          type: string
+          format: uuid
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleType'
+        serviceAccount:
+          $ref: '#/components/schemas/ServiceAccount'
+        environmentId:
+          type: string
+          format: uuid
+        sdkUrlClientEval:
+          type: string
+          description: Optional if they have chosen includeSdkUrl
+        sdkUrlServerEval:
+          type: string
+          description: Optional if they have chosen includeSdkUrl
+    CacheRefreshRequest:
+      type: object
+      properties:
+        allTheThings:
+          type: boolean
+          description: refresh the whole cache
+        applicationId:
+          type: array
+          description: if provided these applications will be refreshed
+          items:
+            type: string
+            format: UUID
+        portfolioId:
+          type: array
+          items:
+            type: string
+            format: UUID
+    CacheRefreshResponse:
+      type: object
+      properties:
+        applicationsRefreshed:
+          type: integer
+        portfoliosRefreshed:
+          type: integer
+        environmentsRefreshed:
+          type: integer
+        serviceAccountsRefreshed:
+          type: integer
+    Group:
+      allOf:
+      - $ref: '#/components/schemas/Audit'
+      - required:
+        - name
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          admin:
+            type: boolean
+            description: is this an admin group?
+          portfolioId:
+            type: string
+            format: uuid
+          organizationId:
+            type: string
+            description: "this will be the organisation this group belongs to at the\
+              \ top level, or if a portfolio group, the organisation of the portfolio"
+            format: uuid
+          version:
+            type: integer
+            format: int64
+          name:
+            maxLength: 255
+            minLength: 1
+            type: string
+          members:
+            type: array
+            items:
+              $ref: '#/components/schemas/Person'
+          applicationRoles:
+            type: array
+            items:
+              $ref: '#/components/schemas/ApplicationGroupRole'
+          environmentRoles:
+            type: array
+            items:
+              $ref: '#/components/schemas/EnvironmentGroupRole'
+          whenArchived:
+            type: string
+            format: date-time
+    ApplicationGroupRole:
+      required:
+      - applicationId
+      - groupId
+      - roles
+      properties:
+        applicationId:
+          type: string
+          format: uuid
+        groupId:
+          type: string
+          format: uuid
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationRoleType'
+    ApplicationRoleType:
+      type: string
+      enum:
+      - FEATURE_EDIT
+      - FEATURE_CREATE
+      - FEATURE_EDIT_AND_DELETE
+    EnvironmentGroupRole:
+      required:
+      - environmentId
+      - groupId
+      - roles
+      properties:
+        environmentId:
+          type: string
+          format: uuid
+        groupId:
+          type: string
+          format: uuid
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleType'
+    Organization:
+      allOf:
+      - $ref: '#/components/schemas/Audit'
+      - required:
+        - name
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          version:
+            type: integer
+            format: int64
+          name:
+            maxLength: 255
+            minLength: 1
+            type: string
+          admin:
+            type: boolean
+          authorizationUrl:
+            type: string
+            description: "If provided, the browser should redirect to this URL to\
+              \ authenticate"
+          orgGroup:
+            $ref: '#/components/schemas/Group'
+          portfolios:
+            type: array
+            items:
+              $ref: '#/components/schemas/Portfolio'
+          whenArchived:
+            type: string
+            format: date-time
+    RolloutStrategyAttribute:
+      allOf:
+      - $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
+      - type: object
+        properties:
+          id:
+            type: string
+            description: A temporary id used only when validating. Saving strips these
+              out as they are not otherwise necessary
+    RolloutStrategy:
+      allOf:
+      - $ref: '#/components/schemas/BaseRolloutStrategy'
+      - required:
+        - name
+        type: object
+        properties:
+          name:
+            type: string
+            description: names are unique in a case insensitive fashion
+          colouring:
+            type: integer
+            description: the colour used to display the strategy in the UI. indexed
+              table of background/foreground combos.
+          avatar:
+            maxLength: 200
+            type: string
+            description: url to avatar (if any). Not sent to SDK. Preferably a unicorn.
+          attributes:
+            type: array
+            items:
+              $ref: '#/components/schemas/RolloutStrategyAttribute'
+    FeatureValueType:
+      type: string
+      enum:
+      - BOOLEAN
+      - STRING
+      - NUMBER
+      - JSON
+    RoleType:
+      type: string
+      enum:
+      - READ
+      - LOCK
+      - UNLOCK
+      - CHANGE_VALUE
+    BaseRolloutStrategy:
+      properties:
+        id:
+          type: string
+        percentage:
+          type: integer
+          description: value between 0 and 1000000 - for four decimal places
+        percentageAttributes:
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you\
+            \ can use one or more attributes defined here"
+          items:
+            type: string
+        value:
+          description: when we attach the RolloutStrategy for Dacha or SSE this lets
+            us push the value out. Only visible in SDK and SSE Edge.
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
+      description: "if the feature in an environment is different from its default,\
+        \ this will be the reason for it. a rollout strategy is defined at the Application\
+        \ level and then applied to a specific feature value. When they are copied\
+        \ to the cache layer they are cloned and the feature value for that strategy\
+        \ is inserted into the clone and those are published."
+    BaseRolloutStrategyAttribute:
+      properties:
+        conditional:
+          $ref: '#/components/schemas/RolloutStrategyAttributeConditional'
+        fieldName:
+          type: string
+        values:
+          type: array
+          description: the value(s) associated with this rule
+          items:
+            $ref: '#/components/schemas/RolloutStrategyArrayType'
+        type:
+          $ref: '#/components/schemas/RolloutStrategyFieldType'
+    RolloutStrategyArrayType:
+      description: values depend on the field type
+    RolloutStrategyFieldType:
+      type: string
+      enum:
+      - STRING
+      - SEMANTIC_VERSION
+      - NUMBER
+      - DATE
+      - DATETIME
+      - BOOLEAN
+      - IP_ADDRESS
+    RolloutStrategyAttributeConditional:
+      type: string
+      enum:
+      - EQUALS
+      - ENDS_WITH
+      - STARTS_WITH
+      - GREATER
+      - GREATER_EQUALS
+      - LESS
+      - LESS_EQUALS
+      - NOT_EQUALS
+      - INCLUDES
+      - EXCLUDES
+      - REGEX
+    StrategyAttributeWellKnownNames:
+      type: string
+      enum:
+      - device
+      - country
+      - platform
+      - userkey
+      - session
+      - version
+    StrategyAttributeDeviceName:
+      type: string
+      enum:
+      - browser
+      - mobile
+      - desktop
+      - server
+      - watch
+      - embedded
+    StrategyAttributePlatformName:
+      type: string
+      enum:
+      - linux
+      - windows
+      - macos
+      - android
+      - ios
+    StrategyAttributeCountryName:
+      type: string
+      description: https://www.britannica.com/topic/list-of-countries-1993160 - we
+        put these in API so everyone can have the same list
+      enum:
+      - afghanistan
+      - albania
+      - algeria
+      - andorra
+      - angola
+      - antigua_and_barbuda
+      - argentina
+      - armenia
+      - australia
+      - austria
+      - azerbaijan
+      - the_bahamas
+      - bahrain
+      - bangladesh
+      - barbados
+      - belarus
+      - belgium
+      - belize
+      - benin
+      - bhutan
+      - bolivia
+      - bosnia_and_herzegovina
+      - botswana
+      - brazil
+      - brunei
+      - bulgaria
+      - burkina_faso
+      - burundi
+      - cabo_verde
+      - cambodia
+      - cameroon
+      - canada
+      - central_african_republic
+      - chad
+      - chile
+      - china
+      - colombia
+      - comoros
+      - congo_democratic_republic_of_the
+      - congo_republic_of_the
+      - costa_rica
+      - cote_divoire
+      - croatia
+      - cuba
+      - cyprus
+      - czech_republic
+      - denmark
+      - djibouti
+      - dominica
+      - dominican_republic
+      - east_timor
+      - ecuador
+      - egypt
+      - el_salvador
+      - equatorial_guinea
+      - eritrea
+      - estonia
+      - eswatini
+      - ethiopia
+      - fiji
+      - finland
+      - france
+      - gabon
+      - the_gambia
+      - georgia
+      - germany
+      - ghana
+      - greece
+      - grenada
+      - guatemala
+      - guinea
+      - guinea_bissau
+      - guyana
+      - haiti
+      - honduras
+      - hungary
+      - iceland
+      - india
+      - indonesia
+      - iran
+      - iraq
+      - ireland
+      - israel
+      - italy
+      - jamaica
+      - japan
+      - jordan
+      - kazakhstan
+      - kenya
+      - kiribati
+      - korea_north
+      - korea_south
+      - kosovo
+      - kuwait
+      - kyrgyzstan
+      - laos
+      - latvia
+      - lebanon
+      - lesotho
+      - liberia
+      - libya
+      - liechtenstein
+      - lithuania
+      - luxembourg
+      - madagascar
+      - malawi
+      - malaysia
+      - maldives
+      - mali
+      - malta
+      - marshall_islands
+      - mauritania
+      - mauritius
+      - mexico
+      - micronesia_federated_states_of
+      - moldova
+      - monaco
+      - mongolia
+      - montenegro
+      - morocco
+      - mozambique
+      - myanmar
+      - namibia
+      - nauru
+      - nepal
+      - netherlands
+      - new_zealand
+      - nicaragua
+      - niger
+      - nigeria
+      - north_macedonia
+      - norway
+      - oman
+      - pakistan
+      - palau
+      - panama
+      - papua_new_guinea
+      - paraguay
+      - peru
+      - philippines
+      - poland
+      - portugal
+      - qatar
+      - romania
+      - russia
+      - rwanda
+      - saint_kitts_and_nevis
+      - saint_lucia
+      - saint_vincent_and_the_grenadines
+      - samoa
+      - san_marino
+      - sao_tome_and_principe
+      - saudi_arabia
+      - senegal
+      - serbia
+      - seychelles
+      - sierra_leone
+      - singapore
+      - slovakia
+      - slovenia
+      - solomon_islands
+      - somalia
+      - south_africa
+      - spain
+      - sri_lanka
+      - sudan
+      - sudan_south
+      - suriname
+      - sweden
+      - switzerland
+      - syria
+      - taiwan
+      - tajikistan
+      - tanzania
+      - thailand
+      - togo
+      - tonga
+      - trinidad_and_tobago
+      - tunisia
+      - turkey
+      - turkmenistan
+      - tuvalu
+      - uganda
+      - ukraine
+      - united_arab_emirates
+      - united_kingdom
+      - united_states
+      - uruguay
+      - uzbekistan
+      - vanuatu
+      - vatican_city
+      - venezuela
+      - vietnam
+      - yemen
+      - zambia
+      - zimbabwe
+    ApplicationVersionInfo:
+      required:
+      - name
+      - version
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+    HiddenEnvironments:
+      type: object
+      properties:
+        noneSelected:
+          type: boolean
+          description: "If this is set to true, then the user in fact as no selected\
+            \ environments"
+        environmentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    WebhookSummaryItem:
+      required:
+      - id
+      - method
+      - status
+      - whenSent
+      type: object
+      properties:
+        id:
+          type: string
+          description: event id as stored in the database (not webhook cloudevent
+            id)
+          format: uuid
+        type:
+          type: string
+          description: "webhook type, empty if the filter is specified as it is just\
+            \ repeated data"
+        method:
+          type: string
+          description: "POST, PUT, etc"
+        whenSent:
+          type: string
+          description: When the hook was posted
+          format: date-time
+        status:
+          type: integer
+          description: HTTP status code
+    WebhookSummary:
+      required:
+      - max
+      - results
+      type: object
+      properties:
+        max:
+          type: integer
+          format: int64
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookSummaryItem'
+    WebhookDetail:
+      required:
+      - cloudEventType
+      - method
+      - status
+      type: object
+      properties:
+        whenSent:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          description: The status of the webhook call
+        method:
+          type: string
+        sourceSystem:
+          type: string
+        deliveredDataCloudEventType:
+          type: string
+        cloudEventType:
+          type: string
+        content:
+          type: string
+        url:
+          type: string
+          description: "The URL requested, only if Admin"
+        outboundHeaders:
+          type: object
+          additionalProperties:
+            type: string
+          description: "The headers we set on the outbound call, only if Admin"
+        incomingHeaders:
+          type: object
+          additionalProperties:
+            type: string
+          description: "The headers that came back, only if Admin"
+        result:
+          type: string
+          description: "The body as a string if any, truncated to 1k"
+      description: webhook data
+    WebhookTypeDetail:
+      required:
+      - description
+      - envPrefix
+      - messageType
+      type: object
+      properties:
+        messageType:
+          type: string
+          description: 'The cloud event message type '
+        description:
+          type: string
+          description: What this cloud event is for
+        envPrefix:
+          type: string
+          description: the prefix to apply in the environmentInfo field to extract
+            the enabled/headers/url data
+    WebhookTypeDetails:
+      required:
+      - types
+      type: object
+      properties:
+        types:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookTypeDetail'
+    WebhookCheck:
+      required:
+      - config
+      - envId
+      - messageType
+      type: object
+      properties:
+        messageType:
+          type: string
+        envId:
+          type: string
+          format: UUID
+        config:
+          type: object
+          additionalProperties:
+            type: string
+          description: "Any configuration to pass to the check, e.g. webhook.feature.url,\
+            \ headers, etc - this ensures the updates get to the destination and are\
+            \ used. They get merged info the envInfo, replacing anything there"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -53,7 +53,6 @@ class ApplicationSpec extends BaseSpec {
     portfolio2 = Finder.findPortfolioById(p2.id);
 
     p1AdminGroup = groupSqlApi.createGroup(portfolio1.id, new Group().name("envtest-appX").admin(true), superPerson)
-
   }
 
   def "i should be able to create, update, and delete an application"() {

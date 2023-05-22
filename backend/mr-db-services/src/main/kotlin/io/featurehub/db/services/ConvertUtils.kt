@@ -460,6 +460,7 @@ open class ConvertUtils : Conversions {
       .whenArchived(toOff(af.whenArchived))
       .valueType(af.valueType)
       .description(af.description)
+      .parentFeatureId(af.parentFeature?.id)
       .id(af.id)
     if (opts!!.contains(FillOpts.MetaData)) {
       feat.metaData(af.metaData)
@@ -480,7 +481,19 @@ open class ConvertUtils : Conversions {
       .name(f.name)
       .secret(f.isSecret)
       .valueType(f.valueType)
+      .parentFeatureId(f.parentFeature?.id)
       .version(f.version)
+  }
+
+  protected fun valueIfParent(fs: DbFeatureValue, feature: DbApplicationFeature): Any? {
+    return feature.valueType?.let { vt ->
+      when(vt) {
+        FeatureValueType.BOOLEAN -> fs.valueIfParentEnabled == "true"
+        FeatureValueType.STRING -> fs.valueIfParentEnabled
+        FeatureValueType.NUMBER -> fs.valueIfParentEnabled?.let { BigDecimal(it) }
+        FeatureValueType.JSON -> fs.valueIfParentEnabled
+      }
+    }
   }
 
   protected fun featureValue(
@@ -494,6 +507,7 @@ open class ConvertUtils : Conversions {
       .key(stripArchived(appFeature.key, appFeature.whenArchived)!!)
       .locked(fs.isLocked)
       .id(fs.id)
+      .valueIfParentEnabled(valueIfParent(fs, appFeature))
       .retired(true == fs.retired)
       .version(fs.version)
     if (appFeature.valueType == FeatureValueType.BOOLEAN) {

@@ -151,7 +151,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   @Transactional
   private void addApplicationFeatureCreationRoleToPortfolioAdminGroup(
       DbApplication aApp, DbGroup adminGroup) {
-    aApp.save();;
+    aApp.save();
 
     if (adminGroup != null) {
       adminGroup.save();
@@ -298,8 +298,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   @Override
   public List<Feature> createApplicationFeature(@NotNull UUID applicationId, Feature feature, Person person,
                                                 @NotNull Opts opts)
-      throws DuplicateFeatureException {
-    Conversions.nonNullApplicationId(applicationId);
+      throws DuplicateFeatureException, InvalidParentException {
 
     DbApplication app = convertUtils.byApplication(applicationId);
 
@@ -320,6 +319,15 @@ public class ApplicationSqlApi implements ApplicationApi {
               .metaData(feature.getMetaData())
               .description(feature.getDescription())
               .build();
+
+      if (feature.getParentFeatureId() != null) {
+        DbApplicationFeature parent = new QDbApplicationFeature().id.eq(feature.getParentFeatureId()).findOne();
+        if (parent != null) {
+          appFeature.setParentFeature(parent);
+        } else {
+          throw new InvalidParentException();
+        }
+      }
 
       saveApplicationFeature(appFeature);
 
@@ -363,7 +371,7 @@ public class ApplicationSqlApi implements ApplicationApi {
     cacheSource.publishFeatureChange(appFeature, PublishAction.CREATE);
   }
 
-  // this ensures we create the featuers and create initial historical records for them as well
+  // this ensures we create the features and create initial historical records for them as well
   @Transactional(type = TxType.REQUIRES_NEW)
   private void saveAllFeatures(List<DbFeatureValue> newFeatures) {
     newFeatures.forEach(internalFeatureSqlApi::saveFeatureValue);
@@ -377,8 +385,9 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public List<Feature> updateApplicationFeature(@NotNull UUID appId, String key, Feature feature, @NotNull Opts opts)
-      throws DuplicateFeatureException, OptimisticLockingException {
+  public List<Feature> updateApplicationFeature(
+      @NotNull UUID appId, String key, Feature feature, @NotNull Opts opts)
+      throws DuplicateFeatureException, OptimisticLockingException, InvalidParentException {
     Conversions.nonNullApplicationId(appId);
 
     DbApplication app = convertUtils.byApplication(appId);
@@ -412,6 +421,17 @@ public class ApplicationSqlApi implements ApplicationApi {
             .exists()) {
           throw new DuplicateFeatureException();
         }
+      }
+
+      if (feature.getParentFeatureId() == null && appFeature.getParentFeature() != null) {
+        appFeature.setParentFeature(null);
+      } else if (feature.getParentFeatureId() != null && appFeature.getParentFeature() != null) {
+        // changing the parent? weird but ok
+        if (!appFeature.getParentFeature().getId().equals(feature.getParentFeatureId())) {
+          updateParentIfNotCircularTree(appFeature, feature.getParentFeatureId());
+        }
+      } else if (feature.getParentFeatureId() != null && appFeature.getParentFeature() == null) {
+        updateParentIfNotCircularTree(appFeature, feature.getParentFeatureId());
       }
 
       boolean changed =
@@ -454,6 +474,27 @@ public class ApplicationSqlApi implements ApplicationApi {
     return new ArrayList<>();
   }
 
+  private void updateParentIfNotCircularTree(DbApplicationFeature appFeature, UUID parentFeatureId) throws InvalidParentException {
+    DbApplicationFeature parent = new QDbApplicationFeature().id.eq(parentFeatureId).findOne();
+
+    if (parent == null) {
+      throw new InvalidParentException();
+    }
+
+    DbApplicationFeature current = parent;
+
+    // circle to see if they are trying to make ourselves parents of ourselves.
+    while (current.getParentFeature() != null && !current.getId().equals(appFeature.getId())) {
+      current = current.getParentFeature();
+    }
+
+    if (current.getId().equals(appFeature.getId())) {
+      throw new InvalidParentException();
+    }
+
+    appFeature.setParentFeature(parent);
+  }
+
   @Transactional
   private void updateApplicationFeature(DbApplicationFeature appFeature) {
     appFeature.update();
@@ -491,9 +532,7 @@ public class ApplicationSqlApi implements ApplicationApi {
     }
   }
 
-  private AppFeature findAppFeature(UUID appId, String applicationFeatureKeyName) {
-    Conversions.nonNullApplicationId(appId);
-
+  private AppFeature findAppFeature(@NotNull UUID appId, String applicationFeatureKeyName) {
     DbApplication app = convertUtils.byApplication(appId);
 
     if (app != null) {
@@ -522,13 +561,16 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public List<Feature> deleteApplicationFeature(@NotNull UUID appId, String key) {
-    Conversions.nonNullApplicationId(appId);
-
+  public List<Feature> deleteApplicationFeature(@NotNull UUID appId, String key) throws InvalidParentException {
     AppFeature appFeature = findAppFeature(appId, key);
 
     if (appFeature == null || !appFeature.isValid()) {
       return null;
+    }
+
+    // you cannot delete a feature which is the parent of other features
+    if (new QDbApplicationFeature().parentFeature.id.eq(appFeature.appFeature.getId()).exists()) {
+      throw new InvalidParentException();
     }
 
     // make sure it isn't already deleted
@@ -556,7 +598,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   final Set<ApplicationRoleType> creatorRoles = Set.of(ApplicationRoleType.EDIT, ApplicationRoleType.CREATE,
     ApplicationRoleType.EDIT_AND_DELETE);
 
-  // finds all of the groups attached to this application  that have application roles
+  // finds all the groups attached to this application  that have application roles
   // and filters them by the feature edit role, and adds them to the outgoing set.
   @Override
   public @NotNull Set<UUID> findFeatureEditors(@NotNull UUID appId) {

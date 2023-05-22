@@ -19,6 +19,7 @@ public interface ApplicationApi {
 
   class DuplicateApplicationException extends Exception {}
   class DuplicateFeatureException extends Exception {}
+  class InvalidParentException extends Exception {}
 
   @Nullable
   Application createApplication(@NotNull UUID portfolioId, @NotNull Application application, @NotNull Person current) throws DuplicateApplicationException;
@@ -32,10 +33,10 @@ public interface ApplicationApi {
 
   Application updateApplication(@NotNull UUID appId, @NotNull Application application, @NotNull Opts opts) throws DuplicateApplicationException, OptimisticLockingException;
 
-  List<Feature> createApplicationFeature(@NotNull UUID appId, Feature feature, Person person, @NotNull Opts opts) throws DuplicateFeatureException;
-  List<Feature> updateApplicationFeature(@NotNull UUID appId, String key, Feature feature, @NotNull Opts opts) throws DuplicateFeatureException, OptimisticLockingException;
+  List<Feature> createApplicationFeature(@NotNull UUID appId, Feature feature, Person person, @NotNull Opts opts) throws DuplicateFeatureException, InvalidParentException;
+  List<Feature> updateApplicationFeature(@NotNull UUID appId, String key, Feature feature, @NotNull Opts opts) throws DuplicateFeatureException, OptimisticLockingException, InvalidParentException;
   List<Feature> getApplicationFeatures(@NotNull UUID appId, @NotNull Opts opts);
-  List<Feature> deleteApplicationFeature(@NotNull UUID appId, String key);
+  List<Feature> deleteApplicationFeature(@NotNull UUID appId, String key) throws InvalidParentException;
   Feature getApplicationFeatureByKey(@NotNull UUID appId, @NotNull String key, @NotNull Opts opts);
 
   @NotNull Set<UUID> findFeatureEditors(@NotNull UUID appId);

@@ -59,10 +59,13 @@ public class DbApplicationFeature extends DbVersionedBase {
   @Enumerated(value = EnumType.STRING)
   private FeatureValueType valueType;
 
-
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "fk_feature_id")
   private Set<DbFeatureValue> environmentFeatures;
+
+  @ManyToOne
+  @Column(nullable = true)
+  private DbApplicationFeature parentFeature;
 
   public DbApplication getParentApplication() {
     return parentApplication;
@@ -150,6 +153,14 @@ public class DbApplicationFeature extends DbVersionedBase {
 
   public void setMetaData(String metaData) {
     this.metaData = metaData;
+  }
+
+  public DbApplicationFeature getParentFeature() {
+    return parentFeature;
+  }
+
+  public void setParentFeature(DbApplicationFeature parentFeature) {
+    this.parentFeature = parentFeature;
   }
 
   public static final class Builder {

@@ -1305,6 +1305,8 @@ paths:
           description: "no permission"
         409:
           description: "Duplicate feature"
+        418:
+          description: "Invalid parent"
   /mr-api/application/{id}/features/{key}:
     parameters:
       - name: id
@@ -1376,6 +1378,8 @@ paths:
           description: "not found"
         409:
           description: "duplicate feature"
+        418:
+          description: "Invalid parent"
         422:
           description: "other feature updated already"
     delete:
@@ -1400,6 +1404,8 @@ paths:
           description: "no permission"
         404:
           description: "none found"
+        418:
+          description: "feature is a parent and children still exist"
   /mr-api/application/{id}/feature-environments/{key}:
     parameters:
       - name: id
@@ -2937,7 +2943,7 @@ components:
         retired:
           type: boolean
           description: "if false or null, this feature will visible on edge. if true, it will not be passed to the client"
-        valueIfParentActive:
+        valueIfParentEnabled:
           description: "Value if the parent is set on the feature. Cannot have rollout strategies of any kind if  there is a parent"
         rolloutStrategyInstances:
           type: array

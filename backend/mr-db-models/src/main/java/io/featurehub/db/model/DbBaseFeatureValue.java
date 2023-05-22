@@ -15,6 +15,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
+import org.jetbrains.annotations.Nullable;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -32,6 +34,10 @@ public class DbBaseFeatureValue extends Model {
 
   @Enumerated(value = EnumType.STRING)
   protected FeatureState featureState;
+
+  @Lob
+  @Column(name = "p_val", nullable = true)
+  private String valueIfParentEnabled;
 
   @Lob
   private String defaultValue;
@@ -90,4 +96,12 @@ public class DbBaseFeatureValue extends Model {
     return whenCreated;
   }
 
+  @Nullable
+  public String getValueIfParentEnabled() {
+    return valueIfParentEnabled;
+  }
+
+  public void setValueIfParentEnabled(@Nullable String valueIfParentEnabled) {
+    this.valueIfParentEnabled = valueIfParentEnabled;
+  }
 }
