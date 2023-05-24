@@ -1,6 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_font_icons/flutter_font_icons.dart';
+
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/version.dart';
@@ -26,12 +26,12 @@ class FHappBar extends StatelessWidget {
                 if (snapshot.hasData && snapshot.data == true) {
                   return IconButton(
                       splashRadius: 20,
-                      icon: const Icon(SimpleLineIcons.menu, size: 20.0),
+                      icon: const Icon(Icons.menu, size: 20.0),
                       onPressed: () => mrBloc.menuOpened.add(false));
                 } else {
                   return IconButton(
                       splashRadius: 20,
-                      icon: const Icon(SimpleLineIcons.menu, size: 20.0),
+                      icon: const Icon(Icons.menu, size: 20.0),
                       onPressed: () => mrBloc.menuOpened.add(true));
                 }
               });
@@ -44,19 +44,21 @@ class FHappBar extends StatelessWidget {
           SizedBox(
             height: kToolbarHeight - 20,
             child: isWide
-                ? ( Theme.of(context).brightness == Brightness.light ?
-            Image.asset('assets/logo/FeatureHub-primary-navy.png') : Image.asset('assets/logo/FeatureHubPrimaryWhite.png'))
+                ? (Theme.of(context).brightness == Brightness.light
+                    ? Image.asset('assets/logo/FeatureHub-primary-navy.png')
+                    : Image.asset('assets/logo/FeatureHubPrimaryWhite.png'))
                 : Image.asset(
                     'assets/logo/FeatureHub-icon.png',
                   ),
           ),
-          if (appVersion != 'main') Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: Text(
-              ' (v$appVersion)',
-              style: const TextStyle(fontSize: 10.0),
-            ),
-          )
+          if (appVersion != 'main')
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                ' (v$appVersion)',
+                style: const TextStyle(fontSize: 10.0),
+              ),
+            )
         ],
       ),
       actions: <Widget>[
@@ -76,20 +78,22 @@ class FHappBar extends StatelessWidget {
                           message: "${person.name} \n"
                               "${person.email}",
                           child: PersonAvatar(person: person)),
-                      if (isWide) const SizedBox(
-                        width: 32.0,
-                      ),
+                      if (isWide)
+                        const SizedBox(
+                          width: 32.0,
+                        ),
                       widgetCreator.externalDocsLinksWidget(),
-                      if (isWide) const SizedBox(
-                        width: 16.0,
-                      ),
+                      if (isWide)
+                        const SizedBox(
+                          width: 16.0,
+                        ),
                       IconButton(
                           // splashRadius: 20,
                           tooltip: light ? 'Dark mode' : 'Light mode',
                           color: Theme.of(context).colorScheme.primary,
                           icon: Icon(light
-                              ? MaterialCommunityIcons.weather_night
-                              : Feather.sun),
+                              ? Icons.dark_mode_outlined
+                              : Icons.light_mode_outlined),
                           onPressed: () {
                             DynamicTheme.of(context).setBrightness(
                                 light ? Brightness.dark : Brightness.light);

@@ -2,7 +2,7 @@ import 'dart:html'; // ignore: avoid_web_libraries_in_flutter
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_font_icons/flutter_font_icons.dart';
+
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
@@ -11,7 +11,6 @@ import 'package:open_admin_app/widgets/features/edit-feature/delete_feature_widg
 import 'package:open_admin_app/widgets/features/edit-feature/set_feature_metadata.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
-
 
 class FeatureCellHolder extends StatelessWidget {
   final Feature feature;
@@ -54,22 +53,22 @@ class FeatureCellHolder extends StatelessWidget {
                                       .bodyMedium!
                                       .copyWith(fontWeight: FontWeight.bold)),
                             ),
-
-                              Row(
-                                children: [
-                                  if (feature.link?.isNotEmpty == true)
+                            Row(
+                              children: [
+                                if (feature.link?.isNotEmpty == true)
                                   FHIconButton(
                                     tooltip: feature.link!,
-                                    icon: const Icon(Feather.external_link),
+                                    icon: const Icon(Icons.arrow_forward),
                                     onPressed: () {
                                       window.open(feature.link!, 'new tab');
                                     },
                                   ),
-                                  FHCopyToClipboard(
-                                      tooltipMessage: "Copy feature key to clipboard",
-                                      copyString: feature.key!),
-                                ],
-                              ),
+                                FHCopyToClipboard(
+                                    tooltipMessage:
+                                        "Copy feature key to clipboard",
+                                    copyString: feature.key!),
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -78,7 +77,8 @@ class FeatureCellHolder extends StatelessWidget {
                 ),
                 PopupMenuButton(
                   tooltip: 'Show more',
-                  icon:Icon(Icons.more_vert, color: Theme.of(context).colorScheme.primary),
+                  icon: Icon(Icons.more_vert,
+                      color: Theme.of(context).colorScheme.primary),
                   onSelected: (value) {
                     if (value == 'edit') {
                       bloc.mrClient.addOverlay((BuildContext context) =>

@@ -17,8 +17,8 @@ Enabling teams to deliver value to customers early and often, whilst maintaining
 FeatureHub can be used with small startups through to large enterprises with many applications and teams.
 It has an enterprise grade security and permission model, that's intuitive and easy to use, so you can be up and running quickly.
 
-FeatureHub is a self-hosted platform so you can run it on your own infrastructure, and because of a unique offering from Fastly, we provide integration with that platform. 
+FeatureHub is a self-hosted platform so you can run it on your own infrastructure, and because of a unique offering from Fastly, we provide integration with that platform.
 
-image::fh_learn_build_measure.svg[Learn,Build,Measure]
+image::fh_learn_build_measure.png[Learn,Build,Measure]
 
 
