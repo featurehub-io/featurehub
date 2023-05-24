@@ -1,6 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_font_icons/flutter_font_icons.dart';
+
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/stepper/progress_stepper_bloc.dart';
@@ -49,8 +49,8 @@ class StepperRocketButton extends StatelessWidget {
             return IconButton(
               tooltip: 'Open quick setup',
               icon: Icon(
-                MaterialCommunityIcons.rocket,
-               color: Theme.of(context).colorScheme.primary,
+                Icons.rocket,
+                color: Theme.of(context).colorScheme.primary,
               ),
               onPressed: () => mrBloc.stepperOpened = true,
             );

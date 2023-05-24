@@ -1,6 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_font_icons/flutter_font_icons.dart';
+
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';
@@ -18,11 +18,15 @@ class AddStrategyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton.icon(
         label: const Text('Add split targeting rules'),
-        icon: const Icon(MaterialCommunityIcons.arrow_split_vertical),
+        icon: const Icon(Icons.call_split_outlined),
         onPressed: (editable == true)
-            ? () => showDialog(context: context, builder: (_) {
+            ? () => showDialog(
+                context: context,
+                builder: (_) {
                   return AlertDialog(
-                    title: Text(editable ? 'Edit split targeting rules' : 'View split targeting rules'),
+                    title: Text(editable
+                        ? 'Edit split targeting rules'
+                        : 'View split targeting rules'),
                     content: BlocProvider(
                       creator: (_c, _b) => IndividualStrategyBloc(
                           bloc.environmentFeatureValue,

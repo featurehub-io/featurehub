@@ -30,7 +30,6 @@ dependencies:
   timeago: ^3.0.2
   shared_preferences: ^2.0.5
   flutter_signin_button: ^2.0.0
-  flutter_font_icons: ^2.2.5
   auto_size_text: ^3.0.0-nullsafety.0
   collection: ^1.1.0
   advanced_datatable: ^0.0.8
@@ -61,11 +60,6 @@ flutter:
     - assets/images/meditation.png
 
   fonts:
-    - family: Roboto
-      fonts:
-        - asset: assets/fonts/Roboto-Regular.ttf
-        - asset: assets/fonts/Roboto-Bold.ttf
-          weight: 700
     - family: SourceCodePro
       fonts:
         - asset: assets/fonts/SourceCodePro-Regular.ttf
