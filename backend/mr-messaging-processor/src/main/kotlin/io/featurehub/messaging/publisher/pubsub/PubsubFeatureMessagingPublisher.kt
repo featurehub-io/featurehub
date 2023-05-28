@@ -14,21 +14,7 @@ import jakarta.ws.rs.core.FeatureContext
 import org.glassfish.hk2.api.Immediate
 import org.glassfish.jersey.internal.inject.AbstractBinder
 
-class PubsubFeatureMessagingPublisher: Feature {
-  override fun configure(context: FeatureContext): Boolean {
-    if (!GoogleEventFeature.isEnabled()) return false
-
-    context.register(object : AbstractBinder() {
-      override fun configure() {
-        bind(PubsubCloudEventsMessagingChannel::class.java).to(PubsubCloudEventsMessagingChannel::class.java)
-          .`in`(Immediate::class.java)
-      }
-    })
-
-    return true
-  }
-}
-class PubsubCloudEventsMessagingChannel @Inject constructor(pubSubFactory: PubSubFactory, cloudEventsPublisher: CloudEventPublisher) {
+class PubsubFeatureMessagingPublisher @Inject constructor(pubSubFactory: PubSubFactory, cloudEventsPublisher: CloudEventPublisher) {
   @ConfigKey("cloudevents.mr-messaging.pubsub.topic-name")
   private var messagingChannelName: String? = "featurehub-messaging-channel"
 
@@ -41,5 +27,4 @@ class PubsubCloudEventsMessagingChannel @Inject constructor(pubSubFactory: PubSu
       CloudEventChannelMetric(FeatureMessagingMetrics.messagingPublishFailureCounter, FeatureMessagingMetrics.messagingPublishHistogram),
       true, publisher::publish)
   }
-
 }
