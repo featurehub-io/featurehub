@@ -262,6 +262,25 @@ command line tools.
 - other optional characteristics, such as the catch & release mode supported by Javascript and Dart (because of their
 UI focus)
 
+==== Repository Readiness
+
+The current design for repositories is there are three states that a repository can be in, `Not Ready` (before the first successful connection), `Ready` and `Failed`.
+
+If you are writing a server application, you should include the FeatureHub in your
+liveness checks - anything other than Ready and the repository is not usable.
+
+- `Not Ready` - this represents the situation before the SDK has been able to connect and get feature states. At this point it does not even know if the FeatureHub URL and API key it has been given are valid. 
+- `Failed` - this represents the state if the server returns a 4xx error of any kind. This can happen if your SDK is too old or because the API does not exist. 
+- `Ready` - this represents the repository having features, not necessarily the current features, that depends on how your application connects to the FeatureHub server.
+
+A repository starts in `Not Ready`, and transitions to `Ready` only when the first successful connect is made. It should not transition to `Not Ready` again, only
+to `Failed`. Transient outages in the install of FeatureHub should not mark the
+repository as `Not Ready` as  the repository is designed specifically as a cache. Having wide ranging server outages because a FeatureHub install was interupted is a key design goal of using a local cache. 
+
+So transitions are: `Not Ready > Ready`, `Not Ready > Ready > Failed`, `Not Ready > Failed`.
+
+As above, if a server receives a "usage cap exceeded" message from the SaaS version of FeatureHub, it should *not* transition to a different state.
+
 === The SSE Layer
 
 This is normally a separate thing, and you would pass your repository into this and it would update it as new updates

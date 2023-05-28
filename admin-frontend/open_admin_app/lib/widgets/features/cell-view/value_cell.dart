@@ -1,6 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_font_icons/flutter_font_icons.dart';
+
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_tag.dart';
 import 'package:open_admin_app/widgets/features/cell-view/flag_colored_on_off_label.dart';
@@ -127,7 +127,7 @@ class RetiredIndicator extends StatelessWidget {
       child: Tooltip(
         message: "Retired",
         child: Icon(
-          MaterialIcons.do_not_disturb,
+          Icons.do_not_disturb,
           size: 14.0,
           color: lightTheme ? Colors.black54 : Colors.white70,
         ),
@@ -200,12 +200,12 @@ class _ValueCard extends StatelessWidget {
                 ),
                 child: rolloutStrategy != null
                     ? Tooltip(
-                        richMessage: TextSpan(
-                children: [
-                  TextSpan(text: rolloutStrategy!.name),
-                  TextSpan(text: generateTooltipMessage(rolloutStrategy))]
-                        ),
-                  child: rolloutStrategy == null
+                        richMessage: TextSpan(children: [
+                          TextSpan(text: rolloutStrategy!.name),
+                          TextSpan(
+                              text: generateTooltipMessage(rolloutStrategy))
+                        ]),
+                        child: rolloutStrategy == null
                             ? const SizedBox.shrink()
                             : Padding(
                                 padding: const EdgeInsets.all(4.0),

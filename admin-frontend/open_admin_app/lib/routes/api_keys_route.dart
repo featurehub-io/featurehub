@@ -1,6 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_font_icons/flutter_font_icons.dart';
+
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/ga_id.dart';
@@ -36,7 +36,8 @@ class ApiKeysRoute extends StatelessWidget {
                 ],
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
                 child: Row(
                   children: [
                     StreamBuilder<List<Application>>(
@@ -51,7 +52,8 @@ class ApiKeysRoute extends StatelessWidget {
                           }
                         }),
                     StreamBuilder<ReleasedPortfolio?>(
-                        stream: bloc.mrClient.streamValley.currentPortfolioStream,
+                        stream:
+                            bloc.mrClient.streamValley.currentPortfolioStream,
                         builder: (context, snapshot) {
                           if (snapshot.data != null &&
                               (snapshot.data!.currentPortfolioOrSuperAdmin ==
@@ -202,7 +204,8 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
                                         children: [
                                           Expanded(
                                             flex: 2,
-                                            child: SelectableText(env.name,
+                                            child: SelectableText(
+                                              env.name,
                                             ),
                                           ),
                                           Expanded(
@@ -326,7 +329,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                 message:
                     'API Key is unavailable because your current permissions for this environment are lower level',
                 child: Icon(
-                  Feather.alert_circle,
+                  Icons.error_outline,
                   size: 24.0,
                   color: Colors.red,
                 ),
@@ -336,7 +339,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                 message:
                     'API Key is unavailable because your current permissions for this environment are lower level',
                 child: Icon(
-                  Feather.alert_circle,
+                  Icons.error_outline,
                   size: 24.0,
                   color: Colors.red,
                 ),
