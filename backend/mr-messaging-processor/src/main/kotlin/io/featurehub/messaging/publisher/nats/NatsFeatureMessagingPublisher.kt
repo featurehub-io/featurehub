@@ -12,7 +12,7 @@ import jakarta.inject.Inject
 class NatsFeatureMessagingPublisher @Inject constructor(
   natsSource: NATSSource, cloudEventsPublisher: CloudEventPublisher
 )  {
-  @ConfigKey("cloudevents.messaging.nats.channel-name")
+  @ConfigKey("cloudevents.mr-messaging.nats.channel-name")
   protected var messagingChannelName: String? = "featurehub/messaging-events"
 
   init {

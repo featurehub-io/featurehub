@@ -7,7 +7,7 @@ import io.prometheus.client.Histogram
 
 class FeatureMessagingMetrics {
   companion object {
-    val messagingPublishFailureCounter = MetricsCollector.counter("messaging_publish_fail", "Feature update messaging publish failures")
-    val messagingPublishHistogram = MetricsCollector.histogram("messaging_publish", "Feature update messaging publish")
+    val messagingPublishFailureCounter = MetricsCollector.counter("mr_messaging_publish_fail", "Feature update messaging publish failures")
+    val messagingPublishHistogram = MetricsCollector.histogram("mr_messaging_publish", "Feature update messaging publish")
   }
 }

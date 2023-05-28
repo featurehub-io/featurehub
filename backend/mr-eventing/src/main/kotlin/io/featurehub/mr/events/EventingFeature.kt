@@ -7,6 +7,8 @@ import io.featurehub.db.publish.nats.NatsDachaEventingFeature
 import io.featurehub.events.CloudEventsFeature
 import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.pubsub.GoogleEventFeature
+import io.featurehub.messaging.MessagingConfig
+import io.featurehub.messaging.MessagingFeature
 import io.featurehub.mr.events.common.*
 import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
 import io.featurehub.mr.events.dacha2.CacheApi
@@ -29,6 +31,10 @@ class EventingFeature : Feature {
 
     if (NatsDachaEventingFeature.isEnabled()) {
       context.register(NatsDachaEventingFeature::class.java)
+    }
+
+    if (MessagingConfig.isEnabled()){
+      context.register(MessagingFeature::class.java)
     }
 
     context.register(object: AbstractBinder() {

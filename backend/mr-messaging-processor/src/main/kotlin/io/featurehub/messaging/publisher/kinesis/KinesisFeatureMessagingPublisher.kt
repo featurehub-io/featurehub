@@ -18,10 +18,10 @@ class KinesisFeatureMessagingPublisher @Inject constructor(
   cloudEventsPublisher: CloudEventPublisher
 ) {
 
-  @ConfigKey("cloudevents.messaging.kinesis.stream-name")
+  @ConfigKey("cloudevents.mr-messaging.kinesis.stream-name")
   private var streamName: String? = "featurehub-messaging-stream"
 
-  @ConfigKey("cloudevents.messaging.kinesis.randomise-partition-key")
+  @ConfigKey("cloudevents.mr-messaging.kinesis.randomise-partition-key")
   private var randomisePartitionKey: Boolean? = false
 
   private var publisher: KinesisCloudEventsPublisher
