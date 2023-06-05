@@ -4,7 +4,7 @@ site:
   start_page: featurehub::index.adoc
   robots: allow
   keys:
-    google_analytics: 'UA-173153929-1'
+    google_analytics: 'G-HDCKQVH0CY'
 antora:
   extensions:
     - require: '@antora/lunr-extension'
