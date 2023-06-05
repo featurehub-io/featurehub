@@ -28,19 +28,17 @@ dependencies:
   universal_html: ^2.0.8
   url_launcher: ^6.0.3
   timeago: ^3.0.2
-  shared_preferences: ^2.0.5
+  shared_preferences: ^2.1.1
   flutter_signin_button: ^2.0.0
-  auto_size_text: ^3.0.0-nullsafety.0
-  collection: ^1.1.0
   advanced_datatable: ^0.0.8
-  syncfusion_flutter_datagrid: ^20.3.52
+  syncfusion_flutter_datagrid: ^21.2.8
   multiselect: ^0.1.0
   side_sheet: ^1.0.3
   async: ^2.9.0
 
 dev_dependencies:
   meta: ^1.8.0
-  flutter_lints: ^1.0.4
+  flutter_lints: ^2.0.1
   flutter_test:
     sdk: flutter
 
