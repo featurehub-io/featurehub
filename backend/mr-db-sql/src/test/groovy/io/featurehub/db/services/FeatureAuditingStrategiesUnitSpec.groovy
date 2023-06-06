@@ -60,7 +60,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       def result = updateStrategies([], [], [newRolloutStrategy])
     then:
       result.hasChanged
-      result.updated == [new RolloutStrategyUpdate("add", null, newRolloutStrategy)]
+      result.updated == [new RolloutStrategyUpdate("added", null, newRolloutStrategy)]
       result.previous == []
       currentFeature.rolloutStrategies.find({it.id == 'x123'})
   }
@@ -84,7 +84,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       def result = updateStrategies([existingStrategy], [], [newRolloutStrategy])
     then:
       result.hasChanged
-      result.updated == [new RolloutStrategyUpdate("add", null, newRolloutStrategy)]
+      result.updated == [new RolloutStrategyUpdate("added", null, newRolloutStrategy)]
       result.previous == []
       result.reordered == []
       currentFeature.rolloutStrategies.find({it.id == '1234'})
@@ -106,8 +106,8 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       def result = updateStrategies([existingStrategy], [existingStrategy], [updatedStrategy])
     then:
       result.hasChanged
-      result.updated == [new RolloutStrategyUpdate("add", null, updatedStrategy),
-                         new RolloutStrategyUpdate("delete", existingStrategy, null)]
+      result.updated == [new RolloutStrategyUpdate("added", null, updatedStrategy),
+                         new RolloutStrategyUpdate("deleted", existingStrategy, null)]
       result.previous == []
       result.reordered == []
       currentFeature.rolloutStrategies.size() == 1
@@ -175,8 +175,8 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       def result = updateStrategies([existingStrategy], [existingStrategy], strategies)
     then:
       result.hasChanged
-      result.updated == [new RolloutStrategyUpdate("change",existingStrategy, updatedStrategy),
-      new RolloutStrategyUpdate("add", null, newStrategy)]
+      result.updated == [new RolloutStrategyUpdate("changed",existingStrategy, updatedStrategy),
+      new RolloutStrategyUpdate("added", null, newStrategy)]
       result.previous == []
       result.reordered == []
       currentFeature.rolloutStrategies.size() == 2
@@ -210,7 +210,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       )
     then:
       result.hasChanged
-      result.updated == [new RolloutStrategyUpdate("add", null, newStrategy)]
+      result.updated == [new RolloutStrategyUpdate("added", null, newStrategy)]
       result.previous ==  []
       result.reordered == []
       currentFeature.rolloutStrategies.size() == 2
@@ -230,8 +230,8 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
     then:
       result.hasChanged
       result.updated == [
-        new RolloutStrategyUpdate("add", null, newStrategy),
-        new RolloutStrategyUpdate("delete", new RolloutStrategy().id('2222').name('wilbur') , null)
+        new RolloutStrategyUpdate("added", null, newStrategy),
+        new RolloutStrategyUpdate("deleted", new RolloutStrategy().id('2222').name('wilbur') , null)
       ]
       result.reordered == []
       result.previous == []
@@ -258,7 +258,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       def result = updateStrategies([], [], [newStrategy])
     then:
       result.hasChanged
-      result.updated == [new RolloutStrategyUpdate("add", null, newStrategy)]
+      result.updated == [new RolloutStrategyUpdate("added", null, newStrategy)]
       result.reordered == []
       result.previous == []
   }
@@ -276,7 +276,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
       )
     then:
       result.hasChanged
-      result.updated == [new RolloutStrategyUpdate("change", editing, edited )]
+      result.updated == [new RolloutStrategyUpdate("changed", editing, edited )]
       currentFeature.rolloutStrategies.size() == 1
       currentFeature.rolloutStrategies[0].name == 'susan2'
   }
