@@ -33,9 +33,8 @@ class EventingFeature : Feature {
       context.register(NatsDachaEventingFeature::class.java)
     }
 
-    if (MessagingConfig.isEnabled()){
-      context.register(MessagingFeature::class.java)
-    }
+    context.register(MessagingFeature::class.java)
+
 
     context.register(object: AbstractBinder() {
       override fun configure() {
