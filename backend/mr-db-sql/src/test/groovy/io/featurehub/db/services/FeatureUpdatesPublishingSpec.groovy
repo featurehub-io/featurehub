@@ -189,7 +189,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
         .conditional(RolloutStrategyAttributeConditional.EQUALS)
         .type(RolloutStrategyFieldType.STRING)
     ])
-    def rolloutStrategyUpdate = new RolloutStrategyUpdate("add", null, rolloutStrategy)
+    def rolloutStrategyUpdate = new RolloutStrategyUpdate("added", null, rolloutStrategy)
     when: "i unlock the feature"
     def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey)
     // it already exists, so we have  to unlock it

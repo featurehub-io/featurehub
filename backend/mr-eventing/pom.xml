@@ -94,6 +94,11 @@
       <artifactId>messaging-api</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>io.featurehub.messaging</groupId>
+      <artifactId>mr-messaging-processor</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 
   <build>

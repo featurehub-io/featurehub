@@ -9,7 +9,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=2.13.0 <3.0.0'
+  sdk: '>=2.19.0 <3.1.0'
 
 dependencies:
   flutter_web_plugins:
@@ -27,28 +27,18 @@ dependencies:
   zxcvbn: ^1.0.0
   universal_html: ^2.0.8
   url_launcher: ^6.0.3
-  intl: ^0.17.0
   timeago: ^3.0.2
-  google_fonts: 2.2.0
-  # do not change this version of animator
-  animator: ^3.0.0
-  shared_preferences: ^2.0.5
+  shared_preferences: ^2.1.1
   flutter_signin_button: ^2.0.0
-  flutter_icons:
-    git:
-      url: https://github.com/adarsh-technocrat/flutter-icons.git
-      branch: null-safety-migration
-  auto_size_text: ^3.0.0-nullsafety.0
-  collection: ^1.1.0
   advanced_datatable: ^0.0.8
-  syncfusion_flutter_datagrid: ^20.3.52
-  multiselect: ^0.0.7
+  syncfusion_flutter_datagrid: ^21.2.8
+  multiselect: ^0.1.0
   side_sheet: ^1.0.3
   async: ^2.9.0
 
 dev_dependencies:
   meta: ^1.8.0
-  flutter_lints: ^1.0.4
+  flutter_lints: ^2.0.1
   flutter_test:
     sdk: flutter
 
@@ -68,11 +58,6 @@ flutter:
     - assets/images/meditation.png
 
   fonts:
-    - family: Roboto
-      fonts:
-        - asset: assets/fonts/Roboto-Regular.ttf
-        - asset: assets/fonts/Roboto-Bold.ttf
-          weight: 700
     - family: SourceCodePro
       fonts:
         - asset: assets/fonts/SourceCodePro-Regular.ttf

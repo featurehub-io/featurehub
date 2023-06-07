@@ -1,6 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
+
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/ga_id.dart';
@@ -51,8 +51,7 @@ class _AppsRouteState extends State<AppsRoute> {
                 stream: bloc.mrClient.streamValley.currentPortfolioStream,
                 builder: (context, snapshot) {
                   if (snapshot.data != null &&
-                      (snapshot.data!.currentPortfolioOrSuperAdmin ==
-                          true)) {
+                      (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
                     return FilledButton.icon(
                       icon: const Icon(Icons.add),
                       label: const Text('Create new application'),
@@ -66,22 +65,25 @@ class _AppsRouteState extends State<AppsRoute> {
         ),
         const SizedBox(height: 8.0),
         const FHPageDivider(),
-
-        if (bloc.mrClient.identityProviders.dacha1Enabled && bloc.mrClient.personState.userIsSuperAdmin)
+        if (bloc.mrClient.identityProviders.dacha1Enabled &&
+            bloc.mrClient.personState.userIsSuperAdmin)
           StreamBuilder<List<Application>>(
-            stream: bloc.currentApplicationsStream,
-            builder: (context, snapshot) {
-              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Align(alignment: Alignment.topRight,
-                      child: OutlinedButton.icon(onPressed: () => _refreshPortfolioConfirm(bloc), icon: const Icon(Icons.cached), label: const Text('Republish portfolio cache'))),
-                );
-              }
+              stream: bloc.currentApplicationsStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Align(
+                        alignment: Alignment.topRight,
+                        child: OutlinedButton.icon(
+                            onPressed: () => _refreshPortfolioConfirm(bloc),
+                            icon: const Icon(Icons.cached),
+                            label: const Text('Republish portfolio cache'))),
+                  );
+                }
 
-              return const SizedBox.shrink();
-            }
-          ),
+                return const SizedBox.shrink();
+              }),
         const SizedBox(height: 8.0),
         _ApplicationsCardsList(
           bloc: bloc,
@@ -100,10 +102,11 @@ class _AppsRouteState extends State<AppsRoute> {
     bloc.mrClient.addOverlay((BuildContext context) {
       return FHAlertDialog(
         title: const Text(
-          "Warning: Intensive system operation" ,
+          "Warning: Intensive system operation",
           style: TextStyle(fontSize: 22.0),
         ),
-        content: const Text("Are you sure you want to republish this entire portfolio's cache?"),
+        content: const Text(
+            "Are you sure you want to republish this entire portfolio's cache?"),
         actions: <Widget>[
           FHFlatButton(
             title: 'OK',
@@ -295,15 +298,13 @@ class _AppTotals extends StatelessWidget {
             _NumberAndIcon(
               tooltipText: 'Environments',
               text: application.environments.length.toString(),
-              icon: const Icon(AntDesign.bars,
+              icon: const Icon(Icons.list,
                   size: 16.0, color: Colors.deepPurpleAccent),
             ),
           if (application.features.isNotEmpty)
             _NumberAndIcon(
               tooltipText: 'Feature flags',
-              text: application.features
-                  .length
-                  .toString(),
+              text: application.features.length.toString(),
               icon: const Icon(Icons.flag, size: 16.0, color: Colors.green),
             ),
         ],
@@ -417,9 +418,12 @@ class _PopUpAdminMenu extends StatelessWidget {
               child: Text('Delete',
                   style: Theme.of(context).textTheme.bodyMedium)),
         ];
-        if (bloc.mrClient.identityProviders.dacha1Enabled && bloc.mrClient.personState.userIsSuperAdmin) {
-          items.add(
-              PopupMenuItem(value: 'publish', child: Text('Republish cache for this app', style: Theme.of(context).textTheme.bodyMedium)));
+        if (bloc.mrClient.identityProviders.dacha1Enabled &&
+            bloc.mrClient.personState.userIsSuperAdmin) {
+          items.add(PopupMenuItem(
+              value: 'publish',
+              child: Text('Republish cache for this app',
+                  style: Theme.of(context).textTheme.bodyMedium)));
         }
         return items;
       },

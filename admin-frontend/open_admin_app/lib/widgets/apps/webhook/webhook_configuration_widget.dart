@@ -89,13 +89,11 @@ class _WebhookTableDataSource extends DataGridSource {
   }
 
   @override
-  void onCellSubmit(DataGridRow dataGridRow, RowColumnIndex rowColumnIndex,
-      GridColumn column) {
-
-    final index = dataGridRow
-        .getCells()
-        .indexWhere((DataGridCell dataGridCell) =>
-          dataGridCell.columnName == column.columnName);
+  Future<void> onCellSubmit(DataGridRow dataGridRow,
+      RowColumnIndex rowColumnIndex, GridColumn column) async {
+    final index = dataGridRow.getCells().indexWhere(
+        (DataGridCell dataGridCell) =>
+            dataGridCell.columnName == column.columnName);
 
     final oldValue = index >= 0 ? dataGridRow.getCells()[index].value : null;
 
@@ -105,8 +103,8 @@ class _WebhookTableDataSource extends DataGridSource {
       return;
     }
 
-    rows[dataRowIndex].getCells()[index] =
-        DataGridCell<String?>(columnName: column.columnName, value: newCellValue.toString());
+    rows[dataRowIndex].getCells()[index] = DataGridCell<String?>(
+        columnName: column.columnName, value: newCellValue.toString());
 
     if (column.columnName == 'header') {
       _headers[dataRowIndex].key = newCellValue.toString();
@@ -129,10 +127,10 @@ class _WebhookTableDataSource extends DataGridSource {
     return DataGridRowAdapter(
         cells: row
             .getCells()
-            .map((e) =>
-                Container(
-                  padding: const EdgeInsets.all(8.0),
-                    alignment: Alignment.centerLeft, child: Tooltip(message: "Click to edit",child: Text(e.value))))
+            .map((e) => Container(
+                padding: const EdgeInsets.all(8.0),
+                alignment: Alignment.centerLeft,
+                child: Tooltip(message: "Click to edit", child: Text(e.value))))
             .toList());
   }
 
@@ -216,22 +214,22 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.start,
-              children: const [
-                Text('Webhook Configuration', style:
-                TextStyle(fontWeight: FontWeight.bold)),
+              children: [
+                Text('Webhook Configuration',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                    onPressed: () => _revert(),
-                    child: const Text("Cancel"),),
+                  onPressed: () => _revert(),
+                  child: const Text("Cancel"),
+                ),
                 FilledButton(
-                    onPressed: () => _save(),
-                    child: const Text('Save')),
+                    onPressed: () => _save(), child: const Text('Save')),
                 if (enabled && _url.text.isNotEmpty)
                   FHIconButton(
                       icon: const Icon(Icons.send),
@@ -271,24 +269,33 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
                         }
                         return null;
                       })),
-                  const SizedBox(height: 24.0,),
+                  const SizedBox(
+                    height: 24.0,
+                  ),
                   Row(
                     children: [
-                      TextButton.icon(icon: const Icon(Icons.add), label: const Text("Add HTTP Header"), onPressed: () => _headers.addRow()),
-                      FHIconButton(tooltip: "Remove selected HTTP header", icon: const Icon(Icons.delete), onPressed: () => _deleteSelected()),
+                      TextButton.icon(
+                          icon: const Icon(Icons.add),
+                          label: const Text("Add HTTP Header"),
+                          onPressed: () => _headers.addRow()),
+                      FHIconButton(
+                          tooltip: "Remove selected HTTP header",
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => _deleteSelected()),
                     ],
                   ),
                   Row(
                     children: [
                       Expanded(
                         child: SfDataGrid(
-                          defaultColumnWidth: 240,
+                            defaultColumnWidth: 240,
                             source: _headers,
                             allowColumnsResizing: true,
                             allowPullToRefresh: false,
                             showCheckboxColumn: true,
                             checkboxColumnSettings:
-                            const DataGridCheckboxColumnSettings(showCheckboxOnHeader: false),
+                                const DataGridCheckboxColumnSettings(
+                                    showCheckboxOnHeader: false),
                             selectionMode: SelectionMode.single,
                             navigationMode: GridNavigationMode.cell,
                             controller: _dataGridController,
@@ -302,14 +309,20 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
                                   label: Container(
                                       // padding: EdgeInsets.all(16.0),
                                       alignment: Alignment.center,
-                                      child: const Text('HTTP Header', style: TextStyle(fontWeight: FontWeight.bold),))),
+                                      child: const Text(
+                                        'HTTP Header',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ))),
                               GridColumn(
                                   columnName: 'value',
                                   allowEditing: true,
                                   label: Container(
                                       padding: const EdgeInsets.all(8.0),
                                       alignment: Alignment.center,
-                                      child: const Text('Value', style: TextStyle(fontWeight: FontWeight.bold))))
+                                      child: const Text('Value',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold))))
                             ]),
                       ),
                     ],
@@ -334,7 +347,8 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
   Future<void> _save() async {
     if (_formKey.currentState!.validate()) {
       // make sure the map is modifiable
-      widget.environment.environmentInfo = {}..addAll(widget.environment.environmentInfo);
+      widget.environment.environmentInfo = {}
+        ..addAll(widget.environment.environmentInfo);
       widget.environment.environmentInfo['${widget.type.envPrefix}.enabled'] =
           enabled.toString();
       widget.environment.environmentInfo['${widget.type.envPrefix}.endpoint'] =
@@ -362,8 +376,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
             '${widget.type.envPrefix}.url': _url.text
           }))
           .then((_) {
-        widget.bloc.mrBloc.addSnackbar(const Text(
-            'Webhook sent.'));
+        widget.bloc.mrBloc.addSnackbar(const Text('Webhook sent.'));
       }).catchError((e, s) async {
         await widget.bloc.mrBloc.dialogError(e, s);
       });

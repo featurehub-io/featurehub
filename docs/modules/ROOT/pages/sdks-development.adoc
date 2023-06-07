@@ -1,16 +1,5 @@
 = SDK Contributors Documentation
 
-++++
-<!-- google -->
-<script>
-(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-ga('create', 'UA-173153929-1', 'auto');
-ga('send', 'pageview');
-</script>
-++++
 
 == What to know up front
 There are a few things you need to know up front.
@@ -24,7 +13,7 @@ as we can go, but try and choose dependencies that are MIT or similarly licensed
 
 We use an OpenAPI definition for the SSE layer. Hold on you say, OpenAPI is a REST/JSON-RPC standard, it doesn't support
 SSE. Yes, you would be right, it doesn't support WebSockets either. However, there is one REST call in the API, and
-all of the data structures that are sent over the wire are listed in that document. 
+all of the data structures that are sent over the wire are listed in that document.
 
 To find the latest published version of the API, go to http://api.dev.featurehub.io/edge/releases.json - and then take the latest version and go to http://api.dev.featurehub.io/edge/1.1.3.yaml (where you replace 1.1.3.yaml with the latest revision).
 
@@ -78,7 +67,7 @@ environment is _stale_ and will no longer receive updates.
 Ops person investigating it
 - MUST: 503 - the server cache isn't ready and
 can't give an answer as to whether the key does or does not exist - wait for a little while and try again.
-- MUST: Support polling interval changes from the server by interpreting the `max-age=X` field. If the cache-control header is set, and there is a `max-age=X` field, the polling interval must be updated to match. This is the number of seconds between polls. This allows per environment control over cache control and the server being able to indicate to the client how quickly (or slowly) to poll. 
+- MUST: Support polling interval changes from the server by interpreting the `max-age=X` field. If the cache-control header is set, and there is a `max-age=X` field, the polling interval must be updated to match. This is the number of seconds between polls. This allows per environment control over cache control and the server being able to indicate to the client how quickly (or slowly) to poll.
 
 === Server Evaluated Feature Support
 
@@ -198,7 +187,7 @@ The event is the command, there is a special one called "error" that is managed 
 === Requirements for SSE client
 
 The SSE client must support all server field types, and not fault if new event types are introduced.
-These are 
+These are
 
 - `ack`:  nothing needs to be done for this, it is simply a heartbeat and is sent at start to ensure that the client receives something.
 - `features`: this contains an array of Feature objects and their appropriate state. If client evaluated keys are supported, this will include strategies, if server evaluated keys are being used, it will only include the specific feature values for this client.
@@ -211,7 +200,7 @@ These are
 
 The `config` response always responds with a JSON data packet. The currently recognized fields are:
 
-- `edge.stale` - the client should stop attempting to connect as this API key represents an environment that is stale. This MUST be honoured. 
+- `edge.stale` - the client should stop attempting to connect as this API key represents an environment that is stale. This MUST be honoured.
 
 === A note on the EventSource spec
 
@@ -261,6 +250,25 @@ command line tools.
 - analytics logging and registering senders
 - other optional characteristics, such as the catch & release mode supported by Javascript and Dart (because of their
 UI focus)
+
+==== Repository Readiness
+
+The current design for repositories is there are three states that a repository can be in, `Not Ready` (before the first successful connection), `Ready` and `Failed`.
+
+If you are writing a server application, you should include the FeatureHub in your
+liveness checks - anything other than Ready and the repository is not usable.
+
+- `Not Ready` - this represents the situation before the SDK has been able to connect and get feature states. At this point it does not even know if the FeatureHub URL and API key it has been given are valid.
+- `Failed` - this represents the state if the server returns a 4xx error of any kind. This can happen if your SDK is too old or because the API does not exist.
+- `Ready` - this represents the repository having features, not necessarily the current features, that depends on how your application connects to the FeatureHub server.
+
+A repository starts in `Not Ready`, and transitions to `Ready` only when the first successful connect is made. It should not transition to `Not Ready` again, only
+to `Failed`. Transient outages in the install of FeatureHub should not mark the
+repository as `Not Ready` as  the repository is designed specifically as a cache. Having wide ranging server outages because a FeatureHub install was interupted is a key design goal of using a local cache.
+
+So transitions are: `Not Ready > Ready`, `Not Ready > Ready > Failed`, `Not Ready > Failed`.
+
+As above, if a server receives a "usage cap exceeded" message from the SaaS version of FeatureHub, it should *not* transition to a different state.
 
 === The SSE Layer
 
@@ -354,7 +362,7 @@ this makes the header:
 city=Istanbul+City,country=turkey,device=mobile,family=Bambam%2cDJ+Elif,platform=ios,session=session-key,userkey=tv-show,version=6.2.3
 ----
 
-The key replacements in attributes is that `=` must be replaced with `%3D`, and `,` with `%2C` as they are the delimeters and how the server will split the attributes up to be evaluated. 
+The key replacements in attributes is that `=` must be replaced with `%3D`, and `,` with `%2C` as they are the delimeters and how the server will split the attributes up to be evaluated.
 
 You should sort the headers by key name, at least to make testing easier.
 

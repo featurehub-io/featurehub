@@ -1,24 +1,13 @@
 = FeatureHub SDKs
 
-++++
-<!-- google -->
-<script>
-(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-ga('create', 'UA-173153929-1', 'auto');
-ga('send', 'pageview');
-</script>
-++++
 
 The client SDKs for FeatureHub are designed to allow various supported languages to connect to the Edge server and receive updates on the features.
-Each different SDK is designed to be idiomatic to that language, but also each different SDK is expected to be used for a different purpose, and so capability varies.
+Each SDK is designed to be idiomatic to that language. The capabilities of each SDK varies, please check the comparison table below.
 
 [#_receiving_feature_updates]
 == Receiving Feature Updates
 
-The SDK is broken into three main API calls:
+The SDK is typically broken into three main API calls:
 
 - `GET` the basic HTTP GET API is used for polling, and is intended primarily for use by customer applications, such as
 browsers and mobile clients. Polling time is configurable in the SDKs.
@@ -40,10 +29,10 @@ Choose from your development language / framework and follow the links for the i
 
 [options="header"]
 |===================================
-||Java|JavaScript|C#|Dart|Go|Python|Ruby
-|Documentation| link:https://github.com/featurehub-io/featurehub-java-sdk/tree/main/client-java-jersey3[Java-Jersey], link:https://github.com/featurehub-io/featurehub-java-sdk/tree/main/client-java-android[Java-Android]|link:https://github.com/featurehub-io/featurehub-javascript-sdk[Javascript-Node], link:https://github.com/featurehub-io/featurehub-javascript-sdk[Javascript-Client], link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/featurehub-react-sdk[React], link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/featurehub-solid-sdk[SolidJS]|https://github.com/featurehub-io/featurehub-dotnet-sdk[C#]|link:https://github.com/featurehub-io/featurehub-flutter-sdk/tree/main/featurehub-client-sdk[Flutter/Dart]|https://github.com/featurehub-io/featurehub-go-sdk#readme[Go]|link:https://github.com/featurehub-io/featurehub-python-sdk[Python]|link:https://github.com/featurehub-io/featurehub-ruby-sdk[Ruby]
+||Java|JavaScript|C#|Dart|Go|Python|Ruby|Swift
+|Documentation| link:https://github.com/featurehub-io/featurehub-java-sdk/tree/main/client-java-jersey3[Java-Jersey], link:https://github.com/featurehub-io/featurehub-java-sdk/tree/main/client-java-android[Java-Android]|link:https://github.com/featurehub-io/featurehub-javascript-sdk[Javascript-Node], link:https://github.com/featurehub-io/featurehub-javascript-sdk[Javascript-Client], link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/featurehub-react-sdk[React], link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/featurehub-solid-sdk[SolidJS]|https://github.com/featurehub-io/featurehub-dotnet-sdk[C#]|link:https://github.com/featurehub-io/featurehub-flutter-sdk/tree/main/featurehub-client-sdk[Flutter/Dart]|https://github.com/featurehub-io/featurehub-go-sdk#readme[Go]|link:https://github.com/featurehub-io/featurehub-python-sdk[Python]|link:https://github.com/featurehub-io/featurehub-ruby-sdk[Ruby]|link:https://github.com/featurehub-io/featurehub-swift-sdk[Swift]
 |Examples|link:https://github.com/featurehub-io/featurehub-examples/tree/master/todo-backend-java[Java-Jersey example], link:https://github.com/featurehub-io/featurehub-examples/tree/master/sample-java-springboot[Java-SpringBoot example], link:https://github.com/featurehub-io/featurehub-examples/tree/master/sample-java-quarkus[Java-Quarkus example] | link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/examples/todo-backend-typescript[Node server example],
-link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/examples/todo-frontend-react-typescript[ Client SDK example (React)], link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/examples/todo-frontend-react-sdk[React SDK example] link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/examples/todo-angular/angular-featurehub-app[Angular example] link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/examples/todo-frontend-solid-sdk[SolidJS example] |https://github.com/featurehub-io/featurehub-dotnet-sdk/tree/master/ConsoleAppExample[C# server example], link:https://github.com/featurehub-io/featurehub-dotnet-sdk/tree/master/ToDoAspCoreExample[ASP.Net example]|https://github.com/featurehub-io/featurehub-flutter-sdk/blob/main/featurehub-client-sdk/example_dart_cli/dart_cli/main.dart[Dart server example], https://github.com/featurehub-io/featurehub-flutter-sdk/tree/main/featurehub-client-sdk/example[Flutter example]|https://github.com/featurehub-io/featurehub-go-sdk/tree/master/examples[Go server example]| https://github.com/featurehub-io/featurehub-python-sdk/tree/main/example[Python Flask example]|https://github.com/featurehub-io/featurehub-ruby-sdk/tree/main/examples/rails_example[Rails example], https://github.com/featurehub-io/featurehub-ruby-sdk/tree/main/examples/sinatra[Sinatra example]
+link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/examples/todo-frontend-react-typescript[ Client SDK example (React)], link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/examples/todo-frontend-react-sdk[React SDK example] link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/examples/todo-angular/angular-featurehub-app[Angular example] link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/examples/todo-frontend-solid-sdk[SolidJS example] |https://github.com/featurehub-io/featurehub-dotnet-sdk/tree/master/ConsoleAppExample[C# server example], link:https://github.com/featurehub-io/featurehub-dotnet-sdk/tree/master/ToDoAspCoreExample[ASP.Net example]|https://github.com/featurehub-io/featurehub-flutter-sdk/blob/main/featurehub-client-sdk/example_dart_cli/dart_cli/main.dart[Dart server example], https://github.com/featurehub-io/featurehub-flutter-sdk/tree/main/featurehub-client-sdk/example[Flutter example]|https://github.com/featurehub-io/featurehub-go-sdk/tree/master/examples[Go server example]| https://github.com/featurehub-io/featurehub-python-sdk/tree/main/example[Python Flask example]|https://github.com/featurehub-io/featurehub-ruby-sdk/tree/main/examples/rails_example[Rails example], https://github.com/featurehub-io/featurehub-ruby-sdk/tree/main/examples/sinatra[Sinatra example]|https://github.com/featurehub-io/featurehub-swift-sdk/tree/main/examples/example-todo[Swift app example]
 |===================================
 
 NOTE: We have now added dedicated https://www.npmjs.com/package/featurehub-react-sdk[React SDK] for the best developer experience, however you can continue using https://www.npmjs.com/package/featurehub-javascript-client-sdk[Javascript Client SDK] on which React SDK is based.

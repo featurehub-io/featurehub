@@ -1,7 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
@@ -89,7 +88,8 @@ class _MenuContainer extends StatelessWidget {
                                       left: 16.0, top: 32.0, bottom: 8.0),
                                   child: Text(
                                     'Application Settings',
-                                    style: Theme.of(context).textTheme.bodySmall,
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
                                   ),
                                 ),
                                 _ApplicationSettings(),
@@ -101,8 +101,9 @@ class _MenuContainer extends StatelessWidget {
                                           left: 16.0, top: 32.0, bottom: 8.0),
                                       child: Text(
                                         'Portfolio Settings',
-                                        style:
-                                            Theme.of(context).textTheme.bodySmall,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
                                       ),
                                     ),
                                     _MenuPortfolioAdminOptionsWidget(),
@@ -148,20 +149,20 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
           List<Widget> menus = [
             const FHMenuItem(
                 name: 'Portfolios',
-                iconData: MaterialCommunityIcons.briefcase_plus_outline,
+                iconData: Icons.cases_sharp,
                 path: '/portfolios',
                 permissionType: PermissionType.portfolioadmin,
                 params: {}),
             const FHMenuItem(
                 name: 'Users',
                 permissionType: PermissionType.portfolioadmin,
-                iconData: AntDesign.addusergroup,
+                iconData: Icons.group_add,
                 path: '/users',
                 params: {}),
             const FHMenuItem(
                 name: 'Admin Service Accounts',
                 permissionType: PermissionType.portfolioadmin,
-                iconData: AntDesign.API,
+                iconData: Icons.api_outlined,
                 path: '/admin-service-accounts',
                 params: {}),
           ];
@@ -180,16 +181,16 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return Column(children: const <Widget>[
+            return const Column(children: <Widget>[
               FHMenuItem(
                   name: 'Groups',
-                  iconData: MaterialIcons.people_outline,
+                  iconData: Icons.people_outline,
                   path: '/groups',
                   permissionType: PermissionType.portfolioadmin,
                   params: {}),
               FHMenuItem(
                   name: 'Service Accounts',
-                  iconData: AntDesign.tool,
+                  iconData: Icons.build_outlined,
                   permissionType: PermissionType.portfolioadmin,
                   path: '/service-accounts',
                   params: {}),
@@ -206,15 +207,13 @@ class _ApplicationSettings extends StatelessWidget {
   Widget build(BuildContext context) {
     var mrClient = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     return StreamBuilder<String?>(
-        stream: mrClient
-            .streamValley
-            .currentPortfolioIdStream,
+        stream: mrClient.streamValley.currentPortfolioIdStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return Column(children: <Widget>[
               const FHMenuItem(
                   name: 'Environments',
-                  iconData: AntDesign.bars,
+                  iconData: Icons.list,
                   path: '/app-settings',
                   permissionType: PermissionType.portfolioadmin,
                   params: {
@@ -222,7 +221,7 @@ class _ApplicationSettings extends StatelessWidget {
                   }),
               const FHMenuItem(
                   name: 'Group permissions',
-                  iconData: MaterialCommunityIcons.check_box_multiple_outline,
+                  iconData: Icons.groups_2_outlined,
                   path: '/app-settings',
                   permissionType: PermissionType.portfolioadmin,
                   params: {
@@ -230,7 +229,7 @@ class _ApplicationSettings extends StatelessWidget {
                   }),
               const FHMenuItem(
                   name: 'Service account permissions',
-                  iconData: MaterialCommunityIcons.cogs,
+                  iconData: Icons.checklist_outlined,
                   path: '/app-settings',
                   permissionType: PermissionType.portfolioadmin,
                   params: {
@@ -239,7 +238,7 @@ class _ApplicationSettings extends StatelessWidget {
               if (mrClient.identityProviders.capabilityWebhooks)
                 const FHMenuItem(
                     name: 'Webhooks',
-                    iconData: MaterialCommunityIcons.webhook,
+                    iconData: Icons.webhook_outlined,
                     path: '/app-settings',
                     permissionType: PermissionType.portfolioadmin,
                     params: {
@@ -258,23 +257,23 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: const [
+    return const Column(
+      children: [
         FHMenuItem(
           name: 'Applications',
-          iconData: Feather.grid,
+          iconData: Icons.apps_outlined,
           path: '/applications',
           params: {},
         ),
         FHMenuItem(
           name: 'Features',
-          iconData: Feather.flag,
+          iconData: Icons.flag_outlined,
           path: routeNameFeatureDashboard,
           params: {},
         ),
         FHMenuItem(
           name: 'API Keys',
-          iconData: AntDesign.key,
+          iconData: Icons.key_outlined,
           path: '/api-keys',
           params: {},
         )
@@ -340,8 +339,11 @@ class FHMenuItem extends StatelessWidget {
                 equalsParams(snapshot.data!.params);
             return Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
-              color: selected ?
-              Theme.of(context).colorScheme.primaryContainer.withOpacity(0.6)
+              color: selected
+                  ? Theme.of(context)
+                      .colorScheme
+                      .primaryContainer
+                      .withOpacity(0.6)
                   : null,
               child: Row(
                 children: <Widget>[
@@ -350,13 +352,13 @@ class FHMenuItem extends StatelessWidget {
                     size: iconSize ?? 18.0,
                   ),
                   Padding(
-                    padding:
-                        const EdgeInsets.only(left: 12.0),
+                    padding: const EdgeInsets.only(left: 12.0),
                     child: Text(' $name',
                         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                            fontWeight:
-                                selected ? FontWeight.bold : FontWeight.normal,
-                        )),
+                              fontWeight: selected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            )),
                   )
                 ],
               ),

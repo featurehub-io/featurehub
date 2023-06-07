@@ -405,4 +405,33 @@ class Dacha2CacheImplSpec extends Specification {
       2 * api.getEnvironment(envId, null) >> { throw new ServerErrorException(503) }
       0 * _
   }
+
+  def "changing the service account api key causes inability to get data"() {
+    given:
+      def pubEnv = new Dacha2Environment().env(new PublishEnvironment()
+        .environment(new CacheEnvironment().id(envId))
+        .featureValues([]))
+      def sa =  saWithPermission()
+      def serviceAccount = new Dacha2ServiceAccount().serviceAccount(sa)
+    when:
+      def result = cache.getFeatureCollection(envId, apiKeyClientSide)
+    then:
+      result != null
+      1 * api.getEnvironment(envId, null) >> pubEnv
+      1 * api.getServiceAccount(apiKeyClientSide, null) >> serviceAccount
+    when:
+      def saReset = sa.copy().apiKeyClientSide("1").version(2)
+      cache.updateServiceAccount(new PublishServiceAccount().action(PublishAction.UPDATE).serviceAccount(saReset))
+    then:
+      cache.getFeatureCollection(envId, apiKeyClientSide) == null
+      cache.getFeatureCollection(envId, "1") != null
+      cache.getFeatureCollection(envId, apiKeyServerSide) != null
+    when:
+      def saServerReset = saReset.copy().apiKeyServerSide("2").version(3)
+      cache.updateServiceAccount(new PublishServiceAccount().action(PublishAction.UPDATE).serviceAccount(saServerReset))
+    then:
+      cache.getFeatureCollection(envId, "2") != null
+      cache.getFeatureCollection(envId, apiKeyServerSide) == null
+
+  }
 }

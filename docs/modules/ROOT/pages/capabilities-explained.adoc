@@ -1,7 +1,30 @@
-==== Event Streaming
+==== Event Streaming updates
 
 This relates to the primary purpose of the FeatureHub platform, which is a platform by which a client is able to connect and then receive a constant stream of real-time updates to the features as they change.
-This mechanism is supported via Server Side Events.
+This mechanism is enabled via Server Side Events (SSE).
+
+==== REST-updates by usage/timeout
+You can set a timeout period on the client, but it will only
+update if the features are evaluated. If a request is made for a feature and the timeout period has
+expired, the SDK will update the features in the background. This is ideal for situations where
+a user can be inactive for periods of time - e.g. Mobile or Web.
+
+==== REST-updates by timer polling
+You can set a polling time period on the client. At the end of the
+timeout a REST GET request will always be made, regardless of activity on the client. This is best for
+situations like Web where you want active updates. A user of your software would not sit on your website
+for a long time, and you want it to update fairly quickly.
+
+==== Rollout strategies server and client evaluated
+
+To apply rollout strategies (targeting and percentage rules) _user context_ is required to be passed to the SDKs and can be evaluated either on the client or server. Percentage rollout requires use of the `session` or `userKey` attributes by default, however
+using the Admin SDK you can configure alternative keys.
+
+
+==== Fastly support
+See https://docs.featurehub.io/featurehub/latest/architecture.html#_fastly[Fastly details]
+
+Fastly CDN is supported for all available SDKs for streaming/SSE updates. Some SDKs, that only support SSE updates, do not support Fastly Polling. Please check in the capabilities table above.
 
 ==== Background Start
 
@@ -9,12 +32,12 @@ This relates to the ability for the application to connect to a FeatureHub Edge 
 
 ==== Block until Start
 
-This is usually a capability provided instead of readyness listeners, whereby the library can be told to wait until the connection has been successfully established and there is a list of features, or the connection fails for some reason.
+This is usually a capability provided instead of readiness listeners, whereby the library can be told to wait until the connection has been successfully established and there is a list of features, or the connection fails for some reason.
 It is used to ensure a client has a consistent set of features before functioning and is generally best used for server side software.
 
-==== Readyness Listeners
+==== Readiness Listeners
 
-These perform a similar function to Block until Start, but instead a server can call back or query the readyness status directly and perform the blocking function themselves.
+These perform a similar function to Block until Start, but instead a server can call back or query the readiness status directly and perform the blocking function themselves.
 The ToDo Java and Typescript examples use this mechanism.
 
 ==== Feature Listeners
@@ -30,19 +53,14 @@ This allows them to do that.
 ==== Analytics Support
 
 This is where the library has a mechanism to log an event, potentially attach metadata.
-The library captures the state of all of the features at the point in time of the request and will pass it on to any registered Analytics provider.
+The library captures the state of all the features at the point in time of the request and will pass it on to any registered Analytics provider.
 A platform can have analytics support but no analytics providers.
 We intend over time to support only one, where the data is posted to a backend service which you can then decide where to send and how to send the data.
 
 ==== Google Analytics
 
 This is a client side implementation of the Analytics support.
-It is designed so you need to specify the `User-ID` or `CID`, your `UA-` id and when logging an event, it will fire off into GA the event - one for each value of non-JSON features.
-
-=== Web + Mobile Capabilities
-
-The following capabilities are focused on clients that provide a UI to the client and thus you may wish to control
-the updating of the features.
+You need to specify the `User-ID` or `CID`, your `UA-` id and when logging an event, it will fire off into GA the event - one for each value of non-JSON features.
 
 ==== Catch & Release
 
@@ -59,6 +77,8 @@ You can configure feature interceptors to not be allowed to override locked feat
 
 FeatureHub supports two types of keys that can be used in the FeatureHub SDKs: *Client Evaluated API Keys* and *Server Evaluated API Keys.*
 
+NOTE: If you are using FeatureHub SaaS managed cloud service, SSE connection can only be made with client evaluated API keys and not supported with server evaluated API keys.
+
 The table below highlights the differences between the two key options.
 
 [options="header"]
@@ -73,7 +93,7 @@ The table below highlights the differences between the two key options.
 
 |===================================
 
-* when request is made to get features from FH server, it can, for example, be visible from the client's browser Dev tools, including the request url, that consists of environment id and API Key. As Server evaluated key doesn't return any sensitive information, it doesn't need to be treated as "secret". On contrary, Client evaluated keys should be kept "secret" because they return the data that contains all the features and rollout strategy information which can be sensitive (e.g. user id's, emails, etc.)
+(*) when a request is made to get features from FH server, it can, for example, be visible from the client's browser Dev tools, including the request url, that consists of environment id and API Key. As Server evaluated key doesn't return any sensitive information, it doesn't need to be treated as "secret". On contrary, Client evaluated keys should be kept "secret" because they return the data that contains all the features and rollout strategy information which can be sensitive (e.g. user id's, emails, etc.)
 
 FeatureHub SDKs use a _Context first API_. This means you define information about who is using the features (including anonymous users), and the SDK will evaluate the feature values based on that information.
 
@@ -92,7 +112,7 @@ sensitive information, and as such you should restrict what kinds of application
 
 Client Evaluated Keys are recommended for _services_ - Microservices, Serverless methods, Monolith web apps, batch processes and so forth - where there is no user who can just grab the key, call the Edge API themselves and get the data.
 
-The benefit of a client evaluated key is that you always have all of the information you need to make a decision about the state
+The benefit of a client evaluated key is that you always have all the information you need to make a decision about the state
 of a feature. You can swap between different _Contexts_ (which are usually in APIs a user's request) as often as you like and
 always evaluate the features appropriate to that _Context_ is already local.
 
@@ -123,12 +143,11 @@ request can hold on until the update has occured and then present you with an up
 
 === Test automation support
 
-Test Client / Feature Updater is designed to allow tests to change the values of features in their environments while they are running.
+==== Test client
 
-This will depend on the permissions granted to the service account in the environment that is configured.
+Test Client / Feature Updater is designed to allow tests to change the values of features in their environments while they are running. The updates are made via  `PUT`  to `/features?apiKey=`.
 
-Besides READ permission, a typical service account would need UNLOCK and CHANGE_VALUE to allow tests to modify values.
-Alternatively if features are always unlocked in test environments (which is often the case), CHANGE_VALUE is all that is required, and READ is implicit.
+This will require a service account with LOCK/UNLOCK and CHANGE_VALUE to allow tests to modify values. READ is implicit if CHANGE_VALUE is set.
 
 Changes are checked against the latest version of the feature in the cache.
 Changes that match the current state are simply ignored (and a 200 response given).
@@ -143,7 +162,9 @@ If a feature is locked, any attempt to change it will be ignored.
 It can be null.
 If it is null, and you want to ensure this is set to null (which is ignored for feature flags), make sure you set `updateValue`.
 - `updateValue` - this is specifically for the situation where you are setting a non feature flag to have a null value.
-Otherwise passing a value will assume this is true.
+Otherwise, passing a value will assume this is true.
+
+NOTE: There is also an alternative option to use Admin SDK API (ADK) to control feature values. Refer to https://docs.featurehub.io/featurehub/latest/admin-service-accounts.html[Admin SDK API Keys] and https://docs.featurehub.io/featurehub/latest/admin-development-kit.html[Admin SDK API docs]
 
 === Feature Interceptors
 

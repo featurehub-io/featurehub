@@ -134,9 +134,10 @@ class FeatureSqlApi @Inject constructor(
   }
 
   override fun saveFeatureValue(featureValue: DbFeatureValue) {
+    val originalVersion = featureValue.version
     database.save(featureValue)
 
-    if (auditingEnabled!!) {
+    if (auditingEnabled!! && originalVersion != featureValue.version) { // have we got auditing enabled and did the feature change
       // now saved a versioned copy
       database.save(DbFeatureValueVersion.fromDbFeatureValue(featureValue))
     }
@@ -326,7 +327,7 @@ class FeatureSqlApi @Inject constructor(
             // try and insert this new strategy where they have placed it
             existingStrategies.add(index, strategy)
           }
-          addToStrategyUpdates(type = "add", newStrategy = strategy, strategyUpdates = strategyUpdates)
+          addToStrategyUpdates(type = "added", newStrategy = strategy, strategyUpdates = strategyUpdates)
         } else {
           // its the same as the HISTORICAL one, then we have to assume that they haven't changed it, so we skip it
           if (Objects.deepEquals(strategy, historicalStrategy)) {
@@ -363,7 +364,7 @@ class FeatureSqlApi @Inject constructor(
               }
               strategy.id = newId
             }
-            addToStrategyUpdates(type = "change", newStrategy = strategy, oldStrategy = historicalStrategy, strategyUpdates = strategyUpdates)
+            addToStrategyUpdates(type = "changed", newStrategy = strategy, oldStrategy = historicalStrategy, strategyUpdates = strategyUpdates)
           } else {
             throw OptimisticLockingException() // it has changed since its history and user wants to change it again
           }
@@ -381,7 +382,7 @@ class FeatureSqlApi @Inject constructor(
           .forEach { strategyToDelete ->
             changed = true
             existingStrategies.remove(strategyToDelete)
-            addToStrategyUpdates(type = "delete", oldStrategy = strategyToDelete, strategyUpdates = strategyUpdates)
+            addToStrategyUpdates(type = "deleted", oldStrategy = strategyToDelete, strategyUpdates = strategyUpdates)
           }
       }
 

@@ -4,12 +4,14 @@ If you are considering helping us by writing a new SDK for your favourite langua
 
 [options="header"]
 |===================================
-||Java|Javascript^1^|Go|Dart^2^|C#|Python|Ruby|Swift
-|Event Streaming|Y|Y|Y|Y|Y|Y|Y|N
-|REST-updates by timer polling^5^|N|Y|N|N|N|Y|Y|N
-|REST-updates by usage/timeout^4^|N|Y|N|N|N|Y|Y|Y
-|Rollout Strategies - Server Evaluated^2^|Y|Y|N|Y|Y|Y|Y|Y
-|Rollout Strategies - Client Evaluated^2^|Y|Y|Y|N|Y|Y|Y|N
+||Java^1^|Javascript^2^|Go|Dart^3^|C#^4^|Python|Ruby|Swift
+|Streaming API feature updates (SSE) |Y|Y|Y|Y|Y|Y|Y|N
+|REST API by timer polling (GET feature updates )|Y|Y|N|Y|N|Y|Y|N
+|REST API by usage/timeout (GET feature updates )|N|Y|N|N|N|Y|Y|Y
+|REST API one-off GET requests support |Y|Y|N|Y|N|Y|N|Y
+|Test API (PUT requests to update feature values) |Y|Y|N|Y|Y|N|N|N
+|Rollout Strategies - Server Evaluated|Y|Y|N|Y|Y|Y|Y|Y
+|Rollout Strategies - Client Evaluated|Y|Y|Y|N|Y|Y|Y|N
 |Background Start|Y|Y|Y|Y|Y|Y|Y|Y
 |Block until Start|N|N|Y|N|N|N|N|N
 |Readiness Listeners|Y|Y|Y|Y|Y|N|N|N
@@ -18,50 +20,16 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |Analytics Support|Y|Y|Y|Y|Y|N|N|N
 |Google Analytics|Y|Y|Y|Y|Y|N|N|N
 |Feature Overrides|N|Y|N|N|N|Y|N|N
-|Fastly Polling Support^3^|Y|Y|N|Y|N|Y|Y|Y
+|Fastly Polling Support|Y|Y|N|Y|N|Y|Y|Y
 |Fastly SSE Support|Y|Y|Y|Y|Y|Y|Y|N
+|Catch & Release|N|Y|N|Y|N|N|N|N
+|Feature Interceptors|Y|Y|N|Y|N|Y|Y|Y
 |===================================
 
-1. Javascript also includes Typescript
-
-2. To apply rollout strategies (targeting and percentage rules) _user context_ is required to be passed to the SDKs and can be evaluated either on the client or server. Percentage rollout requires use of the `session` or `userKey` attributes by default, however
-using the Admin SDK you can configure alternative keys.
-
-3. Fastly CDN is supported for all SDKs for streaming (which all SDKs support), and for all SDKs that support Polling.
-Generally Polling is a technique used by client side APIs (such as Dart), so SDKs that only support Streaming (C#, Go)
-do not support Fastly polling. 
-
-4. REST-updates by usage/timeout means that there is a timeout period on the client, but it will only
-update if the features are evaluated. If a request is made for a feature and the timeout period has
-expired, the SDK will update the features in the background. This is ideal for situations where
-a user can be inactive for periods of time - e.g. Mobile or Web.
-
-5. REST-updates by timer polling means there is a timeout period on the client, and at the end of the
-timeout it will always go and get an update, regardless of activity on the client. This is best for
-situations like Web where you want active updates. A user of your software would not sit on your website
-for a long time, and you want it to update fairly quickly.
-
-==== Web + Mobile focused capabilities for SDKs
-
-[options="header"]
-|===================================
-|Web + Mobile Support|Java|Javascript^1^|Go|Dart^2^|C#
-|Catch & Release|N|Y|N|Y|N
-|===================================
-
-==== Development and Test capabilities for SDKs
-
-[options="header"]
-|===================================
-|Dev/Test Capability|Java|Javascript^1^|Go|Dart^2^|C#|Python
-|Test Client|Y|Y|N|Y|Y|N
-|Feature Interceptors|Y|Y|N|Y|N|Y
-|===================================
-
-- *(1)* Javascript and Typescript are supported via a Typescript library.
-This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
-- *(2)* Dart and Flutter are supported by Dart libraries available at https://pub.dev/publishers/featurehub.io/packages[pub.dev].
-- *(3)* Java is supported by libraries from https://search.maven.org/artifact/io.featurehub.sdk/java-client-core[Apache Maven Central].
+- *(1)* Java is supported by libraries from https://search.maven.org/artifact/io.featurehub.sdk/java-client-core[Apache Maven Central].
 You will need to choose an https://search.maven.org/artifact/io.featurehub.sdk/java-client-android[OKHttp] or https://search.maven.org/artifact/io.featurehub.sdk/java-client-jersey[Jersey] client.
+- *(2)* Javascript and Typescript are supported via a Typescript library.
+This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
+- *(3)* Dart and Flutter are supported by Dart libraries available at https://pub.dev/publishers/featurehub.io/packages[pub.dev].
 - *(4)* C# and .NET is supported by libraries from nuget. https://www.nuget.org/packages/FeatureHub.SDK/1.1.0[Nuget.org]
 

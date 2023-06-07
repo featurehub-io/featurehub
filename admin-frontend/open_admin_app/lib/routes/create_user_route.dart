@@ -32,10 +32,10 @@ class AddUserFormWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
-      children: const <Widget>[TopWidget(), BottomWidget()],
+      children: <Widget>[TopWidget(), BottomWidget()],
     );
   }
 }

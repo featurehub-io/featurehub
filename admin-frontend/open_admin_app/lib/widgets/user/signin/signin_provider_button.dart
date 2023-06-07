@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
+
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:mrapi/api.dart';
 
@@ -29,7 +29,7 @@ class SignInProviderButton extends StatelessWidget {
           onPressed: func,
           text: 'Sign in with Keycloak',
           padding: const EdgeInsets.symmetric(vertical: 16),
-          icon: FontAwesome.key,
+          icon: Icons.key,
         );
       default:
         if (providedIcon != null) {

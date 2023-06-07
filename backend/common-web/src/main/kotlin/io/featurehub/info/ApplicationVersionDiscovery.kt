@@ -45,17 +45,23 @@ class ApplicationVersionDiscovery : ApplicationVersion {
 
       while (resources.hasMoreElements()) {
         try {
-          val manifest = Manifest(resources.nextElement().openStream())
+          val nextManifest = resources.nextElement()
+          log.trace("processing manifest {}", nextManifest)
+          val manifest = Manifest(nextManifest.openStream())
           val attr = manifest.mainAttributes.getValue(key)
+          log.trace("attr  is {} - main is {}", attr, manifest.mainAttributes)
           if (attr != null) {
             info = attr.toString()
             cachedInfo[key] = info
+            break;
           }
         } catch (ignored: IOException) {
+          log.trace("Unable to process manifest", ignored)
         }
       }
     }
 
+    log.trace("Not found, checking for file version")
     // this will try and walk up the file  path assuming you are doing local development
     // - it should only happen when we are developing locally
     if (info == null && key == VERSION_STRING) {
@@ -87,3 +93,4 @@ class ApplicationVersionDiscovery : ApplicationVersion {
     return getInfoVal(VERSION_STRING) ?: "<UnknownVersion>"
   }
 }
+

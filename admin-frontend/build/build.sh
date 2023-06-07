@@ -1,5 +1,5 @@
 #!/bin/bash
-#tar xf *.tar
+echo started
 ls -l
 set -exo pipefail
 echo flutter home is $FLUTTER
@@ -38,7 +38,7 @@ echo FLUTTER: building deploy_main
 #  exit 1
 #fi
 echo "building normal version"
-flutter build web --target=lib/deploy_main.dart
+flutter build web --target=lib/deploy_main.dart --release
 
 rename_main_dart
 mv build build_original
@@ -46,7 +46,7 @@ mkdir -p build/web/assets
 
 echo "building canvaskit embedded version"
 # Flutter already downloads Canvaskit, this just lets us use what it has already downloaded
-flutter build web --dart-define=FLUTTER_WEB_CANVASKIT_URL=canvaskit/ --target=lib/deploy_main.dart
+flutter build web --dart-define=FLUTTER_WEB_CANVASKIT_URL=canvaskit/ --target=lib/deploy_main.dart  --release
 
 rename_main_dart
 
@@ -54,7 +54,7 @@ mv build/web build_original/web/intranet
 rm -rf build
 
 echo "building html renderer version"
-flutter build web --target=lib/deploy_main.dart --web-renderer html
+flutter build web --target=lib/deploy_main.dart --web-renderer html  --release
 
 mv build/web build_original/web/html
 rm -rf build
