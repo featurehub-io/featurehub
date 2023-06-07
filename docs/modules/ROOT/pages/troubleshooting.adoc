@@ -92,3 +92,162 @@ but the one we are interested in for REST logging is this one:
 It needs to move outside the comments. Once you do that, all of the details (except auth tokens) will
 start flowing into your logs.
 
+== I need to do X to the database
+
+There are very few tables in FeatureHub, 20 belonging to FeatureHub itself. The Java code that represents them is https://github.com/featurehub-io/featurehub/tree/main/backend/mr-db-models/src/main/java/io/featurehub/db/model[here]. There are some
+basic tables you would expect:
+
+- `fh_portfolio` - stores portfolios, and is essentially the top level table along with
+- `fh_person` - stores people. `fh_person_group_link` stores the link between people and groups.
+
+Next we have those that belong to portfolio:
+
+- `fh_application` - stores applications (portfolios is the parent)
+- `fh_group` - stores portfolio groups
+- `fh_service_account` - stores portfolio service accounts
+
+Further down we have:
+
+- `fh_fv_version` - which stores the history of the feature values as they change
+
+Belonging to the application comes next:
+
+- `fh_environment`. Others such as `fh_acl` (for group/application permissions), `fh_service_account_env` (service
+- `fh_app_feature` - this stores the feature itself
+- `fh_env_feature_strategy` - this stores the feature value (feature intersection with environment) 
+- `fh_userstate` - stores app customisations like which environments are showing
+- `fh_webhook` - stores the results of requested webhooks
+
+Operational tables:
+
+- `fh_login` - keeps track of issued tokens. If you wanted to kick everyone off and make them login again, delete everything here for example.
+
+And misc tables:
+
+- `db_migration` - to keep track of database migrations
+- `fh_after_mig_job` - tracks jobs that need to run once after a migration occurs because of data structural changes
+- `fh_cache` - obsolete
+- `fh_organisation` - just stores your Organisation name.
+
+Exists in API but not currently used:
+
+- `fh_app_strategy` - these are shared strategies for an application and aren't currently surfaced in the UI
+- `fh_strat_for_feature` - stores the values a shared strategy has against a feature in an environment
+
+=== Example
+
+If for example  you wanted to swap an application from one portfolio to the next, then you need to carefully cut the
+ties of that application with its existing portfolio. That would mean cutting ties with the groups (the ones you have
+created as well as modifying the superuser group who can create feature), as well as any service accounts.
+
+Here we will swap the application "app1" from portfolio "Second" to "First".
+
+[source,sql92]
+----
+# find the IDs of the portfolios
+MariaDB [featurehub]> select id, name from fh_portfolio;
++--------------------------------------+-----------------+
+| id                                   | name            |
++--------------------------------------+-----------------+
+| b5d3d5d9-6830-4176-86b1-a64d9c590c0f | First Portfolio |
+| e4687958-5751-430f-9f9e-468583a62c76 | Fourth          |
+| 621f36fc-6491-4b9e-9a70-47192ce3cb85 | Second          |
+| 3cc2a2fd-5469-42ab-a8a6-7a462189ff92 | Third           |
++--------------------------------------+-----------------+
+4 rows in set (0.001 sec)
+
+# find the app in portfolio "Second"
+MariaDB [featurehub]> select id, name from fh_application where fk_portfolio_id = '621f36fc-6491-4b9e-9a70-47192ce3cb85';
++--------------------------------------+------+
+| id                                   | name |
++--------------------------------------+------+
+| a0ddda31-2cf8-4c12-9a04-15674d731bd5 | app1 |
++--------------------------------------+------+
+1 row in set (0.000 sec)
+
+MariaDB [featurehub]> desc fh_acl;
++----------------+--------------+------+-----+---------+-------+
+| Field          | Type         | Null | Key | Default | Extra |
++----------------+--------------+------+-----+---------+-------+
+| id             | varchar(40)  | NO   | PRI | NULL    |       |
+| environment_id | varchar(40)  | YES  | MUL | NULL    |       |
+| application_id | varchar(40)  | YES  | MUL | NULL    |       |
+| group_id       | varchar(40)  | YES  | MUL | NULL    |       |
+| roles          | varchar(255) | YES  |     | NULL    |       |
+| version        | bigint(20)   | NO   |     | NULL    |       |
+| when_updated   | datetime(6)  | NO   |     | NULL    |       |
+| when_created   | datetime(6)  | NO   |     | NULL    |       |
++----------------+--------------+------+-----+---------+-------+
+8 rows in set (0.001 sec)
+
+# find the permission ACLs in the app. One is the superuser and attached to the superuser group for that portfolio, and the second is specifically a permission to an environment for that portfolio's group
+MariaDB [featurehub]> select * from fh_acl where application_id = 'a0ddda31-2cf8-4c12-9a04-15674d731bd5' or environment_id in (select id from fh_environment where fk_app_id='a0ddda31-2cf8-4c12-9a04-15674d731bd5');
++--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------+
+| id                                   | environment_id                       | application_id                       | group_id                             | roles        |
++--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------+
+| 7c8d400c-2daf-4268-acf8-b59cc1252e0b | NULL                                 | a0ddda31-2cf8-4c12-9a04-15674d731bd5 | 7a789c02-8964-4ff3-8d6a-27656e5a4aed | FEATURE_EDIT |
+| f5ce52eb-92e9-47ad-bcbf-15cc65841a25 | 98f0a596-3224-46f3-8800-ee98dbafbbd9 | NULL                                 | d0009d21-856e-47db-910b-c363d4fe1011 | READ         |
++--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+--------------+
+2 rows in set (0.000 sec)
+
+MariaDB [featurehub]> desc fh_service_account_env;
++-----------------------+--------------+------+-----+---------+-------+
+| Field                 | Type         | Null | Key | Default | Extra |
++-----------------------+--------------+------+-----+---------+-------+
+| id                    | varchar(40)  | NO   | PRI | NULL    |       |
+| fk_environment_id     | varchar(40)  | NO   | MUL | NULL    |       |
+| permissions           | varchar(200) | YES  |     | NULL    |       |
+| fk_service_account_id | varchar(40)  | NO   | MUL | NULL    |       |
+| when_updated          | datetime(6)  | NO   |     | NULL    |       |
+| when_created          | datetime(6)  | NO   |     | NULL    |       |
+| version               | bigint(20)   | NO   |     | NULL    |       |
++-----------------------+--------------+------+-----+---------+-------+
+7 rows in set (0.002 sec)
+
+# find the service account connections to this app
+MariaDB [featurehub]> select * from fh_service_account_env where fk_environment_id in (select id from fh_environment where fk_app_id='a0ddda31-2cf8-4c12-9a04-15674d731bd5');
++--------------------------------------+--------------------------------------+-------------------------------+--------------------------------------+
+| id                                   | fk_environment_id                    | permissions                   | fk_service_account_id                |
++--------------------------------------+--------------------------------------+-------------------------------+--------------------------------------+
+| 8e114d6d-442c-4d5a-b5b2-a01588bea843 | 98f0a596-3224-46f3-8800-ee98dbafbbd9 | READ,UNLOCK,LOCK,CHANGE_VALUE | 034b6682-4059-4c7d-982d-d01a5ca11a2e |
++--------------------------------------+--------------------------------------+-------------------------------+--------------------------------------+
+1 row in set (0.001 sec)
+
+# now delete those service account permissions
+MariaDB [featurehub]> delete from fh_service_account_env where fk_environment_id in (select id from fh_environment where fk_app_id='a0ddda31-2cf8-4c12-9a04-15674d731bd5');
+Query OK, 1 row affected (0.002 sec)
+    
+# get rid of the ACL that is specific to the environment as the group belongs to the portfolio
+MariaDB [featurehub]> delete from fh_acl where id = 'f5ce52eb-92e9-47ad-bcbf-15cc65841a25';
+Query OK, 1 row affected (0.002 sec)
+
+
+# find the group for the superusers in the "First" portfolio
+MariaDB [featurehub]> select id, group_name from fh_group where fk_portfolio_id = 'b5d3d5d9-6830-4176-86b1-a64d9c590c0f';
++--------------------------------------+--------------------------------+
+| id                                   | group_name                     |
++--------------------------------------+--------------------------------+
+| e4fb3ba6-a5f0-46f8-91a5-b317c9a26887 | First Portfolio Administrators |
++--------------------------------------+--------------------------------+
+1 row in set (0.000 sec)
+
+# confirm we have only the one permission left and it is the wrong group id
+MariaDB [featurehub]> select * from fh_acl where application_id = 'a0ddda31-2cf8-4c12-9a04-15674d731bd5' or environment_id in (select id from fh_environment where fk_app_id='a0ddda31-2cf8-4c12-9a04-15674d731bd5');
++--------------------------------------+----------------+--------------------------------------+--------------------------------------+--------------+---------+----------------------------+----------------------------+
+| id                                   | environment_id | application_id                       | group_id                             | roles        | version | when_updated               | when_created               |
++--------------------------------------+----------------+--------------------------------------+--------------------------------------+--------------+---------+----------------------------+----------------------------+
+| 7c8d400c-2daf-4268-acf8-b59cc1252e0b | NULL           | a0ddda31-2cf8-4c12-9a04-15674d731bd5 | 7a789c02-8964-4ff3-8d6a-27656e5a4aed | FEATURE_EDIT |       1 | 2023-06-07 05:51:58.828000 | 2023-06-07 05:51:58.828000 |
++--------------------------------------+----------------+--------------------------------------+--------------------------------------+--------------+---------+----------------------------+----------------------------+
+1 row in set (0.001 sec)
+
+# swap the group id to the right group id (the one in portfolio "First")
+MariaDB [featurehub]> update fh_acl set group_id = 'e4fb3ba6-a5f0-46f8-91a5-b317c9a26887' where id = '7c8d400c-2daf-4268-acf8-b59cc1252e0b';
+Query OK, 1 row affected (0.002 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+# tell the application it has a new portfolio
+MariaDB [featurehub]> update fh_application set fk_portfolio_id = 'b5d3d5d9-6830-4176-86b1-a64d9c590c0f' where id = 'a0ddda31-2cf8-4c12-9a04-15674d731bd5';
+Query OK, 1 row affected (0.001 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+----
