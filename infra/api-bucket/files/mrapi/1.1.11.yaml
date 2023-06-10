@@ -1027,6 +1027,171 @@ paths:
       schema:
         type: string
         format: uuid
+  /mr-api/application/{appId}/feature-groups:
+    get:
+      tags:
+      - FeatureGroupService
+      description: Get feature groups for this application
+      operationId: listFeatureGroups
+      parameters:
+      - name: filter
+        in: query
+        description: A filter to apply to the features - partial match of key or description
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: max
+        in: query
+        description: The maximum number of features to get for this page
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: page
+        in: query
+        description: The page number of the results. 0 indexed.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: sortOrder
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/SortOrder'
+      responses:
+        "200":
+          description: List of feature groups
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureGroupList'
+        "401":
+          description: no permission
+        "404":
+          description: no application
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - FeatureGroupService
+      description: Get feature groups for this application
+      operationId: createFeatureGroup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureGroupUpdate'
+        required: true
+      responses:
+        "201":
+          description: Feature Group Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureGroup'
+        "400":
+          description: bad request
+        "409":
+          description: duplicate
+        "401":
+          description: no permission
+        "404":
+          description: no application
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: appId
+      in: path
+      description: The id of the application to find
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+  /mr-api/application/{appId}/feature-groups/{fgId}:
+    get:
+      tags:
+      - FeatureGroupService
+      description: Get feature groups for this application
+      operationId: getFeatureGroup
+      responses:
+        "200":
+          description: Feature Group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureGroup'
+        "401":
+          description: no permission
+        "404":
+          description: no application or feature group
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - FeatureGroupService
+      description: Get feature groups for this application
+      operationId: updateFeatureGroup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureGroupUpdate'
+        required: true
+      responses:
+        "200":
+          description: Feature Group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureGroup'
+        "401":
+          description: no permission
+        "404":
+          description: no application or feature group
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - FeatureGroupService
+      description: Delete this feature group
+      operationId: deleteFeatureGroup
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: no permission
+        "404":
+          description: no application or feature group
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: appId
+      in: path
+      description: The id of the application
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: fgId
+      in: path
+      description: The id of the feature group
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
   /mr-api/application/{appId}:
     get:
       tags:
@@ -3930,6 +4095,85 @@ components:
           whenArchived:
             type: string
             format: date-time
+    FeatureGroupFeature:
+      required:
+      - id
+      - key
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        value:
+          description: value (if any) associated with this feature
+    FeatureGroup:
+      required:
+      - environmentId
+      - environmentName
+      - features
+      - id
+      - name
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        environmentId:
+          type: string
+          format: string
+        environmentName:
+          type: string
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureGroupFeature'
+        strategy:
+          $ref: '#/components/schemas/RolloutStrategy'
+    FeatureGroupUpdateFeature:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        value:
+          description: value (if any) associated with this feature
+    FeatureGroupUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: allow changing the name
+        environmentId:
+          type: string
+          description: allow swapping the environment
+          format: uuid
+        features:
+          type: array
+          description: allow updating the features
+          items:
+            $ref: '#/components/schemas/FeatureGroupUpdateFeature'
+        strategy:
+          $ref: '#/components/schemas/RolloutStrategy'
+      description: "An update, everything is optional, we will only update what we\
+        \ update"
+    FeatureGroupList:
+      required:
+      - count
+      - featureGroups
+      type: object
+      properties:
+        count:
+          type: integer
+        featureGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureGroup'
     ApplicationGroupRole:
       required:
       - applicationId

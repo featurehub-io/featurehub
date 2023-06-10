@@ -2,44 +2,24 @@ package io.featurehub.mr.utils;
 
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.Person;
+import org.jetbrains.annotations.NotNull;
 
 public class ApplicationPermissionCheck {
-  private Person current;
-  private Application app;
+  @NotNull
+  private final Person current;
+  @NotNull
+  private final Application app;
 
-  private ApplicationPermissionCheck(Builder builder) {
-    current = builder.current;
-    app = builder.app;
+  public ApplicationPermissionCheck(@NotNull Person current, @NotNull Application app) {
+    this.current = current;
+    this.app = app;
   }
 
-  public Person getCurrent() {
+  public @NotNull Person getCurrent() {
     return current;
   }
 
-  public Application getApp() {
+  public @NotNull Application getApp() {
     return app;
-  }
-
-
-  public static final class Builder {
-    private Person current;
-    private Application app;
-
-    public Builder() {
-    }
-
-    public Builder current(Person val) {
-      current = val;
-      return this;
-    }
-
-    public Builder app(Application val) {
-      app = val;
-      return this;
-    }
-
-    public ApplicationPermissionCheck build() {
-      return new ApplicationPermissionCheck(this);
-    }
   }
 }
