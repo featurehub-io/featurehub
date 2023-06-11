@@ -1075,6 +1075,8 @@ paths:
           description: "no permission"
         404:
           description: "no application or feature group"
+        412:
+          description: "attempt to update an old group"
   /mr-api/application/{appId}:
     parameters:
       - name: appId
