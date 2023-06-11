@@ -9,10 +9,10 @@ import org.jetbrains.annotations.NotNull;
 @Embeddable
 public class DbFeatureGroupFeatureKey extends Model {
 
-  @Column(name = "fk_feat_id")
-  @NotNull private final UUID feature;
-  @Column(name = "fk_fg_id")
-  @NotNull private final UUID group;
+  @Column(name = "fk_feat_id", nullable = false)
+  @NotNull private UUID feature;
+  @Column(name = "fk_fg_id", nullable = false)
+  @NotNull private UUID group;
 
   public DbFeatureGroupFeatureKey(@NotNull UUID feature, @NotNull UUID featureGroup) {
     this.feature = feature;
@@ -25,6 +25,14 @@ public class DbFeatureGroupFeatureKey extends Model {
 
   public @NotNull UUID getFeature() {
     return feature;
+  }
+
+  public void setFeature(@NotNull UUID feature) {
+    this.feature = feature;
+  }
+
+  public void setGroup(@NotNull UUID group) {
+    this.group = group;
   }
 
   @Override

@@ -2,10 +2,7 @@ package io.featurehub.mr.resources
 
 import io.featurehub.db.api.FeatureGroupApi
 import io.featurehub.mr.api.FeatureGroupServiceDelegate
-import io.featurehub.mr.model.FeatureGroup
-import io.featurehub.mr.model.FeatureGroupList
-import io.featurehub.mr.model.FeatureGroupUpdate
-import io.featurehub.mr.model.SortOrder
+import io.featurehub.mr.model.*
 import io.featurehub.mr.utils.ApplicationUtils
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
@@ -27,14 +24,14 @@ class FeatureGroupResource @Inject constructor(
 
   override fun createFeatureGroup(
     appId: UUID,
-    featureGroupUpdate: FeatureGroupUpdate,
+    featureGroup: FeatureGroupCreate,
     securityContext: SecurityContext
   ): FeatureGroup {
 
     val check = applicationUtils.featureCreatorCheck(securityContext, appId)
 
     try {
-      return featureGroupApi.createGroup(appId, check.current, featureGroupUpdate)
+      return featureGroupApi.createGroup(appId, check.current, featureGroup) ?: throw NotFoundException()
     } catch (dne: FeatureGroupApi.DuplicateNameException) {
       throw WebApplicationException("Duplicate Name", 409)
     }
@@ -74,6 +71,10 @@ class FeatureGroupResource @Inject constructor(
     securityContext: SecurityContext
   ): FeatureGroup {
     val check = applicationUtils.featureCreatorCheck(securityContext, appId)
-    return featureGroupApi.updateGroup(appId, check.current, fgId, featureGroupUpdate) ?: throw NotFoundException()
+    try {
+      return featureGroupApi.updateGroup(appId, check.current, fgId, featureGroupUpdate) ?: throw NotFoundException()
+    } catch (oex: FeatureGroupApi.OptimisticLockingException) {
+      throw WebApplicationException("Attemping to update old version", 412)
+    }
   }
 }

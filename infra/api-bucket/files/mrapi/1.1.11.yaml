@@ -1087,7 +1087,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FeatureGroupUpdate'
+              $ref: '#/components/schemas/FeatureGroupCreate'
         required: true
       responses:
         "201":
@@ -3598,6 +3598,11 @@ components:
             \ is used."
           items:
             $ref: '#/components/schemas/RolloutStrategy'
+        featureGroupStrategies:
+          type: array
+          description: There are strategies provided by feature groups (if any)
+          items:
+            $ref: '#/components/schemas/FeatureGroupFeatureValueStrategy'
         environmentId:
           type: string
           format: uuid
@@ -4095,6 +4100,16 @@ components:
           whenArchived:
             type: string
             format: date-time
+    FeatureGroupFeatureValueStrategy:
+      type: object
+      properties:
+        featureGroupId:
+          type: string
+          format: uuid
+        strategyName:
+          type: string
+        value:
+          description: value of strategy
     FeatureGroupFeature:
       required:
       - id
@@ -4115,6 +4130,7 @@ components:
       - features
       - id
       - name
+      - version
       type: object
       properties:
         id:
@@ -4122,9 +4138,12 @@ components:
           format: uuid
         name:
           type: string
+        version:
+          type: integer
+          format: int64
         environmentId:
           type: string
-          format: string
+          format: uuid
         environmentName:
           type: string
         features:
@@ -4132,7 +4151,7 @@ components:
           items:
             $ref: '#/components/schemas/FeatureGroupFeature'
         strategy:
-          $ref: '#/components/schemas/RolloutStrategy'
+          $ref: '#/components/schemas/FeatureGroupStrategy'
     FeatureGroupUpdateFeature:
       required:
       - id
@@ -4143,7 +4162,7 @@ components:
           format: uuid
         value:
           description: value (if any) associated with this feature
-    FeatureGroupUpdate:
+    FeatureGroupCRUDBase:
       type: object
       properties:
         name:
@@ -4159,9 +4178,76 @@ components:
           items:
             $ref: '#/components/schemas/FeatureGroupUpdateFeature'
         strategy:
-          $ref: '#/components/schemas/RolloutStrategy'
+          $ref: '#/components/schemas/FeatureGroupStrategy'
       description: "An update, everything is optional, we will only update what we\
         \ update"
+    FeatureGroupStrategy:
+      type: object
+      properties:
+        percentage:
+          type: integer
+          description: value between 0 and 1000000 - for four decimal places
+        percentageAttributes:
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you\
+            \ can use one or more attributes defined here"
+          items:
+            type: string
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
+    FeatureGroupCreate:
+      allOf:
+      - $ref: '#/components/schemas/FeatureGroupCRUDBase'
+      - required:
+        - environmentId
+        - features
+        - name
+        type: object
+    FeatureGroupUpdate:
+      allOf:
+      - $ref: '#/components/schemas/FeatureGroupCRUDBase'
+      - required:
+        - version
+        type: object
+        properties:
+          version:
+            type: integer
+            format: int64
+    FeatureGroupListFeature:
+      required:
+      - key
+      type: object
+      properties:
+        key:
+          type: string
+    FeatureGroupListGroup:
+      required:
+      - environmentId
+      - environmentName
+      - features
+      - id
+      - name
+      - order
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        order:
+          type: integer
+        name:
+          type: string
+        environmentName:
+          type: string
+        environmentId:
+          type: string
+          format: uuid
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureGroupListFeature'
     FeatureGroupList:
       required:
       - count
@@ -4173,7 +4259,7 @@ components:
         featureGroups:
           type: array
           items:
-            $ref: '#/components/schemas/FeatureGroup'
+            $ref: '#/components/schemas/FeatureGroupListGroup'
     ApplicationGroupRole:
       required:
       - applicationId

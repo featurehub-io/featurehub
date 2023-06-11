@@ -4,6 +4,7 @@ import io.featurehub.db.api.ApplicationApi;
 import io.featurehub.db.api.AuthenticationApi;
 import io.featurehub.db.api.EnvironmentApi;
 import io.featurehub.db.api.FeatureApi;
+import io.featurehub.db.api.FeatureGroupApi;
 import io.featurehub.db.api.GroupApi;
 import io.featurehub.db.api.OrganizationApi;
 import io.featurehub.db.api.PersonApi;
@@ -23,6 +24,7 @@ import io.featurehub.db.services.Conversions;
 import io.featurehub.db.services.ConvertUtils;
 import io.featurehub.db.services.DbArchiveStrategy;
 import io.featurehub.db.services.EnvironmentSqlApi;
+import io.featurehub.db.services.FeatureGroupSqlApi;
 import io.featurehub.db.services.FeatureSqlApi;
 import io.featurehub.db.services.GroupSqlApi;
 import io.featurehub.db.services.InternalFeatureSqlApi;
@@ -58,5 +60,6 @@ public class ApiToSqlApiBinder extends AbstractBinder {
     bind(RolloutStrategyValidationUtils.class).to(RolloutStrategyValidator.class).in(Singleton.class);
     bind(RolloutStrategySqlApi.class).to(RolloutStrategyApi.class).in(Singleton.class);
     bind(WebhookSqlApi.class).to(WebhookApi.class).in(Singleton.class);
+    bind(FeatureGroupSqlApi.class).to(FeatureGroupApi.class).in(Singleton.class);
   }
 }

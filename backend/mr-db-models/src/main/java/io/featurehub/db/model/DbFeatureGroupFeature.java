@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,20 +16,23 @@ import org.jetbrains.annotations.Nullable;
 @Table(name = "fh_fg_feat")
 public class DbFeatureGroupFeature extends Model {
   @EmbeddedId
-  @NotNull private final DbFeatureGroupFeatureKey key;
+  @NotNull private DbFeatureGroupFeatureKey key;
 
   @Nullable
   @Lob
+  @Column(name = "v")
   private String value;
 
   @ManyToOne(optional = false)
+  @MapsId("feature")
   @Column(name = "fk_feat_id", nullable = false)
-  @JoinColumn(name = "fk_feat_id", referencedColumnName = "id", updatable = false)
+  @JoinColumn(name = "fk_feat_id", referencedColumnName = "id", updatable = false, nullable = false)
   private DbApplicationFeature feature;
 
   @ManyToOne(optional = false)
+  @MapsId("group")
   @Column(name = "fk_fg_id", nullable = false)
-  @JoinColumn(name = "fk_fg_id", referencedColumnName = "id", updatable = false)
+  @JoinColumn(name = "fk_fg_id", referencedColumnName = "id", updatable = false, nullable = false)
   private DbFeatureGroup group;
 
   public DbFeatureGroupFeature(@NotNull DbFeatureGroupFeatureKey key) {
@@ -53,5 +57,13 @@ public class DbFeatureGroupFeature extends Model {
 
   @NotNull public DbFeatureGroup getGroup() {
     return group;
+  }
+
+  public void setFeature(DbApplicationFeature feature) {
+    this.feature = feature;
+  }
+
+  public void setGroup(DbFeatureGroup group) {
+    this.group = group;
   }
 }

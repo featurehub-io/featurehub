@@ -1,12 +1,17 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.DbJson;
+import io.featurehub.mr.model.FeatureGroupStrategy;
+import io.featurehub.mr.model.RolloutStrategy;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+import java.time.Instant;
 import java.util.List;
 
 @Entity
@@ -21,6 +26,7 @@ public class DbFeatureGroup  extends DbVersionedBase {
   @JoinColumn(name = "fk_environment_id")
   private DbEnvironment environment;
 
+  @OneToMany
   private List<DbFeatureGroupFeature> features;
 
   public DbFeatureGroup(String name, DbEnvironment environment) {
@@ -28,8 +34,12 @@ public class DbFeatureGroup  extends DbVersionedBase {
     this.environment = environment;
   }
 
+  @DbJson
   @Lob
-  private String strategies;
+  private FeatureGroupStrategy strategy;
+
+  @Column(nullable = true)
+  private Instant whenArchived;
 
   public int getOrder() {
     return order;
@@ -63,12 +73,12 @@ public class DbFeatureGroup  extends DbVersionedBase {
     this.features = features;
   }
 
-  public String getStrategies() {
-    return strategies;
+  public FeatureGroupStrategy getStrategy() {
+    return strategy;
   }
 
-  public void setStrategies(String strategies) {
-    this.strategies = strategies;
+  public void setStrategy(FeatureGroupStrategy strategy) {
+    this.strategy = strategy;
   }
 
   private DbPerson whoUpdated;
@@ -90,5 +100,13 @@ public class DbFeatureGroup  extends DbVersionedBase {
 
   public void setWhoCreated(DbPerson whoCreated) {
     this.whoCreated = whoCreated;
+  }
+
+  public Instant getWhenArchived() {
+    return whenArchived;
+  }
+
+  public void setWhenArchived(Instant whenArchived) {
+    this.whenArchived = whenArchived;
   }
 }
