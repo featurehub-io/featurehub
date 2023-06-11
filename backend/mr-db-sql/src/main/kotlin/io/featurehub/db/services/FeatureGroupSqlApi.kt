@@ -12,6 +12,7 @@ import io.featurehub.mr.model.*
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import java.time.Instant
 import java.util.*
 
@@ -83,6 +84,10 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
   }
 
   private fun toFeatureGroup(featureGroup: DbFeatureGroup): FeatureGroup {
+    val features = featureGroup.features?.map {
+      FeatureGroupFeature().id(it.feature.id).key(it.feature.key).value(cast(it.value, it.feature.valueType!!))
+    } ?: mutableListOf()
+
     return FeatureGroup()
       .id(featureGroup.id)
       .environmentId(featureGroup.environment.id)
@@ -90,9 +95,17 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
       .strategy(featureGroup.strategy)
       .name(featureGroup.name)
       .version(featureGroup.version)
-      .features(featureGroup.features?.map {
-        FeatureGroupFeature().id(it.feature.id).key(it.feature.key).value(it.value)
-      } ?: listOf())
+      .features(features.sortedBy { it.key })
+  }
+
+  private fun cast(value: String?, valueType: FeatureValueType): Any? {
+    if (value == null) return null
+    return when(valueType) {
+      FeatureValueType.BOOLEAN -> "true" == value
+      FeatureValueType.STRING -> value.toString()
+      FeatureValueType.NUMBER -> BigDecimal(value.toString())
+      FeatureValueType.JSON -> value.toString()
+    }
   }
 
   @Transactional(type=TxType.REQUIRES_NEW)
@@ -157,7 +170,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
         items.get().map {
           FeatureGroupListGroup().id(it.id).name(it.name)
             .order(it.order).environmentId(it.environment.id).environmentName(it.environment.name)
-            .features(it.features?.map { feat -> FeatureGroupListFeature().key(feat.feature.key) } ?: listOf())
+            .features((it.features?.map { feat -> FeatureGroupListFeature().key(feat.feature.key) } ?: mutableListOf()).sortedBy { it.key })
         }
       )
   }
@@ -216,7 +229,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
           val newVal = found.value?.toString() ?: (if (feat.feature.valueType == FeatureValueType.BOOLEAN) "false" else null)
 
           if (feat.value != newVal) {
-            found.value = newVal
+            feat.value = newVal
             updates.updatedFeatures.add(feat)
           }
 
@@ -252,7 +265,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
 
     features.deletedFeatures.forEach { it.delete() }
     features.updatedFeatures.forEach { it.update() }
-    features.addedFeatures.forEach { it.update() }
+    features.addedFeatures.forEach { it.save() }
   }
 }
 
