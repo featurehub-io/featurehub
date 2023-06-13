@@ -3626,17 +3626,19 @@ components:
       required:
         - id
         - name
-        - description
         - features
         - environmentId
         - environmentName
         - version
+        - order
       properties:
         id:
           type: string
           format: uuid
         name:
           type: string
+        order:
+          type: integer
         description:
           type: string
         version:
@@ -3669,6 +3671,8 @@ components:
       properties:
         name:
           description: "allow changing the name"
+          type: string
+        description:
           type: string
         environmentId:
           description: "allow swapping the environment"
@@ -3726,7 +3730,6 @@ components:
       required:
         - id
         - name
-        - description
         - environmentName
         - environmentId
         - order

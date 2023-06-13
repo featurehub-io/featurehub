@@ -58,6 +58,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
     val fg = with(DbFeatureGroup(featureGroup.name, env)) {
       order = highest
       strategy = featureGroup.strategy
+      description = featureGroup.description
 
       whoCreated = person
       whoUpdated = person
@@ -90,6 +91,8 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
 
     return FeatureGroup()
       .id(featureGroup.id)
+      .order(featureGroup.order)
+      .description(featureGroup.description)
       .environmentId(featureGroup.environment.id)
       .environmentName(featureGroup.environment.name)
       .strategy(featureGroup.strategy)
@@ -141,6 +144,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
     var finder = QDbFeatureGroup()
       .select(
         QDbFeatureGroup.Alias.id, QDbFeatureGroup.Alias.name, QDbFeatureGroup.Alias.order,
+        QDbFeatureGroup.Alias.description,
         QDbFeatureGroup.Alias.environment.id, QDbFeatureGroup.Alias.environment.name,
         QDbFeatureGroup.Alias.features.feature.key
       )
@@ -170,6 +174,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
         items.get().map {
           FeatureGroupListGroup().id(it.id).name(it.name)
             .order(it.order).environmentId(it.environment.id).environmentName(it.environment.name)
+            .description(it.description)
             .features((it.features?.map { feat -> FeatureGroupListFeature().key(feat.feature.key) } ?: mutableListOf()).sortedBy { it.key })
         }
       )
@@ -192,6 +197,15 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
       if (newName != group.name) {
         group.name = newName
         nameChanged = true
+      }
+    }
+
+    var descChanged = false
+
+    update.description?.let { newDesc ->
+      if (newDesc != group.description) {
+        group.description = newDesc
+        descChanged = true
       }
     }
 
@@ -251,7 +265,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
       }
     }
 
-    if (nameChanged || environmentChanged || strategyChanged || updates.updatedFeatures.isNotEmpty() || updates.deletedFeatures.isNotEmpty() || updates.addedFeatures.isNotEmpty()) {
+    if (nameChanged || environmentChanged || strategyChanged || descChanged || updates.updatedFeatures.isNotEmpty() || updates.deletedFeatures.isNotEmpty() || updates.addedFeatures.isNotEmpty()) {
       updateGroup(group, updates)
       group.refresh()
     }

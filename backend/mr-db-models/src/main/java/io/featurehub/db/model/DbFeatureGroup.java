@@ -20,6 +20,8 @@ public class DbFeatureGroup  extends DbVersionedBase {
   @Column(name = "gp_order")
   private int order;
   private String name;
+  @Column(name = "dscr")
+  private String description;
 
   @ManyToOne(optional = false)
   @Column(name = "fk_environment_id", nullable = false)
@@ -108,5 +110,13 @@ public class DbFeatureGroup  extends DbVersionedBase {
 
   public void setWhenArchived(Instant whenArchived) {
     this.whenArchived = whenArchived;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 }

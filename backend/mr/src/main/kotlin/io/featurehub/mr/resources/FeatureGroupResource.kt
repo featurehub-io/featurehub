@@ -26,12 +26,21 @@ class FeatureGroupResource @Inject constructor(
     appId: UUID,
     featureGroup: FeatureGroupCreate,
     securityContext: SecurityContext
-  ): FeatureGroup {
+  ): FeatureGroupListGroup {
 
     val check = applicationUtils.featureCreatorCheck(securityContext, appId)
 
     try {
-      return featureGroupApi.createGroup(appId, check.current, featureGroup) ?: throw NotFoundException()
+      val fg = featureGroupApi.createGroup(appId, check.current, featureGroup) ?: throw NotFoundException()
+
+      return FeatureGroupListGroup()
+        .name(fg.name)
+        .environmentName(fg.environmentName)
+        .environmentId(fg.environmentId)
+        .order(fg.order)
+        .description(fg.description)
+        .id(fg.id)
+        .features(fg.features.map { FeatureGroupListFeature().key(it.key) })
     } catch (dne: FeatureGroupApi.DuplicateNameException) {
       throw WebApplicationException("Duplicate Name", 409)
     }

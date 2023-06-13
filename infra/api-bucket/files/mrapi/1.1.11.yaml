@@ -1065,6 +1065,15 @@ paths:
         explode: true
         schema:
           $ref: '#/components/schemas/SortOrder'
+      - name: environmentId
+        in: query
+        description: Match based on environment id
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: uuid
       responses:
         "200":
           description: List of feature groups
@@ -1095,7 +1104,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FeatureGroup'
+                $ref: '#/components/schemas/FeatureGroupListGroup'
         "400":
           description: bad request
         "409":
@@ -1157,6 +1166,8 @@ paths:
           description: no permission
         "404":
           description: no application or feature group
+        "412":
+          description: attempt to update an old group
       security:
       - bearerAuth: []
     delete:
@@ -4130,6 +4141,7 @@ components:
       - features
       - id
       - name
+      - order
       - version
       type: object
       properties:
@@ -4137,6 +4149,10 @@ components:
           type: string
           format: uuid
         name:
+          type: string
+        order:
+          type: integer
+        description:
           type: string
         version:
           type: integer
@@ -4168,6 +4184,8 @@ components:
         name:
           type: string
           description: allow changing the name
+        description:
+          type: string
         environmentId:
           type: string
           description: allow swapping the environment
@@ -4238,6 +4256,8 @@ components:
         order:
           type: integer
         name:
+          type: string
+        description:
           type: string
         environmentName:
           type: string
