@@ -2,8 +2,7 @@ package io.featurehub.encryption
 
 import spock.lang.Specification
 
-
-class SymmetricEncrypterIntegrationTest extends Specification {
+class SymmetricEncrypterIntegrationSpec extends Specification {
 
   def symmetricEncrypter = new SymmetricEncrypterImpl()
 
