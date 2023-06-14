@@ -70,7 +70,7 @@ class FeatureGroupResource @Inject constructor(
     return featureGroupApi.listGroups(appId,
       holder.max ?: defaultMax,
         holder.filter,
-      holder.page ?: 0, holder.sortOrder ?: SortOrder.ASC)
+      holder.page ?: 0, holder.sortOrder ?: SortOrder.ASC, holder.environmentId)
   }
 
   override fun updateFeatureGroup(

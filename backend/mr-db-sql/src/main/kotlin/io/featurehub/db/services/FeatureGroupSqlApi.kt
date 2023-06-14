@@ -138,7 +138,8 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
     maxPerPage: Int,
     filter: String?,
     pageNum: Int,
-    sortOrder: SortOrder
+    sortOrder: SortOrder,
+    environmentId: UUID?
   ): FeatureGroupList {
     val max = maxPerPage.coerceAtLeast(1).coerceAtMost(100)
     var finder = QDbFeatureGroup()
@@ -157,6 +158,10 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
 
     if (filter != null) {
       finder = finder.name.ilike("%${filter}%")
+    }
+
+    environmentId?.let { envId ->
+      finder = finder.environment.id.eq(envId)
     }
 
     finder = if (sortOrder == SortOrder.ASC) {

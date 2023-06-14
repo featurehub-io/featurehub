@@ -10,6 +10,6 @@ interface FeatureGroupApi {
   fun createGroup(appId: UUID, current: Person, featureGroup: FeatureGroupCreate): FeatureGroup?
   fun deleteGroup(appId: UUID, current: Person, fgId: UUID): Boolean
   fun getGroup(appId: UUID, current: Person, fgId: UUID): FeatureGroup?
-  fun listGroups(appId: UUID, maxPerPage: Int, filter: String?, pageNum: Int, sortOrder: SortOrder): FeatureGroupList
+  fun listGroups(appId: UUID, maxPerPage: Int, filter: String?, pageNum: Int, sortOrder: SortOrder, environmentId: UUID?): FeatureGroupList
   fun updateGroup(appId: UUID, current: Person, fgId: UUID, update: FeatureGroupUpdate): FeatureGroup?
 }

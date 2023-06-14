@@ -32,7 +32,7 @@ class FeatureGroupSpec extends Base3Spec {
       def created2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name("name1").environmentId(env1.id).features(
         [new FeatureGroupUpdateFeature().id(feature.id)]).strategy(new FeatureGroupStrategy().percentage(20)))
     and:
-      def all = fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC)
+      def all = fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, null)
     then:
       all.count == 2
       all.featureGroups.size() == 2
@@ -101,5 +101,7 @@ class FeatureGroupSpec extends Base3Spec {
       updated2.version != updated.version
       updated2.description == 'hello'
       fgApi.getGroup(app1.id, superPerson, created.id).description == 'hello'
+      fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, env1.id).featureGroups.size() > 1
+      fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, UUID.randomUUID()).count == 0
   }
 }
