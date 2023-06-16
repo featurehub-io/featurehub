@@ -759,44 +759,42 @@ class FeatureSqlApi @Inject constructor(
     sdkUrl: String, envId: UUID, featureKey: String, updatingValue: Boolean,
     buildFeatureValue: Function<FeatureValueType, FeatureValue>
   ) {
-    Conversions.nonNullEnvironmentId(envId)
+    val account = QDbServiceAccount()
+      .select(QDbServiceAccount.Alias.sdkPerson.id)
+      .sdkPerson.fetch()
+      .whenArchived.isNotNull
+      .or().apiKeyClientEval.eq(sdkUrl).apiKeyServerEval.eq(sdkUrl).endOr()
+      .findOne() ?: return
 
-    // not checking permissions, edge checks those
-    val feature = QDbApplicationFeature().parentApplication.environments.id.eq(envId).key.eq(featureKey)
+    val feature = QDbApplicationFeature()
+      .select(QDbApplicationFeature.Alias.id, QDbApplicationFeature.Alias.valueType)
+      .parentApplication.environments.id.eq(envId).key.eq(featureKey)
       .findOne()
       ?: return
-    var fv = QDbFeatureValue().environment.id.eq(envId).feature.eq(feature).findOne()
+
+    // we need to know the current version if it exists at all
+    val fv = QDbFeatureValue().environment.id.eq(envId).feature.eq(feature).findOne()
+
+    // not checking permissions, edge checks those
     val newValue = buildFeatureValue.apply(feature.valueType)
-    rolloutStrategyValidator.validateStrategies(
-      feature.valueType,
-      newValue.rolloutStrategies ?: listOf(),
-      newValue.rolloutStrategyInstances ?: listOf()
-    ).hasFailedValidation()
-    val saveNew = fv == null
-    if (saveNew) { // creating
-      fv = DbFeatureValue.Builder()
-        .environment(QDbEnvironment().id.eq(envId).findOne())
-        .feature(feature)
-        .locked(true)
-        .build()
+
+    fv?.let {
+      newValue.version(it.version)
     }
-    if (updatingValue) {
-      when (fv!!.feature.valueType!!) {
-        FeatureValueType.BOOLEAN -> fv.defaultValue =
-          if (newValue.valueBoolean == null) java.lang.Boolean.FALSE.toString() else newValue.valueBoolean.toString()
 
-        FeatureValueType.STRING -> fv.defaultValue = newValue.valueString
-        FeatureValueType.NUMBER -> fv.defaultValue =
-          if (newValue.valueNumber == null) null else newValue.valueNumber.toString()
-
-        FeatureValueType.JSON -> fv.defaultValue = newValue.valueJson
-      }
+    if (account.sdkPerson == null) {
+      log.error("Update for SDK Accounts to assign them person records has not been successfully run")
+      return
     }
-    fv!!.isLocked = newValue.locked
 
-    // API can never change strategies
-    save(fv)
-    publish(fv)
+    val perms = PersonFeaturePermission(Person().id(PersonId().id(account.sdkPerson!!.id)),
+      setOf(RoleType.READ, RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK))
+
+    if (fv == null) {
+      onlyCreateFeatureValueForEnvironment(envId, featureKey, newValue, perms)
+    } else {
+      onlyUpdateFeatureValueForEnvironment(newValue, perms, fv)
+    }
   }
 
   internal class EnvironmentsAndFeatureValues(
