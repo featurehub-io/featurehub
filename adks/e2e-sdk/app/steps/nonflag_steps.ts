@@ -1,6 +1,6 @@
 import { Given, Then, When } from '@cucumber/cucumber';
 import { makeid } from '../support/random';
-import { Feature, FeatureValueType } from 'featurehub-javascript-admin-sdk';
+import { Feature, FeatureValueType } from '../apis/mr-service';
 import { expect } from 'chai';
 import waitForExpect from 'wait-for-expect';
 import { FeatureStateHolder, Readyness } from 'featurehub-javascript-node-sdk';

@@ -3217,6 +3217,7 @@ components:
       enum:
         - person
         - serviceAccount
+        - sdkServiceAccount
     PersonId:
       required:
         - id

@@ -4,6 +4,7 @@ import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.db.model.DbAfterMigrationJob
 import io.featurehub.db.model.query.QDbAfterMigrationJob
+import io.featurehub.db.services.InternalServiceAccountApi
 import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.jersey.server.spi.Container
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener
@@ -37,6 +38,8 @@ class ComplexUpdateMigrations : ContainerLifecycleListener {
     log.info("attempting to process job {}", job.jobName)
     if (job.jobName == "upgrade-rollout-strategies") {
       injector.getService(FeatureApi::class.java).release1_5_11_strategy_update()
+    } else if (job.jobName == "allocate-service-account-persons") {
+      injector.getService(InternalServiceAccountApi::class.java).ensure_service_accounts_have_person()
     }
   }
 

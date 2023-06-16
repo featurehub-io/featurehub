@@ -157,9 +157,13 @@ open class GroupSqlApi @Inject constructor(
   }
 
   override fun superuserGroup(org: DbOrganization): DbGroup? {
+    return superuserGroup(org.id)
+  }
+
+  override fun superuserGroup(orgId: UUID): DbGroup? {
     return QDbGroup().whenArchived
       .isNull.owningOrganization
-      .eq(org).owningPortfolio
+      .id.eq(orgId).owningPortfolio
       .isNull.adminGroup
       .isTrue
       .findOne()

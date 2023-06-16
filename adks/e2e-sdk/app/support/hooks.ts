@@ -1,5 +1,5 @@
 import { After, Before, BeforeAll } from '@cucumber/cucumber';
-import { AuthServiceApi, PortfolioServiceApi, SetupServiceApi, UserCredentials } from 'featurehub-javascript-admin-sdk';
+import { AuthServiceApi, PortfolioServiceApi, SetupServiceApi, UserCredentials } from '../apis/mr-service';
 import { makeid } from './random';
 import { SdkWorld } from './world';
 import { discover } from './discovery';

@@ -16,8 +16,6 @@
     "@types/restify": "^8.5.5",
     "axios": "^1.2.4",
     "chai": "^4.3.7",
-    "featurehub-javascript-admin-sdk": "^1.1.10",
-    "featurehub-javascript-webhooks": "^1.1.1",
     "featurehub-javascript-client-sdk": "^1.1.7",
     "featurehub-javascript-node-sdk": "^1.1.7",
     "nats": "^2.11.0",

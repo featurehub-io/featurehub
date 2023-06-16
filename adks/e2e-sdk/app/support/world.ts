@@ -8,14 +8,14 @@ import {
   EnvironmentServiceApi,
   Feature,
   FeatureServiceApi,
-  FeatureValue,
+  FeatureValue, Person,
   Portfolio,
   PortfolioServiceApi,
   ServiceAccountPermission,
   ServiceAccountServiceApi,
   TokenizedPerson,
   WebhookServiceApi
-} from 'featurehub-javascript-admin-sdk';
+} from '../apis/mr-service';
 import { axiosLoggingAttachment, logger } from './logging';
 import globalAxios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import {
@@ -56,6 +56,7 @@ export class SdkWorld extends World {
   public sdkUrlClientEval: string;
   public sdkUrlServerEval: string;
   private scenarioId: string;
+  public person: Person
 
   constructor(props) {
     super(props);
@@ -171,6 +172,7 @@ export class SdkWorld extends World {
 
   public set apiKey(val: TokenizedPerson) {
     this.adminApiConfig.accessToken = val.accessToken;
+    this.person = val.person;
     apiKey = val.accessToken;
     logger.info('Successfully logged in');
   }

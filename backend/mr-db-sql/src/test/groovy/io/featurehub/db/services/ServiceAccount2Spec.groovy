@@ -11,6 +11,7 @@ import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.DbServiceAccount
+import io.featurehub.db.model.query.QDbPerson
 import io.featurehub.db.model.query.QDbServiceAccount
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
@@ -46,7 +47,7 @@ class ServiceAccount2Spec extends Base2Spec {
     cacheSource = Mock(CacheSource)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureSqlApi))
-    sapi = new ServiceAccountSqlApi(db, convertUtils, cacheSource, archiveStrategy)
+    sapi = new ServiceAccountSqlApi(db, convertUtils, cacheSource, archiveStrategy, personSqlApi)
 
     // now set up the environments we need
     UUID orgUUID = org.id
@@ -139,10 +140,17 @@ class ServiceAccount2Spec extends Base2Spec {
       applicationSqlApi.getApplicationSummary(app2.id).serviceAccountsHavePermission
   }
 
+  @CompileStatic
+  int numberOfPeople() {
+    return new QDbPerson().findCount()
+  }
+
   def "i can create a service account with no environments"() {
     given: "i have a service account"
       def sa = new ServiceAccount()
         .name("sa-2").description("sa-1 test")
+    and: "i know how many people there are"
+      def personCount = numberOfPeople()
     when: "i save it"
       sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
     then:
@@ -150,6 +158,8 @@ class ServiceAccount2Spec extends Base2Spec {
         Opts.empty()).find({it.name == 'sa-2' && sa.description == 'sa-1 test'})?.apiKeyClientSide != null
       sapi.search(portfolio1Id, "sa-2", null, superPerson,
         Opts.empty()).find({it.name == 'sa-2' && sa.description == 'sa-1 test'})?.apiKeyServerSide != null
+    and: "there is 1 more person"
+      numberOfPeople() - 1 == personCount
   }
 
   def "i can reset the key for a service account"() {

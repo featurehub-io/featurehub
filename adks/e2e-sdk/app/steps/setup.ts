@@ -8,7 +8,7 @@ import {
   RoleType,
   ServiceAccount,
   ServiceAccountPermission, ServiceAccountServiceApi, UpdateEnvironment
-} from 'featurehub-javascript-admin-sdk';
+} from '../apis/mr-service';
 import { makeid, sleep } from '../support/random';
 import { EdgeFeatureHubConfig, FeatureHubPollingClient, Readyness } from 'featurehub-javascript-node-sdk';
 import waitForExpect from 'wait-for-expect';

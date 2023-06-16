@@ -9,7 +9,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -27,9 +31,20 @@ public class DbServiceAccount extends DbVersionedBase {
   @JoinColumn(name = "fk_service_account_id")
   private Set<DbServiceAccountEnvironment> serviceAccountEnvironments;
   @ManyToOne(optional = false)
+  @JoinColumn(name = "fk_changed_by")
+  @Column(name = "fk_changed_by")
+  private DbPerson whoChanged;
+
+  @ManyToOne(optional = false)
   @JoinColumn(name = "fk_person_who_created")
   @Column(name = "fk_person_who_created")
-  private DbPerson whoChanged;
+  private DbPerson whoCreated;
+
+  @OneToOne(optional = false)
+  @JoinColumn(name = "fk_sdk_person")
+  @Column(name = "fk_sdk_person", nullable = true)
+  private DbPerson sdkPerson;
+
   @Column(name = "api_key", unique = true, nullable = false, length = 100)
   private String apiKeyServerEval;
   @Column(name = "api_key_client_eval", unique = true, nullable = true, length = 100)
@@ -51,9 +66,11 @@ public class DbServiceAccount extends DbVersionedBase {
     setDescription(builder.description);
     setServiceAccountEnvironments(builder.serviceAccountEnvironments);
     setWhoChanged(builder.whoChanged);
+    setWhoCreated(builder.whoChanged);
     setApiKeyServerEval(builder.apiKeyServerEval);
     setApiKeyClientEval(builder.apiKeyClientEval);
-    portfolio = builder.portfolio;
+    setPortfolio(builder.portfolio);
+    setSdkPerson(builder.sdkPerson);
   }
 
   /**
@@ -71,6 +88,21 @@ public class DbServiceAccount extends DbVersionedBase {
     this.whenUnpublished = whenUnpublished;
   }
 
+  public DbPerson getWhoCreated() {
+    return whoCreated;
+  }
+
+  public void setWhoCreated(DbPerson whoCreated) {
+    this.whoCreated = whoCreated;
+  }
+
+  @Nullable public DbPerson getSdkPerson() {
+    return sdkPerson;
+  }
+
+  public void setSdkPerson(@NotNull DbPerson sdkPerson) {
+    this.sdkPerson = sdkPerson;
+  }
 
   public DbPortfolio getPortfolio() {
     return portfolio;
@@ -144,9 +176,10 @@ public class DbServiceAccount extends DbVersionedBase {
     private String apiKeyServerEval;
     private String apiKeyClientEval;
     private DbPortfolio portfolio;
+    private final DbPerson sdkPerson;
 
-
-    public Builder() {
+    public Builder(DbPerson sdkPerson) {
+      this.sdkPerson = sdkPerson;
     }
 
     public Builder name(String val) {

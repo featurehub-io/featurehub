@@ -5,9 +5,7 @@ import io.ebean.annotation.ConstraintMode;
 import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
 import io.featurehub.mr.model.RolloutStrategy;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,6 +15,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @MappedSuperclass
 public class DbBaseFeatureValue extends Model {
@@ -47,18 +48,20 @@ public class DbBaseFeatureValue extends Model {
   protected List<RolloutStrategy> rolloutStrategies;
 
 
+  @Nullable
   public DbPerson getWhoUpdated() {
     return whoUpdated;
   }
 
-  public void setWhoUpdated(DbPerson whoUpdated) {
+  public void setWhoUpdated(@Nullable
+                            DbPerson whoUpdated) {
     this.whoUpdated = whoUpdated;
   }
-  public FeatureState getFeatureState() {
+  @Nullable public FeatureState getFeatureState() {
     return featureState;
   }
 
-  public void setFeatureState(FeatureState featureState) {
+  public void setFeatureState(@Nullable FeatureState featureState) {
     this.featureState = featureState;
   }
 
@@ -70,11 +73,13 @@ public class DbBaseFeatureValue extends Model {
     this.locked = locked;
   }
 
+  @Nullable
   public String getDefaultValue() {
     return defaultValue;
   }
 
-  public void setDefaultValue(String defaultValue) {
+  public void setDefaultValue(@Nullable
+                              String defaultValue) {
     this.defaultValue = defaultValue;
   }
 
@@ -86,7 +91,7 @@ public class DbBaseFeatureValue extends Model {
     this.rolloutStrategies = rolloutStrategies;
   }
 
-  public LocalDateTime getWhenCreated() {
+  @NotNull public LocalDateTime getWhenCreated() {
     return whenCreated;
   }
 

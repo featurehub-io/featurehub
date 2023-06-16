@@ -23,7 +23,7 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
         .featureId(featureValue.feature.id)
         .featureValueId(featureValue.id)
         .environmentId(environment.id)
-        .whoUpdated(featureValue.whoUpdated.name)
+        .whoUpdated(featureValue.whoUpdated?.name ?: "")
         .whenUpdated(featureValue.whenUpdated.atOffset(ZoneOffset.UTC))
         .applicationId(parentApplication.id)
         .portfolioId(portfolio.id)

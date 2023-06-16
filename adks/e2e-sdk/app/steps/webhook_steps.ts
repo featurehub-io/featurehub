@@ -1,11 +1,10 @@
 import { Given, Then, When } from '@cucumber/cucumber';
 import { SdkWorld } from '../support/world';
-import { WebhookCheck } from 'featurehub-javascript-admin-sdk';
+import { WebhookCheck } from '../apis/mr-service';
 import waitForExpect from 'wait-for-expect';
 import { getWebhookData } from '../support/make_me_a_webserver';
 import { expect } from 'chai';
 import { sleep } from '../support/random';
-
 
 When('I wait for {int} seconds', async function (seconds: number) {
   await sleep(seconds * 1000);
@@ -28,15 +27,20 @@ Then(/^we receive a webhook with (.*) flag that is (locked|unlocked) and (off|on
   if (!process.env.EXTERNAL_NGROK && process.env.REMOTE_BACKEND) {
     return;
   }
+
+  const world = this as SdkWorld;
+
   await waitForExpect(async () => {
     const webhookData = getWebhookData();
     expect(webhookData).to.not.be.undefined;
     expect(webhookData.environment).to.not.be.undefined;
-    expect(webhookData.environment.fv).to.not.be.undefined;
-    const feature = webhookData.environment?.fv?.find(fv => fv.feature.key == flagName);
+    expect(webhookData.environment.featureValues).to.not.be.undefined;
+    const feature = webhookData.environment?.featureValues?.find(fv => fv.feature.key == flagName);
     expect(feature).to.not.be.undefined;
     expect(feature.value.locked).to.eq(lockedStatus === 'locked');
     expect(feature.value.value).to.eq(flag === 'on');
+    expect(feature.value.personIdWhoChanged).to.not.be.undefined;
+    expect(feature.value.personIdWhoChanged).to.eq(world.person.id.id)
   }, 10000, 200);
 });
 

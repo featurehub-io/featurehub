@@ -24,7 +24,6 @@ import jakarta.inject.Singleton
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
 import java.time.Instant
-import java.time.LocalDateTime
 import java.util.*
 
 @Singleton
@@ -32,8 +31,9 @@ class ServiceAccountSqlApi @Inject constructor(
   private val database: Database,
   private val convertUtils: Conversions,
   private val cacheSource: CacheSource,
-  private val archiveStrategy: ArchiveStrategy
-) : ServiceAccountApi {
+  private val archiveStrategy: ArchiveStrategy,
+  private val internalPersonApi: InternalPersonApi
+) : ServiceAccountApi, InternalServiceAccountApi {
   override fun get(id: UUID, opts: Opts): ServiceAccount? {
     val eq = opts(QDbServiceAccount().id.eq(id), opts)
     return convertUtils.toServiceAccount(eq.findOne(), opts)
@@ -58,6 +58,8 @@ class ServiceAccountSqlApi @Inject constructor(
     opts: Opts
   ): ServiceAccount? {
     val sa = QDbServiceAccount().id.eq(serviceAccountId).whenArchived.isNull.findOne() ?: return null
+    val whoUpdated = convertUtils.byPerson(updater) ?: return null
+
     if (serviceAccount.version == null || serviceAccount.version != sa.version) {
       throw OptimisticLockingException()
     }
@@ -114,15 +116,31 @@ class ServiceAccountSqlApi @Inject constructor(
         }
       }
     }
+
+    var descUpdated = false
     if (serviceAccount.description != null) {
       sa.description = serviceAccount.description
+      descUpdated = true
     }
 
+    var updateAssociatedUser = false
     if (serviceAccount.name != sa.name) {
       sa.name = serviceAccount.name
+      updateAssociatedUser = true
+    }
+
+    if (descUpdated || updateAssociatedUser || deletePerms.isNotEmpty() || updatePerms.isNotEmpty() || createPerms.isNotEmpty()) {
+      sa.whoChanged = whoUpdated
     }
 
     asyncUpdateCache(sa, updateServiceAccount(sa, deletePerms, updatePerms, createPerms).values)
+
+    if (updateAssociatedUser) {
+      sa.sdkPerson?.let { sdkPerson ->
+        internalPersonApi.updateSdkServiceAccountUser(sdkPerson.id, whoUpdated, serviceAccount.name)
+      }
+    }
+
     return convertUtils.toServiceAccount(sa, opts)
   }
 
@@ -257,38 +275,32 @@ class ServiceAccountSqlApi @Inject constructor(
   }
 
   @Throws(ServiceAccountApi.DuplicateServiceAccountException::class)
+  @Transactional
   override fun create(
     portfolioId: UUID,
     creator: Person,
     serviceAccount: ServiceAccount,
     opts: Opts
   ): ServiceAccount? {
-    Conversions.nonNullPortfolioId(portfolioId)
-    Conversions.nonNullPerson(creator)
-    val who = convertUtils.byPerson(creator)
-    val portfolio = convertUtils.byPortfolio(portfolioId)
-    if (who == null || portfolio == null) return null
-    val changedEnvironments: MutableList<DbEnvironment> = ArrayList()
+    val who = convertUtils.byPerson(creator) ?: return null
+    val portfolio = convertUtils.byPortfolio(portfolioId) ?: return null
+
+    val changedEnvironments = mutableListOf<DbEnvironment>()
     val envs = environmentMap(serviceAccount)
 
     // now where we actually find the environment, add it into the list
-    val perms = serviceAccount.permissions!!
-      .map { sap: ServiceAccountPermission ->
-        val e = envs[sap.environmentId]
-        if (e != null) {
-          changedEnvironments.add(e)
-          return@map DbServiceAccountEnvironment.Builder()
-            .environment(e)
-            .permissions(convertPermissionsToString(sap.permissions))
-            .build()
-        }
-        null
+    val perms = serviceAccount.permissions!!.mapNotNull { sap: ServiceAccountPermission ->
+      envs[sap.environmentId]?.let { e ->
+        changedEnvironments.add(e)
+        DbServiceAccountEnvironment.Builder()
+          .environment(e)
+          .permissions(convertPermissionsToString(sap.permissions))
+          .build()
       }
-      .filterNotNull()
-      .toMutableSet()
+    }.toMutableSet()
 
     // now create the SA and attach the perms to form the links
-    val sa = DbServiceAccount.Builder()
+    val sa = DbServiceAccount.Builder(internalPersonApi.createSdkServiceAccountUser(serviceAccount.name, who, false))
       .name(serviceAccount.name)
       .description(serviceAccount.description)
       .whoChanged(who)
@@ -297,7 +309,9 @@ class ServiceAccountSqlApi @Inject constructor(
       .serviceAccountEnvironments(perms)
       .portfolio(portfolio)
       .build()
+
     perms.forEach { p: DbServiceAccountEnvironment? -> p!!.serviceAccount = sa }
+
     try {
       save(sa)
       asyncUpdateCache(sa, changedEnvironments)
@@ -356,20 +370,22 @@ class ServiceAccountSqlApi @Inject constructor(
     sa: DbServiceAccount, changedEnvironments: Collection<DbEnvironment>?
   ) {
     cacheSource.updateServiceAccount(sa, PublishAction.UPDATE)
-    if (changedEnvironments != null && !changedEnvironments.isEmpty()) {
-      changedEnvironments.forEach { e: DbEnvironment ->
+    changedEnvironments?.forEach { e ->
         cacheSource.updateEnvironment(
           e,
           PublishAction.UPDATE
         )
       }
-    }
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
   override fun delete(deleter: Person, serviceAccountId: UUID): Boolean {
     val sa = QDbServiceAccount().id.eq(serviceAccountId).whenArchived.isNull.findOne()
     if (sa != null) {
+      sa.sdkPerson?.let {
+        internalPersonApi.deleteSdkServiceAccountUser(it.id, convertUtils.byPerson(deleter)!!)
+      }
+
       archiveStrategy.archiveServiceAccount(sa)
       return true
     }
@@ -378,5 +394,22 @@ class ServiceAccountSqlApi @Inject constructor(
 
   companion object {
     private val log = LoggerFactory.getLogger(ServiceAccountSqlApi::class.java)
+  }
+
+  @Transactional
+  override fun ensure_service_accounts_have_person() {
+    if (convertUtils.hasOrganisation()) {
+      val superuserForOrganisation = mutableMapOf<UUID, DbPerson>()
+      QDbServiceAccount().findList().forEach { sa ->
+        if (sa.sdkPerson == null) {
+          val orgId = sa.portfolio.organization.id
+          val superuser = superuserForOrganisation.computeIfAbsent(orgId) { id ->
+            internalPersonApi.findSuperUserToBlame(id)
+          }
+          sa.setSdkPerson(internalPersonApi.createSdkServiceAccountUser(sa.name, superuser, sa.whenArchived != null))
+          sa.save()
+        }
+      }
+    }
   }
 }

@@ -182,6 +182,21 @@ open class DbCacheSource @Inject constructor(
     }
   }
 
+  private fun addSelectorToFeatureValue(finder: QDbFeatureValue): QDbFeatureValue {
+    return finder.select(
+      QDbFeatureValue.Alias.id,
+      QDbFeatureValue.Alias.locked,
+      QDbFeatureValue.Alias.feature.id,
+      QDbFeatureValue.Alias.rolloutStrategies,
+      QDbFeatureValue.Alias.version,
+      QDbFeatureValue.Alias.retired,
+      QDbFeatureValue.Alias.defaultValue,
+      QDbFeatureValue.Alias.whoUpdated.id,
+    ).feature.whenArchived.isNull.feature.fetch(
+      QDbApplicationFeature.Alias.id
+    )
+  }
+
   private fun fillEnvironmentCacheItem(
     count: Int,
     env: DbEnvironment,
@@ -199,18 +214,8 @@ open class DbCacheSource @Inject constructor(
           QDbApplicationFeature.Alias.version
         ).findList().associate { it.id!! to it!! }.toMutableMap()
 
-      val fvFinder = QDbFeatureValue()
-        .select(
-          QDbFeatureValue.Alias.id,
-          QDbFeatureValue.Alias.locked,
-          QDbFeatureValue.Alias.feature.id,
-          QDbFeatureValue.Alias.rolloutStrategies,
-          QDbFeatureValue.Alias.version,
-          QDbFeatureValue.Alias.retired,
-          QDbFeatureValue.Alias.defaultValue
-        ).feature.whenArchived.isNull.feature.fetch(
-          QDbApplicationFeature.Alias.id
-        ).environment.whenArchived.isNull.environment.whenUnpublished.isNull.environment.eq(env)
+      val fvFinder = addSelectorToFeatureValue(QDbFeatureValue())
+        .environment.whenArchived.isNull.environment.whenUnpublished.isNull.environment.eq(env)
 
       val eci = PublishEnvironment()
         .action(publishAction)
@@ -307,6 +312,7 @@ open class DbCacheSource @Inject constructor(
       .rolloutStrategies(collectCombinedRolloutStrategies(dfv))
       .key(feature.key)
       .retired(dfv.retired)
+      .personIdWhoChanged(dfv.whoUpdated?.id)
   }
 
   private fun featureValueAsObject(value: String?, valueType: FeatureValueType): Any? {
@@ -572,7 +578,7 @@ open class DbCacheSource @Inject constructor(
   override fun publishRolloutStrategyChange(rs: DbRolloutStrategy) {
     executor.submit {
       val updatedValues =
-        QDbFeatureValue().sharedRolloutStrategies.rolloutStrategy.eq(rs).sharedRolloutStrategies.enabled.isTrue.findList()
+        addSelectorToFeatureValue(QDbFeatureValue()).sharedRolloutStrategies.rolloutStrategy.eq(rs).sharedRolloutStrategies.enabled.isTrue.findList()
       if (updatedValues.isNotEmpty()) {
         // they are all the same application and
         // hence the same cache
