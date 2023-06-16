@@ -104,6 +104,7 @@
     <module>backend/dacha2</module>
     <module>backend/dacha-api</module>
     <module>backend/dacha-client</module>
+    <module>backend/encryption-common</module>
     <module>admin-frontend/app_mr_layer</module>
   </modules>
 

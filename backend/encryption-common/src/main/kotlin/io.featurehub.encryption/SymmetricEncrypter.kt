@@ -1,9 +1,7 @@
 package io.featurehub.encryption
 
-import okio.Utf8
 import org.slf4j.LoggerFactory
 import java.nio.ByteBuffer
-import java.nio.charset.Charset
 import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
 import java.security.spec.InvalidKeySpecException
