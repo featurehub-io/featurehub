@@ -4,8 +4,8 @@ import { MESSAGE } from 'triple-beam';
 import stringify from 'safe-stable-stringify';
 import { fhLog } from 'featurehub-javascript-client-sdk';
 
-const httpAwareJsonFormatter = winston.format((info, opts) => {
-  const json = {};
+const httpAwareJsonFormatter = winston.format((info) => {
+  const json: any = {};
 
   if (info.message) {
     json['@message'] = info.message;
@@ -39,6 +39,7 @@ const httpAwareJsonFormatter = winston.format((info, opts) => {
     msg = msg.substring(0, msg.length - 1) + ', http: ' + http + '}';
   }
 
+  // @ts-ignore
   info[MESSAGE] = msg;
 
   return info;

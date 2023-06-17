@@ -8,7 +8,7 @@ import {
   EnvironmentServiceApi,
   Feature,
   FeatureServiceApi,
-  FeatureValue, Person,
+  FeatureValue, Person, PersonServiceApi,
   Portfolio,
   PortfolioServiceApi,
   ServiceAccountPermission,
@@ -48,6 +48,7 @@ export class SdkWorld extends World {
   public readonly environment2Api: Environment2ServiceApi;
   public readonly featureApi: FeatureServiceApi;
   public readonly loginApi: AuthServiceApi;
+  public readonly personApi: PersonServiceApi;
   public readonly serviceAccountApi: ServiceAccountServiceApi;
   public readonly featureValueApi: EnvironmentFeatureServiceApi;
 
@@ -58,7 +59,7 @@ export class SdkWorld extends World {
   private scenarioId: string;
   public person: Person
 
-  constructor(props) {
+  constructor(props: any) {
     super(props);
 
     if (process.env.REMOTE_BEARER_TOKEN) {
@@ -71,6 +72,7 @@ export class SdkWorld extends World {
 
     this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey, axiosInstance: globalAxios.create(), accessToken: apiKey });
     this.portfolioApi = new PortfolioServiceApi(this.adminApiConfig);
+    this.personApi = new PersonServiceApi(this.adminApiConfig);
     this.applicationApi = new ApplicationServiceApi(this.adminApiConfig);
     this.environmentApi = new EnvironmentServiceApi(this.adminApiConfig);
     this.environment2Api = new Environment2ServiceApi(this.adminApiConfig);
@@ -170,6 +172,10 @@ export class SdkWorld extends World {
     return this._application;
   }
 
+  public async getSelf() {
+    this.person = (await this.personApi.getPerson('self',)).data;
+  }
+
   public set apiKey(val: TokenizedPerson) {
     this.adminApiConfig.accessToken = val.accessToken;
     this.person = val.person;
@@ -181,7 +187,7 @@ export class SdkWorld extends World {
     try {
       const fValueResult = await this.featureValueApi.getFeatureForEnvironment(this.environment.id, this.feature.key);
       return fValueResult.data;
-    } catch (e) {
+    } catch (e: any) {
       expect(e.response.status).to.eq(404); // null value
 
       if (e.response.status === 404) {

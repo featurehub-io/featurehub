@@ -592,6 +592,13 @@ paths:
         - bearerAuth: [ ]
       tags:
         - PersonService
+      parameters:
+        - name: id
+          description: "The id of the person to find. Duplicated here as we accept a plain string (not only a uuid)"
+          in: path
+          schema:
+            type: string
+          required: true
       description: "Get person"
       operationId: getPerson
       responses:
@@ -2691,7 +2698,6 @@ components:
           format: email
         password:
           type: string
-          format: password
           maxLength: 100
     PasswordReset:
       required:
@@ -3368,12 +3374,12 @@ components:
           type: array
           items:
             type: string
-            format: UUID
+            format: uuid
         portfolioId:
           type: array
           items:
             type: string
-            format: UUID
+            format: uuid
     CacheRefreshResponse:
       type: object
       properties:

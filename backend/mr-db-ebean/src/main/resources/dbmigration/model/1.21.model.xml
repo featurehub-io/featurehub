@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <alterColumn columnName="name" tableName="fh_service_account" currentType="varchar(100)" notnull="true" currentNotnull="false"/>
+        <alterColumn columnName="description" tableName="fh_service_account" currentType="varchar(400)" notnull="true" currentNotnull="false"/>
+        <alterColumn columnName="fk_sdk_person" tableName="fh_service_account" currentType="uuid" notnull="true" currentNotnull="false"/>
+        <alterColumn columnName="api_key_client_eval" tableName="fh_service_account" currentType="varchar(100)" notnull="true" currentNotnull="false"/>
+        <addUniqueConstraint constraintName="idx_service_name" tableName="fh_service_account" columnNames="DROP CONSTRAINT" nullableColumns="name"/>
+        <addUniqueConstraint constraintName="idx_service_name" tableName="fh_service_account" columnNames="fk_portfolio_id,name" oneToOne="false" nullableColumns=""/>
+    </changeSet>
+</migration>

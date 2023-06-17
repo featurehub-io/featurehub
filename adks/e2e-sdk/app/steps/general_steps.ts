@@ -56,7 +56,7 @@ Then(/^I set the context to$/, function (table) {
 
   const ctx = this.context as ClientContext;
 
-  table.hashes().forEach(row => {
+  table.hashes().forEach((row: any) => {
     console.log('setting context', row);
     ctx.attribute_value(row['Field'], row['Value']);
   });

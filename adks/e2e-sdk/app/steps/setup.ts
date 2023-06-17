@@ -204,3 +204,11 @@ Given(/^I connect to the feature server$/, async function () {
 Then(/^I sleep for (\d+) seconds$/, async function (seconds) {
   await sleep(parseInt(seconds) * 1000);
 });
+
+Given('I am logged in and have a person configured', async function() {
+  const world = this as SdkWorld;
+  await world.getSelf();
+  expect(world.person).to.not.be.undefined;
+  expect(world.person.id).to.not.be.undefined;
+  expect(world.person.id.id).to.not.be.undefined;
+});

@@ -17,9 +17,6 @@ class ComplexUpdateMigrations : ContainerLifecycleListener {
   override fun onStartup(container: Container) {
     val injector = container.applicationHandler
       .injectionManager.getInstance(ServiceLocator::class.java)
-    val serviceAccountApi = injector.getService(ServiceAccountApi::class.java)
-    serviceAccountApi.cleanupServiceAccountApiKeys()
-
     // we want only one server to pick up the post-migrate jobs because they will need to be done in order.
     // do not abuse this and run long jobs here! if there are big jobs, fire them onto the Jobs Queue and
     for (job in QDbAfterMigrationJob().completed.isFalse.orderBy().id.asc().forUpdateSkipLocked().findList()) {

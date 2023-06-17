@@ -15,7 +15,7 @@ Given(/^There is a new feature flag$/, async function () {
     valueType: FeatureValueType.Boolean
   }));
   expect(fCreate.status).to.eq(200);
-  const feat = fCreate.data.find(f => f.key == name);
+  const feat = fCreate.data.find((f: Feature) => f.key == name);
   expect(feat).to.not.be.undefined;
   this.feature = feat;
 });
@@ -27,7 +27,7 @@ Given(/^There is a feature flag with the key (.*)$/, async function (key: string
     valueType: FeatureValueType.Boolean
   }));
   expect(fCreate.status).to.eq(200);
-  const feature = fCreate.data.find(f => f.key == key);
+  const feature = fCreate.data.find((f: Feature) => f.key == key);
   expect(feature).to.not.be.undefined;
 
   this.feature = feature;

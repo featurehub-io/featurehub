@@ -3,7 +3,8 @@ Feature: Webhooks work as expected
 
   @webhook
   Scenario: I setup and test a webhook
-    Given I create a new portfolio
+    Given I am logged in and have a person configured
+    And I create a new portfolio
     And I create an application
     When There is a feature flag with the key FEATURE_TITLE_TO_UPPERCASE
     And I wait for 5 seconds

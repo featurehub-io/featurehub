@@ -53,7 +53,7 @@ class ServiceAccount2Spec extends Base2Spec {
     sapi = new ServiceAccountSqlApi(db, convertUtils, cacheSource, archiveStrategy, personSqlApi)
 
     // now set up the environments we need
-    UUID orgUUID = org.id
+//    UUID orgUUID = org.id
     DbOrganization organization = Finder.findDbOrganization()
     portfolio1 = new DbPortfolio.Builder().name(RandomStringUtils.randomAlphabetic(8) + "p1-env-1").whoCreated(dbSuperPerson).organization(organization).build()
     db.save(portfolio1)
@@ -61,11 +61,11 @@ class ServiceAccount2Spec extends Base2Spec {
     def portfolioGroup = groupSqlApi.createGroup(portfolio1Id, new Group().name("group1").admin(true), superPerson)
     application1 = new DbApplication.Builder().name("app-env-1").portfolio(portfolio1).whoCreated(dbSuperPerson).build()
     db.save(application1)
-    environment1 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e1").parentApplication(application1).build();
+    environment1 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e1").parentApplication(application1).build()
     db.save(environment1)
-    environment2 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e2").parentApplication(application1).build();
+    environment2 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e2").parentApplication(application1).build()
     db.save(environment2)
-    environment3 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e3").parentApplication(application1).build();
+    environment3 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e3").parentApplication(application1).build()
     db.save(environment3)
 
     environmentApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
@@ -340,36 +340,28 @@ class ServiceAccount2Spec extends Base2Spec {
 
   @CompileStatic
   DbServiceAccount newServiceAccount(String newName) {
-    return new DbServiceAccount().with {
-      name = newName
-      description = newName
-      apiKeyClientEval = UUID.randomUUID().toString()
-      apiKeyServerEval = UUID.randomUUID().toString()
-      whoChanged = dbSuperPerson
-      whoCreated = dbSuperPerson
-      portfolio = portfolio1
-      save()
-      it
-    }
+    def sa = new DbServiceAccount(dbSuperPerson, dbSuperPerson, newName, newName, "server-key-${newName}", "client-key-${newName}", portfolio1)
+    sa.save()
+    return sa
   }
 
   def "I can test the transition step that ensures that service accounts now have people attached"() {
     given: "i create 15 service accounts with no people attached"
       List<DbServiceAccount> accounts = []
       5.times { accounts.add(newServiceAccount("service-account-no-person-${it}"))}
-      List<DbPerson> foundSdkaccounts = accounts.collect { it.sdkPerson }
+      List<PersonType> foundSdkaccounts = accounts.collect { it.sdkPerson.personType }
 //      db.currentTransaction()?.commit()
     when: "i trigger the migration process"
       sapi.ensure_service_accounts_have_person()
       def newFoundAccounts =       accounts.collect {
         it.refresh()
-        it.sdkPerson
+        it.sdkPerson.personType
       }
     then:
       1 * internalGroupSqlApi.superuserGroup(org.id) >> groupSqlApi.superuserGroup(org.id)
       foundSdkaccounts.size() == 5
-      foundSdkaccounts.findAll { it == null}.size() == 5
-      newFoundAccounts.findAll { it == null}.size() == 0
-      newFoundAccounts.findAll { it != null}.size() == 5
+      foundSdkaccounts.findAll { it == PersonType.PERSON }.size() == 5
+      newFoundAccounts.findAll { it == PersonType.PERSON}.size() == 0
+      newFoundAccounts.findAll { it == PersonType.SDKSERVICEACCOUNT }.size() == 5
   }
 }

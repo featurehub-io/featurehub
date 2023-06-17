@@ -118,12 +118,13 @@ class ServiceAccountSqlApi @Inject constructor(
     }
 
     var descUpdated = false
-    if (serviceAccount.description != null) {
-      sa.description = serviceAccount.description
+    serviceAccount.description?.let {
+      sa.description = it
       descUpdated = true
     }
 
     var updateAssociatedUser = false
+
     if (serviceAccount.name != sa.name) {
       sa.name = serviceAccount.name
       updateAssociatedUser = true
@@ -136,9 +137,7 @@ class ServiceAccountSqlApi @Inject constructor(
     asyncUpdateCache(sa, updateServiceAccount(sa, deletePerms, updatePerms, createPerms).values)
 
     if (updateAssociatedUser) {
-      sa.sdkPerson?.let { sdkPerson ->
-        internalPersonApi.updateSdkServiceAccountUser(sdkPerson.id, whoUpdated, serviceAccount.name)
-      }
+      internalPersonApi.updateSdkServiceAccountUser(sa.sdkPerson.id, whoUpdated, serviceAccount.name)
     }
 
     return convertUtils.toServiceAccount(sa, opts)
@@ -235,11 +234,11 @@ class ServiceAccountSqlApi @Inject constructor(
         .endOr()
         .findEach { sa: DbServiceAccount ->
           var updated = false
-          if (sa.apiKeyClientEval == null) {
+          if (sa.apiKeyClientEval.isEmpty()) {
             updated = true
             sa.apiKeyClientEval = newClientEvalKey()
           }
-          if (sa.apiKeyServerEval == null) {
+          if (sa.apiKeyServerEval.isEmpty()) {
             updated = true
             sa.apiKeyServerEval = newServerEvalKey()
           }
@@ -300,15 +299,13 @@ class ServiceAccountSqlApi @Inject constructor(
     }.toMutableSet()
 
     // now create the SA and attach the perms to form the links
-    val sa = DbServiceAccount.Builder(internalPersonApi.createSdkServiceAccountUser(serviceAccount.name, who, false))
-      .name(serviceAccount.name)
-      .description(serviceAccount.description)
-      .whoChanged(who)
-      .apiKeyServerEval(newServerEvalKey())
-      .apiKeyClientEval(newClientEvalKey())
-      .serviceAccountEnvironments(perms)
-      .portfolio(portfolio)
-      .build()
+    val sa = DbServiceAccount(who,
+          internalPersonApi.createSdkServiceAccountUser(serviceAccount.name, who, false),
+          serviceAccount.name, serviceAccount.description ?: "",
+          newServerEvalKey(), newClientEvalKey(), portfolio).let {
+      it.serviceAccountEnvironments = perms
+      it
+    }
 
     perms.forEach { p: DbServiceAccountEnvironment? -> p!!.serviceAccount = sa }
 
@@ -396,19 +393,24 @@ class ServiceAccountSqlApi @Inject constructor(
     private val log = LoggerFactory.getLogger(ServiceAccountSqlApi::class.java)
   }
 
+  /**
+   * This is a transitional job that assumes that all of the attached people to the sdkUser are invalid and created
+   * new SDK style user accounts for them. After the migration that inserts the job, this is in fact TRUE.
+   */
   @Transactional
   override fun ensure_service_accounts_have_person() {
     if (convertUtils.hasOrganisation()) {
+      cleanupServiceAccountApiKeys()
+
       val superuserForOrganisation = mutableMapOf<UUID, DbPerson>()
+
       QDbServiceAccount().findList().forEach { sa ->
-        if (sa.sdkPerson == null) {
-          val orgId = sa.portfolio.organization.id
-          val superuser = superuserForOrganisation.computeIfAbsent(orgId) { id ->
-            internalPersonApi.findSuperUserToBlame(id)
-          }
-          sa.setSdkPerson(internalPersonApi.createSdkServiceAccountUser(sa.name, superuser, sa.whenArchived != null))
-          sa.save()
+        val orgId = sa.portfolio.organization.id
+        val superuser = superuserForOrganisation.computeIfAbsent(orgId) { id ->
+          internalPersonApi.findSuperUserToBlame(id)
         }
+        sa.setSdkPerson(internalPersonApi.createSdkServiceAccountUser(sa.name, superuser, sa.whenArchived != null))
+        sa.save()
       }
     }
   }

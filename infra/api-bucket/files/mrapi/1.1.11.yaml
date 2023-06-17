@@ -660,10 +660,10 @@ paths:
       description: Get person
       operationId: getPerson
       parameters:
-      - name: includeServiceAccountId
+      - name: id
         in: path
-        description: "If this is a sdk service acocunt, include the ID of the service\
-          \ account in the PersonInfo fields"
+        description: The id of the person to find. Duplicated here as we accept a
+          plain string (not only a uuid)
         required: true
         style: simple
         explode: false
@@ -671,7 +671,8 @@ paths:
           type: string
       responses:
         "200":
-          description: Resulting person
+          description: "If this is a sdk service acocunt, ID of the service account\
+            \ is in the PersonInfo fields with the key serviceAccountId"
           content:
             application/json:
               schema:
@@ -2888,7 +2889,7 @@ paths:
       explode: false
       schema:
         type: string
-        format: UUID
+        format: uuid
     - name: id
       in: path
       required: true
@@ -2896,7 +2897,7 @@ paths:
       explode: false
       schema:
         type: string
-        format: UUID
+        format: uuid
   /mr-api/webhooks/{envId}:
     get:
       tags:
@@ -2926,7 +2927,7 @@ paths:
       explode: false
       schema:
         type: string
-        format: UUID
+        format: uuid
     - name: max
       in: query
       description: where to start
@@ -3172,7 +3173,6 @@ components:
         password:
           maxLength: 100
           type: string
-          format: password
     PasswordReset:
       required:
       - password
@@ -3701,6 +3701,7 @@ components:
       properties:
         key:
           type: string
+          description: e.g. serviceAccountId
         value:
           type: string
     PersonType:
@@ -3872,12 +3873,12 @@ components:
           description: if provided these applications will be refreshed
           items:
             type: string
-            format: UUID
+            format: uuid
         portfolioId:
           type: array
           items:
             type: string
-            format: UUID
+            format: uuid
     CacheRefreshResponse:
       type: object
       properties:
@@ -4477,7 +4478,7 @@ components:
           type: string
         envId:
           type: string
-          format: UUID
+          format: uuid
         config:
           type: object
           additionalProperties:
