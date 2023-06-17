@@ -40,7 +40,7 @@ public class DbServiceAccount extends DbVersionedBase {
   @Column(name = "fk_person_who_created")
   private DbPerson whoCreated;
 
-  @OneToOne(optional = false)
+  @OneToOne(optional = true)
   @JoinColumn(name = "fk_sdk_person")
   @Column(name = "fk_sdk_person", nullable = true)
   private DbPerson sdkPerson;

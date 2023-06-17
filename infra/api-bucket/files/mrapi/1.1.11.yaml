@@ -660,9 +660,10 @@ paths:
       description: Get person
       operationId: getPerson
       parameters:
-      - name: id
+      - name: includeServiceAccountId
         in: path
-        description: The id of the person to find
+        description: "If this is a sdk service acocunt, include the ID of the service\
+          \ account in the PersonInfo fields"
         required: true
         style: simple
         explode: false

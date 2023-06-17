@@ -21,6 +21,7 @@ import java.util.stream.Collectors
 class PersonResource @Inject constructor(
   private val personApi: PersonApi,
   private val groupApi: GroupApi,
+  private val serviceAccountApi: ServiceAccountApi,
   private val authManager: AuthManagerService
 ) : PersonServiceDelegate {
 
@@ -132,6 +133,11 @@ class PersonResource @Inject constructor(
       }
       if (person == null) {
         throw NotFoundException()
+      }
+      if (person.personType == PersonType.SDKSERVICEACCOUNT) {
+        serviceAccountApi.findServiceAccountByUserId(person.id!!.id)?.let {
+          person.additional!!.add(PersonInfo().key("serviceAccountId").value(it.toString()))
+        }
       }
       return person
     }

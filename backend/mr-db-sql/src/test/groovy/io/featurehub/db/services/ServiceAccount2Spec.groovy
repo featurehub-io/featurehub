@@ -9,6 +9,7 @@ import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
+import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.DbServiceAccount
 import io.featurehub.db.model.query.QDbPerson
@@ -18,6 +19,7 @@ import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Group
+import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
@@ -39,11 +41,12 @@ class ServiceAccount2Spec extends Base2Spec {
   UUID portfolio1Id
   EnvironmentApi environmentApi
   CacheSource cacheSource
+  InternalGroupSqlApi internalGroupSqlApi
 
   def setup() {
     db.commitTransaction()
-
-    personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
+    internalGroupSqlApi = Mock()
+    personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, internalGroupSqlApi)
     cacheSource = Mock(CacheSource)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureSqlApi))
@@ -152,7 +155,7 @@ class ServiceAccount2Spec extends Base2Spec {
     and: "i know how many people there are"
       def personCount = numberOfPeople()
     when: "i save it"
-      sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
+      def account = sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
     then:
       sapi.search(portfolio1Id, "sa-2", null, superPerson,
         Opts.empty()).find({it.name == 'sa-2' && sa.description == 'sa-1 test'})?.apiKeyClientSide != null
@@ -160,6 +163,7 @@ class ServiceAccount2Spec extends Base2Spec {
         Opts.empty()).find({it.name == 'sa-2' && sa.description == 'sa-1 test'})?.apiKeyServerSide != null
     and: "there is 1 more person"
       numberOfPeople() - 1 == personCount
+      findServiceAccount(account.id).sdkPerson.personType == PersonType.SDKSERVICEACCOUNT
   }
 
   def "i can reset the key for a service account"() {
@@ -332,5 +336,40 @@ class ServiceAccount2Spec extends Base2Spec {
     then:
       x == null
       y == null
+  }
+
+  @CompileStatic
+  DbServiceAccount newServiceAccount(String newName) {
+    return new DbServiceAccount().with {
+      name = newName
+      description = newName
+      apiKeyClientEval = UUID.randomUUID().toString()
+      apiKeyServerEval = UUID.randomUUID().toString()
+      whoChanged = dbSuperPerson
+      whoCreated = dbSuperPerson
+      portfolio = portfolio1
+      save()
+      it
+    }
+  }
+
+  def "I can test the transition step that ensures that service accounts now have people attached"() {
+    given: "i create 15 service accounts with no people attached"
+      List<DbServiceAccount> accounts = []
+      5.times { accounts.add(newServiceAccount("service-account-no-person-${it}"))}
+      List<DbPerson> foundSdkaccounts = accounts.collect { it.sdkPerson }
+//      db.currentTransaction()?.commit()
+    when: "i trigger the migration process"
+      sapi.ensure_service_accounts_have_person()
+      def newFoundAccounts =       accounts.collect {
+        it.refresh()
+        it.sdkPerson
+      }
+    then:
+      1 * internalGroupSqlApi.superuserGroup(org.id) >> groupSqlApi.superuserGroup(org.id)
+      foundSdkaccounts.size() == 5
+      foundSdkaccounts.findAll { it == null}.size() == 5
+      newFoundAccounts.findAll { it == null}.size() == 0
+      newFoundAccounts.findAll { it != null}.size() == 5
   }
 }

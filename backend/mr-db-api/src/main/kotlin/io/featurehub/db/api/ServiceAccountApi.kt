@@ -35,4 +35,6 @@ interface ServiceAccountApi {
    * This will unpublish the listed service accounts or all of them if none are specified
    */
   fun unpublishServiceAccounts(portfolioId: UUID, serviceAccounts: List<UUID>?): Int
+
+  fun findServiceAccountByUserId(personId: UUID): UUID?
 }

@@ -412,4 +412,9 @@ class ServiceAccountSqlApi @Inject constructor(
       }
     }
   }
+
+  // allow us to identify the user who created a feature change for instance
+  override fun findServiceAccountByUserId(personId: UUID): UUID? {
+    return QDbServiceAccount().sdkPerson.id.eq(personId).findOne()?.let { it.id }
+  }
 }
