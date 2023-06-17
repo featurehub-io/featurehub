@@ -3734,6 +3734,7 @@ components:
         - environmentId
         - order
         - features
+        - version
       properties:
         id:
           type: string
@@ -3749,6 +3750,9 @@ components:
         environmentId:
           type: string
           format: uuid
+        version:
+          type: integer
+          format: int64
         features:
           type: array
           items:

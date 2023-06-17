@@ -146,6 +146,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
       .select(
         QDbFeatureGroup.Alias.id, QDbFeatureGroup.Alias.name, QDbFeatureGroup.Alias.order,
         QDbFeatureGroup.Alias.description,
+        QDbFeatureGroup.Alias.version,
         QDbFeatureGroup.Alias.environment.id, QDbFeatureGroup.Alias.environment.name,
         QDbFeatureGroup.Alias.features.feature.key
       )
@@ -179,6 +180,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
         items.get().map {
           FeatureGroupListGroup().id(it.id).name(it.name)
             .order(it.order).environmentId(it.environment.id).environmentName(it.environment.name)
+            .version(it.version)
             .description(it.description)
             .features((it.features?.map { feat -> FeatureGroupListFeature().key(feat.feature.key) } ?: mutableListOf()).sortedBy { it.key })
         }

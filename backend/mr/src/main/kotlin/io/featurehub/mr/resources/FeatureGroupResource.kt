@@ -39,6 +39,7 @@ class FeatureGroupResource @Inject constructor(
         .environmentId(fg.environmentId)
         .order(fg.order)
         .description(fg.description)
+        .version(fg.version)
         .id(fg.id)
         .features(fg.features.map { FeatureGroupListFeature().key(it.key) })
     } catch (dne: FeatureGroupApi.DuplicateNameException) {
