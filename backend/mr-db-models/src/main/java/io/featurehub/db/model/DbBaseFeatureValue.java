@@ -14,6 +14,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
@@ -29,40 +30,30 @@ public class DbBaseFeatureValue extends Model {
   @Column(name = "fk_who_updated", nullable = true)
   @JoinColumn(name = "fk_who_updated")
   @DbForeignKey(onDelete = ConstraintMode.SET_NULL)
+  @NotNull
   protected DbPerson whoUpdated;
 
-  @Enumerated(value = EnumType.STRING)
-  protected FeatureState featureState;
-
   @Lob
+  @Nullable
   private String defaultValue;
 
   @Column(nullable = false)
   protected boolean locked;
 
-
   // a user can have multiple strategies here that are specific to this feature value
   // these are usually percentage only ones, but that may change in the future
   @DbJson
-  @Column(name="rollout_strat")
+  @Column(name = "rollout_strat")
+  @Nullable
   protected List<RolloutStrategy> rolloutStrategies;
 
-
-  @Nullable
+  @NotNull
   public DbPerson getWhoUpdated() {
     return whoUpdated;
   }
 
-  public void setWhoUpdated(@Nullable
-                            DbPerson whoUpdated) {
+  public void setWhoUpdated(@NotNull DbPerson whoUpdated) {
     this.whoUpdated = whoUpdated;
-  }
-  @Nullable public FeatureState getFeatureState() {
-    return featureState;
-  }
-
-  public void setFeatureState(@Nullable FeatureState featureState) {
-    this.featureState = featureState;
   }
 
   public boolean isLocked() {
@@ -83,11 +74,11 @@ public class DbBaseFeatureValue extends Model {
     this.defaultValue = defaultValue;
   }
 
-  public List<RolloutStrategy> getRolloutStrategies() {
+  public @Nullable List<RolloutStrategy> getRolloutStrategies() {
     return rolloutStrategies;
   }
 
-  public void setRolloutStrategies(List<RolloutStrategy> rolloutStrategies) {
+  public void setRolloutStrategies(@Nullable List<RolloutStrategy> rolloutStrategies) {
     this.rolloutStrategies = rolloutStrategies;
   }
 
@@ -95,4 +86,8 @@ public class DbBaseFeatureValue extends Model {
     return whenCreated;
   }
 
+  public DbBaseFeatureValue(@NotNull DbPerson whoUpdated, boolean locked) {
+    this.whoUpdated = whoUpdated;
+    this.locked = locked;
+  }
 }

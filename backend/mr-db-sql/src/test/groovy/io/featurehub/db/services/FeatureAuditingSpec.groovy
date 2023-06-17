@@ -4,6 +4,7 @@ import cd.connect.app.config.ThreadLocalConfigurationSource
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyValidator
+import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.RoleType
@@ -14,6 +15,7 @@ import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.RolloutStrategy
+import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.utils.ExecutorSupplier
 
 import java.util.concurrent.ExecutorService
@@ -31,6 +33,7 @@ class FeatureAuditingSpec extends Base2Spec {
   RolloutStrategyValidator rsValidator
   PersonFeaturePermission perms
   FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
+  ServiceAccountApi serviceAccountApi
 
   static UUID portfolioId = UUID.fromString('16364b24-b4ef-4052-9c33-5eb66b0d1baf')
 //  static UUID
@@ -43,6 +46,8 @@ class FeatureAuditingSpec extends Base2Spec {
     rsValidator.validateStrategies(_, _, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true'])
     featureMessagingCloudEventPublisher = Mock()
+
+    serviceAccountApi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalPersonApi))
 
     featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
@@ -101,9 +106,8 @@ class FeatureAuditingSpec extends Base2Spec {
 
   def "when i update a boolean feature value and then update it again with the historical version, nothing changes"() {
     given: "i create a feature"
-      def feature = applicationSqlApi.createApplicationFeature(app.id,
+      def feature = applicationSqlApi.createApplicationLevelFeature(app.id,
         new Feature().name("bool-feature").description("bool-feature").key("FBOOL").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
-        .find { it.key == 'FBOOL' }
     and: "i get the feature value"
       def fv = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
@@ -115,5 +119,17 @@ class FeatureAuditingSpec extends Base2Spec {
     then:
       !featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key).valueBoolean
       featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key).version == firstUpdate.version
+  }
+
+  def "when an update comes in from the test sdk, it will process and be stored in the historical database"() {
+    given: "i create a feature"
+      def feature = applicationSqlApi.createApplicationLevelFeature(app.id,
+        new Feature().name("testsdk-feature").description("testsdk-feature").key("TESTSDK-BOOL").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+    and: "we have a service account"
+      def sa = serviceAccountApi.create(portfolioId, superPerson, new ServiceAccount().name("testsdk")
+            .description("some desc").permissions([]))
+    when: "i update the feature using the test-sdk api"
+//      featureSqlApi.updateFeatureFromTestSdk()
+    then: "the feature has updated"
   }
 }

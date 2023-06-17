@@ -24,7 +24,7 @@ open class FeatureUpdateListenerImpl @Inject constructor(
   override fun processUpdate(update: StreamedFeatureUpdate) {
     try {
       log.debug("received update {}", update)
-      featureUpdateBySDKApi.updateFeature(
+      featureUpdateBySDKApi.updateFeatureFromTestSdk(
         update.apiKey, update.environmentId, update.featureKey, update.updatingValue
       ) { valueType: FeatureValueType? ->
         val fv = FeatureValue()

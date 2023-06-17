@@ -28,7 +28,6 @@ import java.util.*
 
 @Singleton
 class ServiceAccountSqlApi @Inject constructor(
-  private val database: Database,
   private val convertUtils: Conversions,
   private val cacheSource: CacheSource,
   private val archiveStrategy: ArchiveStrategy,
@@ -70,9 +69,9 @@ class ServiceAccountSqlApi @Inject constructor(
         updatedEnvironments[perm.environmentId] = perm
         newEnvironments.add(perm.environmentId)
       }
-    val deletePerms: MutableList<DbServiceAccountEnvironment?> = ArrayList()
-    val updatePerms: MutableList<DbServiceAccountEnvironment?> = ArrayList()
-    val createPerms: MutableList<DbServiceAccountEnvironment?> = ArrayList()
+    val deletePerms = mutableListOf<DbServiceAccountEnvironment>()
+    val updatePerms = mutableListOf<DbServiceAccountEnvironment>()
+    val createPerms = mutableListOf<DbServiceAccountEnvironment>()
 
     // we drop out of this knowing which perms to delete and update
     QDbServiceAccountEnvironment().environment.id
@@ -243,7 +242,7 @@ class ServiceAccountSqlApi @Inject constructor(
             sa.apiKeyServerEval = newServerEvalKey()
           }
           if (updated) {
-            database.update(sa)
+            sa.update()
           }
         }
     }
@@ -331,30 +330,30 @@ class ServiceAccountSqlApi @Inject constructor(
 
   @Transactional(type = TxType.REQUIRES_NEW)
   private fun save(sa: DbServiceAccount) {
-    database.save(sa)
+    sa.save()
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
   private fun updateOnlyServiceAccount(sa: DbServiceAccount) {
-    database.update(sa)
+    sa.update()
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
   private fun updateServiceAccount(
     sa: DbServiceAccount,
-    deleted: List<DbServiceAccountEnvironment?>,
-    updated: List<DbServiceAccountEnvironment?>,
-    created: List<DbServiceAccountEnvironment?>
+    deleted: List<DbServiceAccountEnvironment>,
+    updated: List<DbServiceAccountEnvironment>,
+    created: List<DbServiceAccountEnvironment>
   ) : MutableMap<UUID, DbEnvironment> {
     sa.markAsDirty() // ensure version is changed
-    database.update(sa)
-    database.updateAll(updated)
-    database.deleteAll(deleted)
-    database.saveAll(created)
+    sa.update()
+    updated.forEach { it.update() }
+    deleted.forEach { it.delete() }
+    created.forEach { it.save() }
     val changed = mutableMapOf<UUID, DbEnvironment>()
-    deleted.forEach { e: DbServiceAccountEnvironment? -> changed[e!!.environment.id] = e.environment }
-    updated.forEach { e: DbServiceAccountEnvironment? -> changed[e!!.environment.id] = e.environment }
-    created.forEach { e: DbServiceAccountEnvironment? -> changed[e!!.environment.id] = e.environment }
+    deleted.forEach { e: DbServiceAccountEnvironment -> changed[e.environment.id] = e.environment }
+    updated.forEach { e: DbServiceAccountEnvironment -> changed[e.environment.id] = e.environment }
+    created.forEach { e: DbServiceAccountEnvironment -> changed[e.environment.id] = e.environment }
     changed.values.forEach { e ->
       e.markAsDirty()
       e.update()

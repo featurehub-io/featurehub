@@ -22,12 +22,15 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
   @EmbeddedId
   private final DbFeatureValueVersionKey id;
 
-  public DbFeatureValueVersion(@NotNull DbFeatureValueVersionKey id, @NotNull LocalDateTime whenCreated,
-                               DbPerson whoCreated, @NotNull FeatureState featureState,
-                               @Nullable String defaultValue, boolean locked, boolean retired,
-                               List<RolloutStrategy> rolloutStrategies,
+  public DbFeatureValueVersion(@NotNull DbFeatureValueVersionKey id,
+                               @NotNull LocalDateTime whenCreated,
+                               @NotNull DbPerson whoCreated,
+                               @Nullable String defaultValue,
+                               boolean locked, boolean retired,
+                               @Nullable List<RolloutStrategy> rolloutStrategies,
                                List<SharedRolloutStrategyVersion> sharedRolloutStrategies,
                                DbApplicationFeature feature) {
+    super(whoCreated, locked);
 
     this.id = id;
     this.whenCreated = whenCreated;
@@ -36,10 +39,7 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
     this.sharedRolloutStrategies = sharedRolloutStrategies;
     this.feature = feature;
 
-    setWhoUpdated(whoCreated);
-    setFeatureState(featureState);
     setDefaultValue(defaultValue);
-    setLocked(locked);
     setRolloutStrategies(rolloutStrategies);
   }
 
@@ -73,7 +73,6 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
       new DbFeatureValueVersionKey(from.getId(), from.getVersion()),
         from.getVersion() == 1L ? from.getWhenCreated() : from.getWhenUpdated(),
         from.getWhoUpdated(),
-        from.getFeatureState() == null ? FeatureState.READY : from.getFeatureState(),
         from.getDefaultValue(),
         from.isLocked(),
         from.getRetired() == Boolean.TRUE,

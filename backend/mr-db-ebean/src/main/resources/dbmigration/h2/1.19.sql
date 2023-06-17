@@ -6,6 +6,7 @@ alter table fh_service_account add column fk_sdk_person uuid not null default '0
 update fh_service_account set fk_sdk_person = fk_person_who_created;
 -- now we need the job
 insert into fh_after_mig_job(id, completed, job_name) values (2, false, 'allocate-service-account-persons');
+insert into fh_after_mig_job(id, completed, job_name) values (3, false, 'upgrade-rollout-strategies2');
 -- foreign keys and indices
 
 create index ix_fh_service_account_fk_changed_by on fh_service_account (fk_changed_by);

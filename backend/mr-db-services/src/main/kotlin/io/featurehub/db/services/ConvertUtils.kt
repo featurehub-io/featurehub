@@ -82,6 +82,10 @@ open class ConvertUtils : Conversions {
       .exists()
   }
 
+  override fun safeConvert(bool: Boolean?): Boolean {
+    return bool?.let { bool } ?: false
+  }
+
   override fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean {
     return QDbGroup().owningPortfolio.id.eq(portfolioId).groupMembers.person.id.eq(personId).exists()
   }
@@ -515,8 +519,8 @@ open class ConvertUtils : Conversions {
     featureValue.environmentId = fs.environment.id
     if (opts.contains(FillOpts.RolloutStrategies)) {
       featureValue.rolloutStrategies = fs.rolloutStrategies
-      featureValue.rolloutStrategyInstances = fs.sharedRolloutStrategies
-        .map { srs: DbStrategyForFeatureValue ->
+      featureValue.rolloutStrategyInstances =
+        fs.sharedRolloutStrategies?.map { srs: DbStrategyForFeatureValue ->
           val rolloutStrategy = srs.rolloutStrategy
           RolloutStrategyInstance()
             .value(

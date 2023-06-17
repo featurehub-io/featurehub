@@ -29,7 +29,7 @@ public class DbServiceAccount extends DbVersionedBase {
   private String name;
 
   @Column(length = 400)
-  @NotNull
+  @Nullable
   private String description;
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
@@ -72,7 +72,8 @@ public class DbServiceAccount extends DbVersionedBase {
   @NotNull
   private DbPortfolio portfolio;
 
-  public DbServiceAccount(@NotNull DbPerson whoCreated, @NotNull DbPerson sdkPerson, @NotNull String name, @NotNull String description, @NotNull String serverKey,
+  public DbServiceAccount(@NotNull DbPerson whoCreated, @NotNull DbPerson sdkPerson, @NotNull String name,
+                          @Nullable String description, @NotNull String serverKey,
                           @NotNull String clientKey, @NotNull DbPortfolio portfolio ) {
     this.whoChanged = whoCreated;
     this.whoCreated = whoCreated;
@@ -131,11 +132,11 @@ public class DbServiceAccount extends DbVersionedBase {
     this.name = name;
   }
 
-  public @NotNull String getDescription() {
+  public @Nullable String getDescription() {
     return description;
   }
 
-  public void setDescription(@NotNull String description) {
+  public void setDescription(@Nullable String description) {
     this.description = description;
   }
 

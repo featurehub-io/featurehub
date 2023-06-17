@@ -33,7 +33,7 @@ class ComplexUpdateMigrations : ContainerLifecycleListener {
 
   private fun processJob(job: DbAfterMigrationJob, injector: ServiceLocator) {
     log.info("attempting to process job {}", job.jobName)
-    if (job.jobName == "upgrade-rollout-strategies") {
+    if (job.jobName == "upgrade-rollout-strategies" || job.jobName == "upgrade-rollout-strategies2") {
       injector.getService(FeatureApi::class.java).release1_5_11_strategy_update()
     } else if (job.jobName == "allocate-service-account-persons") {
       injector.getService(InternalServiceAccountApi::class.java).ensure_service_accounts_have_person()

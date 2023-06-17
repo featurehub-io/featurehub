@@ -14,6 +14,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -23,19 +26,6 @@ import java.util.UUID;
 @Index(name = "idx_fv_unique", unique = true, columnNames = {"fk_environment_id", "fk_feature_id"})
 @ChangeLog
 public class DbFeatureValue extends DbBaseFeatureValue {
-  private DbFeatureValue(Builder builder) {
-    setWhoUpdated(builder.whoUpdated);
-    setEnvironment(builder.environment);
-    setFeature(builder.feature);
-    setFeatureState(builder.featureState);
-    setDefaultValue(builder.defaultValue);
-    setLocked(builder.locked);
-    setRolloutStrategies(builder.rolloutStrategies);
-    setRetired(builder.retired);
-    setSharedRolloutStrategies(builder.sharedRolloutStrategies);
-    setVersion(builder.version);
-  }
-
   @Id
   private UUID id;
 
@@ -50,31 +40,62 @@ public class DbFeatureValue extends DbBaseFeatureValue {
    * see it.
    */
   @Column
-  protected Boolean retired;
+  protected boolean retired;
 
   @WhenModified
   @Column(name = "when_updated")
   protected LocalDateTime whenUpdated;
 
+  // in sql, create a unique index on these two
+  @ManyToOne(optional = false)
+  @Column(name = "fk_environment_id", nullable = false)
+  @JoinColumn(name = "fk_environment_id")
+  @NotNull
+  private DbEnvironment environment;
+
+  @ManyToOne(optional = false)
+  @Column(name = "fk_feature_id")
+  @JoinColumn(name = "fk_feature_id")
+  @NotNull
+  private DbApplicationFeature feature;
+
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "fk_fv_id")
+  @Nullable
+  protected List<DbStrategyForFeatureValue> sharedRolloutStrategies;
+
+  public DbFeatureValue(@NotNull DbPerson whoUpdated, boolean locked, @NotNull DbApplicationFeature feature,
+                        @NotNull DbEnvironment environment,
+                        @Nullable String defaultValue) {
+    super(whoUpdated, locked);
+
+    this.feature = feature;
+    this.environment = environment;
+    setDefaultValue(defaultValue);
+
+  }
+
+  @NotNull
   public LocalDateTime getWhenUpdated() {
     return whenUpdated;
   }
 
-  public Boolean getRetired() {
+  public boolean getRetired() {
     return retired;
   }
 
-  public void setRetired(Boolean retired) {
+  public void setRetired(boolean retired) {
     this.retired = retired;
   }
 
-  public Long getVersion() {
+  @NotNull public Long getVersion() {
     return version;
   }
 
+  @NotNull
   public UUID getId() { return id; }
 
-  public void setId(UUID id) {
+  public void setId(@NotNull UUID id) {
     this.id = id;
   }
 
@@ -82,120 +103,27 @@ public class DbFeatureValue extends DbBaseFeatureValue {
     this.version = version;
   }
 
-  // in sql, create a unique index on these two
-
-  @ManyToOne(optional = false)
-  @Column(name = "fk_environment_id", nullable = false)
-  @JoinColumn(name = "fk_environment_id")
-  private DbEnvironment environment;
-
-  @ManyToOne(optional = false)
-  @Column(name = "fk_feature_id")
-  @JoinColumn(name = "fk_feature_id")
-  private DbApplicationFeature feature;
-
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "fk_fv_id")
-  protected List<DbStrategyForFeatureValue> sharedRolloutStrategies;
-
-  public List<DbStrategyForFeatureValue> getSharedRolloutStrategies() {
+  public @Nullable List<DbStrategyForFeatureValue> getSharedRolloutStrategies() {
     return sharedRolloutStrategies;
   }
 
-  public void setSharedRolloutStrategies(List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
+  public void setSharedRolloutStrategies(@Nullable List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
     this.sharedRolloutStrategies = sharedRolloutStrategies;
   }
 
-
-  public DbFeatureValue() {
-  }
-
-
-  public DbEnvironment getEnvironment() {
+  public @NotNull DbEnvironment getEnvironment() {
     return environment;
   }
 
-  public void setEnvironment(DbEnvironment environment) {
+  public void setEnvironment(@NotNull DbEnvironment environment) {
     this.environment = environment;
   }
 
-  public DbApplicationFeature getFeature() {
+  public @NotNull DbApplicationFeature getFeature() {
     return feature;
   }
 
-  public void setFeature(DbApplicationFeature feature) {
+  public void setFeature(@NotNull DbApplicationFeature feature) {
     this.feature = feature;
   }
-
-  public static final class Builder {
-    private DbPerson whoUpdated;
-    private DbEnvironment environment;
-    private DbApplicationFeature feature;
-    private FeatureState featureState;
-    private String defaultValue;
-    private boolean locked;
-    private Boolean retired; // null == true
-    private List<RolloutStrategy> rolloutStrategies;
-    private List<DbStrategyForFeatureValue> sharedRolloutStrategies;
-    private Long version;
-
-    public Builder() {
-    }
-
-    public Builder version(Long version) {
-      this.version = version;
-      return this;
-    }
-
-    public Builder retired(Boolean retired) {
-      this.retired = retired;
-      return this;
-    }
-
-    public Builder whoUpdated(DbPerson val) {
-      whoUpdated = val;
-      return this;
-    }
-
-    public Builder environment(DbEnvironment val) {
-      environment = val;
-      return this;
-    }
-
-    public Builder feature(DbApplicationFeature val) {
-      feature = val;
-      return this;
-    }
-
-    public Builder featureState(FeatureState val) {
-      featureState = val;
-      return this;
-    }
-
-    public Builder defaultValue(String val) {
-      defaultValue = val;
-      return this;
-    }
-
-    public Builder locked(boolean val) {
-      locked = val;
-      return this;
-    }
-
-    public Builder rolloutStrategies(List<RolloutStrategy> val) {
-      rolloutStrategies = val;
-      return this;
-    }
-
-    public Builder sharedRolloutStrategies(List<DbStrategyForFeatureValue> val) {
-      sharedRolloutStrategies = val;
-      return this;
-    }
-
-    public DbFeatureValue build() {
-      return new DbFeatureValue(this);
-    }
-  }
-
-
 }

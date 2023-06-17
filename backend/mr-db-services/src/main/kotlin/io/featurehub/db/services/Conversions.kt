@@ -26,6 +26,8 @@ interface Conversions {
   fun byGroup(gid: UUID?, opts: Opts?): DbGroup?
   fun personIsNotSuperAdmin(person: DbPerson?): Boolean
 
+  fun safeConvert(bool: Boolean?): Boolean
+
   fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean
   fun isPersonMemberOfPortfolioAdminGroup(portfolioId: UUID, personId: UUID): Boolean
   fun personIsSuperAdmin(person: DbPerson?): Boolean
