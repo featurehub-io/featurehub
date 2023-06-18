@@ -42,6 +42,7 @@ interface FeatureApi {
     NoAppropriateRole::class,
     LockedException::class
   )
+
   fun createFeatureValueForEnvironment(
     eid: UUID, key: String, featureValue: FeatureValue,
     person: PersonFeaturePermission

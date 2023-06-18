@@ -44,7 +44,6 @@ public class DbBaseFeatureValue extends Model {
   // these are usually percentage only ones, but that may change in the future
   @DbJson
   @Column(name = "rollout_strat")
-  @Nullable
   protected List<RolloutStrategy> rolloutStrategies;
 
   @NotNull
@@ -74,11 +73,15 @@ public class DbBaseFeatureValue extends Model {
     this.defaultValue = defaultValue;
   }
 
-  public @Nullable List<RolloutStrategy> getRolloutStrategies() {
-    return rolloutStrategies;
+  public @NotNull List<RolloutStrategy> getRolloutStrategies() {
+    if (rolloutStrategies == null) {
+      rolloutStrategies = new LinkedList<>();
+    }
+
+    return rolloutStrategies ;
   }
 
-  public void setRolloutStrategies(@Nullable List<RolloutStrategy> rolloutStrategies) {
+  public void setRolloutStrategies(@NotNull List<RolloutStrategy> rolloutStrategies) {
     this.rolloutStrategies = rolloutStrategies;
   }
 

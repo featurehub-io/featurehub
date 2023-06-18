@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,8 +28,8 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
                                @NotNull DbPerson whoCreated,
                                @Nullable String defaultValue,
                                boolean locked, boolean retired,
-                               @Nullable List<RolloutStrategy> rolloutStrategies,
-                               List<SharedRolloutStrategyVersion> sharedRolloutStrategies,
+                               @NotNull List<RolloutStrategy> rolloutStrategies,
+                               @NotNull List<SharedRolloutStrategyVersion> sharedRolloutStrategies,
                                DbApplicationFeature feature) {
     super(whoCreated, locked);
 
@@ -52,7 +53,11 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
   @Column(name = "shared_strat")
   protected List<SharedRolloutStrategyVersion> sharedRolloutStrategies;
 
-  public List<SharedRolloutStrategyVersion> getSharedRolloutStrategies() {
+  public @NotNull List<SharedRolloutStrategyVersion> getSharedRolloutStrategies() {
+    if (sharedRolloutStrategies == null) {
+      sharedRolloutStrategies = new LinkedList<>();
+    }
+
     return sharedRolloutStrategies;
   }
 
@@ -76,13 +81,13 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
         from.getDefaultValue(),
         from.isLocked(),
         from.getRetired() == Boolean.TRUE,
-        from.getRolloutStrategies() == null ? Collections.emptyList() : from.getRolloutStrategies(),
+        from.getRolloutStrategies(),
         transformSharedStrategies(from.getSharedRolloutStrategies()),
         from.getFeature()
       );
   }
 
-  private static List<SharedRolloutStrategyVersion> transformSharedStrategies(List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
+  private static List<SharedRolloutStrategyVersion> transformSharedStrategies(@NotNull List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
     return new QDbStrategyForFeatureValue()
       .id.in(sharedRolloutStrategies.stream().map(DbStrategyForFeatureValue::getId).collect(Collectors.toList()))
       .select(QDbStrategyForFeatureValue.Alias.rolloutStrategy.id,

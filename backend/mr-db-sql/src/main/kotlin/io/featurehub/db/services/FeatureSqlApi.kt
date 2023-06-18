@@ -49,12 +49,13 @@ class FeatureSqlApi @Inject constructor(
     FeatureApi.NoAppropriateRole::class,
     FeatureApi.LockedException::class
   )
+
   override fun createFeatureValueForEnvironment(
     eid: UUID,
     key: String,
     featureValue: FeatureValue,
     person: PersonFeaturePermission
-  ): FeatureValue {
+  ): FeatureValue? {
     if (!person.hasWriteRole()) {
       val env = QDbEnvironment().id.eq(eid).whenArchived.isNull.findOne()
       log.warn("User has no roles for environment {} key {}", eid, key)
@@ -80,13 +81,10 @@ class FeatureSqlApi @Inject constructor(
         featureValue.rolloutStrategyInstances ?: listOf()
       ).hasFailedValidation()
 
-      if (dbFeatureValue.rolloutStrategies == null) { // ensure this is not null for further calculation
-        dbFeatureValue.rolloutStrategies = mutableListOf()
-      }
       // this is an update not a create, environment + app-feature key exists
-      onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue)!!
+      onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue)
     } else if (person.hasChangeValueRole() || person.hasLockRole() || person.hasUnlockRole()) {
-      onlyCreateFeatureValueForEnvironment(eid, key, featureValue, person)!!
+      onlyCreateFeatureValueForEnvironment(eid, key, featureValue, person)
     } else {
       log.info(
         "roles for person are {} and are not enough for environment {} and key {}",
@@ -109,13 +107,26 @@ class FeatureSqlApi @Inject constructor(
       .select(QDbApplicationFeature.Alias.id, QDbApplicationFeature.Alias.key)
       .key.eq(key)
       .parentApplication.environments.eq(environ)
-      .parentApplication.environments.whenArchived.isNotNull
+      .parentApplication.environments.whenArchived.isNull
       .findOne() ?: return null
+
+    val featureValField = convertFeatureValueToDefaultValue(featureValue, appFeature.valueType)
+    val typeBool = (appFeature.valueType == FeatureValueType.BOOLEAN)
+
+    // they cannot set the value field if they don't have change value permissions or a boolean field to true for same
+    if (!person.hasChangeValueRole() && ((featureValField != null && !typeBool) || (typeBool && featureValField != "false"))) {
+      throw FeatureApi.NoAppropriateRole()
+    }
+
+    val locked = convertUtils.safeConvert(featureValue.locked)
+    if ((typeBool && !locked && !person.hasUnlockRole()) || (!typeBool && !person.hasLockRole() && locked)) {
+      throw FeatureApi.NoAppropriateRole()
+    }
 
     val dbFeatureValue = DbFeatureValue(
       dbPerson,
-      convertUtils.safeConvert(featureValue.locked), appFeature, environ,
-      convertFeatureValueToDefaultValue(featureValue, appFeature.valueType)
+      locked, appFeature, environ,
+      featureValField
     )
 
     with(dbFeatureValue) {
@@ -294,8 +305,8 @@ class FeatureSqlApi @Inject constructor(
     var changed = false
     val personCanChangeValues = person.hasChangeValueRole()
 
-    val historicalStrategies = historical.rolloutStrategies?.toList() ?: listOf()
-    val existingStrategies = existing.rolloutStrategies ?: mutableListOf()
+    val historicalStrategies = historical.rolloutStrategies.toList() // not mutable
+    val existingStrategies = existing.rolloutStrategies
 
     featureValue.rolloutStrategies?.let { strategies ->
       rationaliseStrategyIdsAndAttributeIds(strategies)
@@ -654,7 +665,7 @@ class FeatureSqlApi @Inject constructor(
     key: String,
     featureValue: FeatureValue,
     person: PersonFeaturePermission
-  ): FeatureValue {
+  ): FeatureValue? {
     return createFeatureValueForEnvironment(eid, key, featureValue, person)
   }
 
@@ -771,8 +782,7 @@ class FeatureSqlApi @Inject constructor(
   ) {
     val account = QDbServiceAccount()
       .select(QDbServiceAccount.Alias.sdkPerson.id)
-      .sdkPerson.fetch()
-      .whenArchived.isNotNull
+      .whenArchived.isNull
       .or().apiKeyClientEval.eq(sdkUrl).apiKeyServerEval.eq(sdkUrl).endOr()
       .findOne() ?: return
 
@@ -1174,7 +1184,7 @@ class FeatureSqlApi @Inject constructor(
     QDbFeatureValue().findList().forEach { fv ->
       count++
 
-      fv.rolloutStrategies?.let { strategies ->
+      fv.rolloutStrategies.let { strategies ->
         rationaliseStrategyIdsAndAttributeIds(strategies)
       }
 

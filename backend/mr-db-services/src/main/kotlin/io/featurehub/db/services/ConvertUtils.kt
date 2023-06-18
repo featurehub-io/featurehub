@@ -537,7 +537,7 @@ open class ConvertUtils : Conversions {
     // this is an indicator it is for the UI not for the cache.
     if (opts.contains(FillOpts.People)) {
       featureValue.whenUpdated = toOff(fs.whenUpdated)
-      featureValue.whoUpdated = if (fs.whoUpdated == null) null else toPerson(fs.whoUpdated)
+      featureValue.whoUpdated = toPerson(fs.whoUpdated)
     }
     return featureValue
   }
@@ -622,7 +622,7 @@ open class ConvertUtils : Conversions {
 
       person?.let {
         val portAdmin = isPersonMemberOfPortfolioAdminGroup(portfolio.id!!, it.id!!.id)
-        if (personNotSuperAdmin && !isPersonMemberOfPortfolioAdminGroup(portfolio.id!!, it.id!!.id)) {
+        if (personNotSuperAdmin && !portAdmin) {
           appFinder = appFinder.or()
             .environments.groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id)
             .groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id).endOr()

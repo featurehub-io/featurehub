@@ -305,14 +305,14 @@ open class DbCacheSource @Inject constructor(
     return if (dfv == null) {
       null
     } else CacheFeatureValue()
-      .id(dfv.id)
-      .version(dfv.version)
+      .id(dfv.id!!)
+      .version(dfv.version!!)
       .value(featureValueAsObject(dfv.defaultValue, feature.valueType))
       .locked(dfv.isLocked)
       .rolloutStrategies(collectCombinedRolloutStrategies(dfv))
       .key(feature.key)
       .retired(dfv.retired)
-      .personIdWhoChanged(dfv.whoUpdated?.id)
+      .personIdWhoChanged(dfv.whoUpdated.id)
   }
 
   private fun featureValueAsObject(value: String?, valueType: FeatureValueType): Any? {
@@ -404,12 +404,10 @@ open class DbCacheSource @Inject constructor(
   private fun collectCombinedRolloutStrategies(featureValue: DbFeatureValue): List<CacheRolloutStrategy> {
     log.trace("cache combine strategies")
 
-    val allStrategies: MutableList<CacheRolloutStrategy> = ArrayList()
-    if (featureValue.rolloutStrategies != null) {
-      allStrategies.addAll(
-        featureValue.rolloutStrategies.stream().map { rs: RolloutStrategy -> fromRolloutStrategy(rs) }
-          .collect(Collectors.toList()))
-    }
+    val allStrategies = mutableListOf<CacheRolloutStrategy>()
+    allStrategies.addAll(
+      featureValue.rolloutStrategies.stream().map { rs: RolloutStrategy -> fromRolloutStrategy(rs) }
+        .collect(Collectors.toList()))
 
     val activeSharedStrategies = QDbStrategyForFeatureValue()
       .select(QDbStrategyForFeatureValue.Alias.value)

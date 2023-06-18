@@ -100,8 +100,8 @@ class DbDachaSqlApi : DachaApiKeyService {
     val fv = CacheFeatureValue()
       .key(dbFeature.feature.key)
       .locked(dbFeature.isLocked)
-      .version(dbFeature.version)
-      .id(dbFeature.id)
+      .version(dbFeature.version!!)
+      .id(dbFeature.id!!)
 
     // we haven't implemented shared rollout strategies so don't both to include those
     when (dbFeature.feature.valueType) {
@@ -111,12 +111,7 @@ class DbDachaSqlApi : DachaApiKeyService {
       else -> fv.value(null)
     }
 
-    if (dbFeature.rolloutStrategies != null) {
-      fv.rolloutStrategies(dbFeature.rolloutStrategies.map { fromRolloutStrategy(it) })
-    } else {
-      fv.rolloutStrategies(listOf())
-    }
-
+    fv.rolloutStrategies(dbFeature.rolloutStrategies.map { fromRolloutStrategy(it) })
 
     return fv
   }

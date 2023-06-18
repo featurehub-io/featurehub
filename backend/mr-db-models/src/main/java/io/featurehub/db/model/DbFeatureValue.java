@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -88,11 +89,10 @@ public class DbFeatureValue extends DbBaseFeatureValue {
     this.retired = retired;
   }
 
-  @NotNull public Long getVersion() {
+  public Long getVersion() {
     return version;
   }
 
-  @NotNull
   public UUID getId() { return id; }
 
   public void setId(@NotNull UUID id) {
@@ -104,6 +104,9 @@ public class DbFeatureValue extends DbBaseFeatureValue {
   }
 
   public @Nullable List<DbStrategyForFeatureValue> getSharedRolloutStrategies() {
+    if (sharedRolloutStrategies == null) {
+      sharedRolloutStrategies = new LinkedList<>();
+    }
     return sharedRolloutStrategies;
   }
 

@@ -297,9 +297,9 @@ class ServiceAccountSqlApi @Inject constructor(
       }
     }.toMutableSet()
 
+    val sdkPerson = internalPersonApi.createSdkServiceAccountUser(serviceAccount.name, who, false)
     // now create the SA and attach the perms to form the links
-    val sa = DbServiceAccount(who,
-          internalPersonApi.createSdkServiceAccountUser(serviceAccount.name, who, false),
+    val sa = DbServiceAccount(who, sdkPerson,
           serviceAccount.name, serviceAccount.description ?: "",
           newServerEvalKey(), newClientEvalKey(), portfolio).let {
       it.serviceAccountEnvironments = perms

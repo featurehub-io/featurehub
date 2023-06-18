@@ -50,7 +50,7 @@ class ServiceAccount2Spec extends Base2Spec {
     cacheSource = Mock(CacheSource)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureSqlApi))
-    sapi = new ServiceAccountSqlApi(db, convertUtils, cacheSource, archiveStrategy, personSqlApi)
+    sapi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, personSqlApi)
 
     // now set up the environments we need
 //    UUID orgUUID = org.id

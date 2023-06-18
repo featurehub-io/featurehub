@@ -33,7 +33,8 @@ class FeatureAuditingSpec extends Base2Spec {
   RolloutStrategyValidator rsValidator
   PersonFeaturePermission perms
   FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
-  ServiceAccountApi serviceAccountApi
+  ServiceAccountSqlApi serviceAccountApi
+  InternalPersonApi internalPersonApi
 
   static UUID portfolioId = UUID.fromString('16364b24-b4ef-4052-9c33-5eb66b0d1baf')
 //  static UUID
@@ -42,12 +43,13 @@ class FeatureAuditingSpec extends Base2Spec {
     perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK] as Set<RoleType>)
     cacheSource = Mock()
     rsValidator = Mock()
+    internalPersonApi = new PersonSqlApi(db, convertUtils, archiveStrategy, groupSqlApi)
     rsValidator.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     rsValidator.validateStrategies(_, _, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true'])
     featureMessagingCloudEventPublisher = Mock()
 
-    serviceAccountApi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalPersonApi))
+    serviceAccountApi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, internalPersonApi)
 
     featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
@@ -80,9 +82,9 @@ class FeatureAuditingSpec extends Base2Spec {
 
   def "when i have a string feature and i add alternating strategies at the same history point they work"() {
     given: "i create a string feature"
-      def feature = applicationSqlApi.createApplicationFeature(app.id,
+      def feature = applicationSqlApi.createApplicationLevelFeature(app.id,
         new Feature().name("str1-feature").description("str1-feature").key("FSTR1").valueType(FeatureValueType.STRING), superPerson, Opts.empty())
-        .find { it.key == 'FSTR1' }
+
     and: "i set the value of the feature"
       def fv1 = featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key, new FeatureValue().locked(false).valueString("fred"), perms)
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
@@ -126,10 +128,18 @@ class FeatureAuditingSpec extends Base2Spec {
       def feature = applicationSqlApi.createApplicationLevelFeature(app.id,
         new Feature().name("testsdk-feature").description("testsdk-feature").key("TESTSDK-BOOL").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     and: "we have a service account"
-      def sa = serviceAccountApi.create(portfolioId, superPerson, new ServiceAccount().name("testsdk")
-            .description("some desc").permissions([]))
+      def sa = serviceAccountApi.create(p1.id, superPerson, new ServiceAccount().name("testsdk")
+            .description("some desc").permissions([]), Opts.empty())
+      db.currentTransaction()?.commit()
     when: "i update the feature using the test-sdk api"
-//      featureSqlApi.updateFeatureFromTestSdk()
+      featureSqlApi.updateFeatureFromTestSdk(sa.apiKeyServerSide, env.id, feature.key, true, { type ->
+        return new FeatureValue().locked(false).valueBoolean(true)
+      })
+    and:
+      def value = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
     then: "the feature has updated"
+      value.valueBoolean
+      new InternalFeatureHistorySqlApi().history(env.id, feature.id, value.id).size() == 2
+
   }
 }
