@@ -3735,6 +3735,7 @@ components:
         - order
         - features
         - version
+        - hasStrategy
       properties:
         id:
           type: string
@@ -3753,6 +3754,8 @@ components:
         version:
           type: integer
           format: int64
+        hasStrategy:
+          type: boolean
         features:
           type: array
           items:

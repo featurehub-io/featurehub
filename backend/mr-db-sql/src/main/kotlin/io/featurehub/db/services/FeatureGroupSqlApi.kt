@@ -85,9 +85,9 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
   }
 
   private fun toFeatureGroup(featureGroup: DbFeatureGroup): FeatureGroup {
-    val features = featureGroup.features?.map {
+    val features = featureGroup.features.map {
       FeatureGroupFeature().id(it.feature.id).key(it.feature.key).value(cast(it.value, it.feature.valueType!!))
-    } ?: mutableListOf()
+    }
 
     return FeatureGroup()
       .id(featureGroup.id)
@@ -145,6 +145,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
     var finder = QDbFeatureGroup()
       .select(
         QDbFeatureGroup.Alias.id, QDbFeatureGroup.Alias.name, QDbFeatureGroup.Alias.order,
+        QDbFeatureGroup.Alias.strategy,
         QDbFeatureGroup.Alias.description,
         QDbFeatureGroup.Alias.version,
         QDbFeatureGroup.Alias.environment.id, QDbFeatureGroup.Alias.environment.name,
@@ -181,6 +182,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
           FeatureGroupListGroup().id(it.id).name(it.name)
             .order(it.order).environmentId(it.environment.id).environmentName(it.environment.name)
             .version(it.version)
+            .hasStrategy(it.strategy != null)
             .description(it.description)
             .features((it.features?.map { feat -> FeatureGroupListFeature().key(feat.feature.key) } ?: mutableListOf()).sortedBy { it.key })
         }

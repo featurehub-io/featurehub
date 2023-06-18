@@ -4245,6 +4245,7 @@ components:
       - environmentId
       - environmentName
       - features
+      - hasStrategy
       - id
       - name
       - order
@@ -4268,6 +4269,8 @@ components:
         version:
           type: integer
           format: int64
+        hasStrategy:
+          type: boolean
         features:
           type: array
           items:
