@@ -20,6 +20,7 @@ import io.featurehub.messaging.converter.FeatureMessagingParameter
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
 import jakarta.inject.Inject
+import jakarta.persistence.OptimisticLockException
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -82,7 +83,7 @@ class FeatureSqlApi @Inject constructor(
       ).hasFailedValidation()
 
       // this is an update not a create, environment + app-feature key exists
-      onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue)
+      onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue, true, true)
     } else if (person.hasChangeValueRole() || person.hasLockRole() || person.hasUnlockRole()) {
       onlyCreateFeatureValueForEnvironment(eid, key, featureValue, person)
     } else {
@@ -175,7 +176,9 @@ class FeatureSqlApi @Inject constructor(
   private fun onlyUpdateFeatureValueForEnvironment(
     featureValue: FeatureValue,
     person: PersonFeaturePermission,
-    existing: DbFeatureValue
+    existing: DbFeatureValue,
+    changingDefaultValue: Boolean,
+    updatingLock: Boolean
   ): FeatureValue? {
     if (featureValue.version == null) {
       throw OptimisticLockingException() // we cannot determine what version to  compare this against
@@ -190,13 +193,14 @@ class FeatureSqlApi @Inject constructor(
     }
 
     if (historical == null) {
+      log.trace("historical is null, updating old way")
       updateFeatureValue(featureValue, person, existing, existing.feature.valueType, dbPerson)
 
       save(existing)
       publish(existing)
     } else {
       // saving is done inside here as it detects it
-      updateSelectively(featureValue, person, existing, dbPerson, historical)
+      updateSelectively(featureValue, person, existing, dbPerson, historical, changingDefaultValue, updatingLock)
     }
 
     return convertUtils.toFeatureValue(existing)
@@ -208,16 +212,23 @@ class FeatureSqlApi @Inject constructor(
     person: PersonFeaturePermission,
     existing: DbFeatureValue,
     dbPerson: DbPerson,
-    historical: DbFeatureValueVersion
+    historical: DbFeatureValueVersion,
+    changingDefaultValue: Boolean,
+    updatingLock: Boolean
   ) {
     val feature = existing.feature
 
-    val lockUpdate = updateSelectivelyLocked(featureValue, historical, existing, person)
+    val lockUpdate = if (updatingLock) updateSelectivelyLocked(featureValue, historical, existing, person)
+        else SingleFeatureValueUpdate(hasChanged = false, false, false)
+
     val lockChanged = lockUpdate.hasChanged
 
+    log.trace("before-update-default: {}, {}", existing.defaultValue, changingDefaultValue)
     // allow them to change the value and lock it at the same time
-    val defaultValueUpdate =
+    val defaultValueUpdate = if (changingDefaultValue)
       updateSelectivelyDefaultValue(feature, featureValue, historical, existing, person, lockChanged)
+      else SingleNullableFeatureValueUpdate()
+    log.trace("after-update-default: {}, {}", existing.defaultValue, changingDefaultValue)
 
     val strategyUpdates = updateSelectivelyRolloutStrategies(person, featureValue, historical, existing, lockChanged)
 
@@ -746,7 +757,7 @@ class FeatureSqlApi @Inject constructor(
       } else {
         val fv = newValues.remove(strategy.feature.key)
         if (fv != null) {
-          onlyUpdateFeatureValueForEnvironment(fv, requireRoleCheck, strategy)
+          onlyUpdateFeatureValueForEnvironment(fv, requireRoleCheck, strategy, true, true)
         }
       }
     }
@@ -783,6 +794,7 @@ class FeatureSqlApi @Inject constructor(
   @Throws(RolloutStrategyValidator.InvalidStrategyCombination::class)
   override fun updateFeatureFromTestSdk(
     sdkUrl: String, envId: UUID, featureKey: String, updatingValue: Boolean,
+    updatingLock: Boolean,
     buildFeatureValue: Function<FeatureValueType, FeatureValue>
   ) {
     val account = QDbServiceAccount()
@@ -798,13 +810,14 @@ class FeatureSqlApi @Inject constructor(
       ?: return
 
     // we need to know the current version if it exists at all
-    val fv = QDbFeatureValue().environment.id.eq(envId).feature.eq(feature).findOne()
 
     // not checking permissions, edge checks those
     val newValue = buildFeatureValue.apply(feature.valueType)
 
+    var fv = QDbFeatureValue().environment.id.eq(envId).feature.eq(feature).findOne()
     fv?.let {
       newValue.version(it.version)
+      newValue.id(it.id)
     }
 
     val perms = PersonFeaturePermission(
@@ -812,10 +825,33 @@ class FeatureSqlApi @Inject constructor(
       setOf(RoleType.READ, RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK)
     )
 
-    if (fv == null) {
-      onlyCreateFeatureValueForEnvironment(envId, featureKey, newValue, perms)
-    } else {
-      onlyUpdateFeatureValueForEnvironment(newValue, perms, fv)
+    var count = 0
+    var saved = false
+    while (count++ < 10 && !saved) {
+      try {
+        if (fv == null) {
+          log.trace("test-sdk: creating value")
+          onlyCreateFeatureValueForEnvironment(envId, featureKey, newValue, perms)
+        } else {
+          onlyUpdateFeatureValueForEnvironment(newValue, perms, fv, updatingValue, updatingLock)
+        }
+        saved = true
+      } catch (ignored: OptimisticLockException) {
+        log.trace("WARN: missed test-sdk due to optimistic lock {}", count)
+        if (fv == null) {
+          fv = QDbFeatureValue().environment.id.eq(envId).feature.eq(feature).findOne()
+        } else {
+          fv.refresh()
+        }
+
+        with(fv!!) {
+          newValue.version(version)
+          newValue.id(id)
+        }
+      }
+    }
+    if (!saved) {
+      log.error("Unable to save feature update from TestSDK due to continual optimistic lock issues")
     }
   }
 

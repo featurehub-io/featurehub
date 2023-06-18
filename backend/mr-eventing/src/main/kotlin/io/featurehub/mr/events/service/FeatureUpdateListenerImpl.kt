@@ -25,19 +25,23 @@ open class FeatureUpdateListenerImpl @Inject constructor(
     try {
       log.debug("received update {}", update)
       featureUpdateBySDKApi.updateFeatureFromTestSdk(
-        update.apiKey, update.environmentId, update.featureKey, update.updatingValue
+        update.apiKey, update.environmentId, update.featureKey,  update.updatingValue, update.lock != null
       ) { valueType: FeatureValueType? ->
         val fv = FeatureValue()
           .key(update.featureKey)
           .locked(update.lock != null && update.lock!!)
-        when (valueType) {
-          FeatureValueType.BOOLEAN -> fv.valueBoolean(update.valueBoolean)
-          FeatureValueType.STRING -> fv.valueString(update.valueString)
-          FeatureValueType.NUMBER -> fv.valueNumber = update.valueNumber
-          FeatureValueType.JSON -> fv.valueJson(update.valueString)
-          else -> {
+
+        if (update.updatingValue) {
+          when (valueType) {
+            FeatureValueType.BOOLEAN -> fv.valueBoolean(update.valueBoolean)
+            FeatureValueType.STRING -> fv.valueString(update.valueString)
+            FeatureValueType.NUMBER -> fv.valueNumber = update.valueNumber
+            FeatureValueType.JSON -> fv.valueJson(update.valueString)
+            else -> {
+            }
           }
         }
+
         fv
       }
     } catch (ignoreEx: InvalidStrategyCombination) {

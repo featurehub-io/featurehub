@@ -13,6 +13,7 @@ interface FeatureUpdateBySDKApi {
         envId: UUID,
         featureKey: String,
         updatingValue: Boolean,
+        updatingLock: Boolean,
         buildFeatureValue: Function<FeatureValueType, FeatureValue>
     )
 }

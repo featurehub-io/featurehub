@@ -132,7 +132,7 @@ class FeatureAuditingSpec extends Base2Spec {
             .description("some desc").permissions([]), Opts.empty())
       db.currentTransaction()?.commit()
     when: "i update the feature using the test-sdk api"
-      featureSqlApi.updateFeatureFromTestSdk(sa.apiKeyServerSide, env.id, feature.key, true, { type ->
+      featureSqlApi.updateFeatureFromTestSdk(sa.apiKeyServerSide, env.id, feature.key, true, true, { type ->
         return new FeatureValue().locked(false).valueBoolean(true)
       })
     and:
