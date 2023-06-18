@@ -1,7 +1,7 @@
 -- apply alter tables
-alter table fh_service_account add column fk_changed_by varchar2(40) not null default '00000000-0000-0000-0000-000000000000';
+alter table fh_service_account add fk_changed_by varchar2(40) default '00000000-0000-0000-0000-000000000000' not null;
 update fh_service_account set fk_changed_by = fk_person_who_created;
-alter table fh_service_account add column fk_sdk_person varchar2(40) not null default '00000000-0000-0000-0000-000000000000';
+alter table fh_service_account add fk_sdk_person varchar2(40) default '00000000-0000-0000-0000-000000000000' not null;
 -- we don't actually want these, but we need them to be valid references
 update fh_service_account set fk_sdk_person = fk_person_who_created;
 -- now we need the job

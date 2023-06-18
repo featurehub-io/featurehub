@@ -628,7 +628,9 @@ class FeatureSqlApi @Inject constructor(
     }
   }
 
-  fun rationaliseStrategyIdsAndAttributeIds(strategies: List<RolloutStrategy>) {
+  fun rationaliseStrategyIdsAndAttributeIds(strategies: List<RolloutStrategy>): Boolean {
+    var changes = false
+
     strategies.forEach { strategy ->
       if (strategy.id == null || strategy.id!!.length > strategyIdLength) {
         var id = RandomStringUtils.randomAlphanumeric(strategyIdLength)
@@ -636,7 +638,7 @@ class FeatureSqlApi @Inject constructor(
         while (strategies.any { id == strategy.id }) {
           id = RandomStringUtils.randomAlphanumeric(strategyIdLength)
         }
-
+        changes = true
         strategy.id = id
       }
 
@@ -648,10 +650,13 @@ class FeatureSqlApi @Inject constructor(
             id = RandomStringUtils.randomAlphanumeric(strategyIdLength)
           }
 
+          changes = true
           attribute.id = id
         }
       }
     }
+
+    return changes
   }
 
   @Throws(
@@ -1184,11 +1189,9 @@ class FeatureSqlApi @Inject constructor(
     QDbFeatureValue().findList().forEach { fv ->
       count++
 
-      fv.rolloutStrategies.let { strategies ->
-        rationaliseStrategyIdsAndAttributeIds(strategies)
+      if (rationaliseStrategyIdsAndAttributeIds(fv.rolloutStrategies)) {
+        save(fv)
       }
-
-      save(fv)
 
       if (count % 50 == 0) {
         log.info("upgraded {} feature values", count)
