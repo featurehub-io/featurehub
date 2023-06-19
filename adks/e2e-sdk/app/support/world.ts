@@ -18,6 +18,7 @@ import {
 } from '../apis/mr-service';
 import { axiosLoggingAttachment, logger } from './logging';
 import globalAxios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import { Configuration as EdgeConfig, FeatureServiceApi as EdgeService } from '../apis/edge';
 import {
   ClientContext,
   EdgeFeatureHubConfig,
@@ -51,6 +52,7 @@ export class SdkWorld extends World {
   public readonly personApi: PersonServiceApi;
   public readonly serviceAccountApi: ServiceAccountServiceApi;
   public readonly featureValueApi: EnvironmentFeatureServiceApi;
+  public readonly edgeApi: EdgeService;
 
   public readonly webhookApi: WebhookServiceApi;
   private _clientContext: ClientContext;
@@ -81,6 +83,9 @@ export class SdkWorld extends World {
     this.serviceAccountApi = new ServiceAccountServiceApi(this.adminApiConfig);
     this.featureValueApi = new EnvironmentFeatureServiceApi(this.adminApiConfig);
     this.webhookApi = new WebhookServiceApi(this.adminApiConfig);
+
+    const edgeConfig = new EdgeConfig({ basePath: this.featureUrl, axiosInstance: this.adminApiConfig.axiosInstance});
+    this.edgeApi = new EdgeService(edgeConfig);
 
     axiosLoggingAttachment([this.adminApiConfig.axiosInstance]);
     const self = this;

@@ -17,3 +17,15 @@ Feature: Webhooks work as expected
     And I set the feature flag to unlocked and off
     Then we receive a webhook with FEATURE_TITLE_TO_UPPERCASE flag that is unlocked and off
     And we should have 3 messages in the list of webhooks
+
+  @webhook2
+  Scenario: I test a webhook that is triggered by a TestSDK changing a value
+    Given I create a new portfolio
+    And I create an application
+    When There is a feature flag with the key FEATURE_TITLE_TO_UPPERCASE
+    And I update the environment for feature webhooks
+    And I create a service account and full permissions based on the application environments
+    And I use the Test SDK to update feature FEATURE_TITLE_TO_UPPERCASE to unlocked and off
+    And we receive a webhook that has changed the feature FEATURE_TITLE_TO_UPPERCASE that belongs to the Test SDK
+
+
