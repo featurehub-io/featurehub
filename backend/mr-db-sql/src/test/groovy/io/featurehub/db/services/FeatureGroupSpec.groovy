@@ -23,14 +23,15 @@ class FeatureGroupSpec extends Base3Spec {
             new Feature().name("sample_1").key("sample_1").valueType(FeatureValueType.BOOLEAN),
             superPerson, Opts.empty()).first()
     when:
-      def created = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name("name").environmentId(env1.id).features(
+      def created = fgApi.createGroup(app1.id, superPerson,
+        new FeatureGroupCreate().name("name").environmentId(env1.id).features(
           [new FeatureGroupUpdateFeature().id(feature.id).value(true)]
       ))
     then:
       created.version == 1
     when:
       def created2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name("name1").environmentId(env1.id).features(
-        [new FeatureGroupUpdateFeature().id(feature.id)]).strategy(new FeatureGroupStrategy().percentage(20)))
+        [new FeatureGroupUpdateFeature().id(feature.id)]).strategies([new FeatureGroupStrategy().percentage(20).name("fred")]))
     and:
       def all = fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, null)
     then:
@@ -39,9 +40,12 @@ class FeatureGroupSpec extends Base3Spec {
       all.featureGroups[1].order == 2
       all.featureGroups[0].id == created.id
       all.featureGroups[0].name == created.name
+      !all.featureGroups[0].hasStrategy
       all.featureGroups[1].id == created2.id
       all.featureGroups[1].name == created2.name
+      all.featureGroups[1].hasStrategy
       !fgApi.getGroup(app1.id, superPerson, created2.id).features[0].value
+      fgApi.getGroup(app1.id, superPerson, created2.id).strategies[0].name == "fred"
   }
 
   def "i can create a feature group and then update it"() {

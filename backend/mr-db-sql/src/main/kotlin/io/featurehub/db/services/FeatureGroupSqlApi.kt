@@ -3,6 +3,7 @@ package io.featurehub.db.services
 import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
 import io.featurehub.db.api.FeatureGroupApi
+import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.QDbApplicationFeature
 import io.featurehub.db.model.query.QDbEnvironment
@@ -20,13 +21,15 @@ import java.util.*
  * We never check the appId as we assume from the front end that it always does that as part of its
  * permissions check. We do not check permissions either.
  */
-class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversions) : FeatureGroupApi {
+class FeatureGroupSqlApi @Inject constructor(
+  private val conversions: Conversions,
+) : FeatureGroupApi {
   private val log: Logger = LoggerFactory.getLogger(FeatureGroupSqlApi::class.java)
 
   override fun createGroup(appId: UUID, current: Person, featureGroup: FeatureGroupCreate): FeatureGroup? {
 
     val env =
-      QDbEnvironment().id.eq(featureGroup.environmentId).parentApplication.id.eq(appId).findOne() ?: return null;
+      QDbEnvironment().id.eq(featureGroup.environmentId).parentApplication.id.eq(appId).findOne() ?: return null
     val person = conversions.byPerson(current.id?.id) ?: return null
     val mappedFeatures =
       QDbApplicationFeature().parentApplication.id.eq(appId).id.`in`(featureGroup.features.map { it.id }).findList()
@@ -57,7 +60,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
   ): DbFeatureGroup {
     val fg = with(DbFeatureGroup(featureGroup.name, env)) {
       order = highest
-      strategy = featureGroup.strategy
+      strategies = featureGroup.strategies ?: mutableListOf()
       description = featureGroup.description
 
       whoCreated = person
@@ -67,7 +70,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
       this
     }
 
-    // because we are using a Emebdded object here, we need to use the id of the newly created group
+    // because we are using an Embedded object here, we need to use the id of the newly created group
     mappedFeatures.forEach { feat ->
       with(DbFeatureGroupFeature(DbFeatureGroupFeatureKey(feat.id, fg.id))) {
         value = featureGroup.features.find { it.id == feat.id }?.value?.toString()
@@ -95,7 +98,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
       .description(featureGroup.description)
       .environmentId(featureGroup.environment.id)
       .environmentName(featureGroup.environment.name)
-      .strategy(featureGroup.strategy)
+      .strategies(featureGroup.strategies)
       .name(featureGroup.name)
       .version(featureGroup.version)
       .features(features.sortedBy { it.key })
@@ -115,9 +118,9 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
   override fun deleteGroup(appId: UUID, current: Person, fgId: UUID): Boolean {
     val found =
       QDbFeatureGroup().id.eq(fgId).environment.parentApplication.id.eq(appId).whenArchived.isNull.forUpdate().findOne()
-        ?: return false;
+        ?: return false
 
-    found.whenArchived = Instant.now();
+    found.whenArchived = Instant.now()
     found.save()
 
     return true
@@ -145,7 +148,7 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
     var finder = QDbFeatureGroup()
       .select(
         QDbFeatureGroup.Alias.id, QDbFeatureGroup.Alias.name, QDbFeatureGroup.Alias.order,
-        QDbFeatureGroup.Alias.strategy,
+        QDbFeatureGroup.Alias.strategies,
         QDbFeatureGroup.Alias.description,
         QDbFeatureGroup.Alias.version,
         QDbFeatureGroup.Alias.environment.id, QDbFeatureGroup.Alias.environment.name,
@@ -182,9 +185,9 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
           FeatureGroupListGroup().id(it.id).name(it.name)
             .order(it.order).environmentId(it.environment.id).environmentName(it.environment.name)
             .version(it.version)
-            .hasStrategy(it.strategy != null)
+            .hasStrategy(it.strategies.isNotEmpty())
             .description(it.description)
-            .features((it.features?.map { feat -> FeatureGroupListFeature().key(feat.feature.key) } ?: mutableListOf()).sortedBy { it.key })
+            .features((it.features.map { feat -> FeatureGroupListFeature().key(feat.feature.key) }).sortedBy { sb -> sb.key })
         }
       )
   }
@@ -232,10 +235,10 @@ class FeatureGroupSqlApi @Inject constructor(private val conversions: Conversion
 
     var strategyChanged = false
     // are they changing the strategy - they can never change it back to "null"
-    update.strategy?.let { newStrat ->
-      if (group.strategy == null || newStrat != group.strategy) {
+    update.strategies?.let { newStrat ->
+      if (group.strategies == null || newStrat != group.strategies) {
         strategyChanged = true
-        group.strategy = newStrat
+        group.strategies = newStrat
       }
     }
 

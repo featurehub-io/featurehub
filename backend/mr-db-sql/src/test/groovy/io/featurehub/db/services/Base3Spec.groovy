@@ -14,6 +14,7 @@ import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.utils.ExecutorSupplier
+import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -86,9 +87,9 @@ class Base3Spec extends Specification {
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, featureSqlApi)
 
-    portfolio = portfolioSqlApi.createPortfolio(new Portfolio().name("port1-base3").description("desc1"), Opts.empty(), superPerson)
-    app1 = applicationSqlApi.createApplication(portfolio.id, new Application().name("app1").description("app1"), superPerson)
-    env1 = environmentSqlApi.create(new Environment().description("prod").name("prod"), app1, superPerson)
+    portfolio = portfolioSqlApi.createPortfolio(new Portfolio().name(RandomStringUtils.randomAlphabetic(10)).description("desc1"), Opts.empty(), superPerson)
+    app1 =  applicationSqlApi.createApplication(portfolio.id, new Application().name(RandomStringUtils.randomAlphabetic(10)).description("app1"), superPerson)
+    env1 = environmentSqlApi.create(new Environment().description(RandomStringUtils.randomAlphabetic(10)).name(RandomStringUtils.randomAlphabetic(10)), app1, superPerson)
   }
 
   def cleanup() {

@@ -3653,8 +3653,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FeatureGroupFeature"
-        strategy:
-          $ref: "#/components/schemas/FeatureGroupStrategy"
+        strategies:
+          type: array
+          description: "We only honour the first one"
+          items:
+            $ref: "#/components/schemas/FeatureGroupStrategy"
     FeatureGroupUpdateFeature:
       type: object
       required:
@@ -3683,11 +3686,19 @@ components:
           description: "allow updating the features"
           items:
             $ref: "#/components/schemas/FeatureGroupUpdateFeature"
-        strategy:
-          $ref: "#/components/schemas/FeatureGroupStrategy"
+        strategies:
+          type: array
+          description: "We only honour the first one"
+          items:
+            $ref: "#/components/schemas/FeatureGroupStrategy"
     FeatureGroupStrategy:
       type: object
+      required:
+        - name
       properties:
+        name:
+          description: "The strategy name"
+          type: string
         percentage:
           description: "value between 0 and 1000000 - for four decimal places"
           type: integer

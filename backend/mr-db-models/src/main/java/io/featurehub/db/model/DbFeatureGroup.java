@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,7 +37,7 @@ public class DbFeatureGroup  extends DbVersionedBase {
   @NotNull
   private List<DbFeatureGroupFeature> features;
 
-  public DbFeatureGroup(String name, DbEnvironment environment) {
+  public DbFeatureGroup(@NotNull String name, @NotNull DbEnvironment environment) {
     this.name = name;
     this.environment = environment;
   }
@@ -44,7 +45,7 @@ public class DbFeatureGroup  extends DbVersionedBase {
   @DbJson
   @Lob
   @Nullable
-  private FeatureGroupStrategy strategy;
+  private List<FeatureGroupStrategy> strategies;
 
   @Column(nullable = true)
   @Nullable
@@ -82,12 +83,15 @@ public class DbFeatureGroup  extends DbVersionedBase {
     this.features = features;
   }
 
-  public @Nullable FeatureGroupStrategy getStrategy() {
-    return strategy;
+  public @NotNull List<FeatureGroupStrategy> getStrategies() {
+    if (strategies == null) {
+      strategies = new LinkedList<>();
+    }
+    return strategies;
   }
 
-  public void setStrategy(@Nullable FeatureGroupStrategy strategy) {
-    this.strategy = strategy;
+  public void setStrategies(@NotNull List<FeatureGroupStrategy> strategies) {
+    this.strategies = strategies;
   }
 
   private DbPerson whoUpdated;

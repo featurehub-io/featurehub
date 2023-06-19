@@ -4166,8 +4166,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FeatureGroupFeature'
-        strategy:
-          $ref: '#/components/schemas/FeatureGroupStrategy'
+        strategies:
+          type: array
+          description: We only honour the first one
+          items:
+            $ref: '#/components/schemas/FeatureGroupStrategy'
     FeatureGroupUpdateFeature:
       required:
       - id
@@ -4195,13 +4198,21 @@ components:
           description: allow updating the features
           items:
             $ref: '#/components/schemas/FeatureGroupUpdateFeature'
-        strategy:
-          $ref: '#/components/schemas/FeatureGroupStrategy'
+        strategies:
+          type: array
+          description: We only honour the first one
+          items:
+            $ref: '#/components/schemas/FeatureGroupStrategy'
       description: "An update, everything is optional, we will only update what we\
         \ update"
     FeatureGroupStrategy:
+      required:
+      - name
       type: object
       properties:
+        name:
+          type: string
+          description: The strategy name
         percentage:
           type: integer
           description: value between 0 and 1000000 - for four decimal places
