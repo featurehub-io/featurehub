@@ -4225,7 +4225,7 @@ components:
         attributes:
           type: array
           items:
-            $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
+            $ref: '#/components/schemas/RolloutStrategyAttribute'
     FeatureGroupCreate:
       allOf:
       - $ref: '#/components/schemas/FeatureGroupCRUDBase'

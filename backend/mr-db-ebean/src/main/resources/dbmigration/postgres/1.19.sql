@@ -7,9 +7,9 @@ create table fh_featgroup (
   when_updated                  timestamp not null,
   when_created                  timestamp not null,
   version                       bigint not null,
-  name                          varchar(255),
+  name                          varchar(255) not null,
   dscr                          varchar(255),
-  strategy                      json,
+  strategies                    json,
   constraint pk_fh_featgroup primary key (id)
 );
 

@@ -2,10 +2,10 @@
 create table fh_featgroup (
   id                            varchar(40) not null,
   gp_order                      integer not null,
-  name                          varchar(255),
+  name                          varchar(255) not null,
   dscr                          varchar(255),
   fk_environment_id             varchar(40) not null,
-  strategy                      json,
+  strategies                    json,
   when_archived                 datetime(6),
   when_updated                  datetime(6) not null,
   when_created                  datetime(6) not null,
