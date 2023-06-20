@@ -3,8 +3,6 @@ package io.featurehub.db.model;
 import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.Index;
 import io.ebean.annotation.WhenModified;
-import io.featurehub.mr.model.RolloutStrategy;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,13 +12,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Entity
 @Table(name = "fh_env_feature_strategy")

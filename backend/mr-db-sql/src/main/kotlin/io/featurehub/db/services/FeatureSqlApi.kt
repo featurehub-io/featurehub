@@ -239,6 +239,8 @@ class FeatureSqlApi @Inject constructor(
       save(existing)
       publish(existing)
       publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
+    } else {
+      log.trace("update created no changes, not saving or publishing")
     }
   }
 

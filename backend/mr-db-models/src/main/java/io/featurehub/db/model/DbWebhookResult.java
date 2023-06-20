@@ -1,17 +1,16 @@
 package io.featurehub.db.model;
 
 import io.ebean.Model;
-import org.jetbrains.annotations.NotNull;
-
+import io.ebean.annotation.Index;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import io.ebean.annotation.Index;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import org.jetbrains.annotations.NotNull;
 
 @Entity
 @Table(name="fh_webhook")

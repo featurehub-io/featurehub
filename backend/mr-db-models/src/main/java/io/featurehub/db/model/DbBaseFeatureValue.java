@@ -1,14 +1,10 @@
 package io.featurehub.db.model;
 
 import io.ebean.Model;
-import io.ebean.annotation.ConstraintMode;
-import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.WhenCreated;
 import io.featurehub.mr.model.RolloutStrategy;
 import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
@@ -16,7 +12,6 @@ import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,9 +22,8 @@ public class DbBaseFeatureValue extends Model {
   protected LocalDateTime whenCreated;
 
   @ManyToOne
-  @Column(name = "fk_who_updated", nullable = true)
+  @Column(name = "fk_who_updated", nullable = false)
   @JoinColumn(name = "fk_who_updated")
-  @DbForeignKey(onDelete = ConstraintMode.SET_NULL)
   @NotNull
   protected DbPerson whoUpdated;
 

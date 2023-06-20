@@ -2,7 +2,6 @@ package io.featurehub.db.model;
 
 import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.Index;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

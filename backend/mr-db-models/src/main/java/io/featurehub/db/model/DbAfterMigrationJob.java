@@ -1,8 +1,6 @@
 package io.featurehub.db.model;
 
 import io.ebean.Model;
-import io.ebean.annotation.Index;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

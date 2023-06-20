@@ -3,19 +3,17 @@ package io.featurehub.db.model;
 import io.ebean.annotation.DbJson;
 import io.featurehub.db.model.query.QDbStrategyForFeatureValue;
 import io.featurehub.mr.model.RolloutStrategy;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Entity
 @Table(name = "fh_fv_version")

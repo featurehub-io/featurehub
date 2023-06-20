@@ -1,7 +1,6 @@
 package io.featurehub.db.model;
 
 import io.ebean.Model;
-
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
