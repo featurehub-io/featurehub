@@ -3541,5 +3541,17 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/RolloutStrategyAttribute"
-
-
+    AnemicPerson:
+      type: object
+      required:
+        - id
+        - name
+        - type
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          $ref: "#/components/schemas/PersonType"

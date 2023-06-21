@@ -28,7 +28,7 @@ import java.util.function.Function
 import kotlin.math.max
 
 interface InternalFeatureSqlApi {
-  fun saveFeatureValue(featureValue: DbFeatureValue)
+  fun saveFeatureValue(featureValue: DbFeatureValue, versionFrom: Long?)
 }
 
 class FeatureSqlApi @Inject constructor(
@@ -83,7 +83,10 @@ class FeatureSqlApi @Inject constructor(
       ).hasFailedValidation()
 
       // this is an update not a create, environment + app-feature key exists
-      onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue, true, true)
+      onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue,
+        changingDefaultValue = true,
+        updatingLock = true
+      )
     } else if (person.hasChangeValueRole() || person.hasLockRole() || person.hasUnlockRole()) {
       onlyCreateFeatureValueForEnvironment(eid, key, featureValue, person)
     } else {
@@ -135,24 +138,24 @@ class FeatureSqlApi @Inject constructor(
       retired = convertUtils.safeConvert(featureValue.retired)
     }
 
-    save(dbFeatureValue)
+    save(dbFeatureValue, null)
     publish(dbFeatureValue)
 
     return convertUtils.toFeatureValue(dbFeatureValue)
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
-  private fun save(featureValue: DbFeatureValue) {
-    saveFeatureValue(featureValue)
+  private fun save(featureValue: DbFeatureValue, versionFrom: Long?) {
+    saveFeatureValue(featureValue, versionFrom)
   }
 
-  override fun saveFeatureValue(featureValue: DbFeatureValue) {
+  override fun saveFeatureValue(featureValue: DbFeatureValue, versionFrom: Long?) {
     val originalVersion = featureValue.version
     database.save(featureValue)
 
     if (originalVersion != featureValue.version) { // have we got auditing enabled and did the feature change
       // now saved a versioned copy
-      database.save(DbFeatureValueVersion.fromDbFeatureValue(featureValue))
+      database.save(DbFeatureValueVersion.fromDbFeatureValue(featureValue, versionFrom))
     }
   }
 
@@ -196,7 +199,7 @@ class FeatureSqlApi @Inject constructor(
       log.trace("historical is null, updating old way")
       updateFeatureValue(featureValue, person, existing, existing.feature.valueType, dbPerson)
 
-      save(existing)
+      save(existing, featureValue.version)
       publish(existing)
     } else {
       // saving is done inside here as it detects it
@@ -219,7 +222,7 @@ class FeatureSqlApi @Inject constructor(
     val feature = existing.feature
 
     val lockUpdate = if (updatingLock) updateSelectivelyLocked(featureValue, historical, existing, person)
-        else SingleFeatureValueUpdate(hasChanged = false, false, false)
+        else SingleFeatureValueUpdate(hasChanged = false, updated = false, previous = false)
 
     val lockChanged = lockUpdate.hasChanged
 
@@ -236,7 +239,7 @@ class FeatureSqlApi @Inject constructor(
 
     if (lockChanged || defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged) {
       existing.whoUpdated = dbPerson
-      save(existing)
+      save(existing, featureValue.version)
       publish(existing)
       publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
     } else {
@@ -641,7 +644,7 @@ class FeatureSqlApi @Inject constructor(
     }
   }
 
-  fun rationaliseStrategyIdsAndAttributeIds(strategies: List<RolloutStrategy>): Boolean {
+  private fun rationaliseStrategyIdsAndAttributeIds(strategies: List<RolloutStrategy>): Boolean {
     var changes = false
 
     strategies.forEach { strategy ->
@@ -759,7 +762,10 @@ class FeatureSqlApi @Inject constructor(
       } else {
         val fv = newValues.remove(strategy.feature.key)
         if (fv != null) {
-          onlyUpdateFeatureValueForEnvironment(fv, requireRoleCheck, strategy, true, true)
+          onlyUpdateFeatureValueForEnvironment(fv, requireRoleCheck, strategy,
+            changingDefaultValue = true,
+            updatingLock = true
+          )
         }
       }
     }
@@ -1088,10 +1094,10 @@ class FeatureSqlApi @Inject constructor(
         .whenArchived.isNull
         .parentApplication.eq(app)
 
-      if (sort == SortOrder.ASC) {
-        appFeatureQuery = appFeatureQuery.order().key.asc()
+      appFeatureQuery = if (sort == SortOrder.ASC) {
+        appFeatureQuery.order().key.asc()
       } else {
-        appFeatureQuery = appFeatureQuery.order().key.desc()
+        appFeatureQuery.order().key.desc()
       }
 
       if (filter != null) {
@@ -1228,7 +1234,7 @@ class FeatureSqlApi @Inject constructor(
       count++
 
       if (rationaliseStrategyIdsAndAttributeIds(fv.rolloutStrategies)) {
-        save(fv)
+        save(fv, null)
       }
 
       if (count % 50 == 0) {

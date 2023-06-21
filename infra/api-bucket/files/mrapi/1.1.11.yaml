@@ -2952,6 +2952,91 @@ paths:
       explode: true
       schema:
         type: string
+  /mr-api/application/{appId}/feature-history:
+    get:
+      tags:
+      - WebhookService
+      description: Gets a paginated list of history of feature value changes
+      operationId: listFeatureHistory
+      parameters:
+      - name: appId
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uuid
+      - name: featureKeys
+        in: query
+        description: "Allows you to search by keys. If featureIds are provided, keys\
+          \ are ignored"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: featureIds
+        in: query
+        description: "The ids of the features you want, prefer this over keys as keys\
+          \ can change"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: versions
+        in: query
+        description: "If only one feature is requested, you can specify the specific\
+          \ versions you want"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: number
+            format: int64
+      - name: environmentIds
+        in: query
+        description: Any environments you want the feature keys/ids from
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+      - name: max
+        in: query
+        description: "This is the max to result, limited by server"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: startAt
+        in: query
+        description: what position in the results to start at
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: the webhook type details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureHistoryList'
+        "404":
+          description: no such url
 components:
   schemas:
     EnvironmentFeaturesResult:
@@ -4034,6 +4119,20 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/RolloutStrategyAttribute'
+    AnemicPerson:
+      required:
+      - id
+      - name
+      - type
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/PersonType'
     FeatureValueType:
       type: string
       enum:
@@ -4486,6 +4585,53 @@ components:
           description: "Any configuration to pass to the check, e.g. webhook.feature.url,\
             \ headers, etc - this ensures the updates get to the destination and are\
             \ used. They get merged info the envInfo, replacing anything there"
+    FeatureHistoryItem:
+      type: object
+      properties:
+        envId:
+          type: string
+          format: uuid
+        featureValueId:
+          type: string
+          format: uuid
+        featureId:
+          type: string
+          format: uuid
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureHistoryValue'
+    FeatureHistoryValue:
+      type: object
+      properties:
+        version:
+          type: number
+          format: int64
+        when:
+          type: string
+          description: When it was created
+          format: date-time
+        who:
+          $ref: '#/components/schemas/AnemicPerson'
+        value:
+          description: "the value, no type is passed back"
+        locked:
+          type: boolean
+        retired:
+          type: boolean
+        rolloutStrategies:
+          $ref: '#/components/schemas/RolloutStrategy'
+    FeatureHistoryList:
+      type: object
+      properties:
+        max:
+          type: number
+          description: The maximum number of items returned by this query
+          format: int64
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureHistoryItem'
   securitySchemes:
     bearerAuth:
       type: http

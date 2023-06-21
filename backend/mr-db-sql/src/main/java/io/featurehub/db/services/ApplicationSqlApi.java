@@ -373,7 +373,9 @@ public class ApplicationSqlApi implements ApplicationApi {
   // this ensures we create the featuers and create initial historical records for them as well
   @Transactional(type = TxType.REQUIRES_NEW)
   private void saveAllFeatures(List<DbFeatureValue> newFeatures) {
-    newFeatures.forEach(internalFeatureSqlApi::saveFeatureValue);
+    for (DbFeatureValue newFeature : newFeatures) {
+      internalFeatureSqlApi.saveFeatureValue(newFeature, null);
+    }
   }
 
   private List<Feature> getAppFeatures(DbApplication app, @NotNull Opts opts) {
