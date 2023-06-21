@@ -3,18 +3,17 @@ package io.featurehub.db.model;
 import io.ebean.annotation.DbJson;
 import io.featurehub.db.model.query.QDbStrategyForFeatureValue;
 import io.featurehub.mr.model.RolloutStrategy;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Entity
 @Table(name = "fh_fv_version")
@@ -22,12 +21,15 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
   @EmbeddedId
   private final DbFeatureValueVersionKey id;
 
-  public DbFeatureValueVersion(@NotNull DbFeatureValueVersionKey id, @NotNull LocalDateTime whenCreated,
-                               DbPerson whoCreated, @NotNull FeatureState featureState,
-                               @Nullable String defaultValue, boolean locked, boolean retired,
-                               List<RolloutStrategy> rolloutStrategies,
-                               List<SharedRolloutStrategyVersion> sharedRolloutStrategies,
+  public DbFeatureValueVersion(@NotNull DbFeatureValueVersionKey id,
+                               @NotNull LocalDateTime whenCreated,
+                               @NotNull DbPerson whoCreated,
+                               @Nullable String defaultValue,
+                               boolean locked, boolean retired,
+                               @NotNull List<RolloutStrategy> rolloutStrategies,
+                               @NotNull List<SharedRolloutStrategyVersion> sharedRolloutStrategies,
                                DbApplicationFeature feature) {
+    super(whoCreated, locked);
 
     this.id = id;
     this.whenCreated = whenCreated;
@@ -36,10 +38,7 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
     this.sharedRolloutStrategies = sharedRolloutStrategies;
     this.feature = feature;
 
-    setWhoUpdated(whoCreated);
-    setFeatureState(featureState);
     setDefaultValue(defaultValue);
-    setLocked(locked);
     setRolloutStrategies(rolloutStrategies);
   }
 
@@ -52,7 +51,11 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
   @Column(name = "shared_strat")
   protected List<SharedRolloutStrategyVersion> sharedRolloutStrategies;
 
-  public List<SharedRolloutStrategyVersion> getSharedRolloutStrategies() {
+  public @NotNull List<SharedRolloutStrategyVersion> getSharedRolloutStrategies() {
+    if (sharedRolloutStrategies == null) {
+      sharedRolloutStrategies = new LinkedList<>();
+    }
+
     return sharedRolloutStrategies;
   }
 
@@ -73,17 +76,16 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
       new DbFeatureValueVersionKey(from.getId(), from.getVersion()),
         from.getVersion() == 1L ? from.getWhenCreated() : from.getWhenUpdated(),
         from.getWhoUpdated(),
-        from.getFeatureState() == null ? FeatureState.READY : from.getFeatureState(),
         from.getDefaultValue(),
         from.isLocked(),
         from.getRetired() == Boolean.TRUE,
-        from.getRolloutStrategies() == null ? Collections.emptyList() : from.getRolloutStrategies(),
+        from.getRolloutStrategies(),
         transformSharedStrategies(from.getSharedRolloutStrategies()),
         from.getFeature()
       );
   }
 
-  private static List<SharedRolloutStrategyVersion> transformSharedStrategies(List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
+  private static List<SharedRolloutStrategyVersion> transformSharedStrategies(@NotNull List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
     return new QDbStrategyForFeatureValue()
       .id.in(sharedRolloutStrategies.stream().map(DbStrategyForFeatureValue::getId).collect(Collectors.toList()))
       .select(QDbStrategyForFeatureValue.Alias.rolloutStrategy.id,

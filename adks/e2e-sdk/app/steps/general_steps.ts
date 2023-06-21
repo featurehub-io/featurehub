@@ -1,5 +1,5 @@
 import { Given, Then } from '@cucumber/cucumber';
-import { FeatureValueType, RolloutStrategy, RolloutStrategyAttribute } from 'featurehub-javascript-admin-sdk';
+import { FeatureValueType, RolloutStrategy, RolloutStrategyAttribute } from '../apis/mr-service';
 import { ClientContext } from 'featurehub-javascript-node-sdk';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
 import * as fs from 'fs';
@@ -56,7 +56,7 @@ Then(/^I set the context to$/, function (table) {
 
   const ctx = this.context as ClientContext;
 
-  table.hashes().forEach(row => {
+  table.hashes().forEach((row: any) => {
     console.log('setting context', row);
     ctx.attribute_value(row['Field'], row['Value']);
   });

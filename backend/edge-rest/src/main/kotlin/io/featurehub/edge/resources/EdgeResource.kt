@@ -59,4 +59,38 @@ class EdgeResource @Inject constructor(private val featureGetProcessor: FeatureG
   ) {
     featureUpdateProcessor.updateFeature(response, namedCache, envId, apiKey, featureKey, featureStateUpdate, null)
   }
+
+  @PUT
+  @Path("{environmentId}/{apiKey}/{featureKey}")
+  @ManagedAsync
+  @Prometheus(name = "edge_test_sdk_api", help = "Number of requests to the test SDK API")
+  fun updateNew(
+    @Suspended response: AsyncResponse,
+    @PathParam("environmentId") envId: UUID,
+    @PathParam("apiKey") apiKey: String,
+    @PathParam("featureKey") featureKey: String,
+    featureStateUpdate: FeatureStateUpdate
+  ) {
+    featureUpdateProcessor.updateFeature(response, null, envId, apiKey, featureKey, featureStateUpdate, null)
+  }
+
+  @PUT
+  @Path("{sdkUrl}/{featureKey}")
+  @ManagedAsync
+  @Prometheus(name = "edge_test_sdk_api", help = "Number of requests to the test SDK API")
+  fun updateEncoded(
+    @Suspended response: AsyncResponse,
+    @PathParam("sdkUrl") sdkKey: String,
+    @PathParam("featureKey") featureKey: String,
+    featureStateUpdate: FeatureStateUpdate
+  ) {
+    val parts = sdkKey.replace("+", "/").split("/")
+    if (parts.size != 2) {
+      throw BadRequestException()
+    }
+    val envId = UUID.fromString(parts[0])
+    featureUpdateProcessor.updateFeature(response, null, envId, parts[1], featureKey, featureStateUpdate, null)
+  }
+
+
 }

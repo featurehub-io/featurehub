@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply" dropsFor="1.17">
+        <dropColumn columnName="what_updated" tableName="fh_env_feature_strategy"/>
+    </changeSet>
+</migration>

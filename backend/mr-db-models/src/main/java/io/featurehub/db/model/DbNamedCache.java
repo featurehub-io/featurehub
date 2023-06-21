@@ -1,7 +1,6 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.ChangeLog;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;

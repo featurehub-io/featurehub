@@ -1,12 +1,11 @@
 package io.featurehub.db.model;
 
 import io.ebean.Model;
-import org.jetbrains.annotations.NotNull;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.util.Objects;
 import java.util.UUID;
+import org.jetbrains.annotations.NotNull;
 
 @Embeddable
 public class DbGroupMemberKey extends Model {

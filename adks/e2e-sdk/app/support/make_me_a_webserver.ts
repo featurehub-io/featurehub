@@ -3,11 +3,11 @@ import * as restify from 'restify';
 
 import { networkInterfaces } from 'os';
 import { IncomingHttpHeaders } from 'http';
-import { EnrichedFeatures } from 'featurehub-javascript-webhooks';
+import { EnrichedFeatures, EnrichedFeaturesTypeTransformer } from '../apis/webhooks';
 import { logger } from './logging';
 
 const nets = networkInterfaces();
-const results = {};
+const results: any = {};
 let networkName: string | undefined;
 
 for (const name of Object.keys(nets)) {
@@ -50,7 +50,7 @@ function setupServer() {
   server.use(restify.plugins.bodyParser());
 
   server.post('/webhook', function (req, res, next) {
-    webhookData = req.body as EnrichedFeatures;
+    webhookData = EnrichedFeaturesTypeTransformer.fromJson(req.body);
     webhookHeaders =  req.headers;
     logger.log({level: 'info', message: `received webhook ${JSON.stringify(webhookData)}`});
 

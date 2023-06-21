@@ -13,7 +13,6 @@ public class PersonFeaturePermission {
   private final Set<RoleType> roles;
   private final Set<ApplicationRoleType> appRoles;
 
-  @Deprecated
   public PersonFeaturePermission(Person person, Set<RoleType> roles) {
     this.person = person;
     this.roles = roles;

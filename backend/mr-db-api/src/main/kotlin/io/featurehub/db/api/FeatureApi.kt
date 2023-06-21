@@ -5,7 +5,7 @@ import java.util.*
 
 data class SingleNullableFeatureValueUpdate<T>(var hasChanged: Boolean=false, var updated: T? = null, var previous: T? = null)
 data class SingleFeatureValueUpdate<T>(var hasChanged: Boolean=false, var updated: T, var previous: T)
-data class MultiFeatureValueUpdate<T, V>(var hasChanged: Boolean=false, var updated: MutableList<T> = mutableListOf(), var reordered: MutableList<V> = mutableListOf(), var previous: MutableList<V> = mutableListOf())
+data class MultiFeatureValueUpdate<T, V>(var hasChanged: Boolean=false, var updated: MutableList<T> = mutableListOf(), var reordered: MutableList<V> = mutableListOf(), var previous: List<V> = listOf())
 data class RolloutStrategyUpdate(val type: String, val old: RolloutStrategy? = null, val new: RolloutStrategy? = null)
 
 
@@ -42,6 +42,7 @@ interface FeatureApi {
     NoAppropriateRole::class,
     LockedException::class
   )
+
   fun createFeatureValueForEnvironment(
     eid: UUID, key: String, featureValue: FeatureValue,
     person: PersonFeaturePermission

@@ -9,14 +9,17 @@ import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
+import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.DbServiceAccount
+import io.featurehub.db.model.query.QDbPerson
 import io.featurehub.db.model.query.QDbServiceAccount
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Group
+import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
@@ -38,18 +41,19 @@ class ServiceAccount2Spec extends Base2Spec {
   UUID portfolio1Id
   EnvironmentApi environmentApi
   CacheSource cacheSource
+  InternalGroupSqlApi internalGroupSqlApi
 
   def setup() {
     db.commitTransaction()
-
-    personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
+    internalGroupSqlApi = Mock()
+    personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, internalGroupSqlApi)
     cacheSource = Mock(CacheSource)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureSqlApi))
-    sapi = new ServiceAccountSqlApi(db, convertUtils, cacheSource, archiveStrategy)
+    sapi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, personSqlApi)
 
     // now set up the environments we need
-    UUID orgUUID = org.id
+//    UUID orgUUID = org.id
     DbOrganization organization = Finder.findDbOrganization()
     portfolio1 = new DbPortfolio.Builder().name(RandomStringUtils.randomAlphabetic(8) + "p1-env-1").whoCreated(dbSuperPerson).organization(organization).build()
     db.save(portfolio1)
@@ -57,11 +61,11 @@ class ServiceAccount2Spec extends Base2Spec {
     def portfolioGroup = groupSqlApi.createGroup(portfolio1Id, new Group().name("group1").admin(true), superPerson)
     application1 = new DbApplication.Builder().name("app-env-1").portfolio(portfolio1).whoCreated(dbSuperPerson).build()
     db.save(application1)
-    environment1 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e1").parentApplication(application1).build();
+    environment1 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e1").parentApplication(application1).build()
     db.save(environment1)
-    environment2 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e2").parentApplication(application1).build();
+    environment2 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e2").parentApplication(application1).build()
     db.save(environment2)
-    environment3 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e3").parentApplication(application1).build();
+    environment3 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e3").parentApplication(application1).build()
     db.save(environment3)
 
     environmentApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
@@ -139,17 +143,27 @@ class ServiceAccount2Spec extends Base2Spec {
       applicationSqlApi.getApplicationSummary(app2.id).serviceAccountsHavePermission
   }
 
+  @CompileStatic
+  int numberOfPeople() {
+    return new QDbPerson().findCount()
+  }
+
   def "i can create a service account with no environments"() {
     given: "i have a service account"
       def sa = new ServiceAccount()
         .name("sa-2").description("sa-1 test")
+    and: "i know how many people there are"
+      def personCount = numberOfPeople()
     when: "i save it"
-      sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
+      def account = sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
     then:
       sapi.search(portfolio1Id, "sa-2", null, superPerson,
         Opts.empty()).find({it.name == 'sa-2' && sa.description == 'sa-1 test'})?.apiKeyClientSide != null
       sapi.search(portfolio1Id, "sa-2", null, superPerson,
         Opts.empty()).find({it.name == 'sa-2' && sa.description == 'sa-1 test'})?.apiKeyServerSide != null
+    and: "there is 1 more person"
+      numberOfPeople() - 1 == personCount
+      findServiceAccount(account.id).sdkPerson.personType == PersonType.SDKSERVICEACCOUNT
   }
 
   def "i can reset the key for a service account"() {
@@ -322,5 +336,32 @@ class ServiceAccount2Spec extends Base2Spec {
     then:
       x == null
       y == null
+  }
+
+  @CompileStatic
+  DbServiceAccount newServiceAccount(String newName) {
+    def sa = new DbServiceAccount(dbSuperPerson, dbSuperPerson, newName, newName, "server-key-${newName}", "client-key-${newName}", portfolio1)
+    sa.save()
+    return sa
+  }
+
+  def "I can test the transition step that ensures that service accounts now have people attached"() {
+    given: "i create 15 service accounts with no people attached"
+      List<DbServiceAccount> accounts = []
+      5.times { accounts.add(newServiceAccount("service-account-no-person-${it}"))}
+      List<PersonType> foundSdkaccounts = accounts.collect { it.sdkPerson.personType }
+//      db.currentTransaction()?.commit()
+    when: "i trigger the migration process"
+      sapi.ensure_service_accounts_have_person()
+      def newFoundAccounts =       accounts.collect {
+        it.refresh()
+        it.sdkPerson.personType
+      }
+    then:
+      1 * internalGroupSqlApi.superuserGroup(org.id) >> groupSqlApi.superuserGroup(org.id)
+      foundSdkaccounts.size() == 5
+      foundSdkaccounts.findAll { it == PersonType.PERSON }.size() == 5
+      newFoundAccounts.findAll { it == PersonType.PERSON}.size() == 0
+      newFoundAccounts.findAll { it == PersonType.SDKSERVICEACCOUNT }.size() == 5
   }
 }

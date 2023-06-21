@@ -1,4 +1,4 @@
-export function makeid(length) {
+export function makeid(length: number) {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const charactersLength = characters.length;
@@ -8,6 +8,6 @@ export function makeid(length) {
   return result;
 }
 
-export const sleep = (ms) =>
+export const sleep = (ms: number) =>
   new Promise(resolve => setTimeout(() => resolve(this), ms));
 

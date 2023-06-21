@@ -47,14 +47,11 @@ class DbFeatureTestProvider {
       .valueType(FeatureValueType.STRING)
       .build()
     feature.setId(featureId)
-    def dbFeatureValue = new DbFeatureValue()
-    dbFeatureValue.environment = environment
-    dbFeatureValue.id = featureValueId
-
-    dbFeatureValue.defaultValue = newFeatureValue
-    dbFeatureValue.feature = feature
-    dbFeatureValue.whoUpdated = person
-    dbFeatureValue.whenUpdated = whenUpdated
+    def dbFeatureValue = new DbFeatureValue(person, false, feature, environment, newFeatureValue).with {
+      it.id = featureValueId
+      it.whenUpdated = whenUpdated
+      it
+    }
     return dbFeatureValue
   }
 

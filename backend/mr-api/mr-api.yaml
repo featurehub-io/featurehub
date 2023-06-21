@@ -592,18 +592,18 @@ paths:
         - bearerAuth: [ ]
       tags:
         - PersonService
-      description: "Get person"
-      operationId: getPerson
       parameters:
         - name: id
-          description: "The id of the person to find"
+          description: "The id of the person to find. Duplicated here as we accept a plain string (not only a uuid)"
           in: path
           schema:
             type: string
           required: true
+      description: "Get person"
+      operationId: getPerson
       responses:
         200:
-          description: "Resulting person"
+          description: "If this is a sdk service acocunt, ID of the service account is in the PersonInfo fields with the key serviceAccountId"
           content:
             application/json:
               schema:
@@ -2698,7 +2698,6 @@ components:
           format: email
         password:
           type: string
-          format: password
           maxLength: 100
     PasswordReset:
       required:
@@ -3208,6 +3207,7 @@ components:
         - value
       properties:
         key:
+          description: "e.g. serviceAccountId"
           type: string
         value:
           type: string
@@ -3217,6 +3217,7 @@ components:
       enum:
         - person
         - serviceAccount
+        - sdkServiceAccount
     PersonId:
       required:
         - id
@@ -3373,12 +3374,12 @@ components:
           type: array
           items:
             type: string
-            format: UUID
+            format: uuid
         portfolioId:
           type: array
           items:
             type: string
-            format: UUID
+            format: uuid
     CacheRefreshResponse:
       type: object
       properties:

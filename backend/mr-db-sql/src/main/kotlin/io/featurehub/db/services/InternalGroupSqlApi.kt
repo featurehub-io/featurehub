@@ -16,6 +16,7 @@ class SuperuserChanges(var organization: DbOrganization) {
 interface InternalGroupSqlApi {
   fun updateSuperusersFromPortfolioGroups(superuserChanges: SuperuserChanges)
   fun superuserGroup(org: DbOrganization): DbGroup?
+  fun superuserGroup(orgId: UUID): DbGroup?
 
   /**
    * This returns an anemic list of groups that is populated ONLY by the "adminGroup" field and the

@@ -82,6 +82,10 @@ open class ConvertUtils : Conversions {
       .exists()
   }
 
+  override fun safeConvert(bool: Boolean?): Boolean {
+    return bool?.let { bool } ?: false
+  }
+
   override fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean {
     return QDbGroup().owningPortfolio.id.eq(portfolioId).groupMembers.person.id.eq(personId).exists()
   }
@@ -515,8 +519,8 @@ open class ConvertUtils : Conversions {
     featureValue.environmentId = fs.environment.id
     if (opts.contains(FillOpts.RolloutStrategies)) {
       featureValue.rolloutStrategies = fs.rolloutStrategies
-      featureValue.rolloutStrategyInstances = fs.sharedRolloutStrategies
-        .map { srs: DbStrategyForFeatureValue ->
+      featureValue.rolloutStrategyInstances =
+        fs.sharedRolloutStrategies?.map { srs: DbStrategyForFeatureValue ->
           val rolloutStrategy = srs.rolloutStrategy
           RolloutStrategyInstance()
             .value(
@@ -533,7 +537,7 @@ open class ConvertUtils : Conversions {
     // this is an indicator it is for the UI not for the cache.
     if (opts.contains(FillOpts.People)) {
       featureValue.whenUpdated = toOff(fs.whenUpdated)
-      featureValue.whoUpdated = if (fs.whoUpdated == null) null else toPerson(fs.whoUpdated)
+      featureValue.whoUpdated = toPerson(fs.whoUpdated)
     }
     return featureValue
   }
@@ -618,7 +622,7 @@ open class ConvertUtils : Conversions {
 
       person?.let {
         val portAdmin = isPersonMemberOfPortfolioAdminGroup(portfolio.id!!, it.id!!.id)
-        if (personNotSuperAdmin && !isPersonMemberOfPortfolioAdminGroup(portfolio.id!!, it.id!!.id)) {
+        if (personNotSuperAdmin && !portAdmin) {
           appFinder = appFinder.or()
             .environments.groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id)
             .groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id).endOr()

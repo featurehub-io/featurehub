@@ -2,7 +2,6 @@ package io.featurehub.db.model;
 
 import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.Index;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,7 +11,10 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Index(unique = true, name = "idx_service_name", columnNames = {"fk_portfolio_id", "name"})
 @Entity
@@ -20,40 +22,64 @@ import java.util.Set;
 @ChangeLog
 public class DbServiceAccount extends DbVersionedBase {
   @Column(length = 100)
+  @NotNull
   private String name;
+
   @Column(length = 400)
+  @Nullable
   private String description;
+
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "fk_service_account_id")
-  private Set<DbServiceAccountEnvironment> serviceAccountEnvironments;
+  @NotNull
+  private Set<DbServiceAccountEnvironment> serviceAccountEnvironments = new LinkedHashSet<>();
+
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "fk_changed_by")
+  @Column(name = "fk_changed_by")
+  @NotNull
+  private DbPerson whoChanged;
+
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_person_who_created")
   @Column(name = "fk_person_who_created")
-  private DbPerson whoChanged;
+  @NotNull
+  private DbPerson whoCreated;
+
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "fk_sdk_person")
+  @Column(name = "fk_sdk_person", nullable = false)
+  @NotNull
+  private DbPerson sdkPerson;
+
   @Column(name = "api_key", unique = true, nullable = false, length = 100)
+  @NotNull
   private String apiKeyServerEval;
-  @Column(name = "api_key_client_eval", unique = true, nullable = true, length = 100)
+  @Column(name = "api_key_client_eval", unique = true, length = 100, nullable = false)
+  @NotNull
   private String apiKeyClientEval;
 
   @Column(name = "when_archived")
+  @Nullable
   private LocalDateTime whenArchived;
 
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_portfolio_id")
   @Column(name = "fk_portfolio_id", nullable = false)
+  @NotNull
   private DbPortfolio portfolio;
 
-  public DbServiceAccount() {
-  }
-
-  private DbServiceAccount(Builder builder) {
-    setName(builder.name);
-    setDescription(builder.description);
-    setServiceAccountEnvironments(builder.serviceAccountEnvironments);
-    setWhoChanged(builder.whoChanged);
-    setApiKeyServerEval(builder.apiKeyServerEval);
-    setApiKeyClientEval(builder.apiKeyClientEval);
-    portfolio = builder.portfolio;
+  public DbServiceAccount(@NotNull DbPerson whoCreated, @NotNull DbPerson sdkPerson, @NotNull String name,
+                          @Nullable String description, @NotNull String serverKey,
+                          @NotNull String clientKey, @NotNull DbPortfolio portfolio ) {
+    this.whoChanged = whoCreated;
+    this.whoCreated = whoCreated;
+    this.sdkPerson = sdkPerson;
+    this.name = name;
+    this.description = description;
+    this.apiKeyServerEval = serverKey;
+    this.apiKeyClientEval = clientKey;
+    this.portfolio = portfolio;
   }
 
   /**
@@ -71,121 +97,83 @@ public class DbServiceAccount extends DbVersionedBase {
     this.whenUnpublished = whenUnpublished;
   }
 
+  public @NotNull DbPerson getWhoCreated() {
+    return whoCreated;
+  }
 
-  public DbPortfolio getPortfolio() {
+  public void setWhoCreated(@NotNull DbPerson whoCreated) {
+    this.whoCreated = whoCreated;
+  }
+
+  public @NotNull DbPerson getSdkPerson() {
+    return sdkPerson;
+  }
+
+  public void setSdkPerson(@NotNull DbPerson sdkPerson) {
+    this.sdkPerson = sdkPerson;
+  }
+
+  public @NotNull DbPortfolio getPortfolio() {
     return portfolio;
   }
 
-  public void setPortfolio(DbPortfolio portfolio) {
+  public void setPortfolio(@NotNull DbPortfolio portfolio) {
     this.portfolio = portfolio;
   }
 
-  public String getName() {
+  public @NotNull String getName() {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(@NotNull String name) {
     this.name = name;
   }
 
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return description;
   }
 
-  public void setDescription(String description) {
+  public void setDescription(@Nullable String description) {
     this.description = description;
   }
 
-  public Set<DbServiceAccountEnvironment> getServiceAccountEnvironments() {
+  public @NotNull Set<DbServiceAccountEnvironment> getServiceAccountEnvironments() {
     return serviceAccountEnvironments;
   }
 
-  public String getApiKeyServerEval() {
+  public @NotNull String getApiKeyServerEval() {
     return apiKeyServerEval;
   }
 
-  public void setApiKeyServerEval(String apiKeyServerEval) {
+  public void setApiKeyServerEval(@NotNull String apiKeyServerEval) {
     this.apiKeyServerEval = apiKeyServerEval;
   }
 
-  public void setServiceAccountEnvironments(Set<DbServiceAccountEnvironment> serviceAccountEnvironments) {
+  public void setServiceAccountEnvironments(@NotNull Set<DbServiceAccountEnvironment> serviceAccountEnvironments) {
     this.serviceAccountEnvironments = serviceAccountEnvironments;
   }
 
-  public DbPerson getWhoChanged() {
+  public @NotNull DbPerson getWhoChanged() {
     return whoChanged;
   }
 
-  public void setWhoChanged(DbPerson whoChanged) {
+  public void setWhoChanged(@NotNull DbPerson whoChanged) {
     this.whoChanged = whoChanged;
   }
 
-  public LocalDateTime getWhenArchived() {
+  public @Nullable LocalDateTime getWhenArchived() {
     return whenArchived;
   }
 
-  public void setWhenArchived(LocalDateTime whenArchived) {
+  public void setWhenArchived(@Nullable LocalDateTime whenArchived) {
     this.whenArchived = whenArchived;
   }
 
-  public String getApiKeyClientEval() {
+  public @NotNull String getApiKeyClientEval() {
     return apiKeyClientEval;
   }
 
-  public void setApiKeyClientEval(String apiKeyClientEval) {
+  public void setApiKeyClientEval(@NotNull String apiKeyClientEval) {
     this.apiKeyClientEval = apiKeyClientEval;
-  }
-
-  public static final class Builder {
-    private String name;
-    private String description;
-    private Set<DbServiceAccountEnvironment> serviceAccountEnvironments;
-    private DbPerson whoChanged;
-    private String apiKeyServerEval;
-    private String apiKeyClientEval;
-    private DbPortfolio portfolio;
-
-
-    public Builder() {
-    }
-
-    public Builder name(String val) {
-      name = val;
-      return this;
-    }
-
-    public Builder description(String val) {
-      description = val;
-      return this;
-    }
-
-    public Builder serviceAccountEnvironments(Set<DbServiceAccountEnvironment> val) {
-      serviceAccountEnvironments = val;
-      return this;
-    }
-
-    public Builder apiKeyClientEval(String val) {
-      apiKeyClientEval = val;
-      return this;
-    }
-
-    public Builder whoChanged(DbPerson val) {
-      whoChanged = val;
-      return this;
-    }
-
-    public Builder apiKeyServerEval(String val) {
-      apiKeyServerEval = val;
-      return this;
-    }
-
-    public Builder portfolio(DbPortfolio val) {
-      portfolio = val;
-      return this;
-    }
-
-    public DbServiceAccount build() {
-      return new DbServiceAccount(this);
-    }
   }
 }

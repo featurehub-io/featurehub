@@ -295,12 +295,8 @@ public class ApplicationSqlApi implements ApplicationApi {
     return null;
   }
 
-  @Override
-  public List<Feature> createApplicationFeature(@NotNull UUID applicationId, Feature feature, Person person,
-                                                @NotNull Opts opts)
-      throws DuplicateFeatureException {
-    Conversions.nonNullApplicationId(applicationId);
-
+  public @Nullable DbApplicationFeature createApplicationLevelFeature(@NotNull UUID applicationId, Feature feature, Person person,
+                                               @NotNull Opts opts) throws DuplicateFeatureException {
     DbApplication app = convertUtils.byApplication(applicationId);
 
     if (app != null) {
@@ -309,32 +305,45 @@ public class ApplicationSqlApi implements ApplicationApi {
       }
 
       final DbApplicationFeature appFeature =
-          new DbApplicationFeature.Builder()
-              .name(feature.getName())
-              .key(feature.getKey())
-              .parentApplication(app)
-              .alias(feature.getAlias())
-              .link(feature.getLink())
-              .secret(feature.getSecret() != null && feature.getSecret())
-              .valueType(feature.getValueType())
-              .metaData(feature.getMetaData())
-              .description(feature.getDescription())
-              .build();
+        new DbApplicationFeature.Builder()
+          .name(feature.getName())
+          .key(feature.getKey())
+          .parentApplication(app)
+          .alias(feature.getAlias())
+          .link(feature.getLink())
+          .secret(feature.getSecret() != null && feature.getSecret())
+          .valueType(feature.getValueType())
+          .metaData(feature.getMetaData())
+          .description(feature.getDescription())
+          .build();
 
       saveApplicationFeature(appFeature);
 
       if (appFeature.getValueType() != FeatureValueType.BOOLEAN) {
         cacheSource.publishFeatureChange(appFeature, PublishAction.CREATE);
-      }
-
-      // if this is a boolean feature, create this feature with a default value of false in all
-      // environments we currently
-      // have
-      if (appFeature.getValueType() == FeatureValueType.BOOLEAN) {
+      } else {
+        // if this is a boolean feature, create this feature with a default value of false in all
+        // environments we currently
+        // have
         createDefaultBooleanFeatureValuesForAllEnvironments(appFeature, app, person);
       }
 
-      return getAppFeatures(app, opts);
+      return appFeature;
+    }
+
+    return null;
+  }
+
+  @Override
+  @NotNull
+  public List<Feature> createApplicationFeature(@NotNull UUID applicationId, Feature feature, Person person,
+                                                @NotNull Opts opts)
+      throws DuplicateFeatureException {
+
+    final DbApplicationFeature feat = createApplicationLevelFeature(applicationId, feature, person, opts);
+
+    if (feat != null) {
+      return getAppFeatures(feat.getParentApplication(), opts);
     }
 
     return new ArrayList<>();
@@ -344,18 +353,16 @@ public class ApplicationSqlApi implements ApplicationApi {
       DbApplicationFeature appFeature, DbApplication app, Person person) {
     final List<DbEnvironment> appEnvironments = new QDbEnvironment()
       .whenArchived.isNull().parentApplication.eq(app).findList();
+
+    final DbPerson dbPerson = convertUtils.byPerson(person);
+    final String defaultValue = Boolean.FALSE.toString();
+
     final List<DbFeatureValue> newFeatures =
         appEnvironments.stream()
                 .map(
                     env ->
-                        new DbFeatureValue.Builder()
-                            .defaultValue(Boolean.FALSE.toString())
-                            .environment(env)
-                            .feature(appFeature)
-                            .featureState(FeatureState.ENABLED)
-                            .locked(true)
-                            .whoUpdated(convertUtils.byPerson(person))
-                            .build())
+                      new DbFeatureValue(dbPerson, true, appFeature, env, defaultValue)
+                    )
                 .collect(Collectors.toList());
 
     saveAllFeatures(newFeatures);

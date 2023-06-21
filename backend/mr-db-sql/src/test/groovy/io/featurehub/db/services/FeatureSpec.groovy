@@ -61,7 +61,7 @@ class FeatureSpec extends Base2Spec {
   def setup() {
     db.commitTransaction()
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
-    serviceAccountSqlApi = new ServiceAccountSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
+    serviceAccountSqlApi = new ServiceAccountSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, personSqlApi)
 
     rsv = Mock(RolloutStrategyValidator)
     rsv.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
@@ -252,7 +252,6 @@ class FeatureSpec extends Base2Spec {
       featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
     and: "i update the feature value as unlock permission only"
       def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
-      fv.valueBoolean(false)
       fv.locked(false)
       featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, fv, new PersonFeaturePermission(superPerson, [RoleType.UNLOCK] as Set<RoleType>))
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
@@ -613,7 +612,7 @@ class FeatureSpec extends Base2Spec {
     and:
       def stored = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
     then:
-      stored.rolloutStrategies.isEmpty()
+      thrown(FeatureApi.LockedException)
   }
 
   def "a plain user in a group that has lock/unlock/read but not change is able to lock and unlock"() {
@@ -636,10 +635,7 @@ class FeatureSpec extends Base2Spec {
         fv = new FeatureValue().environmentId(env1.id).key(key)
       }
       featureSqlApi.updateAllFeatureValuesByApplicationForKey(app2Id, key, [fv.locked(false).valueString("sausage")], person, false)
-      fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
     then:
-      !fv.locked
-      fv.valueString == null
+      thrown(FeatureApi.NoAppropriateRole)
   }
-
 }

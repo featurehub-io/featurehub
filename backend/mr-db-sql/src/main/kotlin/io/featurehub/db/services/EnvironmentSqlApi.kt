@@ -208,60 +208,53 @@ class EnvironmentSqlApi @Inject constructor(
   // - person who created is a portfolio or superuser admin
   // - env has been validated for content
   @Throws(EnvironmentApi.DuplicateEnvironmentException::class, EnvironmentApi.InvalidEnvironmentChangeException::class)
-  override fun create(env: Environment?, app: Application?, whoCreated: Person?): Environment? {
-    val application = convertUtils.byApplication(app!!.id)
-    if (application != null) {
-      if (QDbEnvironment().and().name.eq(env!!.name).whenArchived.isNull.parentApplication.eq(application)
-          .endAnd().exists()
-      ) {
-        throw EnvironmentApi.DuplicateEnvironmentException()
-      }
-      var priorEnvironment = convertUtils.byEnvironment(env.priorEnvironmentId)
-      if (priorEnvironment != null && priorEnvironment.parentApplication.id != application.id) {
-        throw EnvironmentApi.InvalidEnvironmentChangeException()
-      }
-      // so we don't have an environment so lets order them and put this one before the 1st one
-      if (priorEnvironment == null) {
-        val environments = QDbEnvironment().parentApplication.eq(application).whenArchived.isNull.findList()
-        if (environments.isNotEmpty()) {
-          promotionSortedEnvironments(environments)
-          priorEnvironment = environments[environments.size - 1]
-        }
-      }
-      val newEnv = DbEnvironment.Builder()
-        .description(env.description)
-        .name(env.name)
-        .priorEnvironment(priorEnvironment)
-        .userEnvironmentInfo(env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap())  // prevent mgmt prefixes being used
-        .parentApplication(application)
-        .productionEnvironment(java.lang.Boolean.TRUE == env.production)
-        .build()
-      val createdEnvironment = update(newEnv)
-//      cacheSource.updateEnvironment(createdEnvironment, PublishAction.CREATE)
-      discoverMissingBooleanApplicationFeaturesForThisEnvironment(createdEnvironment, whoCreated)
-      return convertUtils.toEnvironment(createdEnvironment, Opts.empty())
+  override fun create(env: Environment?, app: Application?, whoCreated: Person): Environment? {
+    val application = convertUtils.byApplication(app!!.id) ?: return null
+    val dbPerson = convertUtils.byPerson(whoCreated) ?: return null
+
+    if (QDbEnvironment().and().name.eq(env!!.name).whenArchived.isNull.parentApplication.eq(application)
+        .endAnd().exists()
+    ) {
+      throw EnvironmentApi.DuplicateEnvironmentException()
     }
-    return null
+    var priorEnvironment = convertUtils.byEnvironment(env.priorEnvironmentId)
+    if (priorEnvironment != null && priorEnvironment.parentApplication.id != application.id) {
+      throw EnvironmentApi.InvalidEnvironmentChangeException()
+    }
+    // so we don't have an environment so lets order them and put this one before the 1st one
+    if (priorEnvironment == null) {
+      val environments = QDbEnvironment().parentApplication.eq(application).whenArchived.isNull.findList()
+      if (environments.isNotEmpty()) {
+        promotionSortedEnvironments(environments)
+        priorEnvironment = environments[environments.size - 1]
+      }
+    }
+    val newEnv = DbEnvironment.Builder()
+      .description(env.description)
+      .name(env.name)
+      .priorEnvironment(priorEnvironment)
+      .userEnvironmentInfo(env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap())  // prevent mgmt prefixes being used
+      .parentApplication(application)
+      .productionEnvironment(java.lang.Boolean.TRUE == env.production)
+      .build()
+    val createdEnvironment = update(newEnv)
+    discoverMissingBooleanApplicationFeaturesForThisEnvironment(createdEnvironment, dbPerson)
+    return convertUtils.toEnvironment(createdEnvironment, Opts.empty())
   }
 
   private fun discoverMissingBooleanApplicationFeaturesForThisEnvironment(
     createdEnvironment: DbEnvironment,
-    whoCreated: Person?
+    whoCreated: DbPerson
   ) {
+
     val newFeatures =
       QDbApplicationFeature().whenArchived.isNull.parentApplication.eq(createdEnvironment.parentApplication).valueType.eq(
         FeatureValueType.BOOLEAN
       ).findList()
-        .map { af: DbApplicationFeature? ->
-          DbFeatureValue.Builder()
-            .defaultValue(java.lang.Boolean.FALSE.toString())
-            .environment(createdEnvironment)
-            .feature(af)
-            .featureState(FeatureState.ENABLED)
-            .locked(true)
-            .whoUpdated(convertUtils.byPerson(whoCreated))
-            .build()
+        .map { af ->
+          DbFeatureValue(whoCreated, true, af, createdEnvironment, false.toString())
         }
+
     saveAllFeatures(newFeatures)
     for (nf in newFeatures) {
       cacheSource.publishFeatureChange(nf)

@@ -5,6 +5,6 @@
             <column name="u_env_inf" type="json"/>
             <column name="m_env_inf" type="json"/>
         </addColumn>
-        <alterColumn columnName="person_type" tableName="fh_person" checkConstraint="check ( person_type in ('PERSON','SERVICEACCOUNT'))" checkConstraintName="ck_fh_person_person_type"/>
+        <alterColumn columnName="person_type" tableName="fh_person"/>
     </changeSet>
 </migration>

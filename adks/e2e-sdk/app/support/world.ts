@@ -8,16 +8,17 @@ import {
   EnvironmentServiceApi,
   Feature,
   FeatureServiceApi,
-  FeatureValue,
+  FeatureValue, Person, PersonServiceApi,
   Portfolio,
   PortfolioServiceApi,
   ServiceAccountPermission,
   ServiceAccountServiceApi,
   TokenizedPerson,
   WebhookServiceApi
-} from 'featurehub-javascript-admin-sdk';
+} from '../apis/mr-service';
 import { axiosLoggingAttachment, logger } from './logging';
 import globalAxios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import { Configuration as EdgeConfig, FeatureServiceApi as EdgeService } from '../apis/edge';
 import {
   ClientContext,
   EdgeFeatureHubConfig,
@@ -48,16 +49,19 @@ export class SdkWorld extends World {
   public readonly environment2Api: Environment2ServiceApi;
   public readonly featureApi: FeatureServiceApi;
   public readonly loginApi: AuthServiceApi;
+  public readonly personApi: PersonServiceApi;
   public readonly serviceAccountApi: ServiceAccountServiceApi;
   public readonly featureValueApi: EnvironmentFeatureServiceApi;
+  public readonly edgeApi: EdgeService;
 
   public readonly webhookApi: WebhookServiceApi;
   private _clientContext: ClientContext;
   public sdkUrlClientEval: string;
   public sdkUrlServerEval: string;
   private scenarioId: string;
+  public person: Person
 
-  constructor(props) {
+  constructor(props: any) {
     super(props);
 
     if (process.env.REMOTE_BEARER_TOKEN) {
@@ -70,6 +74,7 @@ export class SdkWorld extends World {
 
     this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey, axiosInstance: globalAxios.create(), accessToken: apiKey });
     this.portfolioApi = new PortfolioServiceApi(this.adminApiConfig);
+    this.personApi = new PersonServiceApi(this.adminApiConfig);
     this.applicationApi = new ApplicationServiceApi(this.adminApiConfig);
     this.environmentApi = new EnvironmentServiceApi(this.adminApiConfig);
     this.environment2Api = new Environment2ServiceApi(this.adminApiConfig);
@@ -78,6 +83,9 @@ export class SdkWorld extends World {
     this.serviceAccountApi = new ServiceAccountServiceApi(this.adminApiConfig);
     this.featureValueApi = new EnvironmentFeatureServiceApi(this.adminApiConfig);
     this.webhookApi = new WebhookServiceApi(this.adminApiConfig);
+
+    const edgeConfig = new EdgeConfig({ basePath: this.featureUrl, axiosInstance: this.adminApiConfig.axiosInstance});
+    this.edgeApi = new EdgeService(edgeConfig);
 
     axiosLoggingAttachment([this.adminApiConfig.axiosInstance]);
     const self = this;
@@ -169,8 +177,13 @@ export class SdkWorld extends World {
     return this._application;
   }
 
+  public async getSelf() {
+    this.person = (await this.personApi.getPerson('self',)).data;
+  }
+
   public set apiKey(val: TokenizedPerson) {
     this.adminApiConfig.accessToken = val.accessToken;
+    this.person = val.person;
     apiKey = val.accessToken;
     logger.info('Successfully logged in');
   }
@@ -179,7 +192,7 @@ export class SdkWorld extends World {
     try {
       const fValueResult = await this.featureValueApi.getFeatureForEnvironment(this.environment.id, this.feature.key);
       return fValueResult.data;
-    } catch (e) {
+    } catch (e: any) {
       expect(e.response.status).to.eq(404); // null value
 
       if (e.response.status === 404) {

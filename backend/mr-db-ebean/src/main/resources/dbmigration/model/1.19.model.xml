@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addColumn tableName="fh_service_account">
+            <column name="fk_changed_by" type="uuid" notnull="true" references="fh_person.id" foreignKeyName="fk_fh_service_account_fk_changed_by" foreignKeyIndex="ix_fh_service_account_fk_changed_by"/>
+            <column name="fk_sdk_person" type="uuid" uniqueOneToOne="uq_fh_service_account_fk_sdk_person" references="fh_person.id" foreignKeyName="fk_fh_service_account_fk_sdk_person"/>
+        </addColumn>
+    </changeSet>
+</migration>

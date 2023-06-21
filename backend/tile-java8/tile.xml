@@ -111,7 +111,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.1</version>
+        <version>3.3.0</version>
         <configuration>
           <archive>
             <compress>true</compress>
@@ -131,20 +131,6 @@
             <include>**/*Spec.java</include>
           </includes>
         </configuration>
-      </plugin>
-      <!-- ensure we know what our licenses are -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>license-maven-plugin</artifactId>
-        <version>1.20</version>
-        <executions>
-          <execution>
-            <id>licences</id>
-            <goals>
-              <goal>add-third-party</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.codehaus.gmavenplus</groupId>

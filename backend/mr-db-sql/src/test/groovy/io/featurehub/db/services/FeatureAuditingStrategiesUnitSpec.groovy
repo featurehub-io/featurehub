@@ -44,12 +44,12 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
   }
 
   MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy> updateStrategies(List<RolloutStrategy> current, List<RolloutStrategy> historical, List<RolloutStrategy> updated, PersonFeaturePermission person) {
-    currentFeature = new DbFeatureValue.Builder().locked(currentLock).rolloutStrategies(current).build()
+    currentFeature = featureValue("y", feature).with { it.locked = currentLock; it.rolloutStrategies = current; it }
 
     return fsApi.updateSelectivelyRolloutStrategies(
       person,
       new FeatureValue().rolloutStrategies(updated),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, FeatureState.READY, "y", false, false, historical, [], feature),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", false, false, historical, [], feature),
       currentFeature, lockChanged
     )
   }
