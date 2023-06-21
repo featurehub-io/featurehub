@@ -38,6 +38,7 @@ class FeatureGroupResource @Inject constructor(
         .environmentName(fg.environmentName)
         .environmentId(fg.environmentId)
         .order(fg.order)
+        .hasStrategy(fg.hasStrategy)
         .description(fg.description)
         .version(fg.version)
         .id(fg.id)
