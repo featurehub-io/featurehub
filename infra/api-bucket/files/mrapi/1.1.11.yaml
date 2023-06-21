@@ -2999,7 +2999,7 @@ paths:
         schema:
           type: array
           items:
-            type: number
+            type: integer
             format: int64
       - name: environmentIds
         in: query
@@ -4605,7 +4605,10 @@ components:
       type: object
       properties:
         version:
-          type: number
+          type: integer
+          format: int64
+        versionFrom:
+          type: integer
           format: int64
         when:
           type: string
@@ -4620,12 +4623,14 @@ components:
         retired:
           type: boolean
         rolloutStrategies:
-          $ref: '#/components/schemas/RolloutStrategy'
+          type: array
+          items:
+            $ref: '#/components/schemas/RolloutStrategy'
     FeatureHistoryList:
       type: object
       properties:
         max:
-          type: number
+          type: integer
           description: The maximum number of items returned by this query
           format: int64
         items:

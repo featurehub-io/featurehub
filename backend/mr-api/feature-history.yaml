@@ -52,7 +52,7 @@ paths:
           schema:
             type: array
             items:
-              type: number
+              type: integer
               format: int64
         - name: environmentIds
           description: "Any environments you want the feature keys/ids from"
@@ -97,7 +97,10 @@ components:
       type: object
       properties:
         version:
-          type: number
+          type: integer
+          format: int64
+        versionFrom:
+          type: integer
           format: int64
         when:
           description: "When it was created"
@@ -112,13 +115,15 @@ components:
         retired:
           type: boolean
         rolloutStrategies:
-          $ref: "#/components/schemas/RolloutStrategy"
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategy"
     FeatureHistoryList:
       type: object
       properties:
         max:
           description: "The maximum number of items returned by this query"
-          type: number
+          type: integer
           format: int64
         items:
           type: array
