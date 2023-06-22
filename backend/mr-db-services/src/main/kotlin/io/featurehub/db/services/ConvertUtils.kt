@@ -74,10 +74,16 @@ open class ConvertUtils : Conversions {
   }
 
   override fun personIsSuperAdmin(person: DbPerson?): Boolean {
+    val p = person ?: return false
+
+    return personIsSuperAdmin(p.id)
+  }
+
+  override fun personIsSuperAdmin(person: UUID): Boolean {
     return QDbGroup().whenArchived
       .isNull.owningPortfolio
       .isNull.groupMembers.person
-      .eq(person).adminGroup
+      .id.eq(person).adminGroup
       .isTrue
       .exists()
   }

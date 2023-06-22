@@ -1,22 +1,19 @@
 package io.featurehub.db.services
 
+import io.featurehub.db.api.FeatureHistoryApi
 import io.featurehub.db.model.DbFeatureValueVersion
+import io.featurehub.db.model.query.QDbApplicationFeature
+import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.model.query.QDbFeatureValueVersion
-import io.featurehub.mr.model.AnemicPerson
-import io.featurehub.mr.model.FeatureHistoryItem
-import io.featurehub.mr.model.FeatureHistoryList
-import io.featurehub.mr.model.FeatureHistoryValue
+import io.featurehub.db.model.query.QDbPerson
+import io.featurehub.mr.model.*
+import java.math.BigDecimal
 import java.time.ZoneOffset
 import java.util.UUID
 
 
 interface InternalFeatureHistoryApi {
 }
-
-interface FeatureHistoryApi {
-  fun listHistory(appId: UUID, environmentIds: List<UUID>, versions: List<Long>, keys: List<String>, featureIds: List<UUID>, max: Int?, startAt: Int?): FeatureHistoryList
-}
-
 
 class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
   fun history(environmentId: UUID, applicationFeature: UUID, featureValue: UUID): List<DbFeatureValueVersion> {
@@ -32,7 +29,7 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
     max: Int?,
     startAt: Int?
   ): FeatureHistoryList {
-    val highest = (max?.coerceAtLeast(1) ?: 1).coerceAtMost(100)
+    val highest = ((max ?: 20).coerceAtLeast(1)).coerceAtMost(100)
     val start = (startAt?.coerceAtLeast(0) ?: 0)
     var finder = QDbFeatureValueVersion()
       .select(
@@ -43,12 +40,10 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
         QDbFeatureValueVersion.Alias.retired,
         QDbFeatureValueVersion.Alias.rolloutStrategies,
         QDbFeatureValueVersion.Alias.whenCreated,
-        QDbFeatureValueVersion.Alias.whoUpdated.id,
-        QDbFeatureValueVersion.Alias.whoUpdated.name,
-        QDbFeatureValueVersion.Alias.feature.id,
-        QDbFeatureValueVersion.Alias.featureValue.id,
-        QDbFeatureValueVersion.Alias.featureValue.environment.id
       )
+      .whoUpdated.fetch(QDbPerson.Alias.id, QDbPerson.Alias.name)
+      .featureValue.fetch(QDbFeatureValue.Alias.id, QDbFeatureValue.Alias.environment.id)
+      .feature.fetch(QDbApplicationFeature.Alias.key, QDbApplicationFeature.Alias.id, QDbApplicationFeature.Alias.valueType)
       .feature.parentApplication.id.eq(appId)
 
     if (environmentIds.isNotEmpty()) {
@@ -66,7 +61,7 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
     }
 
     val count = finder.findFutureCount()
-    val data =  finder.setMaxRows(highest).setFirstRow(start).findList()
+    val data =  finder.setMaxRows(highest).setFirstRow(start).orderBy().id.version.asc().findList()
 
     val items = mutableMapOf<FeatureHistoryItem, FeatureHistoryItem>()
 
@@ -75,14 +70,14 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
       var item = items[key]
 
       if (item == null) {
-        item = FeatureHistoryItem().featureId(it.feature.id).featureValueId(it.id.id).envId(it.featureValue.environment.id)
+        item = key.copy()
         items[key] = item
       }
 
       item!!.addHistoryItem(
         FeatureHistoryValue()
           .versionFrom(it.versionFrom)
-          .value(it.defaultValue).version(it.id.version).retired(it.isRetired)
+          .value(convert(it.defaultValue, it.feature.valueType)).version(it.id.version).retired(it.isRetired)
           .locked(it.isLocked).rolloutStrategies(it.rolloutStrategies).`when`(it.whenCreated.atOffset(ZoneOffset.UTC))
           .who(AnemicPerson().id(it.whoUpdated.id).name(it.whoUpdated.name))
       )
@@ -91,5 +86,14 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
     return FeatureHistoryList()
       .max(count.get().toLong())
       .items(items.values.toList())
+  }
+
+  private fun convert(defaultValue: String?, valueType: FeatureValueType): Any? {
+    return when(valueType) {
+      FeatureValueType.BOOLEAN -> defaultValue == "true"
+      FeatureValueType.STRING -> defaultValue
+      FeatureValueType.NUMBER -> defaultValue?.let { BigDecimal(it) }
+      FeatureValueType.JSON -> defaultValue
+    }
   }
 }

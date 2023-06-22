@@ -2955,7 +2955,7 @@ paths:
   /mr-api/application/{appId}/feature-history:
     get:
       tags:
-      - WebhookService
+      - FeatureHistoryService
       description: Gets a paginated list of history of feature value changes
       operationId: listFeatureHistory
       parameters:
@@ -2989,6 +2989,7 @@ paths:
           type: array
           items:
             type: string
+            format: uuid
       - name: versions
         in: query
         description: "If only one feature is requested, you can specify the specific\
@@ -3037,6 +3038,8 @@ paths:
                 $ref: '#/components/schemas/FeatureHistoryList'
         "404":
           description: no such url
+      security:
+      - bearerAuth: []
 components:
   schemas:
     EnvironmentFeaturesResult:

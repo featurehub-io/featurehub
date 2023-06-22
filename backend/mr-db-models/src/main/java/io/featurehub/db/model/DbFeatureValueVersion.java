@@ -9,6 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
@@ -47,8 +48,9 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
   }
 
   @ManyToOne(optional = false)
-  @JoinColumn(name="id", referencedColumnName = "id", foreignKey = @ForeignKey(name="fk_feature_value"))
-  @NotNull
+  @Column(name = "id")
+  @JoinColumn(name="id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
+  @MapsId("id")
   private DbFeatureValue featureValue;
 
   @NotNull public DbFeatureValue getFeatureValue() {

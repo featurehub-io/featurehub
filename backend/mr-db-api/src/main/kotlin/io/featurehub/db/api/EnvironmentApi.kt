@@ -26,4 +26,10 @@ interface EnvironmentApi {
   fun findPortfolio(envId: UUID?): Portfolio?
   fun unpublishEnvironments(appId: UUID, environments: List<UUID>?): Int
   fun updateEnvironment(eid: UUID, env: UpdateEnvironment, opts: Opts): Environment?
+
+  /**
+   * If null, then no app exists or there are no environments
+   * If empty, all environments, otherwise environment list
+   */
+  fun getEnvironmentsUserCanAccess(appId: UUID, person: UUID): List<UUID>?
 }

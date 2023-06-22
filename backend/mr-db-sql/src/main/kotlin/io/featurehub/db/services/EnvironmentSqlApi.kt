@@ -162,6 +162,16 @@ class EnvironmentSqlApi @Inject constructor(
     return null
   }
 
+  override fun getEnvironmentsUserCanAccess(appId: UUID, person: UUID): List<UUID>? {
+    if (convertUtils.personIsSuperAdmin(person)) return listOf()
+
+    val envs = QDbEnvironment()
+      .select(QDbEnvironment.Alias.id)
+      .parentApplication.id.eq(appId).groupRolesAcl.group.groupMembers.person.id.eq(person).findList();
+
+    return if (envs.isEmpty()) null else envs.map { it.id };
+  }
+
   private fun circularPriorEnvironmentCheck(priorEnvironmentId: UUID?, environment: DbEnvironment) {
     // find anything that pointed to this environment and set it to what we used to point to
     val newPriorEnvironment = if (priorEnvironmentId == null) null else convertUtils.byEnvironment(

@@ -12,7 +12,9 @@ paths:
       description: "Gets a paginated list of history of feature value changes"
       operationId: listFeatureHistory
       tags:
-        - WebhookService
+        - FeatureHistoryService
+      security:
+        -  bearerAuth: []
       responses:
         "200":
           description: "the webhook type details"
@@ -45,6 +47,7 @@ paths:
             type: array
             items:
               type: string
+              format: uuid
         - name: versions
           description: "If only one feature is requested, you can specify the specific versions you want"
           required: false

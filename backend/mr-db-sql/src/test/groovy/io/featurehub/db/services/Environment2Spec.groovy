@@ -290,6 +290,12 @@ class Environment2Spec extends Base2Spec {
       groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
     and: "i have an environment"
       def env = envApi.create(new Environment().name("env-1-perm-1").description("1"), app1, superPerson)
+    when: "i find out of the superuser has permissions to the environment"
+      def supEnvAccess = envApi.getEnvironmentsUserCanAccess(app1.id, superPerson.id.id)
+      def averageJoAccess = envApi.getEnvironmentsUserCanAccess(app1.id, averageJoe.id)
+    then:
+      supEnvAccess.size() == 0 // i.e. everything
+      averageJoAccess == null // i.e. nothing
     when: "i ask for the roles"
       def permsAverageJoe = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id)
       def permsWhenSuperAdmin = envApi.personRoles(superPerson, env.id)
@@ -300,11 +306,7 @@ class Environment2Spec extends Base2Spec {
       groupSqlApi.updateGroup(g.id, g, null, false, false, true, Opts.empty())
       def permsAverageJoeAfterAddingPerms = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id)
       def permsAdmin = envApi.personRoles(superPerson, env.id)
-    and: "I make average joe a feature creator"
-      g = groupSqlApi.getGroup(groupInPortfolio1.id, Opts.opts(FillOpts.Acls), superPerson)
-      g.applicationRoles.add(new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.CREATE]))
-      def permsAverageJoeAfterAdminOfApp1 = groupSqlApi.updateGroup(g.id, g, app1.id, false, true, false, Opts.opts(FillOpts.Acls))
-    then: "the permissions to the portfolio are empty"
+    then:
       permsAverageJoe.environmentRoles.isEmpty()
       permsAverageJoe.applicationRoles.isEmpty()
       permsAverageJoeAfterAddingPerms.applicationRoles.isEmpty()
@@ -313,7 +315,14 @@ class Environment2Spec extends Base2Spec {
       permsAdmin.environmentRoles.containsAll(RoleType.values() as List)
       permsWhenSuperAdmin.applicationRoles.containsAll([ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE])
       permsWhenSuperAdmin.environmentRoles.containsAll(RoleType.values() as List)
+    when: "I make average joe a feature creator"
+      g = groupSqlApi.getGroup(groupInPortfolio1.id, Opts.opts(FillOpts.Acls), superPerson)
+      g.applicationRoles.add(new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.CREATE]))
+      def permsAverageJoeAfterAdminOfApp1 = groupSqlApi.updateGroup(g.id, g, app1.id, false, true, false, Opts.opts(FillOpts.Acls))
+      averageJoAccess = envApi.getEnvironmentsUserCanAccess(app1.id, averageJoe.id)
+    then: "the permissions to the portfolio are empty"
       permsAverageJoeAfterAdminOfApp1.applicationRoles.collect({it.roles}).flatten().containsAll([ApplicationRoleType.CREATE])
+      averageJoAccess.size() == 1
   }
 
   def "i create an environment and update it using the update2"() {
