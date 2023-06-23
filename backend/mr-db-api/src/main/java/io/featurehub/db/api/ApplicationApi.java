@@ -24,19 +24,20 @@ public interface ApplicationApi {
   Application createApplication(@NotNull UUID portfolioId, @NotNull Application application, @NotNull Person current) throws DuplicateApplicationException;
 
   @NotNull
-  List<Application> findApplications(@NotNull UUID portfolioId, String filter, SortOrder order, @NotNull Opts opts, @NotNull Person current, boolean loadAll);
+  List<Application> findApplications(@NotNull UUID portfolioId, @Nullable String filter, SortOrder order,
+                                     @NotNull Opts opts, @NotNull Person current, boolean loadAll);
 
   boolean deleteApplication(@NotNull UUID portfolioId, UUID applicationId);
 
-  Application getApplication(@NotNull UUID appId, @NotNull Opts opts);
+  @Nullable Application getApplication(@NotNull UUID appId, @NotNull Opts opts);
 
-  Application updateApplication(@NotNull UUID appId, @NotNull Application application, @NotNull Opts opts) throws DuplicateApplicationException, OptimisticLockingException;
+  @Nullable Application updateApplication(@NotNull UUID appId, @NotNull Application application, @NotNull Opts opts) throws DuplicateApplicationException, OptimisticLockingException;
 
-  List<Feature> createApplicationFeature(@NotNull UUID appId, Feature feature, Person person, @NotNull Opts opts) throws DuplicateFeatureException;
-  List<Feature> updateApplicationFeature(@NotNull UUID appId, String key, Feature feature, @NotNull Opts opts) throws DuplicateFeatureException, OptimisticLockingException;
-  List<Feature> getApplicationFeatures(@NotNull UUID appId, @NotNull Opts opts);
-  List<Feature> deleteApplicationFeature(@NotNull UUID appId, String key);
-  Feature getApplicationFeatureByKey(@NotNull UUID appId, @NotNull String key, @NotNull Opts opts);
+  @Nullable List<Feature> createApplicationFeature(@NotNull UUID appId, Feature feature, Person person, @NotNull Opts opts) throws DuplicateFeatureException;
+  @Nullable List<Feature> updateApplicationFeature(@NotNull UUID appId, String key, Feature feature, @NotNull Opts opts) throws DuplicateFeatureException, OptimisticLockingException;
+  @Nullable List<Feature> getApplicationFeatures(@NotNull UUID appId, @NotNull Opts opts);
+  @Nullable List<Feature> deleteApplicationFeature(@NotNull UUID appId, String key);
+  @Nullable Feature getApplicationFeatureByKey(@NotNull UUID appId, @NotNull String key, @NotNull Opts opts);
 
   @NotNull Set<UUID> findFeatureEditors(@NotNull UUID appId);
   boolean personIsFeatureEditor(@NotNull UUID appId, @NotNull UUID personId);

@@ -22,14 +22,14 @@ class FeatureAuditingRetiredUnitSpec extends FeatureAuditingBaseUnitSpec {
     roles = rolesChangeValue
     featureLocked = false
     changingLocked = false
-    feature = new DbApplicationFeature.Builder().valueType(FeatureValueType.BOOLEAN).build()
+    feature = af()
   }
 
   SingleFeatureValueUpdate<Boolean> update(Boolean currentRetired, boolean historicalRetired, boolean changingRetired) {
     return fsApi.updateSelectivelyRetired(
       new PersonFeaturePermission(person, roles),
       new FeatureValue().retired(changingRetired),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", featureLocked, historicalRetired, [], [], feature),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", featureLocked, historicalRetired, [], [], feature, 0),
       featureValue("y", feature).with {
         it.locked = featureLocked
         it.retired = currentRetired

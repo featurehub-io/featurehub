@@ -174,9 +174,9 @@ class PortfolioSqlApi @Inject constructor(
 
   @Transactional
   override fun deletePortfolio(id: UUID) {
-    Conversions.nonNullPortfolioId(id)
-    QDbPortfolio().id.eq(id).findOneOrEmpty()
-      .ifPresent { portfolio: DbPortfolio? -> archiveStrategy.archivePortfolio(portfolio) }
+    QDbPortfolio().id.eq(id).findOne()?.let {
+      archiveStrategy.archivePortfolio(it)
+    }
   }
 
   companion object {

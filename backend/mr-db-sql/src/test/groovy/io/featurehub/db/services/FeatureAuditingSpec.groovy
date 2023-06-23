@@ -47,7 +47,7 @@ class FeatureAuditingSpec extends Base2Spec {
 
     serviceAccountApi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, internalPersonApi)
 
-    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
+    featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     p1 = portfolioSqlApi.getPortfolio("basic")
 

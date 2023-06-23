@@ -58,7 +58,7 @@ class Base3Spec extends Specification {
     db.save(dbSuperPerson);
     superuser = dbSuperPerson.getId()
 
-    def organizationSqlApi = new OrganizationSqlApi(db, convertUtils)
+    def organizationSqlApi = new OrganizationSqlApi(convertUtils)
 
     // ensure the org is created and we have an admin user in an admin group
     Group adminGroup
@@ -85,7 +85,7 @@ class Base3Spec extends Specification {
 
     featureMessagingCloudEventPublisher = Mock()
 
-    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
+    featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, featureSqlApi)

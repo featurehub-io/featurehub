@@ -21,19 +21,18 @@ import java.time.LocalDateTime
 class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
 
 
-
   /*
    * These are the tests around the changing of the value
    */
 
   def "bool - they pass an update the same as the existing one but different from the historical one"() {
     given:
-      def feat = new DbApplicationFeature.Builder().valueType(FeatureValueType.BOOLEAN).build()
+      def feat = af()
     when:
       def result = fsApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueBoolean(true),
-        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "false", false, false, [], [], feat),
+        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "false", false, false, [], [], feat, 0),
         featureValue("true", feat),
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
       )
@@ -43,12 +42,12 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
 
   def "bool - they pass an update the same as the historical one but different from the existing one"() {
     given:
-      def feat = new DbApplicationFeature.Builder().valueType(FeatureValueType.BOOLEAN).build()
+      def feat = af()
     when:
       def result = fsApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueBoolean(false),
-        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "false", false, false, [], [], feat),
+        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "false", false, false, [], [], feat, 0),
         featureValue("true", feat),
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
       )
@@ -58,12 +57,12 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
 
   def "string - they pass an update the same as the historical one but different from the existing one"() {
     given:
-      def feat = new DbApplicationFeature.Builder().valueType(FeatureValueType.STRING).build()
+      def feat = af(FeatureValueType.STRING)
     when:
       def result = fsApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueString("x"),
-        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "x", false, false, [], [], feat),
+        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "x", false, false, [], [], feat, 0),
         featureValue("y", feat),
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
       )
@@ -74,7 +73,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
   def "string - they pass an update the different to the historical one and historical is the same as existing one"() {
     given:
       def historicalValue = "y"
-      def feat = new DbApplicationFeature.Builder().valueType(FeatureValueType.STRING).build()
+      def feat = af(FeatureValueType.STRING)
       def existing = featureValue(historicalValue, feat)
 
     def newFeatureValue = "x"
@@ -82,7 +81,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
       def result = fsApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueString(newFeatureValue),
-        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, historicalValue, false, false, [], [], feat),
+        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, historicalValue, false, false, [], [], feat, 0),
         existing,
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
       )
@@ -95,12 +94,12 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
 
   def "string - they pass an update the different to the historical one and historical is different existing one"() {
     given:
-      def feat = new DbApplicationFeature.Builder().valueType(FeatureValueType.STRING).build()
+      def feat = af(FeatureValueType.STRING)
     when:
       def result = fsApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueString("x"),
-        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "z", false, false, [], [], feat),
+        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "z", false, false, [], [], feat, 0),
         featureValue("y", feat),
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
       )
@@ -110,12 +109,12 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
 
   def "string - they pass an update the different to the historical one and historical is the same as existing one - but feature is locked"() {
     given:
-      def feat = new DbApplicationFeature.Builder().valueType(FeatureValueType.STRING).build()
+      def feat = af(FeatureValueType.STRING)
     when:
       def result = fsApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueString("x"),
-        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", false, false, [], [], feat),
+        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", false, false, [], [], feat, 0),
         featureValue("y", feat).with { it.locked = true; it },
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
       )
@@ -125,12 +124,12 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
 
   def "string - they pass an update the different to the historical one and historical is the same as existing one - but has no role"() {
     given:
-      def feat = new DbApplicationFeature.Builder().valueType(FeatureValueType.STRING).build()
+      def feat = af(FeatureValueType.STRING)
     when:
       def result = fsApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueString("x"),
-        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", false, false, [], [], feat),
+        new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", false, false, [], [], feat, 0),
         featureValue("y", feat).with { it.locked = true; it },
         new PersonFeaturePermission(new Person(), rolesRead), true
       )

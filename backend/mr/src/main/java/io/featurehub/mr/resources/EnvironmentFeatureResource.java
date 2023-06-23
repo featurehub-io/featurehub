@@ -69,13 +69,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
 
   @Override
   public void deleteFeatureForEnvironment(UUID eid, String key, SecurityContext securityContext) {
-    if (!requireRoleCheck(eid, securityContext).hasChangeValueRole()) {
-      throw new ForbiddenException();
-    }
-
-    if (!featureApi.deleteFeatureValueForEnvironment(eid, key)) {
-      throw new NotFoundException();
-    }
+    throw new BadRequestException();
   }
 
   @Override

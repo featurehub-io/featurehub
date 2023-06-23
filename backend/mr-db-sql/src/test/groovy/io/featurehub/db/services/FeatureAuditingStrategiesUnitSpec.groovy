@@ -29,7 +29,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
     lockChanged = false
     currentLock = false
     defaultRoles = rolesChangeValue
-    feature = new DbApplicationFeature.Builder().valueType(FeatureValueType.BOOLEAN).build()
+    feature = af()
   }
 
   /**
@@ -49,7 +49,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
     return fsApi.updateSelectivelyRolloutStrategies(
       person,
       new FeatureValue().rolloutStrategies(updated),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", false, false, historical, [], feature),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", false, false, historical, [], feature, 0),
       currentFeature, lockChanged
     )
   }
