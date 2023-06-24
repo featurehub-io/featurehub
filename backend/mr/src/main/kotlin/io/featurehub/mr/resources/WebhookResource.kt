@@ -6,6 +6,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.WebhookApi
 import io.featurehub.enriched.model.EnricherPing
 import io.featurehub.events.CloudEventPublisher
+import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.mr.api.WebhookServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.*
@@ -42,7 +43,11 @@ class WebhookResource @Inject constructor(
           WebhookTypeDetail()
             .messageType(WebhookEnvironmentResult.CLOUD_EVENT_TYPE)
             .envPrefix("webhook.features")
-            .description("Feature updates")
+            .description("Feature updates"),
+          WebhookTypeDetail()
+            .messageType(FeatureMessagingUpdate.CLOUD_EVENT_TYPE)
+            .envPrefix("webhook.messaging")
+            .description("Feature updates for messaging integration")
         )
       )
   }
