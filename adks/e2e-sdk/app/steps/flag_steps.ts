@@ -151,8 +151,8 @@ function strategyComparison(one: Array<RolloutStrategy>, two: Array<RolloutStrat
   return true;
 }
 
-function decodeStrategies(s: string): Array<RolloutStrategy> {
-  if (s.trim().length == 0) return [];
+function decodeStrategies(s: string | undefined): Array<RolloutStrategy> {
+  if (!s || s.trim().length == 0) return [];
 
   const strategies: Array<RolloutStrategy> = [];
   s.split(",").forEach(strat => {
