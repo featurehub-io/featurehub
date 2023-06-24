@@ -35,7 +35,7 @@ class Base2Spec extends DbSpecification {
     db.save(dbSuperPerson);
     superuser = dbSuperPerson.getId()
 
-    def organizationSqlApi = new OrganizationSqlApi(db, convertUtils)
+    def organizationSqlApi = new OrganizationSqlApi(convertUtils)
 
     // ensure the org is created and we have an admin user in an admin group
     Group adminGroup

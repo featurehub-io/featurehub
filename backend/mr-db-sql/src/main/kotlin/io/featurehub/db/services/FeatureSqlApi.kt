@@ -2,7 +2,6 @@ package io.featurehub.db.services
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import io.ebean.Database
 import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
 import io.featurehub.db.api.*
@@ -28,11 +27,12 @@ import java.util.function.Function
 import kotlin.math.max
 
 interface InternalFeatureSqlApi {
-  fun saveFeatureValue(featureValue: DbFeatureValue)
+  fun saveFeatureValue(featureValue: DbFeatureValue, versionFrom: Long?)
 }
 
 class FeatureSqlApi @Inject constructor(
-  private val database: Database, private val convertUtils: Conversions, private val cacheSource: CacheSource,
+  private val convertUtils: Conversions,
+  private val cacheSource: CacheSource,
   private val rolloutStrategyValidator: RolloutStrategyValidator,
   private val featureMessagingCloudEventPublisher: FeatureMessagingCloudEventPublisher,
 ) : FeatureApi, FeatureUpdateBySDKApi, InternalFeatureSqlApi {
@@ -58,7 +58,7 @@ class FeatureSqlApi @Inject constructor(
     person: PersonFeaturePermission
   ): FeatureValue? {
     if (!person.hasWriteRole()) {
-      val env = QDbEnvironment().id.eq(eid).whenArchived.isNull.findOne()
+      val env = QDbEnvironment().select(QDbEnvironment.Alias.id).id.eq(eid).whenArchived.isNull.findOne()
       log.warn("User has no roles for environment {} key {}", eid, key)
       if (env == null) {
         log.error("could not find environment or environment is archived")
@@ -83,7 +83,10 @@ class FeatureSqlApi @Inject constructor(
       ).hasFailedValidation()
 
       // this is an update not a create, environment + app-feature key exists
-      onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue, true, true)
+      onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue,
+        changingDefaultValue = true,
+        updatingLock = true
+      )
     } else if (person.hasChangeValueRole() || person.hasLockRole() || person.hasUnlockRole()) {
       onlyCreateFeatureValueForEnvironment(eid, key, featureValue, person)
     } else {
@@ -135,24 +138,24 @@ class FeatureSqlApi @Inject constructor(
       retired = convertUtils.safeConvert(featureValue.retired)
     }
 
-    save(dbFeatureValue)
+    save(dbFeatureValue, null)
     publish(dbFeatureValue)
 
     return convertUtils.toFeatureValue(dbFeatureValue)
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
-  private fun save(featureValue: DbFeatureValue) {
-    saveFeatureValue(featureValue)
+  private fun save(featureValue: DbFeatureValue, versionFrom: Long?) {
+    saveFeatureValue(featureValue, versionFrom)
   }
 
-  override fun saveFeatureValue(featureValue: DbFeatureValue) {
+  override fun saveFeatureValue(featureValue: DbFeatureValue, versionFrom: Long?) {
     val originalVersion = featureValue.version
-    database.save(featureValue)
+    featureValue.save()
 
     if (originalVersion != featureValue.version) { // have we got auditing enabled and did the feature change
       // now saved a versioned copy
-      database.save(DbFeatureValueVersion.fromDbFeatureValue(featureValue))
+      DbFeatureValueVersion.fromDbFeatureValue(featureValue, versionFrom).save()
     }
   }
 
@@ -161,24 +164,13 @@ class FeatureSqlApi @Inject constructor(
     cacheSource.publishFeatureChange(featureValue)
   }
 
-  @Transactional(type = TxType.REQUIRES_NEW)
-  override fun deleteFeatureValueForEnvironment(eid: UUID, key: String): Boolean {
-    Conversions.nonNullEnvironmentId(eid)
-    val strategy = QDbFeatureValue().environment.id.eq(eid).feature.key.eq(key).findOne()
-    if (strategy != null) {
-      cacheSource.deleteFeatureChange(strategy.feature, strategy.environment.id)
-      return database.delete(strategy)
-    }
-    return false
-  }
-
   @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class)
   private fun onlyUpdateFeatureValueForEnvironment(
     featureValue: FeatureValue,
     person: PersonFeaturePermission,
     existing: DbFeatureValue,
     changingDefaultValue: Boolean,
-    updatingLock: Boolean
+    updatingLock: Boolean,
   ): FeatureValue? {
     if (featureValue.version == null) {
       throw OptimisticLockingException() // we cannot determine what version to  compare this against
@@ -196,7 +188,7 @@ class FeatureSqlApi @Inject constructor(
       log.trace("historical is null, updating old way")
       updateFeatureValue(featureValue, person, existing, existing.feature.valueType, dbPerson)
 
-      save(existing)
+      save(existing, featureValue.version)
       publish(existing)
     } else {
       // saving is done inside here as it detects it
@@ -219,7 +211,7 @@ class FeatureSqlApi @Inject constructor(
     val feature = existing.feature
 
     val lockUpdate = if (updatingLock) updateSelectivelyLocked(featureValue, historical, existing, person)
-        else SingleFeatureValueUpdate(hasChanged = false, false, false)
+        else SingleFeatureValueUpdate(hasChanged = false, updated = false, previous = false)
 
     val lockChanged = lockUpdate.hasChanged
 
@@ -236,7 +228,7 @@ class FeatureSqlApi @Inject constructor(
 
     if (lockChanged || defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged) {
       existing.whoUpdated = dbPerson
-      save(existing)
+      save(existing, featureValue.version)
       publish(existing)
       publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
     } else {
@@ -641,7 +633,7 @@ class FeatureSqlApi @Inject constructor(
     }
   }
 
-  fun rationaliseStrategyIdsAndAttributeIds(strategies: List<RolloutStrategy>): Boolean {
+  private fun rationaliseStrategyIdsAndAttributeIds(strategies: List<RolloutStrategy>): Boolean {
     var changes = false
 
     strategies.forEach { strategy ->
@@ -716,24 +708,19 @@ class FeatureSqlApi @Inject constructor(
     featureValues: List<FeatureValue>,
     requireRoleCheck: PersonFeaturePermission
   ): List<FeatureValue> {
-    Conversions.nonNullEnvironmentId(eid)
     require(
       featureValues.size == featureValues.map { obj: FeatureValue -> obj.key }.toSet().size
     ) { "Invalid update dataset" }
 
-    val existing = QDbFeatureValue().environment.id.eq(eid).feature.whenArchived.isNull.findList()
-    val existingFeatures =
+    val existingValues = QDbFeatureValue().environment.id.eq(eid).feature.whenArchived.isNull.findList()
+    val validFeatureKeys =
       QDbApplicationFeature().parentApplication.environments.id.eq(eid).findList().associateBy { it.key }
     val newValues = featureValues.associateBy { it.key }.toMutableMap()
 
     // ensure the strategies are valid from a conceptual perspective
     val failure = RolloutStrategyValidator.ValidationFailure()
     for (fv in featureValues) {
-      if (newValues[fv.key] == null) {
-        throw FeatureApi.NoAppropriateRole()
-      }
-
-      val feat = existingFeatures[fv.key] ?: throw FeatureApi.NoSuchFeature()
+      val feat = validFeatureKeys[fv.key] ?: throw FeatureApi.NoSuchFeature()
 
       rolloutStrategyValidator.validateStrategies(
         feat.valueType,
@@ -742,25 +729,14 @@ class FeatureSqlApi @Inject constructor(
     }
     failure.hasFailedValidation()
 
-    val deleteKeys = existing.map { e: DbFeatureValue -> e.feature.key }.toMutableList()
-    // take them all and remove all fv's we were passed, leaving only EFS's we want to remove
-    for (fv in featureValues) {
-      deleteKeys.remove(fv.key)
-    }
-
-    // we should be left with only keys in deleteKeys that do not exist in the passed in list of feature values
-    // and in addingKeys we should be given a list of keys which exist in the passed in FV's but didn't exist in the db
-    val deleteStrategies = mutableListOf<DbFeatureValue>()
-    for (strategy in existing) {
-      if (deleteKeys.contains(strategy.feature.key)) {
-        if (strategy.feature.valueType != FeatureValueType.BOOLEAN) {
-          deleteStrategies.add(strategy) // can't delete booleans
-        }
-      } else {
-        val fv = newValues.remove(strategy.feature.key)
-        if (fv != null) {
-          onlyUpdateFeatureValueForEnvironment(fv, requireRoleCheck, strategy, true, true)
-        }
+    for (strategy in existingValues) {
+      val fv = newValues.remove(strategy.feature.key)
+      if (fv != null) {
+        // its existing, so update it
+        onlyUpdateFeatureValueForEnvironment(fv, requireRoleCheck, strategy,
+          changingDefaultValue = true,
+          updatingLock = true
+        )
       }
     }
 
@@ -769,28 +745,10 @@ class FeatureSqlApi @Inject constructor(
       newValues[key]?.let { fv ->
         onlyCreateFeatureValueForEnvironment(eid, key, fv, requireRoleCheck)
       }
-
-    }
-    if (deleteStrategies.isNotEmpty()) {
-      publishTheRemovalOfABunchOfStrategies(deleteStrategies)
     }
 
     return QDbFeatureValue().environment.id.eq(eid).feature.whenArchived.isNull.findList()
       .map { fs: DbFeatureValue -> convertUtils.toFeatureValue(fs)!! }
-  }
-
-  // can't background this because they will deleted shortly
-  @Transactional(type = TxType.REQUIRES_NEW)
-  private fun publishTheRemovalOfABunchOfStrategies(deleteStrategies: Collection<DbFeatureValue?>) {
-    if (!deleteStrategies.isEmpty()) {
-      deleteStrategies.parallelStream().forEach { strategy: DbFeatureValue? ->
-        cacheSource.deleteFeatureChange(
-          strategy!!.feature, strategy.environment.id
-        )
-      }
-
-      database.deleteAll(deleteStrategies)
-    }
   }
 
   @Throws(RolloutStrategyValidator.InvalidStrategyCombination::class)
@@ -966,10 +924,8 @@ class FeatureSqlApi @Inject constructor(
     key: String,
     featureValue: List<FeatureValue>,
     from: Person,
-    removeValuesNotPassed: Boolean
   ) {
     val result = featureValuesUserCanAccess(id, key, from)
-
     val failure = RolloutStrategyValidator.ValidationFailure()
 
     // environment id -> role in that environment
@@ -1003,7 +959,7 @@ class FeatureSqlApi @Inject constructor(
     failure.hasFailedValidation()
 
     // environment -> feature value
-    val featureValuesToDelete = result.envIdToDbFeatureValue
+    val featureValuesToNull = result.envIdToDbFeatureValue
     for (fv in featureValue) {
       createFeatureValueForEnvironment(
         fv.environmentId!!, key, fv,
@@ -1013,18 +969,9 @@ class FeatureSqlApi @Inject constructor(
           .roles(HashSet(environmentToRoleMap[fv.environmentId!!]!!)).build()
       )
 
-      featureValuesToDelete.remove(fv.environmentId) // we processed this environment ok, didn't throw a wobbly
+      featureValuesToNull.remove(fv.environmentId) // we processed this environment ok, didn't throw a wobbly
     }
 
-    // now remove any ability to remove feature values that are flags
-    val invalidDeletions = featureValuesToDelete.keys
-      .filter { u: UUID -> featureValuesToDelete[u]!!.feature.valueType != FeatureValueType.BOOLEAN }
-
-    invalidDeletions.forEach { featureValuesToDelete.remove(it) }
-
-    if (removeValuesNotPassed) {
-      publishTheRemovalOfABunchOfStrategies(featureValuesToDelete.values)
-    }
   }
 
   private fun environmentToFeatureValues(
@@ -1088,10 +1035,10 @@ class FeatureSqlApi @Inject constructor(
         .whenArchived.isNull
         .parentApplication.eq(app)
 
-      if (sort == SortOrder.ASC) {
-        appFeatureQuery = appFeatureQuery.order().key.asc()
+      appFeatureQuery = if (sort == SortOrder.ASC) {
+        appFeatureQuery.order().key.asc()
       } else {
-        appFeatureQuery = appFeatureQuery.order().key.desc()
+        appFeatureQuery.order().key.desc()
       }
 
       if (filter != null) {
@@ -1228,7 +1175,7 @@ class FeatureSqlApi @Inject constructor(
       count++
 
       if (rationaliseStrategyIdsAndAttributeIds(fv.rolloutStrategies)) {
-        save(fv)
+        save(fv, null)
       }
 
       if (count % 50 == 0) {

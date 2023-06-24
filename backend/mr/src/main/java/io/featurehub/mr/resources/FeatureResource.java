@@ -125,7 +125,7 @@ public class FeatureResource implements FeatureServiceDelegate {
     final Person person = authManager.from(securityContext);
 
     try {
-      featureApi.updateAllFeatureValuesByApplicationForKey(id, key, featureValue, person, Boolean.TRUE.equals(holder.removeValuesNotPassed));
+      featureApi.updateAllFeatureValuesByApplicationForKey(id, key, featureValue, person);
     } catch (OptimisticLockingException e) {
       log.warn("Optimistic locking failure", e);
       throw new WebApplicationException(409);

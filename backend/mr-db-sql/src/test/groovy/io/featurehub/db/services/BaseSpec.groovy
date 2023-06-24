@@ -38,7 +38,7 @@ class BaseSpec extends Specification {
     database.save(dbSuperPerson);
     superuser = dbSuperPerson.getId()
 
-    def organizationSqlApi = new OrganizationSqlApi(database, convertUtils)
+    def organizationSqlApi = new OrganizationSqlApi(convertUtils)
 
 
     def orgExists = convertUtils.hasOrganisation()

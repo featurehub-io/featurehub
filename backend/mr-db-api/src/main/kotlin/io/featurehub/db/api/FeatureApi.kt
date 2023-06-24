@@ -18,8 +18,7 @@ interface FeatureApi {
   )
   fun updateAllFeatureValuesByApplicationForKey(
     id: UUID, key: String, featureValue: List<FeatureValue>,
-    from: Person,
-    removeValuesNotPassed: Boolean
+    from: Person
   )
 
   fun findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
@@ -47,8 +46,6 @@ interface FeatureApi {
     eid: UUID, key: String, featureValue: FeatureValue,
     person: PersonFeaturePermission
   ): FeatureValue?
-
-  fun deleteFeatureValueForEnvironment(eid: UUID, key: String): Boolean
 
   @Throws(
     OptimisticLockingException::class,

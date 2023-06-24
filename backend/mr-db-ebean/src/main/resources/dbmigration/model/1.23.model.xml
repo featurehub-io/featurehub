@@ -5,8 +5,4 @@
         <alterColumn columnName="retired" tableName="fh_env_feature_strategy" currentType="boolean" defaultValue="false" notnull="true" currentNotnull="false"/>
         <alterColumn columnName="fk_who_updated" tableName="fh_fv_version" currentType="uuid" notnull="true" currentNotnull="false"/>
     </changeSet>
-    <changeSet type="pendingDrops">
-        <dropColumn columnName="feature_state" tableName="fh_env_feature_strategy"/>
-        <dropColumn columnName="feature_state" tableName="fh_fv_version"/>
-    </changeSet>
 </migration>

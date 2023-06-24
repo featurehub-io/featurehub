@@ -1,11 +1,13 @@
 import { Given, Then, When } from '@cucumber/cucumber';
-import { Feature, FeatureValueType } from '../apis/mr-service';
+import { Feature, FeatureValueType, RolloutStrategy } from '../apis/mr-service';
 import { makeid } from '../support/random';
 import { expect } from 'chai';
 import waitForExpect from 'wait-for-expect';
 import { FeatureStateHolder, Readyness } from 'featurehub-javascript-node-sdk';
 import { logger } from '../support/logging';
 import { SdkWorld } from '../support/world';
+import DataTable from '@cucumber/cucumber/lib/models/data_table';
+import { isDeepStrictEqual } from 'util';
 
 Given(/^There is a new feature flag$/, async function () {
   const name = makeid(5).toUpperCase();
@@ -110,4 +112,93 @@ When(/^I setup (\d+) random feature (flags|strings|numbers|json)$/, async functi
     expect(fCreate.status).to.eq(200);
   }
 
+});
+
+When(/^I create custom rollout strategies$/, async function (table: DataTable) {
+  const world = this as SdkWorld;
+  const fv = (await world.featureValueApi.getFeatureForEnvironment(world.environment.id, world.feature.key)).data;
+
+  fv.rolloutStrategies = [];
+
+  for(const row of table.hashes()) {
+    console.log('strategy row', row);
+    const percentage = parseInt(row['percentage']);
+    const name = row['name'];
+    const value = row['value'];
+    const rs = new RolloutStrategy({
+      name: name,
+      percentage: percentage,
+      value: value === 'on'
+    });
+    fv.rolloutStrategies.push(rs);
+  }
+
+  const updated = await world.updateFeature(fv);
+  updated.rolloutStrategies.forEach(rs => rs.id = undefined);
+  expect(strategyComparison(updated.rolloutStrategies, fv.rolloutStrategies)).to.be.true;
+});
+
+function strategyComparison(one: Array<RolloutStrategy>, two: Array<RolloutStrategy>): boolean {
+  if (one.length != two.length) return false;
+  for(let count = 0; count < one.length; count ++) {
+    if ((one[count].percentage !== two[count].percentage) ||
+       (one[count].value !== two[count].value) ||
+      (one[count].name !== two[count].name)) {
+      console.log('one: ', JSON.stringify(one[count]), 'not equal  to two: ', JSON.stringify(two[count]));
+      return false;
+    }
+  }
+  return true;
+}
+
+function decodeStrategies(s: string | undefined): Array<RolloutStrategy> {
+  if (!s || s.trim().length == 0) return [];
+
+  const strategies: Array<RolloutStrategy> = [];
+  s.split(",").forEach(strat => {
+    const data = strat.split("/");
+    strategies.push(new RolloutStrategy({
+      name: data[1],
+      percentage: parseInt(data[0]),
+      value: data[2] === 'on'
+    }));
+  });
+
+  return strategies;
+}
+When(/^I check the feature history I see$/, async function (table: DataTable) {
+  const world = this as SdkWorld;
+
+  const response = await world.historyApi.listFeatureHistory(world.application.id, [], [world.feature.id], [],
+      [world.environment.id]);
+
+  expect(response.status).to.eq(200);
+  const data = response.data;
+  expect(data.items.length).to.eq(1);
+  expect(data.items[0].envId).to.eq(world.environment.id);
+  expect(data.items[0].featureId).to.eq(world.feature.id);
+  const itemData = data.items[0];
+
+  // wip the ids as we can't compare those
+  itemData.history.forEach(it => {
+    it.rolloutStrategies?.forEach(rs => rs.id = undefined);
+  });
+
+  let pos = 0; // position in version history
+
+  for (const row of table.hashes()) {
+    console.log('history row', row);
+    const locked = row['locked'] === 'true';
+    const value = row['value'] === 'on';
+    const retired = row['retired'] === 'true';
+    const strategies = decodeStrategies(row['strategies']);
+    let found = false;
+    while (!found && pos < itemData.history.length) {
+      console.log('comparing ', JSON.stringify(itemData.history[pos]), 'to locked', locked, 'retired', retired, 'value', value, 'strategies', JSON.stringify(strategies));
+      const item = itemData.history[pos++];
+      found = (item.locked == locked) && (item.retired == retired) && (item.value == value) && (strategyComparison(item.rolloutStrategies, strategies));
+    }
+
+    expect(found).to.be.true;
+  }
 });

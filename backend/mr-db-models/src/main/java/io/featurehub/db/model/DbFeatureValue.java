@@ -100,14 +100,14 @@ public class DbFeatureValue extends DbBaseFeatureValue {
     this.version = version;
   }
 
-  public @Nullable List<DbStrategyForFeatureValue> getSharedRolloutStrategies() {
+  public @NotNull List<DbStrategyForFeatureValue> getSharedRolloutStrategies() {
     if (sharedRolloutStrategies == null) {
       sharedRolloutStrategies = new LinkedList<>();
     }
     return sharedRolloutStrategies;
   }
 
-  public void setSharedRolloutStrategies(@Nullable List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
+  public void setSharedRolloutStrategies(@NotNull List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
     this.sharedRolloutStrategies = sharedRolloutStrategies;
   }
 

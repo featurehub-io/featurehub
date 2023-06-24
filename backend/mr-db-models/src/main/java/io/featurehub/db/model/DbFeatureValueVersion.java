@@ -6,7 +6,9 @@ import io.featurehub.mr.model.RolloutStrategy;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
@@ -28,7 +30,8 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
                                boolean locked, boolean retired,
                                @NotNull List<RolloutStrategy> rolloutStrategies,
                                @NotNull List<SharedRolloutStrategyVersion> sharedRolloutStrategies,
-                               DbApplicationFeature feature) {
+                               DbApplicationFeature feature,
+                               @Nullable Long versionFrom) {
     super(whoCreated, locked);
 
     this.id = id;
@@ -37,15 +40,34 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
     this.retired = retired;
     this.sharedRolloutStrategies = sharedRolloutStrategies;
     this.feature = feature;
+    this.versionFrom = versionFrom;
 
     setDefaultValue(defaultValue);
     setRolloutStrategies(rolloutStrategies);
+  }
+
+  @ManyToOne(optional = false)
+  @Column(name = "id")
+  @JoinColumn(name="id", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
+  @MapsId("id")
+  private DbFeatureValue featureValue;
+
+  @NotNull public DbFeatureValue getFeatureValue() {
+    return featureValue;
   }
 
   private boolean retired;
 
   @ManyToOne(optional = false)
   private DbApplicationFeature feature;
+
+  /**
+   * The version the user was updating when they saved this record. Allows us to look  up  that version, do
+   *  a diff between these records and send the details of the diff back.
+   */
+  @Column(name = "v_from")
+  @Nullable
+  private Long versionFrom;
 
   @DbJson
   @Column(name = "shared_strat")
@@ -71,7 +93,7 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
     return id;
   }
 
-  public static DbFeatureValueVersion fromDbFeatureValue(DbFeatureValue from) {
+  public static DbFeatureValueVersion fromDbFeatureValue(DbFeatureValue from, @Nullable Long versionFrom) {
     return new DbFeatureValueVersion(
       new DbFeatureValueVersionKey(from.getId(), from.getVersion()),
         from.getVersion() == 1L ? from.getWhenCreated() : from.getWhenUpdated(),
@@ -81,7 +103,8 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
         from.getRetired() == Boolean.TRUE,
         from.getRolloutStrategies(),
         transformSharedStrategies(from.getSharedRolloutStrategies()),
-        from.getFeature()
+        from.getFeature(),
+        versionFrom
       );
   }
 
@@ -95,5 +118,9 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
             shared.getRolloutStrategy().getVersion(),
             shared.isEnabled(), shared.getValue());
       }).collect(Collectors.toList());
+  }
+
+  public @Nullable Long getVersionFrom() {
+    return versionFrom;
   }
 }

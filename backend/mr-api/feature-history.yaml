@@ -1,0 +1,135 @@
+openapi: 3.0.1
+info:
+  title: ManagementResourceApi
+  description: This describes the API clients use for accessing features. This reflects the API from 1.5.7 onwards.
+#  CRUD for portfolios, environments, features, service account, people, and groups (edited)
+#  roles are fixed
+#  then people<->group association
+#  and group<->role association
+paths:
+  /mr-api/application/{appId}/feature-history:
+    get:
+      description: "Gets a paginated list of history of feature value changes"
+      operationId: listFeatureHistory
+      tags:
+        - FeatureHistoryService
+      security:
+        -  bearerAuth: []
+      responses:
+        "200":
+          description: "the webhook type details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureHistoryList"
+        "404":
+          description: "no such url"
+      parameters:
+        - name: appId
+          required: true
+          in: path
+          schema:
+            type: string
+            format: uuid
+        - name: featureKeys
+          description: "Allows you to search by keys. If featureIds are provided, keys are ignored"
+          required: false
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: featureIds
+          description: "The ids of the features you want, prefer this over keys as keys can change"
+          required: false
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+        - name: versions
+          description: "If only one feature is requested, you can specify the specific versions you want"
+          required: false
+          in: query
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+        - name: environmentIds
+          description: "Any environments you want the feature keys/ids from"
+          required: false
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+        - name: max
+          in: query
+          description: "This is the max to result, limited by server"
+          required: false
+          schema:
+            type: integer
+        - name: startAt
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: "what position in the results to start at"
+components:
+  schemas:
+    FeatureHistoryItem:
+      type: object
+      properties:
+        envId:
+          type: string
+          format: uuid
+        featureValueId:
+          type: string
+          format: uuid
+        featureId:
+          type: string
+          format: uuid
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureHistoryValue"
+    FeatureHistoryValue:
+      type: object
+      properties:
+        version:
+          type: integer
+          format: int64
+        versionFrom:
+          type: integer
+          format: int64
+        when:
+          description: "When it was created"
+          type: string
+          format: date-time
+        who:
+          $ref: "#/components/schemas/AnemicPerson"
+        value:
+          description: "the value, no type is passed back"
+        locked:
+          type: boolean
+        retired:
+          type: boolean
+        rolloutStrategies:
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategy"
+    FeatureHistoryList:
+      type: object
+      properties:
+        max:
+          description: "The maximum number of items returned by this query"
+          type: integer
+          format: int64
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureHistoryItem"
+

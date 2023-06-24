@@ -6,7 +6,7 @@ Feature: All flag based functionality works as expected
     And I create a service account and full permissions based on the application environments
     And I connect to the feature server
 
-    @retired
+    @retired @history
   Scenario: A new portfolio with a boolean feature is retired and no longer exists
     Given There is a new feature flag
     Then the feature flag is locked and off
@@ -17,8 +17,34 @@ Feature: All flag based functionality works as expected
     When I unretire the feature flag
     Then there are 1 features
     Then the feature flag is unlocked and on
+    When I check the feature history I see
+      | locked | retired | value |
+      | true   | false   | off   |
+      | false  | true    | off   |
+      | false  | true    | on    |
+      | false  | false   | on    |
 
-    @flags
+      @history2
+   Scenario: A new portfolio with complex history
+     Given There is a new feature flag
+     And I set the feature flag to on and unlocked
+     And I create custom rollout strategies
+       | percentage | name          | value  |
+       | 15         | orange-roughy | on |
+       | 12         | green-diamon  | off  |
+     And I create custom rollout strategies
+       | percentage | name          | value  |
+       | 25         | orange-roughy | on |
+       | 16         | green-diamon  | on  |
+       | 50         | blue-peter    | off   |
+     When I check the feature history I see
+       | locked | retired | value | strategies                                               |
+       | true   | false   | off   |                                                          |
+       | false  | false   | on    | 15/orange-roughy/on,12/green-diamon/off                  |
+       | false  | false   | on    | 25/orange-roughy/on,16/green-diamon/on,50/blue-peter/off |
+
+
+  @flags
   Scenario: A new portfolio with a boolean feature
 #    Given I connect to the Edge server using <ConnectionType>
     Given There is a new feature flag

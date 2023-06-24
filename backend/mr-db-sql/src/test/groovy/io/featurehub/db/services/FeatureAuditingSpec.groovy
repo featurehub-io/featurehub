@@ -4,7 +4,6 @@ import cd.connect.app.config.ThreadLocalConfigurationSource
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyValidator
-import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.RoleType
@@ -16,9 +15,6 @@ import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.ServiceAccount
-import io.featurehub.utils.ExecutorSupplier
-
-import java.util.concurrent.ExecutorService
 
 class FeatureAuditingSpec extends Base2Spec {
   PortfolioSqlApi portfolioSqlApi
@@ -51,7 +47,7 @@ class FeatureAuditingSpec extends Base2Spec {
 
     serviceAccountApi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, internalPersonApi)
 
-    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
+    featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     p1 = portfolioSqlApi.getPortfolio("basic")
 
@@ -139,7 +135,7 @@ class FeatureAuditingSpec extends Base2Spec {
       def value = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
     then: "the feature has updated"
       value.valueBoolean
-      new InternalFeatureHistorySqlApi().history(env.id, feature.id, value.id).size() == 2
+      new FeatureHistorySqlApi().history(env.id, feature.id, value.id).size() == 2
 
   }
 }
