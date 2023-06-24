@@ -2064,7 +2064,8 @@ paths:
     put:
       tags:
       - EnvironmentFeatureService
-      description: Update all features for this environment
+      description: Update all features for this environment that are passed. Ignores
+        any other feature values that are not passed.
       operationId: updateAllFeaturesForEnvironment
       requestBody:
         content:
@@ -2210,19 +2211,13 @@ paths:
     delete:
       tags:
       - EnvironmentFeatureService
-      description: Delete a specific feature in this environment.
+      description: No longer supported. Please update to a null value.
       operationId: deleteFeatureForEnvironment
       responses:
-        "204":
-          description: No data returned.
         "400":
           description: Bad Request
         "401":
           description: no permission
-        "403":
-          description: forbidden
-        "404":
-          description: not found
       security:
       - bearerAuth: []
     parameters:

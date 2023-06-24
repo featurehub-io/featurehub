@@ -6,7 +6,7 @@ import {
   Configuration, Environment, Environment2ServiceApi,
   EnvironmentFeatureServiceApi,
   EnvironmentServiceApi,
-  Feature,
+  Feature, FeatureHistoryServiceApi,
   FeatureServiceApi,
   FeatureValue, Person, PersonServiceApi,
   Portfolio,
@@ -53,6 +53,7 @@ export class SdkWorld extends World {
   public readonly serviceAccountApi: ServiceAccountServiceApi;
   public readonly featureValueApi: EnvironmentFeatureServiceApi;
   public readonly edgeApi: EdgeService;
+  public readonly historyApi: FeatureHistoryServiceApi;
 
   public readonly webhookApi: WebhookServiceApi;
   private _clientContext: ClientContext;
@@ -83,6 +84,7 @@ export class SdkWorld extends World {
     this.serviceAccountApi = new ServiceAccountServiceApi(this.adminApiConfig);
     this.featureValueApi = new EnvironmentFeatureServiceApi(this.adminApiConfig);
     this.webhookApi = new WebhookServiceApi(this.adminApiConfig);
+    this.historyApi = new FeatureHistoryServiceApi(this.adminApiConfig);
 
     const edgeConfig = new EdgeConfig({ basePath: this.featureUrl, axiosInstance: this.adminApiConfig.axiosInstance});
     this.edgeApi = new EdgeService(edgeConfig);
@@ -201,11 +203,12 @@ export class SdkWorld extends World {
     }
   }
 
-  async updateFeature(fValue: FeatureValue) {
+  async updateFeature(fValue: FeatureValue) : Promise<FeatureValue> {
     fValue.whenUpdated = undefined;
     fValue.whoUpdated = undefined;
     const uResult = await this.featureValueApi.updateFeatureForEnvironment(this.environment.id, this.feature.key, fValue);
     expect(uResult.status).to.eq(200);
+    return uResult.data;
   }
 }
 

@@ -1,4 +1,4 @@
-import { Given, Then } from '@cucumber/cucumber';
+import { Given, Then, When } from '@cucumber/cucumber';
 import { FeatureValueType, RolloutStrategy, RolloutStrategyAttribute } from '../apis/mr-service';
 import { ClientContext } from 'featurehub-javascript-node-sdk';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';

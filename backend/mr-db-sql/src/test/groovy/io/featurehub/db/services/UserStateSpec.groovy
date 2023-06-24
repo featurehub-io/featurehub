@@ -28,7 +28,7 @@ class UserStateSpec extends BaseSpec {
 
     appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureSqlApi))
     envApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
-    userStateApi = new UserStateSqlApi(convertUtils, database)
+    userStateApi = new UserStateSqlApi(convertUtils)
 
     // now set up the environments we need
     DbOrganization organization = Finder.findDbOrganization()
@@ -59,18 +59,9 @@ class UserStateSpec extends BaseSpec {
       he.environmentIds[0] == env1.id
   }
 
-  def "Invalid db save is ignored"() {
-    given: "a new user state"
-      def us = new UserStateSqlApi(Mock(Conversions), Mock(Database))
-    when: "i save"
-      us.saveHiddenEnvironments(null, null, null)
-    then:
-      0 * database.save(any())
-  }
-
   def "I attempt to add > max environments and i get an invalid state"() {
     given: "a new user state"
-        def us = new UserStateSqlApi(convertUtils, database)
+        def us = new UserStateSqlApi(convertUtils)
     and: "a new user state with too manny environments"
       def he = new HiddenEnvironments();
       for(int count = 0; count < us.maximumEnvironmentsPerApplication + 5; count ++) {
@@ -84,7 +75,7 @@ class UserStateSpec extends BaseSpec {
 
   def "I attempt to add environments that aren't valid uuids"() {
     given: "a new user state impl"
-      def us = new UserStateSqlApi(convertUtils, database)
+      def us = new UserStateSqlApi(convertUtils)
     and: "a new user state with invalid environment uuids"
       def he = new HiddenEnvironments().addEnvironmentIdsItem(UUID.randomUUID()).addEnvironmentIdsItem(UUID.randomUUID())
     when: "i save"
@@ -95,7 +86,7 @@ class UserStateSpec extends BaseSpec {
 
   def "I attempt to add environments that don't exist"() {
     given: "a new user state impl"
-      def us = new UserStateSqlApi(convertUtils, database)
+      def us = new UserStateSqlApi(convertUtils)
     and: "a new user state with invalid environment uuids"
       def he = new HiddenEnvironments().addEnvironmentIdsItem(UUID.randomUUID()).addEnvironmentIdsItem(UUID.randomUUID())
     when: "i save"

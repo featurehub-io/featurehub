@@ -68,8 +68,8 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
   }
 
   @Override
-  public void deleteFeatureForEnvironment(UUID eid, String key, SecurityContext securityContext) {
-    throw new BadRequestException();
+  public Response deleteFeatureForEnvironment(UUID eid, String key, SecurityContext securityContext) {
+    return Response.status(400).build();
   }
 
   @Override
