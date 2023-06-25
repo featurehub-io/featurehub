@@ -34,6 +34,10 @@ export function getWebhookData(): EnrichedFeatures | undefined {
   return webhookData;
 }
 
+export function  clearWebhookData() {
+  webhookData = undefined;
+}
+
 export function getWebserverExternalAddress(): string | undefined {
   if (process.env.EXTERNAL_NGROK) {
     return process.env.EXTERNAL_NGROK;

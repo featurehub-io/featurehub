@@ -28,4 +28,16 @@ Feature: Webhooks work as expected
     And I use the Test SDK to update feature FEATURE_TITLE_TO_UPPERCASE to unlocked and off
     And we receive a webhook that has changed the feature FEATURE_TITLE_TO_UPPERCASE that belongs to the Test SDK
 
-
+  @webhook3
+  Scenario: I want to see if we can cause a webhook to fail
+    Given I create a new portfolio
+    And I create an application
+    And I update the environment for feature webhooks
+    When then I test the webhook
+      | feature_type | key  | action | value |
+      | flag         | flag1 | justcreate | true  |
+      | number       | num1  | create | 15.3  |
+      | number       | num1  | delete | none  |
+#      | flag         | flag1 | change | false |
+#      | number       | num1  | create | 17.2  |
+#      | number       | num1  | change | 13.1  |
