@@ -170,6 +170,8 @@ open class PersonSqlApi @Inject constructor(
     }
   }
 
+  val nilUUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+
   override fun search(
     filter: String?, sortOrder: SortOrder?, offset: Int, max: Int,
     pTypes: Set<PersonType?>,
@@ -180,7 +182,8 @@ open class PersonSqlApi @Inject constructor(
     val searchMax = max.coerceAtMost(MAX_SEARCH).coerceAtLeast(1)
 
     // set the limits
-    var search = QDbPerson().setFirstRow(searchOffset).setMaxRows(searchMax)
+    var search = QDbPerson()
+      .id.ne(nilUUID)
 
     // set the filter if anything, make sure it is case insignificant
     if (filter != null) {
@@ -218,7 +221,9 @@ open class PersonSqlApi @Inject constructor(
     }
 
     val futureCount = search.findFutureCount()
-    val futureList = search.findFutureList()
+    val futureList = search
+      .setFirstRow(searchOffset).setMaxRows(searchMax)
+      .findFutureList()
 
     return try {
       val org = convertUtils.dbOrganization()
