@@ -7,6 +7,7 @@ import io.featurehub.db.model.*
 import io.featurehub.db.model.query.*
 import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
+import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
@@ -17,7 +18,9 @@ import java.util.*
 import java.util.stream.Collectors
 
 @Singleton
-open class ConvertUtils : Conversions {
+open class ConvertUtils @Inject constructor(
+  private val encryptionService: WebhookEncryptionService
+) : Conversions {
   override fun byPerson(id: UUID?): DbPerson? {
     return if (id == null) null else QDbPerson().id.eq(id).findOne()
   }
@@ -108,6 +111,26 @@ open class ConvertUtils : Conversions {
     return if (s == null) null else if (s.length > len) s.substring(0, len) else s
   }
 
+  /**
+   * Returns a map with encrypted items replaced with a value "ENCRYPTED-TEXT"
+   *
+   * @param webhookEnvInfo
+   * @return
+   */
+  private fun toWebhookEnvironmentInfo(webhookEnvInfo: Map<String,String>) : Map<String,String> {
+    val webhookEnvEncryptedKeys = encryptionService.getAllKeysEnabledForEncryption(webhookEnvInfo)
+    val result = mutableMapOf<String, String>()
+    webhookEnvInfo.forEach { webhookItem ->
+      val key = webhookItem.key
+      if (webhookEnvEncryptedKeys.contains(key)) {
+        result[key] = "ENCRYPTED-TEXT"
+      } else if (!key.endsWith(".salt")) { // we do not need to send the salt back to the client
+        result[key] = webhookItem.value
+      }
+    }
+    return result.toMap()
+  }
+
   override fun toEnvironment(
     env: DbEnvironment?, opts: Opts?, features: Set<DbApplicationFeature?>?
   ): Environment? {
@@ -125,6 +148,8 @@ open class ConvertUtils : Conversions {
       .applicationId(env.parentApplication.id)
     if (opts!!.contains(FillOpts.Details)) {
       environment.environmentInfo(env.userEnvironmentInfo)
+
+      environment.webhookEnvironmentInfo(toWebhookEnvironmentInfo(env.webhookEnvironmentInfo))
       environment.description(env.description)
     }
     if (opts.contains(FillOpts.People)) {

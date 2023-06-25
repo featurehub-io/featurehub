@@ -18,13 +18,13 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
 
-
 @Singleton
 class EnvironmentSqlApi @Inject constructor(
   private val database: Database,
   private val convertUtils: Conversions,
   private val cacheSource: CacheSource,
-  private val archiveStrategy: ArchiveStrategy
+  private val archiveStrategy: ArchiveStrategy,
+  private val webhookEncryptionService: WebhookEncryptionService
 ) : EnvironmentApi {
 
   override fun portfolioEnvironmentBelongsTo(eId: UUID): UUID? {
@@ -178,6 +178,15 @@ class EnvironmentSqlApi @Inject constructor(
       environment.userEnvironmentInfo = env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap()  // prevent mgmt prefixes being used
     }
 
+      val webhookEnvironmentInfo = env.webhookEnvironmentInfo
+      if (webhookEnvironmentInfo != null) {
+        if (webhookEncryptionService.shouldEncrypt(webhookEnvironmentInfo)) {
+          environment.webhookEnvironmentInfo = webhookEncryptionService.encrypt(webhookEnvironmentInfo)
+        } else {
+          environment.webhookEnvironmentInfo = webhookEnvironmentInfo.filter { !it.key.startsWith("mgmt.") }.toMap()  // prevent mgmt prefixes being used
+        }
+      }
+
     update(environment)
 
     return convertUtils.toEnvironment(environment, opts)
@@ -191,6 +200,10 @@ class EnvironmentSqlApi @Inject constructor(
       .parentApplication.id.eq(appId).groupRolesAcl.group.groupMembers.person.id.eq(person).findList()
 
     return if (envs.isEmpty()) null else envs.map { it.id }
+  }
+
+  override fun getDecryptedEnvironmentWebhookContent(eid: UUID): Environment {
+    TODO("Not yet implemented")
   }
 
   private fun circularPriorEnvironmentCheck(priorEnvironmentId: UUID?, environment: DbEnvironment) {

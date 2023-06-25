@@ -35,6 +35,7 @@ public class DbEnvironment extends DbVersionedBase {
     setEnvironmentFeatures(builder.environmentFeatures);
     setServiceAccountEnvironments(builder.serviceAccountEnvironments);
     setUserEnvironmentInfo(builder.userEnvironmentInfo);
+    setWebhookEnvironmentInfo(builder.webhookEnvironmentInfo);
   }
 
   private DbPerson whoUpdated;
@@ -91,6 +92,10 @@ public class DbEnvironment extends DbVersionedBase {
   @DbJson
   @Column(name = "m_env_inf")
   private Map<String, String> managementEnvironmentInfo;
+
+  @DbJson
+  @Column(name = "w_env_inf")
+  private Map<String, String> webhookEnvironmentInfo;
 
   public Instant getWhenUnpublished() {
     return whenUnpublished;
@@ -204,6 +209,14 @@ public class DbEnvironment extends DbVersionedBase {
     this.managementEnvironmentInfo = managementEnvironmentInfo;
   }
 
+  public Map<String, String> getWebhookEnvironmentInfo() {
+    return webhookEnvironmentInfo;
+  }
+
+  public void setWebhookEnvironmentInfo(Map<String, String> webhookEnvironmentInfo) {
+    this.webhookEnvironmentInfo = webhookEnvironmentInfo;
+  }
+
   public static final class Builder {
     private DbPerson whoUpdated;
     private DbPerson whoCreated;
@@ -216,6 +229,7 @@ public class DbEnvironment extends DbVersionedBase {
     private Set<DbFeatureValue> environmentFeatures;
     private Set<DbServiceAccountEnvironment> serviceAccountEnvironments;
     private Map<String, String> userEnvironmentInfo;
+    public Map<String, String> webhookEnvironmentInfo;
 
     public Builder() {
     }
@@ -272,6 +286,11 @@ public class DbEnvironment extends DbVersionedBase {
 
     public Builder serviceAccountEnvironments(Set<DbServiceAccountEnvironment> val) {
       serviceAccountEnvironments = val;
+      return this;
+    }
+
+    public Builder webhookEnvironmentInfo(Map<String, String> val) {
+      webhookEnvironmentInfo = val;
       return this;
     }
 
