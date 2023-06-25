@@ -6,6 +6,8 @@ import { clearWebhookData, getWebhookData } from '../support/make_me_a_webserver
 import { expect } from 'chai';
 import { sleep } from '../support/random';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
+import { EnrichedFeatures } from '../apis/webhooks';
+import { logger } from '../support/logging';
 
 When('I wait for {int} seconds', async function (seconds: number) {
   await sleep(seconds * 1000);
@@ -99,7 +101,17 @@ function featureValue(version: number, type: FeatureValueType, value: string, ke
   return val;
 }
 
-async function createFeatureAndValue(world: SdkWorld, type: FeatureValueType, key: string, value: string, action: string): Promise<void> {
+function expectedFeatures(webhookData: EnrichedFeatures | undefined, expectedFeatureKeys: Array<string>) {
+  expect(webhookData).to.not.be.undefined;
+  logger.info(`Expecting keys ${expectedFeatureKeys} got ${webhookData.environment?.featureValues?.map(i => i.feature.key)}`);
+  expectedFeatureKeys.forEach(key => {
+    const feature = webhookData.environment?.featureValues?.find(fv => fv.feature.key == key);
+    expect(feature, `Unable to find key ${key}`).to.not.be.undefined;
+  });
+}
+
+async function createFeatureAndValue(world: SdkWorld, type: FeatureValueType,
+                                     key: string, value: string, action: string, expectedFeatureKeys: Array<string>): Promise<void> {
   await world.featureApi.createFeaturesForApplication(world.application.id, new Feature({
     valueType: type,
     name: key,
@@ -110,9 +122,7 @@ async function createFeatureAndValue(world: SdkWorld, type: FeatureValueType, ke
   // wait until the webhook turns up that creates the key
   await waitForExpect(async () => {
     const webhookData = getWebhookData();
-    expect(webhookData).to.not.be.undefined;
-    const feature = webhookData.environment?.featureValues?.find(fv => fv.feature.key == key);
-    expect(feature).to.not.be.undefined;
+    expectedFeatures(webhookData, expectedFeatureKeys);
     const keyChange = webhookData.featureKeys.includes(key);
     expect(keyChange).to.be.true;
   }, 10000, 200);
@@ -126,9 +136,8 @@ async function createFeatureAndValue(world: SdkWorld, type: FeatureValueType, ke
 
     await waitForExpect(async () => {
       const webhookData = getWebhookData();
-      expect(webhookData).to.not.be.undefined;
+      expectedFeatures(webhookData, expectedFeatureKeys);
       const feature = webhookData.environment?.featureValues?.find(fv => fv.feature.key == key);
-      expect(feature).to.not.be.undefined;
       expect(feature.value.locked).to.be.false;
       const keyChange = webhookData.featureKeys.includes(key);
       expect(keyChange).to.be.true;
@@ -138,15 +147,13 @@ async function createFeatureAndValue(world: SdkWorld, type: FeatureValueType, ke
   }
 }
 
-async function deleteFeature(world: SdkWorld, key: string): Promise<void> {
+async function deleteFeature(world: SdkWorld, key: string, expectedFeatureKeys: Array<string>): Promise<void> {
   await world.featureApi.deleteFeatureForApplication(world.application.id, key);
 
   // wait until the webhook turns up that creates the key
   await waitForExpect(async () => {
     const webhookData = getWebhookData();
-    expect(webhookData).to.not.be.undefined;
-    const feature = webhookData.environment?.featureValues?.find(fv => fv.feature.key == key);
-    expect(feature).to.be.undefined;
+    expectedFeatures(webhookData, expectedFeatureKeys);
     const keyChange = webhookData.featureKeys.includes(key);
     expect(keyChange).to.be.true;
   }, 10000, 200);
@@ -160,9 +167,9 @@ When(/^then I test the webhook$/, { timeout: 300000 }, async function(table: Dat
     console.log('processing row', row);
     const type = featureType(row['feature_type']);
     if (row['action'] === 'create' || row['action'] === 'justcreate') {
-      await createFeatureAndValue(world, type, row['key'], row['value'], row['action']);
+      await createFeatureAndValue(world, type, row['key'], row['value'], row['action'], row['expected_features'].trim().split(','));
     } else if (row['action'] === 'delete') {
-      await deleteFeature(world, row['key']);
+      await deleteFeature(world, row['key'], row['expected_features'].trim().split(','));
     } else if (row['action'] === 'change') {
       // await updateFeatureValue(world, type, row['key'], row['value']);
     }
