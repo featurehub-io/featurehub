@@ -59,7 +59,7 @@
     <dependency>
       <groupId>cd.connect.common</groupId>
       <artifactId>connect-prometheus-jersey</artifactId>
-      <version>4.2</version>
+      <version>4.3</version>
       <exclusions>
         <exclusion>
           <groupId>jakarta.ws.rs</groupId>
