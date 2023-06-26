@@ -26,7 +26,7 @@ open class PersonSqlApi @Inject constructor(
   private val convertUtils: Conversions,
   private val archiveStrategy: ArchiveStrategy,
   private val internalGroupSqlApi: InternalGroupSqlApi
-) : PersonApi {
+) : PersonApi, InternalPersonApi {
   private val passwordSalter = PasswordSalter()
 
   @Throws(OptimisticLockingException::class)
@@ -56,6 +56,10 @@ open class PersonSqlApi @Inject constructor(
 
   fun updatePersonDetails(personId: UUID, updatedBy: UUID, version: Long, name: String?, email: String?, groups: List<UUID>?, unarchive: Boolean) : DbPerson? {
     val updatingRecord = QDbPerson().id.eq(personId).findOne() ?: return null
+
+    if (updatingRecord.personType == PersonType.SDKSERVICEACCOUNT) {
+      return null
+    }
 
     if (version != updatingRecord.version) {
       throw OptimisticLockingException()
@@ -166,9 +170,11 @@ open class PersonSqlApi @Inject constructor(
     }
   }
 
+  val nilUUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+
   override fun search(
     filter: String?, sortOrder: SortOrder?, offset: Int, max: Int,
-    personTypes: Set<PersonType?>,
+    pTypes: Set<PersonType?>,
     sortBy: SearchPersonSortBy?,
     opts: Opts
   ): PersonApi.PersonPagination {
@@ -176,7 +182,8 @@ open class PersonSqlApi @Inject constructor(
     val searchMax = max.coerceAtMost(MAX_SEARCH).coerceAtLeast(1)
 
     // set the limits
-    var search = QDbPerson().setFirstRow(searchOffset).setMaxRows(searchMax)
+    var search = QDbPerson()
+      .id.ne(nilUUID)
 
     // set the filter if anything, make sure it is case insignificant
     if (filter != null) {
@@ -184,6 +191,8 @@ open class PersonSqlApi @Inject constructor(
       // name is mixed case, email is always lower case
       search = search.or().name.icontains(fil).email.contains(fil).endOr()
     }
+
+    val personTypes = pTypes.filter { it != null && it != PersonType.SDKSERVICEACCOUNT }
 
     search = if (personTypes.isNotEmpty()) {
       if (personTypes.size == 1) search.personType.eq(personTypes.first()) else search.personType.`in`(personTypes)
@@ -212,7 +221,9 @@ open class PersonSqlApi @Inject constructor(
     }
 
     val futureCount = search.findFutureCount()
-    val futureList = search.findFutureList()
+    val futureList = search
+      .setFirstRow(searchOffset).setMaxRows(searchMax)
+      .findFutureList()
 
     return try {
       val org = convertUtils.dbOrganization()
@@ -265,15 +276,14 @@ open class PersonSqlApi @Inject constructor(
   }
 
   override fun get(id: UUID, opts: Opts): Person? {
-    Conversions.nonNullPersonId(id)
     var search = QDbPerson().id.eq(id)
+
     if (!opts.contains(FillOpts.Archived)) {
       search = search.whenArchived.isNull
     }
+
     return search.groupMembers.fetch()
-      .findOneOrEmpty()
-      .map { p: DbPerson? -> convertUtils.toPerson(p, opts) }
-      .orElse(null)
+      .findOne()?.let { convertUtils.toPerson(it, opts) }
   }
 
   override fun getByToken(token: String, opts: Opts): Person? {
@@ -283,8 +293,7 @@ open class PersonSqlApi @Inject constructor(
     } else null
   }
 
-  protected val now: LocalDateTime
-  get() = LocalDateTime.now()
+  protected val now: LocalDateTime get() = LocalDateTime.now()
 
   @Throws(PersonApi.DuplicatePersonException::class)
   override fun create(email: String, name: String?, createdBy: UUID?): PersonApi.PersonToken? {
@@ -425,13 +434,17 @@ open class PersonSqlApi @Inject constructor(
 
   override fun delete(email: String, deleteGroups: Boolean): Boolean {
     return QDbPerson().email.eq(email.lowercase(Locale.getDefault())).findOne()?.let { p ->
-      archiveStrategy.archivePerson(p)
-      // remove all of their tokens
-      QDbLogin().person.id.eq(p.id).delete()
-      if (deleteGroups) {
-        QDbGroupMember().person.id.eq(p.id).delete()
+      if (p.personType == PersonType.SDKSERVICEACCOUNT) {
+        false  // can't delete sdk service accounts even if you know their email!
+      } else {
+        archiveStrategy.archivePerson(p)
+        // remove all of their tokens
+        QDbLogin().person.id.eq(p.id).delete()
+        if (deleteGroups) {
+          QDbGroupMember().person.id.eq(p.id).delete()
+        }
+        true
       }
-      true
     } ?: false
   }
 
@@ -452,5 +465,46 @@ open class PersonSqlApi @Inject constructor(
         .whenLastSeen(person.whenLastSeen)
         .groupCount(groupCountsByPersonId[person.id!!.id] ?: 0)
     }
+  }
+
+  @Transactional(type = TxType.REQUIRES_NEW)
+  override fun createSdkServiceAccountUser(name: String, createdBy: DbPerson, archived: Boolean): DbPerson {
+    val servicePerson = DbPerson()
+    servicePerson.name = name
+    with(servicePerson) {
+      id = UUID.randomUUID()
+      email = "${id}@sdk.sa.featurehub.io"
+      personType = PersonType.SDKSERVICEACCOUNT
+      whoChanged = createdBy
+      if (archived) { // only used when migrating old service accounts
+        whenArchived = now
+      }
+      save()
+    }
+
+    return servicePerson
+  }
+
+
+  override fun deleteSdkServiceAccountUser(personId: UUID, createdBy: DbPerson) {
+    QDbPerson().id.eq(personId).findOne()?.let {
+      it.whoChanged = createdBy
+      it.whenArchived = now
+      it.save()
+    }
+  }
+
+  override fun updateSdkServiceAccountUser(personId: UUID, updatedBy: DbPerson, name: String) {
+    QDbPerson().id.eq(personId)
+      .asUpdate()
+      .set(QDbPerson.Alias.name, name)
+      .set(QDbPerson.Alias.whoChanged, updatedBy)
+      .update()
+  }
+
+  override fun findSuperUserToBlame(orgId: UUID): DbPerson {
+    val superuserGroup = internalGroupSqlApi.superuserGroup(orgId)!!
+
+    return QDbPerson().select(QDbPerson.Alias.id).groupMembers.group.id.eq(superuserGroup.id).setMaxRows(1).findList().first()
   }
 }

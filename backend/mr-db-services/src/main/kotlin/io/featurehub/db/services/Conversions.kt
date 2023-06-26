@@ -26,9 +26,12 @@ interface Conversions {
   fun byGroup(gid: UUID?, opts: Opts?): DbGroup?
   fun personIsNotSuperAdmin(person: DbPerson?): Boolean
 
+  fun safeConvert(bool: Boolean?): Boolean
+
   fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean
   fun isPersonMemberOfPortfolioAdminGroup(portfolioId: UUID, personId: UUID): Boolean
   fun personIsSuperAdmin(person: DbPerson?): Boolean
+  fun personIsSuperAdmin(person: UUID): Boolean
   fun getSuperuserGroup(opts: Opts?): Group?
   fun limitLength(s: String?, len: Int): String?
   fun toEnvironment(env: DbEnvironment?, opts: Opts?, features: Set<DbApplicationFeature?>?): Environment?

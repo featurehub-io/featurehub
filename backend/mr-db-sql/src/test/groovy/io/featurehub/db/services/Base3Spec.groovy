@@ -58,7 +58,7 @@ class Base3Spec extends Specification {
     db.save(dbSuperPerson);
     superuser = dbSuperPerson.getId()
 
-    def organizationSqlApi = new OrganizationSqlApi(db, convertUtils)
+    def organizationSqlApi = new OrganizationSqlApi(convertUtils)
 
     // ensure the org is created and we have an admin user in an admin group
     Group adminGroup
@@ -80,15 +80,18 @@ class Base3Spec extends Specification {
     groupSqlApi.addPersonToGroup(adminGroup.id, superuser, Opts.empty())
 
     rsValidator = Mock()
+    rsValidator.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
+    rsValidator.validateStrategies(_, _, _, _) >> new RolloutStrategyValidator.ValidationFailure()
+
     featureMessagingCloudEventPublisher = Mock()
 
-    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
+    featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, featureSqlApi)
 
     portfolio = portfolioSqlApi.createPortfolio(new Portfolio().name(RandomStringUtils.randomAlphabetic(10)).description("desc1"), Opts.empty(), superPerson)
-    app1 =  applicationSqlApi.createApplication(portfolio.id, new Application().name(RandomStringUtils.randomAlphabetic(10)).description("app1"), superPerson)
+    app1 = applicationSqlApi.createApplication(portfolio.id, new Application().name(RandomStringUtils.randomAlphabetic(10)).description("app1"), superPerson)
     env1 = environmentSqlApi.create(new Environment().description(RandomStringUtils.randomAlphabetic(10)).name(RandomStringUtils.randomAlphabetic(10)), app1, superPerson)
   }
 

@@ -1,6 +1,5 @@
 package io.featurehub.db.model;
 
-import io.ebean.Model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

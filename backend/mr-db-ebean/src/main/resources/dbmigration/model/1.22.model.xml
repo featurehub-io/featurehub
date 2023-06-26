@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <alterColumn columnName="person_type" tableName="fh_person" checkConstraint="check ( person_type in ('PERSON','SERVICEACCOUNT','SDKSERVICEACCOUNT'))" checkConstraintName="ck_fh_person_person_type"/>
+        <alterColumn columnName="fk_sdk_person" tableName="fh_service_account" dropUnique="uq_fh_service_account_fk_sdk_person"/>
+    </changeSet>
+</migration>

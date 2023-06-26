@@ -24,16 +24,15 @@ import jakarta.inject.Singleton
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
 import java.time.Instant
-import java.time.LocalDateTime
 import java.util.*
 
 @Singleton
 class ServiceAccountSqlApi @Inject constructor(
-  private val database: Database,
   private val convertUtils: Conversions,
   private val cacheSource: CacheSource,
-  private val archiveStrategy: ArchiveStrategy
-) : ServiceAccountApi {
+  private val archiveStrategy: ArchiveStrategy,
+  private val internalPersonApi: InternalPersonApi
+) : ServiceAccountApi, InternalServiceAccountApi {
   override fun get(id: UUID, opts: Opts): ServiceAccount? {
     val eq = opts(QDbServiceAccount().id.eq(id), opts)
     return convertUtils.toServiceAccount(eq.findOne(), opts)
@@ -58,6 +57,8 @@ class ServiceAccountSqlApi @Inject constructor(
     opts: Opts
   ): ServiceAccount? {
     val sa = QDbServiceAccount().id.eq(serviceAccountId).whenArchived.isNull.findOne() ?: return null
+    val whoUpdated = convertUtils.byPerson(updater) ?: return null
+
     if (serviceAccount.version == null || serviceAccount.version != sa.version) {
       throw OptimisticLockingException()
     }
@@ -68,9 +69,9 @@ class ServiceAccountSqlApi @Inject constructor(
         updatedEnvironments[perm.environmentId] = perm
         newEnvironments.add(perm.environmentId)
       }
-    val deletePerms: MutableList<DbServiceAccountEnvironment?> = ArrayList()
-    val updatePerms: MutableList<DbServiceAccountEnvironment?> = ArrayList()
-    val createPerms: MutableList<DbServiceAccountEnvironment?> = ArrayList()
+    val deletePerms = mutableListOf<DbServiceAccountEnvironment>()
+    val updatePerms = mutableListOf<DbServiceAccountEnvironment>()
+    val createPerms = mutableListOf<DbServiceAccountEnvironment>()
 
     // we drop out of this knowing which perms to delete and update
     QDbServiceAccountEnvironment().environment.id
@@ -114,15 +115,30 @@ class ServiceAccountSqlApi @Inject constructor(
         }
       }
     }
-    if (serviceAccount.description != null) {
-      sa.description = serviceAccount.description
+
+    var descUpdated = false
+    serviceAccount.description?.let {
+      sa.description = it
+      descUpdated = true
     }
+
+    var updateAssociatedUser = false
 
     if (serviceAccount.name != sa.name) {
       sa.name = serviceAccount.name
+      updateAssociatedUser = true
+    }
+
+    if (descUpdated || updateAssociatedUser || deletePerms.isNotEmpty() || updatePerms.isNotEmpty() || createPerms.isNotEmpty()) {
+      sa.whoChanged = whoUpdated
     }
 
     asyncUpdateCache(sa, updateServiceAccount(sa, deletePerms, updatePerms, createPerms).values)
+
+    if (updateAssociatedUser) {
+      internalPersonApi.updateSdkServiceAccountUser(sa.sdkPerson.id, whoUpdated, serviceAccount.name)
+    }
+
     return convertUtils.toServiceAccount(sa, opts)
   }
 
@@ -217,16 +233,16 @@ class ServiceAccountSqlApi @Inject constructor(
         .endOr()
         .findEach { sa: DbServiceAccount ->
           var updated = false
-          if (sa.apiKeyClientEval == null) {
+          if (sa.apiKeyClientEval.isEmpty()) {
             updated = true
             sa.apiKeyClientEval = newClientEvalKey()
           }
-          if (sa.apiKeyServerEval == null) {
+          if (sa.apiKeyServerEval.isEmpty()) {
             updated = true
             sa.apiKeyServerEval = newServerEvalKey()
           }
           if (updated) {
-            database.update(sa)
+            sa.update()
           }
         }
     }
@@ -257,47 +273,41 @@ class ServiceAccountSqlApi @Inject constructor(
   }
 
   @Throws(ServiceAccountApi.DuplicateServiceAccountException::class)
+  @Transactional
   override fun create(
     portfolioId: UUID,
     creator: Person,
     serviceAccount: ServiceAccount,
     opts: Opts
   ): ServiceAccount? {
-    Conversions.nonNullPortfolioId(portfolioId)
-    Conversions.nonNullPerson(creator)
-    val who = convertUtils.byPerson(creator)
-    val portfolio = convertUtils.byPortfolio(portfolioId)
-    if (who == null || portfolio == null) return null
-    val changedEnvironments: MutableList<DbEnvironment> = ArrayList()
+    val who = convertUtils.byPerson(creator) ?: return null
+    val portfolio = convertUtils.byPortfolio(portfolioId) ?: return null
+
+    val changedEnvironments = mutableListOf<DbEnvironment>()
     val envs = environmentMap(serviceAccount)
 
     // now where we actually find the environment, add it into the list
-    val perms = serviceAccount.permissions!!
-      .map { sap: ServiceAccountPermission ->
-        val e = envs[sap.environmentId]
-        if (e != null) {
-          changedEnvironments.add(e)
-          return@map DbServiceAccountEnvironment.Builder()
-            .environment(e)
-            .permissions(convertPermissionsToString(sap.permissions))
-            .build()
-        }
-        null
+    val perms = serviceAccount.permissions!!.mapNotNull { sap: ServiceAccountPermission ->
+      envs[sap.environmentId]?.let { e ->
+        changedEnvironments.add(e)
+        DbServiceAccountEnvironment.Builder()
+          .environment(e)
+          .permissions(convertPermissionsToString(sap.permissions))
+          .build()
       }
-      .filterNotNull()
-      .toMutableSet()
+    }.toMutableSet()
 
+    val sdkPerson = internalPersonApi.createSdkServiceAccountUser(serviceAccount.name, who, false)
     // now create the SA and attach the perms to form the links
-    val sa = DbServiceAccount.Builder()
-      .name(serviceAccount.name)
-      .description(serviceAccount.description)
-      .whoChanged(who)
-      .apiKeyServerEval(newServerEvalKey())
-      .apiKeyClientEval(newClientEvalKey())
-      .serviceAccountEnvironments(perms)
-      .portfolio(portfolio)
-      .build()
+    val sa = DbServiceAccount(who, sdkPerson,
+          serviceAccount.name, serviceAccount.description ?: "",
+          newServerEvalKey(), newClientEvalKey(), portfolio).let {
+      it.serviceAccountEnvironments = perms
+      it
+    }
+
     perms.forEach { p: DbServiceAccountEnvironment? -> p!!.serviceAccount = sa }
+
     try {
       save(sa)
       asyncUpdateCache(sa, changedEnvironments)
@@ -320,30 +330,30 @@ class ServiceAccountSqlApi @Inject constructor(
 
   @Transactional(type = TxType.REQUIRES_NEW)
   private fun save(sa: DbServiceAccount) {
-    database.save(sa)
+    sa.save()
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
   private fun updateOnlyServiceAccount(sa: DbServiceAccount) {
-    database.update(sa)
+    sa.update()
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
   private fun updateServiceAccount(
     sa: DbServiceAccount,
-    deleted: List<DbServiceAccountEnvironment?>,
-    updated: List<DbServiceAccountEnvironment?>,
-    created: List<DbServiceAccountEnvironment?>
+    deleted: List<DbServiceAccountEnvironment>,
+    updated: List<DbServiceAccountEnvironment>,
+    created: List<DbServiceAccountEnvironment>
   ) : MutableMap<UUID, DbEnvironment> {
     sa.markAsDirty() // ensure version is changed
-    database.update(sa)
-    database.updateAll(updated)
-    database.deleteAll(deleted)
-    database.saveAll(created)
+    sa.update()
+    updated.forEach { it.update() }
+    deleted.forEach { it.delete() }
+    created.forEach { it.save() }
     val changed = mutableMapOf<UUID, DbEnvironment>()
-    deleted.forEach { e: DbServiceAccountEnvironment? -> changed[e!!.environment.id] = e.environment }
-    updated.forEach { e: DbServiceAccountEnvironment? -> changed[e!!.environment.id] = e.environment }
-    created.forEach { e: DbServiceAccountEnvironment? -> changed[e!!.environment.id] = e.environment }
+    deleted.forEach { e: DbServiceAccountEnvironment -> changed[e.environment.id] = e.environment }
+    updated.forEach { e: DbServiceAccountEnvironment -> changed[e.environment.id] = e.environment }
+    created.forEach { e: DbServiceAccountEnvironment -> changed[e.environment.id] = e.environment }
     changed.values.forEach { e ->
       e.markAsDirty()
       e.update()
@@ -356,20 +366,22 @@ class ServiceAccountSqlApi @Inject constructor(
     sa: DbServiceAccount, changedEnvironments: Collection<DbEnvironment>?
   ) {
     cacheSource.updateServiceAccount(sa, PublishAction.UPDATE)
-    if (changedEnvironments != null && !changedEnvironments.isEmpty()) {
-      changedEnvironments.forEach { e: DbEnvironment ->
+    changedEnvironments?.forEach { e ->
         cacheSource.updateEnvironment(
           e,
           PublishAction.UPDATE
         )
       }
-    }
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
   override fun delete(deleter: Person, serviceAccountId: UUID): Boolean {
     val sa = QDbServiceAccount().id.eq(serviceAccountId).whenArchived.isNull.findOne()
     if (sa != null) {
+      sa.sdkPerson?.let {
+        internalPersonApi.deleteSdkServiceAccountUser(it.id, convertUtils.byPerson(deleter)!!)
+      }
+
       archiveStrategy.archiveServiceAccount(sa)
       return true
     }
@@ -378,5 +390,32 @@ class ServiceAccountSqlApi @Inject constructor(
 
   companion object {
     private val log = LoggerFactory.getLogger(ServiceAccountSqlApi::class.java)
+  }
+
+  /**
+   * This is a transitional job that assumes that all of the attached people to the sdkUser are invalid and created
+   * new SDK style user accounts for them. After the migration that inserts the job, this is in fact TRUE.
+   */
+  @Transactional
+  override fun ensure_service_accounts_have_person() {
+    if (convertUtils.hasOrganisation()) {
+      cleanupServiceAccountApiKeys()
+
+      val superuserForOrganisation = mutableMapOf<UUID, DbPerson>()
+
+      QDbServiceAccount().findList().forEach { sa ->
+        val orgId = sa.portfolio.organization.id
+        val superuser = superuserForOrganisation.computeIfAbsent(orgId) { id ->
+          internalPersonApi.findSuperUserToBlame(id)
+        }
+        sa.setSdkPerson(internalPersonApi.createSdkServiceAccountUser(sa.name, superuser, sa.whenArchived != null))
+        sa.save()
+      }
+    }
+  }
+
+  // allow us to identify the user who created a feature change for instance
+  override fun findServiceAccountByUserId(personId: UUID): UUID? {
+    return QDbServiceAccount().sdkPerson.id.eq(personId).findOne()?.let { it.id }
   }
 }

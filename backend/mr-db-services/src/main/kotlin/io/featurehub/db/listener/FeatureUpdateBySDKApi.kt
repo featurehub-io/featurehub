@@ -8,11 +8,12 @@ import java.util.function.Function
 
 interface FeatureUpdateBySDKApi {
     @Throws(RolloutStrategyValidator.InvalidStrategyCombination::class)
-    fun updateFeature(
+    fun updateFeatureFromTestSdk(
         sdkUrl: String,
         envId: UUID,
         featureKey: String,
         updatingValue: Boolean,
+        updatingLock: Boolean,
         buildFeatureValue: Function<FeatureValueType, FeatureValue>
     )
 }

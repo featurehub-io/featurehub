@@ -4,7 +4,6 @@ import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.ConstraintMode;
 import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.DbJson;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -6,7 +6,7 @@ class AdminServiceAccount2Spec extends Base2Spec {
 
   def setup() {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, groupSqlApi)
-    authenticationSqlApi = new AuthenticationSqlApi(db, convertUtils)
+    authenticationSqlApi = new AuthenticationSqlApi(convertUtils)
     db.commitTransaction()
   }
 

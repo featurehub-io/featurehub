@@ -1,5 +1,5 @@
 import { After, Before, BeforeAll } from '@cucumber/cucumber';
-import { AuthServiceApi, PortfolioServiceApi, SetupServiceApi, UserCredentials } from 'featurehub-javascript-admin-sdk';
+import { AuthServiceApi, PortfolioServiceApi, SetupServiceApi, UserCredentials } from '../apis/mr-service';
 import { makeid } from './random';
 import { SdkWorld } from './world';
 import { discover } from './discovery';
@@ -14,7 +14,7 @@ async function ensureLoggedIn(world: SdkWorld) {
 
   try {
     const result = await portfolioService.findPortfolios();
-  } catch (e) {
+  } catch (e: any) {
     if (e.response?.status == 401) {
       const loginApi: AuthServiceApi = world.loginApi;
 
@@ -26,6 +26,7 @@ async function ensureLoggedIn(world: SdkWorld) {
 
         console.log('logged in', loginResult.data);
         world.apiKey = loginResult.data;
+        world.person = (await world.personApi.getPerson('self')).data;
       } catch (loginError) {
         // console.log(loginError);
         const setupApi = new SetupServiceApi(world.adminApiConfig);
@@ -40,6 +41,7 @@ async function ensureLoggedIn(world: SdkWorld) {
 
           console.log('created account', setupResult.data);
           world.apiKey = setupResult.data;
+          world.person = (await world.personApi.getPerson('self')).data;
         } catch (setupError) {
           console.error('Failed to create an account', setupError);
           process.exit(-1);

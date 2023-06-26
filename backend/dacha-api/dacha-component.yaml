@@ -166,6 +166,10 @@ components:
         retired:
           type: boolean
           description: "if true or null, this feature will visible on edge. if false, it will not be passed to the client"
+        personIdWhoChanged:
+          x-basename: pId
+          type: string
+          format: uuid
     PublishServiceAccount:
       x-cloudevent-type: publish-serviceaccount-v1
       x-cloudevent-subject: io.featurehub.events.service-account

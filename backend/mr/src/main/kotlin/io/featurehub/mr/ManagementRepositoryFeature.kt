@@ -29,6 +29,7 @@ class ManagementRepositoryFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     listOf( //ValidationFeature.class,
       ApplicationServiceDelegator::class.java,
+      FeatureHistoryServiceDelegator::class.java,
       WebhookServiceDelegator::class.java,
       AuthServiceDelegator::class.java,
       EnvironmentFeatureServiceDelegator::class.java,
@@ -104,6 +105,7 @@ class ManagementRepositoryFeature : Feature {
         bind(Environment2Resource::class.java).to(Environment2ServiceDelegate::class.java).`in`(
           Singleton::class.java
         )
+        bind(FeatureHistoryResource::class.java).to(FeatureHistoryServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(FeatureResource::class.java).to(FeatureServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(GroupResource::class.java).to(GroupServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(PersonResource::class.java).to(PersonServiceDelegate::class.java).`in`(Singleton::class.java)

@@ -18,7 +18,7 @@ class ConvertUtilsSpec extends Base2Spec {
 
   def setup() {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
-    authenticationSqlApi = new AuthenticationSqlApi(db, convertUtils)
+    authenticationSqlApi = new AuthenticationSqlApi(convertUtils)
   }
 
   def "a new person who has never authenticated will not appear to have whenLastAuthenticated set"() {

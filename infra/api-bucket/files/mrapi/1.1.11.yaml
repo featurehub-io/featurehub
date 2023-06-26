@@ -662,7 +662,8 @@ paths:
       parameters:
       - name: id
         in: path
-        description: The id of the person to find
+        description: The id of the person to find. Duplicated here as we accept a
+          plain string (not only a uuid)
         required: true
         style: simple
         explode: false
@@ -670,7 +671,8 @@ paths:
           type: string
       responses:
         "200":
-          description: Resulting person
+          description: "If this is a sdk service acocunt, ID of the service account\
+            \ is in the PersonInfo fields with the key serviceAccountId"
           content:
             application/json:
               schema:
@@ -2238,7 +2240,8 @@ paths:
     put:
       tags:
       - EnvironmentFeatureService
-      description: Update all features for this environment
+      description: Update all features for this environment that are passed. Ignores
+        any other feature values that are not passed.
       operationId: updateAllFeaturesForEnvironment
       requestBody:
         content:
@@ -2384,19 +2387,13 @@ paths:
     delete:
       tags:
       - EnvironmentFeatureService
-      description: Delete a specific feature in this environment.
+      description: No longer supported. Please update to a null value.
       operationId: deleteFeatureForEnvironment
       responses:
-        "204":
-          description: No data returned.
         "400":
           description: Bad Request
         "401":
           description: no permission
-        "403":
-          description: forbidden
-        "404":
-          description: not found
       security:
       - bearerAuth: []
     parameters:
@@ -3063,7 +3060,7 @@ paths:
       explode: false
       schema:
         type: string
-        format: UUID
+        format: uuid
     - name: id
       in: path
       required: true
@@ -3071,7 +3068,7 @@ paths:
       explode: false
       schema:
         type: string
-        format: UUID
+        format: uuid
   /mr-api/webhooks/{envId}:
     get:
       tags:
@@ -3101,7 +3098,7 @@ paths:
       explode: false
       schema:
         type: string
-        format: UUID
+        format: uuid
     - name: max
       in: query
       description: where to start
@@ -3126,6 +3123,94 @@ paths:
       explode: true
       schema:
         type: string
+  /mr-api/application/{appId}/feature-history:
+    get:
+      tags:
+      - FeatureHistoryService
+      description: Gets a paginated list of history of feature value changes
+      operationId: listFeatureHistory
+      parameters:
+      - name: appId
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uuid
+      - name: featureKeys
+        in: query
+        description: "Allows you to search by keys. If featureIds are provided, keys\
+          \ are ignored"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: featureIds
+        in: query
+        description: "The ids of the features you want, prefer this over keys as keys\
+          \ can change"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+      - name: versions
+        in: query
+        description: "If only one feature is requested, you can specify the specific\
+          \ versions you want"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int64
+      - name: environmentIds
+        in: query
+        description: Any environments you want the feature keys/ids from
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+      - name: max
+        in: query
+        description: "This is the max to result, limited by server"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: startAt
+        in: query
+        description: what position in the results to start at
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: the webhook type details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureHistoryList'
+        "404":
+          description: no such url
+      security:
+      - bearerAuth: []
 components:
   schemas:
     EnvironmentFeaturesResult:
@@ -3347,7 +3432,6 @@ components:
         password:
           maxLength: 100
           type: string
-          format: password
     PasswordReset:
       required:
       - password
@@ -3881,6 +3965,7 @@ components:
       properties:
         key:
           type: string
+          description: e.g. serviceAccountId
         value:
           type: string
     PersonType:
@@ -3888,6 +3973,7 @@ components:
       enum:
       - person
       - serviceAccount
+      - sdkServiceAccount
       default: person
     PersonId:
       required:
@@ -4051,12 +4137,12 @@ components:
           description: if provided these applications will be refreshed
           items:
             type: string
-            format: UUID
+            format: uuid
         portfolioId:
           type: array
           items:
             type: string
-            format: UUID
+            format: uuid
     CacheRefreshResponse:
       type: object
       properties:
@@ -4399,6 +4485,20 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/RolloutStrategyAttribute'
+    AnemicPerson:
+      required:
+      - id
+      - name
+      - type
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/PersonType'
     FeatureValueType:
       type: string
       enum:
@@ -4843,7 +4943,7 @@ components:
           type: string
         envId:
           type: string
-          format: UUID
+          format: uuid
         config:
           type: object
           additionalProperties:
@@ -4851,6 +4951,58 @@ components:
           description: "Any configuration to pass to the check, e.g. webhook.feature.url,\
             \ headers, etc - this ensures the updates get to the destination and are\
             \ used. They get merged info the envInfo, replacing anything there"
+    FeatureHistoryItem:
+      type: object
+      properties:
+        envId:
+          type: string
+          format: uuid
+        featureValueId:
+          type: string
+          format: uuid
+        featureId:
+          type: string
+          format: uuid
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureHistoryValue'
+    FeatureHistoryValue:
+      type: object
+      properties:
+        version:
+          type: integer
+          format: int64
+        versionFrom:
+          type: integer
+          format: int64
+        when:
+          type: string
+          description: When it was created
+          format: date-time
+        who:
+          $ref: '#/components/schemas/AnemicPerson'
+        value:
+          description: "the value, no type is passed back"
+        locked:
+          type: boolean
+        retired:
+          type: boolean
+        rolloutStrategies:
+          type: array
+          items:
+            $ref: '#/components/schemas/RolloutStrategy'
+    FeatureHistoryList:
+      type: object
+      properties:
+        max:
+          type: integer
+          description: The maximum number of items returned by this query
+          format: int64
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureHistoryItem'
   securitySchemes:
     bearerAuth:
       type: http

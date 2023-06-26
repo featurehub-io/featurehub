@@ -3,11 +3,13 @@ package io.featurehub.mr.rest
 import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonApi
+import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.mr.api.PersonServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.CreatePersonDetails
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
+import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.RegistrationUrl
 import io.featurehub.mr.model.UpdatePerson
 import io.featurehub.mr.resources.PersonResource
@@ -25,16 +27,18 @@ class PersonResourceSpec extends Specification {
   AuthManagerService authManager
   PersonResource resource
   SecurityContext ctx
+  ServiceAccountApi serviceAccountApi
 
   def setup() {
-    groupApi = Mock(GroupApi)
-    personApi = Mock(PersonApi)
-    authManager = Mock(AuthManagerService)
-    ctx = Mock(SecurityContext)
+    groupApi = Mock()
+    personApi = Mock()
+    authManager = Mock()
+    serviceAccountApi = Mock()
+    ctx = Mock()
     authManager.from(ctx) >> new Person().id(new PersonId().id(UUID.randomUUID()))
 
     System.setProperty("register.url", "%s")
-    resource = new PersonResource(personApi, groupApi, authManager)
+    resource = new PersonResource(personApi, groupApi, serviceAccountApi, authManager)
   }
 
   def "i can only create a person if i am an admin"() {
@@ -106,6 +110,20 @@ class PersonResourceSpec extends Specification {
       thrown ForbiddenException
   }
 
+  def "a person who is a sdk-person will also return the service account id"() {
+    given:  "the person is a SDK person"
+      def personId = UUID.randomUUID()
+      def serviceAccountId = UUID.randomUUID()
+      def person = new Person().id(new PersonId().id(personId)).personType(PersonType.SDKSERVICEACCOUNT)
+    when:
+      def result = resource.getPerson(personId.toString(), new PersonServiceDelegate.GetPersonHolder(), ctx)
+    then:
+      1 * authManager.isAnyAdmin(_) >> true
+      1 * authManager.from(ctx) >> new Person().id(new PersonId().id(UUID.randomUUID()))
+      1 * personApi.get(personId, _) >> person
+      1 * serviceAccountApi.findServiceAccountByUserId(personId) >> serviceAccountId
+      result.additional.find { it.key == 'serviceAccountId'}?.value == serviceAccountId.toString()
+  }
 
 
   def "a person who updates must be an admin"() {

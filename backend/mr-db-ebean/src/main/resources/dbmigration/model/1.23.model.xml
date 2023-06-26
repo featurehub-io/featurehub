@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <alterColumn columnName="fk_who_updated" tableName="fh_env_feature_strategy" currentType="uuid" notnull="true" currentNotnull="false"/>
+        <alterColumn columnName="retired" tableName="fh_env_feature_strategy" currentType="boolean" defaultValue="false" notnull="true" currentNotnull="false"/>
+        <alterColumn columnName="fk_who_updated" tableName="fh_fv_version" currentType="uuid" notnull="true" currentNotnull="false"/>
+    </changeSet>
+</migration>

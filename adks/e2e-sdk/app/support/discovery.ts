@@ -1,4 +1,4 @@
-import { Configuration, InfoServiceApi } from 'featurehub-javascript-admin-sdk';
+import { Configuration, InfoServiceApi } from '../apis/mr-service';
 import { logger } from './logging';
 
 export abstract class BackendDiscovery {

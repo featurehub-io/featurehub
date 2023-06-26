@@ -24,7 +24,7 @@ class AuthenticationSpec extends BaseSpec {
 
   def setupSpec() {
     baseSetupSpec()
-    auth = new AuthenticationSqlApi(database, convertUtils)
+    auth = new AuthenticationSqlApi(convertUtils)
     personApi = new PersonSqlApi(database, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     portfolioApi = new PortfolioSqlApi(database, convertUtils, archiveStrategy)
     appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureSqlApi))

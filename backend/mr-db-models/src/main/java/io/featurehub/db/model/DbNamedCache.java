@@ -1,7 +1,7 @@
 package io.featurehub.db.model;
 
+import io.ebean.Model;
 import io.ebean.annotation.ChangeLog;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -12,7 +12,7 @@ import java.util.Set;
 @Entity
 @Table(name = "fh_cache")
 @ChangeLog
-public class DbNamedCache {
+public class DbNamedCache extends Model {
   // if this cache is specified, all organizations that are not in a named cache are used.
   public static final String DEFAULT_CACHE_NAME = "default";
 

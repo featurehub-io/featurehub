@@ -51,13 +51,13 @@ paths:
         required: true
         schema:
           type: string
-          format: UUID
+          format: uuid
       - name: id
         in: path
         required: true
         schema:
           type: string
-          format: UUID
+          format: uuid
     get:
       security:
         -  bearerAuth: []
@@ -86,7 +86,7 @@ paths:
         required: true
         schema:
           type: string
-          format: UUID
+          format: uuid
       - name: max
         in: query
         required: false
@@ -239,7 +239,7 @@ components:
           type: string
         envId:
           type: string
-          format: UUID
+          format: uuid
         config:
           description: "Any configuration to pass to the check, e.g. webhook.feature.url, headers, etc - this ensures the updates get to the destination and are used. They get merged info the envInfo, replacing anything there"
           additionalProperties:

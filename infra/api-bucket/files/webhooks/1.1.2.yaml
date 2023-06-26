@@ -1,0 +1,268 @@
+openapi: 3.0.1
+info:
+  title: Enricher API
+  description: This is an OpenAPI document for enriched data. It is used by Webhook
+    Features directly.
+  version: 1.1.2
+servers:
+- url: /
+paths:
+  /v2/fake:
+    get:
+      tags:
+      - EnricherService
+      description: "this is just a holder, it is not generated"
+      operationId: fakeApi
+      responses:
+        "200":
+          description: yay
+components:
+  schemas:
+    EnrichedFeatures:
+      required:
+      - environment
+      - featureKeys
+      properties:
+        targetEnrichmentDestination:
+          type: string
+          description: "If there is a specific target for the data, everything else\
+            \ _should_ ignore it"
+        environment:
+          $ref: '#/components/schemas/PublishEnvironment'
+        featureKeys:
+          type: array
+          description: These are the keys of the features that were updated
+          items:
+            type: string
+      description: A full environment with all of its features. This will filter out
+        any management environmentInfo data
+    PublishAction:
+      type: string
+      description: "Indicates what type of update this is. If CREATE, it is a new\
+        \ record, if UPDATE it updates an existing one, if DELETE you should delete\
+        \ the record. If EMPTY then it indicates there are no records of this type\
+        \ and you shouldn't expect to see any further. EMPTY is used to indicate that\
+        \ the Master process is complete."
+      enum:
+      - CREATE
+      - UPDATE
+      - DELETE
+      - EMPTY
+    PublishEnvironment:
+      required:
+      - action
+      - environment
+      - oId
+      - pId
+      - aId
+      - fv
+      - sa
+      - c
+      properties:
+        environment:
+          $ref: '#/components/schemas/CacheEnvironment'
+        action:
+          $ref: '#/components/schemas/PublishAction'
+        oId:
+          type: string
+          description: organizationId
+          format: uuid
+        pId:
+          type: string
+          description: portfolioId
+          format: uuid
+        aId:
+          type: string
+          description: applicationId
+          format: uuid
+        fv:
+          type: array
+          description: featureValues
+          items:
+            $ref: '#/components/schemas/CacheEnvironmentFeature'
+        sa:
+          type: array
+          description: serviceAccounts
+          items:
+            type: string
+            format: UUID
+        c:
+          type: integer
+          description: count
+      description: Even a EMPTY message must set all the data to junk as it is an
+        unusual situation
+    CacheEnvironment:
+      required:
+      - id
+      - version
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+        eInf:
+          type: object
+          additionalProperties:
+            type: string
+          description: (environmentInfo) - Allows extensibility for the environment
+    CacheEnvironmentFeature:
+      required:
+      - feature
+      type: object
+      properties:
+        feature:
+          $ref: '#/components/schemas/CacheFeature'
+        value:
+          $ref: '#/components/schemas/CacheFeatureValue'
+      description: A feature and its possible value (which could be null)
+    CacheFeature:
+      required:
+      - id
+      - key
+      - valueType
+      - version
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+          description: Unique within this application
+        valueType:
+          $ref: '#/components/schemas/FeatureValueType'
+        version:
+          type: integer
+          description: used for optimistic locking when renaming a feature
+          format: int64
+    CacheFeatureValue:
+      required:
+      - id
+      - key
+      - locked
+      - version
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        locked:
+          type: boolean
+        value:
+          description: default value if no strategy matches. interpreted by type in
+            parent
+        rolloutStrategies:
+          type: array
+          description: These are custom rollout strategies that only apply to this
+            feature value.
+          items:
+            $ref: '#/components/schemas/CacheRolloutStrategy'
+        version:
+          type: integer
+          description: used for optimistic locking
+          format: int64
+        retired:
+          type: boolean
+          description: "if true or null, this feature will visible on edge. if false,\
+            \ it will not be passed to the client"
+        pId:
+          type: string
+          description: personIdWhoChanged
+          format: uuid
+    CacheRolloutStrategy:
+      description: This is the model for the rollout strategy as required by Dacha
+        and Edge
+      allOf:
+      - $ref: '#/components/schemas/BaseRolloutStrategy'
+      - required:
+        - attributes
+        - id
+        type: object
+        properties:
+          attributes:
+            type: array
+            items:
+              $ref: '#/components/schemas/CacheRolloutStrategyAttribute'
+    CacheRolloutStrategyAttribute:
+      allOf:
+      - $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
+      - required:
+        - conditional
+        - fieldName
+        - type
+        type: object
+    FeatureValueType:
+      type: string
+      enum:
+      - BOOLEAN
+      - STRING
+      - NUMBER
+      - JSON
+    BaseRolloutStrategy:
+      properties:
+        id:
+          type: string
+        percentage:
+          type: integer
+          description: value between 0 and 1000000 - for four decimal places
+        percentageAttributes:
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you\
+            \ can use one or more attributes defined here"
+          items:
+            type: string
+        value:
+          description: when we attach the RolloutStrategy for Dacha or SSE this lets
+            us push the value out. Only visible in SDK and SSE Edge.
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
+      description: "if the feature in an environment is different from its default,\
+        \ this will be the reason for it. a rollout strategy is defined at the Application\
+        \ level and then applied to a specific feature value. When they are copied\
+        \ to the cache layer they are cloned and the feature value for that strategy\
+        \ is inserted into the clone and those are published."
+    BaseRolloutStrategyAttribute:
+      properties:
+        conditional:
+          $ref: '#/components/schemas/RolloutStrategyAttributeConditional'
+        fieldName:
+          type: string
+        values:
+          type: array
+          description: the value(s) associated with this rule
+          items:
+            $ref: '#/components/schemas/RolloutStrategyArrayType'
+        type:
+          $ref: '#/components/schemas/RolloutStrategyFieldType'
+    RolloutStrategyArrayType:
+      description: values depend on the field type
+    RolloutStrategyFieldType:
+      type: string
+      enum:
+      - STRING
+      - SEMANTIC_VERSION
+      - NUMBER
+      - DATE
+      - DATETIME
+      - BOOLEAN
+      - IP_ADDRESS
+    RolloutStrategyAttributeConditional:
+      type: string
+      enum:
+      - EQUALS
+      - ENDS_WITH
+      - STARTS_WITH
+      - GREATER
+      - GREATER_EQUALS
+      - LESS
+      - LESS_EQUALS
+      - NOT_EQUALS
+      - INCLUDES
+      - EXCLUDES
+      - REGEX

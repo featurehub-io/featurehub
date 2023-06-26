@@ -4,7 +4,6 @@ import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.Index;
 import io.featurehub.mr.model.RolloutStrategy;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -18,7 +18,7 @@ class FeatureAuditingLockUnitSpec extends FeatureAuditingBaseUnitSpec {
   DbApplicationFeature feature
 
   def setup() {
-    feature = new DbApplicationFeature.Builder().valueType(FeatureValueType.BOOLEAN).build()
+    feature = af()
   }
 
   SingleFeatureValueUpdate<Boolean> locked(boolean current, boolean historical, boolean changing) {
@@ -28,8 +28,8 @@ class FeatureAuditingLockUnitSpec extends FeatureAuditingBaseUnitSpec {
   SingleFeatureValueUpdate<Boolean> locked(boolean current, boolean historical, boolean changing, Set<RoleType> roles) {
     return fsApi.updateSelectivelyLocked(
       new FeatureValue().locked(changing),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, FeatureState.READY, "y", historical, false, [], [], feature),
-      new DbFeatureValue.Builder().defaultValue("y").locked(current).build(),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", historical, false, [], [], feature, 0),
+      featureValue("y", feature).with { it.locked = current; it },
       new PersonFeaturePermission(new Person(), roles)
     )
   }

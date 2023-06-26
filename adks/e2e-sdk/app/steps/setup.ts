@@ -8,7 +8,7 @@ import {
   RoleType,
   ServiceAccount,
   ServiceAccountPermission, ServiceAccountServiceApi, UpdateEnvironment
-} from 'featurehub-javascript-admin-sdk';
+} from '../apis/mr-service';
 import { makeid, sleep } from '../support/random';
 import { EdgeFeatureHubConfig, FeatureHubPollingClient, Readyness } from 'featurehub-javascript-node-sdk';
 import waitForExpect from 'wait-for-expect';
@@ -84,26 +84,26 @@ Given(/^I delete the environment$/, async function () {
 
 Given(/^I create a service account and (full|read) permissions based on the application environments$/, async function (roleTypes) {
   const roles = roleTypes === 'full' ? [RoleType.Read, RoleType.Unlock, RoleType.Lock, RoleType.ChangeValue] : [RoleType.Read];
-
+  const world = this as SdkWorld;
   const permissions: ServiceAccountPermission[] = [
     new ServiceAccountPermission({
-      environmentId: this.application.environments[0].id,
+      environmentId: world.application.environments[0].id,
       permissions: roles
     })
   ];
 
-  const serviceAccountApi: ServiceAccountServiceApi = this.serviceAccountApi;
-  const serviceAccountCreate = await serviceAccountApi.createServiceAccountInPortfolio(this.portfolio.id, new ServiceAccount({
-    name: this.portfolio.name, description: this.portfolio.name, permissions: permissions
+  const serviceAccountApi: ServiceAccountServiceApi = world.serviceAccountApi;
+  const serviceAccountCreate = await serviceAccountApi.createServiceAccountInPortfolio(world.portfolio.id, new ServiceAccount({
+    name: world.portfolio.name, description: world.portfolio.name, permissions: permissions
   }), true);
   expect(serviceAccountCreate.status).to.eq(200);
   expect(serviceAccountCreate.data.permissions.length).to.eq(permissions.length);
 
   // this adds a new permission based on the environment we are actually in
-  if (this.environment.id !== this.application.environments[0].id) {
+  if (world.environment.id !== world.application.environments[0].id) {
     const updatedAccount = serviceAccountCreate.data;
     const newPerm = new ServiceAccountPermission({
-      environmentId: this.environment.id,
+      environmentId: world.environment.id,
       permissions: roles
     });
 
@@ -115,8 +115,8 @@ Given(/^I create a service account and (full|read) permissions based on the appl
     expect(saUpdate.status).to.eq(200);
     expect(saUpdate.data.permissions.length).to.eq(permissions.length);
 
-    const accounts = await serviceAccountApi.searchServiceAccountsInPortfolio(this.portfolio.id, true,
-      saUpdate.data.name, this.application.id, true);
+    const accounts = await serviceAccountApi.searchServiceAccountsInPortfolio(world.portfolio.id, true,
+      saUpdate.data.name, world.application.id, true);
 
     const sa = accounts.data.find(sa => sa.id == saUpdate.data.id);
 
@@ -126,7 +126,7 @@ Given(/^I create a service account and (full|read) permissions based on the appl
   let perm: ServiceAccountPermission;
 
   for (const p of serviceAccountCreate.data.permissions) {
-    if (p.environmentId === this.environment.id) {
+    if (p.environmentId === world.environment.id) {
       perm = p;
       break;
     }
@@ -134,7 +134,7 @@ Given(/^I create a service account and (full|read) permissions based on the appl
 
   expect(perm).to.not.be.undefined;
 
-  this.serviceAccountPermission = perm;
+  world.serviceAccountPermission = perm;
   expect(perm.permissions.length).to.eq(roles.length);
   expect(perm.sdkUrlClientEval).to.not.be.undefined;
   expect(perm.sdkUrlServerEval).to.not.be.undefined;
@@ -203,4 +203,12 @@ Given(/^I connect to the feature server$/, async function () {
 
 Then(/^I sleep for (\d+) seconds$/, async function (seconds) {
   await sleep(parseInt(seconds) * 1000);
+});
+
+Given('I am logged in and have a person configured', async function() {
+  const world = this as SdkWorld;
+  await world.getSelf();
+  expect(world.person).to.not.be.undefined;
+  expect(world.person.id).to.not.be.undefined;
+  expect(world.person.id.id).to.not.be.undefined;
 });

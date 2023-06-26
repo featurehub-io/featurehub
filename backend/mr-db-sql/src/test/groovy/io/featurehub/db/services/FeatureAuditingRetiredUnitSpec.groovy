@@ -5,9 +5,7 @@ import io.featurehub.db.api.FeatureApi.LockedException
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.model.DbApplicationFeature
-import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersion
-import io.featurehub.db.model.FeatureState
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RoleType
@@ -16,23 +14,27 @@ import java.time.LocalDateTime
 
 class FeatureAuditingRetiredUnitSpec extends FeatureAuditingBaseUnitSpec {
   Set<RoleType> roles
-  boolean locked
+  boolean featureLocked
   boolean changingLocked
   DbApplicationFeature feature
 
   def setup() {
     roles = rolesChangeValue
-    locked = false
+    featureLocked = false
     changingLocked = false
-    feature = new DbApplicationFeature.Builder().valueType(FeatureValueType.BOOLEAN).build()
+    feature = af()
   }
 
   SingleFeatureValueUpdate<Boolean> update(Boolean currentRetired, boolean historicalRetired, boolean changingRetired) {
     return fsApi.updateSelectivelyRetired(
       new PersonFeaturePermission(person, roles),
       new FeatureValue().retired(changingRetired),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, FeatureState.READY, "y", locked, historicalRetired, [], [], feature),
-      new DbFeatureValue.Builder().retired(currentRetired).locked(locked).build(),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", featureLocked, historicalRetired, [], [], feature, 0),
+      featureValue("y", feature).with {
+        it.locked = featureLocked
+        it.retired = currentRetired
+        it
+      },
       changingLocked
     )
   }
@@ -46,7 +48,7 @@ class FeatureAuditingRetiredUnitSpec extends FeatureAuditingBaseUnitSpec {
 
   def "i cannot update a locked retired setting"() {
     given:
-      locked = true
+      featureLocked = true
     when:
       update(false, false, true)
     then:

@@ -14,9 +14,7 @@ import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.RolloutStrategy
-import io.featurehub.utils.ExecutorSupplier
-
-import java.util.concurrent.ExecutorService
+import io.featurehub.mr.model.ServiceAccount
 
 class FeatureAuditingSpec extends Base2Spec {
   PortfolioSqlApi portfolioSqlApi
@@ -31,6 +29,8 @@ class FeatureAuditingSpec extends Base2Spec {
   RolloutStrategyValidator rsValidator
   PersonFeaturePermission perms
   FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
+  ServiceAccountSqlApi serviceAccountApi
+  InternalPersonApi internalPersonApi
 
   static UUID portfolioId = UUID.fromString('16364b24-b4ef-4052-9c33-5eb66b0d1baf')
 //  static UUID
@@ -39,12 +39,15 @@ class FeatureAuditingSpec extends Base2Spec {
     perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK] as Set<RoleType>)
     cacheSource = Mock()
     rsValidator = Mock()
+    internalPersonApi = new PersonSqlApi(db, convertUtils, archiveStrategy, groupSqlApi)
     rsValidator.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     rsValidator.validateStrategies(_, _, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true'])
     featureMessagingCloudEventPublisher = Mock()
 
-    featureSqlApi = new FeatureSqlApi(db, convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
+    serviceAccountApi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, internalPersonApi)
+
+    featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     p1 = portfolioSqlApi.getPortfolio("basic")
 
@@ -75,9 +78,9 @@ class FeatureAuditingSpec extends Base2Spec {
 
   def "when i have a string feature and i add alternating strategies at the same history point they work"() {
     given: "i create a string feature"
-      def feature = applicationSqlApi.createApplicationFeature(app.id,
+      def feature = applicationSqlApi.createApplicationLevelFeature(app.id,
         new Feature().name("str1-feature").description("str1-feature").key("FSTR1").valueType(FeatureValueType.STRING), superPerson, Opts.empty())
-        .find { it.key == 'FSTR1' }
+
     and: "i set the value of the feature"
       def fv1 = featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key, new FeatureValue().locked(false).valueString("fred"), perms)
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
@@ -101,9 +104,8 @@ class FeatureAuditingSpec extends Base2Spec {
 
   def "when i update a boolean feature value and then update it again with the historical version, nothing changes"() {
     given: "i create a feature"
-      def feature = applicationSqlApi.createApplicationFeature(app.id,
+      def feature = applicationSqlApi.createApplicationLevelFeature(app.id,
         new Feature().name("bool-feature").description("bool-feature").key("FBOOL").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
-        .find { it.key == 'FBOOL' }
     and: "i get the feature value"
       def fv = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
@@ -115,5 +117,25 @@ class FeatureAuditingSpec extends Base2Spec {
     then:
       !featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key).valueBoolean
       featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key).version == firstUpdate.version
+  }
+
+  def "when an update comes in from the test sdk, it will process and be stored in the historical database"() {
+    given: "i create a feature"
+      def feature = applicationSqlApi.createApplicationLevelFeature(app.id,
+        new Feature().name("testsdk-feature").description("testsdk-feature").key("TESTSDK-BOOL").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+    and: "we have a service account"
+      def sa = serviceAccountApi.create(p1.id, superPerson, new ServiceAccount().name("testsdk")
+            .description("some desc").permissions([]), Opts.empty())
+      db.currentTransaction()?.commit()
+    when: "i update the feature using the test-sdk api"
+      featureSqlApi.updateFeatureFromTestSdk(sa.apiKeyServerSide, env.id, feature.key, true, true, { type ->
+        return new FeatureValue().locked(false).valueBoolean(true)
+      })
+    and:
+      def value = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
+    then: "the feature has updated"
+      value.valueBoolean
+      new FeatureHistorySqlApi().history(env.id, feature.id, value.id).size() == 2
+
   }
 }
