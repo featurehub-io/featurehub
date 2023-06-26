@@ -3,11 +3,12 @@ package io.featurehub.db.services
 import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
 import io.featurehub.db.api.FeatureGroupApi
-import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.QDbApplicationFeature
 import io.featurehub.db.model.query.QDbEnvironment
 import io.featurehub.db.model.query.QDbFeatureGroup
+import io.featurehub.db.model.query.QDbFeatureGroupFeature
+import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.model.query.QFeatureGroupOrderHighest
 import io.featurehub.mr.model.*
 import jakarta.inject.Inject
@@ -32,7 +33,7 @@ class FeatureGroupSqlApi @Inject constructor(
       QDbEnvironment().id.eq(featureGroup.environmentId).parentApplication.id.eq(appId).findOne() ?: return null
     val person = conversions.byPerson(current.id?.id) ?: return null
     val mappedFeatures =
-      QDbApplicationFeature().parentApplication.id.eq(appId).id.`in`(featureGroup.features.map { it.id }).findList()
+      QDbApplicationFeature().parentApplication.id.eq(appId).id.`in`(featureGroup.features.map { it.id }).whenArchived.isNull.findList()
 
     if (mappedFeatures.size != featureGroup.features.size) {
       log.trace("Features passed do not belong to the application")
@@ -73,12 +74,12 @@ class FeatureGroupSqlApi @Inject constructor(
     // because we are using an Embedded object here, we need to use the id of the newly created group
     mappedFeatures.forEach { feat ->
       with(DbFeatureGroupFeature(DbFeatureGroupFeatureKey(feat.id, fg.id))) {
-        value = featureGroup.features.find { it.id == feat.id }?.value?.toString()
-
-        // boolean features must have a value
-        if (feat.valueType == FeatureValueType.BOOLEAN && value == null) {
-          value = "false"
-        }
+//        value = featureGroup.features.find { it.id == feat.id }?.value?.toString()
+//
+//        // boolean features must have a value
+//        if (feat.valueType == FeatureValueType.BOOLEAN && value == null) {
+//          value = "false"
+//        }
 
         save()
       }
@@ -88,9 +89,24 @@ class FeatureGroupSqlApi @Inject constructor(
   }
 
   private fun toFeatureGroup(featureGroup: DbFeatureGroup): FeatureGroup {
-    val features = featureGroup.features.map {
-      FeatureGroupFeature().id(it.feature.id).key(it.feature.key).value(cast(it.value, it.feature.valueType!!))
-    }
+    val featureIds = featureGroup.features.map { it.feature.id }
+
+    val features = QDbApplicationFeature().id.`in`(featureIds).whenArchived.isNull.findList().map {feature ->
+      FeatureGroupFeature().id(feature.id)
+        .key(feature.key).type(feature.valueType)
+        .locked(false)
+    }.sortedBy { it.key }
+
+    QDbFeatureValue()
+      .environment.id.eq(featureGroup.environment.id)
+      .feature.id.`in`(featureIds)
+      .feature.fetch(QDbApplicationFeature.Alias.key, QDbApplicationFeature.Alias.valueType, QDbApplicationFeature.Alias.id)
+      .retired.isFalse.findList().forEach {
+        features.find { f -> f.id == it.feature.id }?.let { fv ->
+          fv.locked = it.isLocked
+          fv.value = cast(it.defaultValue, it.feature.valueType)
+        }
+      }
 
     return FeatureGroup()
       .id(featureGroup.id)
@@ -101,7 +117,7 @@ class FeatureGroupSqlApi @Inject constructor(
       .strategies(featureGroup.strategies)
       .name(featureGroup.name)
       .version(featureGroup.version)
-      .features(features.sortedBy { it.key })
+      .features(features)
   }
 
   private fun cast(value: String?, valueType: FeatureValueType): Any? {
@@ -129,10 +145,10 @@ class FeatureGroupSqlApi @Inject constructor(
   override fun getGroup(appId: UUID, current: Person, fgId: UUID): FeatureGroup? {
     return QDbFeatureGroup()
       .id.eq(fgId)
+      .environment.fetch(QDbEnvironment.Alias.id)
       .environment.parentApplication.id.eq(appId)
       .whenArchived.isNull
-      .features.fetch() // grab the features
-      .features.feature.fetch() // grab the app-features
+      .features.feature.fetch(QDbApplicationFeature.Alias.id)
       .findOne()?.let { toFeatureGroup(it) }
   }
 
@@ -252,13 +268,13 @@ class FeatureGroupSqlApi @Inject constructor(
         if (found == null) { // existing feature not in the list
           updates.deletedFeatures.add(feat)
         } else { // it is there already
-          val newVal = found.value?.toString() ?: (if (feat.feature.valueType == FeatureValueType.BOOLEAN) "false" else null)
-
-          if (feat.value != newVal) {
-            feat.value = newVal
-            updates.updatedFeatures.add(feat)
-          }
-
+//          val newVal = found.value?.toString() ?: (if (feat.feature.valueType == FeatureValueType.BOOLEAN) "false" else null)
+//
+//          if (feat.value != newVal) {
+//            feat.value = newVal
+//            updates.updatedFeatures.add(feat)
+//          }
+//
           newFeatures.remove(found)
         }
       }
@@ -268,9 +284,9 @@ class FeatureGroupSqlApi @Inject constructor(
         val actualNewFeatures = QDbApplicationFeature().id.`in`(newFeatures.map { it.id }).parentApplication.id.eq(appId).findList().toMutableList()
         updates.addedFeatures.addAll(actualNewFeatures.map { feat ->
           val found = newFeatures.find { it.id == feat.id }
-          val newVal = found?.value?.toString() ?: (if (feat.valueType == FeatureValueType.BOOLEAN) "false" else null)
+//          val newVal = found?.value?.toString() ?: (if (feat.valueType == FeatureValueType.BOOLEAN) "false" else null)
           with(DbFeatureGroupFeature(DbFeatureGroupFeatureKey(feat.id, group.id))) {
-            value = newVal
+//            value = newVal
             this
           }
         })
@@ -279,9 +295,9 @@ class FeatureGroupSqlApi @Inject constructor(
 
     if (nameChanged || environmentChanged || strategyChanged || descChanged || updates.updatedFeatures.isNotEmpty() || updates.deletedFeatures.isNotEmpty() || updates.addedFeatures.isNotEmpty()) {
       updateGroup(group, updates)
-      group.refresh()
     }
 
+    group.refresh()
     return toFeatureGroup(group)
   }
 

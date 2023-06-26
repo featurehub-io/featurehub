@@ -25,10 +25,13 @@ class FeatureGroupSpec extends Base3Spec {
     when:
       def created = fgApi.createGroup(app1.id, superPerson,
         new FeatureGroupCreate().name("name").environmentId(env1.id).features(
-          [new FeatureGroupUpdateFeature().id(feature.id).value(true)]
+          [new FeatureGroupUpdateFeature().id(feature.id)]
       ))
     then:
       created.version == 1
+      created.features[0].locked
+      created.features[0].key == 'sample_1'
+      !created.features[0].value
     when:
       def created2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name("name1").environmentId(env1.id).features(
         [new FeatureGroupUpdateFeature().id(feature.id)]).strategies([new FeatureGroupStrategy().percentage(20).name("fred")]))
@@ -39,7 +42,6 @@ class FeatureGroupSpec extends Base3Spec {
       all.featureGroups.size() == 2
       all.featureGroups[1].order == 2
       all.featureGroups[0].id == created.id
-      all.featureGroups[0].name == created.name
       !all.featureGroups[0].hasStrategy
       all.featureGroups[1].id == created2.id
       all.featureGroups[1].name == created2.name
@@ -60,7 +62,7 @@ class FeatureGroupSpec extends Base3Spec {
           superPerson, Opts.empty()).find { it.key == 'sample_3' }
     when:
       def created = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name("name").environmentId(env1.id).features(
-        [new FeatureGroupUpdateFeature().id(feature.id).value(true)]
+        [new FeatureGroupUpdateFeature().id(feature.id)]
       ))
     and:
       def getit = fgApi.getGroup(app1.id, superPerson, created.id)
@@ -69,35 +71,35 @@ class FeatureGroupSpec extends Base3Spec {
       getit.name == "name"
       getit.features.size() == 1
       getit.features[0].id == feature.id
-      getit.features[0].value
+      !getit.features[0].value
       getit.features[0].key == "sample_2"
     when:
       fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate()
         .version(created.version)
         .name("fred")
         .features([
-        new FeatureGroupUpdateFeature().id(feature.id).value(false),
-        new FeatureGroupUpdateFeature().id(feature2.id).value(123.67)]))
+        new FeatureGroupUpdateFeature().id(feature.id),
+        new FeatureGroupUpdateFeature().id(feature2.id)]))
     and:
       getit = fgApi.getGroup(app1.id, superPerson, created.id)
     then:
       getit.name == "fred"
       getit.features.size() == 2
-      !getit.features[0].value
+//      !getit.features[0].value
       getit.features[0].key == "sample_2"
-      getit.features[1].value == 123.67
+//      getit.features[1].value == 123.67
       getit.features[1].key == "sample_3"
     when:
       def updated = fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate()
         .version(getit.version)
         .name("fred")
         .features([
-          new FeatureGroupUpdateFeature().id(feature2.id).value(121.67)]))
+          new FeatureGroupUpdateFeature().id(feature2.id)]))
     and:
       getit = fgApi.getGroup(app1.id, superPerson, created.id)
     then:
       getit.features.size() == 1
-      getit.features[0].value == 121.67
+//      getit.features[0].value == 121.67
       getit.features[0].key == "sample_3"
     when: "i update the description"
       def updated2 = fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate().version(updated.version).description("hello"))

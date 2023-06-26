@@ -4228,6 +4228,10 @@ components:
           type: string
         value:
           description: value (if any) associated with this feature
+        type:
+          $ref: '#/components/schema/FeatureValueType'
+        locked:
+          type: boolean
     FeatureGroup:
       required:
       - environmentId
@@ -4273,8 +4277,6 @@ components:
         id:
           type: string
           format: uuid
-        value:
-          description: value (if any) associated with this feature
     FeatureGroupCRUDBase:
       type: object
       properties:

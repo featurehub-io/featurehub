@@ -3621,7 +3621,10 @@ components:
           type: string
         value:
           description: "value (if any) associated with this feature"
-
+        type:
+          $ref: "#/components/schema/FeatureValueType"
+        locked:
+          type: boolean
     FeatureGroup:
       type: object
       required:
@@ -3667,8 +3670,8 @@ components:
         id:
           type: string
           format: uuid
-        value:
-          description: "value (if any) associated with this feature"
+#        value:
+#          description: "value (if any) associated with this feature"
     FeatureGroupCRUDBase:
       type: object
       description: "An update, everything is optional, we will only update what we update"

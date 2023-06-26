@@ -18,10 +18,6 @@ public class DbFeatureGroupFeature extends Model {
   @EmbeddedId
   @NotNull private DbFeatureGroupFeatureKey key;
 
-  @Nullable
-  @Lob
-  @Column(name = "v")
-  private String value;
 
   @ManyToOne(optional = false)
   @MapsId("feature")
@@ -41,14 +37,6 @@ public class DbFeatureGroupFeature extends Model {
 
   public @NotNull DbFeatureGroupFeatureKey getKey() {
     return key;
-  }
-
-  public @Nullable String getValue() {
-    return value;
-  }
-
-  public void setValue(@Nullable String value) {
-    this.value = value;
   }
 
   @NotNull public DbApplicationFeature getFeature() {
