@@ -398,7 +398,7 @@ public class InMemoryCache implements InternalCache, FeatureEnrichmentCache {
         fv.getEnvironmentId());
       featureMap.set(fv.getFeature());
     } else {
-      log.error("received a feature value update for feature key `{}` in environment `{}` where the feature does " +
+      log.warn("received a feature value update for feature key `{}` in environment `{}` where the feature does " +
         "not exist.", fv.getFeature().getFeature().getKey(), fv.getEnvironmentId());
     }
   }
