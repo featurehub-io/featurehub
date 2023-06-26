@@ -686,14 +686,23 @@ class FeatureSqlApi @Inject constructor(
     return if (featureValue == null) null else convertUtils.toFeatureValue(featureValue)
   }
 
-  override fun getAllFeatureValuesForEnvironment(eid: UUID): EnvironmentFeaturesResult {
-    Conversions.nonNullEnvironmentId(eid)
-    return EnvironmentFeaturesResult()
+  override fun getAllFeatureValuesForEnvironment(eid: UUID, includeFeatures: Boolean): EnvironmentFeaturesResult {
+    val environment = QDbEnvironment().select(QDbEnvironment.Alias.id).parentApplication.fetch(QDbApplication.Alias.id).id.eq(eid).findOne() ?: return EnvironmentFeaturesResult()
+
+    val env =  EnvironmentFeaturesResult()
       .featureValues(
         QDbFeatureValue().environment.id.eq(eid).feature.whenArchived.isNull.findList()
           .map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs) }
       )
-      .environments(listOf(convertUtils.toEnvironment(QDbEnvironment().id.eq(eid).findOne(), Opts.empty())))
+      .environments(listOf(convertUtils.toEnvironment(QDbEnvironment().id.eq(eid).findOne(), Opts.empty())));
+
+    if (includeFeatures) {
+      env.features(QDbApplicationFeature().parentApplication.eq(environment.parentApplication).whenArchived.isNull.findList().map {
+        convertUtils.toApplicationFeature(it, Opts.empty())
+      })
+    }
+
+    return env;
   }
 
   // we are going to have to put a transaction at this level as we want the whole thing to roll back if there is an issue

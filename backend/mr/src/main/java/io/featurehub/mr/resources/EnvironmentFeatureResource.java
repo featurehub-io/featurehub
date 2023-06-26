@@ -94,7 +94,8 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       throw new ForbiddenException();
     }
 
-    final EnvironmentFeaturesResult allFeaturesForEnvironment = featureApi.getAllFeatureValuesForEnvironment(eid);
+    final EnvironmentFeaturesResult allFeaturesForEnvironment = featureApi.getAllFeatureValuesForEnvironment(eid,
+      holder.includeFeatures != null && holder.includeFeatures);
 
     if (allFeaturesForEnvironment == null) {
       throw new BadRequestException("Not a valid environment id");

@@ -229,8 +229,15 @@ class FeatureSpec extends Base2Spec {
       def f2 = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
       assert(f2.valueBoolean && f2.locked);
     and: "i get the FV"
-      def fvEnv1 = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues
-    and: "i update the feature value"
+      def env1Features = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, true)
+      def fvEnv1 = env1Features.featureValues
+    then:
+      fvEnv1.find({it.key == "FEATURE_FV1"})
+      fvEnv1.find({it.key == "FEATURE_FV1"}).valueBoolean
+      fvEnv1.find({it.key == "FEATURE_FV1"}).locked
+      env1Features.features.size() == 1
+      env1Features.features[0].key == 'FEATURE_FV1'
+    when: "i update the feature value"
       def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
       fv.valueBoolean(false)
       fv.valueString("string val")
@@ -238,9 +245,6 @@ class FeatureSpec extends Base2Spec {
       featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, fv, pers)
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
     then:
-      fvEnv1.find({it.key == "FEATURE_FV1"})
-      fvEnv1.find({it.key == "FEATURE_FV1"}).valueBoolean
-      fvEnv1.find({it.key == "FEATURE_FV1"}).locked
       !fv2.locked
       !fv2.valueBoolean
       fv2.valueString == null
@@ -289,7 +293,7 @@ class FeatureSpec extends Base2Spec {
       names.each { k -> appApi.createApplicationFeature(appId, new Feature().name(k).key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty()) }
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i get all the features"
-      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')})
+      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')})
     and: "remove update none"
       List<FeatureValue> remaining = featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, [], pers)
     then:
@@ -307,7 +311,7 @@ class FeatureSpec extends Base2Spec {
                               new FeatureValue().key( 'FEATURE_FVU_2').valueString('h').locked(true)]
       featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updatesForCreate, pers)
     and:
-      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
+      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
     and:
       def updating = new ArrayList<>(found.findAll({k -> k.key == 'FEATURE_FVU_1'}).collect({it.copy().locked(false).valueString('z')}))
 //      updating.add(found.find({it.key == 'FEATURE_FVU_3'}).valueBoolean(true).locked(true))
@@ -315,7 +319,7 @@ class FeatureSpec extends Base2Spec {
       updating.addAll([new FeatureValue().key('FEATURE_FVU_3').valueString('h').locked(true),
                        new FeatureValue().key('FEATURE_FVU_4').valueString('h').locked(true)])
       featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updating, pers)
-      def foundUpdating = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
+      def foundUpdating = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
     then:
       found.size() == 2
       foundUpdating.size() == 4

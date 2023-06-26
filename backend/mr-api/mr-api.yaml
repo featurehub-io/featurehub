@@ -2002,6 +2002,12 @@ paths:
       tags:
         - EnvironmentFeatureService
       parameters:
+        - name: includeFeatures
+          description: "include the features in the result"
+          in: query
+          required: false
+          schema:
+            type: boolean
         - name: filter
           description: "Filter the feature names by this filter."
           in: query

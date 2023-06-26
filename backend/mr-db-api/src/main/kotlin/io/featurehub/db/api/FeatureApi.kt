@@ -59,7 +59,7 @@ interface FeatureApi {
   ): FeatureValue?
 
   fun getFeatureValueForEnvironment(eid: UUID, key: String): FeatureValue?
-  fun getAllFeatureValuesForEnvironment(eid: UUID): EnvironmentFeaturesResult?
+  fun getAllFeatureValuesForEnvironment(eid: UUID, includeFeatures: Boolean): EnvironmentFeaturesResult?
 
   @Throws(
     OptimisticLockingException::class,

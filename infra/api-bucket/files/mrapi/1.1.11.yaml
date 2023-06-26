@@ -2214,6 +2214,14 @@ paths:
       description: Get all features for this environment
       operationId: getFeaturesForEnvironment
       parameters:
+      - name: includeFeatures
+        in: query
+        description: include the features in the result
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
       - name: filter
         in: query
         description: Filter the feature names by this filter.
