@@ -4229,7 +4229,7 @@ components:
         value:
           description: value (if any) associated with this feature
         type:
-          $ref: '#/components/schema/FeatureValueType'
+          $ref: '#/components/schemas/FeatureValueType'
         locked:
           type: boolean
     FeatureGroup:
