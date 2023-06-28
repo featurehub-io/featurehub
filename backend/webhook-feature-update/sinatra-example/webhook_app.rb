@@ -3,6 +3,8 @@
 require 'sinatra'
 require 'json'
 
+set :bind, '0.0.0.0'
+
 post "/" do
   raw_data = request.body.read
   puts "raw data is #{raw_data}"
