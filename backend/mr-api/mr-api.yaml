@@ -1041,78 +1041,6 @@ paths:
           description: "no permission"
         404:
           description: "no application"
-  /mr-api/application/{appId}/rollout-strategy:
-    parameters:
-      - name: appId
-        description: "The id of the application to find"
-        in: path
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - name: includeWhoChanged
-        description: "include who changed"
-        in: query
-        schema:
-          type: boolean
-        required: false
-    get:
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - RolloutStrategyService
-      operationId: listApplicationRolloutStrategies
-      parameters:
-        - name: includeArchived
-          in: query
-          description: "Include archived strategies"
-          schema:
-            type: boolean
-          required: false
-      responses:
-        200:
-          description: "Get all strategies for this application, regardless if they are in use"
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/RolloutStrategyInfo"
-        400:
-          description: "Bad Request"
-        401:
-          description: "no permission"
-        403:
-          description: "forbidden"
-        404:
-          description: "not found"
-    post:
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - RolloutStrategyService
-      operationId: createRolloutStrategy
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RolloutStrategy"
-      responses:
-        "201":
-          description: "The created rollout strategy for this application"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RolloutStrategyInfo"
-        400:
-          description: "Bad Request"
-        401:
-          description: "no permission"
-        403:
-          description: "forbidden to create"
-        409:
-          description: "duplicate name"
 
   /mr-api/application/{appId}/rollout-strategy-validation:
     post:
@@ -1147,99 +1075,6 @@ paths:
           description: "invalid body"
         401:
           description: "no permission"
-
-  /mr-api/application/{appId}/rollout-strategy/{strategyIdOrName}:
-    parameters:
-      - name: appId
-        description: "The id of the application to find"
-        in: path
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - name: strategyIdOrName
-        description: "The id of the strategy or the unique name of it"
-        in: path
-        schema:
-          type: string
-        required: true
-      - name: includeWhoChanged
-        description: "include who changed"
-        in: query
-        schema:
-          type: boolean
-        required: false
-    get:
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - RolloutStrategyService
-      operationId: getRolloutStrategy
-      responses:
-        200:
-          description: "The rollout strategy for this application"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RolloutStrategyInfo"
-        400:
-          description: "Bad Request"
-        401:
-          description: "no permission"
-        403:
-          description: "forbidden"
-        404:
-          description: "If there is no rollout strategy by that id or name"
-    put:
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - RolloutStrategyService
-      operationId: updateRolloutStrategy
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RolloutStrategy"
-      responses:
-        200:
-          description: "The created rollout strategy for this application"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RolloutStrategyInfo"
-        400:
-          description: "Bad Request"
-        401:
-          description: "no permission"
-        403:
-          description: "forbidden"
-        404:
-          description: "not found"
-        409:
-          description: "duplicate strategy name"
-    delete:
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - RolloutStrategyService
-      operationId: deleteRolloutStrategy
-      responses:
-        200:
-          description: "The deleted rollout strategy for this application including its archive date"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RolloutStrategyInfo"
-        400:
-          description: "Bad Request"
-        401:
-          description: "no permission"
-        403:
-          description: "forbidden"
-        404:
-          description: "strategy not found, could not delete"
   /mr-api/application/{id}/features:
     parameters:
       - name: id
@@ -2714,17 +2549,7 @@ components:
           maxLength: 100
           format: password
           type: string
-    RolloutStrategyInfo:
-      required:
-        - rolloutStrategy
-      properties:
-        rolloutStrategy:
-          $ref: "#/components/schemas/RolloutStrategy"
-        whenArchived:
-          type: string
-          format: date-time
-        changedBy:
-          $ref: "#/components/schemas/Person"
+
     RolloutStrategyValidationRequest:
       type: object
       description: "A collection of strategies to validate together to see if it violates any rules"
@@ -3535,6 +3360,7 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/RolloutStrategyAttribute"
+
     AnemicPerson:
       type: object
       required:

@@ -1,0 +1,329 @@
+openapi: 3.0.1
+info:
+  title: ManagementResourceApi
+  description: This describes the API clients use for accessing features. This reflects the API from 1.5.7 onwards.
+paths:
+  /mr-api/application/{appId}/rollout-strategies:
+    parameters:
+      - name: appId
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - RolloutStrategyService
+      operationId: listApplicationRolloutStrategies
+      description: "This allows the user to get the list of strategies that are shared across this entire Application. Shared strategies can be applied to any individual feature value
+                    But the more specific feature values always take precedence over the shared ones. Shared strategies can be applied to any feature value at most once and they have
+                    to have a value appropriate to that feature when applied (including null). They appear at the edge as just another strategy (their results are merged into the updates).
+                    If you update a shared strategy, you update all of the features values - i.e. all features across all environments that this feature is tagged to."
+      parameters:
+        - name: includeWhoChanged
+          description: "include who changed"
+          in: query
+          schema:
+            type: boolean
+          required: false
+        - name: includeAppliedFeatureValues
+          in: query
+          description: "Include the feature values that this feature applies to."
+          schema:
+            type: boolean
+          required: false
+        - name: includeArchived
+          in: query
+          description: "Include archived strategies"
+          schema:
+            type: boolean
+          required: false
+        - name: filter
+          description: "A filter to apply to the features - partial match of key or description"
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: max
+          description: "The maximum number of features to get for this page"
+          in: query
+          schema:
+            type: integer
+          required: false
+        - name: page
+          description: "The page number of the results. 0 indexed."
+          in: query
+          schema:
+            type: integer
+          required: false
+        - name: sortOrder
+          in: query
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+          required: false
+      responses:
+        200:
+          description: "Get the shared strategies available for this application"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApplicationRolloutStrategyList"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "If this API has permission, it will return an empty list of strategies, not a 404."
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - RolloutStrategyService
+      operationId: createApplicationRolloutStrategy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationRolloutStrategyCreate"
+      responses:
+        "201":
+          description: "The created rollout strategy for this application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationRolloutStrategy"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden to create"
+        409:
+          description: "duplicate name"
+  /mr-api/application/{appId}/rollout-strategy/{strategyId}:
+    parameters:
+      - name: appId
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: strategyId
+        description: "Strategy id"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: includeAppliedFeatureValues
+        in: query
+        description: "Include the feature values that this feature applies to in the result set"
+        schema:
+          type: boolean
+        required: false
+    put:
+      description: "Update an existing strategy"
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - RolloutStrategyService
+      operationId: updateApplicationRolloutStrategy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationRolloutStrategyUpdate"
+      responses:
+        200:
+          description: "Get the shared strategies available for this application"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApplicationRolloutStrategyDetails"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "If this API has permission, it will return an empty list of strategies, not a 404."
+    get:
+      description: "Gets the individual rollout strategy for this group"
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - RolloutStrategyService
+      operationId: getApplicationRolloutStrategy
+      responses:
+        200:
+          description: "Get the shared strategies available for this application"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApplicationRolloutStrategyDetails"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "If this API has permission, it will return an empty list of strategies, not a 404."
+components:
+  schemas:
+    ApplicationRolloutStrategy:
+      description: "This is the base set of information in an application strategy"
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        rolloutStrategy:
+          $ref: "#/components/schemas/RolloutStrategy"
+        patterns:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationRolloutStrategyApplyPattern"
+    ApplicationRolloutStrategyCreate:
+      description: "This is used to create an application strategy"
+      allOf:
+        - $ref: "#/components/schemas/ApplicationRolloutStrategy"
+        - type: object
+          required:
+            - rolloutStrategy
+            - patterns
+    ApplicationRolloutStrategyUpdate:
+      description: "This is used in the PUT to update an application strategy"
+      allOf:
+        - $ref: "#/components/schemas/ApplicationRolloutStrategy"
+        - type: object
+          required:
+            - id
+    ApplicationRolloutStrategyApplied:
+      type: object
+      description: "This describes all of the environments and keys that the application strategy is applied to. The arrays can be empty, but not null"
+      required:
+        - appliedEnvironments
+        - appliedKeys
+      properties:
+        appliedEnvironments:
+          type: array
+          description: "For the list, this is always a shallow list of environments, for the get it is a deep copy"
+          items:
+            $ref: "#/components/schemas/ApplicationRolloutStrategyEnvironment"
+        appliedKeys:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationRolloutStrategyKey"
+    ApplicationRolloutStrategyListItem:
+      description: "This is an individual result that is being shown in the application strategy list"
+      allOf:
+        - type: object
+          properties:
+            changedBy: # note, change in API, used to be Person
+              $ref: "#/components/schemas/AnemicPerson"
+            strategyName:
+              type: string
+            whenArchived:
+              type: string
+              format: date-time
+            applied:
+              $ref: "#/components/schemas/ApplicationRolloutStrategyApplied"
+    ApplicationRolloutStrategyList:
+      properties:
+        max:
+          type: integer
+        strategies:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationRolloutStrategyListItem"
+    ApplicationRolloutStrategyDetails:
+      description: "This is the result of a GET on a single strategy"
+      allOf:
+        - $ref: "#/components/schemas/ApplicationRolloutStrategy"
+        - type: object
+          required:
+            - rolloutStrategy
+            - patterns
+          properties:
+            applied:
+              $ref: "#/components/schemas/ApplicationRolloutStrategyApplied"
+    ApplicationRolloutStrategyApplyPattern:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        valueTypes:
+          type: array
+          description: "If true, applies to all these types of features"
+          items:
+            $ref: "#/components/schemas/FeatureValueTypes"
+        allEnvironments:
+          description: "If true, applies to all environments"
+          type: boolean
+        environmentsApplied:
+          description: "This is empty if allEnvironments is true, otherwise it is a list of environments by id"
+          type: array
+          items:
+            type: string
+            format: uuid
+        keyPatterns:
+          description: "A list of type insensitive values it applies to"
+          type: array
+          items:
+            type: string
+    ApplicationRolloutStrategyKey:
+      description: "This represents a key that is used by a strategy. Rather than continually repeating it and its details,
+          we represent it in the list and use the key field to identify it"
+      properties:
+        key:
+          description: "The current key of the feature"
+          type: string
+        id:
+          description: "The unique ID of the feature itself"
+          type: string
+          format: uuid
+        valueType:
+          $ref: "#/components/schemas/FeatureValueType"
+    ApplicationRolloutStrategyEnvironment:
+      type: object
+      properties:
+        id:
+          description: "Environment ID"
+          type: string
+          format: uuid
+        name:
+          description: "Environment Name"
+          type: string
+        values:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationRolloutStrategyValue"
+    ApplicationRolloutStrategyValue:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          description: "The current value of this feature"
