@@ -1,5 +1,6 @@
 package io.featurehub.db.services
 
+import io.featurehub.db.exception.EncryptionException
 import io.featurehub.encryption.SymmetricEncrypter
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
@@ -12,20 +13,32 @@ interface WebhookEncryptionService {
   fun getAllKeysEnabledForEncryption(source: Map<String, String>): List<String>
   fun decrypt(encryptedContent: String): String
 }
-
-class WebhookEncryptionServiceImpl @Inject constructor(
+ class WebhookEncryptionServiceImpl @Inject constructor(
   private val symmetricEncrypter: SymmetricEncrypter,
 ): WebhookEncryptionService {
 
 
   override fun shouldEncrypt(source: Map<String, String>): Boolean {
-    return source.filter { hasEncryptSuffixAndEnabled(it.key, it.value)
-    }.isNotEmpty()
+    return source.filter { hasEncryptSuffixAndEnabled(it.key, it.value) }.isNotEmpty()
   }
 
-  private fun hasEncryptSuffixAndEnabled(key: String, value: String): Boolean {
+   fun hasEncryptSuffixAndEnabled(key: String, value: String): Boolean {
     return key.endsWith("encrypt") && value == "true"
   }
+
+   /**
+    * Retuns all the map keys that has a corresponding "key".encrypt item as "true"
+    *
+    * @param source Map
+    * @return List of keys in the maps whose values should be encrypted
+    */
+
+   override fun getAllKeysEnabledForEncryption(source: Map<String, String>): List<String> {
+     return source.filter {
+       hasEncryptSuffixAndEnabled(it.key, it.value)
+     }
+       .keys.map { it.replace(".encrypt", "") }
+   }
 
   /**
    * Encrypts any map items which has a corresponding "key".encrypt with value "true"
@@ -36,15 +49,15 @@ class WebhookEncryptionServiceImpl @Inject constructor(
    */
   override fun encrypt(source: Map<String, String>): Map<String, String> {
     val password = FallbackPropertyConfig.getConfig("webhooks.encryption.password")
-      ?: throw RuntimeException("Encryption password required!")
+      ?: throw EncryptionException("Encryption password required!")
     val result = mutableMapOf<String, String>()
-
 
     val encryptItemKeys = getAllKeysEnabledForEncryption(source)
 
     source.forEach { webhookItem ->
       val key = webhookItem.key
       val value = webhookItem.value
+      // We only need to encrypt the items that have a corresponding ".encrypt" item with value true
       if (encryptItemKeys.contains(key) ) {
         val salt = UUID.randomUUID()
         val encryptedText = symmetricEncrypter.encrypt(value, password, salt.toString())
@@ -58,16 +71,6 @@ class WebhookEncryptionServiceImpl @Inject constructor(
     return result.toMap()
   }
 
-  /**
-   * Retuns all the map keys that has a corresponding "key".encrypt item as "true"
-   *
-   * @param source Map
-   * @return List of keys in the maps whose values should be encrypted
-   */
-
-  override fun getAllKeysEnabledForEncryption(source: Map<String, String>): List<String> {
-   return source.filter { hasEncryptSuffixAndEnabled(it.key, it.value) }.keys.map { it.replace(".encrypt", "") }
-  }
 
   /**
    * Returns true if the given key has a corresponding "key".encrypt with value "true" in the map

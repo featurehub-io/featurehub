@@ -148,8 +148,9 @@ open class ConvertUtils @Inject constructor(
       .applicationId(env.parentApplication.id)
     if (opts!!.contains(FillOpts.Details)) {
       environment.environmentInfo(env.userEnvironmentInfo)
-
-      environment.webhookEnvironmentInfo(toWebhookEnvironmentInfo(env.webhookEnvironmentInfo))
+      if (env.webhookEnvironmentInfo != null) {
+        environment.webhookEnvironmentInfo(toWebhookEnvironmentInfo(env.webhookEnvironmentInfo))
+      }
       environment.description(env.description)
     }
     if (opts.contains(FillOpts.People)) {

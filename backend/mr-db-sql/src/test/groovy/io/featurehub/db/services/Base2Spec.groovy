@@ -19,10 +19,11 @@ class Base2Spec extends DbSpecification {
   UUID superuser
   DbArchiveStrategy archiveStrategy
   Organization org
-
+  WebhookEncryptionService encryptionService
 
   def setup() {
-    convertUtils = new ConvertUtils()
+    encryptionService = Mock(WebhookEncryptionService)
+    convertUtils = new ConvertUtils(encryptionService)
     archiveStrategy = new DbArchiveStrategy(db, Mock(CacheSource))
     groupSqlApi = new GroupSqlApi(db, convertUtils, archiveStrategy)
 

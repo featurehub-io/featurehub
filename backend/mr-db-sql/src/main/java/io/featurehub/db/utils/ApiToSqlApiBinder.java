@@ -19,32 +19,11 @@ import io.featurehub.db.api.UserStateApi;
 import io.featurehub.db.api.WebhookApi;
 import io.featurehub.db.listener.FeatureUpdateBySDKApi;
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi;
-import io.featurehub.db.services.ApplicationSqlApi;
-import io.featurehub.db.services.ArchiveStrategy;
-import io.featurehub.db.services.AuthenticationSqlApi;
+import io.featurehub.db.services.*;
 import io.featurehub.db.publish.CacheSourceFeatureGroupSqlApi;
-import io.featurehub.db.services.Conversions;
-import io.featurehub.db.services.ConvertUtils;
-import io.featurehub.db.services.DbArchiveStrategy;
-import io.featurehub.db.services.EnvironmentSqlApi;
-import io.featurehub.db.services.FeatureGroupSqlApi;
-import io.featurehub.db.services.FeatureHistorySqlApi;
-import io.featurehub.db.services.FeatureSqlApi;
-import io.featurehub.db.services.GroupSqlApi;
-import io.featurehub.db.services.InternalFeatureApi;
-import io.featurehub.db.services.InternalFeatureSqlApi;
-import io.featurehub.db.services.InternalGroupSqlApi;
-import io.featurehub.db.services.InternalPersonApi;
-import io.featurehub.db.services.InternalServiceAccountApi;
-import io.featurehub.db.services.OrganizationSqlApi;
-import io.featurehub.db.services.PersonSqlApi;
-import io.featurehub.db.services.PortfolioSqlApi;
-import io.featurehub.db.services.ApplicationRolloutStrategySqlApi;
-import io.featurehub.db.services.ServiceAccountSqlApi;
-import io.featurehub.db.services.SetupSqlApi;
-import io.featurehub.db.services.UserStateSqlApi;
-import io.featurehub.db.services.WebhookSqlApi;
 import io.featurehub.db.services.strategies.RolloutStrategyValidationUtils;
+import io.featurehub.encryption.SymmetricEncrypter;
+import io.featurehub.encryption.SymmetricEncrypterImpl;
 import jakarta.inject.Singleton;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
@@ -71,5 +50,8 @@ public class ApiToSqlApiBinder extends AbstractBinder {
     bind(FeatureHistorySqlApi.class).to(FeatureHistoryApi.class).in(Singleton.class);
     bind(FeatureGroupSqlApi.class).to(FeatureGroupApi.class).in(Singleton.class);
     bind(CacheSourceFeatureGroupSqlApi.class).to(CacheSourceFeatureGroupApi.class).in(Singleton.class);
+    bind(WebhookEncryptionServiceImpl.class).to(WebhookEncryptionService.class).in(Singleton.class);
+    bind(SymmetricEncrypterImpl.class).to(SymmetricEncrypter.class).in(Singleton.class);
+
   }
 }

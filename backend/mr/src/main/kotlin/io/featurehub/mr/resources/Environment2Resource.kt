@@ -6,15 +6,18 @@ import io.featurehub.db.api.EnvironmentApi.InvalidEnvironmentChangeException
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
+import io.featurehub.db.exception.EncryptionException
 import io.featurehub.mr.api.Environment2ServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.UpdateEnvironment
 import jakarta.inject.Inject
 import jakarta.ws.rs.BadRequestException
+import jakarta.ws.rs.ClientErrorException
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.SecurityContext
+import java.lang.RuntimeException
 import java.util.*
 
 class Environment2Resource @Inject constructor(
@@ -46,6 +49,8 @@ class Environment2Resource @Inject constructor(
         throw WebApplicationException(jakarta.ws.rs.core.Response.Status.CONFLICT)
       } catch (e: InvalidEnvironmentChangeException) {
         throw BadRequestException()
+      } catch (e: EncryptionException) {
+        throw BadRequestException("Encryption password is missing!")
       }
       if (update == null) {
         throw jakarta.ws.rs.NotFoundException()

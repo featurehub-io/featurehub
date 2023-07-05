@@ -8,6 +8,7 @@ import io.featurehub.db.api.*
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.*
 import io.featurehub.db.utils.EnvironmentUtils
+import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
@@ -204,6 +205,21 @@ class EnvironmentSqlApi @Inject constructor(
 
   override fun getDecryptedEnvironmentWebhookContent(eid: UUID): Environment {
     TODO("Not yet implemented")
+  }
+
+  override fun migrateWebhookEnvInfo() {
+    log.info("Migrating webhook environment info...")
+    QDbEnvironment().findList().forEach { env ->
+      if (env.userEnvironmentInfo != null) {
+        env.webhookEnvironmentInfo = env.userEnvironmentInfo
+          .filter { it.key.contains("webhook.") }.toMap()
+        env.userEnvironmentInfo = env.userEnvironmentInfo
+          .filter { !it.key.contains("webhook.") }.toMap()
+
+        env.save()
+      }
+    }
+    log.info("Finished migrating webhook environment info.")
   }
 
   private fun circularPriorEnvironmentCheck(priorEnvironmentId: UUID?, environment: DbEnvironment) {
