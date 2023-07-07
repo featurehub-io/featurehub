@@ -1127,6 +1127,46 @@ paths:
       schema:
         type: string
         format: uuid
+  /mr-api/application/{appId}/feature-groups/environment/{envId}:
+    get:
+      tags:
+      - FeatureGroupService
+      description: Get feature groups for this application
+      operationId: getFeatureGroupFeatures
+      responses:
+        "200":
+          description: Feature Group features
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureGroupFeature'
+        "401":
+          description: no permission
+        "404":
+          description: no application or feature group
+      security:
+      - bearerAuth: []
+    parameters:
+    - name: appId
+      in: path
+      description: The id of the application
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+    - name: envId
+      in: path
+      description: The id of the feature group
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
   /mr-api/application/{appId}/feature-groups/{fgId}:
     get:
       tags:

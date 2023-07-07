@@ -301,6 +301,27 @@ class FeatureGroupSqlApi @Inject constructor(
     return toFeatureGroup(group)
   }
 
+  override fun getFeaturesForEnvironment(appId: UUID, envId: UUID): List<FeatureGroupFeature> {
+    val features = QDbApplicationFeature().parentApplication.id.eq(appId).whenArchived.isNull.findList().map {feature ->
+      FeatureGroupFeature().id(feature.id)
+        .key(feature.key).type(feature.valueType)
+        .locked(false)
+    }.sortedBy { it.key }
+
+    QDbFeatureValue()
+      .environment.id.eq(envId)
+      .feature.whenArchived.isNull
+      .feature.fetch(QDbApplicationFeature.Alias.id)
+      .retired.isFalse.findList().forEach {
+        features.find { f -> f.id == it.feature.id }?.let { fv ->
+          fv.locked = it.isLocked
+          fv.value = cast(it.defaultValue, it.feature.valueType)
+        }
+      }
+
+    return features
+  }
+
   @Transactional
   private fun updateGroup(group: DbFeatureGroup, features: FeatureUpdates) {
     group.save()

@@ -51,7 +51,11 @@ class FeatureGroupSpec extends Base3Spec {
   }
 
   def "i can create a feature group and then update it"() {
-    given:
+    given: "i delete all existing features"
+      applicationSqlApi.getApplicationFeatures(app1.id, Opts.empty()).each {
+        applicationSqlApi.deleteApplicationFeature(app1.id, it.key)
+      }
+    and:
       def feature =
         applicationSqlApi.createApplicationFeature(app1.id,
           new Feature().name("sample_2").key("sample_2").valueType(FeatureValueType.BOOLEAN),
@@ -66,6 +70,8 @@ class FeatureGroupSpec extends Base3Spec {
       ))
     and:
       def getit = fgApi.getGroup(app1.id, superPerson, created.id)
+    and:
+      def featureValues = fgApi.getFeaturesForEnvironment(app1.id, env1.id)
     then:
       getit.id == created.id
       getit.name == "name"
@@ -73,6 +79,17 @@ class FeatureGroupSpec extends Base3Spec {
       getit.features[0].id == feature.id
       !getit.features[0].value
       getit.features[0].key == "sample_2"
+      featureValues.size() == 2
+      with(featureValues.find({it.key == 'sample_2'})) {
+        it.value == false
+        it.locked == true
+        it.id == feature.id
+      }
+      with(featureValues.find({it.key == 'sample_3'})) {
+        it.value == null
+        it.locked == false
+        it.id == feature2.id
+      }
     when:
       fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate()
         .version(created.version)

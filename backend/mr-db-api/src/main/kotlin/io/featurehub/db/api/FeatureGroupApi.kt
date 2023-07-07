@@ -12,4 +12,5 @@ interface FeatureGroupApi {
   fun getGroup(appId: UUID, current: Person, fgId: UUID): FeatureGroup?
   fun listGroups(appId: UUID, maxPerPage: Int, filter: String?, pageNum: Int, sortOrder: SortOrder, environmentId: UUID?): FeatureGroupList
   fun updateGroup(appId: UUID, current: Person, fgId: UUID, update: FeatureGroupUpdate): FeatureGroup?
+  fun getFeaturesForEnvironment(appId: UUID, envId: UUID): List<FeatureGroupFeature>
 }

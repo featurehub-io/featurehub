@@ -62,6 +62,16 @@ class FeatureGroupResource @Inject constructor(
     return featureGroupApi.getGroup(appId, check.current, fgId) ?: throw NotFoundException()
   }
 
+  override fun getFeatureGroupFeatures(
+    appId: UUID,
+    envId: UUID,
+    securityContext: SecurityContext
+  ): List<FeatureGroupFeature> {
+    val check = applicationUtils.featureCreatorCheck(securityContext, appId)
+
+    return featureGroupApi.getFeaturesForEnvironment(appId, envId)
+  }
+
   override fun listFeatureGroups(
     appId: UUID,
     holder: FeatureGroupServiceDelegate.ListFeatureGroupsHolder,

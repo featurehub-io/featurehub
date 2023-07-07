@@ -1010,6 +1010,42 @@ paths:
           description: "no permission"
         404:
           description: "no application"
+  /mr-api/application/{appId}/feature-groups/environment/{envId}:
+    parameters:
+      - name: appId
+        description: "The id of the application"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: envId
+        description: "The id of the feature group"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - FeatureGroupService
+      description: "Get feature groups for this application"
+      operationId: getFeatureGroupFeatures
+      responses:
+        200:
+          description: "Feature Group features"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeatureGroupFeature"
+        401:
+          description: "no permission"
+        404:
+          description: "no application or feature group"
   /mr-api/application/{appId}/feature-groups/{fgId}:
     parameters:
       - name: appId
