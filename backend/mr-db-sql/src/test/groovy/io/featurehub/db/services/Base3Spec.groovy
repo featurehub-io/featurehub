@@ -39,6 +39,9 @@ class Base3Spec extends Specification {
   @Shared FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
   @Shared ExecutorSupplier executorSupplier
 
+  String ranName() {
+    return RandomStringUtils.randomAlphabetic(10)
+  }
 
   def setupSpec() {
     db = DB.getDefault()

@@ -30,4 +30,5 @@ class AdminServiceAccount2Spec extends Base2Spec {
     and: "i cannot reset an expired token"
       authenticationSqlApi.resetExpiredRegistrationToken(sa1.person.email) == null
   }
+
 }
