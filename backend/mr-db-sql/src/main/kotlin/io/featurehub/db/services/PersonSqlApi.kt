@@ -34,7 +34,8 @@ open class PersonSqlApi @Inject constructor(
     val version = person.version ?: return null
 
     val dbPerson = updatePersonDetails(id, updatedBy, version, person.name,
-      person.email, person.groups?.mapNotNull { it.id }, false)
+      person.email, person.groups?.mapNotNull { it.id }, false
+    )
 
     return if (dbPerson != null) convertUtils.toPerson(dbPerson, opts) else null
   }
@@ -54,7 +55,15 @@ open class PersonSqlApi @Inject constructor(
   }
 
 
-  fun updatePersonDetails(personId: UUID, updatedBy: UUID, version: Long, name: String?, email: String?, groups: List<UUID>?, unarchive: Boolean) : DbPerson? {
+  fun updatePersonDetails(
+    personId: UUID,
+    updatedBy: UUID,
+    version: Long,
+    name: String?,
+    email: String?,
+    groups: List<UUID>?,
+    unarchive: Boolean
+  ): DbPerson? {
     val updatingRecord = QDbPerson().id.eq(personId).findOne() ?: return null
 
     if (updatingRecord.personType == PersonType.SDKSERVICEACCOUNT) {
@@ -70,87 +79,87 @@ open class PersonSqlApi @Inject constructor(
     }
 
     if (updatingRecord.personType != PersonType.SERVICEACCOUNT) {
-      val organization = convertUtils.dbOrganization()
-      val groupChanges = GroupChangeCollection()
-      val superuserChanges = SuperuserChanges(organization)
-
-      // reactivate user?
-      if (unarchive && updatingRecord.whenArchived != null) {
-        updatingRecord.whenArchived = null
-      }
-
       email?.let {
         updatingRecord.email = it
       }
+    }
 
-      groups?.let { groupsTheyWant ->
-        val adminGroupsUpdatingPersonBelongsTo = internalGroupSqlApi.adminGroupsPersonBelongsTo(updatedBy)
+    val organization = convertUtils.dbOrganization()
+    val groupChanges = GroupChangeCollection()
+    val superuserChanges = SuperuserChanges(organization)
 
-        val performedBySuperuser = adminGroupsUpdatingPersonBelongsTo.any { it.owningPortfolio == null }
+    // reactivate user?
+    if (unarchive && updatingRecord.whenArchived != null) {
+      updatingRecord.whenArchived = null
+    }
 
-        val portfoliosPerformingUserCanManage = adminGroupsUpdatingPersonBelongsTo
-          .mapNotNull { it.owningPortfolio?.id }
-          .toList()
+    groups?.let { groupsTheyWant ->
+      val adminGroupsUpdatingPersonBelongsTo = internalGroupSqlApi.adminGroupsPersonBelongsTo(updatedBy)
 
-        if (!performedBySuperuser && portfoliosPerformingUserCanManage.isEmpty()) {
-          return null // why are they even here???
-        }
+      val performedBySuperuser = adminGroupsUpdatingPersonBelongsTo.any { it.owningPortfolio == null }
 
-        val superuserGroup = internalGroupSqlApi.superuserGroup(organization)
+      val portfoliosPerformingUserCanManage = adminGroupsUpdatingPersonBelongsTo
+        .mapNotNull { it.owningPortfolio?.id }
+        .toList()
 
-        val groupsAlreadyIn = QDbGroupMember()
-          .select(QDbGroupMember.Alias.id.groupId)
-          .person.id.eq(personId)
-          .findList().map { it.id.groupId!! }
-
-
-        // we start with a list of groups they want and remove the list of groups they are already in
-        // and that gives us the list of groups they want to add
-        val groupsTheyWantToAdd = with(groupsTheyWant.toMutableList()) {
-          removeAll(groupsAlreadyIn)
-          this
-        }
-
-        if (!performedBySuperuser) { // if the superuser isn't doing this, we need to check if its ok
-          removeChangeIfOutsidePortfolioPermission(groupsTheyWantToAdd, portfoliosPerformingUserCanManage)
-        }
-
-        if (groupsTheyWantToAdd.contains(superuserGroup?.id)) {
-          superuserChanges.addedSuperuserPersonIds.add(personId)
-        }
-
-        // we start with a list of all the groups they are already in and subtract the groups they have told us they want.
-        // the difference is the groups they no longer want
-        val groupsTheyWantToRemove = with(groupsAlreadyIn.toMutableList()) {
-          removeAll(groupsTheyWant)
-          this
-        }
-
-        if (!performedBySuperuser) {
-          removeChangeIfOutsidePortfolioPermission(groupsTheyWantToRemove, portfoliosPerformingUserCanManage)
-        }
-
-        if (groupsTheyWantToRemove.contains(superuserGroup?.id)) {
-          superuserChanges.removedSuperusers.add(personId)
-        }
-
-        groupChanges.groupsToAdd.addAll(groupsTheyWantToAdd)
-        groupChanges.groupsToRemove.addAll(groupsTheyWantToRemove)
-
-        log.debug("Changing groups for person ${personId} as $groupChanges")
+      if (!performedBySuperuser && portfoliosPerformingUserCanManage.isEmpty()) {
+        return null // why are they even here???
       }
 
-      updatePerson(updatingRecord, groupChanges, superuserChanges)
-    } else {
-      updatePerson(updatingRecord, null, null)
+      val superuserGroup = internalGroupSqlApi.superuserGroup(organization)
+
+      val groupsAlreadyIn = QDbGroupMember()
+        .select(QDbGroupMember.Alias.id.groupId)
+        .person.id.eq(personId)
+        .findList().map { it.id.groupId!! }
+
+
+      // we start with a list of groups they want and remove the list of groups they are already in
+      // and that gives us the list of groups they want to add
+      val groupsTheyWantToAdd = with(groupsTheyWant.toMutableList()) {
+        removeAll(groupsAlreadyIn)
+        this
+      }
+
+      if (!performedBySuperuser) { // if the superuser isn't doing this, we need to check if its ok
+        removeChangeIfOutsidePortfolioPermission(groupsTheyWantToAdd, portfoliosPerformingUserCanManage)
+      }
+
+      if (groupsTheyWantToAdd.contains(superuserGroup?.id) && performedBySuperuser) {
+        superuserChanges.addedSuperuserPersonIds.add(personId)
+      }
+
+      // we start with a list of all the groups they are already in and subtract the groups they have told us they want.
+      // the difference is the groups they no longer want
+      val groupsTheyWantToRemove = with(groupsAlreadyIn.toMutableList()) {
+        removeAll(groupsTheyWant)
+        this
+      }
+
+      if (!performedBySuperuser) {
+        removeChangeIfOutsidePortfolioPermission(groupsTheyWantToRemove, portfoliosPerformingUserCanManage)
+      }
+
+      if (groupsTheyWantToRemove.contains(superuserGroup?.id) && performedBySuperuser) {
+        superuserChanges.removedSuperusers.add(personId)
+      }
+
+      groupChanges.groupsToAdd.addAll(groupsTheyWantToAdd)
+      groupChanges.groupsToRemove.addAll(groupsTheyWantToRemove)
+
+      log.debug("Changing groups for person ${personId} as $groupChanges")
     }
+
+    updatePerson(updatingRecord, groupChanges, superuserChanges)
 
     return updatingRecord
   }
 
   override fun updateV2(personId: UUID, updatePerson: UpdatePerson, updatedBy: UUID): UUID? {
-    val person = updatePersonDetails(personId, updatedBy, updatePerson.version, updatePerson.name,
-      updatePerson.email, updatePerson.groups, updatePerson.unarchive == true)
+    val person = updatePersonDetails(
+      personId, updatedBy, updatePerson.version, updatePerson.name,
+      updatePerson.email, updatePerson.groups, updatePerson.unarchive == true
+    )
 
     return if (person == null) null else personId
   }
@@ -235,7 +244,12 @@ open class PersonSqlApi @Inject constructor(
 
       PersonApi.PersonPagination(
         futureCount.get(),
-        if (opts.contains(FillOpts.CountGroups)) people.map { p -> toSearchPerson(p, peopleGroupCount) } else emptyList(),
+        if (opts.contains(FillOpts.CountGroups)) people.map { p ->
+          toSearchPerson(
+            p,
+            peopleGroupCount
+          )
+        } else emptyList(),
         if (!opts.contains(FillOpts.CountGroups)) people else emptyList(),
         dbPeople
           .filter { p -> p.token != null }
@@ -505,6 +519,7 @@ open class PersonSqlApi @Inject constructor(
   override fun findSuperUserToBlame(orgId: UUID): DbPerson {
     val superuserGroup = internalGroupSqlApi.superuserGroup(orgId)!!
 
-    return QDbPerson().select(QDbPerson.Alias.id).groupMembers.group.id.eq(superuserGroup.id).setMaxRows(1).findList().first()
+    return QDbPerson().select(QDbPerson.Alias.id).groupMembers.group.id.eq(superuserGroup.id).setMaxRows(1).findList()
+      .first()
   }
 }
