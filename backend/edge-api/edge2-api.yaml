@@ -1,0 +1,449 @@
+openapi: 3.0.1
+info:
+  title: Edge API Version 2
+  description: This is the version 2 of the API for accessing features
+  version: "1.1.1"
+paths:
+  /features2/:
+    get:
+      tags:
+        - FeatureV2Service
+      parameters:
+        - name: apiKey
+          in: query
+          description: "A list of API keys to retrieve information about"
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+        - name: a
+          in: query
+          description: "The set of filters to allow for server side evaluation of flags"
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/EdgeFieldPair"
+      description: Requests all features for this sdkurl and disconnects
+      operationId: features
+      responses:
+        "200":
+          description: feature request successful, all environments you have permission to or that were found are returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureEnvironments"
+        "236":
+          description: its not you, its me, environment stagnant.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureEnvironments"
+        "400":
+          description: you didn't ask for any environments
+components:
+  schemas:
+    EdgeFieldPair:
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          type: string
+    SSEResponse:
+      type: string
+      x-publish-include: edge
+      description: "error is an inherent state"
+      enum:
+        - ack
+        - bye
+        - failure
+        - features
+        - feature
+        - delete_feature
+        - config
+        - error
+    FeatureEnvironments:
+      type: object
+      properties:
+        e:
+          description: "Environments"
+          x-longname: environments
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureEnvironmentCollectionV2"
+    FeatureEnvironmentCollectionV2:
+      description: "This represents a collection of features as per a request from a GET api. GET's can request multiple API Keys at the same time."
+      x-renamed-from: Environment
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        f:
+          description: "features"
+          x-longname: features
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureState"
+    FeatureState:
+      required:
+        - key
+        - id
+      properties:
+        id:
+          type: string
+        k:
+          type: string
+          x-longname: key
+        l:
+          x-longname: locked
+          description: "Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter."
+          type: boolean
+        v:
+          x-longname: version
+          description: "The version of the feature, this allows features to change values and it means we don't trigger events"
+          type: integer
+          format: int64
+        t:
+          $ref: "#/components/schemas/EdgeFeatureValueType"
+        c:
+          x-longname: value
+          description: "the current value"
+        si:
+          description: "strategy id that was applied if this was a server evaluated feature"
+          x-longname: strategyId
+          type: string
+        s:
+          type: array
+          items:
+            $ref: "#/components/schemas/EdgeRolloutStrategy"
+    EdgeFeatureValueType:
+      x-longname: type
+      type: string
+      enum:
+        - b
+        - n
+        - j
+        - s
+    EdgeRolloutStrategy:
+      description: "The model of the strategy from edge"
+      required:
+        - id
+        - a
+      properties:
+        id:
+          type: string
+        a:
+          x-longname: attributes
+          type: array
+          items:
+            $ref: "#/components/schemas/EdgeFeatureRolloutStrategyAttribute"
+        p:
+          nullable: true
+          x-longname: "percentage"
+          description: "percentage: value between 0 and 1000000 - for four decimal places"
+          type: integer
+        pa:
+          nullable: true
+          x-longname: "percentageAttributes"
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
+          items:
+            type: string
+        v:
+          x-longname: value
+          nullable: true
+          description: "when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge."
+    EdgeFeatureRolloutStrategyAttribute:
+      type: object
+      required:
+        - c
+        - f
+        - t
+        - v
+      properties:
+        c:
+          $ref: "#/components/schemas/RolloutStrategyAttributeConditional"
+        f:
+          x-longname: fieldName
+          type: string
+        vs:
+          nullable: true
+          x-longname: values
+          description: "the value(s) associated with this rule (for matching)"
+          type: array
+          items:
+            $ref: "#/components/schemas/EdgeRolloutStrategyArrayType"
+        t:
+          $ref: "#/components/schemas/EdgeRolloutStrategyFieldType"
+        id:
+          type: string
+    EdgeRolloutStrategyArrayType:
+      x-package: io.featurehub.edge.model
+      description: "values depend on the field type"
+    EdgeRolloutStrategyFieldType:
+      x-package: io.featurehub.edge.model
+      type: string
+      enum:
+        - s
+#        - STRING
+        - sv
+#        - SEMANTIC_VERSION
+        - n
+  #        - NUMBER
+        - d
+#        - DATE
+        - t
+#        - DATETIME
+        - b
+#        - BOOLEAN
+        - i
+#        - IP_ADDRESS
+    RolloutStrategyAttributeConditional:
+      x-package: io.featurehub.edge.model
+      type: string
+      enum:
+        - "e"  # equals
+        - "g"  # greater
+        - "ge" # greater equals
+        - "l" # less
+        - "le" # less equals
+        - "ne" # not equals
+        - "ew" # ends with
+        - "sw" # starts with
+        - "i" #includes
+        - "x" #excludes
+        - "r" #regex
+    EdgeStrategyAttributeWellKnownNames:
+      x-package: io.featurehub.edge.model
+      type: string
+      enum:
+        - "d" # device
+        - "c" # country
+        - "p" # platform
+        - "u" # userkey
+        - "s" # session
+        - "v" # version
+    EdgeStrategyAttributeDeviceName:
+      x-package: io.featurehub.edge.model
+      type: string
+      enum:
+        - "b" # browser
+        - "m" # mobile
+        - "d" # desktop
+        - "s" # server
+        - "w" # watch
+        - "e" # embedded
+    EdgeStrategyAttributePlatformName:
+      x-package: io.featurehub.edge.model
+      type: string
+      enum:
+        - "l" # linux
+        - "w" # windows
+        - "m" # macos
+        - "a" # android
+        - "i" # ios
+    EdgeStrategyAttributeCountryName:
+      x-package: io.featurehub.mr.model
+      x-publish-include: mr-api,edge
+      type: string
+      description: "https://www.britannica.com/topic/list-of-countries-1993160 - we put these in API so everyone can have the same list"
+      enum:
+        - af # afghanistan
+        - al # albania
+        - dz # algeria
+        - ad # andorra
+        - ao # angola
+        - ag # antigua_and_barbuda
+        - ar # argentina
+        - am # armenia
+        - au # australia
+        - at # austria
+        - az # azerbaijan
+        - bs # the_bahamas
+        - bh # bahrain
+        - bd # bangladesh
+        - barbados
+        - belarus
+        - belgium
+        - belize
+        - benin
+        - bhutan
+        - bolivia
+        - bosnia_and_herzegovina
+        - botswana
+        - brazil
+        - brunei
+        - bulgaria
+        - burkina_faso
+        - burundi
+        - cabo_verde
+        - cambodia
+        - cameroon
+        - canada
+        - central_african_republic
+        - chad
+        - chile
+        - china
+        - colombia
+        - comoros
+        - congo_democratic_republic_of_the
+        - congo_republic_of_the
+        - costa_rica
+        - cote_divoire
+        - croatia
+        - cuba
+        - cyprus
+        - czech_republic
+        - denmark
+        - djibouti
+        - dominica
+        - dominican_republic
+        - east_timor
+        - ecuador
+        - egypt
+        - el_salvador
+        - equatorial_guinea
+        - eritrea
+        - estonia
+        - eswatini
+        - ethiopia
+        - fiji
+        - finland
+        - france
+        - gabon
+        - the_gambia
+        - georgia
+        - germany
+        - ghana
+        - greece
+        - grenada
+        - guatemala
+        - guinea
+        - guinea_bissau
+        - guyana
+        - haiti
+        - honduras
+        - hungary
+        - iceland
+        - india
+        - indonesia
+        - iran
+        - iraq
+        - ireland
+        - israel
+        - italy
+        - jamaica
+        - japan
+        - jordan
+        - kazakhstan
+        - kenya
+        - kiribati
+        - korea_north
+        - korea_south
+        - kosovo
+        - kuwait
+        - kyrgyzstan
+        - laos
+        - latvia
+        - lebanon
+        - lesotho
+        - liberia
+        - libya
+        - liechtenstein
+        - lithuania
+        - luxembourg
+        - madagascar
+        - malawi
+        - malaysia
+        - maldives
+        - mali
+        - malta
+        - marshall_islands
+        - mauritania
+        - mauritius
+        - mexico
+        - micronesia_federated_states_of
+        - moldova
+        - monaco
+        - mongolia
+        - montenegro
+        - morocco
+        - mozambique
+        - myanmar
+        - namibia
+        - nauru
+        - nepal
+        - netherlands
+        - new_zealand
+        - nicaragua
+        - niger
+        - nigeria
+        - north_macedonia
+        - norway
+        - oman
+        - pakistan
+        - palau
+        - panama
+        - papua_new_guinea
+        - paraguay
+        - peru
+        - philippines
+        - poland
+        - portugal
+        - qatar
+        - romania
+        - russia
+        - rwanda
+        - saint_kitts_and_nevis
+        - saint_lucia
+        - saint_vincent_and_the_grenadines
+        - samoa
+        - san_marino
+        - sao_tome_and_principe
+        - saudi_arabia
+        - senegal
+        - serbia
+        - seychelles
+        - sierra_leone
+        - singapore
+        - slovakia
+        - slovenia
+        - solomon_islands
+        - somalia
+        - south_africa
+        - spain
+        - sri_lanka
+        - sudan
+        - sudan_south
+        - suriname
+        - sweden
+        - switzerland
+        - syria
+        - taiwan
+        - tajikistan
+        - tanzania
+        - thailand
+        - togo
+        - tonga
+        - trinidad_and_tobago
+        - tunisia
+        - turkey
+        - turkmenistan
+        - tuvalu
+        - uganda
+        - ukraine
+        - united_arab_emirates
+        - united_kingdom
+        - united_states
+        - uruguay
+        - uzbekistan
+        - vanuatu
+        - vatican_city
+        - venezuela
+        - vietnam
+        - yemen
+        - zambia
+        - zimbabwe
+
