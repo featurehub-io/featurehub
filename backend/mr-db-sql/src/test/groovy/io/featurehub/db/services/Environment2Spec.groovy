@@ -280,12 +280,30 @@ class Environment2Spec extends Base2Spec {
       result2.find({e -> e.priorEnvironmentId != null}) == null
   }
 
+  String name() {
+    return RandomStringUtils.randomNumeric(10)
+  }
+
+  def "a new person added to the portfolio admin group has access to all environments for feature history"() {
+    given: "i have an average joe"
+      def averageJoe = new DbPerson.Builder().email("${name()}@featurehub.io").name(name()).build()
+      db.save(averageJoe)
+      def averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
+    and: "i create a general (non-admin) portfolio group"
+      groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
+    when: 'i ask for environment access'
+      def averageJoAccess = envApi.getEnvironmentsUserCanAccess(app1.id, averageJoe.id)
+    then:
+      averageJoAccess.size() == 0
+      convertUtils.isPersonApplicationAdmin(averageJoe.id, app1.id)
+  }
+
   def "a new person in a new group that is not attached to environments has no roles, changing to reflects the new roles, admin always has all roles"() {
     given: "i have an average joe"
       def averageJoe = new DbPerson.Builder().email("averagejoe-env-1@featurehub.io").name("Average Joe").build()
       db.save(averageJoe)
       def averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
-    and: "i create a general portfolio group"
+    and: "i create a general (non-admin) portfolio group"
       groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("envspec-p1-plain-portfolio-group"), superPerson)
       groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
     and: "i have an environment"
@@ -295,6 +313,7 @@ class Environment2Spec extends Base2Spec {
       def averageJoAccess = envApi.getEnvironmentsUserCanAccess(app1.id, averageJoe.id)
     then:
       supEnvAccess.size() == 0 // i.e. everything
+      !convertUtils.isPersonApplicationAdmin(averageJoe.id, app1.id)
       averageJoAccess == null // i.e. nothing
     when: "i ask for the roles"
       def permsAverageJoe = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id)

@@ -5,7 +5,10 @@ import io.featurehub.edge.FeatureTransformer
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.strategies.ClientContext
 import io.featurehub.sse.model.FeatureEnvironmentCollection
+import jakarta.ws.rs.ProcessingException
 import jakarta.ws.rs.WebApplicationException
+import java.net.ConnectException
+import java.net.SocketTimeoutException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -33,6 +36,15 @@ class FeatureRequestCollection(
     }
   }
 
+  private fun decodeWebFailure(failure: WebApplicationException, key: KeyParts, env: FeatureEnvironmentCollection): FeatureRequestResponse? {
+    if (failure.response == null || failure.response.status == 412) {
+      return FeatureRequestResponse(env, FeatureRequestSuccess.DACHA_NOT_READY, key, "", null)
+    } else if (failure.response.status == 404) {
+      return FeatureRequestResponse(env, FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE, key, "", null)
+    }
+
+    return null
+  }
   private fun transformFeatures(
     details: DachaKeyDetailsResponse?,
     key: KeyParts,
@@ -41,11 +53,23 @@ class FeatureRequestCollection(
   ): FeatureRequestResponse {
     val env = FeatureEnvironmentCollection().id(key.environmentId)
 
-    if (failure != null && failure is WebApplicationException) {
-      if (failure.response == null || failure.response.status == 412) {
-        return FeatureRequestResponse(env, FeatureRequestSuccess.DACHA_NOT_READY, key, "", null)
-      } else if (failure.response.status == 404) {
-        return FeatureRequestResponse(env, FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE, key, "", null)
+    if (failure != null) {
+      if (failure is WebApplicationException) {
+        val resp = decodeWebFailure(failure, key, env)
+        if (resp != null) {
+          return resp
+        }
+      } else if (failure is ProcessingException) {
+        failure.cause?.let { cause ->
+          if (cause is ConnectException || cause is SocketTimeoutException) {
+            return FeatureRequestResponse(env, FeatureRequestSuccess.DACHA_NOT_READY, key, "", null)
+          } else if (cause is WebApplicationException) {
+            val resp = decodeWebFailure(cause, key, env)
+            if (resp != null) {
+              return resp
+            }
+          }
+        }
       }
     }
 

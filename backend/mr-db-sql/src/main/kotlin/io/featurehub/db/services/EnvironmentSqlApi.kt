@@ -163,7 +163,7 @@ class EnvironmentSqlApi @Inject constructor(
   }
 
   override fun getEnvironmentsUserCanAccess(appId: UUID, person: UUID): List<UUID>? {
-    if (convertUtils.personIsSuperAdmin(person)) return listOf()
+    if (convertUtils.personIsSuperAdmin(person) || convertUtils.isPersonApplicationAdmin(person, appId)) return listOf()
 
     val envs = QDbEnvironment()
       .select(QDbEnvironment.Alias.id)
