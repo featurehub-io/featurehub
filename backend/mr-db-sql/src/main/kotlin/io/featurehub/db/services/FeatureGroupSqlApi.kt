@@ -74,12 +74,12 @@ class FeatureGroupSqlApi @Inject constructor(
     // because we are using an Embedded object here, we need to use the id of the newly created group
     mappedFeatures.forEach { feat ->
       with(DbFeatureGroupFeature(DbFeatureGroupFeatureKey(feat.id, fg.id))) {
-//        value = featureGroup.features.find { it.id == feat.id }?.value?.toString()
-//
-//        // boolean features must have a value
-//        if (feat.valueType == FeatureValueType.BOOLEAN && value == null) {
-//          value = "false"
-//        }
+        value = featureGroup.features.find { it.id == feat.id }?.value?.toString()
+
+        // boolean features must have a value
+        if (feat.valueType == FeatureValueType.BOOLEAN && value == null) {
+          value = "false"
+        }
 
         save()
       }
@@ -94,6 +94,7 @@ class FeatureGroupSqlApi @Inject constructor(
     val features = QDbApplicationFeature().id.`in`(featureIds).whenArchived.isNull.findList().map {feature ->
       FeatureGroupFeature().id(feature.id)
         .key(feature.key).type(feature.valueType)
+        .name(feature.name)
         .locked(false)
     }.sortedBy { it.key }
 
@@ -101,10 +102,18 @@ class FeatureGroupSqlApi @Inject constructor(
       .environment.id.eq(featureGroup.environment.id)
       .feature.id.`in`(featureIds)
       .feature.fetch(QDbApplicationFeature.Alias.key, QDbApplicationFeature.Alias.valueType, QDbApplicationFeature.Alias.id)
-      .retired.isFalse.findList().forEach {
+      .retired.isFalse.findList()
+       .forEach {
         features.find { f -> f.id == it.feature.id }?.let { fv ->
           fv.locked = it.isLocked
           fv.value = cast(it.defaultValue, it.feature.valueType)
+        }
+      }
+
+    QDbFeatureGroupFeature().key.feature.`in`(featureIds).key.group.eq(featureGroup.id).findList()
+      .forEach {
+        features.find { f -> f.id == it.key.feature }?.let { fv ->
+          fv.value = cast(it.value, it.feature.valueType)
         }
       }
 
@@ -268,13 +277,13 @@ class FeatureGroupSqlApi @Inject constructor(
         if (found == null) { // existing feature not in the list
           updates.deletedFeatures.add(feat)
         } else { // it is there already
-//          val newVal = found.value?.toString() ?: (if (feat.feature.valueType == FeatureValueType.BOOLEAN) "false" else null)
-//
-//          if (feat.value != newVal) {
-//            feat.value = newVal
-//            updates.updatedFeatures.add(feat)
-//          }
-//
+          val newVal = found.value?.toString() ?: (if (feat.feature.valueType == FeatureValueType.BOOLEAN) "false" else null)
+
+          if (feat.value != newVal) {
+            feat.value = newVal
+            updates.updatedFeatures.add(feat)
+          }
+
           newFeatures.remove(found)
         }
       }
@@ -284,9 +293,9 @@ class FeatureGroupSqlApi @Inject constructor(
         val actualNewFeatures = QDbApplicationFeature().id.`in`(newFeatures.map { it.id }).parentApplication.id.eq(appId).findList().toMutableList()
         updates.addedFeatures.addAll(actualNewFeatures.map { feat ->
           val found = newFeatures.find { it.id == feat.id }
-//          val newVal = found?.value?.toString() ?: (if (feat.valueType == FeatureValueType.BOOLEAN) "false" else null)
+          val newVal = found?.value?.toString() ?: (if (feat.valueType == FeatureValueType.BOOLEAN) "false" else null)
           with(DbFeatureGroupFeature(DbFeatureGroupFeatureKey(feat.id, group.id))) {
-//            value = newVal
+            value = newVal
             this
           }
         })
@@ -305,6 +314,7 @@ class FeatureGroupSqlApi @Inject constructor(
     val features = QDbApplicationFeature().parentApplication.id.eq(appId).whenArchived.isNull.findList().map {feature ->
       FeatureGroupFeature().id(feature.id)
         .key(feature.key).type(feature.valueType)
+        .name(feature.name)
         .locked(false)
     }.sortedBy { it.key }
 

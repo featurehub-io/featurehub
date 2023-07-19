@@ -216,14 +216,18 @@ components:
       required:
         - id
         - key
+        - name
+        - type
       properties:
         id:
           type: string
           format: uuid
+        name:
+          type: string
         key:
           type: string
         value:
-          description: "value (if any) associated with this feature"
+          description: "value (if any) associated with this feature for the associated strategy for this feature group"
         type:
           $ref: "#/components/schemas/FeatureValueType"
         locked:
@@ -273,8 +277,8 @@ components:
         id:
           type: string
           format: uuid
-    #        value:
-    #          description: "value (if any) associated with this feature"
+        value:
+          description: "value (if any) associated with this feature for this strategy"
     FeatureGroupCRUDBase:
       type: object
       description: "An update, everything is optional, we will only update what we update"

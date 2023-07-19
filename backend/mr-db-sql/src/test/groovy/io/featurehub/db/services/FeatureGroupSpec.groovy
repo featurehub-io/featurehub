@@ -58,11 +58,11 @@ class FeatureGroupSpec extends Base3Spec {
     and:
       def feature =
         applicationSqlApi.createApplicationFeature(app1.id,
-          new Feature().name("sample_2").key("sample_2").valueType(FeatureValueType.BOOLEAN),
+          new Feature().name("abel").key("sample_2").valueType(FeatureValueType.BOOLEAN),
           superPerson, Opts.empty()).find { it.key == 'sample_2' }
       def feature2 =
         applicationSqlApi.createApplicationFeature(app1.id,
-          new Feature().name("sample_3").key("sample_3").valueType(FeatureValueType.NUMBER),
+          new Feature().name("cain").key("sample_3").valueType(FeatureValueType.NUMBER),
           superPerson, Opts.empty()).find { it.key == 'sample_3' }
     when:
       def created = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name("name").environmentId(env1.id).features(
@@ -79,6 +79,7 @@ class FeatureGroupSpec extends Base3Spec {
       getit.features[0].id == feature.id
       !getit.features[0].value
       getit.features[0].key == "sample_2"
+      getit.features[0].name == 'abel'
       featureValues.size() == 2
       with(featureValues.find({it.key == 'sample_2'})) {
         it.value == false
@@ -96,27 +97,28 @@ class FeatureGroupSpec extends Base3Spec {
         .name("fred")
         .features([
         new FeatureGroupUpdateFeature().id(feature.id),
-        new FeatureGroupUpdateFeature().id(feature2.id)]))
+        new FeatureGroupUpdateFeature().id(feature2.id).value(123.67)]))
     and:
       getit = fgApi.getGroup(app1.id, superPerson, created.id)
     then:
       getit.name == "fred"
       getit.features.size() == 2
-//      !getit.features[0].value
+      !getit.features[0].value
       getit.features[0].key == "sample_2"
-//      getit.features[1].value == 123.67
+      getit.features[1].value == 123.67
       getit.features[1].key == "sample_3"
+      getit.features[1].name == "cain"
     when:
       def updated = fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate()
         .version(getit.version)
         .name("fred")
         .features([
-          new FeatureGroupUpdateFeature().id(feature2.id)]))
+          new FeatureGroupUpdateFeature().id(feature2.id).value(121.67)]))
     and:
       getit = fgApi.getGroup(app1.id, superPerson, created.id)
     then:
       getit.features.size() == 1
-//      getit.features[0].value == 121.67
+      getit.features[0].value == 121.67
       getit.features[0].key == "sample_3"
     when: "i update the description"
       def updated2 = fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate().version(updated.version).description("hello"))
@@ -124,7 +126,7 @@ class FeatureGroupSpec extends Base3Spec {
       updated2.version != updated.version
       updated2.description == 'hello'
       fgApi.getGroup(app1.id, superPerson, created.id).description == 'hello'
-      fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, env1.id).featureGroups.size() > 1
+      fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, env1.id).featureGroups.find({it.name == "fred"})
       fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, UUID.randomUUID()).count == 0
   }
 }

@@ -31,6 +31,12 @@ public class DbFeatureGroupFeature extends Model {
   @JoinColumn(name = "fk_fg_id", referencedColumnName = "id", updatable = false, nullable = false)
   private DbFeatureGroup group;
 
+
+  @Nullable
+  @Lob
+  @Column(name = "v")
+  private String value;
+
   public DbFeatureGroupFeature(@NotNull DbFeatureGroupFeatureKey key) {
     this.key = key;
   }
@@ -53,5 +59,13 @@ public class DbFeatureGroupFeature extends Model {
 
   public void setGroup(DbFeatureGroup group) {
     this.group = group;
+  }
+
+  public String getValue() {
+    return value;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
   }
 }
