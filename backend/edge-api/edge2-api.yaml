@@ -264,101 +264,101 @@ components:
         - bs # the_bahamas
         - bh # bahrain
         - bd # bangladesh
-        - barbados
-        - belarus
-        - belgium
-        - belize
-        - benin
-        - bhutan
-        - bolivia
-        - bosnia_and_herzegovina
-        - botswana
-        - brazil
-        - brunei
-        - bulgaria
-        - burkina_faso
-        - burundi
-        - cabo_verde
-        - cambodia
-        - cameroon
-        - canada
-        - central_african_republic
-        - chad
-        - chile
-        - china
-        - colombia
-        - comoros
-        - congo_democratic_republic_of_the
-        - congo_republic_of_the
-        - costa_rica
-        - cote_divoire
-        - croatia
-        - cuba
-        - cyprus
-        - czech_republic
-        - denmark
-        - djibouti
-        - dominica
-        - dominican_republic
-        - east_timor
-        - ecuador
-        - egypt
-        - el_salvador
-        - equatorial_guinea
-        - eritrea
-        - estonia
-        - eswatini
-        - ethiopia
-        - fiji
-        - finland
-        - france
-        - gabon
-        - the_gambia
-        - georgia
-        - germany
-        - ghana
-        - greece
-        - grenada
-        - guatemala
-        - guinea
-        - guinea_bissau
-        - guyana
-        - haiti
-        - honduras
-        - hungary
-        - iceland
-        - india
-        - indonesia
-        - iran
-        - iraq
-        - ireland
-        - israel
-        - italy
-        - jamaica
-        - japan
-        - jordan
-        - kazakhstan
-        - kenya
-        - kiribati
-        - korea_north
-        - korea_south
-        - kosovo
-        - kuwait
-        - kyrgyzstan
-        - laos
-        - latvia
-        - lebanon
-        - lesotho
-        - liberia
-        - libya
-        - liechtenstein
-        - lithuania
-        - luxembourg
-        - madagascar
-        - malawi
-        - malaysia
-        - maldives
-        - mali
+        - bb # barbados
+        - by # belarus
+        - be # belgium
+        - bz # belize
+        - bz # benin
+        - bt # bhutan
+        - bo # bolivia
+        - ba # bosnia_and_herzegovina
+        - bw # botswana
+        - br # brazil
+        - bn # brunei
+        - bg # bulgaria
+        - bf # burkina_faso
+        - bi # burundi
+        - cv # cabo_verde, cape verde
+        - kh # cambodia
+        - cm # cameroon
+        - ca # canada
+        - cf # central_african_republic
+        - td # chad
+        - cl # chile
+        - cn # china
+        - co # colombia
+        - km # comoros
+        - cd # congo_democratic_republic_of_the
+        - cg # congo_republic_of_the
+        - cr # costa_rica
+        - ci # cote_divoire
+        - hr # croatia
+        - cu # cuba
+        - cy # cyprus
+        - cz # czech_republic
+        - dk # denmark
+        - dj # djibouti
+        - dm # dominica
+        - do # dominican_republic
+        - tl # east_timor
+        - ec # ecuador
+        - eg # egypt
+        - sv # el_salvador
+        - gq # equatorial_guinea
+        - er # eritrea
+        - ee # estonia
+        - sz # eswatini
+        - et # ethiopia
+        - fj # fiji
+        - fi # finland
+        - fr # france
+        - ga # gabon
+        - gm # the_gambia
+        - ge # georgia
+        - de # germany
+        - gh # ghana
+        - gr # greece
+        - gd # grenada
+        - gt # guatemala
+        - gn # guinea
+        - gw # guinea_bissau
+        - gy # guyana
+        - ht # haiti
+        - hn # honduras
+        - hu # hungary
+        - is # iceland
+        - in # india
+        - id # indonesia
+        - ir # iran
+        - iq # iraq
+        - ie # ireland
+        - il # israel
+        - it # italy
+        - jm # jamaica
+        - jp # japan
+        - jo # jordan
+        - kz # kazakhstan
+        - ke # kenya
+        - ki # kiribati
+        - kp # korea_north
+        - kr # korea_south
+        - xk # kosovo
+        - kw # kuwait
+        - kg # kyrgyzstan
+        - la # laos
+        - lv # latvia
+        - lb # lebanon
+        - ls # lesotho
+        - lr # liberia
+        - ly # libya
+        - li # liechtenstein
+        - lt # lithuania
+        - lu # luxembourg
+        - mg # madagascar
+        - mw # malawi
+        - my # malaysia
+        - mv # maldives
+        - ml # mali
         - malta
         - marshall_islands
         - mauritania
@@ -376,7 +376,7 @@ components:
         - nauru
         - nepal
         - netherlands
-        - new_zealand
+        - nz # new_zealand
         - nicaragua
         - niger
         - nigeria
@@ -394,7 +394,7 @@ components:
         - portugal
         - qatar
         - romania
-        - russia
+        - ru # russia
         - rwanda
         - saint_kitts_and_nevis
         - saint_lucia
