@@ -22,5 +22,9 @@ class ConfigurationUtils {
         "webhooks.features.enabled", "true"
       ), ignoreCase = true
     )
+
+    val featureGroupsEnabled = "true".equals(getConfig(
+      "feature-groups.enabled", "false"
+    ), ignoreCase = true)
   }
 }
