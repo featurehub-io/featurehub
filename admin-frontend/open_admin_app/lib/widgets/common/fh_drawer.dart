@@ -272,6 +272,12 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
           params: {},
         ),
         FHMenuItem(
+          name: 'Feature Groups',
+          iconData: Icons.settings_suggest_sharp,
+          path: 'feature-groups',
+          params: {},
+        ),
+        FHMenuItem(
           name: 'API Keys',
           iconData: Icons.key_outlined,
           path: '/api-keys',

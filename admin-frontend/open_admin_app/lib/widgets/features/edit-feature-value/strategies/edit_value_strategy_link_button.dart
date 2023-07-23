@@ -25,23 +25,23 @@ class EditValueStrategyLinkButton extends StatelessWidget {
     return Material(
         type: MaterialType.transparency,
         child: IconButton(
-        splashRadius: 20,
-        mouseCursor:
-        editable ? SystemMouseCursors.click : SystemMouseCursors.basic,
-        icon: const Icon(Icons.edit, size: 16),
-        onPressed: () => showDialog(
-            context: context,
-            builder: (_) {
-              return AlertDialog(
-                  title: Text(editable
-                      ? 'Edit split targeting rules'
-                      : 'View split targeting rules'),
-                  content: BlocProvider(
-                    creator: (_c, _b) => IndividualStrategyBloc(
-                        strBloc.environmentFeatureValue, rolloutStrategy),
-                    child: StrategyEditingWidget(
-                        bloc: strBloc, editable: editable),
-                  ));
-            })));
+            splashRadius: 20,
+            mouseCursor:
+                editable ? SystemMouseCursors.click : SystemMouseCursors.basic,
+            icon: const Icon(Icons.edit, size: 16),
+            onPressed: () => showDialog(
+                context: context,
+                builder: (_) {
+                  return AlertDialog(
+                      title: Text(editable
+                          ? 'Edit split targeting rules'
+                          : 'View split targeting rules'),
+                      content: BlocProvider(
+                        creator: (_c, _b) =>
+                            IndividualStrategyBloc(rolloutStrategy),
+                        child: StrategyEditingWidget(
+                            bloc: strBloc, editable: editable),
+                      ));
+                })));
   }
 }
