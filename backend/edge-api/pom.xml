@@ -196,6 +196,32 @@
               </configOptions>
             </configuration>
           </execution>
+          <execution>
+            <id>featurehub2-api</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <output>${project.basedir}/target/generated-sources/api</output>
+              <apiPackage>io.featurehub.edge.api</apiPackage>
+              <modelPackage>io.featurehub.edge.model</modelPackage>
+              <inputSpec>${project.basedir}/edge2-api.yaml</inputSpec>
+              <generatorName>jersey3-api</generatorName>
+              <additionalProperties>
+                <additionalProperty>server</additionalProperty>
+                <additionalProperty>openApiNullable=false</additionalProperty>
+                <additionalProperty>prometheus=true</additionalProperty>
+              </additionalProperties>
+
+              <configOptions>
+                <configOption>
+                  <name>useBeanValidation</name>
+                  <value>true</value>
+                </configOption>
+              </configOptions>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 
@@ -228,6 +254,11 @@
                   <file>${project.basedir}/target/final.yaml</file>
                   <type>yaml</type>
                   <classifier>api</classifier>
+                </artifact>
+                <artifact>
+                  <file>${project.basedir}/edge2-api.yaml</file>
+                  <type>yaml</type>
+                  <classifier>edge-api</classifier>
                 </artifact>
               </artifacts>
             </configuration>

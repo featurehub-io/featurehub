@@ -17,14 +17,6 @@ paths:
             type: array
             items:
               type: string
-        - name: a
-          in: query
-          description: "The set of filters to allow for server side evaluation of flags"
-          required: false
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/EdgeFieldPair"
       description: Requests all features for this sdkurl and disconnects
       operationId: features
       responses:
@@ -33,13 +25,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FeatureEnvironments"
+                $ref: "#/components/schemas/EdgeFeatureEnvironments"
         "236":
           description: its not you, its me, environment stagnant.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/FeatureEnvironments"
+                $ref: "#/components/schemas/EdgeFeatureEnvironments"
         "400":
           description: you didn't ask for any environments
 components:
@@ -47,9 +39,7 @@ components:
     EdgeFieldPair:
       type: object
       additionalProperties:
-        type: array
-        items:
-          type: string
+        type: string
     SSEResponse:
       type: string
       x-publish-include: edge
@@ -63,7 +53,7 @@ components:
         - delete_feature
         - config
         - error
-    FeatureEnvironments:
+    EdgeFeatureEnvironments:
       type: object
       properties:
         e:
@@ -71,10 +61,9 @@ components:
           x-longname: environments
           type: array
           items:
-            $ref: "#/components/schemas/FeatureEnvironmentCollectionV2"
-    FeatureEnvironmentCollectionV2:
+            $ref: "#/components/schemas/EdgeEnvironmentCollection"
+    EdgeEnvironmentCollection:
       description: "This represents a collection of features as per a request from a GET api. GET's can request multiple API Keys at the same time."
-      x-renamed-from: Environment
       required:
         - id
       properties:
@@ -85,8 +74,8 @@ components:
           x-longname: features
           type: array
           items:
-            $ref: "#/components/schemas/FeatureState"
-    FeatureState:
+            $ref: "#/components/schemas/EdgeFeatureState"
+    EdgeFeatureState:
       required:
         - key
         - id
@@ -164,7 +153,7 @@ components:
         - v
       properties:
         c:
-          $ref: "#/components/schemas/RolloutStrategyAttributeConditional"
+          $ref: "#/components/schemas/EdgeAttributeConditional"
         f:
           x-longname: fieldName
           type: string
@@ -186,21 +175,14 @@ components:
       x-package: io.featurehub.edge.model
       type: string
       enum:
-        - s
-#        - STRING
-        - sv
-#        - SEMANTIC_VERSION
-        - n
-  #        - NUMBER
-        - d
-#        - DATE
-        - t
-#        - DATETIME
-        - b
-#        - BOOLEAN
-        - i
-#        - IP_ADDRESS
-    RolloutStrategyAttributeConditional:
+        - s # STRING
+        - sv # SEMANTIC_VERSION
+        - n # NUMBER
+        - d # DATE
+        - t # DATETIME
+        - b # BOOLEAN
+        - i # IP_ADDRESS
+    EdgeAttributeConditional:
       x-package: io.featurehub.edge.model
       type: string
       enum:
@@ -215,7 +197,7 @@ components:
         - "i" #includes
         - "x" #excludes
         - "r" #regex
-    EdgeStrategyAttributeWellKnownNames:
+    EdgeAttributeWellKnownNames:
       x-package: io.featurehub.edge.model
       type: string
       enum:
@@ -225,7 +207,7 @@ components:
         - "u" # userkey
         - "s" # session
         - "v" # version
-    EdgeStrategyAttributeDeviceName:
+    EdgeAttributeDeviceName:
       x-package: io.featurehub.edge.model
       type: string
       enum:
@@ -235,7 +217,7 @@ components:
         - "s" # server
         - "w" # watch
         - "e" # embedded
-    EdgeStrategyAttributePlatformName:
+    EdgeAttributePlatformName:
       x-package: io.featurehub.edge.model
       type: string
       enum:
@@ -244,7 +226,7 @@ components:
         - "m" # macos
         - "a" # android
         - "i" # ios
-    EdgeStrategyAttributeCountryName:
+    EdgeAttributeCountryName:
       x-package: io.featurehub.mr.model
       x-publish-include: mr-api,edge
       type: string
@@ -268,7 +250,7 @@ components:
         - by # belarus
         - be # belgium
         - bz # belize
-        - bz # benin
+        - bj # benin
         - bt # bhutan
         - bo # bolivia
         - ba # bosnia_and_herzegovina
@@ -359,91 +341,91 @@ components:
         - my # malaysia
         - mv # maldives
         - ml # mali
-        - malta
-        - marshall_islands
-        - mauritania
-        - mauritius
-        - mexico
-        - micronesia_federated_states_of
-        - moldova
-        - monaco
-        - mongolia
-        - montenegro
-        - morocco
-        - mozambique
-        - myanmar
-        - namibia
-        - nauru
-        - nepal
-        - netherlands
+        - mt # malta
+        - mh # marshall_islands
+        - mr # mauritania
+        - mu # mauritius
+        - mx # mexico
+        - fm # micronesia_federated_states_of
+        - md # moldova
+        - mc # monaco
+        - mn # mongolia
+        - me # montenegro
+        - ma # morocco
+        - mz # mozambique
+        - mm # myanmar
+        - na # namibia
+        - nr # nauru
+        - np # nepal
+        - nl # netherlands
         - nz # new_zealand
-        - nicaragua
-        - niger
-        - nigeria
-        - north_macedonia
-        - norway
-        - oman
-        - pakistan
-        - palau
-        - panama
-        - papua_new_guinea
-        - paraguay
-        - peru
-        - philippines
-        - poland
-        - portugal
-        - qatar
-        - romania
+        - ni # nicaragua
+        - ne # niger
+        - ng # nigeria
+        - mk # north_macedonia
+        - no # norway
+        - om # oman
+        - pk # pakistan
+        - pw # palau
+        - pa # panama
+        - pg # papua_new_guinea
+        - py # paraguay
+        - pe # peru
+        - ph # philippines
+        - pl # poland
+        - pt # portugal
+        - qa # qatar
+        - ro # romania
         - ru # russia
-        - rwanda
-        - saint_kitts_and_nevis
-        - saint_lucia
-        - saint_vincent_and_the_grenadines
-        - samoa
-        - san_marino
-        - sao_tome_and_principe
-        - saudi_arabia
-        - senegal
-        - serbia
-        - seychelles
-        - sierra_leone
-        - singapore
-        - slovakia
-        - slovenia
-        - solomon_islands
-        - somalia
-        - south_africa
-        - spain
-        - sri_lanka
-        - sudan
-        - sudan_south
-        - suriname
-        - sweden
-        - switzerland
-        - syria
-        - taiwan
-        - tajikistan
-        - tanzania
-        - thailand
-        - togo
-        - tonga
-        - trinidad_and_tobago
-        - tunisia
-        - turkey
-        - turkmenistan
-        - tuvalu
-        - uganda
-        - ukraine
-        - united_arab_emirates
-        - united_kingdom
-        - united_states
-        - uruguay
-        - uzbekistan
-        - vanuatu
-        - vatican_city
-        - venezuela
-        - vietnam
-        - yemen
-        - zambia
-        - zimbabwe
+        - rw # rwanda
+        - kn # saint_kitts_and_nevis
+        - lc # saint_lucia
+        - vc # saint_vincent_and_the_grenadines
+        - ws # samoa
+        - sm # san_marino
+        - st # sao_tome_and_principe
+        - sa # saudi_arabia
+        - sn # senegal
+        - rs # serbia
+        - sc # seychelles
+        - sl # sierra_leone
+        - sg # singapore
+        - sk # slovakia
+        - si # slovenia
+        - sb # solomon_islands
+        - so # somalia
+        - za # south_africa
+        - es # spain
+        - lk # sri_lanka
+        - sd # sudan
+        - ss # sudan_south
+        - sr # suriname
+        - se # sweden
+        - ch # switzerland
+        - sy # syria
+        - tw # taiwan
+        - tj # tajikistan
+        - tz # tanzania
+        - th # thailand
+        - tg # togo
+        - to # tonga
+        - tt # trinidad_and_tobago
+        - tn # tunisia
+        - tr # turkey
+        - tm # turkmenistan
+        - tv # tuvalu
+        - ug # uganda
+        - ua # ukraine
+        - ae # united_arab_emirates
+        - uk # united_kingdom
+        - us # united_states
+        - uy # uruguay
+        - uz # uzbekistan
+        - vu # vanuatu
+        - va # vatican_city
+        - ve # venezuela
+        - vn # vietnam
+        - ye # yemen
+        - zm # zambia
+        - zw # zimbabwe
 
