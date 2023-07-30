@@ -5,6 +5,7 @@ import io.featurehub.edge.StreamingFeatureController
 import io.featurehub.edge.bucket.BucketService
 import io.featurehub.edge.client.TimedBucketClientFactory
 import io.featurehub.edge.stats.StatRecorder
+import io.featurehub.edge.strategies.ClientContext
 import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
 import jakarta.inject.Inject
@@ -43,21 +44,21 @@ class FeatureSseProcessor @Inject constructor(
   ): EventOutput {
     val outputStream = EventOutput()
 
-    val apiKey = KeyParts("default", envId, apiKey)
+    val key = KeyParts("default", envId, apiKey)
 
     try {
       val bucket = timedBucketFactory.createBucket(
-        outputStream, apiKey, browserHubAttrs?.let { listOf(it) } ?: featureHubAttrs,
+        outputStream, key, ClientContext.decode( browserHubAttrs?.let { listOf(it) } ?: featureHubAttrs, listOf(key)),
         etag, extraContext,
       )
       if (bucket.discovery()) {
         serverConfig.requestFeatures(bucket)
         bucketService.putInBucket(bucket)
       } else {
-        statRecorder.recordHit(apiKey, EdgeHitResultType.FAILED_TO_WRITE_ON_INIT, EdgeHitSourceType.EVENTSOURCE)
+        statRecorder.recordHit(key, EdgeHitResultType.FAILED_TO_WRITE_ON_INIT, EdgeHitSourceType.EVENTSOURCE)
       }
     } catch (e: Exception) {
-      statRecorder.recordHit(apiKey, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE)
+      statRecorder.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE)
       log.error("failed to write feature states")
       throw InternalServerErrorException(e)
     }

@@ -22,7 +22,8 @@ class KeyParts(val cacheName: String, val environmentId: UUID, val serviceKey: S
         } catch (e: Exception) {
           return null
         }
-      } else if (parts.size == 2) {
+      } else if (parts.size == 2 && parts[0].length == 28) {
+      } else if (parts.size == 2 && parts[0].length == 32) {
         try {
           return KeyParts("default", UUID.fromString(parts[0]), parts[1])
         } catch (e: Exception) {
