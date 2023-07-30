@@ -794,7 +794,6 @@ paths:
           description: "no permission"
         403:
           description: "forbidden"
-
   /mr-api/authentication/{email}/expiredTokenReset:
     post:
       security:
@@ -859,7 +858,6 @@ paths:
           description: "no permission"
         403:
           description: "forbidden"
-
   /mr-api/authentication/{token}:
     get:
       tags:
@@ -923,7 +921,6 @@ paths:
           description: "forbidden"
         404:
           description: "not found"
-
   /mr-api/application/{appId}:
     parameters:
       - name: appId
@@ -1842,6 +1839,12 @@ paths:
       tags:
         - EnvironmentFeatureService
       parameters:
+        - name: includeFeatures
+          description: "include the features in the result"
+          in: query
+          required: false
+          schema:
+            type: boolean
         - name: filter
           description: "Filter the feature names by this filter."
           in: query
@@ -2942,6 +2945,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RolloutStrategy"
+        featureGroupStrategies:
+          description: "There are strategies provided by feature groups (if any)"
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureGroupFeatureValueStrategy"
         environmentId:
           type: string
           format: uuid
@@ -3427,6 +3435,7 @@ components:
             whenArchived:
               type: string
               format: date-time
+
     ApplicationGroupRole:
       required:
         - applicationId

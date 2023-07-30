@@ -7,7 +7,6 @@ import '../../../utils/utils.dart';
 
 // this represents a single strategy and allows us to track its state outside of the widget
 class IndividualStrategyBloc extends Bloc {
-  final EnvironmentFeatureValues environmentFeatureValue;
   final RolloutStrategy rolloutStrategy;
   final BehaviorSubject<List<RolloutStrategyAttribute>>
       _rolloutStrategyAttributeSource;
@@ -22,7 +21,7 @@ class IndividualStrategyBloc extends Bloc {
   List<RolloutStrategyAttribute> get currentAttributes =>
       _rolloutStrategyAttributeSource.value;
 
-  IndividualStrategyBloc(this.environmentFeatureValue, this.rolloutStrategy)
+  IndividualStrategyBloc(this.rolloutStrategy)
       : _violationSource =
             BehaviorSubject<List<RolloutStrategyViolation>>.seeded([]),
         _rolloutStrategyAttributeSource =
@@ -50,7 +49,7 @@ class IndividualStrategyBloc extends Bloc {
         case StrategyAttributeWellKnownNames.platform:
         case StrategyAttributeWellKnownNames.userkey:
         case StrategyAttributeWellKnownNames
-            .session: //session is not used in the UI
+              .session: //session is not used in the UI
           rs.type = RolloutStrategyFieldType.STRING;
           break;
         case StrategyAttributeWellKnownNames.version:

@@ -1,37 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
 
-class EditStringValueContainer extends StatefulWidget {
-  const EditStringValueContainer({
+class EditFeatureGroupStringValueContainer extends StatefulWidget {
+  const EditFeatureGroupStringValueContainer({
     Key? key,
-    required this.unlocked,
-    required this.canEdit,
-    this.rolloutStrategy,
-    required this.strBloc,
+    required this.editable,
+    required this.bloc,
+    required this.feature,
   }) : super(key: key);
 
-  final bool unlocked;
-  final bool canEdit;
-  final RolloutStrategy? rolloutStrategy;
-  final CustomStrategyBloc strBloc;
+  final bool editable;
+  final FeatureGroupFeature feature;
+  final FeatureGroupBloc bloc;
 
   @override
-  _EditStringValueContainerState createState() =>
-      _EditStringValueContainerState();
+  _EditFeatureGroupStringValueContainerState createState() =>
+      _EditFeatureGroupStringValueContainerState();
 }
 
-class _EditStringValueContainerState extends State<EditStringValueContainer> {
+class _EditFeatureGroupStringValueContainerState
+    extends State<EditFeatureGroupStringValueContainer> {
   TextEditingController tec = TextEditingController();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    final valueSource = widget.rolloutStrategy != null
-        ? widget.rolloutStrategy!.value
-        : widget.strBloc.featureValue.valueString;
-    tec.text = (valueSource ?? '').toString();
+    tec.text = (widget.feature.value ?? '').toString();
   }
 
   @override
@@ -41,7 +37,7 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
         height: 36,
         child: TextField(
           style: Theme.of(context).textTheme.bodyLarge,
-          enabled: widget.unlocked && widget.canEdit,
+          enabled: !widget.feature.locked! && widget.editable,
           controller: tec,
           decoration: InputDecoration(
               border: const OutlineInputBorder(),
@@ -55,20 +51,15 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
                   borderSide: BorderSide(
                 color: Colors.grey,
               )),
-              hintText: widget.canEdit
-                  ? widget.unlocked
+              hintText: widget.editable
+                  ? !widget.feature.locked!
                       ? 'Enter string value'
                       : 'Unlock to edit'
                   : 'No editing rights',
               hintStyle: Theme.of(context).textTheme.bodySmall),
           onChanged: (value) {
             final replacementValue = value.isEmpty ? null : tec.text.trim();
-            if (widget.rolloutStrategy != null) {
-              widget.rolloutStrategy!.value = replacementValue;
-              // widget.strBloc.updateStrategy();
-            } else {
-              widget.strBloc.fvBloc.updateFeatureValueDefault(replacementValue);
-            }
+            widget.bloc.setFeatureValue(replacementValue, widget.feature);
           },
         ));
   }

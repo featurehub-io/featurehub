@@ -80,7 +80,8 @@ class EditValueContainer extends StatelessWidget {
         return EditBooleanValueDropDownWidget(
           unlocked: unlocked,
           rolloutStrategy: rolloutStrategy,
-          strBloc: strBloc, editable: editable,
+          strBloc: strBloc,
+          editable: editable,
         );
       case FeatureValueType.NUMBER:
         return EditNumberValueContainer(

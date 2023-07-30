@@ -132,6 +132,7 @@
                 <file>${project.basedir}/user.yaml</file>
                 <file>${project.basedir}/webhook-api.yaml</file>
                 <file>${project.basedir}/feature-history.yaml</file>
+                <file>${project.basedir}/feature-group.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
             </configuration>

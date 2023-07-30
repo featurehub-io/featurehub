@@ -43,6 +43,7 @@ class ManagementRepositoryFeature : Feature {
       SetupServiceDelegator::class.java,
       UserStateServiceDelegator::class.java,
       RolloutStrategyServiceDelegator::class.java,
+      FeatureGroupServiceDelegator::class.java,
       CorsFilter::class.java,
       CacheControlFilter::class.java,  //      ConstraintExceptionHandler.class,
       AuthApplicationEventListener::class.java,
@@ -82,6 +83,9 @@ class ManagementRepositoryFeature : Feature {
         bind(PortfolioUtils::class.java).to(PortfolioUtils::class.java).`in`(Singleton::class.java)
         bind(AuthManager::class.java).to(AuthManagerService::class.java).`in`(Singleton::class.java)
         bind(ApplicationResource::class.java).to(ApplicationServiceDelegate::class.java).`in`(
+          Singleton::class.java
+        )
+        bind(FeatureGroupResource::class.java).to(FeatureGroupServiceDelegate::class.java).`in`(
           Singleton::class.java
         )
         if (ConfigurationUtils.dacha1Enabled) {

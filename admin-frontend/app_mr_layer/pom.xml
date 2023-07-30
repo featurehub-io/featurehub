@@ -64,6 +64,8 @@
                 <file>${project.basedir}/../../backend/mr-api/end2end-common.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/mr-api.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/webhook-api.yaml</file>
+                <file>${project.basedir}/../../backend/mr-api/feature-group.yaml</file>
+                <file>${project.basedir}/../../backend/mr-api/feature-history.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
             </configuration>

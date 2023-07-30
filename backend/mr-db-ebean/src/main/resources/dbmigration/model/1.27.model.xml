@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <alterColumn columnName="fk_who_updated" tableName="fh_env_feature_strategy" references="fh_person.id" foreignKeyName="fk_fh_env_feature_strategy_fk_who_updated" foreignKeyIndex="ix_fh_env_feature_strategy_fk_who_updated" dropForeignKey="fk_fh_env_feature_strategy_fk_who_updated" dropForeignKeyIndex="ix_fh_env_feature_strategy_fk_who_updated"/>
+        <alterColumn columnName="fk_who_updated" tableName="fh_fv_version" references="fh_person.id" foreignKeyName="fk_fh_fv_version_fk_who_updated" foreignKeyIndex="ix_fh_fv_version_fk_who_updated" dropForeignKey="fk_fh_fv_version_fk_who_updated" dropForeignKeyIndex="ix_fh_fv_version_fk_who_updated"/>
+    </changeSet>
+</migration>

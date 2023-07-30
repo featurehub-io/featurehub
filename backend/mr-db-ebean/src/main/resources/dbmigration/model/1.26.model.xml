@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="fh_featgroup" identityType="external" pkName="pk_fh_featgroup">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="gp_order" type="integer" notnull="true"/>
+            <column name="name" type="varchar" notnull="true"/>
+            <column name="dscr" type="varchar"/>
+            <column name="fk_environment_id" type="uuid" notnull="true" references="fh_environment.id" foreignKeyName="fk_fh_featgroup_fk_environment_id" foreignKeyIndex="ix_fh_featgroup_fk_environment_id"/>
+            <column name="strategies" type="json"/>
+            <column name="when_archived" type="timestamp"/>
+            <column name="when_updated" type="localdatetime" notnull="true"/>
+            <column name="when_created" type="localdatetime" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+        </createTable>
+        <createTable name="fh_fg_feat" pkName="pk_fh_fg_feat">
+            <column name="fk_feat_id" type="uuid" notnull="true" primaryKey="true" references="fh_app_feature.id" foreignKeyName="fk_fh_fg_feat_fk_feat_id" foreignKeyIndex="ix_fh_fg_feat_fk_feat_id"/>
+            <column name="fk_fg_id" type="uuid" notnull="true" primaryKey="true" references="fh_featgroup.id" foreignKeyName="fk_fh_fg_feat_fk_fg_id" foreignKeyIndex="ix_fh_fg_feat_fk_fg_id"/>
+            <column name="v" type="clob"/>
+        </createTable>
+        <alterColumn columnName="fk_who_updated" tableName="fh_env_feature_strategy" references="fh_person.id" foreignKeyName="fk_fh_env_feature_strategy_fk_who_updated" foreignKeyIndex="ix_fh_env_feature_strategy_fk_who_updated" dropForeignKey="fk_fh_env_feature_strategy_fk_who_updated" dropForeignKeyIndex="ix_fh_env_feature_strategy_fk_who_updated"/>
+        <alterColumn columnName="fk_who_updated" tableName="fh_fv_version" references="fh_person.id" foreignKeyName="fk_fh_fv_version_fk_who_updated" foreignKeyIndex="ix_fh_fv_version_fk_who_updated" dropForeignKey="fk_fh_fv_version_fk_who_updated" dropForeignKeyIndex="ix_fh_fv_version_fk_who_updated"/>
+    </changeSet>
+</migration>

@@ -6,7 +6,6 @@ import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/config/route_handlers.dart';
 import 'package:open_admin_app/config/route_names.dart';
 
-
 final _log = Logger('Routes');
 
 class Routes {
@@ -99,6 +98,9 @@ class Routes {
     router.define('/applications',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.apps));
+    router.define('/feature-groups',
+        routeSlots: [RouteSlot.portfolio],
+        handler: handleRouteChangeRequest(routeCreator.featureGroups));
     // NEVER EVER use /features as that is reserved for use by the Edge app
     router.define(routeNameFeatureDashboard,
         routeSlots: [RouteSlot.portfolio],

@@ -95,7 +95,7 @@ class Base3Spec extends Specification {
 
     portfolio = portfolioSqlApi.createPortfolio(new Portfolio().name(RandomStringUtils.randomAlphabetic(10)).description("desc1"), Opts.empty(), superPerson)
     app1 = applicationSqlApi.createApplication(portfolio.id, new Application().name(RandomStringUtils.randomAlphabetic(10)).description("app1"), superPerson)
-    env1 = environmentSqlApi.create(new Environment().description(RandomStringUtils.randomAlphabetic(10)).name("prod"), app1, superPerson)
+    env1 = environmentSqlApi.create(new Environment().description(RandomStringUtils.randomAlphabetic(10)).name(RandomStringUtils.randomAlphabetic(10)), app1, superPerson)
   }
 
   def cleanup() {

@@ -98,10 +98,12 @@ public class SetupResource implements SetupServiceDelegate {
       boolean enricherEnabled = ConfigurationUtils.Companion.getEnricherEnabled();
       boolean webhooksEnabled = ConfigurationUtils.Companion.getWebhooksEnabled();
       boolean dacha1Enabled = ConfigurationUtils.Companion.getDacha1Enabled();
+      boolean featureGroupsEnabled = ConfigurationUtils.Companion.getFeatureGroupsEnabled();
 
       sr.capabilityInfo(
         Map.of("webhook.features", (enricherEnabled && webhooksEnabled) ? "true" : "false" ,
-          "trackingId", googleTrackingId, "dacha1Enabled", dacha1Enabled ? "true" : "false")
+          "trackingId", googleTrackingId, "dacha1Enabled", dacha1Enabled ? "true" : "false",
+          "featureGroupsEnabled", featureGroupsEnabled ? "true" : "false")
       );
 
       return sr;

@@ -14,10 +14,10 @@ class DrawerViewWidget extends StatefulWidget {
   const DrawerViewWidget({Key? key}) : super(key: key);
 
   @override
-  _DrawerViewWidgetState createState() => _DrawerViewWidgetState();
+  DrawerViewWidgetState createState() => DrawerViewWidgetState();
 }
 
-class _DrawerViewWidgetState extends State<DrawerViewWidget> {
+class DrawerViewWidgetState extends State<DrawerViewWidget> {
   @override
   Widget build(BuildContext context) {
     final mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
@@ -71,7 +71,7 @@ class _MenuContainer extends StatelessWidget {
                     children: [
                       const PortfolioSelectorWidget(),
                       const SizedBox(height: 16),
-                      const _MenuFeaturesOptionsWidget(),
+                      _MenuFeaturesOptionsWidget(mrBloc),
                       StreamBuilder<ReleasedPortfolio?>(
                           stream: mrBloc.streamValley.currentPortfolioStream,
                           builder: (context, snapshot) {
@@ -253,25 +253,34 @@ class _ApplicationSettings extends StatelessWidget {
 }
 
 class _MenuFeaturesOptionsWidget extends StatelessWidget {
-  const _MenuFeaturesOptionsWidget({Key? key}) : super(key: key);
+  final ManagementRepositoryClientBloc mrBloc;
+
+  const _MenuFeaturesOptionsWidget(this.mrBloc, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
-        FHMenuItem(
+        const FHMenuItem(
           name: 'Applications',
           iconData: Icons.apps_outlined,
           path: '/applications',
           params: {},
         ),
-        FHMenuItem(
+        const FHMenuItem(
           name: 'Features',
           iconData: Icons.flag_outlined,
           path: routeNameFeatureDashboard,
           params: {},
         ),
-        FHMenuItem(
+        if (mrBloc.identityProviders.featureGroupsEnabled)
+          const FHMenuItem(
+            name: 'Feature Groups',
+            iconData: Icons.settings_suggest_sharp,
+            path: 'feature-groups',
+            params: {},
+          ),
+        const FHMenuItem(
           name: 'API Keys',
           iconData: Icons.key_outlined,
           path: '/api-keys',

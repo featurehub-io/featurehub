@@ -171,8 +171,11 @@ class _ApplicationsCardsList extends StatelessWidget {
                 direction: Axis.horizontal,
                 crossAxisAlignment: WrapCrossAlignment.start,
                 children: snapshot.data!
-                    .map(
-                        (app) => _ApplicationCard(application: app, bloc: bloc))
+                    .map((app) => _ApplicationCard(
+                          application: app,
+                          bloc: bloc,
+                          cardContents: _AppTotals(application: app),
+                        ))
                     .toList(),
               );
             }
@@ -185,9 +188,13 @@ class _ApplicationsCardsList extends StatelessWidget {
 class _ApplicationCard extends StatelessWidget {
   final Application application;
   final AppsBloc bloc;
+  final Widget cardContents;
 
   const _ApplicationCard(
-      {Key? key, required this.application, required this.bloc})
+      {Key? key,
+      required this.application,
+      required this.bloc,
+      required this.cardContents})
       : super(key: key);
 
   @override
@@ -264,10 +271,7 @@ class _ApplicationCard extends StatelessWidget {
                     ],
                   ),
                   Column(
-                    children: [
-                      const SizedBox(height: 4.0),
-                      _AppTotals(application: application),
-                    ],
+                    children: [const SizedBox(height: 4.0), cardContents],
                   )
                 ],
               ),

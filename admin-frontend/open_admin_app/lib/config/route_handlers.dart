@@ -9,6 +9,7 @@ import 'package:open_admin_app/routes/create_admin_service_accounts_route.dart';
 import 'package:open_admin_app/routes/create_user_route.dart';
 import 'package:open_admin_app/routes/edit_admin_service_account_route.dart';
 import 'package:open_admin_app/routes/edit_user_route.dart';
+import 'package:open_admin_app/routes/feature_groups_route.dart';
 import 'package:open_admin_app/routes/features_overview_route.dart';
 import 'package:open_admin_app/routes/home_route.dart';
 import 'package:open_admin_app/routes/loading_route.dart';
@@ -25,6 +26,7 @@ import 'package:open_admin_app/routes/signin_route.dart';
 import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_app_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:open_admin_app/widgets/group/group_bloc.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';
@@ -122,7 +124,8 @@ class RouteCreator {
             child: const CreateUserRoute(title: 'Create User')));
   }
 
-  Widget createAdminApiKey(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget createAdminApiKey(mrBloc,
+      {Map<String, List<String?>> params = const {}}) {
     // TODO: fix this construction, bloc should not be created outside of provider
     final select = SelectPortfolioGroupBloc(mrBloc);
     return BlocProvider<SelectPortfolioGroupBloc>(
@@ -130,7 +133,8 @@ class RouteCreator {
         child: BlocProvider<CreateUserBloc>(
             creator: (_context, _bag) =>
                 CreateUserBloc(mrBloc, selectGroupBloc: select),
-            child: const CreateAdminServiceAccountsRoute(title: 'Create Admin Service Account')));
+            child: const CreateAdminServiceAccountsRoute(
+                title: 'Create Admin Service Account')));
   }
 
   Widget manageUser(mrBloc, {Map<String, List<String?>> params = const {}}) {
@@ -144,7 +148,8 @@ class RouteCreator {
             child: const EditUserRoute()));
   }
 
-  Widget editAdminApiKey(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget editAdminApiKey(mrBloc,
+      {Map<String, List<String?>> params = const {}}) {
     final select = SelectPortfolioGroupBloc(mrBloc);
     return BlocProvider<SelectPortfolioGroupBloc>(
         creator: (_context, _bag) => select,
@@ -155,7 +160,8 @@ class RouteCreator {
             child: const EditAdminServiceAccountRoute()));
   }
 
-  Widget adminServiceAccount(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget adminServiceAccount(mrBloc,
+      {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<ListUsersBloc>(
         creator: (_context, _bag) =>
             ListUsersBloc(params['search']?.elementAt(0), mrBloc),
@@ -200,6 +206,12 @@ class RouteCreator {
     return BlocProvider<AppsBloc>(
         creator: (_context, _bag) => AppsBloc(mrBloc),
         child: AppsRoute(createApp: _actionCreate(params)));
+  }
+
+  Widget featureGroups(mrBloc, {Map<String, List<String?>> params = const {}}) {
+    return BlocProvider<FeatureGroupsBloc>(
+        creator: (_context, _bag) => FeatureGroupsBloc(mrBloc),
+        child: FeatureGroupsRoute(createApp: _actionCreate(params)));
   }
 
   Widget serviceEnvsHandler(ManagementRepositoryClientBloc mrBloc,
