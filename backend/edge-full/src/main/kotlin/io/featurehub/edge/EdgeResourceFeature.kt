@@ -2,6 +2,7 @@ package io.featurehub.edge
 
 import io.featurehub.edge.client.TimedBucketClientFactory
 import io.featurehub.edge.client.TimedBucketClientFactoryImpl
+import io.featurehub.edge.rest.Edge2Resource
 import io.featurehub.edge.rest.EventStreamResource
 import io.featurehub.edge.rest.SSEHeaderFilter
 import jakarta.inject.Singleton
@@ -13,6 +14,7 @@ class EdgeResourceFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     context
       .register(EventStreamResource::class.java)
+      .register(Edge2Resource::class.java)
       .register(SSEHeaderFilter::class.java)
 
     context.register(object: AbstractBinder() {

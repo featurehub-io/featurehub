@@ -166,7 +166,7 @@
           <dependency>
             <groupId>cd.connect.openapi</groupId>
             <artifactId>connect-openapi-jersey3</artifactId>
-            <version>8.6</version>
+            <version>8.9-SNAPSHOT</version>
           </dependency>
         </dependencies>
         <executions>

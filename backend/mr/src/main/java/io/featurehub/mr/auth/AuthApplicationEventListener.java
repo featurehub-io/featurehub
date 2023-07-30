@@ -51,8 +51,9 @@ public class AuthApplicationEventListener implements ApplicationEventListener {
   @Override
   public RequestEventListener onRequest(RequestEvent requestEvent) {
     // do not return an interceptor when running as the party server otherwise it slows the features API down
-    if (requestEvent.getUriInfo().getPath() != null &&
-        !requestEvent.getUriInfo().getPath().startsWith("/features")
+    if (requestEvent.getUriInfo().getPath() != null
+        && !requestEvent.getUriInfo().getPath().startsWith("/features")
+        && !requestEvent.getUriInfo().getPath().startsWith("/f2")
     ) return new AuthRequestListener();
 
     if (requestEvent.getType() == RequestEvent.Type.FINISHED) {

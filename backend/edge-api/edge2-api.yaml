@@ -61,24 +61,29 @@ components:
           x-longname: environments
           type: array
           items:
-            $ref: "#/components/schemas/EdgeEnvironmentCollection"
-    EdgeEnvironmentCollection:
+            $ref: "#/components/schemas/EdgeEnvironment"
+    EdgeEnvironment:
       description: "This represents a collection of features as per a request from a GET api. GET's can request multiple API Keys at the same time."
       required:
         - id
+        - f
       properties:
         id:
           type: string
         f:
           description: "features"
           x-longname: features
+          nullable: false
           type: array
           items:
             $ref: "#/components/schemas/EdgeFeatureState"
     EdgeFeatureState:
       required:
-        - key
+        - k
         - id
+        - v
+        - t
+        - s
       properties:
         id:
           type: string
@@ -105,11 +110,18 @@ components:
           type: string
         s:
           type: array
+          nullable: false
+          x-longname: strategies
           items:
             $ref: "#/components/schemas/EdgeRolloutStrategy"
     EdgeFeatureValueType:
       x-longname: type
       type: string
+      x-enum-longname:
+        b: BOOLEAN
+        n: NUMBER
+        j: JSON
+        s: STRING
       enum:
         - b
         - n
@@ -169,11 +181,18 @@ components:
         id:
           type: string
     EdgeRolloutStrategyArrayType:
-      x-package: io.featurehub.edge.model
       description: "values depend on the field type"
     EdgeRolloutStrategyFieldType:
-      x-package: io.featurehub.edge.model
       type: string
+      x-longname: fieldType
+      x-enum-longname:
+        s: STRING
+        sv: SEMANTIC_VERSION
+        n: NUMBER
+        d: DATE
+        t: DATETIME
+        b: BOOLEAN
+        i: IP_ADDRESS
       enum:
         - s # STRING
         - sv # SEMANTIC_VERSION
@@ -183,8 +202,20 @@ components:
         - b # BOOLEAN
         - i # IP_ADDRESS
     EdgeAttributeConditional:
-      x-package: io.featurehub.edge.model
+      x-longname: conditional
       type: string
+      x-enum-longname:
+        e:  equals
+        g:  greater
+        ge: greater_equals
+        l: less
+        le: less_equals
+        ne: not_equals
+        ew: ends_with
+        sw: starts_with
+        i: includes
+        x: excludes
+        r: regex
       enum:
         - "e"  # equals
         - "g"  # greater
@@ -198,8 +229,14 @@ components:
         - "x" #excludes
         - "r" #regex
     EdgeAttributeWellKnownNames:
-      x-package: io.featurehub.edge.model
       type: string
+      x-enum-longname:
+        d: device
+        c: country
+        p: platform
+        u: userkey
+        s: session
+        v: version
       enum:
         - "d" # device
         - "c" # country
@@ -208,8 +245,14 @@ components:
         - "s" # session
         - "v" # version
     EdgeAttributeDeviceName:
-      x-package: io.featurehub.edge.model
       type: string
+      x-enum-longname:
+        b: browser
+        m: mobile
+        d: desktop
+        s: server
+        w: watch
+        e: embedded
       enum:
         - "b" # browser
         - "m" # mobile
@@ -218,8 +261,13 @@ components:
         - "w" # watch
         - "e" # embedded
     EdgeAttributePlatformName:
-      x-package: io.featurehub.edge.model
       type: string
+      x-enum-longname:
+        l: linux
+        w: windows
+        m: macos
+        a: android
+        i: ios
       enum:
         - "l" # linux
         - "w" # windows
@@ -227,10 +275,206 @@ components:
         - "a" # android
         - "i" # ios
     EdgeAttributeCountryName:
-      x-package: io.featurehub.mr.model
       x-publish-include: mr-api,edge
       type: string
       description: "https://www.britannica.com/topic/list-of-countries-1993160 - we put these in API so everyone can have the same list"
+      x-enum-longname:
+        af: afghanistan
+        al: albania
+        dz: algeria
+        ad: andorra
+        ao: angola
+        ag: antigua_and_barbuda
+        ar: argentina
+        am: armenia
+        au: australia
+        at: austria
+        az: azerbaijan
+        bs: the_bahamas
+        bh: bahrain
+        bd: bangladesh
+        bb: barbados
+        by: belarus
+        be: belgium
+        bz: belize
+        bj: benin
+        bt: bhutan
+        bo: bolivia
+        ba: bosnia_and_herzegovina
+        bw: botswana
+        br: brazil
+        bn: brunei
+        bg: bulgaria
+        bf: burkina_faso
+        bi: burundi
+        cv: cabo_verde
+        kh: cambodia
+        cm: cameroon
+        ca: canada
+        cf: central_african_republic
+        td: chad
+        cl: chile
+        cn: china
+        co: colombia
+        km: comoros
+        cd: congo_democratic_republic_of_the
+        cg: congo_republic_of_the
+        cr: costa_rica
+        ci: cote_divoire
+        hr: croatia
+        cu: cuba
+        cy: cyprus
+        cz: czech_republic
+        dk: denmark
+        dj: djibouti
+        dm: dominica
+        do: dominican_republic
+        tl: east_timor
+        ec: ecuador
+        eg: egypt
+        sv: el_salvador
+        gq: equatorial_guinea
+        er: eritrea
+        ee: estonia
+        sz: eswatini
+        et: ethiopia
+        fj: fiji
+        fi: finland
+        fr: france
+        ga: gabon
+        gm: the_gambia
+        ge: georgia
+        de: germany
+        gh: ghana
+        gr: greece
+        gd: grenada
+        gt: guatemala
+        gn: guinea
+        gw: guinea_bissau
+        gy: guyana
+        ht: haiti
+        hn: honduras
+        hu: hungary
+        is: iceland
+        in: india
+        id: indonesia
+        ir: iran
+        iq: iraq
+        ie: ireland
+        il: israel
+        it: italy
+        jm: jamaica
+        jp: japan
+        jo: jordan
+        kz: kazakhstan
+        ke: kenya
+        ki: kiribati
+        kp: korea_north
+        kr: korea_south
+        xk: kosovo
+        kw: kuwait
+        kg: kyrgyzstan
+        la: laos
+        lv: latvia
+        lb: lebanon
+        ls: lesotho
+        lr: liberia
+        ly: libya
+        li: liechtenstein
+        lt: lithuania
+        lu: luxembourg
+        mg: madagascar
+        mw: malawi
+        my: malaysia
+        mv: maldives
+        ml: mali
+        mt: malta
+        mh: marshall_islands
+        mr: mauritania
+        mu: mauritius
+        mx: mexico
+        fm: micronesia_federated_states_of
+        md: moldova
+        mc: monaco
+        mn: mongolia
+        me: montenegro
+        ma: morocco
+        mz: mozambique
+        mm: myanmar
+        na: namibia
+        nr: nauru
+        np: nepal
+        nl: netherlands
+        nz: new_zealand
+        ni: nicaragua
+        ne: niger
+        ng: nigeria
+        mk: north_macedonia
+        no: norway
+        om: oman
+        pk: pakistan
+        pw: palau
+        pa: panama
+        pg: papua_new_guinea
+        py: paraguay
+        pe: peru
+        ph: philippines
+        pl: poland
+        pt: portugal
+        qa: qatar
+        ro: romania
+        ru: russia
+        rw: rwanda
+        kn: saint_kitts_and_nevis
+        lc: saint_lucia
+        vc: saint_vincent_and_the_grenadines
+        ws: samoa
+        sm: san_marino
+        st: sao_tome_and_principe
+        sa: saudi_arabia
+        sn: senegal
+        rs: serbia
+        sc: seychelles
+        sl: sierra_leone
+        sg: singapore
+        sk: slovakia
+        si: slovenia
+        sb: solomon_islands
+        so: somalia
+        za: south_africa
+        es: spain
+        lk: sri_lanka
+        sd: sudan
+        ss: sudan_south
+        sr: suriname
+        se: sweden
+        ch: switzerland
+        sy: syria
+        tw: taiwan
+        tj: tajikistan
+        tz: tanzania
+        th: thailand
+        tg: togo
+        to: tonga
+        tt: trinidad_and_tobago
+        tn: tunisia
+        tr: turkey
+        tm: turkmenistan
+        tv: tuvalu
+        ug: uganda
+        ua: ukraine
+        ae: united_arab_emirates
+        uk: united_kingdom
+        us: united_states
+        uy: uruguay
+        uz: uzbekistan
+        vu: vanuatu
+        va: vatican_city
+        ve: venezuela
+        vn: vietnam
+        ye: yemen
+        zm: zambia
+        zw: zimbabwe
       enum:
         - af # afghanistan
         - al # albania
@@ -260,7 +504,7 @@ components:
         - bg # bulgaria
         - bf # burkina_faso
         - bi # burundi
-        - cv # cabo_verde, cape verde
+        - cv # cabo_verde
         - kh # cambodia
         - cm # cameroon
         - ca # canada

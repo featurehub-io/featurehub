@@ -65,7 +65,7 @@ public class TimedBucketClientConnection implements ClientConnection {
       @NotNull KeyParts apiKey,
       @NotNull FeatureTransformer featureTransformer,
       @NotNull StatRecorder statRecorder,
-      @Nullable List<String> featureHubAttributes,
+      @Nullable ClientContext attributesForStrategy,
       @Nullable String etag,
       @Nullable String extraContext,
       @NotNull BucketService bucketService) {
@@ -77,9 +77,6 @@ public class TimedBucketClientConnection implements ClientConnection {
     this.apiKey = apiKey;
     this.featureTransformer = featureTransformer;
     this.statRecorder = statRecorder;
-
-    attributesForStrategy =
-        ClientContext.decode(featureHubAttributes, Collections.singletonList(apiKey));
 
     etags =
         ETagSplitter.Companion.splitTag(etag, List.of(apiKey), attributesForStrategy.makeEtag());

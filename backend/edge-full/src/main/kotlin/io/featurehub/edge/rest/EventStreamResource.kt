@@ -38,7 +38,7 @@ class EventStreamResource @Inject constructor(
   @Prometheus(name = "edge_poll_api", help = "Number of requests for the poll API")
   @ManagedAsync
   fun getFeatureStates(
-    @Suspended response: AsyncResponse?,
+    @Suspended response: AsyncResponse,
     @QueryParam("sdkUrl") sdkUrls: List<String>?,
     @QueryParam("apiKey") apiKeys: List<String>?,
     @QueryParam("contextSha") contextSha: String?,
@@ -46,15 +46,16 @@ class EventStreamResource @Inject constructor(
     @HeaderParam("if-none-match") etagHeader: String?
   ) {
     if (fastlyConfigured && contextSha == null) {
-      throw WebApplicationException(
+      response.resume(
         Response.status(400).header("content-type", "text/plain").entity(
           "Fastly is configured and your SDK is too old to support it and will " +
-              "malfunction, please update."
+            "malfunction, please update."
         ).build()
       )
+      return
     }
     featureGetProcessor.processGet(
-      response!!, sdkUrls, apiKeys, featureHubAttrs, etagHeader, statRecorder
+      response!!, sdkUrls, apiKeys, featureHubAttrs, etagHeader
     )
   }
 
@@ -139,7 +140,12 @@ class EventStreamResource @Inject constructor(
   ) {
     val parts = sdkKey.replace("+", "/").split("/")
     if (parts.size != 2) {
-      throw BadRequestException()
+      response.resume(
+        Response.status(400).header("content-type", "text/plain").entity(
+          "Invalid key"
+        ).build()
+      )
+      return
     }
     val envId = UUID.fromString(parts[0])
     featureUpdateProcessor.updateFeature(response, null, envId, parts[1], featureKey, featureStateUpdate, null)

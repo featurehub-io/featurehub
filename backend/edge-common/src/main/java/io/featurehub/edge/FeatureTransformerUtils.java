@@ -57,7 +57,7 @@ public class FeatureTransformerUtils implements FeatureTransformer {
                     .collect(Collectors.toList())
                 : new ArrayList<>();
 
-        if (clientAttributes.isClientEvaluation && rf.getValue() != null) {
+        if (clientAttributes.isClientEvaluation() && rf.getValue() != null) {
           fs.strategies(fsStrategies);
           fs.value(rf.getValue().getValue());
         } else {
