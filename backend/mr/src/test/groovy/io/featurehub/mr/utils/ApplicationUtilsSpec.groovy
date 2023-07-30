@@ -33,7 +33,7 @@ class ApplicationUtilsSpec extends Specification {
     then:
       1 * appApi.personIsFeatureCreator(appId, person.id.id) >> true
       result.current == person
-      result.app == null
+      result.app.id == appId
   }
 
   def "when a person has an org admin role, they will pass the creator check"() {
