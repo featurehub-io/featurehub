@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
+import 'package:rxdart/rxdart.dart';
 
 class EnvironmentDropDown extends StatefulWidget {
   final FeatureGroupsBloc bloc;
@@ -15,6 +16,7 @@ class EnvironmentDropDown extends StatefulWidget {
 
 class _EnvironmentDropDownState extends State<EnvironmentDropDown> {
   String? _selectedEnvId;
+  late BehaviorSubject<String?> _envStream = BehaviorSubject<String?>();
 
   @override
   void initState() {
@@ -23,6 +25,7 @@ class _EnvironmentDropDownState extends State<EnvironmentDropDown> {
     final bloc = BlocProvider.of<FeatureGroupsBloc>(context);
 
     // when application changes, this stream will set appropriate ID or null
+    _envStream = bloc.currentEnvironmentStream;
     bloc.currentEnvironmentStream.listen((env) {
       setState(() {
         _selectedEnvId = env;
@@ -33,6 +36,7 @@ class _EnvironmentDropDownState extends State<EnvironmentDropDown> {
   @override
   void dispose() {
     super.dispose();
+    _envStream.close();
   }
 
   @override
