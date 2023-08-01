@@ -3,6 +3,7 @@ package io.featurehub.edge.rest
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.StreamingFeatureController
 import io.featurehub.edge.bucket.BucketService
+import io.featurehub.edge.client.BucketProtocolVersion
 import io.featurehub.edge.client.TimedBucketClientFactory
 import io.featurehub.edge.stats.StatRecorder
 import io.featurehub.edge.strategies.ClientContext
@@ -49,6 +50,7 @@ class FeatureSseProcessor @Inject constructor(
     try {
       val bucket = timedBucketFactory.createBucket(
         outputStream, key, ClientContext.decode( browserHubAttrs?.let { listOf(it) } ?: featureHubAttrs, listOf(key)),
+        BucketProtocolVersion.V1,
         etag, extraContext,
       )
       if (bucket.discovery()) {

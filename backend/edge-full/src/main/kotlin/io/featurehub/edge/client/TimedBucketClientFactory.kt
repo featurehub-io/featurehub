@@ -8,9 +8,15 @@ import io.featurehub.edge.strategies.ClientContext
 import jakarta.inject.Inject
 import org.glassfish.jersey.media.sse.EventOutput
 
+enum class BucketProtocolVersion {
+  V1, V2
+}
+
 interface TimedBucketClientFactory {
-  fun createBucket(output: EventOutput, apiKey: KeyParts,
+  fun createBucket(output: EventOutput,
+                   apiKey: KeyParts,
                    context: ClientContext,
+                   bucketProtocolVersion: BucketProtocolVersion,
                    etag: String?,
                    extraContext: String?): TimedBucketClientConnection
 }
@@ -22,9 +28,10 @@ class TimedBucketClientFactoryImpl @Inject constructor(
     output: EventOutput,
     apiKey: KeyParts,
     context: ClientContext,
+    bucketProtocolVersion: BucketProtocolVersion,
     etag: String?,
     extraContext: String?
   ): TimedBucketClientConnection {
-    return TimedBucketClientConnection(output, apiKey, featureTransformer, statRecorder, context, etag, extraContext, bucketService)
+    return TimedBucketClientConnection(output, apiKey, featureTransformer, statRecorder, context, etag, extraContext, bucketService, bucketProtocolVersion)
   }
 }

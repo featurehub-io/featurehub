@@ -9,6 +9,7 @@ import io.featurehub.edge.stats.StatRecorder
 import io.featurehub.edge.strategies.ClientContext
 import io.featurehub.sse.model.FeatureRolloutStrategy
 import io.featurehub.sse.model.FeatureRolloutStrategyAttribute
+import io.featurehub.sse.model.FeatureState
 import io.prometheus.client.Histogram
 import jakarta.inject.Inject
 import jakarta.ws.rs.BadRequestException
@@ -101,20 +102,27 @@ class EdgeGetProcessor  @Inject constructor(
           .values(a.values)
       }
     }
+
+    fun mapFeatures(features: List<FeatureState>?): List<EdgeFeatureState> {
+      if (features == null) return listOf()
+      return features.map(::mapFeature)
+    }
+
+    fun mapFeature(f: FeatureState): EdgeFeatureState {
+      return EdgeFeatureState()
+        .id(shortUuiid(f.id))
+        .key(f.key)
+        .value(f.value)
+        .version(f.version!!)
+        .locked(f.l)
+        .strategies(mapStrategies(f.strategies))
+        .type(EdgeFeatureValueType.fromValue(f.type!!.value)!!)
+    }
   }
 
   override fun buildResponseObject(environments: List<FeatureRequestResponse>): Any {
     return EdgeFeatureEnvironments().environments(environments.map { e ->
-      EdgeEnvironment().features(e.environment.features!!.map { f ->
-        EdgeFeatureState()
-          .id(shortUuiid(f.id))
-          .key(f.key)
-          .value(f.value)
-          .version(f.version!!)
-          .locked(f.l)
-          .strategies(mapStrategies(f.strategies))
-          .type(EdgeFeatureValueType.fromValue(f.type!!.value)!!)
-      })
+      EdgeEnvironment().features(mapFeatures(e.environment.features))
     })
   }
 }

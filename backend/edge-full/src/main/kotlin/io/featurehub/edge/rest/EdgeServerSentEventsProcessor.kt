@@ -3,6 +3,7 @@ package io.featurehub.edge.rest
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.StreamingFeatureController
 import io.featurehub.edge.bucket.BucketService
+import io.featurehub.edge.client.BucketProtocolVersion
 import io.featurehub.edge.client.TimedBucketClientFactory
 import io.featurehub.edge.model.SSEResponse
 import io.featurehub.edge.stats.StatRecorder
@@ -51,7 +52,8 @@ class EdgeServerSentEventsProcess @Inject constructor(private val bucketService:
     try {
       val bucket = timedBucketFactory.createBucket(
         outputStream, apiKey, ClientContext.decode(queryParameters, listOf(apiKey)),
-        etag, extraContext,
+        BucketProtocolVersion.V2,
+        etag, extraConfig,
       )
       if (bucket.discovery()) {
         serverConfig.requestFeatures(bucket)

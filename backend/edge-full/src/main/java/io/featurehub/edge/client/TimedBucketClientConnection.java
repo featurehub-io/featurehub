@@ -10,22 +10,17 @@ import io.featurehub.edge.bucket.TimedBucketSlot;
 import io.featurehub.edge.features.ETagSplitter;
 import io.featurehub.edge.features.EtagStructureHolder;
 import io.featurehub.edge.features.FeatureRequestResponse;
+import io.featurehub.edge.rest.EdgeGetProcessor;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.jersey.config.CacheJsonMapper;
+import io.featurehub.sse.model.FeatureState;
 import io.featurehub.sse.model.SSEResultState;
 import io.featurehub.sse.stats.model.EdgeHitResultType;
 import io.featurehub.sse.stats.model.EdgeHitSourceType;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 import jakarta.ws.rs.core.MediaType;
-import org.glassfish.jersey.media.sse.EventOutput;
-import org.glassfish.jersey.media.sse.OutboundEvent;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +28,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.glassfish.jersey.media.sse.EventOutput;
+import org.glassfish.jersey.media.sse.OutboundEvent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TimedBucketClientConnection implements ClientConnection {
   private static final Logger log = LoggerFactory.getLogger(TimedBucketClientConnection.class);
@@ -41,6 +42,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   private final Map<UUID, EjectHandler> handlers = new HashMap<>();
   protected final String extraContext;
   @NotNull protected final BucketService bucketService;
+  @NotNull private final BucketProtocolVersion bucketProtocolVersion;
   private List<PublishFeatureValue> heldFeatureUpdates = new ArrayList<>();
   @NotNull protected final FeatureTransformer featureTransformer;
   @NotNull protected final ClientContext attributesForStrategy;
@@ -65,12 +67,16 @@ public class TimedBucketClientConnection implements ClientConnection {
       @NotNull KeyParts apiKey,
       @NotNull FeatureTransformer featureTransformer,
       @NotNull StatRecorder statRecorder,
-      @Nullable ClientContext attributesForStrategy,
+      @NotNull ClientContext attributesForStrategy,
       @Nullable String etag,
       @Nullable String extraContext,
-      @NotNull BucketService bucketService) {
+      @NotNull BucketService bucketService,
+      @NotNull BucketProtocolVersion bucketProtocolVersion
+      ) {
     this.extraContext = extraContext;
     this.bucketService = bucketService;
+    this.bucketProtocolVersion = bucketProtocolVersion;
+    this.attributesForStrategy = attributesForStrategy;
     id = UUID.randomUUID();
 
     this.output = output;
@@ -245,7 +251,10 @@ public class TimedBucketClientConnection implements ClientConnection {
                 ETagSplitter.Companion.makeEtags(
                     etags, Collections.singletonList(edgeResponse.getEtag())),
                 CacheJsonMapper.mapper.writeValueAsString(
-                    edgeResponse.getEnvironment().getFeatures()));
+                    bucketProtocolVersion == BucketProtocolVersion.V1
+                        ? edgeResponse.getEnvironment().getFeatures()
+                        : EdgeGetProcessor.Companion.mapFeatures(
+                            edgeResponse.getEnvironment().getFeatures())));
 
             statRecorder.recordHit(
                 apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
@@ -294,9 +303,11 @@ public class TimedBucketClientConnection implements ClientConnection {
         heldFeatureUpdates.add(rf);
       } else {
         try {
+          final FeatureState feature = featureTransformer.transform(rf.getFeature(), attributesForStrategy);
           String data =
               CacheJsonMapper.mapper.writeValueAsString(
-                  featureTransformer.transform(rf.getFeature(), attributesForStrategy));
+                bucketProtocolVersion == BucketProtocolVersion.V1 ?
+                feature : EdgeGetProcessor.Companion.mapFeature(feature));
           // if it was a DELETE or it was being triggered as a retired feature
           if (rf.getAction() == PublishAction.DELETE
               || (rf.getFeature().getValue() != null
