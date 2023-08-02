@@ -38,6 +38,8 @@ import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 import 'package:open_admin_app/widgets/user/register/register_url_bloc.dart';
 
+import '../widget_creator.dart';
+
 Handler handleRouteChangeRequest(builder) {
   return Handler(
       handlerFunc: (BuildContext context, Map<String, List<String?>> params) {
@@ -142,7 +144,7 @@ class RouteCreator {
     return BlocProvider<SelectPortfolioGroupBloc>(
         creator: (_context, _bag) => select,
         child: BlocProvider<EditUserBloc>(
-            creator: (_context, _bag) => EditUserBloc(
+            creator: (_context, _bag) => widgetCreator.createEditUserBloc(
                 mrBloc, params['id']?.elementAt(0),
                 selectGroupBloc: select),
             child: const EditUserRoute()));
