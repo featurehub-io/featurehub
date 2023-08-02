@@ -12,8 +12,8 @@ class WidgetCreator {
       SigninWidget(client);
   Widget orgNameContainer(ManagementRepositoryClientBloc client) =>
       const SizedBox.shrink();
-  Widget externalDocsLinksWidget() =>
-      const ExternalDocsLinksWidget();
+  Widget setBillingAdminCheckbox() => const SizedBox.shrink();
+  Widget externalDocsLinksWidget() => const ExternalDocsLinksWidget();
   List<Widget> extraApplicationMenuItems(
           ManagementRepositoryClientBloc client) =>
       [];
@@ -26,7 +26,8 @@ class WidgetCreator {
     return FHErrorMessageDetailsWidget(fhError: fhError);
   }
 
-  Widget edgeUrlCopyWidget(ManagementRepositoryClientBloc mrClient) => const SizedBox.shrink();
+  Widget edgeUrlCopyWidget(ManagementRepositoryClientBloc mrClient) =>
+      const SizedBox.shrink();
 }
 
 WidgetCreator widgetCreator = WidgetCreator();

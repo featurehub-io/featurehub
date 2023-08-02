@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/widget_creator.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_filled_input_decoration.dart';
@@ -129,6 +130,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
           const PortfolioGroupSelector(),
           if (bloc.mrClient.personState.userIsSuperAdmin)
             AdminCheckboxWidget(person: bloc.person),
+          widgetCreator.setBillingAdminCheckbox(),
           FHButtonBar(children: <Widget>[
             FHFlatButtonTransparent(
                 onPressed: () {
@@ -145,7 +147,8 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
                         try {
-                          await bloc.updatePersonDetails(_email.text, _name.text);
+                          await bloc.updatePersonDetails(
+                              _email.text, _name.text);
                           bloc.mrClient.addSnackbar(Text(
                               'User ${bloc.person!.name!} has been updated'));
                           ManagementRepositoryClientBloc.router

@@ -61,23 +61,24 @@ class EditUserBloc implements Bloc {
         .toList();
   }
 
-  Future<void> _updateDetails(UpdatePerson updatedPerson, String name) async {
-    await mrClient.personServiceApi
-        .updatePersonV2(personId!,
-            updatedPerson
-              ..name = name
-              ..groups = _currentPersonGroups() );
+  Future<void> updateDetails(UpdatePerson updatedPerson, String name) async {
+    await mrClient.personServiceApi.updatePersonV2(
+        personId!,
+        updatedPerson
+          ..name = name
+          ..groups = _currentPersonGroups());
   }
 
   Future<void> updatePersonDetails(String email, String name) async {
     if (person != null) {
-      await _updateDetails(UpdatePerson(version: person!.version!, email: email), name);
+      await updateDetails(
+          UpdatePerson(version: person!.version!, email: email), name);
     }
   }
 
   Future<void> updateApiKeyDetails(String name) async {
     if (person != null) {
-      _updateDetails(UpdatePerson(version: person!.version!), name);
+      updateDetails(UpdatePerson(version: person!.version!), name);
     }
   }
 
@@ -114,6 +115,4 @@ class EditUserBloc implements Bloc {
   Portfolio isSuperAdminPortfolio() {
     return Portfolio(name: 'Super-Admin', description: 'Super-Admin Portfolio');
   }
-
-
 }
