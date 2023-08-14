@@ -4,7 +4,7 @@ info:
   description: This is the version 2 of the API for accessing features
   version: "1.1.1"
 paths:
-  /features2/:
+  /f2:
     get:
       tags:
         - FeatureV2Service
@@ -83,17 +83,19 @@ components:
         - id
         - v
         - t
-        - s
       properties:
         id:
           type: string
+          maxLength: 4
+          description: first 4 characters of the ID, used to allow the key to change
         k:
           type: string
           x-longname: key
         l:
           x-longname: locked
-          description: "Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter."
-          type: boolean
+          description: "Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter. Defaults to no."
+          type: integer
+          default: 0
         v:
           x-longname: version
           description: "The version of the feature, this allows features to change values and it means we don't trigger events"
@@ -110,13 +112,14 @@ components:
           type: string
         s:
           type: array
-          nullable: false
+          nullable: true
           x-longname: strategies
           items:
             $ref: "#/components/schemas/EdgeRolloutStrategy"
     EdgeFeatureValueType:
       x-longname: type
       type: string
+      default: b
       x-enum-longname:
         b: BOOLEAN
         n: NUMBER

@@ -22,8 +22,18 @@ class KeyParts(val cacheName: String, val environmentId: UUID, val serviceKey: S
         } catch (e: Exception) {
           return null
         }
-      } else if (parts.size == 2 && parts[0].length == 28) {
       } else if (parts.size == 2 && parts[0].length == 32) {
+        try {
+          // 9ceb81668aa04bb397aa5515b2d4c5ed
+          // 9ceb8166-8aa0-4bb3-97aa-5515b2d4c5ed
+          val envId = parts[0]
+          return KeyParts("default", UUID.fromString(envId.substring(0,8) + "-" +
+            envId.substring(8,12) + "-" + envId.substring(12,16) + "-" + envId.substring(16,20) + "-" + envId.substring(20)
+          ), parts[1])
+        } catch (e: Exception) {
+          return null
+        }
+      } else if (parts.size == 2 && parts[0].length == 36) {
         try {
           return KeyParts("default", UUID.fromString(parts[0]), parts[1])
         } catch (e: Exception) {

@@ -7,15 +7,21 @@ import io.featurehub.edge.features.FeatureRequestResponse
 import io.featurehub.edge.model.*
 import io.featurehub.edge.stats.StatRecorder
 import io.featurehub.edge.strategies.ClientContext
+import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.sse.model.FeatureRolloutStrategy
 import io.featurehub.sse.model.FeatureRolloutStrategyAttribute
 import io.featurehub.sse.model.FeatureState
+import io.featurehub.utils.UuidUtils
 import io.prometheus.client.Histogram
 import jakarta.inject.Inject
 import jakarta.ws.rs.BadRequestException
+import jakarta.ws.rs.InternalServerErrorException
 import jakarta.ws.rs.NotFoundException
+import jakarta.ws.rs.ServerErrorException
 import jakarta.ws.rs.container.AsyncResponse
 import org.glassfish.hk2.api.IterableProvider
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.*
 
 interface EdgeGet {
@@ -27,6 +33,7 @@ class EdgeGetProcessor  @Inject constructor(
   sourceResponseWrapper: IterableProvider<EdgeGetResponseWrapper>,
   statRecorder: StatRecorder
 ) : BaseFeatureGetProcessor(getOrchestrator, sourceResponseWrapper, statRecorder), EdgeGet {
+  private val log: Logger = LoggerFactory.getLogger(EdgeGetProcessor::class.java)
 
   override fun process(
     response: AsyncResponse,
@@ -60,6 +67,9 @@ class EdgeGetProcessor  @Inject constructor(
       recordStatResponse(environments)
 
       createResponse(response, environments, etagHeader, etags)
+    } catch (e: Exception) {
+      log.error("Failed", e)
+      response.resume(InternalServerErrorException())
     } finally {
       timer.observeDuration()
 
@@ -68,17 +78,6 @@ class EdgeGetProcessor  @Inject constructor(
   }
 
   companion object {
-    fun shortUuiid(id: UUID): String {
-      val buf = StringBuffer()
-
-      for(c in id.toString().toCharArray()) {
-        if (c != '-') {
-          buf.append(c)
-        }
-      }
-
-      return buf.toString()
-    }
 
     fun mapStrategies(strategies: List<FeatureRolloutStrategy>?): List<EdgeRolloutStrategy> {
       if (strategies == null) return listOf()
@@ -110,11 +109,11 @@ class EdgeGetProcessor  @Inject constructor(
 
     fun mapFeature(f: FeatureState): EdgeFeatureState {
       return EdgeFeatureState()
-        .id(shortUuiid(f.id))
+        .id(f.id.toString().substring(0,4))
         .key(f.key)
-        .value(f.value)
+        .value(if (f.type == FeatureValueType.BOOLEAN) (if (f.value == true) 1 else 0) else f.value)
         .version(f.version!!)
-        .locked(f.l)
+        .locked(if (f.l == true) 1 else 0)
         .strategies(mapStrategies(f.strategies))
         .type(EdgeFeatureValueType.fromValue(f.type!!.value)!!)
     }
@@ -122,7 +121,7 @@ class EdgeGetProcessor  @Inject constructor(
 
   override fun buildResponseObject(environments: List<FeatureRequestResponse>): Any {
     return EdgeFeatureEnvironments().environments(environments.map { e ->
-      EdgeEnvironment().features(mapFeatures(e.environment.features))
+      EdgeEnvironment().id(UuidUtils.shortUuiid(e.environment.id)).features(mapFeatures(e.environment.features))
     })
   }
 }

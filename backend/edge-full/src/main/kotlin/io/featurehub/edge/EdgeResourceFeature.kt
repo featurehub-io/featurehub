@@ -2,9 +2,7 @@ package io.featurehub.edge
 
 import io.featurehub.edge.client.TimedBucketClientFactory
 import io.featurehub.edge.client.TimedBucketClientFactoryImpl
-import io.featurehub.edge.rest.Edge2Resource
-import io.featurehub.edge.rest.EventStreamResource
-import io.featurehub.edge.rest.SSEHeaderFilter
+import io.featurehub.edge.rest.*
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
@@ -20,6 +18,7 @@ class EdgeResourceFeature : Feature {
     context.register(object: AbstractBinder() {
       override fun configure() {
         bind(TimedBucketClientFactoryImpl::class.java).to(TimedBucketClientFactory::class.java).`in`(Singleton::class.java)
+        bind(EdgeServerSentEventsProcess::class.java).to(EdgeServerSentEventsProcessor::class.java).`in`(Singleton::class.java)
       }
     })
 
