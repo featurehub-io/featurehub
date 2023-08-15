@@ -82,7 +82,6 @@ components:
         - k
         - id
         - v
-        - t
       properties:
         id:
           type: string
@@ -119,7 +118,7 @@ components:
     EdgeFeatureValueType:
       x-longname: type
       type: string
-      default: b
+#      default: b
       x-enum-longname:
         b: BOOLEAN
         n: NUMBER
