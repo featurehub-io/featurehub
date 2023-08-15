@@ -37,7 +37,7 @@ class AdminCheckboxWidgetState extends State<AdminCheckboxWidget> {
             constraints: const BoxConstraints(maxWidth: 300),
             child: CheckboxListTile(
                 title: Text(
-                  'Set this user as organization super admin.',
+                  'Set this user as organization super admin',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 value: isAdmin,
