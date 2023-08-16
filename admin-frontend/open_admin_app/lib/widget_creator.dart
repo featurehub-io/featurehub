@@ -10,6 +10,7 @@ import 'package:open_admin_app/widgets/user/signin/signin_widget.dart';
 import 'api/client_api.dart';
 
 class WidgetCreator {
+  bool canSeeOrganisationMenuDrawer(ManagementRepositoryClientBloc client) => client.userIsSuperAdmin;
   Widget createSigninWidget(ManagementRepositoryClientBloc client) =>
       SigninWidget(client);
   Widget orgNameContainer(ManagementRepositoryClientBloc client) =>
