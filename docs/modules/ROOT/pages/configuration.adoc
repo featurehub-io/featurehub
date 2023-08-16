@@ -56,7 +56,7 @@ To swap from Dacha1 (NATS only) to Dacha2 (all options), you need to set the env
 
 The upside of NATS is simplicity and speed, it is the fastest product we test with by far. We do not use JetStream,
 but you can configure it with JetStream if you wish. The downside is typically that your Operations team has to support
-it, and it is an extra cost to deploy. The Kubernetes charts for NATS are extremely good and reliable.
+it, and it is an extra cost to deploy. The Kubernetes charts for NATS are excellent and reliable.
 
 ==== Communication
 NATS communicates using a protocol whereby the clients essentially tell the servers about each other, but they
@@ -67,6 +67,7 @@ party-server you do not need to set anything. If you have deployed NATS yourself
 you will need to set the environment variable:
 
 - `nats.urls` - a comma separated list of NATs servers.
+- 'nats.healthcheck.disabled` - set to true if you don't want MR, Edge or Dacha to fail its health check if it cannot communicate with NATS.
 
 You do not need to configure anything further for NATS for Dacha1 or Dacha2. NATS supports request/reply,
 true pub/sub and pub/queues in a single product.
