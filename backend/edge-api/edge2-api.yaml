@@ -9,7 +9,7 @@ paths:
       tags:
         - FeatureV2Service
       parameters:
-        - name: apiKey
+        - name: a
           in: query
           description: "A list of API keys to retrieve information about"
           required: true

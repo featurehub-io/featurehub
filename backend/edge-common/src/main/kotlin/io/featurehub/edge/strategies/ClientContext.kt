@@ -27,7 +27,7 @@ class ClientContext(val isClientEvaluation: Boolean) {
     return if (uKey.isNullOrEmpty()) null else uKey[0]
   }
 
-  operator fun get(key: String, defaultValue: String): String {
+  operator fun get(key: String, defaultValue: String?): String? {
     val value = attributes[key]
     return if (value.isNullOrEmpty()) {
       defaultValue

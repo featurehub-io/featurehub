@@ -30,7 +30,7 @@ class Edge2Resource @Inject constructor(
   @ManagedAsync
   fun getFeatureStates(
     @Suspended response: AsyncResponse,
-    @QueryParam("apiKey") apiKeys: List<String>?,
+    @QueryParam("a") apiKeys: List<String>?,
     @Context uriInfo: UriInfo,
     @HeaderParam("if-none-match") etagHeader: String?
   ) {
@@ -52,7 +52,7 @@ class Edge2Resource @Inject constructor(
   @Prometheus(name = "edge_sse_api", help = "Number of requests for the SSE API")
   @Produces(SseFeature.SERVER_SENT_EVENTS)
   fun features(
-    @QueryParam("apiKey") apiKeys: List<String>?,
+    @QueryParam("a") apiKeys: List<String>?,
     @Context uriInfo: UriInfo,
     @HeaderParam("x-fh-extraconfig") extraConfig: String?,
     @HeaderParam("Last-Event-ID") etag: String?
