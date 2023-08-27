@@ -22,8 +22,6 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<RolloutStrategy> {
   final _featureGroupStream = BehaviorSubject<FeatureGroup>();
   BehaviorSubject<FeatureGroup> get featureGroupStream => _featureGroupStream;
 
-  ////////
-
   final _featureGroupUpdateStream =
       BehaviorSubject<List<FeatureGroupUpdateFeature>>();
 
@@ -41,6 +39,12 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<RolloutStrategy> {
   final _trackingUpdatesGroupFeaturesStream =
       BehaviorSubject<List<FeatureGroupFeature>>.seeded([]);
 
+  final _trackingUpdatesGroupStrategiesStream =
+      BehaviorSubject<List<FeatureGroupStrategy>>.seeded([]);
+
+  final _strategySource = BehaviorSubject<FeatureGroupStrategy>();
+  BehaviorSubject<FeatureGroupStrategy> get strategyStream => _strategySource;
+
   String? _selectedFeatureToAdd;
 
   set selectedFeatureToAdd(String? currentFeatureToAdd) {
@@ -54,7 +58,9 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<RolloutStrategy> {
     _availableFeaturesStream.close();
     _availableFeatureValuesStream.close();
     _groupFeaturesStream.close();
+    _strategySource.close();
     _trackingUpdatesGroupFeaturesStream.close();
+    _trackingUpdatesGroupStrategiesStream.close();
   }
 
   Future<void> _getFeatureGroup() async {
@@ -62,8 +68,12 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<RolloutStrategy> {
         .getFeatureGroup(
             featureGroupsBloc.mrClient.currentAid!, featureGroupListGroup.id);
     _featureGroupStream.add(fg);
+    if (fg.strategies.isNotEmpty) {
+      _strategySource.add(fg.strategies[0]);
+    }
     _groupFeaturesStream.add(fg.features);
     _trackingUpdatesGroupFeaturesStream.add(fg.features);
+    _trackingUpdatesGroupStrategiesStream.add(fg.strategies);
   }
 
   Future<void> _getFeatures() async {
@@ -75,8 +85,12 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<RolloutStrategy> {
   }
 
   @override
-  void addStrategy(strategy) {
-    // TODO: implement addStrategy
+  void addStrategy(dynamic strategy) {
+    FeatureGroupStrategy fgs = strategy;
+    List<FeatureGroupStrategy> strategyList =
+        _trackingUpdatesGroupStrategiesStream.value;
+    strategyList.add(fgs);
+    _trackingUpdatesGroupStrategiesStream.add(strategyList);
   }
 
   @override
@@ -85,9 +99,7 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<RolloutStrategy> {
   }
 
   @override
-  void ensureStrategiesAreUnique() {
-    // TODO: implement ensureStrategiesAreUnique
-  }
+  void ensureStrategiesAreUnique() {}
 
   @override
   // TODO: implement feature
@@ -100,7 +112,6 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<RolloutStrategy> {
 
   @override
   uniqueStrategyId() {
-    // TODO: implement uniqueStrategyId
     throw UnimplementedError();
   }
 
@@ -111,7 +122,11 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<RolloutStrategy> {
 
   @override
   void updateStrategy() {
-    // TODO: implement updateStrategy
+    FeatureGroupStrategy strategy = _strategySource.value;
+    List<FeatureGroupStrategy> strategyList =
+        []; // create new list is ok here, as we only have one strategy
+    strategyList.add(strategy);
+    _trackingUpdatesGroupStrategiesStream.add(strategyList);
   }
 
   @override
@@ -136,13 +151,18 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<RolloutStrategy> {
 
   Future<void> saveFeatureGroupUpdates() async {
     List<FeatureGroupUpdateFeature>? features = [];
+    List<FeatureGroupStrategy> strategies = [];
     for (FeatureGroupFeature feature
         in _trackingUpdatesGroupFeaturesStream.value) {
       FeatureGroupUpdateFeature featureUpdate = convertToFeatureUpdate(feature);
       features.add(featureUpdate);
     }
+    for (FeatureGroupStrategy strategy
+        in _trackingUpdatesGroupStrategiesStream.value) {
+      strategies.add(strategy);
+    }
     await featureGroupsBloc.updateFeatureGroup(featureGroupListGroup,
-        features: features);
+        features: features, strategies: strategies);
   }
 
   FeatureGroupUpdateFeature convertToFeatureUpdate(

@@ -1,3 +1,4 @@
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
@@ -9,6 +10,7 @@ import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_group_strategy_editing_widget.dart';
 import 'package:open_admin_app/widgets/feature-groups/features_drop_down.dart';
 import 'package:open_admin_app/widgets/feature-groups/string_value_container_widget.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
 
 class FeatureGroupSettings extends StatefulWidget {
   final FeatureGroupListGroup featureGroup;
@@ -59,6 +61,7 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                           Text(snapshot.data!.name,
                               style: Theme.of(context).textTheme.titleLarge),
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               SelectableText.rich(TextSpan(
                                   style: DefaultTextStyle.of(context).style,
@@ -93,10 +96,9 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                                     ),
                                   ])),
                             ],
-                            mainAxisAlignment: MainAxisAlignment.center,
                           ),
-                          SizedBox(height: 32.0),
-                          Container(
+                          const SizedBox(height: 32.0),
+                          SizedBox(
                             height: 400,
                             child: Row(children: [
                               Expanded(
@@ -105,7 +107,7 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                                   bloc: widget.bloc,
                                 ),
                               ),
-                              VerticalDivider(
+                              const VerticalDivider(
                                 width: 20,
                                 thickness: 1,
                                 indent: 20,
@@ -138,7 +140,10 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                 // if (widget.editable)
                 FHFlatButton(
                   title: 'Save',
-                  onPressed: () => widget.bloc.saveFeatureGroupUpdates(),
+                  onPressed: () {
+                    widget.bloc.saveFeatureGroupUpdates();
+                    Navigator.pop(context);
+                  },
                 )
               ],
             )
@@ -146,16 +151,6 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
         ),
       ),
     );
-  }
-
-  _updateGroupValues(
-    FeatureGroupBloc bloc,
-    FeatureGroupListGroup group,
-    List<FeatureGroupUpdateFeature>? features,
-    List<FeatureGroupStrategy>? strategies,
-  ) {
-    bloc.featureGroupsBloc
-        .updateFeatureGroup(group, features: features, strategies: strategies);
   }
 }
 
@@ -169,29 +164,57 @@ class _StrategySettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool editable = true;
-    return TextButton.icon(
-        label: const Text('Add rollout strategy'),
-        icon: const Icon(Icons.call_split_outlined),
-        onPressed: (editable == true)
-            ? () => showDialog(
-                context: context,
-                builder: (_) {
-                  return AlertDialog(
-                    title: Text(editable
-                        ? 'Edit split targeting rules'
-                        : 'View split targeting rules'),
-                    content: FeatureGroupStrategyEditingWidget(
-                        bloc: bloc, editable: true),
-                  );
-                })
-            : null);
-    // return Column(
-    //   children: [
-    //     Text('Edit/View strategy',
-    //         style: Theme.of(context).textTheme.headlineMedium),
-    //     FeatureGroupStrategyEditingWidget(bloc: bloc, editable: true),
-    //   ],
-    // );
+    return StreamBuilder<FeatureGroupStrategy>(
+        stream: bloc.strategyStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return TextButton.icon(
+                label: Text(snapshot.data!.name),
+                icon: const Icon(Icons.call_split_outlined),
+                onPressed: (editable == true)
+                    ? () => showDialog(
+                        context: context,
+                        builder: (_) {
+                          return AlertDialog(
+                              title: Text(editable
+                                  ? 'Edit split targeting rules'
+                                  : 'View split targeting rules'),
+                              content: BlocProvider(
+                                creator: (c, b) => IndividualStrategyBloc(
+                                    RolloutStrategy(
+                                        name: bloc.strategyStream.value.name,
+                                        attributes: bloc
+                                            .strategyStream.value.attributes)),
+                                child: FeatureGroupStrategyEditingWidget(
+                                    bloc: bloc, editable: true),
+                              ));
+                        })
+                    : null);
+          } else {
+            return TextButton.icon(
+                label: const Text("Add rollout strategy"),
+                icon: const Icon(Icons.call_split_outlined),
+                onPressed: (editable == true)
+                    ? () => showDialog(
+                        context: context,
+                        builder: (_) {
+                          return AlertDialog(
+                              title: Text(editable
+                                  ? 'Edit split targeting rules'
+                                  : 'View split targeting rules'),
+                              content: BlocProvider(
+                                creator: (c, b) =>
+                                    IndividualStrategyBloc(RolloutStrategy(
+                                  name: '',
+                                  id: 'created',
+                                )),
+                                child: FeatureGroupStrategyEditingWidget(
+                                    bloc: bloc, editable: true),
+                              ));
+                        })
+                    : null);
+          }
+        });
   }
 }
 
@@ -209,7 +232,7 @@ class _FeaturesSettings extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text("Features List", style: Theme.of(context).textTheme.titleLarge),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -223,7 +246,7 @@ class _FeaturesSettings extends StatelessWidget {
                     return const SizedBox.shrink();
                   }
                 }),
-            SizedBox(
+            const SizedBox(
               width: 8.0,
             ),
             TextButton.icon(
@@ -250,7 +273,7 @@ class _FeaturesSettings extends StatelessWidget {
                               child: Row(
                                 children: [
                                   Text(feature.name),
-                                  SizedBox(width: 8.0),
+                                  const SizedBox(width: 8.0),
                                   FeatureValueContainer(
                                       bloc: bloc, feature: feature),
                                 ],

@@ -33,6 +33,7 @@ class _FeatureGroupStrategyEditingWidgetState
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _strategyName = TextEditingController();
   final TextEditingController _strategyPercentage = TextEditingController();
+  late IndividualStrategyBloc individualStrategyBloc;
 
   bool isUpdate = false;
   bool isTotalPercentageError = false;
@@ -42,16 +43,15 @@ class _FeatureGroupStrategyEditingWidgetState
   @override
   void initState() {
     super.initState();
-    _strategyName.text = widget.bloc.featureGroupStream.value.environmentName;
-
-    if (widget.bloc.featureGroupStream.value.strategies.isNotEmpty &&
-        widget.bloc.featureGroupStream.value.strategies[0].percentage != null) {
-      _strategyPercentage.text = widget
-          .bloc.featureGroupStream.value.strategies[0].percentage
-          .toString();
+    individualStrategyBloc = BlocProvider.of(context);
+    if (widget.bloc.strategyStream.hasValue) {
+      _strategyName.text = widget.bloc.strategyStream.value.name;
+      if (widget.bloc.strategyStream.value.percentage != null) {
+        _strategyPercentage.text =
+            widget.bloc.strategyStream.value.percentage.toString();
+      }
+      isUpdate = true;
     }
-
-    isUpdate = true;
   }
 
   @override
@@ -100,8 +100,7 @@ class _FeatureGroupStrategyEditingWidgetState
                 ),
                 const SizedBox(height: 16),
                 BlocProvider(
-                    creator: (_c, _b) =>
-                        IndividualStrategyBloc(RolloutStrategy(name: 'bla')),
+                    creator: (_c, _b) => individualStrategyBloc,
                     child: const RolloutStrategiesWidget()),
                 const SizedBox(height: 16.0),
                 const FHPageDivider(),
@@ -110,10 +109,8 @@ class _FeatureGroupStrategyEditingWidgetState
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Column(children: [
-                      if ((widget.bloc.featureGroupStream.value.strategies
-                                  .isNotEmpty &&
-                              widget.bloc.featureGroupStream.value.strategies[0]
-                                      .percentage !=
+                      if ((widget.bloc.strategyStream.hasValue &&
+                              widget.bloc.strategyStream.value.percentage !=
                                   null) ||
                           showPercentageField)
                         Row(
@@ -161,8 +158,8 @@ class _FeatureGroupStrategyEditingWidgetState
                                       onPressed: () {
                                         setState(() {
                                           _strategyPercentage.text = '';
-                                          widget.bloc.featureGroupStream.value
-                                              .strategies[0].percentage = null;
+                                          widget.bloc.strategyStream.value
+                                              .percentage = null;
                                           showPercentageField = false;
                                           widget.bloc.updateStrategy();
                                         });
@@ -234,8 +231,14 @@ class _FeatureGroupStrategyEditingWidgetState
   }
 
   Future<void> _processUpdate() async {
-    // this deals with the idea we may not have ids yet for stuff
-    widget.bloc.ensureStrategiesAreUnique();
+    final updatedStrategy = widget.bloc.strategyStream.value.copyWith()
+      ..name = _strategyName.text
+      ..attributes = individualStrategyBloc.currentAttributes
+      ..percentage = int.parse(_strategyPercentage.text);
+    // need to validate here
+    widget.bloc.strategyStream.add(updatedStrategy);
+    widget.bloc.updateStrategy();
+    Navigator.pop(context);
 
     // final updatedStrategy = individualStrategyBloc!.rolloutStrategy.copyWith()
     //   ..name = _strategyName.text
@@ -262,30 +265,22 @@ class _FeatureGroupStrategyEditingWidgetState
   }
 
   Future<void> _processCreate() async {
-    // this deals with the idea we may not have ids yet for stuff
-    widget.bloc.ensureStrategiesAreUnique();
+    final newStrategy = FeatureGroupStrategy(
+      name: _strategyName.text,
+      attributes: individualStrategyBloc.currentAttributes,
+    );
 
-    // final defaultValue =
-    //     widget.bloc.feature.valueType == FeatureValueType.BOOLEAN
-    //         ? false
-    //         : null;
-    //
-    // final newStrategy = RolloutStrategy(
-    //   name: _strategyName.text,
-    //   attributes: individualStrategyBloc!.currentAttributes,
-    //   value: defaultValue,
-    // );
-    //
-    // if (_strategyPercentage.text.isNotEmpty) {
-    //   newStrategy.percentageFromText = _strategyPercentage.text;
-    // }
+    if (_strategyPercentage.text.isNotEmpty) {
+      newStrategy.percentage = int.parse(_strategyPercentage.text);
+    }
 
     // final validationCheck = await widget.bloc.validationCheck(newStrategy);
 
     // if (isValidationOk(validationCheck)) {
-    //   newStrategy.id ??= widget.bloc.uniqueStrategyId();
-    //   widget.bloc.addStrategy(newStrategy);
-    //   Navigator.pop(context);
+
+    widget.bloc.strategyStream.add(newStrategy);
+    widget.bloc.addStrategy(newStrategy);
+    Navigator.pop(context);
     // } else {
     //   layoutValidationFailures(validationCheck, newStrategy);
     // }

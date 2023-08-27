@@ -65,6 +65,7 @@ class IndividualStrategyBloc extends Bloc {
     rs.id ??= makeStrategyId();
     rolloutStrategy.attributes = [...rolloutStrategy.attributes, rs];
     _rolloutStrategyAttributeSource.add(rolloutStrategy.attributes);
+    print("attribute added ${_rolloutStrategyAttributeSource.value}");
   }
 
   void deleteAttribute(RolloutStrategyAttribute rs) {
