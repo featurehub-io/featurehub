@@ -39,7 +39,7 @@ class CustomStrategyBloc extends Bloc
   }
 
   @override
-  void addStrategy(dynamic rs) {
+  void addStrategy(RolloutStrategy rs) {
     rs.id ??= makeStrategyId(existing: _strategySource.value);
     List<RolloutStrategy> strategies = _strategySource.value;
     if (strategies.isNotEmpty) {

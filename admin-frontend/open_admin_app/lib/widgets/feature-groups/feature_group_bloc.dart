@@ -7,7 +7,7 @@ import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/ed
 import 'package:rxdart/rxdart.dart';
 import 'package:collection/collection.dart';
 
-class FeatureGroupBloc implements Bloc, EditStrategyBloc<RolloutStrategy> {
+class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   final FeatureGroupsBloc featureGroupsBloc;
   final FeatureGroupListGroup featureGroupListGroup;
   late EnvironmentFeatureServiceApi _featureServiceApi;
@@ -85,11 +85,10 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<RolloutStrategy> {
   }
 
   @override
-  void addStrategy(dynamic strategy) {
-    FeatureGroupStrategy fgs = strategy;
+  void addStrategy(FeatureGroupStrategy strategy) {
     List<FeatureGroupStrategy> strategyList =
         _trackingUpdatesGroupStrategiesStream.value;
-    strategyList.add(fgs);
+    strategyList.add(strategy);
     _trackingUpdatesGroupStrategiesStream.add(strategyList);
   }
 
