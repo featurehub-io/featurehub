@@ -83,9 +83,6 @@ class CustomStrategyBloc extends Bloc
   }
 
   @override
-  void updateAttribute(attribute) {}
-
-  @override
   void dispose() {}
 
   /// this goes through the strategies and ensures they have unique ids

@@ -94,33 +94,6 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<RolloutStrategy> {
   }
 
   @override
-  void addStrategyAttribute() {
-    // TODO: implement addStrategyAttribute
-  }
-
-  @override
-  void ensureStrategiesAreUnique() {}
-
-  @override
-  // TODO: implement feature
-  get feature => throw UnimplementedError();
-
-  @override
-  void removeStrategy(strategy) {
-    // TODO: implement removeStrategy
-  }
-
-  @override
-  uniqueStrategyId() {
-    throw UnimplementedError();
-  }
-
-  @override
-  void updateAttribute(attribute) {
-    // TODO: implement updateAttribute
-  }
-
-  @override
   void updateStrategy() {
     FeatureGroupStrategy strategy = _strategySource.value;
     List<FeatureGroupStrategy> strategyList =
@@ -195,5 +168,27 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<RolloutStrategy> {
     int index = features.indexWhere((f) => feature.id == f.id);
     features[index].value = newValue;
     _trackingUpdatesGroupFeaturesStream.add(features);
+  }
+
+  @override
+  void addStrategyAttribute() {
+    // TODO: implement addStrategyAttribute
+  }
+
+  @override
+  void ensureStrategiesAreUnique() {}
+
+  @override
+  // TODO: implement feature
+  get feature => throw UnimplementedError();
+
+  @override
+  void removeStrategy(strategy) {
+    // TODO: implement removeStrategy
+  }
+
+  @override
+  uniqueStrategyId() {
+    throw UnimplementedError();
   }
 }

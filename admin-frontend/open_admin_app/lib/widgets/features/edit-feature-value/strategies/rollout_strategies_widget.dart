@@ -12,7 +12,6 @@ class RolloutStrategiesWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<IndividualStrategyBloc>(context);
-    print("when in attributes bloc ${bloc.attributes}");
 
     return Column(children: [
       StreamBuilder<List<RolloutStrategyAttribute>>(
