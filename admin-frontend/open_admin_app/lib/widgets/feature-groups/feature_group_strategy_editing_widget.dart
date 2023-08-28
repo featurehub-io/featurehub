@@ -45,10 +45,10 @@ class _FeatureGroupStrategyEditingWidgetState
     super.initState();
     individualStrategyBloc = BlocProvider.of(context);
     if (widget.bloc.strategyStream.hasValue) {
-      _strategyName.text = widget.bloc.strategyStream.value.name;
-      if (widget.bloc.strategyStream.value.percentage != null) {
+      _strategyName.text = widget.bloc.strategyStream.value!.name;
+      if (widget.bloc.strategyStream.value!.percentage != null) {
         _strategyPercentage.text =
-            widget.bloc.strategyStream.value.percentage.toString();
+            widget.bloc.strategyStream.value!.percentage.toString();
       }
       isUpdate = true;
     }
@@ -110,7 +110,7 @@ class _FeatureGroupStrategyEditingWidgetState
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Column(children: [
                       if ((widget.bloc.strategyStream.hasValue &&
-                              widget.bloc.strategyStream.value.percentage !=
+                              widget.bloc.strategyStream.value!.percentage !=
                                   null) ||
                           showPercentageField)
                         Row(
@@ -158,7 +158,7 @@ class _FeatureGroupStrategyEditingWidgetState
                                       onPressed: () {
                                         setState(() {
                                           _strategyPercentage.text = '';
-                                          widget.bloc.strategyStream.value
+                                          widget.bloc.strategyStream.value!
                                               .percentage = null;
                                           showPercentageField = false;
                                           widget.bloc.updateStrategy();
@@ -231,7 +231,7 @@ class _FeatureGroupStrategyEditingWidgetState
   }
 
   Future<void> _processUpdate() async {
-    final updatedStrategy = widget.bloc.strategyStream.value.copyWith()
+    final updatedStrategy = widget.bloc.strategyStream.value!.copyWith()
       ..name = _strategyName.text
       ..attributes = individualStrategyBloc.currentAttributes
       ..percentage = int.parse(_strategyPercentage.text);

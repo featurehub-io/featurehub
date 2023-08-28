@@ -129,6 +129,7 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                   return const SizedBox.shrink();
                 }),
             ButtonBar(
+              alignment: MainAxisAlignment.center,
               children: [
                 FHFlatButtonTransparent(
                   title: 'Cancel',
@@ -139,7 +140,7 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                 ),
                 // if (widget.editable)
                 FHFlatButton(
-                  title: 'Save',
+                  title: 'Save all changes',
                   onPressed: () {
                     widget.bloc.saveFeatureGroupUpdates();
                     Navigator.pop(context);
@@ -164,32 +165,47 @@ class _StrategySettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool editable = true;
-    return StreamBuilder<FeatureGroupStrategy>(
+    return StreamBuilder<FeatureGroupStrategy?>(
         stream: bloc.strategyStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return TextButton.icon(
-                label: Text(snapshot.data!.name),
-                icon: const Icon(Icons.call_split_outlined),
-                onPressed: (editable == true)
-                    ? () => showDialog(
-                        context: context,
-                        builder: (_) {
-                          return AlertDialog(
-                              title: Text(editable
-                                  ? 'Edit split targeting rules'
-                                  : 'View split targeting rules'),
-                              content: BlocProvider(
-                                creator: (c, b) => IndividualStrategyBloc(
-                                    RolloutStrategy(
-                                        name: bloc.strategyStream.value.name,
-                                        attributes: bloc
-                                            .strategyStream.value.attributes)),
-                                child: FeatureGroupStrategyEditingWidget(
-                                    bloc: bloc, editable: true),
-                              ));
-                        })
-                    : null);
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton.icon(
+                    label: Text(snapshot.data!.name),
+                    icon: const Icon(Icons.call_split_outlined),
+                    onPressed: (editable == true)
+                        ? () => showDialog(
+                            context: context,
+                            builder: (_) {
+                              return AlertDialog(
+                                  title: Text(editable
+                                      ? 'Edit split targeting rules'
+                                      : 'View split targeting rules'),
+                                  content: BlocProvider(
+                                    creator: (c, b) => IndividualStrategyBloc(
+                                        RolloutStrategy(
+                                            name: snapshot.data!.name,
+                                            attributes:
+                                                snapshot.data!.attributes)),
+                                    child: FeatureGroupStrategyEditingWidget(
+                                        bloc: bloc, editable: true),
+                                  ));
+                            })
+                        : null),
+                const SizedBox(height: 8.0),
+                TextButton.icon(
+                  onPressed: () {
+                    bloc.removeStrategy(snapshot.data!);
+                  },
+                  icon: const Icon(
+                    Icons.cancel,
+                  ),
+                  label: const Text("Remove strategy"),
+                )
+              ],
+            );
           } else {
             return TextButton.icon(
                 label: const Text("Add rollout strategy"),

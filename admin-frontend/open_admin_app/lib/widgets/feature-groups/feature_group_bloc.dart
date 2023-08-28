@@ -42,8 +42,8 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   final _trackingUpdatesGroupStrategiesStream =
       BehaviorSubject<List<FeatureGroupStrategy>>.seeded([]);
 
-  final _strategySource = BehaviorSubject<FeatureGroupStrategy>();
-  BehaviorSubject<FeatureGroupStrategy> get strategyStream => _strategySource;
+  final _strategySource = BehaviorSubject<FeatureGroupStrategy?>();
+  BehaviorSubject<FeatureGroupStrategy?> get strategyStream => _strategySource;
 
   String? _selectedFeatureToAdd;
 
@@ -94,17 +94,11 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
 
   @override
   void updateStrategy() {
-    FeatureGroupStrategy strategy = _strategySource.value;
+    FeatureGroupStrategy strategy = _strategySource.value!;
     List<FeatureGroupStrategy> strategyList =
         []; // create new list is ok here, as we only have one strategy
     strategyList.add(strategy);
     _trackingUpdatesGroupStrategiesStream.add(strategyList);
-  }
-
-  @override
-  Future validationCheck(strategy) {
-    // TODO: implement validationCheck
-    throw UnimplementedError();
   }
 
   void addFeatureToGroup() {
@@ -183,11 +177,23 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
 
   @override
   void removeStrategy(strategy) {
-    // TODO: implement removeStrategy
+    final strategies = _trackingUpdatesGroupStrategiesStream.value;
+    strategies.removeWhere((e) =>
+        e.name ==
+        strategy
+            .name); // ideally need an id, but because we only have one strategy at the moment, it is ok
+    _strategySource.add(null);
+    _trackingUpdatesGroupStrategiesStream.add(strategies);
   }
 
   @override
   uniqueStrategyId() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future validationCheck(strategy) {
+    // TODO: implement validationCheck
     throw UnimplementedError();
   }
 }
