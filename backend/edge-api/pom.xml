@@ -161,7 +161,7 @@
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>6.0.1</version>
+        <version>6.6.0</version>
         <dependencies>
           <dependency>
             <groupId>cd.connect.openapi</groupId>
