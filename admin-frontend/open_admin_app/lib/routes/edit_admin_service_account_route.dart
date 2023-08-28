@@ -8,6 +8,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
+import 'package:open_admin_app/widgets/user/common/admin_checkbox.dart';
 import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widget.dart';
 import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
 
@@ -102,6 +103,8 @@ class _EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
             ),
           ),
           const PortfolioGroupSelector(),
+          if (bloc.mrClient.personState.userIsSuperAdmin)
+            AdminCheckboxWidget(person: bloc.person),
           FHButtonBar(children: <Widget>[
             FHFlatButtonTransparent(
                 onPressed: () {
