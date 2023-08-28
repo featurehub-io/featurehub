@@ -140,7 +140,7 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                 ),
                 // if (widget.editable)
                 FHFlatButton(
-                  title: 'Save all changes',
+                  title: 'Apply all changes',
                   onPressed: () {
                     widget.bloc.saveFeatureGroupUpdates();
                     Navigator.pop(context);
@@ -292,6 +292,13 @@ class _FeaturesSettings extends StatelessWidget {
                                   const SizedBox(width: 8.0),
                                   FeatureValueContainer(
                                       bloc: bloc, feature: feature),
+                                  IconButton(
+                                      onPressed: () {
+                                        bloc.removeFeatureFromGroup(feature);
+                                      },
+                                      icon: const Icon(Icons.cancel),
+                                      color:
+                                          Theme.of(context).colorScheme.primary)
                                 ],
                               ),
                             ),

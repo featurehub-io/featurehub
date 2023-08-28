@@ -115,6 +115,13 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
     }
   }
 
+  void removeFeatureFromGroup(FeatureGroupFeature groupFeature) {
+    var latestFeatureGroupFeatures = _groupFeaturesStream.value;
+    latestFeatureGroupFeatures.removeWhere((gf) => gf.id == groupFeature.id);
+    _groupFeaturesStream.add(latestFeatureGroupFeatures);
+    _trackingUpdatesGroupFeaturesStream.add(latestFeatureGroupFeatures);
+  }
+
   Future<void> saveFeatureGroupUpdates() async {
     List<FeatureGroupUpdateFeature>? features = [];
     List<FeatureGroupStrategy> strategies = [];
