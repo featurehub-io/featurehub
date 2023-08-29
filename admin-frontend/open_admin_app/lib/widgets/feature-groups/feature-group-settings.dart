@@ -9,6 +9,8 @@ import 'package:open_admin_app/widgets/feature-groups/boolean_value_container_wi
 import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_group_strategy_editing_widget.dart';
 import 'package:open_admin_app/widgets/feature-groups/features_drop_down.dart';
+import 'package:open_admin_app/widgets/feature-groups/json_value_container_widget.dart';
+import 'package:open_admin_app/widgets/feature-groups/number_value_container_widget.dart';
 import 'package:open_admin_app/widgets/feature-groups/string_value_container_widget.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
 
@@ -98,30 +100,20 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                             ],
                           ),
                           const SizedBox(height: 32.0),
-                          SizedBox(
-                            height: 400,
-                            child: Row(children: [
-                              Expanded(
-                                child: _FeaturesSettings(
-                                  featureGroup: snapshot.data!,
-                                  bloc: widget.bloc,
-                                ),
+                          Row(children: [
+                            Expanded(
+                              child: _FeaturesSettings(
+                                featureGroup: snapshot.data!,
+                                bloc: widget.bloc,
                               ),
-                              const VerticalDivider(
-                                width: 20,
-                                thickness: 1,
-                                indent: 20,
-                                endIndent: 0,
-                                color: Colors.grey,
+                            ),
+                            Expanded(
+                              child: _StrategySettings(
+                                featureGroup: snapshot.data!,
+                                bloc: widget.bloc,
                               ),
-                              Expanded(
-                                child: _StrategySettings(
-                                  featureGroup: snapshot.data!,
-                                  bloc: widget.bloc,
-                                ),
-                              )
-                            ]),
-                          ),
+                            )
+                          ]),
                         ],
                       );
                     }
@@ -287,16 +279,23 @@ class _FeaturesSettings extends StatelessWidget {
                             child: SizedBox(
                               height: 42,
                               child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(feature.name),
-                                  const SizedBox(width: 8.0),
-                                  FeatureValueContainer(
-                                      bloc: bloc, feature: feature),
+                                  Row(
+                                    children: [
+                                      Text(feature.name),
+                                      const SizedBox(width: 8.0),
+                                      FeatureValueContainer(
+                                          bloc: bloc, feature: feature),
+                                    ],
+                                  ),
                                   IconButton(
                                       onPressed: () {
                                         bloc.removeFeatureFromGroup(feature);
                                       },
-                                      icon: const Icon(Icons.cancel),
+                                      icon: const Icon(
+                                          Icons.delete_forever_sharp),
                                       color:
                                           Theme.of(context).colorScheme.primary)
                                 ],
@@ -344,11 +343,17 @@ class FeatureValueContainer extends StatelessWidget {
           bloc: bloc,
         );
       case FeatureValueType.NUMBER:
-        // TODO: Handle this case.
-        break;
+        return EditFeatureGroupNumberValueContainer(
+          editable: true,
+          feature: feature,
+          bloc: bloc,
+        );
       case FeatureValueType.JSON:
-        // TODO: Handle this case.
-        break;
+        return EditFeatureGroupJsonValueContainer(
+          editable: true,
+          feature: feature,
+          bloc: bloc,
+        );
       default:
         "foo";
     }
