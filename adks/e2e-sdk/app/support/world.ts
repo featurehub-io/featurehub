@@ -190,7 +190,7 @@ export class SdkWorld extends World {
     logger.info('Successfully logged in');
   }
 
-  async getFeature(): Promise<FeatureValue> {
+  async getFeatureValue(): Promise<FeatureValue> {
     try {
       const fValueResult = await this.featureValueApi.getFeatureForEnvironment(this.environment.id, this.feature.key);
       return fValueResult.data;
@@ -203,11 +203,11 @@ export class SdkWorld extends World {
     }
   }
 
-  async updateFeature(fValue: FeatureValue) : Promise<FeatureValue> {
+  async updateFeature(fValue: FeatureValue, status: number = 200) : Promise<FeatureValue> {
     fValue.whenUpdated = undefined;
     fValue.whoUpdated = undefined;
     const uResult = await this.featureValueApi.updateFeatureForEnvironment(this.environment.id, this.feature.key, fValue);
-    expect(uResult.status).to.eq(200);
+    expect(uResult.status).to.eq(status);
     return uResult.data;
   }
 }

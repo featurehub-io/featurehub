@@ -165,7 +165,7 @@ class FeatureSqlApi @Inject constructor(
   }
 
   @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class)
-  private fun onlyUpdateFeatureValueForEnvironment(
+  fun onlyUpdateFeatureValueForEnvironment(
     featureValue: FeatureValue,
     person: PersonFeaturePermission,
     existing: DbFeatureValue,
@@ -225,6 +225,10 @@ class FeatureSqlApi @Inject constructor(
     val strategyUpdates = updateSelectivelyRolloutStrategies(person, featureValue, historical, existing, lockChanged)
 
     val retiredUpdate = updateSelectivelyRetired(person, featureValue, historical, existing, lockChanged)
+
+    if (featureValue.locked && !lockChanged && (defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged)) {
+      throw OptimisticLockingException()
+    }
 
     if (lockChanged || defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged) {
       existing.whoUpdated = dbPerson
