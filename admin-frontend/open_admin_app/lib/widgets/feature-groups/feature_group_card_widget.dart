@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature-group-settings.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature-group-settings-side-sheet.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
 import 'package:side_sheet/side_sheet.dart';
 

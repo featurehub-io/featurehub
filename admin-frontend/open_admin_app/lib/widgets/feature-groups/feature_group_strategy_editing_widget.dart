@@ -188,11 +188,7 @@ class _FeatureGroupStrategyEditingWidgetState
                   ],
                 ),
                 if (isTotalPercentageError)
-                  Text(
-                      'Your percentage total across all rollout values cannot be over 100%. Please enter different value.',
-                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                          color: Theme.of(context).colorScheme.error)),
-                // _NaughtyDataEntryWidget(bloc: individualStrategyBloc!),
+                  _NaughtyDataEntryWidget(bloc: individualStrategyBloc!),
                 const SizedBox(height: 8.0),
                 Align(
                   alignment: Alignment.bottomRight,
@@ -234,28 +230,18 @@ class _FeatureGroupStrategyEditingWidgetState
     final updatedStrategy = widget.bloc.strategyStream.value!.copyWith()
       ..name = _strategyName.text
       ..attributes = individualStrategyBloc.currentAttributes
-      ..percentage = int.parse(_strategyPercentage.text);
+      ..percentage = _strategyPercentage.text.isNotEmpty
+          ? int.parse(_strategyPercentage.text)
+          : null;
     // need to validate here
-    widget.bloc.strategyStream.add(updatedStrategy);
-    widget.bloc.updateStrategy();
-    Navigator.pop(context);
-
-    // final updatedStrategy = individualStrategyBloc!.rolloutStrategy.copyWith()
-    //   ..name = _strategyName.text
-    //   ..attributes = individualStrategyBloc!.currentAttributes
-    //   ..percentageFromText = _strategyPercentage.text;
-    //
-    // final validationCheck = await widget.bloc.validationCheck(updatedStrategy);
-    //
-    // if (isValidationOk(validationCheck)) {
-    //   individualStrategyBloc!.rolloutStrategy
-    //     ..name = _strategyName.text
-    //     ..percentageFromText = _strategyPercentage.text;
-    //   widget.bloc.updateStrategy();
-    //   Navigator.pop(context);
-    // } else {
-    //   layoutValidationFailures(validationCheck, updatedStrategy);
-    // }
+    final validationCheck = await widget.bloc.validationCheck(updatedStrategy);
+    if (isValidationOk(validationCheck)) {
+      widget.bloc.strategyStream.add(updatedStrategy);
+      widget.bloc.updateStrategy();
+      Navigator.pop(context);
+    } else {
+      layoutValidationFailures(validationCheck, updatedStrategy);
+    }
   }
 
   bool isValidationOk(RolloutStrategyValidationResponse validationCheck) {
@@ -274,30 +260,25 @@ class _FeatureGroupStrategyEditingWidgetState
       newStrategy.percentage = int.parse(_strategyPercentage.text);
     }
 
-    // final validationCheck = await widget.bloc.validationCheck(newStrategy);
+    final validationCheck = await widget.bloc.validationCheck(newStrategy);
 
-    // if (isValidationOk(validationCheck)) {
-
-    widget.bloc.strategyStream.add(newStrategy);
-    widget.bloc.addStrategy(newStrategy);
-    Navigator.pop(context);
-    // } else {
-    //   layoutValidationFailures(validationCheck, newStrategy);
-    // }
+    if (isValidationOk(validationCheck)) {
+      widget.bloc.strategyStream.add(newStrategy);
+      widget.bloc.addStrategy(newStrategy);
+      Navigator.pop(context);
+    } else {
+      layoutValidationFailures(validationCheck, newStrategy);
+    }
   }
 
   void layoutValidationFailures(
       RolloutStrategyValidationResponse validationCheck,
-      RolloutStrategy strategy) {
-    // individualStrategyBloc!.updateStrategyViolations(validationCheck, strategy);
-    //
-    // setState(() {
-    //   if (validationCheck.violations.contains(
-    //       RolloutStrategyCollectionViolationType
-    //           .percentageAddsOver100Percent)) {
-    //     isTotalPercentageError = true;
-    //   }
-    // });
+      FeatureGroupStrategy strategy) {
+    RolloutStrategy rs = RolloutStrategy(
+        name: strategy.name,
+        percentage: strategy.percentage,
+        attributes: strategy.attributes);
+    individualStrategyBloc.updateStrategyViolations(validationCheck, rs);
   }
 }
 

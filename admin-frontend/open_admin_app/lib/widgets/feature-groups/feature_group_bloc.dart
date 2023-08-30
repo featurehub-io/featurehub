@@ -11,10 +11,13 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   final FeatureGroupsBloc featureGroupsBloc;
   final FeatureGroupListGroup featureGroupListGroup;
   late EnvironmentFeatureServiceApi _featureServiceApi;
+  late RolloutStrategyServiceApi _rolloutStrategyServiceApi;
 
   FeatureGroupBloc(this.featureGroupsBloc, this.featureGroupListGroup) {
     _featureServiceApi =
         EnvironmentFeatureServiceApi(featureGroupsBloc.mrClient.apiClient);
+    _rolloutStrategyServiceApi =
+        RolloutStrategyServiceApi(featureGroupsBloc.mrClient.apiClient);
     _getFeatureGroup();
     _getFeatures();
   }
@@ -22,19 +25,14 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   final _featureGroupStream = BehaviorSubject<FeatureGroup>();
   BehaviorSubject<FeatureGroup> get featureGroupStream => _featureGroupStream;
 
-  final _featureGroupUpdateStream =
-      BehaviorSubject<List<FeatureGroupUpdateFeature>>();
-
   final _availableFeaturesStream = BehaviorSubject<List<Feature>>();
   BehaviorSubject<List<Feature>> get availableFeaturesStream =>
       _availableFeaturesStream;
 
   final _availableFeatureValuesStream = BehaviorSubject<List<FeatureValue>>();
 
-  final _groupFeaturesStream =
-      BehaviorSubject<List<FeatureGroupFeature>>.seeded([]);
   BehaviorSubject<List<FeatureGroupFeature>> get groupFeaturesStream =>
-      _groupFeaturesStream;
+      _trackingUpdatesGroupFeaturesStream;
 
   final _trackingUpdatesGroupFeaturesStream =
       BehaviorSubject<List<FeatureGroupFeature>>.seeded([]);
@@ -53,11 +51,8 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
 
   @override
   void dispose() {
-    _featureGroupUpdateStream.close();
-    _availableFeaturesStream.close();
     _availableFeaturesStream.close();
     _availableFeatureValuesStream.close();
-    _groupFeaturesStream.close();
     _strategySource.close();
     _trackingUpdatesGroupFeaturesStream.close();
     _trackingUpdatesGroupStrategiesStream.close();
@@ -71,7 +66,6 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
     if (fg.strategies.isNotEmpty) {
       _strategySource.add(fg.strategies[0]);
     }
-    _groupFeaturesStream.add(fg.features);
     _trackingUpdatesGroupFeaturesStream.add(fg.features);
     _trackingUpdatesGroupStrategiesStream.add(fg.strategies);
   }
@@ -102,23 +96,21 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   }
 
   void addFeatureToGroup() {
-    var latestFeatureGroupFeatures = _groupFeaturesStream.value;
+    var latestFeatureGroupFeatures = _trackingUpdatesGroupFeaturesStream.value;
     if (_selectedFeatureToAdd != null) {
       FeatureGroupFeature currentFeatureGF =
           convertToGroupFeature(_selectedFeatureToAdd!);
       if (!latestFeatureGroupFeatures
           .any((feature) => feature.id == currentFeatureGF.id)) {
         latestFeatureGroupFeatures.add(currentFeatureGF);
-        _groupFeaturesStream.add(latestFeatureGroupFeatures);
         _trackingUpdatesGroupFeaturesStream.add(latestFeatureGroupFeatures);
       }
     }
   }
 
   void removeFeatureFromGroup(FeatureGroupFeature groupFeature) {
-    var latestFeatureGroupFeatures = _groupFeaturesStream.value;
+    var latestFeatureGroupFeatures = _trackingUpdatesGroupFeaturesStream.value;
     latestFeatureGroupFeatures.removeWhere((gf) => gf.id == groupFeature.id);
-    _groupFeaturesStream.add(latestFeatureGroupFeatures);
     _trackingUpdatesGroupFeaturesStream.add(latestFeatureGroupFeatures);
   }
 
@@ -199,8 +191,24 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   }
 
   @override
-  Future validationCheck(strategy) {
-    // TODO: implement validationCheck
-    throw UnimplementedError();
+  Future<RolloutStrategyValidationResponse> validationCheck(strategy) async {
+    // print('validating custom strategies $customStrategies');
+    var rs = RolloutStrategy(
+        name: strategy.name,
+        percentage: strategy.percentage,
+        attributes: strategy.attributes);
+
+    List<RolloutStrategy> strategies = [];
+
+    // strategy.id ??= makeStrategyId(existing: strategies);
+
+    strategies.add(rs);
+
+    return _rolloutStrategyServiceApi.validate(
+        featureGroupsBloc.mrClient.currentAid!,
+        RolloutStrategyValidationRequest(
+          customStrategies: strategies,
+          sharedStrategies: <RolloutStrategyInstance>[],
+        ));
   }
 }
