@@ -1634,6 +1634,33 @@ paths:
           description: "Bad Request"
         401:
           description: "no permission"
+  /mr-api/application/{id}/permissions:
+    parameters:
+      - name: id
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - ApplicationService
+      description: "Gets the permissions of the current user for the specified application"
+      operationId: applicationPermissions
+      responses:
+        200:
+          description: "The application & environment permissions"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationPermissions"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
     post:
       security:
         - bearerAuth: [ ]
@@ -3227,6 +3254,33 @@ components:
         id:
           type: string
           format: uuid
+    ApplicationPermissions:
+      type: object
+      properties:
+        applicationRoles:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationRoleType"
+        environments:
+          type: array
+          items:
+            $ref: "#/components/schemas/EnvironmentPermission"
+    EnvironmentPermission:
+      type: object
+      required:
+        - id
+        - name
+        - roles
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoleType"
     Environment:
       allOf:
         - $ref: "#/components/schemas/Audit"

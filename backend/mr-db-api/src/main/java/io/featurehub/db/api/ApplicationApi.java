@@ -1,6 +1,7 @@
 package io.featurehub.db.api;
 
 import io.featurehub.mr.model.Application;
+import io.featurehub.mr.model.ApplicationPermissions;
 import io.featurehub.mr.model.ApplicationSummary;
 import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.Person;
@@ -41,6 +42,8 @@ public interface ApplicationApi {
 
   @NotNull Set<UUID> findFeatureEditors(@NotNull UUID appId);
   boolean personIsFeatureEditor(@NotNull UUID appId, @NotNull UUID personId);
+
+  @NotNull ApplicationPermissions findApplicationPermissions(@NotNull UUID appId, @NotNull UUID personId);
 
   /**
    * Those who can create features

@@ -8,9 +8,11 @@ import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
 import io.featurehub.db.model.*
+//import io.featurehub.db.model.RoleType
 import io.featurehub.db.model.query.*
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
+import io.featurehub.mr.model.RoleType
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
@@ -415,6 +417,44 @@ class ApplicationSqlApi @Inject constructor(
     return personHoldsOneOfApplicationRoles(appId, personId, editorRoles)
   }
 
+  override fun findApplicationPermissions(appId: UUID, personId: UUID): ApplicationPermissions {
+    // superusers get everything
+    if (convertUtils.personIsSuperAdmin(personId) || convertUtils.isPersonApplicationAdmin(personId, appId) ) {
+      val allRoles = RoleType.values().toList()
+
+      return ApplicationPermissions()
+        .applicationRoles(ApplicationRoleType.values().toList())
+        .environments(QDbEnvironment()
+          .select(QDbEnvironment.Alias.name, QDbEnvironment.Alias.id)
+          .whenArchived.isNull
+          .parentApplication.id.eq(appId).findList().map { env -> EnvironmentPermission().id(env.id).name(env.name).roles(
+            allRoles) })
+    }
+
+    val appPerms = mutableSetOf<ApplicationRoleType>()
+      QDbAcl()
+      .select(QDbAcl.Alias.roles)
+      .application.id.eq(appId)
+      .group.groupMembers.person.id.eq(personId)
+      .findList().map { acl -> convertUtils.splitApplicationRoles(acl.roles) }.forEach { appPerms.addAll(it) }
+
+    val environments = mutableListOf<EnvironmentPermission>()
+
+    environmentPermissions(appId, personId)
+      .select(QDbAcl.Alias.environment.id, QDbAcl.Alias.environment.name, QDbAcl.Alias.roles)
+      .findList().forEach { acl ->
+      val roles = convertUtils.splitEnvironmentRoles(acl.roles.trim())
+      if (roles.isNotEmpty()) {
+        if (!roles.contains(RoleType.READ)) {
+          roles.add(RoleType.READ)
+        }
+        environments.add(EnvironmentPermission().id(acl.environment.id).name(acl.environment.name).roles(roles))
+      }
+    }
+
+    return ApplicationPermissions().applicationRoles(appPerms.toList()).environments(environments)
+  }
+
   override fun personIsFeatureCreator(appId: UUID, personId: UUID): Boolean {
     return personHoldsOneOfApplicationRoles(appId, personId, creatorRoles)
   }
@@ -471,6 +511,16 @@ class ApplicationSqlApi @Inject constructor(
     return featureReaders
   }
 
+  fun environmentPermissions(applicationId: UUID, personId: UUID): QDbAcl {
+    return QDbAcl()
+      .or()
+        .environment.parentApplication.id.eq(applicationId)
+        .application.id.eq(applicationId)
+      .endOr()
+      .group.whenArchived.isNull()
+      .group.groupMembers.person.id.eq(personId)
+  }
+
   override fun personIsFeatureReader(applicationId: UUID, personId: UUID): Boolean {
     Conversions.nonNullApplicationId(applicationId)
     Conversions.nonNullPersonId(personId)
@@ -479,14 +529,7 @@ class ApplicationSqlApi @Inject constructor(
       return true
     }
     if (person != null) {
-      for (acl in QDbAcl()
-        .or().environment.parentApplication.id
-        .eq(applicationId).application.id
-        .eq(applicationId)
-        .endOr().group.whenArchived
-        .isNull().group.groupMembers.person
-        .eq(person)
-        .findList()) {
+      for (acl in environmentPermissions(applicationId, personId).findList()) {
         if (acl.application != null) {
           return true
         }
