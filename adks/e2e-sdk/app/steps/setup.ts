@@ -87,12 +87,11 @@ Given(/^I delete the environment$/, async function () {
   expect(aCreate.data).to.be.true;
 });
 
-Given(/^I create a service account and (full|read) permissions based on the application environments$/, async function (roleTypes) {
+async function serviceAccountPermission(envId: string, roleTypes: string, world: SdkWorld) {
   const roles = roleTypes === 'full' ? [RoleType.Read, RoleType.Unlock, RoleType.Lock, RoleType.ChangeValue] : [RoleType.Read];
-  const world = this as SdkWorld;
   const permissions: ServiceAccountPermission[] = [
     new ServiceAccountPermission({
-      environmentId: world.application.environments[0].id,
+      environmentId: envId,
       permissions: roles
     })
   ];
@@ -144,6 +143,19 @@ Given(/^I create a service account and (full|read) permissions based on the appl
   expect(perm.sdkUrlClientEval).to.not.be.undefined;
   expect(perm.sdkUrlServerEval).to.not.be.undefined;
   expect(perm.environmentId).to.not.be.undefined;
+}
+
+Given(/^I create a service account and (full|read) permissions for environment (.*)$/, async function (roleTypes: string, environment: string) {
+  const world = this as SdkWorld;
+  const env = world.application.environments.find(e => e.name === environment);
+  expect(env, `Unable to find environment ${environment} in application`).to.not.be.undefined;
+
+  await serviceAccountPermission(env.id, roleTypes, world);
+});
+
+Given(/^I create a service account and (full|read) permissions based on the application environments$/, async function (roleTypes) {
+  const world = this as SdkWorld;
+  await serviceAccountPermission(world.application.environments[0].id, roleTypes, world);
 });
 
 Given('the edge connection is no longer available', async function () {
@@ -167,8 +179,8 @@ Given('the edge connection is no longer available', async function () {
 });
 
 Given(/^I connect to the feature server$/, async function () {
-  const serviceAccountPerm: ServiceAccountPermission = this.serviceAccountPermission;
   const world = this as SdkWorld;
+  const serviceAccountPerm: ServiceAccountPermission = world.serviceAccountPermission;
 
   await waitForExpect(async () => {
     const url = `${world.featureUrl}/features?apiKey=${serviceAccountPerm.sdkUrlClientEval}`;

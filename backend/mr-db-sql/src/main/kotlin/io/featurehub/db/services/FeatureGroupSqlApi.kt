@@ -92,6 +92,7 @@ class FeatureGroupSqlApi @Inject constructor(
 
   fun archiveEnvironment(env: DbEnvironment) {
     // ok, now archive all those feature groups. We don't need to do anything else as the feature values will be deleted across the board
+    // because we send a "delete environment" message
     QDbFeatureGroup().environment.id.eq(env.id).whenArchived.isNull.asUpdate()
       .set(QDbFeatureGroup.Alias.whenArchived, Instant.now()).update()
   }
