@@ -244,7 +244,7 @@ class _FeaturesSettings extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            StreamBuilder<List<Feature>>(
+            StreamBuilder<List<FeatureGroupFeature>>(
                 stream: bloc.availableFeaturesStream,
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data!.isNotEmpty) {

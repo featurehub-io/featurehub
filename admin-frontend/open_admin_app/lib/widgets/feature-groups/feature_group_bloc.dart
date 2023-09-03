@@ -5,31 +5,25 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/edit_strategy_interface.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:collection/collection.dart';
 
 class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   final FeatureGroupsBloc featureGroupsBloc;
   final FeatureGroupListGroup featureGroupListGroup;
-  late EnvironmentFeatureServiceApi _featureServiceApi;
   late RolloutStrategyServiceApi _rolloutStrategyServiceApi;
 
   FeatureGroupBloc(this.featureGroupsBloc, this.featureGroupListGroup) {
-    _featureServiceApi =
-        EnvironmentFeatureServiceApi(featureGroupsBloc.mrClient.apiClient);
     _rolloutStrategyServiceApi =
         RolloutStrategyServiceApi(featureGroupsBloc.mrClient.apiClient);
     _getFeatureGroup();
-    _getFeatures();
+    _getAllFeaturesPerEnvironment();
   }
 
   final _featureGroupStream = BehaviorSubject<FeatureGroup>();
   BehaviorSubject<FeatureGroup> get featureGroupStream => _featureGroupStream;
 
-  final _availableFeaturesStream = BehaviorSubject<List<Feature>>();
-  BehaviorSubject<List<Feature>> get availableFeaturesStream =>
+  final _availableFeaturesStream = BehaviorSubject<List<FeatureGroupFeature>>();
+  BehaviorSubject<List<FeatureGroupFeature>> get availableFeaturesStream =>
       _availableFeaturesStream;
-
-  final _availableFeatureValuesStream = BehaviorSubject<List<FeatureValue>>();
 
   BehaviorSubject<List<FeatureGroupFeature>> get groupFeaturesStream =>
       _trackingUpdatesGroupFeaturesStream;
@@ -52,7 +46,6 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   @override
   void dispose() {
     _availableFeaturesStream.close();
-    _availableFeatureValuesStream.close();
     _strategySource.close();
     _trackingUpdatesGroupFeaturesStream.close();
     _trackingUpdatesGroupStrategiesStream.close();
@@ -70,12 +63,13 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
     _trackingUpdatesGroupStrategiesStream.add(fg.strategies);
   }
 
-  Future<void> _getFeatures() async {
-    var feat = await _featureServiceApi.getFeaturesForEnvironment(
-        featureGroupListGroup.environmentId,
-        includeFeatures: true);
-    _availableFeaturesStream.add(feat.features);
-    _availableFeatureValuesStream.add(feat.featureValues);
+  Future<void> _getAllFeaturesPerEnvironment() async {
+    // this gets all features available in the environment, and returns them as a List of FeatureGroupFeature so
+    // we can list in the drop-down all available features to be added to a group
+    var feat = await featureGroupsBloc.featureGroupServiceApi
+        .getFeatureGroupFeatures(featureGroupsBloc.mrClient.currentAid!,
+            featureGroupListGroup.environmentId);
+    _availableFeaturesStream.add(feat);
   }
 
   @override
@@ -98,8 +92,9 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   void addFeatureToGroup() {
     var latestFeatureGroupFeatures = _trackingUpdatesGroupFeaturesStream.value;
     if (_selectedFeatureToAdd != null) {
-      FeatureGroupFeature currentFeatureGF =
-          convertToGroupFeature(_selectedFeatureToAdd!);
+      List<FeatureGroupFeature> features = _availableFeaturesStream.value;
+      FeatureGroupFeature currentFeatureGF = features
+          .firstWhere((feature) => feature.id == _selectedFeatureToAdd!);
       if (!latestFeatureGroupFeatures
           .any((feature) => feature.id == currentFeatureGF.id)) {
         latestFeatureGroupFeatures.add(currentFeatureGF);
@@ -135,25 +130,6 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
     return FeatureGroupUpdateFeature(id: feature.id, value: feature.value);
   }
 
-  FeatureGroupFeature convertToGroupFeature(String id) {
-    List<Feature> features = _availableFeaturesStream.value;
-    Feature feature = features.firstWhere((feature) => feature.id == id);
-    List<FeatureValue> featureValues = _availableFeatureValuesStream.value;
-    // feature value could be not present, for example if it is set to null on the main feature dashboard
-    FeatureValue? featureValue = featureValues
-        .firstWhereOrNull((featureValue) => featureValue.key == feature.key);
-    var currentFeatureGF = FeatureGroupFeature(
-        id: id,
-        name: feature.name,
-        key: feature.key!,
-        value: feature.valueType == FeatureValueType.BOOLEAN ? false : null,
-        type: feature.valueType!,
-        locked: featureValue != null
-            ? featureValue.locked
-            : true); // if feature value is not set on the main dashboard, then display as locked, otherwise there is no value to fall back to
-    return currentFeatureGF;
-  }
-
   void setFeatureValue(dynamic newValue, FeatureGroupFeature feature) {
     List<FeatureGroupFeature> features =
         _trackingUpdatesGroupFeaturesStream.value;
@@ -161,14 +137,6 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
     features[index].value = newValue;
     _trackingUpdatesGroupFeaturesStream.add(features);
   }
-
-  @override
-  void addStrategyAttribute() {
-    // TODO: implement addStrategyAttribute
-  }
-
-  @override
-  void ensureStrategiesAreUnique() {}
 
   @override
   // TODO: implement feature
@@ -186,22 +154,13 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   }
 
   @override
-  uniqueStrategyId() {
-    throw UnimplementedError();
-  }
-
-  @override
   Future<RolloutStrategyValidationResponse> validationCheck(strategy) async {
-    // print('validating custom strategies $customStrategies');
     var rs = RolloutStrategy(
         name: strategy.name,
         percentage: strategy.percentage,
         attributes: strategy.attributes);
 
     List<RolloutStrategy> strategies = [];
-
-    // strategy.id ??= makeStrategyId(existing: strategies);
-
     strategies.add(rs);
 
     return _rolloutStrategyServiceApi.validate(
@@ -210,5 +169,15 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
           customStrategies: strategies,
           sharedStrategies: <RolloutStrategyInstance>[],
         ));
+  }
+
+  @override
+  uniqueStrategyId() {
+    throw UnimplementedError();
+  }
+
+  @override
+  void ensureStrategiesAreUnique() {
+    throw UnimplementedError();
   }
 }
