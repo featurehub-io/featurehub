@@ -6,6 +6,9 @@ import java.util.*
 interface FeatureGroupApi {
   class DuplicateNameException: Exception()
   class OptimisticLockingException: Exception()
+  class DuplicateOrder: Exception()
+  class ArchivedEnvironment: Exception()
+  class ArchivedGroup: Exception()
 
   fun createGroup(appId: UUID, current: Person, featureGroup: FeatureGroupCreate): FeatureGroup?
   fun deleteGroup(appId: UUID, current: Person, fgId: UUID): Boolean

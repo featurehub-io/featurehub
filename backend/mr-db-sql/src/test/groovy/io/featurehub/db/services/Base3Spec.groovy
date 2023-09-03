@@ -91,7 +91,7 @@ class Base3Spec extends Specification {
     featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
-    applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, featureSqlApi)
+    applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi())
 
     portfolio = portfolioSqlApi.createPortfolio(new Portfolio().name(RandomStringUtils.randomAlphabetic(10)).description("desc1"), Opts.empty(), superPerson)
     app1 = applicationSqlApi.createApplication(portfolio.id, new Application().name(RandomStringUtils.randomAlphabetic(10)).description("app1"), superPerson)

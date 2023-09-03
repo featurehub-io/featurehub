@@ -26,8 +26,33 @@ import java.util.*
 import java.util.function.Function
 import kotlin.math.max
 
-interface InternalFeatureSqlApi {
+interface InternalFeatureApi {
   fun saveFeatureValue(featureValue: DbFeatureValue, versionFrom: Long?)
+  fun forceVersionBump(featureIds: List<UUID>, envId: UUID)
+}
+
+class InternalFeatureSqlApi  : InternalFeatureApi {
+  override fun saveFeatureValue(featureValue: DbFeatureValue, versionFrom: Long?) {
+    val originalVersion = featureValue.version
+    featureValue.save()
+
+    if (originalVersion != featureValue.version) { // have we got auditing enabled and did the feature change
+      // now saved a versioned copy
+      DbFeatureValueVersion.fromDbFeatureValue(featureValue, versionFrom).save()
+    }
+  }
+
+  override fun forceVersionBump(featureIds: List<UUID>, envId: UUID) {
+    // force a version change on all these features
+    QDbFeatureValue()
+      .feature.id.`in`(featureIds)
+      .environment.id.eq(envId)
+      .findList().forEach {
+        val version = it.version
+        it.markAsDirty()
+        saveFeatureValue(it, version)
+      }
+  }
 }
 
 class FeatureSqlApi @Inject constructor(
@@ -35,13 +60,15 @@ class FeatureSqlApi @Inject constructor(
   private val cacheSource: CacheSource,
   private val rolloutStrategyValidator: RolloutStrategyValidator,
   private val featureMessagingCloudEventPublisher: FeatureMessagingCloudEventPublisher,
-) : FeatureApi, FeatureUpdateBySDKApi, InternalFeatureSqlApi {
+) : FeatureApi, FeatureUpdateBySDKApi {
 
   @ConfigKey("features.max-per-page")
   private var maxPagination: Int? = 10000
+  private val internalFeatureApi: InternalFeatureApi
 
   init {
     DeclaredConfigResolver.resolve(this)
+    internalFeatureApi = InternalFeatureSqlApi()
   }
 
   @Throws(
@@ -146,17 +173,7 @@ class FeatureSqlApi @Inject constructor(
 
   @Transactional(type = TxType.REQUIRES_NEW)
   private fun save(featureValue: DbFeatureValue, versionFrom: Long?) {
-    saveFeatureValue(featureValue, versionFrom)
-  }
-
-  override fun saveFeatureValue(featureValue: DbFeatureValue, versionFrom: Long?) {
-    val originalVersion = featureValue.version
-    featureValue.save()
-
-    if (originalVersion != featureValue.version) { // have we got auditing enabled and did the feature change
-      // now saved a versioned copy
-      DbFeatureValueVersion.fromDbFeatureValue(featureValue, versionFrom).save()
-    }
+    internalFeatureApi.saveFeatureValue(featureValue, versionFrom)
   }
 
   private fun publish(featureValue: DbFeatureValue) {

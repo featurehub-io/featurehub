@@ -3,7 +3,6 @@ package io.featurehub.db.services
 import io.featurehub.db.FilterOptType
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FillOpts
-import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PortfolioApi
 import io.featurehub.db.model.DbPerson
@@ -40,7 +39,7 @@ class ApplicationSpec extends BaseSpec {
 
     environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
 
-    appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureSqlApi))
+    appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureApi))
 
     // go create a new person and then portfolios and add this person as a portfolio admin
     portfolioPerson = personSqlApi.createPerson("appspec@mailinator.com", "AppSpec", "appspec", superPerson.id.id, Opts.empty());

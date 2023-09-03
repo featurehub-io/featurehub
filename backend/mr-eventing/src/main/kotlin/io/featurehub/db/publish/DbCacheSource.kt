@@ -15,6 +15,7 @@ import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.featurehub.utils.ExecutorSupplier
+import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.annotation.PostConstruct
 import jakarta.inject.Inject
 import org.glassfish.hk2.api.IterableProvider
@@ -55,6 +56,7 @@ internal class CacheBroadcastProxy(
 open class DbCacheSource @Inject constructor(
   private val convertUtils: Conversions, dsConfig: DataSourceConfig,
   private val cacheBroadcasters: IterableProvider<CacheBroadcast>,
+  private val internalFeatureGroupApi: CacheSourceFeatureGroupApi,
   executorSupplier: ExecutorSupplier
 ) : CacheSource, CacheApi, CacheRefresherApi {
   private val executor: ExecutorService
@@ -63,7 +65,14 @@ open class DbCacheSource @Inject constructor(
   private var cachePoolSize: Int?
   private var cacheBroadcast: CacheBroadcast
 
+  val featureGroupsEnabled: Boolean
+
   init {
+    featureGroupsEnabled = "true".equals(
+      FallbackPropertyConfig.getConfig(
+        "feature-groups.enabled", "false"
+      ), ignoreCase = true)
+
     cachePoolSize = dsConfig.maxConnections / 2
     if (cachePoolSize!! < 1) {
       cachePoolSize = 1
@@ -214,6 +223,8 @@ open class DbCacheSource @Inject constructor(
           QDbApplicationFeature.Alias.version
         ).findList().associate { it.id!! to it!! }.toMutableMap()
 
+      val featureGroupRolloutStrategy = if (featureGroupsEnabled) internalFeatureGroupApi.collectStrategiesFromGroupsForEnvironment(env.id) else mapOf()
+
       val fvFinder = addSelectorToFeatureValue(QDbFeatureValue())
         .environment.whenArchived.isNull.environment.whenUnpublished.isNull.environment.eq(env)
 
@@ -223,10 +234,10 @@ open class DbCacheSource @Inject constructor(
         .organizationId(env.parentApplication.portfolio.organization.id)
         .portfolioId(env.parentApplication.portfolio.id)
         .applicationId(env.parentApplication.id)
-        .featureValues(fvFinder.findList().map { fv: DbFeatureValue -> toCacheEnvironmentFeature(fv, features) })
+        .featureValues(fvFinder.findList().map { fv: DbFeatureValue -> toCacheEnvironmentFeature(fv, features, featureGroupRolloutStrategy[fv.feature.id]) })
         .serviceAccounts(
           QDbServiceAccount().select(QDbServiceAccount.Alias.id).serviceAccountEnvironments.environment.id.eq(env.id)
-            .findStream().map { obj: DbServiceAccount -> obj.id }.collect(Collectors.toList())
+            .findList().map { obj: DbServiceAccount -> obj.id }
         )
         .count(count)
 
@@ -248,14 +259,15 @@ open class DbCacheSource @Inject constructor(
 
   private fun toCacheEnvironmentFeature(
     dfv: DbFeatureValue,
-    features: MutableMap<UUID, DbApplicationFeature>
+    features: MutableMap<UUID, DbApplicationFeature>,
+    featureGroupRolloutStrategies: List<RolloutStrategy>?
   ): CacheEnvironmentFeature {
     log.trace("cache-environment-feature")
     val feature = features[dfv.feature.id]
     features.remove(dfv.feature.id)
     return CacheEnvironmentFeature()
       .feature(toCacheFeature(feature!!))
-      .value(toCacheFeatureValue(dfv, feature))
+      .value(toCacheFeatureValue(dfv, feature, featureGroupRolloutStrategies))
   }
 
   // we should select out only the details we need to publish
@@ -301,7 +313,7 @@ open class DbCacheSource @Inject constructor(
       .valueType(feature.valueType)
   }
 
-  private fun toCacheFeatureValue(dfv: DbFeatureValue?, feature: DbApplicationFeature): CacheFeatureValue? {
+  private fun toCacheFeatureValue(dfv: DbFeatureValue?, feature: DbApplicationFeature, featureGroupRolloutStrategies: List<RolloutStrategy>?): CacheFeatureValue? {
     return if (dfv == null) {
       null
     } else CacheFeatureValue()
@@ -309,7 +321,7 @@ open class DbCacheSource @Inject constructor(
       .version(dfv.version!!)
       .value(featureValueAsObject(dfv.defaultValue, feature.valueType))
       .locked(dfv.isLocked)
-      .rolloutStrategies(collectCombinedRolloutStrategies(dfv))
+      .rolloutStrategies(collectCombinedRolloutStrategies(dfv, featureGroupRolloutStrategies))
       .key(feature.key)
       .retired(dfv.retired)
       .personIdWhoChanged(dfv.whoUpdated.id)
@@ -366,13 +378,18 @@ open class DbCacheSource @Inject constructor(
     featureValue: DbFeatureValue,
     cacheBroadcast: CacheBroadcast
   ) {
+    val featureGroupRolloutStrategy =  if (featureGroupsEnabled) internalFeatureGroupApi.collectStrategiesFromGroupsForEnvironmentFeature(
+      featureValue.environment.id,
+      featureValue.feature.id) else listOf()
+
     cacheBroadcast.publishFeatures(
       PublishFeatureValues().addFeaturesItem(
         PublishFeatureValue()
           .feature(
             toCacheEnvironmentFeature(
               featureValue,
-              mutableMapOf(Pair(featureValue.feature.id, featureValue.feature))
+              mutableMapOf(featureValue.feature.id to featureValue.feature),
+              featureGroupRolloutStrategy
             )
           )
           .environmentId(featureValue.environment.id)
@@ -395,19 +412,20 @@ open class DbCacheSource @Inject constructor(
       .percentage(rs.percentage)
       .percentageAttributes(rs.percentageAttributes)
       .value(rs.value)
-      .attributes(if (rs.attributes == null) ArrayList() else rs.attributes!!
-        .stream().map { rsa: RolloutStrategyAttribute -> fromRolloutStrategyAttribute(rsa) }
-        .collect(Collectors.toList()))
+      .attributes(if (rs.attributes == null) mutableListOf() else rs.attributes!!
+        .map { rsa: RolloutStrategyAttribute -> fromRolloutStrategyAttribute(rsa) }
+        )
   }
 
   // combines the custom and shared rollout strategies
-  private fun collectCombinedRolloutStrategies(featureValue: DbFeatureValue): List<CacheRolloutStrategy> {
+  private fun collectCombinedRolloutStrategies(
+    featureValue: DbFeatureValue,
+    featureGroupRolloutStrategies: List<RolloutStrategy>?
+  ): List<CacheRolloutStrategy> {
     log.trace("cache combine strategies")
 
     val allStrategies = mutableListOf<CacheRolloutStrategy>()
-    allStrategies.addAll(
-      featureValue.rolloutStrategies.stream().map { rs: RolloutStrategy -> fromRolloutStrategy(rs) }
-        .collect(Collectors.toList()))
+    allStrategies.addAll(featureValue.rolloutStrategies.map { rs -> fromRolloutStrategy(rs) })
 
     val activeSharedStrategies = QDbStrategyForFeatureValue()
       .select(QDbStrategyForFeatureValue.Alias.value)
@@ -416,13 +434,15 @@ open class DbCacheSource @Inject constructor(
       .rolloutStrategy.fetch(QDbRolloutStrategy.Alias.strategy)
       .findList()
 
-    allStrategies.addAll(activeSharedStrategies.stream()
-      .map { shared ->
+    allStrategies.addAll(activeSharedStrategies.map { shared ->
         val rs = fromRolloutStrategy(shared.rolloutStrategy.strategy)
         rs.value = shared.value // the value associated with the shared strategy is set here not in the strategy itself
         rs
-      }
-      .collect(Collectors.toList()))
+      })
+
+    featureGroupRolloutStrategies?.let { fgStrategies ->
+      allStrategies.addAll(fgStrategies.map { fromRolloutStrategy(it) })
+    }
 
     return allStrategies
   }
@@ -540,11 +560,13 @@ open class DbCacheSource @Inject constructor(
       .whenArchived.isNull
       .whenUnpublished.isNull.findList()
       .forEach { env: DbEnvironment ->
-        val toCacheFeatureValue = toCacheFeatureValue(featureValues[env.id], appFeature)
+        val featureGroupStrategies = if (featureGroupsEnabled) internalFeatureGroupApi.collectStrategiesFromGroupsForEnvironmentFeature(env.id, appFeature.id) else listOf()
+        val toCacheFeatureValue = toCacheFeatureValue(featureValues[env.id], appFeature, featureGroupStrategies)
         // deletes cause the key to change, so this restores it, SDKs should be using the ID in any case
         if (originalKey != null && toCacheFeatureValue != null) {
           toCacheFeatureValue.key = originalKey
         }
+
         cacheBroadcast.publishFeatures(
           PublishFeatureValues().addFeaturesItem(
             PublishFeatureValue()

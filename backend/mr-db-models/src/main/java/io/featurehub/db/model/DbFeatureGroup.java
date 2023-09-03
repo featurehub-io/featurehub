@@ -83,14 +83,14 @@ public class DbFeatureGroup  extends DbVersionedBase {
     this.features = features;
   }
 
-  public @NotNull List<FeatureGroupStrategy> getStrategies() {
+  public @Nullable List<FeatureGroupStrategy> getStrategies() {
     if (strategies == null) {
       strategies = new LinkedList<>();
     }
     return strategies;
   }
 
-  public void setStrategies(@NotNull List<FeatureGroupStrategy> strategies) {
+  public void setStrategies(@Nullable List<FeatureGroupStrategy> strategies) {
     this.strategies = strategies;
   }
 

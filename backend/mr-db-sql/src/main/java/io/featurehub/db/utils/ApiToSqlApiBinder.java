@@ -18,9 +18,11 @@ import io.featurehub.db.api.SetupApi;
 import io.featurehub.db.api.UserStateApi;
 import io.featurehub.db.api.WebhookApi;
 import io.featurehub.db.listener.FeatureUpdateBySDKApi;
+import io.featurehub.db.publish.CacheSourceFeatureGroupApi;
 import io.featurehub.db.services.ApplicationSqlApi;
 import io.featurehub.db.services.ArchiveStrategy;
 import io.featurehub.db.services.AuthenticationSqlApi;
+import io.featurehub.db.services.CacheSourceFeatureGroupSqlApi;
 import io.featurehub.db.services.Conversions;
 import io.featurehub.db.services.ConvertUtils;
 import io.featurehub.db.services.DbArchiveStrategy;
@@ -29,6 +31,7 @@ import io.featurehub.db.services.FeatureGroupSqlApi;
 import io.featurehub.db.services.FeatureHistorySqlApi;
 import io.featurehub.db.services.FeatureSqlApi;
 import io.featurehub.db.services.GroupSqlApi;
+import io.featurehub.db.services.InternalFeatureApi;
 import io.featurehub.db.services.InternalFeatureSqlApi;
 import io.featurehub.db.services.InternalGroupSqlApi;
 import io.featurehub.db.services.InternalPersonApi;
@@ -58,7 +61,8 @@ public class ApiToSqlApiBinder extends AbstractBinder {
     bind(ServiceAccountSqlApi.class).to(InternalServiceAccountApi.class).to(ServiceAccountApi.class).in(Singleton.class);
     bind(ApplicationSqlApi.class).to(ApplicationApi.class).in(Singleton.class);
     bind(EnvironmentSqlApi.class).to(EnvironmentApi.class).in(Singleton.class);
-    bind(FeatureSqlApi.class).to(InternalFeatureSqlApi.class).to(FeatureApi.class).to(FeatureUpdateBySDKApi.class).in(Singleton.class);
+    bind(FeatureSqlApi.class).to(FeatureApi.class).to(FeatureUpdateBySDKApi.class).in(Singleton.class);
+    bind(InternalFeatureSqlApi.class).to(InternalFeatureApi.class).in(Singleton.class);
     bind(DbArchiveStrategy.class).to(ArchiveStrategy.class).in(Singleton.class);
     bind(UserStateSqlApi.class).to(UserStateApi.class).in(Singleton.class);
     bind(RolloutStrategyValidationUtils.class).to(RolloutStrategyValidator.class).in(Singleton.class);
@@ -66,5 +70,6 @@ public class ApiToSqlApiBinder extends AbstractBinder {
     bind(WebhookSqlApi.class).to(WebhookApi.class).in(Singleton.class);
     bind(FeatureHistorySqlApi.class).to(FeatureHistoryApi.class).in(Singleton.class);
     bind(FeatureGroupSqlApi.class).to(FeatureGroupApi.class).in(Singleton.class);
+    bind(CacheSourceFeatureGroupSqlApi.class).to(CacheSourceFeatureGroupApi.class).in(Singleton.class);
   }
 }

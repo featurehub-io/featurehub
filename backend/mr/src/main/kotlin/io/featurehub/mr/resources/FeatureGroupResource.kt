@@ -135,6 +135,12 @@ class FeatureGroupResource @Inject constructor(
       return featureGroupApi.updateGroup(appId, current, fgId, featureGroupUpdate) ?: throw NotFoundException()
     } catch (oex: FeatureGroupApi.OptimisticLockingException) {
       throw WebApplicationException("Attemping to update old version", 412)
+    } catch(orEx: FeatureGroupApi.DuplicateOrder) {
+      throw WebApplicationException("Attemping to use duplicate order", 413)
+    } catch (arEnv: FeatureGroupApi.ArchivedEnvironment) {
+      throw WebApplicationException("Environment is archived", 414)
+    } catch(arGroup: FeatureGroupApi.ArchivedGroup) {
+      throw WebApplicationException("Feature Group is archived", 415)
     }
   }
 }

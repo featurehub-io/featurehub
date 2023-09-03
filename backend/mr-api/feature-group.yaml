@@ -199,6 +199,12 @@ paths:
           description: "no application or feature group"
         412:
           description: "attempt to update an old group"
+        413:
+          description: "attempted to update order position to one already in use"
+        414:
+          description: "attempting to update feature group for archived environment"
+        415:
+          description: "attempting to update feature group that is archived"
 components:
   schemas:
     FeatureGroupFeatureValueStrategy:
@@ -279,8 +285,35 @@ components:
           format: uuid
         value:
           description: "value (if any) associated with this feature for this strategy"
-    FeatureGroupCRUDBase:
+    FeatureGroupStrategy:
       type: object
+      required:
+        - name
+      properties:
+        id:
+          description: "unique id for this strategy"
+          type: string
+        name:
+          description: "The strategy name"
+          type: string
+        percentage:
+          description: "value between 0 and 1000000 - for four decimal places"
+          type: integer
+        percentageAttributes:
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
+          items:
+            type: string
+        attributes:
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyAttribute"
+    FeatureGroupCreate:
+      type: object
+      required:
+        - name
+        - environmentId
+        - features
       description: "An update, everything is optional, we will only update what we update"
       properties:
         name:
@@ -300,46 +333,39 @@ components:
         strategies:
           type: array
           description: "We only honour the first one"
+          nullable: true
           items:
             $ref: "#/components/schemas/FeatureGroupStrategy"
-    FeatureGroupStrategy:
+    FeatureGroupUpdate:
       type: object
+      description: "An update, everything is optional, we will only update what we update"
       required:
-        - name
+        - version
       properties:
         name:
-          description: "The strategy name"
+          description: "allow changing the name"
+          nullable: true
           type: string
-        percentage:
-          description: "value between 0 and 1000000 - for four decimal places"
+        description:
+          nullable: true
+          type: string
+        features:
+          type: array
+          description: "allow updating the features"
+          nullable: true
+          items:
+            $ref: "#/components/schemas/FeatureGroupUpdateFeature"
+        strategies:
+          type: array
+          description: "We only honour the first one"
+          nullable: true
+          items:
+            $ref: "#/components/schemas/FeatureGroupStrategy"
+        order:
           type: integer
-        percentageAttributes:
-          type: array
-          description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
-          items:
-            type: string
-        attributes:
-          type: array
-          items:
-            $ref: "#/components/schemas/RolloutStrategyAttribute"
-    FeatureGroupCreate:
-      allOf:
-        - $ref: "#/components/schemas/FeatureGroupCRUDBase"
-        - type: object
-          required:
-            - name
-            - environmentId
-            - features
-    FeatureGroupUpdate:
-      allOf:
-        - $ref: "#/components/schemas/FeatureGroupCRUDBase"
-        - type: object
-          required:
-            - version
-          properties:
-            version:
-              type: integer
-              format: int64
+        version:
+          type: integer
+          format: int64
     FeatureGroupListFeature:
       type: object
       required:

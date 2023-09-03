@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
 
+
 @Singleton
 class EnvironmentSqlApi @Inject constructor(
   private val database: Database,
@@ -281,7 +282,7 @@ class EnvironmentSqlApi @Inject constructor(
   @Transactional(type = TxType.REQUIRES_NEW)
   private fun update(env: DbEnvironment): DbEnvironment {
     env.markAsDirty()
-    database.save(env)
+    env.save()
     cacheSource.updateEnvironment(env, PublishAction.UPDATE)
     return env
   }
