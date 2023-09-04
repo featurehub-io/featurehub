@@ -14,6 +14,8 @@ import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.SecurityContext
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.*
 
 
@@ -25,6 +27,7 @@ class FeatureGroupResource @Inject constructor(
   private val featureGroupApi: FeatureGroupApi
 ) : FeatureGroupServiceDelegate {
   val defaultMax: Int
+  private val log: Logger = LoggerFactory.getLogger(FeatureGroupResource::class.java)
 
   init {
     defaultMax = FallbackPropertyConfig.getConfig("feature-group.list.max", "20").toInt()
@@ -58,6 +61,8 @@ class FeatureGroupResource @Inject constructor(
 
   private fun allowedCreatePermissionsOnEnvironment(current: Person, envId: UUID): EnvironmentRoles {
     val perms = environmentApi.personRoles(current, envId)
+
+    log.debug("permissions are {}", perms)
 
     if (perms == null || !perms.environmentRoles.contains(RoleType.CHANGE_VALUE)) {
       throw ForbiddenException()
@@ -102,6 +107,8 @@ class FeatureGroupResource @Inject constructor(
     val person = applicationUtils.featureReadCheck(securityContext, appId)
 
     val perms = applicationApi.findApplicationPermissions(appId, person.id!!.id)
+
+    log.debug("permissions are {}", perms)
 
     if (perms.environments.isEmpty()) {
       return FeatureGroupList().count(0)
