@@ -181,7 +181,7 @@ class FeatureGroupSqlApi @Inject constructor(
         QDbFeatureGroup.Alias.environment.id, QDbFeatureGroup.Alias.environment.name,
         QDbFeatureGroup.Alias.features.feature.key
       )
-      .environment.id.`in`(appPerms.environments.filter { it.roles.contains(RoleType.CHANGE_VALUE) }.map { it.id })
+      .environment.id.`in`(appPerms.environments.map { it.id })
       .environment.parentApplication.id.eq(appId) // extra security, relates to SaaS
       .whenArchived.isNull
       .setMaxRows(max)
