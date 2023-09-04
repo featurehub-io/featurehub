@@ -4,6 +4,7 @@ import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.jersey.common.LoggingConfiguration
 import io.featurehub.jersey.config.CommonConfiguration
+import io.featurehub.utils.FallbackPropertyConfig
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.baggage.Baggage
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator
@@ -31,27 +32,53 @@ import jakarta.ws.rs.client.ClientResponseContext
 import jakarta.ws.rs.container.ContainerRequestContext
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
+import org.apache.log4j.MDC
+import org.glassfish.hk2.api.IterableProvider
 import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.jersey.client.spi.PostInvocationInterceptor
 import org.glassfish.jersey.client.spi.PreInvocationInterceptor
 import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.glassfish.jersey.server.ContainerRequest
-import org.glassfish.jersey.server.ExtendedUriInfo
 import org.glassfish.jersey.server.monitoring.ApplicationEvent
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener
 import org.glassfish.jersey.server.monitoring.RequestEvent
 import org.glassfish.jersey.server.monitoring.RequestEventListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.*
 
-class JaxRsContainerRequestMap : TextMapGetter<ContainerRequestContext> {
+/**
+ * use this if you wish to inject arbitrary stuff into the header.
+ */
+interface WebBaggageSource {
+  fun sourceBaggage(carrier: ContainerRequestContext): List<Pair<String,String>>
+}
+
+class JaxRsContainerRequestMap(private val validBaggageHeaders: List<String>, private val baggageSources: List<WebBaggageSource>) : TextMapGetter<ContainerRequestContext> {
   override fun keys(carrier: ContainerRequestContext): MutableIterable<String> {
     return carrier.headers.keys
   }
 
   override fun get(carrier: ContainerRequestContext?, key: String): String? {
-    return carrier?.getHeaderString(key)
+    val result = carrier?.getHeaderString(key)
+    result?.let { res ->
+      if (key.lowercase() === "baggage") {
+        val baggage = baggageSources.map { bs -> bs.sourceBaggage(carrier).map {
+          String.format("%s=%s", it.first, URLEncoder.encode(it.second, StandardCharsets.UTF_8 )) } }.flatten().toMutableList()
+
+        baggage.addAll(res
+          .split(",")
+          .filter {
+            val parts = it.split("=")
+            parts.size == 2 && validBaggageHeaders.contains(parts[0].lowercase())
+          })
+
+        return baggage.joinToString(",")
+      }
+    }
+    return result
   }
 }
 
@@ -106,9 +133,17 @@ class TelemetryInvocationInterceptor @Inject constructor(
 @Singleton
 class TelemetryApplicationEventListener @Inject constructor(
   private val openTelemetry: OpenTelemetry,
-  private val tracer: Tracer
+  private val tracer: Tracer,
+  baggageSources: IterableProvider<WebBaggageSource>
 ) : ApplicationEventListener {
-  private val extractor = JaxRsContainerRequestMap()
+  private val extractor: JaxRsContainerRequestMap
+
+  init {
+    val baggageHeaders = FallbackPropertyConfig.getConfig("opentelemetry.valid-baggage-headers", "")
+          .split(",").filter { it.trim().isNotEmpty() }.map { it.trim().lowercase() }.toMutableList()
+    baggageHeaders.addAll(listOf("x-fh-reqid", "x-fh-uid"))
+    extractor = JaxRsContainerRequestMap(baggageHeaders, baggageSources.toList())
+  }
 
   override fun onEvent(event: ApplicationEvent?) {
   }
@@ -131,8 +166,10 @@ class TelemetryApplicationEventListener @Inject constructor(
       if (event.type == RequestEvent.Type.REQUEST_MATCHED) {
         processRequest(event.containerRequest)
       } else if (event.type == RequestEvent.Type.ON_EXCEPTION) {
+        MDC.clear()
         span?.setStatus(StatusCode.ERROR)
       } else if (event.type == RequestEvent.Type.FINISHED) {
+        MDC.clear()
         span?.end()
         scope?.close()
       }
@@ -154,13 +191,11 @@ class TelemetryApplicationEventListener @Inject constructor(
         .setSpanKind(SpanKind.SERVER)
         .startSpan()
 
-//      val baggage = Baggage.fromContext(Context.current())
+      val baggage = Baggage.fromContext(Context.current())
 
-//      if (baggage.size() > 0) {
-//        baggage.forEach({ k, v -> log.info("baggage `{}`:`{}", k, v.value) } )
-//      } else {
-//        log.info("baggage is empty")
-//      }
+      if (baggage.size() > 0) {
+        baggage.forEach { k, v -> MDC.put(k, v.value) }
+      }
 
       span!!.setAttribute("HTTP_METHOD", request.method)
       span!!.setAttribute("HTTP_SCHEME", request.requestUri.scheme)
@@ -198,6 +233,9 @@ class TelemetryApplicationEventListener @Inject constructor(
 interface BaggageChecker {
   fun baggage(key: String): String?
   fun hasBaggage(key: String): Boolean
+
+  // this cannot be done on incoming request as the jax-rs request is last.
+  fun addBaggageToCurrentContext(key: String, value: String)
 }
 
 class OpenTelemetryBaggageChecker : BaggageChecker {
@@ -207,6 +245,10 @@ class OpenTelemetryBaggageChecker : BaggageChecker {
 
   override fun hasBaggage(key: String): Boolean {
     return baggage(key) != null
+  }
+
+  override fun addBaggageToCurrentContext(key: String, value: String) {
+    Baggage.current().toBuilder().put(key.lowercase(), value).build().storeInContext(Context.current())
   }
 }
 
@@ -239,7 +281,7 @@ class ClientTelemetryFeature : Feature {
  *
  * This feature only works with an injector that has completed its service cycle from a different DI context.
  */
-class UseTelemetryFeature constructor(private val injector: ServiceLocator) : Feature {
+class UseTelemetryFeature(private val injector: ServiceLocator) : Feature {
   override fun configure(context: FeatureContext): Boolean {
     context.register(TelemetryApplicationEventListener::class.java)
     context.register(BaggageFeature::class.java)

@@ -36,6 +36,7 @@ class Dacha2CloudEventListenerImpl @Inject constructor(
     executorService = executorSupplier.executorService(nThreads!!)
 
     if (featureEnricher.isEnabled()) {
+      log.trace("registering enricher for ping")
       register.listen(EnricherPing::class.java) { ep, ce ->
         featureEnricher.enricherPing(ce, ep)
       }

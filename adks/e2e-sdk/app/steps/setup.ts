@@ -50,6 +50,8 @@ Given(/^I update the environment for feature webhooks$/, async function() {
     world.environment = app.data.environments[0];
   }
 
+  // console.log("ensure previous environment has propagated");
+  // await sleep(3);
   const env = world.environment;
 
   const webhookAddress = getWebserverExternalAddress();
@@ -63,6 +65,9 @@ Given(/^I update the environment for feature webhooks$/, async function() {
   }));
 
   world.environment = (await world.applicationApi.getApplication(world.application.id, true)).data.environments[0];
+
+  console.log('sleeping to ensure it is propagated');
+  await sleep(3000);
 });
 
 Given(/^I create a new environment$/, async function () {

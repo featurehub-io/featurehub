@@ -13,19 +13,13 @@ import io.featurehub.edge.features.FeatureRequestResponse;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.jersey.config.CacheJsonMapper;
+import io.featurehub.sse.model.FeatureState;
 import io.featurehub.sse.model.SSEResultState;
 import io.featurehub.sse.stats.model.EdgeHitResultType;
 import io.featurehub.sse.stats.model.EdgeHitSourceType;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 import jakarta.ws.rs.core.MediaType;
-import org.glassfish.jersey.media.sse.EventOutput;
-import org.glassfish.jersey.media.sse.OutboundEvent;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,10 +27,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TimedBucketClientConnection implements ClientConnection {
   private static final Logger log = LoggerFactory.getLogger(TimedBucketClientConnection.class);
-  @NotNull protected final EventOutput output;
+  @NotNull protected final EventOutputHolder output;
   @NotNull protected final KeyParts apiKey;
   private final Map<UUID, EjectHandler> handlers = new HashMap<>();
   protected final String extraContext;
@@ -61,7 +60,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   private TimedBucket timedBucketSlot;
 
   public TimedBucketClientConnection(
-      @NotNull EventOutput output,
+      @NotNull EventOutputHolder output,
       @NotNull KeyParts apiKey,
       @NotNull FeatureTransformer featureTransformer,
       @NotNull StatRecorder statRecorder,
@@ -143,18 +142,10 @@ public class TimedBucketClientConnection implements ClientConnection {
 
   public void writeMessage(SSEResultState name, String etags, String data) throws IOException {
     if (!output.isClosed()) {
-      final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
-      log.trace("data is  etag `{}`: name: `{}` data `{}`", etags, name, data);
-      eventBuilder.name(name.toString());
-      eventBuilder.mediaType(MediaType.TEXT_PLAIN_TYPE);
-      if (etags != null) {
-        eventBuilder.id(etags);
-      }
-      eventBuilder.data(data);
-      final OutboundEvent event = eventBuilder.build();
-      try  {
-        output.write(event);
+      try {
+        output.write(name.toString(), MediaType.TEXT_PLAIN_TYPE, etags, data);
       } catch (IOException e) {
+        log.error("failed to write connection", e);
         close(false);
       }
     } else {
@@ -243,12 +234,13 @@ public class TimedBucketClientConnection implements ClientConnection {
             failed("Unrecognized API key. Please stop requesting.");
             break;
           case SUCCESS:
+            final List<FeatureState> features = edgeResponse.getEnvironment().getFeatures();
             writeMessage(
                 SSEResultState.FEATURES,
                 ETagSplitter.Companion.makeEtags(
                     etags, Collections.singletonList(edgeResponse.getEtag())),
                 CacheJsonMapper.mapper.writeValueAsString(
-                    edgeResponse.getEnvironment().getFeatures()));
+                  features));
 
             statRecorder.recordHit(
                 apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);

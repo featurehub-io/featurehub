@@ -26,7 +26,6 @@ public class EdgeFeature implements Feature {
   @Override
   public boolean configure(FeatureContext context) {
     context.register(TelemetryFeature.class);
-    context.register(CloudEventsFeature.class);
     context
         .register(StatsFeature.class)
         .register(EdgeCommonFeature.class)

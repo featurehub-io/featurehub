@@ -84,6 +84,7 @@ class WebhookEnricherListener @Inject constructor(
   init {
     DeclaredConfigResolver.resolve(this)
 
+    log.debug("listening for webhooks on enriched feature channel")
     cloudEventReceiverRegistry.listen(EnrichedFeatures::class.java, this::process)
 
     client = ClientBuilder.newClient()
