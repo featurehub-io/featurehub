@@ -682,6 +682,14 @@ open class ConvertUtils : Conversions {
     } else byPerson(creator.id!!.id)
   }
 
+  override fun isPersonEnvironmentAdmin(current: Person, environmentId: UUID): Boolean {
+    return QDbGroup()
+      .adminGroup.isTrue
+      .whenArchived.isNull
+      .groupMembers.person.id.eq(current.id?.id)
+      .owningPortfolio.applications.environments.id.eq(environmentId).exists()
+  }
+
   /** is this person a superuser or portfolio admin for this application  */
   override fun isPersonApplicationAdmin(dbPerson: DbPerson?, app: DbApplication?): Boolean {
     if (dbPerson == null || app == null) return false

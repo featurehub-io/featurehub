@@ -3256,6 +3256,9 @@ components:
           format: uuid
     ApplicationPermissions:
       type: object
+      required:
+        - applicationRoles
+        - environments
       properties:
         applicationRoles:
           type: array

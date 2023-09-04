@@ -85,11 +85,13 @@ public class ApplicationUtils {
     }
   }
 
-  public void featureReadCheck(@NotNull SecurityContext securityContext, @NotNull UUID id) {
+  public Person featureReadCheck(@NotNull SecurityContext securityContext, @NotNull UUID id) {
     Person current = authManager.from(securityContext);
 
     if (!applicationApi.personIsFeatureReader(id, current.getId().getId())) {
       throw new ForbiddenException();
     }
+
+    return current;
   }
 }
