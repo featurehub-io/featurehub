@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature-group-settings-side-sheet.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
 import 'package:side_sheet/side_sheet.dart';
@@ -71,12 +70,12 @@ class FeatureGroupCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      StreamBuilder<ReleasedPortfolio?>(
-                          stream:
-                              bloc.mrClient.streamValley.currentPortfolioStream,
+                      StreamBuilder<List<RoleType>>(
+                          stream: bloc.envRoleTypeStream,
                           builder: (context, snapshot) {
                             if (snapshot.data != null &&
-                                (snapshot.data!.currentPortfolioOrSuperAdmin ==
+                                (snapshot.data!
+                                        .contains(RoleType.CHANGE_VALUE) ==
                                     true)) {
                               return _PopUpGroupAdminMenu(
                                 bloc: bloc,

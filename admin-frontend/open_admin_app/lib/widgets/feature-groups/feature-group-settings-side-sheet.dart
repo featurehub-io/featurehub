@@ -120,26 +120,27 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                   }
                   return const SizedBox.shrink();
                 }),
-            ButtonBar(
-              alignment: MainAxisAlignment.center,
-              children: [
-                FHFlatButtonTransparent(
-                  title: 'Cancel',
-                  keepCase: true,
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                // if (widget.editable)
-                FHFlatButton(
-                  title: 'Apply all changes',
-                  onPressed: () {
-                    widget.bloc.saveFeatureGroupUpdates();
-                    Navigator.pop(context);
-                  },
-                )
-              ],
-            )
+            if (widget.bloc.featureGroupsBloc.envRoleTypeStream.value
+                .contains(RoleType.CHANGE_VALUE))
+              ButtonBar(
+                alignment: MainAxisAlignment.center,
+                children: [
+                  FHFlatButtonTransparent(
+                    title: 'Cancel',
+                    keepCase: true,
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  FHFlatButton(
+                    title: 'Apply all changes',
+                    onPressed: () {
+                      widget.bloc.saveFeatureGroupUpdates();
+                      Navigator.pop(context);
+                    },
+                  )
+                ],
+              )
           ]),
         ),
       ),
@@ -156,7 +157,8 @@ class _StrategySettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool editable = true;
+    bool editable = bloc.featureGroupsBloc.envRoleTypeStream.value
+        .contains(RoleType.CHANGE_VALUE);
     return StreamBuilder<FeatureGroupStrategy?>(
         stream: bloc.strategyStream,
         builder: (context, snapshot) {
@@ -167,42 +169,40 @@ class _StrategySettings extends StatelessWidget {
                 TextButton.icon(
                     label: Text(snapshot.data!.name),
                     icon: const Icon(Icons.call_split_outlined),
-                    onPressed: (editable == true)
-                        ? () => showDialog(
-                            context: context,
-                            builder: (_) {
-                              return AlertDialog(
-                                  title: Text(editable
-                                      ? 'Edit split targeting rules'
-                                      : 'View split targeting rules'),
-                                  content: BlocProvider(
-                                    creator: (c, b) => IndividualStrategyBloc(
-                                        RolloutStrategy(
-                                            name: snapshot.data!.name,
-                                            attributes:
-                                                snapshot.data!.attributes)),
-                                    child: FeatureGroupStrategyEditingWidget(
-                                        bloc: bloc, editable: true),
-                                  ));
-                            })
-                        : null),
+                    onPressed: () => showDialog(
+                        context: context,
+                        builder: (_) {
+                          return AlertDialog(
+                              title: Text(editable
+                                  ? 'Edit split targeting rules'
+                                  : 'View split targeting rules'),
+                              content: BlocProvider(
+                                creator: (c, b) => IndividualStrategyBloc(
+                                    RolloutStrategy(
+                                        name: snapshot.data!.name,
+                                        attributes: snapshot.data!.attributes)),
+                                child: FeatureGroupStrategyEditingWidget(
+                                    bloc: bloc, editable: true),
+                              ));
+                        })),
                 const SizedBox(height: 8.0),
-                TextButton.icon(
-                  onPressed: () {
-                    bloc.removeStrategy(snapshot.data!);
-                  },
-                  icon: const Icon(
-                    Icons.cancel,
-                  ),
-                  label: const Text("Remove strategy"),
-                )
+                if (editable)
+                  TextButton.icon(
+                    onPressed: () {
+                      bloc.removeStrategy(snapshot.data!);
+                    },
+                    icon: const Icon(
+                      Icons.cancel,
+                    ),
+                    label: const Text("Remove strategy"),
+                  )
               ],
             );
           } else {
             return TextButton.icon(
                 label: const Text("Add rollout strategy"),
                 icon: const Icon(Icons.call_split_outlined),
-                onPressed: (editable == true)
+                onPressed: editable
                     ? () => showDialog(
                         context: context,
                         builder: (_) {
@@ -235,34 +235,37 @@ class _FeaturesSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var editable = bloc.featureGroupsBloc.envRoleTypeStream.value
+        .contains(RoleType.CHANGE_VALUE);
     return Column(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text("Features List", style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            StreamBuilder<List<FeatureGroupFeature>>(
-                stream: bloc.availableFeaturesStream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                    return FeaturesDropDown(
-                        features: snapshot.data!, bloc: bloc);
-                  } else {
-                    return const SizedBox.shrink();
-                  }
-                }),
-            const SizedBox(
-              width: 8.0,
-            ),
-            TextButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('Add Feature'),
-                onPressed: () => {_addFeatureToGroup(bloc)}),
-          ],
-        ),
+        if (editable)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              StreamBuilder<List<FeatureGroupFeature>>(
+                  stream: bloc.availableFeaturesStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                      return FeaturesDropDown(
+                          features: snapshot.data!, bloc: bloc);
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  }),
+              const SizedBox(
+                width: 8.0,
+              ),
+              TextButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Feature'),
+                  onPressed: () => {_addFeatureToGroup(bloc)}),
+            ],
+          ),
         StreamBuilder<List<FeatureGroupFeature>>(
             stream: bloc.groupFeaturesStream,
             builder: (context, snapshot) {
@@ -290,14 +293,16 @@ class _FeaturesSettings extends StatelessWidget {
                                           bloc: bloc, feature: feature),
                                     ],
                                   ),
-                                  IconButton(
-                                      onPressed: () {
-                                        bloc.removeFeatureFromGroup(feature);
-                                      },
-                                      icon: const Icon(
-                                          Icons.delete_forever_sharp),
-                                      color:
-                                          Theme.of(context).colorScheme.primary)
+                                  if (editable)
+                                    IconButton(
+                                        onPressed: () {
+                                          bloc.removeFeatureFromGroup(feature);
+                                        },
+                                        icon: const Icon(
+                                            Icons.delete_forever_sharp),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary)
                                 ],
                               ),
                             ),
@@ -329,34 +334,36 @@ class FeatureValueContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final editable = bloc.featureGroupsBloc.envRoleTypeStream.value
+        .contains(RoleType.CHANGE_VALUE);
     switch (feature.type) {
       case FeatureValueType.STRING:
         return EditFeatureGroupStringValueContainer(
-          editable: true,
+          editable: editable,
           feature: feature,
           bloc: bloc,
         );
       case FeatureValueType.BOOLEAN:
         return EditFeatureGroupBooleanValueWidget(
-          editable: true,
+          editable: editable,
           feature: feature,
           bloc: bloc,
         );
       case FeatureValueType.NUMBER:
         return EditFeatureGroupNumberValueContainer(
-          editable: true,
+          editable: editable,
           feature: feature,
           bloc: bloc,
         );
       case FeatureValueType.JSON:
         return EditFeatureGroupJsonValueContainer(
-          editable: true,
+          editable: editable,
           feature: feature,
           bloc: bloc,
         );
       default:
         "foo";
     }
-    return SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 }

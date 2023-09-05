@@ -188,26 +188,28 @@ class _FeatureGroupStrategyEditingWidgetState
                   ],
                 ),
                 if (isTotalPercentageError)
-                  _NaughtyDataEntryWidget(bloc: individualStrategyBloc!),
+                  _NaughtyDataEntryWidget(bloc: individualStrategyBloc),
                 const SizedBox(height: 8.0),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: ButtonBar(
-                    children: [
-                      FHFlatButtonTransparent(
-                        title: 'Cancel',
-                        keepCase: true,
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                      if (widget.editable)
-                        FHFlatButton(
-                            title: isUpdate ? 'Update' : 'Add',
-                            onPressed: () => _validationAction()),
-                    ],
+                if (widget.bloc.featureGroupsBloc.envRoleTypeStream.value
+                    .contains(RoleType.CHANGE_VALUE))
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: ButtonBar(
+                      children: [
+                        FHFlatButtonTransparent(
+                          title: 'Cancel',
+                          keepCase: true,
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                        if (widget.editable)
+                          FHFlatButton(
+                              title: isUpdate ? 'Update' : 'Add',
+                              onPressed: () => _validationAction()),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           ),

@@ -46,11 +46,11 @@ class _FeatureGroupsRouteState extends State<FeatureGroupsRoute> {
             const FHHeader(
               title: 'FeatureGroups',
             ),
-            StreamBuilder<ReleasedPortfolio?>(
-                stream: bloc.mrClient.streamValley.currentPortfolioStream,
+            StreamBuilder<List<RoleType>>(
+                stream: bloc.envRoleTypeStream,
                 builder: (context, snapshot) {
                   if (snapshot.data != null &&
-                      (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
+                      (snapshot.data!.contains(RoleType.CHANGE_VALUE))) {
                     return FilledButton.icon(
                       icon: const Icon(Icons.add),
                       label: const Text('Create feature group'),
