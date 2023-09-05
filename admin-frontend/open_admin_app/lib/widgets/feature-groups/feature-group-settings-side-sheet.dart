@@ -136,6 +136,8 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                     title: 'Apply all changes',
                     onPressed: () {
                       widget.bloc.saveFeatureGroupUpdates();
+                      widget.bloc.featureGroupsBloc.mrClient.addSnackbar(Text(
+                          'Settings for group "${widget.featureGroup.name}" have been updated'));
                       Navigator.pop(context);
                     },
                   )
