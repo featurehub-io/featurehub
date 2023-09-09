@@ -138,4 +138,14 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
       getCurrentFeatureGroups();
     }
   }
+
+  deleteFeatureGroup(String id) async {
+    var currentAppId = mrClient.currentAid;
+    if (currentAppId != null) {
+      await featureGroupServiceApi.deleteFeatureGroup(currentAppId, id);
+      List<FeatureGroupListGroup> featureGroupList = _featureGroupsStream.value;
+      featureGroupList.removeWhere((group) => group.id == id);
+      _featureGroupsStream.add(featureGroupList);
+    }
+  }
 }

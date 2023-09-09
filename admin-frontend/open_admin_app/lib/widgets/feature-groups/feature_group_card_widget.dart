@@ -5,6 +5,7 @@ import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
 import 'package:side_sheet/side_sheet.dart';
 
 import 'feature_group_bloc.dart';
+import 'feature_group_delete_dialog_widget.dart';
 import 'feature_group_update_dialog_widget.dart';
 
 class FeatureGroupCard extends StatelessWidget {
@@ -135,12 +136,12 @@ class _PopUpGroupAdminMenu extends StatelessWidget {
                   ));
         }
         if (value == 'delete') {
-          // bloc.mrClient.addOverlay((BuildContext context) {
-          // return FeatureGroupDeleteDialogWidget(
-          //   bloc: bloc,
-          //   application: application,
-          // );
-          // });
+          bloc.mrClient.addOverlay((BuildContext context) {
+            return FeatureGroupDeleteDialogWidget(
+              bloc: bloc,
+              featureGroup: featureGroup,
+            );
+          });
         }
         if (value == 'manage') {
           _openFeatureGroupEditSideSheet(bloc, featureGroup, context);
