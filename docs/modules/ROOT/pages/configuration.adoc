@@ -289,6 +289,11 @@ In case if the front-end is decoupled on a CDN, the base bath needs to be config
 cache any headers. It is on by default. See also the `cache-control.web` configuration for MR and Party Server.
 - `cache-control.api.enabled` - set this to `false` if you wish to disable the Cache Control headers for APIs.
 - `connect.logging.environment` - this is a comma separated value list that lets you pick up values from environment variables that get added directly to your logs. It is typically used in Kubernetes deploys to allow you to extract information from the k8s deploy and put it in environment variables and have them logged. The format is `<ENV-VAR>=<log-key>`. You can use `.` notation to split it into objects.
+- `opentelemetry.valid-baggage-headers` - this allows you to filter out the valid W3C Baggage headers that you will accept from incoming clients. The Web UI adds its own (the request-id for that session) and the
+server adds in the UUID of the user who is performing the action. Your clients can add anything further
+they wish to baggage headers, but you need to specify them here to allow them to be added to the baggage.
+The side effect of this is that _all baggage_ will be logged in the logs. This gives you very good 
+OpenTelemetry and log level tracebility for actions from clients.
 
 .Config
 ----
