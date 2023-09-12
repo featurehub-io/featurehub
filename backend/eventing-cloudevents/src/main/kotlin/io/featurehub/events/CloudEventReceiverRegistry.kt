@@ -93,11 +93,11 @@ constructor(private val openTelemetryReader: CloudEventsTelemetryReader, executo
       return
     }
 
-    if (log.isTraceEnabled) {
-      log.debug("cloudevent: {}", event.subject)
-    }
-
     val handlers = eventHandlers[event.type]?.get(event.subject!!)
+
+    if (log.isTraceEnabled) {
+      log.debug("cloudevent: {} / {} has {} handlers", event.type, event.subject, handlers?.size ?: 0)
+    }
 
     if (handlers == null) {
       event.subject?.let { it ->
@@ -114,7 +114,7 @@ constructor(private val openTelemetryReader: CloudEventsTelemetryReader, executo
     openTelemetryReader.receive(event) {
       CacheJsonMapper.fromEventData(event, handlers[0].clazz)?.let { eventData ->
         if (log.isTraceEnabled) {
-          log.trace("cloudevent: incoming message on {}/{} : {}", event.type, event.subject, eventData.toString())
+          log.debug("cloudevent: incoming message on {}/{} : {}", event.type, event.subject, eventData.toString())
         }
 
         handlers.forEach { handler ->

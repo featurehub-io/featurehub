@@ -148,11 +148,13 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
   override fun getFeatureCollection(eId: UUID, apiKey: String): FeatureCollection? {
     // if the environment is already in the sin-bin, return not found
     environmentMissCache.getIfPresent(eId)?.let {
+      log.trace("environmentMissCache: {}", eId)
       return null
     }
 
     // same with api key
     serviceAccountMissCache.getIfPresent(apiKey)?.let {
+      log.trace("serviceMissCache: {}", apiKey)
       return null
     }
 
@@ -163,20 +165,29 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
           // this can cause an exception
           val serviceAccount = serviceAccountApiKeyCache.get(apiKey)
 
-          serviceAccount.permissions.find { it.environmentId == eId }
+          val result = serviceAccount.permissions.find { it.environmentId == eId }
+          if (result == null) {
+            log.trace("Unable to find environment id {} in serviceAccount", serviceAccount)
+          }
+          result
         } catch (e: Exception) {
+          if (log.isTraceEnabled) {
+            log.trace("failed to get service account permission {}/{}", eId, apiKey)
+          }
           // this will cause an exception
           null
         }
       }
 
       if (perms.permissions.isEmpty()) {
+        log.trace("no permissions for this service account  {}/{}", perms, comboKey)
         return null
       }
 
       // accessing the environment-cache can cause an exception
       return FeatureCollection(environmentCache[eId], perms, serviceAccountApiKeyCache.get(apiKey).id)
     } catch (e: Exception) {
+      log.trace("could not find in perms cache {}", comboKey)
       return null
     }
   }
@@ -209,17 +220,27 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
       return
     }
 
-    val oldEnv = environmentCache.getIfPresent(envId)
-    if (oldEnv == null) {
-      // we know it exists now so if it was deleted and added to the miss cache, removed it
-      environmentMissCache.invalidate(envId)
-      if (cacheStreamedUpdates!!) {
-        environmentCache.put(envId, EnvironmentFeatures(env))
+    val envFeatures = EnvironmentFeatures(env)
+
+    val oldEnv = environmentCache.asMap().putIfAbsent(envId, envFeatures)
+    if (oldEnv != null) { // it is already there
+      if (env.environment.version >= oldEnv.environment.environment.version) {
+        log.trace("environment {} is same version or newer (incoming {}, old {}), storing", envId, env.environment.version, oldEnv.environment.environment.version)
+        environmentCache.put(envId, envFeatures)
+      } else {
+        log.trace(
+          "received old update to environment {} (current {} vs incoming {}) - ignoring",
+          envId,
+          oldEnv.environment.environment.version,
+          env.environment.version
+        )
       }
-    } else if (env.environment.version >= oldEnv.environment.environment.version) {
-      environmentMissCache.invalidate(envId)
-      environmentCache.put(envId, EnvironmentFeatures(env))
+    } else {
+      log.trace("environment {} is new, storing (version {})", envId, env.environment.version)
+      // we know it exists now so if it was deleted and added to the miss cache, removed it
     }
+
+    environmentMissCache.invalidate(envId)
   }
 
   override fun updateServiceAccount(serviceAccount: PublishServiceAccount) {
@@ -240,13 +261,15 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
         return
       }
 
-      val existing = serviceAccountCache.getIfPresent(sId)
-      if (existing == null) {
+      val existing = serviceAccountCache.asMap().putIfAbsent(sId, sa)
+      if (existing == null) { // it wasn't there before
         serviceAccountMissCache.invalidateAll(listOf(sa.apiKeyServerSide, sa.apiKeyClientSide))
         if (cacheStreamedUpdates!!) {
           stashServiceAccount(sa, sId)
         }
       } else if (sa.version >= existing.version) {
+        serviceAccountCache.put(sId, sa) // its equal or newer, we have to store it
+
         if (existing.apiKeyServerSide != sa.apiKeyServerSide) {
           serviceAccountMissCache.put(existing.apiKeyServerSide, true)
           serviceAccountApiKeyCache.invalidate(existing.apiKeyServerSide)
@@ -265,6 +288,8 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
         permsCache.invalidateAll(existing.permissions.takeWhile { envs[it.environmentId] == null }.map {
           listOf(permCacheKey(it.environmentId, sa.apiKeyServerSide), permCacheKey(it.environmentId, sa.apiKeyClientSide)) }
            .flatten())
+      } else {
+        log.trace("attempted to update {} with older service account {}", existing, sa)
       }
     }
   }
@@ -339,7 +364,7 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
             log.trace("feature value didn't change, ignoring")
             return // just ignore it
           } else {
-            log.trace("feature value situation unknown existing {} vs new {}", existingValue, newValue)
+            log.trace("feature value was old,  ignoring as existing is {} vs incoming {}", existingValue, newValue)
           }
         }
 

@@ -165,7 +165,7 @@ class FeatureSqlApi @Inject constructor(
   }
 
   @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class)
-  private fun onlyUpdateFeatureValueForEnvironment(
+  fun onlyUpdateFeatureValueForEnvironment(
     featureValue: FeatureValue,
     person: PersonFeaturePermission,
     existing: DbFeatureValue,
@@ -206,11 +206,11 @@ class FeatureSqlApi @Inject constructor(
     dbPerson: DbPerson,
     historical: DbFeatureValueVersion,
     changingDefaultValue: Boolean,
-    updatingLock: Boolean
+    isFeatureValueChangeUpdatingLockValue: Boolean // this can be false when the update is coming from Edge
   ) {
     val feature = existing.feature
 
-    val lockUpdate = if (updatingLock) updateSelectivelyLocked(featureValue, historical, existing, person)
+    val lockUpdate = if (isFeatureValueChangeUpdatingLockValue) updateSelectivelyLocked(featureValue, historical, existing, person)
         else SingleFeatureValueUpdate(hasChanged = false, updated = false, previous = false)
 
     val lockChanged = lockUpdate.hasChanged
@@ -225,6 +225,12 @@ class FeatureSqlApi @Inject constructor(
     val strategyUpdates = updateSelectivelyRolloutStrategies(person, featureValue, historical, existing, lockChanged)
 
     val retiredUpdate = updateSelectivelyRetired(person, featureValue, historical, existing, lockChanged)
+
+    // if the existing value is locked and this update didn't change it and we are actually changing something
+    // we have an issue
+    if (existing.isLocked && !lockChanged && (defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged)) {
+      throw OptimisticLockingException()
+    }
 
     if (lockChanged || defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged) {
       existing.whoUpdated = dbPerson

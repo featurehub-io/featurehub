@@ -56,7 +56,7 @@ To swap from Dacha1 (NATS only) to Dacha2 (all options), you need to set the env
 
 The upside of NATS is simplicity and speed, it is the fastest product we test with by far. We do not use JetStream,
 but you can configure it with JetStream if you wish. The downside is typically that your Operations team has to support
-it, and it is an extra cost to deploy. The Kubernetes charts for NATS are extremely good and reliable.
+it, and it is an extra cost to deploy. The Kubernetes charts for NATS are excellent and reliable.
 
 ==== Communication
 NATS communicates using a protocol whereby the clients essentially tell the servers about each other, but they
@@ -67,6 +67,7 @@ party-server you do not need to set anything. If you have deployed NATS yourself
 you will need to set the environment variable:
 
 - `nats.urls` - a comma separated list of NATs servers.
+- 'nats.healthcheck.disabled` - set to true if you don't want MR, Edge or Dacha to fail its health check if it cannot communicate with NATS.
 
 You do not need to configure anything further for NATS for Dacha1 or Dacha2. NATS supports request/reply,
 true pub/sub and pub/queues in a single product.
@@ -288,6 +289,11 @@ In case if the front-end is decoupled on a CDN, the base bath needs to be config
 cache any headers. It is on by default. See also the `cache-control.web` configuration for MR and Party Server.
 - `cache-control.api.enabled` - set this to `false` if you wish to disable the Cache Control headers for APIs.
 - `connect.logging.environment` - this is a comma separated value list that lets you pick up values from environment variables that get added directly to your logs. It is typically used in Kubernetes deploys to allow you to extract information from the k8s deploy and put it in environment variables and have them logged. The format is `<ENV-VAR>=<log-key>`. You can use `.` notation to split it into objects.
+- `opentelemetry.valid-baggage-headers` - this allows you to filter out the valid W3C Baggage headers that you will accept from incoming clients. The Web UI adds its own (the request-id for that session) and the
+server adds in the UUID of the user who is performing the action. Your clients can add anything further
+they wish to baggage headers, but you need to specify them here to allow them to be added to the baggage.
+The side effect of this is that _all baggage_ will be logged in the logs. This gives you very good 
+OpenTelemetry and log level tracebility for actions from clients.
 
 .Config
 ----

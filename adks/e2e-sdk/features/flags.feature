@@ -24,7 +24,16 @@ Feature: All flag based functionality works as expected
       | false  | true    | on    |
       | false  | false   | on    |
 
-      @history2
+  @flag-lock
+  Scenario: A locked flag cannot have the strategy changed
+    Given There is a new feature flag
+    Then the feature flag is locked and off
+    And I cannot create custom flag rollout strategies
+      | percentage | name          | value  |
+      | 15         | orange-roughy | true |
+
+
+  @history2
    Scenario: A new portfolio with complex history
      Given There is a new feature flag
      And I set the feature flag to on and unlocked

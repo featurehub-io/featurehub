@@ -1,6 +1,8 @@
 package io.featurehub.edge.strategies;
 
 import io.featurehub.edge.KeyParts;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -65,14 +67,26 @@ public class ClientContext {
     return strategy;
   }
 
-  public String get(String key, String defaultValue) {
+  @Nullable
+  public List<String> get(String key) {
     List<String> val = attributes.get(key);
 
     if (val == null || val.isEmpty()) {
-      return defaultValue;
+      return null;
     }
 
-    return val.get(0);
+    return val;
+  }
+
+  @NotNull
+  public List<String> get(String key, @NotNull String defaultValue) {
+    List<String> val = attributes.get(key);
+
+    if (val == null || val.isEmpty()) {
+      return List.of(defaultValue);
+    }
+
+    return val;
   }
 
   public String makeEtag() {

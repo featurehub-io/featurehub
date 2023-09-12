@@ -3,11 +3,13 @@ package io.featurehub.events
 import io.cloudevents.CloudEvent
 import io.featurehub.metrics.MetricsCollector
 import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.baggage.Baggage
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.propagation.TextMapGetter
 import jakarta.inject.Inject
+import org.apache.log4j.MDC
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -50,15 +52,27 @@ class CloudEventsTelemetryReaderImpl @Inject constructor(private val openTelemet
         .setSpanKind(SpanKind.CONSUMER)
         .startSpan()
 
+      setMDCFromBaggage()
+
       try {
         process(event)
       } catch (e: Exception) {
         metrics.failures.inc()
         throw e
       } finally {
+        MDC.clear()
         span.end()
       }
     }
+  }
+
+  private fun setMDCFromBaggage() {
+    val baggage = Baggage.fromContext(Context.current())
+
+    if (baggage.size() > 0) {
+      baggage.forEach { k, v -> MDC.put(k, v.value) }
+    }
+
   }
 
   override fun receive(event: CloudEvent, process: (event: CloudEvent) -> Unit) {
@@ -70,12 +84,15 @@ class CloudEventsTelemetryReaderImpl @Inject constructor(private val openTelemet
         .setSpanKind(SpanKind.CONSUMER)
         .startSpan()
 
+      setMDCFromBaggage()
+
       try {
         process(event)
       } catch (e: Exception) {
         failedEvent.inc()
         log.error("failed to process event {}", event, e)
       } finally {
+        MDC.clear()
         span.end()
       }
     }

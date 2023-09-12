@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html'; // ignore: avoid_web_libraries_in_flutter
-
+import 'package:dio/dio.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -232,6 +232,8 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   late StreamValley streamValley;
 
+  int requestIdCounter = DateTime.now().millisecond;
+
   static AbstractWebInterface webInterface = getUrlAuthInstance();
 
   static String homeUrl() {
@@ -242,6 +244,14 @@ class ManagementRepositoryClientBloc implements Bloc {
       : _client = ApiClient(basePath: basePathUrl ?? homeUrl()) {
     streamValley = StreamValley(personState);
     webInterface.setOrigin();
+
+    // attach a request id from this client to every outgoing request
+    (_client.apiClientDelegate as DioClientDelegate).client.interceptors.add(InterceptorsWrapper(
+      onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
+        options.headers.putIfAbsent("baggage", () => "x-fh-reqid=${requestIdCounter++}" );
+        return handler.next(options);
+      }
+    ));
 
     _client.passErrorsAsApiResponses = true;
 

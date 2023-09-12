@@ -53,13 +53,13 @@ Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (loc
 });
 
 When(/^I (unlock|lock) the feature$/, async function (lockUnlock) {
-  const fValue = await this.getFeature();
+  const fValue = await (this as SdkWorld).getFeatureValue();
   fValue.locked = (lockUnlock === 'lock');
   await this.updateFeature(fValue);
 });
 
 Then(/^I set the feature flag to (on|off|locked|unlocked)$/, async function (flagChange) {
-  const fValue = await this.getFeature();
+  const fValue = await (this as SdkWorld).getFeatureValue();
   if (flagChange === 'on' || flagChange === 'off') {
     fValue.valueBoolean = (flagChange === 'on');
   } else {
@@ -72,7 +72,7 @@ Then(/^I set the feature flag to (on|off|locked|unlocked)$/, async function (fla
 });
 
 Then(/^I set the feature flag to (on|off|locked|unlocked) and (on|off|locked|unlocked)$/, async function (flagChange1, flagChange2) {
-  const fValue = await this.getFeature();
+  const fValue = await (this as SdkWorld).getFeatureValue();
   if (flagChange1 === 'on' || flagChange1 === 'off') {
     fValue.valueBoolean = (flagChange1 === 'on');
   } else {

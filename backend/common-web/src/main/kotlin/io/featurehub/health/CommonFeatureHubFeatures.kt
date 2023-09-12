@@ -4,6 +4,7 @@ import cd.connect.jersey.common.LoggingConfiguration
 import cd.connect.jersey.prometheus.PrometheusDynamicFeature
 import cd.connect.openapi.support.ReturnStatusContainerResponseFilter
 import io.featurehub.info.ApplicationVersionFeatures
+import io.featurehub.jersey.ManagedAsyncThreadPoolExecutorProvider
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.jersey.config.EndpointLoggingListener
 import io.featurehub.utils.*
@@ -45,6 +46,8 @@ class CommonFeatureHubFeatures @Inject constructor(private val locator: ServiceL
         bind(ConfigInjectionResolver())
       }
     })
+
+    context.register(ManagedAsyncThreadPoolExecutorProvider::class.java)
 
     return true
   }

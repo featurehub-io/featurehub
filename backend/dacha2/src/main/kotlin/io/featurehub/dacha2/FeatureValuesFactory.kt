@@ -5,22 +5,25 @@ import io.featurehub.dacha.model.PublishEnvironment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentSkipListSet
 
 interface FeatureValues {
   fun getFeatures(): Collection<CacheEnvironmentFeature>
   val environment: PublishEnvironment
-//  fun getEnvironment(): PublishEnvironment?
   fun getEtag(): String?
 }
 
-class EnvironmentFeatures(override val environment: PublishEnvironment) : FeatureValues {
+class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
   private val log: Logger = LoggerFactory.getLogger(EnvironmentFeatures::class.java)
   // Feature::id, CacheFeatureValue
   private val features: MutableMap<UUID, CacheEnvironmentFeature>
   private var etag: String
+  private val featureValues = ConcurrentSkipListSet<CacheEnvironmentFeature> { t1, t2 -> t1.feature.id.compareTo(t2.feature.id) }
 
   init {
-    features = environment.featureValues.associate { f -> f.feature.id to f }.toMutableMap()
+    features =  ConcurrentHashMap(env.featureValues.associate { f -> f.feature.id to f }.toMutableMap())
+    featureValues.addAll(env.featureValues)
 
     etag = etagCalculator()
   }
@@ -31,9 +34,12 @@ class EnvironmentFeatures(override val environment: PublishEnvironment) : Featur
 
 
   fun etagCalculator(): String {
-    val calcTag = features.values
+    // we convert to list to protect against changes while we are evaluating it
+    val calcTag = featureValues.toList()
       .map { fvci -> fvci.feature.id.toString() + "-" + (fvci.value?.version ?: "0000") }
       .joinToString("-")
+
+    log.trace("etag is {}", calcTag)
 
     return Integer.toHexString(calcTag.hashCode())
   }
@@ -43,45 +49,49 @@ class EnvironmentFeatures(override val environment: PublishEnvironment) : Featur
     return features[id]
   }
 
-  fun setFeatureValue(feature: CacheEnvironmentFeature) {
+  private fun updateEnvironmentFeature(feature: CacheEnvironmentFeature, useValue: Boolean) {
     val id = feature.feature.id
 
-    val existed = features.containsKey(id)
-    if (!existed) { // this is just a "just in case", the main code never creates this situation
+    val existed = features[id]
+    if (existed == null) { // this is just a "just in case", the main code never creates this situation
       log.trace("Key {} didn't exist, so adding the feature", id)
       features[id] = feature
-      environment.featureValues.add(feature)
-    } else {
-      environment.featureValues.find { it.feature.id == id }?.let {
-        log.trace("replacing feature {} with {}", it.value, feature.value)
-        it.value = feature.value
-        it.feature = feature.feature
+      try {
+        featureValues.add(feature)
+      } catch (e: Exception) {
+        log.warn("another version of the feature {} just got added to the set", feature)
       }
+    } else {
+      if (useValue) {
+        log.trace("replacing feature {} with {}", existed.value, feature.value)
+        existed.value = feature.value
+      }
+
+      log.trace("replacing feature {} with {}", existed.feature, feature.feature)
+      existed.feature = feature.feature
     }
 
+    env.featureValues = featureValues.toList()
     calculateEtag()
   }
 
+  fun setFeatureValue(feature: CacheEnvironmentFeature) {
+    updateEnvironmentFeature(feature, true)
+  }
+
   fun setFeature(feature: CacheEnvironmentFeature) {
-    val id = feature.feature.id
-
-    val existed = features.containsKey(id)
-    if (!existed) {
-      features[id] = feature
-      environment.featureValues.add(feature)
-
-      // etag only uses the ID of the feature, which never changes
-      calculateEtag()
-    } else {
-      environment.featureValues.find { it.feature.id == id }?.let {
-        it.feature = feature.feature
-      }
-    }
+    updateEnvironmentFeature(feature, false)
   }
 
   fun remove(id: UUID) {
     features.remove(id)?.let {
-      environment.featureValues.removeIf { it.feature.id == id }
+      if (!featureValues.remove(it)) {
+        // fallback to the slower remove as the value may have changed
+        environment.featureValues.removeIf { it.feature.id == id }
+      }
+
+      env.featureValues = featureValues.toList()
+
       calculateEtag()
     }
   }
@@ -89,6 +99,9 @@ class EnvironmentFeatures(override val environment: PublishEnvironment) : Featur
   override fun getFeatures(): Collection<CacheEnvironmentFeature> {
     return features.values
   }
+
+  override val environment: PublishEnvironment
+    get() = env
 
   override fun getEtag(): String {
     return etag

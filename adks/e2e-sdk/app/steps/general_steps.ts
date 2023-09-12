@@ -8,7 +8,7 @@ import { expect } from 'chai';
 import waitForExpect from 'wait-for-expect';
 
 Then(/^I add a strategy (.*) with (.*) percentage and value (.*)$/, async function (strategyName, percentage, value, table: DataTable) {
-  const fValue = await this.getFeature();
+  const fValue = await (this as SdkWorld).getFeatureValue();
   const rs = new RolloutStrategy({ name: strategyName });
 
   if (percentage !== 'no') {
