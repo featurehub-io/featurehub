@@ -5,6 +5,7 @@ import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.dacha.api.DachaClientFeature;
 import io.featurehub.dacha.api.DachaClientServiceRegistry;
+import io.featurehub.events.CloudEventsFeature;
 import io.featurehub.events.pubsub.GoogleEventFeature;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
@@ -31,6 +32,7 @@ public class Application {
         new ResourceConfig(
             DachaClientFeature.class,
             EdgeFeature.class,
+            CloudEventsFeature.class,
             GoogleEventFeature.class,
             NATSFeature.class,
             EdgeResourceFeature.class,

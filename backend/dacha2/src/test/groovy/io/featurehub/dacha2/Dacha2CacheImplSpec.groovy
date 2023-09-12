@@ -274,7 +274,7 @@ class Dacha2CacheImplSpec extends Specification {
       def result = cache.isEnvironmentPresent(envId)
     and: "we republish the environment"
       cache.updateEnvironment(new PublishEnvironment().action(PublishAction.UPDATE)
-          .environment(new CacheEnvironment().id(envId))
+          .environment(new CacheEnvironment().id(envId).version(2))
           .featureValues([envFeature])
       )
       def resultWith = cache.getFeatureCollection(envId, apiKeyServerSide)

@@ -7,11 +7,13 @@ import io.featurehub.sse.model.FeatureRolloutStrategyAttribute;
 import io.featurehub.strategies.matchers.MatcherRepository;
 import io.featurehub.strategies.percentage.PercentageCalculator;
 import jakarta.inject.Inject;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,21 +89,21 @@ public class ApplyFeature {
   // This applies the rules as an AND. If at any point it fails it jumps out.
   private boolean matchAttributes(ClientContext cac, FeatureRolloutStrategy rsi) {
     for(FeatureRolloutStrategyAttribute attr : rsi.getAttributes()) {
-      String suppliedValue = cac.get(attr.getFieldName(), null);
+      List<String> suppliedValues = cac.get(attr.getFieldName());
 
       // "now" for dates and date-times are not passed by the client, so we create them in-situ
-      if (suppliedValue == null && "now".equalsIgnoreCase(attr.getFieldName())) {
+      if (suppliedValues == null && "now".equalsIgnoreCase(attr.getFieldName())) {
         if (attr.getType() == RolloutStrategyFieldType.DATE) {
-          suppliedValue = DateTimeFormatter.ISO_DATE.format(LocalDateTime.now());
+          suppliedValues = List.of(DateTimeFormatter.ISO_DATE.format(LocalDateTime.now()));
         } else if (attr.getType() == RolloutStrategyFieldType.DATETIME) {
-          suppliedValue = DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now());
+          suppliedValues = List.of(DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()));
         }
       }
 
       Object val = attr.getValues();
 
       // both are null, just check against equals
-      if (val == null && suppliedValue == null) {
+      if (val == null && suppliedValues == null) {
         if (attr.getConditional() != RolloutStrategyAttributeConditional.EQUALS) {
           return false;
         }
@@ -110,12 +112,12 @@ public class ApplyFeature {
       }
 
       // either of them are null, check against not equals as we can't do anything else
-      if (val == null || suppliedValue == null) {
+      if (val == null || suppliedValues == null) {
         return false;
       }
 
-      // find the appropriate matcher based on type and match against the supplied value
-      if (!matcherRepository.findMatcher(attr).match(suppliedValue, attr)) {
+      // if none of the supplied values match against the associated matcher,
+      if (suppliedValues.stream().noneMatch(sv -> matcherRepository.findMatcher(attr).match(sv, attr) )) {
         return false;
       }
     }
@@ -128,7 +130,10 @@ public class ApplyFeature {
       return cac.defaultPercentageKey();
     }
 
-    return percentageAttributes.stream().map(pa -> cac.get(pa, "<none>")).collect(Collectors.joining("$"));
+    return percentageAttributes.stream()
+      .map(pa -> cac.get(pa, "<none>"))
+      .flatMap(Collection::stream).collect(Collectors.joining(
+      "$"));
   }
 
 

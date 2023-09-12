@@ -29,8 +29,8 @@ class StringArrayMatcherSpec extends Specification {
         'Android'        | RolloutStrategyAttributeConditional.NOT_EQUALS     | ['android']                  || true
         'ios'            | RolloutStrategyAttributeConditional.INCLUDES       | ['android', 'ios', 'chrome'] || true
         'linux'          | RolloutStrategyAttributeConditional.INCLUDES       | ['android', 'ios', 'chrome'] || false
-        'ios'            | RolloutStrategyAttributeConditional.EXCLUDES       | ['android', 'ios', 'chrome'] || false
-        'linux'          | RolloutStrategyAttributeConditional.EXCLUDES       | ['android', 'ios', 'chrome'] || true
+        'ios'            | RolloutStrategyAttributeConditional.EXCLUDES       | ['android', 'ios', 'chrome'] || false // val does not contain "ios" == false, it does
+        'linux'          | RolloutStrategyAttributeConditional.EXCLUDES       | ['android', 'ios', 'chrome'] || true // val does not contain "linux" == true, it doesn't
         'peaches'        | RolloutStrategyAttributeConditional.GREATER_EQUALS | ['peaches']                  || true
         'peaches'        | RolloutStrategyAttributeConditional.GREATER_EQUALS | ['zebras']                   || false
         'peaches'        | RolloutStrategyAttributeConditional.GREATER_EQUALS | ['cream', 'zebras']          || true

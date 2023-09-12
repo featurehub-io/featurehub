@@ -3,6 +3,7 @@ package io.featurehub.mr
 import io.featurehub.app.db.utils.CommonDbFeature
 import io.featurehub.db.utils.ApiToSqlApiBinder
 import io.featurehub.db.utils.ComplexUpdateMigrations
+import io.featurehub.lifecycle.WebBaggageSource
 import io.featurehub.messaging.MessagingFeature
 import io.featurehub.mr.api.*
 import io.featurehub.mr.auth.*
@@ -76,6 +77,7 @@ class ManagementRepositoryFeature : Feature {
           bind(NoAuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
         }
 
+        bind(BaggageSourceAuth::class.java).to(WebBaggageSource::class.java).`in`(Singleton::class.java)
         bind(OAuth2MRAdapter::class.java).to(SSOCompletionListener::class.java).`in`(Singleton::class.java)
         bind(DatabaseAuthRepository::class.java).to(AuthenticationRepository::class.java).`in`(
           Singleton::class.java

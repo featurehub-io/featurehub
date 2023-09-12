@@ -3,6 +3,7 @@ package io.featurehub.mr.auth;
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.context.ConnectContext;
+import io.featurehub.lifecycle.BaggageChecker;
 import io.featurehub.mr.api.AllowedDuringPasswordReset;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -32,13 +33,15 @@ public class AuthApplicationEventListener implements ApplicationEventListener {
   private static final Logger log = LoggerFactory.getLogger(AuthApplicationEventListener.class);
   private static final String USER = "user";
   private final AuthenticationRepository authRepo;
+  private final BaggageChecker baggageChecker;
 
   @ConfigKey("audit.logging.user")
   protected Boolean addUserToLoggingContext = Boolean.FALSE;
 
   @Inject
-  public AuthApplicationEventListener(AuthenticationRepository authRepo) {
+  public AuthApplicationEventListener(AuthenticationRepository authRepo, BaggageChecker baggageChecker) {
     this.authRepo = authRepo;
+    this.baggageChecker = baggageChecker;
 
     DeclaredConfigResolver.resolve(this);
   }
@@ -104,8 +107,10 @@ public class AuthApplicationEventListener implements ApplicationEventListener {
 
           // if they have logged in and either this API is ok during password reset or the person doesn't require it
           if (value != null && (requiresAuth.isAllowedDuringPasswordReset || !Boolean.TRUE.equals(value.person.getPasswordRequiresReset()) )) {
+            final String userId = value.person.getId().getId().toString();
+            baggageChecker.addBaggageToCurrentContext("x-fh-uid", userId);
             if (addUserToLoggingContext) {
-              ConnectContext.set(USER, Map.of("id", value.person.getId().getId(), "email", value.person.getEmail()));
+              ConnectContext.set(USER, Map.of("id", userId, "email", value.person.getEmail()));
             }
             event.getContainerRequest().setSecurityContext(new AuthHolder(value));
           } else {

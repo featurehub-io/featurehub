@@ -24,5 +24,6 @@ class TimedBucketClientFactoryImpl @Inject constructor(
     etag: String?,
     extraContext: String?
   ): TimedBucketClientConnection =
-    TimedBucketClientConnection(output, apiKey, featureTransformer, statRecorder, featureHubAttributes, etag, extraContext, bucketService)
+    TimedBucketClientConnection(InternalEventOutput(output), apiKey, featureTransformer,
+      statRecorder, featureHubAttributes, etag, extraContext, bucketService)
 }

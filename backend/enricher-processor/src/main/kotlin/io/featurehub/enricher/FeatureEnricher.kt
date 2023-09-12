@@ -73,10 +73,12 @@ class FeatureEnricherProcessor @Inject constructor(
    * dacha2
    */
   override fun enrich(event: CloudEvent): Boolean {
+    log.trace("enricher received CE of type {}", event.type)
     if (isEnabled()) {
       openTelemetryReader.receive(event) {
         if (event.type == PublishFeatureValues.CLOUD_EVENT_TYPE) {
           CacheJsonMapper.fromEventData(event, PublishFeatureValues::class.java)?.let { featureData ->
+
             enrichData(featureData, event.time)
           }
         }
@@ -91,6 +93,7 @@ class FeatureEnricherProcessor @Inject constructor(
   }
 
   private fun enrichData(featureData: PublishFeatureValues, time: OffsetDateTime?) {
+    log.trace("enriching features {}", featureData)
     val envs = mutableMapOf<UUID, MutableList<PublishFeatureValue>>()
     featureData.features.forEach { envs.getOrPut(it.environmentId) { mutableListOf() }.add(it) }
 
@@ -102,6 +105,7 @@ class FeatureEnricherProcessor @Inject constructor(
 
         val updatedFeatures = features.map { it.feature.feature.key }
 
+        log.trace("publishing enriched stream for env {} -> {}", envId, updatedFeatures)
         publishEnrichedStream(envId, null, updatedFeatures, time)
       }
     }
