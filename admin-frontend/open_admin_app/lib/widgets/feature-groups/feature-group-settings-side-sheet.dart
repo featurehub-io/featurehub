@@ -134,8 +134,8 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                   ),
                   FHFlatButton(
                     title: 'Apply all changes',
-                    onPressed: () {
-                      widget.bloc.saveFeatureGroupUpdates();
+                    onPressed: () async {
+                      await widget.bloc.saveFeatureGroupUpdates();
                       widget.bloc.featureGroupsBloc.mrClient.addSnackbar(Text(
                           'Settings for group "${widget.featureGroup.name}" have been updated'));
                       Navigator.pop(context);

@@ -139,10 +139,6 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   }
 
   @override
-  // TODO: implement feature
-  get feature => throw UnimplementedError();
-
-  @override
   void removeStrategy(strategy) {
     final strategies = _trackingUpdatesGroupStrategiesStream.value;
     strategies.removeWhere((e) =>
@@ -172,12 +168,11 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   }
 
   @override
-  uniqueStrategyId() {
-    throw UnimplementedError();
-  }
+  uniqueStrategyId() {}
 
   @override
-  void ensureStrategiesAreUnique() {
-    throw UnimplementedError();
-  }
+  void ensureStrategiesAreUnique() {}
+
+  @override
+  get feature {}
 }
