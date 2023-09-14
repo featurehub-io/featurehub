@@ -10,6 +10,7 @@ import io.featurehub.db.api.Opts;
 import io.featurehub.mr.api.ApplicationServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.Application;
+import io.featurehub.mr.model.ApplicationPermissions;
 import io.featurehub.mr.model.ApplicationSummary;
 import io.featurehub.mr.model.Environment;
 import io.featurehub.mr.model.Person;
@@ -48,6 +49,13 @@ public class ApplicationResource implements ApplicationServiceDelegate {
     this.applicationUtils = applicationUtils;
 
     DeclaredConfigResolver.resolve(this);
+  }
+
+  @Override
+  public ApplicationPermissions applicationPermissions(UUID id, SecurityContext securityContext) {
+    Person current = authManager.from(securityContext);
+
+    return applicationApi.findApplicationPermissions(id, current.getId().getId());
   }
 
   @Override

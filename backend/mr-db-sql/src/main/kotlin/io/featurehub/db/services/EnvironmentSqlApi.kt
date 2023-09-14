@@ -44,10 +44,7 @@ class EnvironmentSqlApi @Inject constructor(
 
     if (environment != null && p != null) {
       // is this person a portfolio admin? if so, they have all access to all environments in the portfolio
-      if (QDbGroup().adminGroup.isTrue.whenArchived.isNull.groupMembers.person.eq(p).owningPortfolio.applications.environments.eq(
-          environment
-        ).exists()
-      ) {
+      if (convertUtils.isPersonEnvironmentAdmin(current, eid)) {
         return EnvironmentRoles.Builder()
           .applicationRoles(mutableSetOf(ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE))
           .environmentRoles(HashSet(listOf(*RoleType.values()))).build()

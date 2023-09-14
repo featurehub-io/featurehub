@@ -1,6 +1,8 @@
 package io.featurehub.db.services
 
 import io.featurehub.db.api.Opts
+import io.featurehub.mr.model.ApplicationPermissions
+import io.featurehub.mr.model.EnvironmentPermission
 import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureGroupCreate
 import io.featurehub.mr.model.FeatureGroupStrategy
@@ -11,9 +13,11 @@ import io.featurehub.mr.model.SortOrder
 
 class FeatureGroupSpec extends Base3Spec {
   FeatureGroupSqlApi fgApi
+  ApplicationPermissions permsToEnv1
 
   def setup() {
     fgApi = new FeatureGroupSqlApi(convertUtils)
+    permsToEnv1 = new ApplicationPermissions().environments([new EnvironmentPermission().id(env1.id)])
   }
 
   def "i can create a couple of groups and they have the right ordering and the listGroups comes back with them"() {
@@ -22,6 +26,8 @@ class FeatureGroupSpec extends Base3Spec {
           applicationSqlApi.createApplicationFeature(app1.id,
             new Feature().name("sample_1").key("sample_1").valueType(FeatureValueType.BOOLEAN),
             superPerson, Opts.empty()).first()
+    and: "i have permissions to the environment"
+
     when:
       def created = fgApi.createGroup(app1.id, superPerson,
         new FeatureGroupCreate().name("name").environmentId(env1.id).features(
@@ -36,7 +42,7 @@ class FeatureGroupSpec extends Base3Spec {
       def created2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name("name1").environmentId(env1.id).features(
         [new FeatureGroupUpdateFeature().id(feature.id)]).strategies([new FeatureGroupStrategy().percentage(20).name("fred")]))
     and:
-      def all = fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, null)
+      def all = fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, null, permsToEnv1)
     then:
       all.count == 2
       all.featureGroups.size() == 2
@@ -46,8 +52,8 @@ class FeatureGroupSpec extends Base3Spec {
       all.featureGroups[1].id == created2.id
       all.featureGroups[1].name == created2.name
       all.featureGroups[1].hasStrategy
-      !fgApi.getGroup(app1.id, superPerson, created2.id).features[0].value
-      fgApi.getGroup(app1.id, superPerson, created2.id).strategies[0].name == "fred"
+      !fgApi.getGroup(app1.id, created2.id).features[0].value
+      fgApi.getGroup(app1.id, created2.id).strategies[0].name == "fred"
   }
 
   def "i can create a feature group and then update it"() {
@@ -69,7 +75,7 @@ class FeatureGroupSpec extends Base3Spec {
         [new FeatureGroupUpdateFeature().id(feature.id)]
       ))
     and:
-      def getit = fgApi.getGroup(app1.id, superPerson, created.id)
+      def getit = fgApi.getGroup(app1.id, created.id)
     and:
       def featureValues = fgApi.getFeaturesForEnvironment(app1.id, env1.id)
     then:
@@ -99,7 +105,7 @@ class FeatureGroupSpec extends Base3Spec {
         new FeatureGroupUpdateFeature().id(feature.id),
         new FeatureGroupUpdateFeature().id(feature2.id).value(123.67)]))
     and:
-      getit = fgApi.getGroup(app1.id, superPerson, created.id)
+      getit = fgApi.getGroup(app1.id, created.id)
     then:
       getit.name == "fred"
       getit.features.size() == 2
@@ -115,7 +121,7 @@ class FeatureGroupSpec extends Base3Spec {
         .features([
           new FeatureGroupUpdateFeature().id(feature2.id).value(121.67)]))
     and:
-      getit = fgApi.getGroup(app1.id, superPerson, created.id)
+      getit = fgApi.getGroup(app1.id, created.id)
     then:
       getit.features.size() == 1
       getit.features[0].value == 121.67
@@ -125,8 +131,8 @@ class FeatureGroupSpec extends Base3Spec {
     then:
       updated2.version != updated.version
       updated2.description == 'hello'
-      fgApi.getGroup(app1.id, superPerson, created.id).description == 'hello'
-      fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, env1.id).featureGroups.find({it.name == "fred"})
-      fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, UUID.randomUUID()).count == 0
+      fgApi.getGroup(app1.id, created.id).description == 'hello'
+      fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, env1.id, permsToEnv1).featureGroups.find({it.name == "fred"})
+      fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, UUID.randomUUID(), permsToEnv1).count == 0
   }
 }

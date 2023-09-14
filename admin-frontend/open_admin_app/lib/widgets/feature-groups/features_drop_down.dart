@@ -3,7 +3,7 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
 
 class FeaturesDropDown extends StatefulWidget {
-  final List<Feature> features;
+  final List<FeatureGroupFeature> features;
   final FeatureGroupBloc bloc;
 
   const FeaturesDropDown({Key? key, required this.features, required this.bloc})
@@ -34,7 +34,7 @@ class _FeaturesDropDownState extends State<FeaturesDropDown> {
               isExpanded: true,
               isDense: true,
               items: widget.features.isNotEmpty
-                  ? widget.features.map((Feature feature) {
+                  ? widget.features.map((FeatureGroupFeature feature) {
                       return DropdownMenuItem<String>(
                           value: feature.id,
                           child: Text(

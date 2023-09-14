@@ -74,18 +74,6 @@ class CustomStrategyBloc extends Bloc
   }
 
   @override
-  void addStrategyAttribute() {
-    final rsa = RolloutStrategyAttribute();
-    rsa.id ??= makeStrategyId(existing: _strategySource.value);
-    final attributes = _strategySource.value.last.attributes;
-    attributes.add(rsa);
-    _rolloutStrategyAttributeList.add(attributes);
-  }
-
-  @override
-  void updateAttribute(attribute) {}
-
-  @override
   void dispose() {}
 
   /// this goes through the strategies and ensures they have unique ids

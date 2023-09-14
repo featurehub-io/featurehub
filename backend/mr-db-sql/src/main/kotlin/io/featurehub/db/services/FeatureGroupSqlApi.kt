@@ -11,6 +11,7 @@ import io.featurehub.db.model.query.QDbFeatureGroupFeature
 import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.model.query.QFeatureGroupOrderHighest
 import io.featurehub.mr.model.*
+import io.featurehub.mr.model.RoleType
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -151,7 +152,7 @@ class FeatureGroupSqlApi @Inject constructor(
     return true
   }
 
-  override fun getGroup(appId: UUID, current: Person, fgId: UUID): FeatureGroup? {
+  override fun getGroup(appId: UUID, fgId: UUID): FeatureGroup? {
     return QDbFeatureGroup()
       .id.eq(fgId)
       .environment.fetch(QDbEnvironment.Alias.id)
@@ -167,7 +168,8 @@ class FeatureGroupSqlApi @Inject constructor(
     filter: String?,
     pageNum: Int,
     sortOrder: SortOrder,
-    environmentId: UUID?
+    environmentId: UUID?,
+    appPerms: ApplicationPermissions
   ): FeatureGroupList {
     val max = maxPerPage.coerceAtLeast(1).coerceAtMost(100)
     var finder = QDbFeatureGroup()
@@ -179,7 +181,8 @@ class FeatureGroupSqlApi @Inject constructor(
         QDbFeatureGroup.Alias.environment.id, QDbFeatureGroup.Alias.environment.name,
         QDbFeatureGroup.Alias.features.feature.key
       )
-      .environment.parentApplication.id.eq(appId)
+      .environment.id.`in`(appPerms.environments.map { it.id })
+      .environment.parentApplication.id.eq(appId) // extra security, relates to SaaS
       .whenArchived.isNull
       .setMaxRows(max)
       .setFirstRow(max * pageNum)

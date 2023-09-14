@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/common/stream_valley.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature-group-settings.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature-group-settings-side-sheet.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
 import 'package:side_sheet/side_sheet.dart';
 
 import 'feature_group_bloc.dart';
+import 'feature_group_delete_dialog_widget.dart';
 import 'feature_group_update_dialog_widget.dart';
 
 class FeatureGroupCard extends StatelessWidget {
@@ -71,12 +71,12 @@ class FeatureGroupCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      StreamBuilder<ReleasedPortfolio?>(
-                          stream:
-                              bloc.mrClient.streamValley.currentPortfolioStream,
+                      StreamBuilder<List<RoleType>>(
+                          stream: bloc.envRoleTypeStream,
                           builder: (context, snapshot) {
                             if (snapshot.data != null &&
-                                (snapshot.data!.currentPortfolioOrSuperAdmin ==
+                                (snapshot.data!
+                                        .contains(RoleType.CHANGE_VALUE) ==
                                     true)) {
                               return _PopUpGroupAdminMenu(
                                 bloc: bloc,
@@ -136,12 +136,12 @@ class _PopUpGroupAdminMenu extends StatelessWidget {
                   ));
         }
         if (value == 'delete') {
-          // bloc.mrClient.addOverlay((BuildContext context) {
-          // return FeatureGroupDeleteDialogWidget(
-          //   bloc: bloc,
-          //   application: application,
-          // );
-          // });
+          bloc.mrClient.addOverlay((BuildContext context) {
+            return FeatureGroupDeleteDialogWidget(
+              bloc: bloc,
+              featureGroup: featureGroup,
+            );
+          });
         }
         if (value == 'manage') {
           _openFeatureGroupEditSideSheet(bloc, featureGroup, context);

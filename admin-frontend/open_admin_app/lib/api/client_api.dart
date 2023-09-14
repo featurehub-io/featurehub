@@ -232,7 +232,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   late StreamValley streamValley;
 
-  int requestIdCounter = DateTime.now().millisecond;
+  int requestIdCounter = DateTime.now().millisecondsSinceEpoch;
 
   static AbstractWebInterface webInterface = getUrlAuthInstance();
 

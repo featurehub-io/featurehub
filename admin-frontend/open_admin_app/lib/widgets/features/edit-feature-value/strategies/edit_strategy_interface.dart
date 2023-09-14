@@ -7,10 +7,6 @@ abstract class EditStrategyBloc<T> {
 
   void removeStrategy(T strategy) {}
 
-  void addStrategyAttribute() {}
-
-  void updateAttribute(attribute) {}
-
   /// this goes through the strategies and ensures they have unique ids
   /// unique based on this specific feature value
   void ensureStrategiesAreUnique() {}
