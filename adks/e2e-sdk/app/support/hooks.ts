@@ -60,9 +60,10 @@ Before(function () {
 });
 
 After(function () {
-  if (this.edgeServer) {
-    console.log('shutting down edge connection');
-    this.edgeServer.close();
+  const world = this as SdkWorld;
+  if (world.edgeServer) {
+    console.log('shutting down edge connection', world.edgeServer.getApiKeys(), world.edgeServer.url());
+    world.edgeServer.close();
     console.log('edge connection closed');
   }
 });

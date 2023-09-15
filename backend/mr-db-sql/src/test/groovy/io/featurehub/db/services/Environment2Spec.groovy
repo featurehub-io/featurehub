@@ -3,7 +3,6 @@ package io.featurehub.db.services
 import groovy.transform.CompileStatic
 import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FillOpts
-import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
@@ -19,7 +18,6 @@ import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.EnvironmentSortOrder
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.RoleType
-import io.featurehub.mr.model.SortOrder
 import io.featurehub.mr.model.UpdateEnvironment
 import org.apache.commons.lang3.RandomStringUtils
 import org.jetbrains.annotations.Nullable
@@ -41,7 +39,7 @@ class Environment2Spec extends Base2Spec {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     cacheSource = Mock(CacheSource)
 
-    appApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureSqlApi))
+    appApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureApi))
     envApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
 
     // now set up the environments we need

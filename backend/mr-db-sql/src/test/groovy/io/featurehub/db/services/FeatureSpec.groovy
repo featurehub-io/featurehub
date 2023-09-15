@@ -70,7 +70,7 @@ class FeatureSpec extends Base2Spec {
     ThreadLocalConfigurationSource.createContext(['auditing.enable': 'false'])
     featureMessagingCloudEventPublisher = Mock()
     featureSqlApi = new FeatureSqlApi(convertUtils, Mock(CacheSource), rsv, featureMessagingCloudEventPublisher)
-    appApi = new ApplicationSqlApi( convertUtils, Mock(CacheSource), archiveStrategy, featureSqlApi)
+    appApi = new ApplicationSqlApi( convertUtils, Mock(CacheSource), archiveStrategy, new InternalFeatureSqlApi())
 
     // now set up the environments we need
     portfolio1 = new DbPortfolio.Builder().name("p1-app-feature" + RandomStringUtils.randomAlphabetic(8) ).whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()

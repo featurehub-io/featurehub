@@ -7,11 +7,8 @@ import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbEnvironment
-import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
-import io.featurehub.db.model.query.QDbGroup
-import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
@@ -47,7 +44,7 @@ class GroupSpec extends BaseSpec {
 
     user = dbSuperPerson
 
-    applicationSqlApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureSqlApi))
+    applicationSqlApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureApi))
     commonPortfolio = portfolioApi.createPortfolio(new Portfolio().name("acl common portfolio").organizationId(org.id), Opts.empty(), superPerson)
     commonApplication1 = applicationSqlApi.createApplication(commonPortfolio.id, new Application().name("acl common app").description("acl common app"), superPerson)
     env1App1 = environmentSqlApi.create(new Environment().name("acl common app env1"), commonApplication1, superPerson)

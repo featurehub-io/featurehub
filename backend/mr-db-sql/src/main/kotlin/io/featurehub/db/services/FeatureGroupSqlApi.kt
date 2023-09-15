@@ -4,20 +4,73 @@ import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
 import io.featurehub.db.api.FeatureGroupApi
 import io.featurehub.db.model.*
+import io.featurehub.db.model.query.QDbApplication
 import io.featurehub.db.model.query.QDbApplicationFeature
 import io.featurehub.db.model.query.QDbEnvironment
 import io.featurehub.db.model.query.QDbFeatureGroup
 import io.featurehub.db.model.query.QDbFeatureGroupFeature
 import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.model.query.QFeatureGroupOrderHighest
+import io.featurehub.db.publish.CacheSourceFeatureGroupApi
+import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
 import jakarta.inject.Inject
+import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.*
+
+class CacheSourceFeatureGroupSqlApi : CacheSourceFeatureGroupApi {
+  private fun collectStrategiesFromGroupsForEnvironmentFeatures(
+    envId: UUID,
+    featureIds: List<UUID>
+  ): Map<UUID, List<RolloutStrategy>> {
+    val data = mutableMapOf<UUID, MutableList<RolloutStrategy>>()
+
+    var finder = QDbFeatureGroup()
+      .select(QDbFeatureGroup.Alias.features.key.feature, QDbFeatureGroup.Alias.strategies)
+      .environment.id.eq(envId)
+      .whenArchived.isNull
+      .strategies.isNotNull
+      .features.fetch()
+      .orderBy().order.asc()
+
+    if (featureIds.isNotEmpty()) {
+      finder = finder.features.key.feature.`in`(featureIds)
+    }
+
+    finder
+      .findList().forEach { fg ->
+        fg.strategies?.let {
+          val strat = it.filter { s -> s.id != null }.first()
+
+          fg.features.forEach { feat ->
+            val list = data.computeIfAbsent(feat.key.feature) { _ -> mutableListOf() }
+            list.add(
+              RolloutStrategy().id(strat.id).name(strat.name).percentage(strat.percentage)
+                .percentageAttributes(strat.percentageAttributes)
+                .attributes(strat.attributes).value(feat.value)
+            )
+          }
+        }
+      }
+
+    return data.toMap()
+  }
+
+  override fun collectStrategiesFromGroupsForEnvironment(envId: UUID): Map<UUID, List<RolloutStrategy>> {
+    return collectStrategiesFromGroupsForEnvironmentFeatures(envId, listOf())
+  }
+
+  override fun collectStrategiesFromGroupsForEnvironmentFeature(envId: UUID, featureId: UUID): List<RolloutStrategy> {
+    val data = collectStrategiesFromGroupsForEnvironmentFeatures(envId, listOf(featureId))
+
+    return data[featureId] ?: listOf()
+  }
+}
 
 /**
  * We never check the appId as we assume from the front end that it always does that as part of its
@@ -25,8 +78,24 @@ import java.util.*
  */
 class FeatureGroupSqlApi @Inject constructor(
   private val conversions: Conversions,
+  private val cacheSource: CacheSource,
+  private val internalFeatureApi: InternalFeatureApi,
+  private val archiveStrategy: ArchiveStrategy
 ) : FeatureGroupApi {
   private val log: Logger = LoggerFactory.getLogger(FeatureGroupSqlApi::class.java)
+
+  init {
+    archiveStrategy.environmentArchiveListener {
+      archiveEnvironment(it)
+    }
+  }
+
+  fun archiveEnvironment(env: DbEnvironment) {
+    // ok, now archive all those feature groups. We don't need to do anything else as the feature values will be deleted across the board
+    // because we send a "delete environment" message
+    QDbFeatureGroup().environment.id.eq(env.id).whenArchived.isNull.asUpdate()
+      .set(QDbFeatureGroup.Alias.whenArchived, Instant.now()).update()
+  }
 
   override fun createGroup(appId: UUID, current: Person, featureGroup: FeatureGroupCreate): FeatureGroup? {
 
@@ -43,13 +112,28 @@ class FeatureGroupSqlApi @Inject constructor(
 
     val highest: Int =
       (QFeatureGroupOrderHighest()
-          .select(QFeatureGroupOrderHighest.Alias.highest)
-          .environmentId.eq(env.id).findSingleAttribute() ?: 0) + 1
+        .select(QFeatureGroupOrderHighest.Alias.highest)
+        .environmentId.eq(env.id).findSingleAttribute() ?: 0) + 10
 
     // we have to create it without the features as we don't know the ID yet
     val fg = createFeatureGroup(env, person, mappedFeatures, highest, featureGroup)
     fg.refresh()
+
+    if (mappedFeatures.isNotEmpty() && featureGroup.strategies?.isNotEmpty() == true) {
+      republishFeatureValues(fg.environment, featureGroup.features.map { it.id })
+    }
+
     return toFeatureGroup(fg)
+  }
+
+  @Transactional(type = TxType.REQUIRES_NEW)
+  private fun republishFeatureValues(env: DbEnvironment, featureIds: List<UUID>) {
+    internalFeatureApi.forceVersionBump(featureIds, env.id)
+
+    QDbFeatureValue().feature.id.`in`(featureIds).environment.id.eq(env.id).findList().forEach { fv ->
+      // we can't push the strategy as this feature may be in several strategies
+      cacheSource.publishFeatureChange(fv)
+    }
   }
 
   @Transactional
@@ -62,7 +146,8 @@ class FeatureGroupSqlApi @Inject constructor(
   ): DbFeatureGroup {
     val fg = with(DbFeatureGroup(featureGroup.name, env)) {
       order = highest
-      strategies = featureGroup.strategies ?: mutableListOf()
+      featureGroup.strategies?.let { rationaliseStrategyIdsAndAttributeIds(it) }
+      strategies = if (featureGroup.strategies?.isEmpty() == false) featureGroup.strategies else null
       description = featureGroup.description
 
       whoCreated = person
@@ -84,15 +169,35 @@ class FeatureGroupSqlApi @Inject constructor(
 
         save()
       }
+
+      ensureFeatureValueExists(feat, env, person)
     }
 
     return fg
   }
 
+  private fun ensureFeatureValueExists(feat: DbApplicationFeature, env: DbEnvironment, person: DbPerson) {
+    val valueExists = QDbFeatureValue().feature.id.eq(feat.id).environment.id.eq(env.id).exists()
+    if (!valueExists) {
+      internalFeatureApi.saveFeatureValue(DbFeatureValue(person, false, feat, env, null), null)
+    }
+  }
+
+  private fun ensureFeatureValuesExist(features: List<DbApplicationFeature>, env: DbEnvironment, person: DbPerson) {
+    val values = QDbFeatureValue().select(QDbFeatureValue.Alias.id, QDbFeatureValue.Alias.feature.id)
+      .feature.id.`in`(features.map { it.id }).environment.id.eq(env.id).findList().map { it.feature.id }
+
+    features.forEach { feat ->
+      if (!values.contains(feat.id)) {
+        internalFeatureApi.saveFeatureValue(DbFeatureValue(person, false, feat, env, null), null)
+      }
+    }
+  }
+
   private fun toFeatureGroup(featureGroup: DbFeatureGroup): FeatureGroup {
     val featureIds = featureGroup.features.map { it.feature.id }
 
-    val features = QDbApplicationFeature().id.`in`(featureIds).whenArchived.isNull.findList().map {feature ->
+    val features = QDbApplicationFeature().id.`in`(featureIds).whenArchived.isNull.findList().map { feature ->
       FeatureGroupFeature().id(feature.id)
         .key(feature.key).type(feature.valueType)
         .name(feature.name)
@@ -102,9 +207,13 @@ class FeatureGroupSqlApi @Inject constructor(
     QDbFeatureValue()
       .environment.id.eq(featureGroup.environment.id)
       .feature.id.`in`(featureIds)
-      .feature.fetch(QDbApplicationFeature.Alias.key, QDbApplicationFeature.Alias.valueType, QDbApplicationFeature.Alias.id)
+      .feature.fetch(
+        QDbApplicationFeature.Alias.key,
+        QDbApplicationFeature.Alias.valueType,
+        QDbApplicationFeature.Alias.id
+      )
       .retired.isFalse.findList()
-       .forEach {
+      .forEach {
         features.find { f -> f.id == it.feature.id }?.let { fv ->
           fv.locked = it.isLocked
           fv.value = cast(it.defaultValue, it.feature.valueType)
@@ -132,7 +241,7 @@ class FeatureGroupSqlApi @Inject constructor(
 
   private fun cast(value: String?, valueType: FeatureValueType): Any? {
     if (value == null) return null
-    return when(valueType) {
+    return when (valueType) {
       FeatureValueType.BOOLEAN -> "true" == value
       FeatureValueType.STRING -> value.toString()
       FeatureValueType.NUMBER -> BigDecimal(value.toString())
@@ -140,16 +249,30 @@ class FeatureGroupSqlApi @Inject constructor(
     }
   }
 
-  @Transactional(type=TxType.REQUIRES_NEW)
   override fun deleteGroup(appId: UUID, current: Person, fgId: UUID): Boolean {
-    val found =
-      QDbFeatureGroup().id.eq(fgId).environment.parentApplication.id.eq(appId).whenArchived.isNull.forUpdate().findOne()
-        ?: return false
+    val group = deleteSelectedGroup(appId, current, fgId) ?: return false
 
-    found.whenArchived = Instant.now()
-    found.save()
+    if (group.strategies?.isNotEmpty() == true) {
+      // now republish these attached features
+      republishFeatureValues(group.environment,
+        QDbFeatureGroupFeature().select(QDbFeatureGroupFeature.Alias.key.feature).key.group.eq(fgId).findList().map { it.key.feature })
+    }
 
     return true
+  }
+
+  @Transactional(type = TxType.REQUIRES_NEW)
+  private fun deleteSelectedGroup(appId: UUID, current: Person, fgId: UUID): DbFeatureGroup? {
+    val found =
+      QDbFeatureGroup().select(QDbFeatureGroup.Alias.id, QDbFeatureGroup.Alias.whenArchived,
+            QDbFeatureGroup.Alias.environment, QDbFeatureGroup.Alias.strategies)
+        .id.eq(fgId).environment.parentApplication.id.eq(appId).whenArchived.isNull.forUpdate().findOne()
+        ?: return null
+
+    found.whenArchived = Instant.now()
+    found.whoUpdated = conversions.byPerson(current)
+    found.save()
+    return found
   }
 
   override fun getGroup(appId: UUID, fgId: UUID): FeatureGroup? {
@@ -213,7 +336,7 @@ class FeatureGroupSqlApi @Inject constructor(
           FeatureGroupListGroup().id(it.id).name(it.name)
             .order(it.order).environmentId(it.environment.id).environmentName(it.environment.name)
             .version(it.version)
-            .hasStrategy(it.strategies.isNotEmpty())
+            .hasStrategy(it.strategies?.isNotEmpty() ?: false)
             .description(it.description)
             .features((it.features.map { feat -> FeatureGroupListFeature().key(feat.feature.key) }).sortedBy { sb -> sb.key })
         }
@@ -228,12 +351,46 @@ class FeatureGroupSqlApi @Inject constructor(
   ): FeatureGroup? {
     val group = QDbFeatureGroup().id.eq(fgId).environment.parentApplication.id.eq(appId).findOne() ?: return null
 
-    if (group.version != update.version) throw FeatureGroupApi.OptimisticLockingException()
+    if (group.version != update.version) {
+      log.trace("Group {} is version {} and update is version {}, lock error", fgId, group.version, update.version)
+      throw FeatureGroupApi.OptimisticLockingException()
+    }
+
+    if (group.whenArchived != null) {
+      log.trace("Attempt to update archived group")
+      throw FeatureGroupApi.ArchivedGroup()
+    }
+
+    if (group.environment.whenArchived != null) {
+      log.trace("Group {} has an expired environment", group.id)
+      throw FeatureGroupApi.ArchivedEnvironment()
+    }
+
+    val person = conversions.byPerson(current.id?.id) ?: return null
+
+    var orderChanged = false
+
+    update.order?.let { newOrder ->
+      if (newOrder != group.order) {
+        if (QDbFeatureGroup().environment.id.eq(group.environment.id).order.eq(newOrder).exists()) {
+          log.trace(
+            "Attemping to change feature group {} from order {} to order {} and there is already one of that order",
+            fgId,
+            group.order,
+            newOrder
+          )
+          throw FeatureGroupApi.DuplicateOrder()
+        }
+
+        group.order = newOrder
+        orderChanged = true
+      }
+    }
 
     // we need to keep a track of this so we can publish it out
     var nameChanged = false
 
-    update.name?.let {newName ->
+    update.name?.let { newName ->
       if (newName != group.name) {
         group.name = newName
         nameChanged = true
@@ -249,24 +406,16 @@ class FeatureGroupSqlApi @Inject constructor(
       }
     }
 
-    val originalEnvironment = group.environment
-    var environmentChanged = false
-
-    update.environmentId?.let { envId ->
-      QDbEnvironment().parentApplication.id.eq(appId).id.eq(envId).findOne()?.let { env ->
-        if (group.environment.id != envId) {
-          group.environment = env
-          environmentChanged = true
-        }
-      }
-    }
-
     var strategyChanged = false
     // are they changing the strategy - they can never change it back to "null"
     update.strategies?.let { newStrat ->
       if (group.strategies == null || newStrat != group.strategies) {
-        strategyChanged = true
-        group.strategies = newStrat
+
+        rationaliseStrategyIdsAndAttributeIds(newStrat)
+        strategyChanged = !Objects.deepEquals(newStrat, group.strategies)
+        if (strategyChanged) {
+          group.strategies = newStrat
+        }
       }
     }
 
@@ -280,7 +429,8 @@ class FeatureGroupSqlApi @Inject constructor(
         if (found == null) { // existing feature not in the list
           updates.deletedFeatures.add(feat)
         } else { // it is there already
-          val newVal = found.value?.toString() ?: (if (feat.feature.valueType == FeatureValueType.BOOLEAN) "false" else null)
+          val newVal =
+            found.value?.toString() ?: (if (feat.feature.valueType == FeatureValueType.BOOLEAN) "false" else null)
 
           if (feat.value != newVal) {
             feat.value = newVal
@@ -293,7 +443,9 @@ class FeatureGroupSqlApi @Inject constructor(
 
       // we should now have just the new features
       if (newFeatures.isNotEmpty()) {
-        val actualNewFeatures = QDbApplicationFeature().id.`in`(newFeatures.map { it.id }).parentApplication.id.eq(appId).findList().toMutableList()
+        val actualNewFeatures =
+          QDbApplicationFeature().id.`in`(newFeatures.map { it.id }).parentApplication.id.eq(appId).findList()
+            .toMutableList()
         updates.addedFeatures.addAll(actualNewFeatures.map { feat ->
           val found = newFeatures.find { it.id == feat.id }
           val newVal = found?.value?.toString() ?: (if (feat.valueType == FeatureValueType.BOOLEAN) "false" else null)
@@ -305,21 +457,77 @@ class FeatureGroupSqlApi @Inject constructor(
       }
     }
 
-    if (nameChanged || environmentChanged || strategyChanged || descChanged || updates.updatedFeatures.isNotEmpty() || updates.deletedFeatures.isNotEmpty() || updates.addedFeatures.isNotEmpty()) {
-      updateGroup(group, updates)
-    }
+    if (nameChanged || orderChanged || strategyChanged || descChanged || updates.updatedFeatures.isNotEmpty() || updates.deletedFeatures.isNotEmpty() || updates.addedFeatures.isNotEmpty()) {
+      log.trace("Updating group {} with updates {}", group, updates)
+      updateGroup(group, updates, person)
 
-    group.refresh()
+      group.refresh()
+      log.trace("Group refreshed is now {}", group)
+      if (strategyChanged) {
+        log.trace("Strategy changed so publishing all features {}", group.features)
+        republishFeatureValues(group.environment, group.features.map { it.key.feature })
+      } else {
+        if (updates.updatedFeatures.isNotEmpty()) {
+          log.trace("Publishing updated features {}", updates.updatedFeatures)
+          republishFeatureValues(group.environment, updates.updatedFeatures.map { it.key.feature })
+        }
+        if (updates.deletedFeatures.isNotEmpty()) {
+          log.trace("Publishing deleted features {}", updates.deletedFeatures)
+          republishFeatureValues(group.environment, updates.deletedFeatures.map { it.key.feature })
+        }
+        if (updates.addedFeatures.isNotEmpty()) {
+          log.trace("Publishing added features {}", updates.addedFeatures)
+          republishFeatureValues(group.environment, updates.addedFeatures.map { it.key.feature })
+        }
+      }
+    }
     return toFeatureGroup(group)
   }
 
+  private fun randomId(): String {
+    return "!${RandomStringUtils.randomAlphanumeric(FeatureSqlApi.strategyIdLength - 1)}"
+  }
+
+  private fun rationaliseStrategyIdsAndAttributeIds(strategies: List<FeatureGroupStrategy>): Boolean {
+    var changes = false
+
+    strategies.forEach { strategy ->
+      if (strategy.id == null || strategy.id!!.length > FeatureSqlApi.strategyIdLength) {
+        var id = randomId()
+        // make sure it is unique
+        while (strategies.any { id == strategy.id }) {
+          id = randomId()
+        }
+        changes = true
+        strategy.id = id
+      }
+
+      strategy.attributes?.forEach { attribute ->
+        if (attribute.id == null || attribute.id!!.length > FeatureSqlApi.strategyIdLength) {
+          var id = randomId()
+          // make sure it is unique
+          while (strategy.attributes!!.any { id == attribute.id }) {
+            id = randomId()
+          }
+
+          changes = true
+          attribute.id = id
+        }
+      }
+    }
+
+    return changes
+  }
+
+
   override fun getFeaturesForEnvironment(appId: UUID, envId: UUID): List<FeatureGroupFeature> {
-    val features = QDbApplicationFeature().parentApplication.id.eq(appId).whenArchived.isNull.findList().map {feature ->
-      FeatureGroupFeature().id(feature.id)
-        .key(feature.key).type(feature.valueType)
-        .name(feature.name)
-        .locked(false)
-    }.sortedBy { it.key }
+    val features =
+      QDbApplicationFeature().parentApplication.id.eq(appId).whenArchived.isNull.findList().map { feature ->
+        FeatureGroupFeature().id(feature.id)
+          .key(feature.key).type(feature.valueType)
+          .name(feature.name)
+          .locked(false)
+      }.sortedBy { it.key }
 
     QDbFeatureValue()
       .environment.id.eq(envId)
@@ -336,13 +544,29 @@ class FeatureGroupSqlApi @Inject constructor(
   }
 
   @Transactional
-  private fun updateGroup(group: DbFeatureGroup, features: FeatureUpdates) {
+  private fun updateGroup(group: DbFeatureGroup, features: FeatureUpdates, person: DbPerson) {
     group.save()
 
     features.deletedFeatures.forEach { it.delete() }
     features.updatedFeatures.forEach { it.update() }
-    features.addedFeatures.forEach { it.save() }
+    if (features.addedFeatures.isNotEmpty()) {
+      features.addedFeatures.forEach { it.save() }
+
+      log.trace("update added features ")
+      val parentApp =
+        QDbApplication().select(QDbApplication.Alias.id).environments.id.eq(group.environment.id).findOne()
+      val feats = features.addedFeatures.map {
+        QDbApplicationFeature().select(QDbApplicationFeature.Alias.id).id.eq(it.key.feature).parentApplication.eq(
+          parentApp
+        ).findOne()
+      }.filterNotNull()
+      ensureFeatureValuesExist(feats, group.environment, person)
+    }
   }
 }
 
-private data class FeatureUpdates(val deletedFeatures: MutableList<DbFeatureGroupFeature>, val addedFeatures: MutableList<DbFeatureGroupFeature>, val updatedFeatures: MutableList<DbFeatureGroupFeature>)
+private data class FeatureUpdates(
+  val deletedFeatures: MutableList<DbFeatureGroupFeature>,
+  val addedFeatures: MutableList<DbFeatureGroupFeature>,
+  val updatedFeatures: MutableList<DbFeatureGroupFeature>
+)

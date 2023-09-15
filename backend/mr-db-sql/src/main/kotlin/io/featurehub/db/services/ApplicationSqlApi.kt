@@ -23,7 +23,7 @@ class ApplicationSqlApi @Inject constructor(
   private val convertUtils: Conversions,
   private val cacheSource: CacheSource,
   private val archiveStrategy: ArchiveStrategy,
-  private val internalFeatureSqlApi: InternalFeatureSqlApi
+  private val internalFeatureSqlApi: InternalFeatureApi
 ) : ApplicationApi {
   override fun getApplicationSummary(appId: UUID): ApplicationSummary? {
     return if (!QDbApplication().id.eq(appId).exists()) {

@@ -1,5 +1,5 @@
 import { Given, Then, When } from '@cucumber/cucumber';
-import { Feature, FeatureValueType, RolloutStrategy } from '../apis/mr-service';
+import { Feature, FeatureValue, FeatureValueType, RolloutStrategy } from '../apis/mr-service';
 import { makeid } from '../support/random';
 import { expect } from 'chai';
 import waitForExpect from 'wait-for-expect';
@@ -7,7 +7,6 @@ import { FeatureStateHolder, Readyness } from 'featurehub-javascript-node-sdk';
 import { logger } from '../support/logging';
 import { SdkWorld } from '../support/world';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
-import { isDeepStrictEqual } from 'util';
 
 Given(/^There is a new feature flag$/, async function () {
   const name = makeid(5).toUpperCase();
@@ -22,11 +21,40 @@ Given(/^There is a new feature flag$/, async function () {
   this.feature = feat;
 });
 
-Given(/^There is a feature flag with the key (.*)$/, async function (key: string) {
+When(/^I set the feature value to (.*)$/, async function(value: string) {
+  const world = this as SdkWorld;
+
+  expect(world.application.id).to.not.be.undefined;
+  expect(world.environment.id).to.not.be.undefined;
+  expect(world.feature.id).to.not.be.undefined;
+
+  const result = await world.featureValueApi.createFeatureForEnvironment(world.environment.id, world.feature.key, new FeatureValue({
+    key: world.feature.key,
+    locked: false,
+    valueNumber: world.feature.valueType === FeatureValueType.Number ? parseFloat(value) : null,
+    valueBoolean: world.feature.valueType === FeatureValueType.Boolean ? ('true' === value) : null,
+    valueJson: world.feature.valueType === FeatureValueType.Json ? value : null,
+    valueString: world.feature.valueType === FeatureValueType.String ? value : null,
+  }));
+  expect(result.status).to.eq(200);
+});
+
+Given(/^There is a feature (flag|string|number|json) with the key (.*)$/, async function (type: string, key: string) {
+  let fType: FeatureValueType | undefined;
+  if (type === "flag" || type === "boolean") {
+    fType = FeatureValueType.Boolean;
+  } else if (type === "string") {
+    fType = FeatureValueType.String;
+  } else if (type === "number") {
+    fType = FeatureValueType.Number;
+  } else if (type === "json") {
+    fType = FeatureValueType.Json;
+  }
+  expect(fType, `${type} is an unrecognized flag type`).to.not.be.undefined;
   const fCreate = await this.featureApi.createFeaturesForApplication(this.application.id, new Feature({
     name: key,
     key: key,
-    valueType: FeatureValueType.Boolean
+    valueType: fType
   }));
   expect(fCreate.status).to.eq(200);
   const feature = fCreate.data.find((f: Feature) => f.key == key);

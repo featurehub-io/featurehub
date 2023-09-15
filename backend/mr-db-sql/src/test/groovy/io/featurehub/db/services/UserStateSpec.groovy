@@ -1,6 +1,6 @@
 package io.featurehub.db.services
 
-import io.ebean.Database
+
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.UserStateApi
 import io.featurehub.db.model.DbOrganization
@@ -26,7 +26,7 @@ class UserStateSpec extends BaseSpec {
     baseSetupSpec()
     personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
 
-    appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureSqlApi))
+    appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureApi))
     envApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
     userStateApi = new UserStateSqlApi(convertUtils)
 

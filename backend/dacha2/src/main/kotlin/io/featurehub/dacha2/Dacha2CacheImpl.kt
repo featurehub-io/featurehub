@@ -306,7 +306,11 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
         log.trace("received new feature `{}` for environment `{}`", feature.feature.feature.key, environment.environment.environment.id)
       }
 
-      environment.setFeature(feature.feature)
+      if (feature.feature.value != null) {
+        environment.setFeatureValue(feature.feature)
+      } else {
+        environment.setFeature(feature.feature)
+      }
     }
   }
 
@@ -334,7 +338,7 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
         return
       }
 
-      val newValue = feature.feature.value
+      val newFeatureValue = feature.feature.value
 
       val existingCachedFeature = ef[newFeature.id]
 
@@ -355,20 +359,18 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
           ef.setFeature(feature.feature)
         }
 
-        if (newValue != null) {  // values once set are never null as we cannot support versioning if so
-          if (existingValue == null || existingValue.version < newValue.version) {
+        if (newFeatureValue != null) {  // values once set are never null as we cannot support versioning if so
+          if (existingValue == null || existingValue.version < newFeatureValue.version) {
             log.trace("feature value updated, storing new value")
             ef.setFeatureValue(feature.feature)
             return
-          } else if (existingValue.version == newValue.version) {
+          } else if (existingValue.version == newFeatureValue.version) {
             log.trace("feature value didn't change, ignoring")
             return // just ignore it
           } else {
-            log.trace("feature value was old,  ignoring as existing is {} vs incoming {}", existingValue, newValue)
+            log.trace("feature value was old,  ignoring as existing is {} vs incoming {}", existingValue, newFeatureValue)
           }
         }
-
-        log.warn("attempting to remove a feature older than we have")
       }
     } ?: log.debug("received update for unknown feature {}: {}", feature.environmentId, feature.feature.feature.key)
   }

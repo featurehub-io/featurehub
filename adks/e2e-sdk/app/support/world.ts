@@ -6,7 +6,7 @@ import {
   Configuration, Environment, Environment2ServiceApi,
   EnvironmentFeatureServiceApi,
   EnvironmentServiceApi,
-  Feature, FeatureHistoryServiceApi,
+  Feature, FeatureGroup, FeatureGroupListGroup, FeatureGroupServiceApi, FeatureHistoryServiceApi,
   FeatureServiceApi,
   FeatureValue, Person, PersonServiceApi,
   Portfolio,
@@ -47,6 +47,7 @@ export class SdkWorld extends World {
   public readonly applicationApi: ApplicationServiceApi;
   public readonly environmentApi: EnvironmentServiceApi;
   public readonly environment2Api: Environment2ServiceApi;
+  public readonly featureGroupApi: FeatureGroupServiceApi;
   public readonly featureApi: FeatureServiceApi;
   public readonly loginApi: AuthServiceApi;
   public readonly personApi: PersonServiceApi;
@@ -61,6 +62,7 @@ export class SdkWorld extends World {
   public sdkUrlServerEval: string;
   private scenarioId: string;
   public person: Person
+  public featureGroup: FeatureGroup;
 
   constructor(props: any) {
     super(props);
@@ -79,6 +81,7 @@ export class SdkWorld extends World {
     this.applicationApi = new ApplicationServiceApi(this.adminApiConfig);
     this.environmentApi = new EnvironmentServiceApi(this.adminApiConfig);
     this.environment2Api = new Environment2ServiceApi(this.adminApiConfig);
+    this.featureGroupApi = new FeatureGroupServiceApi(this.adminApiConfig);
     this.featureApi = new FeatureServiceApi(this.adminApiConfig);
     this.loginApi = new AuthServiceApi(this.adminApiConfig); // too noisy in logs
     this.serviceAccountApi = new ServiceAccountServiceApi(this.adminApiConfig);

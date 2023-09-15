@@ -52,6 +52,16 @@ class DbArchiveStrategy @Inject constructor(private val database: Database, priv
         database.save(e)
       }
     }
+
+    environmentListeners.forEach {
+      it.invoke(environment)
+    }
+  }
+
+  private val environmentListeners = mutableListOf<(DbEnvironment) -> Unit>();
+
+  override fun environmentArchiveListener(listener: (DbEnvironment) -> Unit) {
+    environmentListeners.add(listener)
   }
 
   @Transactional

@@ -1,7 +1,6 @@
 package io.featurehub.db.services
 
 import io.featurehub.db.api.DBLoginSession
-import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
@@ -27,7 +26,7 @@ class AuthenticationSpec extends BaseSpec {
     auth = new AuthenticationSqlApi(convertUtils)
     personApi = new PersonSqlApi(database, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     portfolioApi = new PortfolioSqlApi(database, convertUtils, archiveStrategy)
-    appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureSqlApi))
+    appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureApi))
   }
 
   def "I should be able to register a new user"() {

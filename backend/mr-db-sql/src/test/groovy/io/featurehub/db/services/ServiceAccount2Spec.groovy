@@ -9,7 +9,6 @@ import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
-import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.DbServiceAccount
 import io.featurehub.db.model.query.QDbPerson
@@ -49,7 +48,7 @@ class ServiceAccount2Spec extends Base2Spec {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, internalGroupSqlApi)
     cacheSource = Mock(CacheSource)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
-    applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureSqlApi))
+    applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureApi))
     sapi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, personSqlApi)
 
     // now set up the environments we need
