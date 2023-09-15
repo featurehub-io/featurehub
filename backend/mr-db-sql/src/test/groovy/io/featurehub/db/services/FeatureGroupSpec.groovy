@@ -143,14 +143,16 @@ class FeatureGroupSpec extends Base3Spec {
         new FeatureGroupUpdateFeature().id(feature2.id).value(123.67)]))
     and:
       getit = fgApi.getGroup(app1.id, created.id)
+      def f1 = getit.features.find({it.id == feature.id})
+      def f2 = getit.features.find({it.id == feature2.id})
     then:
       getit.name == "fred"
       getit.features.size() == 2
-      !getit.features[0].value
-      getit.features[0].key == feature.key
-      getit.features[1].value == 123.67
-      getit.features[1].key == feature2.key
-      getit.features[1].name == feature2.name
+      !f1.value
+      f1.key == feature.key
+      f2.value == 123.67
+      f2.key == feature2.key
+      f2.name == feature2.name
     when:
       def updated = fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate()
         .version(getit.version)
