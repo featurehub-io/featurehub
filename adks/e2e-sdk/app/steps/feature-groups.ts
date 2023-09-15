@@ -65,7 +65,7 @@ When("I create a feature group {string}", async function (groupName: string, tab
 });
 
 export function conditional(cond: string): RolloutStrategyAttributeConditional {
-  switch (cond) {
+  switch (cond.toLowerCase()) {
     case 'l':
       return RolloutStrategyAttributeConditional.Less;
     case 'le':
@@ -93,7 +93,7 @@ export function conditional(cond: string): RolloutStrategyAttributeConditional {
 }
 
 export function attributeType(type: string): RolloutStrategyFieldType {
-  switch(type) {
+  switch(type.toLowerCase()) {
     case 'sv':
     case 'semantic-version':
       return RolloutStrategyFieldType.SemanticVersion;
@@ -108,6 +108,7 @@ export function attributeType(type: string): RolloutStrategyFieldType {
       return RolloutStrategyFieldType.Boolean;
     case 'ip':
       return RolloutStrategyFieldType.IpAddress;
+    case 'string':
     default:
       return RolloutStrategyFieldType.String;
   }

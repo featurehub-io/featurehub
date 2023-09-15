@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import { SdkWorld } from '../support/world';
 import { expect } from 'chai';
 import waitForExpect from 'wait-for-expect';
+import { attributeType, conditional } from './feature-groups';
 
 Then(/^I add a strategy (.*) with (.*) percentage and value (.*)$/, async function (strategyName, percentage, value, table: DataTable) {
   const fValue = await (this as SdkWorld).getFeatureValue();
@@ -35,9 +36,9 @@ Then(/^I add a strategy (.*) with (.*) percentage and value (.*)$/, async functi
     console.log('row is ', row);
     const rsa = new RolloutStrategyAttribute({
       fieldName: row['Field'],
-      conditional: row['Conditional'],
+      conditional: conditional(row['Conditional']),
       values: row['Values'].split(','),
-      type: row['Type']
+      type: attributeType(row['Type'])
     });
 
     rs.attributes.push(rsa);
