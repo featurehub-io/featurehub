@@ -55,7 +55,7 @@
     <groovy.version>3.0.16</groovy.version>
     <ebean.version>13.17.0-jakarta</ebean.version>
     <ebean.tile.version>13.17.0</ebean.tile.version>
-    <h2.version>2.1.214</h2.version>
+    <h2.version>2.2.222</h2.version>
   </properties>
 
   <build>

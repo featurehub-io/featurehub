@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub.events</groupId>
@@ -8,7 +9,8 @@
   <name>eventing-google-pubsub</name>
 
   <description>
-    Supporting all publishing using Google Pub/Sub. This layer supports dynamic creation of local topics and subscriptions
+    Supporting all publishing using Google Pub/Sub. This layer supports dynamic creation of local topics and
+    subscriptions
     if they don't already exist but not when deploying to the cloud. This layer supports the CloudEvents variant of
     FeatureHub only.
   </description>
@@ -38,7 +40,7 @@
   </licenses>
 
   <properties>
-    <google-pubsub.version>1.123.9</google-pubsub.version>
+    <google-pubsub.version>1.125.1</google-pubsub.version>
   </properties>
 
   <dependencies>
@@ -68,6 +70,12 @@
           <artifactId>google-cloud-pubsub</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <!-- kinesis is lowering this value causing pubsub to fail -->
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>[3.23.2]</version>
     </dependency>
     <dependency>
       <groupId>io.featurehub.events</groupId>

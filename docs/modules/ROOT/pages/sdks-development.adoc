@@ -192,7 +192,7 @@ These are
 - `ack`:  nothing needs to be done for this, it is simply a heartbeat and is sent at start to ensure that the client receives something.
 - `features`: this contains an array of Feature objects and their appropriate state. If client evaluated keys are supported, this will include strategies, if server evaluated keys are being used, it will only include the specific feature values for this client.
 - `feature`: this contains the update to a single feature
-- `delete_feature`: this indicates that the specified feature should be deleted
+- `delete_feature`: this indicates that the specified feature should be deleted. The semantics of this are slightly more complex however. A deleted feature is (a) an actual delete on that feature value, (b) a delete of the feature entirely or (c) a feature value being _retired_. In the (c) case, because of parallelism in the way messages are delivered, a feature could be created (v0), updated (v1), retired (v2), and unretired (v3) in quick succession. This could lead to an incorrect delivery order for deleted features. As such you need to check if the incoming deleted has a "null" version, a version of 0, or the version is greater than the version currently in the repository. In any of these cases, delete the feature.   
 - `config`: this contains metadata used about how the channel should perform, see below
 - `bye` - when the server is closing the connection (you will not always receive this)
 

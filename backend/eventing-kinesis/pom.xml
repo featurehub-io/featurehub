@@ -38,7 +38,7 @@
   </licenses>
 
   <properties>
-    <aws.kcl-client.version>2.4.8</aws.kcl-client.version>
+    <aws.kcl-client.version>2.5.2</aws.kcl-client.version>
   </properties>
 
   <dependencies>
