@@ -88,6 +88,15 @@ class FeatureGroupSqlApi @Inject constructor(
     archiveStrategy.environmentArchiveListener {
       archiveEnvironment(it)
     }
+    archiveStrategy.featureListener {
+      archiveFeature(it)
+    }
+  }
+
+  // we are just removing this from any feature groups that may have it,
+  // the feature itself is dealing with downstream publication.
+  fun archiveFeature(appFeature: DbApplicationFeature) {
+    QDbFeatureGroupFeature().key.feature.eq(appFeature.id).delete();
   }
 
   fun archiveEnvironment(env: DbEnvironment) {

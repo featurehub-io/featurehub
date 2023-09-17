@@ -15,5 +15,6 @@ interface ArchiveStrategy {
   fun archiveServiceAccount(serviceAccount: DbServiceAccount)
   fun archiveGroup(group: DbGroup)
   fun archiveApplicationFeature(feature: DbApplicationFeature)
+  fun featureListener(listener: (DbApplicationFeature) -> Unit)
   fun archivePerson(person: DbPerson)
 }

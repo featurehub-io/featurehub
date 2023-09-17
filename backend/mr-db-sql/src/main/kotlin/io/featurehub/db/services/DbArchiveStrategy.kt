@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter
 class DbArchiveStrategy @Inject constructor(private val database: Database, private val cacheSource: CacheSource) :
   ArchiveStrategy {
   private val isoDate = DateTimeFormatter.ISO_DATE_TIME
+
   @Transactional
   override fun archivePortfolio(portfolio: DbPortfolio) {
     portfolio.whenArchived = LocalDateTime.now()
@@ -32,7 +33,7 @@ class DbArchiveStrategy @Inject constructor(private val database: Database, priv
   override fun archiveApplication(application: DbApplication) {
     application.whenArchived = LocalDateTime.now()
     database.save(application)
-    application.environments.forEach {environment: DbEnvironment -> archiveEnvironment(environment) }
+    application.environments.forEach { environment: DbEnvironment -> archiveEnvironment(environment) }
     application.features.forEach { feature: DbApplicationFeature -> archiveApplicationFeature(feature) }
   }
 
@@ -96,7 +97,22 @@ class DbArchiveStrategy @Inject constructor(private val database: Database, priv
     feature.key =
       feature.key + Conversions.archivePrefix + isoDate.format(feature.whenArchived)
     database.save(feature)
+
+    featureListeners.forEach {
+      try {
+        it(feature)
+      } catch (e: Exception) {
+        log.error("unable to update feature listener", e)
+      }
+    }
+
     cacheSource.publishFeatureChange(feature, PublishAction.DELETE, originalKey)
+  }
+
+  private val featureListeners = mutableListOf<(DbApplicationFeature) -> Unit>();
+
+  override fun featureListener(listener: (DbApplicationFeature) -> Unit) {
+    featureListeners.add(listener)
   }
 
   @Transactional
