@@ -355,4 +355,32 @@ class FeatureGroupSpec extends Base3Spec {
     then: "there are no feature groups for this environment"
       featureGroupCount(env1.id) == 0
   }
+
+  def "when i delete a feature, it is removed from the feature groups"() {
+    given: "i have a feature"
+      def feature = createFeature()
+    and: "i create a couple of groups with that feature"
+      def group1 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name(RandomStringUtils.randomAlphabetic(10))
+        .environmentId(env1.id)
+        .features([new FeatureGroupUpdateFeature().value(true).id(feature.id),])
+      )
+      def group2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name(RandomStringUtils.randomAlphabetic(10))
+        .environmentId(env1.id)
+        .features([new FeatureGroupUpdateFeature().value(true).id(feature.id),])
+      )
+    when: "i get the two groups"
+      def getGroup1 = fgApi.getGroup(app1.id, group1.id)
+      def getGroup2 = fgApi.getGroup(app1.id, group2.id)
+    then:
+      getGroup1.features[0].id == feature.id
+      getGroup2.features[0].id == feature.id
+    when: "i delete the feature"
+      applicationSqlApi.deleteApplicationFeature(app1.id, feature.key)
+    and: "refresh the two groups"
+      getGroup1 = fgApi.getGroup(app1.id, group1.id)
+      getGroup2 = fgApi.getGroup(app1.id, group2.id)
+    then:
+      getGroup1.features.size() == 0
+      getGroup2.features.size() == 0
+  }
 }

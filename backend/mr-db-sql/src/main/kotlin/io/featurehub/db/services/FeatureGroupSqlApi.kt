@@ -45,15 +45,18 @@ class CacheSourceFeatureGroupSqlApi : CacheSourceFeatureGroupApi {
     finder
       .findList().forEach { fg ->
         fg.strategies?.let {
-          val strat = it.filter { s -> s.id != null }.first()
+          val validStrategies = it.filter { s -> s.id != null }
+          if (validStrategies.isNotEmpty()) {
+            val strat = validStrategies.first()
 
-          fg.features.forEach { feat ->
-            val list = data.computeIfAbsent(feat.key.feature) { _ -> mutableListOf() }
-            list.add(
-              RolloutStrategy().id(strat.id).name(strat.name).percentage(strat.percentage)
-                .percentageAttributes(strat.percentageAttributes)
-                .attributes(strat.attributes).value(feat.value)
-            )
+            fg.features.forEach { feat ->
+              val list = data.computeIfAbsent(feat.key.feature) { _ -> mutableListOf() }
+              list.add(
+                RolloutStrategy().id(strat.id).name(strat.name).percentage(strat.percentage)
+                  .percentageAttributes(strat.percentageAttributes)
+                  .attributes(strat.attributes).value(feat.value)
+              )
+            }
           }
         }
       }
@@ -88,6 +91,15 @@ class FeatureGroupSqlApi @Inject constructor(
     archiveStrategy.environmentArchiveListener {
       archiveEnvironment(it)
     }
+    archiveStrategy.featureListener {
+      archiveFeature(it)
+    }
+  }
+
+  // we are just removing this from any feature groups that may have it,
+  // the feature itself is dealing with downstream publication.
+  fun archiveFeature(appFeature: DbApplicationFeature) {
+    QDbFeatureGroupFeature().key.feature.eq(appFeature.id).delete();
   }
 
   fun archiveEnvironment(env: DbEnvironment) {
