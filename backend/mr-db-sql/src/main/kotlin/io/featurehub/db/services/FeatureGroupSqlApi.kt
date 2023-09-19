@@ -4,17 +4,10 @@ import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
 import io.featurehub.db.api.FeatureGroupApi
 import io.featurehub.db.model.*
-import io.featurehub.db.model.query.QDbApplication
-import io.featurehub.db.model.query.QDbApplicationFeature
-import io.featurehub.db.model.query.QDbEnvironment
-import io.featurehub.db.model.query.QDbFeatureGroup
-import io.featurehub.db.model.query.QDbFeatureGroupFeature
-import io.featurehub.db.model.query.QDbFeatureValue
-import io.featurehub.db.model.query.QFeatureGroupOrderHighest
+import io.featurehub.db.model.query.*
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
-import io.featurehub.mr.model.RoleType
 import jakarta.inject.Inject
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.Logger
@@ -83,7 +76,7 @@ class FeatureGroupSqlApi @Inject constructor(
   private val conversions: Conversions,
   private val cacheSource: CacheSource,
   private val internalFeatureApi: InternalFeatureApi,
-  private val archiveStrategy: ArchiveStrategy
+  archiveStrategy: ArchiveStrategy
 ) : FeatureGroupApi {
   private val log: Logger = LoggerFactory.getLogger(FeatureGroupSqlApi::class.java)
 
@@ -98,8 +91,8 @@ class FeatureGroupSqlApi @Inject constructor(
 
   // we are just removing this from any feature groups that may have it,
   // the feature itself is dealing with downstream publication.
-  fun archiveFeature(appFeature: DbApplicationFeature) {
-    QDbFeatureGroupFeature().key.feature.eq(appFeature.id).delete();
+  private fun archiveFeature(appFeature: DbApplicationFeature) {
+    QDbFeatureGroupFeature().key.feature.eq(appFeature.id).delete()
   }
 
   fun archiveEnvironment(env: DbEnvironment) {
@@ -386,7 +379,7 @@ class FeatureGroupSqlApi @Inject constructor(
       if (newOrder != group.order) {
         if (QDbFeatureGroup().environment.id.eq(group.environment.id).order.eq(newOrder).exists()) {
           log.trace(
-            "Attemping to change feature group {} from order {} to order {} and there is already one of that order",
+            "Attempting to change feature group {} from order {} to order {} and there is already one of that order",
             fgId,
             group.order,
             newOrder
@@ -399,7 +392,7 @@ class FeatureGroupSqlApi @Inject constructor(
       }
     }
 
-    // we need to keep a track of this so we can publish it out
+    // we need to keep a track of this, so we can publish it out
     var nameChanged = false
 
     update.name?.let { newName ->
@@ -548,7 +541,7 @@ class FeatureGroupSqlApi @Inject constructor(
       .retired.isFalse.findList().forEach {
         features.find { f -> f.id == it.feature.id }?.let { fv ->
           fv.locked = it.isLocked
-          fv.value = cast(it.defaultValue, it.feature.valueType)
+          fv.value = null // because Irina wants it like this
         }
       }
 
@@ -567,11 +560,11 @@ class FeatureGroupSqlApi @Inject constructor(
       log.trace("update added features ")
       val parentApp =
         QDbApplication().select(QDbApplication.Alias.id).environments.id.eq(group.environment.id).findOne()
-      val feats = features.addedFeatures.map {
+      val feats = features.addedFeatures.mapNotNull {
         QDbApplicationFeature().select(QDbApplicationFeature.Alias.id).id.eq(it.key.feature).parentApplication.eq(
           parentApp
         ).findOne()
-      }.filterNotNull()
+      }
       ensureFeatureValuesExist(feats, group.environment, person)
     }
   }
