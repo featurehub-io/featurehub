@@ -88,6 +88,7 @@ class JaxRsClientRequestMap : TextMapSetter<ClientRequestContext> {
   }
 }
 
+// this is only for calling OUT
 @Singleton
 class TelemetryInvocationInterceptor @Inject constructor(
   private val openTelemetry: OpenTelemetry,
@@ -152,7 +153,7 @@ class TelemetryApplicationEventListener @Inject constructor(
     return TelemetryRequestEventListener(openTelemetry, tracer, extractor)
   }
 
-  internal class TelemetryRequestEventListener constructor(
+  internal class TelemetryRequestEventListener(
     private val openTelemetry: OpenTelemetry,
     private val tracer: Tracer,
     private val extractor: JaxRsContainerRequestMap
@@ -166,8 +167,10 @@ class TelemetryApplicationEventListener @Inject constructor(
       if (event.type == RequestEvent.Type.REQUEST_MATCHED) {
         processRequest(event.containerRequest)
       } else if (event.type == RequestEvent.Type.ON_EXCEPTION) {
+        log.warn("Exception URI {}", event.containerRequest.requestUri)
         MDC.clear()
         span?.setStatus(StatusCode.ERROR)
+        event.containerRequest.requestUri
       } else if (event.type == RequestEvent.Type.FINISHED) {
         MDC.clear()
         span?.end()

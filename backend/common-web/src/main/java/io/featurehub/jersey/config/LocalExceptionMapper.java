@@ -1,5 +1,6 @@
 package io.featurehub.jersey.config;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -14,10 +15,12 @@ public class LocalExceptionMapper implements ExceptionMapper<Exception> {
   @Override
   public Response toResponse(Exception exception) {
     if (exception instanceof WebApplicationException) {
-      log.error("Failed jersey request", exception);
       Response response = ((WebApplicationException) exception).getResponse();
+
       if (response.getStatus() >= 500) { // special callout to all our 5xx in the house.
-        log.error("Failed jersey request", exception);
+        log.error("Error HTTP {} for {}", response.getStatus(), response.getLocation(), exception);
+      } else if (!(exception instanceof NotFoundException)) {
+        log.warn("Failed HTTP {} for {}", response.getStatus(), response.getLocation(), exception);
       }
 
       return response;

@@ -204,7 +204,7 @@ class FeatureGroupSpec extends Base3Spec {
         f.environment.id == env1.id && f.feature.id == features[0].id
       })
       strategies1.size() == 1
-      strategies1[0].value == '121.67'
+      strategies1[0].value == 121.67
       strategies1[0].name == 'fred'
       strategies1[0].percentage == 20
       strategies1[0].attributes.size() == 0
@@ -223,7 +223,7 @@ class FeatureGroupSpec extends Base3Spec {
       })
       strategiesEnv[features[1].id]
       strategiesEnv[features[1].id].size() == 1
-      strategiesEnv[features[1].id][0].value == '12.2'
+      strategiesEnv[features[1].id][0].value == 12.2
       strategiesEnv[features[1].id][0].percentage == 20
     when: "i update an existing value, the feature is published"
       def updatedFeature = fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate()
@@ -300,11 +300,11 @@ class FeatureGroupSpec extends Base3Spec {
       f2Strategies[0].id == group2.strategies[0].id
       f2Strategies[1].id == group1.strategies[0].id
     and: "and feature1 has numeric values correct to the stategy and ordering"
-      f1Strategies[0].value == "12"
-      f1Strategies[1].value == "6"
+      f1Strategies[0].value == 12
+      f1Strategies[1].value == 6
     and: "and feature2 has numeric values correct to the stategy and ordering"
-      f2Strategies[0].value == "true"
-      f2Strategies[1].value == "false"
+      f2Strategies[0].value == true
+      f2Strategies[1].value == false
     when: "i delete the second group"
       fgApi.deleteGroup(app1.id, superPerson, group2.id)
     then: "both of the features get republished"
