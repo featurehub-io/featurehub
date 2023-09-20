@@ -47,7 +47,7 @@ class CacheSourceFeatureGroupSqlApi : CacheSourceFeatureGroupApi {
               list.add(
                 RolloutStrategy().id(strat.id).name(strat.name).percentage(strat.percentage)
                   .percentageAttributes(strat.percentageAttributes)
-                  .attributes(strat.attributes).value(feat.value)
+                  .attributes(strat.attributes).value(FeatureGroupHelper.cast(feat.value, feat.feature.valueType))
               )
             }
           }
@@ -221,14 +221,14 @@ class FeatureGroupSqlApi @Inject constructor(
       .forEach {
         features.find { f -> f.id == it.feature.id }?.let { fv ->
           fv.locked = it.isLocked
-          fv.value = cast(it.defaultValue, it.feature.valueType)
+          fv.value = FeatureGroupHelper.cast(it.defaultValue, it.feature.valueType)
         }
       }
 
     QDbFeatureGroupFeature().key.feature.`in`(featureIds).key.group.eq(featureGroup.id).findList()
       .forEach {
         features.find { f -> f.id == it.key.feature }?.let { fv ->
-          fv.value = cast(it.value, it.feature.valueType)
+          fv.value = FeatureGroupHelper.cast(it.value, it.feature.valueType)
         }
       }
 
@@ -242,16 +242,6 @@ class FeatureGroupSqlApi @Inject constructor(
       .name(featureGroup.name)
       .version(featureGroup.version)
       .features(features)
-  }
-
-  private fun cast(value: String?, valueType: FeatureValueType): Any? {
-    if (value == null) return null
-    return when (valueType) {
-      FeatureValueType.BOOLEAN -> "true" == value
-      FeatureValueType.STRING -> value.toString()
-      FeatureValueType.NUMBER -> BigDecimal(value.toString())
-      FeatureValueType.JSON -> value.toString()
-    }
   }
 
   override fun deleteGroup(appId: UUID, current: Person, fgId: UUID): Boolean {
@@ -567,6 +557,21 @@ class FeatureGroupSqlApi @Inject constructor(
       }
       ensureFeatureValuesExist(feats, group.environment, person)
     }
+  }
+}
+
+internal class FeatureGroupHelper {
+  companion object {
+     fun cast(value: String?, valueType: FeatureValueType): Any? {
+      if (value == null) return null
+      return when (valueType) {
+        FeatureValueType.BOOLEAN -> "true" == value
+        FeatureValueType.STRING -> value.toString()
+        FeatureValueType.NUMBER -> BigDecimal(value.toString())
+        FeatureValueType.JSON -> value.toString()
+      }
+    }
+
   }
 }
 
