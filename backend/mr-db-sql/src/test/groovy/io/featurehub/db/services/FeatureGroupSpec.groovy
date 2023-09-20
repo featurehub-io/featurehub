@@ -7,6 +7,7 @@ import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.query.QDbEnvironment
 import io.featurehub.db.model.query.QDbFeatureGroup
 import io.featurehub.db.model.query.QDbFeatureValue
+import io.featurehub.db.publish.CacheSourceFeatureGroupSqlApi
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.ApplicationPermissions
 import io.featurehub.mr.model.EnvironmentPermission

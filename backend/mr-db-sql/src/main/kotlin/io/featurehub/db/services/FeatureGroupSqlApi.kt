@@ -6,6 +6,7 @@ import io.featurehub.db.api.FeatureGroupApi
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.*
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
+import io.featurehub.db.publish.FeatureGroupHelper
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
 import jakarta.inject.Inject
@@ -15,58 +16,6 @@ import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.*
-
-class CacheSourceFeatureGroupSqlApi : CacheSourceFeatureGroupApi {
-  private fun collectStrategiesFromGroupsForEnvironmentFeatures(
-    envId: UUID,
-    featureIds: List<UUID>
-  ): Map<UUID, List<RolloutStrategy>> {
-    val data = mutableMapOf<UUID, MutableList<RolloutStrategy>>()
-
-    var finder = QDbFeatureGroup()
-      .select(QDbFeatureGroup.Alias.features.key.feature, QDbFeatureGroup.Alias.strategies)
-      .environment.id.eq(envId)
-      .whenArchived.isNull
-      .strategies.isNotNull
-      .features.fetch()
-      .orderBy().order.asc()
-
-    if (featureIds.isNotEmpty()) {
-      finder = finder.features.key.feature.`in`(featureIds)
-    }
-
-    finder
-      .findList().forEach { fg ->
-        fg.strategies?.let {
-          val validStrategies = it.filter { s -> s.id != null }
-          if (validStrategies.isNotEmpty()) {
-            val strat = validStrategies.first()
-
-            fg.features.forEach { feat ->
-              val list = data.computeIfAbsent(feat.key.feature) { _ -> mutableListOf() }
-              list.add(
-                RolloutStrategy().id(strat.id).name(strat.name).percentage(strat.percentage)
-                  .percentageAttributes(strat.percentageAttributes)
-                  .attributes(strat.attributes).value(FeatureGroupHelper.cast(feat.value, feat.feature.valueType))
-              )
-            }
-          }
-        }
-      }
-
-    return data.toMap()
-  }
-
-  override fun collectStrategiesFromGroupsForEnvironment(envId: UUID): Map<UUID, List<RolloutStrategy>> {
-    return collectStrategiesFromGroupsForEnvironmentFeatures(envId, listOf())
-  }
-
-  override fun collectStrategiesFromGroupsForEnvironmentFeature(envId: UUID, featureId: UUID): List<RolloutStrategy> {
-    val data = collectStrategiesFromGroupsForEnvironmentFeatures(envId, listOf(featureId))
-
-    return data[featureId] ?: listOf()
-  }
-}
 
 /**
  * We never check the appId as we assume from the front end that it always does that as part of its
@@ -557,21 +506,6 @@ class FeatureGroupSqlApi @Inject constructor(
       }
       ensureFeatureValuesExist(feats, group.environment, person)
     }
-  }
-}
-
-internal class FeatureGroupHelper {
-  companion object {
-     fun cast(value: String?, valueType: FeatureValueType): Any? {
-      if (value == null) return null
-      return when (valueType) {
-        FeatureValueType.BOOLEAN -> "true" == value
-        FeatureValueType.STRING -> value.toString()
-        FeatureValueType.NUMBER -> BigDecimal(value.toString())
-        FeatureValueType.JSON -> value.toString()
-      }
-    }
-
   }
 }
 

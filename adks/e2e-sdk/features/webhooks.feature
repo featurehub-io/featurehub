@@ -1,4 +1,4 @@
-@needs-webserver
+@needs-webserver @streamingvariants
 Feature: Webhooks work as expected
 
   @webhook @webhooks

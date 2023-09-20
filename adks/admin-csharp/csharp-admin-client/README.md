@@ -1,3 +1,0 @@
-# DOTNET Admin SDK
-
-

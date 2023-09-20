@@ -16,6 +16,7 @@ import { logger } from '../support/logging';
 import { SdkWorld } from '../support/world';
 import { getWebserverExternalAddress } from '../support/make_me_a_webserver';
 import { timeout } from 'nats/lib/nats-base-client/util';
+import {BackendDiscovery} from "../support/discovery";
 
 Given(/^I create a new portfolio$/, async function () {
   const world = this as SdkWorld;
@@ -200,9 +201,12 @@ Given(/^I connect to the feature server$/, async function () {
     expect(found, `${serviceAccountPerm.sdkUrlClientEval} failed to connect`).to.be.true;
     logger.info('Successfully completed poll');
     const edge = new EdgeFeatureHubConfig(world.featureUrl, serviceAccountPerm.sdkUrlClientEval);
-    this.sdkUrlClientEval = serviceAccountPerm.sdkUrlClientEval;
-    this.sdkUrlServerEval = serviceAccountPerm.sdkUrlServerEval;
-    //edge.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, 200));
+    world.sdkUrlClientEval = serviceAccountPerm.sdkUrlClientEval;
+    world.sdkUrlServerEval = serviceAccountPerm.sdkUrlServerEval;
+    if (!BackendDiscovery.supportsSSE) {
+      edge.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, 200));
+    }
+
     edge.init();
     world.edgeServer = edge;
     // give it time to connect

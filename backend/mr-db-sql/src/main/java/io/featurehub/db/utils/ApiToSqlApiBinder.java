@@ -22,7 +22,7 @@ import io.featurehub.db.publish.CacheSourceFeatureGroupApi;
 import io.featurehub.db.services.ApplicationSqlApi;
 import io.featurehub.db.services.ArchiveStrategy;
 import io.featurehub.db.services.AuthenticationSqlApi;
-import io.featurehub.db.services.CacheSourceFeatureGroupSqlApi;
+import io.featurehub.db.publish.CacheSourceFeatureGroupSqlApi;
 import io.featurehub.db.services.Conversions;
 import io.featurehub.db.services.ConvertUtils;
 import io.featurehub.db.services.DbArchiveStrategy;

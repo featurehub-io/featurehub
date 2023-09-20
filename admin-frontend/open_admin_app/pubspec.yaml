@@ -16,7 +16,7 @@ dependencies:
     sdk: flutter
   flutter:
     sdk: flutter
-
+  dio: '^5.0.1'
   rxdart: ^0.27.0
   bloc_provider: ^0.8.0
   logging: ^1.0.1

@@ -87,8 +87,18 @@ export abstract class BackendDiscovery {
     return this._discovered;
   }
 
+  static async discoverRestEdge(baseUrl: string) {
+    try {
+      const versionInfo = await (new InfoServiceApi(new Configuration({ basePath: baseUrl }))).getInfoVersion();
+      this._isRESTEdge = (versionInfo.data.name == 'party-server-ish');
+    } catch (e) {
+      console.log('unable to determine what type of server is running', e);
+    }
+  }
+
   static async discover(): Promise<void> {
     if (process.env.REMOTE_BACKEND || process.env.FEATUREHUB_BASE_URL) {
+      await this.discoverRestEdge(process.env.REMOTE_BACKEND || process.env.FEATUREHUB_BASE_URL || '');
       return;
     }
     if (!BackendDiscovery._discovered) {

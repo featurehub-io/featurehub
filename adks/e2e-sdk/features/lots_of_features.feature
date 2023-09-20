@@ -1,3 +1,4 @@
+@allvariants @streamingvariants
 Feature: I setup a lot of features
 
   Background:

@@ -1,6 +1,8 @@
 package io.featurehub.edge
 
 import io.featurehub.dacha.api.DachaClientServiceRegistry
+import io.featurehub.db.publish.CacheSourceFeatureGroupApi
+import io.featurehub.db.publish.CacheSourceFeatureGroupSqlApi
 import io.featurehub.edge.db.sql.DbDachaCacheSqlApi
 import io.featurehub.edge.db.sql.DbFeatureUpdateProcessor
 import io.featurehub.edge.resources.EdgeResource
@@ -18,6 +20,7 @@ class EdgeGetFeature : Feature {
       override fun configure() {
         bind(DbDachaCacheSqlApi::class.java).to(DachaClientServiceRegistry::class.java).`in`(Singleton::class.java)
         bind(DbFeatureUpdateProcessor::class.java).to(FeatureUpdatePublisher::class.java).`in`(Singleton::class.java)
+        bind(CacheSourceFeatureGroupSqlApi::class.java).to(CacheSourceFeatureGroupApi::class.java).`in`(Singleton::class.java)
       }
     })
 
