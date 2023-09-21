@@ -29,6 +29,8 @@
 * FeatureHub SDKs
 ** xref:sdks.adoc[Software Development Kits]
 ** xref:sdks-development.adoc[Developing an SDK]
+** xref:sdk_api_definition.adoc[SDK API Reference]
+
 
 * Analytics
 ** xref:analytics.adoc[Google Analytics Integration]
