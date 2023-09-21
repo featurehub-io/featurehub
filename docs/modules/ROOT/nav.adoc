@@ -13,6 +13,8 @@
 * FeatureHub Management Via an API
 ** xref:admin-service-accounts.adoc[Admin Service Accounts]
 ** xref:admin-development-kit.adoc[Admin Software Development Kits]
+** xref:api_definition.adoc[API Definition]
+
 
 * Self-Hosting FeatureHub App
 ** xref:architecture.adoc[Architecture]
