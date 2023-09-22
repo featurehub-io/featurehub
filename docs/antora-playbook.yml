@@ -13,7 +13,7 @@ content:
   sources:
     - url: https://github.com/featurehub-io/featurehub
       branches:
-        - test-docs-api-gen
+        - main
       tags:
         - docs-multi-version-support
         - v1.5.7

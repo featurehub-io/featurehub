@@ -13,7 +13,7 @@
 * FeatureHub Management Via an API
 ** xref:admin-service-accounts.adoc[Admin Service Accounts]
 ** xref:admin-development-kit.adoc[Admin Software Development Kits]
-** xref:api_definition.adoc[API Definition]
+** xref:api-definition.adoc[ADK API Reference]
 
 
 * Self-Hosting FeatureHub App
@@ -29,7 +29,7 @@
 * FeatureHub SDKs
 ** xref:sdks.adoc[Software Development Kits]
 ** xref:sdks-development.adoc[Developing an SDK]
-** xref:sdk_api_definition.adoc[SDK API Reference]
+** xref:sdk-api-definition.adoc[SDK API Reference]
 
 
 * Analytics
