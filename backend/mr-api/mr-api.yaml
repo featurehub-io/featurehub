@@ -2587,6 +2587,11 @@ components:
       type: object
     SetupResponse:
       type: object
+      required:
+        - organization
+        - providers
+        - providerInfo
+        - capabilityInfo
       properties:
         organization:
           $ref: "#/components/schemas/Organization"
@@ -2604,6 +2609,7 @@ components:
         redirectUrl:
           description: "Set if there is only one external provider and no local. Allows immediate redirect to provider. It assumes it will be used immediate (e.g. state in oauth2 url)"
           type: string
+          nullable: true
     IdentityProviderInfo:
       type: object
       required:
@@ -2640,12 +2646,17 @@ components:
       properties:
         accessToken:
           type: string
+          nullable: true
         refreshToken:
           type: string
+          nullable: true
         redirectUrl:
           type: string
-        person:
-          $ref: "#/components/schemas/Person"
+          nullable: true
+        person: # do not include a description or the API changes code generation
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Person"
     RegistrationUrl:
       required:
         - token
@@ -2883,6 +2894,7 @@ components:
         environmentName:
           type: string
         priorEnvironmentId:
+          nullable: true
           type: string
           format: uuid
         features:
@@ -3006,15 +3018,19 @@ components:
     Audit:
       properties:
         createdBy:
+          nullable: true
           allOf:
             - $ref: "#/components/schemas/Person"
         updatedBy:
+          nullable: true
           allOf:
             - $ref: "#/components/schemas/Person"
         whenCreated:
+          nullable: true
           type: string
           format: date-time
         whenUpdated:
+          nullable: true
           type: string
           format: date-time
     EnvironmentSortOrder:
@@ -3049,17 +3065,21 @@ components:
               type: integer
               format: int64
             organizationId:
+              nullable: true
               type: string
               format: uuid
             groups:
+              nullable: true
               type: array
               items:
                 $ref: "#/components/schemas/Group"
             applications:
               type: array
+              nullable: true
               items:
                 $ref: "#/components/schemas/Application"
             whenArchived:
+              nullable: true
               type: string
               format: date-time
     ApplicationSummary:
@@ -3101,18 +3121,22 @@ components:
               type: integer
               format: int64
             groups:
+              nullable: true
               type: array
               items:
                 $ref: "#/components/schemas/Group"
             features:
               type: array
+              nullable: true
               items:
                 $ref: "#/components/schemas/Feature"
             environments:
               type: array
+              nullable: true
               items:
                 $ref: "#/components/schemas/Environment"
             whenArchived:
+              nullable: true
               type: string
               format: date-time
 
@@ -3153,38 +3177,50 @@ components:
           type: string
           minLength: 1
           maxLength: 150
+          nullable: true
         email:
           type: string
           format: email
           maxLength: 100
+          nullable: true
         personType:
           $ref: "#/components/schemas/PersonType"
         other:
+          nullable: true
           type: string
         source:
+          nullable: true
           type: string
         version:
           type: integer
           format: int64
         passwordRequiresReset:
+          nullable: true
           type: boolean
         groups:
+          nullable: true
+          default: []
           type: array
           items:
             $ref: "#/components/schemas/Group"
         whenArchived:
+          nullable: true
           type: string
           format: date-time
         whenLastAuthenticated:
+          nullable: true
           description: "This is the timestamp in UTC when they last logged into the system"
           type: string
           format: date-time
         whenLastSeen:
+          nullable: true
           description: "This is the timestamp in UTC when they last made a request to the system on their most recent login. If it is null it means they have no current token or have never logged in."
           type: string
           format: date-time
         additional:
+          nullable: true
           type: array
+          default: []
           items:
             $ref: "#/components/schemas/PersonInfo"
     SearchPersonSortBy:
@@ -3399,11 +3435,13 @@ components:
           type: string
           format: date-time
     ServiceAccountPermission:
+      description: "this represents a specific set of permissions for a SDK service account in an environment"
       required:
         - permissions
         - environmentId
       properties:
         id:
+          nullable: true
           type: string
           format: uuid
         permissions:
@@ -3412,29 +3450,36 @@ components:
             $ref: "#/components/schemas/RoleType"
         serviceAccount:
           description: "The service account associated with this permission. Only filled in when coming from Environment"
-          $ref: "#/components/schemas/ServiceAccount"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/ServiceAccount"
         environmentId:
           type: string
           format: uuid
         sdkUrlClientEval:
           description: "Optional if they have chosen includeSdkUrl"
           type: string
+          nullable: true
         sdkUrlServerEval:
           description: "Optional if they have chosen includeSdkUrl"
           type: string
+          nullable: true
     CacheRefreshRequest:
       type: object
       properties:
         allTheThings:
+          nullable: true
           description: "refresh the whole cache"
           type: boolean
         applicationId:
+          nullable: true
           description: "if provided these applications will be refreshed"
           type: array
           items:
             type: string
             format: uuid
         portfolioId:
+          nullable: true
           type: array
           items:
             type: string
@@ -3464,9 +3509,12 @@ components:
               description: "is this an admin group?"
               type: boolean
             portfolioId:
+              description: "The portfolio this group belongs to, unless it is the superuser group when it does not belong to one"
+              nullable: true
               type: string
               format: uuid
             organizationId:
+              nullable: true
               description: "this will be the organisation this group belongs to at the top level, or if a portfolio group, the organisation of the portfolio"
               type: string
               format: uuid
@@ -3479,20 +3527,23 @@ components:
               maxLength: 255
             members:
               type: array
+              default: []
               items:
                 $ref: "#/components/schemas/Person"
             applicationRoles:
               type: array
+              default: []
               items:
                 $ref: "#/components/schemas/ApplicationGroupRole"
             environmentRoles:
               type: array
+              default: []
               items:
                 $ref: "#/components/schemas/EnvironmentGroupRole"
             whenArchived:
+              nullable: true
               type: string
               format: date-time
-
     ApplicationGroupRole:
       required:
         - applicationId
