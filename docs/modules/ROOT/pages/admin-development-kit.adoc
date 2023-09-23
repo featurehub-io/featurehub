@@ -323,6 +323,6 @@ link:api-definition.adoc[here] or locate it on
 https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[GitHub]
 
 Alternatively, it can be served from (filtered by version):
-http://api.dev.featurehub.io/mrapi/1.1.8.yaml
+https://api.dev.featurehub.io/mrapi/1.1.11.yaml
 
 
