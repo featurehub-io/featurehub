@@ -4,10 +4,12 @@ import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.api.DachaClientServiceRegistry
 import io.featurehub.dacha.api.DachaEnvironmentService
 import io.featurehub.dacha.model.DachaStructureResponse
+import io.featurehub.db.publish.CacheSourceFeatureGroupApi
+import jakarta.inject.Inject
 import java.util.*
 
-class DbDachaCacheSqlApi : DachaClientServiceRegistry {
-  private val apiKeyService = DbDachaSqlApi()
+class DbDachaCacheSqlApi @Inject constructor(cacheSourceFeatureGroup: CacheSourceFeatureGroupApi) : DachaClientServiceRegistry {
+  private val apiKeyService = DbDachaSqlApi(cacheSourceFeatureGroup)
 
   override fun getEnvironmentService(cache: String): DachaEnvironmentService {
     return FakeDachaEnvironmentService() // is never called anyway

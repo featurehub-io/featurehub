@@ -1,3 +1,4 @@
+@allvariants @streamingvariants
 Feature: All flag based functionality works as expected
 
   Background:

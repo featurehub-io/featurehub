@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # make sure you have built all artifacts first
 if [ $# -eq 0 ]
   then
@@ -17,7 +17,7 @@ echo mvn -f pom-packages.xml -DskipTests $BUILD_PARAMS -Ddocker.project.prefix=$
 while true; do
     read -p "Are you sure you wish to release (y/n): " yn
     case $yn in
-        [Yy]* ) mvn -f pom-packages.xml -DskipTests $BUILD_PARAMS -Ddocker.project.prefix=$DOCKER_PREFIX -Dcloud-build=true -Dbuild.version=$VERSION clean install; break;;
+        [Yy]* ) mvn -f pom-packages.xml -DskipTests $BUILD_PARAMS -Ddocker.project.prefix=$DOCKER_PREFIX -Dcloud-build=true -Dbuild.version=$VERSION clean install; git add ../infra/api-bucket/files; break;;
         [Nn]* ) exit;;
         * ) echo "Please answer yes or no.";;
     esac

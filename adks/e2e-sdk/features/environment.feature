@@ -1,5 +1,5 @@
+@allvariants @streamingvariants
 Feature: We have a grouping of environmental behaviour around features
-
 
   @environment
   Scenario: When I delete an environment, it becomes unpublished from Edge

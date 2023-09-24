@@ -1,3 +1,4 @@
+@allvariants @streamingvariants
 Feature: I setup the example features to be able to run the examples
 
   Background:

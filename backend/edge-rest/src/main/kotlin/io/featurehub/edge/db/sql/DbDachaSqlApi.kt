@@ -8,13 +8,14 @@ import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.query.QDbApplicationFeature
 import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.model.query.QDbServiceAccountEnvironment
+import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.mr.model.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.stream.Collectors
 
-class DbDachaSqlApi : DachaApiKeyService {
+class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroupApi) : DachaApiKeyService {
   private val log: Logger = LoggerFactory.getLogger(DbDachaSqlApi::class.java)
 
   // these are not actually required because the stats API isn't used, so we make them up
@@ -27,7 +28,8 @@ class DbDachaSqlApi : DachaApiKeyService {
     val saEnv = findMatch(
       eId,
       serviceAccountKey
-    ).environment.parentApplication.features.fetch(
+    )
+      .environment.parentApplication.features.fetch(
       QDbApplicationFeature.Alias.key,
       QDbApplicationFeature.Alias.id,
       QDbApplicationFeature.Alias.valueType,
@@ -42,14 +44,16 @@ class DbDachaSqlApi : DachaApiKeyService {
       .findOne()
 
     return if (saEnv != null) {
-      val featureValues = saEnv.environment.environmentFeatures.map { it.feature.key to it }.toMap()
-      val features = saEnv.environment.parentApplication.features
+      val fgStrategies = cacheSourceFeatureGroup.collectStrategiesFromGroupsForEnvironment(saEnv.environment.id)
+      // we have to filter here otherwise the SQL query can "not return"
+      val featureValues = saEnv.environment.environmentFeatures.filter { it.feature.whenArchived == null }.map { it.feature.key to it }.toMap()
+      val features = saEnv.environment.parentApplication.features.filter { it.whenArchived == null }
       val response = DachaKeyDetailsResponse()
         .serviceKeyId(saEnv.serviceAccount.id)
         .applicationId(fakeApplicationId)
         .portfolioId(fakePortfolioId)
         .organizationId(fakeOrganisationId)
-        .features(features.map { toFeatureValueCacheItem(it, featureValues[it.key]) }.filterNotNull())
+        .features(features.filter { featureValues[it.key]?.retired != true }.map { toFeatureValueCacheItem(it, featureValues[it.key], fgStrategies[it.id]) }.filterNotNull())
 
       response.etag = calculateEtag(response)
       log.trace("etag is {}", response.etag)
@@ -66,6 +70,8 @@ class DbDachaSqlApi : DachaApiKeyService {
   ): QDbServiceAccountEnvironment {
     val q = QDbServiceAccountEnvironment()
       .select(QDbServiceAccountEnvironment.Alias.serviceAccount.id)
+      .environment.whenUnpublished.isNull
+      .environment.whenArchived.isNull
       .environment.id.eq(eId)
 
     return if (serviceAccountKey.contains("*")) {
@@ -77,15 +83,12 @@ class DbDachaSqlApi : DachaApiKeyService {
 
   private fun toFeatureValueCacheItem(
     feature: DbApplicationFeature,
-    fv: DbFeatureValue?
+    fv: DbFeatureValue?,
+    featureGroupRolloutStrategies: List<RolloutStrategy>?
   ): CacheEnvironmentFeature? {
-    if (fv == null || fv.retired != true) {
-      return CacheEnvironmentFeature()
-        .feature(CacheFeature().key(feature.key).id(feature.id).valueType(feature.valueType))
-        .value(if (fv == null) toEmptyFeatureValue(feature) else toFeatureValue(fv))
-    } else {
-      return null
-    }
+    return CacheEnvironmentFeature()
+      .feature(CacheFeature().key(feature.key).id(feature.id).valueType(feature.valueType))
+      .value(if (fv == null) toEmptyFeatureValue(feature) else toFeatureValue(fv, featureGroupRolloutStrategies))
   }
 
 
@@ -96,7 +99,7 @@ class DbDachaSqlApi : DachaApiKeyService {
       .version(0)
       .locked(false)
 
-  private fun toFeatureValue(dbFeature: DbFeatureValue): CacheFeatureValue {
+  private fun toFeatureValue(dbFeature: DbFeatureValue, featureGroupRolloutStrategies: List<RolloutStrategy>?): CacheFeatureValue {
     val fv = CacheFeatureValue()
       .key(dbFeature.feature.key)
       .locked(dbFeature.isLocked)
@@ -111,7 +114,13 @@ class DbDachaSqlApi : DachaApiKeyService {
       else -> fv.value(null)
     }
 
-    fv.rolloutStrategies(dbFeature.rolloutStrategies.map { fromRolloutStrategy(it) })
+    val rs = dbFeature.rolloutStrategies.map { fromRolloutStrategy(it) }.toMutableList()
+
+    featureGroupRolloutStrategies?.forEach { s ->
+      rs.add(fromRolloutStrategy(s))
+    }
+
+    fv.rolloutStrategies(rs)
 
     return fv
   }
@@ -181,10 +190,14 @@ class DbDachaSqlApi : DachaApiKeyService {
       )
 
     val feature =
-      applicationFeature.parentApplication.environments.serviceAccountEnvironments.eq(serviceAccount).findOne() ?: return null
+      applicationFeature.parentApplication.environments.serviceAccountEnvironments.eq(serviceAccount).whenArchived.isNull.findOne() ?: return null
 
-    val foundFeatureValue = feature.environmentFeatures.find { it.environment.id == eId }
-    val featureValue = if (foundFeatureValue == null) toEmptyFeatureValue(feature).id(feature.id) else toFeatureValue(foundFeatureValue)
+    val foundFeatureValue = feature.environmentFeatures.filter { it.feature.whenArchived == null && !it.retired }.find { it.environment.id == eId }
+    val fgStrategies = if (foundFeatureValue != null) cacheSourceFeatureGroup.collectStrategiesFromGroupsForEnvironmentFeature(eId, foundFeatureValue.feature.id) else null
+    val featureValue = if (foundFeatureValue == null) toEmptyFeatureValue(feature).id(feature.id) else toFeatureValue(
+      foundFeatureValue,
+      fgStrategies
+    )
 
     // it wants roles, valueType, key, locked, the feature value
     return DachaPermissionResponse()

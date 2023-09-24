@@ -8,7 +8,7 @@ This will allow you to set your `~/.featurehub/mr.properties` to
 ----
 db.url=jdbc:postgresql://localhost:5432/featurehub
 db.username=featurehub
-db.password=featurehub`
+db.password=featurehub
 ----
 
 If you are running postgres outside of docker, you can install it (use `brew` on a Mac). Then log

@@ -71,7 +71,7 @@ fhLog.log = (...args: any[]) => {
 };
 
 fhLog.trace = (...args: any[]) => {
-  logger.log({level: 'error', message: args.map(o => (typeof o === 'string') ? o : JSON.stringify(o).replace('"', "'")).join(" "), sdkTrace: true});
+  logger.log({level: 'error', message: args?.map(o => (typeof o === 'string') ? o : JSON.stringify(o)?.replace('"', "'")).join(" "), sdkTrace: true});
 };
 
 fhLog.trace('this is a message');

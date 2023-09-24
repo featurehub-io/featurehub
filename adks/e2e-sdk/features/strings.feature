@@ -1,3 +1,4 @@
+@allvariants @streamingvariants
 Feature: All string based functionality works as expected
 
   Background:

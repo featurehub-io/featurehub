@@ -1,3 +1,4 @@
+@allvariants @streamingvariants
 Feature: Feature groups should operate as per definition
 
   Background:
