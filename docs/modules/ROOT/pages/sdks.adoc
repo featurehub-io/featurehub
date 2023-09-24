@@ -4,6 +4,17 @@
 The client SDKs for FeatureHub are designed to allow various supported languages to connect to the Edge server and receive updates on the features.
 Each SDK is designed to be idiomatic to that language. The capabilities of each SDK varies, please check the comparison table below.
 
+== SDK API and OpenAPI files
+We provide the API description in OpenAPI format.
+
+You can either download and view the latest version
+link:sdk-api-definition.adoc[here] or locate it on
+https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/edge[GitHub]
+
+Alternatively, it can be served from (filtered by version):
+https://api.dev.featurehub.io/edge/1.1.5.yaml
+
+
 [#_receiving_feature_updates]
 == Receiving Feature Updates
 

@@ -2,7 +2,9 @@
 
 == Admin SDK API
 
-The Admin SDK API is designed to provide access to the Management Repository API. It is an OpenAPI driven API, based on the MR OpenAPI file that can be located https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[here]
+The Admin SDK API is designed to provide access to the Management Repository API. It is an OpenAPI driven API, based on the MR OpenAPI file. You can either download and view the latest version
+link:api-definition.adoc[here] or locate it on
+https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[GitHub]
 
 The API is broken up into a number of services representing different facets of the Management Repository, e.g.
 Portfolios, Applications, Environments, Features, Service Accounts, Authentication and so forth.
@@ -148,7 +150,7 @@ PortfolioServiceApi portfolioService = new PortfolioServiceApi();
 ==== Create Portfolio
 
 This operation creates a portfolio, and indicates whether you want to return any created groups and applications inside the portfolio.
-Currently the API does not allow you to create groups and applications when creating portfolios.
+Currently, the API does not allow you to create groups and applications when creating portfolios.
 
 ====
 .Java Definition
@@ -314,15 +316,13 @@ EnvironmentFeatureServiceApi featureValueService = new EnvironmentFeatureService
 ----
 ====
 
+=== ADK API and OpenAPI Files
 
+You can either download and view the latest version
+link:api-definition.adoc[here] or locate it on
+https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[GitHub]
 
-=== OpenAPI Files
-
-If you use a language we don't provide an artifact for or use an OpenAPI generator that is different from the one we
-are using, the information on the latest API is located at:
-https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi
-
-Or can be served from:
-http://api.dev.featurehub.io/mrapi/1.1.8.yaml
+Alternatively, it can be served from (filtered by version):
+https://api.dev.featurehub.io/mrapi/1.1.11.yaml
 
 
