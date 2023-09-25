@@ -1,5 +1,5 @@
 name: featurehub
-version: 1.6.2
+version: 1.6.3
 start_page: ROOT:index.adoc
 title: FeatureHub
 #prerelease: -rc
