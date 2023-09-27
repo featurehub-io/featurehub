@@ -113,10 +113,14 @@ class FeatureSpec extends Base2Spec {
 
   def "when i save a new feature in an application i receive it back as part of the list"() {
     given: "i create a new feature"
+      Map<UUID, Long> envBeforeFeatures = appApi.getApplication(appId, Opts.opts(FillOpts.Environments)).environments.collectEntries({ [it.id, it.version]})
       def features = appApi.createApplicationFeature(appId, new Feature().key("FEATURE_ONE").name("The neo feature").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     when:
       def foundFeatures = appApi.getApplicationFeatures(appId, Opts.empty())
+    and: "i get the version after addition"
+    Map<UUID, Long> envAfterFeatures = appApi.getApplication(appId, Opts.opts(FillOpts.Environments)).environments.collectEntries({ [it.id, it.version]})
     then:
+      envBeforeFeatures.each { envAfterFeatures[it.key] == envBeforeFeatures[it.key] + 1 }
       features.find({ it -> it.key == 'FEATURE_ONE'}) != null
       foundFeatures.find({ it -> it.key == 'FEATURE_ONE'}) != null
       appApi.getApplicationSummary(appId).featureCount == 1
@@ -170,10 +174,15 @@ class FeatureSpec extends Base2Spec {
   def "i can delete an existing feature"() {
     given: "i have a feature"
       def features = appApi.createApplicationFeature(appId, new Feature().name("x").key("FEATURE_DELUROLO").valueType(FeatureValueType.NUMBER), superPerson, Opts.empty())
+    and: "i get the env version numbers before the delete"
+      Map<UUID, Long> envBeforeDelete = appApi.getApplication(appId, Opts.opts(FillOpts.Environments)).environments.collectEntries({ [it.id, it.version]})
     when: "i delete it"
       def deletedList = appApi.deleteApplicationFeature(appId, 'FEATURE_DELUROLO')
       def getList = appApi.getApplicationFeatures(appId, Opts.empty())
+    and: "get the env version numbers after the delete"
+      Map<UUID, Long> envAfterDelete = appApi.getApplication(appId, Opts.opts(FillOpts.Environments)).environments.collectEntries({ [it.id, it.version]})
     then:
+      envBeforeDelete.each { envAfterDelete[it.key] == envBeforeDelete[it.key] + 1 }
       features.find({it.key  == 'FEATURE_DELUROLO'}) != null
       deletedList == getList
       getList.find({it.key  == 'FEATURE_DELUROLO'}) == null
