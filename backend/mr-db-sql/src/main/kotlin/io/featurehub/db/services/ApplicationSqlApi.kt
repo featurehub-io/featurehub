@@ -226,7 +226,11 @@ class ApplicationSqlApi @Inject constructor(
         .metaData(feature.metaData)
         .description(feature.description)
         .build()
+
       saveApplicationFeature(appFeature)
+
+      bumpVersionOfAllEnvironmentsWithFeatureChanged(applicationId)
+
       if (appFeature.valueType != FeatureValueType.BOOLEAN) {
         cacheSource.publishFeatureChange(appFeature, PublishAction.CREATE)
       } else {
@@ -238,6 +242,10 @@ class ApplicationSqlApi @Inject constructor(
       return appFeature
     }
     return null
+  }
+
+  private fun bumpVersionOfAllEnvironmentsWithFeatureChanged(applicationId: UUID) {
+    QDbEnvironment().parentApplication.id.eq(applicationId).asUpdate().setRaw("version = version + 1").update()
   }
 
   @Throws(ApplicationApi.DuplicateFeatureException::class)
@@ -304,6 +312,7 @@ class ApplicationSqlApi @Inject constructor(
         ) {
           throw ApplicationApi.DuplicateFeatureException()
         }
+        bumpVersionOfAllEnvironmentsWithFeatureChanged(appId)
       }
       val changed = feature.key != null && feature.key != appFeature.key || feature.valueType != appFeature.valueType
       appFeature.name = feature.name
@@ -381,6 +390,8 @@ class ApplicationSqlApi @Inject constructor(
     if (!appFeature.isValid) {
       return null
     }
+
+    bumpVersionOfAllEnvironmentsWithFeatureChanged(appId)
 
     // make sure it isn't already deleted
     if (appFeature.appFeature!!.whenArchived == null) {
