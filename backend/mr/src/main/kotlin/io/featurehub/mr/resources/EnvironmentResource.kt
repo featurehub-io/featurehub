@@ -4,7 +4,9 @@ import io.featurehub.db.api.*
 import io.featurehub.mr.api.EnvironmentServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.Application
+import io.featurehub.mr.model.CreateEnvironment
 import io.featurehub.mr.model.Environment
+import io.featurehub.mr.model.UpdateEnvironmentV2
 import io.featurehub.mr.utils.ApplicationUtils
 import jakarta.inject.Inject
 import jakarta.ws.rs.BadRequestException
@@ -22,26 +24,39 @@ class EnvironmentResource @Inject constructor(
     private val applicationApi: ApplicationApi,
     private val applicationUtils: ApplicationUtils
 ) : EnvironmentServiceDelegate {
-    fun createEnvironment(id: UUID?, environment: Environment?, securityContext: SecurityContext?): Environment? {
-        val current = authManager.from(securityContext)
-        var hasPermission = authManager.isOrgAdmin(current)
-        if (!hasPermission) {
-            val application = applicationApi.getApplication(id!!, Opts.empty()) ?: throw NotFoundException()
-            hasPermission = authManager.isPortfolioAdmin(application.portfolioId, current, null)
-        }
-        if (hasPermission) {
-            return try {
-                environmentApi.create(environment!!, Application().id(id!!), current)
-            } catch (e: EnvironmentApi.DuplicateEnvironmentException) {
-                throw WebApplicationException(Response.Status.CONFLICT)
-            } catch (e: EnvironmentApi.InvalidEnvironmentChangeException) {
-                throw BadRequestException()
-            }
-        }
-        throw ForbiddenException()
-    }
 
-    override fun deleteEnvironment(
+  override fun createEnvironment(
+    id: UUID,
+    environment: CreateEnvironment,
+    securityContext: SecurityContext?
+  ): Environment {
+    val current = authManager.from(securityContext)
+    var hasPermission = authManager.isOrgAdmin(current)
+    if (!hasPermission) {
+      val application = applicationApi.getApplication(id, Opts.empty()) ?: throw NotFoundException()
+      hasPermission = authManager.isPortfolioAdmin(application.portfolioId, current, null)
+    }
+    if (hasPermission) {
+      return try {
+        environmentApi.create(environment, id, current) ?: throw NotFoundException()
+      } catch (e: EnvironmentApi.DuplicateEnvironmentException) {
+        throw WebApplicationException(Response.Status.CONFLICT)
+      } catch (e: EnvironmentApi.InvalidEnvironmentChangeException) {
+        throw BadRequestException()
+      }
+    }
+    throw ForbiddenException()
+  }
+
+  override fun createEnvironmentOld(
+    id: UUID,
+    createEnvironment: CreateEnvironment,
+    securityContext: SecurityContext?
+  ): CreateEnvironment {
+    TODO("Not yet implemented")
+  }
+
+  override fun deleteEnvironment(
         eid: UUID,
         holder: EnvironmentServiceDelegate.DeleteEnvironmentHolder,
         securityContext: SecurityContext
@@ -95,6 +110,7 @@ class EnvironmentResource @Inject constructor(
         return found
     }
 
+    @Deprecated("Deprecated in Java")
     override fun updateEnvironment(
         eid: UUID, environment: Environment, holder: EnvironmentServiceDelegate.UpdateEnvironmentHolder,
         securityContext: SecurityContext
@@ -126,7 +142,16 @@ class EnvironmentResource @Inject constructor(
         throw ForbiddenException()
     }
 
-    companion object {
+  override fun updateEnvironmentOnApplication(
+    id: UUID,
+    updateEnvironmentV2: UpdateEnvironmentV2,
+    holder: EnvironmentServiceDelegate.UpdateEnvironmentOnApplicationHolder,
+    securityContext: SecurityContext?
+  ): Environment {
+    TODO("Not yet implemented")
+  }
+
+  companion object {
         private val log = LoggerFactory.getLogger(EnvironmentResource::class.java)
     }
 }

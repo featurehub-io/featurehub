@@ -207,7 +207,7 @@ class ApplicationSqlApi @Inject constructor(
 
   @Throws(ApplicationApi.DuplicateFeatureException::class)
   fun createApplicationLevelFeature(
-    applicationId: UUID, feature: Feature, person: Person,
+    applicationId: UUID, feature: CreateFeature, person: Person,
     opts: Opts
   ): DbApplicationFeature? {
     val app = convertUtils.byApplication(applicationId)
@@ -221,7 +221,7 @@ class ApplicationSqlApi @Inject constructor(
         .parentApplication(app)
         .alias(feature.alias)
         .link(feature.link)
-        .secret(feature.secret != null && feature.secret!!)
+        .secret(feature.secret == true)
         .valueType(feature.valueType)
         .metaData(feature.metaData)
         .description(feature.description)
@@ -250,10 +250,10 @@ class ApplicationSqlApi @Inject constructor(
 
   @Throws(ApplicationApi.DuplicateFeatureException::class)
   override fun createApplicationFeature(
-    applicationId: UUID, feature: Feature, person: Person,
+    appId: UUID, createFeature: CreateFeature, person: Person,
     opts: Opts
   ): List<Feature> {
-    val feat = createApplicationLevelFeature(applicationId, feature, person, opts)
+    val feat = createApplicationLevelFeature(appId, createFeature, person, opts)
     return if (feat != null) {
       getAppFeatures(feat.parentApplication, opts)
     } else ArrayList()
@@ -532,19 +532,18 @@ class ApplicationSqlApi @Inject constructor(
       .group.groupMembers.person.id.eq(personId)
   }
 
-  override fun personIsFeatureReader(applicationId: UUID, personId: UUID): Boolean {
-    Conversions.nonNullApplicationId(applicationId)
-    Conversions.nonNullPersonId(personId)
+
+  override fun personIsFeatureReader(appId: UUID, personId: UUID): Boolean {
     val person = convertUtils.byPerson(personId)
     if (convertUtils.personIsSuperAdmin(person)) {
       return true
     }
     if (person != null) {
-      for (acl in environmentPermissions(applicationId, personId).findList()) {
+      for (acl in environmentPermissions(appId, personId).findList()) {
         if (acl.application != null) {
           return true
         }
-        if (acl.roles.trim { it <= ' ' }.length > 0) {
+        if (acl.roles.trim { it <= ' ' }.isNotEmpty()) {
           return true
         }
       }

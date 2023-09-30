@@ -50,8 +50,8 @@ class ApplicationResource @Inject constructor(
         var app = applicationApi.createApplication(id, application, current) ?: throw NotFoundException()
 
         environmentApi.create(
-          Environment().applicationId(app.id).name(productionEnvironmentName).production(true)
-            .description(productionEnvironmentDescription), app, current
+          CreateEnvironment().name(productionEnvironmentName).production(true)
+            .description(productionEnvironmentDescription), app.id, current
         )
 
         if (java.lang.Boolean.TRUE == holder.includeEnvironments) {

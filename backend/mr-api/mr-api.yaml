@@ -2168,7 +2168,7 @@ paths:
         403:
           description: "Forbidden, no permission to change role"
         404:
-          description: "not found"
+          description: "No environment"
         409:
           description: "Conflict in trying to save, someone else updated a record first"
         422:
@@ -3185,6 +3185,10 @@ components:
           description: "description if any"
         valueType:
           $ref: "#/components/schemas/FeatureValueType"
+        secret:
+          nullable: true
+          type: boolean
+          description: "should the config remain invisible to users without secret permission"
         description:
           type: string
           maxLength: 300

@@ -93,9 +93,7 @@ class EnvironmentFeatureResource @Inject constructor(
         } catch (bad: RolloutStrategyValidator.InvalidStrategyCombination) {
             throw WebApplicationException(Response.status(422).entity(bad.failure).build()) // can't do anything with it
         }
-        if (updated == null) {
-            throw NotFoundException()
-        }
+
         return updated
     }
 

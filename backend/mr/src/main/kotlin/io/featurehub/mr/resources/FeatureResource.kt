@@ -3,10 +3,7 @@ package io.featurehub.mr.resources
 import io.featurehub.db.api.*
 import io.featurehub.mr.api.FeatureServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
-import io.featurehub.mr.model.ApplicationFeatureValues
-import io.featurehub.mr.model.Feature
-import io.featurehub.mr.model.FeatureEnvironment
-import io.featurehub.mr.model.FeatureValue
+import io.featurehub.mr.model.*
 import io.featurehub.mr.utils.ApplicationUtils
 import jakarta.inject.Inject
 import jakarta.ws.rs.BadRequestException
@@ -19,31 +16,32 @@ import java.util.*
 
 class FeatureResource @Inject constructor(
     private val authManager: AuthManagerService,
-    environmentApi: EnvironmentApi?,
     private val applicationApi: ApplicationApi,
     private val applicationUtils: ApplicationUtils,
     private val featureApi: FeatureApi
 ) : FeatureServiceDelegate {
-    fun createFeaturesForApplication(
-        id: UUID?, feature: Feature?,
-        holder: FeatureServiceDelegate.CreateFeaturesForApplicationHolder,
-        securityContext: SecurityContext?
-    ): List<Feature>? {
-        // here we are only calling it to ensure the security check happens
-        val appFeaturePermCheck = applicationUtils.featureCreatorCheck(securityContext!!, id!!)
-        return try {
-            applicationApi.createApplicationFeature(
-                id,
-                feature,
-                appFeaturePermCheck.current,
-                Opts.empty().add(FillOpts.MetaData, holder.includeMetaData)
-            )
-        } catch (e: ApplicationApi.DuplicateFeatureException) {
-            throw WebApplicationException(409)
-        }
-    }
 
-    override fun deleteFeatureForApplication(
+  override fun createFeaturesForApplication(
+    id: UUID,
+    feature: CreateFeature,
+    holder: FeatureServiceDelegate.CreateFeaturesForApplicationHolder,
+    securityContext: SecurityContext?
+  ): List<Feature> {
+    // here we are only calling it to ensure the security check happens
+    val appFeaturePermCheck = applicationUtils.featureCreatorCheck(securityContext!!, id)
+    return try {
+      applicationApi.createApplicationFeature(
+        id,
+        feature,
+        appFeaturePermCheck.current,
+        Opts.empty().add(FillOpts.MetaData, holder.includeMetaData)
+      )
+    } catch (e: ApplicationApi.DuplicateFeatureException) {
+      throw WebApplicationException(409)
+    }
+  }
+
+  override fun deleteFeatureForApplication(
         id: UUID,
         key: String,
         holder: FeatureServiceDelegate.DeleteFeatureForApplicationHolder,
@@ -94,7 +92,7 @@ class FeatureResource @Inject constructor(
         securityContext: SecurityContext
     ): List<Feature> {
         applicationUtils.featureReadCheck(securityContext, id)
-        return applicationApi.getApplicationFeatures(id, Opts.empty().add(FillOpts.MetaData, holder.includeMetaData))!!
+        return applicationApi.getApplicationFeatures(id, Opts.empty().add(FillOpts.MetaData, holder.includeMetaData))
     }
 
     override fun updateAllFeatureValuesByApplicationForKey(
@@ -128,14 +126,24 @@ class FeatureResource @Inject constructor(
             ?: return ArrayList()
     }
 
-    fun updateFeatureForApplication(
-        id: UUID?,
-        key: String?,
-        feature: Feature?,
-        holder: FeatureServiceDelegate.UpdateFeatureForApplicationHolder,
+  override fun updateFeatureForApplication(
+    id: UUID,
+    feature: Feature,
+    holder: FeatureServiceDelegate.UpdateFeatureForApplicationHolder,
+    securityContext: SecurityContext?
+  ): MutableList<Feature> {
+    TODO("Not yet implemented")
+  }
+
+  @Deprecated("Deprecated in Java")
+  override fun updateFeatureForApplicationOld(
+    id: UUID,
+    key: String,
+    feature: Feature,
+        holder: FeatureServiceDelegate.UpdateFeatureForApplicationOldHolder,
         securityContext: SecurityContext?
     ): List<Feature> {
-        applicationUtils.featureEditorCheck(securityContext!!, id!!)
+        applicationUtils.featureEditorCheck(securityContext!!, id)
         return try {
             val features = applicationApi.updateApplicationFeature(
                 id,
