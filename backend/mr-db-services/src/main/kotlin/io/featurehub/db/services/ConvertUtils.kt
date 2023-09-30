@@ -129,15 +129,13 @@ open class ConvertUtils : Conversions {
     }
     if (opts.contains(FillOpts.People)) {
       environment.updatedBy(
-        toAuditCreatedBy(
           toPerson(
             env.whoCreated,
             env.parentApplication.portfolio.organization,
             Opts.empty()
           )
-        )
       )
-      environment.createdBy(toAuditCreatedBy(toPerson(env.whoCreated)))
+      environment.createdBy(toPerson(env.whoCreated))
     }
     if (opts.contains(FillOpts.Features)) {
       if (features != null) {
@@ -253,7 +251,7 @@ open class ConvertUtils : Conversions {
   override fun splitEnvironmentRoles(roles: String?): MutableList<RoleType> {
     val roleTypes = mutableSetOf<RoleType>()
 
-    if (roles == null || roles.isEmpty()) {
+    if (roles.isNullOrEmpty()) {
       return ArrayList(roleTypes)
     }
 
@@ -294,13 +292,6 @@ open class ConvertUtils : Conversions {
     return if (person.name == null || person.name.isEmpty()) {
       "No name"
     } else person.name
-  }
-
-  private fun toAuditCreatedBy(person: Person?): AuditCreatedBy? {
-    return if (person == null) null else AuditCreatedBy()
-      .id(person.id)
-      .name(person.name)
-      .personType(person.personType)
   }
 
   override fun toPerson(person: DbPerson?): Person? {
@@ -613,7 +604,7 @@ open class ConvertUtils : Conversions {
       portfolio
         .whenCreated(toOff(p.whenCreated))
         .whenUpdated(toOff(p.whenUpdated))
-        .createdBy(toAuditCreatedBy(toPerson(p.whoCreated, p.organization, Opts.empty())))
+        .createdBy(toPerson(p.whoCreated, p.organization, Opts.empty()))
     }
     if (opts.contains(FillOpts.Groups)) {
       portfolio.groups =

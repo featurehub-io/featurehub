@@ -1,10 +1,13 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/strategy_editing_widget.dart';
-import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/fv_strategy_editor_provider.dart';
+import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
+import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/strategyeditor/strategy_editing_widget.dart';
+
+
 
 class EditValueStrategyLinkButton extends StatelessWidget {
   const EditValueStrategyLinkButton({
@@ -12,13 +15,11 @@ class EditValueStrategyLinkButton extends StatelessWidget {
     required this.editable,
     required this.fvBloc,
     required this.rolloutStrategy,
-    required this.strBloc,
   }) : super(key: key);
 
   final bool editable;
-  final PerFeatureStateTrackingBloc fvBloc;
+  final EditingFeatureValueBloc fvBloc;
   final RolloutStrategy rolloutStrategy;
-  final CustomStrategyBloc strBloc;
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +37,13 @@ class EditValueStrategyLinkButton extends StatelessWidget {
                       title: Text(editable
                           ? 'Edit split targeting rules'
                           : 'View split targeting rules'),
-                      content: BlocProvider(
+                      content: BlocProvider.builder(
                         creator: (_c, _b) =>
-                            IndividualStrategyBloc(rolloutStrategy),
-                        child: StrategyEditingWidget(
-                            bloc: strBloc, editable: editable),
+                            StrategyEditorBloc(rolloutStrategy.toEditing(), FeatureValueStrategyProvider(fvBloc)),
+                        builder: (ctx, bloc) {
+                          return StrategyEditingWidget(
+                            bloc: bloc, editable: editable);
+                        },
                       ));
                 })));
   }

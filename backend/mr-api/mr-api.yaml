@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: ManagementResourceApi
   description: This describes the API clients use for accessing features. This reflects the API from 1.6.1 onwards.
-  version: "1.1.12"
+  version: "1.2.0"
 #  CRUD for portfolios, environments, features, service account, people, and groups (edited)
 #  roles are fixed
 #  then people<->group association
@@ -126,7 +126,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Portfolio"
+              $ref: "#/components/schemas/CreatePortfolio"
       responses:
         200:
           description: "Resulting portfolio"
@@ -144,7 +144,38 @@ paths:
           description: "unable to create portfolio"
         409:
           description: "duplicate portfolio"
-
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - PortfolioService
+      description: "Update a portfolio"
+      operationId: updatePortfolioOnOrganisation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Portfolio"
+      responses:
+        200:
+          description: "Resulting portfolio"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portfolio"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "no permission to update portfolio"
+        404:
+          description: "cannot find portfolio to update"
+        409:
+          description: "duplicate portfolio name"
+        422:
+          description: "updating old portfolio"
   /mr-api/portfolio/{id}:
     parameters:
       - name: id
@@ -190,6 +221,7 @@ paths:
         404:
           description: "not found"
     put:
+      deprecated: true
       security:
         - bearerAuth: [ ]
       tags:
@@ -307,7 +339,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Application"
+              $ref: "#/components/schemas/CreateApplication"
       responses:
         200:
           description: "Resulting application"
@@ -323,6 +355,39 @@ paths:
           description: "forbidden"
         409:
           description: "duplicates"
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - ApplicationService
+      description: "Update an application"
+      operationId: updateApplicationOnPortfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Application"
+      responses:
+        200:
+          description: "Resulting portfolio"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "app not found"
+        409:
+          description: "Duplicate application"
+        422:
+          description: "Trying to save old record"
+
   /mr-api/portfolio/{id}/group:
     parameters:
       - name: id
@@ -384,7 +449,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Group"
+              $ref: "#/components/schemas/CreateGroup"
       responses:
         200:
           description: "Resulting group"
@@ -400,6 +465,75 @@ paths:
           description: "no permission"
         409:
           description: "duplicate"
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - GroupService
+      description: "Update a group"
+      operationId: updateGroup
+      parameters:
+        - name: includeMembers
+          description: "include people in each group"
+          in: query
+          schema:
+            type: boolean
+        - name: includeGroupRoles
+          description: "include environment and application roles in each group"
+          in: query
+          schema:
+            type: boolean
+        - name: updateMembers
+          description: "update members, deleting those that are not passed"
+          in: query
+          schema:
+            type: boolean
+          required: false
+        - name: updateEnvironmentGroupRoles
+          description: "update environment group roles, deleting any not passed"
+          in: query
+          schema:
+            type: boolean
+          required: false
+        - name: updateApplicationGroupRoles
+          description: "update application group roles, deleting any not passed"
+          in: query
+          schema:
+            type: boolean
+          required: false
+        - name: applicationId
+          description: "if updating the application group roles, and the application id is passed, then the changes are limited to that application"
+          in: query
+          schema:
+            type: string
+            format: uuid
+          required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Group"
+      responses:
+        200:
+          description: "Resulting group"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
+        409:
+          description: "duplicate user or duplicate group"
+        422:
+          description: "version conflict"
+
   /mr-api/person:
     parameters:
       - name: includeGroups
@@ -956,6 +1090,7 @@ paths:
         404:
           description: "no application"
     put:
+      deprecated: true
       security:
         - bearerAuth: [ ]
       tags:
@@ -1286,7 +1421,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Feature"
+              $ref: "#/components/schemas/CreateFeature"
       responses:
         200:
           description: "All features, alphabetically sorted"
@@ -1302,6 +1437,45 @@ paths:
           description: "no permission"
         409:
           description: "Duplicate feature"
+    put:
+      parameters:
+        - name: returnAllFeatures
+          in: query
+          schema:
+            default: true
+            type: boolean
+          required: false
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - FeatureService
+      description: "updates all named features in this application, returns all features by default otherwise just the feature updated"
+      operationId: updateFeatureForApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Feature"
+      responses:
+        200:
+          description: "All features, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Feature"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "not found"
+        409:
+          description: "duplicate feature"
+        422:
+          description: "other feature updated already"
   /mr-api/application/{id}/features/{key}:
     parameters:
       - name: id
@@ -1344,12 +1518,13 @@ paths:
         404:
           description: "not found"
     put:
+      deprecated: true
       security:
         - bearerAuth: [ ]
       tags:
         - FeatureService
       description: "updates all named features in this application, returns all features."
-      operationId: updateFeatureForApplication
+      operationId: updateFeatureForApplicationOld
       requestBody:
         required: true
         content:
@@ -1634,6 +1809,73 @@ paths:
           description: "Bad Request"
         401:
           description: "no permission"
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - EnvironmentService
+      description: "Create a new environment"
+      operationId: createEnvironment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEnvironment"
+      responses:
+        200:
+          description: "Resulting environment"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Environment"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "application not found"
+        409:
+          description: "duplicate environment"
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - EnvironmentService
+      parameters:
+        - name: includeDetails
+          description: "Include all environment details"
+          in: query
+          schema:
+            type: boolean
+      description: "Update an environment"
+      operationId: updateEnvironmentOnApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEnvironmentV2"
+      responses:
+        200:
+          description: "Resulting environment"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Environment"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "No environment found to update"
+        409:
+          description: "Duplicate environment"
+        422:
+          description: "Updating old environment"
+
   /mr-api/application/{id}/permissions:
     parameters:
       - name: id
@@ -1662,25 +1904,26 @@ paths:
         401:
           description: "no permission"
     post:
+      deprecated: true
       security:
         - bearerAuth: [ ]
       tags:
         - EnvironmentService
-      description: "Create a new environment"
-      operationId: createEnvironment
+      description: "Create a new environment - this is mounted at the wrong REST endpoint and is not assured to be maintained"
+      operationId: createEnvironmentOld
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Environment"
+              $ref: "#/components/schemas/CreateEnvironment"
       responses:
         200:
           description: "Resulting environment"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Environment"
+                $ref: "#/components/schemas/CreateEnvironment"
         400:
           description: "Bad Request"
         401:
@@ -1717,11 +1960,12 @@ paths:
         schema:
           type: boolean
     put:
+      deprecated: true
       security:
         - bearerAuth: [ ]
       tags:
         - Environment2Service
-      description: "Update an environment"
+      description: "Update an environment, prefer updateEnvironment on EnvironmentService"
       operationId: updateEnvironmentV2
       requestBody:
         required: true
@@ -1802,12 +2046,12 @@ paths:
         403:
           description: "forbidden"
     put:
+      deprecated: true
       security:
         - bearerAuth: [ ]
       tags:
         - EnvironmentService
-      description: "Update an environment. Please use updateEnvironment2 as that has the fields that can actually be updated"
-      deprecated: true
+      description: "Update an environment. Please use updateEnvironment"
       operationId: updateEnvironment
       requestBody:
         required: true
@@ -2100,12 +2344,13 @@ paths:
         404:
           description: "not found"
     put:
+      deprecated: true
       security:
         - bearerAuth: [ ]
       tags:
         - GroupService
       description: "Update a group"
-      operationId: updateGroup
+      operationId: updateGroupOld
       parameters:
         - name: updateMembers
           description: "update members, deleting those that are not passed"
@@ -2705,8 +2950,12 @@ components:
         token:
           type: string
     CreatePersonDetails:
+      required:
+        - personType
       properties:
         email:
+          nullable: true
+          description: "Can be null if a service account"
           type: string
           minLength: 1
           maxLength: 100
@@ -2714,10 +2963,14 @@ components:
         personType:
           $ref: "#/components/schemas/PersonType"
         name:
+          nullable: true
+          description: "Can be null if a service account"
           type: string
           minLength: 1
           maxLength: 100
         groupIds:
+          nullable: true
+          default: []
           type: array
           items:
             type: string
@@ -2741,6 +2994,7 @@ components:
         password:
           type: string
         reactivate:
+          default: false
           type: boolean
     PasswordUpdate:
       required:
@@ -2817,7 +3071,8 @@ components:
         - violation
       properties:
         id:
-          description: "The id of the attribute (if any)"
+          nullable: true
+          description: "The id of the attribute (if any). if none is provided it is a problem with the strategy itself"
           type: string
         violation:
           $ref: "#/components/schemas/RolloutStrategyViolationType"
@@ -2907,21 +3162,54 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RoleType"
+    CreateFeature:
+      description: "Only used when creating a new feature"
+      required:
+        - key
+        - name
+        - description
+        - valueType
+      properties:
+        key:
+          type: string
+          description: "Unique within this application"
+        alias:
+          nullable: true
+          type: string
+          description: "use this in code, as then people cannot guess your new features from their names"
+        link:
+          nullable: true
+          type: string
+        name:
+          type: string
+          description: "description if any"
+        valueType:
+          $ref: "#/components/schemas/FeatureValueType"
+        description:
+          type: string
+          maxLength: 300
+        metaData:
+          nullable: true
+          type: string
+          description: "Metadata that may need to be stored. Intended for ADK use. No data limit on FHOS. 10k on SaaS. (stored as CLOB)"
     Feature:
       description: "exists simply to hold the name of the feature as it exists across all environments"
       required:
         - name
       properties:
         id:
+          nullable: true
           type: string
           format: uuid
         key:
           type: string
           description: "Unique within this application"
         alias:
+          nullable: true
           type: string
           description: "use this in code, as then people cannot guess your new features from their names"
         link:
+          nullable: true
           type: string
         name:
           type: string
@@ -2933,23 +3221,27 @@ components:
           type: integer
           format: int64
         whenArchived:
+          nullable: true
           type: string
           format: date-time
         secret:
+          nullable: true
           type: boolean
           description: "should the config remain invisible to users without secret permission"
         description:
           type: string
           maxLength: 300
         metaData:
+          nullable: true
           type: string
-          description: Metadata that may need to be stored. Intended for ADK use. No data limit (stored as CLOB)
+          description: "Metadata that may need to be stored. Intended for ADK use. No data limit on FHOS. 10k on SaaS. (stored as CLOB)"
     FeatureValue:
       required:
         - key
         - locked
       properties:
         id:
+          nullable: true
           type: string
           format: uuid
         key:
@@ -2957,15 +3249,20 @@ components:
         locked:
           type: boolean
         valueString:
+          nullable: true
           description: "default value if no strategy matches. interpreted by type in parent"
           type: string
         valueNumber:
+          nullable: true
           type: number
         valueBoolean:
+          nullable: true
           type: boolean
         valueJson:
+          nullable: true
           type: string
         retired:
+          nullable: false
           type: boolean
           description: "if false or null, this feature will visible on edge. if true, it will not be passed to the client"
         rolloutStrategyInstances:
@@ -2985,11 +3282,13 @@ components:
           items:
             $ref: "#/components/schemas/RolloutStrategy"
         featureGroupStrategies:
+          nullable: true
           description: "There are strategies provided by feature groups (if any)"
           type: array
           items:
             $ref: "#/components/schemas/FeatureGroupFeatureValueStrategy"
         environmentId:
+          nullable: true
           type: string
           format: uuid
         version:
@@ -2997,11 +3296,15 @@ components:
           type: integer
           format: int64
         whoUpdated:
-          $ref: "#/components/schemas/Person"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Person"
         whenUpdated:
+          nullable: true
           type: string
           format: date-time
         whatUpdated:
+          nullable: true
           type: string
     RolloutStrategyInstance:
       properties:
@@ -3012,6 +3315,7 @@ components:
           type: string
           format: uuid
         value:
+          nullable: true
           description: "the value for this rollout strategy for this feature value"
         disabled:
           type: boolean
@@ -3044,6 +3348,20 @@ components:
       enum:
         - ASC
         - DESC
+    CreatePortfolio:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          nullable: true
+          type: string
+          maxLength: 400
     Portfolio:
       allOf:
         - $ref: "#/components/schemas/Audit"
@@ -3059,6 +3377,7 @@ components:
               minLength: 1
               maxLength: 200
             description:
+              nullable: true
               type: string
               maxLength: 400
             version:
@@ -3069,13 +3388,13 @@ components:
               type: string
               format: uuid
             groups:
-              nullable: true
               type: array
+              default: []
               items:
                 $ref: "#/components/schemas/Group"
             applications:
               type: array
-              nullable: true
+              default: []
               items:
                 $ref: "#/components/schemas/Application"
             whenArchived:
@@ -3098,12 +3417,25 @@ components:
           type: integer
         environmentCount:
           type: integer
+    CreateApplication:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 400
     Application:
       allOf:
         - $ref: "#/components/schemas/Audit"
         - type: object
           required:
             - name
+            - id
           properties:
             id:
               type: string
@@ -3112,6 +3444,7 @@ components:
               type: string
               maxLength: 100
             description:
+              nullable: true
               type: string
               maxLength: 400
             portfolioId:
@@ -3121,25 +3454,24 @@ components:
               type: integer
               format: int64
             groups:
-              nullable: true
+              default: []
               type: array
               items:
                 $ref: "#/components/schemas/Group"
             features:
               type: array
-              nullable: true
+              default: []
               items:
                 $ref: "#/components/schemas/Feature"
             environments:
               type: array
-              nullable: true
+              default: []
               items:
                 $ref: "#/components/schemas/Environment"
             whenArchived:
               nullable: true
               type: string
               format: date-time
-
     UpdatePerson:
       type: object
       required:
@@ -3172,7 +3504,9 @@ components:
       type: object
       properties:
         id:
-          $ref: "#/components/schemas/PersonId"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PersonId"
         name:
           type: string
           minLength: 1
@@ -3184,7 +3518,9 @@ components:
           maxLength: 100
           nullable: true
         personType:
-          $ref: "#/components/schemas/PersonType"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PersonType"
         other:
           nullable: true
           type: string
@@ -3192,13 +3528,14 @@ components:
           nullable: true
           type: string
         version:
+          nullable: true
           type: integer
           format: int64
         passwordRequiresReset:
           nullable: true
           type: boolean
         groups:
-          nullable: true
+          nullable: false
           default: []
           type: array
           items:
@@ -3320,12 +3657,38 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RoleType"
+    CreateEnvironment:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        priorEnvironmentId:
+          type: string
+          format: uuid
+          nullable: true
+        description:
+          type: string
+          maxLength: 400
+        environmentInfo:
+          nullable: true
+          additionalProperties:
+            type: string
+        production:
+          default: false
+          description: "is this a production environment?"
+          type: boolean
     Environment:
       allOf:
         - $ref: "#/components/schemas/Audit"
         - type: object
           required:
             - name
+            - id
           properties:
             id:
               type: string
@@ -3340,34 +3703,54 @@ components:
             priorEnvironmentId:
               type: string
               format: uuid
+              nullable: true
             version:
               type: integer
               format: int64
             description:
+              nullable: true
               type: string
               maxLength: 400
             production:
+              nullable: true
               description: "is this a production environment?"
               type: boolean
             groupRoles:
+              nullable: true
               type: array
+              default: []
               items:
                 $ref: "#/components/schemas/EnvironmentGroupRole"
             features:
+              nullable: true
               type: array
+              default: []
               items:
                 $ref: "#/components/schemas/Feature"
             environmentInfo:
               nullable: true
+              default: {}
               additionalProperties:
                 type: string
             serviceAccountPermission:
+              nullable: true
               type: array
               items:
                 $ref: "#/components/schemas/ServiceAccountPermission"
             whenArchived:
+              nullable: true
               type: string
               format: date-time
+    UpdateEnvironmentV2:
+      allOf:
+        - $ref: "#/components/schemas/UpdateEnvironment"
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+          required:
+            - id
     UpdateEnvironment:
       type: object
       required:
@@ -3404,6 +3787,7 @@ components:
         - name
       properties:
         id:
+          nullable: true
           type: string
           format: uuid
         name:
@@ -3411,27 +3795,34 @@ components:
           minLength: 1
           maxLength: 70
         portfolioId:
+          nullable: true
           type: string
           format: uuid
         description:
+          nullable: true
           type: string
           maxLength: 400
         version:
+          nullable: true
           type: integer
           format: int64
         apiKeyClientSide:
+          nullable: true
           type: string
           description: "this is a read only field, it denotes an api key where the eval is done client side"
           maxLength: 400
         apiKeyServerSide:
+          nullable: true
           type: string
           description: "this is a read only field, it denotes an api key where the eval is done server side"
           maxLength: 400
         permissions:
           type: array
+          default: []
           items:
             $ref: "#/components/schemas/ServiceAccountPermission"
         whenArchived:
+          nullable: true
           type: string
           format: date-time
     ServiceAccountPermission:
@@ -3446,10 +3837,11 @@ components:
           format: uuid
         permissions:
           type: array
+          default: []
           items:
             $ref: "#/components/schemas/RoleType"
         serviceAccount:
-          description: "The service account associated with this permission. Only filled in when coming from Environment"
+          #description: "The service account associated with this permission. Only filled in when coming from Environment"
           nullable: true
           allOf:
             - $ref: "#/components/schemas/ServiceAccount"
@@ -3495,22 +3887,40 @@ components:
           type: integer
         serviceAccountsRefreshed:
           type: integer
+    CreateGroup:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        admin:
+          nullable: true
+          description: "is this an admin group?"
+          type: boolean
+        applicationRoles:
+          nullable: true
+          type: array
+          default: []
+          items:
+            $ref: "#/components/schemas/ApplicationGroupRole"
     Group:
       allOf:
         - $ref: "#/components/schemas/Audit"
         - type: object
           required:
             - name
+            - id
           properties:
             id:
               type: string
               format: uuid
             admin:
+              nullable: true
               description: "is this an admin group?"
               type: boolean
             portfolioId:
               description: "The portfolio this group belongs to, unless it is the superuser group when it does not belong to one"
-              nullable: true
               type: string
               format: uuid
             organizationId:
@@ -3642,13 +4052,17 @@ components:
               # validator is checking this
             #          maxLength: 100
             colouring:
+              nullable: true
               description: "the colour used to display the strategy in the UI. indexed table of background/foreground combos."
               type: integer
             avatar:
+              nullable: true
               type: string
               description: "url to avatar (if any). Not sent to SDK. Preferably a unicorn."
               maxLength: 200
             attributes:
+              nullable: true
+              default: []
               type: array
               items:
                 $ref: "#/components/schemas/RolloutStrategyAttribute"

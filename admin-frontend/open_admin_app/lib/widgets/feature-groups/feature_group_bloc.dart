@@ -56,11 +56,11 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
         .getFeatureGroup(
             featureGroupsBloc.mrClient.currentAid!, featureGroupListGroup.id);
     _featureGroupStream.add(fg);
-    if (fg.strategies.isNotEmpty) {
-      _strategySource.add(fg.strategies[0]);
+    if (fg.strategies?.isNotEmpty == true) {
+      _strategySource.add(fg.strategies![0]);
     }
     _trackingUpdatesGroupFeaturesStream.add(fg.features);
-    _trackingUpdatesGroupStrategiesStream.add(fg.strategies);
+    _trackingUpdatesGroupStrategiesStream.add(fg.strategies ?? []);
   }
 
   Future<void> _getAllFeaturesPerEnvironment() async {
@@ -152,6 +152,7 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   @override
   Future<RolloutStrategyValidationResponse> validationCheck(strategy) async {
     var rs = RolloutStrategy(
+        id: strategy.id,
         name: strategy.name,
         percentage: strategy.percentage,
         attributes: strategy.attributes);

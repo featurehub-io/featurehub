@@ -287,7 +287,7 @@ class ServiceAccountSqlApi @Inject constructor(
     val envs = environmentMap(serviceAccount)
 
     // now where we actually find the environment, add it into the list
-    val perms = serviceAccount.permissions!!.mapNotNull { sap: ServiceAccountPermission ->
+    val perms = serviceAccount.permissions?.mapNotNull { sap: ServiceAccountPermission ->
       envs[sap.environmentId]?.let { e ->
         changedEnvironments.add(e)
         DbServiceAccountEnvironment.Builder()
@@ -295,7 +295,7 @@ class ServiceAccountSqlApi @Inject constructor(
           .permissions(convertPermissionsToString(sap.permissions))
           .build()
       }
-    }.toMutableSet()
+    }?.toMutableSet() ?: mutableSetOf()
 
     val sdkPerson = internalPersonApi.createSdkServiceAccountUser(serviceAccount.name, who, false)
     // now create the SA and attach the perms to form the links
@@ -321,8 +321,7 @@ class ServiceAccountSqlApi @Inject constructor(
 
   private fun environmentMap(serviceAccount: ServiceAccount?): Map<UUID, DbEnvironment> {
     // find all of the UUIDs in the environment list
-    val envIds = serviceAccount!!.permissions!!
-      .map { obj: ServiceAccountPermission -> obj.environmentId }
+    val envIds = serviceAccount?.permissions?.map { obj: ServiceAccountPermission -> obj.environmentId } ?: listOf()
 
     // now find them in the db in one swoop using "in" syntax
     return QDbEnvironment().id.`in`(envIds).whenArchived.isNull.findList().associateBy { e -> e.id }

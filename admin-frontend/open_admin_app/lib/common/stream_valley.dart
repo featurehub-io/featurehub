@@ -46,11 +46,11 @@ typedef FindApplicationsFunc = Future<List<Application>> Function(
 final _log = Logger('stream-valley');
 
 final ReleasedPortfolio nullPortfolio = ReleasedPortfolio(
-    portfolio: Portfolio(name: 'null-portfolio'),
+    portfolio: Portfolio(name: 'null-portfolio', id: '', description: '', version: -1),
     currentPortfolioOrSuperAdmin: false);
 
 final ReleasedApplication nullApplication =
-    ReleasedApplication(application: Application(name: 'null-app'));
+    ReleasedApplication(application: Application(name: 'null-app', id: '', version: -1, portfolioId: ''));
 
 class StreamValley {
   late ManagementRepositoryClientBloc mrClient;

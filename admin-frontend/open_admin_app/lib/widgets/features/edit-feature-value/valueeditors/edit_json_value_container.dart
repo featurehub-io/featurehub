@@ -5,8 +5,8 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_json_editor.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/json/json_viewer_field.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/valueeditors/json_viewer_field.dart';
+import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 
 class EditJsonValueContainer extends StatefulWidget {
   const EditJsonValueContainer({
@@ -20,7 +20,7 @@ class EditJsonValueContainer extends StatefulWidget {
   final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
-  final CustomStrategyBloc strBloc;
+  final EditingFeatureValueBloc strBloc;
 
   @override
   _EditJsonValueContainerState createState() => _EditJsonValueContainerState();
@@ -134,7 +134,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
       widget.rolloutStrategy!.value = replacementValue;
       widget.strBloc.updateStrategy();
     } else {
-      widget.strBloc.fvBloc.updateFeatureValueDefault(replacementValue);
+      widget.strBloc.updateFeatureValueDefault(replacementValue);
     }
   }
 }

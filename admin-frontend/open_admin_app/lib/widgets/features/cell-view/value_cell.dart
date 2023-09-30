@@ -7,6 +7,7 @@ import 'package:open_admin_app/widgets/features/cell-view/flag_colored_on_off_la
 import 'package:open_admin_app/widgets/features/cell-view/strategy_tooltip.dart';
 import 'package:open_admin_app/widgets/features/cell-view/value_not_set_container.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/edit_feature_value_widget.dart';
+import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:side_sheet/side_sheet.dart';
@@ -56,12 +57,10 @@ class _ValueContainer extends StatelessWidget {
       return InkWell(
         onTap: () {
           SideSheet.right(
-              body: EditFeatureValueWidget(
-                fv: fv!,
-                environmentFeatureValue: efv,
-                perApplicationFeaturesBloc: bloc,
-                feature: feature,
-              ),
+              body: BlocProvider<EditingFeatureValueBloc>.builder(
+                  creator: (_c, _b) => bloc.perFeatureStateTrackingBloc(feature, fv!, efv),
+                  builder: (ctx, efvBloc) => EditFeatureValueWidget(bloc: efvBloc,))
+              ,
               width: MediaQuery.of(context).size.width * 0.3,
               context: context);
         },
@@ -78,12 +77,10 @@ class _ValueContainer extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (fv!.retired != null && fv!.retired == true)
+                    if (fv!.retired && fv!.retired == true)
                       const RetiredIndicator(),
                     if (fv!.locked) const LockedIndicator(),
-                    if (!fv!.locked &&
-                        (fv!.retired == null ||
-                            (fv!.retired != null && fv!.retired == false)))
+                    if (!fv!.locked && !fv!.retired)
                       const SizedBox(height: 14.0)
                   ],
                 ),

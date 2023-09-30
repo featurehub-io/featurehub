@@ -6,7 +6,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_json_editor.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/json/json_viewer_field.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/valueeditors/json_viewer_field.dart';
 
 class EditFeatureGroupJsonValueContainer extends StatefulWidget {
   const EditFeatureGroupJsonValueContainer({

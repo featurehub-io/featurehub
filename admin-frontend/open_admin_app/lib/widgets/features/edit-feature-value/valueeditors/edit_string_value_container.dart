@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 
 class EditStringValueContainer extends StatefulWidget {
   const EditStringValueContainer({
@@ -14,7 +15,7 @@ class EditStringValueContainer extends StatefulWidget {
   final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
-  final CustomStrategyBloc strBloc;
+  final EditingFeatureValueBloc strBloc;
 
   @override
   _EditStringValueContainerState createState() =>
@@ -65,9 +66,9 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
             final replacementValue = value.isEmpty ? null : tec.text.trim();
             if (widget.rolloutStrategy != null) {
               widget.rolloutStrategy!.value = replacementValue;
-              // widget.strBloc.updateStrategy();
+              widget.strBloc.updateStrategy();
             } else {
-              widget.strBloc.fvBloc.updateFeatureValueDefault(replacementValue);
+              widget.strBloc.updateFeatureValueDefault(replacementValue);
             }
           },
         ));

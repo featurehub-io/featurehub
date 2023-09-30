@@ -25,15 +25,15 @@ class AdminPortfolioStepdefs {
 
     if (portfolio == null) {
       Portfolio p = await common.portfolioService.createPortfolio(
-          Portfolio(description: desc, name: portfolioName),
+          Portfolio(description: desc, name: portfolioName, id: '', version: -1),
           includeGroups: true);
 
-      assert(p.groups.length == 1);
+      assert(p.groups?.length == 1);
 
       shared.portfolio = p;
-      shared.portfolioAdminGroup = p.groups[0];
+      shared.portfolioAdminGroup = p.groups![0];
     } else {
-      shared.portfolioAdminGroup = portfolio.groups.firstWhere((g) => g.admin!);
+      shared.portfolioAdminGroup = portfolio.groups?.firstWhere((g) => g.admin);
       shared.portfolio = portfolio;
     }
   }
@@ -64,8 +64,7 @@ class AdminPortfolioStepdefs {
     if (portfolio != null) {
       await common.portfolioService.updatePortfolio(
           portfolio.id!,
-          Portfolio(name: newName, description: newDesc)
-            ..version = portfolio.version,
+          Portfolio(name: newName, description: newDesc, id: '', version: portfolio.version),
           includeGroups: true);
     }
   }
@@ -78,7 +77,7 @@ class AdminPortfolioStepdefs {
     var p = null;
     try {
       p = await common.portfolioService.createPortfolio(
-          new Portfolio(name: portfolioName, description: description));
+          new Portfolio(name: portfolioName, description: description, id: '', version: -1));
     } catch (e) {
       assert(e is ApiException && e.code == 409,
           'Expecting a conflict but did not receive one.');
@@ -101,6 +100,7 @@ class AdminPortfolioStepdefs {
       p = await common.portfolioService.updatePortfolio(
           existing!.id!,
           new Portfolio(
+              id: '',
               name: newName,
               description: 'not important',
               version: existing.version));
@@ -172,7 +172,7 @@ class AdminPortfolioStepdefs {
         DateTime.now().millisecondsSinceEpoch.toString();
 
     shared.portfolio = await common.portfolioService.createPortfolio(
-        new Portfolio(name: portfolioName, description: 'A random portfolio'),
+        new Portfolio(id: '', name: portfolioName, description: 'A random portfolio'),
         includeGroups: true);
 
     shared.portfolioAdminGroup = shared.portfolio.groups[0];

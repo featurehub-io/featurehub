@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
+
+/// This only occurs on individual feature values
+
 class DeleteStrategyIconButton extends StatelessWidget {
   const DeleteStrategyIconButton({
     Key? key,
-    required this.editable,
     required this.rolloutStrategy,
     required this.strBloc,
   }) : super(key: key);
 
-  final bool editable;
   final RolloutStrategy rolloutStrategy;
-  final CustomStrategyBloc strBloc;
+  final EditingFeatureValueBloc strBloc;
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +22,10 @@ class DeleteStrategyIconButton extends StatelessWidget {
       child: IconButton(
         splashRadius: 20,
         mouseCursor:
-            editable ? SystemMouseCursors.click : SystemMouseCursors.basic,
+            SystemMouseCursors.click,
         icon: const Icon(Icons.delete, size: 16),
         onPressed:
-            editable ? () => strBloc.removeStrategy(rolloutStrategy) : null,
+            () => strBloc.removeStrategy(rolloutStrategy),
       ),
     );
   }

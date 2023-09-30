@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
+
 class EditNumberValueContainer extends StatefulWidget {
   const EditNumberValueContainer({
     Key? key,
@@ -15,7 +17,7 @@ class EditNumberValueContainer extends StatefulWidget {
   final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
-  final CustomStrategyBloc strBloc;
+  final EditingFeatureValueBloc strBloc;
 
   @override
   _EditNumberValueContainerState createState() =>
@@ -31,7 +33,7 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
 
     final valueSource = widget.rolloutStrategy != null
         ? widget.rolloutStrategy!.value
-        : widget.strBloc.fvBloc.currentFeatureValue?.valueNumber;
+        : widget.strBloc.currentFeatureValue.valueNumber;
     tec.text = (valueSource ?? '').toString();
   }
 
@@ -56,9 +58,11 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
                 borderSide: BorderSide(
               color: Colors.grey,
             )),
-            hintText:
-                widget.canEdit ?
-                widget.unlocked ? 'Enter number value' : 'Unlock to edit' : 'No editing rights',
+            hintText: widget.canEdit
+                ? widget.unlocked
+                    ? 'Enter number value'
+                    : 'Unlock to edit'
+                : 'No editing rights',
             hintStyle: Theme.of(context).textTheme.bodySmall,
             errorText:
                 validateNumber(tec.text) != null ? 'Not a valid number' : null,
@@ -67,7 +71,6 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
             final replacementValue =
                 value.trim().isEmpty ? null : double.parse(tec.text.trim());
             _updateFeatureValue(replacementValue);
-
           },
           inputFormatters: [
             DecimalTextInputFormatter(
@@ -75,12 +78,13 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
           ],
         ));
   }
-    void _updateFeatureValue(double? replacementValue) {
-    if (widget.rolloutStrategy == null) {
-    widget.strBloc.fvBloc.updateFeatureValueDefault(replacementValue);
 
+  void _updateFeatureValue(double? replacementValue) {
+    if (widget.rolloutStrategy == null) {
+      widget.strBloc.updateFeatureValueDefault(replacementValue);
     } else {
-    widget.rolloutStrategy!.value = replacementValue;
+      widget.rolloutStrategy!.value = replacementValue;
+      widget.strBloc.updateStrategy();
     }
-    }
+  }
 }

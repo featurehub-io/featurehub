@@ -216,11 +216,11 @@ class EnvironmentSqlApi @Inject constructor(
   // - person who created is a portfolio or superuser admin
   // - env has been validated for content
   @Throws(EnvironmentApi.DuplicateEnvironmentException::class, EnvironmentApi.InvalidEnvironmentChangeException::class)
-  override fun create(env: Environment?, app: Application?, whoCreated: Person): Environment? {
+  override fun create(env: Environment, app: Application?, whoCreated: Person): Environment? {
     val application = convertUtils.byApplication(app!!.id) ?: return null
     val dbPerson = convertUtils.byPerson(whoCreated) ?: return null
 
-    if (QDbEnvironment().and().name.eq(env!!.name).whenArchived.isNull.parentApplication.eq(application)
+    if (QDbEnvironment().and().name.eq(env.name).whenArchived.isNull.parentApplication.eq(application)
         .endAnd().exists()
     ) {
       throw EnvironmentApi.DuplicateEnvironmentException()

@@ -208,7 +208,7 @@ class FeatureGroupSpec extends Base3Spec {
       strategies1[0].value == 121.67
       strategies1[0].name == 'fred'
       strategies1[0].percentage == 20
-      strategies1[0].attributes.size() == 0
+      strategies1[0].attributes == null
     when: "i remove the first feature and add a second feature"
       def updatedAddedRemoved = fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate()
         .version(updated.version)

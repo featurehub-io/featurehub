@@ -26,32 +26,38 @@ components:
         id:
           type: string
         percentage:
+          nullable: true
           description: "value between 0 and 1000000 - for four decimal places"
           type: integer
         percentageAttributes:
+          nullable: true
+          default: []
           type: array
           description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
           items:
             type: string
         value:
+          nullable: true
           description: "when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge."
         attributes:
           type: array
+          nullable: true
           items:
             $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
     BaseRolloutStrategyAttribute:
       x-package: io.featurehub.mr.model
       # although they are required,  they aren't here because we need to validate against them
-#      required:
-#        - conditional
-#        - fieldName
-#        - type
+      required:
+        - conditional
+        - fieldName
+        - type
       properties:
         conditional:
-          $ref: "#/components/schemas/RolloutStrategyAttributeConditional"
+            $ref: "#/components/schemas/RolloutStrategyAttributeConditional"
         fieldName:
           type: string
         values:
+          default: []
           description: "the value(s) associated with this rule"
           type: array
           items:

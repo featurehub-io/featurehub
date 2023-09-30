@@ -89,6 +89,38 @@ paths:
           description: "no permission"
         404:
           description: "no application"
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - FeatureGroupService
+      description: "Get feature groups for this application"
+      operationId: updateFeatureGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeatureGroupUpdate"
+      responses:
+        200:
+          description: "Feature Group"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureGroup"
+        401:
+          description: "no permission"
+        404:
+          description: "no application or feature group"
+        412:
+          description: "attempt to update an old group"
+        413:
+          description: "attempted to update order position to one already in use"
+        414:
+          description: "attempting to update feature group for archived environment"
+        415:
+          description: "attempting to update feature group that is archived"
   /mr-api/application/{appId}/feature-groups/environment/{envId}:
     parameters:
       - name: appId
@@ -173,38 +205,6 @@ paths:
           description: "no permission"
         404:
           description: "no application or feature group"
-    put:
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - FeatureGroupService
-      description: "Get feature groups for this application"
-      operationId: updateFeatureGroup
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FeatureGroupUpdate"
-      responses:
-        200:
-          description: "Feature Group"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/FeatureGroup"
-        401:
-          description: "no permission"
-        404:
-          description: "no application or feature group"
-        412:
-          description: "attempt to update an old group"
-        413:
-          description: "attempted to update order position to one already in use"
-        414:
-          description: "attempting to update feature group for archived environment"
-        415:
-          description: "attempting to update feature group that is archived"
 components:
   schemas:
     FeatureGroupFeatureValueStrategy:
@@ -267,10 +267,12 @@ components:
         environmentName:
           type: string
         features:
+          default: []
           type: array
           items:
             $ref: "#/components/schemas/FeatureGroupFeature"
         strategies:
+          nullable: true
           type: array
           description: "We only honour the first one"
           items:
@@ -297,14 +299,19 @@ components:
           description: "The strategy name"
           type: string
         percentage:
+          nullable: true
           description: "value between 0 and 1000000 - for four decimal places"
           type: integer
         percentageAttributes:
+          nullable: true
+          default: []
           type: array
           description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
           items:
             type: string
         attributes:
+          nullable: true
+          default: []
           type: array
           items:
             $ref: "#/components/schemas/RolloutStrategyAttribute"
@@ -341,7 +348,11 @@ components:
       description: "An update, everything is optional, we will only update what we update"
       required:
         - version
+        - id
       properties:
+        id:
+          type: string
+          format: uuid
         name:
           description: "allow changing the name"
           nullable: true
@@ -362,6 +373,7 @@ components:
           items:
             $ref: "#/components/schemas/FeatureGroupStrategy"
         order:
+          nullable: true
           type: integer
         version:
           type: integer

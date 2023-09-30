@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/split_edit.dart';
+import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/delete_strategy_icon_button.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/edit_value_strategy_link_button.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 
 class StrategyCardWidget extends StatelessWidget {
   final bool editable;
   final Widget editableHolderWidget;
   final RolloutStrategy? rolloutStrategy;
-  final CustomStrategyBloc strBloc;
+  final EditingFeatureValueBloc strBloc;
 
   const StrategyCardWidget(
       {Key? key,
@@ -39,14 +40,14 @@ class StrategyCardWidget extends StatelessWidget {
                 children: <Widget>[
                   Expanded(
                       flex: 3,
-                      child: rolloutStrategy == null
+                      child: rolloutStrategy?.name == null
                           ? Text('default',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall!
                                   .copyWith(color: defaultTextColor))
                           : Text(
-                              rolloutStrategy!.name,
+                              rolloutStrategy!.name!,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.labelLarge
@@ -60,11 +61,10 @@ class StrategyCardWidget extends StatelessWidget {
                             EditValueStrategyLinkButton(
                               editable: editable,
                               rolloutStrategy: rolloutStrategy!,
-                              fvBloc: strBloc.fvBloc,
-                              strBloc: strBloc,
+                              fvBloc: strBloc,
                             ),
+                            if (editable)
                             DeleteStrategyIconButton(
-                              editable: editable,
                               rolloutStrategy: rolloutStrategy!,
                               strBloc: strBloc,
                             ),

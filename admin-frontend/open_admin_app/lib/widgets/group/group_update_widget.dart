@@ -96,11 +96,8 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
   }
 
   Future<void> _callUpdateGroup(String name) {
-    final group = widget.group ?? Group(name: '');
-    group.name = name.trim();
-    return widget.group == null
-        ? widget.bloc.createGroup(group)
-        : widget.bloc.updateGroup(group);
+    final groupName = name.trim();
+    return widget.group == null ? widget.bloc.createGroup(groupName) : widget.bloc.updateGroup(widget.group!, name: groupName);
   }
 }
 

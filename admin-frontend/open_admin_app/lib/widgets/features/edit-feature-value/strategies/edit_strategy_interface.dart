@@ -1,3 +1,5 @@
+import 'package:mrapi/api.dart';
+
 abstract class EditStrategyBloc<T> {
   get feature => null;
 
@@ -7,11 +9,5 @@ abstract class EditStrategyBloc<T> {
 
   void removeStrategy(T strategy) {}
 
-  /// this goes through the strategies and ensures they have unique ids
-  /// unique based on this specific feature value
-  void ensureStrategiesAreUnique() {}
-
-  Future validationCheck(T strategy) async {}
-
-  uniqueStrategyId() {}
+  Future validationCheck(RolloutStrategy strategy) async {}
 }

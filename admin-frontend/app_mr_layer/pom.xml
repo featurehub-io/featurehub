@@ -132,6 +132,8 @@
                 <additionalProperty>
                   pubName=mrapi
                 </additionalProperty>
+                <additionalProperty>filter-deprecated-apis</additionalProperty>
+                <additionalProperty>filter-deprecated-models</additionalProperty>
               </additionalProperties>
             </configuration>
           </execution>

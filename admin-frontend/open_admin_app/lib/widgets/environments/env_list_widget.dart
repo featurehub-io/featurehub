@@ -332,9 +332,7 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                 if (_formKey.currentState!.validate()) {
                   try {
                     if (isUpdate) {
-                      await widget.bloc.updateEnv(
-                          widget.env!..production = _isProduction,
-                          _envName.text);
+                      await widget.bloc.updateEnv(widget.env!, name: _envName.text, production: _isProduction);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.addSnackbar(
                           Text('Environment ${_envName.text} updated!'));

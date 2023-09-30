@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 class EditBooleanValueDropDownWidget extends StatefulWidget {
 
   const EditBooleanValueDropDownWidget({
@@ -14,7 +15,7 @@ class EditBooleanValueDropDownWidget extends StatefulWidget {
   final bool unlocked;
   final bool editable;
   final RolloutStrategy? rolloutStrategy;
-  final CustomStrategyBloc strBloc;
+  final EditingFeatureValueBloc strBloc;
 
   @override
   _EditBooleanValueDropDownWidgetState createState() =>
@@ -70,10 +71,10 @@ class _EditBooleanValueDropDownWidgetState
 
   void _updateFeatureValue(bool replacementBoolean) {
     if (widget.rolloutStrategy == null) {
-      widget.strBloc.fvBloc.updateFeatureValueDefault(replacementBoolean);
-
+      widget.strBloc.updateFeatureValueDefault(replacementBoolean);
     } else {
       widget.rolloutStrategy!.value = replacementBoolean;
+      widget.strBloc.updateStrategy();
     }
   }
 }

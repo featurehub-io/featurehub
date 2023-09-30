@@ -2,19 +2,19 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_outline_button.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
-
-import 'attribute_strategy_widget.dart';
+import 'package:open_admin_app/widgets/strategyeditor/attribute_strategy_widget.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
+import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.dart';
 
 class RolloutStrategiesWidget extends StatelessWidget {
   const RolloutStrategiesWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<IndividualStrategyBloc>(context);
+    final bloc = BlocProvider.of<StrategyEditorBloc>(context);
 
     return Column(children: [
-      StreamBuilder<List<RolloutStrategyAttribute>>(
+      StreamBuilder<List<EditingRolloutStrategyAttribute>>(
           stream: bloc.attributes,
           builder: (context, snapshot) {
             if (snapshot.hasData && snapshot.data!.isNotEmpty) {
@@ -33,7 +33,7 @@ class RolloutStrategiesWidget extends StatelessWidget {
       const SizedBox(
         height: 16.0,
       ),
-      StreamBuilder<List<RolloutStrategyAttribute>>(
+      StreamBuilder<List<EditingRolloutStrategyAttribute>>(
           stream: bloc.attributes,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {

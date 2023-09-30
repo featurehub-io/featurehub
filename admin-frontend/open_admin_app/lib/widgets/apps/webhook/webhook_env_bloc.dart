@@ -24,6 +24,7 @@ class EnvironmentAndWebhookType {
 class WebhookEnvironmentBloc extends Bloc {
   final ManagementRepositoryClientBloc mrBloc;
   final List<Environment> environments;
+  final String appId;
 
   late BehaviorSubject<EnvironmentAndWebhookType> _environmentSource;
   Stream<EnvironmentAndWebhookType> get environmentStream => _environmentSource.stream;
@@ -31,7 +32,7 @@ class WebhookEnvironmentBloc extends Bloc {
   final _viewWebookSource = BehaviorSubject<WebhookDetail?>();
   Stream<WebhookDetail?> get viewWebhookStream => _viewWebookSource.stream;
 
-  WebhookEnvironmentBloc(this.mrBloc, this.environments) {
+  WebhookEnvironmentBloc(this.mrBloc, this.environments, this.appId) {
     if (environments.isNotEmpty) {
       _environmentSource = BehaviorSubject<EnvironmentAndWebhookType>.seeded(EnvironmentAndWebhookType(mrBloc.streamValley.firstWebhookType, environments[0]));
       // this will force the underlying set of data to update
@@ -55,7 +56,7 @@ class WebhookEnvironmentBloc extends Bloc {
   // so we need to grab it and hold onto and use that one
   set current(Environment? e) {
     if (e != null) {
-      mrBloc.environmentServiceApi.getEnvironment(e.id!, includeDetails: true)
+      mrBloc.environmentServiceApi.getEnvironment(e.id, includeDetails: true)
           .then((env) {
         _environmentSource.add(_currentSource.fromEnv(env));
       }
@@ -73,14 +74,14 @@ class WebhookEnvironmentBloc extends Bloc {
     if (viewItemId == null && current != null) {
       _viewWebookSource.add(null);
     } else {
-      mrBloc.webhookServiceApi.getWebhookDetails(current!.id!, viewItemId!)
+      mrBloc.webhookServiceApi.getWebhookDetails(current!.id, viewItemId!)
           .then((webhook) => _viewWebookSource.add(webhook));
     }
   }
 
   Future<void> updateEnvironment(Environment env) async {
-    final envData = await mrBloc.environment2ServiceApi.updateEnvironmentV2(env.id!,
-        UpdateEnvironment(version: env.version!, environmentInfo: env.environmentInfo), includeDetails: true);
+    final envData = await mrBloc.environmentServiceApi.updateEnvironmentOnApplication(appId,
+        UpdateEnvironmentV2(id: env.id, version: env.version!, environmentInfo: env.environmentInfo), includeDetails: true);
     _environmentSource.add(_currentSource.fromEnv(envData));
   }
 

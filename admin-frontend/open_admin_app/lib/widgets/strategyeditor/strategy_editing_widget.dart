@@ -1,4 +1,4 @@
-import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
@@ -7,35 +7,33 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_outline_button.dart';
 import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/rollout_strategies_widget.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/strategy_utils.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
+import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/strategyeditor/rollout_strategies_widget.dart';
+import 'package:open_admin_app/widgets/strategyeditor/strategy_utils.dart';
 
-class FeatureGroupStrategyEditingWidget extends StatefulWidget {
-  final FeatureGroupBloc bloc;
+
+class StrategyEditingWidget extends StatefulWidget {
   final bool editable;
+  final StrategyEditorBloc bloc;
 
-  const FeatureGroupStrategyEditingWidget({
+  const StrategyEditingWidget({
     Key? key,
-    required this.bloc,
     required this.editable,
+    required this.bloc,
   }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return _FeatureGroupStrategyEditingWidgetState();
+    return _StrategyEditingWidgetState();
   }
 }
 
-class _FeatureGroupStrategyEditingWidgetState
-    extends State<FeatureGroupStrategyEditingWidget> {
+class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _strategyName = TextEditingController();
   final TextEditingController _strategyPercentage = TextEditingController();
-  late IndividualStrategyBloc individualStrategyBloc;
 
-  bool isUpdate = false;
   bool isTotalPercentageError = false;
   bool showPercentageField = false;
   String? errorText;
@@ -43,14 +41,12 @@ class _FeatureGroupStrategyEditingWidgetState
   @override
   void initState() {
     super.initState();
-    individualStrategyBloc = BlocProvider.of(context);
-    if (widget.bloc.strategyStream.hasValue) {
-      _strategyName.text = widget.bloc.strategyStream.value!.name;
-      if (widget.bloc.strategyStream.value!.percentage != null) {
-        _strategyPercentage.text =
-            widget.bloc.strategyStream.value!.percentage.toString();
-      }
-      isUpdate = true;
+
+    _strategyName.text = widget.bloc.rolloutStrategy.name ?? '';
+
+    if (widget.bloc.rolloutStrategy.percentage != null) {
+      _strategyPercentage.text =
+          widget.bloc.rolloutStrategy.percentageText;
     }
   }
 
@@ -71,7 +67,7 @@ class _FeatureGroupStrategyEditingWidgetState
       child: SingleChildScrollView(
         controller: controller,
         child: SizedBox(
-          width: 800,
+          width: 1000,
           child: Form(
             key: _formKey,
             child: Column(
@@ -99,9 +95,7 @@ class _FeatureGroupStrategyEditingWidgetState
                   ),
                 ),
                 const SizedBox(height: 16),
-                BlocProvider(
-                    creator: (_c, _b) => individualStrategyBloc,
-                    child: const RolloutStrategiesWidget()),
+                const RolloutStrategiesWidget(),
                 const SizedBox(height: 16.0),
                 const FHPageDivider(),
                 const SizedBox(height: 16.0),
@@ -109,9 +103,8 @@ class _FeatureGroupStrategyEditingWidgetState
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Column(children: [
-                      if ((widget.bloc.strategyStream.hasValue &&
-                              widget.bloc.strategyStream.value!.percentage !=
-                                  null) ||
+                      if ((widget.bloc.rolloutStrategy.percentage !=
+                              null) ||
                           showPercentageField)
                         Row(
                           children: [
@@ -158,10 +151,9 @@ class _FeatureGroupStrategyEditingWidgetState
                                       onPressed: () {
                                         setState(() {
                                           _strategyPercentage.text = '';
-                                          widget.bloc.strategyStream.value!
+                                          widget.bloc.rolloutStrategy
                                               .percentage = null;
                                           showPercentageField = false;
-                                          widget.bloc.updateStrategy();
                                         });
                                       })),
                             )
@@ -188,28 +180,30 @@ class _FeatureGroupStrategyEditingWidgetState
                   ],
                 ),
                 if (isTotalPercentageError)
-                  _NaughtyDataEntryWidget(bloc: individualStrategyBloc),
+                  Text(
+                      'Your percentage total across all rollout values cannot be over 100%. Please enter different value.',
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          color: Theme.of(context).colorScheme.error)),
+                _NaughtyDataEntryWidget(bloc: widget.bloc),
                 const SizedBox(height: 8.0),
-                if (widget.bloc.featureGroupsBloc.envRoleTypeStream.value
-                    .contains(RoleType.CHANGE_VALUE))
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: ButtonBar(
-                      children: [
-                        FHFlatButtonTransparent(
-                          title: 'Cancel',
-                          keepCase: true,
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                        if (widget.editable)
-                          FHFlatButton(
-                              title: isUpdate ? 'Update' : 'Add',
-                              onPressed: () => _validationAction()),
-                      ],
-                    ),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: ButtonBar(
+                    children: [
+                      FHFlatButtonTransparent(
+                        title: 'Cancel',
+                        keepCase: true,
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                      if (widget.editable)
+                        FHFlatButton(
+                            title: widget.bloc.rolloutStrategy.saved ? 'Update' : 'Add',
+                            onPressed: () => _validationAction()),
+                    ],
                   ),
+                ),
               ],
             ),
           ),
@@ -220,29 +214,38 @@ class _FeatureGroupStrategyEditingWidgetState
 
   void _validationAction() async {
     if (_formKey.currentState!.validate()) {
-      if (isUpdate) {
-        await _processUpdate();
-      } else {
-        await _processCreate();
-      }
+      await _processUpdate();
     }
   }
 
+  /// this updates the existing strategy we were provided and checks it for validation.
+  /// if it passes we pass up the chain to update the strategy and pop the context, closing
+  /// this window.
   Future<void> _processUpdate() async {
-    final updatedStrategy = widget.bloc.strategyStream.value!.copyWith()
-      ..name = _strategyName.text
-      ..attributes = individualStrategyBloc.currentAttributes
-      ..percentage = _strategyPercentage.text.isNotEmpty
-          ? int.parse(_strategyPercentage.text)
-          : null;
-    // need to validate here
-    final validationCheck = await widget.bloc.validationCheck(updatedStrategy);
-    if (isValidationOk(validationCheck)) {
-      widget.bloc.strategyStream.add(updatedStrategy);
-      widget.bloc.updateStrategy();
-      Navigator.pop(context);
+    final updatedStrategy = widget.bloc.rolloutStrategy.copy(
+      name: _strategyName.text,
+      attributes: widget.bloc.currentAttributes)
+      ..percentageFromText = _strategyPercentage.text;
+
+    await checkForViolationsAndPop(updatedStrategy, () async => await widget.bloc.strategyEditorProvider.updateStrategy(updatedStrategy));
+  }
+
+  Future<void> checkForViolationsAndPop(EditingRolloutStrategy updatedStrategy, AsyncCallback onSuccess) async {
+    final localValidationCheck = updatedStrategy.violations();
+
+    if (localValidationCheck.isNotEmpty) {
+      widget.bloc.updateLocalViolations(localValidationCheck);
     } else {
-      layoutValidationFailures(validationCheck, updatedStrategy);
+      final validationCheck = await widget.bloc.strategyEditorProvider.validateStrategy(updatedStrategy);
+
+      if (validationCheck != null) {
+        if (isValidationOk(validationCheck)) {
+          await onSuccess();
+          Navigator.pop(context);
+        } else {
+          layoutValidationFailures(validationCheck, updatedStrategy);
+        }
+      }
     }
   }
 
@@ -252,40 +255,23 @@ class _FeatureGroupStrategyEditingWidgetState
         validationCheck.violations.isEmpty;
   }
 
-  Future<void> _processCreate() async {
-    final newStrategy = FeatureGroupStrategy(
-      name: _strategyName.text,
-      attributes: individualStrategyBloc.currentAttributes,
-    );
-
-    if (_strategyPercentage.text.isNotEmpty) {
-      newStrategy.percentage = int.parse(_strategyPercentage.text);
-    }
-
-    final validationCheck = await widget.bloc.validationCheck(newStrategy);
-
-    if (isValidationOk(validationCheck)) {
-      widget.bloc.strategyStream.add(newStrategy);
-      widget.bloc.addStrategy(newStrategy);
-      Navigator.pop(context);
-    } else {
-      layoutValidationFailures(validationCheck, newStrategy);
-    }
-  }
-
   void layoutValidationFailures(
       RolloutStrategyValidationResponse validationCheck,
-      FeatureGroupStrategy strategy) {
-    RolloutStrategy rs = RolloutStrategy(
-        name: strategy.name,
-        percentage: strategy.percentage,
-        attributes: strategy.attributes);
-    individualStrategyBloc.updateStrategyViolations(validationCheck, rs);
+      EditingRolloutStrategy strategy) {
+    widget.bloc.updateStrategyViolations(validationCheck);
+
+    setState(() {
+      if (validationCheck.violations.contains(
+          RolloutStrategyCollectionViolationType
+              .percentageAddsOver100Percent)) {
+        isTotalPercentageError = true;
+      }
+    });
   }
 }
 
 class _NaughtyDataEntryWidget extends StatelessWidget {
-  final IndividualStrategyBloc bloc;
+  final StrategyEditorBloc bloc;
 
   const _NaughtyDataEntryWidget({Key? key, required this.bloc})
       : super(key: key);

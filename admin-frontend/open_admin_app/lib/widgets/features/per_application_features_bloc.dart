@@ -5,8 +5,9 @@ import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/mr_client_aware.dart';
-import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
+import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 import 'package:rxdart/rxdart.dart' hide Notification;
+import 'package:collection/collection.dart';
 
 import 'feature_dashboard_constants.dart';
 
@@ -201,17 +202,22 @@ class PerApplicationFeaturesBloc
       String featureAlias,
       String featureLink,
       String featureDescription) async {
-    final feature = Feature(
+    final feature = CreateFeature(
         name: name,
         valueType: featureValueType,
         key: key,
         alias: featureAlias,
         link: featureLink,
         description: featureDescription);
-    await _featureServiceApi.createFeaturesForApplication(
+    List<Feature> allFeatures = await _featureServiceApi.createFeaturesForApplication(
         applicationId!, feature);
-    mrClient.streamValley.triggerRocket();
-    _publishNewFeatureSource.add(feature);
+
+    final feat = allFeatures.firstWhereOrNull((e) => e.key == key);
+
+    if (feat != null) {
+      mrClient.streamValley.triggerRocket();
+      _publishNewFeatureSource.add(feat);
+    }
   }
 
   Future<void> updateFeature(
@@ -230,8 +236,7 @@ class PerApplicationFeaturesBloc
       ..description = newFeatureDescription
       ..key = newKey;
     await _featureServiceApi.updateFeatureForApplication(
-        applicationId!, feature.key!, newFeature);
-    // addAppFeatureValuesToStream();
+        applicationId!, newFeature);
   }
 
   Future<void> getFeatureIncludingMetadata(Feature feature) async {
@@ -243,10 +248,10 @@ class PerApplicationFeaturesBloc
 
   Future<void> updateFeatureMetadata(Feature feature, String metaData) async {
     final currentFeature = await _featureServiceApi
-        .getFeatureByKey(applicationId!, feature.key!, includeMetaData: true);
+        .getFeatureByKey(applicationId!, feature.key, includeMetaData: true);
     final newFeature = currentFeature..metaData = metaData;
     await _featureServiceApi.updateFeatureForApplication(
-        applicationId!, feature.key!, newFeature);
+        applicationId!, newFeature);
     await getFeatureIncludingMetadata(newFeature);
   }
 
@@ -322,9 +327,9 @@ class PerApplicationFeaturesBloc
         candidateEnvs.map((e) => e.environmentName!).toList();
   }
 
-  PerFeatureStateTrackingBloc perFeatureStateTrackingBloc(
-      Feature feature, FeatureValue featureValue) {
-    return PerFeatureStateTrackingBloc(
-        applicationId!, feature, featureValue, this, _appFeatureValues.value!);
+  EditingFeatureValueBloc perFeatureStateTrackingBloc(
+      Feature feature, FeatureValue featureValue, EnvironmentFeatureValues environmentFeatureValue) {
+    return EditingFeatureValueBloc(
+        applicationId!, feature, featureValue, environmentFeatureValue, this, _appFeatureValues.value!);
   }
 }

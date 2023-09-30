@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/multiselect_dropdown.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/transform_strategy_conditions.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/transform_strategy_type_field.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
+import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/strategyeditor/matchers.dart';
+import 'package:open_admin_app/widgets/strategyeditor/multiselect_dropdown.dart';
+import 'package:open_admin_app/widgets/strategyeditor/transform_strategy_conditions.dart';
+import 'package:open_admin_app/widgets/strategyeditor/transform_strategy_type_field.dart';
 
 import 'attribute_value_chip_widget.dart';
-import 'matchers.dart';
 import 'string_caps_extension.dart';
 
 class EditAttributeStrategyWidget extends StatefulWidget {
-  final RolloutStrategyAttribute attribute;
+  final EditingRolloutStrategyAttribute attribute;
   final bool attributeIsFirst;
-  final IndividualStrategyBloc bloc;
+  final StrategyEditorBloc bloc;
 
   // ignore: prefer_const_constructors, prefer_const_constructors_in_immutables
   EditAttributeStrategyWidget({
@@ -24,11 +25,11 @@ class EditAttributeStrategyWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _EditAttributeStrategyWidgetState createState() =>
-      _EditAttributeStrategyWidgetState();
+  EditAttributeStrategyWidgetState createState() =>
+      EditAttributeStrategyWidgetState();
 }
 
-class _EditAttributeStrategyWidgetState
+class EditAttributeStrategyWidgetState
     extends State<EditAttributeStrategyWidget> {
   final TextEditingController _fieldName = TextEditingController();
   final TextEditingController _value = TextEditingController();
@@ -38,8 +39,6 @@ class _EditAttributeStrategyWidgetState
   RolloutStrategyFieldType? _attributeType;
 
   List<RolloutStrategyAttributeConditional> _matchers = [];
-
-  _EditAttributeStrategyWidgetState();
 
   @override
   void initState() {

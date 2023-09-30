@@ -1,45 +1,41 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/utils/utils.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
+import 'package:open_admin_app/widgets/strategyeditor/strategy_editor_provider.dart';
 import 'package:rxdart/rxdart.dart';
 
-import '../../../utils/utils.dart';
 
 // this represents a single strategy and allows us to track its state outside of the widget
-class IndividualStrategyBloc extends Bloc {
-  final RolloutStrategy rolloutStrategy;
-  final BehaviorSubject<List<RolloutStrategyAttribute>>
+class StrategyEditorBloc extends Bloc {
+  final StrategyEditorProvider strategyEditorProvider;
+  final EditingRolloutStrategy rolloutStrategy;
+  final BehaviorSubject<List<EditingRolloutStrategyAttribute>>
       _rolloutStrategyAttributeSource;
 
   final BehaviorSubject<List<RolloutStrategyViolation>> _violationSource;
   Stream<List<RolloutStrategyViolation>> get violationStream =>
       _violationSource.stream;
 
-  Stream<List<RolloutStrategyAttribute>> get attributes =>
+  Stream<List<EditingRolloutStrategyAttribute>> get attributes =>
       _rolloutStrategyAttributeSource.stream;
 
-  List<RolloutStrategyAttribute> get currentAttributes =>
+  List<EditingRolloutStrategyAttribute> get currentAttributes =>
       _rolloutStrategyAttributeSource.value;
 
-  IndividualStrategyBloc(this.rolloutStrategy)
+  StrategyEditorBloc(this.rolloutStrategy, this.strategyEditorProvider)
       : _violationSource =
             BehaviorSubject<List<RolloutStrategyViolation>>.seeded([]),
         _rolloutStrategyAttributeSource =
-            BehaviorSubject<List<RolloutStrategyAttribute>>.seeded(
-                rolloutStrategy.attributes) {
-    // ensure all attributes have a unique id
-    for (var a in rolloutStrategy.attributes) {
-      a.id ??= makeStrategyId();
-    }
-  }
-
-  bool get isUnsavedStrategy =>
-      (rolloutStrategy.id == null || rolloutStrategy.id == 'created');
+            BehaviorSubject<List<EditingRolloutStrategyAttribute>>.seeded(
+                rolloutStrategy.attributes);
 
   void createAttribute({StrategyAttributeWellKnownNames? type}) {
-    final rs = RolloutStrategyAttribute(
+    final rs = EditingRolloutStrategyAttribute(
       id: makeStrategyId(),
       fieldName: type?.name,
+      values: []
     );
 
     if (type != null) {
@@ -61,33 +57,37 @@ class IndividualStrategyBloc extends Bloc {
     addAttribute(rs);
   }
 
-  void addAttribute(RolloutStrategyAttribute rs) {
+  void addAttribute(EditingRolloutStrategyAttribute rs) {
     rs.id ??= makeStrategyId();
     rolloutStrategy.attributes = [...rolloutStrategy.attributes, rs];
     _rolloutStrategyAttributeSource.add(rolloutStrategy.attributes);
   }
 
-  void deleteAttribute(RolloutStrategyAttribute rs) {
+  void deleteAttribute(EditingRolloutStrategyAttribute rs) {
     rolloutStrategy.attributes.remove(rs);
     _rolloutStrategyAttributeSource.add(rolloutStrategy.attributes);
   }
 
-  void updateStrategy(RolloutStrategyAttribute rs) {
+  void updateStrategy(EditingRolloutStrategyAttribute rs) {
     _rolloutStrategyAttributeSource.add(rolloutStrategy.attributes);
   }
 
   @override
   void dispose() {}
 
+  void updateLocalViolations(List<RolloutStrategyViolation> violations) {
+    _violationSource.add(violations);
+  }
+
   /// updates our list of violations and updates the stream
+
   void updateStrategyViolations(
-      RolloutStrategyValidationResponse validationCheck,
-      RolloutStrategy strategy) {
+      RolloutStrategyValidationResponse validationCheck) {
     var _violations = <RolloutStrategyViolation>[];
 
     final customViolations = validationCheck.customStategyViolations
         .firstWhereOrNull(
-            (rs) => rs.strategy != null && rs.strategy!.id == strategy.id);
+            (rs) => rs.strategy.id == rolloutStrategy.id);
 
     if (customViolations != null && customViolations.violations.isNotEmpty) {
       _violations.addAll(customViolations.violations);

@@ -2,13 +2,14 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/strategy_utils.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
+import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/strategyeditor/strategy_utils.dart';
 
 import 'add_attribute_strategy_widget.dart';
 
 class AttributeStrategyWidget extends StatelessWidget {
-  final RolloutStrategyAttribute attribute;
+  final EditingRolloutStrategyAttribute attribute;
   final bool attributeIsFirst;
 
   const AttributeStrategyWidget(
@@ -17,7 +18,7 @@ class AttributeStrategyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<IndividualStrategyBloc>(context);
+    final bloc = BlocProvider.of<StrategyEditorBloc>(context);
 
     return StreamBuilder<List<RolloutStrategyViolation>>(
         stream: bloc.violationStream,

@@ -34,6 +34,11 @@ class FeaturesDataSource extends DataGridSource {
               fv: entry.value.features
                   .firstWhere((fv) => fv.key == feature.key, orElse: () {
                 return FeatureValue(
+                    retired: false,
+                    rolloutStrategies: [],
+                    rolloutStrategyInstances: [],
+                    sharedRolloutStrategies: [],
+                    version: -1,
                     key: feature.key!,
                     locked: false,
                     environmentId: entry.value.environmentId); // workaround for feature values that are not set yet and are null

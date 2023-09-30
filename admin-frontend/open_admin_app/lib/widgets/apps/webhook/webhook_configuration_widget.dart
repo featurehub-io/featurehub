@@ -187,12 +187,11 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
   }
 
   void _setup() {
-    enabled = widget
-            .environment.environmentInfo['${widget.type.envPrefix}.enabled'] ==
+    final envInfo = widget.environment.environmentInfo ?? {};
+    enabled = envInfo['${widget.type.envPrefix}.enabled'] ==
         'true';
 
-    final url =
-        widget.environment.environmentInfo['${widget.type.envPrefix}.endpoint'];
+    final url = envInfo['${widget.type.envPrefix}.endpoint'];
 
     if (url != null) {
       _url.text = url;
@@ -201,7 +200,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
     }
 
     final headerStr =
-        widget.environment.environmentInfo['${widget.type.envPrefix}.headers'];
+        envInfo['${widget.type.envPrefix}.headers'];
 
     _headers.fillFromConfig(headerStr);
   }
@@ -347,14 +346,16 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
   Future<void> _save() async {
     if (_formKey.currentState!.validate()) {
       // make sure the map is modifiable
-      widget.environment.environmentInfo = {}
-        ..addAll(widget.environment.environmentInfo);
-      widget.environment.environmentInfo['${widget.type.envPrefix}.enabled'] =
+      final envInfo = <String,String>{}
+        ..addAll(widget.environment.environmentInfo ?? {});
+      envInfo['${widget.type.envPrefix}.enabled'] =
           enabled.toString();
-      widget.environment.environmentInfo['${widget.type.envPrefix}.endpoint'] =
+      envInfo['${widget.type.envPrefix}.endpoint'] =
           _url.text;
-      widget.environment.environmentInfo['${widget.type.envPrefix}.headers'] =
+      envInfo['${widget.type.envPrefix}.headers'] =
           _headers.encodeFromHeaders();
+
+      widget.environment.environmentInfo = envInfo;
 
       widget.bloc.updateEnvironment(widget.environment).then((_) {
         widget.bloc.mrBloc.addSnackbar(Text(

@@ -85,7 +85,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     if (currentEnvId != null) {
       FeatureGroupCreate fgc = FeatureGroupCreate(
           name: name,
-          description: description,
+          description: description ?? name,
           environmentId: currentEnvId!,
           features: []);
       var currentAppId = mrClient.currentAid;
@@ -126,6 +126,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
       List<FeatureGroupUpdateFeature>? features,
       List<FeatureGroupStrategy>? strategies}) async {
     FeatureGroupUpdate fgc = FeatureGroupUpdate(
+        id: featureGroupListGroup.id,
         name: name,
         description: description,
         version: featureGroupListGroup.version,
@@ -134,7 +135,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     var currentAppId = mrClient.currentAid;
     if (currentAppId != null) {
       await featureGroupServiceApi.updateFeatureGroup(
-          currentAppId, featureGroupListGroup.id, fgc);
+          currentAppId, fgc);
       getCurrentFeatureGroups();
     }
   }

@@ -43,7 +43,7 @@ class AppsBloc implements Bloc {
   Future<void> createApplication(
       String applicationName, String appDescription) async {
     final application =
-        Application(name: applicationName, description: appDescription);
+        CreateApplication(name: applicationName, description: appDescription);
     final newApp = await _applicationServiceApi.createApplication(
         mrClient.currentPid!, application);
     await mrClient.requestOwnDetails();
@@ -60,7 +60,7 @@ class AppsBloc implements Bloc {
     application.name = updatedAppName;
     application.description = updateDescription;
     return _applicationServiceApi
-        .updateApplication(application.id!, application)
+        .updateApplicationOnPortfolio(application.portfolioId, application)
         .then((onSuccess) async {
       await _refreshApplications();
     });

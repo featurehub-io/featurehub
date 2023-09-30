@@ -240,12 +240,13 @@ class _PortfolioUpdateDialogWidgetState
             ]));
   }
 
-  Future _callUpdatePortfolio(String name, String desc) {
-    final portfolio = widget.portfolio ?? Portfolio(name: '', description: '');
-    portfolio.name = name.trim();
-    portfolio.description = desc.trim();
-    return widget.portfolio == null
-        ? widget.bloc.createPortfolio(portfolio)
-        : widget.bloc.updatePortfolio(portfolio);
+  Future _callUpdatePortfolio(String name, String desc) async {
+    await widget.portfolio == null ? widget.bloc.createPortfolio(name.trim(), desc.trim()) : widget.bloc.updatePortfolio(widget.portfolio!, name.trim(), desc.trim());
+    // final portfolio = widget.portfolio ?? Portfolio(name: '', description: '');
+    // portfolio.name = name.trim();
+    // portfolio.description = desc.trim();
+    // return widget.portfolio == null
+    //     ? widget.bloc.createPortfolio(portfolio)
+    //     : widget.bloc.updatePortfolio(portfolio);
   }
 }

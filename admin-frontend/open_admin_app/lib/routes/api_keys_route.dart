@@ -165,7 +165,7 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
             itemBuilder: (context, index) {
               final serviceAccount = serviceAccountEnvs.serviceAccounts[index];
 
-              if (!serviceAccount.permissions
+              if (!serviceAccount.permissions!
                   .every((element) => element.permissions.isEmpty)) {
                 return Card(
                   elevation: 4.0,
@@ -189,13 +189,13 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
                             child: Column(
                               children: [
                                 for (var env in serviceAccountEnvs.environments)
-                                  if (serviceAccount.permissions
+                                  if (serviceAccount.permissions!
                                       .firstWhere(
                                           (p) => p.environmentId == env.id,
                                           orElse: () =>
                                               ServiceAccountPermission(
                                                   permissions: [],
-                                                  environmentId: env.id!))
+                                                  environmentId: env.id))
                                       .permissions
                                       .isNotEmpty)
                                     Padding(
@@ -248,9 +248,9 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final account = sa.permissions.firstWhere((p) => p.environmentId == env.id,
+    final account = sa.permissions!.firstWhere((p) => p.environmentId == env.id,
         orElse: () => ServiceAccountPermission(
-              environmentId: env.id!,
+              environmentId: env.id,
               permissions: <RoleType>[],
             ));
     final perms = account.permissions;
@@ -283,10 +283,10 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final saPermission = sa.permissions.firstWhere(
+    final saPermission = sa.permissions!.firstWhere(
         (p) => p.environmentId == env.id,
         orElse: () => ServiceAccountPermission(
-            permissions: <RoleType>[], environmentId: env.id!));
+            permissions: <RoleType>[], environmentId: env.id));
     var isScreenWide = MediaQuery.of(context).size.width >= 1350;
 
     return Align(

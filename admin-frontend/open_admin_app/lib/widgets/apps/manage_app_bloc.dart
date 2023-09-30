@@ -280,7 +280,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
 
     try {
       final updatedGroup = await _groupServiceApi
-          .updateGroup(gid, group,
+          .updateGroup(portfolio!.id, group,
               includeGroupRoles: true,
               includeMembers: false,
               updateMembers: false,
@@ -360,11 +360,14 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  Future<void> updateEnv(Environment env, String name) async {
+  Future<void> updateEnv(Environment env, {String? name, String? desc, bool? production}) async {
     try {
-      env.name = name;
+      final update = UpdateEnvironmentV2(version: env.version, id: env.id);
+      if (name != null) update.name = name;
+      if (desc != null) update.description = desc;
+      if (production != null) update.production = production;
       await _environmentServiceApi
-          .updateEnvironment(env.id!, env)
+          .updateEnvironmentOnApplication(applicationId!, update)
           .then((e) => _refreshApplication());
     } catch (e, s) {
       _mrClient.dialogError(e, s);
@@ -376,8 +379,9 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         .firstWhereOrNull((env) => env.priorEnvironmentId == null);
     final env = await _environmentServiceApi.createEnvironment(
         applicationId!,
-        Environment(
+        CreateEnvironment(
           name: name,
+          description: name,
           production: _isProduction,
         ));
     if (toUpdate != null) {
