@@ -6,10 +6,19 @@ image::https://github.com/featurehub-io/featurehub/actions/workflows/codeql-anal
 image::docs/modules/ROOT/images/fh_primary_navy.png[Feature Hub,500]
 
 FeatureHub is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.
-This is the primary source code repository for FeatureHub.
+
+FeatureHub is available as a self-hosted Open Source service and as a cloud based SaaS service.
+
+This is the primary source code repository for FeatureHub Open Source.
+
+== FeatureHub SaaS - join hosted cloud service
+
+FeatureHub service is now available as a SaaS offering. You can join today https://app.featurehub.io/[here]. No credit card required and a 30-day free trial is available.
+
+Documentation specific to SaaS service can be found https://docs.featurehub.io/featurehub/latest/hosted/index.html[here]
 
 
-**Install with Docker (evaluation mode)**
+== FeatureHub Open Source - Install with Docker (evaluation mode)
 
 ```
 $ docker run -p 8085:8085 --user 999:999 -v $HOME/party:/db featurehub/party-server:latest
@@ -32,7 +41,7 @@ import {
   EdgeFeatureHubConfig,
 } from 'featurehub-javascript-client-sdk';
 
-const edgeUrl = 'http://localhost:8085/';
+const edgeUrl = 'http://localhost:8085/'; // for SaaS version, replace with edge URL provided in the API Keys page
 const apiKey = 'default/3f7a1a34-642b-4054-a82f-1ca2d14633ed/aH0l9TDXzauYq6rKQzVUPwbzmzGRqe*oPqyYqhUlVC50RxAzSmx';
 
 const fhConfig = new EdgeFeatureHubConfig(edgeUrl, apiKey);
@@ -50,11 +59,13 @@ else {
 
 == FeatureHub API
 
-https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[Headless API] is available to manage FeatureHub app if you require automation or prefer not to use Admin Console to manage features. API is provided in OpenAPI format and can be imported into Postman. Follow https://docs.featurehub.io/featurehub/latest/admin-service-accounts.html[this documentation] to generate access tokens.
+https://docs.featurehub.io/featurehub/latest/api-definition.html[Headless API] is available to manage FeatureHub app if you require automation or prefer not to use Admin Console to manage features. API is provided in https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[OpenAPI format] and can be imported into Postman or similar tools. Follow https://docs.featurehub.io/featurehub/latest/admin-service-accounts.html[this documentation] to generate access tokens.
+
+https://docs.featurehub.io/featurehub/latest/sdk-api-definition.html[SDK API] is also available. This is an API that is used to retrieve feature states in various SDKs that we provide. Open API file can be located https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/edge[here]
 
 == FeatureHub Users
 
-image:docs/images/Ruby_NewLogo_Vertical.png[link="https://www.rubyplaynet.com/", 150] image:docs/images/lovebonito_logo.png[link="https://www.lovebonito.com/",200] image:docs/images/Whistic_Logo.png[link="https://www.whistic.com/",300] image:docs/images/jio-logo.png[link="https://www.jio.com/",180] image:docs/images/flexe-logo.png[link="https://www.flexe.com/",250]
+image:docs/images/Whistic_Logo.png[link="https://www.whistic.com/",300] image:docs/images/jio-logo.png[link="https://www.jio.com/",180] image:docs/images/flexe-logo.png[link="https://www.flexe.com/",250] image:docs/images/eroad-logo.png[link="https://www.eroad.com/",250] image:docs/images/Ruby_NewLogo_Vertical.png[link="https://www.rubyplaynet.com/", 150] image:docs/images/lovebonito_logo.png[link="https://www.lovebonito.com/",200]
 
 
 == Are you also using FeatureHub?
@@ -64,7 +75,7 @@ We are looking for companies that have successfully adopted FeatureHub to help u
 
 == Why FeatureHub?
 
-=== Free
+=== Free Open Source version available
 
 * Unlimited users
 * Unlimited features
@@ -81,7 +92,7 @@ We are looking for companies that have successfully adopted FeatureHub to help u
 
 === Easy to use
 
-* Control features from an easy to use console or headless API
+* Control features from an easy-to-use console or headless API
 * View how your features are setup across each environment from the main console
 * Environments promotion order - to help you see and order features by environment
 * With "smart lock" only enable feature state updates when they are ready
@@ -89,14 +100,15 @@ We are looking for companies that have successfully adopted FeatureHub to help u
 
 === Enterprise ready
 
-* Run on your own infrastructure (self-hosted)
+* Run on your own infrastructure (self-hosted) or use SaaS option
 * External auth support - login with Google, Microsoft, GitHub, Keycloak
 * Access control levels to allow different teams/groups permissions.
 * Multiple portfolios (department) support
 
 === Best development experience
 
-* Easy to set up, Cloud Native - docker containers available
+* Easy to set up, Cloud Native - docker containers and full Kubernetes ready helm chart available
+* Use FeatureHub API
 * Easy to integrate with test automation - API to control feature states from the tests is available
 * Support for feature flags, numbers, strings and Json structure (remote configuration)
 * Easy to log events with analytics with attached feature state
@@ -120,7 +132,9 @@ Full documentation can be found at https://docs.featurehub.io[docs.featurehub.io
 If you are just curious to see how FeatureHub works and would like to play with it there is a simple way of doing it,
 please follow instructions https://docs.featurehub.io/featurehub/latest/index.html#_evaluating_featurehub[here].
 
-Once you have decided to start using FeatureHub in your team, there are also several installation options
+Alternatively, you can join FeatureHub SaaS https://app.featurehub.io/[here] and experiment while on free trial.
+
+Once you have decided to start using FeatureHub Open Source in your team, there are also several installation options
 depending on your use case, please read about these options https://docs.featurehub.io/featurehub/latest/installation.html[here].
 
 Note: We have a separate https://github.com/featurehub-io/featurehub-install[install repository] with configured docker images
