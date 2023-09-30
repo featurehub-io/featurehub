@@ -49,7 +49,7 @@ class ApplicationSqlApi @Inject constructor(
   }
 
   @Throws(ApplicationApi.DuplicateApplicationException::class)
-  override fun createApplication(portfolioId: UUID, application: Application, current: Person): Application? {
+  override fun createApplication(portfolioId: UUID, application: CreateApplication, current: Person): Application? {
     val portfolio = convertUtils.byPortfolio(portfolioId) ?: return null
     val updater = convertUtils.byPerson(current) ?: return null
 

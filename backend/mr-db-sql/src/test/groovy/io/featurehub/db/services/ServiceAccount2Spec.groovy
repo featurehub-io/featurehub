@@ -15,6 +15,7 @@ import io.featurehub.db.model.query.QDbPerson
 import io.featurehub.db.model.query.QDbServiceAccount
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
+import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Group
@@ -119,7 +120,7 @@ class ServiceAccount2Spec extends Base2Spec {
 
   def "service ACL filtering works by application"() {
     given: "i have a second application"
-      def app2 = applicationSqlApi.createApplication(portfolio1Id, new Application().name("acl-sa-test-filter").description("acl test filter"), superPerson)
+      def app2 = applicationSqlApi.createApplication(portfolio1Id, new CreateApplication().name("acl-sa-test-filter").description("acl test filter"), superPerson)
     and: "i have an environment in the second application"
       def env2 = environmentSqlApi.create(new Environment().name("acl-sa-test-filter-env").description("acl-test-filter-env"), app2, superPerson)
     and: "i create a new service account"

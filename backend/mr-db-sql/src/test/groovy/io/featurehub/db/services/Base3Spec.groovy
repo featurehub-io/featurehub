@@ -8,6 +8,7 @@ import io.featurehub.db.model.DbPerson
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.Application
+import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Organization
@@ -94,7 +95,7 @@ class Base3Spec extends Specification {
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi())
 
     portfolio = portfolioSqlApi.createPortfolio(new Portfolio().name(RandomStringUtils.randomAlphabetic(10)).description("desc1"), Opts.empty(), superPerson)
-    app1 = applicationSqlApi.createApplication(portfolio.id, new Application().name(RandomStringUtils.randomAlphabetic(10)).description("app1"), superPerson)
+    app1 = applicationSqlApi.createApplication(portfolio.id, new CreateApplication().name(RandomStringUtils.randomAlphabetic(10)).description("app1"), superPerson)
     env1 = environmentSqlApi.create(new Environment().description(RandomStringUtils.randomAlphabetic(10)).name(RandomStringUtils.randomAlphabetic(10)), app1, superPerson)
   }
 

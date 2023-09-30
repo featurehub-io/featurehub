@@ -9,6 +9,7 @@ import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.messaging.converter.FeatureMessagingParameter
 import io.featurehub.mr.model.Application
+import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureValueType
@@ -62,7 +63,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     app = applicationSqlApi.getApplication(p1.id, "app1")
 
     if (app == null) {
-      app = applicationSqlApi.createApplication(p1.id, new Application().name("app1").description("desc1"), superPerson)
+      app = applicationSqlApi.createApplication(p1.id, new CreateApplication().name("app1").description("desc1"), superPerson)
     }
     appId = app.id
 

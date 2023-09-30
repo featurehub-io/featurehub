@@ -13,6 +13,7 @@ import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
+import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Group
@@ -46,9 +47,9 @@ class GroupSpec extends BaseSpec {
 
     applicationSqlApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureApi))
     commonPortfolio = portfolioApi.createPortfolio(new Portfolio().name("acl common portfolio").organizationId(org.id), Opts.empty(), superPerson)
-    commonApplication1 = applicationSqlApi.createApplication(commonPortfolio.id, new Application().name("acl common app").description("acl common app"), superPerson)
+    commonApplication1 = applicationSqlApi.createApplication(commonPortfolio.id, new CreateApplication().name("acl common app").description("acl common app"), superPerson)
     env1App1 = environmentSqlApi.create(new Environment().name("acl common app env1"), commonApplication1, superPerson)
-    commonApplication2 = applicationSqlApi.createApplication(commonPortfolio.id, new Application().name("acl common app2").description("acl common app2"), superPerson)
+    commonApplication2 = applicationSqlApi.createApplication(commonPortfolio.id, new CreateApplication().name("acl common app2").description("acl common app2"), superPerson)
 
     portfolioAdminGroup = groupSqlApi.createGroup(commonPortfolio.id, new Group().name("admin group").admin(true), superPerson)
   }
@@ -60,7 +61,7 @@ class GroupSpec extends BaseSpec {
 
   def "group ACL filtering by application works as expected"() {
     given: "i have a second application"
-      def app2 = applicationSqlApi.createApplication(commonPortfolio.id, new Application().name("acl-test-filter").description("acl test filter"), superPerson)
+      def app2 = applicationSqlApi.createApplication(commonPortfolio.id, new CreateApplication().name("acl-test-filter").description("acl test filter"), superPerson)
     and: "i have an environment in the second application"
       def env2 = environmentSqlApi.create(new Environment().name("acl-test-filter-env").description("acl-test-filter-env"), app2, superPerson)
     and: "create a new group"

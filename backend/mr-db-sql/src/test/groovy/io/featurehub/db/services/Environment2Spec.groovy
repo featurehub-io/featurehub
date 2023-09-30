@@ -13,6 +13,7 @@ import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
+import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.EnvironmentSortOrder
@@ -53,11 +54,11 @@ class Environment2Spec extends Base2Spec {
     groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("p1-app-1-env1-portfolio-group").admin(true), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, superPerson.id.id, Opts.empty())
 
-    app1 = appApi.createApplication(portfolio1.id, new Application().name('app-1-env'), superPerson)
+    app1 = appApi.createApplication(portfolio1.id, new CreateApplication().name('app-1-env'), superPerson)
     assert app1 != null && app1.id != null
-    app2 = appApi.createApplication(portfolio2.id, new Application().name('app-2-env'), superPerson)
+    app2 = appApi.createApplication(portfolio2.id, new CreateApplication().name('app-2-env'), superPerson)
     assert app2 != null
-    appTreeEnvs = appApi.createApplication(portfolio2.id, new Application().name('app-tree-env'), superPerson)
+    appTreeEnvs = appApi.createApplication(portfolio2.id, new CreateApplication().name('app-tree-env'), superPerson)
     assert appTreeEnvs != null
     if (db.currentTransaction() != null && db.currentTransaction().active) {
       db.commitTransaction()

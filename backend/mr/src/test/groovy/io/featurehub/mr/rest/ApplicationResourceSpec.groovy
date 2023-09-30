@@ -11,6 +11,7 @@ import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.mr.api.ApplicationServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.Application
+import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.SortOrder
@@ -60,7 +61,7 @@ class ApplicationResourceSpec extends Specification {
       UUID appId = UUID.randomUUID()
       authManager.isPortfolioAdmin(pId, person, null) >> true
     and: "i have an application"
-      Application app = new Application()
+      CreateApplication app = new CreateApplication()
     when: "i attempt to create an application"
       ar.createApplication(pId, app, new ApplicationServiceDelegate.CreateApplicationHolder(), sc)
     then:

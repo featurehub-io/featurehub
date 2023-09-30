@@ -12,6 +12,7 @@ import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.ApplicationSummary
+import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Group
@@ -57,7 +58,7 @@ class ApplicationSpec extends BaseSpec {
 
   def "i should be able to create, update, and delete an application"() {
     when: "i create an application"
-      Application app =  appApi.createApplication(portfolio1.id, new Application().name("ghost").description("some desc"), superPerson)
+      Application app =  appApi.createApplication(portfolio1.id, new CreateApplication().name("ghost").description("some desc"), superPerson)
     and: "i find it"
       List<Application> found = appApi.findApplications(portfolio1.id, 'ghost', null, Opts.empty(), superPerson, true)
     and: "i get the summary"
@@ -87,8 +88,8 @@ class ApplicationSpec extends BaseSpec {
 
   def "I should be able to have two portfolios with the same application name"() {
     when: "i have and application in each portfolio with different names"
-        Application p1App =  appApi.createApplication(portfolio1.id, new Application().name("dupe-name1").description("some desc"), superPerson)
-        Application p2App =  appApi.createApplication(portfolio2.id, new Application().name("dupe-name2").description("some desc"), superPerson)
+        Application p1App =  appApi.createApplication(portfolio1.id, new CreateApplication().name("dupe-name1").description("some desc"), superPerson)
+        Application p2App =  appApi.createApplication(portfolio2.id, new CreateApplication().name("dupe-name2").description("some desc"), superPerson)
     and: "i rename the second to the same as the first"
       def app2 = appApi.updateApplication(p2App.id, p2App.name("dupe-name1"), Opts.empty())
     then:
@@ -98,8 +99,8 @@ class ApplicationSpec extends BaseSpec {
 
   def "a person who is a member of an environment can see applications in an environment"() {
     when: "i create two applications"
-      def app1 = appApi.createApplication(portfolio1.id, new Application().name("envtest-app1").description("some desc"), superPerson)
-      def app2 = appApi.createApplication(portfolio1.id, new Application().name("envtest-app2").description("some desc"), superPerson)
+      def app1 = appApi.createApplication(portfolio1.id, new CreateApplication().name("envtest-app1").description("some desc"), superPerson)
+      def app2 = appApi.createApplication(portfolio1.id, new CreateApplication().name("envtest-app2").description("some desc"), superPerson)
     and: "a load-all override can find them"
       List<Application> superuserFoundApps = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), superPerson, true)
     and: "i create a new user who has no group access"
@@ -152,16 +153,16 @@ class ApplicationSpec extends BaseSpec {
 
   def "i cannot create two applications with the same name"() {
     when: "i create two applications with the same name"
-      appApi.createApplication(portfolio1.id, new Application().name("ghost1").description("some desc"), superPerson)
-      appApi.createApplication(portfolio1.id, new Application().name("ghost1").description("some desc"), superPerson)
+      appApi.createApplication(portfolio1.id, new CreateApplication().name("ghost1").description("some desc"), superPerson)
+      appApi.createApplication(portfolio1.id, new CreateApplication().name("ghost1").description("some desc"), superPerson)
     then:
       thrown ApplicationApi.DuplicateApplicationException
   }
 
   def "i cannot update two applications to the same name"() {
     when: "i create two applications with the same name"
-      appApi.createApplication(portfolio1.id, new Application().name("ghost1").description("some desc"), superPerson)
-      def app2 = appApi.createApplication(portfolio1.id, new Application().name("ghost2").description("some desc"), superPerson)
+      appApi.createApplication(portfolio1.id, new CreateApplication().name("ghost1").description("some desc"), superPerson)
+      def app2 = appApi.createApplication(portfolio1.id, new CreateApplication().name("ghost2").description("some desc"), superPerson)
       app2.name("ghost1")
       appApi.updateApplication(app2.id, app2, Opts.empty())
     then:
@@ -170,16 +171,16 @@ class ApplicationSpec extends BaseSpec {
 
   def "i can create two applications with the same name in two different portfolios"() {
     when: "i create two applications with the same name"
-      appApi.createApplication(portfolio1.id, new Application().name("ghost2").description("some desc"), superPerson)
-      appApi.createApplication(portfolio2.id, new Application().name("ghost2").description("some desc"), superPerson)
+      appApi.createApplication(portfolio1.id, new CreateApplication().name("ghost2").description("some desc"), superPerson)
+      appApi.createApplication(portfolio2.id, new CreateApplication().name("ghost2").description("some desc"), superPerson)
     then:
       appApi.findApplications(portfolio1.id, "ghost2", null, Opts.empty(), superPerson, true)
   }
 
   def "two applications in the same group can have create/feature permissions"() {
     given: "i create two applications"
-      def app1 = appApi.createApplication(portfolio1.id, new Application().name("loicoudot 1").description("some desc"), superPerson)
-      def app2 = appApi.createApplication(portfolio1.id, new Application().name("loicoudot 2").description("some desc"), superPerson)
+      def app1 = appApi.createApplication(portfolio1.id, new CreateApplication().name("loicoudot 1").description("some desc"), superPerson)
+      def app2 = appApi.createApplication(portfolio1.id, new CreateApplication().name("loicoudot 2").description("some desc"), superPerson)
     and: "i have a new group"
       def group = groupSqlApi.createGroup(portfolio1.id, new Group().name("loicoudot"), superPerson)
     when:
@@ -207,7 +208,7 @@ class ApplicationSpec extends BaseSpec {
   def "the auto-created portfolio group has feature create/edit permissions"() {
     given: "i create an application"
       def app1 = appApi.createApplication(portfolio1.id,
-        new Application().name("irinas-perm-create1").description("perm-create"), superPerson)
+        new CreateApplication().name("irinas-perm-create1").description("perm-create"), superPerson)
     when: "i convert the portfolio group to a model"
       def group = groupSqlApi.getGroup(adminGroup.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app1.id), superPerson)
     then:
@@ -217,7 +218,7 @@ class ApplicationSpec extends BaseSpec {
 
   def "application groups can store multiple Acls"() {
     given: "i create an application"
-      def app1 = appApi.createApplication(portfolio1.id, new Application().name("perm-create1").description("perm-create"), superPerson)
+      def app1 = appApi.createApplication(portfolio1.id, new CreateApplication().name("perm-create1").description("perm-create"), superPerson)
     and: "i have a new group"
       def createdGroup = groupSqlApi.createGroup(portfolio1.id, new Group().name("perm-create-group"), superPerson)
     and: "create a new person to join the group"
@@ -302,7 +303,7 @@ class ApplicationSpec extends BaseSpec {
       def iGroup = groupSqlApi.createGroup(portfolio1.id, new Group().name("Itchy Group"), superPerson)
       iGroup = groupSqlApi.updateGroup(iGroup.id, iGroup.members([sverbyloHasReadAccess]), null, true, false, false, Opts.empty())
     when: "i create a new application"
-      def newApp = appApi.createApplication(portfolio1.id, new Application().name("app-perm-check-appl1"), superPerson)
+      def newApp = appApi.createApplication(portfolio1.id, new CreateApplication().name("app-perm-check-appl1"), superPerson)
     and: "a new environment"
       def env = environmentSqlApi.create(new Environment().name("production").production(true), newApp, superPerson)
     and: "i grant the iGroup access to it"

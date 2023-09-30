@@ -1,11 +1,6 @@
 package io.featurehub.db.api;
 
-import io.featurehub.mr.model.Application;
-import io.featurehub.mr.model.ApplicationPermissions;
-import io.featurehub.mr.model.ApplicationSummary;
-import io.featurehub.mr.model.Feature;
-import io.featurehub.mr.model.Person;
-import io.featurehub.mr.model.SortOrder;
+import io.featurehub.mr.model.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +17,7 @@ public interface ApplicationApi {
   class DuplicateFeatureException extends Exception {}
 
   @Nullable
-  Application createApplication(@NotNull UUID portfolioId, @NotNull Application application, @NotNull Person current) throws DuplicateApplicationException;
+  Application createApplication(@NotNull UUID portfolioId, @NotNull CreateApplication application, @NotNull Person current) throws DuplicateApplicationException;
 
   @NotNull
   List<Application> findApplications(@NotNull UUID portfolioId, @Nullable String filter, SortOrder order,

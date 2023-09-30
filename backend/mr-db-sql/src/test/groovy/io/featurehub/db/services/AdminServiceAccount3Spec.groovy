@@ -5,6 +5,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
+import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.UpdatePerson
@@ -19,7 +20,7 @@ class AdminServiceAccount3Spec extends Base3Spec {
   def "i can update the groups of a service account user"() {
     given: "i have a second setup portfolio"
       def portfolio2 = portfolioSqlApi.createPortfolio(new Portfolio().name(ranName()).description("desc1"), Opts.empty(), superPerson)
-      def app2 = applicationSqlApi.createApplication(portfolio.id, new Application().name(ranName()).description("app1"), superPerson)
+      def app2 = applicationSqlApi.createApplication(portfolio.id, new CreateApplication().name(ranName()).description("app1"), superPerson)
       def group2 = groupSqlApi.createGroup(portfolio2.id, new Group().name(ranName()).applicationRoles(
           [new ApplicationGroupRole().roles([ApplicationRoleType.EDIT]).applicationId(app2.id)]
       ), superPerson)

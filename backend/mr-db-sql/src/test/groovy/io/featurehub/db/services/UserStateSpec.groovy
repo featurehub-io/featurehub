@@ -7,6 +7,7 @@ import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
+import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.HiddenEnvironments
@@ -39,7 +40,7 @@ class UserStateSpec extends BaseSpec {
     groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("p1-user-spec-admin").admin(true), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, superPerson.id.id, Opts.empty())
 
-    app1 = appApi.createApplication(portfolio1.id, new Application().name('app1-user-spec'), superPerson)
+    app1 = appApi.createApplication(portfolio1.id, new CreateApplication().name('app1-user-spec'), superPerson)
     assert app1 != null && app1.id != null
 
     env1 = envApi.create(new Environment().name("dev").description("desc"), app1, superPerson)
