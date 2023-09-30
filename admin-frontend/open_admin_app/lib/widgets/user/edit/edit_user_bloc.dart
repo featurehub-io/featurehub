@@ -57,7 +57,7 @@ class EditUserBloc implements Bloc {
 
   List<String> _currentPersonGroups() {
     return selectGroupBloc.listOfAddedPortfolioGroups
-        .map((pg) => pg.group.id!)
+        .map((pg) => pg.group.id)
         .toList();
   }
 

@@ -34,7 +34,7 @@ class ServerCapabilities {
     _authServiceApi ??= AuthServiceApi(apiClient);
 
     _authServiceApi!.getLoginUrlForProvider(provider).then((value) {
-      return window.location.href = value.redirectUrl!;
+      return window.location.href = value.redirectUrl;
     }).catchError((e, s) {
       bloc.dialogError(e, s);
       return '';

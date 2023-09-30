@@ -144,7 +144,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         selectedGroup = null;
       } else {
         if (groups[0].id != _selectedGroupId) {
-          selectedGroup = groups[0].id!;
+          selectedGroup = groups[0].id;
         }
       }
     }
@@ -198,7 +198,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     if (_mrClient.userIsCurrentPortfolioAdmin) {
       try {
         final serviceAccounts = await _serviceAccountServiceApi
-            .searchServiceAccountsInPortfolio(app.portfolioId!,
+            .searchServiceAccountsInPortfolio(app.portfolioId,
                 includePermissions: true);
 
         if (!_serviceAccountsBS.isClosed) {
@@ -374,7 +374,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  Future<void> createEnv(String name, bool _isProduction) async {
+  Future<void> createEnv(String name, bool isProduction) async {
     final toUpdate = environmentsList
         .firstWhereOrNull((env) => env.priorEnvironmentId == null);
     final env = await _environmentServiceApi.createEnvironment(
@@ -382,7 +382,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         CreateEnvironment(
           name: name,
           description: name,
-          production: _isProduction,
+          production: isProduction,
         ));
     if (toUpdate != null) {
       toUpdate.priorEnvironmentId = env.id;

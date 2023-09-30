@@ -65,16 +65,16 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                       var editable =
                                           !featureValueLatest.data!.locked &&
                                               canChangeValue;
-                                      List<Widget> _widgets = [];
+                                      List<Widget> widgets = [];
                                       if (strategiesLatest.hasData) {
-                                        _widgets = strategiesLatest.data!
+                                        widgets = strategiesLatest.data!
                                             .map((RolloutStrategy strategy) {
                                           return StrategyCard(
                                               key: ValueKey(strategy),
                                               strBloc: widget.bloc,
                                               rolloutStrategy: strategy,
                                               featureValueType:
-                                                  widget.bloc.feature.valueType!);
+                                                  widget.bloc.feature.valueType);
                                         }).toList();
                                       }
                                       return Column(
@@ -84,10 +84,10 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                           StrategyCard(
                                               strBloc: widget.bloc,
                                               featureValueType:
-                                                  widget.bloc.feature.valueType!),
+                                                  widget.bloc.feature.valueType),
                                           if (strategiesLatest.hasData)
                                             buildReorderableListView(
-                                                _widgets,
+                                                widgets,
                                                 featureValueLatest,
                                                 canChangeValue,
                                                 strategiesLatest,
@@ -104,8 +104,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                               fvBloc: widget.bloc,
                                               editable: editable,
                                               retired: widget.bloc
-                                                      .currentFeatureValue!
-                                                      .retired ??
+                                                      .currentFeatureValue.retired ??
                                                   false),
                                           //this is where we need to pass retired from the actual value
                                           const SizedBox(height: 16.0),
@@ -136,7 +135,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                                   .mrClient
                                                                   .addSnackbar(Text(
                                                                       'Feature ${widget.bloc.feature.name.toUpperCase()} '
-                                                                      'in the environment ${widget.bloc.environmentFeatureValue.environmentName?.toUpperCase()} has been updated!'));
+                                                                      'in the environment ${widget.bloc.environmentFeatureValue.environmentName.toUpperCase()} has been updated!'));
                                                             } catch (e, s) {
                                                               widget
                                                                   .bloc.perApplicationFeaturesBloc
@@ -162,7 +161,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
   }
 
   ReorderableListView buildReorderableListView(
-      List<Widget> _widgets,
+      List<Widget> widgets,
       AsyncSnapshot<FeatureValue> featureValueLatest,
       bool canChangeValue,
       AsyncSnapshot<List<RolloutStrategy>> strategiesLatest,
@@ -171,12 +170,12 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
       shrinkWrap: true,
       buildDefaultDragHandles: false,
       children: <Widget>[
-        for (Widget wid in _widgets)
+        for (Widget wid in widgets)
           ReorderableDragStartListener(
               key: ValueKey(wid),
               enabled: !featureValueLatest.data!.locked && canChangeValue,
-              child: wid,
-              index: _widgets.indexOf(wid))
+              index: widgets.indexOf(wid),
+              child: wid)
       ],
       onReorder: (int oldIndex, int newIndex) {
         if (newIndex > oldIndex) {

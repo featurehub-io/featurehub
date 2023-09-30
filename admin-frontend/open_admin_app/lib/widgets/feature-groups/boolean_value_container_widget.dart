@@ -48,8 +48,7 @@ class _EditFeatureGroupBooleanValueWidgetState
           );
         }).toList(),
         value: boolFeatureValue,
-        onChanged: widget.editable && !widget.feature.locked!
-            ? (value) {
+        onChanged: widget.editable && !widget.feature.locked? (value) {
                 final replacementBoolean = (value == 'On');
                 _updateFeatureValue(replacementBoolean, widget.feature);
                 setState(() {

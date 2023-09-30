@@ -101,7 +101,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       if (bloc.mrClient.isPortfolioOrSuperAdmin(
-                              snapshot.data!.portfolioId!))
+                              snapshot.data!.portfolioId))
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: FilledButton.icon(
@@ -165,7 +165,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                                           ? 'User'
                                           : 'Service Account')),
                                   DataCell(bloc.mrClient.isPortfolioOrSuperAdmin(
-                                          snapshot.data!.portfolioId!)
+                                          snapshot.data!.portfolioId)
                                       ? Tooltip(
                                       message: "Remove from group",
                                         child: FHIconButton(

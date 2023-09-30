@@ -40,15 +40,15 @@ class _EnvListState extends State<EnvListWidget> {
                 onReorder: (int oldIndex, int newIndex) {
                   _reorderEnvironments(oldIndex, newIndex, bloc);
                 },
+                buildDefaultDragHandles: false,
                 children: <Widget>[
                   for (Environment env in _environments!)
                     _EnvWidget(
                         env: env,
                         bloc: bloc,
-                        key: Key(env.id!),
+                        key: Key(env.id),
                         index: _environments!.indexOf(env))
-                ],
-                buildDefaultDragHandles: false),
+                ]),
           );
         });
   }
@@ -60,11 +60,11 @@ class _EnvListState extends State<EnvListWidget> {
       if (env.priorEnvironmentId == null && parentId == '') {
         sortedList.insert(0, env);
         _sortEnvironments(originalList,
-            parentId: env.id!, passedSortedList: sortedList);
+            parentId: env.id, passedSortedList: sortedList);
       } else if (env.priorEnvironmentId == parentId) {
         sortedList.add(env);
         _sortEnvironments(originalList,
-            parentId: env.id!, passedSortedList: sortedList);
+            parentId: env.id, passedSortedList: sortedList);
       }
     }
     return sortedList;
@@ -72,37 +72,37 @@ class _EnvListState extends State<EnvListWidget> {
 
   void _reorderEnvironments(
       int oldIndex, int newIndex, ManageAppBloc bloc) async {
-    final _environments = this._environments!;
+    final environments = _environments!;
 
     setState(() {
       // These two lines are workarounds for ReorderableListView problems
-      if (newIndex > _environments.length) newIndex = _environments.length;
+      if (newIndex > environments.length) newIndex = environments.length;
       if (oldIndex < newIndex) newIndex--;
 
-      final item = _environments[oldIndex];
-      _environments.remove(item);
-      _environments.insert(newIndex, item);
+      final item = environments[oldIndex];
+      environments.remove(item);
+      environments.insert(newIndex, item);
 
       // shuffle the previousIds and save the polar bears
       if (newIndex > 0) {
-        _environments[newIndex].priorEnvironmentId =
-            _environments[newIndex - 1].id;
+        environments[newIndex].priorEnvironmentId =
+            environments[newIndex - 1].id;
       }
-      if (newIndex < _environments.length - 1) {
-        _environments[newIndex + 1].priorEnvironmentId = item.id;
+      if (newIndex < environments.length - 1) {
+        environments[newIndex + 1].priorEnvironmentId = item.id;
       }
-      if (oldIndex < _environments.length - 1 && oldIndex > 0) {
-        _environments[oldIndex].priorEnvironmentId =
-            _environments[oldIndex - 1].id;
+      if (oldIndex < environments.length - 1 && oldIndex > 0) {
+        environments[oldIndex].priorEnvironmentId =
+            environments[oldIndex - 1].id;
       }
-      if (newIndex < oldIndex && oldIndex < _environments.length - 1) {
-        _environments[oldIndex + 1].priorEnvironmentId =
-            _environments[oldIndex].id;
+      if (newIndex < oldIndex && oldIndex < environments.length - 1) {
+        environments[oldIndex + 1].priorEnvironmentId =
+            environments[oldIndex].id;
       }
     });
-    _environments[0].priorEnvironmentId =
+    environments[0].priorEnvironmentId =
         null; // first environment should never have a parent
-    await bloc.updateEnvs(bloc.applicationId!, _environments);
+    await bloc.updateEnvs(bloc.applicationId!, environments);
     bloc.mrClient.addSnackbar(const Text('Environment order updated!'));
   }
 
@@ -234,7 +234,7 @@ class EnvDeleteDialogWidget extends StatelessWidget {
           : null,
       thing: env.production == true ? null : "environment '${env.name}'",
       deleteSelected: () async {
-        final success = await bloc.deleteEnv(env.id!);
+        final success = await bloc.deleteEnv(env.id);
         if (success) {
           bloc.mrClient.addSnackbar(Text("Environment '${env.name}' deleted!"));
         } else {

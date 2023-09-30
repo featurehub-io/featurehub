@@ -217,10 +217,10 @@ class _ServiceAccountPermissionDetailState
                           padding: const EdgeInsets.all(8.0),
                           child: SelectableText(env.name),
                         ),
-                        getPermissionCheckbox(env.id!, RoleType.READ),
-                        getPermissionCheckbox(env.id!, RoleType.LOCK),
-                        getPermissionCheckbox(env.id!, RoleType.UNLOCK),
-                        getPermissionCheckbox(env.id!, RoleType.CHANGE_VALUE),
+                        getPermissionCheckbox(env.id, RoleType.READ),
+                        getPermissionCheckbox(env.id, RoleType.LOCK),
+                        getPermissionCheckbox(env.id, RoleType.UNLOCK),
+                        getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
                       ]));
                 }
 
@@ -349,11 +349,11 @@ class _ServiceAccountPermissionDetailState
       final sap = serviceAccount.permissions
           .firstWhere((item) => item.environmentId == environment.id,
               orElse: () => ServiceAccountPermission(
-                    environmentId: environment.id!,
+                    environmentId: environment.id,
                     permissions: <RoleType>[],
                   ));
 
-      retMap[environment.id!] = sap;
+      retMap[environment.id] = sap;
     }
 
     return retMap;

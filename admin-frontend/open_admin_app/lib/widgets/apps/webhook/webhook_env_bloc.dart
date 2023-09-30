@@ -81,7 +81,7 @@ class WebhookEnvironmentBloc extends Bloc {
 
   Future<void> updateEnvironment(Environment env) async {
     final envData = await mrBloc.environmentServiceApi.updateEnvironmentOnApplication(appId,
-        UpdateEnvironmentV2(id: env.id, version: env.version!, environmentInfo: env.environmentInfo), includeDetails: true);
+        UpdateEnvironmentV2(id: env.id, version: env.version, environmentInfo: env.environmentInfo), includeDetails: true);
     _environmentSource.add(_currentSource.fromEnv(envData));
   }
 

@@ -55,7 +55,7 @@ class FeatureGroupCard extends StatelessWidget {
                                 style: Theme.of(context).textTheme.bodyLarge),
                             const SizedBox(height: 4.0),
                             if (featureGroup.description != null)
-                              Text(featureGroup.description!,
+                              Text(featureGroup.description,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context)

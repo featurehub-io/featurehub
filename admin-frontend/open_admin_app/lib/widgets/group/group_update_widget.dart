@@ -118,7 +118,7 @@ class GroupDeleteDialogWidget extends StatelessWidget {
           'All permissions belonging to this group will be deleted \n\nThis cannot be undone!',
       deleteSelected: () async {
         try {
-          await bloc.deleteGroup(group.id!, true);
+          await bloc.deleteGroup(group.id, true);
           bloc.mrClient.addSnackbar(Text("Group '${group.name}' deleted!"));
           return true;
         } catch (e, s) {

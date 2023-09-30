@@ -3,12 +3,12 @@ import 'package:mrapi/api.dart';
 List<RolloutStrategyAttributeConditional> defineMatchers(
     RolloutStrategyFieldType? attributeType,
     StrategyAttributeWellKnownNames? wellKnown) {
-  final _equalsOnlyMatchers = <RolloutStrategyAttributeConditional>[
+  final equalsOnlyMatchers = <RolloutStrategyAttributeConditional>[
     RolloutStrategyAttributeConditional.EQUALS,
     RolloutStrategyAttributeConditional.NOT_EQUALS
   ];
 
-  final _semanticVersionMatchers = <RolloutStrategyAttributeConditional>[
+  final semanticVersionMatchers = <RolloutStrategyAttributeConditional>[
     RolloutStrategyAttributeConditional.EQUALS,
     RolloutStrategyAttributeConditional.NOT_EQUALS,
     RolloutStrategyAttributeConditional.LESS,
@@ -17,7 +17,7 @@ List<RolloutStrategyAttributeConditional> defineMatchers(
     RolloutStrategyAttributeConditional.GREATER_EQUALS
   ];
 
-  final _userkeyMatchers = <RolloutStrategyAttributeConditional>[
+  final userkeyMatchers = <RolloutStrategyAttributeConditional>[
     RolloutStrategyAttributeConditional.EQUALS,
     RolloutStrategyAttributeConditional.NOT_EQUALS,
     RolloutStrategyAttributeConditional.ENDS_WITH,
@@ -27,7 +27,7 @@ List<RolloutStrategyAttributeConditional> defineMatchers(
     RolloutStrategyAttributeConditional.INCLUDES
   ];
 
-  final _stringMatchers = <RolloutStrategyAttributeConditional>[
+  final stringMatchers = <RolloutStrategyAttributeConditional>[
     RolloutStrategyAttributeConditional.EQUALS,
     RolloutStrategyAttributeConditional.NOT_EQUALS,
     RolloutStrategyAttributeConditional.ENDS_WITH,
@@ -41,7 +41,7 @@ List<RolloutStrategyAttributeConditional> defineMatchers(
     RolloutStrategyAttributeConditional.REGEX,
   ];
 
-  final _numberMatchers = <RolloutStrategyAttributeConditional>[
+  final numberMatchers = <RolloutStrategyAttributeConditional>[
     RolloutStrategyAttributeConditional.EQUALS,
     RolloutStrategyAttributeConditional.NOT_EQUALS,
     RolloutStrategyAttributeConditional.ENDS_WITH,
@@ -54,14 +54,14 @@ List<RolloutStrategyAttributeConditional> defineMatchers(
     RolloutStrategyAttributeConditional.INCLUDES,
   ];
 
-  final _ipAddressMatchers = <RolloutStrategyAttributeConditional>[
+  final ipAddressMatchers = <RolloutStrategyAttributeConditional>[
     RolloutStrategyAttributeConditional.EQUALS,
     RolloutStrategyAttributeConditional.NOT_EQUALS,
     RolloutStrategyAttributeConditional.EXCLUDES,
     RolloutStrategyAttributeConditional.INCLUDES,
   ];
 
-  final _dateMatchers = <RolloutStrategyAttributeConditional>[
+  final dateMatchers = <RolloutStrategyAttributeConditional>[
     RolloutStrategyAttributeConditional.EQUALS,
     RolloutStrategyAttributeConditional.NOT_EQUALS,
     RolloutStrategyAttributeConditional.ENDS_WITH,
@@ -77,30 +77,30 @@ List<RolloutStrategyAttributeConditional> defineMatchers(
     if (wellKnown == StrategyAttributeWellKnownNames.country ||
         wellKnown == StrategyAttributeWellKnownNames.device ||
         wellKnown == StrategyAttributeWellKnownNames.platform) {
-      return _equalsOnlyMatchers;
+      return equalsOnlyMatchers;
     }
 
     if (wellKnown == StrategyAttributeWellKnownNames.version) {
-      return _semanticVersionMatchers;
+      return semanticVersionMatchers;
     }
 
     if (wellKnown == StrategyAttributeWellKnownNames.userkey) {
-      return _userkeyMatchers;
+      return userkeyMatchers;
     }
   } else if (attributeType == RolloutStrategyFieldType.BOOLEAN) {
-    return _equalsOnlyMatchers;
+    return equalsOnlyMatchers;
   } else if (attributeType == RolloutStrategyFieldType.STRING) {
-    return _stringMatchers;
+    return stringMatchers;
   } else if (attributeType == RolloutStrategyFieldType.DATE ||
       attributeType == RolloutStrategyFieldType.DATETIME) {
-    return _dateMatchers;
+    return dateMatchers;
   } else if (attributeType == RolloutStrategyFieldType.NUMBER) {
-    return _numberMatchers;
+    return numberMatchers;
   } else if (attributeType == RolloutStrategyFieldType.SEMANTIC_VERSION) {
-    return _semanticVersionMatchers;
+    return semanticVersionMatchers;
   } else if (attributeType == RolloutStrategyFieldType.IP_ADDRESS) {
-    return _ipAddressMatchers;
+    return ipAddressMatchers;
   }
 
-  return _equalsOnlyMatchers;
+  return equalsOnlyMatchers;
 }

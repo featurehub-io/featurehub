@@ -72,7 +72,7 @@ class WebhookDetailTable extends StatelessWidget {
   String byRowContent(int index) {
     switch (index) {
       case 0:
-        return data.whenSent?.toString() ?? '';
+        return data.whenSent.toString() ?? '';
       case 1:
         return data.deliveredDataCloudEventType ?? '';
       case 2:

@@ -13,11 +13,9 @@ extension EditingTransformFS on FeatureGroupStrategy {
   }
 }
 
-/**
- * this represents a rollout strategy attribute that we are _EDITING_ - as such, it
- * can have null for any and all of its fields. However the API version *cannot*
- * have null for any of its fields
- */
+/// this represents a rollout strategy attribute that we are _EDITING_ - as such, it
+/// can have null for any and all of its fields. However the API version *cannot*
+/// have null for any of its fields
 
 class EditingRolloutStrategyAttribute {
   RolloutStrategyAttributeConditional? conditional;
@@ -112,7 +110,7 @@ class EditingRolloutStrategy {
 
   EditingRolloutStrategy copy({String? id, int? percentage, List<String>? percentageAttributes,
     dynamic value, List<EditingRolloutStrategyAttribute>? attributes, String? name}) {
-    return EditingRolloutStrategy(id: id ?? this.id, saved: this.saved, attributes: (attributes ?? this.attributes).map((e) => e.copy()).toList(),
+    return EditingRolloutStrategy(id: id ?? this.id, saved: saved, attributes: (attributes ?? this.attributes).map((e) => e.copy()).toList(),
         percentage: percentage ?? this.percentage, percentageAttributes: percentageAttributes ?? this.percentageAttributes, name: name ?? this.name);
   }
 
@@ -123,7 +121,7 @@ class EditingRolloutStrategy {
       violations.add(RolloutStrategyViolation(violation:  RolloutStrategyViolationType.noName));
     }
 
-    attributes.forEach((rsa) { violations.addAll(rsa.violations()); });
+    for (var rsa in attributes) { violations.addAll(rsa.violations()); }
 
     return violations;
   }

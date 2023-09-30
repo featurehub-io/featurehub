@@ -91,19 +91,19 @@ class EditingFeatureValueBloc implements Bloc {
   void updateFeatureValueDefault(replacementValue) {
     switch (feature.valueType) {
       case FeatureValueType.BOOLEAN:
-        currentFeatureValue!.valueBoolean = replacementValue;
+        currentFeatureValue.valueBoolean = replacementValue;
         break;
       case FeatureValueType.STRING:
-        currentFeatureValue!.valueString = replacementValue;
+        currentFeatureValue.valueString = replacementValue;
         break;
       case FeatureValueType.NUMBER:
-        currentFeatureValue!.valueNumber = replacementValue;
+        currentFeatureValue.valueNumber = replacementValue;
         break;
       case FeatureValueType.JSON:
-        currentFeatureValue!.valueJson = replacementValue;
+        currentFeatureValue.valueJson = replacementValue;
         break;
     }
-    addFeatureValueToStream(currentFeatureValue!);
+    addFeatureValueToStream(currentFeatureValue);
   }
 
   final _currentFv = BehaviorSubject<FeatureValue>();

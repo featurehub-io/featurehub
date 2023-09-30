@@ -72,7 +72,7 @@ class _EditJsonValueContainerState
         ),
         hoverColor: Colors.black12,
         onTap: () => _viewJsonEditor(
-            context, !widget.feature.locked! && widget.editable),
+            context, !widget.feature.locked&& widget.editable),
         child: Container(
             padding: const EdgeInsets.all(4.0),
             decoration: myBoxDecoration(),
@@ -81,7 +81,7 @@ class _EditJsonValueContainerState
               child: JsonViewerField(
                   text: tec.text,
                   canEdit: widget.editable,
-                  unlocked: !widget.feature.locked!),
+                  unlocked: !widget.feature.locked),
             )),
       ),
     );

@@ -41,7 +41,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final _debouncer = Debouncer(milliseconds: 500);
+    final debouncer = Debouncer(milliseconds: 500);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -53,7 +53,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
               icon: Icon(Icons.search),
             ),
             onChanged: (val) {
-              _debouncer.run(() {
+              debouncer.run(() {
                 source.filterServerSide(val);
               });
             },
@@ -153,25 +153,25 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
 
   @override
   DataRow getRow(int index) {
-    final _personEntry = lastDetails!.rows[index];
+    final personEntry = lastDetails!.rows[index];
     final allowedLocalIdentity = bloc.mrClient.identityProviders.hasLocal;
     return DataRow.byIndex(
         index: index,
         cells: [
-          DataCell(_personEntry.person.name == "No name"
+          DataCell(personEntry.person.name == "No name"
               ? Text('Not yet registered',
                   style: Theme.of(context).textTheme.bodySmall)
               : Text(
-                  _personEntry.person.name,
+                  personEntry.person.name,
                 )),
-          DataCell(Text(_personEntry.person.whenDeactivated != null
+          DataCell(Text(personEntry.person.whenDeactivated != null
               ? "deactivated"
               : "active")),
-          DataCell(Text(_personEntry.person.email)),
-          DataCell(Text('${_personEntry.person.groupCount}')),
+          DataCell(Text(personEntry.person.email)),
+          DataCell(Text('${personEntry.person.groupCount}')),
           DataCell(Text(
-              '${_personEntry.person.whenLastAuthenticated?.toLocal() ?? ""}')),
-          if (_personEntry.person.whenDeactivated != null)
+              '${personEntry.person.whenLastAuthenticated.toLocal() ?? ""}')),
+          if (personEntry.person.whenDeactivated != null)
             DataCell(
               FHIconButton(
                 tooltip: "Activate user",
@@ -183,9 +183,9 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                     bloc.mrClient.addOverlay((BuildContext context) {
                   return FHAlertDialog(
                       title:
-                          Text("Activate user '${_personEntry.person.name}'"),
+                          Text("Activate user '${personEntry.person.name}'"),
                       content: Text(
-                          'Are you sure you want to activate user with email address ${_personEntry.person.email}?'),
+                          'Are you sure you want to activate user with email address ${personEntry.person.email}?'),
                       actions: [
                         TextButton(
                           onPressed: () {
@@ -197,10 +197,10 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                           title: 'Activate',
                           onPressed: () async {
                             try {
-                              await bloc.activatePerson(_personEntry.person);
+                              await bloc.activatePerson(personEntry.person);
                               setNextView(); // triggers reload from server with latest settings and rebuilds state
                               bloc.mrClient.addSnackbar(Text(
-                                  "User '${_personEntry.person.name}' activated!"));
+                                  "User '${personEntry.person.name}' activated!"));
                               bloc.mrClient.removeOverlay();
                             } catch (e, s) {
                               bloc.mrClient.removeOverlay();
@@ -212,16 +212,16 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                 }),
               ),
             ),
-          if (_personEntry.person.whenDeactivated == null)
+          if (personEntry.person.whenDeactivated == null)
             DataCell(Row(children: <Widget>[
               Tooltip(
-                message: _infoTooltip(_personEntry, allowedLocalIdentity),
+                message: _infoTooltip(personEntry, allowedLocalIdentity),
                 child: FHIconButton(
                   icon: Icon(Icons.info,
-                      color: _infoColour(_personEntry, allowedLocalIdentity)),
+                      color: _infoColour(personEntry, allowedLocalIdentity)),
                   onPressed: () =>
                       bloc.mrClient.addOverlay((BuildContext context) {
-                    return ListUserInfoDialog(bloc, _personEntry);
+                    return ListUserInfoDialog(bloc, personEntry);
                   }),
                 ),
               ),
@@ -230,7 +230,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                   onPressed: () => {
                         ManagementRepositoryClientBloc.router
                             .navigateTo(context, '/manage-user', params: {
-                          'id': [_personEntry.person.id]
+                          'id': [personEntry.person.id]
                         })
                       }),
               // const SizedBox(
@@ -240,20 +240,20 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                 icon: const Icon(Icons.delete),
                 onPressed: () =>
                     bloc.mrClient.addOverlay((BuildContext context) {
-                  return bloc.mrClient.person.id!.id == _personEntry.person.id
+                  return bloc.mrClient.person.id!.id == personEntry.person.id
                       ? cantDeleteYourselfDialog(bloc)
                       : FHDeleteThingWarningWidget(
-                          thing: "user '${_personEntry.person.name}'",
+                          thing: "user '${personEntry.person.name}'",
                           content:
                               'This user will be removed from all groups and deactivated in this organization.',
                           bloc: bloc.mrClient,
                           deleteSelected: () async {
                             try {
                               await bloc.deletePerson(
-                                  _personEntry.person.id, true);
+                                  personEntry.person.id, true);
                               setNextView(); // triggers reload from server with latest settings and rebuilds state
                               bloc.mrClient.addSnackbar(Text(
-                                  "User '${_personEntry.person.name}' deactivated!"));
+                                  "User '${personEntry.person.name}' deactivated!"));
                               return true;
                             } catch (e, s) {
                               await bloc.mrClient.dialogError(e, s);
@@ -266,10 +266,10 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
             ])),
         ],
         onSelectChanged: (newValue) {
-          if (_personEntry.person.whenDeactivated == null) {
+          if (personEntry.person.whenDeactivated == null) {
             ManagementRepositoryClientBloc.router
                 .navigateTo(context, '/manage-user', params: {
-              'id': [_personEntry.person.id]
+              'id': [personEntry.person.id]
             });
           } else {
             null;

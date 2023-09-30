@@ -20,7 +20,7 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
   @override
   void initState() {
     super.initState();
-    _locked = widget.fvBloc.currentFeatureValue!.locked;
+    _locked = widget.fvBloc.currentFeatureValue.locked;
   }
 
   @override

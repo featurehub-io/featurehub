@@ -233,10 +233,10 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                           padding: const EdgeInsets.all(8.0),
                           child: SelectableText(env.name),
                         ),
-                        getPermissionCheckbox(env.id!, RoleType.READ),
-                        getPermissionCheckbox(env.id!, RoleType.LOCK),
-                        getPermissionCheckbox(env.id!, RoleType.UNLOCK),
-                        getPermissionCheckbox(env.id!, RoleType.CHANGE_VALUE),
+                        getPermissionCheckbox(env.id, RoleType.READ),
+                        getPermissionCheckbox(env.id, RoleType.LOCK),
+                        getPermissionCheckbox(env.id, RoleType.UNLOCK),
+                        getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
                       ]));
                 }
 
@@ -402,7 +402,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
     if (!hasEditPermission(group, aid)) {
       final agr = ApplicationGroupRole(
           applicationId: aid,
-          groupId: group.id!,
+          groupId: group.id,
           roles: [ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE]);
       group.applicationRoles.add(agr);
     }
@@ -424,13 +424,13 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
 
       if (egr == null) {
         egr = EnvironmentGroupRole(
-            environmentId: environment.id!, groupId: group.id!, roles: []);
+            environmentId: environment.id, groupId: group.id, roles: []);
       } else {
-        egr.environmentId = environment.id!;
-        egr.groupId = group.id!;
+        egr.environmentId = environment.id;
+        egr.groupId = group.id;
       }
 
-      retMap[environment.id!] = egr;
+      retMap[environment.id] = egr;
     }
     return retMap;
   }
@@ -445,7 +445,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
        roles.addAll(adminFeatureRole.roles);
        agr.roles = roles;
      } else {
-       newGroup.applicationRoles.add(ApplicationGroupRole(applicationId: appId, groupId: newGroup.id!, roles: adminFeatureRole.roles));
+       newGroup.applicationRoles.add(ApplicationGroupRole(applicationId: appId, groupId: newGroup.id, roles: adminFeatureRole.roles));
      }
   }
 }

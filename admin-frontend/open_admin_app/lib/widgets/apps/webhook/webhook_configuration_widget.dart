@@ -119,7 +119,7 @@ class _WebhookTableDataSource extends DataGridSource {
 
   String encodeFromHeaders() => _headers
       .map((e) =>
-          Uri.encodeComponent(e.key) + "=" + Uri.encodeComponent(e.value))
+          "${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}")
       .join(",");
 
   @override
@@ -371,7 +371,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
       await widget.bloc
           .sendWebhookCheck(WebhookCheck(
               messageType: widget.type.messageType,
-              envId: widget.environment.id!,
+              envId: widget.environment.id,
               config: {
             '${widget.type.envPrefix}.enabled': 'true',
             '${widget.type.envPrefix}.url': _url.text

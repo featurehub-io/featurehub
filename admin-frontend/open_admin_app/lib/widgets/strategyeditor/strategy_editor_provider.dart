@@ -3,9 +3,7 @@ import 'package:mrapi/api.dart';
 
 import 'editing_rollout_strategy.dart';
 
-/**
- * This provides an interface to do a few things that the strategy editor cannot do within its own context.
- */
+/// This provides an interface to do a few things that the strategy editor cannot do within its own context.
 
 abstract class StrategyEditorProvider {
 

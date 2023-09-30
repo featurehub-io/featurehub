@@ -298,17 +298,17 @@ class _AppTotals extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          if (application.environments?.isNotEmpty == true)
+          if (application.environments.isNotEmpty == true)
             _NumberAndIcon(
               tooltipText: 'Environments',
-              text: application.environments!.length.toString(),
+              text: application.environments.length.toString(),
               icon: const Icon(Icons.list,
                   size: 16.0, color: Colors.deepPurpleAccent),
             ),
-          if (application.features?.isNotEmpty == true)
+          if (application.features.isNotEmpty == true)
             _NumberAndIcon(
               tooltipText: 'Feature flags',
-              text: application.features!.length.toString(),
+              text: application.features.length.toString(),
               icon: const Icon(Icons.flag, size: 16.0, color: Colors.green),
             ),
         ],

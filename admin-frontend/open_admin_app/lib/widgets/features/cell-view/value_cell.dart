@@ -58,7 +58,7 @@ class _ValueContainer extends StatelessWidget {
         onTap: () {
           SideSheet.right(
               body: BlocProvider<EditingFeatureValueBloc>.builder(
-                  creator: (_c, _b) => bloc.perFeatureStateTrackingBloc(feature, fv!, efv),
+                  creator: (c, b) => bloc.perFeatureStateTrackingBloc(feature, fv!, efv),
                   builder: (ctx, efvBloc) => EditFeatureValueWidget(bloc: efvBloc,))
               ,
               width: MediaQuery.of(context).size.width * 0.3,
@@ -265,7 +265,7 @@ class _ValueCard extends StatelessWidget {
   }
 
   String _getFeatureValue() {
-    switch (feature.valueType!) {
+    switch (feature.valueType) {
       case FeatureValueType.STRING:
         return fv.valueString ?? '';
       case FeatureValueType.NUMBER:

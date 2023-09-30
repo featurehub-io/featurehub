@@ -22,11 +22,11 @@ class FeatureStatusFeatures {
 
   FeatureStatusFeatures(this.applicationFeatureValues) {
     sortedByNameEnvironmentIds = applicationFeatureValues.environments
-        .map((e) => e.environmentId!)
+        .map((e) => e.environmentId)
         .toList();
 
     for (var e in applicationFeatureValues.environments) {
-      applicationEnvironments[e.environmentId!] = e;
+      applicationEnvironments[e.environmentId] = e;
     }
   }
 }
@@ -130,7 +130,7 @@ class PerApplicationFeaturesBloc
     if (_appFeatureValues.hasValue && _appFeatureValues.value != null) {
       envIds = _appFeatureValues.value!.environments
           .where((env) => environmentNames.contains(env.environmentName))
-          .map((e) => e.environmentId!)
+          .map((e) => e.environmentId)
           .toList();
     }
 
@@ -228,7 +228,7 @@ class PerApplicationFeaturesBloc
       String newFeatureLink,
       String newFeatureDescription) async {
     final currentFeature =
-        await _featureServiceApi.getFeatureByKey(applicationId!, feature.key!);
+        await _featureServiceApi.getFeatureByKey(applicationId!, feature.key);
     final newFeature = currentFeature
       ..name = newName
       ..alias = newFeatureAlias
@@ -242,7 +242,7 @@ class PerApplicationFeaturesBloc
   Future<void> getFeatureIncludingMetadata(Feature feature) async {
     _featureMetadataStream.add(null);
     final currentFeature = await _featureServiceApi
-        .getFeatureByKey(applicationId!, feature.key!, includeMetaData: true);
+        .getFeatureByKey(applicationId!, feature.key, includeMetaData: true);
     _featureMetadataStream.add(currentFeature);
   }
 
@@ -324,7 +324,7 @@ class PerApplicationFeaturesBloc
                 .toList();
 
     selectedEnvironmentNamesByUser =
-        candidateEnvs.map((e) => e.environmentName!).toList();
+        candidateEnvs.map((e) => e.environmentName).toList();
   }
 
   EditingFeatureValueBloc perFeatureStateTrackingBloc(

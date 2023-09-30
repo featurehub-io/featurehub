@@ -165,8 +165,7 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
             itemBuilder: (context, index) {
               final serviceAccount = serviceAccountEnvs.serviceAccounts[index];
 
-              if (!serviceAccount.permissions!
-                  .every((element) => element.permissions.isEmpty)) {
+              if (!serviceAccount.permissions.every((element) => element.permissions.isEmpty)) {
                 return Card(
                   elevation: 4.0,
                   shadowColor: Colors.transparent,
@@ -189,8 +188,7 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
                             child: Column(
                               children: [
                                 for (var env in serviceAccountEnvs.environments)
-                                  if (serviceAccount.permissions!
-                                      .firstWhere(
+                                  if (serviceAccount.permissions.firstWhere(
                                           (p) => p.environmentId == env.id,
                                           orElse: () =>
                                               ServiceAccountPermission(
@@ -248,7 +246,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final account = sa.permissions!.firstWhere((p) => p.environmentId == env.id,
+    final account = sa.permissions.firstWhere((p) => p.environmentId == env.id,
         orElse: () => ServiceAccountPermission(
               environmentId: env.id,
               permissions: <RoleType>[],
@@ -283,7 +281,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final saPermission = sa.permissions!.firstWhere(
+    final saPermission = sa.permissions.firstWhere(
         (p) => p.environmentId == env.id,
         orElse: () => ServiceAccountPermission(
             permissions: <RoleType>[], environmentId: env.id));
