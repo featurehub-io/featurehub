@@ -11,14 +11,14 @@ FeatureHub is available as a self-hosted Open Source service and as a cloud base
 
 This is the primary source code repository for FeatureHub Open Source.
 
-**FeatureHub SaaS - join hosted cloud service**
+*FeatureHub SaaS - join hosted cloud service*
 
 FeatureHub service is now available as a SaaS offering. You can join today https://app.featurehub.io/[here]. No credit card required and a 30-day free trial is available.
 
 Documentation specific to SaaS service can be found https://docs.featurehub.io/featurehub/latest/hosted/index.html[here]
 
 
-**FeatureHub Open Source - Install with Docker (evaluation mode)**
+*FeatureHub Open Source - Install with Docker (evaluation mode)*
 
 ```
 $ docker run -p 8085:8085 --user 999:999 -v $HOME/party:/db featurehub/party-server:latest
