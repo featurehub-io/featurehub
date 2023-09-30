@@ -107,7 +107,7 @@ We are looking for companies that have successfully adopted FeatureHub to help u
 
 === Best development experience
 
-* Easy to set up, Cloud Native - docker containers available
+* Easy to set up, Cloud Native - docker containers and full Kubernetes ready helm chart available
 * Use FeatureHub API
 * Easy to integrate with test automation - API to control feature states from the tests is available
 * Support for feature flags, numbers, strings and Json structure (remote configuration)
