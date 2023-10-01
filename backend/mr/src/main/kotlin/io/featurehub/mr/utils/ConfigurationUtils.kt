@@ -23,6 +23,12 @@ class ConfigurationUtils {
       ), ignoreCase = true
     )
 
+    val messagingEnabled = "true".equals(
+      getConfig(
+        "webhooks.features.enabled", "true"
+      ), ignoreCase = true
+    )
+
     val featureGroupsEnabled = "true".equals(getConfig(
       "feature-groups.enabled", "true"
     ), ignoreCase = true)

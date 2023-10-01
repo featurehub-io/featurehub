@@ -118,13 +118,10 @@ open class ConvertUtils @Inject constructor(
    * @return
    */
   private fun toWebhookEnvironmentInfo(webhookEnvInfo: Map<String,String>) : Map<String,String> {
-    val webhookEnvEncryptedKeys = encryptionService.getAllKeysEnabledForEncryption(webhookEnvInfo)
     val result = mutableMapOf<String, String>()
     webhookEnvInfo.forEach { webhookItem ->
       val key = webhookItem.key
-      if (webhookEnvEncryptedKeys.contains(key)) {
-        result[key] = "ENCRYPTED-TEXT"
-      } else if (!key.endsWith(".salt")) { // we do not need to send the salt back to the client
+      if (!key.endsWith(".encrypted") && !key.endsWith(".salt")) {
         result[key] = webhookItem.value
       }
     }
@@ -149,7 +146,12 @@ open class ConvertUtils @Inject constructor(
     if (opts!!.contains(FillOpts.Details)) {
       environment.environmentInfo(env.userEnvironmentInfo)
       if (env.webhookEnvironmentInfo != null) {
-        environment.webhookEnvironmentInfo(toWebhookEnvironmentInfo(env.webhookEnvironmentInfo))
+        if (opts.contains(FillOpts.DecryptWebhookDetails)) {
+          val decryptedWebhookInfo = encryptionService.decrypt(env.webhookEnvironmentInfo)
+          environment.webhookEnvironmentInfo(toWebhookEnvironmentInfo(decryptedWebhookInfo))
+        } else {
+          environment.webhookEnvironmentInfo(toWebhookEnvironmentInfo(env.webhookEnvironmentInfo))
+        }
       }
       environment.description(env.description)
     }

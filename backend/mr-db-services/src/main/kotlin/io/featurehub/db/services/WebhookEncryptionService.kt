@@ -1,9 +1,10 @@
 package io.featurehub.db.services
 
-import io.featurehub.db.exception.EncryptionException
+import io.featurehub.db.exception.MissingEncryptionPasswordException
 import io.featurehub.encryption.SymmetricEncrypter
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
+import jakarta.ws.rs.NotFoundException
 import java.util.*
 
 interface WebhookEncryptionService {
@@ -11,7 +12,7 @@ interface WebhookEncryptionService {
   fun encrypt(source: Map<String, String>): Map<String,String>
 
   fun getAllKeysEnabledForEncryption(source: Map<String, String>): List<String>
-  fun decrypt(encryptedContent: String): String
+  fun decrypt(source: Map<String, String>): Map<String,String>
 }
  class WebhookEncryptionServiceImpl @Inject constructor(
   private val symmetricEncrypter: SymmetricEncrypter,
@@ -19,15 +20,15 @@ interface WebhookEncryptionService {
 
 
   override fun shouldEncrypt(source: Map<String, String>): Boolean {
-    return source.filter { hasEncryptSuffixAndEnabled(it.key, it.value) }.isNotEmpty()
+    return source.filter { hasEncryptSuffixAndNotEmpty(it.key, it.value) }.isNotEmpty()
   }
 
-   fun hasEncryptSuffixAndEnabled(key: String, value: String): Boolean {
-    return key.endsWith("encrypt") && value == "true"
+   fun hasEncryptSuffixAndNotEmpty(key: String, value: String): Boolean {
+    return key.endsWith("encrypt") && value.isNotEmpty()
   }
 
    /**
-    * Retuns all the map keys that has a corresponding "key".encrypt item as "true"
+    * Returns all the map keys that are in the encrypt item
     *
     * @param source Map
     * @return List of keys in the maps whose values should be encrypted
@@ -35,53 +36,86 @@ interface WebhookEncryptionService {
 
    override fun getAllKeysEnabledForEncryption(source: Map<String, String>): List<String> {
      return source.filter {
-       hasEncryptSuffixAndEnabled(it.key, it.value)
-     }
-       .keys.map { it.replace(".encrypt", "") }
+       hasEncryptSuffixAndNotEmpty(it.key, it.value)
+     }.values.flatMap { it.trim().split(',') }.toList()
    }
 
   /**
-   * Encrypts any map items which has a corresponding "key".encrypt with value "true"
+   * Encrypts any map items which has its key in prefix.encrypt list
    *
    * @param source
    * @return Map with item values encrypted, if they need to be.
    * @throws RuntimeException if an encryption password is not set in the config item "webhooks.encryption.password"
    */
   override fun encrypt(source: Map<String, String>): Map<String, String> {
-    val password = FallbackPropertyConfig.getConfig("webhooks.encryption.password")
-      ?: throw EncryptionException("Encryption password required!")
-    val result = mutableMapOf<String, String>()
-
-    val encryptItemKeys = getAllKeysEnabledForEncryption(source)
-
-    source.forEach { webhookItem ->
-      val key = webhookItem.key
-      val value = webhookItem.value
-      // We only need to encrypt the items that have a corresponding ".encrypt" item with value true
-      if (encryptItemKeys.contains(key) ) {
-        val salt = UUID.randomUUID()
-        val encryptedText = symmetricEncrypter.encrypt(value, password, salt.toString())
-        result[key] = encryptedText
-        // we need the salt to decrypt the value so let's store it in the map
-        result["${key}.salt"] = salt.toString()
-      } else {
-        result[key] = value
-      }
+    return handleSymmetricEncryption(source) { key, value, password, result ->
+      encryptItem(key, value, password, result)
     }
-    return result.toMap()
   }
 
+   private fun handleSymmetricEncryption(
+     source: Map<String, String>,
+     callbackHandler: (key: String, value: String, password: String, result: MutableMap<String,String>) -> Unit): Map<String, String> {
 
-  /**
-   * Returns true if the given key has a corresponding "key".encrypt with value "true" in the map
+     val password = FallbackPropertyConfig.getConfig("webhooks.encryption.password")
+       ?: throw MissingEncryptionPasswordException()
+
+     // copy everything from source to result
+     val result = source.toMutableMap()
+
+     val encryptItemKeys = getAllKeysEnabledForEncryption(source)
+
+     // for each key in encrypt item keys, encrypt item and replace value, salt and encrypted
+     encryptItemKeys.forEach { encryptItemKey ->
+       val value = result[encryptItemKey]!!
+       callbackHandler(encryptItemKey, value, password, result)
+     }
+
+     return result.toMap()
+   }
+
+   private fun encryptItem(
+     key: String,
+     value: String,
+     password: String,
+     result: MutableMap<String, String>
+   ) {
+     if (value == ENCRYPTEDTEXT) {
+       // its already encrypted so just leave
+       result[key] = value
+       return
+     }
+     val salt = UUID.randomUUID().toString()
+     val encryptedText = symmetricEncrypter.encrypt(value, password, salt)
+     result["${key}.encrypted"] = encryptedText
+     result[key] = ENCRYPTEDTEXT
+     // we need the salt to decrypt the value so let's store it in the map
+     result["${key}.salt"] = salt
+   }
+
+   /**
+   * Decrypts the encrypted items in the source map
    *
    * @param key
    * @param source
    * @return
    */
-
-  override fun decrypt(encryptedContent: String): String {
-    TODO("Not yet implemented")
+  // TODO unit test this
+  override fun decrypt(source: Map<String, String>): Map<String, String> {
+     return handleSymmetricEncryption(source) { key, value, password, result ->
+       decryptItem(key, password, source, result)
+     }
   }
+
+   private fun decryptItem(key: String, password: String, source: Map<String, String> ,result: MutableMap<String, String>) {
+     val salt = source["$key.salt"] ?: throw NotFoundException("Key $key is not encrypted, salt not found!")
+     val encryptedContent = source["$key.encrypted"] ?: throw NotFoundException("Key $key is not encrypted!")
+     val decryptedText = symmetricEncrypter.decrypt(encryptedContent, password, salt)
+     result[key] = decryptedText
+   }
+
+   companion object {
+     const val ENCRYPTEDTEXT = "ENCRYPTED-TEXT"
+   }
 
 }

@@ -1,5 +1,6 @@
 package io.featurehub.db.services
 
+import com.squareup.wire.internal.redactElements
 import io.ebean.Database
 import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
@@ -98,7 +99,8 @@ class EnvironmentSqlApi @Inject constructor(
       if (opts.contains(FillOpts.Features)) {
         env = env.environmentFeatures.fetch()
       }
-      return env.findOneOrEmpty().map { e: DbEnvironment? -> convertUtils.toEnvironment(e, opts) }
+      return env.findOneOrEmpty().map { e: DbEnvironment? ->
+        convertUtils.toEnvironment(e, opts) }
         .orElse(null)
     }
     return null
@@ -180,11 +182,25 @@ class EnvironmentSqlApi @Inject constructor(
     }
 
       val webhookEnvironmentInfo = env.webhookEnvironmentInfo
+      val dbWebhookEnvironmentInfo = environment.webhookEnvironmentInfo
       if (webhookEnvironmentInfo != null) {
-        if (webhookEncryptionService.shouldEncrypt(webhookEnvironmentInfo)) {
-          environment.webhookEnvironmentInfo = webhookEncryptionService.encrypt(webhookEnvironmentInfo)
+
+
+        val updatedWebhookEnvironmentInfo = (dbWebhookEnvironmentInfo + webhookEnvironmentInfo).toMutableMap()
+        val deleted = webhookEnvironmentInfo.filter { it.key.endsWith("deleted") }
+          .map { it.key.replace(".deleted", "") }
+
+        deleted.forEach { deletedKey ->
+          updatedWebhookEnvironmentInfo.remove(deletedKey)
+          updatedWebhookEnvironmentInfo.remove("$deletedKey.deleted")
+          updatedWebhookEnvironmentInfo.remove("$deletedKey.salt")
+          updatedWebhookEnvironmentInfo.remove("$deletedKey.encrypted")
+        }
+
+        if (webhookEncryptionService.shouldEncrypt(updatedWebhookEnvironmentInfo)) {
+          environment.webhookEnvironmentInfo = webhookEncryptionService.encrypt(updatedWebhookEnvironmentInfo)
         } else {
-          environment.webhookEnvironmentInfo = webhookEnvironmentInfo.filter { !it.key.startsWith("mgmt.") }.toMap()  // prevent mgmt prefixes being used
+          environment.webhookEnvironmentInfo = updatedWebhookEnvironmentInfo.filter { !it.key.startsWith("mgmt.") }.toMap()  // prevent mgmt prefixes being used
         }
       }
 
@@ -203,16 +219,31 @@ class EnvironmentSqlApi @Inject constructor(
     return if (envs.isEmpty()) null else envs.map { it.id }
   }
 
-  override fun getDecryptedEnvironmentWebhookContent(eid: UUID): Environment {
-    TODO("Not yet implemented")
-  }
 
   override fun migrateWebhookEnvInfo() {
     log.info("Migrating webhook environment info...")
     QDbEnvironment().findList().forEach { env ->
       if (env.userEnvironmentInfo != null) {
-        env.webhookEnvironmentInfo = env.userEnvironmentInfo
-          .filter { it.key.contains("webhook.") }.toMap()
+        val webhookInfo = env.userEnvironmentInfo
+          .filter { it.key.contains("webhook.") && !it.key.contains(".headers") }
+          .toMap()
+
+        val webhookHeadersInfo = env.userEnvironmentInfo
+          .filter { it.key.contains("webhook.") && it.key.contains(".headers") }
+          .toMap()
+
+        val webhookHeadersSplitMap = mutableMapOf<String,String>()
+        webhookHeadersInfo.forEach { (key, value) ->
+          val prefix = key.substringBeforeLast(".headers")
+          val headers = value.split(",")
+          headers.forEach {
+            val keyValuePair =  it.split("=")
+            webhookHeadersSplitMap["$prefix.headers.${keyValuePair[0]}"] = keyValuePair[1]
+          }
+        }
+
+        env.webhookEnvironmentInfo = webhookInfo + webhookHeadersSplitMap.toMap()
+
         env.userEnvironmentInfo = env.userEnvironmentInfo
           .filter { !it.key.contains("webhook.") }.toMap()
 

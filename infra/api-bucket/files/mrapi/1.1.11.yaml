@@ -2247,6 +2247,14 @@ paths:
       explode: true
       schema:
         type: boolean
+    - name: decryptWebhookDetails
+      in: query
+      description: Decrypt all webhook env details
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
   /mr-api/features/{eid}:
     get:
       tags:

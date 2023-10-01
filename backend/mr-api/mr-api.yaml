@@ -1829,6 +1829,11 @@ paths:
         in: query
         schema:
           type: boolean
+      - name: decryptWebhookDetails
+        description: "Decrypt all webhook env details"
+        in: query
+        schema:
+          type: boolean
     get:
       parameters:
         - name: includeSdkUrl

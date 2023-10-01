@@ -23,4 +23,6 @@ public enum FillOpts {
   Archived, // include archived records
   Details, // full details of the current object type (e.g. if people, all details about people)
   CountGroups, // only count groups don't include them
+
+  DecryptWebhookDetails
 }

@@ -6,24 +6,23 @@ import io.featurehub.db.api.EnvironmentApi.InvalidEnvironmentChangeException
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
-import io.featurehub.db.exception.EncryptionException
+import io.featurehub.db.exception.MissingEncryptionPasswordException
 import io.featurehub.mr.api.Environment2ServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.UpdateEnvironment
 import jakarta.inject.Inject
 import jakarta.ws.rs.BadRequestException
-import jakarta.ws.rs.ClientErrorException
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.SecurityContext
-import java.lang.RuntimeException
 import java.util.*
 
 class Environment2Resource @Inject constructor(
   private val authManager: AuthManagerService,
   private val environmentApi: EnvironmentApi
 ) : Environment2ServiceDelegate {
+
   override fun updateEnvironmentV2(
     eid: UUID,
     updateEnvironment: UpdateEnvironment,
@@ -49,8 +48,10 @@ class Environment2Resource @Inject constructor(
         throw WebApplicationException(jakarta.ws.rs.core.Response.Status.CONFLICT)
       } catch (e: InvalidEnvironmentChangeException) {
         throw BadRequestException()
-      } catch (e: EncryptionException) {
-        throw BadRequestException("Encryption password is missing!")
+      } catch (e: MissingEncryptionPasswordException) {
+        //TODO openapi generator currently does not return 412, always returns 400. So the generator needs to be updated to allow throwing 412
+        // Or some other way front end can differentiate between 400 error above vs encryption password missing
+        throw WebApplicationException(412)
       }
       if (update == null) {
         throw jakarta.ws.rs.NotFoundException()
@@ -60,4 +61,5 @@ class Environment2Resource @Inject constructor(
 
     throw ForbiddenException()
   }
+
 }

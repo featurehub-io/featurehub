@@ -12,6 +12,8 @@ import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbOrganization
+import io.featurehub.encryption.SymmetricEncrypter
+import io.featurehub.encryption.SymmetricEncrypterImpl
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
@@ -63,6 +65,8 @@ class FeatureSpec extends Base2Spec {
   RolloutStrategyValidator rsv
   FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
   CacheSourceFeatureGroupApi mockCacheSourceFeatureGroupApi
+  WebhookEncryptionService webhookEncryptionService
+  SymmetricEncrypter symmetricEncyrpter
 
   def setup() {
     db.commitTransaction()
@@ -89,7 +93,9 @@ class FeatureSpec extends Base2Spec {
     db.save(app2)
     app2Id = app2.id
 
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
+    symmetricEncyrpter = new SymmetricEncrypterImpl()
+    webhookEncryptionService = new WebhookEncryptionServiceImpl(symmetricEncyrpter)
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, webhookEncryptionService)
     envIdApp1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("feature-app-1-env-1"), appId, superPerson).id
 
     def averageJoe = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) + "averagejoe-fvs@featurehub.io").name("Average Joe").build()

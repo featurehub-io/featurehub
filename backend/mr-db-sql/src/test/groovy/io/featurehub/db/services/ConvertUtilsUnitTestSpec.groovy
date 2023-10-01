@@ -19,10 +19,13 @@ class ConvertUtilsUnitTestSpec extends Specification{
   def "should convert to Environment without encrypted value in webhookEnvironmentInfo when encrypt option is true"() {
     given:
     def webhookEnvInfo = [
-      "webhook.messaging.url":"http://someurl.com/webhook",
-      "webhook.messaging.url.encrypt": "true",
-      "webhook.messaging.header.Authorization":"Token",
-      "webhook.messaging.header.encrypt": "true"
+      "webhook.messaging.url":"ENCRYPTED-TEXT",
+      "webhook.messaging.url.encrypted": "ENCODED-ENCRYPTED-TEXT",
+      "webhook.messaging.url.salt": "salt",
+      "webhook.messaging.encrypt": ["webhook.messaging.url,webhook.messaging.header.Authorization"],
+      "webhook.messaging.header.Authorization":"ENCRYPTED-TEXT",
+      "webhook.messaging.header.Authorization.encrypted":"ENCODED-ENCRYPTED-TEXT",
+      "webhook.messaging.header.Authorization.salt":"salt",
     ]
     def envName = RandomStringUtils.randomAlphabetic(5)
     def parentApplication = new DbApplication()
@@ -37,33 +40,12 @@ class ConvertUtilsUnitTestSpec extends Specification{
     def actual = convertUtils.toEnvironment(dbEnvironment, opts, null)
     then:
     actual != null
-    actual.webhookEnvironmentInfo.containsKey("webhook.messaging.url")
-    actual.webhookEnvironmentInfo["webhook.messaging.url"] == "ENCRYPTED-TEXT"
-    actual.webhookEnvironmentInfo.containsKey("webhook.messaging.header.Authorization")
-    actual.webhookEnvironmentInfo["webhook.messaging.header.Authorization"] == "ENCRYPTED-TEXT"
-
-  }
-
-  def "should convert to Environment with actual url in webhookEnvironmentInfo when encrypt is not enabled"() {
-    given:
-    def webhookEnvInfo = [
-      "webhook.messaging.url":"http://someurl.com/webhook",
-      "webhook.messaging.url.encrypt": "false"
+    def actualWebhookInfo = [
+      "webhook.messaging.url":"ENCRYPTED-TEXT",
+      "webhook.messaging.encrypt": ["webhook.messaging.url,webhook.messaging.header.Authorization"],
+      "webhook.messaging.header.Authorization":"ENCRYPTED-TEXT",
     ]
-    def envName = RandomStringUtils.randomAlphabetic(5)
-    def parentApplication = new DbApplication()
-    DbEnvironment dbEnvironment = new DbEnvironment.Builder()
-      .name(envName)
-      .parentApplication(parentApplication)
-      .webhookEnvironmentInfo(webhookEnvInfo)
-      .build()
-    webhookEncryptionService.getAllKeysEnabledForEncryption(webhookEnvInfo) >> []
-    def opts = new Opts(Set.of(FillOpts.Details))
-    when:
-    def actual = convertUtils.toEnvironment(dbEnvironment, opts, null)
-    then:
-    actual != null
-    actual.webhookEnvironmentInfo.containsKey("webhook.messaging.url")
-    actual.webhookEnvironmentInfo["webhook.messaging.url"] == "http://someurl.com/webhook"
+    actual.webhookEnvironmentInfo == actualWebhookInfo
   }
+
 }

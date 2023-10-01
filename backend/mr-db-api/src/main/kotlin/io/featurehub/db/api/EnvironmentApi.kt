@@ -41,7 +41,5 @@ interface EnvironmentApi {
    */
   fun getEnvironmentsUserCanAccess(appId: UUID, person: UUID): List<UUID>?
 
-  fun getDecryptedEnvironmentWebhookContent(eid:UUID): Environment
-
   fun migrateWebhookEnvInfo()
 }
