@@ -49,8 +49,7 @@ class Environment2Resource @Inject constructor(
       } catch (e: InvalidEnvironmentChangeException) {
         throw BadRequestException()
       } catch (e: MissingEncryptionPasswordException) {
-        //TODO openapi generator currently does not return 412, always returns 400. So the generator needs to be updated to allow throwing 412
-        // Or some other way front end can differentiate between 400 error above vs encryption password missing
+        // TODO openapi generator currently does not allow throwing this error code. All error codes other than these [200,400,401,404,409,422] gets thrown as 500.
         throw WebApplicationException(412)
       }
       if (update == null) {

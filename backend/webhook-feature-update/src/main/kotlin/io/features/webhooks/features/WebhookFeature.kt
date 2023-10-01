@@ -93,6 +93,20 @@ class WebhookEnricherListener @Inject constructor(
     client.property(ClientProperties.READ_TIMEOUT, readTimeout)
   }
 
+  // TODO update this to get webhook data from webhookEnvironmentInfo instead
+  // Handle header values coming in as split entries instead of "key=value" string
+  /**
+   * webhook.features.enabled: “true”
+   * webhook.features.encrypt:”webhook.features.endpoint, webhook.features.headers.authorisation, webhook.features.headers.xfoof”
+   * webhook.features.endpoint: “encrypted”
+   * webhook.features.endpoint.encrypted: “sdfjasdk”
+   * webhook.features.endpoint.salt: “3423”
+   * webhook.features.headers.authorisation: "updated”
+   * webhook.features.headers.authorisation,encrypted=“xxxx”
+   * webhook.features.headers.authorisation.salt=“sdfsd”
+   * webhook.features.headers.xfoof=“blah”
+   *
+   */
   fun process(ef: EnrichedFeatures, ce: CloudEvent) {
     log.debug("enriched: checking for environment info")
     val conf = ef.environment.environment.environmentInfo
