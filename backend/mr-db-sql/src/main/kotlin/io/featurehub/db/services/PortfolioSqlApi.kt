@@ -12,14 +12,13 @@ import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbGroup
 import io.featurehub.db.model.query.QDbPortfolio
-import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.CreatePortfolio
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.SortOrder
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
 import java.util.*
-import java.util.stream.Collectors
 
 @Singleton
 class PortfolioSqlApi @Inject constructor(
@@ -31,9 +30,9 @@ class PortfolioSqlApi @Inject constructor(
 
   @Transactional(readOnly = true)
   override fun findPortfolios(
-    filter: String?, ordering: SortOrder?, opts: Opts, currentPerson: Person
+    filter: String?, ordering: SortOrder?, opts: Opts, currentPerson: UUID
   ): List<Portfolio> {
-    val personDoingFind = convertUtils.byPerson(currentPerson) ?: return ArrayList()
+    val personDoingFind = convertUtils.byPerson(currentPerson) ?: return mutableListOf()
 
     var pFinder = QDbPortfolio().organization.eq(
       convertUtils.dbOrganization()
@@ -57,11 +56,12 @@ class PortfolioSqlApi @Inject constructor(
     pFinder = finder(pFinder, opts)
 
     return pFinder.findList()
-      .map { p -> convertUtils.toPortfolio(p, opts, currentPerson, personIsNotSuperAdmin)!! }
+      .map { p -> convertUtils.toPortfolio(p, opts, personDoingFind.id, personIsNotSuperAdmin)!! }
   }
 
-  private fun finder(pFinder: QDbPortfolio, opts: Opts): QDbPortfolio {
-    var pFinder = pFinder
+  private fun finder(finder: QDbPortfolio, opts: Opts): QDbPortfolio {
+    var pFinder = finder
+
     if (opts.contains(FillOpts.Groups)) {
       pFinder = pFinder.groups.fetch()
     }
@@ -74,15 +74,19 @@ class PortfolioSqlApi @Inject constructor(
     if (!opts.contains(FillOpts.Archived)) {
       pFinder = pFinder.whenArchived.isNull
     }
+
     return pFinder
   }
 
   @Throws(PortfolioApi.DuplicatePortfolioException::class)
-  override fun createPortfolio(portfolio: Portfolio, opts: Opts, createdBy: Person): Portfolio {
+  override fun createPortfolio(portfolio: CreatePortfolio, opts: Opts, createdBy: UUID?): Portfolio? {
     val org = convertUtils.dbOrganization()
     val person = convertUtils.byPerson(createdBy)
-    require(person != null) { "Created by person is an invalid argument (does not exist)" }
-    duplicateCheck(portfolio, null, org)
+    if (createdBy != null && person == null) {
+      log.error( "Created by person is an invalid argument (does not exist)")
+      return null
+    }
+    duplicateCheck(portfolio.name, null, org)
     val dbPortfolio = DbPortfolio.Builder()
       .name(convertUtils.limitLength(portfolio.name, 200))
       .description(convertUtils.limitLength(portfolio.description, 400))
@@ -104,7 +108,7 @@ class PortfolioSqlApi @Inject constructor(
   }
 
   @Transactional(readOnly = true)
-  override fun getPortfolio(id: UUID, opts: Opts, currentPerson: Person): Portfolio? {
+  override fun getPortfolio(id: UUID, opts: Opts, currentPerson: UUID): Portfolio? {
     val personDoingFind = convertUtils.byPerson(currentPerson) ?: return null
     var finder = finder(QDbPortfolio().id.eq(id), opts)
     val personIsNotSuperAdmin = convertUtils.personIsNotSuperAdmin(personDoingFind)
@@ -122,10 +126,10 @@ class PortfolioSqlApi @Inject constructor(
     val portf = convertUtils.byPortfolio(portfolio.id)
 
     if (portf != null) {
-      if (portfolio.version == null || portfolio.version != portf.version) {
+      if (portfolio.version != portf.version) {
         throw OptimisticLockingException()
       }
-      duplicateCheck(portfolio, portf, portf.organization)
+      duplicateCheck(portfolio.name, portf, portf.organization)
       portf.name = portfolio.name
       portf.description = portfolio.description
 
@@ -151,17 +155,18 @@ class PortfolioSqlApi @Inject constructor(
   }
 
   @Throws(PortfolioApi.DuplicatePortfolioException::class)
-  private fun duplicateCheck(portfolio: Portfolio, portf: DbPortfolio?, organization: DbOrganization) {
+  private fun duplicateCheck(newName: String, portf: DbPortfolio?, organization: DbOrganization) {
     // if you are changing your name to its existing name, thats fine.  optimisation step
-    if (portf != null && portf.name.equals(portfolio.name, ignoreCase = true)) {
+    if (portf != null && portf.name.equals(newName, ignoreCase = true)) {
       return
     }
     // check for name duplicates
     val nameCheck = QDbPortfolio().whenArchived
       .isNull.organization
       .eq(organization).name
-      .ieq(portfolio.name)
+      .ieq(newName)
       .findOne()
+
     if (nameCheck != null && (portf == null || nameCheck.id != portf.id)) {
       throw PortfolioApi.DuplicatePortfolioException()
     }

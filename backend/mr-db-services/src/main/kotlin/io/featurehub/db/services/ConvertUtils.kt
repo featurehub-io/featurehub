@@ -304,7 +304,7 @@ open class ConvertUtils : Conversions {
       .email(person.email)
       .personType(person.personType)
       .name(personName(person))
-      .groups(null)
+      .groups(listOf())
   }
 
   override fun organizationId(): UUID = dbOrganization().id
@@ -349,7 +349,7 @@ open class ConvertUtils : Conversions {
         .findList()
       log.trace("groups for person {} are {}", p, groupList)
       groupList
-        .forEach { dbg: DbGroup? -> p.addGroupsItem(toGroup(dbg, opts.minus(FillOpts.Groups))) }
+        .forEach { dbg: DbGroup? -> p.addGroupsItem(toGroup(dbg, opts.minus(FillOpts.Groups))!!) }
     }
     return p
   }
@@ -526,9 +526,9 @@ open class ConvertUtils : Conversions {
               )
             )
             .name(rolloutStrategy.name)
-            .disabled(if (srs.isEnabled) null else true)
+            .disabled(if (srs.isEnabled == true) null else true)
             .strategyId(rolloutStrategy.id)
-        }
+        } ?: listOf()
     }
 
     // this is an indicator it is for the UI not for the cache.
@@ -577,7 +577,7 @@ open class ConvertUtils : Conversions {
     }
     val info = RolloutStrategyInfo().rolloutStrategy(rs.strategy.id(rs.id.toString()))
     if (opts!!.contains(FillOpts.SimplePeople)) {
-      info.changedBy(toPerson(rs.whoChanged))
+      info.changedBy(toPerson(rs.whoChanged)!!)
     }
     return info
   }
@@ -587,15 +587,21 @@ open class ConvertUtils : Conversions {
   }
 
   override fun toPortfolio(p: DbPortfolio?, opts: Opts?): Portfolio? {
-    return toPortfolio(p, opts, null, true)
+    val pid: UUID? = null
+
+    return toPortfolio(p, opts, pid, true)
   }
 
   override fun toPortfolio(p: DbPortfolio?, opts: Opts?, person: Person?, personNotSuperAdmin: Boolean): Portfolio? {
+    return toPortfolio(p, opts, person?.id?.id, personNotSuperAdmin)
+  }
+
+  override fun toPortfolio(p: DbPortfolio?, opts: Opts?, personId: UUID?, personNotSuperAdmin: Boolean): Portfolio? {
     if (p == null) {
       return null
     }
     val portfolio = Portfolio()
-      .name(stripArchived(p.name, p.whenArchived)!!)
+      .name(stripArchived(p.name, p.whenArchived))
       .description(p.description)
       .version(p.version)
       .organizationId(p.organization.id)
@@ -617,12 +623,12 @@ open class ConvertUtils : Conversions {
         .portfolio.eq(p)
         .order().name.asc()
 
-      person?.let {
-        val portAdmin = isPersonMemberOfPortfolioAdminGroup(portfolio.id!!, it.id!!.id)
+      personId?.let {
+        val portAdmin = isPersonMemberOfPortfolioAdminGroup(portfolio.id, personId)
         if (personNotSuperAdmin && !portAdmin) {
           appFinder = appFinder.or()
-            .environments.groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id)
-            .groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id).endOr()
+            .environments.groupRolesAcl.group.groupMembers.person.id.eq(personId)
+            .groupRolesAcl.group.groupMembers.person.id.eq(personId).endOr()
         }
       }
 
@@ -766,9 +772,9 @@ open class ConvertUtils : Conversions {
     featureValue: DbFeatureValue?, roles: List<RoleType?>, dbEnvironment: DbEnvironment, opts: Opts
   ): FeatureEnvironment {
     val featureEnvironment = FeatureEnvironment()
-      .environment(toEnvironment(dbEnvironment, Opts.empty()))
+      .environment(toEnvironment(dbEnvironment, Opts.empty())!!)
       .roles(roles)
-      .featureValue(toFeatureValue(featureValue))
+      .featureValue(toFeatureValue(featureValue)!!)
     if (opts.contains(FillOpts.ServiceAccounts)) {
       featureEnvironment.serviceAccounts(
         dbEnvironment.serviceAccountEnvironments.stream()

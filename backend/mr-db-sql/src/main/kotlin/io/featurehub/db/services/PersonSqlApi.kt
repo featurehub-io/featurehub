@@ -34,7 +34,7 @@ open class PersonSqlApi @Inject constructor(
     val version = person.version ?: return null
 
     val dbPerson = updatePersonDetails(id, updatedBy, version, person.name,
-      person.email, person.groups?.mapNotNull { it.id }, false
+      person.email, person.groups.mapNotNull { it.id }, false
     )
 
     return if (dbPerson != null) convertUtils.toPerson(dbPerson, opts) else null

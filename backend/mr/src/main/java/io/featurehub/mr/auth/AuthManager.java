@@ -109,7 +109,7 @@ public class AuthManager implements AuthManagerService {
     member = isGroupMember(personId, adminGroup);
 
     if (!member) {
-      Portfolio p = portfolioApi.getPortfolio(portfolioId, Opts.empty(), new Person().id(new PersonId().id(personId)));
+      Portfolio p = portfolioApi.getPortfolio(portfolioId, Opts.empty(), personId);
 
       if (p != null) {
         orgId = p.getOrganizationId();
@@ -164,6 +164,11 @@ public class AuthManager implements AuthManagerService {
   @Override
   public Person from(SecurityContext context) {
     return ((AuthHolder) context.getUserPrincipal()).getPerson();
+  }
+
+  @Override
+  public UUID who(SecurityContext context) {
+    return from(context).getId().getId();
   }
 
   @Override

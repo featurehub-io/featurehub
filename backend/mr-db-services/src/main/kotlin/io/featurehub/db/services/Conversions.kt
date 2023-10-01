@@ -54,7 +54,7 @@ interface Conversions {
   fun toPerson(person: DbPerson?): Person?
   fun toPerson(dbp: DbPerson?, opts: Opts): Person?
   fun toPerson(dbp: DbPerson?, org: DbOrganization?, opts: Opts): Person?
-  fun stripArchived(name: String, whenArchived: LocalDateTime?): String? {
+  fun stripArchived(name: String, whenArchived: LocalDateTime?): String {
     if (whenArchived == null) {
       return name
     }
@@ -72,6 +72,7 @@ interface Conversions {
   fun toFeatureValue(fs: DbFeatureValue?, opts: Opts?): FeatureValue?
   fun toPortfolio(p: DbPortfolio?, opts: Opts?): Portfolio?
   fun toPortfolio(p: DbPortfolio?, opts: Opts?, person: Person?, personNotSuperAdmin: Boolean): Portfolio?
+  fun toPortfolio(p: DbPortfolio?, opts: Opts?, personId: UUID?, personNotSuperAdmin: Boolean): Portfolio?
   fun toOrganization(org: DbOrganization?, opts: Opts?): Organization?
   fun isPersonApplicationAdmin(dbPerson: DbPerson?, app: DbApplication?): Boolean
   fun isPersonApplicationAdmin(personId: UUID, appId: UUID): Boolean

@@ -5,7 +5,6 @@ import io.ebean.annotation.TxType
 import io.featurehub.db.api.FeatureGroupApi
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.*
-import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.db.publish.FeatureGroupHelper
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
@@ -13,7 +12,6 @@ import jakarta.inject.Inject
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.math.BigDecimal
 import java.time.Instant
 import java.util.*
 
@@ -184,7 +182,7 @@ class FeatureGroupSqlApi @Inject constructor(
     return FeatureGroup()
       .id(featureGroup.id)
       .order(featureGroup.order)
-      .description(featureGroup.description)
+      .description(featureGroup.description ?: "")
       .environmentId(featureGroup.environment.id)
       .environmentName(featureGroup.environment.name)
       .strategies(featureGroup.strategies)
@@ -281,7 +279,7 @@ class FeatureGroupSqlApi @Inject constructor(
             .order(it.order).environmentId(it.environment.id).environmentName(it.environment.name)
             .version(it.version)
             .hasStrategy(it.strategies?.isNotEmpty() ?: false)
-            .description(it.description)
+            .description(it.description ?: "")
             .features((it.features.map { feat -> FeatureGroupListFeature().key(feat.feature.key) }).sortedBy { sb -> sb.key })
         }
       )
@@ -290,13 +288,12 @@ class FeatureGroupSqlApi @Inject constructor(
   override fun updateGroup(
     appId: UUID,
     current: Person,
-    fgId: UUID,
     update: FeatureGroupUpdate
   ): FeatureGroup? {
-    val group = QDbFeatureGroup().id.eq(fgId).environment.parentApplication.id.eq(appId).findOne() ?: return null
+    val group = QDbFeatureGroup().id.eq(update.id).environment.parentApplication.id.eq(appId).findOne() ?: return null
 
     if (group.version != update.version) {
-      log.trace("Group {} is version {} and update is version {}, lock error", fgId, group.version, update.version)
+      log.trace("Group {} is version {} and update is version {}, lock error", update.id, group.version, update.version)
       throw FeatureGroupApi.OptimisticLockingException()
     }
 
@@ -319,7 +316,7 @@ class FeatureGroupSqlApi @Inject constructor(
         if (QDbFeatureGroup().environment.id.eq(group.environment.id).order.eq(newOrder).exists()) {
           log.trace(
             "Attempting to change feature group {} from order {} to order {} and there is already one of that order",
-            fgId,
+            update.id,
             group.order,
             newOrder
           )

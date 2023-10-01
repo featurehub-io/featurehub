@@ -149,6 +149,12 @@ paths:
         - bearerAuth: [ ]
       tags:
         - PortfolioService
+      parameters:
+        - name: includeEnvironments
+          description: "Include environments for the included applications this portfolio in results"
+          in: query
+          schema:
+            type: boolean
       description: "Update a portfolio"
       operationId: updatePortfolioOnOrganisation
       requestBody:
@@ -471,7 +477,7 @@ paths:
       tags:
         - GroupService
       description: "Update a group"
-      operationId: updateGroup
+      operationId: updateGroupOnPortfolio
       parameters:
         - name: includeMembers
           description: "include people in each group"
@@ -2350,7 +2356,7 @@ paths:
       tags:
         - GroupService
       description: "Update a group"
-      operationId: updateGroupOld
+      operationId: updateGroup
       parameters:
         - name: updateMembers
           description: "update members, deleting those that are not passed"
@@ -2568,33 +2574,67 @@ paths:
           description: "forbidden"
         409:
           description: "duplicate"
-  /mr-api/service-account/{id}:
-    parameters:
-      - name: id
-        description: "the id for the service account to get"
-        in: path
+    put:
+      parameters:
+        - name: includePermissions
+          description: "include permissions in return"
+          in: query
+          schema:
+            type: boolean
+      tags:
+        - ServiceAccountService
+      security:
+        - bearerAuth: [ ]
+      requestBody:
         required: true
-        schema:
-          type: string
-          format: uuid
-      - name: includePermissions
-        description: "include permissions in return"
-        in: query
-        schema:
-          type: boolean
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceAccount"
+      description: "Update this service account, overwiting any attached environment permissions this user has access to"
+      operationId: updateServiceAccountOnPortfolio
+      responses:
+        200:
+          description: "Details of service account"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceAccount"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "trying to update SA that doesn't exist"
+        422:
+          description: "trying to update old version"
+  /mr-api/service-account/{id}:
     get:
+      parameters:
+        - name: id
+          description: "the id for the service account to get"
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: includePermissions
+          description: "include permissions in return"
+          in: query
+          schema:
+            type: boolean
+        - name: byApplicationId
+          in: query
+          schema:
+            type: string
+            format: uuid
       tags:
         - ServiceAccountService
       security:
         - bearerAuth: [ ]
       description: "Get service account by id or 'self' if authenticated as this service account"
       operationId: getServiceAccount
-      parameters:
-        - name: byApplicationId
-          in: query
-          schema:
-            type: string
-            format: uuid
       responses:
         200:
           description: "Details of service account"
@@ -2611,6 +2651,20 @@ paths:
         404:
           description: "not found"
     put:
+      deprecated: true
+      parameters:
+        - name: id
+          description: "the id for the service account to get"
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: includePermissions
+          description: "include permissions in return"
+          in: query
+          schema:
+            type: boolean
       tags:
         - ServiceAccountService
       security:
@@ -2642,6 +2696,14 @@ paths:
           description: "trying to update old version"
 
     delete:
+      parameters:
+        - name: id
+          description: "the id for the service account to get"
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
       tags:
         - ServiceAccountService
       security:
@@ -2817,16 +2879,20 @@ components:
         organizationName:
           type: string
         emailAddress:
+          nullable: true
           description: "User's email or blank if using oauth/saml"
           format: email
           type: string
         password:
+          nullable: true
           description: "User's password or blank if using oauth/saml"
           type: string
         name:
+          nullable: true
           description: "user's name. Will be take from external provider if using oauth/saml"
           type: string
         authProvider:
+          nullable: true
           description: "If the site is using external providers, this is the key of the provider chosen. If there is only one, it can be blank."
           type: string
       type: object
@@ -3322,6 +3388,7 @@ components:
           nullable: true
           description: "the value for this rollout strategy for this feature value"
         disabled:
+          nullable: true
           type: boolean
     Audit:
       properties:
@@ -3372,6 +3439,8 @@ components:
         - type: object
           required:
             - name
+            - id
+            - version
           properties:
             id:
               type: string
@@ -3593,6 +3662,7 @@ components:
         personType:
           $ref: "#/components/schemas/PersonType"
         whenLastAuthenticated:
+          nullable: true
           description: "This is the timestamp in UTC when they last logged into the system"
           type: string
           format: date-time
@@ -3600,7 +3670,9 @@ components:
           description: "This is the timestamp in UTC when they last made a request to the system on their most recent login. If it is null it means they have no current token or have never logged in."
           type: string
           format: date-time
+          nullable: true
         whenDeactivated:
+          nullable: true
           description: "When a person's account was deactivated (if it was) and when"
           type: string
           format: date-time
@@ -3789,9 +3861,9 @@ components:
     ServiceAccount:
       required:
         - name
+        - id
       properties:
         id:
-          nullable: true
           type: string
           format: uuid
         name:
@@ -3799,7 +3871,6 @@ components:
           minLength: 1
           maxLength: 70
         portfolioId:
-          nullable: true
           type: string
           format: uuid
         description:
@@ -4018,17 +4089,25 @@ components:
               minLength: 1
               maxLength: 255
             admin:
+              deprecated: true
+              description: "ignored"
               type: boolean
             authorizationUrl:
+              nullable: true
               description: "If provided, the browser should redirect to this URL to authenticate"
               type: string
             orgGroup:
-              $ref: "#/components/schemas/Group"
+              nullable: true
+              allOf:
+                - $ref: "#/components/schemas/Group"
             portfolios:
+              nullable: true
+              default: []
               type: array
               items:
                 $ref: "#/components/schemas/Portfolio"
             whenArchived:
+              nullable: true
               type: string
               format: date-time
     RolloutStrategyAttribute:

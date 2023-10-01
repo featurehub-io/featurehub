@@ -12,7 +12,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 public interface AuthManagerService {
-  Person from(SecurityContext context);
+  @NotNull Person from(SecurityContext context);
+  @NotNull UUID who(SecurityContext context);
   UUID orgPersonIn(Person person);
   UUID orgPersonIn(UUID id);
   UUID orgPersonIn(PersonId personId);
