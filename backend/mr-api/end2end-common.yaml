@@ -23,8 +23,6 @@ components:
                     When they are copied to the cache layer they are cloned and the feature value for that strategy
                     is inserted into the clone and those are published."
       properties:
-        id:
-          type: string
         percentage:
           nullable: true
           description: "value between 0 and 1000000 - for four decimal places"

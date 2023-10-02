@@ -105,8 +105,8 @@ class FeatureSqlApi @Inject constructor(
     return if (dbFeatureValue != null) {
       rolloutStrategyValidator.validateStrategies(
         dbFeatureValue.feature.valueType,
-        featureValue.rolloutStrategies ?: listOf(),
-        featureValue.rolloutStrategyInstances ?: listOf()
+        featureValue.rolloutStrategies,
+        featureValue.rolloutStrategyInstances
       ).hasFailedValidation()
 
       // this is an update not a create, environment + app-feature key exists
@@ -189,9 +189,6 @@ class FeatureSqlApi @Inject constructor(
     changingDefaultValue: Boolean,
     updatingLock: Boolean,
   ): FeatureValue? {
-    if (featureValue.version == null) {
-      throw OptimisticLockingException() // we cannot determine what version to  compare this against
-    }
 
     val dbPerson = convertUtils.byPerson(person.person) ?: return null
 
@@ -308,7 +305,7 @@ class FeatureSqlApi @Inject constructor(
 
       existing.retired = convertUtils.safeConvert(featureValue.retired)
 
-      val updated = featureValue.retired ?: false
+      val updated = featureValue.retired
       updateSingleFeatureValueUpdate(retiredFeatureValueUpdate, updated, historical.isRetired)
 
       return retiredFeatureValueUpdate
@@ -336,7 +333,7 @@ class FeatureSqlApi @Inject constructor(
     val historicalStrategies = historical.rolloutStrategies.toList() // not mutable
     val existingStrategies = existing.rolloutStrategies
 
-    featureValue.rolloutStrategies?.let { strategies ->
+    featureValue.rolloutStrategies.let { strategies ->
       rationaliseStrategyIdsAndAttributeIds(strategies)
 
       // we need a map of the existing strategies in the historical version, and as we
@@ -432,8 +429,8 @@ class FeatureSqlApi @Inject constructor(
 
       // ok, now just honour the order of the incoming strategies and keep track if they actually changed
       val newlyOrderedList =
-        featureValue.rolloutStrategies?.mapNotNull { newStrategy -> existingStrategies.find { it.id == newStrategy.id } }
-          ?.toMutableList() ?: mutableListOf()
+        featureValue.rolloutStrategies.mapNotNull { newStrategy -> existingStrategies.find { it.id == newStrategy.id } }
+            .toMutableList()
       val newlyOrderedListIds = newlyOrderedList.map { it.id }
       newlyOrderedList.addAll(existingStrategies.filter { !newlyOrderedListIds.contains(it.id) })
       val reorderedList = newlyOrderedList.map { it.id }
@@ -498,7 +495,7 @@ class FeatureSqlApi @Inject constructor(
   ): SingleNullableFeatureValueUpdate<String?> {
     val defaultValueUpdate = SingleNullableFeatureValueUpdate<String?>()
     val defaultValueChanged: String? =
-      when (feature.valueType!!) {
+      when (feature.valueType) {
         FeatureValueType.NUMBER -> {
           featureValue.valueNumber?.toString()
         }
@@ -615,10 +612,10 @@ class FeatureSqlApi @Inject constructor(
   }
 
   private fun convertStrategiesToDbFeatureValueStrategies(featureValue: FeatureValue): List<RolloutStrategy> {
-    return featureValue.rolloutStrategies?.let { strategies ->
+    return featureValue.rolloutStrategies.let { strategies ->
       rationaliseStrategyIdsAndAttributeIds(strategies)
       strategies
-    } ?: listOf()
+    }
   }
 
   /**
@@ -717,7 +714,7 @@ class FeatureSqlApi @Inject constructor(
         QDbFeatureValue().environment.id.eq(eid).feature.whenArchived.isNull.findList()
           .map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs) }
       )
-      .environments(listOf(convertUtils.toEnvironment(QDbEnvironment().id.eq(eid).findOne(), Opts.empty())));
+      .environments(listOf(convertUtils.toEnvironment(QDbEnvironment().id.eq(eid).findOne(), Opts.empty())))
 
     if (includeFeatures) {
       env.features(QDbApplicationFeature().parentApplication.eq(environment.parentApplication).whenArchived.isNull.findList().map {
@@ -725,7 +722,7 @@ class FeatureSqlApi @Inject constructor(
       })
     }
 
-    return env;
+    return env
   }
 
   // we are going to have to put a transaction at this level as we want the whole thing to roll back if there is an issue
@@ -756,7 +753,7 @@ class FeatureSqlApi @Inject constructor(
 
       rolloutStrategyValidator.validateStrategies(
         feat.valueType,
-        fv.rolloutStrategies ?: listOf(), fv.rolloutStrategyInstances ?: listOf(), failure
+        fv.rolloutStrategies, fv.rolloutStrategyInstances, failure
       )
     }
     failure.hasFailedValidation()
@@ -982,8 +979,8 @@ class FeatureSqlApi @Inject constructor(
 
       rolloutStrategyValidator.validateStrategies(
         result.feature.valueType,
-        fv.rolloutStrategies ?: listOf(),
-        fv.rolloutStrategyInstances ?: listOf(), failure
+        fv.rolloutStrategies,
+        fv.rolloutStrategyInstances, failure
       )
     }
 
@@ -1091,7 +1088,7 @@ class FeatureSqlApi @Inject constructor(
         .findList()
         .map { f: DbApplicationFeature? -> convertUtils.toApplicationFeature(f, empty)!! }
 
-      val featureKeys = features.map { f -> f.key!! }
+      val featureKeys = features.map { f -> f.key }
 
       // because we need to know what features there are on what pages, we grab the application features we are going
       // to use *first*
@@ -1113,7 +1110,7 @@ class FeatureSqlApi @Inject constructor(
           .onEach { acl: DbAcl -> environmentOrderingMap[acl.environment.id] = acl.environment }
           .mapNotNull { acl: DbAcl -> environmentToFeatureValues(acl, personAdmin, featureKeys) }
           .filter { efv: EnvironmentFeatureValues? ->
-            efv!!.roles!!.isNotEmpty()
+            efv!!.roles.isNotEmpty()
           }
 
       // the user has no permission to any environments and they aren't an admin, they shouldn't see anything

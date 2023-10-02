@@ -4114,14 +4114,11 @@ components:
       allOf:
         - $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
         - type: object
-#          required:
-#            - conditional
-#            - fieldName
-#            - type
           properties:
             id:
+              nullable: true
               type: string
-              description: "A temporary id used only when validating. Saving strips these out as they are not otherwise necessary"
+              description: "An ID that needs to exist for validation"
     RolloutStrategy:
       allOf:
         - $ref: "#/components/schemas/BaseRolloutStrategy"
@@ -4129,6 +4126,10 @@ components:
           required:
             - name
           properties:
+            id:
+              description: "the server will accept null ids but it won't ever store them as null"
+              type: string
+              nullable: true
             name:
               description: "names are unique in a case insensitive fashion"
               type: string

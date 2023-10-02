@@ -187,6 +187,9 @@ components:
             - id
             - attributes
           properties:
+            id:
+              description: "strategy id"
+              type: string
             attributes:
               type: array
               items:

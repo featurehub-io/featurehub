@@ -189,6 +189,9 @@ components:
           required:
             - id
           properties:
+            id:
+              description: "strategy id"
+              type: string
             attributes:
               type: array
               items:
