@@ -22,7 +22,7 @@ class StepperContainer extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data == true) {
             return BlocProvider(
-                creator: (_context, _bag) => StepperBloc(mrBloc),
+                creator: (context, bag) => StepperBloc(mrBloc),
                 child: const FHSetupProgressStepper());
           } else {
             return const SizedBox.shrink();

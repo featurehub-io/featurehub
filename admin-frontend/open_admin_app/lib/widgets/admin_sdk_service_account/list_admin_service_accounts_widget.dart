@@ -41,7 +41,7 @@ class _AdminServiceAccountsListWidgetState
 
   @override
   Widget build(BuildContext context) {
-    final _debouncer = Debouncer(milliseconds: 500);
+    final debouncer = Debouncer(milliseconds: 500);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -53,7 +53,7 @@ class _AdminServiceAccountsListWidgetState
                 icon: Icon(Icons.search),
               ),
               onChanged: (val) {
-                _debouncer.run(
+                debouncer.run(
                   () {
                     source.filterServerSide(val);
                   },
@@ -144,19 +144,19 @@ class AdminServiceAccountDataTableSource
 
   @override
   DataRow getRow(int index) {
-    final _serviceAccount = lastDetails!.rows[index];
+    final serviceAccount = lastDetails!.rows[index];
     return DataRow.byIndex(
         index: index,
         cells: [
           DataCell(Text(
-            _serviceAccount.name,
+            serviceAccount.name,
           )),
-          DataCell(Text('${_serviceAccount.groupCount}')),
+          DataCell(Text('${serviceAccount.groupCount}')),
           DataCell(Row(children: <Widget>[
             FHIconButton(
               icon: const Icon(Icons.info),
               onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
-                return ServiceAccountInfoDialog(bloc, _serviceAccount);
+                return ServiceAccountInfoDialog(bloc, serviceAccount);
               }),
             ),
             FHIconButton(
@@ -165,7 +165,7 @@ class AdminServiceAccountDataTableSource
                       ManagementRepositoryClientBloc.router.navigateTo(
                           context, '/edit-admin-service-account',
                           params: {
-                            'id': [_serviceAccount.id]
+                            'id': [serviceAccount.id]
                           })
                     }),
             // const SizedBox(
@@ -178,7 +178,7 @@ class AdminServiceAccountDataTableSource
               tooltip: "Reset Admin SDK access token",
               onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
                 return AdminSAKeyResetDialogWidget(
-                  person: _serviceAccount,
+                  person: serviceAccount,
                   bloc: bloc,
                 );
               }),
@@ -187,16 +187,16 @@ class AdminServiceAccountDataTableSource
               icon: const Icon(Icons.delete),
               onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
                 return FHDeleteThingWarningWidget(
-                  thing: "service account '${_serviceAccount.name}'",
+                  thing: "service account '${serviceAccount.name}'",
                   content:
                       'This service account will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!',
                   bloc: bloc.mrClient,
                   deleteSelected: () async {
                     try {
-                      await bloc.deletePerson(_serviceAccount.id, true);
+                      await bloc.deletePerson(serviceAccount.id, true);
                       setNextView(); // triggers reload from server with latest settings and rebuilds state
                       bloc.mrClient.addSnackbar(Text(
-                          "Service account '${_serviceAccount.name}' deleted!"));
+                          "Service account '${serviceAccount.name}' deleted!"));
                       return true;
                     } catch (e, s) {
                       await bloc.mrClient.dialogError(e, s);
@@ -211,7 +211,7 @@ class AdminServiceAccountDataTableSource
         onSelectChanged: (newValue) {
           ManagementRepositoryClientBloc.router
               .navigateTo(context, '/edit-admin-service-account', params: {
-            'id': [_serviceAccount.id]
+            'id': [serviceAccount.id]
           });
         });
   }

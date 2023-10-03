@@ -77,9 +77,9 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                       var editable =
                                           !featureValueLatest.data!.locked &&
                                               canChangeValue;
-                                      List<Widget> _widgets = [];
+                                      List<Widget> widgets = [];
                                       if (strategiesLatest.hasData) {
-                                        _widgets = strategiesLatest.data!
+                                        widgets = strategiesLatest.data!
                                             .map((RolloutStrategy strategy) {
                                           return StrategyCard(
                                               key: ValueKey(strategy),
@@ -102,14 +102,17 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                               shrinkWrap: true,
                                               buildDefaultDragHandles: false,
                                               children: <Widget>[
-                                                for (Widget wid in _widgets)
+                                                for (Widget wid in widgets)
                                                   ReorderableDragStartListener(
                                                       key: ValueKey(wid),
-                                                      enabled: !featureValueLatest
-                                                              .data!.locked &&
-                                                          canChangeValue,
+                                                      enabled:
+                                                          !featureValueLatest
+                                                                  .data!
+                                                                  .locked &&
+                                                              canChangeValue,
                                                       child: wid,
-                                                      index: _widgets.indexOf(wid))
+                                                      index:
+                                                          widgets.indexOf(wid))
                                               ],
                                               onReorder:
                                                   (int oldIndex, int newIndex) {
@@ -119,10 +122,10 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                 final items = strategiesLatest
                                                     .data![oldIndex];
 
-                                            strategiesLatest.data!
-                                              ..removeWhere((element) =>
-                                                  element.id == items.id)
-                                              ..insert(newIndex, items);
+                                                strategiesLatest.data!
+                                                  ..removeWhere((element) =>
+                                                      element.id == items.id)
+                                                  ..insert(newIndex, items);
 
                                                 strategyBloc
                                                     .updateStrategyAndFeatureValue();
@@ -134,11 +137,12 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                               editable: editable),
                                           const SizedBox(height: 16.0),
                                           RetireFeatureValueCheckboxWidget(
-                                              environmentFeatureValue:
-                                                  widget.environmentFeatureValue,
+                                              environmentFeatureValue: widget
+                                                  .environmentFeatureValue,
                                               fvBloc: fvBloc,
                                               editable: editable,
-                                              retired: fvBloc.currentFeatureValue!
+                                              retired: fvBloc
+                                                      .currentFeatureValue!
                                                       .retired ??
                                                   false),
                                           //this is where we need to pass retired from the actual value
@@ -155,9 +159,11 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                       Navigator.pop(
                                                           context); //close the side panel
                                                     },
-                                                    child: const Text("Cancel")),
+                                                    child:
+                                                        const Text("Cancel")),
                                                 FilledButton(
-                                                    onPressed: canSave ? () async {
+                                                    onPressed: canSave
+                                                        ? () async {
                                                             try {
                                                               await fvBloc
                                                                   .saveFeatureValueUpdates();

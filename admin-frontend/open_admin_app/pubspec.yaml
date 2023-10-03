@@ -35,6 +35,7 @@ dependencies:
   multiselect: ^0.1.0
   side_sheet: ^1.0.3
   async: ^2.9.0
+  collection: ^1.17.1
 
 dev_dependencies:
   meta: ^1.8.0

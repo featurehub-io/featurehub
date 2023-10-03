@@ -33,9 +33,7 @@ class StrategyCard extends StatelessWidget {
               strBloc: strBloc,
               rolloutStrategy: rolloutStrategy,
               editableHolderWidget: EditValueContainer(
-                key: ValueKey(strBloc.environmentFeatureValue.environmentId! +
-                    '-' +
-                    strBloc.feature.key!),
+                key: ValueKey('${strBloc.environmentFeatureValue.environmentId!}-${strBloc.feature.key!}'),
                 editable: editable,
                 unlocked: unlocked,
                 rolloutStrategy: rolloutStrategy,

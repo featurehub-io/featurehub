@@ -21,10 +21,10 @@ class ManageGroupRoute extends StatefulWidget {
       : super(key: key);
 
   @override
-  _ManageGroupRouteState createState() => _ManageGroupRouteState();
+  ManageGroupRouteState createState() => ManageGroupRouteState();
 }
 
-class _ManageGroupRouteState extends State<ManageGroupRoute> {
+class ManageGroupRouteState extends State<ManageGroupRoute> {
   GroupBloc? bloc;
   bool sortToggle = true;
   int sortColumnIndex = 0;
@@ -100,50 +100,50 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      if (bloc.mrClient.isPortfolioOrSuperAdmin(
-                              snapshot.data!.portfolioId!))
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: FilledButton.icon(
-                                icon: const Icon(Icons.add),
-                                label: const Text('Add members'),
-                                onPressed: () => bloc.mrClient
-                                    .addOverlay((BuildContext context) {
-                                  return AddMembersDialogWidget(
-                                    bloc: bloc,
-                                    group: snapshot.data!,
-                                  );
-                                }),
-                              ),
+                      if (bloc.mrClient
+                          .isPortfolioOrSuperAdmin(snapshot.data!.portfolioId!))
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: FilledButton.icon(
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add members'),
+                            onPressed: () => bloc.mrClient
+                                .addOverlay((BuildContext context) {
+                              return AddMembersDialogWidget(
+                                bloc: bloc,
+                                group: snapshot.data!,
+                              );
+                            }),
                           ),
+                        ),
                       Card(
                           child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: SelectionArea(
-                              child: DataTable(
-                        showCheckboxColumn: false,
-                        sortAscending: sortToggle,
-                        sortColumnIndex: sortColumnIndex,
-                        columns: [
+                        scrollDirection: Axis.horizontal,
+                        child: SelectionArea(
+                          child: DataTable(
+                            showCheckboxColumn: false,
+                            sortAscending: sortToggle,
+                            sortColumnIndex: sortColumnIndex,
+                            columns: [
                               DataColumn(
                                   label: const Text('Name'),
                                   onSort: (columnIndex, ascending) {
-                                    onSortColumn(
-                                        snapshot.data!.members, columnIndex, ascending);
+                                    onSortColumn(snapshot.data!.members,
+                                        columnIndex, ascending);
                                   }),
                               DataColumn(
                                 label: const Text('Email'),
                                 onSort: (columnIndex, ascending) {
-                                  onSortColumn(
-                                      snapshot.data!.members, columnIndex, ascending);
+                                  onSortColumn(snapshot.data!.members,
+                                      columnIndex, ascending);
                                 },
                               ),
                               DataColumn(
                                 label: const Text(
                                     'Type (User or Admin Service Account)'),
                                 onSort: (columnIndex, ascending) {
-                                  onSortColumn(
-                                      snapshot.data!.members, columnIndex, ascending);
+                                  onSortColumn(snapshot.data!.members,
+                                      columnIndex, ascending);
                                 },
                               ),
                               DataColumn(
@@ -152,23 +152,27 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                                     child: Text('Actions'),
                                   ),
                                   onSort: (i, a) => {}),
-                        ],
-                        rows: [
+                            ],
+                            rows: [
                               for (Person member in snapshot.data!.members)
                                 DataRow(cells: [
                                   DataCell(
                                     Text(member.name ?? ''),
                                   ),
-                                  DataCell(Text(member.personType == PersonType.person ? member.email! : "")),
+                                  DataCell(Text(
+                                      member.personType == PersonType.person
+                                          ? member.email!
+                                          : "")),
                                   DataCell(Text(
                                       member.personType == PersonType.person
                                           ? 'User'
                                           : 'Service Account')),
-                                  DataCell(bloc.mrClient.isPortfolioOrSuperAdmin(
-                                          snapshot.data!.portfolioId!)
+                                  DataCell(bloc.mrClient
+                                          .isPortfolioOrSuperAdmin(
+                                              snapshot.data!.portfolioId!)
                                       ? Tooltip(
-                                      message: "Remove from group",
-                                        child: FHIconButton(
+                                          message: "Remove from group",
+                                          child: FHIconButton(
                                             icon: const Icon(Icons.delete),
                                             onPressed: () {
                                               try {
@@ -181,13 +185,13 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                                               }
                                             },
                                           ),
-                                      )
+                                        )
                                       : const Text(''))
                                 ])
-                        ],
-                      ),
-                            ),
-                          ))
+                            ],
+                          ),
+                        ),
+                      ))
                     ],
                   );
                 } else {
@@ -198,42 +202,38 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
       ],
     );
   }
-  void onSortColumn(
-      List<Person> people, int columnIndex, bool ascending) {
+
+  void onSortColumn(List<Person> people, int columnIndex, bool ascending) {
     setState(() {
       if (columnIndex == 0) {
         if (ascending) {
           people.sort((a, b) {
-            return a.name!
-                .toLowerCase()
-                .compareTo(b.name!.toLowerCase());
+            return a.name!.toLowerCase().compareTo(b.name!.toLowerCase());
           });
         } else {
           people.sort((a, b) {
-            return b.name!
-                .toLowerCase()
-                .compareTo(a.name!.toLowerCase());
+            return b.name!.toLowerCase().compareTo(a.name!.toLowerCase());
           });
         }
       }
       if (columnIndex == 1) {
         if (ascending) {
-          people.sort((a, b) => a.email!
-              .toLowerCase()
-              .compareTo(b.email!.toLowerCase()));
+          people.sort((a, b) =>
+              a.email!.toLowerCase().compareTo(b.email!.toLowerCase()));
         } else {
-          people.sort((a, b) => b.email!
-              .toLowerCase()
-              .compareTo(a.email!.toLowerCase()));
+          people.sort((a, b) =>
+              b.email!.toLowerCase().compareTo(a.email!.toLowerCase()));
         }
       }
       if (columnIndex == 2) {
         if (ascending) {
-          people.sort((a, b) => a.personType.toString()
+          people.sort((a, b) => a.personType
+              .toString()
               .toLowerCase()
               .compareTo(b.personType.toString().toLowerCase()));
         } else {
-          people.sort((a, b) => b.personType.toString()
+          people.sort((a, b) => b.personType
+              .toString()
               .toLowerCase()
               .compareTo(a.personType.toString().toLowerCase()));
         }
@@ -244,7 +244,6 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
       sortColumnIndex = columnIndex;
     });
   }
-
 
   Widget _getAdminActions(GroupBloc bloc) {
     return Row(children: <Widget>[
@@ -382,7 +381,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
     return Form(
       key: _formKey,
       child: FHAlertDialog(
-        title: Text('Add members to group ' + widget.group.name),
+        title: Text('Add members to group ${widget.group.name}'),
         content: SizedBox(
           width: 500,
           child: Column(
@@ -467,7 +466,4 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
       },
     );
   }
-
 }
-
-

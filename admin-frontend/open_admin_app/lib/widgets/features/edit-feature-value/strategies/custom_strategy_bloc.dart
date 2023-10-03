@@ -78,6 +78,7 @@ class CustomStrategyBloc extends Bloc
 
   /// this goes through the strategies and ensures they have unique ids
   /// unique based on this specific feature value
+  @override
   void ensureStrategiesAreUnique() {
     final strategies = _strategySource.value;
 

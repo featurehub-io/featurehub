@@ -100,7 +100,7 @@ class _FeatureGroupStrategyEditingWidgetState
                 ),
                 const SizedBox(height: 16),
                 BlocProvider(
-                    creator: (_c, _b) => individualStrategyBloc,
+                    creator: (c, b) => individualStrategyBloc,
                     child: const RolloutStrategiesWidget()),
                 const SizedBox(height: 16.0),
                 const FHPageDivider(),

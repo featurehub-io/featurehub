@@ -12,8 +12,6 @@ import 'package:open_admin_app/widgets/user/common/admin_checkbox.dart';
 import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widget.dart';
 import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
 
-
-
 class EditAdminServiceAccountRoute extends StatelessWidget {
   const EditAdminServiceAccountRoute({Key? key}) : super(key: key);
 
@@ -37,13 +35,14 @@ class EditAdminServiceAccountRoute extends StatelessWidget {
 class EditAdminServiceAccountFormWidget extends StatefulWidget {
   final Person person;
 
-  const EditAdminServiceAccountFormWidget({Key? key, required this.person}) : super(key: key);
+  const EditAdminServiceAccountFormWidget({Key? key, required this.person})
+      : super(key: key);
 
   @override
-  _EditUserFormState createState() => _EditUserFormState();
+  EditUserFormState createState() => EditUserFormState();
 }
 
-class _EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
+class EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
 

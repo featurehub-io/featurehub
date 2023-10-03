@@ -279,14 +279,13 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     group.members = [];
 
     try {
-      final updatedGroup = await _groupServiceApi
-          .updateGroup(gid, group,
-              includeGroupRoles: true,
-              includeMembers: false,
-              updateMembers: false,
-              applicationId: applicationId,
-              updateApplicationGroupRoles: true,
-              updateEnvironmentGroupRoles: true);
+      final updatedGroup = await _groupServiceApi.updateGroup(gid, group,
+          includeGroupRoles: true,
+          includeMembers: false,
+          updateMembers: false,
+          applicationId: applicationId,
+          updateApplicationGroupRoles: true,
+          updateEnvironmentGroupRoles: true);
 
       _groupWithRolesPS
           .add(ApplicationGroupRoles(updatedGroup, applicationId!));
@@ -314,8 +313,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         includePermissions: true,
       );
 
-      _serviceAccountPS
-          .add(updatedServiceAccount);
+      _serviceAccountPS.add(updatedServiceAccount);
 
       unawaited(
           _mrClient.streamValley.getEnvironmentServiceAccountPermissions());
@@ -371,14 +369,14 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  Future<void> createEnv(String name, bool _isProduction) async {
+  Future<void> createEnv(String name, bool isProduction) async {
     final toUpdate = environmentsList
         .firstWhereOrNull((env) => env.priorEnvironmentId == null);
     final env = await _environmentServiceApi.createEnvironment(
         applicationId!,
         Environment(
           name: name,
-          production: _isProduction,
+          production: isProduction,
         ));
     if (toUpdate != null) {
       toUpdate.priorEnvironmentId = env.id;

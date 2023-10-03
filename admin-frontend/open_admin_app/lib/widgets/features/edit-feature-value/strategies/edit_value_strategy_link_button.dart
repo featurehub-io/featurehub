@@ -37,7 +37,7 @@ class EditValueStrategyLinkButton extends StatelessWidget {
                           ? 'Edit split targeting rules'
                           : 'View split targeting rules'),
                       content: BlocProvider(
-                        creator: (_c, _b) =>
+                        creator: (c, b) =>
                             IndividualStrategyBloc(rolloutStrategy),
                         child: StrategyEditingWidget(
                             bloc: strBloc, editable: editable),

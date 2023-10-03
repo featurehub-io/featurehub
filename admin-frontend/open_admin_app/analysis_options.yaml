@@ -7,7 +7,7 @@ include: package:flutter_lints/flutter.yaml
 # Uncomment to specify additional rules.
 linter:
  rules:
-   - avoid_print
-
+   - avoid_print: true
+   - library_private_types_in_public_api: false
 analyzer:
   exclude: [build/**]

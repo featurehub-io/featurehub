@@ -57,7 +57,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
 
   @override
   Widget build(BuildContext context) {
-    final _debouncer = Debouncer(milliseconds: 500);
+    final debouncer = Debouncer(milliseconds: 500);
       List<GridColumn> gridColumnsList = [];
       return StreamBuilder<ApplicationFeatureValues?>(
           stream: widget.bloc.appFeatureValuesStream,
@@ -179,7 +179,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                                 border: const OutlineInputBorder(),
                               ),
                               onChanged: (val) {
-                                _debouncer.run(() {
+                                debouncer.run(() {
                                   setState(() {
                                     _searchTerm = val;
                                     widget.bloc.getApplicationFeatureValuesData(

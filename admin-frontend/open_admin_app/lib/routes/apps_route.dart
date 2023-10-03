@@ -22,10 +22,10 @@ class AppsRoute extends StatefulWidget {
   const AppsRoute({Key? key, required this.createApp}) : super(key: key);
 
   @override
-  _AppsRouteState createState() => _AppsRouteState();
+  AppsRouteState createState() => AppsRouteState();
 }
 
-class _AppsRouteState extends State<AppsRoute> {
+class AppsRouteState extends State<AppsRoute> {
   AppsBloc? bloc;
 
   @override

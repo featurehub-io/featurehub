@@ -28,8 +28,7 @@ class AddStrategyButton extends StatelessWidget {
                         ? 'Edit split targeting rules'
                         : 'View split targeting rules'),
                     content: BlocProvider(
-                      creator: (_c, _b) =>
-                          IndividualStrategyBloc(RolloutStrategy(
+                      creator: (c, b) => IndividualStrategyBloc(RolloutStrategy(
                         name: '',
                         id: 'created',
                       )),

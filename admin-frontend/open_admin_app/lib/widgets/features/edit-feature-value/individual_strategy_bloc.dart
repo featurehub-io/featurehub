@@ -83,16 +83,16 @@ class IndividualStrategyBloc extends Bloc {
   void updateStrategyViolations(
       RolloutStrategyValidationResponse validationCheck,
       RolloutStrategy strategy) {
-    var _violations = <RolloutStrategyViolation>[];
+    var violations = <RolloutStrategyViolation>[];
 
     final customViolations = validationCheck.customStategyViolations
         .firstWhereOrNull(
             (rs) => rs.strategy != null && rs.strategy!.id == strategy.id);
 
     if (customViolations != null && customViolations.violations.isNotEmpty) {
-      _violations.addAll(customViolations.violations);
+      violations.addAll(customViolations.violations);
     }
 
-    _violationSource.add(_violations);
+    _violationSource.add(violations);
   }
 }

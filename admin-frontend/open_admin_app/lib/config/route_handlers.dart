@@ -76,21 +76,21 @@ class RouteCreator {
 
   Widget portfolios(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<PortfolioBloc>(
-        creator: (_context, _bag) =>
+        creator: (context, bag) =>
             PortfolioBloc(params['search']?.elementAt(0), mrBloc),
         child: const PortfolioRoute());
   }
 
   Widget users(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<ListUsersBloc>(
-        creator: (_context, _bag) =>
+        creator: (context, bag) =>
             ListUsersBloc(params['search']?.elementAt(0), mrBloc),
         child: const ManageUsersRoute());
   }
 
   Widget group(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<GroupBloc>(
-        creator: (_context, _bag) =>
+        creator: (context, bag) =>
             GroupBloc(params['id']?.elementAt(0), mrBloc),
         child: ManageGroupRoute(
           createGroup: _actionCreate(params),
@@ -110,7 +110,7 @@ class RouteCreator {
     }
 
     return BlocProvider<RegisterBloc>(
-        creator: (_context, _bag) =>
+        creator: (context, bag) =>
             RegisterBloc(mrBloc)..getDetails(params['token']![0]!),
         child: RegisterURLRoute(params['token']![0]!));
   }
@@ -119,9 +119,9 @@ class RouteCreator {
     // TODO: fix this construction, bloc should not be created outside of provider
     final select = SelectPortfolioGroupBloc(mrBloc);
     return BlocProvider<SelectPortfolioGroupBloc>(
-        creator: (_context, _bag) => select,
+        creator: (context, bag) => select,
         child: BlocProvider<CreateUserBloc>(
-            creator: (_context, _bag) =>
+            creator: (context, bag) =>
                 CreateUserBloc(mrBloc, selectGroupBloc: select),
             child: const CreateUserRoute(title: 'Create User')));
   }
@@ -131,9 +131,9 @@ class RouteCreator {
     // TODO: fix this construction, bloc should not be created outside of provider
     final select = SelectPortfolioGroupBloc(mrBloc);
     return BlocProvider<SelectPortfolioGroupBloc>(
-        creator: (_context, _bag) => select,
+        creator: (context, bag) => select,
         child: BlocProvider<CreateUserBloc>(
-            creator: (_context, _bag) =>
+            creator: (context, bag) =>
                 CreateUserBloc(mrBloc, selectGroupBloc: select),
             child: const CreateAdminServiceAccountsRoute(
                 title: 'Create Admin Service Account')));
@@ -142,9 +142,9 @@ class RouteCreator {
   Widget manageUser(mrBloc, {Map<String, List<String?>> params = const {}}) {
     final select = SelectPortfolioGroupBloc(mrBloc);
     return BlocProvider<SelectPortfolioGroupBloc>(
-        creator: (_context, _bag) => select,
+        creator: (context, bag) => select,
         child: BlocProvider<EditUserBloc>(
-            creator: (_context, _bag) => widgetCreator.createEditUserBloc(
+            creator: (context, bag) => widgetCreator.createEditUserBloc(
                 mrBloc, params['id']?.elementAt(0),
                 selectGroupBloc: select),
             child: const EditUserRoute()));
@@ -154,9 +154,9 @@ class RouteCreator {
       {Map<String, List<String?>> params = const {}}) {
     final select = SelectPortfolioGroupBloc(mrBloc);
     return BlocProvider<SelectPortfolioGroupBloc>(
-        creator: (_context, _bag) => select,
+        creator: (context, bag) => select,
         child: BlocProvider<EditUserBloc>(
-            creator: (_context, _bag) => EditUserBloc(
+            creator: (context, bag) => EditUserBloc(
                 mrBloc, params['id']?.elementAt(0),
                 selectGroupBloc: select),
             child: const EditAdminServiceAccountRoute()));
@@ -165,7 +165,7 @@ class RouteCreator {
   Widget adminServiceAccount(mrBloc,
       {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<ListUsersBloc>(
-        creator: (_context, _bag) =>
+        creator: (context, bag) =>
             ListUsersBloc(params['search']?.elementAt(0), mrBloc),
         child: const ManageAdminServiceAccountsRoute());
   }
@@ -173,7 +173,7 @@ class RouteCreator {
   Widget serviceAccount(mrBloc,
       {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<ManageServiceAccountsBloc>(
-        creator: (_context, _bag) =>
+        creator: (context, bag) =>
             ManageServiceAccountsBloc(params['pid']?.elementAt(0), mrBloc),
         child: ManageServiceAccountsRoute(
             createServiceAccount: _actionCreate(params)));
@@ -182,7 +182,7 @@ class RouteCreator {
   Widget featureStatus(ManagementRepositoryClientBloc mrBloc,
       {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<PerApplicationFeaturesBloc>(
-        creator: (_c, _b) => PerApplicationFeaturesBloc(mrBloc),
+        creator: (c, b) => PerApplicationFeaturesBloc(mrBloc),
         child: Builder(
             builder: (context) => FeatureStatusRoute(
                   createFeature: _actionCreate(params),
@@ -206,27 +206,27 @@ class RouteCreator {
 
   Widget apps(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<AppsBloc>(
-        creator: (_context, _bag) => AppsBloc(mrBloc),
+        creator: (context, bag) => AppsBloc(mrBloc),
         child: AppsRoute(createApp: _actionCreate(params)));
   }
 
   Widget featureGroups(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<FeatureGroupsBloc>(
-        creator: (_context, _bag) => FeatureGroupsBloc(mrBloc),
+        creator: (context, bag) => FeatureGroupsBloc(mrBloc),
         child: FeatureGroupsRoute(createApp: _actionCreate(params)));
   }
 
   Widget serviceEnvsHandler(ManagementRepositoryClientBloc mrBloc,
       {Map<String, List<String>>? params}) {
     return BlocProvider<ServiceAccountEnvBloc>(
-      creator: (_c, _b) => ServiceAccountEnvBloc(mrBloc),
+      creator: (c, b) => ServiceAccountEnvBloc(mrBloc),
       child: const ApiKeysRoute(),
     );
   }
 
   Widget manageApp(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<ManageAppBloc>(
-        creator: (_context, _bag) => ManageAppBloc(mrBloc),
+        creator: (context, bag) => ManageAppBloc(mrBloc),
         child: ManageAppRoute(_actionCreate(params) &&
             _paramEquals(params, 'tab', 'environments')));
   }

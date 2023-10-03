@@ -4,10 +4,10 @@ class NotFoundRoute extends StatefulWidget {
   const NotFoundRoute({Key? key}) : super(key: key);
 
   @override
-  _NotFoundRouteState createState() => _NotFoundRouteState();
+  NotFoundRouteState createState() => NotFoundRouteState();
 }
 
-class _NotFoundRouteState extends State<NotFoundRoute>
+class NotFoundRouteState extends State<NotFoundRoute>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   final RelativeRectTween _relativeRectTween = RelativeRectTween(

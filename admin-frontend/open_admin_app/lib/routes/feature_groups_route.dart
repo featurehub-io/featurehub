@@ -21,10 +21,10 @@ class FeatureGroupsRoute extends StatefulWidget {
       : super(key: key);
 
   @override
-  _FeatureGroupsRouteState createState() => _FeatureGroupsRouteState();
+  FeatureGroupsRouteState createState() => FeatureGroupsRouteState();
 }
 
-class _FeatureGroupsRouteState extends State<FeatureGroupsRoute> {
+class FeatureGroupsRouteState extends State<FeatureGroupsRoute> {
   FeatureGroupsBloc? bloc;
 
   @override

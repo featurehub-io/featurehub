@@ -119,7 +119,7 @@ class _WebhookTableDataSource extends DataGridSource {
 
   String encodeFromHeaders() => _headers
       .map((e) =>
-          Uri.encodeComponent(e.key) + "=" + Uri.encodeComponent(e.value))
+          "${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}")
       .join(",");
 
   @override

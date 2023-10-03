@@ -22,10 +22,10 @@ class ManageAppRoute extends StatefulWidget {
   const ManageAppRoute(this.createEnvironment, {Key? key}) : super(key: key);
 
   @override
-  _ManageAppRouteState createState() => _ManageAppRouteState();
+  ManageAppRouteState createState() => ManageAppRouteState();
 }
 
-class _ManageAppRouteState extends State<ManageAppRoute> {
+class ManageAppRouteState extends State<ManageAppRoute> {
   ManageAppBloc? bloc;
 
   @override
@@ -47,8 +47,8 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
         ),
         const SizedBox(height: 16.0),
         StreamBuilder<List<Application>>(
-            stream: bloc
-                .mrClient.streamValley.currentPortfolioApplicationsStream,
+            stream:
+                bloc.mrClient.streamValley.currentPortfolioApplicationsStream,
             builder: (context, snapshot) {
               if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                 return Container(
@@ -61,7 +61,8 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                     padding: const EdgeInsets.only(left: 8, top: 15),
                     child: Row(
                       children: [
-                        SelectableText('There are no applications in this portfolio',
+                        SelectableText(
+                            'There are no applications in this portfolio',
                             style: Theme.of(context).textTheme.bodySmall),
                         const Padding(
                           padding: EdgeInsets.only(left: 8.0),
@@ -84,8 +85,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                     ManageAppWidget(),
                   ],
                 );
-              } else if (envSnapshot.data ==
-                  ManageAppPageState.loadingState) {
+              } else if (envSnapshot.data == ManageAppPageState.loadingState) {
                 return Container();
               }
               return Container();
@@ -127,10 +127,10 @@ class ManageAppWidget extends StatefulWidget {
   const ManageAppWidget({Key? key}) : super(key: key);
 
   @override
-  _ManageAppWidgetState createState() => _ManageAppWidgetState();
+  ManageAppWidgetState createState() => ManageAppWidgetState();
 }
 
-class _ManageAppWidgetState extends State<ManageAppWidget>
+class ManageAppWidgetState extends State<ManageAppWidget>
     with SingleTickerProviderStateMixin {
   StreamSubscription<RouteChange?>? _routeChange;
   TabController? _controller;
@@ -197,7 +197,9 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
               indicatorSize: TabBarIndicatorSize.label,
               controller: _controller,
               labelStyle: MediaQuery.of(context).size.width > 400
-                  ? const TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold) : const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold),
+                  ? const TextStyle(fontSize: 14.0, fontWeight: FontWeight.bold)
+                  : const TextStyle(
+                      fontSize: 12.0, fontWeight: FontWeight.bold),
               tabs: [
                 const Tab(
                   child: Text("Environments"),
@@ -217,9 +219,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
                   ),
                 ),
                 if (bloc.mrClient.identityProviders.capabilityWebhooks)
-                  const Tab(
-                    child: Text("Webhooks")
-                  )
+                  const Tab(child: Text("Webhooks"))
               ],
             ),
           ),
@@ -304,9 +304,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
     }
 
     var mrClient = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-    _routeChange = mrClient
-        .routeChangedStream
-        .listen((routeChange) {
+    _routeChange = mrClient.routeChangedStream.listen((routeChange) {
       if (routeChange?.route == '/app-settings') {
         switch (routeChange!.params['tab']![0]) {
           case 'environments':
