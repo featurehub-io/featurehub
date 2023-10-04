@@ -1,5 +1,6 @@
 package io.featurehub.db.api
 
+import io.featurehub.mr.model.CreateServiceAccount
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.ServiceAccount
 import java.util.*
@@ -27,7 +28,7 @@ interface ServiceAccountApi {
   class DuplicateServiceAccountException : Exception()
 
   @Throws(DuplicateServiceAccountException::class)
-  fun create(portfolioId: UUID, creator: Person, serviceAccount: ServiceAccount, opts: Opts): ServiceAccount?
+  fun create(portfolioId: UUID, creator: Person, serviceAccount: CreateServiceAccount, opts: Opts): ServiceAccount?
   fun delete(deleter: Person, serviceAccountId: UUID): Boolean
   fun cleanupServiceAccountApiKeys()
 

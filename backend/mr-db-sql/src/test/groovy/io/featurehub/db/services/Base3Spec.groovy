@@ -9,6 +9,8 @@ import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.CreateApplication
+import io.featurehub.mr.model.CreateEnvironment
+import io.featurehub.mr.model.CreatePortfolio
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Organization
@@ -94,9 +96,9 @@ class Base3Spec extends Specification {
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi())
 
-    portfolio = portfolioSqlApi.createPortfolio(new Portfolio().name(RandomStringUtils.randomAlphabetic(10)).description("desc1"), Opts.empty(), superPerson)
+    portfolio = portfolioSqlApi.createPortfolio(new CreatePortfolio().name(RandomStringUtils.randomAlphabetic(10)).description("desc1"), Opts.empty(), superuser)
     app1 = applicationSqlApi.createApplication(portfolio.id, new CreateApplication().name(RandomStringUtils.randomAlphabetic(10)).description("app1"), superPerson)
-    env1 = environmentSqlApi.create(new Environment().description(RandomStringUtils.randomAlphabetic(10)).name(RandomStringUtils.randomAlphabetic(10)), app1, superPerson)
+    env1 = environmentSqlApi.create(new CreateEnvironment().description(RandomStringUtils.randomAlphabetic(10)).name(RandomStringUtils.randomAlphabetic(10)), app1.id, superPerson)
   }
 
   def cleanup() {

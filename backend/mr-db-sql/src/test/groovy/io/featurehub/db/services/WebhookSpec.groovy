@@ -3,6 +3,7 @@ package io.featurehub.db.services
 import cd.connect.app.config.ThreadLocalConfigurationSource
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
+import io.featurehub.mr.model.CreateEnvironment
 import io.featurehub.mr.model.Environment
 import io.featurehub.webhook.events.WebhookEnvironmentResult
 import io.featurehub.webhook.events.WebhookMethod
@@ -17,7 +18,7 @@ class WebhookSpec extends Base3Spec {
     webhookApi = new WebhookSqlApi()
   }
 
-  def teardown() {
+  def cleanup() {
     ThreadLocalConfigurationSource.clearContext()
   }
 
@@ -61,8 +62,8 @@ class WebhookSpec extends Base3Spec {
       details.url == null
       details.sourceSystem == 'mine'
       details.result == 'ok'
-      details.outboundHeaders.isEmpty()
-      details.incomingHeaders.isEmpty()
+      details.outboundHeaders == null
+      details.incomingHeaders ==  null
       details.cloudEventType == WebhookEnvironmentResult.CLOUD_EVENT_TYPE
       details.deliveredDataCloudEventType == 'saus'
       details.content == 'blah'
@@ -73,10 +74,10 @@ class WebhookSpec extends Base3Spec {
 
   def "pagination works and failure deactivation works as expected"() {
     given: "i create a new environment"
-      def env2 = environmentSqlApi.create(new Environment()
+      def env2 = environmentSqlApi.create(new CreateEnvironment()
         .name("pagy")
         .environmentInfo(["webhook.features.enabled": "true"])
-        .description("pagy"), app1, superPerson)
+        .description("pagy"), app1.id, superPerson)
       env2 = environmentSqlApi.get(env2.id, Opts.opts(FillOpts.Details), superPerson)
     and: "i have 40 webhooks"
       for(int count = 1; count < 40; count ++) { webhookApi.saveWebhook(makeData(env2.id, 'pootle'))}

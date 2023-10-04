@@ -6,6 +6,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.mr.events.common.CacheSource
+import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureValueType
 
@@ -25,14 +26,16 @@ class FeatureStandaloneSpec extends Base2Spec {
       db.save(app)
 
     and: "i have two features"
-      appApi.createApplicationFeature(app.id, new Feature().name("x").key("FEATURE_UPD2").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      appApi.createApplicationFeature(app.id, new CreateFeature().name("x")
+        .description("x")
+        .key("FEATURE_UPD2").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
 
       // we now have to save this or the next operational can't find it
       DB.currentTransaction().commit()
       DB.beginTransaction()
 
       def features = appApi.createApplicationFeature(app.id,
-        new Feature().name('FEATURE_UPD3').key("FEATURE_UPD3").valueType(FeatureValueType.NUMBER), superPerson, Opts.empty())
+        new CreateFeature().description("x").name('FEATURE_UPD3').key("FEATURE_UPD3").valueType(FeatureValueType.NUMBER), superPerson, Opts.empty())
 
       Feature f2 = features.find({ it -> it.key == 'FEATURE_UPD3'})
     when: "i update the second to the same name as the first"

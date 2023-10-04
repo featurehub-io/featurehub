@@ -5,7 +5,6 @@ import io.featurehub.mr.api.PortfolioServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.CreateGroup
 import io.featurehub.mr.model.CreatePortfolio
-import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.utils.PortfolioUtils
 import jakarta.inject.Inject
@@ -46,7 +45,7 @@ class PortfolioResource @Inject constructor(
             .name(portfolioUtils.formatPortfolioAdminGroupName(createPortfolio.name))
             .admin(true),
           authManager.from(securityContext)
-        )
+        ) ?: throw NotFoundException()
       } catch (e: GroupApi.DuplicateGroupException) {
         throw WebApplicationException(Response.Status.CONFLICT)
       }

@@ -293,7 +293,8 @@ components:
         - name
       properties:
         id:
-          description: "unique id for this strategy"
+          nullable: true
+          description: "unique id for this strategy, client can be null but server will always fill in and never return null"
           type: string
         name:
           description: "The strategy name"

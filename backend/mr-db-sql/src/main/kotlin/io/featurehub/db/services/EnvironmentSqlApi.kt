@@ -165,9 +165,9 @@ class EnvironmentSqlApi @Inject constructor(
 
     val envs = QDbEnvironment()
       .select(QDbEnvironment.Alias.id)
-      .parentApplication.id.eq(appId).groupRolesAcl.group.groupMembers.person.id.eq(person).findList();
+      .parentApplication.id.eq(appId).groupRolesAcl.group.groupMembers.person.id.eq(person).findList()
 
-    return if (envs.isEmpty()) null else envs.map { it.id };
+    return if (envs.isEmpty()) null else envs.map { it.id }
   }
 
   private fun circularPriorEnvironmentCheck(priorEnvironmentId: UUID?, environment: DbEnvironment) {
@@ -382,13 +382,13 @@ class EnvironmentSqlApi @Inject constructor(
       }
     }
     if (environments.size > 1) {
-      val destinations = environments.associateBy { it.id!! }
+      val destinations = environments.associateBy { it.id }
       for (e in environments) {
         // create a slot for each environment
-        val spot: MutableMap<UUID, Int> = environments.map { env -> env.id!! to 0 }.toMap() as MutableMap<UUID, Int>
+        val spot: MutableMap<UUID, Int> = environments.map { env -> env.id to 0 }.toMap() as MutableMap<UUID, Int>
 
         // set our one to "visited"
-        spot[e.id!!] = 1
+        spot[e.id] = 1
         // now walk backwards until we either hit the end or see "visited"
         var currentId = e.priorEnvironmentId
         while (currentId != null && spot[currentId] == 0) {
@@ -419,7 +419,7 @@ class EnvironmentSqlApi @Inject constructor(
     }
   }
 
-  public fun getEnvironment(appId: UUID, envName: String): Environment? {
+  fun getEnvironment(appId: UUID, envName: String): Environment? {
     return QDbEnvironment().parentApplication.id.eq(appId).name.ieq(envName).findOne()?.let { convertUtils.toEnvironment(it, Opts.empty()) }
   }
 

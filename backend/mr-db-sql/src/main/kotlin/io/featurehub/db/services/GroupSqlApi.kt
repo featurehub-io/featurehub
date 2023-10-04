@@ -396,13 +396,13 @@ open class GroupSqlApi @Inject constructor(
       superuserChanges = updateMembersOfGroup(gp, group)
     }
     var aclUpdates: AclUpdates? = null
-    gp.environmentRoles?.let {
+    gp.environmentRoles.let {
       if (updateEnvironmentGroupRoles) {
         aclUpdates = updateEnvironmentMembersOfGroup(it, group)
       }
     }
 
-    gp.applicationRoles?.let { appRoles ->
+    gp.applicationRoles.let { appRoles ->
       if (updateApplicationGroupRoles) {
         updateApplicationMembersOfGroup(appRoles, group, appId)
       }
@@ -616,16 +616,16 @@ open class GroupSqlApi @Inject constructor(
 
   @Throws(DuplicateUsersException::class)
   private fun updateMembersOfGroup(gp: Group, group: DbGroup): SuperuserChanges? {
-    val uuids = gp.members!!
+    val uuids = gp.members
       .filter { p: Person -> p.id != null }
       .map { p: Person ->
         p.id!!
           .id
       }.toSet()
-    if (uuids.size != gp.members!!.size) {
+    if (uuids.size != gp.members.size) {
       throw DuplicateUsersException()
     }
-    val desiredPeople = gp.members!!
+    val desiredPeople = gp.members
       .filter { p: Person -> p.id != null }
       .associateBy { it.id!!.id }
 
@@ -634,7 +634,7 @@ open class GroupSqlApi @Inject constructor(
     val removedPerson = mutableListOf<UUID>()
 
     // ensure no duplicates get through
-    val addedPeople = gp.members?.mapNotNull { it?.id?.id }?.toMutableSet() ?: mutableSetOf()
+    val addedPeople = gp.members.mapNotNull { it?.id?.id }?.toMutableSet() ?: mutableSetOf()
 
     val isSuperuserGroup = group.isAdminGroup && group.owningPortfolio == null
 

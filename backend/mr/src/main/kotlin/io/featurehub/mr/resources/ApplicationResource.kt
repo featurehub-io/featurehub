@@ -77,7 +77,7 @@ class ApplicationResource @Inject constructor(
         securityContext: SecurityContext
     ): Boolean {
         val apc = applicationUtils.check(securityContext, eid)
-        return applicationApi.deleteApplication(apc.app.portfolioId!!, apc.app.id)
+        return applicationApi.deleteApplication(apc.app.portfolioId, apc.app.id)
     }
 
     override fun findApplications(

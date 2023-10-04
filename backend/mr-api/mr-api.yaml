@@ -2558,7 +2558,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ServiceAccount"
+              $ref: "#/components/schemas/CreateServiceAccount"
       responses:
         200:
           description: "Newly created service account"
@@ -3178,12 +3178,16 @@ components:
           $ref: "#/components/schemas/Environment"
         roles:
           description: "the roles of this person in this environment"
+          default: []
           type: array
           items:
             $ref: "#/components/schemas/RoleType"
         featureValue:
-          $ref: "#/components/schemas/FeatureValue"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/FeatureValue"
         serviceAccounts:
+          default: []
           type: array
           items:
             $ref: "#/components/schemas/ServiceAccount"
@@ -3233,7 +3237,6 @@ components:
       required:
         - key
         - name
-        - description
         - valueType
       properties:
         key:
@@ -3256,6 +3259,7 @@ components:
           type: boolean
           description: "should the config remain invisible to users without secret permission"
         description:
+          nullable: true
           type: string
           maxLength: 300
         metaData:
@@ -3299,6 +3303,7 @@ components:
           type: boolean
           description: "should the config remain invisible to users without secret permission"
         description:
+          nullable: true
           type: string
           maxLength: 300
         metaData:
@@ -3333,6 +3338,7 @@ components:
           type: string
         retired:
           nullable: false
+          default: false
           type: boolean
           description: "if false or null, this feature will visible on edge. if true, it will not be passed to the client"
         rolloutStrategyInstances:
@@ -3858,6 +3864,23 @@ components:
           nullable: true
           type: string
           format: uuid
+    CreateServiceAccount:
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 70
+        description:
+          nullable: true
+          type: string
+          maxLength: 400
+        permissions:
+          type: array
+          default: []
+          items:
+            $ref: "#/components/schemas/ServiceAccountPermission"
     ServiceAccount:
       required:
         - name
@@ -3871,6 +3894,7 @@ components:
           minLength: 1
           maxLength: 70
         portfolioId:
+          nullable: true
           type: string
           format: uuid
         description:
@@ -3995,7 +4019,8 @@ components:
               description: "is this an admin group?"
               type: boolean
             portfolioId:
-              description: "The portfolio this group belongs to, unless it is the superuser group when it does not belong to one"
+              nullable: true
+              description: "The portfolio this group belongs to, unless it is the superuser group when it does not belong to one (null)"
               type: string
               format: uuid
             organizationId:

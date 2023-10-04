@@ -14,6 +14,9 @@ import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.CreateApplication
+import io.featurehub.mr.model.CreateEnvironment
+import io.featurehub.mr.model.CreateGroup
+import io.featurehub.mr.model.CreatePortfolio
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Group
@@ -46,12 +49,12 @@ class GroupSpec extends BaseSpec {
     user = dbSuperPerson
 
     applicationSqlApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureApi))
-    commonPortfolio = portfolioApi.createPortfolio(new Portfolio().name("acl common portfolio").organizationId(org.id), Opts.empty(), superPerson)
+    commonPortfolio = portfolioApi.createPortfolio(new CreatePortfolio().name("acl common portfolio"), Opts.empty(), superuser)
     commonApplication1 = applicationSqlApi.createApplication(commonPortfolio.id, new CreateApplication().name("acl common app").description("acl common app"), superPerson)
-    env1App1 = environmentSqlApi.create(new Environment().name("acl common app env1"), commonApplication1, superPerson)
+    env1App1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("acl common app env1"), commonApplication1.id, superPerson)
     commonApplication2 = applicationSqlApi.createApplication(commonPortfolio.id, new CreateApplication().name("acl common app2").description("acl common app2"), superPerson)
 
-    portfolioAdminGroup = groupSqlApi.createGroup(commonPortfolio.id, new Group().name("admin group").admin(true), superPerson)
+    portfolioAdminGroup = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name("admin group").admin(true), superPerson)
   }
 
   def setup() {
@@ -63,9 +66,9 @@ class GroupSpec extends BaseSpec {
     given: "i have a second application"
       def app2 = applicationSqlApi.createApplication(commonPortfolio.id, new CreateApplication().name("acl-test-filter").description("acl test filter"), superPerson)
     and: "i have an environment in the second application"
-      def env2 = environmentSqlApi.create(new Environment().name("acl-test-filter-env").description("acl-test-filter-env"), app2, superPerson)
+      def env2 = environmentSqlApi.create(new CreateEnvironment().name("acl-test-filter-env").description("acl-test-filter-env"), app2.id, superPerson)
     and: "create a new group"
-      def group = groupSqlApi.createGroup(commonPortfolio.id, new Group().name("acl-test-filter-group"), superPerson)
+      def group = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name("acl-test-filter-group"), superPerson)
     and: "i create permissions in the group for both environments"
       def groupUpdated = groupSqlApi.updateGroup(group.id, group.environmentRoles([
         new EnvironmentGroupRole().environmentId(env1App1.id).roles([RoleType.UNLOCK]),
@@ -88,7 +91,7 @@ class GroupSpec extends BaseSpec {
       def janeToken = personApi.create('plain-jane@mailinator.com', 'Jane', superuser)
       def jane = personApi.getByToken(janeToken.token, Opts.empty())
     and: "i create a new group in the common portfolio"
-      Group g = groupSqlApi.createGroup(commonPortfolio.id, new Group().name("plain-bob-group"), superPerson)
+      Group g = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name("plain-bob-group"), superPerson)
     and: "i update it with the basic user"
       groupSqlApi.updateGroup(g.id, g.members([bob]), null, true, false, false, Opts.empty())
     when: "i add jane as a portfolio admin"
@@ -104,11 +107,11 @@ class GroupSpec extends BaseSpec {
 
   def "i can create an admin group for a portfolio and can't create another"() {
     given: "i have a portfolio"
-      Portfolio p = portfolioApi.createPortfolio(new Portfolio().name("Main App").organizationId(org.id), Opts.empty(), superPerson)
+      Portfolio p = portfolioApi.createPortfolio(new CreatePortfolio().name("Main App"), Opts.empty(), superuser)
     when: "i create an admin group for it"
-      Group g = groupSqlApi.createGroup(p.id, new Group().name("admin-group").admin(true), superPerson)
+      Group g = groupSqlApi.createGroup(p.id, new CreateGroup().name("admin-group").admin(true), superPerson)
     and: "i create another admin group for it"
-      Group second = groupSqlApi.createGroup(p.id, new Group().name("second").admin(true), superPerson)
+      Group second = groupSqlApi.createGroup(p.id, new CreateGroup().name("second").admin(true), superPerson)
     and: "i look for it"
       Group pAdminGroup = groupSqlApi.findPortfolioAdminGroup(p.id, Opts.opts(FillOpts.Members))
     then: "the first admin group exists"
@@ -124,11 +127,11 @@ class GroupSpec extends BaseSpec {
 
   def "i can create more than one non-admin group for a portfolio"() {
     given: "i have a portfolio"
-      Portfolio p = portfolioApi.createPortfolio(new Portfolio().name("Main App1").organizationId(org.id), Opts.empty(), superPerson)
+      Portfolio p = portfolioApi.createPortfolio(new CreatePortfolio().name("Main App1"), Opts.empty(), superuser)
     when: "i create a group for it"
-      Group g = groupSqlApi.createGroup(p.id, new Group().name("non-admin-group"), superPerson)
+      Group g = groupSqlApi.createGroup(p.id, new CreateGroup().name("non-admin-group"), superPerson)
     and: "i create another group for it"
-      Group second = groupSqlApi.createGroup(p.id, new Group().name("second-non-admin"), superPerson)
+      Group second = groupSqlApi.createGroup(p.id, new CreateGroup().name("second-non-admin"), superPerson)
     then: "the first group exists"
       g.id != null
       g.name != null
@@ -141,7 +144,7 @@ class GroupSpec extends BaseSpec {
 
   def "i can't create a group for a non-existent portfolio"() {
     when: "i create a group for a fantasy portfolio"
-      Group g = groupSqlApi.createGroup(UUID.randomUUID(), new Group().name("non-admin-group"), superPerson)
+      Group g = groupSqlApi.createGroup(UUID.randomUUID(), new CreateGroup().name("non-admin-group"), superPerson)
     then:  "no group is created"
       g == null
   }
@@ -170,8 +173,8 @@ class GroupSpec extends BaseSpec {
   static int counter = 5;
 
   private Group nonAdminGroup() {
-    Portfolio p = portfolioApi.createPortfolio(new Portfolio().name("Main App$counter").organizationId(org.id), Opts.empty(), superPerson)
-    Group g = groupSqlApi.createGroup(p.id, new Group().name("non-admin-group$counter"), superPerson)
+    Portfolio p = portfolioApi.createPortfolio(new CreatePortfolio().name("Main App$counter"), Opts.empty(), superuser)
+    Group g = groupSqlApi.createGroup(p.id, new CreateGroup().name("non-admin-group$counter"), superPerson)
     counter ++
     return g
   }
@@ -187,18 +190,18 @@ class GroupSpec extends BaseSpec {
 
   def "i can't create the same portfolio group name twice"() {
     given: "i have a group called ecks"
-      groupSqlApi.createGroup(commonPortfolio.id, new Group().name("ecks"), superPerson)
+      groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name("ecks"), superPerson)
     when: "i try and create another group with the same name"
-      groupSqlApi.createGroup(commonPortfolio.id, new Group().name("ecks"), superPerson)
+      groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name("ecks"), superPerson)
     then: "it throws a DuplicateGroupException"
       thrown(GroupApi.DuplicateGroupException)
   }
 
   def "i can't update to the same portfolio group name twice"() {
     given: "i have a group called ecks"
-      groupSqlApi.createGroup(commonPortfolio.id, new Group().name("update-ecks"), superPerson)
+      groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name("update-ecks"), superPerson)
     when: "i try and create another group with the same name"
-      def g = groupSqlApi.createGroup(commonPortfolio.id, new Group().name("update-ecks1"), superPerson)
+      def g = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name("update-ecks1"), superPerson)
       groupSqlApi.updateGroup(g.id, g.name("update-ecks"), null, true, true, true, Opts.empty())
     then: "it throws a DuplicateGroupException"
       thrown(GroupApi.DuplicateGroupException)
@@ -369,14 +372,14 @@ class GroupSpec extends BaseSpec {
 
   def "i create several groups for a portfolio, and then look for them and they can be found in a search"() {
     given: "i have two portfolios"
-      Portfolio p1 = portfolioApi.createPortfolio(new Portfolio().name("Main App0").organizationId(org.id), Opts.empty(), superPerson)
-      Portfolio p2 = portfolioApi.createPortfolio(new Portfolio().name("Second App").organizationId(org.id), Opts.empty(), superPerson)
+      Portfolio p1 = portfolioApi.createPortfolio(new CreatePortfolio().name("Main App0"), Opts.empty(), superuser)
+      Portfolio p2 = portfolioApi.createPortfolio(new CreatePortfolio().name("Second App"), Opts.empty(), superuser)
     and: "i have three groups under each with the same names"
       List<Group> p1Groups = []
       List<Group> p2Groups = []
       (1..3).each { it ->
-        p1Groups.add groupSqlApi.createGroup(p1.id, new Group().name("group ${it}"), superPerson)
-        p2Groups.add groupSqlApi.createGroup(p2.id, new Group().name("group ${it}"), superPerson)
+        p1Groups.add groupSqlApi.createGroup(p1.id, new CreateGroup().name("group ${it}"), superPerson)
+        p2Groups.add groupSqlApi.createGroup(p2.id, new CreateGroup().name("group ${it}"), superPerson)
       }
     when: "i search for groups under p1"
       List<Group> groupsP1 = groupSqlApi.findGroups(p1.getId(), null, SortOrder.ASC, Opts.empty())
@@ -400,12 +403,12 @@ class GroupSpec extends BaseSpec {
 
   def "I create four groups of which two are admin and add a person to one admin and one non admin group and they should have 1 admin group"() {
     given: "I have a portfolio"
-      Portfolio pi = portfolioApi.createPortfolio(new Portfolio().name("access test").organizationId(org.id), Opts.empty(), superPerson)
+      Portfolio pi = portfolioApi.createPortfolio(new CreatePortfolio().name("access test"), Opts.empty(), superuser)
     and: "I create four groups"
-      def g1 = groupSqlApi.createGroup(pi.id, new Group().name("g1-access").admin(true), superPerson)
-      def g2 = groupSqlApi.createGroup(pi.id, new Group().name("g2-access").admin(true), superPerson)
-      def g3 = groupSqlApi.createGroup(pi.id, new Group().name("g3-access"), superPerson)
-      def g4 = groupSqlApi.createGroup(pi.id, new Group().name("g4-access"), superPerson)
+      def g1 = groupSqlApi.createGroup(pi.id, new CreateGroup().name("g1-access").admin(true), superPerson)
+      def g2 = groupSqlApi.createGroup(pi.id, new CreateGroup().name("g2-access").admin(true), superPerson)
+      def g3 = groupSqlApi.createGroup(pi.id, new CreateGroup().name("g3-access"), superPerson)
+      def g4 = groupSqlApi.createGroup(pi.id, new CreateGroup().name("g4-access"), superPerson)
     and: "i add a person to this group"
       DbPerson user = new DbPerson.Builder().email("bob-test@featurehub.io").name("Rob test").build();
       database.save(user);
@@ -420,9 +423,9 @@ class GroupSpec extends BaseSpec {
 
   def "I wish to update a group with environment acls"() {
     given: "I have a portfolio"
-      Portfolio pi = portfolioApi.createPortfolio(new Portfolio().name("acl test1").organizationId(org.id), Opts.empty(), superPerson)
+      Portfolio pi = portfolioApi.createPortfolio(new CreatePortfolio().name("acl test1"), Opts.empty(), superuser)
     and: "I create a group"
-      def g1 = groupSqlApi.createGroup(pi.id, new Group().name("g1-access-acl1").admin(false), superPerson)
+      def g1 = groupSqlApi.createGroup(pi.id, new CreateGroup().name("g1-access-acl1").admin(false), superPerson)
     and: "an application"
       def portfo = database.find(DbPortfolio, pi.id)
       def app = new DbApplication.Builder().name("g1-name-acl").portfolio(portfo).whoCreated(user).build()
@@ -474,7 +477,7 @@ class GroupSpec extends BaseSpec {
   def "i wish to add an application acl to a group"() {
     given: "i create a group with the application acl"
       def g1 = groupSqlApi.createGroup(commonPortfolio.id,
-        new Group().name("app acl group1")
+        new CreateGroup().name("app acl group1")
           .applicationRoles([
             new ApplicationGroupRole()
               .roles([ApplicationRoleType.EDIT])

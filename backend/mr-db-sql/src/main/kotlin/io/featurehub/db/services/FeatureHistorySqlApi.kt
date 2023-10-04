@@ -12,12 +12,11 @@ import java.time.ZoneOffset
 import java.util.UUID
 
 
-interface InternalFeatureHistoryApi {
-}
+interface InternalFeatureHistoryApi
 
 class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
   fun history(environmentId: UUID, applicationFeature: UUID, featureValue: UUID): List<DbFeatureValueVersion> {
-    return QDbFeatureValueVersion().feature.id.eq(applicationFeature).id.id.eq(featureValue).findList();
+    return QDbFeatureValueVersion().feature.id.eq(applicationFeature).id.id.eq(featureValue).findList()
   }
 
   override fun listHistory(

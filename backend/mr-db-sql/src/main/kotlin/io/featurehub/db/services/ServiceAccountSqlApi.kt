@@ -15,10 +15,8 @@ import io.featurehub.db.model.query.QDbEnvironment
 import io.featurehub.db.model.query.QDbServiceAccount
 import io.featurehub.db.model.query.QDbServiceAccountEnvironment
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
-import io.featurehub.mr.model.ServiceAccount
-import io.featurehub.mr.model.ServiceAccountPermission
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.apache.commons.lang3.RandomStringUtils
@@ -65,7 +63,7 @@ class ServiceAccountSqlApi @Inject constructor(
     val updatedEnvironments: MutableMap<UUID, ServiceAccountPermission> = HashMap()
     val newEnvironments: MutableList<UUID> = ArrayList()
     serviceAccount
-      .permissions!!.forEach { perm: ServiceAccountPermission ->
+      .permissions.forEach { perm: ServiceAccountPermission ->
         updatedEnvironments[perm.environmentId] = perm
         newEnvironments.add(perm.environmentId)
       }
@@ -277,7 +275,7 @@ class ServiceAccountSqlApi @Inject constructor(
   override fun create(
     portfolioId: UUID,
     creator: Person,
-    serviceAccount: ServiceAccount,
+    serviceAccount: CreateServiceAccount,
     opts: Opts
   ): ServiceAccount? {
     val who = convertUtils.byPerson(creator) ?: return null
@@ -287,7 +285,7 @@ class ServiceAccountSqlApi @Inject constructor(
     val envs = environmentMap(serviceAccount)
 
     // now where we actually find the environment, add it into the list
-    val perms = serviceAccount.permissions?.mapNotNull { sap: ServiceAccountPermission ->
+    val perms = serviceAccount.permissions.mapNotNull { sap: ServiceAccountPermission ->
       envs[sap.environmentId]?.let { e ->
         changedEnvironments.add(e)
         DbServiceAccountEnvironment.Builder()
@@ -295,7 +293,7 @@ class ServiceAccountSqlApi @Inject constructor(
           .permissions(convertPermissionsToString(sap.permissions))
           .build()
       }
-    }?.toMutableSet() ?: mutableSetOf()
+    }.toMutableSet() ?: mutableSetOf()
 
     val sdkPerson = internalPersonApi.createSdkServiceAccountUser(serviceAccount.name, who, false)
     // now create the SA and attach the perms to form the links
@@ -319,9 +317,9 @@ class ServiceAccountSqlApi @Inject constructor(
     return convertUtils.toServiceAccount(sa, if (opts.contains(FillOpts.Permissions)) opts.add(FillOpts.SdkURL) else opts)
   }
 
-  private fun environmentMap(serviceAccount: ServiceAccount?): Map<UUID, DbEnvironment> {
+  private fun environmentMap(serviceAccount: CreateServiceAccount): Map<UUID, DbEnvironment> {
     // find all of the UUIDs in the environment list
-    val envIds = serviceAccount?.permissions?.map { obj: ServiceAccountPermission -> obj.environmentId } ?: listOf()
+    val envIds = serviceAccount.permissions.map { obj: ServiceAccountPermission -> obj.environmentId } ?: listOf()
 
     // now find them in the db in one swoop using "in" syntax
     return QDbEnvironment().id.`in`(envIds).whenArchived.isNull.findList().associateBy { e -> e.id }
@@ -377,8 +375,8 @@ class ServiceAccountSqlApi @Inject constructor(
   override fun delete(deleter: Person, serviceAccountId: UUID): Boolean {
     val sa = QDbServiceAccount().id.eq(serviceAccountId).whenArchived.isNull.findOne()
     if (sa != null) {
-      sa.sdkPerson?.let {
-        internalPersonApi.deleteSdkServiceAccountUser(it.id, convertUtils.byPerson(deleter)!!)
+      sa.sdkPerson.let {
+          internalPersonApi.deleteSdkServiceAccountUser(it.id, convertUtils.byPerson(deleter)!!)
       }
 
       archiveStrategy.archiveServiceAccount(sa)
@@ -407,7 +405,7 @@ class ServiceAccountSqlApi @Inject constructor(
         val superuser = superuserForOrganisation.computeIfAbsent(orgId) { id ->
           internalPersonApi.findSuperUserToBlame(id)
         }
-        sa.setSdkPerson(internalPersonApi.createSdkServiceAccountUser(sa.name, superuser, sa.whenArchived != null))
+        sa.sdkPerson = internalPersonApi.createSdkServiceAccountUser(sa.name, superuser, sa.whenArchived != null)
         sa.save()
       }
     }

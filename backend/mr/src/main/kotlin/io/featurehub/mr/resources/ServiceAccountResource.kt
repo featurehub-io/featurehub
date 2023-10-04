@@ -8,6 +8,7 @@ import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.db.services.Conversions
 import io.featurehub.mr.api.ServiceAccountServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
+import io.featurehub.mr.model.CreateServiceAccount
 import io.featurehub.mr.model.ResetApiKeyType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
@@ -26,7 +27,7 @@ class ServiceAccountResource @Inject constructor(
   private val serviceAccountApi: ServiceAccountApi
 ) : ServiceAccountServiceDelegate {
   override fun createServiceAccountInPortfolio(
-    id: UUID, serviceAccount: ServiceAccount,
+    id: UUID, serviceAccount: CreateServiceAccount,
     holder: ServiceAccountServiceDelegate.CreateServiceAccountInPortfolioHolder, securityContext: SecurityContext
   ): ServiceAccount {
     val person = authManager.from(securityContext)

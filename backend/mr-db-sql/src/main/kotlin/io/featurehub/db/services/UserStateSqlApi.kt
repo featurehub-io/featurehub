@@ -41,20 +41,20 @@ class UserStateSqlApi @Inject constructor(private val conversions: Conversions) 
     val application = conversions.byApplication(appId) ?: return
     val person = conversions.byPerson(currentPerson) ?: return
 
-    if (environments.environmentIds == null || environments.environmentIds!!.isEmpty() && environments.noneSelected !== Boolean.TRUE) {
+    if (environments.environmentIds.isEmpty() && (environments.noneSelected !== true)) {
       userStateFinder(currentPerson, application.id, UserState.HIDDEN_FEATURES).delete()
       return
     }
 
     // too many environments?
-    if (environments.environmentIds!!.size > maximumEnvironmentsPerApplication) {
+    if (environments.environmentIds.size > maximumEnvironmentsPerApplication) {
       throw UserStateApi.InvalidUserStateException("Too many environments.")
     }
 
     // environment ids that aren't uuids?
-    val envIds = environments.environmentIds!!
+    val envIds = environments.environmentIds
       .stream().filter { obj: UUID? -> Objects.nonNull(obj) }.collect(Collectors.toList())
-    if (envIds.size != environments.environmentIds!!.size) {
+    if (envIds.size != environments.environmentIds.size) {
       throw UserStateApi.InvalidUserStateException("Invalid UUIDs in environments list")
     }
 

@@ -10,6 +10,7 @@ import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.publish.CacheSourceFeatureGroupSqlApi
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.ApplicationPermissions
+import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.EnvironmentPermission
 import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureGroupCreate
@@ -47,7 +48,7 @@ class FeatureGroupSpec extends Base3Spec {
     def key = RandomStringUtils.randomAlphabetic(10)
 
     return applicationSqlApi.createApplicationFeature(app1.id,
-      new Feature().name(key).key(key).valueType(type),
+      new CreateFeature().name(key).description(key).key(key).valueType(type),
       superPerson, Opts.empty()).find { it.key == key }
   }
 
@@ -73,7 +74,7 @@ class FeatureGroupSpec extends Base3Spec {
     and: "i have permissions to the environment"
     when:
       def created = fgApi.createGroup(app1.id, superPerson,
-        new FeatureGroupCreate().name("name").environmentId(env1.id).features(
+        new FeatureGroupCreate().description("x").name("name").environmentId(env1.id).features(
           [new FeatureGroupUpdateFeature().id(feature.id)]
       ))
     then:
@@ -82,7 +83,7 @@ class FeatureGroupSpec extends Base3Spec {
       created.features[0].key == feature.key
       !created.features[0].value
     when:
-      def created2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name("name1").environmentId(env1.id).features(
+      def created2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().description("x").name("name1").environmentId(env1.id).features(
         [new FeatureGroupUpdateFeature().id(feature.id)]).strategies([new FeatureGroupStrategy().percentage(20).name("fred")]))
     and:
       def all = fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, null, permsToEnv1)
@@ -109,7 +110,7 @@ class FeatureGroupSpec extends Base3Spec {
       def feature = createFeature()
       def feature2 = createFeature(FeatureValueType.NUMBER)
     when:
-      def created = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name("name").environmentId(env1.id).features(
+      def created = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().description("x").name("name").environmentId(env1.id).features(
         [new FeatureGroupUpdateFeature().id(feature.id)]
       ))
     and:
@@ -136,7 +137,8 @@ class FeatureGroupSpec extends Base3Spec {
         it.id == feature2.id
       }
     when:
-      fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate()
+      fgApi.updateGroup(app1.id, superPerson, new FeatureGroupUpdate()
+        .id(created.id)
         .version(created.version)
         .name("fred")
         .features([
@@ -155,7 +157,8 @@ class FeatureGroupSpec extends Base3Spec {
       f2.key == feature2.key
       f2.name == feature2.name
     when:
-      def updated = fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate()
+      def updated = fgApi.updateGroup(app1.id, superPerson, new FeatureGroupUpdate()
+        .id(created.id)
         .version(getit.version)
         .name("fred")
         .features([
@@ -167,8 +170,8 @@ class FeatureGroupSpec extends Base3Spec {
       getit.features[0].value == 121.67
       getit.features[0].key == feature2.key
     when: "i update the description"
-      def updated2 = fgApi.updateGroup(app1.id, superPerson, created.id,
-        new FeatureGroupUpdate().version(updated.version).description("hello").strategies([
+      def updated2 = fgApi.updateGroup(app1.id, superPerson,
+        new FeatureGroupUpdate().version(updated.version).id(created.id).description("hello").strategies([
           new FeatureGroupStrategy().percentage(20).name("fred")
         ]))
     then:
@@ -189,13 +192,14 @@ class FeatureGroupSpec extends Base3Spec {
         features.add(createFeature(FeatureValueType.NUMBER))
       }
     and: "i have a feature group with a strategy"
-      def created = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name(RandomStringUtils.randomAlphabetic(10))
+      def created = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().description("x").name(RandomStringUtils.randomAlphabetic(10))
         .environmentId(env1.id).strategies([new FeatureGroupStrategy().percentage(20).name("fred")])
       )
     and: "i have the cache source reader for feature groups"
       def fgSource = new CacheSourceFeatureGroupSqlApi()
     when: "i update the group adding one "
-      def updated = fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate()
+      def updated = fgApi.updateGroup(app1.id, superPerson, new FeatureGroupUpdate()
+        .id(created.id)
         .version(created.version)
         .features([
           new FeatureGroupUpdateFeature().id(features[0].id).value(121.67)]))
@@ -210,7 +214,8 @@ class FeatureGroupSpec extends Base3Spec {
       strategies1[0].percentage == 20
       strategies1[0].attributes == null
     when: "i remove the first feature and add a second feature"
-      def updatedAddedRemoved = fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate()
+      def updatedAddedRemoved = fgApi.updateGroup(app1.id, superPerson, new FeatureGroupUpdate()
+        .id(created.id)
         .version(updated.version)
         .features([
           new FeatureGroupUpdateFeature().id(features[1].id).value(12.2)]))
@@ -227,7 +232,8 @@ class FeatureGroupSpec extends Base3Spec {
       strategiesEnv[features[1].id][0].value == 12.2
       strategiesEnv[features[1].id][0].percentage == 20
     when: "i update an existing value, the feature is published"
-      def updatedFeature = fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate()
+      def updatedFeature = fgApi.updateGroup(app1.id, superPerson, new FeatureGroupUpdate()
+        .id(created.id)
         .version(updatedAddedRemoved.version)
         .features([
           new FeatureGroupUpdateFeature().id(features[1].id).value(167.88)]))
@@ -236,7 +242,8 @@ class FeatureGroupSpec extends Base3Spec {
         f.feature.id == features[1].id
       })
     when: "i update the strategy, the feature publishes"
-      def updatedStrategy = fgApi.updateGroup(app1.id, superPerson, created.id, new FeatureGroupUpdate()
+      def updatedStrategy = fgApi.updateGroup(app1.id, superPerson, new FeatureGroupUpdate()
+        .id(created.id)
         .version(updatedFeature.version)
         .strategies([new FeatureGroupStrategy().percentage(25).name("fred")]))
       strategiesEnv = fgSource.collectStrategiesFromGroupsForEnvironment(env1.id)
@@ -252,15 +259,15 @@ class FeatureGroupSpec extends Base3Spec {
       def key = RandomStringUtils.randomAlphabetic(10)
       def feature1 =
         applicationSqlApi.createApplicationFeature(app1.id,
-          new Feature().name(key).key(key).valueType(FeatureValueType.NUMBER),
+          new CreateFeature().description(key).name(key).key(key).valueType(FeatureValueType.NUMBER),
           superPerson, Opts.empty()).find { it.key == key }
       key = RandomStringUtils.randomAlphabetic(10)
       def feature2 =
         applicationSqlApi.createApplicationFeature(app1.id,
-          new Feature().name(key).key(key).valueType(FeatureValueType.BOOLEAN),
+          new CreateFeature().description("x").name(key).key(key).valueType(FeatureValueType.BOOLEAN),
           superPerson, Opts.empty()).find { it.key == key }
     when: "i have a feature group with a percentage strategy"
-      def group1 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name(RandomStringUtils.randomAlphabetic(10))
+      def group1 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().description("x").name(RandomStringUtils.randomAlphabetic(10))
         .environmentId(env1.id).strategies([new FeatureGroupStrategy().percentage(20).name("fred")])
         .features([
           new FeatureGroupUpdateFeature().value(6).id(feature1.id),
@@ -271,7 +278,7 @@ class FeatureGroupSpec extends Base3Spec {
       1 * cacheSource.publishFeatureChange({ DbFeatureValue fv -> fv.feature.id == feature1.id })
       1 * cacheSource.publishFeatureChange({ DbFeatureValue fv -> fv.feature.id == feature2.id })
     when: "i have a feature group with an attribute strategy"
-      def group2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name(RandomStringUtils.randomAlphabetic(10))
+      def group2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().description("x").name(RandomStringUtils.randomAlphabetic(10))
         .environmentId(env1.id)
         .strategies([sally()])
         .features([
@@ -283,7 +290,7 @@ class FeatureGroupSpec extends Base3Spec {
       1 * cacheSource.publishFeatureChange({ DbFeatureValue fv -> fv.feature.id == feature1.id })
       1 * cacheSource.publishFeatureChange({ DbFeatureValue fv -> fv.feature.id == feature2.id })
     when: "i set the second group to have an order BEFORE the first group"
-      group2 = fgApi.updateGroup(app1.id, superPerson, group2.id, new FeatureGroupUpdate().version(group2.version).order(group1.order-1))
+      group2 = fgApi.updateGroup(app1.id, superPerson, new FeatureGroupUpdate().id(group2.id).version(group2.version).order(group1.order-1))
     and: "i have the cache source reader for feature groups"
       def fgSource = new CacheSourceFeatureGroupSqlApi()
     and: "i ask for environment strategies"
@@ -317,7 +324,7 @@ class FeatureGroupSpec extends Base3Spec {
     given: "i create have a feature"
       def feature = createFeature()
     when: "i create a feature group without a strategy"
-      def group2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name(RandomStringUtils.randomAlphabetic(10))
+      def group2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().description("x").name(RandomStringUtils.randomAlphabetic(10))
         .environmentId(env1.id)
         .features([
           new FeatureGroupUpdateFeature().value(12).id(feature.id),
@@ -344,7 +351,7 @@ class FeatureGroupSpec extends Base3Spec {
 
   def "when i get a request from the archiving of envrironments, it removes all feature groups"() {
     given: "i create a feature group without a strategy"
-      def group = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name(RandomStringUtils.randomAlphabetic(10))
+      def group = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().description("x").name(RandomStringUtils.randomAlphabetic(10))
         .environmentId(env1.id)
       )
     when: "i count feature groups"
@@ -361,11 +368,11 @@ class FeatureGroupSpec extends Base3Spec {
     given: "i have a feature"
       def feature = createFeature()
     and: "i create a couple of groups with that feature"
-      def group1 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name(RandomStringUtils.randomAlphabetic(10))
+      def group1 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().description("x").name(RandomStringUtils.randomAlphabetic(10))
         .environmentId(env1.id)
         .features([new FeatureGroupUpdateFeature().value(true).id(feature.id),])
       )
-      def group2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().name(RandomStringUtils.randomAlphabetic(10))
+      def group2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().description("x").name(RandomStringUtils.randomAlphabetic(10))
         .environmentId(env1.id)
         .features([new FeatureGroupUpdateFeature().value(true).id(feature.id),])
       )

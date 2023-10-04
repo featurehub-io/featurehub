@@ -147,7 +147,7 @@ open class PersonSqlApi @Inject constructor(
       groupChanges.groupsToAdd.addAll(groupsTheyWantToAdd)
       groupChanges.groupsToRemove.addAll(groupsTheyWantToRemove)
 
-      log.debug("Changing groups for person ${personId} as $groupChanges")
+      log.debug("Changing groups for person $personId as $groupChanges")
     }
 
     updatePerson(updatingRecord, groupChanges, superuserChanges)

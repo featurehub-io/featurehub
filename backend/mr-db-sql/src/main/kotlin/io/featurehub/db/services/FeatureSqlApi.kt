@@ -930,7 +930,6 @@ class FeatureSqlApi @Inject constructor(
     key: String,
     person: Person
   ): List<FeatureEnvironment> {
-    Conversions.nonNullApplicationId(appId)
     val result = featureValuesUserCanAccess(appId, key, person)
 
     return result.environments.keys.map { e ->
@@ -1097,16 +1096,17 @@ class FeatureSqlApi @Inject constructor(
 
       // the requirement is that we only send back environments they have at least READ access to, so
       // this finds the environments their group has access to
+      val rawPerms = QDbAcl()
+        .environment.whenArchived.isNull
+        .environment.parentApplication.eq(app)
+        .environment.parentApplication.whenArchived.isNull
+        .environment.parentApplication.groupRolesAcl.fetch()
+        .group.whenArchived.isNull
+        .group.groupMembers.person.eq(
+          dbPerson
+        ).findList()
       val permEnvs =
-        QDbAcl()
-          .environment.whenArchived.isNull
-          .environment.parentApplication.eq(app)
-          .environment.parentApplication.whenArchived.isNull
-          .environment.parentApplication.groupRolesAcl.fetch()
-          .group.whenArchived.isNull
-          .group.groupMembers.person.eq(
-            dbPerson
-          ).findList()
+        rawPerms
           .onEach { acl: DbAcl -> environmentOrderingMap[acl.environment.id] = acl.environment }
           .mapNotNull { acl: DbAcl -> environmentToFeatureValues(acl, personAdmin, featureKeys) }
           .filter { efv: EnvironmentFeatureValues? ->
@@ -1125,19 +1125,19 @@ class FeatureSqlApi @Inject constructor(
         val original = envs[e!!.environmentId]
         if (original != null) { // merge them
           val originalFeatureValueIds =
-            original.features!!.map { obj: FeatureValue -> obj.id }.toSet()
-          e.features!!.forEach { fv: FeatureValue ->
+            original.features.map { obj: FeatureValue -> obj.id }.toSet()
+          e.features.forEach { fv: FeatureValue ->
             if (!originalFeatureValueIds.contains(fv.id)) {
-              original.features!!.add(fv)
+              original.features.add(fv)
             }
           }
 
-          e.roles!!
+          e.roles
             .forEach { rt: RoleType? ->
-              if (!original.roles!!
+              if (!original.roles
                   .contains(rt)
               ) {
-                original.roles!!.add(rt)
+                original.roles.add(rt)
               }
             }
         } else {
@@ -1146,7 +1146,8 @@ class FeatureSqlApi @Inject constructor(
       }
 
       // now we have a flat-map of individual environments  the user has actual access to, but they may be an admin, so
-      // if so, we need to fill those in
+      // if so, we need to fill those in. This gives us all the environments and sets the roles to empty
+      // if the user has no access to the environment
       if (permEnvs.isNotEmpty() || personAdmin) {
         // now go through all the environments for this app
         val environments =
@@ -1171,16 +1172,16 @@ class FeatureSqlApi @Inject constructor(
       // to all of them, so we will lose the sort order if we try and order them
       // so we get them all, sort them, and then pick them out of the map one by one
       val sortingEnvironments: List<DbEnvironment> =
-        ArrayList(QDbEnvironment().select(QDbEnvironment.Alias.id).parentApplication.id.eq(appId).findList())
+        ArrayList(QDbEnvironment().select(QDbEnvironment.Alias.id).parentApplication.id.eq(appId).whenArchived.isNull.findList())
       EnvironmentUtils.sortEnvironments(sortingEnvironments)
-      val finalValues: MutableList<EnvironmentFeatureValues> = ArrayList()
+
+      val finalValues = mutableListOf<EnvironmentFeatureValues>()
       sortingEnvironments.forEach { e: DbEnvironment ->
-        val efv = envs[e.id]
-        if (efv != null) {
-          finalValues.add(efv)
-        }
+        envs[e.id]?.let { finalValues.add(it) }
       }
 
+      // this actually returns ALL environments regardless of whether a user has access, it simply returns
+      // roles of [] if they don't have access
       return ApplicationFeatureValues()
         .applicationId(appId)
         .features(features)

@@ -774,7 +774,7 @@ open class ConvertUtils : Conversions {
     val featureEnvironment = FeatureEnvironment()
       .environment(toEnvironment(dbEnvironment, Opts.empty())!!)
       .roles(roles)
-      .featureValue(toFeatureValue(featureValue)!!)
+      .featureValue(toFeatureValue(featureValue))
     if (opts.contains(FillOpts.ServiceAccounts)) {
       featureEnvironment.serviceAccounts(
         dbEnvironment.serviceAccountEnvironments.stream()

@@ -8,19 +8,7 @@ import io.featurehub.db.api.PortfolioApi
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.mr.model.Application
-import io.featurehub.mr.model.ApplicationGroupRole
-import io.featurehub.mr.model.ApplicationRoleType
-import io.featurehub.mr.model.ApplicationSummary
-import io.featurehub.mr.model.CreateApplication
-import io.featurehub.mr.model.Environment
-import io.featurehub.mr.model.EnvironmentGroupRole
-import io.featurehub.mr.model.Group
-import io.featurehub.mr.model.Person
-import io.featurehub.mr.model.PersonId
-import io.featurehub.mr.model.Portfolio
-import io.featurehub.mr.model.RoleType
-import io.featurehub.mr.model.SortOrder
+import io.featurehub.mr.model.*
 import spock.lang.Shared
 
 class ApplicationSpec extends BaseSpec {
@@ -43,16 +31,16 @@ class ApplicationSpec extends BaseSpec {
     appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureApi))
 
     // go create a new person and then portfolios and add this person as a portfolio admin
-    portfolioPerson = personSqlApi.createPerson("appspec@mailinator.com", "AppSpec", "appspec", superPerson.id.id, Opts.empty());
+    portfolioPerson = personSqlApi.createPerson("appspec@mailinator.com", "AppSpec", "appspec", superPerson.id.id, Opts.empty())
 
     portfolioApi = new PortfolioSqlApi(database, convertUtils, Mock(ArchiveStrategy))
-    def p1 = portfolioApi.createPortfolio(new Portfolio().name("p1-app-1"), Opts.empty(), superPerson);
-    def p2 = portfolioApi.createPortfolio(new Portfolio().name("p1-app-2"), Opts.empty(), superPerson);
+    def p1 = portfolioApi.createPortfolio(new CreatePortfolio().name("p1-app-1"), Opts.empty(), superuser)
+    def p2 = portfolioApi.createPortfolio(new CreatePortfolio().name("p1-app-2"), Opts.empty(), superuser)
 
     portfolio1 = Finder.findPortfolioById(p1.id);
     portfolio2 = Finder.findPortfolioById(p2.id);
 
-    p1AdminGroup = groupSqlApi.createGroup(portfolio1.id, new Group().name("envtest-appX").admin(true), superPerson)
+    p1AdminGroup = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("envtest-appX").admin(true), superPerson)
 
   }
 
@@ -110,19 +98,19 @@ class ApplicationSpec extends BaseSpec {
     and: "this person cannot see any apps"
       def notInAnyGroupsAccess = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
     and: "then we give them access to a portfolio group that still has no access"
-      Group group = groupSqlApi.createGroup(portfolio1.id, new Group().name("envtest-appX1"), superPerson)
+      Group group = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("envtest-appX1"), superPerson)
       group = groupSqlApi.addPersonToGroup(group.id, person.id.id, Opts.opts(FillOpts.Members))
-      def portfoliosNoPerms = portfolioApi.findPortfolios(null, SortOrder.ASC, Opts.opts(FillOpts.Applications), person)
+      def portfoliosNoPerms = portfolioApi.findPortfolios(null, SortOrder.ASC, Opts.opts(FillOpts.Applications), person.id.id)
     and: "the superuser adds to a group as well"
-      Group superuserGroup = groupSqlApi.createGroup(portfolio1.id, new Group().name("envtest-appSuperuser"), superPerson)
+      Group superuserGroup = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("envtest-appSuperuser"), superPerson)
       superuserGroup = groupSqlApi.addPersonToGroup(superuserGroup.id, superPerson.id.id, Opts.opts(FillOpts.Members))
     and: "with no environment access the two groups have no visibility to applications"
       def stillNotInAnyGroupsPerson = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
       def stillNotInAnyGroupsSuperuser = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), superPerson, false)
       def summaryApp1NoPerms = appApi.getApplicationSummary(app1.id)
     and: "i add an environment to each application and add group permissions"
-      def app1Env1 = environmentSqlApi.create(new Environment().name("dev"), app1, superPerson)
-      def app2Env1 = environmentSqlApi.create(new Environment().name("dev"), app2, superPerson)
+      def app1Env1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("dev"), app1.id, superPerson)
+      def app2Env1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("dev"), app2.id, superPerson)
       group = groupSqlApi.updateGroup(group.id, group.environmentRoles([
 	      new EnvironmentGroupRole().environmentId(app1Env1.id).roles([RoleType.READ]),
 	      new EnvironmentGroupRole().environmentId(app2Env1.id).roles([RoleType.READ])
@@ -131,7 +119,7 @@ class ApplicationSpec extends BaseSpec {
 	      new EnvironmentGroupRole().environmentId(app1Env1.id).roles([RoleType.READ])
       ]), null, true, true, true, Opts.opts(FillOpts.Members))
       def summaryApp1Perms = appApi.getApplicationSummary(app1.id)
-      def portfoliosPerms = portfolioApi.findPortfolios(null, SortOrder.ASC, Opts.opts(FillOpts.Applications), person)
+      def portfoliosPerms = portfolioApi.findPortfolios(null, SortOrder.ASC, Opts.opts(FillOpts.Applications), person.id.id)
     and: "person should now be able to see two groups"
       def shouldSeeTwoAppsPerson = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
     and: "superperson should now be able to see 1 group"
@@ -182,7 +170,7 @@ class ApplicationSpec extends BaseSpec {
       def app1 = appApi.createApplication(portfolio1.id, new CreateApplication().name("loicoudot 1").description("some desc"), superPerson)
       def app2 = appApi.createApplication(portfolio1.id, new CreateApplication().name("loicoudot 2").description("some desc"), superPerson)
     and: "i have a new group"
-      def group = groupSqlApi.createGroup(portfolio1.id, new Group().name("loicoudot"), superPerson)
+      def group = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("loicoudot"), superPerson)
     when:
       def group1 = groupSqlApi.updateGroup(group.id,
         group.applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.EDIT])]),
@@ -220,7 +208,7 @@ class ApplicationSpec extends BaseSpec {
     given: "i create an application"
       def app1 = appApi.createApplication(portfolio1.id, new CreateApplication().name("perm-create1").description("perm-create"), superPerson)
     and: "i have a new group"
-      def createdGroup = groupSqlApi.createGroup(portfolio1.id, new Group().name("perm-create-group"), superPerson)
+      def createdGroup = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("perm-create-group"), superPerson)
     and: "create a new person to join the group"
       def deepme = new DbPerson.Builder().email("dj-deepme@featurehub.io").name("DJ DeepMe").build()
       database.save(deepme)
@@ -295,17 +283,19 @@ class ApplicationSpec extends BaseSpec {
       def golodryga = new DbPerson.Builder().email("Golodryga@m.com").name("Golodryga").build()
       database.save(golodryga)
       def golodrygaPortfolioMemberButNoApplicationAccess = convertUtils.toPerson(golodryga)
-      groupSqlApi.createGroup(portfolio1.id, new Group().name("Twitchy Group").members([golodrygaPortfolioMemberButNoApplicationAccess]), superPerson)
+      groupSqlApi.createGroup(portfolio1.id,
+        new CreateGroup().name("Twitchy Group"), superPerson)
+//        new CreateGroup().name("Twitchy Group").members([golodrygaPortfolioMemberButNoApplicationAccess]), superPerson)
     and: "I create a new portfolio group and add in Sverbylo and give her read access to production"
       def sverbylo = new DbPerson.Builder().email("sverbylo@m.com").name("Sverbylo").build()
       database.save(sverbylo)
       def sverbyloHasReadAccess = convertUtils.toPerson(sverbylo)
-      def iGroup = groupSqlApi.createGroup(portfolio1.id, new Group().name("Itchy Group"), superPerson)
+      def iGroup = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("Itchy Group"), superPerson)
       iGroup = groupSqlApi.updateGroup(iGroup.id, iGroup.members([sverbyloHasReadAccess]), null, true, false, false, Opts.empty())
     when: "i create a new application"
-      def newApp = appApi.createApplication(portfolio1.id, new CreateApplication().name("app-perm-check-appl1"), superPerson)
+      def newApp = appApi.createApplication(portfolio1.id, new CreateApplication().description("x").name("app-perm-check-appl1"), superPerson)
     and: "a new environment"
-      def env = environmentSqlApi.create(new Environment().name("production").production(true), newApp, superPerson)
+      def env = environmentSqlApi.create(new CreateEnvironment().description("x").name("production").production(true), newApp.id, superPerson)
     and: "i grant the iGroup access to it"
       groupSqlApi.updateGroup(iGroup.id, iGroup.environmentRoles(
         [new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env.id)]), null, false, false, true, Opts.empty())

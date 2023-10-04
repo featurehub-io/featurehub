@@ -110,7 +110,7 @@ class RolloutStrategyResource @Inject constructor(
     appId: UUID, req: RolloutStrategyValidationRequest,
     securityContext: SecurityContext
   ): RolloutStrategyValidationResponse {
-    val validationFailure = validator.validateStrategies(null, req.customStrategies!!, req.sharedStrategies!!)
+    val validationFailure = validator.validateStrategies(null, req.customStrategies, req.sharedStrategies)
     return RolloutStrategyValidationResponse()
       .customStategyViolations(
         validationFailure.customStrategyViolations.entries

@@ -318,13 +318,13 @@ class ApplicationSqlApi @Inject constructor(
       appFeature.name = feature.name
       appFeature.alias = feature.alias
       if (feature.key != null) {
-        appFeature.key = feature.key!!
+        appFeature.key = feature.key
       }
       if (feature.link != null) {
         appFeature.link = feature.link
       }
       if (feature.valueType != null) {
-        appFeature.valueType = feature.valueType!!
+        appFeature.valueType = feature.valueType
       }
       appFeature.isSecret = feature.secret != null && feature.secret!!
       if (feature.metaData != null) {

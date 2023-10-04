@@ -47,8 +47,8 @@ class GroupResource @Inject constructor(
     val currentUser = authManager.from(securityContext)
     var adminGroup: Group? = null
     var member = false
-    if (groupToCheck.portfolioId != null) { // this is a portfolio groupToCheck, so find the groupToCheck belonging to this portfolio
-      adminGroup = groupApi.findPortfolioAdminGroup(groupToCheck.portfolioId!!, Opts.opts(FillOpts.Members))
+    groupToCheck.portfolioId?.let { pId ->
+      adminGroup = groupApi.findPortfolioAdminGroup(pId, Opts.opts(FillOpts.Members))
       member = isGroupMember(currentUser, adminGroup)
     }
     if (!member) {
@@ -63,7 +63,7 @@ class GroupResource @Inject constructor(
   }
 
   private fun isGroupMember(user: Person, group: Group?): Boolean {
-    return group!!.members!!
+    return group!!.members
       .stream().map { obj: Person -> obj.id }.anyMatch { uid: PersonId? -> uid == user.id }
   }
 
@@ -76,12 +76,12 @@ class GroupResource @Inject constructor(
       gid,
       authManager.from(securityContext)
     ) { group: Group ->
-      personCheck(personId) { person: Person? ->
+      personCheck(personId) {
         isAdminOfGroup(
           group,
           securityContext,
           "No permission to add user to group."
-        ) { adminGroup: Group? ->
+        ) {
           groupHolder.group =
             groupApi.addPersonToGroup(gid, personId, Opts().add(FillOpts.Members, holder.includeMembers))
         }
@@ -120,7 +120,7 @@ class GroupResource @Inject constructor(
       if (group.admin!!) {
         throw ForbiddenException("Cannot delete admin group from deleteGroup method.")
       }
-      isAdminOfGroup(group, securityContext, "Not owner of group, cannot delete") { adminGroup: Group? ->
+      isAdminOfGroup(group, securityContext, "Not owner of group, cannot delete") {
         groupApi.deleteGroup(gid)
         groupHolder.delete = true
       }
@@ -136,10 +136,10 @@ class GroupResource @Inject constructor(
   ): Group {
     val groupHolder = GroupHolder()
     groupCheck(gid, authManager.from(securityContext)) { group: Group ->
-      personCheck(personId) { person: Person? ->
+      personCheck(personId) {
         isAdminOfGroup(
           group, securityContext, "No permission to delete user to group."
-        ) { adminGroup: Group? ->
+        ) {
           groupHolder.group = groupApi.deletePersonFromGroup(
             gid,
             personId,
@@ -166,7 +166,7 @@ class GroupResource @Inject constructor(
           FillOpts.People,
           holder.includePeople
         )
-      ) ?: throw NotFoundException()
+      )
     }
     throw ForbiddenException()
   }
@@ -201,7 +201,7 @@ class GroupResource @Inject constructor(
   ): Group {
     val groupHolder = GroupHolder()
     groupCheck(group.id, authManager.from(securityContext)) { groupCheck: Group ->
-      isAdminOfGroup(groupCheck, securityContext!!, "No permission to rename group.") { adminGroup: Group? ->
+      isAdminOfGroup(groupCheck, securityContext!!, "No permission to rename group.") {
         try {
           groupHolder.group = groupApi.updateGroup(
             group.id,
@@ -237,7 +237,7 @@ class GroupResource @Inject constructor(
   ): Group {
     val groupHolder = GroupHolder()
     groupCheck(gid, authManager.from(securityContext)) { group: Group ->
-      isAdminOfGroup(group, securityContext, "No permission to rename group.") { adminGroup: Group? ->
+      isAdminOfGroup(group, securityContext, "No permission to rename group.") {
         try {
           groupHolder.group = groupApi.updateGroup(
             gid,
