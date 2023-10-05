@@ -1821,7 +1821,7 @@ paths:
       tags:
         - EnvironmentService
       description: "Create a new environment"
-      operationId: createEnvironment
+      operationId: createEnvironmentOnApplication
       requestBody:
         required: true
         content:
@@ -1916,7 +1916,7 @@ paths:
       tags:
         - EnvironmentService
       description: "Create a new environment - this is mounted at the wrong REST endpoint and is not assured to be maintained"
-      operationId: createEnvironmentOld
+      operationId: createEnvironment
       requestBody:
         required: true
         content:
@@ -1929,7 +1929,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateEnvironment"
+                $ref: "#/components/schemas/Environment"
         400:
           description: "Bad Request"
         401:
@@ -3368,7 +3368,8 @@ components:
           type: string
           format: uuid
         version:
-          description: "used for optimistic locking"
+          default: 0
+          description: "used for optimistic locking. we set it to 0 for the initial version"
           type: integer
           format: int64
         whoUpdated:
@@ -3764,6 +3765,7 @@ components:
           default: false
           description: "is this a production environment?"
           type: boolean
+
     Environment:
       allOf:
         - $ref: "#/components/schemas/Audit"
@@ -4107,6 +4109,7 @@ components:
               type: string
               format: uuid
             version:
+              nullable: true
               type: integer
               format: int64
             name:
@@ -4114,6 +4117,7 @@ components:
               minLength: 1
               maxLength: 255
             admin:
+              nullable: true
               deprecated: true
               description: "ignored"
               type: boolean

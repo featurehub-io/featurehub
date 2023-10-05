@@ -26,7 +26,9 @@ class AddStrategyButton extends StatelessWidget {
                     title: const Text('Add split targeting rule'),
                     content: BlocProvider.builder(
                       creator: (c, b) =>
-                          StrategyEditorBloc(EditingRolloutStrategy.newStrategy(id: makeStrategyId(existing: bloc.featureValue.rolloutStrategies)),
+                          StrategyEditorBloc(
+                              EditingRolloutStrategy.newStrategy(
+                                  id: makeStrategyId(existing: bloc.featureValue.rolloutStrategies)),
                               FeatureValueStrategyProvider(bloc)),
                       builder: (ctx, bloc) {
                         return StrategyEditingWidget(

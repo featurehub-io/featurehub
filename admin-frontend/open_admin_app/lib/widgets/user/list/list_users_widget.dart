@@ -170,7 +170,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
           DataCell(Text(personEntry.person.email)),
           DataCell(Text('${personEntry.person.groupCount}')),
           DataCell(Text(
-              '${personEntry.person.whenLastAuthenticated.toLocal() ?? ""}')),
+              '${personEntry.person.whenLastAuthenticated?.toLocal() ?? ""}')),
           if (personEntry.person.whenDeactivated != null)
             DataCell(
               FHIconButton(

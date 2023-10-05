@@ -132,7 +132,7 @@ function extractStrategy(table: DataTable): FeatureGroupStrategy {
     if (!strategies.find(s => s.name === row['name'])) {
       strategies.push(new FeatureGroupStrategy({
         name: row["name"],
-        percentage: row['percentage'].trim() === '-' ? 0 : parseInt(row['percentage'].trim()),
+        percentage: row['percentage'].trim() === '-' ? null : parseInt(row['percentage'].trim()),
         attributes: [],
       }));
     }

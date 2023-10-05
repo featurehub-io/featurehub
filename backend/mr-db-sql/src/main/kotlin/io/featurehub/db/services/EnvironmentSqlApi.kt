@@ -128,36 +128,34 @@ class EnvironmentSqlApi @Inject constructor(
   }
 
   override fun updateEnvironment(eid: UUID, env: UpdateEnvironment, opts: Opts): Environment? {
-    val environment = convertUtils.byEnvironment(eid)
+    val environment = convertUtils.byEnvironment(eid) ?: return null
 
-    if (environment != null) {
-      if (environment.version != env.version) {
-        throw OptimisticLockingException()
-      }
-
-      if (env.name != null) {
-        dupeEnvironmentNameCheck(env.name!!, environment)
-      }
-
-      circularPriorEnvironmentCheck(env.priorEnvironmentId, environment)
-
-      if (env.description != null) {
-        environment.description = env.description
-      }
-
-      if (env.production != null) {
-        environment.isProductionEnvironment = java.lang.Boolean.TRUE == env.production
-      }
-
-      if (env.environmentInfo != null) {
-        environment.userEnvironmentInfo = env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap()  // prevent mgmt prefixes being used
-      }
-
-      update(environment)
-
-      return convertUtils.toEnvironment(environment, opts)
+    if (environment.version != env.version) {
+      log.trace("attempting to update old environment, current {}, update coming in is {}", environment.version, env.version)
+      throw OptimisticLockingException()
     }
-    return null
+
+    if (env.name != null) {
+      dupeEnvironmentNameCheck(env.name!!, environment)
+    }
+
+    circularPriorEnvironmentCheck(env.priorEnvironmentId, environment)
+
+    if (env.description != null) {
+      environment.description = env.description
+    }
+
+    if (env.production != null) {
+      environment.isProductionEnvironment = java.lang.Boolean.TRUE == env.production
+    }
+
+    if (env.environmentInfo != null) {
+      environment.userEnvironmentInfo = env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap()  // prevent mgmt prefixes being used
+    }
+
+    update(environment)
+
+    return convertUtils.toEnvironment(environment, opts)
   }
 
   override fun getEnvironmentsUserCanAccess(appId: UUID, person: UUID): List<UUID>? {

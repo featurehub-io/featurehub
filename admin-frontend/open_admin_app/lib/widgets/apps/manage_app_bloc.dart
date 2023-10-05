@@ -280,7 +280,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
 
     try {
       final updatedGroup = await _groupServiceApi
-          .updateGroup(portfolio!.id, group,
+          .updateGroupOnPortfolio(portfolio!.id, group,
               includeGroupRoles: true,
               includeMembers: false,
               updateMembers: false,
@@ -308,8 +308,8 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
       String sid, ServiceAccount serviceAccount) async {
     try {
       final updatedServiceAccount =
-          await _serviceAccountServiceApi.updateServiceAccount(
-        sid,
+          await _serviceAccountServiceApi.updateServiceAccountOnPortfolio(
+        portfolio!.id,
         serviceAccount,
         includePermissions: true,
       );
@@ -377,7 +377,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   Future<void> createEnv(String name, bool isProduction) async {
     final toUpdate = environmentsList
         .firstWhereOrNull((env) => env.priorEnvironmentId == null);
-    final env = await _environmentServiceApi.createEnvironment(
+    final env = await _environmentServiceApi.createEnvironmentOnApplication(
         applicationId!,
         CreateEnvironment(
           name: name,

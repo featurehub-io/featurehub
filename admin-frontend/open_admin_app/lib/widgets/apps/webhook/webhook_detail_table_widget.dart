@@ -84,9 +84,9 @@ class WebhookDetailTable extends StatelessWidget {
       case 5:
         return data.cloudEventType;
       case 6:
-        return keyValue(data.incomingHeaders);
+        return keyValue(data.incomingHeaders ?? {});
       case 7:
-        return keyValue(data.outboundHeaders);
+        return keyValue(data.outboundHeaders ?? {});
     }
 
     return data.content ?? '';

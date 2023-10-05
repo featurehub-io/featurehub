@@ -1,9 +1,10 @@
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 
 abstract class EditStrategyBloc<T> {
   get feature => null;
 
-  void addStrategy(T strategy) {}
+  void addStrategy(EditingRolloutStrategy strategy) {}
 
   void updateStrategy() {}
 

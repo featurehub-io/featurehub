@@ -55,7 +55,7 @@ Then(/^we should have (\d+) messages in the list of webhooks$/, async function(r
   await waitForExpect(async () => {
 
     const hookResults = (await world.webhookApi.listWebhooks(world.environment.id)).data;
-    expect(hookResults.results.length).to.eq(3);
+    expect(hookResults.results.length).to.eq(resultCount);
   }, 2000, 200);
 });
 

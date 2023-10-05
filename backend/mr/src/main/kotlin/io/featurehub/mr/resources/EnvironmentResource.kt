@@ -30,6 +30,14 @@ class EnvironmentResource @Inject constructor(
     environment: CreateEnvironment,
     securityContext: SecurityContext?
   ): Environment {
+    return createEnvironmentOnApplication(id, environment, securityContext)
+  }
+
+  override fun createEnvironmentOnApplication(
+    id: UUID,
+    environment: CreateEnvironment,
+    securityContext: SecurityContext?
+  ): Environment {
     val current = authManager.from(securityContext)
     var hasPermission = authManager.isOrgAdmin(current)
     if (!hasPermission) {
@@ -46,14 +54,6 @@ class EnvironmentResource @Inject constructor(
       }
     }
     throw ForbiddenException()
-  }
-
-  override fun createEnvironmentOld(
-    id: UUID,
-    createEnvironment: CreateEnvironment,
-    securityContext: SecurityContext?
-  ): CreateEnvironment {
-    TODO("Not yet implemented")
   }
 
   override fun deleteEnvironment(

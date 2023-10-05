@@ -146,7 +146,7 @@ class SetupResource @Inject constructor(
     createPortfolio(setupSiteAdmin, person)
 
     //create the group and add admin to the group - any preference on group name here?
-    val group = groupApi.createOrgAdminGroup(organization.id, "org_admin", person!!)
+    val group = groupApi.createOrgAdminGroup(organization.id!!, "org_admin", person!!)
     groupApi.addPersonToGroup(group!!.id, person.id!!.id, Opts.empty())
     person = personApi[person.id!!.id, Opts.opts(FillOpts.Groups, FillOpts.Acls)]
     return TokenizedPerson().accessToken(authRepository.put(person)).person(person)

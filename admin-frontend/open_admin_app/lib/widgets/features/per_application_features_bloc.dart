@@ -171,7 +171,7 @@ class PerApplicationFeaturesBloc
       if (pid != null) {
         List<Application>? appList;
         try {
-          appList = await _appServiceApi.findApplications(portfolioId!,
+          appList = await _appServiceApi.findApplications(pid,
               order: SortOrder.ASC);
           if (!_appSearchResultSource.isClosed) {
             _appSearchResultSource.add(appList);

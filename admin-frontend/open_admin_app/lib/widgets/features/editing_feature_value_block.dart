@@ -37,15 +37,22 @@ class EditingFeatureValueBloc implements Bloc {
       : _featureStatusBloc = featureStatusBloc {
     _featureServiceApi = FeatureServiceApi(featureStatusBloc.mrClient.apiClient);
     currentFeatureValue = FeatureValue.fromJson(featureValue.toJson()); // keeping original featureValue cached for resets
+    _strategySource = BehaviorSubject<List<RolloutStrategy>>.seeded(currentFeatureValue.rolloutStrategies);
     environmentId = environmentFeatureValue.environmentId;
     addFeatureValueToStream(featureValue);
   }
 
+  /*
+   * This takes the result of the adding of a new strategy and converts it back to a RolloutStrategy
+   */
   void addStrategy(EditingRolloutStrategy rs) {
     List<RolloutStrategy> strategies = _strategySource.value;
 
     final index = strategies.indexWhere((s) => s.id == rs.id);
     if (index == -1) {
+      if (feature.valueType == FeatureValueType.BOOLEAN) {
+        rs.value = featureValue.valueBoolean ?? false;
+      }
       strategies.add(rs.toRolloutStrategy()!);
     } else {
       strategies[index] = rs.toRolloutStrategy()!;

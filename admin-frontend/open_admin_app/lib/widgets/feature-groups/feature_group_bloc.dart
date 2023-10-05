@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/fhos_logger.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/edit_strategy_interface.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 import 'package:rxdart/rxdart.dart';
 
 class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
@@ -73,10 +75,15 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   }
 
   @override
-  void addStrategy(FeatureGroupStrategy strategy) {
+  void addStrategy(EditingRolloutStrategy strategy) {
+    fhosLogger.fine("adding new strategy ${strategy} to stream");
+    final fgStrategy = strategy.toFeatureGroupStrategy()!;
+
+    _strategySource.add(fgStrategy);
     List<FeatureGroupStrategy> strategyList =
         _trackingUpdatesGroupStrategiesStream.value;
-    strategyList.add(strategy);
+    strategyList.clear(); // we can only have 1
+    strategyList.add(fgStrategy);
     _trackingUpdatesGroupStrategiesStream.add(strategyList);
   }
 

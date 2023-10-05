@@ -12,9 +12,8 @@ class FeatureGroupStrategyProvider extends StrategyEditorProvider {
   FeatureGroupStrategyProvider(this.bloc);
 
   @override
-  Future<void> updateStrategy(EditingRolloutStrategy rs) {
-    // TODO: implement updateStrategy
-    throw UnimplementedError();
+  Future<void> updateStrategy(EditingRolloutStrategy rs) async {
+    bloc.addStrategy(rs);
   }
 
   @override

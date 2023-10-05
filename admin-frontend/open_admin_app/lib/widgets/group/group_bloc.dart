@@ -92,7 +92,7 @@ class GroupBloc implements Bloc {
       if (name != null) {
         groupToUpdate.name = name;
       }
-      final newGroup = await _groupServiceApi.updateGroup(groupToUpdate.id, groupToUpdate,
+      final newGroup = await _groupServiceApi.updateGroupOnPortfolio(mrClient.currentPortfolio!.id, groupToUpdate,
           includeMembers: true, updateMembers: true);
       await getGroups(focusGroup: groupToUpdate);
       group = newGroup;

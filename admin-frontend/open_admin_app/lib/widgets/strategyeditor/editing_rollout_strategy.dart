@@ -28,6 +28,12 @@ class EditingRolloutStrategyAttribute {
   /* A temporary id used only when validating. Saving strips these out as they are not otherwise necessary */
   String id;
 
+
+  @override
+  String toString() {
+    return "ersa: field ${fieldName}, values: ${values}, type: ${type}, id: ${id}, conditional: ${conditional}";
+  }
+
   EditingRolloutStrategyAttribute({
       this.conditional, this.fieldName, required this.values, this.type, required this.id});
 
@@ -61,7 +67,7 @@ class EditingRolloutStrategyAttribute {
 
 
   static EditingRolloutStrategyAttribute fromRolloutStrategyAttribute(RolloutStrategyAttribute rsa) {
-    return EditingRolloutStrategyAttribute(values: rsa.values, conditional: rsa.conditional, fieldName: rsa.fieldName, type: rsa.type, id: rsa.id);
+    return EditingRolloutStrategyAttribute(values: rsa.values, conditional: rsa.conditional, fieldName: rsa.fieldName, type: rsa.type, id: rsa.id!);
   }
 }
 
@@ -93,9 +99,15 @@ class EditingRolloutStrategy {
   String get percentageText =>
       percentage == null ? '' : (percentage! / percentageMultiplier).toString();
 
+
+  @override
+  String toString() {
+    return "name: ${name}, id: ${id}, percentage ${percentage}, percentage attr: ${percentageAttributes}, value: ${value}, ${attributes}";
+  }
+
   static EditingRolloutStrategy fromRolloutStrategy(RolloutStrategy rs) {
     return EditingRolloutStrategy(
-        id: rs.id,
+        id: rs.id!,
         saved: true,
         percentage: rs.percentage, percentageAttributes: rs.percentageAttributes, value: rs.value,
         name: rs.name,
@@ -128,12 +140,16 @@ class EditingRolloutStrategy {
 
   static EditingRolloutStrategy fromFeatureGroupStrategy(FeatureGroupStrategy rs, dynamic value) {
     return EditingRolloutStrategy(
-        id: rs.id,
+        id: rs.id!,
         saved: true,
         percentage: rs.percentage, percentageAttributes: rs.percentageAttributes, value: value,
         name: rs.name,
         attributes: (rs.attributes ?? []).map((e) => EditingRolloutStrategyAttribute.fromRolloutStrategyAttribute(e)).toList()
     );
+  }
+
+  FeatureGroupStrategy? toFeatureGroupStrategy() {
+    return FeatureGroupStrategy(name: name!, id: id, percentage: percentage, percentageAttributes: percentageAttributes, attributes: attributes.map((e) => e.toRolloutStrategyAttribute()!).toList());
   }
 
   static EditingRolloutStrategy newStrategy({int? percentage, String? id, List<String>? percentageAttributes,
