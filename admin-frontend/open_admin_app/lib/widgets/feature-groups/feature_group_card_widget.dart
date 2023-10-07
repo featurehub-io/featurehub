@@ -89,12 +89,13 @@ class FeatureGroupCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Divider(),
                 Padding(
                   padding:
                       const EdgeInsets.only(left: 16.0, bottom: 8, right: 16.0),
                   child: Column(
                     children: [
+                      const Divider(),
+                      SizedBox(height: 4.0),
                       FeaturesCounter(
                         counter: featureGroup.features.length,
                         featureGroup: featureGroup,
