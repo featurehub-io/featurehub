@@ -266,6 +266,10 @@ components:
           format: uuid
         environmentName:
           type: string
+        disabled:
+          description: "Whether or not this group should be disabled"
+          type: boolean
+          default: false
         features:
           default: []
           type: array
@@ -276,7 +280,7 @@ components:
           type: array
           description: "We only honour the first one"
           items:
-            $ref: "#/components/schemas/FeatureGroupStrategy"
+            $ref: "#/components/schemas/GroupRolloutStrategy"
     FeatureGroupUpdateFeature:
       type: object
       required:
@@ -287,7 +291,7 @@ components:
           format: uuid
         value:
           description: "value (if any) associated with this feature for this strategy"
-    FeatureGroupStrategy:
+    GroupRolloutStrategy:
       type: object
       required:
         - name
@@ -333,6 +337,10 @@ components:
           description: "allow swapping the environment"
           type: string
           format: uuid
+        disabled:
+          description: "Whether or not this group should be disabled"
+          type: boolean
+          default: false
         features:
           type: array
           description: "allow updating the features"
@@ -343,7 +351,7 @@ components:
           description: "We only honour the first one"
           nullable: true
           items:
-            $ref: "#/components/schemas/FeatureGroupStrategy"
+            $ref: "#/components/schemas/GroupRolloutStrategy"
     FeatureGroupUpdate:
       type: object
       description: "An update, everything is optional, we will only update what we update"
@@ -372,7 +380,7 @@ components:
           description: "We only honour the first one"
           nullable: true
           items:
-            $ref: "#/components/schemas/FeatureGroupStrategy"
+            $ref: "#/components/schemas/GroupRolloutStrategy"
         order:
           nullable: true
           type: integer

@@ -429,7 +429,7 @@ class FeatureGroupSqlApi @Inject constructor(
     return "!${RandomStringUtils.randomAlphanumeric(FeatureSqlApi.strategyIdLength - 1)}"
   }
 
-  private fun rationaliseStrategyIdsAndAttributeIds(strategies: List<FeatureGroupStrategy>): Boolean {
+  private fun rationaliseStrategyIdsAndAttributeIds(strategies: List<GroupRolloutStrategy>): Boolean {
     var changes = false
 
     strategies.forEach { strategy ->

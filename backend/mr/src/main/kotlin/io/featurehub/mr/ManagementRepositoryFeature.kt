@@ -4,7 +4,6 @@ import io.featurehub.app.db.utils.CommonDbFeature
 import io.featurehub.db.utils.ApiToSqlApiBinder
 import io.featurehub.db.utils.ComplexUpdateMigrations
 import io.featurehub.lifecycle.WebBaggageSource
-import io.featurehub.messaging.MessagingFeature
 import io.featurehub.mr.api.*
 import io.featurehub.mr.auth.*
 import io.featurehub.mr.dacha2.Dacha2Feature
@@ -43,7 +42,7 @@ class ManagementRepositoryFeature : Feature {
       ServiceAccountServiceDelegator::class.java,
       SetupServiceDelegator::class.java,
       UserStateServiceDelegator::class.java,
-      RolloutStrategyServiceDelegator::class.java,
+      ApplicationRolloutStrategyServiceDelegator::class.java,
       FeatureGroupServiceDelegator::class.java,
       CorsFilter::class.java,
       CacheControlFilter::class.java,  //      ConstraintExceptionHandler.class,
@@ -114,7 +113,7 @@ class ManagementRepositoryFeature : Feature {
         bind(PortfolioResource::class.java).to(PortfolioServiceDelegate::class.java).`in`(
           Singleton::class.java
         )
-        bind(RolloutStrategyResource::class.java).to(RolloutStrategyServiceDelegate::class.java).`in`(
+        bind(ApplicationRolloutStrategyResource::class.java).to(ApplicationRolloutStrategyServiceDelegate::class.java).`in`(
           Singleton::class.java
         )
         bind(ServiceAccountResource::class.java).to(ServiceAccountServiceDelegate::class.java).`in`(

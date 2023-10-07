@@ -40,6 +40,7 @@ components:
         attributes:
           type: array
           nullable: true
+          default: []
           items:
             $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
     BaseRolloutStrategyAttribute:

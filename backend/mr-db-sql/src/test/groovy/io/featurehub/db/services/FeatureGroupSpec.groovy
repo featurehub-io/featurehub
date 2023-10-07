@@ -13,8 +13,8 @@ import io.featurehub.mr.model.ApplicationPermissions
 import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.EnvironmentPermission
 import io.featurehub.mr.model.Feature
+import io.featurehub.mr.model.GroupRolloutStrategy
 import io.featurehub.mr.model.FeatureGroupCreate
-import io.featurehub.mr.model.FeatureGroupStrategy
 import io.featurehub.mr.model.FeatureGroupUpdate
 import io.featurehub.mr.model.FeatureGroupUpdateFeature
 import io.featurehub.mr.model.FeatureValueType
@@ -52,8 +52,8 @@ class FeatureGroupSpec extends Base3Spec {
       superPerson, Opts.empty()).find { it.key == key }
   }
 
-  @NotNull FeatureGroupStrategy sally() {
-    return new FeatureGroupStrategy().name("sally").attributes([
+  @NotNull GroupRolloutStrategy sally() {
+    return new GroupRolloutStrategy().name("sally").attributes([
       new RolloutStrategyAttribute().conditional(RolloutStrategyAttributeConditional.EQUALS)
         .fieldName("name").values(["mary"]).type(RolloutStrategyFieldType.STRING)
     ])
@@ -84,7 +84,7 @@ class FeatureGroupSpec extends Base3Spec {
       !created.features[0].value
     when:
       def created2 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().description("x").name("name1").environmentId(env1.id).features(
-        [new FeatureGroupUpdateFeature().id(feature.id)]).strategies([new FeatureGroupStrategy().percentage(20).name("fred")]))
+        [new FeatureGroupUpdateFeature().id(feature.id)]).strategies([new GroupRolloutStrategy().percentage(20).name("fred")]))
     and:
       def all = fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, null, permsToEnv1)
     then:
@@ -172,7 +172,7 @@ class FeatureGroupSpec extends Base3Spec {
     when: "i update the description"
       def updated2 = fgApi.updateGroup(app1.id, superPerson,
         new FeatureGroupUpdate().version(updated.version).id(created.id).description("hello").strategies([
-          new FeatureGroupStrategy().percentage(20).name("fred")
+          new GroupRolloutStrategy().percentage(20).name("fred")
         ]))
     then:
       updated2.version != updated.version
@@ -193,7 +193,7 @@ class FeatureGroupSpec extends Base3Spec {
       }
     and: "i have a feature group with a strategy"
       def created = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().description("x").name(RandomStringUtils.randomAlphabetic(10))
-        .environmentId(env1.id).strategies([new FeatureGroupStrategy().percentage(20).name("fred")])
+        .environmentId(env1.id).strategies([new GroupRolloutStrategy().percentage(20).name("fred")])
       )
     and: "i have the cache source reader for feature groups"
       def fgSource = new CacheSourceFeatureGroupSqlApi()
@@ -245,7 +245,7 @@ class FeatureGroupSpec extends Base3Spec {
       def updatedStrategy = fgApi.updateGroup(app1.id, superPerson, new FeatureGroupUpdate()
         .id(created.id)
         .version(updatedFeature.version)
-        .strategies([new FeatureGroupStrategy().percentage(25).name("fred")]))
+        .strategies([new GroupRolloutStrategy().percentage(25).name("fred")]))
       strategiesEnv = fgSource.collectStrategiesFromGroupsForEnvironment(env1.id)
     then:
       1 * cacheSource.publishFeatureChange({ DbFeatureValue f ->
@@ -268,7 +268,7 @@ class FeatureGroupSpec extends Base3Spec {
           superPerson, Opts.empty()).find { it.key == key }
     when: "i have a feature group with a percentage strategy"
       def group1 = fgApi.createGroup(app1.id, superPerson, new FeatureGroupCreate().description("x").name(RandomStringUtils.randomAlphabetic(10))
-        .environmentId(env1.id).strategies([new FeatureGroupStrategy().percentage(20).name("fred")])
+        .environmentId(env1.id).strategies([new GroupRolloutStrategy().percentage(20).name("fred")])
         .features([
           new FeatureGroupUpdateFeature().value(6).id(feature1.id),
           new FeatureGroupUpdateFeature().value(false).id(feature2.id)

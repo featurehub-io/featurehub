@@ -116,7 +116,7 @@ open class ConvertUtils : Conversions {
     }
     val environment = Environment()
       .id(env.id)
-      .name(stripArchived(env.name, env.whenArchived)!!)
+      .name(stripArchived(env.name, env.whenArchived))
       .version(env.version)
       .production(env.isProductionEnvironment)
       .priorEnvironmentId(
@@ -571,19 +571,27 @@ open class ConvertUtils : Conversions {
     } else featureValue(feature, value, opts!!)
   }
 
-  override fun toRolloutStrategy(rs: DbRolloutStrategy?, opts: Opts?): RolloutStrategyInfo? {
+  override fun toApplicationRolloutStrategy(rs: DbApplicationRolloutStrategy?, opts: Opts?): ApplicationRolloutStrategy? {
     if (rs == null) {
       return null
     }
-    val info = RolloutStrategyInfo().rolloutStrategy(rs.strategy.id(rs.id.toString()))
-    if (opts!!.contains(FillOpts.SimplePeople)) {
-      info.changedBy(toPerson(rs.whoChanged)!!)
-    }
+
+    val info = ApplicationRolloutStrategy()
+      .id(rs.id)
+      .name(rs.name)
+      .disabled(rs.isDisabled)
+      .attributes(rs.attributes)
+      .colouring(rs.colouring)
+      .avatar(rs.avatar)
+
+//    if (opts!!.contains(FillOpts.SimplePeople)) {
+//      info.changedBy(toPerson(rs.whoChanged)!!)
+//    }
     return info
   }
 
-  override fun byStrategy(id: UUID?): DbRolloutStrategy? {
-    return if (id == null) null else QDbRolloutStrategy().id.eq(id).findOne()
+  override fun byStrategy(id: UUID?): DbApplicationRolloutStrategy? {
+    return if (id == null) null else QDbApplicationRolloutStrategy().id.eq(id).findOne()
   }
 
   override fun toPortfolio(p: DbPortfolio?, opts: Opts?): Portfolio? {

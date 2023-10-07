@@ -1,7 +1,7 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.DbJson;
-import io.featurehub.mr.model.FeatureGroupStrategy;
+import io.featurehub.mr.model.GroupRolloutStrategy;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -45,7 +45,7 @@ public class DbFeatureGroup  extends DbVersionedBase {
   @DbJson
   @Lob
   @Nullable
-  private List<FeatureGroupStrategy> strategies;
+  private List<GroupRolloutStrategy> strategies;
 
   @Column(nullable = true)
   @Nullable
@@ -83,14 +83,14 @@ public class DbFeatureGroup  extends DbVersionedBase {
     this.features = features;
   }
 
-  public @Nullable List<FeatureGroupStrategy> getStrategies() {
+  public @Nullable List<GroupRolloutStrategy> getStrategies() {
     if (strategies == null) {
       strategies = new LinkedList<>();
     }
     return strategies;
   }
 
-  public void setStrategies(@Nullable List<FeatureGroupStrategy> strategies) {
+  public void setStrategies(@Nullable List<GroupRolloutStrategy> strategies) {
     this.strategies = strategies;
   }
 

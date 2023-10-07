@@ -1179,205 +1179,7 @@ paths:
           description: "no permission"
         404:
           description: "no application"
-  /mr-api/application/{appId}/rollout-strategy:
-    parameters:
-      - name: appId
-        description: "The id of the application to find"
-        in: path
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - name: includeWhoChanged
-        description: "include who changed"
-        in: query
-        schema:
-          type: boolean
-        required: false
-    get:
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - RolloutStrategyService
-      operationId: listApplicationRolloutStrategies
-      parameters:
-        - name: includeArchived
-          in: query
-          description: "Include archived strategies"
-          schema:
-            type: boolean
-          required: false
-      responses:
-        200:
-          description: "Get all strategies for this application, regardless if they are in use"
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/RolloutStrategyInfo"
-        400:
-          description: "Bad Request"
-        401:
-          description: "no permission"
-        403:
-          description: "forbidden"
-        404:
-          description: "not found"
-    post:
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - RolloutStrategyService
-      operationId: createRolloutStrategy
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RolloutStrategy"
-      responses:
-        "201":
-          description: "The created rollout strategy for this application"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RolloutStrategyInfo"
-        400:
-          description: "Bad Request"
-        401:
-          description: "no permission"
-        403:
-          description: "forbidden to create"
-        409:
-          description: "duplicate name"
 
-  /mr-api/application/{appId}/rollout-strategy-validation:
-    post:
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - RolloutStrategyService
-      description: "Provide server validation responses for this group of rollout strategies"
-      parameters:
-        - name: appId
-          description: "The id of the application to find"
-          in: path
-          schema:
-            type: string
-            format: uuid
-          required: true
-      operationId: validate
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RolloutStrategyValidationRequest"
-      responses:
-        200:
-          description: "validation results"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RolloutStrategyValidationResponse"
-        400:
-          description: "invalid body"
-        401:
-          description: "no permission"
-
-  /mr-api/application/{appId}/rollout-strategy/{strategyIdOrName}:
-    parameters:
-      - name: appId
-        description: "The id of the application to find"
-        in: path
-        schema:
-          type: string
-          format: uuid
-        required: true
-      - name: strategyIdOrName
-        description: "The id of the strategy or the unique name of it"
-        in: path
-        schema:
-          type: string
-        required: true
-      - name: includeWhoChanged
-        description: "include who changed"
-        in: query
-        schema:
-          type: boolean
-        required: false
-    get:
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - RolloutStrategyService
-      operationId: getRolloutStrategy
-      responses:
-        200:
-          description: "The rollout strategy for this application"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RolloutStrategyInfo"
-        400:
-          description: "Bad Request"
-        401:
-          description: "no permission"
-        403:
-          description: "forbidden"
-        404:
-          description: "If there is no rollout strategy by that id or name"
-    put:
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - RolloutStrategyService
-      operationId: updateRolloutStrategy
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RolloutStrategy"
-      responses:
-        200:
-          description: "The created rollout strategy for this application"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RolloutStrategyInfo"
-        400:
-          description: "Bad Request"
-        401:
-          description: "no permission"
-        403:
-          description: "forbidden"
-        404:
-          description: "not found"
-        409:
-          description: "duplicate strategy name"
-    delete:
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - RolloutStrategyService
-      operationId: deleteRolloutStrategy
-      responses:
-        200:
-          description: "The deleted rollout strategy for this application including its archive date"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RolloutStrategyInfo"
-        400:
-          description: "Bad Request"
-        401:
-          description: "no permission"
-        403:
-          description: "forbidden"
-        404:
-          description: "strategy not found, could not delete"
   /mr-api/application/{id}/features:
     parameters:
       - name: id
@@ -2974,6 +2776,7 @@ components:
         - personId
       properties:
         registrationUrl:
+          nullable: true
           type: string
         personId:
           type: string
@@ -3075,17 +2878,7 @@ components:
           maxLength: 100
           format: password
           type: string
-    RolloutStrategyInfo:
-      required:
-        - rolloutStrategy
-      properties:
-        rolloutStrategy:
-          $ref: "#/components/schemas/RolloutStrategy"
-        whenArchived:
-          type: string
-          format: date-time
-        changedBy:
-          $ref: "#/components/schemas/Person"
+
     RolloutStrategyValidationRequest:
       type: object
       description: "A collection of strategies to validate together to see if it violates any rules"
@@ -3323,17 +3116,23 @@ components:
           type: string
         locked:
           type: boolean
+        value:
+          description: "Preferred now, please don't use valueX fields"
         valueString:
+          deprecated: true
           nullable: true
           description: "default value if no strategy matches. interpreted by type in parent"
           type: string
         valueNumber:
+          deprecated: true
           nullable: true
           type: number
         valueBoolean:
+          deprecated: true
           nullable: true
           type: boolean
         valueJson:
+          deprecated: true
           nullable: true
           type: string
         retired:
@@ -3343,11 +3142,15 @@ components:
           description: "if false or null, this feature will visible on edge. if true, it will not be passed to the client"
         rolloutStrategyInstances:
           type: array
+          nullable: true
+          default: []
           items:
             $ref: "#/components/schemas/RolloutStrategyInstance"
         rolloutStrategies:
           description: "These are custom rollout strategies that only apply to this feature value."
           type: array
+          nullable: true
+          default: []
           items:
             $ref: "#/components/schemas/RolloutStrategy"
         sharedRolloutStrategies:
@@ -3355,14 +3158,17 @@ components:
                         then it will mirror rolloutStrategyInstances and only enabled ones will be passed back. The value from the rolloutStrategyInstance will be embedded. This field will
                         _always_ be ignored when being sent back to the server, only rolloutStrategyInstances is used."
           type: array
+          nullable: true
+          default: []
           items:
             $ref: "#/components/schemas/RolloutStrategy"
         featureGroupStrategies:
           nullable: true
           description: "There are strategies provided by feature groups (if any)"
           type: array
+          default: []
           items:
-            $ref: "#/components/schemas/FeatureGroupFeatureValueStrategy"
+            $ref: "#/components/schemas/GroupRolloutStrategy"
         environmentId:
           nullable: true
           type: string
@@ -3528,6 +3334,7 @@ components:
               type: string
               maxLength: 400
             portfolioId:
+              nullable: true
               type: string
               format: uuid
             version:
@@ -4148,6 +3955,30 @@ components:
               nullable: true
               type: string
               description: "An ID that needs to exist for validation"
+    CreateRolloutStrategy:
+      type: object
+      description: "This is used by Shared Strategies to create new strategies"
+      properties:
+        name:
+          description: "names are unique in a case insensitive fashion"
+          type: string
+          # validator is checking this
+        #          maxLength: 100
+        colouring:
+          nullable: true
+          description: "the colour used to display the strategy in the UI. indexed table of background/foreground combos."
+          type: integer
+        avatar:
+          nullable: true
+          type: string
+          description: "url to avatar (if any). Not sent to SDK. Preferably a unicorn."
+          maxLength: 200
+        attributes:
+          nullable: true
+          default: []
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyAttribute"
     RolloutStrategy:
       allOf:
         - $ref: "#/components/schemas/BaseRolloutStrategy"
@@ -4162,6 +3993,10 @@ components:
             name:
               description: "names are unique in a case insensitive fashion"
               type: string
+            disabled:
+              description: "This will allow an individual strategy to be disabled rather than having to be removed"
+              type: boolean
+              default: false
               # validator is checking this
             #          maxLength: 100
             colouring:

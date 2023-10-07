@@ -76,7 +76,7 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
 
   @override
   void addStrategy(EditingRolloutStrategy strategy) {
-    fhosLogger.fine("adding new strategy ${strategy} to stream");
+    fhosLogger.fine("adding new strategy $strategy to stream");
     final fgStrategy = strategy.toFeatureGroupStrategy()!;
 
     _strategySource.add(fgStrategy);

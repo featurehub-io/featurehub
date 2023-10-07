@@ -406,6 +406,8 @@ open class DbCacheSource @Inject constructor(
       .type(rsa.type!!)
   }
 
+
+
   private fun fromRolloutStrategy(rs: RolloutStrategy): CacheRolloutStrategy {
     return CacheRolloutStrategy()
       .id(rs.id ?: "rs-id")
@@ -431,7 +433,8 @@ open class DbCacheSource @Inject constructor(
       .select(QDbStrategyForFeatureValue.Alias.value)
       .featureValue.id.eq(featureValue.id)
       .enabled.isTrue
-      .rolloutStrategy.fetch(QDbRolloutStrategy.Alias.strategy)
+      .rolloutStrategy.disabled.isFalse
+      .rolloutStrategy.fetch(QDbApplicationRolloutStrategy.Alias.attributes, QDbApplicationRolloutStrategy.Alias.shortUniqueCode)
       .findList()
 
     allStrategies.addAll(activeSharedStrategies.map { shared ->
@@ -595,7 +598,7 @@ open class DbCacheSource @Inject constructor(
    *
    * @param rs - the rollout strategy that changed
    */
-  override fun publishRolloutStrategyChange(rs: DbRolloutStrategy) {
+  override fun publishApplicationRolloutStrategyChange(rs: DbApplicationRolloutStrategy) {
     executor.submit {
       val updatedValues =
         addSelectorToFeatureValue(QDbFeatureValue()).sharedRolloutStrategies.rolloutStrategy.eq(rs).sharedRolloutStrategies.enabled.isTrue.findList()

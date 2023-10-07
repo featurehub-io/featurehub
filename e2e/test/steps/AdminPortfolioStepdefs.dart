@@ -33,7 +33,7 @@ class AdminPortfolioStepdefs {
       shared.portfolio = p;
       shared.portfolioAdminGroup = p.groups![0];
     } else {
-      shared.portfolioAdminGroup = portfolio.groups?.firstWhere((g) => g.admin);
+      shared.portfolioAdminGroup = portfolio.groups?.firstWhere((g) => g.admin == true);
       shared.portfolio = portfolio;
     }
   }
@@ -64,7 +64,7 @@ class AdminPortfolioStepdefs {
     if (portfolio != null) {
       await common.portfolioService.updatePortfolio(
           portfolio.id!,
-          Portfolio(name: newName, description: newDesc, id: '', version: portfolio.version),
+          Portfolio(name: newName, description: newDesc, id: portfolio.id!, version: portfolio.version),
           includeGroups: true);
     }
   }
@@ -100,7 +100,7 @@ class AdminPortfolioStepdefs {
       p = await common.portfolioService.updatePortfolio(
           existing!.id!,
           new Portfolio(
-              id: '',
+              id: existing.id!,
               name: newName,
               description: 'not important',
               version: existing.version));

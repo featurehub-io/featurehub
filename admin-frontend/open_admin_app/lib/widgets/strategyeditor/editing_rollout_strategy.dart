@@ -31,7 +31,7 @@ class EditingRolloutStrategyAttribute {
 
   @override
   String toString() {
-    return "ersa: field ${fieldName}, values: ${values}, type: ${type}, id: ${id}, conditional: ${conditional}";
+    return "ersa: field $fieldName, values: $values, type: $type, id: $id, conditional: $conditional";
   }
 
   EditingRolloutStrategyAttribute({
@@ -102,7 +102,7 @@ class EditingRolloutStrategy {
 
   @override
   String toString() {
-    return "name: ${name}, id: ${id}, percentage ${percentage}, percentage attr: ${percentageAttributes}, value: ${value}, ${attributes}";
+    return "name: $name, id: $id, percentage $percentage, percentage attr: $percentageAttributes, value: $value, $attributes";
   }
 
   static EditingRolloutStrategy fromRolloutStrategy(RolloutStrategy rs) {

@@ -18,7 +18,7 @@ interface Conversions {
   fun byPerson(id: UUID?): DbPerson?
   fun byPerson(id: UUID?, opts: Opts?): DbPerson?
   fun byPerson(creator: Person?): DbPerson?
-  fun byStrategy(id: UUID?): DbRolloutStrategy?
+  fun byStrategy(id: UUID?): DbApplicationRolloutStrategy?
   fun byPortfolio(portfolioId: UUID?): DbPortfolio?
   fun byEnvironment(id: UUID?): DbEnvironment?
   fun byEnvironment(id: UUID?, opts: Opts?): DbEnvironment?
@@ -93,7 +93,7 @@ interface Conversions {
 
   fun toFeatureValue(feature: DbApplicationFeature?, value: DbFeatureValue?): FeatureValue?
   fun toFeatureValue(feature: DbApplicationFeature?, value: DbFeatureValue?, opts: Opts?): FeatureValue?
-  fun toRolloutStrategy(rs: DbRolloutStrategy?, opts: Opts?): RolloutStrategyInfo?
+  fun toApplicationRolloutStrategy(rs: DbApplicationRolloutStrategy?, opts: Opts?): ApplicationRolloutStrategy?
   fun isPersonEnvironmentAdmin(current: Person, environmentId: UUID): Boolean
 
   companion object {

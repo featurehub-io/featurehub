@@ -198,14 +198,14 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     if (_mrClient.userIsCurrentPortfolioAdmin) {
       try {
         final serviceAccounts = await _serviceAccountServiceApi
-            .searchServiceAccountsInPortfolio(app.portfolioId,
+            .searchServiceAccountsInPortfolio(app.portfolioId!,
                 includePermissions: true);
 
         if (!_serviceAccountsBS.isClosed) {
           if (serviceAccounts.isNotEmpty) {
             _currentServiceAccountIdSource.add(null);
             // ignore: unawaited_futures
-            selectServiceAccount(serviceAccounts[0].id!);
+            selectServiceAccount(serviceAccounts[0].id);
           }
           _serviceAccountsBS.add(serviceAccounts);
         }

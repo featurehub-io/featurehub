@@ -246,7 +246,7 @@ class _ServiceAccountPermissionDetailState
                         onPressed: () {
                           currentServiceAccount = null;
                           widget.bloc
-                              .selectServiceAccount(saSnapshot.data!.id!);
+                              .selectServiceAccount(saSnapshot.data!.id);
                         },
                         title: 'Cancel',
                         keepCase: true,
@@ -261,7 +261,7 @@ class _ServiceAccountPermissionDetailState
                             newSa.permissions = newList;
                             widget.bloc
                                 .updateServiceAccountPermissions(
-                                    newSa.id!, saSnapshot.data!)
+                                    newSa.id, saSnapshot.data!)
                                 .then((serviceAccount) => widget.bloc.mrClient
                                     .addSnackbar(Text(
                                         "Service account '${serviceAccount?.name ?? '<unknown>'}' updated!")))

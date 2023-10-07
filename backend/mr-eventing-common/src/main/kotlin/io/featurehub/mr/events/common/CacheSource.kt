@@ -46,5 +46,5 @@ interface CacheSource {
   fun publishFeatureChange(featureValue: DbFeatureValue)
 
 
-  fun publishRolloutStrategyChange(rs: DbRolloutStrategy)
+  fun publishApplicationRolloutStrategyChange(rs: DbApplicationRolloutStrategy)
 }

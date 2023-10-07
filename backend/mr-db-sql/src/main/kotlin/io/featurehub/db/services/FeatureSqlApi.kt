@@ -105,8 +105,8 @@ class FeatureSqlApi @Inject constructor(
     return if (dbFeatureValue != null) {
       rolloutStrategyValidator.validateStrategies(
         dbFeatureValue.feature.valueType,
-        featureValue.rolloutStrategies,
-        featureValue.rolloutStrategyInstances
+        featureValue.rolloutStrategies ?: listOf() ,
+        featureValue.rolloutStrategyInstances ?: listOf()
       ).hasFailedValidation()
 
       // this is an update not a create, environment + app-feature key exists
@@ -333,7 +333,7 @@ class FeatureSqlApi @Inject constructor(
     val historicalStrategies = historical.rolloutStrategies.toList() // not mutable
     val existingStrategies = existing.rolloutStrategies
 
-    featureValue.rolloutStrategies.let { strategies ->
+    featureValue.rolloutStrategies?.let { strategies ->
       rationaliseStrategyIdsAndAttributeIds(strategies)
 
       // we need a map of the existing strategies in the historical version, and as we
@@ -429,8 +429,8 @@ class FeatureSqlApi @Inject constructor(
 
       // ok, now just honour the order of the incoming strategies and keep track if they actually changed
       val newlyOrderedList =
-        featureValue.rolloutStrategies.mapNotNull { newStrategy -> existingStrategies.find { it.id == newStrategy.id } }
-            .toMutableList()
+        (featureValue.rolloutStrategies?.mapNotNull { newStrategy -> existingStrategies.find { it.id == newStrategy.id } }
+          ?: listOf()).toMutableList()
       val newlyOrderedListIds = newlyOrderedList.map { it.id }
       newlyOrderedList.addAll(existingStrategies.filter { !newlyOrderedListIds.contains(it.id) })
       val reorderedList = newlyOrderedList.map { it.id }
@@ -612,10 +612,10 @@ class FeatureSqlApi @Inject constructor(
   }
 
   private fun convertStrategiesToDbFeatureValueStrategies(featureValue: FeatureValue): List<RolloutStrategy> {
-    return featureValue.rolloutStrategies.let { strategies ->
+    return featureValue.rolloutStrategies?.let { strategies ->
       rationaliseStrategyIdsAndAttributeIds(strategies)
       strategies
-    }
+    } ?: listOf()
   }
 
   /**
@@ -753,7 +753,7 @@ class FeatureSqlApi @Inject constructor(
 
       rolloutStrategyValidator.validateStrategies(
         feat.valueType,
-        fv.rolloutStrategies, fv.rolloutStrategyInstances, failure
+        fv.rolloutStrategies ?: listOf(), fv.rolloutStrategyInstances ?: listOf(), failure
       )
     }
     failure.hasFailedValidation()
@@ -978,8 +978,8 @@ class FeatureSqlApi @Inject constructor(
 
       rolloutStrategyValidator.validateStrategies(
         result.feature.valueType,
-        fv.rolloutStrategies,
-        fv.rolloutStrategyInstances, failure
+        fv.rolloutStrategies ?: listOf(),
+        fv.rolloutStrategyInstances ?: listOf(), failure
       )
     }
 

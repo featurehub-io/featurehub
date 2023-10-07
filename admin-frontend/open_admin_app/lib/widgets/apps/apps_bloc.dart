@@ -60,7 +60,7 @@ class AppsBloc implements Bloc {
     application.name = updatedAppName;
     application.description = updateDescription;
     return _applicationServiceApi
-        .updateApplicationOnPortfolio(application.portfolioId, application)
+        .updateApplicationOnPortfolio(application.portfolioId!, application)
         .then((onSuccess) async {
       await _refreshApplications();
     });
