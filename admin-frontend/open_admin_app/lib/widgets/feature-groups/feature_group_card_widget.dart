@@ -230,19 +230,37 @@ class FeaturesCounter extends StatelessWidget {
             ]),
           ],
         ),
-        if (featureGroup.features.isNotEmpty && featureGroup.hasStrategy)
-          Row(children: [
-            Icon(Icons.check_circle_outline_rounded,
-                color: Colors.greenAccent.shade700, size: 18.0),
-            const SizedBox(
-              width: 4.0,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Strategy",
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Theme.of(context)
+                      .textTheme
+                      .labelSmall
+                      ?.color
+                      ?.withOpacity(0.6)),
             ),
-            Text("Active",
-                style: Theme.of(context)
-                    .textTheme
-                    .labelMedium
-                    ?.copyWith(color: Colors.greenAccent.shade700))
-          ])
+            const SizedBox(
+              height: 6.0,
+            ),
+            (featureGroup.features.isNotEmpty && featureGroup.hasStrategy)
+                ? Row(children: [
+                    Icon(Icons.check_circle_outline_rounded,
+                        color: Colors.greenAccent.shade700, size: 18.0),
+                    const SizedBox(
+                      width: 4.0,
+                    ),
+                    Text("Active",
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelMedium
+                            ?.copyWith(color: Colors.greenAccent.shade700))
+                  ])
+                : const Text("Not set"),
+          ],
+        )
       ],
     );
   }

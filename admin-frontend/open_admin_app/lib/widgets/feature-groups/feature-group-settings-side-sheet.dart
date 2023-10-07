@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
@@ -60,14 +61,22 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                     } else if (snapshot.hasData) {
                       return Column(
                         children: [
-                          Text(snapshot.data!.name,
-                              style: Theme.of(context).textTheme.titleLarge),
-                          const SizedBox(
-                            height: 16.0,
-                          ),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
+                              SelectableText.rich(TextSpan(
+                                  style: DefaultTextStyle.of(context).style,
+                                  children: [
+                                    const TextSpan(
+                                      text: 'Group: ',
+                                    ),
+                                    TextSpan(
+                                      text: snapshot.data!.name,
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ])),
+                              const SizedBox(width: 16.0),
                               SelectableText.rich(TextSpan(
                                   style: DefaultTextStyle.of(context).style,
                                   children: [
@@ -105,40 +114,58 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                                   ])),
                             ],
                           ),
-                          const SizedBox(height: 32.0),
+                          const SizedBox(
+                            height: 8.0,
+                          ),
+                          const FHPageDivider(),
+                          const SizedBox(
+                            height: 8.0,
+                          ),
                           if (widget
                               .bloc.featureGroupsBloc.envRoleTypeStream.value
                               .contains(RoleType.CHANGE_VALUE))
-                            ButtonBar(
-                              alignment: MainAxisAlignment.end,
-                              children: [
-                                FHFlatButtonTransparent(
-                                  title: 'Cancel',
-                                  keepCase: true,
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                                FHFlatButton(
-                                  title: 'Apply all changes',
-                                  onPressed: () async {
-                                    await widget.bloc.saveFeatureGroupUpdates();
-                                    widget.bloc.featureGroupsBloc.mrClient
-                                        .addSnackbar(Text(
-                                            'Settings for group "${widget.featureGroup.name}" have been updated'));
-                                    Navigator.pop(context);
-                                  },
-                                )
-                              ],
-                            ),
+                            StreamBuilder<bool>(
+                                stream: widget.bloc.isGroupUpdatedStream,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData && snapshot.data!) {
+                                    return ButtonBar(
+                                      alignment: MainAxisAlignment.end,
+                                      children: [
+                                        FHFlatButtonTransparent(
+                                          title: 'Cancel',
+                                          keepCase: true,
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                        ),
+                                        FHFlatButton(
+                                          title: 'Apply all changes',
+                                          onPressed: () async {
+                                            await widget.bloc
+                                                .saveFeatureGroupUpdates();
+                                            widget
+                                                .bloc.featureGroupsBloc.mrClient
+                                                .addSnackbar(Text(
+                                                    'Settings for group "${widget.featureGroup.name}" have been updated'));
+                                            Navigator.pop(context);
+                                          },
+                                        )
+                                      ],
+                                    );
+                                  } else {
+                                    return const SizedBox.shrink();
+                                  }
+                                }),
                           const SizedBox(height: 32.0),
                           Row(children: [
                             Expanded(
                               child: Container(
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                     border: Border(
                                         right: BorderSide(
-                                            color: Colors.black87,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onPrimaryContainer,
                                             width: 0.5))),
                                 child: _FeaturesSettings(
                                   featureGroup: snapshot.data!,
@@ -259,7 +286,7 @@ class _FeaturesSettings extends StatelessWidget {
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("Features List", style: Theme.of(context).textTheme.titleLarge),
+        Text("Features List", style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 16),
         if (editable)
           Row(
@@ -286,6 +313,7 @@ class _FeaturesSettings extends StatelessWidget {
                   onPressed: () => {_addFeatureToGroup(bloc)}),
             ],
           ),
+        const SizedBox(height: 8.0),
         StreamBuilder<List<FeatureGroupFeature>>(
             stream: bloc.groupFeaturesStream,
             builder: (context, snapshot) {
@@ -294,9 +322,16 @@ class _FeaturesSettings extends StatelessWidget {
                   children: [
                     for (FeatureGroupFeature feature in snapshot.data!)
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0, vertical: 16.0),
+                        padding: const EdgeInsets.fromLTRB(6.0, 8.0, 8.0, 8.0),
                         child: Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              color: Theme.of(context).colorScheme.outline,
+                            ),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(12)),
+                          ),
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: SizedBox(
@@ -312,12 +347,15 @@ class _FeaturesSettings extends StatelessWidget {
                                       FeatureValueContainer(
                                           bloc: bloc, feature: feature),
                                       if (feature.locked!)
-                                        const Tooltip(
+                                        Tooltip(
                                             message:
-                                                "Feature value is locked. Unlock from the main Features dashboard to edit",
-                                            child: Icon(
-                                                Icons.lock_outline_rounded,
-                                                size: 18.0)),
+                                                "Feature value is locked. Unlock from the main Features dashboard to enable editing",
+                                            child: Icon(Icons.lock_outline,
+                                                size: 14.0,
+                                                color: Theme.of(context)
+                                                    .iconTheme
+                                                    .color
+                                                    ?.withOpacity(0.8))),
                                     ],
                                   ),
                                   if (editable)

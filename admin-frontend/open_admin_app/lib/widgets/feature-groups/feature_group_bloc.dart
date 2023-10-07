@@ -37,6 +37,9 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   final _strategySource = BehaviorSubject<FeatureGroupStrategy?>();
   BehaviorSubject<FeatureGroupStrategy?> get strategyStream => _strategySource;
 
+  final _isGroupUpdatedSource = BehaviorSubject<bool>.seeded(false);
+  BehaviorSubject<bool> get isGroupUpdatedStream => _isGroupUpdatedSource;
+
   String? _selectedFeatureToAdd;
 
   set selectedFeatureToAdd(String? currentFeatureToAdd) {
@@ -78,6 +81,7 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
         _trackingUpdatesGroupStrategiesStream.value;
     strategyList.add(strategy);
     _trackingUpdatesGroupStrategiesStream.add(strategyList);
+    _isGroupUpdatedSource.add(true);
   }
 
   @override
@@ -87,6 +91,7 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
         []; // create new list is ok here, as we only have one strategy
     strategyList.add(strategy);
     _trackingUpdatesGroupStrategiesStream.add(strategyList);
+    _isGroupUpdatedSource.add(true);
   }
 
   void addFeatureToGroup() {
@@ -101,12 +106,14 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
         _trackingUpdatesGroupFeaturesStream.add(latestFeatureGroupFeatures);
       }
     }
+    _isGroupUpdatedSource.add(true);
   }
 
   void removeFeatureFromGroup(FeatureGroupFeature groupFeature) {
     var latestFeatureGroupFeatures = _trackingUpdatesGroupFeaturesStream.value;
     latestFeatureGroupFeatures.removeWhere((gf) => gf.id == groupFeature.id);
     _trackingUpdatesGroupFeaturesStream.add(latestFeatureGroupFeatures);
+    _isGroupUpdatedSource.add(true);
   }
 
   Future<void> saveFeatureGroupUpdates() async {
@@ -136,6 +143,7 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
     int index = features.indexWhere((f) => feature.id == f.id);
     features[index].value = newValue;
     _trackingUpdatesGroupFeaturesStream.add(features);
+    _isGroupUpdatedSource.add(true);
   }
 
   @override
@@ -147,6 +155,7 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
             .name); // ideally need an id, but because we only have one strategy at the moment, it is ok
     _strategySource.add(null);
     _trackingUpdatesGroupStrategiesStream.add(strategies);
+    _isGroupUpdatedSource.add(true);
   }
 
   @override
