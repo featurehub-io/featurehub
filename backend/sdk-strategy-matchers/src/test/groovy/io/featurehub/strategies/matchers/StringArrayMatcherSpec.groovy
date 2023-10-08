@@ -14,7 +14,7 @@ class StringArrayMatcherSpec extends Specification {
   }
 
   @Unroll
-  def 'number array matcher works as expected'() {
+  def 'string array matcher works as expected'() {
     given: 'i create a rollout strategy'
       def rsi = new FeatureRolloutStrategyAttribute().conditional(conditional).values(val)
     when:

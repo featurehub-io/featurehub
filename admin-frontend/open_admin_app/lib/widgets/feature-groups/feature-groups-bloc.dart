@@ -124,7 +124,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
       {String? name,
       String? description,
       List<FeatureGroupUpdateFeature>? features,
-      List<FeatureGroupStrategy>? strategies}) async {
+      List<GroupRolloutStrategy>? strategies}) async {
     FeatureGroupUpdate fgc = FeatureGroupUpdate(
         id: featureGroupListGroup.id,
         name: name,

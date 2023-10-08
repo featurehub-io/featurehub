@@ -37,7 +37,7 @@ class EditingFeatureValueBloc implements Bloc {
       : _featureStatusBloc = featureStatusBloc {
     _featureServiceApi = FeatureServiceApi(featureStatusBloc.mrClient.apiClient);
     currentFeatureValue = FeatureValue.fromJson(featureValue.toJson()); // keeping original featureValue cached for resets
-    _strategySource = BehaviorSubject<List<RolloutStrategy>>.seeded(currentFeatureValue.rolloutStrategies);
+    _strategySource = BehaviorSubject<List<RolloutStrategy>>.seeded([...currentFeatureValue.rolloutStrategies ?? []]);
     environmentId = environmentFeatureValue.environmentId;
     addFeatureValueToStream(featureValue);
   }
@@ -53,6 +53,7 @@ class EditingFeatureValueBloc implements Bloc {
       if (feature.valueType == FeatureValueType.BOOLEAN) {
         rs.value = featureValue.valueBoolean ?? false;
       }
+
       strategies.add(rs.toRolloutStrategy()!);
     } else {
       strategies[index] = rs.toRolloutStrategy()!;

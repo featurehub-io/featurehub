@@ -576,13 +576,7 @@ open class ConvertUtils : Conversions {
       return null
     }
 
-    val info = ApplicationRolloutStrategy()
-      .id(rs.id)
-      .name(rs.name)
-      .disabled(rs.isDisabled)
-      .attributes(rs.attributes)
-      .colouring(rs.colouring)
-      .avatar(rs.avatar)
+    val info = rs.strategy
 
 //    if (opts!!.contains(FillOpts.SimplePeople)) {
 //      info.changedBy(toPerson(rs.whoChanged)!!)

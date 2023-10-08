@@ -26,6 +26,7 @@ components:
         - featureKeys
       properties:
         targetEnrichmentDestination:
+          nullable: true
           description: "If there is a specific target for the data, everything else _should_ ignore it"
           type: string
         environment:

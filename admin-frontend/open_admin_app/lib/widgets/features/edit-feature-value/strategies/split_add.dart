@@ -28,7 +28,7 @@ class AddStrategyButton extends StatelessWidget {
                       creator: (c, b) =>
                           StrategyEditorBloc(
                               EditingRolloutStrategy.newStrategy(
-                                  id: makeStrategyId(existing: bloc.featureValue.rolloutStrategies)),
+                                  id: makeStrategyId(existing: bloc.featureValue.rolloutStrategies!)),
                               FeatureValueStrategyProvider(bloc)),
                       builder: (ctx, bloc) {
                         return StrategyEditingWidget(

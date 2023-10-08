@@ -40,6 +40,7 @@ components:
         apiKey:
           type: string
         apiKeyServerSide:
+          nullable: true
           type: string
         environmentId:
           type: string
@@ -47,28 +48,38 @@ components:
         featureKey:
           type: string
         valueBoolean:
+          nullable: true
           type: boolean
         valueString:
+          nullable: true
           type: string
         valueNumber:
+          nullable: true
           type: number
         updatingValue:
+          nullable: true
+          default: false
           type: boolean
         lock:
+          nullable: true
           type: boolean
         organizationId:
+          nullable: true
           x-basename: oId
           type: string
           format: uuid
         portfolioId:
+          nullable: true
           x-basename: pId
           type: string
           format: uuid
         applicationId:
+          nullable: true
           x-basename: aId
           type: string
           format: uuid
         serviceKeyId:
+          nullable: true
           description: "The actual service key id rather than the key"
           x-basename: sId
           type: string

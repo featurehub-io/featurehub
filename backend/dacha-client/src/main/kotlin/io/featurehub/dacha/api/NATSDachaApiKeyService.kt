@@ -31,7 +31,7 @@ class NATSDachaApiKeyService constructor(private val nats: NATSSource, val cache
             DachaNATSRequest().featuresRequest(
               DachaKeyDetailsRequest().serviceAccountKey(
                 serviceAccountKey
-              ).eId(eId).excludeRetired(excludeRetired)
+              ).eId(eId).excludeRetired(excludeRetired ?: false)
             )
           ),
           Duration.of(connectionTimeout, ChronoUnit.MILLIS)

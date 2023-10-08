@@ -8,14 +8,14 @@ import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/ed
 import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 import 'package:rxdart/rxdart.dart';
 
-class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
+class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
   final FeatureGroupsBloc featureGroupsBloc;
   final FeatureGroupListGroup featureGroupListGroup;
-  late RolloutStrategyServiceApi _rolloutStrategyServiceApi;
+  late ApplicationRolloutStrategyServiceApi _appStrategyServiceApi;
 
   FeatureGroupBloc(this.featureGroupsBloc, this.featureGroupListGroup) {
-    _rolloutStrategyServiceApi =
-        RolloutStrategyServiceApi(featureGroupsBloc.mrClient.apiClient);
+    _appStrategyServiceApi =
+        ApplicationRolloutStrategyServiceApi(featureGroupsBloc.mrClient.apiClient);
     _getFeatureGroup();
     _getAllFeaturesPerEnvironment();
   }
@@ -34,10 +34,10 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
       BehaviorSubject<List<FeatureGroupFeature>>.seeded([]);
 
   final _trackingUpdatesGroupStrategiesStream =
-      BehaviorSubject<List<FeatureGroupStrategy>>.seeded([]);
+      BehaviorSubject<List<GroupRolloutStrategy>>.seeded([]);
 
-  final _strategySource = BehaviorSubject<FeatureGroupStrategy?>();
-  BehaviorSubject<FeatureGroupStrategy?> get strategyStream => _strategySource;
+  final _strategySource = BehaviorSubject<GroupRolloutStrategy?>();
+  BehaviorSubject<GroupRolloutStrategy?> get strategyStream => _strategySource;
 
   String? _selectedFeatureToAdd;
 
@@ -77,10 +77,10 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   @override
   void addStrategy(EditingRolloutStrategy strategy) {
     fhosLogger.fine("adding new strategy $strategy to stream");
-    final fgStrategy = strategy.toFeatureGroupStrategy()!;
+    final fgStrategy = strategy.toGroupRolloutStrategy()!;
 
     _strategySource.add(fgStrategy);
-    List<FeatureGroupStrategy> strategyList =
+    List<GroupRolloutStrategy> strategyList =
         _trackingUpdatesGroupStrategiesStream.value;
     strategyList.clear(); // we can only have 1
     strategyList.add(fgStrategy);
@@ -89,8 +89,8 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
 
   @override
   void updateStrategy() {
-    FeatureGroupStrategy strategy = _strategySource.value!;
-    List<FeatureGroupStrategy> strategyList =
+    GroupRolloutStrategy strategy = _strategySource.value!;
+    List<GroupRolloutStrategy> strategyList =
         []; // create new list is ok here, as we only have one strategy
     strategyList.add(strategy);
     _trackingUpdatesGroupStrategiesStream.add(strategyList);
@@ -118,13 +118,13 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
 
   Future<void> saveFeatureGroupUpdates() async {
     List<FeatureGroupUpdateFeature>? features = [];
-    List<FeatureGroupStrategy> strategies = [];
+    List<GroupRolloutStrategy> strategies = [];
     for (FeatureGroupFeature feature
         in _trackingUpdatesGroupFeaturesStream.value) {
       FeatureGroupUpdateFeature featureUpdate = convertToFeatureUpdate(feature);
       features.add(featureUpdate);
     }
-    for (FeatureGroupStrategy strategy
+    for (GroupRolloutStrategy strategy
         in _trackingUpdatesGroupStrategiesStream.value) {
       strategies.add(strategy);
     }
@@ -167,19 +167,13 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
     List<RolloutStrategy> strategies = [];
     strategies.add(rs);
 
-    return _rolloutStrategyServiceApi.validate(
+    return _appStrategyServiceApi.validate(
         featureGroupsBloc.mrClient.currentAid!,
         RolloutStrategyValidationRequest(
           customStrategies: strategies,
           sharedStrategies: <RolloutStrategyInstance>[],
         ));
   }
-
-  @override
-  uniqueStrategyId() {}
-
-  @override
-  void ensureStrategiesAreUnique() {}
 
   @override
   get feature {}

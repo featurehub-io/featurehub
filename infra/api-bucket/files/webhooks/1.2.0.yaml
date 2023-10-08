@@ -27,6 +27,7 @@ components:
           type: string
           description: "If there is a specific target for the data, everything else\
             \ _should_ ignore it"
+          nullable: true
         environment:
           $ref: '#/components/schemas/PublishEnvironment'
         featureKeys:
@@ -116,8 +117,10 @@ components:
         feature:
           $ref: '#/components/schemas/CacheFeature'
         value:
-          $ref: '#/components/schemas/CacheFeatureValue'
-      description: A feature and its possible value (which could be null)
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/CacheFeatureValue'
+      description: A feature and its possible value
     CacheFeature:
       required:
       - id
@@ -138,63 +141,6 @@ components:
           type: integer
           description: used for optimistic locking when renaming a feature
           format: int64
-    CacheFeatureValue:
-      required:
-      - id
-      - key
-      - locked
-      - version
-      properties:
-        id:
-          type: string
-          format: uuid
-        key:
-          type: string
-        locked:
-          type: boolean
-        value:
-          description: default value if no strategy matches. interpreted by type in
-            parent
-        rolloutStrategies:
-          type: array
-          description: These are custom rollout strategies that only apply to this
-            feature value.
-          items:
-            $ref: '#/components/schemas/CacheRolloutStrategy'
-        version:
-          type: integer
-          description: used for optimistic locking
-          format: int64
-        retired:
-          type: boolean
-          description: "if true or null, this feature will visible on edge. if false,\
-            \ it will not be passed to the client"
-        pId:
-          type: string
-          description: personIdWhoChanged
-          format: uuid
-    CacheRolloutStrategy:
-      description: This is the model for the rollout strategy as required by Dacha
-        and Edge
-      allOf:
-      - $ref: '#/components/schemas/BaseRolloutStrategy'
-      - required:
-        - attributes
-        - id
-        type: object
-        properties:
-          attributes:
-            type: array
-            items:
-              $ref: '#/components/schemas/CacheRolloutStrategyAttribute'
-    CacheRolloutStrategyAttribute:
-      allOf:
-      - $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
-      - required:
-        - conditional
-        - fieldName
-        - type
-        type: object
     FeatureValueType:
       type: string
       enum:
@@ -202,73 +148,3 @@ components:
       - STRING
       - NUMBER
       - JSON
-    BaseRolloutStrategy:
-      properties:
-        id:
-          type: string
-          nullable: true
-        percentage:
-          type: integer
-          description: value between 0 and 1000000 - for four decimal places
-          nullable: true
-        percentageAttributes:
-          type: array
-          description: "if you don't wish to apply percentage based on user id, you\
-            \ can use one or more attributes defined here"
-          nullable: true
-          items:
-            type: string
-          default: []
-        value:
-          description: when we attach the RolloutStrategy for Dacha or SSE this lets
-            us push the value out. Only visible in SDK and SSE Edge.
-          nullable: true
-        attributes:
-          type: array
-          nullable: true
-          items:
-            $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
-      description: "if the feature in an environment is different from its default,\
-        \ this will be the reason for it. a rollout strategy is defined at the Application\
-        \ level and then applied to a specific feature value. When they are copied\
-        \ to the cache layer they are cloned and the feature value for that strategy\
-        \ is inserted into the clone and those are published."
-    BaseRolloutStrategyAttribute:
-      properties:
-        conditional:
-          $ref: '#/components/schemas/RolloutStrategyAttributeConditional'
-        fieldName:
-          type: string
-        values:
-          type: array
-          description: the value(s) associated with this rule
-          items:
-            $ref: '#/components/schemas/RolloutStrategyArrayType'
-        type:
-          $ref: '#/components/schemas/RolloutStrategyFieldType'
-    RolloutStrategyArrayType:
-      description: values depend on the field type
-    RolloutStrategyFieldType:
-      type: string
-      enum:
-      - STRING
-      - SEMANTIC_VERSION
-      - NUMBER
-      - DATE
-      - DATETIME
-      - BOOLEAN
-      - IP_ADDRESS
-    RolloutStrategyAttributeConditional:
-      type: string
-      enum:
-      - EQUALS
-      - ENDS_WITH
-      - STARTS_WITH
-      - GREATER
-      - GREATER_EQUALS
-      - LESS
-      - LESS_EQUALS
-      - NOT_EQUALS
-      - INCLUDES
-      - EXCLUDES
-      - REGEX

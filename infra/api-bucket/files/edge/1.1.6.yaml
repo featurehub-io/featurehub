@@ -160,11 +160,8 @@ components:
       - STRING
       - NUMBER
       - JSON
-    BaseRolloutStrategy:
+    BaseStrategy:
       properties:
-        id:
-          type: string
-          nullable: true
         percentage:
           type: integer
           description: value between 0 and 1000000 - for four decimal places
@@ -177,22 +174,36 @@ components:
           items:
             type: string
           default: []
-        value:
-          description: when we attach the RolloutStrategy for Dacha or SSE this lets
-            us push the value out. Only visible in SDK and SSE Edge.
-          nullable: true
         attributes:
           type: array
           nullable: true
           items:
-            $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
+            $ref: '#/components/schemas/RolloutStrategyAttribute'
+          default: []
       description: "if the feature in an environment is different from its default,\
         \ this will be the reason for it. a rollout strategy is defined at the Application\
         \ level and then applied to a specific feature value. When they are copied\
         \ to the cache layer they are cloned and the feature value for that strategy\
         \ is inserted into the clone and those are published."
-    BaseRolloutStrategyAttribute:
+    BaseRolloutStrategy:
+      allOf:
+      - $ref: '#/components/schemas/BaseStrategy'
+      - type: object
+        properties:
+          value:
+            description: when we attach the RolloutStrategy for Dacha or SSE this
+              lets us push the value out. Only visible in SDK and SSE Edge.
+            nullable: true
+    RolloutStrategyAttribute:
+      required:
+      - conditional
+      - fieldName
+      - type
       properties:
+        id:
+          type: string
+          description: An ID that needs to exist for validation
+          nullable: true
         conditional:
           $ref: '#/components/schemas/RolloutStrategyAttributeConditional'
         fieldName:
@@ -202,6 +213,7 @@ components:
           description: the value(s) associated with this rule
           items:
             $ref: '#/components/schemas/RolloutStrategyArrayType'
+          default: []
         type:
           $ref: '#/components/schemas/RolloutStrategyFieldType'
     RolloutStrategyArrayType:
@@ -472,13 +484,16 @@ components:
       properties:
         value:
           description: the new value
+          nullable: true
         updateValue:
           type: boolean
           description: "indicates whether you are trying to update the value, as value\
             \ can be null"
+          nullable: true
         lock:
           type: boolean
           description: "set only if you wish to lock or unlock, otherwise null"
+          nullable: true
     SSEResultState:
       type: string
       description: error is an inherent state
@@ -519,6 +534,7 @@ components:
           type: boolean
           description: "Is this feature locked. Usually this doesn't matter because\
             \ the value is the value, but for FeatureInterceptors it can matter."
+          default: false
         version:
           type: integer
           description: "The version of the feature, this allows features to change\
@@ -528,10 +544,12 @@ components:
           $ref: '#/components/schemas/FeatureValueType'
         value:
           description: the current value
+          nullable: true
         v:
           type: string
           description: strategy id that was applied if this was a server evaluated
             feature
+          nullable: true
         environmentId:
           type: string
           description: "This field is filled in from the client side in the GET api\
@@ -539,8 +557,10 @@ components:
             \ passed from the server, as an array of feature states is wrapped in\
             \ an environment."
           format: uuid
+          nullable: true
         strategies:
           type: array
+          nullable: true
           items:
             $ref: '#/components/schemas/FeatureRolloutStrategy'
     FeatureRolloutStrategy:
@@ -552,13 +572,16 @@ components:
         - id
         type: object
         properties:
+          id:
+            type: string
+            description: strategy id
           attributes:
             type: array
             items:
               $ref: '#/components/schemas/FeatureRolloutStrategyAttribute'
     FeatureRolloutStrategyAttribute:
       allOf:
-      - $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
+      - $ref: '#/components/schemas/RolloutStrategyAttribute'
       - required:
         - conditional
         - fieldName

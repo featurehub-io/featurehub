@@ -292,34 +292,15 @@ components:
         value:
           description: "value (if any) associated with this feature for this strategy"
     GroupRolloutStrategy:
-      type: object
-      required:
-        - name
-      properties:
-        id:
-          nullable: true
-          description: "unique id for this strategy, client can be null but server will always fill in and never return null"
-          type: string
-        name:
-          description: "The strategy name"
-          type: string
-        percentage:
-          nullable: true
-          description: "value between 0 and 1000000 - for four decimal places"
-          type: integer
-        percentageAttributes:
-          nullable: true
-          default: []
-          type: array
-          description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
-          items:
-            type: string
-        attributes:
-          nullable: true
-          default: []
-          type: array
-          items:
-            $ref: "#/components/schemas/RolloutStrategyAttribute"
+      allOf:
+        - $ref: "#/components/schemas/BaseUIStrategy"
+        - $ref: "#/components/schemas/BaseStrategy"
+        - type: object
+          properties:
+            id:
+              description: "the server will accept null ids but it won't ever store them as null"
+              type: string
+              nullable: true
     FeatureGroupCreate:
       type: object
       required:

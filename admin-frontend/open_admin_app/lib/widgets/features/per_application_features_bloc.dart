@@ -42,7 +42,7 @@ class PerApplicationFeaturesBloc
   final ManagementRepositoryClientBloc _mrClient;
   late ApplicationServiceApi _appServiceApi;
   late UserStateServiceApi _userStateServiceApi;
-  late RolloutStrategyServiceApi _rolloutStrategyServiceApi;
+  late ApplicationRolloutStrategyServiceApi _rolloutStrategyServiceApi;
 
   late FeatureServiceApi _featureServiceApi;
 
@@ -85,7 +85,7 @@ class PerApplicationFeaturesBloc
     _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
     _featureServiceApi = FeatureServiceApi(_mrClient.apiClient);
     _userStateServiceApi = UserStateServiceApi(_mrClient.apiClient);
-    _rolloutStrategyServiceApi = RolloutStrategyServiceApi(_mrClient.apiClient);
+    _rolloutStrategyServiceApi = ApplicationRolloutStrategyServiceApi(_mrClient.apiClient);
 
     _currentPid = _mrClient.streamValley.currentPortfolioIdStream
         .listen(addApplicationsToStream);

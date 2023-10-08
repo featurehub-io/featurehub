@@ -163,7 +163,7 @@ class _StrategySettings extends StatelessWidget {
   Widget build(BuildContext context) {
     bool editable = bloc.featureGroupsBloc.envRoleTypeStream.value
         .contains(RoleType.CHANGE_VALUE);
-    return StreamBuilder<FeatureGroupStrategy?>(
+    return StreamBuilder<GroupRolloutStrategy?>(
         stream: bloc.strategyStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
@@ -183,7 +183,7 @@ class _StrategySettings extends StatelessWidget {
                               content: BlocProvider.builder(
                                 creator: (c, b) {
                                   var rs = snapshot.data!;
-                                  return StrategyEditorBloc(rs.toEditing(), FeatureGroupStrategyProvider(bloc));
+                                  return StrategyEditorBloc(rs.toEditing(), GroupRolloutStrategyProvider(bloc));
                                 },
                                 builder: (c, b) => StrategyEditingWidget(
                                     bloc: b, editable: true),
@@ -216,7 +216,7 @@ class _StrategySettings extends StatelessWidget {
                                   : 'View split targeting rules'),
                               content: BlocProvider.builder(
                                 creator: (c, b) =>
-                                    StrategyEditorBloc(EditingRolloutStrategy.newStrategy(), FeatureGroupStrategyProvider(bloc)),
+                                    StrategyEditorBloc(EditingRolloutStrategy.newStrategy(), GroupRolloutStrategyProvider(bloc)),
                                 builder: (c, b) => StrategyEditingWidget(
                                     bloc: b, editable: true),
                               ));

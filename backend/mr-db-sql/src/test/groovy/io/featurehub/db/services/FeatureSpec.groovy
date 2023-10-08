@@ -20,6 +20,7 @@ import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.CreateEnvironment
 import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.CreateGroup
+import io.featurehub.mr.model.CreateServiceAccount
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Feature
@@ -503,7 +504,7 @@ class FeatureSpec extends Base2Spec {
       def env4 = environmentSqlApi.create(new CreateEnvironment().description("x").name("app2-production-f1"), app2Id, superPerson)
     and: "i create a service account"
       def serviceA1 = serviceAccountSqlApi.create(portfolio1.id, superPerson,
-        new ServiceAccount()
+        new CreateServiceAccount()
           .description("the dragon").name("wilbur")
           .permissions([new ServiceAccountPermission().environmentId(env1.id).permissions([RoleType.READ])]),
         Opts.empty())

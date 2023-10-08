@@ -7,9 +7,9 @@ extension EditingTransformRS on RolloutStrategy {
   }
 }
 
-extension EditingTransformFS on FeatureGroupStrategy {
+extension EditingTransformFS on GroupRolloutStrategy {
   EditingRolloutStrategy toEditing() {
-    return EditingRolloutStrategy.fromFeatureGroupStrategy(this, null);
+    return EditingRolloutStrategy.fromGroupRolloutStrategy(this, null);
   }
 }
 
@@ -138,7 +138,7 @@ class EditingRolloutStrategy {
     return violations;
   }
 
-  static EditingRolloutStrategy fromFeatureGroupStrategy(FeatureGroupStrategy rs, dynamic value) {
+  static EditingRolloutStrategy fromGroupRolloutStrategy(GroupRolloutStrategy rs, dynamic value) {
     return EditingRolloutStrategy(
         id: rs.id!,
         saved: true,
@@ -148,8 +148,8 @@ class EditingRolloutStrategy {
     );
   }
 
-  FeatureGroupStrategy? toFeatureGroupStrategy() {
-    return FeatureGroupStrategy(name: name!, id: id, percentage: percentage, percentageAttributes: percentageAttributes, attributes: attributes.map((e) => e.toRolloutStrategyAttribute()!).toList());
+  GroupRolloutStrategy? toGroupRolloutStrategy() {
+    return GroupRolloutStrategy(name: name!, id: id, percentage: percentage, percentageAttributes: percentageAttributes, attributes: attributes.map((e) => e.toRolloutStrategyAttribute()!).toList());
   }
 
   static EditingRolloutStrategy newStrategy({int? percentage, String? id, List<String>? percentageAttributes,

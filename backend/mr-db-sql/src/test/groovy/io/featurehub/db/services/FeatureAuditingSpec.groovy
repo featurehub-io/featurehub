@@ -9,6 +9,7 @@ import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.CreateEnvironment
 import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.CreatePortfolio
+import io.featurehub.mr.model.CreateServiceAccount
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.events.common.CacheSource
@@ -130,7 +131,7 @@ class FeatureAuditingSpec extends Base2Spec {
       def feature = applicationSqlApi.createApplicationLevelFeature(app.id,
         new CreateFeature().name("testsdk-feature").description("testsdk-feature").key("TESTSDK-BOOL").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     and: "we have a service account"
-      def sa = serviceAccountApi.create(p1.id, superPerson, new ServiceAccount().name("testsdk")
+      def sa = serviceAccountApi.create(p1.id, superPerson, new CreateServiceAccount().name("testsdk")
             .description("some desc").permissions([]), Opts.empty())
       db.currentTransaction()?.commit()
     when: "i update the feature using the test-sdk api"

@@ -86,7 +86,7 @@ class _ValueContainer extends StatelessWidget {
                 ),
               ),
               _ValueCard(feature: feature, fv: fv!),
-              if (fv!.rolloutStrategies.isNotEmpty)
+              if (fv!.rolloutStrategies?.isNotEmpty == true)
                 _StrategiesList(feature: feature, fv: fv!),
             ],
           ),
@@ -142,11 +142,13 @@ class _StrategiesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final rolloutStrategies = fv.rolloutStrategies;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (RolloutStrategy rsi in fv.rolloutStrategies)
-          _ValueCard(rolloutStrategy: rsi, fv: fv, feature: feature)
+        if (rolloutStrategies != null)
+          for (RolloutStrategy rsi in rolloutStrategies)
+            _ValueCard(rolloutStrategy: rsi, fv: fv, feature: feature)
       ],
     );
   }

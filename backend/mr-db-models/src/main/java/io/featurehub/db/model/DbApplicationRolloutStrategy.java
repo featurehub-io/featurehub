@@ -3,6 +3,7 @@ package io.featurehub.db.model;
 import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.Index;
+import io.featurehub.mr.model.ApplicationRolloutStrategy;
 import io.featurehub.mr.model.RolloutStrategyAttribute;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -31,7 +32,6 @@ public class DbApplicationRolloutStrategy extends DbVersionedBase {
 
   @Column(name = "when_archived")
   private LocalDateTime whenArchived;
-
   @Column(name = "strategy_name", nullable = false, length = 150)
   private String name;
 
@@ -46,32 +46,23 @@ public class DbApplicationRolloutStrategy extends DbVersionedBase {
   // we can introduce another database field with the new record
   // and migrate it on the fly
   @DbJson
-  @Nullable
-  @Column(name = "attr")
-  private List<RolloutStrategyAttribute> attributes;
+  @Column(name = "strategy", nullable = false)
+  @NotNull
+  private ApplicationRolloutStrategy strategy;
 
   @NotNull
   @Column(nullable = false, name = "code")
   private final String shortUniqueCode;
-
-  @Column(nullable = false)
-  private boolean disabled = false;
-
-  @Column(length = 200)
-  @Nullable
-  private String avatar;
-
-  @Nullable
-  private Integer colouring;
 
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_person_who_changed")
   @Column(name = "fk_person_who_changed")
   private DbPerson whoChanged;
 
-  public DbApplicationRolloutStrategy(@NotNull DbApplication application, @NotNull String shortUniqueCode) {
+  public DbApplicationRolloutStrategy(@NotNull DbApplication application, @NotNull String shortUniqueCode, @NotNull ApplicationRolloutStrategy strategy) {
     this.application = application;
     this.shortUniqueCode = shortUniqueCode;
+    this.strategy = strategy;
   }
 
   public DbPerson getWhoChanged() {
@@ -118,36 +109,8 @@ public class DbApplicationRolloutStrategy extends DbVersionedBase {
     sharedRolloutStrategies.add(strategyLink);
   }
 
-  public @Nullable List<RolloutStrategyAttribute> getAttributes() {
-    return attributes;
-  }
-
-  public void setAttributes(@Nullable List<RolloutStrategyAttribute> attributes) {
-    this.attributes = attributes;
-  }
-
-  public boolean isDisabled() {
-    return disabled;
-  }
-
-  public void setDisabled(boolean disabled) {
-    this.disabled = disabled;
-  }
-
-  public @Nullable String getAvatar() {
-    return avatar;
-  }
-
-  public void setAvatar(@Nullable String avatar) {
-    this.avatar = avatar;
-  }
-
-  public @Nullable Integer getColouring() {
-    return colouring;
-  }
-
-  public void setColouring(@Nullable Integer colouring) {
-    this.colouring = colouring;
+  public ApplicationRolloutStrategy getStrategy() {
+    return strategy;
   }
 
   public String getShortUniqueCode() {

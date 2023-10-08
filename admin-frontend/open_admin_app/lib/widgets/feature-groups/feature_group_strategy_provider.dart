@@ -6,10 +6,10 @@ import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
 import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 import 'package:open_admin_app/widgets/strategyeditor/strategy_editor_provider.dart';
 
-class FeatureGroupStrategyProvider extends StrategyEditorProvider {
+class GroupRolloutStrategyProvider extends StrategyEditorProvider {
   final FeatureGroupBloc bloc;
 
-  FeatureGroupStrategyProvider(this.bloc);
+  GroupRolloutStrategyProvider(this.bloc);
 
   @override
   Future<void> updateStrategy(EditingRolloutStrategy rs) async {

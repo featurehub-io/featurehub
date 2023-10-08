@@ -198,7 +198,7 @@ components:
     MessagingRolloutStrategyAttribute:
       x-package: io.featurehub.messaging.model
       allOf:
-        - $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
+        - $ref: "#/components/schemas/RolloutStrategyAttribute"
         - type: object
           required:
             - conditional

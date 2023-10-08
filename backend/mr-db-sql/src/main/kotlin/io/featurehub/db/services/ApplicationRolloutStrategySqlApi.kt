@@ -45,13 +45,20 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
     }
 
     rolloutStrategy.attributes?.let { rationaliseAttributeIds(it) }
+    val strategy = ApplicationRolloutStrategy()
+      .id(UUID.randomUUID())
+      .name(rolloutStrategy.name)
+      .percentage(rolloutStrategy.percentage)
+      .percentageAttributes(rolloutStrategy.percentageAttributes)
+      .attributes(rolloutStrategy.attributes)
+      .colouring(rolloutStrategy.colouring)
+      .avatar(rolloutStrategy.avatar)
+      .disabled(rolloutStrategy.disabled)
 
-    val rs = with(DbApplicationRolloutStrategy(app, code)) {
+    val rs = with(DbApplicationRolloutStrategy(app, code, strategy)) {
       whoChanged = p
-      attributes = rolloutStrategy.attributes
-      colouring = rolloutStrategy.colouring
-      avatar = rolloutStrategy.avatar
       name = rolloutStrategy.name
+      id = strategy.id
       this
     }
 
@@ -124,12 +131,12 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
 
       update.attributes?.let { attr ->
         rationaliseAttributeIds(attr)
-        strategy.attributes = attr
+        strategy.strategy.attributes = attr
       }
 
-      update.avatar?.let { strategy.avatar = it }
-      update.colouring?.let { strategy.colouring = it }
-      update.disabled?.let { strategy.isDisabled = it }
+      update.avatar?.let { strategy.strategy.avatar = it }
+      update.colouring?.let { strategy.strategy.colouring = it }
+      update.disabled?.let { strategy.strategy.disabled = it }
 
       strategy.whoChanged = p
 

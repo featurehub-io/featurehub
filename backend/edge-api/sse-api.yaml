@@ -206,7 +206,7 @@ components:
                 $ref: "#/components/schemas/FeatureRolloutStrategyAttribute"
     FeatureRolloutStrategyAttribute:
       allOf:
-        - $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
+        - $ref: "#/components/schemas/RolloutStrategyAttribute"
         - type: object
           required:
             - conditional

@@ -3946,15 +3946,6 @@ components:
               nullable: true
               type: string
               format: date-time
-    RolloutStrategyAttribute:
-      allOf:
-        - $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
-        - type: object
-          properties:
-            id:
-              nullable: true
-              type: string
-              description: "An ID that needs to exist for validation"
     CreateRolloutStrategy:
       type: object
       description: "This is used by Shared Strategies to create new strategies"
@@ -3981,39 +3972,14 @@ components:
             $ref: "#/components/schemas/RolloutStrategyAttribute"
     RolloutStrategy:
       allOf:
+        - $ref: "#/components/schemas/BaseUIStrategy"
         - $ref: "#/components/schemas/BaseRolloutStrategy"
         - type: object
-          required:
-            - name
           properties:
             id:
               description: "the server will accept null ids but it won't ever store them as null"
               type: string
               nullable: true
-            name:
-              description: "names are unique in a case insensitive fashion"
-              type: string
-            disabled:
-              description: "This will allow an individual strategy to be disabled rather than having to be removed"
-              type: boolean
-              default: false
-              # validator is checking this
-            #          maxLength: 100
-            colouring:
-              nullable: true
-              description: "the colour used to display the strategy in the UI. indexed table of background/foreground combos."
-              type: integer
-            avatar:
-              nullable: true
-              type: string
-              description: "url to avatar (if any). Not sent to SDK. Preferably a unicorn."
-              maxLength: 200
-            attributes:
-              nullable: true
-              default: []
-              type: array
-              items:
-                $ref: "#/components/schemas/RolloutStrategyAttribute"
     AnemicPerson:
       type: object
       required:

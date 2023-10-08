@@ -4987,51 +4987,17 @@ components:
             type: string
             format: date-time
             nullable: true
-    RolloutStrategyAttribute:
-      allOf:
-      - $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
-      - type: object
-        properties:
-          id:
-            type: string
-            description: An ID that needs to exist for validation
-            nullable: true
     RolloutStrategy:
       allOf:
+      - $ref: '#/components/schemas/BaseUIStrategy'
       - $ref: '#/components/schemas/BaseRolloutStrategy'
-      - required:
-        - name
-        type: object
+      - type: object
         properties:
           id:
             type: string
             description: the server will accept null ids but it won't ever store them
               as null
             nullable: true
-          name:
-            type: string
-            description: names are unique in a case insensitive fashion
-          disabled:
-            type: boolean
-            description: This will allow an individual strategy to be disabled rather
-              than having to be removed
-            default: false
-          colouring:
-            type: integer
-            description: the colour used to display the strategy in the UI. indexed
-              table of background/foreground combos.
-            nullable: true
-          avatar:
-            maxLength: 200
-            type: string
-            description: url to avatar (if any). Not sent to SDK. Preferably a unicorn.
-            nullable: true
-          attributes:
-            type: array
-            nullable: true
-            items:
-              $ref: '#/components/schemas/RolloutStrategyAttribute'
-            default: []
     AnemicPerson:
       required:
       - id
@@ -5060,7 +5026,7 @@ components:
       - LOCK
       - UNLOCK
       - CHANGE_VALUE
-    BaseRolloutStrategy:
+    BaseStrategy:
       properties:
         percentage:
           type: integer
@@ -5074,27 +5040,57 @@ components:
           items:
             type: string
           default: []
-        value:
-          description: when we attach the RolloutStrategy for Dacha or SSE this lets
-            us push the value out. Only visible in SDK and SSE Edge.
-          nullable: true
         attributes:
           type: array
           nullable: true
           items:
-            $ref: '#/components/schemas/BaseRolloutStrategyAttribute'
+            $ref: '#/components/schemas/RolloutStrategyAttribute'
           default: []
       description: "if the feature in an environment is different from its default,\
         \ this will be the reason for it. a rollout strategy is defined at the Application\
         \ level and then applied to a specific feature value. When they are copied\
         \ to the cache layer they are cloned and the feature value for that strategy\
         \ is inserted into the clone and those are published."
-    BaseRolloutStrategyAttribute:
+    BaseUIStrategy:
+      type: object
+      properties:
+        name:
+          type: string
+          description: names are unique in a case insensitive fashion
+        colouring:
+          type: integer
+          description: the colour used to display the strategy in the UI. indexed
+            table of background/foreground combos.
+          nullable: true
+        disabled:
+          type: boolean
+          description: Disable this strategy across all feature values that are using
+            it
+          default: false
+        avatar:
+          maxLength: 200
+          type: string
+          description: url to avatar (if any). Not sent to SDK. Preferably a unicorn.
+          nullable: true
+    BaseRolloutStrategy:
+      allOf:
+      - $ref: '#/components/schemas/BaseStrategy'
+      - type: object
+        properties:
+          value:
+            description: when we attach the RolloutStrategy for Dacha or SSE this
+              lets us push the value out. Only visible in SDK and SSE Edge.
+            nullable: true
+    RolloutStrategyAttribute:
       required:
       - conditional
       - fieldName
       - type
       properties:
+        id:
+          type: string
+          description: An ID that needs to exist for validation
+          nullable: true
         conditional:
           $ref: '#/components/schemas/RolloutStrategyAttributeConditional'
         fieldName:
@@ -5641,36 +5637,16 @@ components:
         value:
           description: value (if any) associated with this feature for this strategy
     GroupRolloutStrategy:
-      required:
-      - name
-      type: object
-      properties:
-        id:
-          type: string
-          description: "unique id for this strategy, client can be null but server\
-            \ will always fill in and never return null"
-          nullable: true
-        name:
-          type: string
-          description: The strategy name
-        percentage:
-          type: integer
-          description: value between 0 and 1000000 - for four decimal places
-          nullable: true
-        percentageAttributes:
-          type: array
-          description: "if you don't wish to apply percentage based on user id, you\
-            \ can use one or more attributes defined here"
-          nullable: true
-          items:
+      allOf:
+      - $ref: '#/components/schemas/BaseUIStrategy'
+      - $ref: '#/components/schemas/BaseStrategy'
+      - type: object
+        properties:
+          id:
             type: string
-          default: []
-        attributes:
-          type: array
-          nullable: true
-          items:
-            $ref: '#/components/schemas/RolloutStrategyAttribute'
-          default: []
+            description: the server will accept null ids but it won't ever store them
+              as null
+            nullable: true
     FeatureGroupCreate:
       required:
       - environmentId
@@ -5813,39 +5789,14 @@ components:
           items:
             $ref: '#/components/schemas/ApplicationRolloutStrategy'
     CreateApplicationRolloutStrategy:
-      required:
-      - name
-      type: object
-      properties:
-        name:
-          type: string
-          description: names are unique in a case insensitive fashion
-        colouring:
-          type: integer
-          description: the colour used to display the strategy in the UI. indexed
-            table of background/foreground combos.
-          nullable: true
-        disabled:
-          type: boolean
-          description: Disable this strategy across all feature values that are using
-            it
-          default: false
-        avatar:
-          maxLength: 200
-          type: string
-          description: url to avatar (if any). Not sent to SDK. Preferably a unicorn.
-          nullable: true
-        attributes:
-          type: array
-          nullable: true
-          items:
-            $ref: '#/components/schemas/RolloutStrategyAttribute'
-          default: []
-      description: This is used by Shared Strategies to create new strategies
+      allOf:
+      - $ref: '#/components/schemas/BaseUIStrategy'
+      - $ref: '#/components/schemas/BaseStrategy'
     UpdateApplicationRolloutStrategy:
       type: object
       properties:
         name:
+          maxLength: 150
           type: string
           description: names are unique in a case insensitive fashion
           nullable: true
@@ -5869,39 +5820,14 @@ components:
             $ref: '#/components/schemas/RolloutStrategyAttribute'
     ApplicationRolloutStrategy:
       allOf:
-      - $ref: '#/components/schemas/BaseRolloutStrategy'
-      - required:
-        - name
-        type: object
+      - $ref: '#/components/schemas/BaseStrategy'
+      - $ref: '#/components/schemas/BaseUIStrategy'
+      - type: object
         properties:
           id:
             type: string
             description: unique id of the strategy
             format: uuid
-          name:
-            type: string
-            description: names are unique in a case insensitive fashion
-          colouring:
-            type: integer
-            description: the colour used to display the strategy in the UI. indexed
-              table of background/foreground combos.
-            nullable: true
-          disabled:
-            type: boolean
-            description: Disable this strategy across all feature values that are
-              using it
-            default: false
-          avatar:
-            maxLength: 200
-            type: string
-            description: url to avatar (if any). Not sent to SDK. Preferably a unicorn.
-            nullable: true
-          attributes:
-            type: array
-            nullable: true
-            items:
-              $ref: '#/components/schemas/RolloutStrategyAttribute'
-            default: []
   securitySchemes:
     bearerAuth:
       type: http
