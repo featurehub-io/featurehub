@@ -37,13 +37,13 @@ Then(/^we receive a webhook with (.*) flag that is (locked|unlocked) and (off|on
     const webhookData = getWebhookData();
     expect(webhookData).to.not.be.undefined;
     expect(webhookData.environment).to.not.be.undefined;
-    expect(webhookData.environment.featureValues).to.not.be.undefined;
-    const feature = webhookData.environment?.featureValues?.find(fv => fv.feature.key == flagName);
+    expect(webhookData.environment.fv).to.not.be.undefined;
+    const feature = webhookData.environment?.fv?.find(fv => fv.feature.key == flagName);
     expect(feature).to.not.be.undefined;
     expect(feature.value.locked).to.eq(lockedStatus === 'locked');
     expect(feature.value.value).to.eq(flag === 'on');
-    expect(feature.value.personIdWhoChanged).to.not.be.undefined;
-    expect(feature.value.personIdWhoChanged).to.eq(world.person.id.id)
+    expect(feature.value.pId).to.not.be.undefined;
+    expect(feature.value.pId).to.eq(world.person.id.id)
   }, 10000, 200);
 });
 
@@ -64,9 +64,9 @@ Then(/^we receive a webhook that has changed the feature (.*) that belongs to th
   await waitForExpect(async () => {
     const webhookData = getWebhookData();
     expect(webhookData).to.not.be.undefined;
-    const feature = webhookData.environment?.featureValues?.find(fv => fv.feature.key == key);
-    expect(feature.value.personIdWhoChanged).to.not.be.undefined;
-    const user = await world.personApi.getPerson(feature.value.personIdWhoChanged);
+    const feature = webhookData.environment?.fv?.find(fv => fv.feature.key == key);
+    expect(feature.value.pId).to.not.be.undefined;
+    const user = await world.personApi.getPerson(feature.value.pId);
     expect(user.data.personType).to.eq(PersonType.SdkServiceAccount);
     expect(user.data.additional.find(k => k.key === 'serviceAccountId')).to.not.be.undefined;
   }, 10000, 200);
@@ -103,9 +103,9 @@ function featureValue(version: number, type: FeatureValueType, value: string, ke
 
 function expectedFeatures(webhookData: EnrichedFeatures | undefined, expectedFeatureKeys: Array<string>) {
   expect(webhookData).to.not.be.undefined;
-  logger.info(`Expecting keys ${expectedFeatureKeys} got ${webhookData.environment?.featureValues?.map(i => i.feature.key)}`);
+  logger.info(`Expecting keys ${expectedFeatureKeys} got ${webhookData.environment?.fv?.map(i => i.feature.key)}`);
   expectedFeatureKeys.forEach(key => {
-    const feature = webhookData.environment?.featureValues?.find(fv => fv.feature.key == key);
+    const feature = webhookData.environment?.fv?.find(fv => fv.feature.key == key);
     expect(feature, `Unable to find key ${key}`).to.not.be.undefined;
   });
 }
@@ -137,7 +137,7 @@ async function createFeatureAndValue(world: SdkWorld, type: FeatureValueType,
     await waitForExpect(async () => {
       const webhookData = getWebhookData();
       expectedFeatures(webhookData, expectedFeatureKeys);
-      const feature = webhookData.environment?.featureValues?.find(fv => fv.feature.key == key);
+      const feature = webhookData.environment?.fv?.find(fv => fv.feature.key == key);
       expect(feature.value.locked).to.be.false;
       const keyChange = webhookData.featureKeys.includes(key);
       expect(keyChange).to.be.true;
