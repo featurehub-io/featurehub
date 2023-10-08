@@ -135,7 +135,7 @@
                 </additionalProperty>
                 <additionalProperty>filter-deprecated-apis</additionalProperty>
                 <additionalProperty>filter-deprecated-models</additionalProperty>
-                <additionalProperty>localDev=/Users/richard/projects/dart/openapi_dart_common</additionalProperty>
+<!--                <additionalProperty>localDev=/Users/richard/projects/dart/openapi_dart_common</additionalProperty>-->
               </additionalProperties>
             </configuration>
           </execution>
