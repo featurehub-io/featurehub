@@ -27,6 +27,11 @@ for (const name of Object.keys(nets)) {
   }
 }
 
+if (networkName  ===  undefined)  {
+  networkName = 'localhost';
+  results[networkName]  =  ['localhost'];
+}
+
 let webhookData: EnrichedFeatures | undefined;
 let webhookHeaders: IncomingHttpHeaders;
 

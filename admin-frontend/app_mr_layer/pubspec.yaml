@@ -1,13 +1,12 @@
 name: mrapi
 version: 1.0.0
 description: OpenAPI API client
-publish_to: none
 homepage: homepage
 environment:
   sdk: '>=2.15.0 <3.1.0'
 dependencies:
-  openapi_dart_common:
-    path: /Users/richard/projects/dart/openapi_dart_common
+  dio: '^5.0.1'
+  openapi_dart_common: ^5.0.0
   collection: '^1.16.0'
 dev_dependencies:
   test: ^1.23.1

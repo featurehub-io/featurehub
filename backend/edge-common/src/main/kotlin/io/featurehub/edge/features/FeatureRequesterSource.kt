@@ -3,6 +3,7 @@ package io.featurehub.edge.features
 import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.model.DachaKeyDetailsResponse
 import io.featurehub.edge.KeyParts
+import jakarta.ws.rs.WebApplicationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -32,9 +33,17 @@ class FeatureRequesterSource(private val api: DachaApiKeyService, override val k
 
           if (details != null)
             copyKeyDetails(key, details!!)
-        } catch (e : Exception) {
-          failure = e
-          log.trace("failed to request details for key {}", key, e)
+        } catch (e : Throwable) {
+          if (e is Exception) {
+            failure = e
+          }
+
+          if (e is WebApplicationException) {
+            log.trace("failed to request details for key {}", key, e)
+          } else {
+            log.warn("Failed to get request details for more serious reason {}", key, e)
+          }
+
         }
 
         submitter.requestForKeyComplete(key)
