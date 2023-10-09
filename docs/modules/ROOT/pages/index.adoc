@@ -8,7 +8,8 @@ Welcome to FeatureHub! - from the FeatureHub Team at <info@featurehub.io>
 https://www.featurehub.io/[FeatureHub] is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.
 It's an essential ingredient for enabling the feedback loop and feature testing and experimentation in production with real users (see diagram below).
 
-Visit our official web page for more information about the platform https://www.featurehub.io/[here]
+FeatureHub comes as a self-hosted platform, so you can run it on your own infrastructure. Alternatively, we also provide cloud hosted SaaS solution with a simple pay-as-you-go pricing. You
+can join today and get 30 days free trial https://app.featurehub.io/[here].
 
 Building software with feature management encourages DevOps practices like
 https://trunkbaseddevelopment.com[trunk based development], continuous delivery and importantly, separating deployment from release management.
@@ -17,7 +18,8 @@ Enabling teams to deliver value to customers early and often, whilst maintaining
 FeatureHub can be used with small startups through to large enterprises with many applications and teams.
 It has an enterprise grade security and permission model, that's intuitive and easy to use, so you can be up and running quickly.
 
-FeatureHub is a self-hosted platform so you can run it on your own infrastructure, and because of a unique offering from Fastly, we provide integration with that platform.
+This documentation covers both Open Source and SaaS platforms.
+
 
 image::fh_learn_build_measure.png[Learn,Build,Measure]
 
