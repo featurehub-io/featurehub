@@ -53,10 +53,14 @@ export function getWebserverExternalAddress(): string | undefined {
 
 let server: restify.Server;
 
-// function mergeResults(data: EnrichedFeatures) : boolean {
+// function mergeResults(data: EnrichedFeatures, headers: IncomingHttpHeaders) : boolean {
 //   if (webhookData === undefined) {
 //     webhookData = data;
 //     return true;
+//   }
+//
+//   if (webhookHeaders['ce-id'] === headers['ce-id']) {
+//     return false; // same message
 //   }
 //
 //   if (webhookData.environment.environment.version < data.environment.environment.version) {
@@ -78,7 +82,8 @@ function setupServer() {
   server.post('/webhook', function (req, res, next) {
     webhookData = EnrichedFeaturesTypeTransformer.fromJson(req.body);
     webhookHeaders =  req.headers;
-    logger.log({level: 'info', message: `received webhook ${JSON.stringify(webhookData)} with headers ${JSON.stringify(webhookHeaders)}`});
+    logger.log({level: 'info', message: `<<webhook-data>> ${JSON.stringify(webhookData)}`});
+    logger.log({level: 'info', message: `<<webhook-headers>> ${JSON.stringify(webhookHeaders)}`});
 
     res.send( 200,'Ok');
     return next();
