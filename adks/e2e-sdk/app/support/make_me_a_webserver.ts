@@ -53,6 +53,23 @@ export function getWebserverExternalAddress(): string | undefined {
 
 let server: restify.Server;
 
+// function mergeResults(data: EnrichedFeatures) : boolean {
+//   if (webhookData === undefined) {
+//     webhookData = data;
+//     return true;
+//   }
+//
+//   if (webhookData.environment.environment.version < data.environment.environment.version) {
+//     webhookData = data;
+//     return true;
+//   }
+//
+//   data.environment.fv.forEach((fv) => {
+//     const existing = webhookData.environment.fv.find(f => f.feature.key === fv.feature.key);
+//     if (!existing || existing.feature.version < fv.feature.version || existing.value?.version)
+//   });
+// }
+
 function setupServer() {
   server.use(restify.plugins.acceptParser(server.acceptable));
   server.use(restify.plugins.queryParser());
@@ -61,7 +78,7 @@ function setupServer() {
   server.post('/webhook', function (req, res, next) {
     webhookData = EnrichedFeaturesTypeTransformer.fromJson(req.body);
     webhookHeaders =  req.headers;
-    logger.log({level: 'info', message: `received webhook ${JSON.stringify(webhookData)}`});
+    logger.log({level: 'info', message: `received webhook ${JSON.stringify(webhookData)} with headers ${JSON.stringify(webhookHeaders)}`});
 
     res.send( 200,'Ok');
     return next();
