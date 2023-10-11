@@ -69,19 +69,25 @@ function mergeResults(data: EnrichedFeatures, headers: IncomingHttpHeaders) : bo
   }
 
   let changed = false;
-  data.environment.fv.forEach((fv) => {
+  for (const fv of data.environment.fv) {
     const existing = webhookData.environment.fv.findIndex(f => f.feature.key === fv.feature.key);
     if (existing === -1) {
       changed = true;
-      webhookData.environment.fv.push(fv);
+      break;
+      // webhookData.environment.fv.push(fv);
     } else {
       const pos = webhookData.environment.fv[existing];
       if (pos.feature.version < fv.feature.version || (pos.value?.version || -1) < (fv.value?.version || -1)) {
         changed = true;
-        webhookData.environment.fv[existing] = fv;
+        break;
+        // webhookData.environment.fv[existing] = fv;
       }
     }
-  });
+  }
+
+  if (changed) {
+    webhookData = data;
+  }
 
   return changed;
 }
