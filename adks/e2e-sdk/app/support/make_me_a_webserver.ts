@@ -53,26 +53,38 @@ export function getWebserverExternalAddress(): string | undefined {
 
 let server: restify.Server;
 
-// function mergeResults(data: EnrichedFeatures, headers: IncomingHttpHeaders) : boolean {
-//   if (webhookData === undefined) {
-//     webhookData = data;
-//     return true;
-//   }
-//
-//   if (webhookHeaders['ce-id'] === headers['ce-id']) {
-//     return false; // same message
-//   }
-//
-//   if (webhookData.environment.environment.version < data.environment.environment.version) {
-//     webhookData = data;
-//     return true;
-//   }
-//
-//   data.environment.fv.forEach((fv) => {
-//     const existing = webhookData.environment.fv.find(f => f.feature.key === fv.feature.key);
-//     if (!existing || existing.feature.version < fv.feature.version || existing.value?.version)
-//   });
-// }
+function mergeResults(data: EnrichedFeatures, headers: IncomingHttpHeaders) : boolean {
+  if (webhookData === undefined) {
+    webhookData = data;
+    return true;
+  }
+
+  if (webhookHeaders['ce-id'] === headers['ce-id']) {
+    return false; // same message
+  }
+
+  if (webhookData.environment.environment.version < data.environment.environment.version) {
+    webhookData = data;
+    return true;
+  }
+
+  let changed = false;
+  data.environment.fv.forEach((fv) => {
+    const existing = webhookData.environment.fv.findIndex(f => f.feature.key === fv.feature.key);
+    if (existing === -1) {
+      changed = true;
+      webhookData.environment.fv.push(fv);
+    } else {
+      const pos = webhookData.environment.fv[existing];
+      if (pos.feature.version < fv.feature.version || (pos.value?.version || -1) < (fv.value?.version || -1)) {
+        changed = true;
+        webhookData.environment.fv[existing] = fv;
+      }
+    }
+  });
+
+  return changed;
+}
 
 function setupServer() {
   server.use(restify.plugins.acceptParser(server.acceptable));
@@ -80,10 +92,16 @@ function setupServer() {
   server.use(restify.plugins.bodyParser());
 
   server.post('/webhook', function (req, res, next) {
-    webhookData = EnrichedFeaturesTypeTransformer.fromJson(req.body);
-    webhookHeaders =  req.headers;
-    logger.log({level: 'info', message: `<<webhook-data>> ${JSON.stringify(webhookData)}`});
-    logger.log({level: 'info', message: `<<webhook-headers>> ${JSON.stringify(webhookHeaders)}`});
+    if (mergeResults(EnrichedFeaturesTypeTransformer.fromJson(req.body), req.headers)) {
+      webhookHeaders =  req.headers;
+      logger.log({level: 'info', message: `<<incoming-webhook-data>> ${JSON.stringify(req.body)}`});
+      logger.log({level: 'info', message: `<<incoming-webhook-headers>> ${JSON.stringify(req.headers)}`});
+      logger.log({level: 'info', message: `<<webhook-data>> ${JSON.stringify(webhookData)}`});
+      logger.log({level: 'info', message: `<<webhook-headers>> ${JSON.stringify(webhookHeaders)}`});
+    } else {
+      logger.log({level: 'info', message: `<<ignored-webhook-data>> ${JSON.stringify(req.body)}`});
+      logger.log({level: 'info', message: `<<ignored-webhook-headers>> ${JSON.stringify(req.headers)}`});
+    }
 
     res.send( 200,'Ok');
     return next();
