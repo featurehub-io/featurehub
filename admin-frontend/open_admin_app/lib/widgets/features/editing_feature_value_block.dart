@@ -1,5 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/fhos_logger.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 import 'package:rxdart/rxdart.dart';
@@ -76,6 +77,7 @@ class EditingFeatureValueBloc implements Bloc {
   void removeStrategy(RolloutStrategy rs) {
     // tag it to ensure it has a number so we can remove it
     final strategies = _strategySource.value;
+    fhosLogger.fine("removing strategy ${rs.id} from list ${strategies.map((e) => e.id)}");
     strategies.removeWhere((e) => e.id == rs.id);
     _strategySource.add(strategies);
   }
@@ -131,6 +133,7 @@ class EditingFeatureValueBloc implements Bloc {
   }
 
   saveFeatureValueUpdates() async {
+    currentFeatureValue.rolloutStrategies = _strategySource.value;
     await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(
         applicationId, feature.key, [currentFeatureValue]);
     await _featureStatusBloc.updateApplicationFeatureValuesStream();

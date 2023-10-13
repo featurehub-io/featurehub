@@ -83,7 +83,7 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
       widget.strBloc.updateFeatureValueDefault(replacementValue);
     } else {
       widget.rolloutStrategy!.value = replacementValue;
-      widget.strBloc.updateStrategy();
+      //widget.strBloc.updateStrategy();
     }
   }
 }
