@@ -51,13 +51,15 @@ class EditingFeatureValueBloc implements Bloc {
 
     final index = strategies.indexWhere((s) => s.id == rs.id);
     if (index == -1) {
+      dynamic value = null;
+
       if (feature.valueType == FeatureValueType.BOOLEAN) {
-        rs.value = featureValue.valueBoolean ?? false;
+        value = !(featureValue.valueBoolean ?? false);
       }
 
-      strategies.add(rs.toRolloutStrategy()!);
+      strategies.add(rs.toRolloutStrategy(value)!);
     } else {
-      strategies[index] = rs.toRolloutStrategy()!;
+      strategies[index] = rs.toRolloutStrategy(strategies[index].value)!;
     }
 
     updateFeatureValueStrategies(strategies);

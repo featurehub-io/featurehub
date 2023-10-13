@@ -18,6 +18,6 @@ class GroupRolloutStrategyProvider extends StrategyEditorProvider {
 
   @override
   Future<RolloutStrategyValidationResponse?> validateStrategy(EditingRolloutStrategy rs) {
-    return bloc.validationCheck(rs.toRolloutStrategy()!);
+    return bloc.validationCheck(rs.toRolloutStrategy(null)!);
   }
 }

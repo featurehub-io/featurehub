@@ -77,8 +77,6 @@ class EditingRolloutStrategy {
   int? percentage;
   /* if you don't wish to apply percentage based on user id, you can use one or more attributes defined here */
   List<String>? percentageAttributes;
-  /* when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge. */
-  dynamic value;
 
   List<EditingRolloutStrategyAttribute> attributes = [];
   /* names are unique in a case insensitive fashion */
@@ -87,7 +85,7 @@ class EditingRolloutStrategy {
   bool saved;
 
   EditingRolloutStrategy({required this.id, required this.saved, this.percentage, this.percentageAttributes,
-      this.value, required this.attributes, this.name});
+      required this.attributes, this.name});
 
   double get maxPercentage => 1000000.0;
   double get percentageMultiplier => maxPercentage / 100.0;
@@ -102,20 +100,20 @@ class EditingRolloutStrategy {
 
   @override
   String toString() {
-    return "name: $name, id: $id, percentage $percentage, percentage attr: $percentageAttributes, value: $value, $attributes";
+    return "name: $name, id: $id, percentage $percentage, percentage attr: $percentageAttributes, $attributes";
   }
 
   static EditingRolloutStrategy fromRolloutStrategy(RolloutStrategy rs) {
     return EditingRolloutStrategy(
         id: rs.id!,
         saved: true,
-        percentage: rs.percentage, percentageAttributes: rs.percentageAttributes, value: rs.value,
+        percentage: rs.percentage, percentageAttributes: rs.percentageAttributes,
         name: rs.name,
         attributes: (rs.attributes ?? []).map((e) => EditingRolloutStrategyAttribute.fromRolloutStrategyAttribute(e)).toList()
     );
   }
 
-  RolloutStrategy? toRolloutStrategy() {
+  RolloutStrategy? toRolloutStrategy(dynamic value) {
     if (name == null || attributes.any((rsa) => rsa.toRolloutStrategyAttribute() == null)) return null;
     return RolloutStrategy(id: id, name: name!, value: value, percentage: percentage, percentageAttributes: percentageAttributes, attributes: attributes.map((e) => e.toRolloutStrategyAttribute()!).toList());
   }
@@ -142,7 +140,7 @@ class EditingRolloutStrategy {
     return EditingRolloutStrategy(
         id: rs.id!,
         saved: true,
-        percentage: rs.percentage, percentageAttributes: rs.percentageAttributes, value: value,
+        percentage: rs.percentage, percentageAttributes: rs.percentageAttributes,
         name: rs.name,
         attributes: (rs.attributes ?? []).map((e) => EditingRolloutStrategyAttribute.fromRolloutStrategyAttribute(e)).toList()
     );
@@ -153,8 +151,8 @@ class EditingRolloutStrategy {
   }
 
   static EditingRolloutStrategy newStrategy({int? percentage, String? id, List<String>? percentageAttributes,
-    dynamic value, List<EditingRolloutStrategyAttribute>? attributes, String? name}) {
+    List<EditingRolloutStrategyAttribute>? attributes, String? name}) {
     return EditingRolloutStrategy(id: id ?? makeStrategyId(), saved: false, attributes: attributes ?? [],
-        name: name, percentageAttributes: percentageAttributes, percentage: percentage, value: value);
+        name: name, percentageAttributes: percentageAttributes, percentage: percentage);
   }
 }

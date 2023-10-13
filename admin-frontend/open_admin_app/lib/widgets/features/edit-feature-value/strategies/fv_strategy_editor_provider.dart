@@ -17,7 +17,7 @@ class FeatureValueStrategyProvider extends StrategyEditorProvider {
 
   @override
   Future<RolloutStrategyValidationResponse?> validateStrategy(EditingRolloutStrategy rs) {
-    var strategy = rs.toRolloutStrategy()!;
+    var strategy = rs.toRolloutStrategy(null)!;
 
     final customStrategies = [strategy, ...
         fvStrategyBloc.featureValue.rolloutStrategies!.where((rs) => rs.id != strategy)];
