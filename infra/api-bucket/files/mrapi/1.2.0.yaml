@@ -4831,12 +4831,16 @@ components:
       properties:
         applicationsRefreshed:
           type: integer
+          nullable: true
         portfoliosRefreshed:
           type: integer
+          nullable: true
         environmentsRefreshed:
           type: integer
+          nullable: true
         serviceAccountsRefreshed:
           type: integer
+          nullable: true
     CreateGroup:
       type: object
       properties:

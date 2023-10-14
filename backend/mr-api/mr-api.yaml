@@ -3787,12 +3787,16 @@ components:
       type: object
       properties:
         applicationsRefreshed:
+          nullable: true
           type: integer
         portfoliosRefreshed:
+          nullable: true
           type: integer
         environmentsRefreshed:
+          nullable: true
           type: integer
         serviceAccountsRefreshed:
+          nullable: true
           type: integer
     CreateGroup:
       type: object
