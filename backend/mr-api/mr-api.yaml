@@ -1258,7 +1258,7 @@ paths:
       tags:
         - FeatureService
       description: "updates all named features in this application, returns all features by default otherwise just the feature updated"
-      operationId: updateFeatureForApplication
+      operationId: updateFeatureForApplicationOnFeature
       requestBody:
         required: true
         content:
@@ -1326,13 +1326,12 @@ paths:
         404:
           description: "not found"
     put:
-      deprecated: true
       security:
         - bearerAuth: [ ]
       tags:
         - FeatureService
-      description: "updates all named features in this application, returns all features."
-      operationId: updateFeatureForApplicationOld
+      description: "updates all named features in this application, returns all features. Use this ONLY if you wish to change the key."
+      operationId: updateFeatureForApplication
       requestBody:
         required: true
         content:

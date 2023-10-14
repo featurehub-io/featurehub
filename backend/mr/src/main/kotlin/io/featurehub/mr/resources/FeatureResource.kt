@@ -126,21 +126,35 @@ class FeatureResource @Inject constructor(
             ?: return ArrayList()
     }
 
-  override fun updateFeatureForApplication(
+
+  override fun updateFeatureForApplicationOnFeature(
     id: UUID,
     feature: Feature,
-    holder: FeatureServiceDelegate.UpdateFeatureForApplicationHolder,
+    holder: FeatureServiceDelegate.UpdateFeatureForApplicationOnFeatureHolder,
     securityContext: SecurityContext?
-  ): MutableList<Feature> {
-    TODO("Not yet implemented")
+  ): List<Feature> {
+    applicationUtils.featureEditorCheck(securityContext!!, id)
+    return try {
+      val features = applicationApi.updateApplicationFeature(
+        id,
+        feature,
+        Opts.empty().add(FillOpts.MetaData, holder.includeMetaData)
+      )
+        ?: throw NotFoundException("no such feature name")
+      features
+    } catch (e: ApplicationApi.DuplicateFeatureException) {
+      throw WebApplicationException(Response.Status.CONFLICT)
+    } catch (e: OptimisticLockingException) {
+      throw WebApplicationException(422)
+    }
   }
 
   @Deprecated("Deprecated in Java")
-  override fun updateFeatureForApplicationOld(
+  override fun updateFeatureForApplication(
     id: UUID,
     key: String,
     feature: Feature,
-        holder: FeatureServiceDelegate.UpdateFeatureForApplicationOldHolder,
+        holder: FeatureServiceDelegate.UpdateFeatureForApplicationHolder,
         securityContext: SecurityContext?
     ): List<Feature> {
         applicationUtils.featureEditorCheck(securityContext!!, id)

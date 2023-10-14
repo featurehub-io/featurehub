@@ -178,11 +178,21 @@ class ApplicationSqlApi @Inject constructor(
     )!!
   }
 
-  @Throws(ApplicationApi.DuplicateApplicationException::class, OptimisticLockingException::class)
-  override fun updateApplication(applicationId: UUID, application: Application, opts: Opts): Application? {
-    val app = fetchApplicationOpts(opts, QDbApplication().id.eq(applicationId)).findOne() ?: return null
 
-    if (application.version == null || application.version != app.version) {
+  override fun updateApplicationOnPortfolio(portfolioId: UUID, application: Application, opts: Opts): Application? {
+    val app = fetchApplicationOpts(opts, QDbApplication().id.eq(application.id).portfolio.id.eq(portfolioId)).findOne() ?: return null
+    return updateApplication(application, app, opts)
+  }
+
+  @Throws(ApplicationApi.DuplicateApplicationException::class, OptimisticLockingException::class)
+  override fun updateApplication(appId: UUID, application: Application, opts: Opts): Application? {
+    val app = fetchApplicationOpts(opts, QDbApplication().id.eq(appId)).findOne() ?: return null
+
+    return updateApplication(application, app, opts)
+  }
+
+  private fun updateApplication(application: Application, app: DbApplication, opts: Opts): Application? {
+    if (application.version != app.version) {
       throw OptimisticLockingException()
     }
 
@@ -202,7 +212,7 @@ class ApplicationSqlApi @Inject constructor(
 
     saveApp(app)
 
-    return convertUtils.toApplication(app, opts)!!
+    return convertUtils.toApplication(app, opts)
   }
 
   @Throws(ApplicationApi.DuplicateFeatureException::class)
@@ -287,6 +297,10 @@ class ApplicationSqlApi @Inject constructor(
     return app.features
       .filter { af: DbApplicationFeature -> af.whenArchived == null }
       .map { af: DbApplicationFeature? -> convertUtils.toApplicationFeature(af, opts)!! }
+  }
+
+  override fun updateApplicationFeature(appId: UUID, feature: Feature, opts: Opts): List<Feature>? {
+    return updateApplicationFeature(appId, feature.key, feature, opts)
   }
 
   @Throws(ApplicationApi.DuplicateFeatureException::class, OptimisticLockingException::class)

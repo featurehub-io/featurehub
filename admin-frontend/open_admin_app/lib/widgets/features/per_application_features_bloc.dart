@@ -236,7 +236,7 @@ class PerApplicationFeaturesBloc
       ..description = newFeatureDescription
       ..key = newKey;
     await _featureServiceApi.updateFeatureForApplication(
-        applicationId!, newFeature);
+        applicationId!, feature.key, newFeature);
   }
 
   Future<void> getFeatureIncludingMetadata(Feature feature) async {
@@ -251,7 +251,7 @@ class PerApplicationFeaturesBloc
         .getFeatureByKey(applicationId!, feature.key, includeMetaData: true);
     final newFeature = currentFeature..metaData = metaData;
     await _featureServiceApi.updateFeatureForApplication(
-        applicationId!, newFeature);
+        applicationId!, feature.key, newFeature);
     await getFeatureIncludingMetadata(newFeature);
   }
 

@@ -1340,7 +1340,7 @@ paths:
       - FeatureService
       description: "updates all named features in this application, returns all features\
         \ by default otherwise just the feature updated"
-      operationId: updateFeatureForApplication
+      operationId: updateFeatureForApplicationOnFeature
       parameters:
       - name: returnAllFeatures
         in: query
@@ -1447,8 +1447,9 @@ paths:
     put:
       tags:
       - FeatureService
-      description: "updates all named features in this application, returns all features."
-      operationId: updateFeatureForApplicationOld
+      description: "updates all named features in this application, returns all features.\
+        \ Use this ONLY if you wish to change the key."
+      operationId: updateFeatureForApplication
       requestBody:
         content:
           application/json:
@@ -1474,7 +1475,6 @@ paths:
           description: duplicate feature
         "422":
           description: other feature updated already
-      deprecated: true
       security:
       - bearerAuth: []
     delete:

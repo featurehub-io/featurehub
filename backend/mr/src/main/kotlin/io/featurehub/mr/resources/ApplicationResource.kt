@@ -140,9 +140,20 @@ class ApplicationResource @Inject constructor(
     id: UUID,
     application: Application,
     holder: ApplicationServiceDelegate.UpdateApplicationOnPortfolioHolder,
-    securityContext: SecurityContext?
+    securityContext: SecurityContext
   ): Application {
-    TODO("Not yet implemented")
+    applicationUtils.check(securityContext, application.id)
+    return try {
+      applicationApi.updateApplicationOnPortfolio(
+        id,
+        application,
+        Opts().add(FillOpts.Environments, holder.includeEnvironments)
+      )!!
+    } catch (e: ApplicationApi.DuplicateApplicationException) {
+      throw WebApplicationException(Response.Status.CONFLICT)
+    } catch (e: OptimisticLockingException) {
+      throw WebApplicationException(422)
+    }
   }
 
   companion object {
