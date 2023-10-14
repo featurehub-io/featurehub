@@ -10,6 +10,8 @@ interface ServiceAccountApi {
 
   @Throws(OptimisticLockingException::class)
   fun update(serviceAccountId: UUID, updater: Person, serviceAccount: ServiceAccount, opts: Opts): ServiceAccount?
+  @Throws(OptimisticLockingException::class)
+  fun update(portfolioId: UUID, personId: UUID, serviceAccount: ServiceAccount, opts: Opts): ServiceAccount?
 
   /**
    * This has to determine if this user has access based on what they are asking for. If they have any access to the

@@ -120,7 +120,28 @@ class ServiceAccountResource @Inject constructor(
     holder: ServiceAccountServiceDelegate.UpdateServiceAccountOnPortfolioHolder,
     securityContext: SecurityContext?
   ): ServiceAccount {
-    TODO("Not yet implemented")
+    val person = authManager.who(securityContext)
+
+    val envIds = serviceAccount.permissions.map { obj: ServiceAccountPermission -> obj.environmentId }.toSet()
+
+    if (envIds.size < serviceAccount.permissions.size) {
+      throw BadRequestException("Duplicate environment ids were passed.")
+    }
+
+    if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person)) {
+      return try {
+        serviceAccountApi.update(
+          id,
+          person,
+          serviceAccount,
+          Opts().add(FillOpts.Permissions, holder.includePermissions)
+        ) ?: throw NotFoundException()
+      } catch (e: OptimisticLockingException) {
+        throw WebApplicationException(422)
+      }
+    }
+
+    throw ForbiddenException()
   }
 
   @Deprecated("Deprecated in Java")

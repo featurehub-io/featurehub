@@ -48,6 +48,18 @@ class ServiceAccountSqlApi @Inject constructor(
   }
 
   @Throws(OptimisticLockingException::class)
+  override fun update(portfolioId: UUID, personId: UUID, serviceAccount: ServiceAccount, opts: Opts): ServiceAccount? {
+    val sa = QDbServiceAccount().id.eq(serviceAccount.id).whenArchived.isNull.portfolio.id.eq(portfolioId).findOne() ?: return null
+
+    if (serviceAccount.version == null || serviceAccount.version != sa.version) {
+      throw OptimisticLockingException()
+    }
+
+    val whoUpdated = convertUtils.byPerson(personId) ?: return null
+    return update(sa, whoUpdated, serviceAccount, opts)
+  }
+
+  @Throws(OptimisticLockingException::class)
   override fun update(
     serviceAccountId: UUID,
     updater: Person,
@@ -55,11 +67,15 @@ class ServiceAccountSqlApi @Inject constructor(
     opts: Opts
   ): ServiceAccount? {
     val sa = QDbServiceAccount().id.eq(serviceAccountId).whenArchived.isNull.findOne() ?: return null
-    val whoUpdated = convertUtils.byPerson(updater) ?: return null
 
     if (serviceAccount.version == null || serviceAccount.version != sa.version) {
       throw OptimisticLockingException()
     }
+    val whoUpdated = convertUtils.byPerson(updater) ?: return null
+    return update(sa, whoUpdated, serviceAccount, opts)
+  }
+
+  private fun update(sa: DbServiceAccount, whoUpdated: DbPerson, serviceAccount: ServiceAccount, opts: Opts): ServiceAccount {
     val updatedEnvironments: MutableMap<UUID, ServiceAccountPermission> = HashMap()
     val newEnvironments: MutableList<UUID> = ArrayList()
     serviceAccount
@@ -89,6 +105,10 @@ class ServiceAccountSqlApi @Inject constructor(
           }
         }
       }
+
+    QDbServiceAccountEnvironment().environment.id.notIn(updatedEnvironments.keys).serviceAccount.eq(sa).findEach { toDelete ->
+      deletePerms.add(toDelete)
+    }
 
     // now we need to know which perms to add
     newEnvironments.forEach { envId: UUID ->
@@ -137,7 +157,7 @@ class ServiceAccountSqlApi @Inject constructor(
       internalPersonApi.updateSdkServiceAccountUser(sa.sdkPerson.id, whoUpdated, serviceAccount.name)
     }
 
-    return convertUtils.toServiceAccount(sa, opts)
+    return convertUtils.toServiceAccount(sa, opts)!!
   }
 
   private fun convertPermissionsToString(permissions: List<RoleType>): String {

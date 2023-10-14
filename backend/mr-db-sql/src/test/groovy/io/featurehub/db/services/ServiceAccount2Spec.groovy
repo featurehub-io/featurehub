@@ -72,9 +72,9 @@ class ServiceAccount2Spec extends Base2Spec {
 
     groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.environmentRoles(
       [
-        new EnvironmentGroupRole().roles([io.featurehub.mr.model.RoleType.READ]).environmentId(environment1.id),
-        new EnvironmentGroupRole().roles([io.featurehub.mr.model.RoleType.READ]).environmentId(environment2.id),
-        new EnvironmentGroupRole().roles([io.featurehub.mr.model.RoleType.READ]).environmentId(environment3.id),
+        new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment1.id),
+        new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment2.id),
+        new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment3.id),
       ]
     ), null, false, false, true, Opts.empty())
 
@@ -332,6 +332,10 @@ class ServiceAccount2Spec extends Base2Spec {
       newEnv2.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).permissions.containsAll([RoleType.LOCK, RoleType.UNLOCK, RoleType.READ])
       newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).sdkUrlClientEval.contains("/" + newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).serviceAccount.apiKeyClientSide)
       newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).sdkUrlServerEval.contains("/" + newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).serviceAccount.apiKeyServerSide)
+    when: "we update a second time using the new API"
+      def thirdUpdate = sapi.update(portfolio1Id, superuser, secondUpdate.permissions([]), Opts.opts(FillOpts.Permissions))
+    then:
+      thirdUpdate.permissions.isEmpty()
   }
 
   def "I cannot request or update an unknown service account"() {
