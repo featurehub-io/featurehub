@@ -3,7 +3,7 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature-group-settings-side-sheet.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
 import 'package:side_sheet/side_sheet.dart';
-
+import 'package:bloc_provider/bloc_provider.dart';
 import 'feature_group_bloc.dart';
 import 'feature_group_delete_dialog_widget.dart';
 import 'feature_group_update_dialog_widget.dart';
@@ -171,10 +171,12 @@ class _PopUpGroupAdminMenu extends StatelessWidget {
 _openFeatureGroupEditSideSheet(FeatureGroupsBloc bloc,
     FeatureGroupListGroup featureGroup, BuildContext context) {
   SideSheet.right(
-      body: FeatureGroupSettings(
-        bloc: FeatureGroupBloc(bloc, featureGroup),
-        featureGroup: featureGroup,
-      ),
+      body: BlocProvider.builder(
+        creator: (c, b) => FeatureGroupBloc(bloc, featureGroup),
+        builder: (c, b) => FeatureGroupSettings(
+          bloc: b,
+          featureGroup: featureGroup,
+        )),
       width: MediaQuery.of(context).size.width * 0.8,
       context: context);
 }

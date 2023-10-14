@@ -129,9 +129,9 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
         id: featureGroupListGroup.id,
         name: name,
         description: description,
-        version: featureGroupListGroup.version,
-        features: features,
-        strategies: strategies);
+        version: featureGroupListGroup.version)
+      ..features = features
+      ..strategies = strategies;
     var currentAppId = mrClient.currentAid;
     if (currentAppId != null) {
       await featureGroupServiceApi.updateFeatureGroup(
