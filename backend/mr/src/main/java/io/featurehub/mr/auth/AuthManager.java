@@ -44,7 +44,7 @@ public class AuthManager implements AuthManagerService {
   }
 
   @Override
-  public boolean isPortfolioAdmin(Portfolio portfolio, Person person) {
+  public boolean isPortfolioAdmin(@NotNull Portfolio portfolio, @NotNull Person person) {
     if (portfolio == null || person == null) {
       return false;
     }
@@ -150,6 +150,16 @@ public class AuthManager implements AuthManagerService {
 
 
   @Override
+  public boolean isPortfolioAdminOfEnvironment(@NotNull UUID envId, @NotNull UUID person) {
+    final UUID portfolioId = environmentApi.portfolioEnvironmentBelongsTo(envId);
+
+    if (portfolioId == null) {
+      return false;
+    }
+
+    return isPortfolioAdmin(portfolioId, person);
+  }
+
   public boolean isPortfolioAdminOfEnvironment(@NotNull UUID envId, @NotNull Person person) {
     final UUID portfolioId = environmentApi.portfolioEnvironmentBelongsTo(envId);
 

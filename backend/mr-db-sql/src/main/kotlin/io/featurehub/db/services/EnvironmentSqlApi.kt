@@ -103,28 +103,53 @@ class EnvironmentSqlApi @Inject constructor(
     return null
   }
 
+  override fun update(application: UUID, env: UpdateEnvironmentV2, opts: Opts): Environment? {
+    val environment = QDbEnvironment().parentApplication.id.eq(application).id.eq(env.id).whenArchived.isNull.findOne() ?: return null
+
+    if (env.name != null) {
+      dupeEnvironmentNameCheck(env.name!!, environment)
+    }
+
+    circularPriorEnvironmentCheck(env.priorEnvironmentId, environment)
+
+    if (env.description != null) {
+      environment.description = env.description
+    }
+
+    if (env.production != null) {
+      environment.isProductionEnvironment = java.lang.Boolean.TRUE == env.production
+    }
+
+    if (env.environmentInfo != null) {
+      environment.userEnvironmentInfo = env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap()  // prevent mgmt prefixes being used
+    }
+
+    update(environment)
+
+    return convertUtils.toEnvironment(environment, opts)
+  }
+
   @Throws(
     OptimisticLockingException::class,
     EnvironmentApi.DuplicateEnvironmentException::class,
     EnvironmentApi.InvalidEnvironmentChangeException::class
   )
-  override fun update(envId: UUID?, env: Environment?, opts: Opts?): Environment? {
-    Conversions.nonNullEnvironmentId(envId)
-    val environment = convertUtils.byEnvironment(envId)
-    if (environment != null) {
-      if (env!!.version == null || environment.version != env.version) {
-        throw OptimisticLockingException()
-      }
-      dupeEnvironmentNameCheck(env.name, environment)
-      circularPriorEnvironmentCheck(env.priorEnvironmentId, environment)
-      environment.description = env.description
-      if (env.production != null) {
-        environment.isProductionEnvironment = java.lang.Boolean.TRUE == env.production
-      }
-      update(environment)
-      return convertUtils.toEnvironment(environment, opts)
+  override fun update(envId: UUID, env: Environment, opts: Opts): Environment? {
+    val environment = convertUtils.byEnvironment(envId) ?: return null
+
+    if (environment.version != env.version) {
+      throw OptimisticLockingException()
     }
-    return null
+
+    dupeEnvironmentNameCheck(env.name, environment)
+    circularPriorEnvironmentCheck(env.priorEnvironmentId, environment)
+    environment.description = env.description
+    if (env.production != null) {
+      environment.isProductionEnvironment = java.lang.Boolean.TRUE == env.production
+    }
+    update(environment)
+
+    return convertUtils.toEnvironment(environment, opts)
   }
 
   override fun updateEnvironment(eid: UUID, env: UpdateEnvironment, opts: Opts): Environment? {

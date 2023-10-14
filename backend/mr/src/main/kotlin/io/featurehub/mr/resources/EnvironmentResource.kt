@@ -61,9 +61,9 @@ class EnvironmentResource @Inject constructor(
         holder: EnvironmentServiceDelegate.DeleteEnvironmentHolder,
         securityContext: SecurityContext
     ): Boolean {
-        val current = authManager.from(securityContext)
+        val current = authManager.who(securityContext)
         return if (authManager.isOrgAdmin(current) ||
-            authManager.isPortfolioAdmin(environmentApi.findPortfolio(eid), current)
+            authManager.isPortfolioAdminOfEnvironment(eid, current)
         ) {
             environmentApi.delete(eid)
         } else false
@@ -117,7 +117,7 @@ class EnvironmentResource @Inject constructor(
     ): Environment {
         val current = authManager.from(securityContext)
         if (authManager.isOrgAdmin(current) ||
-            authManager.isPortfolioAdmin(environmentApi.findPortfolio(environment.id), current)
+            authManager.isPortfolioAdminOfEnvironment(environment.id, current)
         ) {
             val update: Environment?
             update = try {
@@ -144,11 +144,26 @@ class EnvironmentResource @Inject constructor(
 
   override fun updateEnvironmentOnApplication(
     id: UUID,
-    updateEnvironmentV2: UpdateEnvironmentV2,
+    environment: UpdateEnvironmentV2,
     holder: EnvironmentServiceDelegate.UpdateEnvironmentOnApplicationHolder,
     securityContext: SecurityContext?
   ): Environment {
-    TODO("Not yet implemented")
+    val person = authManager.who(securityContext)
+    if (authManager.isOrgAdmin(person) || authManager.isPortfolioAdminOfEnvironment(environment.id, person)
+    ) {
+      return try {
+        environmentApi.update(
+          id, environment, Opts().add(FillOpts.Details, holder.includeDetails)
+        ) ?: throw NotFoundException()
+      } catch (e: OptimisticLockingException) {
+        throw WebApplicationException(422)
+      } catch (e: EnvironmentApi.DuplicateEnvironmentException) {
+        throw WebApplicationException(Response.Status.CONFLICT)
+      } catch (e: EnvironmentApi.InvalidEnvironmentChangeException) {
+        throw BadRequestException()
+      }
+    }
+    throw ForbiddenException()
   }
 
   companion object {

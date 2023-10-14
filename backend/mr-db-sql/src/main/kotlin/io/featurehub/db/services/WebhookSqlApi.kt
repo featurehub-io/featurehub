@@ -93,7 +93,7 @@ class WebhookSqlApi : WebhookApi{
         .url(originalHook.url)
     }
 
-    detail.content(originalHook.content).sourceSystem(originalHook.sourceSystem).result(originalHook.result ?: "")
+    detail.content(originalHook.content).sourceSystem(originalHook.sourceSystem).result(originalHook.result ?: "").whenSent(webhook.whenSent)
   }
 
   override fun paginateWebhooks(envId: UUID, max: Int, startPos: Int, filter: String?): WebhookSummary {

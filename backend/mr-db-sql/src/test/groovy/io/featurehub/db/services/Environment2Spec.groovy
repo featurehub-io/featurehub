@@ -22,6 +22,7 @@ import io.featurehub.mr.model.EnvironmentSortOrder
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.UpdateEnvironment
+import io.featurehub.mr.model.UpdateEnvironmentV2
 import org.apache.commons.lang3.RandomStringUtils
 import org.jetbrains.annotations.Nullable
 
@@ -72,18 +73,16 @@ class Environment2Spec extends Base2Spec {
       Environment e = envApi.create(new CreateEnvironment().name("env-1-app1").description("desc app 1 env 1"), app1.id, superPerson)
       List<Environment> createSearch = envApi.search(app1.id, e.name, EnvironmentSortOrder.ASC, Opts.empty(), superPerson)
       Environment eGet = envApi.get(e.id, Opts.empty(), superPerson)
-    and:
-      def originalEnv = envApi.get(e.id, Opts.empty(), superPerson)
-      Environment u = envApi.update(e.id, originalEnv.name("env-1-app-1 update").description("new desc"), Opts.empty())
-      List<Environment> updateSearch = envApi.search(app1.id, u.name, EnvironmentSortOrder.ASC, Opts.empty(), superPerson)
-      Environment uGet = envApi.get(e.id, Opts.empty(), superPerson)
-    and:
-      boolean success = envApi.delete(u.id)
-      List<Environment> deleteSearch = envApi.search(app1.id, u.name, EnvironmentSortOrder.ASC, Opts.empty(), superPerson)
     then:
       e != null
       createSearch.size() == 1
       createSearch[0].name == e.name
+    when:
+      def originalEnv = envApi.get(e.id, Opts.empty(), superPerson)
+      Environment u = envApi.update(e.id, originalEnv.name("env-1-app-1 update").description("new desc"), Opts.empty())
+      List<Environment> updateSearch = envApi.search(app1.id, u.name, EnvironmentSortOrder.ASC, Opts.empty(), superPerson)
+      Environment uGet = envApi.get(e.id, Opts.empty(), superPerson)
+    then:
       eGet != null
       eGet.name == e.name
       eGet.description == e.description
@@ -93,6 +92,18 @@ class Environment2Spec extends Base2Spec {
       uGet != null
       uGet.name == u.name
       uGet.description == u.description
+    when:
+      def newUpdate = envApi.update(app1.id, new UpdateEnvironmentV2().id(uGet.id).version(uGet.version).environmentInfo(["hello": "there"]), Opts.opts(FillOpts.Details))
+    then:
+      newUpdate.environmentInfo["hello"] == "there"
+    when:
+      def notValidUpdate = envApi.update(UUID.randomUUID(), new UpdateEnvironmentV2().id(uGet.id).version(uGet.version), Opts.empty())
+    then:
+      notValidUpdate == null
+    when:
+      boolean success = envApi.delete(u.id)
+      List<Environment> deleteSearch = envApi.search(app1.id, u.name, EnvironmentSortOrder.ASC, Opts.empty(), superPerson)
+    then:
       success
       deleteSearch.size() == 0
   }

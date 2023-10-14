@@ -21,11 +21,12 @@ public interface AuthManagerService {
   boolean isOrgAdmin(Person person);
   boolean isOrgAdmin(UUID person);
   boolean isPortfolioAdminOfEnvironment(@NotNull UUID envId, @NotNull Person person);
+  boolean isPortfolioAdminOfEnvironment(@NotNull UUID envId, @NotNull UUID person);
   boolean isPortfolioAdmin(@NotNull UUID portfolioId, @NotNull UUID personId, @Nullable Consumer<Group> action);
   boolean isPortfolioAdmin(@NotNull UUID portfolioId, @NotNull UUID personId);
   boolean isPortfolioAdmin(UUID portfolioId, PersonId personId, Consumer<Group> action);
   boolean isPortfolioAdmin(UUID portfolioId, Person person, Consumer<Group> action);
-  boolean isPortfolioAdmin(Portfolio portfolio, Person person);
+  boolean isPortfolioAdmin(@NotNull Portfolio portfolio, @NotNull Person person);
   boolean isPortfolioAdmin(UUID portfolio, Person person);
 //  boolean isApplicationMember(String id, Person person);
   boolean isAnyAdmin(UUID personId);

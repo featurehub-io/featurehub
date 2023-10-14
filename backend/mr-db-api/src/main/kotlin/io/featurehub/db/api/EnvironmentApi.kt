@@ -18,7 +18,8 @@ interface EnvironmentApi {
     DuplicateEnvironmentException::class,
     InvalidEnvironmentChangeException::class
   )
-  fun update(envId: UUID?, env: Environment?, opts: Opts?): Environment?
+  fun update(envId: UUID, env: Environment, opts: Opts): Environment?
+  fun update(application: UUID, env: UpdateEnvironmentV2, opts: Opts): Environment?
 
   @Throws(DuplicateEnvironmentException::class, InvalidEnvironmentChangeException::class)
   fun create(env: CreateEnvironment, appId: UUID, whoCreated: Person): Environment?
