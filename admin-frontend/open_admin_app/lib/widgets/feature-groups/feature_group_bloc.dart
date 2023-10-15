@@ -14,16 +14,18 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
   late ApplicationRolloutStrategyServiceApi _appStrategyServiceApi;
 
   FeatureGroupBloc(this.featureGroupsBloc, this.featureGroupListGroup) {
-    _appStrategyServiceApi =
-        ApplicationRolloutStrategyServiceApi(featureGroupsBloc.mrClient.apiClient);
+    _appStrategyServiceApi = ApplicationRolloutStrategyServiceApi(
+        featureGroupsBloc.mrClient.apiClient);
     _getFeatureGroup();
     _getAllFeaturesPerEnvironment();
   }
 
   final _featureGroupStream = BehaviorSubject<FeatureGroup>();
+
   BehaviorSubject<FeatureGroup> get featureGroupStream => _featureGroupStream;
 
   final _availableFeaturesStream = BehaviorSubject<List<FeatureGroupFeature>>();
+
   BehaviorSubject<List<FeatureGroupFeature>> get availableFeaturesStream =>
       _availableFeaturesStream;
 
@@ -37,6 +39,7 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
       BehaviorSubject<List<GroupRolloutStrategy>>.seeded([]);
 
   final _strategySource = BehaviorSubject<GroupRolloutStrategy?>();
+
   BehaviorSubject<GroupRolloutStrategy?> get strategyStream => _strategySource;
 
   String? _selectedFeatureToAdd;
@@ -97,13 +100,14 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
   }
 
   void addFeatureToGroup() {
-    var latestFeatureGroupFeatures = _trackingUpdatesGroupFeaturesStream.value;
     if (_selectedFeatureToAdd != null) {
+      final latestFeatureGroupFeatures = _trackingUpdatesGroupFeaturesStream.value;
       List<FeatureGroupFeature> features = _availableFeaturesStream.value;
       FeatureGroupFeature currentFeatureGF = features
           .firstWhere((feature) => feature.id == _selectedFeatureToAdd!);
       if (!latestFeatureGroupFeatures
           .any((feature) => feature.id == currentFeatureGF.id)) {
+        fhosLogger.fine("adding feature ${currentFeatureGF} to tracking");
         latestFeatureGroupFeatures.add(currentFeatureGF);
         _trackingUpdatesGroupFeaturesStream.add(latestFeatureGroupFeatures);
       }
@@ -117,19 +121,20 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
   }
 
   Future<void> saveFeatureGroupUpdates() async {
-    List<FeatureGroupUpdateFeature>? features = [];
-    List<GroupRolloutStrategy> strategies = [];
-    for (FeatureGroupFeature feature
-        in _trackingUpdatesGroupFeaturesStream.value) {
-      FeatureGroupUpdateFeature featureUpdate = convertToFeatureUpdate(feature);
-      features.add(featureUpdate);
-    }
-    for (GroupRolloutStrategy strategy
-        in _trackingUpdatesGroupStrategiesStream.value) {
-      strategies.add(strategy);
-    }
+    final features = _trackingUpdatesGroupFeaturesStream.hasValue
+        ? _trackingUpdatesGroupFeaturesStream.value
+        .map((e) => convertToFeatureUpdate(e))
+        .toList()
+        : null;
+
+    final strategies = _trackingUpdatesGroupStrategiesStream.hasValue
+        ? _trackingUpdatesGroupStrategiesStream.value
+        : null;
+
+    print("features ${features} - strategies ${strategies}");
     await featureGroupsBloc.updateFeatureGroup(featureGroupListGroup,
-        features: features, strategies: strategies);
+        features: features,
+        strategies: strategies);
   }
 
   FeatureGroupUpdateFeature convertToFeatureUpdate(

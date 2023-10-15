@@ -79,7 +79,7 @@ class GroupBloc implements Bloc {
     }
   }
 
-  void removeFromGroup(Group group, Person person) async {
+  Future<void> removeFromGroup(Group group, Person person) async {
     var data = await _groupServiceApi
         .deletePersonFromGroup(group.id, person.id!.id, includeMembers: true);
     if (!_groupSource.isClosed) {

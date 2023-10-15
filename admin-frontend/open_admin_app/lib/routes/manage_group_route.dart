@@ -170,9 +170,9 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                                       message: "Remove from group",
                                         child: FHIconButton(
                                             icon: const Icon(Icons.delete),
-                                            onPressed: () {
+                                            onPressed: () async {
                                               try {
-                                                bloc.removeFromGroup(
+                                                await bloc.removeFromGroup(
                                                     snapshot.data!, member);
                                                 bloc.mrClient.addSnackbar(Text(
                                                     "'${member.name}' removed from group '${snapshot.data!.name}'"));

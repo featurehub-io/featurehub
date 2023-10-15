@@ -512,7 +512,7 @@ open class PersonSqlApi @Inject constructor(
     QDbPerson().id.eq(personId)
       .asUpdate()
       .set(QDbPerson.Alias.name, name)
-      .set(QDbPerson.Alias.whoChanged, updatedBy)
+      .set(QDbPerson.Alias.whoChanged, updatedBy.id)
       .update()
   }
 
