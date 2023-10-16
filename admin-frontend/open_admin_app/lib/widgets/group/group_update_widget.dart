@@ -96,11 +96,8 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
   }
 
   Future<void> _callUpdateGroup(String name) {
-    final group = widget.group ?? Group(name: '');
-    group.name = name.trim();
-    return widget.group == null
-        ? widget.bloc.createGroup(group)
-        : widget.bloc.updateGroup(group);
+    final groupName = name.trim();
+    return widget.group == null ? widget.bloc.createGroup(groupName) : widget.bloc.updateGroup(widget.group!, name: groupName);
   }
 }
 
@@ -121,7 +118,7 @@ class GroupDeleteDialogWidget extends StatelessWidget {
           'All permissions belonging to this group will be deleted \n\nThis cannot be undone!',
       deleteSelected: () async {
         try {
-          await bloc.deleteGroup(group.id!, true);
+          await bloc.deleteGroup(group.id, true);
           bloc.mrClient.addSnackbar(Text("Group '${group.name}' deleted!"));
           return true;
         } catch (e, s) {

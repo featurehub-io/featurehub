@@ -62,11 +62,11 @@ class OauthResource @Inject constructor(
     val providerUser = providerFromState.discoverProviderUser(authed)
       ?: return Response.status(302).location(URI.create(failureUrl!!)).build()
     return SSOCompletionListener.successfulCompletion(
-        providerUser.email,
+        providerUser.email!!,
         providerUser.name,
         userMustBeCreatedFirst!!,
-        failureUrl,
-        successUrl,
+        failureUrl!!,
+        successUrl!!,
         providerFromState.providerName()
     )
   }

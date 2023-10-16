@@ -54,7 +54,7 @@ class PersonState {
   // if we add roles that are NOT feature related, this will need to change to exclude them
   bool personCanAnythingFeaturesForApplication(String? appId) {
     return _isUserIsSuperAdmin ||
-        person.groups.any((gp) => gp.applicationRoles.any((ar) => ar.applicationId == appId && ar.roles.isNotEmpty));
+        person.groups.any((gp) => gp.applicationRoles.any((ar) => ar.applicationId == appId && ar.roles.isNotEmpty) == true);
   }
 
   bool _personHasApplicationRoleInApp(String? appId, List<ApplicationRoleType> roles) {
@@ -65,7 +65,7 @@ class PersonState {
     return _isUserIsSuperAdmin ||
         person.groups.any((gp) => gp.applicationRoles.any((ar) => ar.applicationId == appId &&
             ( gp.admin == true || ar.roles.any((roleForAppInGroup) => roles.contains(roleForAppInGroup)) )
-        ));
+        ) == true);
   }
 
   bool userHasPortfolioPermission(String? pid) {
@@ -80,7 +80,7 @@ class PersonState {
     if (appId == null) return false;
 
     return person.groups.any((g) =>
-        g.applicationRoles.any((appRole) => appRole.applicationId == appId));
+        g.applicationRoles.any((appRole) => appRole.applicationId == appId) == true);
   }
 
   // if they are admin in a group where there is no portfolio id, they are super-admin

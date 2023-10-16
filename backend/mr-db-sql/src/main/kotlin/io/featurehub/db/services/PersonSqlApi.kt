@@ -34,7 +34,7 @@ open class PersonSqlApi @Inject constructor(
     val version = person.version ?: return null
 
     val dbPerson = updatePersonDetails(id, updatedBy, version, person.name,
-      person.email, person.groups?.mapNotNull { it.id }, false
+      person.email, person.groups.mapNotNull { it.id }, false
     )
 
     return if (dbPerson != null) convertUtils.toPerson(dbPerson, opts) else null
@@ -147,7 +147,7 @@ open class PersonSqlApi @Inject constructor(
       groupChanges.groupsToAdd.addAll(groupsTheyWantToAdd)
       groupChanges.groupsToRemove.addAll(groupsTheyWantToRemove)
 
-      log.debug("Changing groups for person ${personId} as $groupChanges")
+      log.debug("Changing groups for person $personId as $groupChanges")
     }
 
     updatePerson(updatingRecord, groupChanges, superuserChanges)
@@ -512,7 +512,7 @@ open class PersonSqlApi @Inject constructor(
     QDbPerson().id.eq(personId)
       .asUpdate()
       .set(QDbPerson.Alias.name, name)
-      .set(QDbPerson.Alias.whoChanged, updatedBy)
+      .set(QDbPerson.Alias.whoChanged, updatedBy.id)
       .update()
   }
 

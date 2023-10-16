@@ -37,7 +37,7 @@ class _EditFeatureGroupStringValueContainerState
         height: 36,
         child: TextField(
           style: Theme.of(context).textTheme.bodyLarge,
-          enabled: !widget.feature.locked! && widget.editable,
+          enabled: !widget.feature.locked&& widget.editable,
           controller: tec,
           decoration: InputDecoration(
               border: const OutlineInputBorder(),
@@ -52,8 +52,7 @@ class _EditFeatureGroupStringValueContainerState
                 color: Colors.grey,
               )),
               hintText: widget.editable
-                  ? !widget.feature.locked!
-                      ? 'Enter string value'
+                  ? !widget.feature.locked? 'Enter string value'
                       : 'Unlock to edit'
                   : 'No editing rights',
               hintStyle: Theme.of(context).textTheme.bodySmall),

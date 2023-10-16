@@ -6,8 +6,6 @@ import io.featurehub.dacha.model.DachaPermissionResponse
 import io.featurehub.dacha2.Dacha2Cache
 import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
-import jakarta.ws.rs.WebApplicationException
-import jakarta.ws.rs.core.Response
 import java.util.*
 
 class DachaApiKeyResource @Inject constructor(private val cache: Dacha2Cache) : DachaApiKeyService {

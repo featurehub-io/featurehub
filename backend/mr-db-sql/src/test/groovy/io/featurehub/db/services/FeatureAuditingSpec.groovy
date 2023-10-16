@@ -5,6 +5,11 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
+import io.featurehub.mr.model.CreateApplication
+import io.featurehub.mr.model.CreateEnvironment
+import io.featurehub.mr.model.CreateFeature
+import io.featurehub.mr.model.CreatePortfolio
+import io.featurehub.mr.model.CreateServiceAccount
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.events.common.CacheSource
@@ -52,14 +57,14 @@ class FeatureAuditingSpec extends Base2Spec {
     p1 = portfolioSqlApi.getPortfolio("basic")
 
     if (p1 == null) {
-      p1 = portfolioSqlApi.createPortfolio(new Portfolio().name("basic").description("basic"), Opts.empty(), superPerson)
+      p1 = portfolioSqlApi.createPortfolio(new CreatePortfolio().name("basic").description("basic"), Opts.empty(), superuser)
     }
 
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi())
     app = applicationSqlApi.getApplication(p1.id, "app1")
 
     if (app == null) {
-      app = applicationSqlApi.createApplication(p1.id, new Application().name("app1").description("desc1"), superPerson)
+      app = applicationSqlApi.createApplication(p1.id, new CreateApplication().name("app1").description("desc1"), superPerson)
     }
 
     db.currentTransaction().commit()
@@ -68,7 +73,7 @@ class FeatureAuditingSpec extends Base2Spec {
     env = environmentSqlApi.getEnvironment(app.id, "dev")
 
     if (env == null) {
-      env = environmentSqlApi.create(new  Environment().name("dev").description("dev"), app, superPerson)
+      env = environmentSqlApi.create(new CreateEnvironment().name("dev").description("dev"), app.id, superPerson)
     }
   }
 
@@ -79,13 +84,15 @@ class FeatureAuditingSpec extends Base2Spec {
   def "when i have a string feature and i add alternating strategies at the same history point they work"() {
     given: "i create a string feature"
       def feature = applicationSqlApi.createApplicationLevelFeature(app.id,
-        new Feature().name("str1-feature").description("str1-feature").key("FSTR1").valueType(FeatureValueType.STRING), superPerson, Opts.empty())
+        new CreateFeature().name("str1-feature").description("str1-feature").key("FSTR1").valueType(FeatureValueType.STRING), superPerson, Opts.empty())
 
     and: "i set the value of the feature"
-      def fv1 = featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key, new FeatureValue().locked(false).valueString("fred"), perms)
+      def fv1 = featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key,
+        new FeatureValue().locked(false).valueString("fred").retired(false), perms)
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
     when: "i update the value of the feature and update the rollout strategies"
-      def fvUpdated = featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key, fv1.valueString("mary").rolloutStrategies([
+      def fvUpdated = featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key,
+        fv1.valueString("mary").retired(false).rolloutStrategies([
         new RolloutStrategy().name("rs1").percentage(20).value(10)
       ]), perms)
     and: "i update the value of the feature and add another rollout strategy"
@@ -105,7 +112,7 @@ class FeatureAuditingSpec extends Base2Spec {
   def "when i update a boolean feature value and then update it again with the historical version, nothing changes"() {
     given: "i create a feature"
       def feature = applicationSqlApi.createApplicationLevelFeature(app.id,
-        new Feature().name("bool-feature").description("bool-feature").key("FBOOL").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+        new CreateFeature().name("bool-feature").description("bool-feature").key("FBOOL").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     and: "i get the feature value"
       def fv = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
@@ -122,14 +129,14 @@ class FeatureAuditingSpec extends Base2Spec {
   def "when an update comes in from the test sdk, it will process and be stored in the historical database"() {
     given: "i create a feature"
       def feature = applicationSqlApi.createApplicationLevelFeature(app.id,
-        new Feature().name("testsdk-feature").description("testsdk-feature").key("TESTSDK-BOOL").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+        new CreateFeature().name("testsdk-feature").description("testsdk-feature").key("TESTSDK-BOOL").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     and: "we have a service account"
-      def sa = serviceAccountApi.create(p1.id, superPerson, new ServiceAccount().name("testsdk")
+      def sa = serviceAccountApi.create(p1.id, superPerson, new CreateServiceAccount().name("testsdk")
             .description("some desc").permissions([]), Opts.empty())
       db.currentTransaction()?.commit()
     when: "i update the feature using the test-sdk api"
       featureSqlApi.updateFeatureFromTestSdk(sa.apiKeyServerSide, env.id, feature.key, true, true, { type ->
-        return new FeatureValue().locked(false).valueBoolean(true)
+        return new FeatureValue().retired(false).locked(false).valueBoolean(true)
       })
     and:
       def value = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)

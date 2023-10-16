@@ -7,6 +7,9 @@ import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
+import io.featurehub.mr.model.CreateApplication
+import io.featurehub.mr.model.CreateEnvironment
+import io.featurehub.mr.model.CreateGroup
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.HiddenEnvironments
@@ -32,17 +35,17 @@ class UserStateSpec extends BaseSpec {
 
     // now set up the environments we need
     DbOrganization organization = Finder.findDbOrganization()
-    portfolio1 = new DbPortfolio.Builder().name("port-user-spec").whoCreated(dbSuperPerson).organization(organization).build()
+    portfolio1 = new DbPortfolio.Builder().name("port-user-spec").description("x").whoCreated(dbSuperPerson).organization(organization).build()
     database.save(portfolio1)
 
     // create the portfolio group
-    groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new Group().name("p1-user-spec-admin").admin(true), superPerson)
+    groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("p1-user-spec-admin").admin(true), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, superPerson.id.id, Opts.empty())
 
-    app1 = appApi.createApplication(portfolio1.id, new Application().name('app1-user-spec'), superPerson)
+    app1 = appApi.createApplication(portfolio1.id, new CreateApplication().description("x").name('app1-user-spec'), superPerson)
     assert app1 != null && app1.id != null
 
-    env1 = envApi.create(new Environment().name("dev").description("desc"), app1, superPerson)
+    env1 = envApi.create(new CreateEnvironment().name("dev").description("desc"), app1.id, superPerson)
   }
 
   def "Basic CRUD on HiddenEnvironments works as expected"() {

@@ -6,6 +6,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonApi
 import io.featurehub.mr.api.GroupServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
+import io.featurehub.mr.model.CreateGroup
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
@@ -21,7 +22,11 @@ class GroupResourceSpec extends Specification {
   PersonApi personApi
   GroupResource gr
   AuthManagerService authManager
+  SecurityContext sc
   UUID gid
+  UUID pId // portfolio id
+  UUID personId
+  Person person
   UUID adminUser
 
   def setup() {
@@ -30,34 +35,34 @@ class GroupResourceSpec extends Specification {
     authManager = Mock(AuthManagerService)
     gr = new GroupResource(personApi, groupApi, authManager)
     gid = UUID.randomUUID()
+    pId = UUID.randomUUID()
     adminUser = UUID.randomUUID()
+    personId = UUID.randomUUID()
+    sc = Mock()
+    person = new Person().id(new PersonId().id(personId))
+    authManager.from(sc) >> person
+    authManager.who(sc) >> personId
   }
 
   def "cannot add a person to a non-existent group"() {
     given: "the group does not exist"
       groupApi.getGroup(gid, (Opts) _, _) >> null
     when: "i try and add a person to the group"
-      gr.addPersonToGroup(gid, null, new GroupServiceDelegate.AddPersonToGroupHolder(includeMembers: true), null)
+      gr.addPersonToGroup(gid, UUID.randomUUID(), new GroupServiceDelegate.AddPersonToGroupHolder(includeMembers: true), sc)
     then:
       thrown(NotFoundException)
   }
 
   def "if you are a portfolio admin you can create a group"() {
     given: "i am a portfolio admin"
-      SecurityContext sc = Mock(SecurityContext)
-      Person person = new Person()
-      authManager.from(sc) >> person
-      UUID pId = gid
       authManager.isPortfolioAdmin(pId, person, null) >> true
     and: "i have a group"
-      Group group = new Group()
+      def group = new CreateGroup()
     when: "i attempt to create said Group"
-      gr.createGroup(gid, group, new GroupServiceDelegate.CreateGroupHolder(includePeople: true), sc)
+      gr.createGroup(pId, group, new GroupServiceDelegate.CreateGroupHolder(includePeople: true), sc)
     then:
-      1 * groupApi.createGroup(pId, group, person)
+      1 * groupApi.createGroup(pId, group, person) >> new Group().id(gid)
   }
-
-
 
   def "findGroups works"() {
     given:
@@ -74,13 +79,9 @@ class GroupResourceSpec extends Specification {
 
   def "if you are not a portfolio admin, you cannot create a group"() {
     given: "i am not a portfolio admin"
-      SecurityContext sc = Mock(SecurityContext)
-      Person person = new Person()
-      authManager.from(sc) >> person
-      String pId = gid
       authManager.isPortfolioAdmin(pId, person, null) >> false
     and: "i have a group"
-      Group group = new Group()
+      def group = new CreateGroup()
     when: "i attempt to create a group"
       gr.createGroup(gid, group, new GroupServiceDelegate.CreateGroupHolder(includePeople: true), sc)
     then:
@@ -91,22 +92,22 @@ class GroupResourceSpec extends Specification {
     if (personIdInAdminGroup == null) {
       personIdInAdminGroup = adminUser
     }
-    groupApi.getGroup(gid, (Opts) _, _) >> new Group().portfolioId(portfolioId).admin(groupIsAdmin)
+    UUID orgId = UUID.randomUUID()
+    groupApi.getGroup(gid, (Opts) _, _) >> new Group().id(gid).portfolioId(portfolioId).admin(groupIsAdmin).organizationId(orgId)
     def sc = Mock(SecurityContext)
-    groupApi.findPortfolioAdminGroup(portfolioId, (Opts)_) >> new Group().admin(true).members([new Person().id(new PersonId().id(idPersonInChargeOfPortfolioAdminGroup))])
-    groupApi.findOrganizationAdminGroup(null, (Opts)_) >> new Group().admin(true).members([new Person().id(new PersonId().id(personIdInAdminGroup))])
+    groupApi.findPortfolioAdminGroup(portfolioId, (Opts)_) >> new Group().id(gid).admin(true).members([new Person().id(new PersonId().id(idPersonInChargeOfPortfolioAdminGroup))])
+    groupApi.findOrganizationAdminGroup(orgId, (Opts)_) >> new Group().id(gid).admin(true).members([new Person().id(new PersonId().id(personIdInAdminGroup))])
     authManager.from(sc) >> new Person().id(new PersonId().id(currentPersonId))
     return sc
   }
 
   def "a person not in a portfolio admin group cannot change portfolio group"() {
     given: "the group is set up and the portfolio admin is setup"
-      UUID personId = UUID.randomUUID()
       def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), UUID.randomUUID(), personId)
     and: "the person to be added exists"
       personApi.get(personId, (Opts)_) >> new Person()
     when:
-      gr.addPersonToGroup(gid, personId, null, sc)
+      gr.addPersonToGroup(gid, personId, new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
     then: "not allowed to add a person to the group"
       thrown(ForbiddenException)
   }
@@ -137,7 +138,7 @@ class GroupResourceSpec extends Specification {
 
   def "cannot add a person to an known group"() {
     when:
-      gr.addPersonToGroup(gid, UUID.randomUUID(), null, null)
+      gr.addPersonToGroup(gid, UUID.randomUUID(), new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
     then:
       thrown(NotFoundException)
   }
@@ -147,7 +148,7 @@ class GroupResourceSpec extends Specification {
       def pidOwner = UUID.randomUUID()
       def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), UUID.randomUUID(), pidOwner)
     when:
-      gr.addPersonToGroup(gid, pidOwner, null, null)
+      gr.addPersonToGroup(gid, pidOwner, new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
     then:
       thrown(NotFoundException)
   }
@@ -199,7 +200,7 @@ class GroupResourceSpec extends Specification {
 
   def "cannot delete an unknown group"() {
     when: "i try and delete an unknown group"
-      gr.deleteGroup(gid, new GroupServiceDelegate.DeleteGroupHolder(), null)
+      gr.deleteGroup(gid, new GroupServiceDelegate.DeleteGroupHolder(), sc)
     then:
       thrown(NotFoundException)
   }
@@ -248,7 +249,7 @@ class GroupResourceSpec extends Specification {
 
   def "cannot delete person from non-existent group"() {
     when:
-      gr.deletePersonFromGroup(gid, UUID.randomUUID(), new GroupServiceDelegate.DeletePersonFromGroupHolder(), null)
+      gr.deletePersonFromGroup(gid, UUID.randomUUID(), new GroupServiceDelegate.DeletePersonFromGroupHolder(), sc)
     then:
       thrown(NotFoundException)
   }
@@ -267,14 +268,14 @@ class GroupResourceSpec extends Specification {
 
   def "non existent group cannot get"() {
     when:
-      gr.getGroup(gid, new GroupServiceDelegate.GetGroupHolder(), null)
+      gr.getGroup(gid, new GroupServiceDelegate.GetGroupHolder(), sc)
     then:
       thrown(NotFoundException)
   }
 
   def "can get existing group"() {
     when:
-      gr.getGroup(gid, new GroupServiceDelegate.GetGroupHolder(), null)
+      gr.getGroup(gid, new GroupServiceDelegate.GetGroupHolder(), sc)
     then:
       1 * groupApi.getGroup(gid, (Opts) _, _) >> new Group()
   }

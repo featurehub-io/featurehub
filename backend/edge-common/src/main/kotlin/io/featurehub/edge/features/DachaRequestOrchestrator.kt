@@ -46,11 +46,13 @@ open class DachaRequestOrchestrator @Inject constructor(
     // and tell them to go get the data or add us to their list
     getters.forEach { getter -> getter.add(action) }
 
-    val result = future.get()
-
-    inflightGauge.dec()
-
-    return result
+    try {
+      return future.get()
+    } catch (e: Exception) {
+      return listOf()
+    } finally {
+      inflightGauge.dec()
+    }
   }
 
   protected open fun createInflightRequest(key: KeyParts): FeatureRequester =

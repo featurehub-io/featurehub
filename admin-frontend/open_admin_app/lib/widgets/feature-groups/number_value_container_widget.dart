@@ -40,7 +40,7 @@ class _EditNumberValueContainerState
         height: 36,
         child: TextField(
           style: Theme.of(context).textTheme.bodyLarge,
-          enabled: !widget.feature.locked! && widget.editable,
+          enabled: !widget.feature.locked&& widget.editable,
           controller: tec,
           decoration: InputDecoration(
             border: const OutlineInputBorder(),
@@ -55,8 +55,7 @@ class _EditNumberValueContainerState
               color: Colors.grey,
             )),
             hintText: widget.editable
-                ? !widget.feature.locked!
-                    ? 'Enter number value'
+                ? !widget.feature.locked? 'Enter number value'
                     : 'Unlock to edit'
                 : 'No editing rights',
             hintStyle: Theme.of(context).textTheme.bodySmall,

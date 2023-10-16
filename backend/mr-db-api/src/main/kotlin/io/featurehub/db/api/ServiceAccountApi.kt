@@ -1,5 +1,6 @@
 package io.featurehub.db.api
 
+import io.featurehub.mr.model.CreateServiceAccount
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.ServiceAccount
 import java.util.*
@@ -9,6 +10,8 @@ interface ServiceAccountApi {
 
   @Throws(OptimisticLockingException::class)
   fun update(serviceAccountId: UUID, updater: Person, serviceAccount: ServiceAccount, opts: Opts): ServiceAccount?
+  @Throws(OptimisticLockingException::class)
+  fun update(portfolioId: UUID, personId: UUID, serviceAccount: ServiceAccount, opts: Opts): ServiceAccount?
 
   /**
    * This has to determine if this user has access based on what they are asking for. If they have any access to the
@@ -27,7 +30,7 @@ interface ServiceAccountApi {
   class DuplicateServiceAccountException : Exception()
 
   @Throws(DuplicateServiceAccountException::class)
-  fun create(portfolioId: UUID, creator: Person, serviceAccount: ServiceAccount, opts: Opts): ServiceAccount?
+  fun create(portfolioId: UUID, creator: Person, serviceAccount: CreateServiceAccount, opts: Opts): ServiceAccount?
   fun delete(deleter: Person, serviceAccountId: UUID): Boolean
   fun cleanupServiceAccountApiKeys()
 

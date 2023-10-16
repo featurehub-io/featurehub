@@ -11,6 +11,7 @@ import io.featurehub.db.services.Conversions
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.events.dacha2.CacheApi
+import io.featurehub.mr.model.ApplicationRolloutStrategy
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
@@ -400,11 +401,13 @@ open class DbCacheSource @Inject constructor(
 
   private fun fromRolloutStrategyAttribute(rsa: RolloutStrategyAttribute): CacheRolloutStrategyAttribute {
     return CacheRolloutStrategyAttribute()
-      .conditional(rsa.conditional!!)
+      .conditional(rsa.conditional)
       .values(rsa.values)
-      .fieldName(rsa.fieldName!!)
-      .type(rsa.type!!)
+      .fieldName(rsa.fieldName)
+      .type(rsa.type)
   }
+
+
 
   private fun fromRolloutStrategy(rs: RolloutStrategy): CacheRolloutStrategy {
     return CacheRolloutStrategy()
@@ -413,6 +416,17 @@ open class DbCacheSource @Inject constructor(
       .percentageAttributes(rs.percentageAttributes)
       .value(rs.value)
       .attributes(if (rs.attributes == null) mutableListOf() else rs.attributes!!
+        .map { rsa: RolloutStrategyAttribute -> fromRolloutStrategyAttribute(rsa) }
+        )
+  }
+
+  private fun fromApplicationRolloutStrategy(rs: DbStrategyForFeatureValue): CacheRolloutStrategy {
+    return CacheRolloutStrategy()
+      .id(rs.rolloutStrategy.shortUniqueCode)
+      .percentage(rs.rolloutStrategy.strategy.percentage)
+      .percentageAttributes(rs.rolloutStrategy.strategy.percentageAttributes)
+      .value(rs.value)
+      .attributes(if (rs.rolloutStrategy.strategy.attributes == null) mutableListOf() else rs.rolloutStrategy.strategy.attributes!!
         .map { rsa: RolloutStrategyAttribute -> fromRolloutStrategyAttribute(rsa) }
         )
   }
@@ -431,11 +445,11 @@ open class DbCacheSource @Inject constructor(
       .select(QDbStrategyForFeatureValue.Alias.value)
       .featureValue.id.eq(featureValue.id)
       .enabled.isTrue
-      .rolloutStrategy.fetch(QDbRolloutStrategy.Alias.strategy)
+      .rolloutStrategy.fetch(QDbApplicationRolloutStrategy.Alias.strategy, QDbApplicationRolloutStrategy.Alias.shortUniqueCode)
       .findList()
 
-    allStrategies.addAll(activeSharedStrategies.map { shared ->
-        val rs = fromRolloutStrategy(shared.rolloutStrategy.strategy)
+    allStrategies.addAll(activeSharedStrategies.filter { !it.rolloutStrategy.strategy.disabled }.map { shared ->
+        val rs = fromApplicationRolloutStrategy(shared)
         rs.value = shared.value // the value associated with the shared strategy is set here not in the strategy itself
         rs
       })
@@ -595,7 +609,7 @@ open class DbCacheSource @Inject constructor(
    *
    * @param rs - the rollout strategy that changed
    */
-  override fun publishRolloutStrategyChange(rs: DbRolloutStrategy) {
+  override fun publishApplicationRolloutStrategyChange(rs: DbApplicationRolloutStrategy) {
     executor.submit {
       val updatedValues =
         addSelectorToFeatureValue(QDbFeatureValue()).sharedRolloutStrategies.rolloutStrategy.eq(rs).sharedRolloutStrategies.enabled.isTrue.findList()

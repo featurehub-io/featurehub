@@ -7,6 +7,7 @@ import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.utils.FallbackPropertyConfig
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.baggage.Baggage
+import io.opentelemetry.api.baggage.BaggageEntry
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
@@ -236,6 +237,7 @@ class TelemetryApplicationEventListener @Inject constructor(
 interface BaggageChecker {
   fun baggage(key: String): String?
   fun hasBaggage(key: String): Boolean
+  fun asMap(): Map<String, BaggageEntry>
 
   // this cannot be done on incoming request as the jax-rs request is last.
   fun addBaggageToCurrentContext(key: String, value: String)
@@ -244,6 +246,10 @@ interface BaggageChecker {
 class OpenTelemetryBaggageChecker : BaggageChecker {
   override fun baggage(key: String): String? {
     return Baggage.current().getEntryValue(key)
+  }
+
+  override fun asMap(): Map<String, BaggageEntry> {
+    return Baggage.current().asMap()
   }
 
   override fun hasBaggage(key: String): Boolean {

@@ -40,15 +40,15 @@ class _EnvListState extends State<EnvListWidget> {
                 onReorder: (int oldIndex, int newIndex) {
                   _reorderEnvironments(oldIndex, newIndex, bloc);
                 },
+                buildDefaultDragHandles: false,
                 children: <Widget>[
                   for (Environment env in _environments!)
                     _EnvWidget(
                         env: env,
                         bloc: bloc,
-                        key: Key(env.id!),
+                        key: Key(env.id),
                         index: _environments!.indexOf(env))
-                ],
-                buildDefaultDragHandles: false),
+                ]),
           );
         });
   }
@@ -60,11 +60,11 @@ class _EnvListState extends State<EnvListWidget> {
       if (env.priorEnvironmentId == null && parentId == '') {
         sortedList.insert(0, env);
         _sortEnvironments(originalList,
-            parentId: env.id!, passedSortedList: sortedList);
+            parentId: env.id, passedSortedList: sortedList);
       } else if (env.priorEnvironmentId == parentId) {
         sortedList.add(env);
         _sortEnvironments(originalList,
-            parentId: env.id!, passedSortedList: sortedList);
+            parentId: env.id, passedSortedList: sortedList);
       }
     }
     return sortedList;
@@ -234,7 +234,7 @@ class EnvDeleteDialogWidget extends StatelessWidget {
           : null,
       thing: env.production == true ? null : "environment '${env.name}'",
       deleteSelected: () async {
-        final success = await bloc.deleteEnv(env.id!);
+        final success = await bloc.deleteEnv(env.id);
         if (success) {
           bloc.mrClient.addSnackbar(Text("Environment '${env.name}' deleted!"));
         } else {
@@ -332,9 +332,7 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                 if (_formKey.currentState!.validate()) {
                   try {
                     if (isUpdate) {
-                      await widget.bloc.updateEnv(
-                          widget.env!..production = _isProduction,
-                          _envName.text);
+                      await widget.bloc.updateEnv(widget.env!, name: _envName.text, production: _isProduction);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.addSnackbar(
                           Text('Environment ${_envName.text} updated!'));

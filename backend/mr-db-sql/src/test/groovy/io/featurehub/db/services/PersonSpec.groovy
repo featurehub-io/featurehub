@@ -6,13 +6,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonApi
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.query.QDbGroupMember
-import io.featurehub.mr.model.Group
-import io.featurehub.mr.model.Person
-import io.featurehub.mr.model.PersonType
-import io.featurehub.mr.model.Portfolio
-import io.featurehub.mr.model.SearchPersonSortBy
-import io.featurehub.mr.model.SortOrder
-import io.featurehub.mr.model.UpdatePerson
+import io.featurehub.mr.model.*
 import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Shared
 
@@ -84,9 +78,9 @@ class PersonSpec extends BaseSpec {
 
   def "I can't register the same person twice"() {
     when: "i register"
-      PersonApi.PersonToken p = personSqlApi.create("reg1@f.com", "z", superPerson.id.id)
+      personSqlApi.create("reg1@f.com", "z", superPerson.id.id)
     and: "i try and register the same email again"
-      PersonApi.PersonToken p2 = personSqlApi.create("reg1@f.com", "z", superPerson.id.id)
+      personSqlApi.create("reg1@f.com", "z", superPerson.id.id)
     then:
       thrown PersonApi.DuplicatePersonException
   }
@@ -120,9 +114,9 @@ class PersonSpec extends BaseSpec {
       person2.save()
       def pers2 = personSqlApi.get(person2.id, Opts.empty())
     and: "i create a new portfolio"
-      def p1 = portfolioSqlApi.createPortfolio(new Portfolio().name('del-person1').organizationId(org.id), Opts.empty(), superPerson)
+      def p1 = portfolioSqlApi.createPortfolio(new CreatePortfolio().name('del-person1'), Opts.empty(), superuser)
     and: "i create a new group"
-      def g1 = groupSqlApi.createGroup(p1.id, new Group(name: 'upd-g-1'), superPerson)
+      def g1 = groupSqlApi.createGroup(p1.id, new CreateGroup(name: 'upd-g-1'), superPerson)
     and: "add the person to the group"
       g1.members.add(pers)
       g1.members.add(pers2)
@@ -209,11 +203,11 @@ class PersonSpec extends BaseSpec {
       def person = new DbPerson.Builder().email("updateme@me.com").name("update me").build()
       database.save(person)
     and: "i create two new portfolios"
-      def p1 = portfolioSqlApi.createPortfolio(new Portfolio().name('upd-p-1').organizationId(org.id), Opts.empty(), superPerson)
-      def p2 = portfolioSqlApi.createPortfolio(new Portfolio().name('upd-p-2').organizationId(org.id), Opts.empty(), superPerson)
+      def p1 = portfolioSqlApi.createPortfolio(new CreatePortfolio().name('upd-p-1'), Opts.empty(), superuser)
+      def p2 = portfolioSqlApi.createPortfolio(new CreatePortfolio().name('upd-p-2'), Opts.empty(), superuser)
     and: "i create two new groups"
-      def g1 = groupSqlApi.createGroup(p1.id, new Group(name: 'upd-g-1'), superPerson)
-      def g2 = groupSqlApi.createGroup(p2.id, new Group(name: 'upd-g-2'), superPerson)
+      def g1 = groupSqlApi.createGroup(p1.id, new CreateGroup(name: 'upd-g-1'), superPerson)
+      def g2 = groupSqlApi.createGroup(p2.id, new CreateGroup(name: 'upd-g-2'), superPerson)
     when:
       def originalPerson = personSqlApi.get(person.id, Opts.empty())
       def resultingPerson = personSqlApi.update(person.id,
@@ -247,13 +241,13 @@ class PersonSpec extends BaseSpec {
       def person = new DbPerson.Builder().email("updateme22@me.com").name("update me").build()
       database.save(person)
     and: "i create two new portfolios"
-      def p1 = portfolioSqlApi.createPortfolio(new Portfolio().name('upd-p-a').organizationId(org.id), Opts.empty(), superPerson)
-      def p2 = portfolioSqlApi.createPortfolio(new Portfolio().name('upd-p-b').organizationId(org.id), Opts.empty(), superPerson)
+      def p1 = portfolioSqlApi.createPortfolio(new CreatePortfolio().name('upd-p-a'), Opts.empty(), superuser)
+      def p2 = portfolioSqlApi.createPortfolio(new CreatePortfolio().name('upd-p-b'), Opts.empty(), superuser)
     and: "i create two new groups, one in each portfolio"
-      def g1 = groupSqlApi.createGroup(p1.id, new Group(name: 'upd-g-a'), superPerson)
-      def g2 = groupSqlApi.createGroup(p2.id, new Group(name: 'upd-g-b'), superPerson)
+      def g1 = groupSqlApi.createGroup(p1.id, new CreateGroup(name: 'upd-g-a'), superPerson)
+      def g2 = groupSqlApi.createGroup(p2.id, new CreateGroup(name: 'upd-g-b'), superPerson)
     and: "i create a portfolio admin group for portfolio 2"
-      def gPortfolioAdmin = groupSqlApi.createGroup(p2.id, new Group().name("admin of p2").admin(true), superPerson)
+      def gPortfolioAdmin = groupSqlApi.createGroup(p2.id, new CreateGroup().name("admin of p2").admin(true), superPerson)
     and: "i create a user and make them a membe rof the portfolio admin group"
       def pAdmin = new DbPerson.Builder().name("Frederick Von Brinkenstorm").email("freddy@mailinator.com").build()
       database.save(pAdmin)
@@ -288,13 +282,13 @@ class PersonSpec extends BaseSpec {
       def person = new DbPerson.Builder().email("updatem2e22@me.com").name("update me").build()
       database.save(person)
     and: "i create two new portfolios"
-      def p1 = portfolioSqlApi.createPortfolio(new Portfolio().name('upd-p-a2').organizationId(org.id), Opts.empty(), superPerson)
-      def p2 = portfolioSqlApi.createPortfolio(new Portfolio().name('upd-p-b2').organizationId(org.id), Opts.empty(), superPerson)
+      def p1 = portfolioSqlApi.createPortfolio(new CreatePortfolio().name('upd-p-a2'), Opts.empty(), superuser)
+      def p2 = portfolioSqlApi.createPortfolio(new CreatePortfolio().name('upd-p-b2'), Opts.empty(), superuser)
     and: "i create two new groups, one in each portfolio"
-      def g1 = groupSqlApi.createGroup(p1.id, new Group(name: 'upd-g-a2'), superPerson)
-      def g2 = groupSqlApi.createGroup(p2.id, new Group(name: 'upd-g-b2'), superPerson)
+      def g1 = groupSqlApi.createGroup(p1.id, new CreateGroup(name: 'upd-g-a2'), superPerson)
+      def g2 = groupSqlApi.createGroup(p2.id, new CreateGroup(name: 'upd-g-b2'), superPerson)
     and: "i create a portfolio admin group for portfolio 2"
-      def gPortfolioAdmin = groupSqlApi.createGroup(p2.id, new Group().name("admin of p2").admin(true), superPerson)
+      def gPortfolioAdmin = groupSqlApi.createGroup(p2.id, new CreateGroup().name("admin of p2").admin(true), superPerson)
     and: "i create a user and make them a membe rof the portfolio admin group"
       def pAdmin = new DbPerson.Builder().name("Frederick Von Brinkenstorm").email(RandomStringUtils.randomAlphabetic(4) + "freddy@mailinator.com").build()
       database.save(pAdmin)

@@ -17,7 +17,7 @@ class CustomColumnSizer extends ColumnSizer {
         if (cell.value is AggregatedFeatureCellData) {
           var typedCellData = cell.value as AggregatedFeatureCellData;
           if (typedCellData.fv != null) {
-            var stratLength = typedCellData.fv!.rolloutStrategies.length;
+            var stratLength = typedCellData.fv!.rolloutStrategies!.length;
             if (stratLength * defaultCellHeight > height) {
               height = stratLength * defaultCellHeight;
             }

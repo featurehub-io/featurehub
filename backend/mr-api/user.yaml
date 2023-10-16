@@ -68,7 +68,8 @@ components:
       properties:
         noneSelected:
           type: boolean
-          description: "If this is set to true, then the user in fact as no selected environments"
+          default: false
+          description: "If this is set to true, then the user in fact has no selected environments"
         environmentIds:
           type: array
           items:

@@ -46,11 +46,11 @@ typedef FindApplicationsFunc = Future<List<Application>> Function(
 final _log = Logger('stream-valley');
 
 final ReleasedPortfolio nullPortfolio = ReleasedPortfolio(
-    portfolio: Portfolio(name: 'null-portfolio'),
+    portfolio: Portfolio(name: 'null-portfolio', id: '', description: '', version: -1),
     currentPortfolioOrSuperAdmin: false);
 
 final ReleasedApplication nullApplication =
-    ReleasedApplication(application: Application(name: 'null-app'));
+    ReleasedApplication(application: Application(name: 'null-app', id: '', version: -1, portfolioId: ''));
 
 class StreamValley {
   late ManagementRepositoryClientBloc mrClient;
@@ -80,7 +80,7 @@ class StreamValley {
       _webhookTypesSource.stream;
   final _currentAppSource = BehaviorSubject.seeded(nullApplication);
 
-  String? get currentAppId => _currentAppSource.value.application.id;
+  String? get currentAppId => _currentAppSource.value.isNull() ? null : _currentAppSource.value.application.id;
 
   Stream<bool> get rocketTrigger => _rocketTriggerSource.stream;
   Stream<String?> get currentAppIdStream => _currentAppSource.stream
@@ -105,7 +105,7 @@ class StreamValley {
       ? _currentPortfolioSource.value
       : nullPortfolio;
 
-  String? get currentPortfolioId => currentPortfolio.portfolio.id;
+  String? get currentPortfolioId => currentPortfolio.isNull() ? null : currentPortfolio.portfolio.id;
 
   final _globalRefresherSource = BehaviorSubject<String?>();
 
@@ -258,7 +258,7 @@ class StreamValley {
   }
 
   Stream<String?> get currentPortfolioIdStream =>
-      _currentPortfolioSource.stream.map((p) => p.portfolio.id);
+      _currentPortfolioSource.stream.map((p) => p.isNull() ? null : p.portfolio.id);
 
   Stream<ReleasedApplication> get currentAppStream => _currentAppSource.stream;
 

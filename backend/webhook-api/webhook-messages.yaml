@@ -78,9 +78,11 @@ components:
           additionalProperties:
             type: string
         incomingHeaders:
+          nullable: true
           description: "The headers that came back"
           additionalProperties:
             type: string
         result:
+          nullable: true
           description: "The body as a string if any, truncated to 1k"
           type: string

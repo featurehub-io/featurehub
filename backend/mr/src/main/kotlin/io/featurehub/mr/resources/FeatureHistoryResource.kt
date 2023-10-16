@@ -19,7 +19,7 @@ class FeatureHistoryResource @Inject constructor(private val authManager: AuthMa
     holder: FeatureHistoryServiceDelegate.ListFeatureHistoryHolder,
     ctx: SecurityContext
   ): FeatureHistoryList {
-    val person = authManager.from(ctx) ?: throw ForbiddenException()
+    val person = authManager.from(ctx)
     val environmentUserHasAccessTo = environmentApi.getEnvironmentsUserCanAccess(appId, person.id!!.id) ?: throw NotFoundException()
 
     var envs = environmentUserHasAccessTo

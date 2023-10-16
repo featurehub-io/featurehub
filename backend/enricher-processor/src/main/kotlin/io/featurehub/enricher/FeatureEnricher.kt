@@ -66,6 +66,7 @@ class FeatureEnricherProcessor @Inject constructor(
    * coming in from dacha1, NATS only
    */
   override fun processFeature(fv: PublishFeatureValue) {
+    log.trace("dacha1 request to enrich new feature: {}", fv)
     enrichData(PublishFeatureValues().features(listOf(fv)), OffsetDateTime.now())
   }
 

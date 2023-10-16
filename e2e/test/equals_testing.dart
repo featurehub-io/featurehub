@@ -4,12 +4,9 @@ import 'package:test/test.dart';
 void main() {
   test('person equals works expected', ()
   {
-    Person a = Person()
-      ..name = 'Rob'
-      ..email = 'rob@mailinator.com';
-    Person b = Person()
-      ..name = 'Rob'
-      ..email = 'rob@mailinator.com';
+    Person a = Person(id: PersonId(id: ''), personType: PersonType.person, name: 'Rob', email: 'rob@mailinator.com', version: -1);
+
+    Person b = Person(id: PersonId(id: ''), personType: PersonType.person, name: 'Rob', email: 'rob@mailinator.com', version: -1);
 
 //    Set<int> vals = Set<int>();
 //    vals.add(1);

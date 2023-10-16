@@ -103,61 +103,84 @@ class EnvironmentSqlApi @Inject constructor(
     return null
   }
 
+  override fun update(application: UUID, env: UpdateEnvironmentV2, opts: Opts): Environment? {
+    val environment = QDbEnvironment().parentApplication.id.eq(application).id.eq(env.id).whenArchived.isNull.findOne() ?: return null
+
+    if (env.name != null) {
+      dupeEnvironmentNameCheck(env.name!!, environment)
+    }
+
+    circularPriorEnvironmentCheck(env.priorEnvironmentId, environment)
+
+    if (env.description != null) {
+      environment.description = env.description
+    }
+
+    if (env.production != null) {
+      environment.isProductionEnvironment = java.lang.Boolean.TRUE == env.production
+    }
+
+    if (env.environmentInfo != null) {
+      environment.userEnvironmentInfo = env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap()  // prevent mgmt prefixes being used
+    }
+
+    update(environment)
+
+    return convertUtils.toEnvironment(environment, opts)
+  }
+
   @Throws(
     OptimisticLockingException::class,
     EnvironmentApi.DuplicateEnvironmentException::class,
     EnvironmentApi.InvalidEnvironmentChangeException::class
   )
-  override fun update(envId: UUID?, env: Environment?, opts: Opts?): Environment? {
-    Conversions.nonNullEnvironmentId(envId)
-    val environment = convertUtils.byEnvironment(envId)
-    if (environment != null) {
-      if (env!!.version == null || environment.version != env.version) {
-        throw OptimisticLockingException()
-      }
-      dupeEnvironmentNameCheck(env.name, environment)
-      circularPriorEnvironmentCheck(env.priorEnvironmentId, environment)
-      environment.description = env.description
-      if (env.production != null) {
-        environment.isProductionEnvironment = java.lang.Boolean.TRUE == env.production
-      }
-      update(environment)
-      return convertUtils.toEnvironment(environment, opts)
+  override fun update(envId: UUID, env: Environment, opts: Opts): Environment? {
+    val environment = convertUtils.byEnvironment(envId) ?: return null
+
+    if (environment.version != env.version) {
+      throw OptimisticLockingException()
     }
-    return null
+
+    dupeEnvironmentNameCheck(env.name, environment)
+    circularPriorEnvironmentCheck(env.priorEnvironmentId, environment)
+    environment.description = env.description
+    if (env.production != null) {
+      environment.isProductionEnvironment = java.lang.Boolean.TRUE == env.production
+    }
+    update(environment)
+
+    return convertUtils.toEnvironment(environment, opts)
   }
 
   override fun updateEnvironment(eid: UUID, env: UpdateEnvironment, opts: Opts): Environment? {
-    val environment = convertUtils.byEnvironment(eid)
+    val environment = convertUtils.byEnvironment(eid) ?: return null
 
-    if (environment != null) {
-      if (environment.version != env.version) {
-        throw OptimisticLockingException()
-      }
-
-      if (env.name != null) {
-        dupeEnvironmentNameCheck(env.name!!, environment)
-      }
-
-      circularPriorEnvironmentCheck(env.priorEnvironmentId, environment)
-
-      if (env.description != null) {
-        environment.description = env.description
-      }
-
-      if (env.production != null) {
-        environment.isProductionEnvironment = java.lang.Boolean.TRUE == env.production
-      }
-
-      if (env.environmentInfo != null) {
-        environment.userEnvironmentInfo = env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap()  // prevent mgmt prefixes being used
-      }
-
-      update(environment)
-
-      return convertUtils.toEnvironment(environment, opts)
+    if (environment.version != env.version) {
+      log.trace("attempting to update old environment, current {}, update coming in is {}", environment.version, env.version)
+      throw OptimisticLockingException()
     }
-    return null
+
+    if (env.name != null) {
+      dupeEnvironmentNameCheck(env.name!!, environment)
+    }
+
+    circularPriorEnvironmentCheck(env.priorEnvironmentId, environment)
+
+    if (env.description != null) {
+      environment.description = env.description
+    }
+
+    if (env.production != null) {
+      environment.isProductionEnvironment = java.lang.Boolean.TRUE == env.production
+    }
+
+    if (env.environmentInfo != null) {
+      environment.userEnvironmentInfo = env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap()  // prevent mgmt prefixes being used
+    }
+
+    update(environment)
+
+    return convertUtils.toEnvironment(environment, opts)
   }
 
   override fun getEnvironmentsUserCanAccess(appId: UUID, person: UUID): List<UUID>? {
@@ -165,9 +188,9 @@ class EnvironmentSqlApi @Inject constructor(
 
     val envs = QDbEnvironment()
       .select(QDbEnvironment.Alias.id)
-      .parentApplication.id.eq(appId).groupRolesAcl.group.groupMembers.person.id.eq(person).findList();
+      .parentApplication.id.eq(appId).groupRolesAcl.group.groupMembers.person.id.eq(person).findList()
 
-    return if (envs.isEmpty()) null else envs.map { it.id };
+    return if (envs.isEmpty()) null else envs.map { it.id }
   }
 
   private fun circularPriorEnvironmentCheck(priorEnvironmentId: UUID?, environment: DbEnvironment) {
@@ -216,17 +239,17 @@ class EnvironmentSqlApi @Inject constructor(
   // - person who created is a portfolio or superuser admin
   // - env has been validated for content
   @Throws(EnvironmentApi.DuplicateEnvironmentException::class, EnvironmentApi.InvalidEnvironmentChangeException::class)
-  override fun create(env: Environment?, app: Application?, whoCreated: Person): Environment? {
-    val application = convertUtils.byApplication(app!!.id) ?: return null
+  override fun create(env: CreateEnvironment, appId: UUID, whoCreated: Person): Environment? {
+    val application = convertUtils.byApplication(appId) ?: return null
     val dbPerson = convertUtils.byPerson(whoCreated) ?: return null
 
-    if (QDbEnvironment().and().name.eq(env!!.name).whenArchived.isNull.parentApplication.eq(application)
+    if (QDbEnvironment().and().name.eq(env.name).whenArchived.isNull.parentApplication.eq(application)
         .endAnd().exists()
     ) {
       throw EnvironmentApi.DuplicateEnvironmentException()
     }
     var priorEnvironment = convertUtils.byEnvironment(env.priorEnvironmentId)
-    if (priorEnvironment != null && priorEnvironment.parentApplication.id != application.id) {
+    if ((priorEnvironment != null) && (priorEnvironment.parentApplication.id != application.id)) {
       throw EnvironmentApi.InvalidEnvironmentChangeException()
     }
     // so we don't have an environment so lets order them and put this one before the 1st one
@@ -293,9 +316,11 @@ class EnvironmentSqlApi @Inject constructor(
     order: EnvironmentSortOrder?,
     opts: Opts?,
     current: Person?
-  ): List<Environment?>? {
+  ): List<Environment> {
     Conversions.nonNullApplicationId(appId)
+
     val application = convertUtils.byApplication(appId)
+
     if (application != null) {
       val currentPerson = convertUtils.byPerson(current)
       if (currentPerson != null) {
@@ -316,16 +341,17 @@ class EnvironmentSqlApi @Inject constructor(
           eq = eq.parentApplication.portfolio.groups.groupMembers.person.id.eq(currentPerson.id)
         }
 
-        var environmentList = eq.findList().toMutableList()
+        val environmentList = eq.findList().toMutableList()
 
         if (order == null || order == EnvironmentSortOrder.PRIORITY) {
           EnvironmentUtils.sortEnvironments(environmentList)
         }
 
-        return environmentList.map { e: DbEnvironment? -> convertUtils.toEnvironment(e, opts) }.toMutableList()
+        return environmentList.map { e: DbEnvironment? -> convertUtils.toEnvironment(e, opts)!! }
       }
     }
-    return ArrayList()
+
+    return listOf()
   }
 
   override fun findPortfolio(envId: UUID?): Portfolio? {
@@ -379,13 +405,13 @@ class EnvironmentSqlApi @Inject constructor(
       }
     }
     if (environments.size > 1) {
-      val destinations = environments.associateBy { it.id!! }
+      val destinations = environments.associateBy { it.id }
       for (e in environments) {
         // create a slot for each environment
-        val spot: MutableMap<UUID, Int> = environments.map { env -> env.id!! to 0 }.toMap() as MutableMap<UUID, Int>
+        val spot: MutableMap<UUID, Int> = environments.map { env -> env.id to 0 }.toMap() as MutableMap<UUID, Int>
 
         // set our one to "visited"
-        spot[e.id!!] = 1
+        spot[e.id] = 1
         // now walk backwards until we either hit the end or see "visited"
         var currentId = e.priorEnvironmentId
         while (currentId != null && spot[currentId] == 0) {
@@ -416,7 +442,7 @@ class EnvironmentSqlApi @Inject constructor(
     }
   }
 
-  public fun getEnvironment(appId: UUID, envName: String): Environment? {
+  fun getEnvironment(appId: UUID, envName: String): Environment? {
     return QDbEnvironment().parentApplication.id.eq(appId).name.ieq(envName).findOne()?.let { convertUtils.toEnvironment(it, Opts.empty()) }
   }
 

@@ -35,7 +35,7 @@ class RegisterBloc implements Bloc {
     if (token != this.token) {
       mrClient.authServiceApi.personByToken(token).then((data) {
         if (data.additional
-                .firstWhereOrNull((pi) => pi.key == 'already-logged-in') !=
+                ?.firstWhereOrNull((pi) => pi.key == 'already-logged-in') !=
             null) {
           // we can get into a situation where a person is already "good"
           // but their registration link still works, so lets redirect to login

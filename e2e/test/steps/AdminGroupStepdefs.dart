@@ -64,7 +64,7 @@ class AdminGroupStepdefs {
           await userCommon.findExactGroup(groupName, shared.portfolio.id);
       if (group == null) {
         await userCommon.groupService
-            .createGroup(shared.portfolio.id!, Group(name: g["groupName"]));
+            .createGroup(shared.portfolio.id!, Group(name: g["groupName"], admin: false, id: '', version: -1));
       }
     }
   }

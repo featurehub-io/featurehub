@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/mr_client_aware.dart';
+import 'package:open_admin_app/fhos_logger.dart';
 import 'package:rxdart/rxdart.dart';
 
 class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
@@ -85,7 +86,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     if (currentEnvId != null) {
       FeatureGroupCreate fgc = FeatureGroupCreate(
           name: name,
-          description: description,
+          description: description ?? name,
           environmentId: currentEnvId!,
           features: []);
       var currentAppId = mrClient.currentAid;
@@ -124,17 +125,20 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
       {String? name,
       String? description,
       List<FeatureGroupUpdateFeature>? features,
-      List<FeatureGroupStrategy>? strategies}) async {
+      List<GroupRolloutStrategy>? strategies}) async {
+    print("update fg $features -> $strategies");
     FeatureGroupUpdate fgc = FeatureGroupUpdate(
+        id: featureGroupListGroup.id,
         name: name,
         description: description,
         version: featureGroupListGroup.version,
         features: features,
         strategies: strategies);
+    fhosLogger.fine('Updating feature group with ${fgc}');
     var currentAppId = mrClient.currentAid;
     if (currentAppId != null) {
       await featureGroupServiceApi.updateFeatureGroup(
-          currentAppId, featureGroupListGroup.id, fgc);
+          currentAppId, fgc);
       getCurrentFeatureGroups();
     }
   }

@@ -144,10 +144,10 @@ class ServerConfig @Inject constructor(
    */
   private fun listenAsQueueForFeatureRequestsForEnrichment() {
     log.info("enricher: listening for feature updates on queue")
-    val dispatcher = natsServer.connection.createDispatcher({ message ->
+    val dispatcher = natsServer.connection.createDispatcher { message ->
       val fv = CacheJsonMapper.readFromZipBytes(message.data, PublishFeatureValue::class.java)
       featureEnricher.processFeature(fv)
-    })
+    }
 
     val subject = ChannelNames.featureValueChannel(name)
     val subscribe = dispatcher.subscribe(subject, "enricher-queue")

@@ -190,14 +190,17 @@ components:
         content:
           type: string
         url:
+          nullable: true
           description: "The URL requested, only if Admin"
           type: string
         outboundHeaders:
           description: "The headers we set on the outbound call, only if Admin"
+          nullable: true
           additionalProperties:
             type: string
         incomingHeaders:
           description: "The headers that came back, only if Admin"
+          nullable: true
           additionalProperties:
             type: string
         result:

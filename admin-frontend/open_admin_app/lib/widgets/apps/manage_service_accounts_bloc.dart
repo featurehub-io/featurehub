@@ -78,7 +78,7 @@ class ManageServiceAccountsBloc implements Bloc {
     serviceAccount.name = updatedServiceAccountName;
     serviceAccount.description = updatedDescription;
     return _serviceAccountServiceApi
-        .updateServiceAccount(serviceAccount.id!, serviceAccount)
+        .updateServiceAccountOnPortfolio(portfolioId!, serviceAccount)
         .then((onSuccess) {
       addServiceAccountsToStream(portfolioId);
     }).catchError((e, s) {
@@ -90,7 +90,7 @@ class ManageServiceAccountsBloc implements Bloc {
       String serviceAccountName, String description) async {
     if (portfolioId != null) {
       final serviceAccount =
-          ServiceAccount(name: serviceAccountName, description: description);
+          CreateServiceAccount(name: serviceAccountName, description: description);
       await _serviceAccountServiceApi
           .createServiceAccountInPortfolio(portfolioId!, serviceAccount)
           .then((onSuccess) {

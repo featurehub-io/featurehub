@@ -57,7 +57,7 @@ class EditUserBloc implements Bloc {
 
   List<String> _currentPersonGroups() {
     return selectGroupBloc.listOfAddedPortfolioGroups
-        .map((pg) => pg.group.id!)
+        .map((pg) => pg.group.id)
         .toList();
   }
 
@@ -113,6 +113,6 @@ class EditUserBloc implements Bloc {
   }
 
   Portfolio isSuperAdminPortfolio() {
-    return Portfolio(name: 'Super-Admin', description: 'Super-Admin Portfolio');
+    return Portfolio(name: 'Super-Admin', description: 'Super-Admin Portfolio', version: -1, id: '');
   }
 }

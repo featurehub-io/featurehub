@@ -15,6 +15,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.SecurityContext;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -43,7 +44,7 @@ public class AuthManager implements AuthManagerService {
   }
 
   @Override
-  public boolean isPortfolioAdmin(Portfolio portfolio, Person person) {
+  public boolean isPortfolioAdmin(@NotNull Portfolio portfolio, @NotNull Person person) {
     if (portfolio == null || person == null) {
       return false;
     }
@@ -90,26 +91,22 @@ public class AuthManager implements AuthManagerService {
     return isPortfolioAdmin(portfolioId, personId.getId(), action);
   }
 
-  public boolean isPortfolioAdmin(UUID portfolioId, UUID personId, Consumer<Group> action) {
-    if (personId == null || portfolioId == null) {
-      return false;
-    }
+  public boolean isPortfolioAdmin(@NotNull UUID portfolioId, @NotNull UUID personId) {
+    return isPortfolioAdmin(portfolioId, personId, null);
+  }
 
-    Group adminGroup = null;
-
-    boolean member = false;
-
+  public boolean isPortfolioAdmin(@NotNull UUID portfolioId, @NotNull UUID personId, @Nullable Consumer<Group> action) {
     // this is a portfolio groupToCheck, so find the groupToCheck belonging to this portfolio
-    adminGroup = groupApi.findPortfolioAdminGroup(portfolioId, Opts.opts(FillOpts.Members));
+    Group adminGroup = groupApi.findPortfolioAdminGroup(portfolioId, Opts.opts(FillOpts.Members));
     if (adminGroup == null) { // no such portfolio
       return false;
     }
     UUID orgId = null;
 
-    member = isGroupMember(personId, adminGroup);
+    boolean member = isGroupMember(personId, adminGroup);
 
     if (!member) {
-      Portfolio p = portfolioApi.getPortfolio(portfolioId, Opts.empty(), new Person().id(new PersonId().id(personId)));
+      Portfolio p = portfolioApi.getPortfolio(portfolioId, Opts.empty(), personId);
 
       if (p != null) {
         orgId = p.getOrganizationId();
@@ -118,7 +115,9 @@ public class AuthManager implements AuthManagerService {
 
     if (!member && orgId != null) {
       adminGroup = groupApi.findOrganizationAdminGroup(orgId, Opts.opts(FillOpts.Members));
-      member = isGroupMember(personId, adminGroup);
+      if (adminGroup != null) {
+        member = isGroupMember(personId, adminGroup);
+      }
     }
 
     if (member) {
@@ -145,12 +144,22 @@ public class AuthManager implements AuthManagerService {
     return isOrgAdmin(person.getId().getId());
   }
 
-  public boolean isGroupMember(UUID userId, Group group) {
-    return group.getMembers().stream().map(Person::getId).anyMatch(uid -> uid.getId().equals(userId));
+  public boolean isGroupMember(@NotNull UUID userId, @NotNull Group group) {
+    return group.getMembers().stream().map(Person::getId).anyMatch(uid -> userId.equals(uid.getId()));
   }
 
 
   @Override
+  public boolean isPortfolioAdminOfEnvironment(@NotNull UUID envId, @NotNull UUID person) {
+    final UUID portfolioId = environmentApi.portfolioEnvironmentBelongsTo(envId);
+
+    if (portfolioId == null) {
+      return false;
+    }
+
+    return isPortfolioAdmin(portfolioId, person);
+  }
+
   public boolean isPortfolioAdminOfEnvironment(@NotNull UUID envId, @NotNull Person person) {
     final UUID portfolioId = environmentApi.portfolioEnvironmentBelongsTo(envId);
 
@@ -164,6 +173,11 @@ public class AuthManager implements AuthManagerService {
   @Override
   public Person from(SecurityContext context) {
     return ((AuthHolder) context.getUserPrincipal()).getPerson();
+  }
+
+  @Override
+  public UUID who(SecurityContext context) {
+    return from(context).getId().getId();
   }
 
   @Override

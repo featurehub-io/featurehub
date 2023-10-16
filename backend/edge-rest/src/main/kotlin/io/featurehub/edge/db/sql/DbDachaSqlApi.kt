@@ -2,18 +2,26 @@ package io.featurehub.edge.db.sql
 
 import io.ebean.annotation.Transactional
 import io.featurehub.dacha.api.DachaApiKeyService
-import io.featurehub.dacha.model.*
+import io.featurehub.dacha.model.CacheEnvironmentFeature
+import io.featurehub.dacha.model.CacheFeature
+import io.featurehub.dacha.model.CacheFeatureValue
+import io.featurehub.dacha.model.CacheRolloutStrategy
+import io.featurehub.dacha.model.CacheRolloutStrategyAttribute
+import io.featurehub.dacha.model.DachaKeyDetailsResponse
+import io.featurehub.dacha.model.DachaPermissionResponse
 import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.query.QDbApplicationFeature
 import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.model.query.QDbServiceAccountEnvironment
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
-import io.featurehub.mr.model.*
+import io.featurehub.mr.model.FeatureValueType
+import io.featurehub.mr.model.RoleType
+import io.featurehub.mr.model.RolloutStrategy
+import io.featurehub.mr.model.RolloutStrategyAttribute
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
-import java.util.stream.Collectors
 
 class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroupApi) : DachaApiKeyService {
   private val log: Logger = LoggerFactory.getLogger(DbDachaSqlApi::class.java)
@@ -48,17 +56,23 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
       // we have to filter here otherwise the SQL query can "not return"
       val featureValues = saEnv.environment.environmentFeatures.filter { it.feature.whenArchived == null }.map { it.feature.key to it }.toMap()
       val features = saEnv.environment.parentApplication.features.filter { it.whenArchived == null }
-      val response = DachaKeyDetailsResponse()
-        .serviceKeyId(saEnv.serviceAccount.id)
-        .applicationId(fakeApplicationId)
-        .portfolioId(fakePortfolioId)
-        .organizationId(fakeOrganisationId)
-        .features(features.filter { featureValues[it.key]?.retired != true }.map { toFeatureValueCacheItem(it, featureValues[it.key], fgStrategies[it.id]) }.filterNotNull())
+      try {
+        val response = DachaKeyDetailsResponse()
+          .serviceKeyId(saEnv.serviceAccount.id)
+          .applicationId(fakeApplicationId)
+          .portfolioId(fakePortfolioId)
+          .organizationId(fakeOrganisationId)
+          .features(features.filter { featureValues[it.key]?.retired != true }
+            .map { toFeatureValueCacheItem(it, featureValues[it.key], fgStrategies[it.id]) }.filterNotNull())
 
-      response.etag = calculateEtag(response)
-      log.trace("etag is {}", response.etag)
+        response.etag = calculateEtag(response)
+        log.trace("etag is {}", response.etag)
 
-      response
+        response
+      } catch (e: Exception) {
+        log.error("failed", e)
+        null
+      }
     } else {
       null
     }
@@ -132,16 +146,15 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
       .percentageAttributes(rs.percentageAttributes)
       .value(rs.value)
       .attributes(if (rs.attributes == null) ArrayList() else rs.attributes!!
-        .stream().map { rsa: RolloutStrategyAttribute -> fromRolloutStrategyAttribute(rsa) }
-        .collect(Collectors.toList()))
+        .map {  fromRolloutStrategyAttribute(it) })
   }
 
   private fun fromRolloutStrategyAttribute(rsa: RolloutStrategyAttribute): CacheRolloutStrategyAttribute {
     return CacheRolloutStrategyAttribute()
-      .conditional(rsa.conditional!!)
+      .conditional(rsa.conditional)
       .values(rsa.values)
-      .fieldName(rsa.fieldName!!)
-      .type(rsa.type!!)
+      .fieldName(rsa.fieldName)
+      .type(rsa.type)
   }
 
   private fun calculateEtag(details: DachaKeyDetailsResponse): String {

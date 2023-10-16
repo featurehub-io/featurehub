@@ -18,14 +18,15 @@ class SetupWrapperWidget extends StatelessWidget {
       body: Center(
           child: MediaQuery.of(context).size.width > 500
               ? SizedBox(
-                  width: 500,
-                  child: BlocProvider<SetupBloc>(
+            width: 500,
+            child: BlocProvider<SetupBloc>(
                       creator: (context, bag) => SetupBloc(client),
-                      child: const SetupPageWidget()),
-                )
+                child: const SetupPageWidget()),
+          )
               : BlocProvider<SetupBloc>(
                   creator: (context, bag) => SetupBloc(client),
-                  child: const SetupPageWidget())),
+              child: const SetupPageWidget())),
     );
   }
 }
+

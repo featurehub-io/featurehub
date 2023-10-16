@@ -122,17 +122,16 @@ class FeatureGroupResource @Inject constructor(
 
   override fun updateFeatureGroup(
     appId: UUID,
-    fgId: UUID,
     featureGroupUpdate: FeatureGroupUpdate,
-    securityContext: SecurityContext
+    securityContext: SecurityContext?
   ): FeatureGroup {
     val current = authManager.from(securityContext)
-    val group = featureGroupApi.getGroup(appId, fgId) ?: throw NotFoundException()
+    val group = featureGroupApi.getGroup(appId, featureGroupUpdate.id) ?: throw NotFoundException()
 
     allowedCreatePermissionsOnEnvironment(current, group.environmentId)
 
     try {
-      return featureGroupApi.updateGroup(appId, current, fgId, featureGroupUpdate) ?: throw NotFoundException()
+      return featureGroupApi.updateGroup(appId, current, featureGroupUpdate) ?: throw NotFoundException()
     } catch (oex: FeatureGroupApi.OptimisticLockingException) {
       throw WebApplicationException("Attemping to update old version", 412)
     } catch(orEx: FeatureGroupApi.DuplicateOrder) {
@@ -143,4 +142,5 @@ class FeatureGroupResource @Inject constructor(
       throw WebApplicationException("Feature Group is archived", 415)
     }
   }
+
 }

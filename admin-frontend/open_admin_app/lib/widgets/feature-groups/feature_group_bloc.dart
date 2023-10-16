@@ -2,26 +2,30 @@ import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/fhos_logger.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/edit_strategy_interface.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 import 'package:rxdart/rxdart.dart';
 
-class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
+class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
   final FeatureGroupsBloc featureGroupsBloc;
   final FeatureGroupListGroup featureGroupListGroup;
-  late RolloutStrategyServiceApi _rolloutStrategyServiceApi;
+  late ApplicationRolloutStrategyServiceApi _appStrategyServiceApi;
 
   FeatureGroupBloc(this.featureGroupsBloc, this.featureGroupListGroup) {
-    _rolloutStrategyServiceApi =
-        RolloutStrategyServiceApi(featureGroupsBloc.mrClient.apiClient);
+    _appStrategyServiceApi = ApplicationRolloutStrategyServiceApi(
+        featureGroupsBloc.mrClient.apiClient);
     _getFeatureGroup();
     _getAllFeaturesPerEnvironment();
   }
 
   final _featureGroupStream = BehaviorSubject<FeatureGroup>();
+
   BehaviorSubject<FeatureGroup> get featureGroupStream => _featureGroupStream;
 
   final _availableFeaturesStream = BehaviorSubject<List<FeatureGroupFeature>>();
+
   BehaviorSubject<List<FeatureGroupFeature>> get availableFeaturesStream =>
       _availableFeaturesStream;
 
@@ -32,10 +36,11 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
       BehaviorSubject<List<FeatureGroupFeature>>.seeded([]);
 
   final _trackingUpdatesGroupStrategiesStream =
-      BehaviorSubject<List<FeatureGroupStrategy>>.seeded([]);
+      BehaviorSubject<List<GroupRolloutStrategy>>.seeded([]);
 
-  final _strategySource = BehaviorSubject<FeatureGroupStrategy?>();
-  BehaviorSubject<FeatureGroupStrategy?> get strategyStream => _strategySource;
+  final _strategySource = BehaviorSubject<GroupRolloutStrategy?>();
+
+  BehaviorSubject<GroupRolloutStrategy?> get strategyStream => _strategySource;
 
   final _isGroupUpdatedSource = BehaviorSubject<bool>.seeded(false);
   BehaviorSubject<bool> get isGroupUpdatedStream => _isGroupUpdatedSource;
@@ -59,11 +64,11 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
         .getFeatureGroup(
             featureGroupsBloc.mrClient.currentAid!, featureGroupListGroup.id);
     _featureGroupStream.add(fg);
-    if (fg.strategies.isNotEmpty) {
-      _strategySource.add(fg.strategies[0]);
+    if (fg.strategies?.isNotEmpty == true) {
+      _strategySource.add(fg.strategies![0]);
     }
     _trackingUpdatesGroupFeaturesStream.add(fg.features);
-    _trackingUpdatesGroupStrategiesStream.add(fg.strategies);
+    _trackingUpdatesGroupStrategiesStream.add(fg.strategies ?? []);
   }
 
   Future<void> _getAllFeaturesPerEnvironment() async {
@@ -76,18 +81,23 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   }
 
   @override
-  void addStrategy(FeatureGroupStrategy strategy) {
-    List<FeatureGroupStrategy> strategyList =
+  void addStrategy(EditingRolloutStrategy strategy) {
+    fhosLogger.fine("adding new strategy $strategy to stream");
+    final fgStrategy = strategy.toGroupRolloutStrategy()!;
+
+    _strategySource.add(fgStrategy);
+    List<GroupRolloutStrategy> strategyList =
         _trackingUpdatesGroupStrategiesStream.value;
-    strategyList.add(strategy);
+    strategyList.clear(); // we can only have 1
+    strategyList.add(fgStrategy);
     _trackingUpdatesGroupStrategiesStream.add(strategyList);
     _isGroupUpdatedSource.add(true);
   }
 
   @override
   void updateStrategy() {
-    FeatureGroupStrategy strategy = _strategySource.value!;
-    List<FeatureGroupStrategy> strategyList =
+    GroupRolloutStrategy strategy = _strategySource.value!;
+    List<GroupRolloutStrategy> strategyList =
         []; // create new list is ok here, as we only have one strategy
     strategyList.add(strategy);
     _trackingUpdatesGroupStrategiesStream.add(strategyList);
@@ -95,13 +105,14 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   }
 
   void addFeatureToGroup() {
-    var latestFeatureGroupFeatures = _trackingUpdatesGroupFeaturesStream.value;
     if (_selectedFeatureToAdd != null) {
+      final latestFeatureGroupFeatures = _trackingUpdatesGroupFeaturesStream.value;
       List<FeatureGroupFeature> features = _availableFeaturesStream.value;
       FeatureGroupFeature currentFeatureGF = features
           .firstWhere((feature) => feature.id == _selectedFeatureToAdd!);
       if (!latestFeatureGroupFeatures
           .any((feature) => feature.id == currentFeatureGF.id)) {
+        fhosLogger.fine("adding feature ${currentFeatureGF} to tracking");
         latestFeatureGroupFeatures.add(currentFeatureGF);
         _trackingUpdatesGroupFeaturesStream.add(latestFeatureGroupFeatures);
       }
@@ -117,19 +128,20 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   }
 
   Future<void> saveFeatureGroupUpdates() async {
-    List<FeatureGroupUpdateFeature>? features = [];
-    List<FeatureGroupStrategy> strategies = [];
-    for (FeatureGroupFeature feature
-        in _trackingUpdatesGroupFeaturesStream.value) {
-      FeatureGroupUpdateFeature featureUpdate = convertToFeatureUpdate(feature);
-      features.add(featureUpdate);
-    }
-    for (FeatureGroupStrategy strategy
-        in _trackingUpdatesGroupStrategiesStream.value) {
-      strategies.add(strategy);
-    }
+    final features = _trackingUpdatesGroupFeaturesStream.hasValue
+        ? _trackingUpdatesGroupFeaturesStream.value
+        .map((e) => convertToFeatureUpdate(e))
+        .toList()
+        : null;
+
+    final strategies = _trackingUpdatesGroupStrategiesStream.hasValue
+        ? _trackingUpdatesGroupStrategiesStream.value
+        : null;
+
+    print("features ${features} - strategies ${strategies}");
     await featureGroupsBloc.updateFeatureGroup(featureGroupListGroup,
-        features: features, strategies: strategies);
+        features: features,
+        strategies: strategies);
   }
 
   FeatureGroupUpdateFeature convertToFeatureUpdate(
@@ -161,6 +173,7 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
   @override
   Future<RolloutStrategyValidationResponse> validationCheck(strategy) async {
     var rs = RolloutStrategy(
+        id: strategy.id,
         name: strategy.name,
         percentage: strategy.percentage,
         attributes: strategy.attributes);
@@ -168,19 +181,13 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<FeatureGroupStrategy> {
     List<RolloutStrategy> strategies = [];
     strategies.add(rs);
 
-    return _rolloutStrategyServiceApi.validate(
+    return _appStrategyServiceApi.validate(
         featureGroupsBloc.mrClient.currentAid!,
         RolloutStrategyValidationRequest(
           customStrategies: strategies,
           sharedStrategies: <RolloutStrategyInstance>[],
         ));
   }
-
-  @override
-  uniqueStrategyId() {}
-
-  @override
-  void ensureStrategiesAreUnique() {}
 
   @override
   get feature {}

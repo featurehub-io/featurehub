@@ -5,11 +5,11 @@ import jakarta.ws.rs.core.Response
 // this is a call back mechanism that lets the core system
 interface SSOCompletionListener {
   fun successfulCompletion(
-    email: String?,
+    email: String,
     username: String?,
     userMustBeCreatedFirst: Boolean,
-    failureUrl: String?,
-    successUrl: String?,
+    failureUrl: String,
+    successUrl: String,
     provider: String
   ): Response
 

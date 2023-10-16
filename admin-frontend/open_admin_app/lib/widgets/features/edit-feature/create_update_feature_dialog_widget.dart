@@ -45,7 +45,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
       _featureAlias.text = widget.feature!.alias ?? '';
       _featureLink.text = widget.feature!.link ?? '';
       _featureDesc.text = widget.feature!.description ?? '';
-      _dropDownFeatureTypeValue = widget.feature!.valueType!;
+      _dropDownFeatureTypeValue = widget.feature!.valueType;
       isUpdate = true;
     }
   }

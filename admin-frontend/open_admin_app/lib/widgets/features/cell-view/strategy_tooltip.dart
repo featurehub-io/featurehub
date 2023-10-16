@@ -18,32 +18,33 @@ String generateTooltipMessage(RolloutStrategy? rolloutStrategy) {
     percentageMessage = 'Percentage: ${rolloutStrategy.percentageText}%\n';
   }
 
-  if (rolloutStrategy.attributes.any(
+  final attrs = rolloutStrategy.attributes ?? [];
+  if (attrs.any(
       (rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.userkey.name)) {
     userKeyMessage = 'User key\n';
   }
 
-  if (rolloutStrategy.attributes.any(
+  if (attrs.any(
       (rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.country.name)) {
     countryNameMessage = 'Country\n';
   }
 
-  if (rolloutStrategy.attributes.any((rsa) =>
+  if (attrs.any((rsa) =>
       rsa.fieldName == StrategyAttributeWellKnownNames.platform.name)) {
     platformNameMessage = 'Platform\n';
   }
 
-  if (rolloutStrategy.attributes.any(
+  if (attrs.any(
       (rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.device.name)) {
     deviceNameMessage = 'Device\n';
   }
 
-  if (rolloutStrategy.attributes.any(
+  if (attrs.any(
       (rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.version.name)) {
     versionNameMessage = 'Version\n';
   }
 
-  if (rolloutStrategy.attributes.any((rsa) => StrategyAttributeWellKnownNames
+  if (attrs.any((rsa) => StrategyAttributeWellKnownNames
       .values
       .every((value) => rsa.fieldName != value.name))) {
     customNameMessage = 'Custom\n';

@@ -8,12 +8,14 @@ import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 import 'package:open_admin_app/widgets/feature-groups/boolean_value_container_widget.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature_group_strategy_editing_widget.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature_group_strategy_provider.dart';
 import 'package:open_admin_app/widgets/feature-groups/features_drop_down.dart';
 import 'package:open_admin_app/widgets/feature-groups/json_value_container_widget.dart';
 import 'package:open_admin_app/widgets/feature-groups/number_value_container_widget.dart';
 import 'package:open_admin_app/widgets/feature-groups/string_value_container_widget.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/individual_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
+import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/strategyeditor/strategy_editing_widget.dart';
 
 class FeatureGroupSettings extends StatefulWidget {
   final FeatureGroupListGroup featureGroup;
@@ -204,7 +206,7 @@ class _StrategySettings extends StatelessWidget {
   Widget build(BuildContext context) {
     bool editable = bloc.featureGroupsBloc.envRoleTypeStream.value
         .contains(RoleType.CHANGE_VALUE);
-    return StreamBuilder<FeatureGroupStrategy?>(
+    return StreamBuilder<GroupRolloutStrategy?>(
         stream: bloc.strategyStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
@@ -221,13 +223,13 @@ class _StrategySettings extends StatelessWidget {
                               title: Text(editable
                                   ? 'Edit split targeting rules'
                                   : 'View split targeting rules'),
-                              content: BlocProvider(
-                                creator: (c, b) => IndividualStrategyBloc(
-                                    RolloutStrategy(
-                                        name: snapshot.data!.name,
-                                        attributes: snapshot.data!.attributes)),
-                                child: FeatureGroupStrategyEditingWidget(
-                                    bloc: bloc, editable: true),
+                              content: BlocProvider.builder(
+                                creator: (c, b) {
+                                  var rs = snapshot.data!;
+                                  return StrategyEditorBloc(rs.toEditing(), GroupRolloutStrategyProvider(bloc));
+                                },
+                                builder: (c, b) => StrategyEditingWidget(
+                                    bloc: b, editable: true),
                               ));
                         })),
                 const SizedBox(height: 8.0),
@@ -255,14 +257,11 @@ class _StrategySettings extends StatelessWidget {
                               title: Text(editable
                                   ? 'Edit split targeting rules'
                                   : 'View split targeting rules'),
-                              content: BlocProvider(
+                              content: BlocProvider.builder(
                                 creator: (c, b) =>
-                                    IndividualStrategyBloc(RolloutStrategy(
-                                  name: '',
-                                  id: 'created',
-                                )),
-                                child: FeatureGroupStrategyEditingWidget(
-                                    bloc: bloc, editable: true),
+                                    StrategyEditorBloc(EditingRolloutStrategy.newStrategy(), GroupRolloutStrategyProvider(bloc)),
+                                builder: (c, b) => StrategyEditingWidget(
+                                    bloc: b, editable: true),
                               ));
                         })
                     : null);

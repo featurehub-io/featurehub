@@ -28,7 +28,7 @@ class WebhooksPanelWidget extends StatelessWidget {
             } else if (snapshot.hasData) {
               return BlocProvider<WebhookEnvironmentBloc>(
                   creator: (ctx, bag) =>
-                      WebhookEnvironmentBloc(mrBloc, snapshot.data!),
+                      WebhookEnvironmentBloc(mrBloc, snapshot.data!, appBloc.applicationId!),
                   child: const WebhookEnvironment());
             }
           }

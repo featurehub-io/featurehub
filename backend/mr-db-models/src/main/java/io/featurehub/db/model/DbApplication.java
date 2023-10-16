@@ -52,7 +52,7 @@ public class DbApplication extends DbVersionedBase {
   @DbForeignKey(onDelete = ConstraintMode.CASCADE)
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "fk_app_id")
-  private List<DbRolloutStrategy> sharedRolloutStrategies;
+  private List<DbApplicationRolloutStrategy> sharedRolloutStrategies;
 
   public DbApplication() {}
 
@@ -131,11 +131,11 @@ public class DbApplication extends DbVersionedBase {
     this.whenArchived = whenArchived;
   }
 
-  public List<DbRolloutStrategy> getSharedRolloutStrategies() {
+  public List<DbApplicationRolloutStrategy> getSharedRolloutStrategies() {
     return sharedRolloutStrategies;
   }
 
-  public void setSharedRolloutStrategies(List<DbRolloutStrategy> sharedRolloutStrategies) {
+  public void setSharedRolloutStrategies(List<DbApplicationRolloutStrategy> sharedRolloutStrategies) {
     this.sharedRolloutStrategies = sharedRolloutStrategies;
   }
 
@@ -148,7 +148,7 @@ public class DbApplication extends DbVersionedBase {
     private Set<DbEnvironment> environments;
     private Set<DbApplicationFeature> features;
     private Set<DbAcl> groupRolesAcl;
-    private List<DbRolloutStrategy> sharedRolloutStrategies;
+    private List<DbApplicationRolloutStrategy> sharedRolloutStrategies;
 
     public Builder() {
     }
@@ -188,7 +188,7 @@ public class DbApplication extends DbVersionedBase {
       return this;
     }
 
-    public Builder sharedRolloutStrategies(List<DbRolloutStrategy> val) {
+    public Builder sharedRolloutStrategies(List<DbApplicationRolloutStrategy> val) {
       sharedRolloutStrategies = val;
       return this;
     }

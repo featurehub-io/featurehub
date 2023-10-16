@@ -5,8 +5,9 @@ import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/mr_client_aware.dart';
-import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
+import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 import 'package:rxdart/rxdart.dart' hide Notification;
+import 'package:collection/collection.dart';
 
 import 'feature_dashboard_constants.dart';
 
@@ -21,11 +22,11 @@ class FeatureStatusFeatures {
 
   FeatureStatusFeatures(this.applicationFeatureValues) {
     sortedByNameEnvironmentIds = applicationFeatureValues.environments
-        .map((e) => e.environmentId!)
+        .map((e) => e.environmentId)
         .toList();
 
     for (var e in applicationFeatureValues.environments) {
-      applicationEnvironments[e.environmentId!] = e;
+      applicationEnvironments[e.environmentId] = e;
     }
   }
 }
@@ -41,7 +42,7 @@ class PerApplicationFeaturesBloc
   final ManagementRepositoryClientBloc _mrClient;
   late ApplicationServiceApi _appServiceApi;
   late UserStateServiceApi _userStateServiceApi;
-  late RolloutStrategyServiceApi _rolloutStrategyServiceApi;
+  late ApplicationRolloutStrategyServiceApi _rolloutStrategyServiceApi;
 
   late FeatureServiceApi _featureServiceApi;
 
@@ -84,7 +85,7 @@ class PerApplicationFeaturesBloc
     _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
     _featureServiceApi = FeatureServiceApi(_mrClient.apiClient);
     _userStateServiceApi = UserStateServiceApi(_mrClient.apiClient);
-    _rolloutStrategyServiceApi = RolloutStrategyServiceApi(_mrClient.apiClient);
+    _rolloutStrategyServiceApi = ApplicationRolloutStrategyServiceApi(_mrClient.apiClient);
 
     _currentPid = _mrClient.streamValley.currentPortfolioIdStream
         .listen(addApplicationsToStream);
@@ -129,7 +130,7 @@ class PerApplicationFeaturesBloc
     if (_appFeatureValues.hasValue && _appFeatureValues.value != null) {
       envIds = _appFeatureValues.value!.environments
           .where((env) => environmentNames.contains(env.environmentName))
-          .map((e) => e.environmentId!)
+          .map((e) => e.environmentId)
           .toList();
     }
 
@@ -170,7 +171,7 @@ class PerApplicationFeaturesBloc
       if (pid != null) {
         List<Application>? appList;
         try {
-          appList = await _appServiceApi.findApplications(portfolioId!,
+          appList = await _appServiceApi.findApplications(pid,
               order: SortOrder.ASC);
           if (!_appSearchResultSource.isClosed) {
             _appSearchResultSource.add(appList);
@@ -201,17 +202,22 @@ class PerApplicationFeaturesBloc
       String featureAlias,
       String featureLink,
       String featureDescription) async {
-    final feature = Feature(
+    final feature = CreateFeature(
         name: name,
         valueType: featureValueType,
         key: key,
         alias: featureAlias,
         link: featureLink,
         description: featureDescription);
-    await _featureServiceApi.createFeaturesForApplication(
+    List<Feature> allFeatures = await _featureServiceApi.createFeaturesForApplication(
         applicationId!, feature);
-    mrClient.streamValley.triggerRocket();
-    _publishNewFeatureSource.add(feature);
+
+    final feat = allFeatures.firstWhereOrNull((e) => e.key == key);
+
+    if (feat != null) {
+      mrClient.streamValley.triggerRocket();
+      _publishNewFeatureSource.add(feat);
+    }
   }
 
   Future<void> updateFeature(
@@ -222,7 +228,7 @@ class PerApplicationFeaturesBloc
       String newFeatureLink,
       String newFeatureDescription) async {
     final currentFeature =
-        await _featureServiceApi.getFeatureByKey(applicationId!, feature.key!);
+        await _featureServiceApi.getFeatureByKey(applicationId!, feature.key);
     final newFeature = currentFeature
       ..name = newName
       ..alias = newFeatureAlias
@@ -230,23 +236,22 @@ class PerApplicationFeaturesBloc
       ..description = newFeatureDescription
       ..key = newKey;
     await _featureServiceApi.updateFeatureForApplication(
-        applicationId!, feature.key!, newFeature);
-    // addAppFeatureValuesToStream();
+        applicationId!, feature.key, newFeature);
   }
 
   Future<void> getFeatureIncludingMetadata(Feature feature) async {
     _featureMetadataStream.add(null);
     final currentFeature = await _featureServiceApi
-        .getFeatureByKey(applicationId!, feature.key!, includeMetaData: true);
+        .getFeatureByKey(applicationId!, feature.key, includeMetaData: true);
     _featureMetadataStream.add(currentFeature);
   }
 
   Future<void> updateFeatureMetadata(Feature feature, String metaData) async {
     final currentFeature = await _featureServiceApi
-        .getFeatureByKey(applicationId!, feature.key!, includeMetaData: true);
+        .getFeatureByKey(applicationId!, feature.key, includeMetaData: true);
     final newFeature = currentFeature..metaData = metaData;
     await _featureServiceApi.updateFeatureForApplication(
-        applicationId!, feature.key!, newFeature);
+        applicationId!, feature.key, newFeature);
     await getFeatureIncludingMetadata(newFeature);
   }
 
@@ -319,12 +324,12 @@ class PerApplicationFeaturesBloc
                 .toList();
 
     selectedEnvironmentNamesByUser =
-        candidateEnvs.map((e) => e.environmentName!).toList();
+        candidateEnvs.map((e) => e.environmentName).toList();
   }
 
-  PerFeatureStateTrackingBloc perFeatureStateTrackingBloc(
-      Feature feature, FeatureValue featureValue) {
-    return PerFeatureStateTrackingBloc(
-        applicationId!, feature, featureValue, this, _appFeatureValues.value!);
+  EditingFeatureValueBloc perFeatureStateTrackingBloc(
+      Feature feature, FeatureValue featureValue, EnvironmentFeatureValues environmentFeatureValue) {
+    return EditingFeatureValueBloc(
+        applicationId!, feature, featureValue, environmentFeatureValue, this, _appFeatureValues.value!);
   }
 }

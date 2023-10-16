@@ -108,14 +108,16 @@ components:
     CacheEnvironmentFeature:
       x-package: io.featurehub.dacha.model
       type: object
-      description: "A feature and its possible value (which could be null)"
+      description: "A feature and its possible value"
       required:
         - feature
       properties:
         feature:
           $ref: "#/components/schemas/CacheFeature"
         value:
-          $ref: "#/components/schemas/CacheFeatureValue"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/CacheFeatureValue"
     CacheFeature:
       x-package: io.featurehub.dacha.model
       type: object
@@ -236,6 +238,9 @@ components:
             - id
             - attributes
           properties:
+            id:
+              description: "strategy id"
+              type: string
             attributes:
               type: array
               items:
@@ -243,7 +248,7 @@ components:
     CacheRolloutStrategyAttribute:
       x-package: io.featurehub.dacha.model
       allOf:
-        - $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
+        - $ref: "#/components/schemas/RolloutStrategyAttribute"
         - type: object
           required:
             - conditional

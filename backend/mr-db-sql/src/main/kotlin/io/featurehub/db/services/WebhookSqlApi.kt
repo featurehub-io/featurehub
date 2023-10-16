@@ -49,7 +49,7 @@ class WebhookSqlApi : WebhookApi{
           ) {
           // need to disable and we need the existing environment data
           QDbEnvironment().select(QDbEnvironment.Alias.environmentFeatures).id.eq(webhookResult.environmentId).findOne()?.let { updateEnv ->
-            updateEnv.userEnvironmentInfo["webhook.features.enabled"] = "false";
+            updateEnv.userEnvironmentInfo["webhook.features.enabled"] = "false"
             updateEnv.save()
           }
         }
@@ -60,7 +60,7 @@ class WebhookSqlApi : WebhookApi{
   override fun getWebhookDetails(envId: UUID, id: UUID, opts: Opts): WebhookDetail? {
     QDbWebhookResult().id.eq(id).findOne()?.let { webhook ->
       if (webhook.environment.id != envId) {
-        return null;
+        return null
       }
 
       val detail = WebhookDetail()
@@ -88,12 +88,12 @@ class WebhookSqlApi : WebhookApi{
 
     if (opts.contains(FillOpts.Details)) {
       detail
-        .incomingHeaders(originalHook.incomingHeaders)
+        .incomingHeaders(originalHook.incomingHeaders?.toMap() ?: mutableMapOf())
         .outboundHeaders(originalHook.outboundHeaders)
         .url(originalHook.url)
     }
 
-    detail.content(originalHook.content).sourceSystem(originalHook.sourceSystem).result(originalHook.result)
+    detail.content(originalHook.content).sourceSystem(originalHook.sourceSystem).result(originalHook.result ?: "").whenSent(webhook.whenSent)
   }
 
   override fun paginateWebhooks(envId: UUID, max: Int, startPos: Int, filter: String?): WebhookSummary {
