@@ -82,6 +82,7 @@ Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (loc
 
 When(/^I (unlock|lock) the feature$/, async function (lockUnlock) {
   const fValue = await (this as SdkWorld).getFeatureValue();
+  console.log('feature is', fValue);
   fValue.locked = (lockUnlock === 'lock');
   await this.updateFeature(fValue);
 });

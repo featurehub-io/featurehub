@@ -9,7 +9,10 @@ import io.featurehub.db.api.PortfolioApi
 import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.mr.api.PortfolioServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
+import io.featurehub.mr.model.CreatePortfolio
+import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.resources.PortfolioResource
 import io.featurehub.mr.utils.PortfolioUtils
@@ -29,6 +32,7 @@ class PortfolioResourceSpec extends Specification {
   PortfolioResource pr
   ServiceAccountApi serviceAccountApi
   EnvironmentApi environmentApi
+  SecurityContext mockCtx
 
   def setup() {
     authManager = Mock(AuthManagerService)
@@ -41,6 +45,7 @@ class PortfolioResourceSpec extends Specification {
 
     System.setProperty('portfolio.admin.group.suffix', 'Administrators')
 
+    mockCtx = Mock()
     pr = new PortfolioResource(groupApi, authManager, portfolioApi, organizationApi, new PortfolioUtils())
   }
 
@@ -52,7 +57,7 @@ class PortfolioResourceSpec extends Specification {
       authManager.from(sc) >> person
       authManager.isOrgAdmin(person) >> false
     when: "i try and create a portfolio"
-      pr.createPortfolio(new Portfolio().name("art"), new PortfolioServiceDelegate.CreatePortfolioHolder(), sc)
+      pr.createPortfolio(new CreatePortfolio().name("art"), new PortfolioServiceDelegate.CreatePortfolioHolder(), sc)
     then:
       thrown(ForbiddenException)
   }
@@ -60,25 +65,27 @@ class PortfolioResourceSpec extends Specification {
   def "if you are an org admin, you can create a portfolio"() {
     given: "i am an org admin"
       SecurityContext sc = Mock(SecurityContext)
-      Person person = new Person()
+      def personId  = UUID.randomUUID()
+      Person person = new Person().id(new  PersonId().id(personId))
       authManager.from(sc) >> person
+      authManager.who(sc) >>  personId
       authManager.isOrgAdmin(person) >> true
     and: "i have a portfolio"
-      Portfolio p = new Portfolio().name("art")
+    CreatePortfolio p = new CreatePortfolio().name("art")
     when: "i try and create a portfolio"
       pr.createPortfolio(p, new PortfolioServiceDelegate.CreatePortfolioHolder(), sc)
     then:
-      1 * portfolioApi.createPortfolio(p, (Opts)_, person) >> new Portfolio()
-//      1 * groupApi.addPersonToGroup(*_) > new Group()
+      1 * portfolioApi.createPortfolio(p, (Opts)_, personId) >> new Portfolio().id(personId)
+      1 * groupApi.createGroup(_,  _, _) >> new Group()
   }
 
   def "an org admin cannot create a duplicate portfolio"() {
     given: "i am an org admin"
       authManager.isOrgAdmin(_) >> true
     and: "i create a new duplicate portfolio"
-      Portfolio p = new Portfolio()
+    CreatePortfolio p = new CreatePortfolio()
     when: "i try and create a portfolio"
-      pr.createPortfolio(p, new PortfolioServiceDelegate.CreatePortfolioHolder(), null)
+      pr.createPortfolio(p, new PortfolioServiceDelegate.CreatePortfolioHolder(), mockCtx)
     then:
       1 * portfolioApi.createPortfolio(p, (Opts)_, _) >> { throw new PortfolioApi.DuplicatePortfolioException() }
       WebApplicationException ex = thrown()
@@ -88,9 +95,10 @@ class PortfolioResourceSpec extends Specification {
   def "only an org admin can delete a portfolio"() {
     given: "i am not an org admin"
       SecurityContext sc = Mock(SecurityContext)
-      Person person = new Person()
-      authManager.from(sc) >> person
-      authManager.isOrgAdmin(person) >> false
+//      Person person = new Person()
+      def  personId =  UUID.randomUUID()
+      authManager.who(sc) >> personId
+      authManager.isOrgAdmin(personId) >> false
     when: "i try and delete a portfolio"
       pr.deletePortfolio(UUID.randomUUID(), new PortfolioServiceDelegate.DeletePortfolioHolder(), sc)
     then:
@@ -100,9 +108,9 @@ class PortfolioResourceSpec extends Specification {
   def "you can only delete a portfolio that exists"() {
     given: "i am an org admin"
       SecurityContext sc = Mock(SecurityContext)
-      Person person = new Person()
-      authManager.from(sc) >> person
-      authManager.isOrgAdmin(person) >> true
+      def  personId =  UUID.randomUUID()
+      authManager.who(sc) >> personId
+      authManager.isOrgAdmin(personId) >> true
     when: "i try and delete a portfolio"
       def count = pr.deletePortfolio(UUID.randomUUID(), new PortfolioServiceDelegate.DeletePortfolioHolder(), sc)
     then:
@@ -112,12 +120,12 @@ class PortfolioResourceSpec extends Specification {
   def "an org admin can delete a portfolio"() {
     given: "i am an org admin"
       SecurityContext sc = Mock(SecurityContext)
-      Person person = new Person()
-      authManager.from(sc) >> person
-      authManager.isOrgAdmin(person) >> true
+    def  personId =  UUID.randomUUID()
+      authManager.who(sc) >> personId
+      authManager.isOrgAdmin(personId) >> true
     and: "i create a portfolio"
       UUID pId = UUID.randomUUID()
-      portfolioApi.getPortfolio(pId, (Opts)_, _) >> new Portfolio()
+      portfolioApi.getPortfolio(pId, (Opts)_, _) >> new Portfolio().id(pId)
     when: "i try and delete a portfolio"
       def count = pr.deletePortfolio(pId, new PortfolioServiceDelegate.DeletePortfolioHolder(), sc)
     then:
@@ -125,19 +133,29 @@ class PortfolioResourceSpec extends Specification {
   }
 
   def "getting a non-existent portfolio throws 404"() {
+    given: "i am an org admin"
+      SecurityContext sc = Mock(SecurityContext)
+      def  personId =  UUID.randomUUID()
+      authManager.who(sc) >> personId
     when:
-      pr.getPortfolio(UUID.randomUUID(), new PortfolioServiceDelegate.GetPortfolioHolder(includeEnvironments: true, includeApplications: true, includeGroups: true), null)
+      pr.getPortfolio(UUID.randomUUID(), new PortfolioServiceDelegate.GetPortfolioHolder(includeEnvironments: true,
+        includeApplications: true, includeGroups: true), sc)
     then:
       thrown(NotFoundException)
   }
 
   def "getting portfolio returns portfolio"() {
-    given: "i have a portfolio"
+    given: "i am an org admin"
+      SecurityContext sc = Mock(SecurityContext)
+      def  personId =  UUID.randomUUID()
+      authManager.who(sc) >> personId
+    and: "i have a portfolio"
       UUID portId = UUID.randomUUID()
       Portfolio p = new Portfolio().id(portId)
       portfolioApi.getPortfolio(portId, (Opts)_, _) >> p
     when:
-      Portfolio p1 = pr.getPortfolio(portId, new PortfolioServiceDelegate.GetPortfolioHolder(includeEnvironments: true, includeApplications: true, includeGroups: true), null)
+      Portfolio p1 = pr.getPortfolio(portId, new PortfolioServiceDelegate.GetPortfolioHolder(includeEnvironments: true,
+        includeApplications: true, includeGroups: true), sc)
     then:
       p1 != null
       p1.id == portId
@@ -151,13 +169,14 @@ class PortfolioResourceSpec extends Specification {
     and: "i am a person with admin rights"
       SecurityContext sc = Mock(SecurityContext)
 
-      Person person = new Person()
+      Person person = new Person().id(new PersonId().id(UUID.randomUUID()))
       authManager.from(sc) >> person
       authManager.isPortfolioAdmin(pId, person, null) >> true
     when: "i rename the portfolio"
       pr.updatePortfolio(pId, p, new PortfolioServiceDelegate.UpdatePortfolioHolder(), sc)
     then:
       1 * portfolioApi.updatePortfolio(p, (Opts)_) >> p
+      1 * portfolioApi.getPortfolio(pId, _, _ ) >> p
   }
 
   def "renaming a portfolio to the name of an existing portfolio results in a conflict error"() {

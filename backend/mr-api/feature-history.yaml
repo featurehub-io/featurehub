@@ -103,6 +103,7 @@ components:
           type: integer
           format: int64
         versionFrom:
+          nullable: true
           type: integer
           format: int64
         when:
@@ -112,6 +113,7 @@ components:
         who:
           $ref: "#/components/schemas/AnemicPerson"
         value:
+          nullable: true
           description: "the value, no type is passed back"
         locked:
           type: boolean

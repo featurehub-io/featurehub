@@ -10,8 +10,8 @@ public class PortfolioUtils {
   @ConfigKey("portfolio.admin.group.suffix")
   private String portfolioAdminGroupSuffix = "Administrators";
 
-  public String formatPortfolioAdminGroupName(Portfolio pf) {
-    return String.format("%s %s", pf.getName(), portfolioAdminGroupSuffix);
+  public String formatPortfolioAdminGroupName(String pfName) {
+    return String.format("%s %s", pfName, portfolioAdminGroupSuffix);
   }
 
 }

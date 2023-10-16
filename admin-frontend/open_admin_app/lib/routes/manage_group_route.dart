@@ -101,7 +101,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       if (bloc.mrClient.isPortfolioOrSuperAdmin(
-                              snapshot.data!.portfolioId!))
+                              snapshot.data!.portfolioId))
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: FilledButton.icon(
@@ -165,14 +165,14 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                                           ? 'User'
                                           : 'Service Account')),
                                   DataCell(bloc.mrClient.isPortfolioOrSuperAdmin(
-                                          snapshot.data!.portfolioId!)
+                                          snapshot.data!.portfolioId)
                                       ? Tooltip(
                                       message: "Remove from group",
                                         child: FHIconButton(
                                             icon: const Icon(Icons.delete),
-                                            onPressed: () {
+                                            onPressed: () async {
                                               try {
-                                                bloc.removeFromGroup(
+                                                await bloc.removeFromGroup(
                                                     snapshot.data!, member);
                                                 bloc.mrClient.addSnackbar(Text(
                                                     "'${member.name}' removed from group '${snapshot.data!.name}'"));
@@ -261,8 +261,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                               group: bloc.group!,
                             ))),
                 //hide the delete button for Admin groups
-                snapshot.data!.admin!
-                    ? Container()
+                ( snapshot.data!.admin == true ) ? Container()
                     : FHIconButton(
                         icon: const Icon(Icons.delete),
                         onPressed: () =>
@@ -382,7 +381,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
     return Form(
       key: _formKey,
       child: FHAlertDialog(
-        title: Text('Add members to group ' + widget.group.name),
+        title: Text('Add members to group ${widget.group.name}'),
         content: SizedBox(
           width: 500,
           child: Column(

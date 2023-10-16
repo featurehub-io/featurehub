@@ -58,6 +58,8 @@ export abstract class BackendDiscovery {
         this._featuresPort = port;
         this._mrPort = port;
         this._isRESTEdge = true;
+        logger.info('we are using party-server-ish');
+        return true;
       } else if (versionInfo.data.name === 'management-repository') {
         this._mrPort = port;
         if (port === 80) { // its k8s, all god

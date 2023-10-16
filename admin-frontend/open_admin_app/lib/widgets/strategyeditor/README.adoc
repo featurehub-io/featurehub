@@ -1,0 +1,9 @@
+== The Strategy Editor
+
+This folder represents the delineating line where an individual strategy is being
+edited. The interface is expected to be an EditableRolloutStrategy. It is reused in:
+
+- individual feature value editing
+- feature groups
+
+and soon, shared strategies.

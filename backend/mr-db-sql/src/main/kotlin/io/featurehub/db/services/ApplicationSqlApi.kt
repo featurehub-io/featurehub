@@ -49,7 +49,7 @@ class ApplicationSqlApi @Inject constructor(
   }
 
   @Throws(ApplicationApi.DuplicateApplicationException::class)
-  override fun createApplication(portfolioId: UUID, application: Application, current: Person): Application? {
+  override fun createApplication(portfolioId: UUID, application: CreateApplication, current: Person): Application? {
     val portfolio = convertUtils.byPortfolio(portfolioId) ?: return null
     val updater = convertUtils.byPerson(current) ?: return null
 
@@ -178,11 +178,21 @@ class ApplicationSqlApi @Inject constructor(
     )!!
   }
 
-  @Throws(ApplicationApi.DuplicateApplicationException::class, OptimisticLockingException::class)
-  override fun updateApplication(applicationId: UUID, application: Application, opts: Opts): Application? {
-    val app = fetchApplicationOpts(opts, QDbApplication().id.eq(applicationId)).findOne() ?: return null
 
-    if (application.version == null || application.version != app.version) {
+  override fun updateApplicationOnPortfolio(portfolioId: UUID, application: Application, opts: Opts): Application? {
+    val app = fetchApplicationOpts(opts, QDbApplication().id.eq(application.id).portfolio.id.eq(portfolioId)).findOne() ?: return null
+    return updateApplication(application, app, opts)
+  }
+
+  @Throws(ApplicationApi.DuplicateApplicationException::class, OptimisticLockingException::class)
+  override fun updateApplication(appId: UUID, application: Application, opts: Opts): Application? {
+    val app = fetchApplicationOpts(opts, QDbApplication().id.eq(appId)).findOne() ?: return null
+
+    return updateApplication(application, app, opts)
+  }
+
+  private fun updateApplication(application: Application, app: DbApplication, opts: Opts): Application? {
+    if (application.version != app.version) {
       throw OptimisticLockingException()
     }
 
@@ -202,12 +212,12 @@ class ApplicationSqlApi @Inject constructor(
 
     saveApp(app)
 
-    return convertUtils.toApplication(app, opts)!!
+    return convertUtils.toApplication(app, opts)
   }
 
   @Throws(ApplicationApi.DuplicateFeatureException::class)
   fun createApplicationLevelFeature(
-    applicationId: UUID, feature: Feature, person: Person,
+    applicationId: UUID, feature: CreateFeature, person: Person,
     opts: Opts
   ): DbApplicationFeature? {
     val app = convertUtils.byApplication(applicationId)
@@ -221,7 +231,7 @@ class ApplicationSqlApi @Inject constructor(
         .parentApplication(app)
         .alias(feature.alias)
         .link(feature.link)
-        .secret(feature.secret != null && feature.secret!!)
+        .secret(feature.secret == true)
         .valueType(feature.valueType)
         .metaData(feature.metaData)
         .description(feature.description)
@@ -250,10 +260,10 @@ class ApplicationSqlApi @Inject constructor(
 
   @Throws(ApplicationApi.DuplicateFeatureException::class)
   override fun createApplicationFeature(
-    applicationId: UUID, feature: Feature, person: Person,
+    appId: UUID, createFeature: CreateFeature, person: Person,
     opts: Opts
   ): List<Feature> {
-    val feat = createApplicationLevelFeature(applicationId, feature, person, opts)
+    val feat = createApplicationLevelFeature(appId, createFeature, person, opts)
     return if (feat != null) {
       getAppFeatures(feat.parentApplication, opts)
     } else ArrayList()
@@ -289,6 +299,10 @@ class ApplicationSqlApi @Inject constructor(
       .map { af: DbApplicationFeature? -> convertUtils.toApplicationFeature(af, opts)!! }
   }
 
+  override fun updateApplicationFeature(appId: UUID, feature: Feature, opts: Opts): List<Feature>? {
+    return updateApplicationFeature(appId, feature.key, feature, opts)
+  }
+
   @Throws(ApplicationApi.DuplicateFeatureException::class, OptimisticLockingException::class)
   override fun updateApplicationFeature(appId: UUID, key: String, feature: Feature, opts: Opts): List<Feature>? {
     Conversions.nonNullApplicationId(appId)
@@ -318,13 +332,13 @@ class ApplicationSqlApi @Inject constructor(
       appFeature.name = feature.name
       appFeature.alias = feature.alias
       if (feature.key != null) {
-        appFeature.key = feature.key!!
+        appFeature.key = feature.key
       }
       if (feature.link != null) {
         appFeature.link = feature.link
       }
       if (feature.valueType != null) {
-        appFeature.valueType = feature.valueType!!
+        appFeature.valueType = feature.valueType
       }
       appFeature.isSecret = feature.secret != null && feature.secret!!
       if (feature.metaData != null) {
@@ -532,19 +546,18 @@ class ApplicationSqlApi @Inject constructor(
       .group.groupMembers.person.id.eq(personId)
   }
 
-  override fun personIsFeatureReader(applicationId: UUID, personId: UUID): Boolean {
-    Conversions.nonNullApplicationId(applicationId)
-    Conversions.nonNullPersonId(personId)
+
+  override fun personIsFeatureReader(appId: UUID, personId: UUID): Boolean {
     val person = convertUtils.byPerson(personId)
     if (convertUtils.personIsSuperAdmin(person)) {
       return true
     }
     if (person != null) {
-      for (acl in environmentPermissions(applicationId, personId).findList()) {
+      for (acl in environmentPermissions(appId, personId).findList()) {
         if (acl.application != null) {
           return true
         }
-        if (acl.roles.trim { it <= ' ' }.length > 0) {
+        if (acl.roles.trim { it <= ' ' }.isNotEmpty()) {
           return true
         }
       }

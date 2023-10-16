@@ -81,17 +81,19 @@ class PortfolioBloc implements Bloc {
     }
   }
 
-  Future createPortfolio(Portfolio portfolio) {
-    return _portfolioServiceApi.createPortfolio(portfolio);
+  Future createPortfolio(String name, String desc) {
+    return _portfolioServiceApi.createPortfolio(CreatePortfolio(name: name, description: desc));
   }
 
-  Future updatePortfolio(Portfolio portfolio) {
-    return _portfolioServiceApi.updatePortfolio(portfolio.id!, portfolio);
+  Future updatePortfolio(Portfolio portfolio, String name, String desc) {
+    return _portfolioServiceApi.updatePortfolioOnOrganisation(portfolio
+        ..name = name
+        ..description = desc);
   }
 
   void savePortfolio(String portfolioName) async {
     await _portfolioServiceApi
-        .createPortfolio(Portfolio(name: portfolioName, description: ''));
+        .createPortfolio(CreatePortfolio(name: portfolioName, description: portfolioName));
   }
 
   @override

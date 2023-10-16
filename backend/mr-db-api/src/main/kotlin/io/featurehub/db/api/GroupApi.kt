@@ -1,9 +1,6 @@
 package io.featurehub.db.api
 
-import io.featurehub.mr.model.Group
-import io.featurehub.mr.model.Organization
-import io.featurehub.mr.model.Person
-import io.featurehub.mr.model.SortOrder
+import io.featurehub.mr.model.*
 import java.util.*
 
 interface GroupApi {
@@ -27,7 +24,7 @@ interface GroupApi {
    * of those.
    */
   @Throws(DuplicateGroupException::class)
-  fun createGroup(portfolioId: UUID, group: Group, whoCreated: Person?): Group?
+  fun createGroup(portfolioId: UUID, group: CreateGroup, whoCreated: Person?): Group?
 
   /**
    * Adds a person to a group

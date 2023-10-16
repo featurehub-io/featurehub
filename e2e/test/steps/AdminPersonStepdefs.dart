@@ -17,9 +17,7 @@ class AdminPersonStepdefs {
   Future<void> registerNewUser(String email) async {
     await common.initialize();
     shared.registrationUrl = await common.personService
-        .createPerson(CreatePersonDetails(email: email)
-          // ..name = email
-          ..groupIds = []);
+        .createPerson(CreatePersonDetails(email: email, personType: PersonType.person, groupIds: []));
   }
 
   // must be run by supervisor
@@ -28,9 +26,9 @@ class AdminPersonStepdefs {
     await common.initialize();
 
     shared.registrationUrl = await common.personService
-        .createPerson(CreatePersonDetails(email: email)
+        .createPerson(CreatePersonDetails(email: email, personType: PersonType.person,
           // ..name = email
-          ..groupIds = [common.superuserGroupId!]);
+          groupIds: [common.superuserGroupId!]));
   }
 
   @When(r'I register a new user with email {string}')
@@ -38,7 +36,7 @@ class AdminPersonStepdefs {
     await common.initialize();
 
     shared.registrationUrl = await common.personService
-        .createPerson(CreatePersonDetails(email: email)
+        .createPerson(CreatePersonDetails(email: email, personType: PersonType.person,)
             // ..name = email
             );
   }
@@ -135,7 +133,7 @@ class AdminPersonStepdefs {
     } else {
       final person = spr.people[0];
       await common.authService.resetPassword(person.id!.id,
-          PasswordReset(password: 'password')..reactivate = true);
+          PasswordReset(reactivate: false, password: 'password')..reactivate = true);
       await common.authService.changePassword(person.id!.id,
           PasswordUpdate(newPassword: password, oldPassword: 'password'));
 
@@ -196,7 +194,7 @@ class AdminPersonStepdefs {
         personServiceApi: common.personService);
     assert(user != null, 'Cannot find user to try and update');
     await common.authService
-        .resetPassword(user!.id!.id, PasswordReset(password: password));
+        .resetPassword(user!.id!.id, PasswordReset(reactivate: false, password: password));
   }
 
 

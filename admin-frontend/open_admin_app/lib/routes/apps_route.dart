@@ -22,10 +22,10 @@ class AppsRoute extends StatefulWidget {
   const AppsRoute({Key? key, required this.createApp}) : super(key: key);
 
   @override
-  _AppsRouteState createState() => _AppsRouteState();
+  AppsRouteState createState() => AppsRouteState();
 }
 
-class _AppsRouteState extends State<AppsRoute> {
+class AppsRouteState extends State<AppsRoute> {
   AppsBloc? bloc;
 
   @override
@@ -246,7 +246,7 @@ class _ApplicationCard extends StatelessWidget {
                                             ? Theme.of(context).primaryColor
                                             : null)),
                             const SizedBox(height: 4.0),
-                            Text(application.description!,
+                            Text(application.description ?? '',
                                 maxLines: 2,
 //                              overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.bodySmall),
@@ -298,14 +298,14 @@ class _AppTotals extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          if (application.environments.isNotEmpty)
+          if (application.environments.isNotEmpty == true)
             _NumberAndIcon(
               tooltipText: 'Environments',
               text: application.environments.length.toString(),
               icon: const Icon(Icons.list,
                   size: 16.0, color: Colors.deepPurpleAccent),
             ),
-          if (application.features.isNotEmpty)
+          if (application.features.isNotEmpty == true)
             _NumberAndIcon(
               tooltipText: 'Feature flags',
               text: application.features.length.toString(),
@@ -404,7 +404,7 @@ class _PopUpAdminMenu extends StatelessWidget {
           );
         }
         if (value == 'publish') {
-          bloc.refreshApplicationCache(application.id!);
+          bloc.refreshApplicationCache(application.id);
         }
       },
       itemBuilder: (BuildContext context) {

@@ -76,7 +76,7 @@ class ApplicationStepdefs {
     await userCommon.applicationService.updateApplication(
         app!.id!,
         api.Application(
-            name: newName, description: newDesc, version: app.version));
+            name: newName, description: newDesc, id: app.id!, version: app.version));
   }
 
   @And(r'I delete the application called {string} in the portfolio {string}')

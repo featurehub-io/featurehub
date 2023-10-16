@@ -113,13 +113,13 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
         builder:
             (BuildContext context, AsyncSnapshot<WidgetBuilder?> snapshot) {
           return ExcludeFocus(
+            excluding: snapshot.hasData,
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _mainContent(context),
                 ]),
-            excluding: snapshot.hasData,
           );
         });
   }

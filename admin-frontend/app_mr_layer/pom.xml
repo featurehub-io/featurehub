@@ -66,6 +66,7 @@
                 <file>${project.basedir}/../../backend/mr-api/webhook-api.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/feature-group.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/feature-history.yaml</file>
+                <file>${project.basedir}/../../backend/mr-api/application-strategies.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
             </configuration>
@@ -101,12 +102,6 @@
                 <include>**/**</include>
               </includes>
             </fileset>
-            <fileset>
-              <directory>.openapi-generator</directory>
-              <includes>
-                <include>**/**</include>
-              </includes>
-            </fileset>
           </filesets>
         </configuration>
       </plugin>
@@ -114,12 +109,12 @@
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>6.4.0</version>
+        <version>7.0.1</version>
         <dependencies>
           <dependency>
             <groupId>com.bluetrainsoftware.maven</groupId>
             <artifactId>openapi-dart-generator</artifactId>
-            <version>7.2</version>
+            <version>8.1-RC4</version>
           </dependency>
         </dependencies>
         <executions>
@@ -138,15 +133,9 @@
                 <additionalProperty>
                   pubName=mrapi
                 </additionalProperty>
-                <additionalProperty>
-                  nullSafe=true
-                </additionalProperty>
-                <additionalProperty>
-                  nullSafe-array-default=true
-                </additionalProperty>
-                <additionalProperty>
-                  useDio5=true
-                </additionalProperty>
+                <additionalProperty>filter-deprecated-apis</additionalProperty>
+                <additionalProperty>filter-deprecated-models</additionalProperty>
+<!--                <additionalProperty>localDev=/Users/richard/projects/dart/openapi_dart_common</additionalProperty>-->
               </additionalProperties>
             </configuration>
           </execution>

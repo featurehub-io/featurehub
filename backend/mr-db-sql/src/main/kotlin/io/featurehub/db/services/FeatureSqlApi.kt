@@ -105,7 +105,7 @@ class FeatureSqlApi @Inject constructor(
     return if (dbFeatureValue != null) {
       rolloutStrategyValidator.validateStrategies(
         dbFeatureValue.feature.valueType,
-        featureValue.rolloutStrategies ?: listOf(),
+        featureValue.rolloutStrategies ?: listOf() ,
         featureValue.rolloutStrategyInstances ?: listOf()
       ).hasFailedValidation()
 
@@ -189,9 +189,6 @@ class FeatureSqlApi @Inject constructor(
     changingDefaultValue: Boolean,
     updatingLock: Boolean,
   ): FeatureValue? {
-    if (featureValue.version == null) {
-      throw OptimisticLockingException() // we cannot determine what version to  compare this against
-    }
 
     val dbPerson = convertUtils.byPerson(person.person) ?: return null
 
@@ -308,7 +305,7 @@ class FeatureSqlApi @Inject constructor(
 
       existing.retired = convertUtils.safeConvert(featureValue.retired)
 
-      val updated = featureValue.retired ?: false
+      val updated = featureValue.retired
       updateSingleFeatureValueUpdate(retiredFeatureValueUpdate, updated, historical.isRetired)
 
       return retiredFeatureValueUpdate
@@ -432,8 +429,8 @@ class FeatureSqlApi @Inject constructor(
 
       // ok, now just honour the order of the incoming strategies and keep track if they actually changed
       val newlyOrderedList =
-        featureValue.rolloutStrategies?.mapNotNull { newStrategy -> existingStrategies.find { it.id == newStrategy.id } }
-          ?.toMutableList() ?: mutableListOf()
+        (featureValue.rolloutStrategies?.mapNotNull { newStrategy -> existingStrategies.find { it.id == newStrategy.id } }
+          ?: listOf()).toMutableList()
       val newlyOrderedListIds = newlyOrderedList.map { it.id }
       newlyOrderedList.addAll(existingStrategies.filter { !newlyOrderedListIds.contains(it.id) })
       val reorderedList = newlyOrderedList.map { it.id }
@@ -498,7 +495,7 @@ class FeatureSqlApi @Inject constructor(
   ): SingleNullableFeatureValueUpdate<String?> {
     val defaultValueUpdate = SingleNullableFeatureValueUpdate<String?>()
     val defaultValueChanged: String? =
-      when (feature.valueType!!) {
+      when (feature.valueType) {
         FeatureValueType.NUMBER -> {
           featureValue.valueNumber?.toString()
         }
@@ -717,7 +714,7 @@ class FeatureSqlApi @Inject constructor(
         QDbFeatureValue().environment.id.eq(eid).feature.whenArchived.isNull.findList()
           .map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs) }
       )
-      .environments(listOf(convertUtils.toEnvironment(QDbEnvironment().id.eq(eid).findOne(), Opts.empty())));
+      .environments(listOf(convertUtils.toEnvironment(QDbEnvironment().id.eq(eid).findOne(), Opts.empty())))
 
     if (includeFeatures) {
       env.features(QDbApplicationFeature().parentApplication.eq(environment.parentApplication).whenArchived.isNull.findList().map {
@@ -725,7 +722,7 @@ class FeatureSqlApi @Inject constructor(
       })
     }
 
-    return env;
+    return env
   }
 
   // we are going to have to put a transaction at this level as we want the whole thing to roll back if there is an issue
@@ -933,7 +930,6 @@ class FeatureSqlApi @Inject constructor(
     key: String,
     person: Person
   ): List<FeatureEnvironment> {
-    Conversions.nonNullApplicationId(appId)
     val result = featureValuesUserCanAccess(appId, key, person)
 
     return result.environments.keys.map { e ->
@@ -1091,7 +1087,7 @@ class FeatureSqlApi @Inject constructor(
         .findList()
         .map { f: DbApplicationFeature? -> convertUtils.toApplicationFeature(f, empty)!! }
 
-      val featureKeys = features.map { f -> f.key!! }
+      val featureKeys = features.map { f -> f.key }
 
       // because we need to know what features there are on what pages, we grab the application features we are going
       // to use *first*
@@ -1100,20 +1096,21 @@ class FeatureSqlApi @Inject constructor(
 
       // the requirement is that we only send back environments they have at least READ access to, so
       // this finds the environments their group has access to
+      val rawPerms = QDbAcl()
+        .environment.whenArchived.isNull
+        .environment.parentApplication.eq(app)
+        .environment.parentApplication.whenArchived.isNull
+        .environment.parentApplication.groupRolesAcl.fetch()
+        .group.whenArchived.isNull
+        .group.groupMembers.person.eq(
+          dbPerson
+        ).findList()
       val permEnvs =
-        QDbAcl()
-          .environment.whenArchived.isNull
-          .environment.parentApplication.eq(app)
-          .environment.parentApplication.whenArchived.isNull
-          .environment.parentApplication.groupRolesAcl.fetch()
-          .group.whenArchived.isNull
-          .group.groupMembers.person.eq(
-            dbPerson
-          ).findList()
+        rawPerms
           .onEach { acl: DbAcl -> environmentOrderingMap[acl.environment.id] = acl.environment }
           .mapNotNull { acl: DbAcl -> environmentToFeatureValues(acl, personAdmin, featureKeys) }
           .filter { efv: EnvironmentFeatureValues? ->
-            efv!!.roles!!.isNotEmpty()
+            efv!!.roles.isNotEmpty()
           }
 
       // the user has no permission to any environments and they aren't an admin, they shouldn't see anything
@@ -1128,19 +1125,19 @@ class FeatureSqlApi @Inject constructor(
         val original = envs[e!!.environmentId]
         if (original != null) { // merge them
           val originalFeatureValueIds =
-            original.features!!.map { obj: FeatureValue -> obj.id }.toSet()
-          e.features!!.forEach { fv: FeatureValue ->
+            original.features.map { obj: FeatureValue -> obj.id }.toSet()
+          e.features.forEach { fv: FeatureValue ->
             if (!originalFeatureValueIds.contains(fv.id)) {
-              original.features!!.add(fv)
+              original.features.add(fv)
             }
           }
 
-          e.roles!!
+          e.roles
             .forEach { rt: RoleType? ->
-              if (!original.roles!!
+              if (!original.roles
                   .contains(rt)
               ) {
-                original.roles!!.add(rt)
+                original.roles.add(rt)
               }
             }
         } else {
@@ -1149,7 +1146,8 @@ class FeatureSqlApi @Inject constructor(
       }
 
       // now we have a flat-map of individual environments  the user has actual access to, but they may be an admin, so
-      // if so, we need to fill those in
+      // if so, we need to fill those in. This gives us all the environments and sets the roles to empty
+      // if the user has no access to the environment
       if (permEnvs.isNotEmpty() || personAdmin) {
         // now go through all the environments for this app
         val environments =
@@ -1174,16 +1172,16 @@ class FeatureSqlApi @Inject constructor(
       // to all of them, so we will lose the sort order if we try and order them
       // so we get them all, sort them, and then pick them out of the map one by one
       val sortingEnvironments: List<DbEnvironment> =
-        ArrayList(QDbEnvironment().select(QDbEnvironment.Alias.id).parentApplication.id.eq(appId).findList())
+        ArrayList(QDbEnvironment().select(QDbEnvironment.Alias.id).parentApplication.id.eq(appId).whenArchived.isNull.findList())
       EnvironmentUtils.sortEnvironments(sortingEnvironments)
-      val finalValues: MutableList<EnvironmentFeatureValues> = ArrayList()
+
+      val finalValues = mutableListOf<EnvironmentFeatureValues>()
       sortingEnvironments.forEach { e: DbEnvironment ->
-        val efv = envs[e.id]
-        if (efv != null) {
-          finalValues.add(efv)
-        }
+        envs[e.id]?.let { finalValues.add(it) }
       }
 
+      // this actually returns ALL environments regardless of whether a user has access, it simply returns
+      // roles of [] if they don't have access
       return ApplicationFeatureValues()
         .applicationId(appId)
         .features(features)

@@ -35,12 +35,12 @@ void main() async {
 Future<void> mainApp() async {
   configureApp();
   runApp(BlocProvider(
-    creator: (_context, _bag) {
+    creator: (context, bag) {
       return ManagementRepositoryClientBloc();
     },
     child: BlocProvider(
-        creator: (_c, _b) => NavigationProviderBloc(
-            BlocProvider.of<ManagementRepositoryClientBloc>(_c)),
+        creator: (c, b) => NavigationProviderBloc(
+            BlocProvider.of<ManagementRepositoryClientBloc>(c)),
         child: const FeatureHubApp()),
   ));
 }

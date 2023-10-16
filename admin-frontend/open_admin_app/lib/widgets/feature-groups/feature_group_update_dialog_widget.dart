@@ -37,9 +37,7 @@ class _FeatureGroupUpdateDialogWidgetState
     super.initState();
     if (widget.featureGroup != null) {
       _featureGroupName.text = widget.featureGroup!.name;
-      if (widget.featureGroup!.description != null) {
-        _featureGroupDescription.text = widget.featureGroup!.description!;
-      }
+      _featureGroupDescription.text = widget.featureGroup!.description;
       isUpdate = true;
     }
   }

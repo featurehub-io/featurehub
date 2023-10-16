@@ -41,16 +41,19 @@ components:
           items:
             $ref: "#/components/schemas/EdgeApiStat"
         organizationId:
+          nullable: true
           description: "This is carried (if it exists) as it could become unpublished by the time downstream consumers are notified"
           x-basename: oId
           type: string
           format: uuid
         portfolioId:
+          nullable: true
           description: "This is carried (if it exists) as it could become unpublished by the time downstream consumers are notified"
           x-basename: pId
           type: string
           format: uuid
         applicationId:
+          nullable: true
           description: "This is carried (if it exists) as it could become unpublished by the time downstream consumers are notified"
           x-basename: aId
           type: string

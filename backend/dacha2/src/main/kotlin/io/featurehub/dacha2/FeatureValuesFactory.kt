@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentSkipListSet
 interface FeatureValues {
   fun getFeatures(): Collection<CacheEnvironmentFeature>
   val environment: PublishEnvironment
-  fun getEtag(): String?
+  fun getEtag(): String
 }
 
 class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {

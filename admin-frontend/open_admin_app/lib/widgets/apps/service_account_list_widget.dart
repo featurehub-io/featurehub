@@ -208,7 +208,7 @@ class _ServiceAccountEnvironment extends StatelessWidget {
 
                       ManagementRepositoryClientBloc.router
                           .navigateTo(context, '/app-settings', params: {
-                        'service-account': [serviceAccount.id!],
+                        'service-account': [serviceAccount.id],
                         'tab': ['service-accounts']
                       });
                     },
@@ -272,7 +272,7 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
         var success = false;
         try {
           success = await bloc
-              .deleteServiceAccount(serviceAccount.id!);
+              .deleteServiceAccount(serviceAccount.id);
 
           if (success) {
             bloc.mrClient.removeOverlay();

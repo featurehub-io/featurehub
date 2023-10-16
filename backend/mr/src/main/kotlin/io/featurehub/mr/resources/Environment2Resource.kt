@@ -30,7 +30,7 @@ class Environment2Resource @Inject constructor(
     val current: io.featurehub.mr.model.Person = authManager.from(securityContext)
 
     if (authManager.isOrgAdmin(current) ||
-      authManager.isPortfolioAdmin(environmentApi.findPortfolio(eid), current)
+      authManager.isPortfolioAdminOfEnvironment(eid, current)
     ) {
       val update: Environment?
       try {

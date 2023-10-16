@@ -24,7 +24,7 @@ class WebhookResource @Inject constructor(
   private val authManagerService: AuthManagerService
 ) : WebhookServiceDelegate {
   override fun getWebhookDetails(envId: UUID, id: UUID, securityContext: SecurityContext): WebhookDetail {
-    val person = authManagerService.from(securityContext) ?: throw ForbiddenException()
+    val person = authManagerService.from(securityContext)
 
     if (authManagerService.isOrgAdmin(person) || authManagerService.isPortfolioAdminOfEnvironment(envId, person)) {
       return webhookApi.getWebhookDetails(envId, id, Opts.opts(FillOpts.Details)) ?: throw NotFoundException()
@@ -52,7 +52,7 @@ class WebhookResource @Inject constructor(
     holder: WebhookServiceDelegate.ListWebhooksHolder,
     securityContext: SecurityContext
   ): WebhookSummary {
-    val person = authManagerService.from(securityContext) ?: throw ForbiddenException()
+    val person = authManagerService.from(securityContext)
 
     if (authManagerService.isOrgAdmin(person) || authManagerService.isPortfolioAdminOfEnvironment(envId, person)) {
       return webhookApi.paginateWebhooks(envId, holder.max ?: 10, holder.startAt ?: 0, holder.filter)
@@ -62,7 +62,7 @@ class WebhookResource @Inject constructor(
   }
 
   override fun testWebhook(webhookCheck: WebhookCheck, securityContext: SecurityContext?) {
-    val person = authManagerService.from(securityContext) ?: throw ForbiddenException()
+    val person = authManagerService.from(securityContext)
 
     if (authManagerService.isOrgAdmin(person) || authManagerService.isPortfolioAdminOfEnvironment(webhookCheck.envId, person)) {
       cloudEventPublisher.publish(

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
+import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 
 class LockUnlockSwitch extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
-  final PerFeatureStateTrackingBloc fvBloc;
+  final EditingFeatureValueBloc fvBloc;
 
   const LockUnlockSwitch(
       {Key? key, required this.environmentFeatureValue, required this.fvBloc})
@@ -20,7 +20,7 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
   @override
   void initState() {
     super.initState();
-    _locked = widget.fvBloc.currentFeatureValue!.locked;
+    _locked = widget.fvBloc.currentFeatureValue.locked;
   }
 
   @override

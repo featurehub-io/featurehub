@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: Enricher API
   description: This is an OpenAPI document for enriched data. It is used by Webhook Features directly.
-  version: "1.1.2"
+  version: "1.2.0"
 paths:
   /v2/fake:
     get:
@@ -26,6 +26,7 @@ components:
         - featureKeys
       properties:
         targetEnrichmentDestination:
+          nullable: true
           description: "If there is a specific target for the data, everything else _should_ ignore it"
           type: string
         environment:

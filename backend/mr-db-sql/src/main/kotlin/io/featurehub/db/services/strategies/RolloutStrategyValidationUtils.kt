@@ -60,7 +60,7 @@ class RolloutStrategyValidationUtils : RolloutStrategyValidator {
         )
       }
       rs.attributes?.filter { a: RolloutStrategyAttribute ->
-        a.values == null || a.values!!.isEmpty()
+        a.values == null || a.values.isEmpty()
       }?.forEach { a: RolloutStrategyAttribute ->
         failures.add(
           RolloutStrategyViolation()
@@ -96,41 +96,41 @@ class RolloutStrategyValidationUtils : RolloutStrategyValidator {
             try {
               when (attr.type) {
                 RolloutStrategyFieldType.STRING ->
-                  attr.values = attr.values!!.map { v: Any -> v.toString().trim { it <= ' ' } }
+                  attr.values = attr.values.map { v: Any -> v.toString().trim { it <= ' ' } }
 
                 RolloutStrategyFieldType.SEMANTIC_VERSION ->
-                  if (attr.values!!.any { n -> n == null || notSemanticVersion(n) }) {
+                  if (attr.values.any { n -> n == null || notSemanticVersion(n) }) {
                     failures.add(
                       RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_SEMANTIC_VERSION)
                         .id(attr.id), rs
                     )
                   }
 
-                RolloutStrategyFieldType.NUMBER -> if (attr.values!!.any { n -> n == null || notNumber(n) }) {
+                RolloutStrategyFieldType.NUMBER -> if (attr.values.any { n -> n == null || notNumber(n) }) {
                   failures.add(
                     RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_NUMBER)
                       .id(attr.id), rs
                   )
                 }
 
-                RolloutStrategyFieldType.DATE -> if (attr.values!!.any { n -> n == null || notDate(n) }) {
+                RolloutStrategyFieldType.DATE -> if (attr.values.any { n -> n == null || notDate(n) }) {
                   failures.add(
                     RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_DATE)
                       .id(attr.id), rs
                   )
                 }
 
-                RolloutStrategyFieldType.DATETIME -> if (attr.values!!.any { n -> n == null || notDateTime(n) }) {
+                RolloutStrategyFieldType.DATETIME -> if (attr.values.any { n -> n == null || notDateTime(n) }) {
                   failures.add(
                     RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_DATE_TIME)
                       .id(attr.id), rs
                   )
                 }
 
-                RolloutStrategyFieldType.BOOLEAN -> attr.values = attr.values!!.filter { obj -> Objects.nonNull(obj) }
+                RolloutStrategyFieldType.BOOLEAN -> attr.values = attr.values.filter { obj -> Objects.nonNull(obj) }
                     .map { b -> java.lang.Boolean.parseBoolean(b.toString()) }
 
-                RolloutStrategyFieldType.IP_ADDRESS -> if (attr.values!!.any { n -> n == null || notIpAddress(n) }) {
+                RolloutStrategyFieldType.IP_ADDRESS -> if (attr.values.any { n -> n == null || notIpAddress(n) }) {
                   failures.add(
                     RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_CIDR)
                       .id(attr.id), rs

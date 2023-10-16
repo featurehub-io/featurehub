@@ -3,7 +3,6 @@ package io.featurehub.db.publish
 import io.featurehub.dacha.model.PublishAction
 import io.featurehub.db.api.CacheRefresherApi
 import io.featurehub.db.model.*
-import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CacheSource
 import java.util.*
 
@@ -20,7 +19,7 @@ class DummyPublisher : CacheSource, CacheRefresherApi {
   override fun deleteEnvironment(id: UUID) {}
   override fun publishFeatureChange(appFeature: DbApplicationFeature, update: PublishAction) {}
   override fun publishFeatureChange(appFeature: DbApplicationFeature, update: PublishAction, featureKey: String) {}
-  override fun publishRolloutStrategyChange(rs: DbRolloutStrategy) {}
+  override fun publishApplicationRolloutStrategyChange(rs: DbApplicationRolloutStrategy) {}
   override fun refreshPortfolios(portfolioIds: List<UUID>) {
   }
 

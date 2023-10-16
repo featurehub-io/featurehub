@@ -24,7 +24,7 @@ class FeaturesDataSource extends DataGridSource {
         data.applicationFeatureValues.features;
     Map<String, EnvironmentFeatureValues> efvMap = data.applicationEnvironments;
     _featuresData = featuresListExtracted.map<DataGridRow>((feature) {
-      var _cells = efvMap.entries
+      var cells = efvMap.entries
           .map((entry) => DataGridCell<AggregatedFeatureCellData>(
           columnName: entry.key,
           value: AggregatedFeatureCellData(
@@ -34,14 +34,19 @@ class FeaturesDataSource extends DataGridSource {
               fv: entry.value.features
                   .firstWhere((fv) => fv.key == feature.key, orElse: () {
                 return FeatureValue(
-                    key: feature.key!,
+                    retired: false,
+                    rolloutStrategies: [],
+                    rolloutStrategyInstances: [],
+                    sharedRolloutStrategies: [],
+                    version: -1,
+                    key: feature.key,
                     locked: false,
                     environmentId: entry.value.environmentId); // workaround for feature values that are not set yet and are null
               }))))
           .toList();
       return DataGridRow(cells: [
         DataGridCell<Feature>(columnName: 'feature name', value: feature),
-        ..._cells,
+        ...cells,
       ]);
     }).toList();
   }

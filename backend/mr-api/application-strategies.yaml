@@ -1,0 +1,258 @@
+openapi: 3.0.1
+info:
+  title: ManagementResourceApi
+  description: This describes the API clients use for accessing features. This reflects the API from 1.5.7 onwards.
+paths:
+  /mr-api/application/{appId}/strategy:
+    parameters:
+      - name: appId
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: includeWhoChanged
+        description: "include who changed"
+        in: query
+        schema:
+          type: boolean
+        required: false
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - ApplicationRolloutStrategyService
+      operationId: listApplicationStrategies
+      parameters:
+        - name: includeArchived
+          in: query
+          description: "Include archived strategies"
+          schema:
+            type: boolean
+          required: false
+      responses:
+        200:
+          description: "Get all strategies for this application, regardless if they are in use"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationRolloutStrategyList"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - ApplicationRolloutStrategyService
+      operationId: createApplicationStrategy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateApplicationRolloutStrategy"
+      responses:
+        "201":
+          description: "The created rollout strategy for this application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationRolloutStrategy"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden to create"
+        409:
+          description: "duplicate name"
+
+  /mr-api/application/{appId}/rollout-strategy-validation:
+    parameters:
+      - name: appId
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - ApplicationRolloutStrategyService
+      description: "Provide server validation responses for this group of rollout strategies"
+      operationId: validate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RolloutStrategyValidationRequest"
+      responses:
+        200:
+          description: "validation results"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolloutStrategyValidationResponse"
+        400:
+          description: "invalid body"
+        401:
+          description: "no permission"
+
+  /mr-api/application/{appId}/rollout-strategy/{appStrategyId}:
+    parameters:
+      - name: appId
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: appStrategyId
+        description: "The id of the strategy or the unique name of it"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: includeWhoChanged
+        description: "include who changed"
+        in: query
+        schema:
+          type: boolean
+        required: false
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - ApplicationRolloutStrategyService
+      operationId: getApplicationStrategy
+      responses:
+        200:
+          description: "The rollout strategy for this application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationRolloutStrategy"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "If there is no rollout strategy by that id or name"
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - ApplicationRolloutStrategyService
+      operationId: updateApplicationStrategy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateApplicationRolloutStrategy"
+      responses:
+        200:
+          description: "The created rollout strategy for this application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationRolloutStrategy"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
+        409:
+          description: "duplicate strategy name"
+    delete:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - ApplicationRolloutStrategyService
+      operationId: deleteApplicationStrategy
+      responses:
+        204:
+          description: "This strategy was deleted"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "strategy not found, could not delete"
+components:
+  schemas:
+    ApplicationRolloutStrategyList:
+      type: object
+      required:
+        - max
+        - page
+        - items
+      properties:
+        max:
+          description: "how many there are"
+          type: integer
+        page:
+          description: "this page number"
+          type: integer
+        items:
+          description: "the application rollout strategies on this page"
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationRolloutStrategy"
+    CreateApplicationRolloutStrategy:
+      allOf:
+        - $ref: "#/components/schemas/BaseUIStrategy"
+        - $ref: "#/components/schemas/BaseStrategy"
+    UpdateApplicationRolloutStrategy:
+      type: object
+      properties:
+        name:
+          nullable: true
+          description: "names are unique in a case insensitive fashion"
+          type: string
+          maxLength: 150
+        colouring:
+          nullable: true
+          description: "the colour used to display the strategy in the UI. indexed table of background/foreground combos."
+          type: integer
+        avatar:
+          nullable: true
+          type: string
+          description: "url to avatar (if any). Not sent to SDK. Preferably a unicorn."
+          maxLength: 200
+        disabled:
+          nullable: true
+          type: boolean
+        attributes:
+          nullable: true
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyAttribute"
+    ApplicationRolloutStrategy:
+      allOf:
+        - $ref: "#/components/schemas/BaseStrategy"
+        - $ref: "#/components/schemas/BaseUIStrategy"
+        - type: object
+          properties:
+            id:
+              description: "unique id of the strategy"
+              type: string
+              format: uuid

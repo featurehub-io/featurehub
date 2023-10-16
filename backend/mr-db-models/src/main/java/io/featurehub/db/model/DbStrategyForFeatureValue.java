@@ -27,7 +27,7 @@ public class DbStrategyForFeatureValue {
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_rs_id")
   @Column(nullable = false, name = "fk_rs_id")
-  private DbRolloutStrategy rolloutStrategy;
+  private DbApplicationRolloutStrategy rolloutStrategy;
 
   @Column(nullable = false, name = "fv_enabled")
   private boolean enabled;
@@ -55,11 +55,11 @@ public class DbStrategyForFeatureValue {
     this.featureValue = featureValue;
   }
 
-  public DbRolloutStrategy getRolloutStrategy() {
+  public DbApplicationRolloutStrategy getRolloutStrategy() {
     return rolloutStrategy;
   }
 
-  public void setRolloutStrategy(DbRolloutStrategy rolloutStrategy) {
+  public void setRolloutStrategy(DbApplicationRolloutStrategy rolloutStrategy) {
     this.rolloutStrategy = rolloutStrategy;
   }
 
@@ -81,7 +81,7 @@ public class DbStrategyForFeatureValue {
 
   public static final class Builder {
     private DbFeatureValue featureValue;
-    private DbRolloutStrategy rolloutStrategy;
+    private DbApplicationRolloutStrategy rolloutStrategy;
     private boolean enabled;
     private String value;
 
@@ -93,7 +93,7 @@ public class DbStrategyForFeatureValue {
       return this;
     }
 
-    public Builder rolloutStrategy(DbRolloutStrategy val) {
+    public Builder rolloutStrategy(DbApplicationRolloutStrategy val) {
       rolloutStrategy = val;
       return this;
     }

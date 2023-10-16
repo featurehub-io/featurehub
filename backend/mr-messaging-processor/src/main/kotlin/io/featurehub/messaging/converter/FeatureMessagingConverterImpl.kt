@@ -92,7 +92,7 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
     return MessagingStrategyUpdate()
       .let { if (new != null) it.newStrategy(toMessagingRolloutStrategy(new)) else it }
       .let { if (old != null) it.oldStrategy(toMessagingRolloutStrategy(old)) else it }
-      .updateType(StrategyUpdateType.fromValue(rolloutStrategyUpdate.type.uppercase()))
+      .updateType(StrategyUpdateType.fromValue(rolloutStrategyUpdate.type.uppercase())!!)
   }
 
   private fun toMessagingRolloutStrategy(rolloutStrategy: RolloutStrategy): MessagingRolloutStrategy {

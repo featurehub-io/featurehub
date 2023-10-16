@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: FeatureServiceApi
   description: This describes the API clients use for accessing features
-  version: "1.1.5"
+  version: "1.1.6"
 paths:
   /features/:
     get:
@@ -115,11 +115,14 @@ components:
       type: object
       properties:
         value:
+          nullable: true
           description: "the new value"
         updateValue:
+          nullable: true
           type: boolean
           description: "indicates whether you are trying to update the value, as value can be null"
         lock:
+          nullable: true
           description: "set only if you wish to lock or unlock, otherwise null"
           type: boolean
     SSEResultState:
@@ -159,6 +162,7 @@ components:
         key:
           type: string
         l:
+          default: false
           description: "Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter."
           type: boolean
         version:
@@ -168,16 +172,20 @@ components:
         type:
           $ref: "#/components/schemas/FeatureValueType"
         value:
+          nullable: true
           description: "the current value"
         v:
+          nullable: true
           description: "strategy id that was applied if this was a server evaluated feature"
           type: string
         environmentId:
+          nullable: true
           description: "This field is filled in from the client side in the GET api as the GET api is able to request multiple environments.
                         It is never passed from the server, as an array of feature states is wrapped in an environment."
           type: string
           format: uuid
         strategies:
+          nullable: true
           type: array
           items:
             $ref: "#/components/schemas/FeatureRolloutStrategy"
@@ -189,13 +197,16 @@ components:
           required:
             - id
           properties:
+            id:
+              description: "strategy id"
+              type: string
             attributes:
               type: array
               items:
                 $ref: "#/components/schemas/FeatureRolloutStrategyAttribute"
     FeatureRolloutStrategyAttribute:
       allOf:
-        - $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
+        - $ref: "#/components/schemas/RolloutStrategyAttribute"
         - type: object
           required:
             - conditional

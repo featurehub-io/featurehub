@@ -2,6 +2,8 @@ package io.featurehub.db.services
 
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
+import io.featurehub.mr.model.CreateGroup
+import io.featurehub.mr.model.CreatePortfolio
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Portfolio
 
@@ -19,17 +21,17 @@ class Person2Spec extends Base2Spec {
     given: "i create a new user"
       def person = personSqlApi.createPerson("millie@i.com", "Millie", "password123", superPerson.id.id, Opts.empty())
     and: "I have two new portfolios"
-      def port1 = portfolioSqlApi.createPortfolio(new Portfolio().name("port1").description("port1"), Opts.empty(), superPerson)
+      def port1 = portfolioSqlApi.createPortfolio(new CreatePortfolio().name("port1").description("port1"), Opts.empty(), superuser)
       def groupPort1 = groupSqlApi.createGroup(
         port1.id,
-        new Group().name('port1').admin(true),
+        new CreateGroup().name('port1').admin(true),
         superPerson
       )
 
-      def port2 = portfolioSqlApi.createPortfolio(new Portfolio().name("port2").description("port2"), Opts.empty(), superPerson)
+      def port2 = portfolioSqlApi.createPortfolio(new CreatePortfolio().name("port2").description("port2"), Opts.empty(), superuser)
       def groupPort2 = groupSqlApi.createGroup(
         port2.id,
-        new Group().name('port2').admin(true),
+        new CreateGroup().name('port2').admin(true),
         superPerson
       )
     and: "i know what the superuser group is"

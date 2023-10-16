@@ -14,10 +14,11 @@ import io.featurehub.db.model.DbServiceAccount
 import io.featurehub.db.model.query.QDbPerson
 import io.featurehub.db.model.query.QDbServiceAccount
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.mr.model.Application
-import io.featurehub.mr.model.Environment
+import io.featurehub.mr.model.CreateApplication
+import io.featurehub.mr.model.CreateEnvironment
+import io.featurehub.mr.model.CreateGroup
+import io.featurehub.mr.model.CreateServiceAccount
 import io.featurehub.mr.model.EnvironmentGroupRole
-import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.ServiceAccount
@@ -57,7 +58,7 @@ class ServiceAccount2Spec extends Base2Spec {
     portfolio1 = new DbPortfolio.Builder().name(RandomStringUtils.randomAlphabetic(8) + "p1-env-1").whoCreated(dbSuperPerson).organization(organization).build()
     db.save(portfolio1)
     portfolio1Id = portfolio1.id
-    def portfolioGroup = groupSqlApi.createGroup(portfolio1Id, new Group().name("group1").admin(true), superPerson)
+    def portfolioGroup = groupSqlApi.createGroup(portfolio1Id, new CreateGroup().name("group1").admin(true), superPerson)
     application1 = new DbApplication.Builder().name("app-env-1").portfolio(portfolio1).whoCreated(dbSuperPerson).build()
     db.save(application1)
     environment1 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e1").parentApplication(application1).build()
@@ -93,8 +94,10 @@ class ServiceAccount2Spec extends Base2Spec {
 
   def "I create two service accounts and they both get unpublished when I unpublish all service accounts"() {
     given: "I have two service accounts"
-      def sa1 = sapi.create(portfolio1Id, superPerson, new ServiceAccount().name("sa01").description("sa1111"), new Opts())
-      def sa2 = sapi.create(portfolio1Id, superPerson, new ServiceAccount().name("sa02").description("sa222"), new Opts())
+      def sa1 = sapi.create(portfolio1Id, superPerson,
+        new CreateServiceAccount().name("sa01").description("sa1111"), new Opts())
+      def sa2 = sapi.create(portfolio1Id, superPerson,
+        new CreateServiceAccount().name("sa02").description("sa222"), new Opts())
     when: "I unpublish service accounts"
       sapi.unpublishServiceAccounts(portfolio1Id, null)
     then:
@@ -106,8 +109,10 @@ class ServiceAccount2Spec extends Base2Spec {
 
   def "when i create two service accounts but ask to unpublish only one, then only one is unpublished"() {
     given: "I have two service accounts"
-      def sa1 = sapi.create(portfolio1Id, superPerson, new ServiceAccount().name("sa01").description("sa1111"), new Opts())
-      def sa2 = sapi.create(portfolio1Id, superPerson, new ServiceAccount().name("sa02").description("sa222"), new Opts())
+      def sa1 = sapi.create(portfolio1Id, superPerson,
+        new CreateServiceAccount().name("sa01").description("sa1111"), new Opts())
+      def sa2 = sapi.create(portfolio1Id, superPerson,
+        new CreateServiceAccount().name("sa02").description("sa222"), new Opts())
     when: "I unpublish service accounts"
       sapi.unpublishServiceAccounts(portfolio1Id, [sa2.id])
     then:
@@ -119,11 +124,11 @@ class ServiceAccount2Spec extends Base2Spec {
 
   def "service ACL filtering works by application"() {
     given: "i have a second application"
-      def app2 = applicationSqlApi.createApplication(portfolio1Id, new Application().name("acl-sa-test-filter").description("acl test filter"), superPerson)
+      def app2 = applicationSqlApi.createApplication(portfolio1Id, new CreateApplication().name("acl-sa-test-filter").description("acl test filter"), superPerson)
     and: "i have an environment in the second application"
-      def env2 = environmentSqlApi.create(new Environment().name("acl-sa-test-filter-env").description("acl-test-filter-env"), app2, superPerson)
+      def env2 = environmentSqlApi.create(new CreateEnvironment().name("acl-sa-test-filter-env").description("acl-test-filter-env"), app2.id, superPerson)
     and: "i create a new service account"
-      def sa = new ServiceAccount().name('sa-acl-filter').description('sa-acl-filter')
+      def sa = new CreateServiceAccount().name('sa-acl-filter').description('sa-acl-filter')
         .permissions([
           new ServiceAccountPermission()
             .environmentId(environment1.id)
@@ -149,7 +154,7 @@ class ServiceAccount2Spec extends Base2Spec {
 
   def "i can create a service account with no environments"() {
     given: "i have a service account"
-      def sa = new ServiceAccount()
+      def sa = new CreateServiceAccount()
         .name("sa-2").description("sa-1 test")
     and: "i know how many people there are"
       def personCount = numberOfPeople()
@@ -167,7 +172,7 @@ class ServiceAccount2Spec extends Base2Spec {
 
   def "i can reset the key for a service account"() {
     given: "i have a service account"
-      def sa = new ServiceAccount().name("sa-reset").description("sa-1 test")
+      def sa = new CreateServiceAccount().name("sa-reset").description("sa-1 test")
         .permissions([
           new ServiceAccountPermission()
             .permissions([RoleType.READ])
@@ -196,7 +201,7 @@ class ServiceAccount2Spec extends Base2Spec {
 
   def "i can create then delete a service account"() {
     given: "i have a service account"
-      def sa = new ServiceAccount().name("sa-delete").description("sa-1 test").permissions(
+      def sa = new CreateServiceAccount().name("sa-delete").description("sa-1 test").permissions(
         [new ServiceAccountPermission()
            .permissions([RoleType.READ, RoleType.CHANGE_VALUE])
            .environmentId(environment1.id),
@@ -216,7 +221,7 @@ class ServiceAccount2Spec extends Base2Spec {
 
   def "i cannot create two service accounts with the same name"() {
     given: "i have a service account"
-      def sa = new ServiceAccount().name("sa-dupe").description("sa-1 test")
+      def sa = new CreateServiceAccount().name("sa-dupe").description("sa-1 test")
     when: "i create it"
       sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
     and: "do it again"
@@ -228,16 +233,17 @@ class ServiceAccount2Spec extends Base2Spec {
   def "i can create two service accounts for an environment"() {
     given: "i have an environment"
       def app1 = convertUtils.toApplication(application1, Opts.empty())
-      def env1 = environmentApi.create(new Environment().description('app-twosa-env1').name('app-twosa-env1'), app1, superPerson)
+      def env1 = environmentApi.create(new CreateEnvironment()
+        .description('app-twosa-env1').name('app-twosa-env1'), app1.id, superPerson)
     and: "i have a service account"
-      def sa1 = sapi.create(portfolio1Id, superPerson, new ServiceAccount().name("twosa-sa-1").description("sa-1 test").permissions(
+      def sa1 = sapi.create(portfolio1Id, superPerson, new CreateServiceAccount().name("twosa-sa-1").description("sa-1 test").permissions(
         [new ServiceAccountPermission()
            .permissions([RoleType.READ, RoleType.CHANGE_VALUE])
            .environmentId(env1.id),
         ]
       ), Opts.empty())
     and: "i have another service account"
-      def sa2 = sapi.create(portfolio1Id, superPerson, new ServiceAccount().name("twosa-sa-2").description("sa-2 test").permissions(
+      def sa2 = sapi.create(portfolio1Id, superPerson, new CreateServiceAccount().name("twosa-sa-2").description("sa-2 test").permissions(
         [new ServiceAccountPermission()
            .permissions([RoleType.LOCK])
            .environmentId(env1.id),
@@ -256,11 +262,11 @@ class ServiceAccount2Spec extends Base2Spec {
   def "i can create a service account with permissions in two environments, then update it to remove one environment and change permission on other"() {
     given: "i have three environments"
       def app1 = convertUtils.toApplication(application1, Opts.empty())
-      def env1 = environmentApi.create(new Environment().description('app-sa1-env1').name('app-sa1-env1'), app1, superPerson)
-      def env2 = environmentApi.create(new Environment().description('app-sa1-env2').name('app-sa1-env2'), app1, superPerson)
-      def env3 = environmentApi.create(new Environment().description('app-sa1-env3').name('app-sa1-env3'), app1, superPerson)
+      def env1 = environmentApi.create(new CreateEnvironment().description('app-sa1-env1').name('app-sa1-env1'), app1.id, superPerson)
+      def env2 = environmentApi.create(new CreateEnvironment().description('app-sa1-env2').name('app-sa1-env2'), app1.id, superPerson)
+      def env3 = environmentApi.create(new CreateEnvironment().description('app-sa1-env3').name('app-sa1-env3'), app1.id, superPerson)
     and: "i have a service account with two environments"
-      def sa = new ServiceAccount().name("sa-1").description("sa-1 test").permissions(
+      def sa = new CreateServiceAccount().name("sa-1").description("sa-1 test").permissions(
         [new ServiceAccountPermission()
            .permissions([RoleType.READ, RoleType.CHANGE_VALUE])
            .environmentId(env1.id),
@@ -326,6 +332,10 @@ class ServiceAccount2Spec extends Base2Spec {
       newEnv2.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).permissions.containsAll([RoleType.LOCK, RoleType.UNLOCK, RoleType.READ])
       newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).sdkUrlClientEval.contains("/" + newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).serviceAccount.apiKeyClientSide)
       newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).sdkUrlServerEval.contains("/" + newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).serviceAccount.apiKeyServerSide)
+    when: "we update a second time using the new API"
+      def thirdUpdate = sapi.update(portfolio1Id, superuser, secondUpdate.permissions([]), Opts.opts(FillOpts.Permissions))
+    then:
+      thirdUpdate.permissions.isEmpty()
   }
 
   def "I cannot request or update an unknown service account"() {

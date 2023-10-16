@@ -60,11 +60,11 @@ class SetupBloc implements Bloc {
 
     var s = SetupSiteAdmin(
         organizationName: orgName!,
-        name: name,
-        emailAddress: email,
-        password: pw1,
+        name: name!,
+        emailAddress: email!,
+        password: pw1!,
         portfolio: portfolio!,
-        authProvider: provider);
+        authProvider: provider!);
 
     mrClient.setupApi.setupSiteAdmin(s).then((data) {
       _setupSource.add(true);

@@ -70,13 +70,13 @@ interface FeatureApi {
   fun updateAllFeatureValuesForEnvironment(
     eid: UUID, featureValues: List<FeatureValue>,
     requireRoleCheck: PersonFeaturePermission
-  ): List<FeatureValue?>?
+  ): List<FeatureValue>
 
   fun getFeatureValuesForApplicationForKeyForPerson(
     appId: UUID,
     key: String,
     person: Person
-  ): List<FeatureEnvironment?>?
+  ): List<FeatureEnvironment>?
 
   /**
    * This specifically upgrades the strategies from 1.5.11 to ensure they all have 4 digit strategies - ready for analytics

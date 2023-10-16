@@ -6,6 +6,9 @@ import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
+import io.featurehub.mr.model.CreateApplication
+import io.featurehub.mr.model.CreateGroup
+import io.featurehub.mr.model.CreatePortfolio
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
@@ -204,12 +207,12 @@ class AuthenticationSpec extends BaseSpec {
       personApi.create('portman26@mailinator.com', "Portman26",superuser)
       Person p2 = auth.register("william", "portman26@mailinator.com", "hooray", null)
     and: "i create a new portfolio"
-      Portfolio portfolio1 = portfolioApi.createPortfolio(new Portfolio().name("persontestportfolio").organizationId(org.getId()), Opts.empty(), superPerson)
+      Portfolio portfolio1 = portfolioApi.createPortfolio(new CreatePortfolio().name("persontestportfolio"), Opts.empty(), superuser)
     and: "i create an application in that portfolio"
-      def app1 = appApi.createApplication(portfolio1.id, new Application().name("persontest-app1").description("some desc"), superPerson)
+      def app1 = appApi.createApplication(portfolio1.id, new CreateApplication().name("persontest-app1").description("some desc"), superPerson)
     and: "i make the user a portfolio manager"
       def portfolioGroup = groupSqlApi.createGroup(portfolio1.id,
-        new Group().name("admin-group").admin(true)
+        new CreateGroup().name("admin-group").admin(true)
           .applicationRoles([new ApplicationGroupRole().applicationId(app1.id)
                                .roles([ApplicationRoleType.EDIT])]), superPerson)
       groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.members([p2]), null,

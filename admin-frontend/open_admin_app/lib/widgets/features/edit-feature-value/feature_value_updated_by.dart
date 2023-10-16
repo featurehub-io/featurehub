@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 
 class FeatureValueUpdatedByCell extends StatelessWidget {
-  final CustomStrategyBloc strBloc;
+  final EditingFeatureValueBloc strBloc;
 
   const FeatureValueUpdatedByCell({Key? key, required this.strBloc})
       : super(key: key);

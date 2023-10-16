@@ -57,7 +57,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
 
   @override
   Widget build(BuildContext context) {
-    final _debouncer = Debouncer(milliseconds: 500);
+    final debouncer = Debouncer(milliseconds: 500);
       List<GridColumn> gridColumnsList = [];
       return StreamBuilder<ApplicationFeatureValues?>(
           stream: widget.bloc.appFeatureValuesStream,
@@ -79,7 +79,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                       label: Container(
                           padding: const EdgeInsets.all(8.0),
                           alignment: Alignment.center,
-                          child: Text(entry.environmentName! ,style: const TextStyle(fontWeight: FontWeight.bold))),
+                          child: Text(entry.environmentName,style: const TextStyle(fontWeight: FontWeight.bold))),
                       visible: _selectedEnvironmentList
                           .contains(entry.environmentName),
                     ),
@@ -127,7 +127,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                                   size: 18,
                                 ),
                                 options: snapshot.data!.environments
-                                    .map((e) => e.environmentName!)
+                                    .map((e) => e.environmentName)
                                     .toList(),
                                 selectedValues: _selectedEnvironmentList
                                 // whenEmpty: 'Select Something',
@@ -179,7 +179,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                                 border: const OutlineInputBorder(),
                               ),
                               onChanged: (val) {
-                                _debouncer.run(() {
+                                debouncer.run(() {
                                   setState(() {
                                     _searchTerm = val;
                                     widget.bloc.getApplicationFeatureValuesData(

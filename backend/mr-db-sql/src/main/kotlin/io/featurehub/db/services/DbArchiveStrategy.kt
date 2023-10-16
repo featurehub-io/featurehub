@@ -59,7 +59,7 @@ class DbArchiveStrategy @Inject constructor(private val database: Database, priv
     }
   }
 
-  private val environmentListeners = mutableListOf<(DbEnvironment) -> Unit>();
+  private val environmentListeners = mutableListOf<(DbEnvironment) -> Unit>()
 
   override fun environmentArchiveListener(listener: (DbEnvironment) -> Unit) {
     environmentListeners.add(listener)
@@ -109,7 +109,7 @@ class DbArchiveStrategy @Inject constructor(private val database: Database, priv
     cacheSource.publishFeatureChange(feature, PublishAction.DELETE, originalKey)
   }
 
-  private val featureListeners = mutableListOf<(DbApplicationFeature) -> Unit>();
+  private val featureListeners = mutableListOf<(DbApplicationFeature) -> Unit>()
 
   override fun featureListener(listener: (DbApplicationFeature) -> Unit) {
     featureListeners.add(listener)

@@ -66,7 +66,7 @@ class FeatureCellHolder extends StatelessWidget {
                                 FHCopyToClipboard(
                                     tooltipMessage:
                                         "Copy feature key to clipboard",
-                                    copyString: feature.key!),
+                                    copyString: feature.key),
                               ],
                             ),
                           ],

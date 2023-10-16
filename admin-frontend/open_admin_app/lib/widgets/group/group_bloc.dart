@@ -79,20 +79,23 @@ class GroupBloc implements Bloc {
     }
   }
 
-  void removeFromGroup(Group group, Person person) async {
+  Future<void> removeFromGroup(Group group, Person person) async {
     var data = await _groupServiceApi
-        .deletePersonFromGroup(group.id!, person.id!.id, includeMembers: true);
+        .deletePersonFromGroup(group.id, person.id!.id, includeMembers: true);
     if (!_groupSource.isClosed) {
       _groupSource.add(data);
     }
   }
 
-  Future<bool> updateGroup(Group groupToUpdate) async {
+  Future<bool> updateGroup(Group groupToUpdate, { String? name }) async {
     try {
-      await _groupServiceApi.updateGroup(groupToUpdate.id!, groupToUpdate,
+      if (name != null) {
+        groupToUpdate.name = name;
+      }
+      final newGroup = await _groupServiceApi.updateGroupOnPortfolio(mrClient.currentPortfolio!.id, groupToUpdate,
           includeMembers: true, updateMembers: true);
       await getGroups(focusGroup: groupToUpdate);
-      group = groupToUpdate;
+      group = newGroup;
       groupId = groupToUpdate.id;
       return true;
     } catch (e, s) {
@@ -104,9 +107,9 @@ class GroupBloc implements Bloc {
     }
   }
 
-  Future<void> createGroup(Group newGroup) async {
+  Future<void> createGroup(String name) async {
     final createdGroup = await _groupServiceApi
-        .createGroup(mrClient.currentPid!, newGroup);
+        .createGroup(mrClient.currentPid!, CreateGroup(name: name));
     await getGroups(focusGroup: createdGroup);
     groupId = createdGroup.id;
     group = createdGroup;

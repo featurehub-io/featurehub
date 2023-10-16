@@ -13,6 +13,7 @@ components:
           type: string
           format: uuid
         destId:
+          nullable: true
           description: "this allows one instance on the bus to communicate directly with another instance"
           type: string
           format: uuid

@@ -144,7 +144,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         selectedGroup = null;
       } else {
         if (groups[0].id != _selectedGroupId) {
-          selectedGroup = groups[0].id!;
+          selectedGroup = groups[0].id;
         }
       }
     }
@@ -205,7 +205,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
           if (serviceAccounts.isNotEmpty) {
             _currentServiceAccountIdSource.add(null);
             // ignore: unawaited_futures
-            selectServiceAccount(serviceAccounts[0].id!);
+            selectServiceAccount(serviceAccounts[0].id);
           }
           _serviceAccountsBS.add(serviceAccounts);
         }
@@ -280,7 +280,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
 
     try {
       final updatedGroup = await _groupServiceApi
-          .updateGroup(gid, group,
+          .updateGroupOnPortfolio(portfolio!.id, group,
               includeGroupRoles: true,
               includeMembers: false,
               updateMembers: false,
@@ -308,8 +308,8 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
       String sid, ServiceAccount serviceAccount) async {
     try {
       final updatedServiceAccount =
-          await _serviceAccountServiceApi.updateServiceAccount(
-        sid,
+          await _serviceAccountServiceApi.updateServiceAccountOnPortfolio(
+        portfolio!.id,
         serviceAccount,
         includePermissions: true,
       );
@@ -360,25 +360,29 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  Future<void> updateEnv(Environment env, String name) async {
+  Future<void> updateEnv(Environment env, {String? name, String? desc, bool? production}) async {
     try {
-      env.name = name;
+      final update = UpdateEnvironmentV2(version: env.version, id: env.id);
+      if (name != null) update.name = name;
+      if (desc != null) update.description = desc;
+      if (production != null) update.production = production;
       await _environmentServiceApi
-          .updateEnvironment(env.id!, env)
+          .updateEnvironmentOnApplication(applicationId!, update)
           .then((e) => _refreshApplication());
     } catch (e, s) {
       _mrClient.dialogError(e, s);
     }
   }
 
-  Future<void> createEnv(String name, bool _isProduction) async {
+  Future<void> createEnv(String name, bool isProduction) async {
     final toUpdate = environmentsList
         .firstWhereOrNull((env) => env.priorEnvironmentId == null);
-    final env = await _environmentServiceApi.createEnvironment(
+    final env = await _environmentServiceApi.createEnvironmentOnApplication(
         applicationId!,
-        Environment(
+        CreateEnvironment(
           name: name,
-          production: _isProduction,
+          description: name,
+          production: isProduction,
         ));
     if (toUpdate != null) {
       toUpdate.priorEnvironmentId = env.id;

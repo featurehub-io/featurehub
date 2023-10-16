@@ -116,7 +116,7 @@ open class ConvertUtils : Conversions {
     }
     val environment = Environment()
       .id(env.id)
-      .name(stripArchived(env.name, env.whenArchived)!!)
+      .name(stripArchived(env.name, env.whenArchived))
       .version(env.version)
       .production(env.isProductionEnvironment)
       .priorEnvironmentId(
@@ -129,15 +129,13 @@ open class ConvertUtils : Conversions {
     }
     if (opts.contains(FillOpts.People)) {
       environment.updatedBy(
-        toAuditCreatedBy(
           toPerson(
             env.whoCreated,
             env.parentApplication.portfolio.organization,
             Opts.empty()
           )
-        )
       )
-      environment.createdBy(toAuditCreatedBy(toPerson(env.whoCreated)))
+      environment.createdBy(toPerson(env.whoCreated))
     }
     if (opts.contains(FillOpts.Features)) {
       if (features != null) {
@@ -253,7 +251,7 @@ open class ConvertUtils : Conversions {
   override fun splitEnvironmentRoles(roles: String?): MutableList<RoleType> {
     val roleTypes = mutableSetOf<RoleType>()
 
-    if (roles == null || roles.isEmpty()) {
+    if (roles.isNullOrEmpty()) {
       return ArrayList(roleTypes)
     }
 
@@ -296,13 +294,6 @@ open class ConvertUtils : Conversions {
     } else person.name
   }
 
-  private fun toAuditCreatedBy(person: Person?): AuditCreatedBy? {
-    return if (person == null) null else AuditCreatedBy()
-      .id(person.id)
-      .name(person.name)
-      .personType(person.personType)
-  }
-
   override fun toPerson(person: DbPerson?): Person? {
     return if (person == null) {
       null
@@ -313,7 +304,7 @@ open class ConvertUtils : Conversions {
       .email(person.email)
       .personType(person.personType)
       .name(personName(person))
-      .groups(null)
+      .groups(listOf())
   }
 
   override fun organizationId(): UUID = dbOrganization().id
@@ -358,7 +349,7 @@ open class ConvertUtils : Conversions {
         .findList()
       log.trace("groups for person {} are {}", p, groupList)
       groupList
-        .forEach { dbg: DbGroup? -> p.addGroupsItem(toGroup(dbg, opts.minus(FillOpts.Groups))) }
+        .forEach { dbg: DbGroup? -> p.addGroupsItem(toGroup(dbg, opts.minus(FillOpts.Groups))!!) }
     }
     return p
   }
@@ -535,9 +526,9 @@ open class ConvertUtils : Conversions {
               )
             )
             .name(rolloutStrategy.name)
-            .disabled(if (srs.isEnabled) null else true)
+            .disabled(if (srs.isEnabled == true) null else true)
             .strategyId(rolloutStrategy.id)
-        }
+        } ?: listOf()
     }
 
     // this is an indicator it is for the UI not for the cache.
@@ -580,31 +571,39 @@ open class ConvertUtils : Conversions {
     } else featureValue(feature, value, opts!!)
   }
 
-  override fun toRolloutStrategy(rs: DbRolloutStrategy?, opts: Opts?): RolloutStrategyInfo? {
+  override fun toApplicationRolloutStrategy(rs: DbApplicationRolloutStrategy?, opts: Opts?): ApplicationRolloutStrategy? {
     if (rs == null) {
       return null
     }
-    val info = RolloutStrategyInfo().rolloutStrategy(rs.strategy.id(rs.id.toString()))
-    if (opts!!.contains(FillOpts.SimplePeople)) {
-      info.changedBy(toPerson(rs.whoChanged))
-    }
+
+    val info = rs.strategy
+
+//    if (opts!!.contains(FillOpts.SimplePeople)) {
+//      info.changedBy(toPerson(rs.whoChanged)!!)
+//    }
     return info
   }
 
-  override fun byStrategy(id: UUID?): DbRolloutStrategy? {
-    return if (id == null) null else QDbRolloutStrategy().id.eq(id).findOne()
+  override fun byStrategy(id: UUID?): DbApplicationRolloutStrategy? {
+    return if (id == null) null else QDbApplicationRolloutStrategy().id.eq(id).findOne()
   }
 
   override fun toPortfolio(p: DbPortfolio?, opts: Opts?): Portfolio? {
-    return toPortfolio(p, opts, null, true)
+    val pid: UUID? = null
+
+    return toPortfolio(p, opts, pid, true)
   }
 
   override fun toPortfolio(p: DbPortfolio?, opts: Opts?, person: Person?, personNotSuperAdmin: Boolean): Portfolio? {
+    return toPortfolio(p, opts, person?.id?.id, personNotSuperAdmin)
+  }
+
+  override fun toPortfolio(p: DbPortfolio?, opts: Opts?, personId: UUID?, personNotSuperAdmin: Boolean): Portfolio? {
     if (p == null) {
       return null
     }
     val portfolio = Portfolio()
-      .name(stripArchived(p.name, p.whenArchived)!!)
+      .name(stripArchived(p.name, p.whenArchived))
       .description(p.description)
       .version(p.version)
       .organizationId(p.organization.id)
@@ -613,7 +612,7 @@ open class ConvertUtils : Conversions {
       portfolio
         .whenCreated(toOff(p.whenCreated))
         .whenUpdated(toOff(p.whenUpdated))
-        .createdBy(toAuditCreatedBy(toPerson(p.whoCreated, p.organization, Opts.empty())))
+        .createdBy(toPerson(p.whoCreated, p.organization, Opts.empty()))
     }
     if (opts.contains(FillOpts.Groups)) {
       portfolio.groups =
@@ -626,12 +625,12 @@ open class ConvertUtils : Conversions {
         .portfolio.eq(p)
         .order().name.asc()
 
-      person?.let {
-        val portAdmin = isPersonMemberOfPortfolioAdminGroup(portfolio.id!!, it.id!!.id)
+      personId?.let {
+        val portAdmin = isPersonMemberOfPortfolioAdminGroup(portfolio.id, personId)
         if (personNotSuperAdmin && !portAdmin) {
           appFinder = appFinder.or()
-            .environments.groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id)
-            .groupRolesAcl.group.groupMembers.person.id.eq(it.id!!.id).endOr()
+            .environments.groupRolesAcl.group.groupMembers.person.id.eq(personId)
+            .groupRolesAcl.group.groupMembers.person.id.eq(personId).endOr()
         }
       }
 
@@ -775,7 +774,7 @@ open class ConvertUtils : Conversions {
     featureValue: DbFeatureValue?, roles: List<RoleType?>, dbEnvironment: DbEnvironment, opts: Opts
   ): FeatureEnvironment {
     val featureEnvironment = FeatureEnvironment()
-      .environment(toEnvironment(dbEnvironment, Opts.empty()))
+      .environment(toEnvironment(dbEnvironment, Opts.empty())!!)
       .roles(roles)
       .featureValue(toFeatureValue(featureValue))
     if (opts.contains(FillOpts.ServiceAccounts)) {

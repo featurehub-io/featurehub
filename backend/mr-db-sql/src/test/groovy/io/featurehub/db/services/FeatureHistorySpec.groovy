@@ -3,8 +3,8 @@ package io.featurehub.db.services
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.model.DbApplicationFeature
-import io.featurehub.mr.model.Environment
-import io.featurehub.mr.model.Feature
+import io.featurehub.mr.model.CreateEnvironment
+import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RoleType
 import org.apache.commons.lang3.RandomStringUtils
@@ -13,12 +13,12 @@ class FeatureHistorySpec extends Base3Spec {
 
   def "i an create a history of features and query it different ways"() {
     given: "i have multiple environments"
-      def env2 = environmentSqlApi.create(new Environment().description(RandomStringUtils.randomAlphabetic(10)).name(RandomStringUtils.randomAlphabetic(10)), app1, superPerson)
-      def env3 = environmentSqlApi.create(new Environment().description("env3").name(RandomStringUtils.randomAlphabetic(10)), app1, superPerson)
+      def env2 = environmentSqlApi.create(new CreateEnvironment().description(RandomStringUtils.randomAlphabetic(10)).name(RandomStringUtils.randomAlphabetic(10)), app1.id, superPerson)
+      def env3 = environmentSqlApi.create(new CreateEnvironment().description("env3").name(RandomStringUtils.randomAlphabetic(10)), app1.id, superPerson)
     and: "i have multiple features"
       List<DbApplicationFeature> features = []
       def c = { FeatureValueType type ->
-        def feat = new Feature().name(RandomStringUtils.randomAlphabetic(10)).key(RandomStringUtils.randomAlphabetic(10)).description("desc")
+        def feat = new CreateFeature().name(RandomStringUtils.randomAlphabetic(10)).key(RandomStringUtils.randomAlphabetic(10)).description("desc")
           .valueType(type)
         def f = applicationSqlApi.createApplicationLevelFeature(app1.id, feat, superPerson, Opts.empty())
         features.add(f)

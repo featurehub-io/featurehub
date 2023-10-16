@@ -53,15 +53,15 @@ class AuthResource @Inject constructor(
    * @param provider
    * @return
    */
-  override fun getLoginUrlForProvider(provider: String?): ProviderRedirect? {
-    val authProviderSource = authProviderCollection.find(provider!!)
+  override fun getLoginUrlForProvider(provider: String): ProviderRedirect {
+    val authProviderSource = authProviderCollection.find(provider)
     if (authProviderSource != null) {
-      return ProviderRedirect().redirectUrl(authProviderSource.redirectUrl)
+      return ProviderRedirect().redirectUrl(authProviderSource.redirectUrl!!)
     }
     throw NotFoundException()
   }
 
-  override fun login(userCredentials: UserCredentials): TokenizedPerson? {
+  override fun login(userCredentials: UserCredentials): TokenizedPerson {
     // if access via this API is forbidden (for example only GUI based OAuth or SAML login is allowed)
     // then fail requests automatically
     if (loginDisabled == true) {
@@ -82,12 +82,12 @@ class AuthResource @Inject constructor(
     authRepository.invalidate(securityContext)
   }
 
-  override fun personByToken(token: String?): Person? {
-    return authenticationApi.getPersonByToken(token!!)
+  override fun personByToken(token: String): Person {
+    return authenticationApi.getPersonByToken(token)
       ?: throw NotFoundException("No person by that token")
   }
 
-  override fun registerPerson(personRegistrationDetails: PersonRegistrationDetails): TokenizedPerson? {
+  override fun registerPerson(personRegistrationDetails: PersonRegistrationDetails): TokenizedPerson {
 
     //check user found by token and token hasn't expired
     val person = personApi.getByToken(personRegistrationDetails.registrationToken, Opts.opts(FillOpts.Groups))
@@ -120,7 +120,7 @@ class AuthResource @Inject constructor(
     id: UUID,
     passwordReset: PasswordReset,
     context: SecurityContext?
-  ): TokenizedPerson? {
+  ): TokenizedPerson {
     val person = authManager.from(context)
     if (true == person.passwordRequiresReset) {
       if (person.id!!.id == id) { // its me
@@ -132,7 +132,7 @@ class AuthResource @Inject constructor(
     throw ForbiddenException()
   }
 
-  override fun resetExpiredToken(email: String?, context: SecurityContext?): RegistrationUrl? {
+  override fun resetExpiredToken(email: String, context: SecurityContext?): RegistrationUrl {
     val person = authManager.from(context)
     if (authManager.isAnyAdmin(person)) {
       val token = authenticationApi.resetExpiredRegistrationToken(email)
@@ -144,10 +144,10 @@ class AuthResource @Inject constructor(
     throw ForbiddenException()
   }
 
-  override fun resetPassword(id: UUID?, passwordReset: PasswordReset, context: SecurityContext?): Person? {
+  override fun resetPassword(id: UUID, passwordReset: PasswordReset, context: SecurityContext?): Person {
     if (authManager.isAnyAdmin(authManager.from(context))) {
       return authenticationApi.resetPassword(
-        id!!, passwordReset.password,
+        id, passwordReset.password,
         authManager.from(context).id!!.id, true == passwordReset.reactivate
       )
         ?: throw NotFoundException()

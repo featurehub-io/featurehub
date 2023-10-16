@@ -136,7 +136,7 @@ class PersonResource @Inject constructor(
       }
       if (person.personType == PersonType.SDKSERVICEACCOUNT) {
         serviceAccountApi.findServiceAccountByUserId(person.id!!.id)?.let {
-          person.additional!!.add(PersonInfo().key("serviceAccountId").value(it.toString()))
+          person.addAdditionalItem(PersonInfo().key("serviceAccountId").value(it.toString()))
         }
       }
       return person

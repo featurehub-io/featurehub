@@ -9,6 +9,10 @@ import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.messaging.converter.FeatureMessagingParameter
 import io.featurehub.mr.model.Application
+import io.featurehub.mr.model.CreateApplication
+import io.featurehub.mr.model.CreateEnvironment
+import io.featurehub.mr.model.CreateFeature
+import io.featurehub.mr.model.CreatePortfolio
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureValueType
@@ -56,13 +60,13 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     p1 = portfolioSqlApi.getPortfolio("basic")
 
     if (p1 == null) {
-      p1 = portfolioSqlApi.createPortfolio(new Portfolio().name("basic").description("basic"), Opts.empty(), superPerson)
+      p1 = portfolioSqlApi.createPortfolio(new CreatePortfolio().name("basic").description("basic"), Opts.empty(), superuser)
     }
 
     app = applicationSqlApi.getApplication(p1.id, "app1")
 
     if (app == null) {
-      app = applicationSqlApi.createApplication(p1.id, new Application().name("app1").description("desc1"), superPerson)
+      app = applicationSqlApi.createApplication(p1.id, new CreateApplication().name("app1").description("desc1"), superPerson)
     }
     appId = app.id
 
@@ -71,7 +75,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     env = environmentSqlApi.getEnvironment(app.id, "dev")
 
     if (env == null) {
-      env = environmentSqlApi.create(new  Environment().name("dev").description("dev"), app, superPerson)
+      env = environmentSqlApi.create(new  CreateEnvironment().name("dev").description("dev"), app.id, superPerson)
     }
     envIdApp1 = env.id
 
@@ -84,7 +88,8 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
   def "feature updates are published when i create the feature value"() {
     given: "i have a feature"
     String featureKey = "FEATURE_FV1"
-    applicationSqlApi.createApplicationFeature(appId, new Feature().name("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+    applicationSqlApi.createApplicationFeature(appId, new CreateFeature()
+      .name("x").description("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
 
     when: "i set the feature value"
@@ -115,7 +120,8 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
   def "feature updates are published when i update the feature value"() {
     given: "i have a feature"
     String featureKey = "FEATURE_FV2"
-    def features = applicationSqlApi.createApplicationFeature(appId, new Feature().name("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+    def features = applicationSqlApi.createApplicationFeature(appId,
+      new CreateFeature().name("x").description("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
 
     when: "i unlock the feature"
@@ -176,24 +182,25 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
 
   def "feature updates are published when i add rollout strategies"() {
     given: "i have a feature"
-    String featureKey = "FEATURE_FV3"
-    applicationSqlApi.createApplicationFeature(appId, new Feature().name("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
-    def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
+      String featureKey = "FEATURE_FV3"
+      applicationSqlApi.createApplicationFeature(appId,
+        new CreateFeature().name("x").description("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
 
     and: "i have a rollout strategy"
-    def rolloutStrategy = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
-      .value(Boolean.FALSE).attributes([
-      new RolloutStrategyAttribute()
-        .values(['ios'])
-        .fieldName('platform')
-        .conditional(RolloutStrategyAttributeConditional.EQUALS)
-        .type(RolloutStrategyFieldType.STRING)
-    ])
-    def rolloutStrategyUpdate = new RolloutStrategyUpdate("added", null, rolloutStrategy)
+      def rolloutStrategy = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
+        .value(Boolean.FALSE).attributes([
+        new RolloutStrategyAttribute()
+          .values(['ios'])
+          .fieldName('platform')
+          .conditional(RolloutStrategyAttributeConditional.EQUALS)
+          .type(RolloutStrategyFieldType.STRING)
+      ])
+      def rolloutStrategyUpdate = new RolloutStrategyUpdate("added", null, rolloutStrategy)
     when: "i unlock the feature"
-    def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey)
-    // it already exists, so we have  to unlock it
-    f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.locked(false), pers)
+      def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey)
+      // it already exists, so we have  to unlock it
+      f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.locked(false), pers)
 
     then: "feature update is published"
     1 * featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate({ FeatureMessagingParameter param ->

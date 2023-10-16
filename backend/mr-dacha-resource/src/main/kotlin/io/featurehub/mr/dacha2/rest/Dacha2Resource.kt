@@ -63,7 +63,7 @@ class Dacha2ProxyClient @Inject constructor(private val cacheApi: CacheApi) : Da
     throw NotImplementedError()
   }
 
-  override fun getEnvironmentWithHttpInfo(id: UUID?, key: String?): ApiResponse<Dacha2Environment> {
+  override fun getEnvironmentWithHttpInfo(id: UUID, key: String?): ApiResponse<Dacha2Environment> {
     throw NotImplementedError()
   }
 
@@ -81,7 +81,7 @@ class Dacha2ProxyClient @Inject constructor(private val cacheApi: CacheApi) : Da
     throw NotImplementedError()
   }
 
-  override fun getServiceAccountWithHttpInfo(id: String?, key: String?): ApiResponse<Dacha2ServiceAccount> {
+  override fun getServiceAccountWithHttpInfo(id: String, key: String?): ApiResponse<Dacha2ServiceAccount> {
     throw NotImplementedError()
   }
 }

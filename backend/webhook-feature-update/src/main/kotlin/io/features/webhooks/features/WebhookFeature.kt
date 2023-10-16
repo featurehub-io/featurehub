@@ -7,12 +7,11 @@ import io.cloudevents.CloudEvent
 import io.cloudevents.core.v1.CloudEventBuilder
 import io.featurehub.enriched.model.EnrichedFeatures
 import io.featurehub.enricher.EnricherListenerFeature
-import io.featurehub.events.CloudEventChannelMetric
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.jersey.config.CommonConfiguration
-import io.featurehub.metrics.MetricsCollector
+import io.featurehub.lifecycle.BaggageChecker
 import io.featurehub.utils.FallbackPropertyConfig
 import io.featurehub.webhook.events.WebhookEnvironmentResult
 import io.featurehub.webhook.events.WebhookMethod
@@ -30,6 +29,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.URLDecoder
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.OffsetDateTime
 
@@ -55,17 +55,15 @@ class WebhookFeature : Feature {
   }
 
   companion object {
-    val enabled: Boolean
+    val enabled: Boolean = FallbackPropertyConfig.getConfig("webhooks.features.enabled")?.lowercase() != "false"
 
-    init {
-      enabled = FallbackPropertyConfig.getConfig("webhooks.features.enabled")?.lowercase() != "false"
-    }
   }
 }
 
 class WebhookEnricherListener @Inject constructor(
   cloudEventReceiverRegistry: CloudEventReceiverRegistry,
-  private val cloudEventPublisher: CloudEventPublisher) {
+  private val cloudEventPublisher: CloudEventPublisher,
+  private val baggageSource: BaggageChecker) {
   private val client: Client
 
   @ConfigKey("webhooks.features.timeout.connect")
@@ -101,7 +99,7 @@ class WebhookEnricherListener @Inject constructor(
 
     log.debug("webhook: environment info is {}", conf)
 
-    if (conf == null || (ef.targetEnrichmentDestination != null && ef.targetEnrichmentDestination != WebhookEnvironmentResult.CLOUD_EVENT_TYPE )) {
+    if ((ef.targetEnrichmentDestination != null && ef.targetEnrichmentDestination != WebhookEnvironmentResult.CLOUD_EVENT_TYPE )) {
       return
     }
 
@@ -136,24 +134,41 @@ class WebhookEnricherListener @Inject constructor(
         target.header("ce-source", cloudEventSource)
         target.header("ce-subject", EnrichedFeatures.CLOUD_EVENT_SUBJECT)
         val time = OffsetDateTime.now()
-        target.header("ce-time", time)
+        target.header("ce-time", ce.time ?: time)
+        target.header("ce-id", ce.id)
 
-        val checksum = Integer.toHexString(ef.environment.featureValues.joinToString(",") { fv ->
-          if (fv.value == null) {
-            fv.feature.id.toString()
-          } else {
-            fv.value!!.id.toString() + "-" + fv.value!!.version
-          }
-        }.hashCode())
+        ce.extensionNames.forEach {
+          target.header("ce-${it}", ce.getExtension(it))
+        }
 
-        val id = "${ef.environment.environment.id}-${checksum}"
-        target.header("ce-id", id)
+        val baggage = baggageSource.asMap().entries.joinToString(",") {
+          "${it.key}=${
+            URLEncoder.encode(
+              it.value.value,
+              StandardCharsets.UTF_8
+            )
+          }"}
+
+        if (baggage.isNotEmpty()) {
+          target.header("baggage", baggage)
+        }
+
+//        val checksum = Integer.toHexString(ef.environment.featureValues.joinToString(",") { fv ->
+//          if (fv.value == null) {
+//            fv.feature.id.toString()
+//          } else {
+//            fv.value!!.id.toString() + "-" + fv.value!!.version
+//          }
+//        }.hashCode())
+//
+//        val id = "${ef.environment.environment.id}-${checksum}"
+//        target.header("ce-id", id)
 
         val notifyEvent = CloudEventBuilder().newBuilder()
           .withType(WebhookEnvironmentResult.CLOUD_EVENT_TYPE)
           .withSubject(WebhookEnvironmentResult.CLOUD_EVENT_SUBJECT)
           .withSource(replySource)
-          .withId(id)
+          .withId(ce.id)
           .withTime(time)
 
         val data = WebhookEnvironmentResult()
