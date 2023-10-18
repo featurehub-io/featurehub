@@ -1469,14 +1469,14 @@ paths:
           type: string
           format: uuid
         required: true
-#      - name: environmentIds
-#        description: "The environment ids to filter by. This should be limited to what the user is currently looking at or needing"
-#        in: query
-#        schema:
-#          type: array
-#          items:
-#            type: string
-#            format: uuid
+      - name: environmentIds
+        description: "The environment ids to filter by. This should be limited to what the user is currently looking at or needing"
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
       - name: filter
         description: "A filter to apply to the features - partial match of key or description"
         in: query

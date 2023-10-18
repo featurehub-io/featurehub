@@ -1646,6 +1646,18 @@ paths:
       schema:
         type: string
         format: uuid
+    - name: environmentIds
+      in: query
+      description: The environment ids to filter by. This should be limited to what
+        the user is currently looking at or needing
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+          format: uuid
     - name: filter
       in: query
       description: A filter to apply to the features - partial match of key or description
@@ -4200,7 +4212,7 @@ components:
           description: There are strategies provided by feature groups (if any)
           nullable: true
           items:
-            $ref: '#/components/schemas/GroupRolloutStrategy'
+            $ref: '#/components/schemas/ThinGroupRolloutStrategy'
           default: []
         environmentId:
           type: string
@@ -4223,6 +4235,13 @@ components:
         whatUpdated:
           type: string
           nullable: true
+    ThinGroupRolloutStrategy:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          description: "The value for this strategy, currently always a string"
     RolloutStrategyInstance:
       properties:
         name:

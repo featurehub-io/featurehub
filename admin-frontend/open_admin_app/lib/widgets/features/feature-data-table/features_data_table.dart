@@ -44,11 +44,11 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
           setState(() {
             _selectedEnvironmentList =
                 bloc.selectedEnvironmentNamesByUser;
-            var featuresList = FeatureStatusFeatures(features);
+            var featuresList = FeatureStatusFeatures(features.applicationFeatureValues);
             _selectedFeatureTypes = bloc.selectedFeatureTypesByUser;
             _featuresDataSource = FeaturesDataSource(featuresList, widget.bloc,
                 _searchTerm, _selectedFeatureTypes, _rowsPerPage);
-            _maxFeatures = features.maxFeatures;
+            _maxFeatures = features.applicationFeatureValues.maxFeatures;
             _pageIndex = bloc.currentPageIndex-1;
           });
       }
@@ -59,11 +59,12 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
   Widget build(BuildContext context) {
     final debouncer = Debouncer(milliseconds: 500);
       List<GridColumn> gridColumnsList = [];
-      return StreamBuilder<ApplicationFeatureValues?>(
+
+      return StreamBuilder<CollectedFeatureTableData?>(
           stream: widget.bloc.appFeatureValuesStream,
           builder: (context, snapshot) {
             if (snapshot.hasData &&
-                snapshot.data!.environments.isEmpty) {
+                snapshot.data!.availableEnvironments.isEmpty) {
               return const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -72,7 +73,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
               );
             }
             else if (snapshot.hasData) {
-              gridColumnsList = snapshot.data!.environments
+              gridColumnsList = snapshot.data!.applicationFeatureValues.environments
                   .map(
                     (entry) => GridColumn(
                       columnName: "env",
@@ -86,14 +87,14 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                   )
                   .toList();
 
-              var featuresList = FeatureStatusFeatures(snapshot.data!);
+              var featuresList = FeatureStatusFeatures(snapshot.data!.applicationFeatureValues);
               _featuresDataSource = FeaturesDataSource(
                   featuresList,
                   widget.bloc,
                   _searchTerm,
                   _selectedFeatureTypes,
                   _rowsPerPage);
-              _maxFeatures = snapshot.data!.maxFeatures;
+              _maxFeatures = snapshot.data!.applicationFeatureValues.maxFeatures;
 
               return Card(
                     elevation: 1,
@@ -126,8 +127,8 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                                   Icons.visibility_sharp,
                                   size: 18,
                                 ),
-                                options: snapshot.data!.environments
-                                    .map((e) => e.environmentName)
+                                options: snapshot.data!.availableEnvironments
+                                    .map((e) => e.name)
                                     .toList(),
                                 selectedValues: _selectedEnvironmentList
                                 // whenEmpty: 'Select Something',
