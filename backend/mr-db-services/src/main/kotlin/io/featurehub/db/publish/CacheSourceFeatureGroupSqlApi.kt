@@ -62,6 +62,11 @@ class CacheSourceFeatureGroupSqlApi : CacheSourceFeatureGroupApi {
   ): List<CacheSourceCollectedStrategy> {
     val collected = mutableListOf<CacheSourceCollectedStrategy>()
 
+    // neither of these is a valid use case, so skip asking the db
+    if (envId.isEmpty() || featureIds.isEmpty()) {
+      return collected
+    }
+
     QDbFeatureGroupFeature().key.feature.`in`(featureIds).group.environment.id.`in`(envId)
       .group.whenArchived.isNull
       .select(
