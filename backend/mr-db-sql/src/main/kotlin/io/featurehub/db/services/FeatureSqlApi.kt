@@ -13,6 +13,7 @@ import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersion
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.query.*
+import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.db.utils.EnvironmentUtils
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.messaging.converter.FeatureMessagingParameter
@@ -60,6 +61,7 @@ class FeatureSqlApi @Inject constructor(
   private val cacheSource: CacheSource,
   private val rolloutStrategyValidator: RolloutStrategyValidator,
   private val featureMessagingCloudEventPublisher: FeatureMessagingCloudEventPublisher,
+  private val featureGroupApi: CacheSourceFeatureGroupApi,
 ) : FeatureApi, FeatureUpdateBySDKApi {
 
   @ConfigKey("features.max-per-page")
@@ -1180,6 +1182,8 @@ class FeatureSqlApi @Inject constructor(
         envs[e.id]?.let { finalValues.add(it) }
       }
 
+      fillInFeatureGroupData(features, finalValues)
+
       // this actually returns ALL environments regardless of whether a user has access, it simply returns
       // roles of [] if they don't have access
       return ApplicationFeatureValues()
@@ -1189,6 +1193,20 @@ class FeatureSqlApi @Inject constructor(
         .maxFeatures(totalFeatureCount)
     }
     return null
+  }
+
+  private fun fillInFeatureGroupData(features: List<Feature>, values: List<EnvironmentFeatureValues>) {
+    val featureKeymap = features.associateBy { it.id }
+    val envMap = values.associateBy { it.environmentId }
+
+    // now will get back a bunch of name/value/envId/featureId pairs,
+    for (fg in featureGroupApi.collectStrategiesFromEnvironmentsWithFeatures(values.map { it.environmentId }.distinct(), features.map { it.id!! }.distinct())) {
+      val key = featureKeymap[fg.featureId]?.key ?: continue
+      val env = envMap[fg.envId] ?: continue
+
+      env.features.find { it.key == key }
+        ?.addFeatureGroupStrategiesItem(ThinGroupRolloutStrategy().name(fg.name).value(fg.value))
+    }
   }
 
   // it is already in a transaction for the job table, so it needs a new one

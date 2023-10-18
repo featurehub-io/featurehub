@@ -213,6 +213,14 @@ class FeatureGroupSpec extends Base3Spec {
       strategies1[0].name == 'fred'
       strategies1[0].percentage == 20
       strategies1[0].attributes == null
+    when: "i ask for the collection of feature ids + environments"
+      def collected = fgSource.collectStrategiesFromEnvironmentsWithFeatures([env1.id], [features[0].id, features[1].id])
+    then:
+      collected.size() == 1
+      collected[0].name == 'fred'
+      collected[0].value == '121.67'
+      collected[0].envId == env1.id
+      collected[0].featureId == features[0].id
     when: "i remove the first feature and add a second feature"
       def updatedAddedRemoved = fgApi.updateGroup(app1.id, superPerson, new FeatureGroupUpdate()
         .id(created.id)
