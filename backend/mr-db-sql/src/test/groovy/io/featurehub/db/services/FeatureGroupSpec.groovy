@@ -218,7 +218,7 @@ class FeatureGroupSpec extends Base3Spec {
     then:
       collected.size() == 1
       collected[0].name == 'fred'
-      collected[0].value == '121.67'
+      collected[0].value == 121.67
       collected[0].envId == env1.id
       collected[0].featureId == features[0].id
     when: "i remove the first feature and add a second feature"

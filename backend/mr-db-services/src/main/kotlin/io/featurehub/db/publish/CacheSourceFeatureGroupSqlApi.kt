@@ -72,7 +72,9 @@ class CacheSourceFeatureGroupSqlApi : CacheSourceFeatureGroupApi {
       .select(
         QDbFeatureGroupFeature.Alias.group.strategies, QDbFeatureGroupFeature.Alias.value,
         QDbFeatureGroupFeature.Alias.group.environment.id,
-        QDbFeatureGroupFeature.Alias.key.feature, QDbFeatureGroupFeature.Alias.key.group
+        QDbFeatureGroupFeature.Alias.key.feature,
+        QDbFeatureGroupFeature.Alias.feature.valueType,
+        QDbFeatureGroupFeature.Alias.key.group
       )
       .order().group.order.asc()
       .findList().forEach { fgFeature ->
@@ -83,7 +85,7 @@ class CacheSourceFeatureGroupSqlApi : CacheSourceFeatureGroupApi {
                 strat[0].name,
                 fgFeature.group.environment.id,
                 fgFeature.key.feature,
-                fgFeature.value
+                FeatureGroupHelper.cast(fgFeature.value, fgFeature.feature.valueType)
               )
             )
           }
