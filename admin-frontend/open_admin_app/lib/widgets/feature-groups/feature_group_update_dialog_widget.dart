@@ -4,7 +4,7 @@ import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class FeatureGroupUpdateDialogWidget extends StatefulWidget {

@@ -22,7 +22,7 @@ class EditingFeatureValueBloc implements Bloc {
 
   late final BehaviorSubject<List<RolloutStrategy>> _strategySource;
   final _rolloutStrategyAttributeList =
-  BehaviorSubject<List<RolloutStrategyAttribute>>();
+      BehaviorSubject<List<RolloutStrategyAttribute>>();
   Stream<List<RolloutStrategyAttribute>> get attributes =>
       _rolloutStrategyAttributeList.stream;
 
@@ -36,9 +36,12 @@ class EditingFeatureValueBloc implements Bloc {
       PerApplicationFeaturesBloc featureStatusBloc,
       this.applicationFeatureValues)
       : _featureStatusBloc = featureStatusBloc {
-    _featureServiceApi = FeatureServiceApi(featureStatusBloc.mrClient.apiClient);
-    currentFeatureValue = FeatureValue.fromJson(featureValue.toJson()); // keeping original featureValue cached for resets
-    _strategySource = BehaviorSubject<List<RolloutStrategy>>.seeded([...currentFeatureValue.rolloutStrategies ?? []]);
+    _featureServiceApi =
+        FeatureServiceApi(featureStatusBloc.mrClient.apiClient);
+    currentFeatureValue = FeatureValue.fromJson(featureValue
+        .toJson()); // keeping original featureValue cached for resets
+    _strategySource = BehaviorSubject<List<RolloutStrategy>>.seeded(
+        [...currentFeatureValue.rolloutStrategies ?? []]);
     environmentId = environmentFeatureValue.environmentId;
     addFeatureValueToStream(featureValue);
   }
@@ -51,7 +54,7 @@ class EditingFeatureValueBloc implements Bloc {
 
     final index = strategies.indexWhere((s) => s.id == rs.id);
     if (index == -1) {
-      dynamic value = null;
+      dynamic value;
 
       if (feature.valueType == FeatureValueType.BOOLEAN) {
         value = !(featureValue.valueBoolean ?? false);
@@ -79,7 +82,8 @@ class EditingFeatureValueBloc implements Bloc {
   void removeStrategy(RolloutStrategy rs) {
     // tag it to ensure it has a number so we can remove it
     final strategies = _strategySource.value;
-    fhosLogger.fine("removing strategy ${rs.id} from list ${strategies.map((e) => e.id)}");
+    fhosLogger.fine(
+        "removing strategy ${rs.id} from list ${strategies.map((e) => e.id)}");
     strategies.removeWhere((e) => e.id == rs.id);
     _strategySource.add(strategies);
   }

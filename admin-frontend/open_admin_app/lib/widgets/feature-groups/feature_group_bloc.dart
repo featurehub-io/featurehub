@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/fhos_logger.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/edit_strategy_interface.dart';
 import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 import 'package:rxdart/rxdart.dart';
@@ -106,7 +106,8 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
 
   void addFeatureToGroup() {
     if (_selectedFeatureToAdd != null) {
-      final latestFeatureGroupFeatures = _trackingUpdatesGroupFeaturesStream.value;
+      final latestFeatureGroupFeatures =
+          _trackingUpdatesGroupFeaturesStream.value;
       List<FeatureGroupFeature> features = _availableFeaturesStream.value;
       FeatureGroupFeature currentFeatureGF = features
           .firstWhere((feature) => feature.id == _selectedFeatureToAdd!);
@@ -130,18 +131,16 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
   Future<void> saveFeatureGroupUpdates() async {
     final features = _trackingUpdatesGroupFeaturesStream.hasValue
         ? _trackingUpdatesGroupFeaturesStream.value
-        .map((e) => convertToFeatureUpdate(e))
-        .toList()
+            .map((e) => convertToFeatureUpdate(e))
+            .toList()
         : null;
 
     final strategies = _trackingUpdatesGroupStrategiesStream.hasValue
         ? _trackingUpdatesGroupStrategiesStream.value
         : null;
 
-    print("features ${features} - strategies ${strategies}");
     await featureGroupsBloc.updateFeatureGroup(featureGroupListGroup,
-        features: features,
-        strategies: strategies);
+        features: features, strategies: strategies);
   }
 
   FeatureGroupUpdateFeature convertToFeatureUpdate(

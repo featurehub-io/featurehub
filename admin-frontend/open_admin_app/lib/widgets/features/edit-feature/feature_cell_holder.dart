@@ -58,7 +58,8 @@ class FeatureCellHolder extends StatelessWidget {
                                 if (feature.link?.isNotEmpty == true)
                                   FHIconButton(
                                     tooltip: feature.link!,
-                                    icon: const Icon(Icons.arrow_forward),
+                                    icon: const Icon(
+                                        Icons.arrow_outward_outlined),
                                     onPressed: () {
                                       window.open(feature.link!, 'new tab');
                                     },

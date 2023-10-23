@@ -26,7 +26,7 @@ import 'package:open_admin_app/routes/signin_route.dart';
 import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_app_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:open_admin_app/widgets/group/group_bloc.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';

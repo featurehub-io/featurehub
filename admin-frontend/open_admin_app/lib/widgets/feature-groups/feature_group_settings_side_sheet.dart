@@ -226,7 +226,8 @@ class _StrategySettings extends StatelessWidget {
                               content: BlocProvider.builder(
                                 creator: (c, b) {
                                   var rs = snapshot.data!;
-                                  return StrategyEditorBloc(rs.toEditing(), GroupRolloutStrategyProvider(bloc));
+                                  return StrategyEditorBloc(rs.toEditing(),
+                                      GroupRolloutStrategyProvider(bloc));
                                 },
                                 builder: (c, b) => StrategyEditingWidget(
                                     bloc: b, editable: true),
@@ -258,8 +259,9 @@ class _StrategySettings extends StatelessWidget {
                                   ? 'Edit split targeting rules'
                                   : 'View split targeting rules'),
                               content: BlocProvider.builder(
-                                creator: (c, b) =>
-                                    StrategyEditorBloc(EditingRolloutStrategy.newStrategy(), GroupRolloutStrategyProvider(bloc)),
+                                creator: (c, b) => StrategyEditorBloc(
+                                    EditingRolloutStrategy.newStrategy(),
+                                    GroupRolloutStrategyProvider(bloc)),
                                 builder: (c, b) => StrategyEditingWidget(
                                     bloc: b, editable: true),
                               ));
@@ -345,7 +347,7 @@ class _FeaturesSettings extends StatelessWidget {
                                       const SizedBox(width: 8.0),
                                       FeatureValueContainer(
                                           bloc: bloc, feature: feature),
-                                      if (feature.locked!)
+                                      if (feature.locked)
                                         Tooltip(
                                             message:
                                                 "Feature value is locked. Unlock from the main Features dashboard to enable editing",

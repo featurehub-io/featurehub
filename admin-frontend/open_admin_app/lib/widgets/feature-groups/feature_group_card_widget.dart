@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature-group-settings-side-sheet.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature_group_settings_side_sheet.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 import 'package:side_sheet/side_sheet.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'feature_group_bloc.dart';
@@ -54,20 +54,19 @@ class FeatureGroupCard extends StatelessWidget {
                                 maxLines: 2,
                                 style: Theme.of(context).textTheme.bodyLarge),
                             const SizedBox(height: 4.0),
-                            if (featureGroup.description != null)
-                              Text(featureGroup.description,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        color: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.color
-                                            ?.withOpacity(0.5),
-                                      )),
+                            Text(featureGroup.description,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.color
+                                          ?.withOpacity(0.5),
+                                    )),
                           ],
                         ),
                       ),
@@ -95,7 +94,7 @@ class FeatureGroupCard extends StatelessWidget {
                   child: Column(
                     children: [
                       const Divider(),
-                      SizedBox(height: 4.0),
+                      const SizedBox(height: 4.0),
                       FeaturesCounter(
                         counter: featureGroup.features.length,
                         featureGroup: featureGroup,
@@ -173,11 +172,11 @@ _openFeatureGroupEditSideSheet(FeatureGroupsBloc bloc,
     FeatureGroupListGroup featureGroup, BuildContext context) {
   SideSheet.right(
       body: BlocProvider.builder(
-        creator: (c, b) => FeatureGroupBloc(bloc, featureGroup),
-        builder: (c, b) => FeatureGroupSettings(
-          bloc: b,
-          featureGroup: featureGroup,
-        )),
+          creator: (c, b) => FeatureGroupBloc(bloc, featureGroup),
+          builder: (c, b) => FeatureGroupSettings(
+                bloc: b,
+                featureGroup: featureGroup,
+              )),
       width: MediaQuery.of(context).size.width * 0.8,
       context: context);
 }

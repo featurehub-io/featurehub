@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 
 class EnvironmentDropDown extends StatefulWidget {
   final FeatureGroupsBloc bloc;

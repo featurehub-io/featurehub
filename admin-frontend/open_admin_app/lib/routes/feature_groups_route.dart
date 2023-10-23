@@ -10,7 +10,7 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 import 'package:open_admin_app/widgets/feature-groups/environment_drop_down.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_group_card_widget.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_group_update_dialog_widget.dart';
 

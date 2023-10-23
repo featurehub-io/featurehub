@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class FeatureGroupDeleteDialogWidget extends StatelessWidget {

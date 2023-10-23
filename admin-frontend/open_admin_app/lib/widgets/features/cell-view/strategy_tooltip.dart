@@ -44,8 +44,7 @@ String generateTooltipMessage(RolloutStrategy? rolloutStrategy) {
     versionNameMessage = 'Version\n';
   }
 
-  if (attrs.any((rsa) => StrategyAttributeWellKnownNames
-      .values
+  if (attrs.any((rsa) => StrategyAttributeWellKnownNames.values
       .every((value) => rsa.fieldName != value.name))) {
     customNameMessage = 'Custom\n';
   }
