@@ -249,16 +249,16 @@ class FeaturesCounter extends StatelessWidget {
             ),
             (featureGroup.features.isNotEmpty && featureGroup.hasStrategy)
                 ? Row(children: [
-                    Icon(Icons.check_circle_outline_rounded,
-                        color: Colors.greenAccent.shade700, size: 18.0),
-                    const SizedBox(
-                      width: 4.0,
-                    ),
                     Text("Active",
                         style: Theme.of(context)
                             .textTheme
                             .labelMedium
-                            ?.copyWith(color: Colors.greenAccent.shade700))
+                            ?.copyWith(color: Colors.greenAccent.shade700)),
+                    const SizedBox(
+                      width: 4.0,
+                    ),
+                    Icon(Icons.check_circle_outline_rounded,
+                        color: Colors.greenAccent.shade700, size: 18.0),
                   ])
                 : const Text("Not set"),
           ],
