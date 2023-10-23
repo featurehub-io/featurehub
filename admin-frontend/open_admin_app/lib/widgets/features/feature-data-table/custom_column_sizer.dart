@@ -3,7 +3,6 @@ import 'package:open_admin_app/widgets/features/feature-data-table/features_data
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-
 class CustomColumnSizer extends ColumnSizer {
   @override
   double computeCellHeight(GridColumn column, DataGridRow row,
@@ -17,7 +16,13 @@ class CustomColumnSizer extends ColumnSizer {
         if (cell.value is AggregatedFeatureCellData) {
           var typedCellData = cell.value as AggregatedFeatureCellData;
           if (typedCellData.fv != null) {
-            var stratLength = typedCellData.fv!.rolloutStrategies!.length;
+            int stratLength = 0;
+            if (typedCellData.fv!.featureGroupStrategies != null) {
+              stratLength = typedCellData.fv!.rolloutStrategies!.length +
+                  typedCellData.fv!.featureGroupStrategies!.length;
+            } else {
+              stratLength = typedCellData.fv!.rolloutStrategies!.length;
+            }
             if (stratLength * defaultCellHeight > height) {
               height = stratLength * defaultCellHeight;
             }
@@ -25,6 +30,9 @@ class CustomColumnSizer extends ColumnSizer {
         }
       });
     }
-    return height + defaultCellHeight + cellInfoIconsHeight + featureNameBoxExtraHeightForFeatureType;
+    return height +
+        defaultCellHeight +
+        cellInfoIconsHeight +
+        featureNameBoxExtraHeightForFeatureType;
   }
 }

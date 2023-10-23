@@ -60,7 +60,7 @@ class FeatureResource @Inject constructor(
         val current = authManager.from(securityContext)
         return featureApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
             id, current, holder.filter,
-            holder.max, holder.page, holder.featureTypes, holder.sortOrder
+            holder.max, holder.page, holder.featureTypes, holder.sortOrder, holder.environmentIds
         ) ?: throw NotFoundException()
     }
 

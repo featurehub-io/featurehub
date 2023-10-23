@@ -13,6 +13,7 @@ import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersion
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.query.*
+import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.db.utils.EnvironmentUtils
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.messaging.converter.FeatureMessagingParameter
@@ -60,6 +61,7 @@ class FeatureSqlApi @Inject constructor(
   private val cacheSource: CacheSource,
   private val rolloutStrategyValidator: RolloutStrategyValidator,
   private val featureMessagingCloudEventPublisher: FeatureMessagingCloudEventPublisher,
+  private val featureGroupApi: CacheSourceFeatureGroupApi,
 ) : FeatureApi, FeatureUpdateBySDKApi {
 
   @ConfigKey("features.max-per-page")
@@ -1044,7 +1046,8 @@ class FeatureSqlApi @Inject constructor(
     maxFeatures: Int?,
     startingPage: Int?,
     featureValueTypes: List<FeatureValueType>?,
-    sortOrder: SortOrder?
+    sortOrder: SortOrder?,
+    environmentIds: List<UUID>?
   ): ApplicationFeatureValues? {
     val dbPerson = convertUtils.byPerson(current)
     val app = convertUtils.byApplication(appId)
@@ -1094,9 +1097,10 @@ class FeatureSqlApi @Inject constructor(
       val personAdmin = convertUtils.isPersonApplicationAdmin(dbPerson, app)
       val environmentOrderingMap: MutableMap<UUID, DbEnvironment> = HashMap()
 
+
       // the requirement is that we only send back environments they have at least READ access to, so
       // this finds the environments their group has access to
-      val rawPerms = QDbAcl()
+      var rawPermsQl = QDbAcl()
         .environment.whenArchived.isNull
         .environment.parentApplication.eq(app)
         .environment.parentApplication.whenArchived.isNull
@@ -1104,9 +1108,16 @@ class FeatureSqlApi @Inject constructor(
         .group.whenArchived.isNull
         .group.groupMembers.person.eq(
           dbPerson
-        ).findList()
+        )
+      // it doesn't matter if they don't have access to the envs they are selecting, they still have
+      // to have ACLs in them, but it allows us to limit them.
+      environmentIds?.let { requestedEnvIdList ->
+        if (requestedEnvIdList.isNotEmpty()) {
+          rawPermsQl = rawPermsQl.environment.id.`in`(requestedEnvIdList)
+        }
+      }
       val permEnvs =
-        rawPerms
+        rawPermsQl.findList()
           .onEach { acl: DbAcl -> environmentOrderingMap[acl.environment.id] = acl.environment }
           .mapNotNull { acl: DbAcl -> environmentToFeatureValues(acl, personAdmin, featureKeys) }
           .filter { efv: EnvironmentFeatureValues? ->
@@ -1150,8 +1161,14 @@ class FeatureSqlApi @Inject constructor(
       // if the user has no access to the environment
       if (permEnvs.isNotEmpty() || personAdmin) {
         // now go through all the environments for this app
-        val environments =
-          QDbEnvironment().whenArchived.isNull.order().name.desc().parentApplication.eq(app).findList()
+        var environmentsQl =
+          QDbEnvironment().whenArchived.isNull.order().name.desc().parentApplication.eq(app)
+        environmentIds?.let { requestedEnvIdList ->
+          if (requestedEnvIdList.isNotEmpty()) {
+            environmentsQl = environmentsQl.id.`in`(requestedEnvIdList)
+          }
+        }
+        val environments = environmentsQl.findList()
         // envId, DbEnvi
         val roles = if (personAdmin) listOf(*RoleType.values()) else listOf()
         environments.forEach { e: DbEnvironment ->
@@ -1180,6 +1197,8 @@ class FeatureSqlApi @Inject constructor(
         envs[e.id]?.let { finalValues.add(it) }
       }
 
+      fillInFeatureGroupData(features, finalValues)
+
       // this actually returns ALL environments regardless of whether a user has access, it simply returns
       // roles of [] if they don't have access
       return ApplicationFeatureValues()
@@ -1189,6 +1208,20 @@ class FeatureSqlApi @Inject constructor(
         .maxFeatures(totalFeatureCount)
     }
     return null
+  }
+
+  private fun fillInFeatureGroupData(features: List<Feature>, values: List<EnvironmentFeatureValues>) {
+    val featureKeymap = features.associateBy { it.id }
+    val envMap = values.associateBy { it.environmentId }
+
+    // now will get back a bunch of name/value/envId/featureId pairs,
+    for (fg in featureGroupApi.collectStrategiesFromEnvironmentsWithFeatures(values.map { it.environmentId }.distinct(), features.map { it.id!! }.distinct())) {
+      val key = featureKeymap[fg.featureId]?.key ?: continue
+      val env = envMap[fg.envId] ?: continue
+
+      env.features.find { it.key == key }
+        ?.addFeatureGroupStrategiesItem(ThinGroupRolloutStrategy().name(fg.name).value(fg.value))
+    }
   }
 
   // it is already in a transaction for the job table, so it needs a new one

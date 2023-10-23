@@ -17,7 +17,6 @@ dependencies:
   flutter:
     sdk: flutter
   dio: '^5.0.1'
-  collection: '^1.16.0'
   rxdart: ^0.27.0
   bloc_provider: ^0.8.0
   logging: ^1.0.1
@@ -36,6 +35,7 @@ dependencies:
   multiselect: ^0.1.0
   side_sheet: ^1.0.3
   async: ^2.9.0
+  collection: ^1.17.1
 
 dev_dependencies:
   meta: ^1.8.0

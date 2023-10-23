@@ -12,14 +12,15 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 class ManageServiceAccountsRoute extends StatefulWidget {
   final bool createServiceAccount;
 
-  const ManageServiceAccountsRoute({Key? key, required this.createServiceAccount})
-      :super(key: key);
+  const ManageServiceAccountsRoute(
+      {Key? key, required this.createServiceAccount})
+      : super(key: key);
 
   @override
-  _ServiceAccountSearchState createState() => _ServiceAccountSearchState();
+  ServiceAccountSearchState createState() => ServiceAccountSearchState();
 }
 
-class _ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
+class ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
   String? selectedPortfolio;
   ManageServiceAccountsBloc? bloc;
 
@@ -38,7 +39,7 @@ class _ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         const FHHeader(
-        title: 'Manage service accounts',
+          title: 'Manage service accounts',
         ),
         const SizedBox(height: 4.0),
         const FHPageDivider(),
@@ -68,7 +69,6 @@ class _ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
       ],
     );
   }
-
 
   @override
   void didUpdateWidget(ManageServiceAccountsRoute oldWidget) {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
-class EditBooleanValueDropDownWidget extends StatefulWidget {
 
+class EditBooleanValueDropDownWidget extends StatefulWidget {
   const EditBooleanValueDropDownWidget({
     Key? key,
     required this.unlocked,
@@ -29,41 +29,44 @@ class _EditBooleanValueDropDownWidgetState
   void initState() {
     super.initState();
     if (widget.rolloutStrategy == null) {
-        boolFeatureValue =
-            (widget.strBloc.featureValue.valueBoolean ?? false) ? 'On' : 'Off';
-      } else {
-        boolFeatureValue = widget.rolloutStrategy!.value ? 'On' : 'Off';
-      }
+      boolFeatureValue =
+          (widget.strBloc.featureValue.valueBoolean ?? false) ? 'On' : 'Off';
+    } else {
+      boolFeatureValue = widget.rolloutStrategy!.value ? 'On' : 'Off';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonHideUnderline(
-      child: DropdownButton(
-        isDense: true,
-        isExpanded: false,
-        items:
-            <String>['On', 'Off'].map<DropdownMenuItem<String>>((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(
-              value,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          );
-        }).toList(),
-        value: boolFeatureValue,
-        onChanged: widget.editable && widget.unlocked
-            ? (value) {
-                final replacementBoolean = (value == 'On');
-                _updateFeatureValue(replacementBoolean);
-                setState(() {
-                  boolFeatureValue = replacementBoolean ? 'On' : 'Off';
-                });
-              }
-            : null,
-        disabledHint:
-            Text(boolFeatureValue, style: Theme.of(context).textTheme.bodySmall),
+    return SizedBox(
+      width: 50,
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton(
+          isDense: true,
+          isExpanded: true,
+          items: <String>['On', 'Off']
+              .map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(
+                value,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            );
+          }).toList(),
+          value: boolFeatureValue,
+          onChanged: widget.editable && widget.unlocked
+              ? (value) {
+                  final replacementBoolean = (value == 'On');
+                  _updateFeatureValue(replacementBoolean);
+                  setState(() {
+                    boolFeatureValue = replacementBoolean ? 'On' : 'Off';
+                  });
+                }
+              : null,
+          disabledHint: Text(boolFeatureValue,
+              style: Theme.of(context).textTheme.bodySmall),
+        ),
       ),
     );
   }

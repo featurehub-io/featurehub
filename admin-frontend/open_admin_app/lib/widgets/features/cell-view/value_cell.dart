@@ -57,10 +57,13 @@ class _ValueContainer extends StatelessWidget {
       return InkWell(
         onTap: () {
           SideSheet.right(
+              sheetColor: Theme.of(context).canvasColor,
               body: BlocProvider<EditingFeatureValueBloc>.builder(
-                  creator: (c, b) => bloc.perFeatureStateTrackingBloc(feature, fv!, efv),
-                  builder: (ctx, efvBloc) => EditFeatureValueWidget(bloc: efvBloc,))
-              ,
+                  creator: (c, b) =>
+                      bloc.perFeatureStateTrackingBloc(feature, fv!, efv),
+                  builder: (ctx, efvBloc) => EditFeatureValueWidget(
+                        bloc: efvBloc,
+                      )),
               width: MediaQuery.of(context).size.width * 0.3,
               context: context);
         },
@@ -88,6 +91,9 @@ class _ValueContainer extends StatelessWidget {
               _ValueCard(feature: feature, fv: fv!),
               if (fv!.rolloutStrategies?.isNotEmpty == true)
                 _StrategiesList(feature: feature, fv: fv!),
+              if (fv!.featureGroupStrategies != null &&
+                  fv!.featureGroupStrategies!.isNotEmpty)
+                _FeatureGroupStrategyList(feature: feature, fv: fv!)
             ],
           ),
         ),
@@ -154,16 +160,44 @@ class _StrategiesList extends StatelessWidget {
   }
 }
 
+class _FeatureGroupStrategyList extends StatelessWidget {
+  final Feature feature;
+  final FeatureValue fv;
+
+  const _FeatureGroupStrategyList(
+      {Key? key, required this.feature, required this.fv})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (fv.featureGroupStrategies != null)
+          for (ThinGroupRolloutStrategy rsi in fv.featureGroupStrategies!)
+            _ValueCard(
+              rolloutStrategy: rsi,
+              fv: fv,
+              feature: feature,
+              isGroupStrategy: true,
+            )
+      ],
+    );
+  }
+}
+
 class _ValueCard extends StatelessWidget {
   final FeatureValue fv;
   final Feature feature;
-  final RolloutStrategy? rolloutStrategy;
+  final dynamic rolloutStrategy;
+  final bool? isGroupStrategy;
 
   const _ValueCard({
     Key? key,
     required this.fv,
     required this.feature,
     this.rolloutStrategy,
+    this.isGroupStrategy = false,
   }) : super(key: key);
 
   @override
@@ -191,8 +225,10 @@ class _ValueCard extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: rolloutStrategy == null
-                      ? defaultTextColor.withOpacity(0.2)
-                      : strategyTextColor.withOpacity(0.2),
+                      ? defaultTextColor.withOpacity(0.15)
+                      : (isGroupStrategy!
+                          ? groupStrategyTextColor.withOpacity(0.15)
+                          : strategyTextColor.withOpacity(0.15)),
                   borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(4.0),
                       bottomLeft: Radius.circular(4.0)),
@@ -200,30 +236,46 @@ class _ValueCard extends StatelessWidget {
                 child: rolloutStrategy != null
                     ? Tooltip(
                         richMessage: TextSpan(children: [
-                          TextSpan(text: rolloutStrategy!.name),
+                          if (!isGroupStrategy!)
+                            TextSpan(text: rolloutStrategy!.name),
                           TextSpan(
-                              text: generateTooltipMessage(rolloutStrategy))
+                              text: isGroupStrategy!
+                                  ? "Group Strategy"
+                                  : generateTooltipMessage(rolloutStrategy))
                         ]),
                         child: rolloutStrategy == null
                             ? const SizedBox.shrink()
                             : Padding(
                                 padding: const EdgeInsets.all(4.0),
-                                child: Text(rolloutStrategy!.name,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge!
-                                        .copyWith(color: strategyTextColor)),
+                                child: Text(
+                                  rolloutStrategy!.name,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelLarge!
+                                      .copyWith(
+                                          color: isGroupStrategy!
+                                              ? groupStrategyTextColor
+                                              : strategyTextColor,
+                                          // fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.9),
+                                ),
                               ),
                       )
                     : Padding(
                         padding: const EdgeInsets.all(4.0),
-                        child: Text('default',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge!
-                                .copyWith(color: defaultTextColor)),
+                        child: isGroupStrategy!
+                            ? Text(rolloutStrategy!.name,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge!
+                                    .copyWith(color: defaultTextColor))
+                            : Text('default',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge!
+                                    .copyWith(color: defaultTextColor)),
                       ),
               ),
             ),

@@ -70,19 +70,19 @@ class FeaturesDataSource extends DataGridSource {
   DataGridRowAdapter buildRow(DataGridRow row) {
     return DataGridRowAdapter(
         cells: row.getCells().map<Widget>((dataGridCell) {
-          if (dataGridCell.columnName == "feature name") {
-            Feature feature = dataGridCell.value;
-            return FeatureCellHolder(feature: feature); // adapt feature cells
-          } else {
-            AggregatedFeatureCellData fv = dataGridCell.value;
-            return ValueCellHolder(
-              efv: fv.efv,
-              feature: fv.feature,
-              fv: fv.fv,
-              afv: fv.afv,
-            ); // adapt feature value cells
-          }
-        }).toList());
+      if (dataGridCell.columnName == "feature name") {
+        Feature feature = dataGridCell.value;
+        return FeatureCellHolder(feature: feature); // adapt feature cells
+      } else {
+        AggregatedFeatureCellData fv = dataGridCell.value;
+        return ValueCellHolder(
+          efv: fv.efv,
+          feature: fv.feature,
+          fv: fv.fv,
+          afv: fv.afv,
+        ); // adapt feature value cells
+      }
+    }).toList());
   }
 
   void updateDataGridSource() {

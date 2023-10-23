@@ -9,6 +9,7 @@ import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart
 
 class StrategyCard extends StatelessWidget {
   final RolloutStrategy? rolloutStrategy;
+  final ThinGroupRolloutStrategy? groupRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
   final FeatureValueType featureValueType;
 
@@ -16,7 +17,8 @@ class StrategyCard extends StatelessWidget {
       {Key? key,
       this.rolloutStrategy,
       required this.strBloc,
-      required this.featureValueType})
+      required this.featureValueType,
+      this.groupRolloutStrategy})
       : super(key: key);
 
   @override
@@ -32,9 +34,11 @@ class StrategyCard extends StatelessWidget {
               editable: editable && unlocked,
               strBloc: strBloc,
               rolloutStrategy: rolloutStrategy,
+              groupRolloutStrategy: groupRolloutStrategy,
               editableHolderWidget: EditValueContainer(
-                key: ValueKey('${strBloc.environmentFeatureValue.environmentId}-${strBloc.feature.key}'),
-                editable: editable,
+                key: ValueKey(
+                    '${strBloc.environmentFeatureValue.environmentId}-${strBloc.feature.key}'),
+                editable: groupRolloutStrategy != null ? false : editable,
                 unlocked: unlocked,
                 rolloutStrategy: rolloutStrategy,
                 strBloc: strBloc,

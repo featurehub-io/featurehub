@@ -8,6 +8,7 @@ import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersionKey
 import io.featurehub.db.model.DbPerson
+import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.FeatureValueType
@@ -45,7 +46,7 @@ class FeatureAuditingBaseUnitSpec extends Specification {
     histId = new DbFeatureValueVersionKey(UUID.randomUUID(), 1)
     featureMessagingCloudEventPublisher = Mock()
 
-    fsApi =new FeatureSqlApi(conversions, cacheSource, rolloutStrategyValidator, featureMessagingCloudEventPublisher)
+    fsApi =new FeatureSqlApi(conversions, cacheSource, rolloutStrategyValidator, featureMessagingCloudEventPublisher, Mock(CacheSourceFeatureGroupApi))
 
     app = new DbApplication()
   }

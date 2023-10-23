@@ -21,7 +21,8 @@ class CreateAdminServiceAccountsRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const FHCardWidget(width: 800, child: AddAdminServiceAccountFormWidget());
+    return const FHCardWidget(
+        width: 800, child: AddAdminServiceAccountFormWidget());
   }
 }
 
@@ -62,10 +63,10 @@ class TopAdminSAWidgetDefault extends StatefulWidget {
   const TopAdminSAWidgetDefault({Key? key}) : super(key: key);
 
   @override
-  _TopAdminSAWidgetDefaultState createState() => _TopAdminSAWidgetDefaultState();
+  TopAdminSAWidgetDefaultState createState() => TopAdminSAWidgetDefaultState();
 }
 
-class _TopAdminSAWidgetDefaultState extends State<TopAdminSAWidgetDefault> {
+class TopAdminSAWidgetDefaultState extends State<TopAdminSAWidgetDefault> {
   final _name = TextEditingController();
   bool isAddButtonDisabled = true;
 

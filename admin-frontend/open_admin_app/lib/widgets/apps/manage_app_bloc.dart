@@ -281,12 +281,12 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     try {
       final updatedGroup = await _groupServiceApi
           .updateGroupOnPortfolio(portfolio!.id, group,
-              includeGroupRoles: true,
-              includeMembers: false,
-              updateMembers: false,
-              applicationId: applicationId,
-              updateApplicationGroupRoles: true,
-              updateEnvironmentGroupRoles: true);
+          includeGroupRoles: true,
+          includeMembers: false,
+          updateMembers: false,
+          applicationId: applicationId,
+          updateApplicationGroupRoles: true,
+          updateEnvironmentGroupRoles: true);
 
       _groupWithRolesPS
           .add(ApplicationGroupRoles(updatedGroup, applicationId!));
@@ -314,8 +314,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         includePermissions: true,
       );
 
-      _serviceAccountPS
-          .add(updatedServiceAccount);
+      _serviceAccountPS.add(updatedServiceAccount);
 
       unawaited(
           _mrClient.streamValley.getEnvironmentServiceAccountPermissions());

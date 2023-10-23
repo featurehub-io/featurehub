@@ -40,10 +40,10 @@ class EditUserFormWidget extends StatefulWidget {
   const EditUserFormWidget({Key? key, required this.person}) : super(key: key);
 
   @override
-  _EditUserFormState createState() => _EditUserFormState();
+  EditUserFormState createState() => EditUserFormState();
 }
 
-class _EditUserFormState extends State<EditUserFormWidget> {
+class EditUserFormState extends State<EditUserFormWidget> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _email = TextEditingController();

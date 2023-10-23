@@ -182,8 +182,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                 onPressed: () =>
                     bloc.mrClient.addOverlay((BuildContext context) {
                   return FHAlertDialog(
-                      title:
-                          Text("Activate user '${personEntry.person.name}'"),
+                      title: Text("Activate user '${personEntry.person.name}'"),
                       content: Text(
                           'Are you sure you want to activate user with email address ${personEntry.person.email}?'),
                       actions: [

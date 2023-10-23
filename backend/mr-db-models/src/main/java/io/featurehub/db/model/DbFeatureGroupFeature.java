@@ -61,7 +61,7 @@ public class DbFeatureGroupFeature extends Model {
     this.group = group;
   }
 
-  public String getValue() {
+  @Nullable public String getValue() {
     return value;
   }
 

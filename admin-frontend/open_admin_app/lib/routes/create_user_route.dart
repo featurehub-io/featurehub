@@ -74,10 +74,10 @@ class TopWidgetDefault extends StatefulWidget {
   const TopWidgetDefault({Key? key}) : super(key: key);
 
   @override
-  _TopWidgetDefaultState createState() => _TopWidgetDefaultState();
+  TopWidgetDefaultState createState() => TopWidgetDefaultState();
 }
 
-class _TopWidgetDefaultState extends State<TopWidgetDefault> {
+class TopWidgetDefaultState extends State<TopWidgetDefault> {
   final _email = TextEditingController();
   bool isAddButtonDisabled = true;
 
@@ -112,7 +112,8 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                     const SizedBox(height: 16.0),
                     TextFormField(
                       autofocus: true,
-                      onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                      onFieldSubmitted: (_) =>
+                          FocusScope.of(context).nextFocus(),
                       controller: _email,
                       decoration: fhFilledInputDecoration(
                         labelText: 'Email',
@@ -153,67 +154,70 @@ class TopWidgetSuccess extends StatelessWidget {
     final hasLocal =
         bloc.client.identityProviders.hasLocal && bloc.registrationUrl != null;
 
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
-        Widget>[
-      Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('User created! \n',
-              style: Theme.of(context).textTheme.titleLarge),
-          Text(bloc.email ?? '', style: Theme.of(context).textTheme.bodyLarge),
-        ],
-      ),
-      if (hasLocal)
-        Padding(
-          padding: const EdgeInsets.only(top: 20.0),
-          child: Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('Registration URL',
-                  style: Theme.of(context).textTheme.titleSmall),
-              Text(
-                bloc.client.registrationUrl(bloc.registrationUrl!.token),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+              Text('User created! \n',
+                  style: Theme.of(context).textTheme.titleLarge),
+              Text(bloc.email ?? '',
+                  style: Theme.of(context).textTheme.bodyLarge),
             ],
           ),
-        ),
-      if (hasLocal)
-        Row(
-          children: <Widget>[
-            FHCopyToClipboardFlatButton(
-              text: bloc.client.registrationUrl(bloc.registrationUrl!.token),
-              caption: ' Copy URL to clipboard',
+          if (hasLocal)
+            Padding(
+              padding: const EdgeInsets.only(top: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text('Registration URL',
+                      style: Theme.of(context).textTheme.titleSmall),
+                  Text(
+                    bloc.client.registrationUrl(bloc.registrationUrl!.token),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      if (hasLocal)
-        Text(
-          'You will need to email this URL to the new user, so they can complete their registration and set their password.',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      if (!hasLocal)
-        Text(
-          'The user can now sign in and they will be able to access the system.',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      FHButtonBar(children: [
-        FHFlatButtonTransparent(
-            onPressed: () {
-              bloc.backToDefault();
-              ManagementRepositoryClientBloc.router
-                  .navigateTo(context, '/users');
-            },
-            title: 'Close',
-            keepCase: true),
-        FHFlatButton(
-            onPressed: () {
-              bloc.backToDefault();
-            },
-            title: 'Create another user',
-            keepCase: true),
-      ])
-    ]);
+          if (hasLocal)
+            Row(
+              children: <Widget>[
+                FHCopyToClipboardFlatButton(
+                  text:
+                      bloc.client.registrationUrl(bloc.registrationUrl!.token),
+                  caption: ' Copy URL to clipboard',
+                ),
+              ],
+            ),
+          if (hasLocal)
+            Text(
+              'You will need to email this URL to the new user, so they can complete their registration and set their password.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          if (!hasLocal)
+            Text(
+              'The user can now sign in and they will be able to access the system.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          FHButtonBar(children: [
+            FHFlatButtonTransparent(
+                onPressed: () {
+                  bloc.backToDefault();
+                  ManagementRepositoryClientBloc.router
+                      .navigateTo(context, '/users');
+                },
+                title: 'Close',
+                keepCase: true),
+            FHFlatButton(
+                onPressed: () {
+                  bloc.backToDefault();
+                },
+                title: 'Create another user',
+                keepCase: true),
+          ])
+        ]);
   }
 }
 

@@ -126,7 +126,6 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
       String? description,
       List<FeatureGroupUpdateFeature>? features,
       List<GroupRolloutStrategy>? strategies}) async {
-    print("update fg $features -> $strategies");
     FeatureGroupUpdate fgc = FeatureGroupUpdate(
         id: featureGroupListGroup.id,
         name: name,
@@ -137,8 +136,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     fhosLogger.fine('Updating feature group with ${fgc}');
     var currentAppId = mrClient.currentAid;
     if (currentAppId != null) {
-      await featureGroupServiceApi.updateFeatureGroup(
-          currentAppId, fgc);
+      await featureGroupServiceApi.updateFeatureGroup(currentAppId, fgc);
       getCurrentFeatureGroups();
     }
   }

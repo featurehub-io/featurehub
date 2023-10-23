@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/fhos_logger.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature-groups-bloc.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/edit_strategy_interface.dart';
 import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 import 'package:rxdart/rxdart.dart';
@@ -41,6 +41,9 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
   final _strategySource = BehaviorSubject<GroupRolloutStrategy?>();
 
   BehaviorSubject<GroupRolloutStrategy?> get strategyStream => _strategySource;
+
+  final _isGroupUpdatedSource = BehaviorSubject<bool>.seeded(false);
+  BehaviorSubject<bool> get isGroupUpdatedStream => _isGroupUpdatedSource;
 
   String? _selectedFeatureToAdd;
 
@@ -88,6 +91,7 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
     strategyList.clear(); // we can only have 1
     strategyList.add(fgStrategy);
     _trackingUpdatesGroupStrategiesStream.add(strategyList);
+    _isGroupUpdatedSource.add(true);
   }
 
   @override
@@ -97,11 +101,13 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
         []; // create new list is ok here, as we only have one strategy
     strategyList.add(strategy);
     _trackingUpdatesGroupStrategiesStream.add(strategyList);
+    _isGroupUpdatedSource.add(true);
   }
 
   void addFeatureToGroup() {
     if (_selectedFeatureToAdd != null) {
-      final latestFeatureGroupFeatures = _trackingUpdatesGroupFeaturesStream.value;
+      final latestFeatureGroupFeatures =
+          _trackingUpdatesGroupFeaturesStream.value;
       List<FeatureGroupFeature> features = _availableFeaturesStream.value;
       FeatureGroupFeature currentFeatureGF = features
           .firstWhere((feature) => feature.id == _selectedFeatureToAdd!);
@@ -112,29 +118,29 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
         _trackingUpdatesGroupFeaturesStream.add(latestFeatureGroupFeatures);
       }
     }
+    _isGroupUpdatedSource.add(true);
   }
 
   void removeFeatureFromGroup(FeatureGroupFeature groupFeature) {
     var latestFeatureGroupFeatures = _trackingUpdatesGroupFeaturesStream.value;
     latestFeatureGroupFeatures.removeWhere((gf) => gf.id == groupFeature.id);
     _trackingUpdatesGroupFeaturesStream.add(latestFeatureGroupFeatures);
+    _isGroupUpdatedSource.add(true);
   }
 
   Future<void> saveFeatureGroupUpdates() async {
     final features = _trackingUpdatesGroupFeaturesStream.hasValue
         ? _trackingUpdatesGroupFeaturesStream.value
-        .map((e) => convertToFeatureUpdate(e))
-        .toList()
+            .map((e) => convertToFeatureUpdate(e))
+            .toList()
         : null;
 
     final strategies = _trackingUpdatesGroupStrategiesStream.hasValue
         ? _trackingUpdatesGroupStrategiesStream.value
         : null;
 
-    print("features ${features} - strategies ${strategies}");
     await featureGroupsBloc.updateFeatureGroup(featureGroupListGroup,
-        features: features,
-        strategies: strategies);
+        features: features, strategies: strategies);
   }
 
   FeatureGroupUpdateFeature convertToFeatureUpdate(
@@ -148,6 +154,7 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
     int index = features.indexWhere((f) => feature.id == f.id);
     features[index].value = newValue;
     _trackingUpdatesGroupFeaturesStream.add(features);
+    _isGroupUpdatedSource.add(true);
   }
 
   @override
@@ -159,6 +166,7 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
             .name); // ideally need an id, but because we only have one strategy at the moment, it is ok
     _strategySource.add(null);
     _trackingUpdatesGroupStrategiesStream.add(strategies);
+    _isGroupUpdatedSource.add(true);
   }
 
   @override
