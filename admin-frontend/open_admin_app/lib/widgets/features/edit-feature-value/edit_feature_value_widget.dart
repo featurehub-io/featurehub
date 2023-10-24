@@ -103,6 +103,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                   .textTheme
                                                   .labelSmall),
                                         ),
+                                      if (featureValueLatest.data?.featureGroupStrategies?.isNotEmpty == true)
                                       StrategyCard(
                                           groupRolloutStrategy:
                                               featureValueLatest.data!

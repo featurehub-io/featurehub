@@ -850,7 +850,7 @@ class FeatureSqlApi @Inject constructor(
     // this is envId -> DbFeatureValue
     var envIdToDbFeatureValue: MutableMap<UUID, DbFeatureValue>,
     val feature: DbApplicationFeature,
-    var envIdToRolePermissions: Map<UUID, List<RoleType>>,
+    var envIdToRolePermissions: Map<UUID, Set<RoleType>>,
     var environments: Map<UUID, DbEnvironment>,
     var appRolesForThisPerson: Set<ApplicationRoleType>
   )
@@ -866,9 +866,9 @@ class FeatureSqlApi @Inject constructor(
       throw FeatureApi.NoSuchFeature()
     }
 
-    val featureValuesResult: MutableMap<UUID, DbFeatureValue> = mutableMapOf()
-    val roles: MutableMap<UUID, List<RoleType>> = mutableMapOf()
-    val environments: MutableMap<UUID, DbEnvironment> = mutableMapOf()
+    val featureValuesResult = mutableMapOf<UUID, DbFeatureValue>()
+    val roles = mutableMapOf<UUID, MutableSet<RoleType>>()
+    val environments = mutableMapOf<UUID, DbEnvironment> ()
     val personAdmin = convertUtils.isPersonApplicationAdmin(person.id!!.id, appId)
     // this can be empty as the feature may not have a value in this environment if it is a non-bool
     val featureValueList = QDbFeatureValue()
@@ -891,7 +891,10 @@ class FeatureSqlApi @Inject constructor(
           val roleTypes = convertUtils.splitEnvironmentRoles(fe.roles)
           if (roleTypes.isNotEmpty()) {
             val envId = fe.environment.id
-            roles[envId] = roleTypes
+            if (roles[envId] == null) {
+              roles[envId] = mutableSetOf()
+            }
+            roles[envId]?.addAll(roleTypes)
             environments[envId] = fe.environment
             envIdToDbFeatureValues.remove(envId)?.let { fv ->
               featureValuesResult[envId] = fv
@@ -906,7 +909,8 @@ class FeatureSqlApi @Inject constructor(
       QDbEnvironment().parentApplication.id.eq(appId).findList().forEach { env: DbEnvironment ->
         if (environments[env.id] == null) {
           environments[env.id] = env
-          roles[env.id] = if (personAdmin) adminRoles else emptyRoles
+          roles[env.id] = mutableSetOf()
+          roles[env.id]?.addAll(if (personAdmin) adminRoles else emptyRoles)
           if (personAdmin) {
             envIdToDbFeatureValues.remove(env.id)?.let { fv ->
               featureValuesResult[env.id] = fv
@@ -936,7 +940,7 @@ class FeatureSqlApi @Inject constructor(
 
     return result.environments.keys.map { e ->
       convertUtils.toFeatureEnvironment(
-        result.envIdToDbFeatureValue[e], result.envIdToRolePermissions[e]!!,
+        result.envIdToDbFeatureValue[e], result.envIdToRolePermissions[e]?.toList() ?: listOf(),
         result.environments[e]!!, Opts.opts(FillOpts.ServiceAccounts)
       )
     }
