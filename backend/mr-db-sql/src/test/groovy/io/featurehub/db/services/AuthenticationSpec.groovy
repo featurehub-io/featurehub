@@ -13,6 +13,7 @@ import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.Portfolio
+import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Shared
 
 import java.time.Instant
@@ -41,6 +42,23 @@ class AuthenticationSpec extends BaseSpec {
       person.name == "william"
       person.email == "william@featurehub.io"
       !person.passwordRequiresReset
+  }
+
+  def "I should be able to invalidate a user and their login token should not longer be valid"() {
+    given: "i register a new user"
+      def email = "${RandomStringUtils.randomAlphabetic(10)}@mailinator.com"
+      personApi.create(email, email, null)
+      Person person = auth.register(email, email, "yacht", null)
+    when: "i create a session"
+      def token = RandomStringUtils.randomAlphabetic(20)
+      def session = auth.createSession(new DBLoginSession(person, token, Instant.now()))
+    then: "the session is valid"
+      auth.findSession(token) != null
+    when: "i delete person"
+      def couldDelete = personApi.delete(email, true)
+    then: "the session is no longer valid"
+      couldDelete
+      auth.findSession(token) == null
   }
 
   def "I should be able to invalidate a user and not log in as them again"() {
