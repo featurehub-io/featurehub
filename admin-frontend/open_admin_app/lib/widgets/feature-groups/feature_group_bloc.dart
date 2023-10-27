@@ -116,9 +116,9 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
         fhosLogger.fine("adding feature ${currentFeatureGF} to tracking");
         latestFeatureGroupFeatures.add(currentFeatureGF);
         _trackingUpdatesGroupFeaturesStream.add(latestFeatureGroupFeatures);
+        _isGroupUpdatedSource.add(true);
       }
     }
-    _isGroupUpdatedSource.add(true);
   }
 
   void removeFeatureFromGroup(FeatureGroupFeature groupFeature) {
