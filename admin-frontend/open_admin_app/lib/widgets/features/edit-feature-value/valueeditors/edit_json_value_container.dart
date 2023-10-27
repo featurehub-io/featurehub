@@ -15,11 +15,13 @@ class EditJsonValueContainer extends StatefulWidget {
     required this.canEdit,
     this.rolloutStrategy,
     required this.strBloc,
+    this.groupRolloutStrategy,
   }) : super(key: key);
 
   final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
+  final ThinGroupRolloutStrategy? groupRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   @override
@@ -36,7 +38,9 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
 
     final valueSource = widget.rolloutStrategy != null
         ? widget.rolloutStrategy!.value
-        : widget.strBloc.featureValue.valueJson;
+        : widget.groupRolloutStrategy != null
+            ? widget.groupRolloutStrategy!.value
+            : widget.strBloc.featureValue.valueJson;
     if (valueSource != null) {
       try {
         tec.text = const JsonEncoder.withIndent('  ')
@@ -95,35 +99,34 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
         context: context,
         builder: (_) {
           return AlertDialog(
-              content: FHJsonEditorWidget(
-                controller: tec,
-                formKey: _formKey,
-                onlyJsonValidation: true,
+            content: FHJsonEditorWidget(
+              controller: tec,
+              formKey: _formKey,
+              onlyJsonValidation: true,
+            ),
+            title: const Text("Set feature value"),
+            actions: [
+              FHFlatButtonTransparent(
+                onPressed: () {
+                  tec.text = initialValue;
+                  Navigator.pop(context);
+                },
+                title: 'Cancel',
+                keepCase: true,
               ),
-              title: const Text("Set feature value"),
-              actions: [
-                FHFlatButtonTransparent(
-                  onPressed: () {
-                    tec.text = initialValue;
-                    Navigator.pop(context);
-                  },
-                  title: 'Cancel',
-                  keepCase: true,
-                ),
-                enabled
-                    ? FHFlatButton(
-                        title: 'Set value',
-                        onPressed: (() {
-                          if (_formKey.currentState!.validate()) {
-                            _valueChanged();
-                            Navigator.pop(context);
-                          }
-                        }))
-                    : Container(),
-              ],
-            );
-        }
-    );
+              enabled
+                  ? FHFlatButton(
+                      title: 'Set value',
+                      onPressed: (() {
+                        if (_formKey.currentState!.validate()) {
+                          _valueChanged();
+                          Navigator.pop(context);
+                        }
+                      }))
+                  : Container(),
+            ],
+          );
+        });
   }
 
   void _valueChanged() {

@@ -9,11 +9,13 @@ class EditBooleanValueDropDownWidget extends StatefulWidget {
     required this.editable,
     this.rolloutStrategy,
     required this.strBloc,
+    this.groupRolloutStrategy,
   }) : super(key: key);
 
   final bool unlocked;
   final bool editable;
   final RolloutStrategy? rolloutStrategy;
+  final ThinGroupRolloutStrategy? groupRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   @override
@@ -28,11 +30,13 @@ class _EditBooleanValueDropDownWidgetState
   @override
   void initState() {
     super.initState();
-    if (widget.rolloutStrategy == null) {
+    if (widget.rolloutStrategy != null) {
+      boolFeatureValue = widget.rolloutStrategy!.value ? 'On' : 'Off';
+    } else if (widget.groupRolloutStrategy != null) {
+      boolFeatureValue = widget.groupRolloutStrategy!.value ? 'On' : 'Off';
+    } else {
       boolFeatureValue =
           (widget.strBloc.featureValue.valueBoolean ?? false) ? 'On' : 'Off';
-    } else {
-      boolFeatureValue = widget.rolloutStrategy!.value ? 'On' : 'Off';
     }
   }
 
