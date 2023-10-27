@@ -5,6 +5,7 @@
 ** xref:environments.adoc[Environments]
 ** xref:features.adoc[Features]
 ** xref:strategies.adoc[Rollout Strategy and User Targeting]
+** xref:feature-groups.adoc[Feature Groups]
 ** xref:service-accounts.adoc[Service Accounts & API Keys]
 ** xref:users.adoc[Users & User Groups Permissions]
 ** xref:webhooks.adoc[Webhooks]
