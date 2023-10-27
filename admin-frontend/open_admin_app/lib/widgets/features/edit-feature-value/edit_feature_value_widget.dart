@@ -103,14 +103,20 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                   .textTheme
                                                   .labelSmall),
                                         ),
-                                      if (featureValueLatest.data?.featureGroupStrategies?.isNotEmpty == true)
-                                      StrategyCard(
-                                          groupRolloutStrategy:
-                                              featureValueLatest.data!
-                                                  .featureGroupStrategies![0],
-                                          strBloc: widget.bloc,
-                                          featureValueType:
-                                              widget.bloc.feature.valueType),
+                                      if (featureValueLatest
+                                              .data
+                                              ?.featureGroupStrategies
+                                              ?.isNotEmpty ==
+                                          true)
+                                        for (var groupStrategy
+                                            in featureValueLatest
+                                                .data!.featureGroupStrategies!)
+                                          StrategyCard(
+                                              groupRolloutStrategy:
+                                                  groupStrategy,
+                                              strBloc: widget.bloc,
+                                              featureValueType: widget
+                                                  .bloc.feature.valueType),
                                       const SizedBox(height: 8.0),
                                       if (editable)
                                         AddStrategyButton(

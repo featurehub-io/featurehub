@@ -41,6 +41,7 @@ class StrategyCard extends StatelessWidget {
                 editable: groupRolloutStrategy != null ? false : editable,
                 unlocked: unlocked,
                 rolloutStrategy: rolloutStrategy,
+                groupRolloutStrategy: groupRolloutStrategy,
                 strBloc: strBloc,
                 featureValueType: featureValueType,
               ),
@@ -57,6 +58,7 @@ class EditValueContainer extends StatelessWidget {
   final bool editable;
   final bool unlocked;
   final RolloutStrategy? rolloutStrategy;
+  final ThinGroupRolloutStrategy? groupRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   const EditValueContainer(
@@ -65,7 +67,8 @@ class EditValueContainer extends StatelessWidget {
       required this.editable,
       required this.unlocked,
       this.rolloutStrategy,
-      required this.strBloc})
+      required this.strBloc,
+      this.groupRolloutStrategy})
       : super(key: key);
 
   @override
@@ -76,12 +79,14 @@ class EditValueContainer extends StatelessWidget {
           canEdit: editable,
           unlocked: unlocked,
           rolloutStrategy: rolloutStrategy,
+          groupRolloutStrategy: groupRolloutStrategy,
           strBloc: strBloc,
         );
       case FeatureValueType.BOOLEAN:
         return EditBooleanValueDropDownWidget(
           unlocked: unlocked,
           rolloutStrategy: rolloutStrategy,
+          groupRolloutStrategy: groupRolloutStrategy,
           strBloc: strBloc,
           editable: editable,
         );
@@ -90,6 +95,7 @@ class EditValueContainer extends StatelessWidget {
           canEdit: editable,
           unlocked: unlocked,
           rolloutStrategy: rolloutStrategy,
+          groupRolloutStrategy: groupRolloutStrategy,
           strBloc: strBloc,
         );
       case FeatureValueType.JSON:
@@ -97,6 +103,7 @@ class EditValueContainer extends StatelessWidget {
           canEdit: editable,
           unlocked: unlocked,
           rolloutStrategy: rolloutStrategy,
+          groupRolloutStrategy: groupRolloutStrategy,
           strBloc: strBloc,
         );
       default:
