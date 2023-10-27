@@ -24,6 +24,9 @@ Set `REMOTE_BEARER_TOKEN` to a Superuser level Admin level bearer token.
 
 Set `REMOTE_BACKEND` to the https://X full location of your server.
 
+Set `FEATUREHUB_EDGE_URL` to the http(s) location of your edge server (if different from remote-backend).
+
+
 if you want to test the webhook, use ngrok or similar and set the env var
 EXTERNAL_NGROK and make sure it comes back to port 3000 e.g., `./ngrok 3000`
 
