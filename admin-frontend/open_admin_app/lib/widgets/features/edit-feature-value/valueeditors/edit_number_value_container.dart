@@ -11,11 +11,13 @@ class EditNumberValueContainer extends StatefulWidget {
     required this.canEdit,
     this.rolloutStrategy,
     required this.strBloc,
+    this.groupRolloutStrategy,
   }) : super(key: key);
 
   final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
+  final ThinGroupRolloutStrategy? groupRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   @override
@@ -32,7 +34,9 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
 
     final valueSource = widget.rolloutStrategy != null
         ? widget.rolloutStrategy!.value
-        : widget.strBloc.currentFeatureValue.valueNumber;
+        : widget.groupRolloutStrategy != null
+            ? widget.groupRolloutStrategy!.value
+            : widget.strBloc.currentFeatureValue.valueNumber;
     tec.text = (valueSource ?? '').toString();
   }
 
