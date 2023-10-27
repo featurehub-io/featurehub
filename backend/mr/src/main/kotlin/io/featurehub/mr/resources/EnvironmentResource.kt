@@ -1,9 +1,12 @@
 package io.featurehub.mr.resources
 
-import io.featurehub.db.api.*
+import io.featurehub.db.api.ApplicationApi
+import io.featurehub.db.api.EnvironmentApi
+import io.featurehub.db.api.FillOpts
+import io.featurehub.db.api.OptimisticLockingException
+import io.featurehub.db.api.Opts
 import io.featurehub.mr.api.EnvironmentServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
-import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.CreateEnvironment
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.UpdateEnvironmentV2
@@ -19,12 +22,13 @@ import org.slf4j.LoggerFactory
 import java.util.*
 
 class EnvironmentResource @Inject constructor(
-    private val authManager: AuthManagerService,
-    private val environmentApi: EnvironmentApi,
-    private val applicationApi: ApplicationApi,
-    private val applicationUtils: ApplicationUtils
+  private val authManager: AuthManagerService,
+  private val environmentApi: EnvironmentApi,
+  private val applicationApi: ApplicationApi,
+  private val applicationUtils: ApplicationUtils
 ) : EnvironmentServiceDelegate {
 
+  @Deprecated("Deprecated in Java", ReplaceWith("createEnvironmentOnApplication(id, environment, securityContext)"))
   override fun createEnvironment(
     id: UUID,
     environment: CreateEnvironment,
@@ -57,90 +61,88 @@ class EnvironmentResource @Inject constructor(
   }
 
   override fun deleteEnvironment(
-        eid: UUID,
-        holder: EnvironmentServiceDelegate.DeleteEnvironmentHolder,
-        securityContext: SecurityContext
-    ): Boolean {
-        val current = authManager.who(securityContext)
-        return if (authManager.isOrgAdmin(current) ||
-            authManager.isPortfolioAdminOfEnvironment(eid, current)
-        ) {
-            environmentApi.delete(eid)
-        } else false
-    }
+    eid: UUID,
+    holder: EnvironmentServiceDelegate.DeleteEnvironmentHolder,
+    securityContext: SecurityContext
+  ): Boolean {
+    val current = authManager.who(securityContext)
+    return if (authManager.isOrgAdmin(current) ||
+      authManager.isPortfolioAdminOfEnvironment(eid, current)
+    ) {
+      environmentApi.delete(eid)
+    } else false
+  }
 
-    override fun environmentOrdering(
-        id: UUID, environments: List<Environment>,
-        securityContext: SecurityContext
-    ): List<Environment> {
-        val perm = applicationUtils.check(securityContext, id)
-        return environmentApi.setOrdering(perm.app, environments) ?: throw BadRequestException()
-    }
+  override fun environmentOrdering(
+    id: UUID, environments: List<Environment>,
+    securityContext: SecurityContext
+  ): List<Environment> {
+    val perm = applicationUtils.check(securityContext, id)
+    return environmentApi.setOrdering(perm.app, environments) ?: throw BadRequestException()
+  }
 
-    override fun findEnvironments(
-        id: UUID,
-        holder: EnvironmentServiceDelegate.FindEnvironmentsHolder,
-        securityContext: SecurityContext
-    ): List<Environment> {
-        val current = authManager.from(securityContext)
-        return environmentApi.search(
-            id, holder.filter, holder.order,
-            Opts().add(FillOpts.Acls, holder.includeAcls)
-                .add(FillOpts.Features, holder.includeFeatures)
-                .add(FillOpts.Details, holder.includeDetails), current
-        )
-    }
+  override fun findEnvironments(
+    id: UUID,
+    holder: EnvironmentServiceDelegate.FindEnvironmentsHolder,
+    securityContext: SecurityContext
+  ): List<Environment> {
+    val current = authManager.from(securityContext)
+    return environmentApi.search(
+      id, holder.filter, holder.order,
+      Opts().add(FillOpts.Acls, holder.includeAcls)
+        .add(FillOpts.Features, holder.includeFeatures)
+        .add(FillOpts.Details, holder.includeDetails), current
+    )
+  }
 
-    override fun getEnvironment(
-        eid: UUID,
-        holder: EnvironmentServiceDelegate.GetEnvironmentHolder,
-        securityContext: SecurityContext
-    ): Environment {
-        val current = authManager.from(securityContext)
-        val found = environmentApi[eid, Opts()
-            .add(FillOpts.Acls, holder.includeAcls)
-            .add(FillOpts.Features, holder.includeFeatures)
-            .add(FillOpts.ServiceAccounts, holder.includeServiceAccounts)
-            .add(FillOpts.SdkURL, holder.includeSdkUrl)
-            .add(FillOpts.Details, holder.includeDetails), current]
-        if (found == null) {
-            log.warn("User had no access to environment `{}` or it didn't exist.", eid)
-            throw ForbiddenException()
-        }
-        return found
+  override fun getEnvironment(
+    eid: UUID,
+    holder: EnvironmentServiceDelegate.GetEnvironmentHolder,
+    securityContext: SecurityContext
+  ): Environment {
+    val current = authManager.from(securityContext)
+    val found = environmentApi[eid, Opts()
+      .add(FillOpts.Acls, holder.includeAcls)
+      .add(FillOpts.Features, holder.includeFeatures)
+      .add(FillOpts.ServiceAccounts, holder.includeServiceAccounts)
+      .add(FillOpts.SdkURL, holder.includeSdkUrl)
+      .add(FillOpts.DecryptWebhookDetails, holder.decryptWebhookDetails)
+      .add(FillOpts.Details, holder.includeDetails), current]
+    if (found == null) {
+      log.warn("User had no access to environment `{}` or it didn't exist.", eid)
+      throw ForbiddenException()
     }
+    return found
+  }
 
-    @Deprecated("Deprecated in Java")
-    override fun updateEnvironment(
-        eid: UUID, environment: Environment, holder: EnvironmentServiceDelegate.UpdateEnvironmentHolder,
-        securityContext: SecurityContext
-    ): Environment {
-        val current = authManager.from(securityContext)
-        if (authManager.isOrgAdmin(current) ||
-            authManager.isPortfolioAdminOfEnvironment(environment.id, current)
-        ) {
-            val update: Environment?
-            update = try {
-                environmentApi.update(
-                    eid, environment, Opts().add(
-                        FillOpts.Acls,
-                        holder.includeAcls
-                    ).add(FillOpts.Features, holder.includeFeatures).add(FillOpts.Details, holder.includeDetails)
-                )
-            } catch (e: OptimisticLockingException) {
-                throw WebApplicationException(422)
-            } catch (e: EnvironmentApi.DuplicateEnvironmentException) {
-                throw WebApplicationException(Response.Status.CONFLICT)
-            } catch (e: EnvironmentApi.InvalidEnvironmentChangeException) {
-                throw BadRequestException()
-            }
-            if (update == null) {
-                throw NotFoundException()
-            }
-            return update
-        }
-        throw ForbiddenException()
+  @Deprecated("Deprecated in Java")
+  override fun updateEnvironment(
+    eid: UUID, environment: Environment, holder: EnvironmentServiceDelegate.UpdateEnvironmentHolder,
+    securityContext: SecurityContext
+  ): Environment {
+    val current = authManager.from(securityContext)
+    if (authManager.isOrgAdmin(current) ||
+      authManager.isPortfolioAdminOfEnvironment(environment.id, current)
+    ) {
+      val update = try {
+        environmentApi.update(
+          eid, environment, Opts().add(
+            FillOpts.Acls,
+            holder.includeAcls
+          ).add(FillOpts.Features, holder.includeFeatures).add(FillOpts.Details, holder.includeDetails)
+        ) ?: throw NotFoundException()
+      } catch (e: OptimisticLockingException) {
+        throw WebApplicationException(422)
+      } catch (e: EnvironmentApi.DuplicateEnvironmentException) {
+        throw WebApplicationException(Response.Status.CONFLICT)
+      } catch (e: EnvironmentApi.InvalidEnvironmentChangeException) {
+        throw BadRequestException()
+      }
+
+      return update
     }
+    throw ForbiddenException()
+  }
 
   override fun updateEnvironmentOnApplication(
     id: UUID,
@@ -167,6 +169,6 @@ class EnvironmentResource @Inject constructor(
   }
 
   companion object {
-        private val log = LoggerFactory.getLogger(EnvironmentResource::class.java)
-    }
+    private val log = LoggerFactory.getLogger(EnvironmentResource::class.java)
+  }
 }

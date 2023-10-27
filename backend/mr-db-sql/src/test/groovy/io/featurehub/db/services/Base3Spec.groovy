@@ -50,7 +50,7 @@ class Base3Spec extends Specification {
   def setupSpec() {
     db = DB.getDefault()
 
-    convertUtils = new ConvertUtils()
+    convertUtils = new ConvertUtils(Mock(WebhookEncryptionService))
     cacheSource = Mock()
 
     archiveStrategy = new DbArchiveStrategy(db, cacheSource)
@@ -94,7 +94,7 @@ class Base3Spec extends Specification {
 
     featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher, Mock(CacheSourceFeatureGroupApi))
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, Mock(WebhookEncryptionService))
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi())
 
     portfolio = portfolioSqlApi.createPortfolio(new CreatePortfolio().name(RandomStringUtils.randomAlphabetic(10)).description("desc1"), Opts.empty(), superuser)

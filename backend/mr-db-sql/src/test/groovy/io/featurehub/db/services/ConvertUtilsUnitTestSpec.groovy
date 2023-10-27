@@ -29,11 +29,13 @@ class ConvertUtilsUnitTestSpec extends Specification{
     ]
     def envName = RandomStringUtils.randomAlphabetic(5)
     def parentApplication = new DbApplication()
+    parentApplication.setId(UUID.randomUUID())
     DbEnvironment dbEnvironment = new DbEnvironment.Builder()
       .name(envName)
       .parentApplication(parentApplication)
       .webhookEnvironmentInfo(webhookEnvInfo)
       .build()
+    dbEnvironment.setId(UUID.randomUUID())
     webhookEncryptionService.getAllKeysEnabledForEncryption(webhookEnvInfo) >> ["webhook.messaging.url", "webhook.messaging.header.Authorization"]
     def opts = new Opts(Set.of(FillOpts.Details))
     when:

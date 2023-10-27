@@ -48,7 +48,7 @@ class ServiceAccount2Spec extends Base2Spec {
     internalGroupSqlApi = Mock()
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, internalGroupSqlApi)
     cacheSource = Mock(CacheSource)
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, Mock(WebhookEncryptionService))
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureApi))
     sapi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, personSqlApi)
 
@@ -68,7 +68,7 @@ class ServiceAccount2Spec extends Base2Spec {
     environment3 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e3").parentApplication(application1).build()
     db.save(environment3)
 
-    environmentApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
+    environmentApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, Mock(WebhookEncryptionService))
 
     groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.environmentRoles(
       [

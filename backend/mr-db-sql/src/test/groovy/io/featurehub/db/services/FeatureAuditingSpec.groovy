@@ -70,7 +70,7 @@ class FeatureAuditingSpec extends Base2Spec {
 
     db.currentTransaction().commit()
 
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, Mock(WebhookEncryptionService))
     env = environmentSqlApi.getEnvironment(app.id, "dev")
 
     if (env == null) {

@@ -44,7 +44,7 @@ class GroupSpec extends BaseSpec {
     baseSetupSpec()
 
     portfolioApi = new PortfolioSqlApi(database, convertUtils, archiveStrategy)
-    environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
+    environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy, Mock(WebhookEncryptionService))
 
     user = dbSuperPerson
 
@@ -59,7 +59,7 @@ class GroupSpec extends BaseSpec {
 
   def setup() {
     personApi = new PersonSqlApi(database, convertUtils, archiveStrategy, groupSqlApi)
-    conversions = new ConvertUtils()
+    conversions = new ConvertUtils(Mock(WebhookEncryptionService))
   }
 
   def "group ACL filtering by application works as expected"() {

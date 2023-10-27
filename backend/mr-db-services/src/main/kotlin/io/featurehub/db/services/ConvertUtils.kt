@@ -143,16 +143,19 @@ open class ConvertUtils @Inject constructor(
         if (env.priorEnvironment != null) env.priorEnvironment.id else null
       )
       .applicationId(env.parentApplication.id)
+
     if (opts!!.contains(FillOpts.Details)) {
       environment.environmentInfo(env.userEnvironmentInfo)
-      if (env.webhookEnvironmentInfo != null) {
+
+      env.webhookEnvironmentInfo?.let {
         if (opts.contains(FillOpts.DecryptWebhookDetails)) {
-          val decryptedWebhookInfo = encryptionService.decrypt(env.webhookEnvironmentInfo)
+          val decryptedWebhookInfo = encryptionService.decrypt(it)
           environment.webhookEnvironmentInfo(toWebhookEnvironmentInfo(decryptedWebhookInfo))
         } else {
-          environment.webhookEnvironmentInfo(toWebhookEnvironmentInfo(env.webhookEnvironmentInfo))
+          environment.webhookEnvironmentInfo(toWebhookEnvironmentInfo(it))
         }
       }
+
       environment.description(env.description)
     }
     if (opts.contains(FillOpts.People)) {
@@ -388,7 +391,7 @@ open class ConvertUtils @Inject constructor(
     }
     val group = Group().version(dbg.version).whenArchived(toOff(dbg.whenArchived))
     group.id = dbg.id
-    group.name = stripArchived(dbg.name, dbg.whenArchived)!!
+    group.name = stripArchived(dbg.name, dbg.whenArchived)
     group.admin = dbg.isAdminGroup
     if (dbg.owningPortfolio != null) {
       group.portfolioId = dbg.owningPortfolio.id
@@ -425,14 +428,14 @@ open class ConvertUtils @Inject constructor(
       // if this is an admin group and we have no roles, add the create/edit feature roles
       if (group.admin == true) {
         appIdFilter?.let { appId ->
-          val agr = group.applicationRoles?.find { appId == it.applicationId }
+          val agr = group.applicationRoles.find { appId == it.applicationId }
 
           if (agr != null) {
             if (agr.roles.isEmpty()) {
               agr.roles = mutableListOf(ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE)
             }
           } else {
-            group.addApplicationRolesItem(ApplicationGroupRole().groupId(group.id!!).applicationId(appId).roles(
+            group.addApplicationRolesItem(ApplicationGroupRole().groupId(group.id).applicationId(appId).roles(
               mutableListOf(ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE)
             ))
           }
@@ -449,7 +452,7 @@ open class ConvertUtils @Inject constructor(
       return null
     }
     val application = Application()
-      .name(stripArchived(app.name, app.whenArchived)!!)
+      .name(stripArchived(app.name, app.whenArchived))
       .description(app.description)
       .id(app.id)
       .version(app.version)
@@ -460,10 +463,10 @@ open class ConvertUtils @Inject constructor(
         QDbEnvironment().whenArchived.isNull.parentApplication.eq(app).findList()
           .map { env: DbEnvironment? -> toEnvironment(env, opts) }
 
-      val envIds = application.environments!!.associate { it.id to it.id }
+      val envIds = application.environments.associate { it.id to it.id }
 
       // TODO: Remove in 1.6.0
-      application.environments!!
+      application.environments
         .stream().forEach { e: Environment ->
           if (!envIds.containsKey(e.priorEnvironmentId)) {
             e.priorEnvironmentId = null
@@ -520,7 +523,7 @@ open class ConvertUtils @Inject constructor(
     }
     val appFeature = actFeature ?: fs.feature
     val featureValue = FeatureValue()
-      .key(stripArchived(appFeature.key, appFeature.whenArchived)!!)
+      .key(stripArchived(appFeature.key, appFeature.whenArchived))
       .locked(fs.isLocked)
       .id(fs.id)
       .retired(true == fs.retired)
@@ -545,7 +548,7 @@ open class ConvertUtils @Inject constructor(
     if (opts.contains(FillOpts.RolloutStrategies)) {
       featureValue.rolloutStrategies = fs.rolloutStrategies
       featureValue.rolloutStrategyInstances =
-        fs.sharedRolloutStrategies?.map { srs: DbStrategyForFeatureValue ->
+        fs.sharedRolloutStrategies.map { srs: DbStrategyForFeatureValue ->
           val rolloutStrategy = srs.rolloutStrategy
           RolloutStrategyInstance()
             .value(
@@ -556,7 +559,7 @@ open class ConvertUtils @Inject constructor(
             .name(rolloutStrategy.name)
             .disabled(if (srs.isEnabled == true) null else true)
             .strategyId(rolloutStrategy.id)
-        } ?: listOf()
+        }
     }
 
     // this is an indicator it is for the UI not for the cache.
@@ -593,7 +596,7 @@ open class ConvertUtils @Inject constructor(
     return if (value == null) {
       FeatureValue()
         .id(feature!!.id)
-        .key(stripArchived(feature.key, feature.whenArchived)!!)
+        .key(stripArchived(feature.key, feature.whenArchived))
         .version(0L)
         .locked(false)
     } else featureValue(feature, value, opts!!)
@@ -673,7 +676,7 @@ open class ConvertUtils @Inject constructor(
       return null
     }
     val organisation = Organization()
-      .name(stripArchived(org.name, org.whenArchived)!!)
+      .name(stripArchived(org.name, org.whenArchived))
       .id(org.id)
       .whenArchived(toOff(org.whenArchived))
       .admin(true)
