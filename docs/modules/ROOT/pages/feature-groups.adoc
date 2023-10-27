@@ -1,0 +1,28 @@
+= Feature Groups
+
+Feature Groups allow you to assign a strategy to multiple features.
+
+One of the use cases is when a feature flag is used as a mechanism to split features into different customer tiers (Free, Small Teams, Enterprise etc..). For example, a SaaS company could have a group of base features served to all of their clients, including on a "free" tier and then another group which contains features only available to the clients on the "paid" tier. If a new client joins a paid tier, Feature Group strategy could be easily updated in one place and applied to all features in that group simultaneously.
+
+== Feature Groups Settings
+
+Feature Groups can be created from a Feature Groups screen. In order to create one, you need to select an application and an environment. There are no limitations on how many groups can be created. 
+
+image::feature-groups-create.png[Create Feature Group, 1500]
+
+You can update feature group name and description at a later time. If you decide to delete a feature group, the group strategy and the group feature values will be removed along with the group. The feature itself and all the settings that you have on the main "Features" dashboard will remain the same.
+
+== Adding Features to a Feature Group
+
+In order to add a feature into a feature group, you first need to have a feature created from the "Features" screen. Once this is done, you can select features from the drop-down list on the "Feature Group" overlay. You can add as many features as you like and assign the desired values.
+
+image::fg-add-feature.png[Create Feature Group, 1500]
+
+== Adding Rollout Strategy to a Feature Group
+Select "Add rollout strategy" option from the Feature Group overlay and create the desired conditions for the strategy. Once you save the rollout strategy, the feature values assigned to the features in the group will be applied. 
+
+NOTE: The order in which group rollout strategy is evaluated, is as following: 
+First evaluate against any "standard" rollout strategies assigned (you can set those from the Features screen), if no match, then evaluate against "feature group" strategy, then if no match, use "default" value.
+
+== Viewing Feature Group Strategies and Values from the Features Dashboard
+If you have any features and a strategy set in a feature group, it will also be visible in the main "Features" dashboard screen. However, you can only edit a group value and  a group strategy from the "Feature Groups" screen. 
