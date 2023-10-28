@@ -30,19 +30,17 @@ class FeatureGroupCard extends StatelessWidget {
           onTap: () {
             _openFeatureGroupEditSideSheet(bloc, featureGroup, context);
           },
-          child: SizedBox(
-            width: 240,
-            height: 170,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
+          child: Column(
+            children: [
+              SizedBox(
+                width: 240,
+                height: 100,
+                child: Padding(
                   padding:
                       const EdgeInsets.only(left: 16.0, bottom: 8, top: 8.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
                         constraints: const BoxConstraints(maxWidth: 150),
@@ -88,22 +86,25 @@ class FeatureGroupCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Padding(
-                  padding:
-                      const EdgeInsets.only(left: 16.0, bottom: 8, right: 16.0),
-                  child: Column(
-                    children: [
-                      const Divider(),
-                      const SizedBox(height: 4.0),
-                      FeaturesCounter(
-                        counter: featureGroup.features.length,
-                        featureGroup: featureGroup,
-                      )
-                    ],
-                  ),
-                )
-              ],
-            ),
+              ),
+              SizedBox(
+                  width: 240,
+                  height: 76,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 16.0, bottom: 8, right: 16.0),
+                    child: Column(
+                      children: [
+                        const Divider(),
+                        const SizedBox(height: 4.0),
+                        FeaturesCounter(
+                          counter: featureGroup.features.length,
+                          featureGroup: featureGroup,
+                        )
+                      ],
+                    ),
+                  ))
+            ],
           ),
         ),
       ),
