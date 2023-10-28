@@ -24,7 +24,7 @@ interface WebhookEncryptionService {
   }
 
    fun hasEncryptSuffixAndNotEmpty(key: String, value: String): Boolean {
-    return key.endsWith("encrypt") && value.isNotEmpty()
+    return key.endsWith(".encrypt") && value.isNotEmpty()
   }
 
    /**
