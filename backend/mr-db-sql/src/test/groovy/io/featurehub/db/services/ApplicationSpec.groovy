@@ -7,6 +7,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PortfolioApi
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
 import spock.lang.Shared

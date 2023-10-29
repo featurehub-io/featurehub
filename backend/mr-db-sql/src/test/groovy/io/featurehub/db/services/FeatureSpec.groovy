@@ -4,7 +4,6 @@ import cd.connect.app.config.ThreadLocalConfigurationSource
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.FillOpts
-import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyValidator
@@ -12,21 +11,20 @@ import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbOrganization
+import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.encryption.SymmetricEncrypter
 import io.featurehub.encryption.SymmetricEncrypterImpl
-import io.featurehub.db.publish.CacheSourceFeatureGroupApi
-import io.featurehub.mr.events.common.CacheSource
+import io.featurehub.encryption.WebhookEncryptionService
+import io.featurehub.encryption.WebhookEncryptionServiceImpl
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
-import io.featurehub.mr.model.Application
+import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.ApplicationFeatureValues
 import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.CreateEnvironment
 import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.CreateGroup
 import io.featurehub.mr.model.CreateServiceAccount
-import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
-import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureEnvironment
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueType
@@ -37,13 +35,9 @@ import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
-import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
-import io.featurehub.utils.ExecutorSupplier
-import org.apache.commons.lang3.RandomStringUtils
 import io.featurehub.mr.model.SortOrder
-
-import java.util.concurrent.ExecutorService
+import org.apache.commons.lang3.RandomStringUtils
 
 class FeatureSpec extends Base2Spec {
   PersonSqlApi personSqlApi

@@ -1,6 +1,5 @@
 package io.featurehub.db.services
 
-import com.squareup.wire.internal.redactElements
 import io.ebean.Database
 import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
@@ -9,13 +8,12 @@ import io.featurehub.db.api.*
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.*
 import io.featurehub.db.utils.EnvironmentUtils
-import io.featurehub.jersey.config.CacheJsonMapper
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import jakarta.validation.Valid
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*

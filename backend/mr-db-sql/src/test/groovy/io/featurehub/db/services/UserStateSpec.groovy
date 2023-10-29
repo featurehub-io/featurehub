@@ -5,6 +5,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.UserStateApi
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPortfolio
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.CreateApplication

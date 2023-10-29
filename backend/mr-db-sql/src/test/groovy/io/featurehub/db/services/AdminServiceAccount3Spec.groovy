@@ -2,14 +2,11 @@ package io.featurehub.db.services
 
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
-import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.CreateGroup
 import io.featurehub.mr.model.CreatePortfolio
-import io.featurehub.mr.model.Group
-import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.UpdatePerson
 
 class AdminServiceAccount3Spec extends Base3Spec {

@@ -5,6 +5,7 @@ import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.*
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
 import jakarta.inject.Inject

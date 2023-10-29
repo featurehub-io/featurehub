@@ -5,6 +5,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.CreateEnvironment

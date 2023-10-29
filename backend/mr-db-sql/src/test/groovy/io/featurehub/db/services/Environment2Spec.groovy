@@ -9,6 +9,7 @@ import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbEnvironment
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole

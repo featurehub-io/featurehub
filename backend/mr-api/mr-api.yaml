@@ -1688,8 +1688,6 @@ paths:
           description: "No environment found to update"
         409:
           description: "Duplicate environment"
-        412:
-          description: "Missing password in config"
         422:
           description: "Updating old environment"
 
@@ -1805,8 +1803,6 @@ paths:
           description: "No environment found to update"
         409:
           description: "Duplicate environment"
-        412:
-          description: "Missing encryption password and encryption reqested"
         422:
           description: "Updating old environment"
   /mr-api/environment/{eid}:

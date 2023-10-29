@@ -1,16 +1,24 @@
-package io.featurehub.db.services
+package io.featurehub.encryption
 
-import io.featurehub.db.exception.MissingEncryptionPasswordException
-import io.featurehub.encryption.SymmetricEncrypter
+import cd.connect.app.config.ThreadLocalConfigurationSource
 import spock.lang.Specification
 
 class WebhookEncryptionServiceImplSpec extends Specification {
   WebhookEncryptionServiceImpl webhookEncryptionService
   SymmetricEncrypter symmetricEncrypter
+  String password
 
   void setup() {
+    password = 'blah'
     symmetricEncrypter = Mock(SymmetricEncrypter)
+    ThreadLocalConfigurationSource.createContext([
+      'webhooks.encryption.password': password
+    ])
     webhookEncryptionService = new WebhookEncryptionServiceImpl(symmetricEncrypter)
+  }
+
+  def cleanup() {
+    ThreadLocalConfigurationSource.clearContext()
   }
 
   def "hasEncryptSuffixAndEnabled should return true when key ends with encrypt and value is true"() {
@@ -97,9 +105,7 @@ class WebhookEncryptionServiceImplSpec extends Specification {
 
   def "Encrypt should encrypt value"(){
     given:
-    def password = "blah"
     def encrypted = "encrypted"
-    System.setProperty("webhooks.encryption.password", password)
 
     def mapValue = "cool"
     def map = ["webhook.alfie.endpoint": mapValue, "webhook.alfie.encrypt": "webhook.alfie.endpoint"]
@@ -116,7 +122,6 @@ class WebhookEncryptionServiceImplSpec extends Specification {
 
   def "Encrypt should encrypt headers"(){
     given:
-    def password = "blah"
     def encrypted = "encrypted value"
     def encryptedHeader = "encrypted header value"
     System.setProperty("webhooks.encryption.password", password)
@@ -144,10 +149,8 @@ class WebhookEncryptionServiceImplSpec extends Specification {
 
   def "Encrypt should encrypt only the headers that are enabled for encryption"(){
     given:
-    def password = "blah"
     def encrypted = "encrypted value"
     def encryptedHeader = "encrypted header value"
-    System.setProperty("webhooks.encryption.password", password)
 
     def headerValue = "loud"
     def urlValue = "url"
@@ -174,12 +177,10 @@ class WebhookEncryptionServiceImplSpec extends Specification {
 
   def "Encrypt should encrypt for multiple prefixes"(){
     given:
-    def password = "blah"
     def encrypted1 = "encrypted value"
     def encryptedHeader1 = "encrypted header value"
     def encrypted2 = "encrypted value 2"
     def encryptedHeader2 = "encrypted header value 2"
-    System.setProperty("webhooks.encryption.password", password)
 
     def headerValue1 = "loud"
     def urlValue1 = "url"
@@ -220,5 +221,38 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     actual["alfie.messaging.headers.sleep.encrypted"] == encryptedHeader2
     actual["alfie.messaging.headers.sleep.salt"].length() == 36
 
+  }
+
+  def "decrypt valid setup works as expected"() {
+    given: "i have an encrypted map"
+        def encrypted_map = [
+          'webhook.messaging.url': 'ENCRYPTED-TEXT',
+          'webhook.messaging.url.encrypted': 'blah',
+          'webhook.messaging.url.salt': 'pepper',
+          'webhook.messaging.encrypt': 'webhook.messaging.url'
+        ]
+    when: 'I decrypt the data'
+      def result = webhookEncryptionService.decrypt(encrypted_map)
+    then:
+      1 * symmetricEncrypter.decrypt('blah', password, 'pepper') >> 'sausage'
+      result.size() == 4
+      result['webhook.messaging.url'] == 'sausage'
+    when: 'I filter the decrypted data'
+      def filteredDecrypted = webhookEncryptionService.filterEncryptedSource(result)
+    then:
+      result.size() == 2
+      result['webhook.messaging.url'] == 'sausage'
+      result['webhook.messaging.encrypt'] == 'webhook.messaging.url'
+    when: "i reencrypt"
+      def reencrypt = webhookEncryptionService.encrypt(result)
+    then:
+      reencrypt.size() == 4
+      reencrypt['webhook.messaging.url'] == 'ENCRYPTED-TEXT'
+    when: "i filter encrypted"
+      def filterEncrypted = webhookEncryptionService.filterEncryptedSource(reencrypt)
+    then:
+      filterEncrypted.size() == 2
+      filterEncrypted['webhook.messaging.url'] == 'ENCRYPTED-TEXT'
+      filterEncrypted['webhook.messaging.encrypt'] == 'webhook.messaging.url'
   }
 }

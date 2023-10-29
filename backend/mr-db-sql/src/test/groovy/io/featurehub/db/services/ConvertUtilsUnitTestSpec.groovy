@@ -4,6 +4,7 @@ import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbEnvironment
+import io.featurehub.encryption.WebhookEncryptionService
 import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Specification
 

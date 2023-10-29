@@ -13,6 +13,7 @@ import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.DbServiceAccount
 import io.featurehub.db.model.query.QDbPerson
 import io.featurehub.db.model.query.QDbServiceAccount
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.CreateEnvironment

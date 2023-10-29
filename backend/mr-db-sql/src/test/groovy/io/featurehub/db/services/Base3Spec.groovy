@@ -6,6 +6,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.Application

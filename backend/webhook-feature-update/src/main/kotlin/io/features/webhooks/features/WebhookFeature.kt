@@ -111,7 +111,7 @@ class WebhookEnricherListener @Inject constructor(
     log.debug("enriched: checking for environment info")
     val conf = ef.environment.environment.environmentInfo
 
-    log.debug("webhook: environment info is {}", conf)
+    log.trace("webhook: environment info is {}", conf)
 
     if ((ef.targetEnrichmentDestination != null && ef.targetEnrichmentDestination != WebhookEnvironmentResult.CLOUD_EVENT_TYPE )) {
       return

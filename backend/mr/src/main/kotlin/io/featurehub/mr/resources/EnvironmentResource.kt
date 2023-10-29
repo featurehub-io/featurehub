@@ -5,7 +5,6 @@ import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
-import io.featurehub.db.exception.MissingEncryptionPasswordException
 import io.featurehub.mr.api.EnvironmentServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.CreateEnvironment
@@ -158,8 +157,6 @@ class EnvironmentResource @Inject constructor(
         environmentApi.update(
           id, environment, Opts().add(FillOpts.Details, holder.includeDetails)
         ) ?: throw NotFoundException()
-      } catch (e: MissingEncryptionPasswordException) {
-        throw WebApplicationException(412)
       } catch (e: OptimisticLockingException) {
         throw WebApplicationException(422)
       } catch (e: EnvironmentApi.DuplicateEnvironmentException) {

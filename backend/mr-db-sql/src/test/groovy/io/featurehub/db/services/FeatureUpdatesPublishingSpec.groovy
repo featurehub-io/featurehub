@@ -23,6 +23,7 @@ import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
+import io.featurehub.encryption.WebhookEncryptionService
 
 class FeatureUpdatesPublishingSpec extends Base2Spec {
   PortfolioSqlApi portfolioSqlApi

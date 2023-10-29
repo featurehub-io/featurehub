@@ -6,7 +6,6 @@ import io.featurehub.db.api.EnvironmentApi.InvalidEnvironmentChangeException
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
-import io.featurehub.db.exception.MissingEncryptionPasswordException
 import io.featurehub.mr.api.Environment2ServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.Environment
@@ -49,8 +48,6 @@ class Environment2Resource @Inject constructor(
         throw WebApplicationException(jakarta.ws.rs.core.Response.Status.CONFLICT)
       } catch (e: InvalidEnvironmentChangeException) {
         throw BadRequestException()
-      } catch (e: MissingEncryptionPasswordException) {
-        throw WebApplicationException(412)
       }
     }
 

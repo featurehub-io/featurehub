@@ -6,6 +6,7 @@ import io.featurehub.db.api.PersonApi
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbLogin
 import io.featurehub.db.model.DbPerson
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.SortOrder
@@ -22,6 +23,7 @@ class ConvertUtilsSpec extends Base2Spec {
   def setup() {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     authenticationSqlApi = new AuthenticationSqlApi(convertUtils)
+    webhookEncryptionService = Mock()
   }
 
   def "a new person who has never authenticated will not appear to have whenLastAuthenticated set"() {
