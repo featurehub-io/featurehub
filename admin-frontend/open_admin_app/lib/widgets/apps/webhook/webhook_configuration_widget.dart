@@ -41,15 +41,14 @@ class _WebhookTableDataSource extends DataGridSource with WebhookEncryption {
   final List<WebhookHeader> _deletedHeaders = [];
   List<DataGridRow> _rows = [];
 
-
-  void fillFromConfig(Map<String, String?> headers, String prefix, List<String> encryptFields) {
+  void fillFromConfig(
+      Map<String, String?> headers, String prefix, List<String> encryptFields) {
     _headers.clear();
     _encryptFields = encryptFields;
     for (var item in headers.entries) {
       _headers.add(WebhookHeader(
-            Uri.decodeComponent(item.key.replaceAll("$prefix.headers.", "")),
-            Uri.decodeComponent(item.value!)
-        ));
+          Uri.decodeComponent(item.key.replaceAll("$prefix.headers.", "")),
+          Uri.decodeComponent(item.value!)));
     }
 
     _rows = _headers
@@ -108,9 +107,12 @@ class _WebhookTableDataSource extends DataGridSource with WebhookEncryption {
   @override
   Future<void> onCellSubmit(DataGridRow dataGridRow,
       RowColumnIndex rowColumnIndex, GridColumn column) async {
+
     final index = dataGridRow.getCells().indexWhere(
         (DataGridCell dataGridCell) =>
             dataGridCell.columnName == column.columnName);
+
+    if (index == -1) return;
 
     final oldValue = index >= 0 ? dataGridRow.getCells()[index].value : null;
 
@@ -135,17 +137,17 @@ class _WebhookTableDataSource extends DataGridSource with WebhookEncryption {
   }
 
   String encodeFromHeaders() => _headers
-      .map((e) => "${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}").join(",");
+      .map((e) =>
+          "${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}")
+      .join(",");
 
   // Concatenates header value in the headers map with the given prefix
-  Map<String,String> getHeadersMapWithPrefix(String prefix) {
-    return {
-      for (var item in _headers) "$prefix${item.key}": item.value
-    };
+  Map<String, String> getHeadersMapWithPrefix(String prefix) {
+    return {for (var item in _headers) "$prefix${item.key}": item.value};
   }
 
   // Returns all the headers that have been deleted with the deleted suffix key
-  Map<String,String> getDeletedHeadersMapWithPrefix(String prefix) {
+  Map<String, String> getDeletedHeadersMapWithPrefix(String prefix) {
     return {
       for (var item in _deletedHeaders) "$prefix${item.key}.deleted": item.value
     };
@@ -154,34 +156,33 @@ class _WebhookTableDataSource extends DataGridSource with WebhookEncryption {
   @override
   DataGridRowAdapter? buildRow(DataGridRow row) {
     final rowIndex = _rows.indexOf(row);
-    return DataGridRowAdapter(
-      cells: [
-        Container(
+    return DataGridRowAdapter(cells: [
+      Container(
+        padding: const EdgeInsets.all(8.0),
+        alignment: Alignment.centerLeft,
+        child: Tooltip(
+            message: "Click to edit", child: Text(row.getCells()[0].value)),
+      ),
+      Container(
+        padding: const EdgeInsets.all(8.0),
+        alignment: Alignment.centerLeft,
+        child: Tooltip(
+            message: "Click to edit", child: Text(row.getCells()[1].value)),
+      ),
+      Container(
           padding: const EdgeInsets.all(8.0),
           alignment: Alignment.centerLeft,
-          child: Tooltip(message: "Click to edit", child: Text(row.getCells()[0].value)),
-        ),
-        Container(
-          padding: const EdgeInsets.all(8.0),
-          alignment: Alignment.centerLeft,
-          child: Tooltip(message: "Click to edit", child: Text(
-              row.getCells()[1].value)
-          ),
-        ),
-        Container(
-            padding: const EdgeInsets.all(8.0),
-            alignment: Alignment.centerLeft,
-            child: (row.getCells()[1].value == 'ENCRYPTED-TEXT') ?
-            Checkbox(value: isEncryptEnabled("headers.${_headers[rowIndex].key}"), onChanged: null ) :
-            Checkbox(
-                value: isEncryptEnabled("headers.${_headers[rowIndex].key}"),
-                onChanged: (changedValue) {
-                  toggleEncrypt("headers.${_headers[rowIndex].key}");
-                  notifyListeners();
-                })
-        )
-      ]
-    );
+          child: (row.getCells()[1].value == 'ENCRYPTED-TEXT')
+              ? Checkbox(
+                  value: isEncryptEnabled("headers.${_headers[rowIndex].key}"),
+                  onChanged: null)
+              : Checkbox(
+                  value: isEncryptEnabled("headers.${_headers[rowIndex].key}"),
+                  onChanged: (changedValue) {
+                    toggleEncrypt("headers.${_headers[rowIndex].key}");
+                    notifyListeners();
+                  }))
+    ]);
   }
 
   addRow() {
@@ -197,11 +198,11 @@ class _WebhookTableDataSource extends DataGridSource with WebhookEncryption {
   void deleteRow(int index) {
     _rows.removeAt(index);
     _deletedHeaders.add(_headers[index]);
-    _encryptFields.removeWhere((element) => element == "headers.${_headers[index].key}");
+    _encryptFields
+        .removeWhere((element) => element == "headers.${_headers[index].key}");
     _headers.removeAt(index);
     notifyListeners();
   }
-
 }
 
 class WebhookConfiguration extends StatefulWidget {
@@ -216,12 +217,14 @@ class WebhookConfiguration extends StatefulWidget {
   State<WebhookConfiguration> createState() => _WebhookConfigurationState();
 }
 
-class _WebhookConfigurationState extends State<WebhookConfiguration> with WebhookEncryption{
+class _WebhookConfigurationState extends State<WebhookConfiguration>
+    with WebhookEncryption {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _url = TextEditingController();
   final _WebhookTableDataSource _headers = _WebhookTableDataSource();
   final DataGridController _dataGridController = DataGridController();
   bool enabled = false;
+
   // List<String> encrypt = [];
 
   @override
@@ -242,11 +245,9 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> with Webhoo
 
   void _setup() {
     final envInfo = widget.environment.webhookEnvironmentInfo ?? {};
-    enabled = envInfo['${widget.type.envPrefix}.enabled'] ==
-        'true';
+    enabled = envInfo['${widget.type.envPrefix}.enabled'] == 'true';
 
-    final url =
-    envInfo['${widget.type.envPrefix}.endpoint'];
+    final url = envInfo['${widget.type.envPrefix}.endpoint'];
 
     if (url != null) {
       _url.text = url;
@@ -255,15 +256,19 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> with Webhoo
     }
 
     // Extract items with key starting with '${widget.type.envPrefix}.headers'
-    final headers = Map.of(envInfo)..removeWhere((key,v) => !key.startsWith('${widget.type.envPrefix}.headers'));
+    final headers = Map.of(envInfo)
+      ..removeWhere(
+          (key, v) => !key.startsWith('${widget.type.envPrefix}.headers'));
 
     // Collect all webhook keys that are enabled to encryption
-    _encryptFields = envInfo['${widget.type.envPrefix}.encrypt']?.split(",")
-    .map((e) => e.replaceAll("${widget.type.envPrefix}.", '')).toList() ?? [];
+    _encryptFields = envInfo['${widget.type.envPrefix}.encrypt']
+            ?.split(",")
+            .map((e) => e.replaceAll("${widget.type.envPrefix}.", ''))
+            .toList() ??
+        [];
     _encryptFields.removeWhere((item) => item.isEmpty);
 
-    _headers.fillFromConfig(headers,widget.type.envPrefix, _encryptFields);
-
+    _headers.fillFromConfig(headers, widget.type.envPrefix, _encryptFields);
   }
 
   @override
@@ -311,37 +316,38 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> with Webhoo
                             });
                           }),
                       const Text('Enabled'),
-                      if (_url.text == 'ENCRYPTED-TEXT' || _headers._headers.where((element) => element.value == 'ENCRYPTED-TEXT').isNotEmpty)
+                      if (widget.bloc.mrBloc.identityProviders.capabilityWebhookEncryption && (_url.text == 'ENCRYPTED-TEXT' ||
+                          _headers._headers
+                              .where((element) =>
+                                  element.value == 'ENCRYPTED-TEXT')
+                              .isNotEmpty))
                         TextButton.icon(
-                          icon: const Icon(Icons.lock_open),
-                          label: const Text("Show encrypted values"),
-                          onPressed: () => fetchEncryptedText()
-                        )
+                            icon: const Icon(Icons.lock_open),
+                            label: const Text("Show encrypted values"),
+                            onPressed: () => fetchEncryptedText())
                     ],
                   ),
-                  Row(
-                    children: [
-                      Expanded(
+                  Row(children: [
+                    Expanded(
                         child: TextFormField(
-                          controller: _url,
-                          autofocus: true,
-                          textInputAction: TextInputAction.next,
-                          readOnly: _url.text == 'ENCRYPTED-TEXT',
-                          decoration:
-                          const InputDecoration(labelText: 'Webhook URL'),
-                          validator: ((v) {
-                            if (v == null || v.isEmpty) {
-                              return 'Please enter a valid webhook URL';
-                            }
-                            if (!v.startsWith("http://") &&
-                                v.startsWith("https://")) {
-                              return 'Please enter a valid URL';
-                            }
-                            return null;
-                          }))),
-                      ...buildEncryptionOptions()
-                    ]
-                  ),
+                            controller: _url,
+                            autofocus: true,
+                            textInputAction: TextInputAction.next,
+                            readOnly: _url.text == 'ENCRYPTED-TEXT',
+                            decoration:
+                                const InputDecoration(labelText: 'Webhook URL'),
+                            validator: ((v) {
+                              if (v == null || v.isEmpty) {
+                                return 'Please enter a valid webhook URL';
+                              }
+                              if (!v.startsWith("http://") &&
+                                  v.startsWith("https://")) {
+                                return 'Please enter a valid URL';
+                              }
+                              return null;
+                            }))),
+                    ...buildEncryptionOptions()
+                  ]),
                   const SizedBox(
                     height: 24.0,
                   ),
@@ -396,16 +402,17 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> with Webhoo
                                       child: const Text('Value',
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold)))),
-                              GridColumn(
-                                  columnName: 'encrypt',
-                                  allowEditing: true,
-                                  label: Container(
-                                      padding: const EdgeInsets.all(8.0),
-                                      alignment: Alignment.center,
-                                      child: const Text('Encrypt',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold))))
-
+                              if (widget.bloc.mrBloc.identityProviders
+                                  .capabilityWebhookEncryption)
+                                GridColumn(
+                                    columnName: 'encrypt',
+                                    allowEditing: true,
+                                    label: Container(
+                                        padding: const EdgeInsets.all(8.0),
+                                        alignment: Alignment.center,
+                                        child: const Text('Encrypt',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold))))
                             ]),
                       ),
                     ],
@@ -418,14 +425,18 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> with Webhoo
   }
 
   List<Widget> buildEncryptionOptions() {
-    if (_url.text != 'ENCRYPTED-TEXT') {
-      return [Checkbox(
-          value: isEncryptEnabled("endpoint"),
-          onChanged: (_) {
-            setState(() {
-              toggleEncrypt("endpoint");
-            });
-          }), const Text('Encrypt URL')];
+    if (widget.bloc.mrBloc.identityProviders.capabilityWebhookEncryption &&
+        _url.text != 'ENCRYPTED-TEXT') {
+      return [
+        Checkbox(
+            value: isEncryptEnabled("endpoint"),
+            onChanged: (_) {
+              setState(() {
+                toggleEncrypt("endpoint");
+              });
+            }),
+        const Text('Encrypt URL')
+      ];
     }
     return [];
   }
@@ -443,39 +454,33 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> with Webhoo
   Future<void> _save() async {
     if (_formKey.currentState!.validate()) {
       // make sure the map is modifiable
-      final envInfo = <String,String>{}
+      final envInfo = <String, String>{}
         ..addAll(widget.environment.webhookEnvironmentInfo ?? {});
-      envInfo['${widget.type.envPrefix}.enabled'] =
-          enabled.toString();
-      envInfo['${widget.type.envPrefix}.endpoint'] =
-          _url.text;
+      envInfo['${widget.type.envPrefix}.enabled'] = enabled.toString();
+      envInfo['${widget.type.envPrefix}.endpoint'] = _url.text;
 
-      final headers = _headers.getHeadersMapWithPrefix("${widget.type.envPrefix}.headers.");
-      final deletedHeaders = _headers.getDeletedHeadersMapWithPrefix("${widget.type.envPrefix}.headers.");
+      final headers =
+          _headers.getHeadersMapWithPrefix("${widget.type.envPrefix}.headers.");
+      final deletedHeaders = _headers
+          .getDeletedHeadersMapWithPrefix("${widget.type.envPrefix}.headers.");
 
       // remove all the existing header entries for this prefix from the webhookEnvInfo
-      envInfo.removeWhere((key,v) => key.startsWith('${widget.type.envPrefix}.headers'));
+      envInfo.removeWhere(
+          (key, v) => key.startsWith('${widget.type.envPrefix}.headers'));
 
       // add all the header entries - this will have the updated headers
       envInfo.addAll(headers);
       envInfo.addAll(deletedHeaders);
 
-      envInfo['${widget.type.envPrefix}.encrypt'] =
-          _encryptFields.map((item) => '${widget.type.envPrefix}.$item').join(",");
+      envInfo['${widget.type.envPrefix}.encrypt'] = _encryptFields
+          .map((item) => '${widget.type.envPrefix}.$item')
+          .join(",");
 
       widget.environment.webhookEnvironmentInfo = envInfo;
-        widget.bloc.updateEnvironment(widget.environment).then((_) {
-          widget.bloc.mrBloc.addSnackbar(Text(
-              "Environment '${widget.environment.name}' updated with webhook details!"));
-        }).onError<ApiException>((error, stackTrace) async {
-          // TODO this should be 412
-          if (error.code == 422) {
-            widget.bloc.mrBloc
-                .customError(messageTitle: "You need to set encryption password in MR before enabling encryption!");
-          } else {
-            throw error;
-          }
-        }).catchError((e,s) async {
+      widget.bloc.updateEnvironment(widget.environment).then((_) {
+        widget.bloc.mrBloc.addSnackbar(Text(
+            "Environment '${widget.environment.name}' updated with webhook details!"));
+      }).catchError((e, s) async {
         await widget.bloc.mrBloc.dialogError(e, s);
       });
     }

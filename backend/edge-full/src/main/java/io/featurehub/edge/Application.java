@@ -13,6 +13,7 @@ import io.featurehub.publish.NATSFeature;
 import io.featurehub.rest.CorsFilter;
 import io.featurehub.utils.FallbackPropertyConfig;
 import io.features.webhooks.features.WebhookFeature;
+import io.featurehub.encryption.WebhookEncryptionFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spi.Container;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
@@ -36,6 +37,7 @@ public class Application {
             GoogleEventFeature.class,
             NATSFeature.class,
             EdgeResourceFeature.class,
+            WebhookEncryptionFeature.class,
             CorsFilter.class);
 
     if (WebhookFeature.Companion.getEnabled()) {

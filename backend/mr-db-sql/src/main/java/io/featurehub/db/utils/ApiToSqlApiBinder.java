@@ -52,8 +52,5 @@ public class ApiToSqlApiBinder extends AbstractBinder {
     bind(FeatureHistorySqlApi.class).to(FeatureHistoryApi.class).in(Singleton.class);
     bind(FeatureGroupSqlApi.class).to(FeatureGroupApi.class).in(Singleton.class);
     bind(CacheSourceFeatureGroupSqlApi.class).to(CacheSourceFeatureGroupApi.class).in(Singleton.class);
-    bind(WebhookEncryptionServiceImpl.class).to(WebhookEncryptionService.class).in(Singleton.class);
-    bind(SymmetricEncrypterImpl.class).to(SymmetricEncrypter.class).in(Singleton.class);
-
   }
 }

@@ -31,9 +31,8 @@ class BaseSpec extends Specification {
   def baseSetupSpec() {
     System.setProperty("ebean.ddl.generate", "true")
     System.setProperty("ebean.ddl.run", "true")
-    System.setProperty("webhooks.encryption.password", "foof")
     database = DB.getDefault()
-    symmetricEncrypter = new SymmetricEncrypterImpl()
+    symmetricEncrypter = new SymmetricEncrypterImpl("password")
     webhookEncryptionService = new WebhookEncryptionServiceImpl(symmetricEncrypter)
     convertUtils = new ConvertUtils(webhookEncryptionService)
     archiveStrategy = new DbArchiveStrategy(database, Mock(CacheSource))

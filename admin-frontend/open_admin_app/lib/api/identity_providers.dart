@@ -43,6 +43,7 @@ class ServerCapabilities {
 
   ///the server supports webhooks if it returns this
   bool get capabilityWebhooks => _capabilities['webhook.features'] == 'true';
+  bool get capabilityWebhookEncryption => _capabilities['webook.encryption'] == 'true';
   bool get dacha1Enabled => _capabilities['dacha1Enabled'] == 'true';
   bool get featureGroupsEnabled => _capabilities['featureGroupsEnabled'] == 'true';
 }

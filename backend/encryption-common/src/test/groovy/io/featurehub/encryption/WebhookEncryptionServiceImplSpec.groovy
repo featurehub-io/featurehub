@@ -9,11 +9,7 @@ class WebhookEncryptionServiceImplSpec extends Specification {
   String password
 
   void setup() {
-    password = 'blah'
     symmetricEncrypter = Mock(SymmetricEncrypter)
-    ThreadLocalConfigurationSource.createContext([
-      'webhooks.encryption.password': password
-    ])
     webhookEncryptionService = new WebhookEncryptionServiceImpl(symmetricEncrypter)
   }
 
@@ -100,7 +96,7 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     when:
     def actual = webhookEncryptionService.encrypt(map)
     then:
-    symmetricEncrypter.encrypt(mapValue, password, _ as String) >> encrypted
+    symmetricEncrypter.encrypt(mapValue, _ as String) >> encrypted
     actual != null
     actual["webhook.alfie.endpoint"] == "ENCRYPTED-TEXT"
     actual["webhook.alfie.endpoint.encrypted"] == encrypted
@@ -134,7 +130,7 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     when: 'i ask for the encryption to take place, field.1 changes but field.2 does not'
       def re = webhookEncryptionService.encrypt(client + sendToClient)
     then:
-      1 * symmetricEncrypter.encrypt('sausage', password, _) >> 'cooked-sausage'
+      1 * symmetricEncrypter.encrypt('sausage', _) >> 'cooked-sausage'
       re['field.2.salt'] == client['field.2.salt']
       re['field.2.encrypted'] == client['field.2.encrypted']
       re['field.1.salt'] != client['field.1.salt']
@@ -155,7 +151,6 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     given:
     def encrypted = "encrypted value"
     def encryptedHeader = "encrypted header value"
-    System.setProperty("webhooks.encryption.password", password)
 
     def headerValue = "yes"
     def urlValue = "url"
@@ -166,8 +161,8 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     when:
     def actual = webhookEncryptionService.encrypt(map)
     then:
-    symmetricEncrypter.encrypt(urlValue, password, _ as String) >> encrypted
-    symmetricEncrypter.encrypt(headerValue, password, _ as String) >> encryptedHeader
+    symmetricEncrypter.encrypt(urlValue, _ as String) >> encrypted
+    symmetricEncrypter.encrypt(headerValue, _ as String) >> encryptedHeader
     actual != null
     actual["webhook.alfie.feature.endpoint"] == "ENCRYPTED-TEXT"
     actual["webhook.alfie.feature.endpoint.encrypted"] == encrypted
@@ -194,8 +189,8 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     when:
     def actual = webhookEncryptionService.encrypt(map)
     then:
-    symmetricEncrypter.encrypt(urlValue, password, _ as String) >> encrypted
-    symmetricEncrypter.encrypt(headerValue, password, _ as String) >> encryptedHeader
+    symmetricEncrypter.encrypt(urlValue, _ as String) >> encrypted
+    symmetricEncrypter.encrypt(headerValue, _ as String) >> encryptedHeader
     actual != null
     actual["alfie.feature.endpoint"] == "ENCRYPTED-TEXT"
     actual["alfie.feature.endpoint.encrypted"] == encrypted
@@ -230,10 +225,10 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     when:
     def actual = webhookEncryptionService.encrypt(map)
     then:
-    symmetricEncrypter.encrypt(urlValue1, password, _ as String) >> encrypted1
-    symmetricEncrypter.encrypt(headerValue1, password, _ as String) >> encryptedHeader1
-    symmetricEncrypter.encrypt(urlValue2, password, _ as String) >> encrypted2
-    symmetricEncrypter.encrypt(headerValue2, password, _ as String) >> encryptedHeader2
+    symmetricEncrypter.encrypt(urlValue1, _ as String) >> encrypted1
+    symmetricEncrypter.encrypt(headerValue1, _ as String) >> encryptedHeader1
+    symmetricEncrypter.encrypt(urlValue2, _ as String) >> encrypted2
+    symmetricEncrypter.encrypt(headerValue2, _ as String) >> encryptedHeader2
     actual != null
     actual["alfie.feature.endpoint"] == "ENCRYPTED-TEXT"
     actual["alfie.feature.endpoint.encrypted"] == encrypted1
@@ -264,7 +259,7 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     when: 'I decrypt the data'
       def result = webhookEncryptionService.decrypt(encrypted_map)
     then:
-      1 * symmetricEncrypter.decrypt('blah', password, 'pepper') >> 'sausage'
+      1 * symmetricEncrypter.decrypt('blah', 'pepper') >> 'sausage'
       result.size() == 4
       result['webhook.messaging.url'] == 'sausage'
     when: 'I filter the decrypted data'
@@ -276,7 +271,7 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     when: "i reencrypt"
       def reencrypt = webhookEncryptionService.encrypt(result)
     then:
-      1 * symmetricEncrypter.encrypt('sausage', password, _) >> 'ENCRYPTED-TEXT'
+      1 * symmetricEncrypter.encrypt('sausage', _) >> 'ENCRYPTED-TEXT'
       reencrypt.size() == 4
       reencrypt['webhook.messaging.url'] == 'ENCRYPTED-TEXT'
     when: "i filter encrypted"
@@ -285,5 +280,26 @@ class WebhookEncryptionServiceImplSpec extends Specification {
       filterEncrypted.size() == 2
       filterEncrypted['webhook.messaging.url'] == 'ENCRYPTED-TEXT'
       filterEncrypted['webhook.messaging.encrypt'] == 'webhook.messaging.url'
+  }
+
+  def "encrypted text becomes unencrypted so encrypted fields should be removed"() {
+    given: "we have a database of encrypted content"
+      def db = [
+        'webhook.messaging.url': 'ENCRYPTED-TEXT',
+        'webhook.messaging.salt': 'salt',
+        'webhook.messaging.encrypted': 'blah',
+        'webhook.messaging.encrypt': 'webhook.messaging.url'
+      ]
+    and: 'the user sends back the data with the encryption turned off'
+      def un = [
+        'webhook.messaging.url': 'zoot',
+        'webhook.messaging.encrypt': ''
+      ]
+    when: 'we combine them and have them ready for saving'
+      def combined = db + un
+      def en = webhookEncryptionService.encrypt(combined)
+    then:
+      en.size() == 2
+      en['webhook.messaging.url'] == 'zoot'
   }
 }

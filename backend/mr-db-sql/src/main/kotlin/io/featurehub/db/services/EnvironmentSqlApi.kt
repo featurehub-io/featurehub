@@ -216,12 +216,8 @@ class EnvironmentSqlApi @Inject constructor(
       updatedWebhookEnvironmentInfo.remove("$deletedKey.encrypted")
     }
 
-    if (webhookEncryptionService.shouldEncrypt(updatedWebhookEnvironmentInfo)) {
-      environment.webhookEnvironmentInfo = webhookEncryptionService.encrypt(updatedWebhookEnvironmentInfo)
-    } else {
-      environment.webhookEnvironmentInfo = updatedWebhookEnvironmentInfo.filter { !it.key.startsWith("mgmt.") }
-        .toMap()  // prevent mgmt prefixes being used
-    }
+    environment.webhookEnvironmentInfo = webhookEncryptionService.encrypt(updatedWebhookEnvironmentInfo.filter { !it.key.startsWith("mgmt.") }
+      .toMap())
   }
 
   override fun getEnvironmentsUserCanAccess(appId: UUID, person: UUID): List<UUID>? {

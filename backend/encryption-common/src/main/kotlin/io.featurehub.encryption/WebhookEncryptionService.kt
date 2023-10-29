@@ -1,9 +1,6 @@
 package io.featurehub.encryption
 
-import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.*
 
 interface WebhookEncryptionService {
@@ -31,11 +28,9 @@ interface WebhookEncryptionService {
 class WebhookEncryptionServiceImpl @Inject constructor(
   private val symmetricEncrypter: SymmetricEncrypter,
 ) : WebhookEncryptionService {
-  private val log: Logger = LoggerFactory.getLogger(WebhookEncryptionServiceImpl::class.java)
-  private val encryptionPassword: String;
 
   init {
-    encryptionPassword = FallbackPropertyConfig.getMandatoryConfig("webhooks.encryption.password")
+
   }
 
   override fun shouldEncrypt(source: Map<String, String>): Boolean {
@@ -67,12 +62,20 @@ class WebhookEncryptionServiceImpl @Inject constructor(
    *
    * @param source
    * @return Map with item values encrypted, if they need to be.
-   * @throws RuntimeException if an encryption password is not set in the config item "webhooks.encryption.password"
    */
   override fun encrypt(source: Map<String, String>): Map<String, String> {
-    return handleSymmetricEncryption(source) { key, value, password, result ->
-      encryptItem(key, value, password, result)
+    val updated = handleSymmetricEncryption(source) { key, value, result ->
+      encryptItem(key, value, result)
     }
+
+    val validSaltsAndEncrypts = getAllKeysEnabledForEncryption(updated).map { listOf("$it.salt", "$it.encrypted") }.flatten()
+
+    val data = updated.filter {
+      ((it.key.endsWith(".salt") || it.key.endsWith(".encrypted")) && validSaltsAndEncrypts.contains(it.key)) ||
+        (!it.key.endsWith(".salt") && !it.key.endsWith(".encrypted"))
+     }
+
+    return data
   }
 
   override fun filterEncryptedSource(source: Map<String, String>): Map<String, String> {
@@ -92,7 +95,7 @@ class WebhookEncryptionServiceImpl @Inject constructor(
 
   private fun handleSymmetricEncryption(
     source: Map<String, String>,
-    callbackHandler: (key: String, value: String, password: String, result: MutableMap<String, String>) -> Unit
+    callbackHandler: (key: String, value: String, result: MutableMap<String, String>) -> Unit
   ): Map<String, String> {
     // copy everything from source to result
     val result = source.toMutableMap()
@@ -102,7 +105,7 @@ class WebhookEncryptionServiceImpl @Inject constructor(
     // for each key in encrypt item keys, encrypt item and replace value, salt and encrypted
     encryptItemKeys.forEach { encryptItemKey ->
       val value = result[encryptItemKey]!!
-      callbackHandler(encryptItemKey, value, encryptionPassword, result)
+      callbackHandler(encryptItemKey, value, result)
     }
 
     return result.toMap()
@@ -111,7 +114,6 @@ class WebhookEncryptionServiceImpl @Inject constructor(
   private fun encryptItem(
     key: String,
     value: String,
-    password: String,
     result: MutableMap<String, String>
   ) {
     if (value == ENCRYPTEDTEXT) {
@@ -120,7 +122,7 @@ class WebhookEncryptionServiceImpl @Inject constructor(
       return
     }
     val salt = UUID.randomUUID().toString()
-    val encryptedText = symmetricEncrypter.encrypt(value, password, salt)
+    val encryptedText = symmetricEncrypter.encrypt(value, salt)
     result["${key}.encrypted"] = encryptedText
     result[key] = ENCRYPTEDTEXT
     // we need the salt to decrypt the value so let's store it in the map
@@ -136,11 +138,11 @@ class WebhookEncryptionServiceImpl @Inject constructor(
    *
    * @param key
    * @param source
-   * @return
+   * @return decrypted data
    */
   override fun decrypt(source: Map<String, String>): Map<String, String> {
-    return handleSymmetricEncryption(source) { key, value, password, result ->
-      decryptItem(key, password, source, result)
+    return handleSymmetricEncryption(source) { key, value, result ->
+      decryptItem(key, source, result)
     }
   }
 
@@ -148,18 +150,16 @@ class WebhookEncryptionServiceImpl @Inject constructor(
   // will focus on ensuring the data is correct
   private fun decryptItem(
     key: String,
-    password: String,
     source: Map<String, String>,
     result: MutableMap<String, String>
   ) {
     val salt = source["$key.salt"] ?: return
     val encryptedContent = source["$key.encrypted"] ?: return
-    val decryptedText = symmetricEncrypter.decrypt(encryptedContent, password, salt)
+    val decryptedText = symmetricEncrypter.decrypt(encryptedContent, salt)
     result[key] = decryptedText
   }
 
   companion object {
     const val ENCRYPTEDTEXT = "ENCRYPTED-TEXT"
   }
-
 }

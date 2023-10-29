@@ -92,7 +92,7 @@ class WebhookEnvironmentBloc extends Bloc {
 
   Future<void> decryptEncryptedFields(Environment e) async {
     // final envData = await mrBloc.environment2ServiceApi.
-    final envData = await mrBloc.environmentServiceApi.getEnvironment(e.id!, includeDetails: true, decryptWebhookDetails: true);
+    final envData = await mrBloc.environmentServiceApi.getEnvironment(e.id, includeDetails: true, decryptWebhookDetails: true);
     _environmentSource.add(_currentSource.fromEnv(envData));
 
   }

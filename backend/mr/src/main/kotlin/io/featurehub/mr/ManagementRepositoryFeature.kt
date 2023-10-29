@@ -3,6 +3,7 @@ package io.featurehub.mr
 import io.featurehub.app.db.utils.CommonDbFeature
 import io.featurehub.db.utils.ApiToSqlApiBinder
 import io.featurehub.db.utils.ComplexUpdateMigrations
+import io.featurehub.encryption.WebhookEncryptionFeature
 import io.featurehub.lifecycle.WebBaggageSource
 import io.featurehub.mr.api.*
 import io.featurehub.mr.auth.*
@@ -50,7 +51,8 @@ class ManagementRepositoryFeature : Feature {
       Dacha2Feature::class.java,
       OAuth2Feature::class.java,
       SamlEnvironmentalFeature::class.java,
-      AuthProvidersFeature::class.java
+      AuthProvidersFeature::class.java,
+      WebhookEncryptionFeature::class.java
     ).forEach { componentClass: Class<out Any?>? -> context.register(componentClass) }
 
     if (ConfigurationUtils.dacha1Enabled) {

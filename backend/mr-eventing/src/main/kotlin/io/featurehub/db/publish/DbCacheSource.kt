@@ -277,7 +277,8 @@ open class DbCacheSource @Inject constructor(
       QDbEnvironment.Alias.id,
       QDbEnvironment.Alias.version,
       QDbEnvironment.Alias.userEnvironmentInfo,
-      QDbEnvironment.Alias.managementEnvironmentInfo
+      QDbEnvironment.Alias.managementEnvironmentInfo,
+      QDbEnvironment.Alias.webhookEnvironmentInfo
     ).findOne()
   }
 
@@ -288,20 +289,14 @@ open class DbCacheSource @Inject constructor(
       .version(env.version)
 
     if (env.userEnvironmentInfo != null) {
-      if (ce.environmentInfo == null) {
-        ce.environmentInfo = HashMap(env.userEnvironmentInfo)
-      } else {
-        ce.environmentInfo?.putAll(env.userEnvironmentInfo)
-      }
+      ce.environmentInfo.putAll(env.userEnvironmentInfo)
     }
 
     if (env.managementEnvironmentInfo != null) {
-      if (ce.environmentInfo == null) {
-        ce.environmentInfo = HashMap(env.managementEnvironmentInfo)
-      } else {
-        ce.environmentInfo?.putAll(env.managementEnvironmentInfo)
-      }
+      ce.environmentInfo.putAll(env.managementEnvironmentInfo)
     }
+
+    ce.webhookEnvironment = env.webhookEnvironmentInfo
 
     return ce
   }
@@ -360,7 +355,8 @@ open class DbCacheSource @Inject constructor(
         QDbEnvironment.Alias.name,
         QDbEnvironment.Alias.version,
         QDbEnvironment.Alias.userEnvironmentInfo,
-        QDbEnvironment.Alias.managementEnvironmentInfo
+        QDbEnvironment.Alias.managementEnvironmentInfo,
+        QDbEnvironment.Alias.webhookEnvironmentInfo
       )
     }
   }

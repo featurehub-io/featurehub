@@ -6,7 +6,6 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.encryption.SymmetricEncrypter
-import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.encryption.WebhookEncryptionServiceImpl
 import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Specification
@@ -63,8 +62,8 @@ class ConvertUtilsUnitTestSpec extends Specification{
     when: 'we ask for the decrypted data back'
       def decrypted = convertUtils.toEnvironment(dbEnvironment, Opts.opts(FillOpts.Details, FillOpts.DecryptWebhookDetails), null)
     then:
-      1 * symmetricEncrypter.decrypt('ENCODED-URL-TEXT', _, 'salt-url') >> 'url'
-      1 * symmetricEncrypter.decrypt('ENCODED-ENCRYPTED-TEXT', _, 'salt-auth') >> 'auth'
+      1 * symmetricEncrypter.decrypt('ENCODED-URL-TEXT', 'salt-url') >> 'url'
+      1 * symmetricEncrypter.decrypt('ENCODED-ENCRYPTED-TEXT', 'salt-auth') >> 'auth'
       0 * _
       decrypted.webhookEnvironmentInfo == [
         'webhook.messaging.url': 'url',

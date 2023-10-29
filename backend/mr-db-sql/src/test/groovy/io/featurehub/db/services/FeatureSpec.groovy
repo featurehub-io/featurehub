@@ -87,7 +87,7 @@ class FeatureSpec extends Base2Spec {
     db.save(app2)
     app2Id = app2.id
 
-    symmetricEncyrpter = new SymmetricEncrypterImpl()
+    symmetricEncyrpter = new SymmetricEncrypterImpl("password")
     webhookEncryptionService = new WebhookEncryptionServiceImpl(symmetricEncyrpter)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, webhookEncryptionService)
     envIdApp1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("feature-app-1-env-1"), appId, superPerson).id
