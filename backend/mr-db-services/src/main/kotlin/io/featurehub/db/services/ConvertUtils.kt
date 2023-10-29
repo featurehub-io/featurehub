@@ -112,23 +112,6 @@ open class ConvertUtils @Inject constructor(
     return if (s == null) null else if (s.length > len) s.substring(0, len) else s
   }
 
-  /**
-   * Returns a map with encrypted items replaced with a value "ENCRYPTED-TEXT"
-   *
-   * @param webhookEnvInfo
-   * @return
-   */
-  private fun toWebhookEnvironmentInfo(webhookEnvInfo: Map<String,String>) : Map<String,String> {
-    val result = mutableMapOf<String, String>()
-    webhookEnvInfo.forEach { webhookItem ->
-      val key = webhookItem.key
-      if (!key.endsWith(".encrypted") && !key.endsWith(".salt")) {
-        result[key] = webhookItem.value
-      }
-    }
-    return result.toMap()
-  }
-
   override fun toEnvironment(
     env: DbEnvironment?, opts: Opts?, features: Set<DbApplicationFeature?>?
   ): Environment? {
@@ -149,11 +132,12 @@ open class ConvertUtils @Inject constructor(
       environment.environmentInfo(env.userEnvironmentInfo)
 
       env.webhookEnvironmentInfo?.let {
+        // encrypted data and salt never leave this layer.
         if (opts.contains(FillOpts.DecryptWebhookDetails)) {
-          val decryptedWebhookInfo = encryptionService.decrypt(it)
-          environment.webhookEnvironmentInfo(toWebhookEnvironmentInfo(decryptedWebhookInfo))
+          val decryptedWebhookInfo = encryptionService.filterEncryptedSource(encryptionService.decrypt(it))
+          environment.webhookEnvironmentInfo(decryptedWebhookInfo)
         } else {
-          environment.webhookEnvironmentInfo(toWebhookEnvironmentInfo(it))
+          environment.webhookEnvironmentInfo(encryptionService.filterEncryptedSource(it))
         }
       }
 

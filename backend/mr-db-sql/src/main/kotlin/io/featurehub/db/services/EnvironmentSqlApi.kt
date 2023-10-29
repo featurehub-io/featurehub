@@ -206,7 +206,7 @@ class EnvironmentSqlApi @Inject constructor(
     val dbWebhookEnvironmentInfo = environment.webhookEnvironmentInfo ?: mutableMapOf()
 
     val updatedWebhookEnvironmentInfo = (dbWebhookEnvironmentInfo + webhookEnvironmentInfo).toMutableMap()
-    val deleted = webhookEnvironmentInfo.filter { it.key.endsWith("deleted") }
+    val deleted = webhookEnvironmentInfo.filter { it.key.endsWith(".deleted") }
       .map { it.key.replace(".deleted", "") }
 
     deleted.forEach { deletedKey ->

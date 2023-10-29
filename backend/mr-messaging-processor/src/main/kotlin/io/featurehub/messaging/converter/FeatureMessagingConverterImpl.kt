@@ -107,10 +107,10 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
 
   private fun toRolloutStrategyAttribute(rolloutStrategyAttribute: RolloutStrategyAttribute): MessagingRolloutStrategyAttribute {
     return MessagingRolloutStrategyAttribute()
-      .conditional(rolloutStrategyAttribute.conditional!!)
+      .conditional(rolloutStrategyAttribute.conditional)
       .values(rolloutStrategyAttribute.values)
-      .fieldName(rolloutStrategyAttribute.fieldName!!)
-      .type(rolloutStrategyAttribute.type!!)
+      .fieldName(rolloutStrategyAttribute.fieldName)
+      .type(rolloutStrategyAttribute.type)
   }
 
 }

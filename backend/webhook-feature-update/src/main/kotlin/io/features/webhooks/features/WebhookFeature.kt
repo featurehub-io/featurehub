@@ -5,6 +5,7 @@ import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.jersey.common.LoggingConfiguration
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.v1.CloudEventBuilder
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.enriched.model.EnrichedFeatures
 import io.featurehub.enricher.EnricherListenerFeature
 import io.featurehub.events.CloudEventPublisher
@@ -63,7 +64,9 @@ class WebhookFeature : Feature {
 class WebhookEnricherListener @Inject constructor(
   cloudEventReceiverRegistry: CloudEventReceiverRegistry,
   private val cloudEventPublisher: CloudEventPublisher,
-  private val baggageSource: BaggageChecker) {
+  private val baggageSource: BaggageChecker,
+  private val encryptionService: WebhookEncryptionService
+  ) {
   private val client: Client
 
   @ConfigKey("webhooks.features.timeout.connect")
@@ -108,22 +111,25 @@ class WebhookEnricherListener @Inject constructor(
    *
    */
   fun process(ef: EnrichedFeatures, ce: CloudEvent) {
-    log.debug("enriched: checking for environment info")
-    val conf = ef.environment.environment.environmentInfo
+    log.debug("enriched: checking for environment info (will exit if null)")
+    val originalConf = ef.environment.environment.webhookEnvironment ?: return
 
-    log.trace("webhook: environment info is {}", conf)
+    log.trace("webhook: environment info is {}", originalConf)
 
     if ((ef.targetEnrichmentDestination != null && ef.targetEnrichmentDestination != WebhookEnvironmentResult.CLOUD_EVENT_TYPE )) {
       return
     }
 
-    if (conf[WEBHOOK_ENABLED] == "true") {
+    if (originalConf[WEBHOOK_ENABLED] == "true") {
+      val conf = encryptionService.decrypt(originalConf)
       val endpoint = conf[WEBHOOK_ENDPOINT] ?: return
       val headers = conf[WEBHOOK_HEADERS]
 
       // strip out management headers
-      val newConf = conf.filter { !it.key.startsWith("mgmt.") }.toMap()
-      ef.environment.environment.environmentInfo = newConf
+      val newConf =  conf
+      ef.environment.environment.environmentInfo = ef.environment.environment.environmentInfo.filter { !it.key.startsWith("mgmt.") }.toMap()
+      // strip out any encryption keys
+      ef.environment.environment.webhookEnvironment = encryptionService.filterEncryptedSource(originalConf)
 
       try {
         val target = client.target(endpoint).request()

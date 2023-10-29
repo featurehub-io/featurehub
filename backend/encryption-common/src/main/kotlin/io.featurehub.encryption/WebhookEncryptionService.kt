@@ -18,6 +18,12 @@ interface WebhookEncryptionService {
    */
   fun filterEncryptedSource(source: Map<String, String>): Map<String, String>
 
+  /**
+   * This is used by the outgoing webhook to remove all encryption related content, including
+   * .salt, .encrypted and .encrypt fields
+   */
+  fun filterAllEncryptionContent(source: Map<String, String>): Map<String, String>
+
   fun getAllKeysEnabledForEncryption(source: Map<String, String>): List<String>
   fun decrypt(source: Map<String, String>): Map<String, String>
 }
@@ -33,7 +39,9 @@ class WebhookEncryptionServiceImpl @Inject constructor(
   }
 
   override fun shouldEncrypt(source: Map<String, String>): Boolean {
-    return source.filter { hasEncryptSuffixAndNotEmpty(it.key, it.value) }.isNotEmpty()
+    return getAllKeysEnabledForEncryption(source).any {
+      source[it] != ENCRYPTEDTEXT
+    }
   }
 
   // a field ending with ".encrypt" is a list of fields that are encrypted
@@ -72,10 +80,14 @@ class WebhookEncryptionServiceImpl @Inject constructor(
 
     getAllKeysEnabledForEncryption(source).forEach { prefix ->
       replace.remove("$prefix.salt")
-      replace.remove("$prefix.encryption")
+      replace.remove("$prefix.encrypted")
     }
 
     return replace
+  }
+
+  override fun filterAllEncryptionContent(source: Map<String, String>): Map<String, String> {
+    return filterEncryptedSource(source).filter { !it.key.endsWith(".encrypt") }
   }
 
   private fun handleSymmetricEncryption(

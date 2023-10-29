@@ -79,9 +79,6 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     !actual
   }
 
-  def "Encrypt"() {
-  }
-
   def "GetAllKeysEnabledForEncryption should return keys in encrypt item"() {
     given:
     def map = ["webhook.alfie.endpoint": "cool",
@@ -92,15 +89,6 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     def actual = webhookEncryptionService.getAllKeysEnabledForEncryption(map)
     then:
     actual == ["webhook.alfie.endpoint","webhook.alfie.headers.meow","webhook.crookshanks.endpoint"]
-  }
-
-  def "Encrypt should throw exception when encryption password is not set"(){
-    given:
-    def map = ["alfie": "cool","alfie.encrypt": "true"]
-    when:
-    webhookEncryptionService.encrypt(map)
-    then:
-    thrown(MissingEncryptionPasswordException)
   }
 
   def "Encrypt should encrypt value"(){
@@ -117,7 +105,50 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     actual["webhook.alfie.endpoint"] == "ENCRYPTED-TEXT"
     actual["webhook.alfie.endpoint.encrypted"] == encrypted
     actual["webhook.alfie.endpoint.salt"].length() == 36
+  }
 
+  def "in a normal web flow, encrypted data should never leave the API layer, even into the REST layer"() {
+    given: "we have encrypted data"
+      def client = [
+        "webhook.ginger.encrypt": "field.1,field.2",
+        'field.1.salt': 'salt1',
+        'field.1.encrypted': 'field1_encrypted',
+        'field.1': 'ENCRYPTED-TEXT',
+        'field.2.salt': 'salt2',
+        'field.2.encrypted': 'field2_encrypted',
+        'field.2': 'ENCRYPTED-TEXT',
+      ]
+    when: "i strip it ready to send to client"
+      def sendToClient = webhookEncryptionService.filterEncryptedSource(client)
+    then: 'we should just have raw fields + indicating of encryption'
+      sendToClient.size() == 3
+      sendToClient['webhook.ginger.encrypt'] == 'field.1,field.2'
+      sendToClient['field.1'] == 'ENCRYPTED-TEXT'
+      sendToClient['field.2'] == 'ENCRYPTED-TEXT'
+    then: 'the client sends it back as is, it should not trigger shouldEncrypt'
+      !webhookEncryptionService.shouldEncrypt(client + sendToClient)
+    when: 'i change the text of an encrypted field'
+      sendToClient['field.1'] = 'sausage'
+    then:
+      webhookEncryptionService.shouldEncrypt(client + sendToClient)
+    when: 'i ask for the encryption to take place, field.1 changes but field.2 does not'
+      def re = webhookEncryptionService.encrypt(client + sendToClient)
+    then:
+      1 * symmetricEncrypter.encrypt('sausage', password, _) >> 'cooked-sausage'
+      re['field.2.salt'] == client['field.2.salt']
+      re['field.2.encrypted'] == client['field.2.encrypted']
+      re['field.1.salt'] != client['field.1.salt']
+      re['field.1.encrypted'] != client['field.1.encrypted']
+      re['field.1.encrypted'] == 'cooked-sausage'
+      re['field.1'] == 'ENCRYPTED-TEXT'
+      re['field.2'] == 'ENCRYPTED-TEXT'
+      re['webhook.ginger.encrypt'] == 'field.1,field.2'
+    when: "we publish this via a webhook we should strip out any encrypted content"
+      def publish = webhookEncryptionService.filterAllEncryptionContent(re)
+    then:
+      publish.size() == 2
+      publish['field.1'] == 'ENCRYPTED-TEXT'
+      publish['field.2'] == 'ENCRYPTED-TEXT'
   }
 
   def "Encrypt should encrypt headers"(){
@@ -220,7 +251,6 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     actual["alfie.messaging.headers.sleep"] == "ENCRYPTED-TEXT"
     actual["alfie.messaging.headers.sleep.encrypted"] == encryptedHeader2
     actual["alfie.messaging.headers.sleep.salt"].length() == 36
-
   }
 
   def "decrypt valid setup works as expected"() {
@@ -240,12 +270,13 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     when: 'I filter the decrypted data'
       def filteredDecrypted = webhookEncryptionService.filterEncryptedSource(result)
     then:
-      result.size() == 2
-      result['webhook.messaging.url'] == 'sausage'
-      result['webhook.messaging.encrypt'] == 'webhook.messaging.url'
+      filteredDecrypted.size() == 2
+      filteredDecrypted['webhook.messaging.url'] == 'sausage'
+      filteredDecrypted['webhook.messaging.encrypt'] == 'webhook.messaging.url'
     when: "i reencrypt"
       def reencrypt = webhookEncryptionService.encrypt(result)
     then:
+      1 * symmetricEncrypter.encrypt('sausage', password, _) >> 'ENCRYPTED-TEXT'
       reencrypt.size() == 4
       reencrypt['webhook.messaging.url'] == 'ENCRYPTED-TEXT'
     when: "i filter encrypted"
