@@ -110,6 +110,15 @@ class WebhookEnricherListener @Inject constructor(
    * webhook.features.headers.xfoof=“blah”
    *
    */
+
+  /**
+   * expects a fully decrypted set of data
+   */
+  fun extractHeaders(conf: Map<String, String>): Map<String, String> {
+    val len = WEBHOOK_HEADERS.length
+    return conf.filter { it.key.startsWith(WEBHOOK_HEADERS) }.mapKeys { it.key.substring(len) }
+  }
+
   fun process(ef: EnrichedFeatures, ce: CloudEvent) {
     log.debug("enriched: checking for environment info (will exit if null)")
     val originalConf = ef.environment.environment.webhookEnvironment ?: return
@@ -123,29 +132,23 @@ class WebhookEnricherListener @Inject constructor(
     if (originalConf[WEBHOOK_ENABLED] == "true") {
       val conf = encryptionService.decrypt(originalConf)
       val endpoint = conf[WEBHOOK_ENDPOINT] ?: return
-      val headers = conf[WEBHOOK_HEADERS]
+      val headers = extractHeaders(conf)
 
       // strip out management headers
-      val newConf =  conf
       ef.environment.environment.environmentInfo = ef.environment.environment.environmentInfo.filter { !it.key.startsWith("mgmt.") }.toMap()
-      // strip out any encryption keys
-      ef.environment.environment.webhookEnvironment = encryptionService.filterEncryptedSource(originalConf)
+      // don't want anything here
+      ef.environment.environment.webhookEnvironment = null
 
       try {
         val target = client.target(endpoint).request()
 
         val outboundHeaders = mutableMapOf<String, String>()
 
-        headers?.let {
-          it.split(",").forEach { header ->
-            val kv = header.split("=")
-            if (kv.size == 2) {
-              val key = URLDecoder.decode(kv[0], StandardCharsets.UTF_8)
-              val value = URLDecoder.decode(kv[1], StandardCharsets.UTF_8)
-              outboundHeaders[key] = value
-              target.header(key, value)
-            }
-          }
+        headers.forEach { header ->
+            val key = header.key
+            val value = header.value
+            outboundHeaders[key] = value
+            target.header(key, value)
         }
 
         // no bindings for jakarta yet (in 2.4.0)
@@ -224,7 +227,7 @@ class WebhookEnricherListener @Inject constructor(
   companion object {
     const val WEBHOOK_ENABLED = "webhook.features.enabled"
     const val WEBHOOK_ENDPOINT = "webhook.features.endpoint"
-    const val WEBHOOK_HEADERS = "webhook.features.headers" // url-encoded comma separated
+    const val WEBHOOK_HEADERS = "webhook.features.headers." // prefix for headers
 
     const val SOURCE_SYSTEM = "/webhook-features"
   }

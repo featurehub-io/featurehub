@@ -40,6 +40,9 @@ class _WebhookTableDataSource extends DataGridSource with WebhookEncryption {
   final List<WebhookHeader> _headers = [];
   final List<WebhookHeader> _deletedHeaders = [];
   List<DataGridRow> _rows = [];
+  final bool encryptionEnabled;
+
+  _WebhookTableDataSource(this.encryptionEnabled);
 
   void fillFromConfig(
       Map<String, String?> headers, String prefix, List<String> encryptFields) {
@@ -169,19 +172,20 @@ class _WebhookTableDataSource extends DataGridSource with WebhookEncryption {
         child: Tooltip(
             message: "Click to edit", child: Text(row.getCells()[1].value)),
       ),
-      Container(
-          padding: const EdgeInsets.all(8.0),
-          alignment: Alignment.centerLeft,
-          child: (row.getCells()[1].value == 'ENCRYPTED-TEXT')
-              ? Checkbox(
-                  value: isEncryptEnabled("headers.${_headers[rowIndex].key}"),
-                  onChanged: null)
-              : Checkbox(
-                  value: isEncryptEnabled("headers.${_headers[rowIndex].key}"),
-                  onChanged: (changedValue) {
-                    toggleEncrypt("headers.${_headers[rowIndex].key}");
-                    notifyListeners();
-                  }))
+      if (encryptionEnabled)
+        Container(
+            padding: const EdgeInsets.all(8.0),
+            alignment: Alignment.centerLeft,
+            child: (row.getCells()[1].value == 'ENCRYPTED-TEXT')
+                ? Checkbox(
+                    value: isEncryptEnabled("headers.${_headers[rowIndex].key}"),
+                    onChanged: null)
+                : Checkbox(
+                    value: isEncryptEnabled("headers.${_headers[rowIndex].key}"),
+                    onChanged: (changedValue) {
+                      toggleEncrypt("headers.${_headers[rowIndex].key}");
+                      notifyListeners();
+                    }))
     ]);
   }
 
@@ -214,18 +218,22 @@ class WebhookConfiguration extends StatefulWidget {
       : super(key: key);
 
   @override
-  State<WebhookConfiguration> createState() => _WebhookConfigurationState();
+  State<WebhookConfiguration> createState() => _WebhookConfigurationState(bloc.mrBloc.identityProviders.capabilityWebhookEncryption);
 }
 
 class _WebhookConfigurationState extends State<WebhookConfiguration>
     with WebhookEncryption {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _url = TextEditingController();
-  final _WebhookTableDataSource _headers = _WebhookTableDataSource();
+  final _WebhookTableDataSource _headers;
   final DataGridController _dataGridController = DataGridController();
+  final bool encryptionEnabled;
   bool enabled = false;
 
   // List<String> encrypt = [];
+
+  _WebhookConfigurationState(this.encryptionEnabled):
+        _headers = _WebhookTableDataSource(encryptionEnabled);
 
   @override
   void initState() {
@@ -316,7 +324,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
                             });
                           }),
                       const Text('Enabled'),
-                      if (widget.bloc.mrBloc.identityProviders.capabilityWebhookEncryption && (_url.text == 'ENCRYPTED-TEXT' ||
+                      if (encryptionEnabled && (_url.text == 'ENCRYPTED-TEXT' ||
                           _headers._headers
                               .where((element) =>
                                   element.value == 'ENCRYPTED-TEXT')
@@ -425,7 +433,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
   }
 
   List<Widget> buildEncryptionOptions() {
-    if (widget.bloc.mrBloc.identityProviders.capabilityWebhookEncryption &&
+    if (encryptionEnabled &&
         _url.text != 'ENCRYPTED-TEXT') {
       return [
         Checkbox(

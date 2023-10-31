@@ -1,6 +1,6 @@
 import { Given, Then, When } from '@cucumber/cucumber';
 import { SdkWorld } from '../support/world';
-import { Feature, FeatureValue, FeatureValueType, PersonType, WebhookCheck } from '../apis/mr-service';
+import {CreateFeature, Feature, FeatureValue, FeatureValueType, PersonType, WebhookCheck} from '../apis/mr-service';
 import waitForExpect from 'wait-for-expect';
 import { clearWebhookData, getWebhookData } from '../support/make_me_a_webserver';
 import { expect } from 'chai';
@@ -112,7 +112,7 @@ function expectedFeatures(webhookData: EnrichedFeatures | undefined, expectedFea
 
 async function createFeatureAndValue(world: SdkWorld, type: FeatureValueType,
                                      key: string, value: string, action: string, expectedFeatureKeys: Array<string>): Promise<void> {
-  await world.featureApi.createFeaturesForApplication(world.application.id, new Feature({
+  await world.featureApi.createFeaturesForApplication(world.application.id, new CreateFeature({
     valueType: type,
     name: key,
     key: key,

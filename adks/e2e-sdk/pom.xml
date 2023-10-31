@@ -36,52 +36,52 @@
 
   <build>
     <plugins>
-<!--      <plugin>-->
-<!--        <groupId>org.apache.maven.plugins</groupId>-->
-<!--        <artifactId>maven-dependency-plugin</artifactId>-->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <id>extract MR API</id>-->
-<!--            <phase>initialize</phase>-->
-<!--            <goals>-->
-<!--              <goal>copy</goal>-->
-<!--            </goals>-->
-<!--            <configuration>-->
-<!--              <artifactItems>-->
-<!--                <artifactItem>-->
-<!--                  <groupId>io.featurehub.edge</groupId>-->
-<!--                  <artifactId>edge-api</artifactId>-->
-<!--                  <version>1.4-SNAPSHOT</version>-->
-<!--                  <classifier>api</classifier>-->
-<!--                  <type>yaml</type>-->
-<!--                  <outputDirectory>${project.basedir}/target</outputDirectory>-->
-<!--                  <destFileName>sse.yaml</destFileName>-->
-<!--                </artifactItem>-->
-<!--                <artifactItem>-->
-<!--                  <groupId>io.featurehub.mr</groupId>-->
-<!--                  <artifactId>mr-api</artifactId>-->
-<!--                  <version>1.1-SNAPSHOT</version>-->
-<!--                  <classifier>api</classifier>-->
-<!--                  <type>yaml</type>-->
-<!--                  <outputDirectory>${project.basedir}/target</outputDirectory>-->
-<!--                  <destFileName>mr-api.yaml</destFileName>-->
-<!--                </artifactItem>-->
-<!--                <artifactItem>-->
-<!--                  <groupId>io.featurehub.edge</groupId>-->
-<!--                  <artifactId>edge-stats-api</artifactId>-->
-<!--                  <version>1.1-SNAPSHOT</version>-->
-<!--                  <classifier>api</classifier>-->
-<!--                  <type>yaml</type>-->
-<!--                  <outputDirectory>${project.basedir}/target</outputDirectory>-->
-<!--                  <destFileName>stats-api.yaml</destFileName>-->
-<!--                </artifactItem>-->
-<!--              </artifactItems>-->
-<!--              <overWriteReleases>true</overWriteReleases>-->
-<!--              <overWriteSnapshots>true</overWriteSnapshots>-->
-<!--            </configuration>-->
-<!--          </execution>-->
-<!--        </executions>-->
-<!--      </plugin>-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>extract MR API</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>io.featurehub.edge</groupId>
+                  <artifactId>edge-api</artifactId>
+                  <version>1.4-SNAPSHOT</version>
+                  <classifier>api</classifier>
+                  <type>yaml</type>
+                  <outputDirectory>${project.basedir}/target</outputDirectory>
+                  <destFileName>sse.yaml</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>io.featurehub.mr</groupId>
+                  <artifactId>mr-api</artifactId>
+                  <version>1.1-SNAPSHOT</version>
+                  <classifier>api</classifier>
+                  <type>yaml</type>
+                  <outputDirectory>${project.basedir}/target</outputDirectory>
+                  <destFileName>mr-api.yaml</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>io.featurehub.edge</groupId>
+                  <artifactId>edge-stats-api</artifactId>
+                  <version>1.1-SNAPSHOT</version>
+                  <classifier>api</classifier>
+                  <type>yaml</type>
+                  <outputDirectory>${project.basedir}/target</outputDirectory>
+                  <destFileName>stats-api.yaml</destFileName>
+                </artifactItem>
+              </artifactItems>
+              <overWriteReleases>true</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
@@ -108,8 +108,8 @@
               <generateApiTests>false</generateApiTests>
               <generateModelDocumentation>false</generateModelDocumentation>
               <generateSupportingFiles>true</generateSupportingFiles>
-              <inputSpec>../../infra/api-bucket/files/edge/1.1.5.yaml</inputSpec>
-<!--              <inputSpec>target/sse.yaml</inputSpec>-->
+<!--              <inputSpec>../../infra/api-bucket/files/edge/1.1.5.yaml</inputSpec>-->
+              <inputSpec>target/sse.yaml</inputSpec>
               <apiPackage>edge.api</apiPackage>
               <modelPackage>edge.models</modelPackage>
               <output>app/apis/edge</output>
@@ -136,7 +136,7 @@
               <generateApiTests>false</generateApiTests>
               <generateModelDocumentation>false</generateModelDocumentation>
               <generateSupportingFiles>true</generateSupportingFiles>
-              <inputSpec>../../infra/api-bucket/files/webhooks/1.1.2.yaml</inputSpec>
+              <inputSpec>../../infra/api-bucket/files/webhooks/1.2.0.yaml</inputSpec>
 <!--              <inputSpec>target/webhooks.yaml</inputSpec>-->
               <apiPackage>webhooks.api</apiPackage>
               <modelPackage>webhooks.models</modelPackage>
@@ -164,8 +164,8 @@
               <generateApiTests>false</generateApiTests>
               <generateModelDocumentation>false</generateModelDocumentation>
               <generateSupportingFiles>true</generateSupportingFiles>
-              <inputSpec>../../infra/api-bucket/files/mrapi/1.1.12.yaml</inputSpec>
-<!--              <inputSpec>target/mr-api.yaml</inputSpec>-->
+<!--              <inputSpec>../../infra/api-bucket/files/mrapi/1.1.12.yaml</inputSpec>-->
+              <inputSpec>target/mr-api.yaml</inputSpec>
               <apiPackage>mr.api</apiPackage>
               <modelPackage>mr.models</modelPackage>
               <output>app/apis/mr-service</output>
