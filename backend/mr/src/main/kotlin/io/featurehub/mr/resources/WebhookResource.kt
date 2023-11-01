@@ -44,10 +44,10 @@ class WebhookResource @Inject constructor(
             .messageType(WebhookEnvironmentResult.CLOUD_EVENT_TYPE)
             .envPrefix("webhook.features")
             .description("Feature updates"),
-          WebhookTypeDetail()
-            .messageType(FeatureMessagingUpdate.CLOUD_EVENT_TYPE)
-            .envPrefix("webhook.messaging")
-            .description("Feature updates for messaging integration")
+//          WebhookTypeDetail()
+//            .messageType(FeatureMessagingUpdate.CLOUD_EVENT_TYPE)
+//            .envPrefix("webhook.messaging")
+//            .description("Feature updates for messaging integration")
         )
       )
   }
