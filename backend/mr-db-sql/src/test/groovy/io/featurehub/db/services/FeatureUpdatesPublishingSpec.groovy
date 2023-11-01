@@ -6,6 +6,7 @@ import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
+import io.featurehub.messaging.converter.FeatureMessagingConverter
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.messaging.converter.FeatureMessagingParameter
@@ -37,7 +38,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
   RolloutStrategyValidator rsValidator
   PersonFeaturePermission perms
   RolloutStrategyValidator rsv
-  FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
+  FeatureMessagingConverter featureMessagingCloudEventPublisher
   UUID envIdApp1
   UUID appId
 
@@ -102,7 +103,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
 
     then: "feature update is published"
 
-    1 * featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate({ FeatureMessagingParameter param ->
+    1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
       with(param) {
         !lockUpdate.updated
         lockUpdate.previous
@@ -132,7 +133,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.locked(false), pers)
 
     then: "feature update is published"
-    1 * featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate({ FeatureMessagingParameter param ->
+    1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
       with(param) {
         !lockUpdate.updated
         lockUpdate.previous
@@ -149,7 +150,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.valueBoolean(true).locked(true), pers)
 
     then: "feature update is published"
-    1 * featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate({ FeatureMessagingParameter param ->
+    1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
       with(param) {
         lockUpdate.updated
         !lockUpdate.previous
@@ -168,7 +169,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, fv, pers)
 
     then: "feature update is published"
-    1 * featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate({ FeatureMessagingParameter param ->
+    1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
       with(param) {
         !lockUpdate.updated
         lockUpdate.previous
@@ -205,7 +206,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
       f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.locked(false), pers)
 
     then: "feature update is published"
-    1 * featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate({ FeatureMessagingParameter param ->
+    1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
       with(param) {
         !lockUpdate.updated
         lockUpdate.previous
@@ -225,7 +226,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, fv, perms)
 
     then: "feature update is published"
-    1 * featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate({ FeatureMessagingParameter param ->
+    1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
       with(param) {
         !lockUpdate.updated
         !lockUpdate.previous

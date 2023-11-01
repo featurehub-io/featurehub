@@ -7,8 +7,8 @@ import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.encryption.WebhookEncryptionService
+import io.featurehub.messaging.converter.FeatureMessagingConverter
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.CreateEnvironment
@@ -41,7 +41,7 @@ class Base3Spec extends Specification {
   @Shared Portfolio portfolio
   @Shared Application app1
   @Shared Environment env1
-  @Shared FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
+  @Shared FeatureMessagingConverter featureMessagingCloudEventPublisher
   @Shared ExecutorSupplier executorSupplier
 
   String ranName() {

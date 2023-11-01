@@ -1,6 +1,7 @@
 package io.featurehub.messaging.converter
 
 import io.featurehub.db.model.DbFeatureValue
+import io.featurehub.messaging.MessagingConfig
 import io.featurehub.messaging.common.DbFeatureTestProvider
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
@@ -9,6 +10,7 @@ import io.featurehub.db.api.SingleNullableFeatureValueUpdate
 import io.featurehub.messaging.model.MessagingRolloutStrategy
 import io.featurehub.messaging.model.MessagingRolloutStrategyAttribute
 import io.featurehub.messaging.model.StrategyUpdateType
+import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
@@ -21,10 +23,14 @@ import java.time.ZoneOffset
 class FeatureMessagingConverterImplSpec extends Specification {
   FeatureMessagingConverterImpl featureMessagingConverter
   DbFeatureValue dbFeatureValue
+  FeatureMessagingCloudEventPublisher publisher
+  MessagingConfig config
 
   def setup() {
     dbFeatureValue = DbFeatureTestProvider.provideFeatureValue()
-    featureMessagingConverter = new FeatureMessagingConverterImpl()
+    publisher = Mock()
+    config = Mock()
+    featureMessagingConverter = new FeatureMessagingConverterImpl(config, publisher)
   }
 
   def createRolloutStrategy(String id = null) {
@@ -90,7 +96,7 @@ class FeatureMessagingConverterImplSpec extends Specification {
       lockUpdated.updated
       !lockUpdated.previous
       retiredUpdated == null
-      strategiesUpdated.isEmpty()
+      strategiesUpdated == null
     }
   }
 
@@ -126,7 +132,7 @@ class FeatureMessagingConverterImplSpec extends Specification {
       lockUpdated == null
       retiredUpdated.updated
       !retiredUpdated.previous
-      strategiesUpdated.isEmpty()
+      strategiesUpdated == null
     }
   }
 

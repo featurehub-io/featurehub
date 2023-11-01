@@ -16,7 +16,7 @@ import io.featurehub.encryption.SymmetricEncrypter
 import io.featurehub.encryption.SymmetricEncrypterImpl
 import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.encryption.WebhookEncryptionServiceImpl
-import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
+import io.featurehub.messaging.converter.FeatureMessagingConverter
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.ApplicationFeatureValues
 import io.featurehub.mr.model.ApplicationRoleType
@@ -57,7 +57,7 @@ class FeatureSpec extends Base2Spec {
   Group groupInPortfolio1
   Group adminGroupInPortfolio1
   RolloutStrategyValidator rsv
-  FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
+  FeatureMessagingConverter featureMessagingCloudEventPublisher
   CacheSourceFeatureGroupApi mockCacheSourceFeatureGroupApi
   WebhookEncryptionService webhookEncryptionService
   SymmetricEncrypter symmetricEncyrpter
