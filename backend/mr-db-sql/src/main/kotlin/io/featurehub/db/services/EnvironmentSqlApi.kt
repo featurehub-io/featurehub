@@ -236,27 +236,29 @@ class EnvironmentSqlApi @Inject constructor(
     QDbEnvironment().findList().forEach { env ->
       if (env.userEnvironmentInfo != null) {
         val webhookInfo = env.userEnvironmentInfo
-          .filter { it.key.contains("webhook.") && !it.key.contains(".headers") }
+          .filter { it.key.startsWith("webhook.") && !it.key.contains(".headers") }
           .toMap()
 
         val webhookHeadersInfo = env.userEnvironmentInfo
-          .filter { it.key.contains("webhook.") && it.key.contains(".headers") }
+          .filter { it.key.startsWith("webhook.") && it.key.contains(".headers") }
           .toMap()
 
         val webhookHeadersSplitMap = mutableMapOf<String, String>()
         webhookHeadersInfo.forEach { (key, value) ->
           val prefix = key.substringBeforeLast(".headers")
-          val headers = value.split(",")
+          val headers = value.split(",").map { it.trim() }.filter { it.isNotEmpty() }
           headers.forEach {
             val keyValuePair = it.split("=")
-            webhookHeadersSplitMap["$prefix.headers.${keyValuePair[0]}"] = keyValuePair[1]
+            if (keyValuePair.size == 2 && keyValuePair[1].trim().isNotEmpty()) {
+              webhookHeadersSplitMap["$prefix.headers.${keyValuePair[0]}"] = keyValuePair[1]
+            }
           }
         }
 
         env.webhookEnvironmentInfo = webhookInfo + webhookHeadersSplitMap.toMap()
 
         env.userEnvironmentInfo = env.userEnvironmentInfo
-          .filter { !it.key.contains("webhook.") }.toMap()
+          .filter { !it.key.startsWith("webhook.") }.toMap()
 
         env.save()
       }
