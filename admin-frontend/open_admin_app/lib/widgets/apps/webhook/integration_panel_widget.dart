@@ -8,8 +8,8 @@ import 'package:open_admin_app/widgets/apps/webhook/webhook_environment_widget.d
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 
-class WebhooksPanelWidget extends StatelessWidget {
-  const WebhooksPanelWidget({Key? key}) : super(key: key);
+class IntegrationPanelWidget extends StatelessWidget {
+  const IntegrationPanelWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

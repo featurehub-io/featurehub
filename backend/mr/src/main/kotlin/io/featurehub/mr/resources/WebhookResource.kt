@@ -32,9 +32,7 @@ class WebhookResource @Inject constructor(
     }
 
     throw ForbiddenException()
-
   }
-
 
   override fun getWebhookTypes(): WebhookTypeDetails {
     return WebhookTypeDetails()
@@ -43,7 +41,11 @@ class WebhookResource @Inject constructor(
           WebhookTypeDetail()
             .messageType(WebhookEnvironmentResult.CLOUD_EVENT_TYPE)
             .envPrefix("webhook.features")
-            .description("Feature updates"),
+            .description("Webhook: Feature updates"),
+          WebhookTypeDetail()
+            .messageType("integration/slack-v1")
+            .envPrefix("integration.slack")
+            .description("Slack")
 //          WebhookTypeDetail()
 //            .messageType(FeatureMessagingUpdate.CLOUD_EVENT_TYPE)
 //            .envPrefix("webhook.messaging")
