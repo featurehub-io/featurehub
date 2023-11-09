@@ -11,6 +11,7 @@ import 'package:open_admin_app/widgets/apps/app_update_dialog_widget.dart';
 import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
@@ -46,6 +47,15 @@ class AppsRouteState extends State<AppsRoute> {
           children: [
             const FHHeader(
               title: 'Applications',
+              children: [
+                FHExternalLinkWidget(
+                  tooltipMessage: "View documentation",
+                  link:
+                      "https://docs.featurehub.io/featurehub/latest/applications.html",
+                  icon: Icon(Icons.arrow_outward_outlined),
+                  label: 'Applications Documentation',
+                )
+              ],
             ),
             StreamBuilder<ReleasedPortfolio?>(
                 stream: bloc.mrClient.streamValley.currentPortfolioStream,

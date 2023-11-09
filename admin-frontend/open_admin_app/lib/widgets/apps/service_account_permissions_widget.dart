@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
@@ -92,13 +93,23 @@ class _ServiceAccountPermissionState
                     ),
                     const Padding(
                       padding: EdgeInsets.only(left: 16.0),
-                      child: FHInfoCardWidget(
-                          message:
-                              '''The 'Lock/Unlock' and 'Change value' permissions
-are so you can change these states through the API's
-e.g., when running tests. \n
+                      child: FHInfoCardWidget(message: '''
 We strongly recommend setting production environments
-with only 'Read' permission for service accounts.'''),
+with only 'Read' permission for service accounts.
+The 'Lock/Unlock' and 'Change value' permissions
+typically given to service accounts for testing purposes,
+e.g. changing feature values states through the SDK
+when running tests. '''),
+                    ),
+                    const SizedBox(
+                      width: 32,
+                    ),
+                    const FHExternalLinkWidget(
+                      tooltipMessage: "View documentation",
+                      link:
+                          "https://docs.featurehub.io/featurehub/latest/service-accounts.html#_service_account_permissions",
+                      icon: Icon(Icons.arrow_outward_outlined),
+                      label: 'Service Accounts Documentation',
                     ),
                   ],
                 ),
@@ -211,17 +222,16 @@ class _ServiceAccountPermissionDetailState
                 final rows = <TableRow>[];
                 rows.add(getHeader());
                 for (var env in envSnapshot.data!) {
-                  rows.add(TableRow(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: SelectableText(env.name),
-                        ),
-                        getPermissionCheckbox(env.id, RoleType.READ),
-                        getPermissionCheckbox(env.id, RoleType.LOCK),
-                        getPermissionCheckbox(env.id, RoleType.UNLOCK),
-                        getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
-                      ]));
+                  rows.add(TableRow(children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SelectableText(env.name),
+                    ),
+                    getPermissionCheckbox(env.id, RoleType.READ),
+                    getPermissionCheckbox(env.id, RoleType.LOCK),
+                    getPermissionCheckbox(env.id, RoleType.UNLOCK),
+                    getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
+                  ]));
                 }
 
                 return Column(
@@ -236,17 +246,20 @@ class _ServiceAccountPermissionDetailState
                         )),
                     Card(
                       child: Table(
-                      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                      border: TableBorder(horizontalInside: BorderSide(
-                      color: Theme.of(context).dividerColor.withOpacity(0.5))),
-                      children: rows),
+                          defaultVerticalAlignment:
+                              TableCellVerticalAlignment.middle,
+                          border: TableBorder(
+                              horizontalInside: BorderSide(
+                                  color: Theme.of(context)
+                                      .dividerColor
+                                      .withOpacity(0.5))),
+                          children: rows),
                     ),
                     FHButtonBar(children: [
                       FHFlatButtonTransparent(
                         onPressed: () {
                           currentServiceAccount = null;
-                          widget.bloc
-                              .selectServiceAccount(saSnapshot.data!.id);
+                          widget.bloc.selectServiceAccount(saSnapshot.data!.id);
                         },
                         title: 'Cancel',
                         keepCase: true,
@@ -278,45 +291,47 @@ class _ServiceAccountPermissionDetailState
   }
 
   TableRow getHeader() {
-    var headerStyle = Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold);
-    return TableRow(
-        children: [
-          const Text(
-            '',
-          ),
-          Center(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-            'Read',
-                  style: headerStyle,
-          ),
-              )),
-          Center(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-            'Lock',
-                  style: headerStyle,
-          ),
-              )),
-          Center(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-            'Unlock',
-                  style: headerStyle,
-          ),
-              )),
-          Center(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-            'Change value / Retire',
-                  style: headerStyle,
-          ),
-              )),
-        ]);
+    var headerStyle = Theme.of(context)
+        .textTheme
+        .titleSmall!
+        .copyWith(fontWeight: FontWeight.bold);
+    return TableRow(children: [
+      const Text(
+        '',
+      ),
+      Center(
+          child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Text(
+          'Read',
+          style: headerStyle,
+        ),
+      )),
+      Center(
+          child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Text(
+          'Lock',
+          style: headerStyle,
+        ),
+      )),
+      Center(
+          child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Text(
+          'Unlock',
+          style: headerStyle,
+        ),
+      )),
+      Center(
+          child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Text(
+          'Change value / Retire',
+          style: headerStyle,
+        ),
+      )),
+    ]);
   }
 
   Widget getPermissionCheckbox(String envId, RoleType permissionType) {
@@ -329,7 +344,9 @@ class _ServiceAccountPermissionDetailState
         onChanged: (bool? value) {
           setState(() {
             if (value == true) {
-              newServiceAccountPermission[envId]!.permissions.add(permissionType);
+              newServiceAccountPermission[envId]!
+                  .permissions
+                  .add(permissionType);
             } else {
               newServiceAccountPermission[envId]!
                   .permissions

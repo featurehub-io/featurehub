@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_environment_table_widget.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 
@@ -30,8 +31,8 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [Column(
+    return Stack(children: [
+      Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16.0),
@@ -45,7 +46,8 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
                 ),
                 if (bloc.environments.isNotEmpty == true)
                   selectEnvironment(bloc.environments),
-                if (bloc.environments.isNotEmpty != true) const Text("no environments")
+                if (bloc.environments.isNotEmpty != true)
+                  const Text("no environments")
               ],
             ),
             const SizedBox(
@@ -60,7 +62,17 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
                 ),
                 selectWebhookTypeDetail(),
               ],
-            )
+            ),
+            const SizedBox(
+              width: 32,
+            ),
+            const FHExternalLinkWidget(
+              tooltipMessage: "View documentation",
+              link:
+                  "https://docs.featurehub.io/featurehub/latest/webhooks.html",
+              icon: Icon(Icons.arrow_outward_outlined),
+              label: 'Webhooks Documentation',
+            ),
           ]),
           StreamBuilder<EnvironmentAndWebhookType>(
             stream: bloc.environmentStream,
