@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
@@ -15,17 +16,16 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   late StreamSubscription<List<Application>> _currentApplicationsListListener;
   late StreamSubscription<String?> _currentAppIdListener;
-  late StreamSubscription<String?> _currentApplicationListener;
 
   String? currentEnvId;
+  String? appId;
   ApplicationPermissions? userRoles;
+  bool triggerEnvironmentListener = true;
 
   FeatureGroupsBloc(this._mrClient) {
     _currentApplicationsListListener = mrClient
         .streamValley.currentPortfolioApplicationsStream
         .listen(_getCurrentPortfolioApplications);
-    _currentApplicationListener = mrClient.streamValley.currentAppIdStream
-        .listen(resetDataStreamsOnAppIdChange);
     mrClient.streamValley.includeEnvironmentsInApplicationRequest = true;
     featureGroupServiceApi = FeatureGroupServiceApi(_mrClient.apiClient);
     applicationServiceApi = ApplicationServiceApi(_mrClient.apiClient);
@@ -63,23 +63,39 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
   }
 
   getCurrentFeatureGroups() async {
-    if (mrClient.currentAid != null) {
+    if (appId != null) {
       var featureGroupsList = await featureGroupServiceApi
-          .listFeatureGroups(mrClient.currentAid!, environmentId: currentEnvId);
+          .listFeatureGroups(appId!, environmentId: currentEnvId);
       _featureGroupsStream.add(featureGroupsList.featureGroups);
       if (userRoles != null) {
         var envRoles =
-            userRoles!.environments.firstWhere((env) => env.id == currentEnvId);
-        _envRoleTypeStream.add(envRoles.roles);
+            userRoles!.environments.firstWhereOrNull((env) => env.id == currentEnvId);
+
+        if (envRoles != null) {
+          _envRoleTypeStream.add(envRoles.roles);
+        }
       }
     }
   }
 
   _getPermissions(String? appId) async {
+    this.appId = appId;
+
     if (appId != null) {
+      // check if the environment list has been refreshed. As there were no listeners before we were created,
+      // its likely it has out-of-sync
+      if (triggerEnvironmentListener) {
+        mrClient.streamValley.getCurrentApplicationEnvironments();
+        triggerEnvironmentListener = false;
+      }
       userRoles = await applicationServiceApi
-          .applicationPermissions(mrClient.currentAid!);
+          .applicationPermissions(appId);
+    } else {
+      userRoles = null;
     }
+
+    resetDataStreamsOnAppIdChange(appId);
+
   }
 
   createFeatureGroup(String name, String? description) async {
@@ -89,10 +105,9 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
           description: description ?? name,
           environmentId: currentEnvId!,
           features: []);
-      var currentAppId = mrClient.currentAid;
-      if (currentAppId != null) {
+      if (appId != null) {
         FeatureGroupListGroup group =
-            await featureGroupServiceApi.createFeatureGroup(currentAppId, fgc);
+            await featureGroupServiceApi.createFeatureGroup(appId!, fgc);
         List<FeatureGroupListGroup> featureGroupList =
             _featureGroupsStream.value;
         featureGroupList.add(group);
@@ -110,7 +125,6 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
   void dispose() {
     _currentApplicationsListListener.cancel();
     _currentAppIdListener.cancel();
-    _currentApplicationListener.cancel();
     _featureGroupsStream.close();
     _currentEnvironmentStream.close();
     _currentApplicationsStream.close();
@@ -134,17 +148,15 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
         features: features,
         strategies: strategies);
     fhosLogger.fine('Updating feature group with ${fgc}');
-    var currentAppId = mrClient.currentAid;
-    if (currentAppId != null) {
-      await featureGroupServiceApi.updateFeatureGroup(currentAppId, fgc);
+    if (appId != null) {
+      await featureGroupServiceApi.updateFeatureGroup(appId!, fgc);
       getCurrentFeatureGroups();
     }
   }
 
   deleteFeatureGroup(String id) async {
-    var currentAppId = mrClient.currentAid;
-    if (currentAppId != null) {
-      await featureGroupServiceApi.deleteFeatureGroup(currentAppId, id);
+    if (appId != null) {
+      await featureGroupServiceApi.deleteFeatureGroup(appId!, id);
       List<FeatureGroupListGroup> featureGroupList = _featureGroupsStream.value;
       featureGroupList.removeWhere((group) => group.id == id);
       _featureGroupsStream.add(featureGroupList);
