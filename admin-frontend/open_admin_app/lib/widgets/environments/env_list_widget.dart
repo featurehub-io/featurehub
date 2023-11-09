@@ -4,6 +4,7 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/apps/manage_app_bloc.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
@@ -332,7 +333,8 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                 if (_formKey.currentState!.validate()) {
                   try {
                     if (isUpdate) {
-                      await widget.bloc.updateEnv(widget.env!, name: _envName.text, production: _isProduction);
+                      await widget.bloc.updateEnv(widget.env!,
+                          name: _envName.text, production: _isProduction);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.addSnackbar(
                           Text('Environment ${_envName.text} updated!'));
@@ -370,8 +372,7 @@ Widget addEnvWidget(BuildContext context, ManageAppBloc bloc) {
             child: FilledButton.icon(
               icon: const Icon(Icons.add),
               label: const Text('Create new environment'),
-              onPressed: () =>
-                  bloc.mrClient.addOverlay((BuildContext context) {
+              onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
                 return EnvUpdateDialogWidget(
                   bloc: bloc,
                 );
@@ -385,6 +386,16 @@ showing the path to production (top to bottom)
 will be reflected on the "Features" dashboard.\n
 It helps your teams see their changes
 per environment in the correct order.''',
+        ),
+        const SizedBox(
+          width: 32,
+        ),
+        const FHExternalLinkWidget(
+          tooltipMessage: "View documentation",
+          link:
+              "https://docs.featurehub.io/featurehub/latest/environments.html",
+          icon: Icon(Icons.arrow_outward_outlined),
+          label: 'Environments Documentation',
         ),
       ],
     )

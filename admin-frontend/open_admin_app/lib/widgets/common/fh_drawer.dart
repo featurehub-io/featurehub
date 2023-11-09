@@ -8,6 +8,7 @@ import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/config/route_names.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/widget_creator.dart';
+import 'package:open_admin_app/widgets/common/fh_label_container.dart';
 import 'package:open_admin_app/widgets/common/fh_portfolio_selector.dart';
 
 class DrawerViewWidget extends StatefulWidget {
@@ -66,76 +67,84 @@ class _MenuContainer extends StatelessWidget {
                     return const SizedBox.shrink();
                   }
                   return StreamBuilder<String?>(
-                    stream: mrBloc.streamValley.globalRefresherStream,
-                    builder: (context, snapshot) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const PortfolioSelectorWidget(),
-                          const SizedBox(height: 16),
-                          _MenuFeaturesOptionsWidget(mrBloc),
-                          StreamBuilder<ReleasedPortfolio?>(
-                              stream: mrBloc.streamValley.currentPortfolioStream,
-                              builder: (context, snapshot) {
-                                // print("new released portfolio ${snapshot.data}");
-                                if (!snapshot.hasData ||
-                                    !snapshot.data!.currentPortfolioOrSuperAdmin) {
-                                  return const SizedBox.shrink();
-                                }
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 16.0, top: 32.0, bottom: 8.0),
-                                      child: Text(
-                                        'Application Settings',
-                                        style:
-                                            Theme.of(context).textTheme.bodySmall,
-                                      ),
-                                    ),
-                                    _ApplicationSettings(),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 16.0, top: 32.0, bottom: 8.0),
-                                          child: Text(
-                                            'Portfolio Settings',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall,
-                                          ),
+                      stream: mrBloc.streamValley.globalRefresherStream,
+                      builder: (context, snapshot) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const PortfolioSelectorWidget(),
+                            const SizedBox(height: 16),
+                            _MenuFeaturesOptionsWidget(mrBloc),
+                            StreamBuilder<ReleasedPortfolio?>(
+                                stream:
+                                    mrBloc.streamValley.currentPortfolioStream,
+                                builder: (context, snapshot) {
+                                  // print("new released portfolio ${snapshot.data}");
+                                  if (!snapshot.hasData ||
+                                      !snapshot
+                                          .data!.currentPortfolioOrSuperAdmin) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 16.0, top: 32.0, bottom: 8.0),
+                                        child: Text(
+                                          'Application Settings',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall,
                                         ),
-                                        _MenuPortfolioAdminOptionsWidget(),
-                                        _MenuDivider(),
-                                      ],
+                                      ),
+                                      _ApplicationSettings(),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 16.0,
+                                                top: 32.0,
+                                                bottom: 8.0),
+                                            child: Text(
+                                              'Portfolio Settings',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall,
+                                            ),
+                                          ),
+                                          _MenuPortfolioAdminOptionsWidget(),
+                                          _MenuDivider(),
+                                        ],
+                                      ),
+                                    ],
+                                  );
+                                }),
+                            if (widgetCreator
+                                .canSeeOrganisationMenuDrawer(mrBloc))
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Container(
+                                    padding: const EdgeInsets.only(
+                                        left: 16.0, top: 32.0, bottom: 8.0),
+                                    child: Text(
+                                      'Organization Settings',
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
                                     ),
-                                  ],
-                                );
-                              }),
-                          if (widgetCreator.canSeeOrganisationMenuDrawer(mrBloc))
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Container(
-                                  padding: const EdgeInsets.only(
-                                      left: 16.0, top: 32.0, bottom: 8.0),
-                                  child: Text(
-                                    'Organization Settings',
-                                    style: Theme.of(context).textTheme.bodySmall,
                                   ),
-                                ),
-                                _SiteAdminOptionsWidget(),
-                                _MenuDivider(),
-                              ],
-                            )
-                        ],
-                      );
-                    }
-                  );
+                                  _SiteAdminOptionsWidget(),
+                                  _MenuDivider(),
+                                ],
+                              )
+                          ],
+                        );
+                      });
                 }),
           ),
         ),
@@ -284,6 +293,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
             iconData: Icons.settings_suggest_sharp,
             path: 'feature-groups',
             params: {},
+            displayNewLabel: true,
           ),
         const FHMenuItem(
           name: 'API Keys',
@@ -303,6 +313,7 @@ class FHMenuItem extends StatelessWidget {
   final String path;
   final Map<String, List<String>> params;
   final PermissionType permissionType;
+  final bool displayNewLabel;
 
   const FHMenuItem(
       {Key? key,
@@ -311,7 +322,8 @@ class FHMenuItem extends StatelessWidget {
       required this.path,
       required this.params,
       this.permissionType = PermissionType.regular,
-      this.iconSize})
+      this.iconSize,
+      this.displayNewLabel = false})
       : super(key: key);
 
   bool equalsParams(Map<String, List<String>> snapParams) {
@@ -373,7 +385,13 @@ class FHMenuItem extends StatelessWidget {
                                   ? FontWeight.bold
                                   : FontWeight.normal,
                             )),
-                  )
+                  ),
+                  if (displayNewLabel)
+                    const FHLabelContainer(
+                      text: "NEW",
+                      color: Color(0xff2DCD7A),
+                      margin: EdgeInsets.symmetric(horizontal: 8.0),
+                    )
                 ],
               ),
             );

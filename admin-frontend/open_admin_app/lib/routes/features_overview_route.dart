@@ -5,6 +5,7 @@ import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/common/application_drop_down.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/link_to_applications_page.dart';
 import 'package:open_admin_app/widgets/features/edit-feature/create_update_feature_dialog_widget.dart';
@@ -35,7 +36,16 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const FHHeader(
-              title: 'Features console',
+                title: 'Features console',
+                children: [
+                  FHExternalLinkWidget(
+                    tooltipMessage: "View documentation",
+                    link:
+                        "https://docs.featurehub.io/featurehub/latest/features.html",
+                    icon: Icon(Icons.arrow_outward_outlined),
+                    label: 'Features Documentation',
+                  )
+                ],
               ),
               StreamBuilder<List<Application>?>(
                   stream: bloc.applications,
@@ -46,15 +56,14 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 16.0, horizontal: 8.0),
                             child: Wrap(
                               spacing: 16.0,
                               runSpacing: 16.0,
                               children: [
                                 ApplicationDropDown(
-                                    applications: snapshot.data!,
-                                    bloc: bloc),
+                                    applications: snapshot.data!, bloc: bloc),
                                 CreateFeatureButton(bloc: bloc)
                               ],
                             ),
@@ -67,12 +76,11 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
                     }
                     if (snapshot.hasData && snapshot.data!.isEmpty) {
                       return StreamBuilder<ReleasedPortfolio?>(
-                          stream: bloc
-                              .mrClient.streamValley.currentPortfolioStream,
+                          stream:
+                              bloc.mrClient.streamValley.currentPortfolioStream,
                           builder: (context, snapshot) {
                             if (snapshot.hasData &&
-                                snapshot
-                                    .data!.currentPortfolioOrSuperAdmin) {
+                                snapshot.data!.currentPortfolioOrSuperAdmin) {
                               return Row(
                                 children: <Widget>[
                                   SelectableText(
@@ -90,8 +98,7 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
                               return SelectableText(
                                   "Either there are no applications in this portfolio or you don't have access to any of the applications.\n"
                                   'Please contact your administrator.',
-                                  style:
-                                      Theme.of(context).textTheme.bodySmall);
+                                  style: Theme.of(context).textTheme.bodySmall);
                             }
                           });
                     }
@@ -102,7 +109,6 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
     );
   }
 }
-
 
 class CreateFeatureButton extends StatelessWidget {
   final PerApplicationFeaturesBloc bloc;
@@ -125,10 +131,10 @@ class CreateFeatureButton extends StatelessWidget {
                   // keepCase: true,
                   onPressed: () {
                     bloc.mrClient.addOverlay((BuildContext context) {
-                        return CreateFeatureDialogWidget(
-                          bloc: bloc,
-                        );
-                      });
+                      return CreateFeatureDialogWidget(
+                        bloc: bloc,
+                      );
+                    });
                   },
                   icon: const Icon(Icons.add),
                   label: const Text('Create New Feature'));

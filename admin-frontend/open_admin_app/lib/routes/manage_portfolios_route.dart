@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';
@@ -26,12 +27,22 @@ class PortfolioRoute extends StatelessWidget {
           children: [
             const FHHeader(
               title: 'Manage portfolios',
+              children: [
+                FHExternalLinkWidget(
+                  tooltipMessage: "View documentation",
+                  link:
+                      "https://docs.featurehub.io/featurehub/latest/portfolios.html",
+                  icon: Icon(Icons.arrow_outward_outlined),
+                  label: 'Manage Portfolios Documentation',
+                )
+              ],
             ),
             if (bloc.mrClient.userIsSuperAdmin == true)
               FilledButton.icon(
                 icon: const Icon(Icons.add),
                 label: const Text('Create new portfolio'),
-                onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
+                onPressed: () =>
+                    bloc.mrClient.addOverlay((BuildContext context) {
                   return PortfolioUpdateDialogWidget(
                     bloc: bloc,
                   );
@@ -43,22 +54,26 @@ class PortfolioRoute extends StatelessWidget {
         const FHPageDivider(),
         const SizedBox(height: 8.0),
         Row(
-
           children: [
             Container(
               constraints: const BoxConstraints(maxWidth: 300),
               child: TextField(
-                decoration: const InputDecoration(hintText: 'Search portfolios',
-                    icon: Icon(Icons.search)),
+                decoration: const InputDecoration(
+                    hintText: 'Search portfolios', icon: Icon(Icons.search)),
                 onChanged: (val) => bloc.triggerSearch(val),
               ),
             ),
-            if (bloc.mrClient.identityProviders.dacha1Enabled && bloc.mrClient.personState.userIsSuperAdmin)
+            if (bloc.mrClient.identityProviders.dacha1Enabled &&
+                bloc.mrClient.personState.userIsSuperAdmin)
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 8.0),
-                  child: Align(alignment: Alignment.topRight,
-                      child: OutlinedButton.icon(onPressed: () => _refreshWholeCacheConfirm(bloc), icon: const Icon(Icons.cached), label: const Text('Republish system cache'))),
+                  child: Align(
+                      alignment: Alignment.topRight,
+                      child: OutlinedButton.icon(
+                          onPressed: () => _refreshWholeCacheConfirm(bloc),
+                          icon: const Icon(Icons.cached),
+                          label: const Text('Republish system cache'))),
                 ),
               )
           ],
@@ -73,10 +88,11 @@ class PortfolioRoute extends StatelessWidget {
     bloc.mrClient.addOverlay((BuildContext context) {
       return FHAlertDialog(
         title: const Text(
-          "Warning: Intensive system operation" ,
+          "Warning: Intensive system operation",
           style: TextStyle(fontSize: 22.0),
         ),
-        content: const Text("Are you sure you want to republish the entire cache?"),
+        content:
+            const Text("Are you sure you want to republish the entire cache?"),
         actions: <Widget>[
           FHFlatButton(
             title: 'OK',

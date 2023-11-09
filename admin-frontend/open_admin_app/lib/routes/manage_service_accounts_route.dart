@@ -5,6 +5,7 @@ import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
 import 'package:open_admin_app/widgets/apps/service_account_list_widget.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 
 /// Every user has access to portfolios, they can only see the ones they have access to
@@ -40,6 +41,15 @@ class ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
       children: <Widget>[
         const FHHeader(
           title: 'Manage service accounts',
+          children: [
+            FHExternalLinkWidget(
+              tooltipMessage: "View documentation",
+              link:
+                  "https://docs.featurehub.io/featurehub/latest/service-accounts.html",
+              icon: Icon(Icons.arrow_outward_outlined),
+              label: 'Service Accounts Documentation',
+            )
+          ],
         ),
         const SizedBox(height: 4.0),
         const FHPageDivider(),

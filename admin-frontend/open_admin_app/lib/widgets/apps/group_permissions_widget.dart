@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
@@ -29,42 +30,49 @@ class GroupPermissionsWidget extends StatelessWidget {
             if (snapshot.hasError) {
               return const FHLoadingError();
             } else if (snapshot.hasData) {
-
-          return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                const SizedBox(
-                  height: 16.0,
-                ),
-                Row(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    const SizedBox(
+                      height: 16.0,
+                    ),
+                    Row(
                       children: [
-                        Text(
-                          'Group',
-                          style: Theme.of(context).textTheme.bodySmall,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Group',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            _GroupsDropdown(groups: snapshot.data!, bloc: bloc),
+                          ],
                         ),
-                        _GroupsDropdown(groups: snapshot.data!, bloc: bloc),
+                        const SizedBox(width: 16.0),
+                        FHUnderlineButton(
+                          title: 'Go to manage group members',
+                          onPressed: () {
+                            ManagementRepositoryClientBloc.router
+                                .navigateTo(context, '/groups', params: {
+                              'id': [bloc.selectedGroup!]
+                            });
+                          },
+                        ),
+                        const FHExternalLinkWidget(
+                          tooltipMessage: "View documentation",
+                          link:
+                              "https://docs.featurehub.io/featurehub/latest/users.html#_group_permissions",
+                          icon: Icon(Icons.arrow_outward_outlined),
+                          label: 'Group Permissions Documentation',
+                        ),
                       ],
                     ),
-                    const SizedBox(width: 16.0),
-                    FHUnderlineButton(
-                      title: 'Go to manage group members',
-                      onPressed: () {
-                        ManagementRepositoryClientBloc.router
-                            .navigateTo(context, '/groups', params: {
-                          'id': [bloc.selectedGroup!]
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                _GroupPermissionDetailWidget(bloc: bloc, mr: mrBloc)
-              ]);
-        }}
-        return const SizedBox.shrink();
+                    _GroupPermissionDetailWidget(bloc: bloc, mr: mrBloc)
+                  ]);
+            }
+          }
+          return const SizedBox.shrink();
         });
   }
 }
@@ -143,7 +151,8 @@ class _AdminFeatureRole {
   _AdminFeatureRole(this.id, this.name, this.roles);
 
   bool matches(List<ApplicationRoleType> matchRoles) {
-    return roles.length == matchRoles.length && !roles.none((role) => matchRoles.contains(role));
+    return roles.length == matchRoles.length &&
+        !roles.none((role) => matchRoles.contains(role));
   }
 
   @override
@@ -165,18 +174,25 @@ class _AdminFeatureRole {
 final _adminFeatureRoles = [
   _AdminFeatureRole('none', 'No feature permissions', []),
   _AdminFeatureRole('creator', 'Create features', [ApplicationRoleType.CREATE]),
-  _AdminFeatureRole('editor', 'Create / Edit / Delete features', [ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE])
+  _AdminFeatureRole('editor', 'Create / Edit / Delete features',
+      [ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE])
 ];
 
 final _noFeaturePermissionRole = _adminFeatureRoles[0];
 final _editorFeaturePermissionRole = _adminFeatureRoles[2];
 
-_AdminFeatureRole _discoverAdminRoleType(Group currentGroup, String applicationId) {
-  final roles = currentGroup.applicationRoles.firstWhereOrNull((element) => element.applicationId == applicationId)?.roles ?? [];
+_AdminFeatureRole _discoverAdminRoleType(
+    Group currentGroup, String applicationId) {
+  final roles = currentGroup.applicationRoles
+          .firstWhereOrNull((element) => element.applicationId == applicationId)
+          ?.roles ??
+      [];
   if (roles.length == 1 && roles.contains(ApplicationRoleType.EDIT)) {
     return _editorFeaturePermissionRole;
   }
-  return _adminFeatureRoles.firstWhereOrNull((adminRole) => adminRole.matches(roles)) ?? _noFeaturePermissionRole;
+  return _adminFeatureRoles
+          .firstWhereOrNull((adminRole) => adminRole.matches(roles)) ??
+      _noFeaturePermissionRole;
 }
 
 class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
@@ -220,54 +236,60 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                       createMap(envSnapshot.data!, groupSnapshot.data!.group);
                   currentGroup = groupSnapshot.data?.group;
                   applicationId = groupSnapshot.data!.applicationId;
-                  adminFeatureRole = _discoverAdminRoleType(currentGroup!, widget.bloc.applicationId!);
+                  adminFeatureRole = _discoverAdminRoleType(
+                      currentGroup!, widget.bloc.applicationId!);
                   originalAdminFeatureRole = adminFeatureRole;
                 }
 
                 final rows = <TableRow>[];
                 rows.add(getHeader());
                 for (var env in envSnapshot.data!) {
-                  rows.add(TableRow(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: SelectableText(env.name),
-                        ),
-                        getPermissionCheckbox(env.id, RoleType.READ),
-                        getPermissionCheckbox(env.id, RoleType.LOCK),
-                        getPermissionCheckbox(env.id, RoleType.UNLOCK),
-                        getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
-                      ]));
+                  rows.add(TableRow(children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SelectableText(env.name),
+                    ),
+                    getPermissionCheckbox(env.id, RoleType.READ),
+                    getPermissionCheckbox(env.id, RoleType.LOCK),
+                    getPermissionCheckbox(env.id, RoleType.UNLOCK),
+                    getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
+                  ]));
                 }
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     const SizedBox(height: 24),
-                    SelectableText(
-                        'Set feature level permissions',
+                    SelectableText('Set feature level permissions',
                         style: Theme.of(context).textTheme.bodySmall),
                     // SizedBox(height: 4.0),
                     Row(
                       children: <Widget>[
-                          DropdownButton<_AdminFeatureRole>(
-                            icon: const Padding(
-                              padding: EdgeInsets.only(left: 8.0),
-                              child: Icon(
-                                Icons.keyboard_arrow_down,
-                                size: 18,
-                              ),
+                        DropdownButton<_AdminFeatureRole>(
+                          icon: const Padding(
+                            padding: EdgeInsets.only(left: 8.0),
+                            child: Icon(
+                              Icons.keyboard_arrow_down,
+                              size: 18,
                             ),
-                            items: _adminFeatureRoles.map((role) {
+                          ),
+                          items: _adminFeatureRoles.map((role) {
                             return DropdownMenuItem<_AdminFeatureRole>(
-                              value: role,
-                              child: Text(role.name, style: Theme.of(context).textTheme.bodyMedium, overflow: TextOverflow.ellipsis, ));
-                              }).toList(),
-                            isDense: true,
-                            // isExpanded: true,
-                            value: adminFeatureRole,
-                            onChanged: currentGroup?.admin != true ? (value) => setState(() =>  adminFeatureRole = value) : null,
-                              ),
+                                value: role,
+                                child: Text(
+                                  role.name,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  overflow: TextOverflow.ellipsis,
+                                ));
+                          }).toList(),
+                          isDense: true,
+                          // isExpanded: true,
+                          value: adminFeatureRole,
+                          onChanged: currentGroup?.admin != true
+                              ? (value) =>
+                                  setState(() => adminFeatureRole = value)
+                              : null,
+                        ),
                       ],
                     ),
                     Center(
@@ -277,11 +299,16 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                               'Set feature value level permissions per environment',
                               style: Theme.of(context).textTheme.bodySmall)),
                     ),
-                    Card(child: Table(
-                        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                      border: TableBorder(horizontalInside: BorderSide(
-                          color: Theme.of(context).dividerColor.withOpacity(0.5))),
-                        children: rows)),
+                    Card(
+                        child: Table(
+                            defaultVerticalAlignment:
+                                TableCellVerticalAlignment.middle,
+                            border: TableBorder(
+                                horizontalInside: BorderSide(
+                                    color: Theme.of(context)
+                                        .dividerColor
+                                        .withOpacity(0.5))),
+                            children: rows)),
                     FHButtonBar(children: [
                       FHFlatButtonTransparent(
                         onPressed: () {
@@ -299,8 +326,12 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             });
                             var newGroup = currentGroup!;
                             newGroup.environmentRoles = newList;
-                            if (adminFeatureRole != null && originalAdminFeatureRole != null && originalAdminFeatureRole?.id != adminFeatureRole?.id) {
-                              replaceGroupRoles(newGroup, applicationId!, originalAdminFeatureRole!, adminFeatureRole!);
+                            if (adminFeatureRole != null &&
+                                originalAdminFeatureRole != null &&
+                                originalAdminFeatureRole?.id !=
+                                    adminFeatureRole?.id) {
+                              replaceGroupRoles(newGroup, applicationId!,
+                                  originalAdminFeatureRole!, adminFeatureRole!);
                             }
                             await widget.bloc
                                 .updateGroupWithEnvironmentRoles(
@@ -309,12 +340,9 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                               currentGroup = group;
                               originalAdminFeatureRole = _discoverAdminRoleType(
                                   currentGroup!, widget.bloc.applicationId!);
-                              widget.bloc.mrClient
-                                  .addSnackbar(
-                                  Text("Group '${group?.name ??
-                                      '<unknown>'}' updated!"));
-                            })
-                                .catchError((e, s) {
+                              widget.bloc.mrClient.addSnackbar(Text(
+                                  "Group '${group?.name ?? '<unknown>'}' updated!"));
+                            }).catchError((e, s) {
                               widget.bloc.mrClient.dialogError(e, s);
                             });
                             widget.bloc.mrClient.streamValley.triggerRocket();
@@ -328,45 +356,47 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
   }
 
   TableRow getHeader() {
-    var headerStyle = Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold);
-    return TableRow(
-        children: [
-          const Text(
-            '',
-          ),
-          Center(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-            'Read',
-            style: headerStyle,
-          ),
-              )),
-          Center(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-            'Lock',
-            style: headerStyle,
-          ),
-              )),
-          Center(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-            'Unlock',
-            style: headerStyle,
-          ),
-              )),
-          Center(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-            'Change value / Retire',
-            style: headerStyle,
-          ),
-              )),
-        ]);
+    var headerStyle = Theme.of(context)
+        .textTheme
+        .titleSmall!
+        .copyWith(fontWeight: FontWeight.bold);
+    return TableRow(children: [
+      const Text(
+        '',
+      ),
+      Center(
+          child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Text(
+          'Read',
+          style: headerStyle,
+        ),
+      )),
+      Center(
+          child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Text(
+          'Lock',
+          style: headerStyle,
+        ),
+      )),
+      Center(
+          child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Text(
+          'Unlock',
+          style: headerStyle,
+        ),
+      )),
+      Center(
+          child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Text(
+          'Change value / Retire',
+          style: headerStyle,
+        ),
+      )),
+    ]);
   }
 
   Widget getPermissionCheckbox(String envId, RoleType roleType) {
@@ -392,7 +422,9 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
     final agr = group.applicationRoles.firstWhereOrNull(
         (item) => item.applicationId == aid && item.groupId == group.id);
 
-    if (agr == null || !(agr.roles.contains(ApplicationRoleType.EDIT) || agr.roles.contains(ApplicationRoleType.EDIT_AND_DELETE) )) {
+    if (agr == null ||
+        !(agr.roles.contains(ApplicationRoleType.EDIT) ||
+            agr.roles.contains(ApplicationRoleType.EDIT_AND_DELETE))) {
       return false;
     }
     return true;
@@ -403,7 +435,10 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
       final agr = ApplicationGroupRole(
           applicationId: aid,
           groupId: group.id,
-          roles: [ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE]);
+          roles: [
+            ApplicationRoleType.EDIT_AND_DELETE,
+            ApplicationRoleType.CREATE
+          ]);
       group.applicationRoles.add(agr);
     }
     return group;
@@ -435,17 +470,27 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
     return retMap;
   }
 
-  void replaceGroupRoles(Group newGroup, String appId, _AdminFeatureRole originalAdminFeatureRole, _AdminFeatureRole adminFeatureRole) {
-     final agr = newGroup.applicationRoles.firstWhereOrNull((appGroupRole) => appGroupRole.applicationId == appId);
-     if (agr != null) {
-       // these are the roles they have
-       final roles = [...agr.roles];
-       // if the new feature
-       roles.removeWhere((role) => originalAdminFeatureRole.roles.contains(role) || adminFeatureRole.roles.contains(role) );
-       roles.addAll(adminFeatureRole.roles);
-       agr.roles = roles;
-     } else {
-       newGroup.applicationRoles.add(ApplicationGroupRole(applicationId: appId, groupId: newGroup.id, roles: adminFeatureRole.roles));
-     }
+  void replaceGroupRoles(
+      Group newGroup,
+      String appId,
+      _AdminFeatureRole originalAdminFeatureRole,
+      _AdminFeatureRole adminFeatureRole) {
+    final agr = newGroup.applicationRoles.firstWhereOrNull(
+        (appGroupRole) => appGroupRole.applicationId == appId);
+    if (agr != null) {
+      // these are the roles they have
+      final roles = [...agr.roles];
+      // if the new feature
+      roles.removeWhere((role) =>
+          originalAdminFeatureRole.roles.contains(role) ||
+          adminFeatureRole.roles.contains(role));
+      roles.addAll(adminFeatureRole.roles);
+      agr.roles = roles;
+    } else {
+      newGroup.applicationRoles.add(ApplicationGroupRole(
+          applicationId: appId,
+          groupId: newGroup.id,
+          roles: adminFeatureRole.roles));
+    }
   }
 }
