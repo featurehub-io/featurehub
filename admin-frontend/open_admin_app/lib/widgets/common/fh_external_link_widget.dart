@@ -22,13 +22,14 @@ class FHExternalLinkWidget extends StatelessWidget {
       Tooltip(
         message: tooltipMessage,
         child: TextButton.icon(
-            icon: icon,
-            onPressed: () {
-              window.open(link, 'new tab');
-            },
-            label: Text(
-              label,
-            )),
+          icon: Text(
+            label,
+          ),
+          onPressed: () {
+            window.open(link, 'new tab');
+          },
+          label: icon,
+        ),
       ),
     ]);
   }

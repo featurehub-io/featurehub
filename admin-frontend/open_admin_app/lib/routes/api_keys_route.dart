@@ -9,6 +9,7 @@ import 'package:open_admin_app/widget_creator.dart';
 import 'package:open_admin_app/widgets/common/application_drop_down.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
@@ -30,9 +31,15 @@ class ApiKeysRoute extends StatelessWidget {
             children: <Widget>[
               const Wrap(
                 children: [
-                  FHHeader(
-                    title: 'API Keys',
-                  ),
+                  FHHeader(title: 'API Keys', children: [
+                    FHExternalLinkWidget(
+                      tooltipMessage: "View documentation",
+                      link:
+                          "https://docs.featurehub.io/featurehub/latest/service-accounts.html#_api_keys",
+                      icon: Icon(Icons.arrow_outward_outlined),
+                      label: 'API Keys Documentation',
+                    )
+                  ]),
                 ],
               ),
               Padding(
@@ -165,7 +172,8 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
             itemBuilder: (context, index) {
               final serviceAccount = serviceAccountEnvs.serviceAccounts[index];
 
-              if (!serviceAccount.permissions.every((element) => element.permissions.isEmpty)) {
+              if (!serviceAccount.permissions
+                  .every((element) => element.permissions.isEmpty)) {
                 return Card(
                   elevation: 4.0,
                   shadowColor: Colors.transparent,
@@ -188,7 +196,8 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
                             child: Column(
                               children: [
                                 for (var env in serviceAccountEnvs.environments)
-                                  if (serviceAccount.permissions.firstWhere(
+                                  if (serviceAccount.permissions
+                                      .firstWhere(
                                           (p) => p.environmentId == env.id,
                                           orElse: () =>
                                               ServiceAccountPermission(

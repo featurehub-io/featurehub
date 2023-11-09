@@ -6,6 +6,7 @@ import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/common/application_drop_down.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
@@ -44,7 +45,16 @@ class FeatureGroupsRouteState extends State<FeatureGroupsRoute> {
         Wrap(
           children: [
             const FHHeader(
-              title: 'FeatureGroups',
+              title: 'Feature Groups',
+              children: [
+                FHExternalLinkWidget(
+                  tooltipMessage: "View documentation",
+                  link:
+                      "https://docs.featurehub.io/featurehub/1.7.0/feature-groups.html",
+                  icon: Icon(Icons.arrow_outward_outlined),
+                  label: 'Feature Groups Documentation',
+                )
+              ],
             ),
             StreamBuilder<List<RoleType>>(
                 stream: bloc.envRoleTypeStream,

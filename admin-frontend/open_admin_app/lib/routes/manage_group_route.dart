@@ -5,6 +5,7 @@ import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/third_party/chips_input.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
@@ -46,6 +47,15 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
             padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
             child: const FHHeader(
               title: 'Manage group members',
+              children: [
+                FHExternalLinkWidget(
+                  tooltipMessage: "View documentation",
+                  link:
+                      "https://docs.featurehub.io/featurehub/latest/users.html#_user_groups",
+                  icon: Icon(Icons.arrow_outward_outlined),
+                  label: 'User Groups Documentation',
+                ),
+              ],
             )),
         const FHPageDivider(),
         Row(
@@ -100,8 +110,8 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      if (bloc.mrClient.isPortfolioOrSuperAdmin(
-                              snapshot.data!.portfolioId))
+                      if (bloc.mrClient
+                          .isPortfolioOrSuperAdmin(snapshot.data!.portfolioId))
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: FilledButton.icon(
@@ -167,8 +177,9 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                                       member.personType == PersonType.person
                                           ? 'User'
                                           : 'Service Account')),
-                                  DataCell(bloc.mrClient.isPortfolioOrSuperAdmin(
-                                          snapshot.data!.portfolioId)
+                                  DataCell(bloc.mrClient
+                                          .isPortfolioOrSuperAdmin(
+                                              snapshot.data!.portfolioId)
                                       ? Tooltip(
                                           message: "Remove from group",
                                           child: FHIconButton(
@@ -259,7 +270,8 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                               group: bloc.group!,
                             ))),
                 //hide the delete button for Admin groups
-                ( snapshot.data!.admin == true ) ? Container()
+                (snapshot.data!.admin == true)
+                    ? Container()
                     : FHIconButton(
                         icon: const Icon(Icons.delete),
                         onPressed: () =>

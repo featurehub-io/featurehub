@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_widget.dart';
@@ -23,6 +24,15 @@ class ManageUsersRoute extends StatelessWidget {
           children: [
             const FHHeader(
               title: 'Manage users',
+              children: [
+                FHExternalLinkWidget(
+                  tooltipMessage: "View documentation",
+                  link:
+                      "https://docs.featurehub.io/featurehub/latest/users.html#_users",
+                  icon: Icon(Icons.arrow_outward_outlined),
+                  label: 'Manage Users Documentation',
+                )
+              ],
             ),
             if (bloc.mrClient.userIsSuperAdmin == true)
               FilledButton.icon(
