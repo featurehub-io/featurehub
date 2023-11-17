@@ -71,7 +71,7 @@ open class DbCacheSource @Inject constructor(
   init {
     featureGroupsEnabled = "true".equals(
       FallbackPropertyConfig.getConfig(
-        "feature-groups.enabled", "false"
+        "feature-groups.enabled", "true"
       ), ignoreCase = true)
 
     cachePoolSize = dsConfig.maxConnections / 2

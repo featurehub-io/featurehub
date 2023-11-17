@@ -24,7 +24,7 @@ class ConfigurationUtils {
     )
 
     val featureGroupsEnabled = "true".equals(getConfig(
-      "feature-groups.enabled", "false"
+      "feature-groups.enabled", "true"
     ), ignoreCase = true)
   }
 }

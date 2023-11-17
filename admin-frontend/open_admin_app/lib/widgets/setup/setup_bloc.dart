@@ -64,7 +64,7 @@ class SetupBloc implements Bloc {
         emailAddress: email!,
         password: pw1!,
         portfolio: portfolio!,
-        authProvider: provider!);
+        authProvider: provider);
 
     mrClient.setupApi.setupSiteAdmin(s).then((data) {
       _setupSource.add(true);
