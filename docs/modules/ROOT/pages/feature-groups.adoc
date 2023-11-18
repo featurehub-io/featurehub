@@ -40,3 +40,12 @@ image::fg-dashboard-view.png[Feature Group features console view, 1500]
 Yes, the same feature can be added to multiple groups. It means that a feature will have multiple strategies applied to it, so you can assign multiple values. For example, this could be useful, when you want to serve a feature but with different feature value depending on a different customer segment. As every feature value you set in the groups is always visible from the main dashboard, it is easy to see all the strategies assigned. The order of the strategies will appear in the same order as the order of feature groups on "Feature Groups" screen. In the future, we will provide ability to reorder them.
 
 image::fg-view-from-dashboard.png[Feature Group values view from Console, 1500]
+
+== Feature Groups and User Permissions to set/update groups
+Permissions for Feature Groups are set per environment and controlled by the Feature Value level permissions.
+
+* `READ` permission allows to view Feature Groups and settings for features and a strategy inside a group
+* `CHANGE_VALUE` permission allows
+to create, edit and delete Feature Groups for a given environment. As well as change a feature value, create and update strategy in a Feature Group.
+
+NOTE: See link:users#_group_permissions[Groups Permissions] for details on the various permission states a feature can have.

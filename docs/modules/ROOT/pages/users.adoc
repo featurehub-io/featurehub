@@ -67,12 +67,17 @@ NOTE: Once feature is created, feature values will be automatically created with
 
 Following permissions are to control feature values and can be set per each environment for a given application:
 
-* `READ` Can see the value of a feature, feature value strategies assigned, feature properties, lock/unlock status, retirement status and feature auditing
+* `READ` 
+** Can view the value of a feature, feature value strategies assigned, feature properties, lock/unlock status, retirement status and feature auditing
+** Can view Feature Groups and settings for features and a strategy inside a group
 * `LOCK` Can lock a feature, so it's value can't be changed, this gives us a
 safety net when deploying incomplete code into production.
 (Typically, developers and testers keep features locked until they are finished and ready to be set by business people)
 * `UNLOCK` Can unlock a feature, so it's value can be changed
-* `CHANGE_VALUE` Can change the value of a feature or can "retire" a feature
+* `CHANGE_VALUE` 
+** Can change the value of a feature or can "retire" a feature. 
+** Can create, set and delete strategy on a feature. 
+** Can create, edit and delete feature groups for a given environment. Can change a feature value, create and update strategy in a Feature Group.
 
 image::fh-group-permissions.png[Group permissions, 1500]
 
