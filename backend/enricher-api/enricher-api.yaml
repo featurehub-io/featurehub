@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: Enricher API
   description: This is an OpenAPI document for enriched data. It is used by Webhook Features directly.
-  version: "1.2.0"
+  version: "1.2.1"
 paths:
   /v2/fake:
     get:

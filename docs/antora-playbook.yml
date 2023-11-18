@@ -24,6 +24,7 @@ content:
         - v1.6.1
         - v1.6.2-docpatch
         - v1.6.3
+        - v1.7.0
       start_path: docs
     - url: https://github.com/featurehub-io/featurehub-saas-docs
       branches:
