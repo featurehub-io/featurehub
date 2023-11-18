@@ -50,7 +50,7 @@ class FeatureGroupsRouteState extends State<FeatureGroupsRoute> {
                 FHExternalLinkWidget(
                   tooltipMessage: "View documentation",
                   link:
-                      "https://docs.featurehub.io/featurehub/1.7.0/feature-groups.html",
+                      "https://docs.featurehub.io/featurehub/latest/feature-groups.html",
                   icon: Icon(Icons.arrow_outward_outlined),
                   label: 'Feature Groups Documentation',
                 )
