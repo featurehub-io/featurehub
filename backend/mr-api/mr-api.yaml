@@ -2773,6 +2773,10 @@ components:
         redirectUrl:
           type: string
           nullable: true
+        capabilityInfo:
+          nullable: true
+          additionalProperties:
+            type: string
         person: # do not include a description or the API changes code generation
           nullable: true
           allOf:

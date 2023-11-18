@@ -74,6 +74,10 @@ class SetupBloc implements Bloc {
       } else {
         mrClient.setBearerToken(data.accessToken);
         mrClient.setPerson(data.person!);
+
+        if (data.capabilityInfo != null) {
+          mrClient.identityProviders.capabilities = data.capabilityInfo!;
+        }
       }
       //    client.setGroup(data.person.groups);
     }).catchError((e, s) {
