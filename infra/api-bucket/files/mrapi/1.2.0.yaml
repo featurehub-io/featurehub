@@ -4576,6 +4576,13 @@ components:
       - serviceAccount
       - sdkServiceAccount
       default: person
+    PersonId:
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          format: uuid
     ApplicationPermissions:
       required:
       - applicationRoles
