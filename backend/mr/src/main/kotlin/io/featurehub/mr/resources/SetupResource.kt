@@ -50,17 +50,9 @@ class SetupResource @Inject constructor(
         val provider = authProviderCollection.providers[0]
         sr.redirectUrl(provider.redirectUrl)
       }
-      val enricherEnabled = ConfigurationUtils.enricherEnabled
-      val webhooksEnabled = ConfigurationUtils.webhooksEnabled
-      val dacha1Enabled = ConfigurationUtils.dacha1Enabled
-      val featureGroupsEnabled = ConfigurationUtils.featureGroupsEnabled
-      sr.capabilityInfo(
-        java.util.Map.of(
-          "webhook.features", if (enricherEnabled && webhooksEnabled) "true" else "false",
-          "trackingId", googleTrackingId, "dacha1Enabled", if (dacha1Enabled) "true" else "false",
-          "featureGroupsEnabled", if (featureGroupsEnabled) "true" else "false"
-        )
-      )
+
+      sr.capabilityInfo(capabilityInfo())
+
       return sr
     }
     val setupMissingResponse = SetupMissingResponse()
@@ -68,6 +60,19 @@ class SetupResource @Inject constructor(
       .providers(providerCodes)
       .providerInfo(fillProviderInfo())
     throw WebApplicationException(Response.status(Response.Status.NOT_FOUND).entity(setupMissingResponse).build())
+  }
+
+  private fun capabilityInfo(): Map<String, String> {
+    val enricherEnabled = ConfigurationUtils.enricherEnabled
+    val webhooksEnabled = ConfigurationUtils.webhooksEnabled
+    val dacha1Enabled = ConfigurationUtils.dacha1Enabled
+    val featureGroupsEnabled = ConfigurationUtils.featureGroupsEnabled
+
+    return java.util.Map.of(
+      "webhook.features", if (enricherEnabled && webhooksEnabled) "true" else "false",
+      "trackingId", googleTrackingId, "dacha1Enabled", if (dacha1Enabled) "true" else "false",
+      "featureGroupsEnabled", if (featureGroupsEnabled) "true" else "false"
+    )
   }
 
   private fun fillProviderInfo(): Map<String, IdentityProviderInfo> {
@@ -149,7 +154,10 @@ class SetupResource @Inject constructor(
     val group = groupApi.createOrgAdminGroup(organization.id!!, "org_admin", person!!)
     groupApi.addPersonToGroup(group!!.id, person.id!!.id, Opts.empty())
     person = personApi[person.id!!.id, Opts.opts(FillOpts.Groups, FillOpts.Acls)]
-    return TokenizedPerson().accessToken(authRepository.put(person)).person(person)
+
+    // the capability needing to be returned is a unique problem of using username/password and
+    // returning a token which is immediately usable.
+    return TokenizedPerson().accessToken(authRepository.put(person)).person(person).capabilityInfo(capabilityInfo())
   }
 
   private fun createPortfolio(setupSiteAdmin: SetupSiteAdmin, person: Person?) {

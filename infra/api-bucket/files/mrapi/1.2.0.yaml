@@ -3796,6 +3796,11 @@ components:
         redirectUrl:
           type: string
           nullable: true
+        capabilityInfo:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
         person:
           nullable: true
           allOf:
