@@ -76,7 +76,7 @@
           <plugin>
             <groupId>io.featurehub.tooling</groupId>
             <artifactId>maven-openapi-publisher</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
             <executions>
               <execution>
                 <id>publish</id>
@@ -107,7 +107,7 @@
           <plugin>
             <groupId>io.featurehub.tooling</groupId>
             <artifactId>maven-openapi-publisher</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
             <executions>
               <execution>
                 <id>export</id>
