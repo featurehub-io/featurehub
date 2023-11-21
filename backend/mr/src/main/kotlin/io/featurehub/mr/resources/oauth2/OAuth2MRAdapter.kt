@@ -56,7 +56,7 @@ class OAuth2MRAdapter @Inject constructor(
       p.name = username
 
       try {
-        personApi.updateV2(p.id!!.id, UpdatePerson().name(username), p.id!!.id)
+        personApi.updateV2(p.id!!.id, UpdatePerson().version(p.version!!).name(username), p.id!!.id)
       } catch (ignored: OptimisticLockingException) {
       }
 
