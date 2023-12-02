@@ -5,6 +5,7 @@ import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
+import io.featurehub.encryption.WebhookEncryptionFeature
 import io.featurehub.mr.api.EnvironmentServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.CreateEnvironment
@@ -101,13 +102,18 @@ class EnvironmentResource @Inject constructor(
     securityContext: SecurityContext
   ): Environment {
     val current = authManager.from(securityContext)
-    val found = environmentApi[eid, Opts()
+    val options = Opts()
       .add(FillOpts.Acls, holder.includeAcls)
       .add(FillOpts.Features, holder.includeFeatures)
       .add(FillOpts.ServiceAccounts, holder.includeServiceAccounts)
       .add(FillOpts.SdkURL, holder.includeSdkUrl)
-      .add(FillOpts.DecryptWebhookDetails, holder.decryptWebhookDetails)
-      .add(FillOpts.Details, holder.includeDetails), current]
+      .add(FillOpts.Details, holder.includeDetails)
+
+    if (WebhookEncryptionFeature.isWebhookDecryptionEnabled) {
+      options.add(FillOpts.DecryptWebhookDetails, holder.decryptWebhookDetails)
+    }
+
+    val found = environmentApi[eid, options, current]
     if (found == null) {
       log.warn("User had no access to environment `{}` or it didn't exist.", eid)
       throw ForbiddenException()

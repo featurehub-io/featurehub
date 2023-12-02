@@ -73,7 +73,8 @@ class SetupResource @Inject constructor(
       "webhook.features", if (enricherEnabled && webhooksEnabled) "true" else "false",
       "trackingId", googleTrackingId, "dacha1Enabled", if (dacha1Enabled) "true" else "false",
           "featureGroupsEnabled", if (featureGroupsEnabled) "true" else "false",
-          "webook.encryption", if (WebhookEncryptionFeature.isWebhookEncryptionEnabled) "true" else "false"
+          "webhook.encryption", if (WebhookEncryptionFeature.isWebhookEncryptionEnabled) "true" else "false",
+          "webhook.decryption", if (WebhookEncryptionFeature.isWebhookDecryptionEnabled) "true" else "false"
     )
   }
 

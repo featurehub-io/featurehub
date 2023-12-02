@@ -216,7 +216,10 @@ class WebhookConfiguration extends StatefulWidget {
       : super(key: key);
 
   @override
-  State<WebhookConfiguration> createState() => _WebhookConfigurationState(bloc.mrBloc.identityProviders.capabilityWebhookEncryption);
+  State<WebhookConfiguration> createState() => _WebhookConfigurationState(
+      bloc.mrBloc.identityProviders.capabilityWebhookEncryption,
+      bloc.mrBloc.identityProviders.capabilityWebhookDecryption
+  );
 }
 
 class _WebhookConfigurationState extends State<WebhookConfiguration>
@@ -226,12 +229,15 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
   final _WebhookTableDataSource _headers;
   final DataGridController _dataGridController = DataGridController();
   final bool encryptionEnabled;
+  final bool decryptionEnabled;
   bool enabled = false;
 
   // List<String> encrypt = [];
 
-  _WebhookConfigurationState(this.encryptionEnabled):
-        _headers = _WebhookTableDataSource(encryptionEnabled);
+  _WebhookConfigurationState(this.encryptionEnabled, this.decryptionEnabled):
+        _headers = _WebhookTableDataSource(encryptionEnabled) {
+    print("encryption: ${encryptionEnabled}, decryption: ${decryptionEnabled}");
+  }
 
   @override
   void initState() {
@@ -322,7 +328,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
                             });
                           }),
                       const Text('Enabled'),
-                      if (encryptionEnabled && (_url.text == 'ENCRYPTED-TEXT' ||
+                      if (encryptionEnabled && decryptionEnabled && (_url.text == 'ENCRYPTED-TEXT' ||
                           _headers._headers
                               .where((element) =>
                                   element.value == 'ENCRYPTED-TEXT')

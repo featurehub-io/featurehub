@@ -27,8 +27,12 @@ class WebhookEncryptionFeature : Feature {
 
   companion object {
     const val webhookPasswordConfig = "webhooks.encryption.password"
+    const val webhookDecryptionEnabled = "webhooks.decryption.enabled"
 
     val isWebhookEncryptionEnabled get() =
       FallbackPropertyConfig.getConfig(webhookPasswordConfig) != null
+
+    val isWebhookDecryptionEnabled get() =
+      FallbackPropertyConfig.getConfig(webhookDecryptionEnabled, "false").lowercase() == "true"
   }
 }
