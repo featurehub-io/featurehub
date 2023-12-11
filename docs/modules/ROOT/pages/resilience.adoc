@@ -1,0 +1,24 @@
+= Building for Resilience
+
+FeatureHub is designed to allow you to provide your applications a resilient way to ensure
+that your feature flags and configuration is always available. 
+
+Out of the box, this is achieved in a number of ways:
+
+- The SDKs are designed to *cache their feature states*, so intermittent failures to communicate with the Edge server are not going to cause outages of features.
+- The SDKs are designed to allow you to load their state from numerous different sources, not just
+  the Edge servers. You can load the state from a file system, from a Kubernetes secret or 
+  configmap, a Redis key, an S3 or Cloud Storage bucket, a Dynamic DB table - any such locations
+  can easily be backups for your state.
+- The https://github.com/featurehub-io/featurehub-webhook-to-sdk[FeatureHub servers can push state out to your systems via a Webhook] that gives you complete control over where, when and how you store your backup data. You can even use this as a primary
+source of data (e.g. for a static website that is regenerated for every feature change, or for
+an AWS Lambda that talks to S3).
+- Each component of FeatureHub is designed to be replicable and not a single point of failure - you can have as many copies of Edge, Dacha and the Management Repository as you like, as fits your load and High Availability requirements.
+- FeatureHub specifically depends (when used as separate components) on proven Cloud Scale tools like NATS.io and Google PubSub, all of which provide their own strong resiliency story.
+- FeatureHub is capable of directly integrating with Fastly's worldwide distributed cache, and this comes out of the box, even in the Open Source version! mailto:info@featurehub.io[Please contact us] for details and we can provide you with configuration.
+
+== Resilient SDKs
+
+Resiliency in SDKs face two main issues:
+
+- If FeatureHub is unavailable, how 
