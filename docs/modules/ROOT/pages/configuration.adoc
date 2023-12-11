@@ -209,6 +209,7 @@ Note, internally webhooks are dependent on enrichment pipeline, see below for `e
 countdown, where after n number of retries, it will automatically disable the webhook. Default value is 5. To change, set to the desired number: `webhook.features.max-fails=10`
 - `enricher.enabled` - The enricher pipeline, currently only required to be enabled for webhooks to work. True by default. To reduce unnecessary "load" if you do not use webhooks, disable as follows: `enricher.enabled=false`
 - `ga.tracking-id` - If provided, this will enable tracking on the usage of your Admin UI and tell you what features people are using. 
+- `mr.dacha2.api-keys` - This swaps the Dacha2 endpoint to the public interface and protects it to expect a `key` header with one of the keys listed here. See Dacha2 below for more details.
 
 === Dacha1 Config
 
@@ -222,11 +223,13 @@ If you are using Dacha1 (the "active" cache), the following properties/environme
 
 If you are using Dacha2 (the "lazy" cache), then the following properties/environment variables can be set:
 
-- `dacha2.cache.api-key` - if Dacha2 is available directly on the internet, it is recommended you set an API key to protect it.
-Also set this on *Edge* (but only if Dacha2 is publicically exposed).
+- `management-repository.url` - http(s) location of the Management Repository. Needs to include a port number.
+- `dacha2.cache.api-key` - this is used to allow Dacha2 to communicate with a Remote Management Repository to get its cache misses. If an Edge request comes in that Dacha2 hasn't seen, it will make a request to the Management Repository to get the state - which is a fairly heavy call. This call you don't normally want to expose over the internet as it can be a vector of denial of service attack on your Management Repository. If you in fact wish to distribute your Dacha2 instances out to several clusters, potentially across the world, then you can protect the MR API by setting `mr.dacha2.api-keys` (as outlined above) which gives you (a) the ability to rotate keys and (b) different potential keys for each cluster and this key `dacha2.cache.api-key` on your Dacha2 instances. By setting the `mr.dacha2.api-keys` value, the API will swap to the *public interface* and will not be available internally. Note, this traffic need not going through the external load balancer for Dacha2 instances in the same cluster as the Management Repository. The following diagram shows this in more detail.
 
-There are other configuration fields that allow you to not activetely cache incoming new environments or set the size of the LRU cache for data, but unless
-you are getting memory issues or need to support more than 10000 active environments, it is not recommended you bother with these.
+image::REST_communication_dacha2.svg[REST Traffic between API Servers for Caches]
+
+There are other configuration fields that allow you to not actively cache incoming new environments or set the size of the LRU cache for data, but unless
+you are getting memory issues or need to support more than 10000 active environments, it is not recommended change these.
 
 == Edge (all) Config
 
