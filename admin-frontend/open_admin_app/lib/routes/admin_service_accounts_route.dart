@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/ga_id.dart';
+import 'package:open_admin_app/widget_creator.dart';
 import 'package:open_admin_app/widgets/admin_sdk_service_account/list_admin_service_accounts_widget.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
@@ -49,6 +50,7 @@ class ManageAdminServiceAccountsRoute extends StatelessWidget {
             },
           ),
         const SizedBox(height: 16.0),
+        widgetCreator.adminSdkBaseUrlWidget(bloc.mrClient),
         const AdminServiceAccountsListWidget(),
       ],
     );
