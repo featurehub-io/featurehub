@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/apps/webhook/slack_panel_widget.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_environment_table_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
@@ -57,7 +58,7 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Webhook Type',
+                  'Integration Type',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 selectWebhookTypeDetail(),
@@ -80,7 +81,14 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
               if (snapshot.data == null || _currentWebhookType == null) {
                 return const SizedBox.shrink();
               }
-              return WebhookEnvironmentTable(snapshot.data!, bloc);
+
+              if (_currentWebhookType?.messageType == "webhook-environment-result-v1")
+                return WebhookEnvironmentTable(snapshot.data!, bloc);
+
+              if (_currentWebhookType?.messageType == "integration/slack-v1")
+                return SlackPanelWidget(snapshot.data!, bloc);
+
+              return SizedBox.shrink();
             },
           ),
         ],

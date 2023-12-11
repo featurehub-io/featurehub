@@ -108,7 +108,15 @@ components:
           type: object
           additionalProperties:
             type: string
-          description: (environmentInfo) - Allows extensibility for the environment
+          description: Allows extensibility for the environment
+          x-longname: environmentInfo
+        wInfo:
+          type: object
+          additionalProperties:
+            type: string
+          description: Stores all of the unique data for webhooks
+          nullable: true
+          x-longname: webhookEnvironment
     CacheEnvironmentFeature:
       required:
       - feature

@@ -15,6 +15,7 @@ import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.query.*
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.db.utils.EnvironmentUtils
+import io.featurehub.messaging.converter.FeatureMessagingConverter
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.messaging.converter.FeatureMessagingParameter
 import io.featurehub.mr.events.common.CacheSource
@@ -60,7 +61,7 @@ class FeatureSqlApi @Inject constructor(
   private val convertUtils: Conversions,
   private val cacheSource: CacheSource,
   private val rolloutStrategyValidator: RolloutStrategyValidator,
-  private val featureMessagingCloudEventPublisher: FeatureMessagingCloudEventPublisher,
+  private val featureMessagingConverter: FeatureMessagingConverter,
   private val featureGroupApi: CacheSourceFeatureGroupApi,
 ) : FeatureApi, FeatureUpdateBySDKApi {
 
@@ -268,7 +269,7 @@ class FeatureSqlApi @Inject constructor(
     try {
       val featureMessagingParameter =
         FeatureMessagingParameter(featureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
-      featureMessagingCloudEventPublisher.publishFeatureMessagingUpdate(featureMessagingParameter)
+      featureMessagingConverter.publish(featureMessagingParameter)
     } catch (e: Exception) {
       log.error("Failed to publish feature messaging update {}", featureValue, e)
     }

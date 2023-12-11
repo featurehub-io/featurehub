@@ -1,10 +1,10 @@
-import { Given, Then, When } from '@cucumber/cucumber';
-import { makeid } from '../support/random';
-import { Feature, FeatureValueType } from '../apis/mr-service';
-import { expect } from 'chai';
+import {Given, Then, When} from '@cucumber/cucumber';
+import {makeid} from '../support/random';
+import {CreateFeature, FeatureValueType} from '../apis/mr-service';
+import {expect} from 'chai';
 import waitForExpect from 'wait-for-expect';
-import { FeatureStateHolder, Readyness } from 'featurehub-javascript-node-sdk';
-import { SdkWorld } from '../support/world';
+import {FeatureStateHolder, Readyness} from 'featurehub-javascript-node-sdk';
+import {SdkWorld} from '../support/world';
 
 async function newFeature(world: SdkWorld, featureType: string, name: string) {
   let vt = FeatureValueType.String;
@@ -14,7 +14,7 @@ async function newFeature(world: SdkWorld, featureType: string, name: string) {
   } else if (featureType === 'json') {
     vt = FeatureValueType.Json;
   }
-  const fCreate = await world.featureApi.createFeaturesForApplication(world.application.id, new Feature({
+  const fCreate = await world.featureApi.createFeaturesForApplication(world.application.id, new CreateFeature({
     name: name,
     key: name,
     valueType: vt

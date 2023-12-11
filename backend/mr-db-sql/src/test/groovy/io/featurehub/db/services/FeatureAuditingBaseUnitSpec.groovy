@@ -9,22 +9,19 @@ import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersionKey
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
+import io.featurehub.messaging.converter.FeatureMessagingConverter
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.RoleType
-import io.featurehub.utils.ExecutorSupplier
 import spock.lang.Specification
-
-import java.util.concurrent.ExecutorService
 
 class FeatureAuditingBaseUnitSpec extends Specification {
   Database database
   Conversions conversions
   CacheSource cacheSource
   RolloutStrategyValidator rolloutStrategyValidator
-  FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
+  FeatureMessagingConverter featureMessagingCloudEventPublisher
 
   FeatureSqlApi fsApi
   Person person

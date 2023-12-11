@@ -75,7 +75,12 @@
       <version>${ebean.version}</version>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-logging</artifactId>
+      <version>1.3-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

@@ -9,6 +9,7 @@ import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbEnvironment
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
@@ -44,7 +45,7 @@ class Environment2Spec extends Base2Spec {
     cacheSource = Mock(CacheSource)
 
     appApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureApi))
-    envApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
+    envApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, Mock(WebhookEncryptionService))
 
     // now set up the environments we need
     DbOrganization organization = Finder.findDbOrganization()

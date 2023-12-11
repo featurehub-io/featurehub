@@ -5,22 +5,21 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
-import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
+import io.featurehub.encryption.WebhookEncryptionService
+import io.featurehub.messaging.converter.FeatureMessagingConverter
+import io.featurehub.mr.events.common.CacheSource
+import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.CreateEnvironment
 import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.CreatePortfolio
 import io.featurehub.mr.model.CreateServiceAccount
-import io.featurehub.mr.model.FeatureValue
-import io.featurehub.mr.model.RoleType
-import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.Environment
-import io.featurehub.mr.model.Feature
+import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Portfolio
+import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.RolloutStrategy
-import io.featurehub.mr.model.ServiceAccount
 
 class FeatureAuditingSpec extends Base2Spec {
   PortfolioSqlApi portfolioSqlApi
@@ -34,7 +33,7 @@ class FeatureAuditingSpec extends Base2Spec {
   Environment env
   RolloutStrategyValidator rsValidator
   PersonFeaturePermission perms
-  FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
+  FeatureMessagingConverter featureMessagingCloudEventPublisher
   ServiceAccountSqlApi serviceAccountApi
   InternalPersonApi internalPersonApi
 
@@ -70,7 +69,7 @@ class FeatureAuditingSpec extends Base2Spec {
 
     db.currentTransaction().commit()
 
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, Mock(WebhookEncryptionService))
     env = environmentSqlApi.getEnvironment(app.id, "dev")
 
     if (env == null) {

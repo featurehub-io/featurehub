@@ -13,6 +13,7 @@ import io.featurehub.mr.model.UpdateEnvironment
 import jakarta.inject.Inject
 import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.ForbiddenException
+import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.SecurityContext
 import java.util.*
@@ -21,6 +22,8 @@ class Environment2Resource @Inject constructor(
   private val authManager: AuthManagerService,
   private val environmentApi: EnvironmentApi
 ) : Environment2ServiceDelegate {
+
+  @Deprecated("Deprecated in Java")
   override fun updateEnvironmentV2(
     eid: UUID,
     updateEnvironment: UpdateEnvironment,
@@ -32,14 +35,13 @@ class Environment2Resource @Inject constructor(
     if (authManager.isOrgAdmin(current) ||
       authManager.isPortfolioAdminOfEnvironment(eid, current)
     ) {
-      val update: Environment?
-      try {
-        update = environmentApi.updateEnvironment(
+      return try {
+        environmentApi.updateEnvironment(
           eid, updateEnvironment, Opts().add(
             FillOpts.Acls,
             holder.includeAcls
           ).add(FillOpts.Features, holder.includeFeatures).add(FillOpts.Details, holder.includeDetails)
-        )
+        ) ?: throw NotFoundException()
       } catch (e: OptimisticLockingException) {
         throw WebApplicationException(422)
       } catch (e: DuplicateEnvironmentException) {
@@ -47,12 +49,9 @@ class Environment2Resource @Inject constructor(
       } catch (e: InvalidEnvironmentChangeException) {
         throw BadRequestException()
       }
-      if (update == null) {
-        throw jakarta.ws.rs.NotFoundException()
-      }
-      return update
     }
 
     throw ForbiddenException()
   }
+
 }

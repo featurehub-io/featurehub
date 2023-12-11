@@ -6,8 +6,9 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
+import io.featurehub.encryption.WebhookEncryptionService
+import io.featurehub.messaging.converter.FeatureMessagingConverter
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.CreateEnvironment
@@ -40,7 +41,7 @@ class Base3Spec extends Specification {
   @Shared Portfolio portfolio
   @Shared Application app1
   @Shared Environment env1
-  @Shared FeatureMessagingCloudEventPublisher featureMessagingCloudEventPublisher
+  @Shared FeatureMessagingConverter featureMessagingCloudEventPublisher
   @Shared ExecutorSupplier executorSupplier
 
   String ranName() {
@@ -50,7 +51,7 @@ class Base3Spec extends Specification {
   def setupSpec() {
     db = DB.getDefault()
 
-    convertUtils = new ConvertUtils()
+    convertUtils = new ConvertUtils(Mock(WebhookEncryptionService))
     cacheSource = Mock()
 
     archiveStrategy = new DbArchiveStrategy(db, cacheSource)
@@ -94,7 +95,7 @@ class Base3Spec extends Specification {
 
     featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher, Mock(CacheSourceFeatureGroupApi))
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, Mock(WebhookEncryptionService))
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi())
 
     portfolio = portfolioSqlApi.createPortfolio(new CreatePortfolio().name(RandomStringUtils.randomAlphabetic(10)).description("desc1"), Opts.empty(), superuser)

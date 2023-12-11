@@ -18,5 +18,5 @@ data class FeatureMessagingParameter(
 
 interface FeatureMessagingConverter {
   fun toFeatureMessagingUpdate(featureMessagingParameter: FeatureMessagingParameter): FeatureMessagingUpdate
-
+  fun publish(featureMessagingParameter: FeatureMessagingParameter)
 }

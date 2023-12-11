@@ -19,6 +19,7 @@ GEM
 
 PLATFORMS
   x86_64-darwin-21
+  x86_64-darwin-22
   x86_64-linux
 
 DEPENDENCIES
@@ -26,7 +27,7 @@ DEPENDENCIES
   sinatra
 
 RUBY VERSION
-   ruby 2.7.6p219
+   ruby 3.0.6p216
 
 BUNDLED WITH
    2.3.26

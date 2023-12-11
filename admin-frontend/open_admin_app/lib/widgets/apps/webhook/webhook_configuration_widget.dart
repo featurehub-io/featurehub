@@ -6,6 +6,26 @@ import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
+mixin WebhookEncryption {
+  List<String> _encryptFields = [];
+
+  bool isEncryptEnabled(key) {
+    return _encryptFields.contains(key);
+  }
+
+  void toggleEncrypt(String key) {
+    if (_encryptFields.contains(key)) {
+      _encryptFields.removeWhere((item) => item == key);
+    } else {
+      _encryptFields.add(key);
+    }
+  }
+
+  void removeEncrypt(String key) {
+    _encryptFields.removeWhere((item) => item == key);
+  }
+}
+
 class WebhookHeader {
   String key;
   String value;
@@ -18,30 +38,33 @@ class WebhookHeader {
   }
 }
 
-class _WebhookTableDataSource extends DataGridSource {
+final _encryptedText = 'ENCRYPTED-TEXT';
+
+class _WebhookHeadersDataSource extends DataGridSource with WebhookEncryption {
   final List<WebhookHeader> _headers = [];
+  final List<WebhookHeader> _deletedHeaders = [];
   List<DataGridRow> _rows = [];
+  final bool encryptionEnabled;
 
-  void fillFromConfig(String? headerStr) {
+  _WebhookHeadersDataSource(this.encryptionEnabled);
+
+  void fillFromConfig(
+      Map<String, String?> headers, String prefix, List<String> encryptedFields) {
     _headers.clear();
-
-    headerStr?.split(",").forEach((header) {
-      header = header.trim();
-      if (header.isNotEmpty) {
-        final parts = header.split("=");
-        if (parts.length == 2) {
-          _headers.add(WebhookHeader(
-              Uri.decodeComponent(parts[0]), Uri.decodeComponent(parts[1])));
-        }
-      }
-    });
+    _encryptFields = encryptedFields;
+    for (var item in headers.entries) {
+      _headers.add(WebhookHeader(
+          Uri.decodeComponent(item.key.replaceAll("$prefix.headers.", "")),
+          Uri.decodeComponent(item.value ?? "")));
+    }
 
     _rows = _headers
         .map((e) => DataGridRow(cells: [
               DataGridCell(columnName: 'header', value: e.key),
-              DataGridCell(columnName: 'value', value: e.value)
+              DataGridCell(columnName: 'value', value: e.value),
             ]))
         .toList();
+    notifyListeners();
   }
 
   @override
@@ -71,6 +94,7 @@ class _WebhookTableDataSource extends DataGridSource {
         padding: const EdgeInsets.all(8.0),
         alignment: Alignment.centerRight,
         child: TextField(
+          enabled: displayText != _encryptedText,
           autofocus: true,
           controller: editingController..text = displayText,
           textAlign: TextAlign.left,
@@ -91,9 +115,12 @@ class _WebhookTableDataSource extends DataGridSource {
   @override
   Future<void> onCellSubmit(DataGridRow dataGridRow,
       RowColumnIndex rowColumnIndex, GridColumn column) async {
+
     final index = dataGridRow.getCells().indexWhere(
         (DataGridCell dataGridCell) =>
             dataGridCell.columnName == column.columnName);
+
+    if (index == -1) return;
 
     final oldValue = index >= 0 ? dataGridRow.getCells()[index].value : null;
 
@@ -108,7 +135,7 @@ class _WebhookTableDataSource extends DataGridSource {
 
     if (column.columnName == 'header') {
       _headers[dataRowIndex].key = newCellValue.toString();
-    } else {
+    } else if (column.columnName == 'value') {
       _headers[dataRowIndex].value = newCellValue.toString();
     }
 
@@ -122,16 +149,49 @@ class _WebhookTableDataSource extends DataGridSource {
           "${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}")
       .join(",");
 
+  // Concatenates header value in the headers map with the given prefix
+  Map<String, String> getHeadersMapWithPrefix(String prefix) {
+    return {for (var item in _headers) "$prefix${item.key}": item.value};
+  }
+
+  // Returns all the headers that have been deleted with the deleted suffix key
+  Map<String, String> getDeletedHeadersMapWithPrefix(String prefix) {
+    return {
+      for (var item in _deletedHeaders) "$prefix${item.key}.deleted": item.value
+    };
+  }
+
   @override
   DataGridRowAdapter? buildRow(DataGridRow row) {
-    return DataGridRowAdapter(
-        cells: row
-            .getCells()
-            .map((e) => Container(
-                padding: const EdgeInsets.all(8.0),
-                alignment: Alignment.centerLeft,
-                child: Tooltip(message: "Click to edit", child: Text(e.value))))
-            .toList());
+    final rowIndex = _rows.indexOf(row);
+    return DataGridRowAdapter(cells: [
+      Container(
+        padding: const EdgeInsets.all(8.0),
+        alignment: Alignment.centerLeft,
+        child: Tooltip(
+            message: "Click to edit", child: Text(row.getCells()[0].value)),
+      ),
+      Container(
+        padding: const EdgeInsets.all(8.0),
+        alignment: Alignment.centerLeft,
+        child: Tooltip(
+            message: "Click to edit", child: Text(row.getCells()[1].value)),
+      ),
+      if (encryptionEnabled)
+        Container(
+            padding: const EdgeInsets.all(8.0),
+            alignment: Alignment.centerLeft,
+            child: (row.getCells()[1].value == _encryptedText)
+                ? Checkbox(
+                    value: isEncryptEnabled("headers.${_headers[rowIndex].key}"),
+                    onChanged: null)
+                : Checkbox(
+                    value: isEncryptEnabled("headers.${_headers[rowIndex].key}"),
+                    onChanged: (changedValue) {
+                      toggleEncrypt("headers.${_headers[rowIndex].key}");
+                      notifyListeners();
+                    }))
+    ]);
   }
 
   addRow() {
@@ -139,15 +199,32 @@ class _WebhookTableDataSource extends DataGridSource {
     _headers.add(wh);
     _rows.add(DataGridRow(cells: [
       DataGridCell(columnName: 'header', value: wh.key),
-      DataGridCell(columnName: 'value', value: wh.value)
+      DataGridCell(columnName: 'value', value: wh.value),
     ]));
     notifyListeners();
   }
 
   void deleteRow(int index) {
     _rows.removeAt(index);
+    _deletedHeaders.add(_headers[index]);
+    _encryptFields
+        .removeWhere((element) => element == "headers.${_headers[index].key}");
     _headers.removeAt(index);
     notifyListeners();
+  }
+
+  // resets the value back to empty and returns the header key
+  void resetRow(int index) {
+    if (index < _headers.length) {
+      final wh = _headers[index];
+      wh.value = 'value';
+      _rows[index] = DataGridRow(cells: [
+        DataGridCell(columnName: 'header', value: wh.key),
+        DataGridCell(columnName: 'value', value: wh.value),
+      ]);
+      notifyListeners();
+      removeEncrypt("headers.${wh.key}");
+    }
   }
 }
 
@@ -160,15 +237,26 @@ class WebhookConfiguration extends StatefulWidget {
       : super(key: key);
 
   @override
-  State<WebhookConfiguration> createState() => _WebhookConfigurationState();
+  State<WebhookConfiguration> createState() => _WebhookConfigurationState(
+      bloc.mrBloc.identityProviders.capabilityWebhookEncryption,
+      bloc.mrBloc.identityProviders.capabilityWebhookDecryption
+  );
 }
 
-class _WebhookConfigurationState extends State<WebhookConfiguration> {
+class _WebhookConfigurationState extends State<WebhookConfiguration>
+    with WebhookEncryption {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _url = TextEditingController();
-  final _WebhookTableDataSource _headers = _WebhookTableDataSource();
+  final _WebhookHeadersDataSource _headers;
   final DataGridController _dataGridController = DataGridController();
+  final bool encryptionEnabled;
+  final bool decryptionEnabled;
   bool enabled = false;
+
+  // List<String> encrypt = [];
+
+  _WebhookConfigurationState(this.encryptionEnabled, this.decryptionEnabled):
+        _headers = _WebhookHeadersDataSource(encryptionEnabled);
 
   @override
   void initState() {
@@ -187,9 +275,8 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
   }
 
   void _setup() {
-    final envInfo = widget.environment.environmentInfo ?? {};
-    enabled = envInfo['${widget.type.envPrefix}.enabled'] ==
-        'true';
+    final envInfo = widget.environment.webhookEnvironmentInfo ?? {};
+    enabled = envInfo['${widget.type.envPrefix}.enabled'] == 'true';
 
     final url = envInfo['${widget.type.envPrefix}.endpoint'];
 
@@ -199,10 +286,20 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
       _url.text = '';
     }
 
-    final headerStr =
-        envInfo['${widget.type.envPrefix}.headers'];
+    // Extract items with key starting with '${widget.type.envPrefix}.headers'
+    final headers = Map.of(envInfo)
+      ..removeWhere(
+          (key, v) => !key.startsWith('${widget.type.envPrefix}.headers'));
 
-    _headers.fillFromConfig(headerStr);
+    // Collect all webhook keys that are enabled to encryption
+    _encryptFields = envInfo['${widget.type.envPrefix}.encrypt']
+            ?.split(",")
+            .map((e) => e.replaceAll("${widget.type.envPrefix}.", ''))
+            .toList() ??
+        [];
+    _encryptFields.removeWhere((item) => item.isEmpty);
+
+    _headers.fillFromConfig(headers, widget.type.envPrefix, _encryptFields);
   }
 
   @override
@@ -250,24 +347,38 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
                             });
                           }),
                       const Text('Enabled'),
+                      if (encryptionEnabled && decryptionEnabled && (_url.text == _encryptedText ||
+                          _headers._headers
+                              .where((element) =>
+                                  element.value == _encryptedText)
+                              .isNotEmpty))
+                        TextButton.icon(
+                            icon: const Icon(Icons.lock_open),
+                            label: const Text("Show encrypted values"),
+                            onPressed: () => fetchEncryptedText())
                     ],
                   ),
-                  TextFormField(
-                      controller: _url,
-                      autofocus: true,
-                      textInputAction: TextInputAction.next,
-                      decoration:
-                          const InputDecoration(labelText: 'Webhook URL'),
-                      validator: ((v) {
-                        if (v == null || v.isEmpty) {
-                          return 'Please enter a valid webhook URL';
-                        }
-                        if (!v.startsWith("http://") &&
-                            v.startsWith("https://")) {
-                          return 'Please enter a valid URL';
-                        }
-                        return null;
-                      })),
+                  Row(children: [
+                    Expanded(
+                        child: TextFormField(
+                            controller: _url,
+                            autofocus: true,
+                            textInputAction: TextInputAction.next,
+                            readOnly: _url.text == _encryptedText && decryptionEnabled,
+                            decoration:
+                                const InputDecoration(labelText: 'Webhook URL'),
+                            validator: ((v) {
+                              if (v == null || v.isEmpty) {
+                                return 'Please enter a valid webhook URL';
+                              }
+                              if (!v.startsWith("http://") &&
+                                  v.startsWith("https://")) {
+                                return 'Please enter a valid URL';
+                              }
+                              return null;
+                            }))),
+                    ...buildUrlEncryptionOptions()
+                  ]),
                   const SizedBox(
                     height: 24.0,
                   ),
@@ -281,6 +392,10 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
                           tooltip: "Remove selected HTTP header",
                           icon: const Icon(Icons.delete),
                           onPressed: () => _deleteSelected()),
+                      FHIconButton(
+                          tooltip: "Clear selected HTTP header",
+                          icon: const Icon(Icons.reset_tv),
+                          onPressed: () => _resetSelected()),
                     ],
                   ),
                   Row(
@@ -291,7 +406,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
                             source: _headers,
                             allowColumnsResizing: true,
                             allowPullToRefresh: false,
-                            showCheckboxColumn: true,
+                            showCheckboxColumn: false,
                             checkboxColumnSettings:
                                 const DataGridCheckboxColumnSettings(
                                     showCheckboxOnHeader: false),
@@ -321,7 +436,17 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
                                       alignment: Alignment.center,
                                       child: const Text('Value',
                                           style: TextStyle(
-                                              fontWeight: FontWeight.bold))))
+                                              fontWeight: FontWeight.bold)))),
+                              if (encryptionEnabled)
+                                GridColumn(
+                                    columnName: 'encrypt',
+                                    allowEditing: true,
+                                    label: Container(
+                                        padding: const EdgeInsets.all(8.0),
+                                        alignment: Alignment.center,
+                                        child: const Text('Encrypt',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold))))
                             ]),
                       ),
                     ],
@@ -333,9 +458,45 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
     );
   }
 
+  List<Widget> buildUrlEncryptionOptions() {
+    if (!encryptionEnabled) {
+      return [];
+    }
+
+    if (_url.text != _encryptedText) {
+      return [
+        Checkbox(
+            value: isEncryptEnabled("endpoint"),
+            onChanged: (_) {
+              setState(() {
+                toggleEncrypt("endpoint");
+              });
+            }),
+        const Text('Encrypt URL')
+      ];
+    }
+
+    // it is encrypted
+    return [
+      TextButton(onPressed: () {
+        setState( () {
+          _url.text = '';
+          removeEncrypt("endpoint");
+        });
+
+      }, child: Text('Reset URL'))
+    ];
+  }
+
   void _deleteSelected() {
     if (_dataGridController.selectedIndex != -1) {
       _headers.deleteRow(_dataGridController.selectedIndex);
+    }
+  }
+
+  void _resetSelected() {
+    if (_dataGridController.selectedIndex != -1) {
+      _headers.resetRow(_dataGridController.selectedIndex);
     }
   }
 
@@ -343,20 +504,37 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
     setState(() => _setup());
   }
 
+  Map<String, String> _collectPayload() {
+    final envInfo = <String, String>{}
+      ..addAll(widget.environment.webhookEnvironmentInfo ?? {});
+    envInfo['${widget.type.envPrefix}.enabled'] = enabled.toString();
+    envInfo['${widget.type.envPrefix}.endpoint'] = _url.text;
+
+    final headers =
+    _headers.getHeadersMapWithPrefix("${widget.type.envPrefix}.headers.");
+    final deletedHeaders = _headers
+        .getDeletedHeadersMapWithPrefix("${widget.type.envPrefix}.headers.");
+
+    // remove all the existing header entries for this prefix from the webhookEnvInfo
+    envInfo.removeWhere(
+            (key, v) => key.startsWith('${widget.type.envPrefix}.headers'));
+
+    // add all the header entries - this will have the updated headers
+    envInfo.addAll(headers);
+    envInfo.addAll(deletedHeaders);
+
+    envInfo['${widget.type.envPrefix}.encrypt'] = _encryptFields
+        .map((item) => '${widget.type.envPrefix}.$item')
+        .join(",");
+
+    return envInfo;
+  }
+
   Future<void> _save() async {
     if (_formKey.currentState!.validate()) {
       // make sure the map is modifiable
-      final envInfo = <String,String>{}
-        ..addAll(widget.environment.environmentInfo ?? {});
-      envInfo['${widget.type.envPrefix}.enabled'] =
-          enabled.toString();
-      envInfo['${widget.type.envPrefix}.endpoint'] =
-          _url.text;
-      envInfo['${widget.type.envPrefix}.headers'] =
-          _headers.encodeFromHeaders();
 
-      widget.environment.environmentInfo = envInfo;
-
+      widget.environment.webhookEnvironmentInfo = _collectPayload();
       widget.bloc.updateEnvironment(widget.environment).then((_) {
         widget.bloc.mrBloc.addSnackbar(Text(
             "Environment '${widget.environment.name}' updated with webhook details!"));
@@ -382,5 +560,9 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
         await widget.bloc.mrBloc.dialogError(e, s);
       });
     }
+  }
+
+  Future<void> fetchEncryptedText() async {
+    await widget.bloc.decryptEncryptedFields(widget.environment);
   }
 }

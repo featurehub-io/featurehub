@@ -1,21 +1,22 @@
-import { expect } from 'chai';
-import { Given, Then } from '@cucumber/cucumber';
+import {expect} from 'chai';
+import {Given, Then} from '@cucumber/cucumber';
 import {
   Application,
+  CreatePortfolio,
   Environment,
-  Portfolio,
   PortfolioServiceApi,
   RoleType,
   ServiceAccount,
-  ServiceAccountPermission, ServiceAccountServiceApi, UpdateEnvironment
+  ServiceAccountPermission,
+  ServiceAccountServiceApi,
+  UpdateEnvironment
 } from '../apis/mr-service';
-import { makeid, sleep } from '../support/random';
-import { EdgeFeatureHubConfig, FeatureHubPollingClient, Readyness } from 'featurehub-javascript-node-sdk';
+import {makeid, sleep} from '../support/random';
+import {EdgeFeatureHubConfig, FeatureHubPollingClient, Readyness} from 'featurehub-javascript-node-sdk';
 import waitForExpect from 'wait-for-expect';
-import { logger } from '../support/logging';
-import { SdkWorld } from '../support/world';
-import { getWebserverExternalAddress } from '../support/make_me_a_webserver';
-import { timeout } from 'nats/lib/nats-base-client/util';
+import {logger} from '../support/logging';
+import {SdkWorld} from '../support/world';
+import {getWebserverExternalAddress} from '../support/make_me_a_webserver';
 import {BackendDiscovery} from "../support/discovery";
 
 Given(/^I create a new portfolio$/, async function () {
@@ -24,7 +25,7 @@ Given(/^I create a new portfolio$/, async function () {
   const portfolioService: PortfolioServiceApi = world.portfolioApi;
 
   const name = process.env.PORTFOLIO_NAME || makeid(12);
-  const pCreate = await portfolioService.createPortfolio(new Portfolio({ name: name, description: name }));
+  const pCreate = await portfolioService.createPortfolio(new CreatePortfolio({ name: name, description: name }));
   expect(pCreate.status).to.eq(200);
   this.portfolio = pCreate.data;
 });
@@ -58,10 +59,13 @@ Given(/^I update the environment for feature webhooks$/, async function() {
   const webhookAddress = getWebserverExternalAddress();
   await world.environment2Api.updateEnvironmentV2(env.id, new UpdateEnvironment({
     version: env.version,
-    environmentInfo: {
+    webhookEnvironmentInfo: {
       'webhook.features.enabled': 'true',
       'webhook.features.endpoint': `${webhookAddress}/webhook`,
-      'webhook.features.headers': 'x-foof=muddy,authorisation=bearer 12345'
+      'webhook.messages.enabled': 'false',
+      'webhook.features.encrypt': 'webhook.features.endpoint,webhook.features.header.x-foof,webhook.features.header.authorisation',
+      'webhook.features.header.x-foof': 'muddy',
+      'webhook.features.header.authorisation': 'bearer 12345'
     }
   }));
 
@@ -210,7 +214,7 @@ Given(/^I connect to the feature server$/, async function () {
     edge.init();
     world.edgeServer = edge;
     // give it time to connect
-    sleep(200);
+    await sleep(200);
     world.repository = edge.repository();
     // its important we wait for it to become ready before stuffing data into it otherwise we can create features at the same
     // time we are waiting for a result back and miss the 1st feature

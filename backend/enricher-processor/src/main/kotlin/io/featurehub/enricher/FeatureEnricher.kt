@@ -121,8 +121,8 @@ class FeatureEnricherProcessor @Inject constructor(
     try {
       val env = cache.getEnrichableEnvironment(envId)
 
-      if (env.environment.environment.environmentInfo?.isEmpty() == true && publishOnlyWhenEnvironmentNotEmpty) {
-        log.trace("environment {} has no env config, skipping", env.environment)
+      if (env.environment.environment.webhookEnvironment?.isEmpty() == true && publishOnlyWhenEnvironmentNotEmpty) {
+        log.trace("environment {} has no webhooks config, skipping", env.environment)
         return
       }
 

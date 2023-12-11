@@ -4,18 +4,19 @@ import spock.lang.Specification
 
 class SymmetricEncrypterIntegrationSpec extends Specification {
 
-  def symmetricEncrypter = new SymmetricEncrypterImpl()
+  def password = "SuperStrongPassword"
+  def symmetricEncrypter = new SymmetricEncrypterImpl(password)
 
   def "should encrypt and decrypt plain text"() {
     given: "i have the source, password and salt"
       def source = "text to encrypt"
-      def password = "SuperStrongPassword"
+
       def salt = "pink salt"
     when:
-      def actual = symmetricEncrypter.encrypt(source, password, salt)
+      def actual = symmetricEncrypter.encrypt(source, salt)
     then:
       actual != null
-      def decryptedValue = symmetricEncrypter.decrypt(actual, password, salt)
+      def decryptedValue = symmetricEncrypter.decrypt(actual, salt)
       decryptedValue == source
   }
 
@@ -25,10 +26,10 @@ class SymmetricEncrypterIntegrationSpec extends Specification {
     def password = "SuperStrongPassword"
     def salt = "pink salt"
     and:
-    def encrypted = symmetricEncrypter.encrypt(source, password, salt)
+    def encrypted = symmetricEncrypter.encrypt(source, salt)
     encrypted != null
     when:
-    symmetricEncrypter.decrypt(encrypted, "wrongpassword", salt)
+      new SymmetricEncrypterImpl("wrongpassword").decrypt(encrypted, salt)
     then:
     thrown(RuntimeException)
   }
@@ -39,10 +40,10 @@ class SymmetricEncrypterIntegrationSpec extends Specification {
     def password = "SuperStrongPassword"
     def salt = "pink salt"
     and:
-    def encrypted = symmetricEncrypter.encrypt(source, password, salt)
+    def encrypted = symmetricEncrypter.encrypt(source, salt)
     encrypted != null
     when:
-    symmetricEncrypter.decrypt(encrypted, password, "unknown")
+    symmetricEncrypter.decrypt(encrypted, "unknown")
     then:
     thrown(RuntimeException)
   }

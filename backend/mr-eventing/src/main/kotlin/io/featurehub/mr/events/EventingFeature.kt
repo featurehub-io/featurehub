@@ -7,7 +7,7 @@ import io.featurehub.db.publish.nats.NatsDachaEventingFeature
 import io.featurehub.events.CloudEventsFeature
 import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.pubsub.GoogleEventFeature
-import io.featurehub.messaging.MessagingFeature
+import io.featurehub.messaging.ManagementRepositoryMessagingFeature
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.events.common.CloudEventCacheBroadcaster
@@ -34,7 +34,7 @@ class EventingFeature : Feature {
       context.register(NatsDachaEventingFeature::class.java)
     }
 
-    context.register(MessagingFeature::class.java)
+    context.register(ManagementRepositoryMessagingFeature::class.java)
 
 
     context.register(object: AbstractBinder() {

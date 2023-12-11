@@ -3,8 +3,11 @@ package io.featurehub.db.services
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonApi
+import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbLogin
 import io.featurehub.db.model.DbPerson
+import io.featurehub.encryption.WebhookEncryptionService
+import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.SortOrder
 
@@ -15,10 +18,12 @@ import java.time.ZoneOffset
 class ConvertUtilsSpec extends Base2Spec {
   PersonSqlApi personSqlApi
   AuthenticationSqlApi authenticationSqlApi
+  WebhookEncryptionService webhookEncryptionService
 
   def setup() {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     authenticationSqlApi = new AuthenticationSqlApi(convertUtils)
+    webhookEncryptionService = Mock()
   }
 
   def "a new person who has never authenticated will not appear to have whenLastAuthenticated set"() {

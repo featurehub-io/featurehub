@@ -5,6 +5,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.query.QDbOrganization
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.db.test.DbSpecification
 import io.featurehub.mr.model.Group
@@ -19,10 +20,12 @@ class Base2Spec extends DbSpecification {
   UUID superuser
   DbArchiveStrategy archiveStrategy
   Organization org
-
+  WebhookEncryptionService encryptionService
 
   def setup() {
-    convertUtils = new ConvertUtils()
+    System.setProperty("webhooks.encryption.password", "foof")
+    encryptionService = Mock()
+    convertUtils = new ConvertUtils(encryptionService)
     archiveStrategy = new DbArchiveStrategy(db, Mock(CacheSource))
     groupSqlApi = new GroupSqlApi(db, convertUtils, archiveStrategy)
 

@@ -1829,6 +1829,11 @@ paths:
         in: query
         schema:
           type: boolean
+      - name: decryptWebhookDetails
+        description: "Decrypt all webhook env details"
+        in: query
+        schema:
+          type: boolean
     get:
       parameters:
         - name: includeSdkUrl
@@ -3641,6 +3646,10 @@ components:
               default: {}
               additionalProperties:
                 type: string
+            webhookEnvironmentInfo:
+              nullable: true
+              additionalProperties:
+                type: string
             serviceAccountPermission:
               nullable: true
               type: array
@@ -3685,6 +3694,11 @@ components:
         environmentInfo:
           nullable: true
           description: "Allows some settings that affect the behaviour of this environment. Currently `cacheControl` if set will be passed and set on the responses to GET requests."
+          additionalProperties:
+            type: string
+        webhookEnvironmentInfo:
+          nullable: true
+          description: "Environment webhook url and headers"
           additionalProperties:
             type: string
         priorEnvironmentId:

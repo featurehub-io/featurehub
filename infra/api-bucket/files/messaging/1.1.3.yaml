@@ -55,25 +55,36 @@ components:
           description: Id of Feature value that got updated
           format: uuid
         featureValueType:
-          $ref: '#/components/schemas/FeatureValueType'
+          description: Type of the feature value
+          allOf:
+          - $ref: '#/components/schemas/FeatureValueType'
         featureValueUpdated:
-          $ref: '#/components/schemas/MessagingFeatureValueUpdate'
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/MessagingFeatureValueUpdate'
         lockUpdated:
-          $ref: '#/components/schemas/MessagingLockUpdate'
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/MessagingLockUpdate'
         retiredUpdated:
-          $ref: '#/components/schemas/MessagingRetiredUpdate'
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/MessagingRetiredUpdate'
         strategiesUpdated:
           type: array
           description: Strategies changes
+          nullable: true
           items:
             $ref: '#/components/schemas/MessagingStrategyUpdate'
         strategiesReordered:
-          $ref: '#/components/schemas/MessagingStrategiesReorder'
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/MessagingStrategiesReorder'
         additionalInfo:
-          type: array
-          description: "Any additional info, webhook headers etc"
-          items:
+          type: object
+          additionalProperties:
             type: string
+          description: "Any additional info, webhook headers etc"
         eId:
           type: string
           description: environmentId
@@ -153,9 +164,13 @@ components:
         updateType:
           $ref: '#/components/schemas/StrategyUpdateType'
         oldStrategy:
-          $ref: '#/components/schemas/MessagingRolloutStrategy'
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/MessagingRolloutStrategy'
         newStrategy:
-          $ref: '#/components/schemas/MessagingRolloutStrategy'
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/MessagingRolloutStrategy'
     StrategyUpdateType:
       type: string
       enum:

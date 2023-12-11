@@ -5,7 +5,7 @@ import DataTable from '@cucumber/cucumber/lib/models/data_table';
 import {
   FeatureGroup,
   FeatureGroupCreate,
-  FeatureGroupStrategy,
+  GroupRolloutStrategy,
   FeatureGroupUpdate,
   FeatureGroupUpdateFeature,
   RolloutStrategyAttribute,
@@ -125,12 +125,12 @@ When('I delete the feature group {string}', async function(name: string) {
   await world.featureGroupApi.deleteFeatureGroup(world.application.id, world.featureGroup.id);
 });
 
-function extractStrategy(table: DataTable): FeatureGroupStrategy {
-  const strategies: Array<FeatureGroupStrategy> = [];
+function extractStrategy(table: DataTable): GroupRolloutStrategy {
+  const strategies: Array<GroupRolloutStrategy> = [];
 
   for (const row of table.hashes()) {
     if (!strategies.find(s => s.name === row['name'])) {
-      strategies.push(new FeatureGroupStrategy({
+      strategies.push(new GroupRolloutStrategy({
         name: row["name"],
         percentage: row['percentage'].trim() === '-' ? null : parseInt(row['percentage'].trim()),
         attributes: [],
@@ -166,7 +166,7 @@ When("I update the strategy in the feature group", async function (table: DataTa
     strategies: [extractStrategy(table)]
   });
 
-  const data = await world.featureGroupApi.updateFeatureGroup(world.application.id, world.featureGroup.id, update);
+  const data = await world.featureGroupApi.updateFeatureGroup(world.application.id, update);
   expect(data.status).to.eq(200);
   world.featureGroup.version = data.data.version;
 });
@@ -191,7 +191,7 @@ When('I update the values of the feature group to', async function (table: DataT
     features: (await translateFeatureValueTable(world, table))
   });
 
-  const data = await world.featureGroupApi.updateFeatureGroup(world.application.id, world.featureGroup.id, update);
+  const data = await world.featureGroupApi.updateFeatureGroup(world.application.id, update);
   expect(data.status).to.eq(200);
   world.featureGroup.version = data.data.version;
 });

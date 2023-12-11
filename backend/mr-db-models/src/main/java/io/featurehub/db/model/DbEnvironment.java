@@ -15,13 +15,13 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
 @Entity
 @Table(name = "fh_environment")
 @ChangeLog
 public class DbEnvironment extends DbVersionedBase {
-  public DbEnvironment() {
-  }
+  public DbEnvironment() {}
 
   private DbEnvironment(Builder builder) {
     setWhoUpdated(builder.whoUpdated);
@@ -35,6 +35,7 @@ public class DbEnvironment extends DbVersionedBase {
     setEnvironmentFeatures(builder.environmentFeatures);
     setServiceAccountEnvironments(builder.serviceAccountEnvironments);
     setUserEnvironmentInfo(builder.userEnvironmentInfo);
+    setWebhookEnvironmentInfo(builder.webhookEnvironmentInfo);
   }
 
   private DbPerson whoUpdated;
@@ -78,9 +79,9 @@ public class DbEnvironment extends DbVersionedBase {
   private LocalDateTime whenArchived;
 
   /**
-   * Indicates this environment is removed from the publishing list for some reason, usually because the organisation
-   * expired. This is different from archiving because archiving is an action taken by the customer, whereas
-   * unpublishing is a system action.
+   * Indicates this environment is removed from the publishing list for some reason, usually because
+   * the organisation expired. This is different from archiving because archiving is an action taken
+   * by the customer, whereas unpublishing is a system action.
    */
   private Instant whenUnpublished;
 
@@ -91,6 +92,10 @@ public class DbEnvironment extends DbVersionedBase {
   @DbJson
   @Column(name = "m_env_inf")
   private Map<String, String> managementEnvironmentInfo;
+
+  @DbJson
+  @Column(name = "w_env_inf")
+  private Map<String, String> webhookEnvironmentInfo;
 
   public Instant getWhenUnpublished() {
     return whenUnpublished;
@@ -160,7 +165,8 @@ public class DbEnvironment extends DbVersionedBase {
     return serviceAccountEnvironments;
   }
 
-  public void setServiceAccountEnvironments(Set<DbServiceAccountEnvironment> serviceAccountEnvironments) {
+  public void setServiceAccountEnvironments(
+      Set<DbServiceAccountEnvironment> serviceAccountEnvironments) {
     this.serviceAccountEnvironments = serviceAccountEnvironments;
   }
 
@@ -200,8 +206,18 @@ public class DbEnvironment extends DbVersionedBase {
     return managementEnvironmentInfo;
   }
 
-  public void setManagementEnvironmentInfo(Map<String, String> managementEnvironmentInfo) {
+  public void setManagementEnvironmentInfo(
+      @Nullable Map<String, String> managementEnvironmentInfo) {
     this.managementEnvironmentInfo = managementEnvironmentInfo;
+  }
+
+  @Nullable
+  public Map<String, String> getWebhookEnvironmentInfo() {
+    return webhookEnvironmentInfo;
+  }
+
+  public void setWebhookEnvironmentInfo(Map<String, String> webhookEnvironmentInfo) {
+    this.webhookEnvironmentInfo = webhookEnvironmentInfo;
   }
 
   public static final class Builder {
@@ -216,9 +232,9 @@ public class DbEnvironment extends DbVersionedBase {
     private Set<DbFeatureValue> environmentFeatures;
     private Set<DbServiceAccountEnvironment> serviceAccountEnvironments;
     private Map<String, String> userEnvironmentInfo;
+    @Nullable public Map<String, String> webhookEnvironmentInfo;
 
-    public Builder() {
-    }
+    public Builder() {}
 
     public Builder whoUpdated(DbPerson val) {
       whoUpdated = val;
@@ -272,6 +288,11 @@ public class DbEnvironment extends DbVersionedBase {
 
     public Builder serviceAccountEnvironments(Set<DbServiceAccountEnvironment> val) {
       serviceAccountEnvironments = val;
+      return this;
+    }
+
+    public Builder webhookEnvironmentInfo(@Nullable Map<String, String> val) {
+      webhookEnvironmentInfo = val;
       return this;
     }
 
