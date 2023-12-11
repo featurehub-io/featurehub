@@ -3,6 +3,7 @@ package io.featurehub.mr.resources
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.db.api.*
+import io.featurehub.encryption.WebhookEncryptionFeature
 import io.featurehub.mr.api.SetupServiceDelegate
 import io.featurehub.mr.auth.AuthenticationRepository
 import io.featurehub.mr.model.*
@@ -71,7 +72,9 @@ class SetupResource @Inject constructor(
     return java.util.Map.of(
       "webhook.features", if (enricherEnabled && webhooksEnabled) "true" else "false",
       "trackingId", googleTrackingId, "dacha1Enabled", if (dacha1Enabled) "true" else "false",
-      "featureGroupsEnabled", if (featureGroupsEnabled) "true" else "false"
+          "featureGroupsEnabled", if (featureGroupsEnabled) "true" else "false",
+          "webhook.encryption", if (WebhookEncryptionFeature.isWebhookEncryptionEnabled) "true" else "false",
+          "webhook.decryption", if (WebhookEncryptionFeature.isWebhookDecryptionEnabled) "true" else "false"
     )
   }
 

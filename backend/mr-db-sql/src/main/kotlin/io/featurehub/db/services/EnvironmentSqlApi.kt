@@ -8,23 +8,23 @@ import io.featurehub.db.api.*
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.*
 import io.featurehub.db.utils.EnvironmentUtils
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import jakarta.validation.Valid
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
-
 
 @Singleton
 class EnvironmentSqlApi @Inject constructor(
   private val database: Database,
   private val convertUtils: Conversions,
   private val cacheSource: CacheSource,
-  private val archiveStrategy: ArchiveStrategy
+  private val archiveStrategy: ArchiveStrategy,
+  private val webhookEncryptionService: WebhookEncryptionService
 ) : EnvironmentApi {
 
   override fun portfolioEnvironmentBelongsTo(eId: UUID): UUID? {
@@ -60,9 +60,10 @@ class EnvironmentSqlApi @Inject constructor(
         }
       }
 
-      QDbAcl().application.eq(environment.parentApplication).group.groupMembers.person.eq(p).findList().forEach { fe: DbAcl ->
-        appRoles.addAll(convertUtils.splitApplicationRoles(fe.roles))
-      }
+      QDbAcl().application.eq(environment.parentApplication).group.groupMembers.person.eq(p).findList()
+        .forEach { fe: DbAcl ->
+          appRoles.addAll(convertUtils.splitApplicationRoles(fe.roles))
+        }
     }
 
     return EnvironmentRoles.Builder().applicationRoles(appRoles).environmentRoles(roles).build()
@@ -74,10 +75,11 @@ class EnvironmentSqlApi @Inject constructor(
     if (env != null) {
       archiveStrategy.archiveEnvironment(env)
 
-      QDbEnvironment().parentApplication.id.eq(env.parentApplication.id).priorEnvironment.id.eq(id).whenArchived.isNull.findList().forEach { e ->
-        e.priorEnvironment = env.priorEnvironment
-        e.save()
-      }
+      QDbEnvironment().parentApplication.id.eq(env.parentApplication.id).priorEnvironment.id.eq(id).whenArchived.isNull.findList()
+        .forEach { e ->
+          e.priorEnvironment = env.priorEnvironment
+          e.save()
+        }
     }
     return env != null
   }
@@ -97,14 +99,17 @@ class EnvironmentSqlApi @Inject constructor(
       if (opts.contains(FillOpts.Features)) {
         env = env.environmentFeatures.fetch()
       }
-      return env.findOneOrEmpty().map { e: DbEnvironment? -> convertUtils.toEnvironment(e, opts) }
+      return env.findOneOrEmpty().map { e: DbEnvironment? ->
+        convertUtils.toEnvironment(e, opts)
+      }
         .orElse(null)
     }
     return null
   }
 
   override fun update(application: UUID, env: UpdateEnvironmentV2, opts: Opts): Environment? {
-    val environment = QDbEnvironment().parentApplication.id.eq(application).id.eq(env.id).whenArchived.isNull.findOne() ?: return null
+    val environment =
+      QDbEnvironment().parentApplication.id.eq(application).id.eq(env.id).whenArchived.isNull.findOne() ?: return null
 
     if (env.name != null) {
       dupeEnvironmentNameCheck(env.name!!, environment)
@@ -121,7 +126,12 @@ class EnvironmentSqlApi @Inject constructor(
     }
 
     if (env.environmentInfo != null) {
-      environment.userEnvironmentInfo = env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap()  // prevent mgmt prefixes being used
+      environment.userEnvironmentInfo =
+        env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap()  // prevent mgmt prefixes being used
+    }
+
+    env.webhookEnvironmentInfo?.let { webhookEnvironmentInfo ->
+      updateWebhookEnvironmentInfo(webhookEnvironmentInfo, environment)
     }
 
     update(environment)
@@ -156,7 +166,11 @@ class EnvironmentSqlApi @Inject constructor(
     val environment = convertUtils.byEnvironment(eid) ?: return null
 
     if (environment.version != env.version) {
-      log.trace("attempting to update old environment, current {}, update coming in is {}", environment.version, env.version)
+      log.trace(
+        "attempting to update old environment, current {}, update coming in is {}",
+        environment.version,
+        env.version
+      )
       throw OptimisticLockingException()
     }
 
@@ -175,12 +189,35 @@ class EnvironmentSqlApi @Inject constructor(
     }
 
     if (env.environmentInfo != null) {
-      environment.userEnvironmentInfo = env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap()  // prevent mgmt prefixes being used
+      environment.userEnvironmentInfo =
+        env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap()  // prevent mgmt prefixes being used
+    }
+
+    env.webhookEnvironmentInfo?.let { webhookEnvironmentInfo ->
+      updateWebhookEnvironmentInfo(webhookEnvironmentInfo, environment)
     }
 
     update(environment)
 
     return convertUtils.toEnvironment(environment, opts)
+  }
+
+  private fun updateWebhookEnvironmentInfo(webhookEnvironmentInfo: Map<String,String>, environment: DbEnvironment) {
+    val dbWebhookEnvironmentInfo = environment.webhookEnvironmentInfo ?: mutableMapOf()
+
+    val updatedWebhookEnvironmentInfo = (dbWebhookEnvironmentInfo + webhookEnvironmentInfo).toMutableMap()
+    val deleted = webhookEnvironmentInfo.filter { it.key.endsWith(".deleted") }
+      .map { it.key.replace(".deleted", "") }
+
+    deleted.forEach { deletedKey ->
+      updatedWebhookEnvironmentInfo.remove(deletedKey)
+      updatedWebhookEnvironmentInfo.remove("$deletedKey.deleted")
+      updatedWebhookEnvironmentInfo.remove("$deletedKey.salt")
+      updatedWebhookEnvironmentInfo.remove("$deletedKey.encrypted")
+    }
+
+    environment.webhookEnvironmentInfo = webhookEncryptionService.encrypt(updatedWebhookEnvironmentInfo.filter { !it.key.startsWith("mgmt.") }
+      .toMap())
   }
 
   override fun getEnvironmentsUserCanAccess(appId: UUID, person: UUID): List<UUID>? {
@@ -191,6 +228,42 @@ class EnvironmentSqlApi @Inject constructor(
       .parentApplication.id.eq(appId).groupRolesAcl.group.groupMembers.person.id.eq(person).findList()
 
     return if (envs.isEmpty()) null else envs.map { it.id }
+  }
+
+
+  override fun migrateWebhookEnvInfo() {
+    log.info("Migrating webhook environment info...")
+    QDbEnvironment().findList().forEach { env ->
+      if (env.userEnvironmentInfo != null) {
+        val webhookInfo = env.userEnvironmentInfo
+          .filter { it.key.startsWith("webhook.") && !it.key.contains(".headers") }
+          .toMap()
+
+        val webhookHeadersInfo = env.userEnvironmentInfo
+          .filter { it.key.startsWith("webhook.") && it.key.contains(".headers") }
+          .toMap()
+
+        val webhookHeadersSplitMap = mutableMapOf<String, String>()
+        webhookHeadersInfo.forEach { (key, value) ->
+          val prefix = key.substringBeforeLast(".headers")
+          val headers = value.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+          headers.forEach {
+            val keyValuePair = it.split("=")
+            if (keyValuePair.size == 2 && keyValuePair[1].trim().isNotEmpty()) {
+              webhookHeadersSplitMap["$prefix.headers.${keyValuePair[0]}"] = keyValuePair[1]
+            }
+          }
+        }
+
+        env.webhookEnvironmentInfo = webhookInfo + webhookHeadersSplitMap.toMap()
+
+        env.userEnvironmentInfo = env.userEnvironmentInfo
+          .filter { !it.key.startsWith("webhook.") }.toMap()
+
+        env.save()
+      }
+    }
+    log.info("Finished migrating webhook environment info.")
   }
 
   private fun circularPriorEnvironmentCheck(priorEnvironmentId: UUID?, environment: DbEnvironment) {
@@ -264,7 +337,8 @@ class EnvironmentSqlApi @Inject constructor(
       .description(env.description)
       .name(env.name)
       .priorEnvironment(priorEnvironment)
-      .userEnvironmentInfo(env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }?.toMap())  // prevent mgmt prefixes being used
+      .userEnvironmentInfo(env.environmentInfo?.filter { !it.key.startsWith("mgmt.") }
+        ?.toMap())  // prevent mgmt prefixes being used
       .parentApplication(application)
       .productionEnvironment(java.lang.Boolean.TRUE == env.production)
       .build()
@@ -443,7 +517,8 @@ class EnvironmentSqlApi @Inject constructor(
   }
 
   fun getEnvironment(appId: UUID, envName: String): Environment? {
-    return QDbEnvironment().parentApplication.id.eq(appId).name.ieq(envName).findOne()?.let { convertUtils.toEnvironment(it, Opts.empty()) }
+    return QDbEnvironment().parentApplication.id.eq(appId).name.ieq(envName).findOne()
+      ?.let { convertUtils.toEnvironment(it, Opts.empty()) }
   }
 
   companion object {

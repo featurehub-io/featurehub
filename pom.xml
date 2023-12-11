@@ -90,6 +90,8 @@
     <module>backend/mr-eventing</module>
     <module>backend/mr-eventing-common</module>
     <module>backend/messaging-api</module>
+    <module>backend/messaging-channel</module>
+    <module>backend/messaging-webhook</module>
     <module>backend/mr-messaging-processor</module>
     <module>backend/mr-eventing-nats</module>
     <module>backend/edge-feature-update-async-api</module>

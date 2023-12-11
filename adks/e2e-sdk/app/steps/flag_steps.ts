@@ -1,5 +1,5 @@
 import { Given, Then, When } from '@cucumber/cucumber';
-import { Feature, FeatureValue, FeatureValueType, RolloutStrategy } from '../apis/mr-service';
+import {CreateFeature, Feature, FeatureValue, FeatureValueType, RolloutStrategy} from '../apis/mr-service';
 import { makeid } from '../support/random';
 import { expect } from 'chai';
 import waitForExpect from 'wait-for-expect';
@@ -10,7 +10,7 @@ import DataTable from '@cucumber/cucumber/lib/models/data_table';
 
 Given(/^There is a new feature flag$/, async function () {
   const name = makeid(5).toUpperCase();
-  const fCreate = await this.featureApi.createFeaturesForApplication(this.application.id, new Feature({
+  const fCreate = await this.featureApi.createFeaturesForApplication(this.application.id, new CreateFeature({
     name: name,
     key: name,
     valueType: FeatureValueType.Boolean
@@ -51,7 +51,7 @@ Given(/^There is a feature (flag|string|number|json) with the key (.*)$/, async 
     fType = FeatureValueType.Json;
   }
   expect(fType, `${type} is an unrecognized flag type`).to.not.be.undefined;
-  const fCreate = await this.featureApi.createFeaturesForApplication(this.application.id, new Feature({
+  const fCreate = await this.featureApi.createFeaturesForApplication(this.application.id, new CreateFeature({
     name: key,
     key: key,
     valueType: fType

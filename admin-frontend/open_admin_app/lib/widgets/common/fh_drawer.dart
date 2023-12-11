@@ -251,12 +251,12 @@ class _ApplicationSettings extends StatelessWidget {
                   }),
               if (mrClient.identityProviders.capabilityWebhooks)
                 const FHMenuItem(
-                    name: 'Webhooks',
+                    name: 'Integrations',
                     iconData: Icons.webhook_outlined,
                     path: '/app-settings',
                     permissionType: PermissionType.portfolioadmin,
                     params: {
-                      'tab': ['webhooks']
+                      'tab': ['integrations']
                     }),
             ]);
           } else {

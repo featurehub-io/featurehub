@@ -73,30 +73,39 @@ components:
           format: uuid
         featureValueType:
           description: "Type of the feature value"
-          $ref: "#/components/schemas/FeatureValueType"
+          allOf:
+            - $ref: "#/components/schemas/FeatureValueType"
         featureValueUpdated:
-          description: "Feature value changes"
-          $ref: '#/components/schemas/MessagingFeatureValueUpdate'
+          nullable: true
+          #description: "Feature value changes"
+          allOf:
+            - $ref: '#/components/schemas/MessagingFeatureValueUpdate'
         lockUpdated:
-          description: "Lock changes"
-          $ref: '#/components/schemas/MessagingLockUpdate'
+          nullable: true
+          #description: "Lock changes"
+          allOf:
+            - $ref: '#/components/schemas/MessagingLockUpdate'
         retiredUpdated:
-          description: "Retired changes"
-          $ref: '#/components/schemas/MessagingRetiredUpdate'
+          nullable: true
+          #description: "Retired changes"
+          allOf:
+            - $ref: '#/components/schemas/MessagingRetiredUpdate'
         strategiesUpdated:
+          nullable: true
           description: "Strategies changes"
           type: array
           items:
             $ref: '#/components/schemas/MessagingStrategyUpdate'
         strategiesReordered:
-          description: "Strategies reorder changes"
-          $ref: '#/components/schemas/MessagingStrategiesReorder'
+          nullable: true
+          #description: "Strategies reorder changes"
+          allOf:
+            - $ref: '#/components/schemas/MessagingStrategiesReorder'
         additionalInfo:
           description: "Any additional info, webhook headers etc"
-          type: array
-          items:
+          type: string
+          additionalProperties:
             type: string
-
     MessagingFeatureValueUpdate:
       x-package: io.featurehub.messaging.model
       type: object
@@ -166,9 +175,13 @@ components:
         updateType:
           $ref: '#/components/schemas/StrategyUpdateType'
         oldStrategy:
-          $ref: '#/components/schemas/MessagingRolloutStrategy'
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/MessagingRolloutStrategy'
         newStrategy:
-          $ref: '#/components/schemas/MessagingRolloutStrategy'
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/MessagingRolloutStrategy'
     StrategyUpdateType:
       x-package: io.featurehub.messaging.model
       type: string

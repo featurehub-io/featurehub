@@ -4,6 +4,10 @@ import io.ebean.DB
 import io.ebean.Database
 import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbPerson
+import io.featurehub.encryption.SymmetricEncrypter
+import io.featurehub.encryption.SymmetricEncrypterImpl
+import io.featurehub.encryption.WebhookEncryptionService
+import io.featurehub.encryption.WebhookEncryptionServiceImpl
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Organization
@@ -21,12 +25,16 @@ class BaseSpec extends Specification {
   @Shared DbArchiveStrategy archiveStrategy
   @Shared Organization org
   @Shared Group adminGroup
+  @Shared WebhookEncryptionService webhookEncryptionService
+  @Shared SymmetricEncrypter symmetricEncrypter
 
   def baseSetupSpec() {
     System.setProperty("ebean.ddl.generate", "true")
     System.setProperty("ebean.ddl.run", "true")
     database = DB.getDefault()
-    convertUtils = new ConvertUtils()
+    symmetricEncrypter = new SymmetricEncrypterImpl("password")
+    webhookEncryptionService = new WebhookEncryptionServiceImpl(symmetricEncrypter)
+    convertUtils = new ConvertUtils(webhookEncryptionService)
     archiveStrategy = new DbArchiveStrategy(database, Mock(CacheSource))
     groupSqlApi = new GroupSqlApi(database, convertUtils, archiveStrategy)
 

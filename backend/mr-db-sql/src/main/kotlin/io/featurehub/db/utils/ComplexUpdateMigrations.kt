@@ -1,5 +1,6 @@
 package io.featurehub.db.utils
 
+import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.db.model.DbAfterMigrationJob
@@ -37,6 +38,8 @@ class ComplexUpdateMigrations : ContainerLifecycleListener {
       injector.getService(FeatureApi::class.java).release1_5_11_strategy_update()
     } else if (job.jobName == "allocate-service-account-persons") {
       injector.getService(InternalServiceAccountApi::class.java).ensure_service_accounts_have_person()
+    } else if (job.jobName == "migrate-webhook-env-info") {
+      injector.getService(EnvironmentApi::class.java).migrateWebhookEnvInfo()
     }
   }
 

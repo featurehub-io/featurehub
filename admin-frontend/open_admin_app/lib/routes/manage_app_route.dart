@@ -10,7 +10,7 @@ import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/widgets/apps/group_permissions_widget.dart';
 import 'package:open_admin_app/widgets/apps/manage_app_bloc.dart';
 import 'package:open_admin_app/widgets/apps/service_account_permissions_widget.dart';
-import 'package:open_admin_app/widgets/apps/webhook/webhook_panel_widget.dart';
+import 'package:open_admin_app/widgets/apps/webhook/integration_panel_widget.dart';
 import 'package:open_admin_app/widgets/common/application_drop_down.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
@@ -160,9 +160,8 @@ class ManageAppWidgetState extends State<ManageAppWidget>
         'tab': ['service-accounts']
       };
     } else if (_controller?.index == 3) {
-      // this is gonna get awkward once we have multiple optional server flags
       rc.params = {
-        'tab': ['webhooks']
+        'tab': ['integrations']
       };
     }
     bloc?.notifyExternalRouteChange(rc);
@@ -218,8 +217,8 @@ class ManageAppWidgetState extends State<ManageAppWidget>
                     ),
                   ),
                 ),
-                if (bloc.mrClient.identityProviders.capabilityWebhooks)
-                  const Tab(child: Text("Webhooks"))
+                if (bloc.mrClient.identityProviders.integrationsEnabled)
+                  const Tab(child: Text("Integrations"))
               ],
             ),
           ),
@@ -280,7 +279,7 @@ class ManageAppWidgetState extends State<ManageAppWidget>
                       controller: controllerTab4,
                       child: const Column(
                         children: <Widget>[
-                          WebhooksPanelWidget(),
+                          IntegrationPanelWidget(),
                         ],
                       ),
                     ),
@@ -316,7 +315,7 @@ class ManageAppWidgetState extends State<ManageAppWidget>
           case 'service-accounts':
             _controller!.animateTo(2);
             break;
-          case 'webhooks':
+          case 'integrations':
             if (mrClient.identityProviders.capabilityWebhooks) {
               _controller!.animateTo(3);
             } else {

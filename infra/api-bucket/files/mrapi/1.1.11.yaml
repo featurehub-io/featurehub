@@ -2247,6 +2247,14 @@ paths:
       explode: true
       schema:
         type: boolean
+    - name: decryptWebhookDetails
+      in: query
+      description: Decrypt all webhook env details
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: boolean
   /mr-api/features/{eid}:
     get:
       tags:
@@ -4072,6 +4080,11 @@ components:
             additionalProperties:
               type: string
             nullable: true
+          webhookEnvironmentInfo:
+            type: object
+            additionalProperties:
+              type: string
+            nullable: true
           serviceAccountPermission:
             type: array
             items:
@@ -4109,6 +4122,12 @@ components:
           description: Allows some settings that affect the behaviour of this environment.
             Currently `cacheControl` if set will be passed and set on the responses
             to GET requests.
+          nullable: true
+        webhookEnvironmentInfo:
+          type: object
+          additionalProperties:
+            type: string
+          description: Environment webhook url and headers
           nullable: true
         priorEnvironmentId:
           type: string

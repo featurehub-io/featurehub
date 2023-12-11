@@ -9,6 +9,7 @@ import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
@@ -44,7 +45,7 @@ class GroupSpec extends BaseSpec {
     baseSetupSpec()
 
     portfolioApi = new PortfolioSqlApi(database, convertUtils, archiveStrategy)
-    environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
+    environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy, Mock(WebhookEncryptionService))
 
     user = dbSuperPerson
 
@@ -59,7 +60,7 @@ class GroupSpec extends BaseSpec {
 
   def setup() {
     personApi = new PersonSqlApi(database, convertUtils, archiveStrategy, groupSqlApi)
-    conversions = new ConvertUtils()
+    conversions = new ConvertUtils(Mock(WebhookEncryptionService))
   }
 
   def "group ACL filtering by application works as expected"() {

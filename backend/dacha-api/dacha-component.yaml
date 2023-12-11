@@ -100,9 +100,15 @@ components:
         version:
           type: integer
           format: int64
-        environmentInfo:
+        eInf:
           description: "Allows extensibility for the environment"
-          x-basename: eInf
+          x-longname: environmentInfo
+          additionalProperties:
+            type: string
+        wInfo:
+          nullable: true
+          description: "Stores all of the unique data for webhooks"
+          x-longname: webhookEnvironment
           additionalProperties:
             type: string
     CacheEnvironmentFeature:

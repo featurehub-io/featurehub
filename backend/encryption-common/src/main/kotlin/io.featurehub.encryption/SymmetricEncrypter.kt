@@ -23,7 +23,7 @@ interface SymmetricEncrypter {
    * @param salt random value for turning the password into a secret
    * @return base64 encoded string containing the encrypted text
    */
-  fun encrypt(source: String, password: String, salt: String): String
+  fun encrypt(source: String, salt: String): String
 
   /**
    * Decrypts the encrypted source using secret key derived from password and salt
@@ -33,12 +33,12 @@ interface SymmetricEncrypter {
    * @param salt random value for turning the password into a secret
    * @return decrypted plain text string
    */
-  fun decrypt(encryptedSource: String, password: String, salt: String): String
+  fun decrypt(encryptedSource: String, salt: String): String
 }
 
 data class DecodedCipher(val initializationVector: ByteArray, val cipherText: ByteArray)
 
-class SymmetricEncrypterImpl : SymmetricEncrypter {
+class SymmetricEncrypterImpl(private val password: String)  : SymmetricEncrypter {
   private val ivLengthInBytes = 12
   private val secretKeyAlgorithm = "PBKDF2WithHmacSHA256"
   private val iterationCount = 65536
@@ -48,9 +48,8 @@ class SymmetricEncrypterImpl : SymmetricEncrypter {
   private val base64Decoder = Base64.getDecoder()
   private val cipherTransformation = "AES/GCM/NoPadding"
   private val TAG_LENGTH_BIT = 128
-  private val log = LoggerFactory.getLogger(SymmetricEncrypterImpl::class.java)
 
-  override fun encrypt(source: String, password: String, salt: String): String {
+  override fun encrypt(source: String, salt: String): String {
     try {
       // generate secret key using password and salt
       val secretKey = getAESKeyFromPassword(password, salt)
@@ -69,8 +68,7 @@ class SymmetricEncrypterImpl : SymmetricEncrypter {
 
   }
 
-  override fun decrypt(encryptedSource: String, password: String, salt: String): String {
-
+  override fun decrypt(encryptedSource: String, salt: String): String {
     try {
       // Decode and split encrypted text and IV
       val decodedCipher = decodeCipherTextWithIv(encryptedSource, ivLengthInBytes)

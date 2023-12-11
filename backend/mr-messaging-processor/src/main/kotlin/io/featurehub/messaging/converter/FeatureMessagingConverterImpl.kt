@@ -1,14 +1,25 @@
 package io.featurehub.messaging.converter
 
 import io.featurehub.db.api.RolloutStrategyUpdate
+import io.featurehub.messaging.MessagingConfig
 import io.featurehub.messaging.model.*
+import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
+import jakarta.inject.Inject
 import org.slf4j.LoggerFactory
 import java.time.ZoneOffset
 import java.util.ArrayList
 
-class FeatureMessagingConverterImpl : FeatureMessagingConverter{
+class FeatureMessagingConverterImpl @Inject constructor(
+  private val messageConfig: MessagingConfig,
+  private val publisher: FeatureMessagingCloudEventPublisher
+) : FeatureMessagingConverter{
+  override fun publish(featureMessagingParameter: FeatureMessagingParameter) {
+    if (messageConfig.enabled)
+      publisher.publishFeatureMessagingUpdate(toFeatureMessagingUpdate(featureMessagingParameter))
+  }
+
   override fun toFeatureMessagingUpdate(
     featureMessagingParameter: FeatureMessagingParameter
   ): FeatureMessagingUpdate {
@@ -107,10 +118,10 @@ class FeatureMessagingConverterImpl : FeatureMessagingConverter{
 
   private fun toRolloutStrategyAttribute(rolloutStrategyAttribute: RolloutStrategyAttribute): MessagingRolloutStrategyAttribute {
     return MessagingRolloutStrategyAttribute()
-      .conditional(rolloutStrategyAttribute.conditional!!)
+      .conditional(rolloutStrategyAttribute.conditional)
       .values(rolloutStrategyAttribute.values)
-      .fieldName(rolloutStrategyAttribute.fieldName!!)
-      .type(rolloutStrategyAttribute.type!!)
+      .fieldName(rolloutStrategyAttribute.fieldName)
+      .type(rolloutStrategyAttribute.type)
   }
 
 }
