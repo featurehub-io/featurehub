@@ -17,8 +17,40 @@ an AWS Lambda that talks to S3).
 - FeatureHub specifically depends (when used as separate components) on proven Cloud Scale tools like NATS.io and Google PubSub, all of which provide their own strong resiliency story.
 - FeatureHub is capable of directly integrating with Fastly's worldwide distributed cache, and this comes out of the box, even in the Open Source version! mailto:info@featurehub.io[Please contact us] for details and we can provide you with configuration.
 
+In SaaS, we use Fastly's worldwide distributed cache making the chances of FeatureHub not being available extremely low.
+
 == Resilient SDKs
 
 Resiliency in SDKs face two main issues:
 
-- If FeatureHub is unavailable, how 
+- If FeatureHub is unavailable, how do you get your initial state and,
+- If FeatureHub becomes available _after_ startup (i.e. it was not available at the time of startup and you have gone to a backing store to get initial state), how do you get your updated state
+
+=== FeatureHub not available at startup
+
+This affects all feature flagging systems, but FeatureHub is designed to be extremely reliable and downtime is low when
+properly configured. 
+
+There are several approaches, and you can mix and match.
+
+==== assume a state for all of your features as part of your code development
+
+This would mean for example that you assume or code for all features being false or deliberately choosing a state for them. In FeatureHub SDK's, feature flags for instance can have one of three states: non-existent, false or true, where non-existent becomes automatically false unless you code for it.
+
+==== provide backup source state for your feature flags
+
+This usually entails that you have a JSON blob representing your feature flags that is available somewhere. It could be as part of the base docker image, loaded as a configmap or secret in Kubernetes, available in an S3 or Cloud Storage bucket, in a key storage (e.g. Redis, Memcache or DynamoDB) or otherwise. The SDKs have a method of loading external state into the SDK.
+
+All SDK's also support xref:capabilities-explained.adoc#_feature_interceptors[_interceptors_] - which are ways to override how features are determined, so they can be used to provide
+state. One example of an interceptor for example is where OpenTelemetry is used and the Baggage is examined for state pre-set
+from upstream sources. 
+
+=== Features become available after startup
+
+If you have loaded from a backup source when your application starts, you are still able to point to your desired source.
+The SDKs are designed to expect server failures and unless you have 400 or 404 errors coming from your FeatureHub server
+indicating that the API Key simply does not exist or your SDK is too old, then your SDK will recover and start loading
+feature flags again. Typically the SSE connection will backoff, waiting a longer time between connects. 
+
+
+
