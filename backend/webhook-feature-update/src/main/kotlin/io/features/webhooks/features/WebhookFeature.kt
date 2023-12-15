@@ -114,9 +114,25 @@ class WebhookEnricherListener @Inject constructor(
   /**
    * expects a fully decrypted set of data
    */
-  fun extractHeaders(conf: Map<String, String>): Map<String, String> {
+  private fun extractHeaders(conf: Map<String, String>): Map<String, String> {
     val len = WEBHOOK_HEADERS.length
     return conf.filter { it.key.startsWith(WEBHOOK_HEADERS) }.mapKeys { it.key.substring(len) }
+  }
+
+  private fun removeEncryptedHeaders(originalWebhookEnvironment: Map<String, String>, postedHeaders: Map<String, String>): Map<String, String> {
+    // these are the keys that were encrypted, select out only those that are headers
+    val keys = encryptionService.getAllKeysEnabledForEncryption(originalWebhookEnvironment)
+      .filter { it.startsWith(WEBHOOK_HEADERS) }
+    // remove any headers that held encrypted data
+    return postedHeaders.filter { !keys.contains("${WEBHOOK_HEADERS}${it.key}") }
+  }
+
+  private fun checkUrlEncrypted(originalWebhookEnvironment: Map<String, String>, url: String): String {
+    return if (encryptionService.getAllKeysEnabledForEncryption(originalWebhookEnvironment).contains(WEBHOOK_ENDPOINT)) {
+      "[encrypted-url]"
+    } else {
+      url
+    }
   }
 
   fun process(ef: EnrichedFeatures, ce: CloudEvent) {
@@ -130,7 +146,7 @@ class WebhookEnricherListener @Inject constructor(
     }
 
     if (originalConf[WEBHOOK_ENABLED] == "true") {
-      val conf = encryptionService.decrypt(originalConf)
+      val conf = encryptionService.decryptAndStripEncrypted(originalConf)
       val endpoint = conf[WEBHOOK_ENDPOINT] ?: return
       val headers = extractHeaders(conf)
 
@@ -145,10 +161,11 @@ class WebhookEnricherListener @Inject constructor(
         val outboundHeaders = mutableMapOf<String, String>()
 
         headers.forEach { header ->
-            val key = header.key
-            val value = header.value
-            outboundHeaders[key] = value
-            target.header(key, value)
+          val key = header.key
+
+          val value = header.value
+          outboundHeaders[key] = value
+          target.header(key, value)
         }
 
         // no bindings for jakarta yet (in 2.4.0)
@@ -217,6 +234,9 @@ class WebhookEnricherListener @Inject constructor(
           data.status(0).result(e.message?.take(1000))
         }
 
+        // strip out encrypted headers
+        data.outboundHeaders = removeEncryptedHeaders(originalConf, data.outboundHeaders)
+        data.url = checkUrlEncrypted(originalConf, data.url)
         cloudEventPublisher.publish(WebhookEnvironmentResult.CLOUD_EVENT_TYPE, data, notifyEvent)
       } catch (e: Exception) {
         log.debug("Failed to construct webhook", e)

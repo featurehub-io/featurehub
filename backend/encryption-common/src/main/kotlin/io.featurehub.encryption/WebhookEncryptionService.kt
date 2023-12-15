@@ -23,6 +23,7 @@ interface WebhookEncryptionService {
 
   fun getAllKeysEnabledForEncryption(source: Map<String, String>): List<String>
   fun decrypt(source: Map<String, String>): Map<String, String>
+  fun decryptAndStripEncrypted(source: Map<String, String>): Map<String, String>
 }
 
 class WebhookEncryptionServiceImpl @Inject constructor(
@@ -144,6 +145,15 @@ class WebhookEncryptionServiceImpl @Inject constructor(
     return handleSymmetricEncryption(source) { key, value, result ->
       decryptItem(key, source, result)
     }
+  }
+
+  override fun decryptAndStripEncrypted(source: Map<String, String>): Map<String, String> {
+    return handleSymmetricEncryption(source) { key, value, result ->
+      decryptItem(key, source, result)
+      result.remove("$key.salt")
+      result.remove("$key.encrypted")
+    }
+
   }
 
   // we ignore any errors in the data, if someone has stuffed bad data in, we
