@@ -56,20 +56,24 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                       style: TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
-              Row(children: [
-                Text("Slack is currently ${_enabled ? 'enabled' : 'disabled'}")
-              ],),
               Form(
                   key: _formKey,
                   child:
                       Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                        Row(children: [
+                          const Text('Enabled'),
+                          Checkbox(autofocus: true,
+                            value: _enabled, onChanged: (value) => setState(() {
+                            _enabled = value ?? false;
+                          }),)
+                        ],),
                     Row(children: [
                       Expanded(
                           child: TextFormField(
                               controller: _apiKey,
                               autofocus: true,
                               textInputAction: TextInputAction.next,
-                              obscureText: _channelName.text == 'ENCRYPTED-TEXT',
+                              obscureText: _apiKey.text == 'ENCRYPTED-TEXT',
                               obscuringCharacter: '*',
                               readOnly: _apiKey.text == 'ENCRYPTED-TEXT',
                               decoration: const InputDecoration(
@@ -87,11 +91,8 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                               controller: _channelName,
                               autofocus: true,
                               textInputAction: TextInputAction.next,
-                              obscureText: _channelName.text == 'ENCRYPTED-TEXT',
-                              obscuringCharacter: '*',
-                              readOnly: _channelName.text == 'ENCRYPTED-TEXT',
                               decoration: const InputDecoration(
-                                  labelText: 'Slack Channel (use @XXXX)'),
+                                  labelText: 'Slack channel code (e.g. @C0150T7AF25)'),
                               validator: ((v) {
                                 if (v == null || v.isEmpty) {
                                   return 'Please enter a Slack Channel';
@@ -103,6 +104,8 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                       height: 24.0,
                     ),
                     Row(children: [
+                      if (widget.bloc.mrBloc.identityProviders.capabilityWebhookEncryption &&
+                          widget.bloc.mrBloc.identityProviders.capabilityWebhookDecryption)
                       Column(children: [
                         if (_apiKey.text == 'ENCRYPTED-TEXT')
                           FilledButton(
@@ -118,11 +121,13 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 FilledButton(
-                                    onPressed: () => _updateData(false),
-                                    child: const Text('Disable')),
-                                FilledButton(
-                                    onPressed: () => _updateData(true),
-                                    child: const Text('Save/Enable')),
+                                    onPressed: () async {
+                                      if ( _formKey.currentState!.validate()) {
+                                        _formKey.currentState!.save();
+                                        await _updateData();
+                                      }
+                                    },
+                                    child: const Text('Save')),
                               ],
                             )
                           ],
@@ -133,14 +138,19 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
             ])));
   }
 
-  Future<void> _updateData(bool enabled) async {
+  bool _saveable() {
+    return _apiKey.text.trim().isNotEmpty && _channelName.text.trim().isNotEmpty;
+  }
+
+  Future<void> _updateData() async {
     final env = widget.env.environment?.webhookEnvironmentInfo ?? {};
     final prefix = widget.env.type!.envPrefix;
-    env['${prefix}.enabled'] = enabled.toString();
+    env['${prefix}.enabled'] = _enabled.toString();
     env['${prefix}.api_key'] = _apiKey.text;
     env['${prefix}.channel_name'] = _channelName.text;
-    env['${prefix}.encrypt'] = '${prefix}.api_key,${prefix}.channel_name';
+    env['${prefix}.encrypt'] = '${prefix}.api_key';
+    widget.bloc.mrBloc.addSnackbar(Text("Saving Slack webhook"));
     await widget.bloc.updateEnvironmentWithWebhookData(
-        widget.env.environment!, env, prefix + ".");
+        widget.env.environment!, env, "$prefix.");
   }
 }
