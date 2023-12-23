@@ -7,6 +7,9 @@ import io.featurehub.edge.events.StreamingEventPublisher
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.kinesis.KinesisFactory
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecycleListeners
+import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.mr.messaging.StreamedFeatureUpdate
 import io.featurehub.webhook.common.WebhookCommonFeature
 import io.featurehub.webhook.events.WebhookEnvironmentResult
@@ -14,8 +17,6 @@ import io.features.webhooks.features.WebhookFeature
 import jakarta.inject.Inject
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
-import org.glassfish.hk2.api.Immediate
-import org.glassfish.jersey.internal.inject.AbstractBinder
 import java.util.*
 
 class KinesisEdgeFeature : Feature {
@@ -23,22 +24,18 @@ class KinesisEdgeFeature : Feature {
     if (!KinesisEventFeature.isEnabled()) return false
 
     context.register(KinesisEventFeature::class.java)
-    context.register(object: AbstractBinder() {
-      override fun configure() {
-        // start listening immediately on wiring finishing
-        bind(KinesisFeaturesListener::class.java).to(KinesisFeaturesListener::class.java).`in`(Immediate::class.java)
-        bind(KinesisFeatureUpdatePublisher::class.java).to(KinesisFeatureUpdatePublisher::class.java).`in`(Immediate::class.java)
-      }
-    })
+    LifecycleListeners.starter(KinesisFeaturesListener::class.java, context)
+    LifecycleListeners.starter(KinesisFeatureUpdatePublisher::class.java, context)
 
     return true
   }
 }
 
+@LifecyclePriority(priority = 12)
 class KinesisFeaturesListener @Inject constructor(
   private val controller: EdgeSubscriber,
   kinesisFactory: KinesisFactory
-) {
+) : LifecycleListener {
   @ConfigKey("cloudevents.mr-edge.kinesis.stream-name")
   private var edgeTopicName: String? = "featurehub-mr-edge"
 
@@ -51,7 +48,8 @@ class KinesisFeaturesListener @Inject constructor(
   }
 }
 
-class KinesisFeatureUpdatePublisher @Inject constructor(kinesisFactory: KinesisFactory, cloudEventPublisher: CloudEventPublisher) {
+@LifecyclePriority(priority = 12)
+class KinesisFeatureUpdatePublisher @Inject constructor(kinesisFactory: KinesisFactory, cloudEventPublisher: CloudEventPublisher) : LifecycleListener {
   @ConfigKey("cloudevents.edge-mr.kinesis.stream-name")
   private val updateStreamName: String = "featurehub-edge-updates"
   @ConfigKey("cloudevents.edge-mr.kinesis.randomise")

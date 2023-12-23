@@ -50,8 +50,6 @@ class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
 ) : FeatureMessagingCloudEventPublisher {
   private val log = LoggerFactory.getLogger(FeatureMessagingCloudEventPublisherImpl::class.java)
 
-
-
   override fun publishFeatureMessagingUpdate(
     hooks: List<MappedSupportedConfig>,
     webhookEnvironmentInfo: Map<String, String>,

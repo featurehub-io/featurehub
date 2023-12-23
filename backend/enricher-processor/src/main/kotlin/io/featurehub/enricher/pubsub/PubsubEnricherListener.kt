@@ -7,15 +7,17 @@ import io.featurehub.enricher.FeatureEnricher
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.pubsub.PubSubFactory
-import io.featurehub.utils.FallbackPropertyConfig
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecyclePriority
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@LifecyclePriority(priority = 10)
 class PubsubEnricherListener @Inject constructor(
   pubSubFactory: PubSubFactory,
   eventListener: CloudEventReceiverRegistry
-) {
+) : LifecycleListener {
   @ConfigKey("cloudevents.enricher.pubsub.enriched-subscription-name")
   private var enricherChannelName: String? = "featurehub-enriched-events"
   private val log: Logger = LoggerFactory.getLogger(PubsubEnricherListener::class.java)
@@ -40,11 +42,12 @@ class PubsubEnricherListener @Inject constructor(
  * subscribers share the same message, only one of the subscribers gets the message. So we need to specify the channels
  * we will use by giving them names, and then we dynamically look up the name pair.
  */
+@LifecyclePriority(priority = 10)
 class PubsubEnricherPublisher @Inject constructor(
   pubSubFactory: PubSubFactory,
   cloudEventPublisher: CloudEventPublisher,
   featureEnricher: FeatureEnricher
-) {
+) : LifecycleListener {
   private val log: Logger = LoggerFactory.getLogger(PubsubEnricherPublisher::class.java)
 
   init {

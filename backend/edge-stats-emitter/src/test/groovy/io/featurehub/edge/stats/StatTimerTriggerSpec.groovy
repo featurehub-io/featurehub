@@ -2,7 +2,7 @@ package io.featurehub.edge.stats
 
 import spock.lang.Specification
 
-class StatTimeTriggerSpec extends Specification {
+class StatTimerTriggerSpec extends Specification {
   def "A timer will get kicked off"() {
     given: "i set up a mock collector"
       def statCollector = Mock(StatCollector)
@@ -11,6 +11,7 @@ class StatTimeTriggerSpec extends Specification {
       System.setProperty('edge.stats.publish-interval-ms', '1') // 1 ms
     and: "create the trigger, starting off the timer"
       def trigger = new StatTimeTrigger(statCollector, statsOrchestrator)
+      trigger.started()
     when: "i wait to ensure the timer has gone off"
       Thread.sleep(50)
     then: "make sure process was called one or more times"
@@ -18,6 +19,6 @@ class StatTimeTriggerSpec extends Specification {
       (1.._) * statCollector.ejectData()
     cleanup:
       System.clearProperty('edge.stats.publish-interval-ms')
-      trigger.shutdownTimer()
+      trigger.shutdown()
   }
 }

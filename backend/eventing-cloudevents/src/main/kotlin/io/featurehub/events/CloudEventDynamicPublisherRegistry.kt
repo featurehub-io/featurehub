@@ -31,6 +31,28 @@ interface CloudEventDynamicPublisherRegistry {
 
 }
 
+class FakeDyn : CloudEventDynamicPublisherRegistry {
+  override fun registerDymamicPublisherProvider(
+    prefixes: List<String>,
+    callback: (params: Map<String, String>, cloudEventType: String, destination: String, destSuffix: String, metric: CloudEventChannelMetric) -> Unit
+  ) {
+    TODO("Not yet implemented")
+  }
+
+  override fun requireDynamicPublisher(
+    destination: String,
+    params: Map<String, String>,
+    cloudEventType: String
+  ): Boolean {
+    TODO("Not yet implemented")
+  }
+
+  override fun setDefaultPublisherProvider(prefix: String) {
+    TODO("Not yet implemented")
+  }
+
+}
+
 class CloudEventDynamicPublisherRegistryImpl : CloudEventDynamicPublisherRegistry {
   private val log: Logger = LoggerFactory.getLogger(CloudEventDynamicPublisherRegistryImpl::class.java)
   private val dynamicPublishers: MutableMap<String, (params: Map<String, String>, cloudEventType: String, destination: String, destSuffix: String, metric: CloudEventChannelMetric) -> Unit> = mutableMapOf()

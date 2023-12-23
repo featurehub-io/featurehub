@@ -3,6 +3,8 @@ package io.featurehub.events.kinesis
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.events.CloudEventReceiverRegistry
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecyclePriority
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -12,7 +14,8 @@ interface KinesisAppNameProvider {
   fun name(): String
 }
 
-class KinesisListenAllTheThings @Inject constructor(kinesisFactory: KinesisFactory, registry: CloudEventReceiverRegistry, nameProvider: KinesisAppNameProvider) {
+@LifecyclePriority(priority = 12)
+class KinesisListenAllTheThings @Inject constructor(kinesisFactory: KinesisFactory, registry: CloudEventReceiverRegistry, nameProvider: KinesisAppNameProvider): LifecycleListener {
   @ConfigKey("cloudevents.inbound.stream-names")
   var subscriptions: List<String>? = listOf()
 

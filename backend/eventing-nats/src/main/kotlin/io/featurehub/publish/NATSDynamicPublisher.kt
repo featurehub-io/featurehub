@@ -3,7 +3,8 @@ package io.featurehub.publish
 import io.featurehub.events.CloudEventChannelMetric
 import io.featurehub.events.CloudEventDynamicPublisherRegistry
 import io.featurehub.events.CloudEventPublisher
-import io.featurehub.events.CloudEventPublisherRegistry
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecyclePriority
 import jakarta.inject.Inject
 
 /**
@@ -11,13 +12,14 @@ import jakarta.inject.Inject
  * fly and register it with the Cloud Events Publishing registry for a specific type. It will compress by default
  * but does not need to.
  */
+@LifecyclePriority(priority = 5)
 class NATSDynamicPublisher @Inject constructor(
   private val nats: NATSSource,
   dynamicPublisher: CloudEventDynamicPublisherRegistry,
   private val publisherRegistry: CloudEventPublisher
-) {
+): LifecycleListener {
   init {
-//    dynamicPublisher.registerDymamicPublisherProvider(listOf("nats://"), this::registerType)
+    dynamicPublisher.registerDymamicPublisherProvider(listOf("nats://"), this::registerType)
   }
 
   fun registerType(

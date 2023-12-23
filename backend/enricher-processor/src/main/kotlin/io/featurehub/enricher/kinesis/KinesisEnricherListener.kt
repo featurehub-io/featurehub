@@ -9,6 +9,8 @@ import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.kinesis.KinesisFactory
 import io.featurehub.events.nats.NatsListener
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.publish.NATSSource
 import jakarta.annotation.PreDestroy
 import jakarta.inject.Inject
@@ -32,10 +34,11 @@ open class KinesisEnricherBase {
 }
 
 // used for example in Edge
+@LifecyclePriority(priority = 10)
 class KinesisEnricherListener @Inject constructor(
   kinesisFactory: KinesisFactory,
   eventListener: CloudEventReceiverRegistry
-) : KinesisEnricherBase() {
+) : KinesisEnricherBase(), LifecycleListener {
 
   init {
     DeclaredConfigResolver.resolve(this)
@@ -45,11 +48,12 @@ class KinesisEnricherListener @Inject constructor(
 }
 
 // only used by Dacha2
+@LifecyclePriority(priority = 10)
 class KinesisEnricherPublisher @Inject constructor(
   kinesisFactory: KinesisFactory,
   featureEnricher: FeatureEnricher,
   cloudEventsPublisher: CloudEventPublisher
-) : KinesisEnricherBase() {
+) : KinesisEnricherBase(), LifecycleListener {
   init {
     val publisher = kinesisFactory.makePublisher(enricherChannelName!!)
 

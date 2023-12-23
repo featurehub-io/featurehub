@@ -7,6 +7,9 @@ import io.featurehub.enricher.FeatureEnricher
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.nats.NatsListener
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecyclePriority
+import io.featurehub.lifecycle.LifecycleShutdown
 import io.featurehub.publish.NATSSource
 import jakarta.annotation.PreDestroy
 import jakarta.inject.Inject
@@ -22,18 +25,18 @@ open class NatsEnricherBase {
 
   init {
     DeclaredConfigResolver.resolve(this)
-
   }
 }
 
 /**
  * We include this one here, because Dacha1 and Dacha2 support NATS. Used by a service that publishes
  */
+@LifecyclePriority(priority = 10)
 class NatsEnricherPublisher @Inject constructor(
   natsSource: NATSSource,
   featureEnricher: FeatureEnricher,
   cloudEventsPublisher: CloudEventPublisher
-) : NatsEnricherBase() {
+) : NatsEnricherBase(), LifecycleListener {
   init {
     val publisher = natsSource.createPublisher(enricherChannelName!!)
 
@@ -47,10 +50,11 @@ class NatsEnricherPublisher @Inject constructor(
 /**
  * used by a service that listens to the enriched stream
  */
+@LifecyclePriority(priority = 10)
 class NatsEnricherListener @Inject constructor(
   natsSource: NATSSource,
   private val eventListener: CloudEventReceiverRegistry
-) : NatsEnricherBase() {
+) : NatsEnricherBase(), LifecycleShutdown {
   private val log: Logger = LoggerFactory.getLogger(NatsEnricherListener::class.java)
   private val enricherListener: NatsListener
 
@@ -61,8 +65,7 @@ class NatsEnricherListener @Inject constructor(
     log.info("nats: dacha enricher enabled (listen)")
   }
 
-  @PreDestroy
-  fun close() {
+  override fun shutdown() {
     enricherListener.close()
   }
 }

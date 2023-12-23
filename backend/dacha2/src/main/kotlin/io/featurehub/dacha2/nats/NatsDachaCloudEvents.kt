@@ -28,8 +28,7 @@ class NatsDachaEventsListener : Feature {
   }
 
   override fun configure(context: FeatureContext): Boolean {
-    LifecycleListeners.starter(Dacha2NatsListener::class.java, context)
-    LifecycleListeners.shutdown(Dacha2NatsListener::class.java, context)
+    LifecycleListeners.wrap(Dacha2NatsListener::class.java, context)
 
     return true
   }

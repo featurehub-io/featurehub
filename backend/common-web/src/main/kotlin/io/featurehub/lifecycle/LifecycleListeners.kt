@@ -29,7 +29,16 @@ import java.util.concurrent.ExecutorService
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @Singleton
-annotation class LifecyclePriority(val priority: Int)
+annotation class LifecyclePriority(val priority: Int) {
+  companion object {
+    const val APPLICATION_PRIORITY_START = 10
+    const val APPLICATION_PRIORITY_END = 100
+    const val CRITICAL_INTERNAL_PRIORITY_START = 0
+    const val CRITICAL_INTERNAL_PRIORITY_END = 4
+    const val INTERNAL_PRIORITY_START = 5
+    const val INTERNAL_PRIORITY_END = 9
+  }
+}
 
 /**
  * implement this if you just want your class to be instantiated
@@ -210,6 +219,11 @@ class LifecycleListeners : ContainerLifecycleListener {
     }
 
     fun <T: LifecycleListener> shutdown(clazz: Class<T>, config: Configurable<*>) {
+      register(clazz, config, SHUTDOWN_KEY)
+    }
+
+    fun <T: LifecycleListener> wrap(clazz: Class<T>, config: Configurable<*>) {
+      register(clazz, config, START_KEY)
       register(clazz, config, SHUTDOWN_KEY)
     }
   }

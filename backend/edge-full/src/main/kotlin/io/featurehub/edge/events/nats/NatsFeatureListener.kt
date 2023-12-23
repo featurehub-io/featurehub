@@ -2,18 +2,17 @@ package io.featurehub.edge.events.nats
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import io.featurehub.dacha.model.PublishFeatureValues
-import io.featurehub.edge.StreamingFeatureController
 import io.featurehub.edge.events.EdgeSubscriber
 import io.featurehub.events.nats.NatsListener
-import io.featurehub.jersey.config.CacheJsonMapper
+import io.featurehub.lifecycle.LifecyclePriority
+import io.featurehub.lifecycle.LifecycleShutdown
 import io.featurehub.publish.NATSSource
-import jakarta.annotation.PreDestroy
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class NatsFeatureListener @Inject constructor(private val controller: EdgeSubscriber, nats: NATSSource) {
+@LifecyclePriority(priority = 12)
+class NatsFeatureListener @Inject constructor(private val controller: EdgeSubscriber, nats: NATSSource) : LifecycleShutdown {
   @ConfigKey("cloudevents.mr-edge.nats.channel-name")
   private var edgeChannelName: String? = "featurehub/mr-edge-channel"
   private val listener: NatsListener
@@ -28,8 +27,7 @@ class NatsFeatureListener @Inject constructor(private val controller: EdgeSubscr
     }
   }
 
-  @PreDestroy
-  fun close() {
+  override fun shutdown() {
     listener.close()
   }
 }

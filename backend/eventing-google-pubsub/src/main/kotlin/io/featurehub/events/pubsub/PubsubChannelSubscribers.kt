@@ -15,9 +15,10 @@ class RetryException : RuntimeException() {
 }
 
 /**
- * This listens to all channels that are listed here. They all go into the big bucket of CloudEventReceiverRegistry
+ * This listens to all channels that are listed here. They all go into the big bucket of CloudEventReceiverRegistry. This should happen after all
+ * the application events finish so it starts listening LATE so everything else is ready
  */
-@LifecyclePriority(priority = 5)
+@LifecyclePriority(priority = LifecyclePriority.APPLICATION_PRIORITY_END)
 class PubsubChannelSubscribers @Inject constructor(private val pubSubFactory: PubSubFactory, private val registry: CloudEventReceiverRegistry):
   LifecycleStarted, LifecycleShutdown {
   @ConfigKey("cloudevents.inbound.channel-names")

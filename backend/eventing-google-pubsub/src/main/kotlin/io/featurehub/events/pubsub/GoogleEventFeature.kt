@@ -1,6 +1,7 @@
 package io.featurehub.events.pubsub
 
 import io.featurehub.health.HealthSource
+import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecycleListeners
 import io.featurehub.mr.events.listeners.PubsubChannelSubscribers
 import io.featurehub.utils.FallbackPropertyConfig
@@ -16,11 +17,11 @@ class GoogleEventFeature : Feature {
       context.register(object: AbstractBinder() {
         override fun configure() {
           bind(PubSubFactoryService::class.java).to(PubSubFactory::class.java).to(HealthSource::class.java).`in`(Singleton::class.java)
-          // register it so others can register against it
-          bind(PubsubDynamicPublisher::class.java).to(PubsubDynamicPublisher::class.java).`in`(Immediate::class.java)
         }
       })
 
+      // register it so others can register against it
+      LifecycleListeners.starter(PubsubDynamicPublisher::class.java, context)
       // start listening to all the channels up front
       LifecycleListeners.starter(PubsubChannelSubscribers::class.java, context)
 

@@ -6,6 +6,7 @@ import com.lmax.disruptor.EventHandler
 import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.kinesis.KinesisFactory
 import io.featurehub.events.pubsub.GoogleEventFeature
+import io.featurehub.lifecycle.LifecycleListeners
 import io.featurehub.publish.NATSFeature
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
@@ -62,30 +63,10 @@ class StatsFeature : Feature {
         )
 
         bind(StatDisruptor::class.java).to(StatRecorder::class.java).`in`(Immediate::class.java)
-        bind(StatTimeTrigger::class.java).to(StatTimeTrigger::class.java).`in`(Immediate::class.java)
       }
     })
-//      .register(object : ContainerLifecycleListener {
-//        override fun onStartup(container: Container) {
-//
-//          // access the ServiceLocator here
-//          val injector = container
-//            .applicationHandler
-//            .injectionManager
-//            .getInstance(ServiceLocator::class.java)
-//          // starts the stats time publisher if there are any
-//
-//          // starts the stats time publisher if there are any
-//          injector.getService(StatTimeTrigger::class.java)
-//          injector.getService(StatRecorder::class.java)
-//        }
-//
-//        override fun onReload(container: Container) {
-//        }
-//
-//        override fun onShutdown(container: Container) {
-//        }
-//      })
+
+    LifecycleListeners.wrap(StatTimeTrigger::class.java, context)
 
     return true
   }

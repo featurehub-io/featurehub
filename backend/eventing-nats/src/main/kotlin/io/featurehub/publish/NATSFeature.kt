@@ -1,6 +1,8 @@
 package io.featurehub.publish
 
 import io.featurehub.health.HealthSource
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecycleListeners
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
@@ -23,9 +25,10 @@ class NATSFeature : Feature {
       override fun configure() {
         bind(NATSConnectionSource::class.java).to(NATSSource::class.java).`in`(Singleton::class.java)
         bind(NATSHealthSource::class.java).to(HealthSource::class.java).`in`(Singleton::class.java)
-//        bind(NATSDynamicPublisher::class.java).to(NATSDynamicPublisher::class.java).`in`(Immediate::class.java)
       }
     })
+
+    LifecycleListeners.starter(NATSDynamicPublisher::class.java, context)
 
     return true
   }

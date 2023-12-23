@@ -11,6 +11,7 @@ import io.featurehub.enricher.FeatureEnrichmentCache
 import io.featurehub.enricher.EnrichmentProcessingFeature
 import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.pubsub.GoogleEventFeature
+import io.featurehub.lifecycle.LifecycleListeners
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
@@ -35,20 +36,20 @@ class Dacha2Feature : Feature {
         if (FastlyPublisher.fastlyEnabled()) {
           bind(FastlyPublisher::class.java).to(Dacha2CacheListener::class.java).`in`(Singleton::class.java)
         }
-        bind(Dacha2CloudEventListenerImpl::class.java).to(Dacha2CloudEventListenerImpl::class.java).`in`(Immediate::class.java)
         bind(FeatureValuesFactoryImpl::class.java).to(FeatureValuesFactory::class.java).`in`(Singleton::class.java)
         bind(DachaApiKeyResource::class.java).to(DachaApiKeyService::class.java).`in`(Singleton::class.java)
-
-        if (GoogleEventFeature.isEnabled()) {
-          // bind and start listening immediately
-          bind(PubsubDachaCloudEvents::class.java).to(PubsubDachaCloudEvents::class.java).`in`(Immediate::class.java)
-        }
-
-        if (KinesisEventFeature.isEnabled()) {
-          bind(KinesisDachaCloudEvents::class.java).to(KinesisDachaCloudEvents::class.java).`in`(Immediate::class.java)
-        }
       }
     })
+
+    LifecycleListeners.starter(Dacha2CloudEventListenerImpl::class.java, context)
+
+    if (GoogleEventFeature.isEnabled()) {
+      LifecycleListeners.starter(PubsubDachaCloudEvents::class.java, context)
+    }
+
+    if (KinesisEventFeature.isEnabled()) {
+      LifecycleListeners.starter(KinesisDachaCloudEvents::class.java, context)
+    }
 
     return true
   }

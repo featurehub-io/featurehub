@@ -10,31 +10,27 @@ import io.featurehub.events.CloudEventChannelMetric
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.events.pubsub.PubSubFactory
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecycleListeners
+import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.mr.events.common.CacheMetrics
 import jakarta.inject.Inject
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
-import org.glassfish.hk2.api.Immediate
-import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class PubsubMRFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     if (!GoogleEventFeature.isEnabled()) return false
 
-    context.register(object : AbstractBinder() {
-      override fun configure() {
-        bind(PubsubCloudEventsEdgeChannel::class.java).to(PubsubCloudEventsEdgeChannel::class.java)
-          .`in`(Immediate::class.java)
-        bind(PubsubCloudEventsDachaChannel::class.java).to(PubsubCloudEventsDachaChannel::class.java)
-          .`in`(Immediate::class.java)
-      }
-    })
+    LifecycleListeners.starter(PubsubCloudEventsEdgeChannel::class.java, context)
+    LifecycleListeners.starter(PubsubCloudEventsDachaChannel::class.java, context)
 
     return true
   }
 }
 
-class PubsubCloudEventsEdgeChannel @Inject constructor(pubSubFactory: PubSubFactory, cloudEventsPublisher: CloudEventPublisher) {
+@LifecyclePriority(priority = 12)
+class PubsubCloudEventsEdgeChannel @Inject constructor(pubSubFactory: PubSubFactory, cloudEventsPublisher: CloudEventPublisher): LifecycleListener {
   @ConfigKey("cloudevents.mr-edge.pubsub.topic-name")
   private var edgeChannelName: String? = "featurehub-mr-edge"
 
@@ -49,7 +45,8 @@ class PubsubCloudEventsEdgeChannel @Inject constructor(pubSubFactory: PubSubFact
   }
 }
 
-class PubsubCloudEventsDachaChannel @Inject constructor(pubSubFactory: PubSubFactory, cloudEventsPublisher: CloudEventPublisher) {
+@LifecyclePriority(priority = 12)
+class PubsubCloudEventsDachaChannel @Inject constructor(pubSubFactory: PubSubFactory, cloudEventsPublisher: CloudEventPublisher): LifecycleListener {
   @ConfigKey("cloudevents.mr-dacha2.pubsub.topic-name")
   private var dachaChannelName: String? = "featurehub-mr-dacha2"
 

@@ -1,5 +1,7 @@
 package io.featurehub.edge.events.nats
 
+import io.featurehub.lifecycle.LifecycleListeners
+import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.publish.NATSFeature
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.ws.rs.core.Feature
@@ -9,26 +11,18 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class NatsEdgeFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
-    if (NATSFeature.isNatsConfigured()) {
-      context.register(NATSFeature::class.java)
+    if (!NATSFeature.isNatsConfigured()) return false
+    context.register(NATSFeature::class.java)
 
-      context.register(object : AbstractBinder() {
-        override fun configure() {
-          bind(NatsFeatureUpdatePublisher::class.java).to(NatsFeatureUpdatePublisher::class.java)
-            .`in`(Immediate::class.java)
-          if (isDacha2Enabled()) {
-            bind(NatsFeatureListener::class.java).to(NatsFeatureListener::class.java).`in`(Immediate::class.java)
-          }
-          if (isDacha1Enabled()) {
-            bind(NatsOriginalListener::class.java).to(NatsOriginalListener::class.java).`in`(Immediate::class.java)
-          }
-        }
-      })
-
-      return true
+    LifecycleListeners.starter(NatsFeatureUpdatePublisher::class.java, context)
+    if (isDacha2Enabled()) {
+      LifecycleListeners.wrap(NatsFeatureListener::class.java, context)
+    }
+    if (isDacha1Enabled()) {
+      LifecycleListeners.wrap(NatsOriginalListener::class.java, context)
     }
 
-    return false
+    return true
   }
 
   fun isDacha1Enabled(): Boolean =
