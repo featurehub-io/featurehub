@@ -23,6 +23,7 @@
 ** xref:installation.adoc[Installation]
 ** xref:configuration.adoc[Configuration]
 ** xref:webhooks-configuration.adoc[Webhooks Configuration]
+** xref:resilience.adoc[Building for Resilience]
 ** xref:identity.adoc[Identity, authentication, OAuth2 and SAML options]
 ** xref:metrics.adoc[Monitoring your Installation]
 ** xref:troubleshooting.adoc[Troubleshooting your Installation]
