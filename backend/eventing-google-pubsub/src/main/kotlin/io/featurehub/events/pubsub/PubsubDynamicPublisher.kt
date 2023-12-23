@@ -2,7 +2,7 @@ package io.featurehub.events.pubsub
 
 import io.featurehub.events.CloudEventChannelMetric
 import io.featurehub.events.CloudEventDynamicPublisherRegistry
-import io.featurehub.events.CloudEventPublisherRegistry
+import io.featurehub.events.CloudEventPublisher
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
 import jakarta.inject.Inject
@@ -12,7 +12,7 @@ import jakarta.inject.Inject
  */
 @LifecyclePriority(priority = 5)
 class PubsubDynamicPublisher @Inject constructor(private val pubSubFactory: PubSubFactory, dynamicPublisher: CloudEventDynamicPublisherRegistry,
-                                                 private val publisherRegistry: CloudEventPublisherRegistry
+                                                 private val publisherRegistry: CloudEventPublisher
 ) : LifecycleListener {
   init {
     dynamicPublisher.registerDymamicPublisherProvider(listOf("pubsub://"), this::registerType)
