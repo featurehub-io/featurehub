@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: Feature Messaging API
   description: This is an OpenAPI document for featurehub messaging data. It is used to publish feature updates to messaging listeners.
-  version: "1.1.4"
+  version: "1.2.0"
 paths:
   /v2/fake:
     get:
@@ -22,48 +22,60 @@ components:
       x-package: io.featurehub.messaging.model
       description: "Changes made to a specific feature and who changed it"
       type: object
-      required:
-        - environmentId
-        - applicationId
-        - portfolioId
-        - organizationId
-        - whenUpdated
-        - whoUpdated
-        - featureKey
-        - featureId
-        - featureValueId
-        - featureValueType
-        - whatUpdated
       properties:
         targetDestination:
           description: "If there is a specific target for the data, everything else _should_ ignore it"
+          type: string
+        environmentName:
+          x-basename: eName
           type: string
         environmentId:
           x-basename: eId
           type: string
           format: uuid
+        portfolioName:
+          x-basename: pName
+          type: string
         portfolioId:
           x-basename: pId
           type: string
           format: uuid
+        orgName:
+          x-basename: oName
+          type: string
         organizationId:
           x-basename: oId
           type: string
           format: uuid
+        appName:
+          x-basename: aName
+          type: string
         applicationId:
           x-basename: aId
           type: string
           format: uuid
+        hostUrl:
+          type: string
         whenUpdated:
           type: string
           format: date-time
+        whoUpdatedId:
+          type: string
+          format: uuid
+          description: "The ID of the person who updated the feature"
         whoUpdated:
           type: string
           description: Name of the user who made the change to the feature
+        featureName:
+          description: "The name of the feature"
+          x-basename: fName
+          type: string
         featureKey:
+          x-basename: fKey
           description: "Feature key that got updated"
           type: string
         featureId:
+          x-basename: fId
           description: "Id of the Feature that got updated"
           type: string
           format: uuid
@@ -103,6 +115,7 @@ components:
             - $ref: '#/components/schemas/MessagingStrategiesReorder'
         additionalInfo:
           description: "Any additional info, webhook headers etc"
+          nullable: true
           type: string
           additionalProperties:
             type: string
@@ -196,10 +209,10 @@ components:
       allOf:
         - $ref: "#/components/schemas/BaseRolloutStrategy"
         - type: object
-          required:
-            - id
-            - attributes
           properties:
+            name:
+              description: "strategy name"
+              type: string
             id:
               description: "strategy id"
               type: string

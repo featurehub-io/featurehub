@@ -53,7 +53,7 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
     execSupplierMock.executorService(_) >> execServiceMock
     execServiceMock.submit(_) >> { Runnable task -> task.run() }
     listener = new Dacha2CloudEventListenerImpl(cacheProvider, d2Cache, featureEnricher, register, execSupplierMock)
-    listener.init()
+    listener.started()
     serviceAccountId = UUID.randomUUID()
     apiKeyClientSide = "1234*1"
     apiKeyServerSide = "1234"

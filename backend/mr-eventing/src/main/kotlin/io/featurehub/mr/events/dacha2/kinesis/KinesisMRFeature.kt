@@ -9,13 +9,19 @@ import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.enriched.model.EnricherPing
 import io.featurehub.events.CloudEventChannelMetric
 import io.featurehub.events.CloudEventPublisher
-import io.featurehub.events.kinesis.*
+import io.featurehub.events.kinesis.KinesisAppNameProvider
+import io.featurehub.events.kinesis.KinesisCloudEventsPublisher
+import io.featurehub.events.kinesis.KinesisEventFeature
+import io.featurehub.events.kinesis.KinesisFactory
+import io.featurehub.events.kinesis.KinesisListenAllTheThings
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecycleListeners
+import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.mr.events.common.CacheMetrics
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
-import org.glassfish.hk2.api.Immediate
 import org.glassfish.jersey.internal.inject.AbstractBinder
 import java.util.*
 
@@ -25,11 +31,12 @@ class KinesisMRFeature : Feature {
 
     context.register(object: AbstractBinder() {
       override fun configure() {
-        bind(KinesisMROutboundStream::class.java).to(KinesisMROutboundStream::class.java).`in`(Immediate::class.java)
         bind(MrAppNameProvider::class.java).to(KinesisAppNameProvider::class.java).`in`(Singleton::class.java)
-        bind(KinesisListenAllTheThings::class.java).to(KinesisListenAllTheThings::class.java).`in`(Immediate::class.java)
       }
     })
+
+    LifecycleListeners.starter(KinesisMROutboundStream::class.java, context)
+    LifecycleListeners.starter(KinesisListenAllTheThings::class.java, context)
 
     return true
   }
@@ -39,7 +46,8 @@ class MrAppNameProvider : KinesisAppNameProvider {
   override fun name(): String = "management-repository"
 }
 
-class KinesisMROutboundStream @Inject constructor(kinesisFactory: KinesisFactory, cloudEventsPublisher: CloudEventPublisher) {
+@LifecyclePriority(priority = 12)
+class KinesisMROutboundStream @Inject constructor(kinesisFactory: KinesisFactory, cloudEventsPublisher: CloudEventPublisher) : LifecycleListener {
   @ConfigKey("cloudevents.outbound.kinesis.stream-name")
   private var streamName: String? = "featurehub-mr-stream"
   @ConfigKey("cloudevents.outbound.kinesis.randomise-partition-key")

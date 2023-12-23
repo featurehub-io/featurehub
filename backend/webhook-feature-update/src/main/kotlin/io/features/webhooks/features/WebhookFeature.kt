@@ -13,6 +13,9 @@ import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.lifecycle.BaggageChecker
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecycleListeners
+import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.utils.FallbackPropertyConfig
 import io.featurehub.webhook.events.WebhookEnvironmentResult
 import io.featurehub.webhook.events.WebhookMethod
@@ -45,11 +48,8 @@ class WebhookFeature : Feature {
     if (enabled) {
       log.info("webhooks: registering for outbound feature webhook processing")
       context.register(EnricherListenerFeature::class.java)
-      context.register(object: AbstractBinder() {
-        override fun configure() {
-          bind(WebhookEnricherListener::class.java).to(WebhookEnricherListener::class.java).`in`(Immediate::class.java)
-        }
-      })
+
+      LifecycleListeners.starter(WebhookEnricherListener::class.java, context)
     }
 
     return true
@@ -61,12 +61,13 @@ class WebhookFeature : Feature {
   }
 }
 
+@LifecyclePriority(priority = 12)
 class WebhookEnricherListener @Inject constructor(
   cloudEventReceiverRegistry: CloudEventReceiverRegistry,
   private val cloudEventPublisher: CloudEventPublisher,
   private val baggageSource: BaggageChecker,
   private val encryptionService: WebhookEncryptionService
-  ) {
+  ) : LifecycleListener {
   private val client: Client
 
   @ConfigKey("webhooks.features.timeout.connect")

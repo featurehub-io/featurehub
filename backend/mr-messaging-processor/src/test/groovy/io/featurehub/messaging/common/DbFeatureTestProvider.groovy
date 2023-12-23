@@ -8,6 +8,7 @@ import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.mr.model.FeatureValueType
+import org.apache.commons.lang3.RandomStringUtils
 
 import java.time.LocalDateTime
 
@@ -29,10 +30,12 @@ class DbFeatureTestProvider {
     portfolio.setId(portfolioId)
     def application = new DbApplication.Builder()
       .portfolio(portfolio)
+      .name(RandomStringUtils.randomAlphanumeric(10))
       .build()
     application.setId(applicationId)
     def environment = new DbEnvironment.Builder()
       .parentApplication(application)
+      .name(RandomStringUtils.randomAlphanumeric(10))
       .build()
     environment.setId(environmentId)
 
@@ -44,6 +47,7 @@ class DbFeatureTestProvider {
     def feature = new DbApplicationFeature.Builder()
       .name(featureName)
       .key(featureKey)
+      .parentApplication(application)
       .valueType(FeatureValueType.STRING)
       .build()
     feature.setId(featureId)

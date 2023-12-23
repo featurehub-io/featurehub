@@ -5,7 +5,7 @@
   <groupId>io.featurehub.messaging</groupId>
   <artifactId>mr-messaging-processor</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>messaging-processor</name>
+  <name>mr-messaging-processor</name>
 
   <description>
     This artifact simply deals with extracting the feature messaging update cloud events and dropping them into the cloud event

@@ -2,13 +2,13 @@ package io.featurehub.dacha;
 
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
-import cd.connect.lifecycle.ApplicationLifecycleManager;
-import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.dacha.model.CacheManagementMessage;
 import io.featurehub.dacha.model.CacheRequestType;
 import io.featurehub.dacha.model.CacheState;
 import io.featurehub.health.HealthSource;
 import io.featurehub.jersey.config.CacheJsonMapper;
+import io.featurehub.lifecycle.ApplicationLifecycleManager;
+import io.featurehub.lifecycle.LifecycleStatus;
 import io.featurehub.metrics.MetricsCollector;
 import io.featurehub.publish.ChannelNames;
 import io.featurehub.publish.NATSSource;
@@ -17,21 +17,18 @@ import io.featurehub.utils.FallbackPropertyConfig;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
 import io.nats.client.MessageHandler;
-import io.opentelemetry.context.Context;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CacheManager implements MessageHandler, HealthSource {
   private static final Logger log = LoggerFactory.getLogger(CacheManager.class);
@@ -111,11 +108,12 @@ public class CacheManager implements MessageHandler, HealthSource {
 
     requestCompleteCache(false);
 
-    ApplicationLifecycleManager.registerListener(trans -> {
-      if (trans.next == LifecycleStatus.TERMINATING) {
-        shutdown();
-      }
-    });
+    ApplicationLifecycleManager.Companion.registerListener(
+        trans -> {
+          if (trans.getNext() == LifecycleStatus.TERMINATING) {
+            shutdown();
+          }
+        });
   }
 
   void shutdown() {

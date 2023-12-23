@@ -1,8 +1,5 @@
 package io.featurehub.dacha2
 
-import cd.connect.app.config.DeclaredConfigResolver
-import cd.connect.lifecycle.ApplicationLifecycleManager
-import cd.connect.lifecycle.LifecycleStatus
 import io.featurehub.dacha2.client.Dacha2MRClientFeature
 import io.featurehub.events.CloudEventsFeature
 import io.featurehub.events.kinesis.KinesisEventFeature
@@ -13,7 +10,6 @@ import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.publish.NATSFeature
 import io.featurehub.rest.Info
-import io.featurehub.utils.FallbackPropertyConfig
 import org.glassfish.jersey.server.ResourceConfig
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -22,8 +18,6 @@ class Application {
   private val log: Logger = LoggerFactory.getLogger(Application::class.java)
 
   fun run() {
-    ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTING)
-
     // ensure migrations do not run
 //    System.setProperty("db.run-migrations", "false")
 

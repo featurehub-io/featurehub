@@ -4,20 +4,37 @@ import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.messaging.MessagingConfig
 import io.featurehub.messaging.model.*
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
+import io.featurehub.messaging.service.MappedSupportedConfig
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import jakarta.inject.Inject
 import org.slf4j.LoggerFactory
 import java.time.ZoneOffset
-import java.util.ArrayList
+import java.util.*
 
 class FeatureMessagingConverterImpl @Inject constructor(
   private val messageConfig: MessagingConfig,
   private val publisher: FeatureMessagingCloudEventPublisher
 ) : FeatureMessagingConverter{
+  val hooks = mapOf(Pair("integration.slack", "integration/slack-v1")).map {
+    val prefix = MappedSupportedConfig.prefix(it.key)
+    if (prefix != null) MappedSupportedConfig(it.value, prefix, it.key) else null
+  }.filterNotNull()
+
+  init {
+    hooks.forEach {
+
+    }
+  }
+
   override fun publish(featureMessagingParameter: FeatureMessagingParameter) {
-    if (messageConfig.enabled)
-      publisher.publishFeatureMessagingUpdate(toFeatureMessagingUpdate(featureMessagingParameter))
+    if (messageConfig.enabled) {
+      val webhookUsage = featureMessagingParameter.featureValue.environment.webhookEnvironmentInfo ?: mapOf()
+
+      if (hooks.isNotEmpty()) {
+        publisher.publishFeatureMessagingUpdate(hooks, webhookUsage) { -> toFeatureMessagingUpdate(featureMessagingParameter) }
+      }
+    }
   }
 
   override fun toFeatureMessagingUpdate(
@@ -32,13 +49,19 @@ class FeatureMessagingConverterImpl @Inject constructor(
       return FeatureMessagingUpdate()
         .featureKey(featureValue.feature.key)
         .featureId(featureValue.feature.id)
+        .featureName(featureValue.feature.name)
         .featureValueId(featureValue.id!!)
+        .environmentName(environment.name)
         .environmentId(environment.id)
+        .whoUpdatedId(featureValue.whoUpdated.id ?: UUID(0,0))
         .whoUpdated(featureValue.whoUpdated.name ?: "")
         .whenUpdated(featureValue.whenUpdated.atOffset(ZoneOffset.UTC))
         .applicationId(parentApplication.id)
+        .appName(parentApplication.name)
         .portfolioId(portfolio.id)
+        .portfolioName(portfolio.name)
         .organizationId(portfolio.organization.id)
+        .orgName(portfolio.organization.name)
         .featureValueType(featureValue.feature.valueType)
         .let {
           val defaultValueUpdate = featureMessagingParameter.defaultValueUpdate
@@ -110,6 +133,7 @@ class FeatureMessagingConverterImpl @Inject constructor(
     val attributes = rolloutStrategy.attributes
     return MessagingRolloutStrategy()
       .id(rolloutStrategy.id!!)
+      .name(rolloutStrategy.name)
       .percentage(rolloutStrategy.percentage)
       .percentageAttributes(rolloutStrategy.percentageAttributes)
       .value(rolloutStrategy.value)

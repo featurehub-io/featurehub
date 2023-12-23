@@ -1,10 +1,10 @@
 package io.featurehub.dacha
 
-import cd.connect.lifecycle.ApplicationLifecycleManager
-import cd.connect.lifecycle.LifecycleStatus
 import io.featurehub.events.CloudEventsFeature
 import io.featurehub.health.MetricsHealthRegistration
 import io.featurehub.jersey.FeatureHubJerseyHost
+import io.featurehub.lifecycle.ApplicationLifecycleManager
+import io.featurehub.lifecycle.LifecycleStatus
 import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.publish.NATSFeature
 import io.featurehub.rest.Info

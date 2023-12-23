@@ -9,6 +9,8 @@ import io.featurehub.enriched.model.EnricherPing
 import io.featurehub.events.CloudEventChannelMetric
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.nats.NatsCloudEventsPublisher
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.mr.events.common.CacheMetrics
 import io.featurehub.mr.events.common.Dacha2Config
 import io.featurehub.publish.NATSSource
@@ -18,7 +20,8 @@ import jakarta.inject.Inject
 /**
  * This broadcasts events specifically for the consumption of Edge (which is just feature updates)
  */
-class NatsCloudEventsPublishers @Inject constructor(nats: NATSSource, cloudEventsPublisher: CloudEventPublisher) {
+@LifecyclePriority(priority = 10)
+class NatsCloudEventsPublishers @Inject constructor(nats: NATSSource, cloudEventsPublisher: CloudEventPublisher) : LifecycleListener {
   @ConfigKey("cloudevents.mr-edge.nats.channel-name")
   private var edgeChannelName: String? = "featurehub/mr-edge-channel"
   @ConfigKey("cloudevents.mr-dacha2.nats.channel-name")

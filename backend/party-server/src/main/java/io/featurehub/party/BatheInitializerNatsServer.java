@@ -1,8 +1,8 @@
 package io.featurehub.party;
 
 import bathe.BatheInitializer;
-import cd.connect.lifecycle.ApplicationLifecycleManager;
-import cd.connect.lifecycle.LifecycleStatus;
+import io.featurehub.lifecycle.ApplicationLifecycleManager;
+import io.featurehub.lifecycle.LifecycleStatus;
 import io.featurehub.utils.FallbackPropertyConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,12 +72,13 @@ class NatsRunner implements Runnable {
         if (line.contains("Error listening on port")) {
           log.error("Unable to start NATS server");
         } else if (line.contains("Server is ready")) {
-          ApplicationLifecycleManager.registerListener(trans -> {
-            if (trans.next == LifecycleStatus.TERMINATING) {
-              log.info("shutting down nats-server");
-              process.destroyForcibly();
-            }
-          });
+          ApplicationLifecycleManager.Companion.registerListener(
+              trans -> {
+                if (trans.getNext() == LifecycleStatus.TERMINATING) {
+                  log.info("shutting down nats-server");
+                  process.destroyForcibly();
+                }
+              });
         }
       }
 
