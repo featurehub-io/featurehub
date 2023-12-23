@@ -42,7 +42,7 @@ This would mean for example that you assume or code for all features being false
 This usually entails that you have a JSON blob representing your feature flags that is available somewhere. It could be as part of the base docker image, loaded as a configmap or secret in Kubernetes, available in an S3 or Cloud Storage bucket, in a key storage (e.g. Redis, Memcache or DynamoDB) or otherwise. The SDKs have a method of loading external state into the SDK.
 
 All SDK's also support xref:capabilities-explained.adoc#_feature_interceptors[_interceptors_] - which are ways to override how features are determined, so they can be used to provide
-state. One example of an interceptor for example is where OpenTelemetry is used and the Baggage is examined for state pre-set
+state. One example of an interceptor  is where OpenTelemetry is used and the Baggage is examined for state pre-set
 from upstream sources. 
 
 === Features become available after startup
