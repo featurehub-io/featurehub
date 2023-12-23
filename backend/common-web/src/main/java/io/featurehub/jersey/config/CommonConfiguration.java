@@ -2,6 +2,7 @@ package io.featurehub.jersey.config;
 
 import cd.connect.openapi.support.OpenApiEnumProvider;
 import io.featurehub.jersey.OffsetDateTimeQueryProvider;
+import io.featurehub.lifecycle.LifecycleListenerFeature;
 import io.featurehub.rest.WebHeaderAuditLogger;
 import io.featurehub.utils.FallbackPropertyConfig;
 import jakarta.ws.rs.core.Feature;
@@ -30,6 +31,7 @@ public class CommonConfiguration implements Feature {
     config.register(LocalExceptionMapper.class);
     config.register(OffsetDateTimeQueryProvider.class);
     config.register(OpenApiEnumProvider.class);
+    config.register(LifecycleListenerFeature.class);
 
     // only wire this up if the config is actually there
     if (FallbackPropertyConfig.Companion.getConfig(WebHeaderAuditLogger.Companion.getCONFIG_KEY())

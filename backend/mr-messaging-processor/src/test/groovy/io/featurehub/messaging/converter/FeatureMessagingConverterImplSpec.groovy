@@ -52,6 +52,7 @@ class FeatureMessagingConverterImplSpec extends Specification {
   def toMessagingRolloutStrategy(RolloutStrategy rolloutStrategy) {
     return new MessagingRolloutStrategy()
       .id(rolloutStrategy.id)
+      .name(rolloutStrategy.name)
       .percentage(rolloutStrategy.percentage)
       .percentageAttributes(rolloutStrategy.percentageAttributes)
       .value(rolloutStrategy.value)

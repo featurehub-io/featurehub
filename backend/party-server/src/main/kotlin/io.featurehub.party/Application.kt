@@ -9,6 +9,10 @@ import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecycleListeners
+import io.featurehub.lifecycle.LifecyclePriority
+import io.featurehub.lifecycle.LifecycleStarted
 import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
 import io.featurehub.mr.dacha2.Dacha2Feature
@@ -18,11 +22,22 @@ import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info.Companion.APPLICATION_NAME_PROPERTY
 import io.features.webhooks.features.WebhookFeature
+import jakarta.inject.Inject
 import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.spi.Container
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+@LifecyclePriority(priority = 2)
+class PartyInjectorStarter @Inject constructor(
+  private val dachaServiceRegistry: DachaClientServiceRegistry,
+  private val apiKeyService: DachaApiKeyService) : LifecycleStarted {
+  override fun started() {
+    // make sure Edge talks internally to Dacha for the current cache
+    dachaServiceRegistry.registerApiKeyService(ChannelConstants.DEFAULT_CACHE_NAME, apiKeyService )
+  }
+}
 
 class Application {
   private val log = LoggerFactory.getLogger(io.featurehub.Application::class.java)
@@ -49,19 +64,7 @@ class Application {
       config.register(WebhookFeature::class.java)
     }
 
-    config.register(object: ContainerLifecycleListener {
-      override fun onStartup(container: Container) {
-        FeatureHubJerseyHost.withServiceLocator(container) { injector ->
-          // make sure Edge talks directly to Dacha for the current cache
-          val dachaServiceRegistry = injector.getService(DachaClientServiceRegistry::class.java)
-          dachaServiceRegistry.registerApiKeyService(ChannelConstants.DEFAULT_CACHE_NAME, injector.getService(DachaApiKeyService::class.java) )
-        }
-      }
-
-      override fun onReload(container: Container?) {}
-
-      override fun onShutdown(container: Container?) {}
-    })
+    LifecycleListeners.starter(PartyInjectorStarter::class.java, config)
 
     registerMetrics(config)
 

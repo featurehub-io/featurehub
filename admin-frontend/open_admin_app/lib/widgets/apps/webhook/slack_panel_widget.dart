@@ -16,7 +16,7 @@ class SlackPanelWidget extends StatefulWidget {
 
 class SlackPanelWidgetState extends State<SlackPanelWidget> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _apiKey = TextEditingController();
+  final TextEditingController _token = TextEditingController();
   final TextEditingController _channelName = TextEditingController();
   bool _enabled = false;
 
@@ -38,7 +38,7 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
     final env = widget.env.environment?.webhookEnvironmentInfo ?? {};
     final prefix = widget.env.type!.envPrefix;
     _enabled = env['${prefix}.enabled'] == 'true';
-    _apiKey.text = env['${prefix}.api_key'] ?? '';
+    _token.text = env['${prefix}.token'] ?? '';
     _channelName.text = env['${prefix}.channel_name'] ?? '';
   }
 
@@ -70,17 +70,17 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                     Row(children: [
                       Expanded(
                           child: TextFormField(
-                              controller: _apiKey,
+                              controller: _token,
                               autofocus: true,
                               textInputAction: TextInputAction.next,
-                              obscureText: _apiKey.text == 'ENCRYPTED-TEXT',
+                              obscureText: _token.text == 'ENCRYPTED-TEXT',
                               obscuringCharacter: '*',
-                              readOnly: _apiKey.text == 'ENCRYPTED-TEXT',
+                              readOnly: _token.text == 'ENCRYPTED-TEXT',
                               decoration: const InputDecoration(
-                                  labelText: 'Slack API Key'),
+                                  labelText: 'Slack OAuth Token'),
                               validator: ((v) {
                                 if (v == null || v.isEmpty) {
-                                  return 'Please enter a Slack API Key';
+                                  return 'Please enter a Slack Token';
                                 }
                                 return null;
                               }))),
@@ -107,7 +107,7 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                       if (widget.bloc.mrBloc.identityProviders.capabilityWebhookEncryption &&
                           widget.bloc.mrBloc.identityProviders.capabilityWebhookDecryption)
                       Column(children: [
-                        if (_apiKey.text == 'ENCRYPTED-TEXT')
+                        if (_token.text == 'ENCRYPTED-TEXT')
                           FilledButton(
                               onPressed: () => widget.bloc
                                   .decryptEncryptedFields(
@@ -139,16 +139,16 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
   }
 
   bool _saveable() {
-    return _apiKey.text.trim().isNotEmpty && _channelName.text.trim().isNotEmpty;
+    return _token.text.trim().isNotEmpty && _channelName.text.trim().isNotEmpty;
   }
 
   Future<void> _updateData() async {
     final env = widget.env.environment?.webhookEnvironmentInfo ?? {};
     final prefix = widget.env.type!.envPrefix;
     env['${prefix}.enabled'] = _enabled.toString();
-    env['${prefix}.api_key'] = _apiKey.text;
+    env['${prefix}.token'] = _token.text;
     env['${prefix}.channel_name'] = _channelName.text;
-    env['${prefix}.encrypt'] = '${prefix}.api_key';
+    env['${prefix}.encrypt'] = '${prefix}.token';
     widget.bloc.mrBloc.addSnackbar(Text("Saving Slack webhook"));
     await widget.bloc.updateEnvironmentWithWebhookData(
         widget.env.environment!, env, "$prefix.");

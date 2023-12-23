@@ -1,0 +1,302 @@
+openapi: 3.0.1
+info:
+  title: Feature Messaging API
+  description: This is an OpenAPI document for featurehub messaging data. It is used
+    to publish feature updates to messaging listeners.
+  version: 1.2.0
+servers:
+- url: /
+paths:
+  /v2/fake:
+    get:
+      tags:
+      - FeatureMessagingService
+      description: "this is just a holder, it is not generated"
+      operationId: fakeApi
+      responses:
+        "200":
+          description: yay
+components:
+  schemas:
+    FeatureMessagingUpdate:
+      type: object
+      properties:
+        targetDestination:
+          type: string
+          description: "If there is a specific target for the data, everything else\
+            \ _should_ ignore it"
+        hostUrl:
+          type: string
+        whenUpdated:
+          type: string
+          format: date-time
+        whoUpdatedId:
+          type: string
+          description: The ID of the person who updated the feature
+          format: uuid
+        whoUpdated:
+          type: string
+          description: Name of the user who made the change to the feature
+        featureValueId:
+          type: string
+          description: Id of Feature value that got updated
+          format: uuid
+        featureValueType:
+          description: Type of the feature value
+          allOf:
+          - $ref: '#/components/schemas/FeatureValueType'
+        featureValueUpdated:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/MessagingFeatureValueUpdate'
+        lockUpdated:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/MessagingLockUpdate'
+        retiredUpdated:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/MessagingRetiredUpdate'
+        strategiesUpdated:
+          type: array
+          description: Strategies changes
+          nullable: true
+          items:
+            $ref: '#/components/schemas/MessagingStrategyUpdate'
+        strategiesReordered:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/MessagingStrategiesReorder'
+        additionalInfo:
+          type: object
+          additionalProperties:
+            type: string
+          description: "Any additional info, webhook headers etc"
+          nullable: true
+        eName:
+          type: string
+          description: environmentName
+        eId:
+          type: string
+          description: environmentId
+          format: uuid
+        pName:
+          type: string
+          description: portfolioName
+        pId:
+          type: string
+          description: portfolioId
+          format: uuid
+        oName:
+          type: string
+          description: orgName
+        oId:
+          type: string
+          description: organizationId
+          format: uuid
+        aName:
+          type: string
+          description: appName
+        aId:
+          type: string
+          description: applicationId
+          format: uuid
+        fName:
+          type: string
+          description: (featureName) - The name of the feature
+        fKey:
+          type: string
+          description: (featureKey) - Feature key that got updated
+        fId:
+          type: string
+          description: (featureId) - Id of the Feature that got updated
+          format: uuid
+      description: Changes made to a specific feature and who changed it
+    MessagingFeatureValueUpdate:
+      required:
+      - previous
+      - updated
+      type: object
+      properties:
+        updated:
+          description: Updated feature value
+        previous:
+          description: Previous feature value
+      description: "Feature value changes, if any"
+    MessagingLockUpdate:
+      required:
+      - previous
+      - updated
+      type: object
+      properties:
+        updated:
+          type: boolean
+          description: Updated lock value
+        previous:
+          type: boolean
+          description: Previous lock value
+      description: "Lock value changes, if any"
+    MessagingRetiredUpdate:
+      required:
+      - previous
+      - updated
+      type: object
+      properties:
+        updated:
+          type: boolean
+          description: Updated retired value
+        previous:
+          type: boolean
+          description: Previous retired value
+      description: "Retired value changes, if any"
+    MessagingStrategiesReorder:
+      required:
+      - previous
+      - reordered
+      type: object
+      properties:
+        reordered:
+          type: array
+          description: Reordered strategies
+          items:
+            $ref: '#/components/schemas/MessagingRolloutStrategy'
+        previous:
+          type: array
+          description: Previous strategies
+          items:
+            $ref: '#/components/schemas/MessagingRolloutStrategy'
+      description: "Strategies reorders, if any"
+    MessagingStrategyUpdate:
+      required:
+      - updateType
+      type: object
+      properties:
+        updateType:
+          $ref: '#/components/schemas/StrategyUpdateType'
+        oldStrategy:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/MessagingRolloutStrategy'
+        newStrategy:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/MessagingRolloutStrategy'
+    StrategyUpdateType:
+      type: string
+      enum:
+      - ADDED
+      - CHANGED
+      - DELETED
+    MessagingRolloutStrategy:
+      description: Updated rollout strategy
+      allOf:
+      - $ref: '#/components/schemas/BaseRolloutStrategy'
+      - type: object
+        properties:
+          name:
+            type: string
+            description: strategy name
+          id:
+            type: string
+            description: strategy id
+          attributes:
+            type: array
+            items:
+              $ref: '#/components/schemas/MessagingRolloutStrategyAttribute'
+    MessagingRolloutStrategyAttribute:
+      allOf:
+      - $ref: '#/components/schemas/RolloutStrategyAttribute'
+      - required:
+        - conditional
+        - fieldName
+        - type
+        type: object
+    FeatureValueType:
+      type: string
+      enum:
+      - BOOLEAN
+      - STRING
+      - NUMBER
+      - JSON
+    BaseStrategy:
+      properties:
+        percentage:
+          type: integer
+          description: value between 0 and 1000000 - for four decimal places
+          nullable: true
+        percentageAttributes:
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you\
+            \ can use one or more attributes defined here"
+          nullable: true
+          items:
+            type: string
+          default: []
+        attributes:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RolloutStrategyAttribute'
+          default: []
+      description: "if the feature in an environment is different from its default,\
+        \ this will be the reason for it. a rollout strategy is defined at the Application\
+        \ level and then applied to a specific feature value. When they are copied\
+        \ to the cache layer they are cloned and the feature value for that strategy\
+        \ is inserted into the clone and those are published."
+    BaseRolloutStrategy:
+      allOf:
+      - $ref: '#/components/schemas/BaseStrategy'
+      - type: object
+        properties:
+          value:
+            description: when we attach the RolloutStrategy for Dacha or SSE this
+              lets us push the value out. Only visible in SDK and SSE Edge.
+            nullable: true
+    RolloutStrategyAttribute:
+      required:
+      - conditional
+      - fieldName
+      - type
+      properties:
+        id:
+          type: string
+          description: An ID that needs to exist for validation
+          nullable: true
+        conditional:
+          $ref: '#/components/schemas/RolloutStrategyAttributeConditional'
+        fieldName:
+          type: string
+        values:
+          type: array
+          description: the value(s) associated with this rule
+          items:
+            $ref: '#/components/schemas/RolloutStrategyArrayType'
+          default: []
+        type:
+          $ref: '#/components/schemas/RolloutStrategyFieldType'
+    RolloutStrategyArrayType:
+      description: values depend on the field type
+    RolloutStrategyFieldType:
+      type: string
+      enum:
+      - STRING
+      - SEMANTIC_VERSION
+      - NUMBER
+      - DATE
+      - DATETIME
+      - BOOLEAN
+      - IP_ADDRESS
+    RolloutStrategyAttributeConditional:
+      type: string
+      enum:
+      - EQUALS
+      - ENDS_WITH
+      - STARTS_WITH
+      - GREATER
+      - GREATER_EQUALS
+      - LESS
+      - LESS_EQUALS
+      - NOT_EQUALS
+      - INCLUDES
+      - EXCLUDES
+      - REGEX

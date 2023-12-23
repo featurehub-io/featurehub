@@ -1,8 +1,6 @@
 package io.featurehub.edge
 
 import cd.connect.app.config.DeclaredConfigResolver
-import cd.connect.lifecycle.ApplicationLifecycleManager
-import cd.connect.lifecycle.LifecycleStatus
 import io.featurehub.app.db.utils.CommonDbFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
@@ -18,8 +16,6 @@ class Application {
   private val log: Logger = LoggerFactory.getLogger(Application::class.java)
 
   fun run() {
-    ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTING)
-
     DeclaredConfigResolver.resolve(this)
 
     // ensure migrations do not run

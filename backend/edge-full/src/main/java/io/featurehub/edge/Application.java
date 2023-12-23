@@ -1,14 +1,14 @@
 package io.featurehub.edge;
 
 import cd.connect.app.config.DeclaredConfigResolver;
-import cd.connect.lifecycle.ApplicationLifecycleManager;
-import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.dacha.api.DachaClientFeature;
 import io.featurehub.dacha.api.DachaClientServiceRegistry;
 import io.featurehub.events.CloudEventsFeature;
 import io.featurehub.events.pubsub.GoogleEventFeature;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
+import io.featurehub.lifecycle.LifecycleListener;
+import io.featurehub.lifecycle.LifecycleListeners;
 import io.featurehub.publish.NATSFeature;
 import io.featurehub.rest.CorsFilter;
 import io.featurehub.utils.FallbackPropertyConfig;
@@ -24,8 +24,6 @@ public class Application {
   private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Application.class);
 
   public void run() throws Exception {
-    ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTING);
-
     DeclaredConfigResolver.resolve(this);
 
     // we do not want telemetry enabled on Edge
@@ -46,28 +44,8 @@ public class Application {
 
       // check if we should list on a different port
     MetricsHealthRegistration.Companion.registerMetrics(config);
-
     if (FallbackPropertyConfig.Companion.getConfig("cache.name") != null) {
-      config.register(new ContainerLifecycleListener() {
-        @Override
-        public void onStartup(Container container) {
-          FeatureHubJerseyHost.Companion.withServiceLocator(container, (serviceLocator) -> {
-            DachaClientServiceRegistry registry = serviceLocator.getService(DachaClientServiceRegistry.class);
-            if (registry.getApiKeyService(FallbackPropertyConfig.Companion.getConfig("cache.name")) == null) {
-              log.error("You must configure the URL indicating where dacha is located. dacha.url.{} is missing", FallbackPropertyConfig.Companion.getConfig("cache.name"));
-              throw new RuntimeException("Cannot find dacha url, see error log");
-            }
-
-            return null;
-          });
-        }
-
-        @Override
-        public void onReload(Container container) {}
-
-        @Override
-        public void onShutdown(Container container) {}
-      });
+      LifecycleListeners.Companion.starter(ConfigureCacheApiLoader.class, config);
     }
 
     // this has a default grace period of 10 seconds
@@ -86,7 +64,6 @@ public class Application {
       new Application().run();
     } catch (Exception e) {
       log.error("Failed to start.", e);
-      ApplicationLifecycleManager.updateStatus(LifecycleStatus.TERMINATING);
       System.exit(-1);
     }
   }

@@ -1,10 +1,8 @@
 package io.featurehub.db.publish.nats
 
-import cd.connect.lifecycle.ApplicationLifecycleManager
-import cd.connect.lifecycle.LifecycleStatus
-import cd.connect.lifecycle.LifecycleTransition
-import io.featurehub.db.model.DbNamedCache
-import io.featurehub.db.model.query.QDbNamedCache
+import io.featurehub.lifecycle.LifecyclePriority
+import io.featurehub.lifecycle.LifecycleShutdown
+import io.featurehub.lifecycle.LifecycleStarted
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
 import io.featurehub.publish.ChannelConstants
@@ -19,35 +17,25 @@ import java.util.concurrent.ConcurrentHashMap
  * it is not required for Dacha2.
  */
 @Singleton
+@LifecyclePriority(priority = 5)
 class NATSSetupCacheFillers @Inject constructor(
-  cacheSource: CacheSource,
-  natsServer: NATSSource, featureUpdateListener: FeatureUpdateListener
-) {
+  private val cacheSource: CacheSource,
+  private val natsServer: NATSSource,
+  private val featureUpdateListener: FeatureUpdateListener
+): LifecycleShutdown, LifecycleStarted {
   private val namedCaches: MutableMap<String, NatsDachaCacheFiller> = ConcurrentHashMap()
 
-  init {
+  override fun shutdown() {
+    namedCaches.values.parallelStream().forEach { obj: NatsDachaCacheFiller -> obj.close() }
+  }
+
+  override fun started() {
     val id = UUID.randomUUID()
 
     // always listen to default
-    if (QDbNamedCache().findCount() == 0) {
-      namedCaches[ChannelConstants.DEFAULT_CACHE_NAME] = NatsDachaCacheFiller(
-        ChannelConstants.DEFAULT_CACHE_NAME, natsServer, id, cacheSource,
-        featureUpdateListener
-      )
-    }
-
-    QDbNamedCache().findList().forEach { nc: DbNamedCache ->
-      namedCaches[nc.cacheName] = NatsDachaCacheFiller(nc.cacheName, natsServer, id, cacheSource, featureUpdateListener)
-    }
-
-    ApplicationLifecycleManager.registerListener { trans: LifecycleTransition ->
-      if (trans.next == LifecycleStatus.TERMINATING) {
-        shutdown()
-      }
-    }
-  }
-
-  private fun shutdown() {
-    namedCaches.values.parallelStream().forEach { obj: NatsDachaCacheFiller -> obj.close() }
+    namedCaches[ChannelConstants.DEFAULT_CACHE_NAME] = NatsDachaCacheFiller(
+      ChannelConstants.DEFAULT_CACHE_NAME, natsServer, id, cacheSource,
+      featureUpdateListener
+    )
   }
 }

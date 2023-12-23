@@ -1,5 +1,6 @@
 package io.featurehub.db.publish.nats
 
+import io.featurehub.lifecycle.LifecycleListeners
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CloudEventCacheBroadcaster
 import io.featurehub.mr.events.nats.NatsCloudEventsPublishers
@@ -44,6 +45,9 @@ class NatsDachaEventingFeature : Feature {
           }
         }
       })
+
+      LifecycleListeners.starter(NATSSetupCacheFillers::class.java, context)
+      LifecycleListeners.shutdown(NATSSetupCacheFillers::class.java, context)
 
       return true
     }

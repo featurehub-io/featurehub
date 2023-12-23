@@ -13,6 +13,7 @@ import java.lang.reflect.Constructor
 @Retention(AnnotationRetention.RUNTIME)
 annotation class FeatureHubConfig(val source: String, val required: Boolean = false)
 
+
 class ConfigInjectionResolver : InjectionResolver<FeatureHubConfig> {
   override fun resolve(injectee: Injectee): Any? {
     val elem: AnnotatedElement = injectee.parent

@@ -2,9 +2,6 @@ package io.featurehub.dacha
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import cd.connect.lifecycle.ApplicationLifecycleManager
-import cd.connect.lifecycle.LifecycleStatus
-import cd.connect.lifecycle.LifecycleTransition
 import com.fasterxml.jackson.core.JsonProcessingException
 import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValue
@@ -16,6 +13,9 @@ import io.featurehub.enricher.FeatureEnricher
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.nats.NatsCloudEventQueueListener
 import io.featurehub.jersey.config.CacheJsonMapper
+import io.featurehub.lifecycle.ApplicationLifecycleManager
+import io.featurehub.lifecycle.LifecycleStatus
+import io.featurehub.lifecycle.LifecycleTransition
 import io.featurehub.metrics.MetricsCollector
 import io.featurehub.mr.model.DachaNATSRequest
 import io.featurehub.publish.ChannelConstants

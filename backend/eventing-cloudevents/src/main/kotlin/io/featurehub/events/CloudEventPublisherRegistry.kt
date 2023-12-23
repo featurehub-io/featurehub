@@ -12,6 +12,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ExecutorService
 
+
 /**
  * This is a generic publisher, it just takes cloud events messages and routes them to channels that ask for them,
  * like the reverse of the listener
@@ -100,4 +101,6 @@ class CloudEventPublisherRegistry @Inject constructor(
     val handlers = eventHandlers.getOrPut(type) { mutableListOf() }
     handlers.add(CallbackHolder(type, metric, compress, handler))
   }
+
+
 }
