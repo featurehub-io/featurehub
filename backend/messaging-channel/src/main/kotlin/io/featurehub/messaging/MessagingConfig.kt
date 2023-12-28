@@ -12,13 +12,10 @@ interface MessagingConfig {
 }
 
 class MessagingConfigImpl @Inject constructor(supplier: ExecutorSupplier) : MessagingConfig {
-  override val executor: ExecutorService?
+  override val executor: ExecutorService? = if (isEnabled()) supplier.executorService(threadPoolSize()) else null
+
   override val enabled: Boolean
     get() = isEnabled()
-
-  init {
-    executor =  if (isEnabled()) supplier.executorService(threadPoolSize()) else null
-  }
 
   companion object {
     fun isEnabled() = FallbackPropertyConfig.getConfig("messaging.publish.enabled")?.lowercase() == "true"

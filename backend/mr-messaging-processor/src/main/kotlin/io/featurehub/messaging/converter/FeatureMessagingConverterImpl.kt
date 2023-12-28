@@ -5,6 +5,7 @@ import io.featurehub.messaging.MessagingConfig
 import io.featurehub.messaging.model.*
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.messaging.service.MappedSupportedConfig
+import io.featurehub.mr.model.FeatureVersion
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import jakarta.inject.Inject
@@ -16,24 +17,12 @@ class FeatureMessagingConverterImpl @Inject constructor(
   private val messageConfig: MessagingConfig,
   private val publisher: FeatureMessagingCloudEventPublisher
 ) : FeatureMessagingConverter{
-  val hooks = mapOf(Pair("integration.slack", "integration/slack-v1")).map {
-    val prefix = MappedSupportedConfig.prefix(it.key)
-    if (prefix != null) MappedSupportedConfig(it.value, prefix, it.key) else null
-  }.filterNotNull()
-
-  init {
-    hooks.forEach {
-
-    }
-  }
 
   override fun publish(featureMessagingParameter: FeatureMessagingParameter) {
     if (messageConfig.enabled) {
       val webhookUsage = featureMessagingParameter.featureValue.environment.webhookEnvironmentInfo ?: mapOf()
 
-      if (hooks.isNotEmpty()) {
-        publisher.publishFeatureMessagingUpdate(hooks, webhookUsage) { -> toFeatureMessagingUpdate(featureMessagingParameter) }
-      }
+      publisher.publishFeatureMessagingUpdate(webhookUsage) { -> toFeatureMessagingUpdate(featureMessagingParameter) }
     }
   }
 
@@ -62,6 +51,7 @@ class FeatureMessagingConverterImpl @Inject constructor(
         .portfolioName(portfolio.name)
         .organizationId(portfolio.organization.id)
         .orgName(portfolio.organization.name)
+        .version(FeatureVersion().curr(featureMessagingParameter.versionUpdate.updated!!).prev(featureMessagingParameter.versionUpdate.previous))
         .featureValueType(featureValue.feature.valueType)
         .let {
           val defaultValueUpdate = featureMessagingParameter.defaultValueUpdate

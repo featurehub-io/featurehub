@@ -3,8 +3,12 @@ package io.featurehub.messaging.service
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 
 interface FeatureMessagingCloudEventPublisher {
+  /**
+   * This is set up by the initializer
+   */
+  fun setHooks(hooks: List<MappedSupportedConfig>)
+
   fun publishFeatureMessagingUpdate(
-    hooks: List<MappedSupportedConfig>,
     webhookEnvironmentInfo: Map<String, String>,
     converterHandler: () -> FeatureMessagingUpdate
   )

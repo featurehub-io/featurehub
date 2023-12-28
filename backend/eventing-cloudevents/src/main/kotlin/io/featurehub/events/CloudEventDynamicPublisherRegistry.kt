@@ -29,27 +29,7 @@ interface CloudEventDynamicPublisherRegistry {
    */
   fun setDefaultPublisherProvider(prefix: String)
 
-}
-
-class FakeDyn : CloudEventDynamicPublisherRegistry {
-  override fun registerDymamicPublisherProvider(
-    prefixes: List<String>,
-    callback: (params: Map<String, String>, cloudEventType: String, destination: String, destSuffix: String, metric: CloudEventChannelMetric) -> Unit
-  ) {
-    TODO("Not yet implemented")
-  }
-
-  override fun requireDynamicPublisher(
-    destination: String,
-    params: Map<String, String>,
-    cloudEventType: String
-  ): Boolean {
-    TODO("Not yet implemented")
-  }
-
-  override fun setDefaultPublisherProvider(prefix: String) {
-    TODO("Not yet implemented")
-  }
+  fun confirmDynamicPublisherExists(destination: String): Boolean
 
 }
 
@@ -68,11 +48,21 @@ class CloudEventDynamicPublisherRegistryImpl : CloudEventDynamicPublisherRegistr
     }
   }
 
-  override fun requireDynamicPublisher(destination: String, params: Map<String, String>, cloudEventType: String): Boolean {
+  private fun extractDestinationType(destination: String): String? {
     val pos = destination.indexOf("//")
 
     if (pos > 0) {
-      val type = destination.substring(0, pos + 1)
+      return destination.substring(0, pos + 2)
+    }
+
+    return null
+  }
+
+  override fun requireDynamicPublisher(destination: String, params: Map<String, String>, cloudEventType: String): Boolean {
+    val type = extractDestinationType(destination)
+    val pos = destination.indexOf("//")
+
+    if (type != null) {
       dynamicPublishers[type]?.let {
         it(params, cloudEventType, destination, destination.substring(pos+2), makeMetric(params, destination))
         return true
@@ -101,5 +91,11 @@ class CloudEventDynamicPublisherRegistryImpl : CloudEventDynamicPublisherRegistr
 
   override fun setDefaultPublisherProvider(prefix: String) {
     defaultPublisher = prefix
+  }
+
+  override fun confirmDynamicPublisherExists(destination: String): Boolean {
+    val type = extractDestinationType(destination)
+
+    return (type != null && dynamicPublishers.containsKey(type)) || defaultPublisher != null
   }
 }

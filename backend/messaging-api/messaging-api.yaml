@@ -26,6 +26,7 @@ components:
         targetDestination:
           description: "If there is a specific target for the data, everything else _should_ ignore it"
           type: string
+          nullable: true
         environmentName:
           x-basename: eName
           type: string
@@ -54,8 +55,6 @@ components:
           x-basename: aId
           type: string
           format: uuid
-        hostUrl:
-          type: string
         whenUpdated:
           type: string
           format: date-time
@@ -87,6 +86,8 @@ components:
           description: "Type of the feature value"
           allOf:
             - $ref: "#/components/schemas/FeatureValueType"
+        version:
+          $ref: "#/components/schemas/FeatureVersion"
         featureValueUpdated:
           nullable: true
           #description: "Feature value changes"
@@ -119,6 +120,19 @@ components:
           type: string
           additionalProperties:
             type: string
+    FeatureVersion:
+      type: object
+      description: "Describes the previous and current versions"
+      properties:
+        prev:
+          description: "Prior version - version we are changing"
+          type: integer
+          format: int64
+          nullable: true
+        curr:
+          description: "Current version, version we are changing to"
+          type: integer
+          format: int64
     MessagingFeatureValueUpdate:
       x-package: io.featurehub.messaging.model
       type: object

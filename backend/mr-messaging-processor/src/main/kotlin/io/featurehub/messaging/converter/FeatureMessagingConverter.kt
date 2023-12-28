@@ -13,7 +13,8 @@ data class FeatureMessagingParameter(
   val lockUpdate: SingleFeatureValueUpdate<Boolean>,
   val defaultValueUpdate: SingleNullableFeatureValueUpdate<String?>,
   val retiredUpdate: SingleFeatureValueUpdate<Boolean>,
-  val strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>
+  val strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
+  val versionUpdate: SingleNullableFeatureValueUpdate<Long>
 )
 
 interface FeatureMessagingConverter {

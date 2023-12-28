@@ -253,7 +253,8 @@ class FeatureSqlApi @Inject constructor(
       existing.whoUpdated = dbPerson
       save(existing, featureValue.version)
       publish(existing)
-      publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
+      publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates,
+        SingleNullableFeatureValueUpdate(true, historical.versionFrom, featureValue.version))
     } else {
       log.trace("update created no changes, not saving or publishing")
     }
@@ -264,11 +265,12 @@ class FeatureSqlApi @Inject constructor(
     lockUpdate: SingleFeatureValueUpdate<Boolean>,
     defaultValueUpdate: SingleNullableFeatureValueUpdate<String?>,
     retiredUpdate: SingleFeatureValueUpdate<Boolean>,
-    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>
+    strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
+    versionUpdate: SingleNullableFeatureValueUpdate<Long>
   ) {
     try {
       val featureMessagingParameter =
-        FeatureMessagingParameter(featureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates)
+        FeatureMessagingParameter(featureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates, versionUpdate)
       featureMessagingConverter.publish(featureMessagingParameter)
     } catch (e: Exception) {
       log.error("Failed to publish feature messaging update {}", featureValue, e)

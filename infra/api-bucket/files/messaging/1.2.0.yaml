@@ -25,8 +25,7 @@ components:
           type: string
           description: "If there is a specific target for the data, everything else\
             \ _should_ ignore it"
-        hostUrl:
-          type: string
+          nullable: true
         whenUpdated:
           type: string
           format: date-time
@@ -45,6 +44,8 @@ components:
           description: Type of the feature value
           allOf:
           - $ref: '#/components/schemas/FeatureValueType'
+        version:
+          $ref: '#/components/schemas/FeatureVersion'
         featureValueUpdated:
           nullable: true
           allOf:
@@ -112,6 +113,19 @@ components:
           description: (featureId) - Id of the Feature that got updated
           format: uuid
       description: Changes made to a specific feature and who changed it
+    FeatureVersion:
+      type: object
+      properties:
+        prev:
+          type: integer
+          description: Prior version - version we are changing
+          format: int64
+          nullable: true
+        curr:
+          type: integer
+          description: "Current version, version we are changing to"
+          format: int64
+      description: Describes the previous and current versions
     MessagingFeatureValueUpdate:
       required:
       - previous
