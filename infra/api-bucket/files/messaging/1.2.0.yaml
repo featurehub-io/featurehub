@@ -21,11 +21,6 @@ components:
     FeatureMessagingUpdate:
       type: object
       properties:
-        targetDestination:
-          type: string
-          description: "If there is a specific target for the data, everything else\
-            \ _should_ ignore it"
-          nullable: true
         whenUpdated:
           type: string
           format: date-time
@@ -40,12 +35,26 @@ components:
           type: string
           description: Id of Feature value that got updated
           format: uuid
+          nullable: true
+        operation:
+          description: "The basic operation performed, create a feature, update a\
+            \ feature in an environment, delete a feature"
         featureValueType:
           description: Type of the feature value
           allOf:
           - $ref: '#/components/schemas/FeatureValueType'
+        desc:
+          type: string
+          description: Feature description
+          nullable: true
+        link:
+          type: string
+          description: Link associated with feature (if any)
+          nullable: true
         version:
-          $ref: '#/components/schemas/FeatureVersion'
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/FeatureVersion'
         featureValueUpdated:
           nullable: true
           allOf:
@@ -112,7 +121,9 @@ components:
           type: string
           description: (featureId) - Id of the Feature that got updated
           format: uuid
-      description: Changes made to a specific feature and who changed it
+      description: "Changes made to a specific feature and optionally value and who\
+        \ changed it. This will currently only occur when a feature value changes,\
+        \ not on feature creation or deletion."
     FeatureVersion:
       type: object
       properties:

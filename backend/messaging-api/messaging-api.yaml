@@ -20,13 +20,9 @@ components:
       x-cloudevent-subject: io.featurehub.events.messaging
       x-publish-include: messaging
       x-package: io.featurehub.messaging.model
-      description: "Changes made to a specific feature and who changed it"
+      description: "Changes made to a specific feature and optionally value and who changed it. This will currently only occur when a feature value changes, not on feature creation or deletion."
       type: object
       properties:
-        targetDestination:
-          description: "If there is a specific target for the data, everything else _should_ ignore it"
-          type: string
-          nullable: true
         environmentName:
           x-basename: eName
           type: string
@@ -82,12 +78,25 @@ components:
           description: "Id of Feature value that got updated"
           type: string
           format: uuid
+          nullable: true
+        operation:
+          description: "The basic operation performed, create a feature, update a feature in an environment, delete a feature"
         featureValueType:
           description: "Type of the feature value"
           allOf:
             - $ref: "#/components/schemas/FeatureValueType"
+        desc:
+          description: "Feature description"
+          nullable: true
+          type: string
+        link:
+          description: "Link associated with feature (if any)"
+          nullable: true
+          type: string
         version:
-          $ref: "#/components/schemas/FeatureVersion"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/FeatureVersion"
         featureValueUpdated:
           nullable: true
           #description: "Feature value changes"

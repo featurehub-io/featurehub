@@ -53,6 +53,8 @@ class FeatureMessagingConverterImpl @Inject constructor(
         .orgName(portfolio.organization.name)
         .version(FeatureVersion().curr(featureMessagingParameter.versionUpdate.updated!!).prev(featureMessagingParameter.versionUpdate.previous))
         .featureValueType(featureValue.feature.valueType)
+        .desc(featureValue.feature.description)
+        .link(featureValue.feature.link)
         .let {
           val defaultValueUpdate = featureMessagingParameter.defaultValueUpdate
           val defaultValueUpdated = defaultValueUpdate.updated

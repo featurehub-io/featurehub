@@ -170,6 +170,7 @@ class FeatureSqlApi @Inject constructor(
 
     save(dbFeatureValue, null)
     publish(dbFeatureValue)
+    publishFirstRecord(dbFeatureValue, featureValue)
 
     return convertUtils.toFeatureValue(dbFeatureValue)
   }
@@ -207,12 +208,36 @@ class FeatureSqlApi @Inject constructor(
 
       save(existing, featureValue.version)
       publish(existing)
+      publishFirstRecord(existing, featureValue)
     } else {
       // saving is done inside here as it detects it
       updateSelectively(featureValue, person, existing, dbPerson, historical, changingDefaultValue, updatingLock)
     }
 
     return convertUtils.toFeatureValue(existing)
+  }
+
+  /**
+   * This happens because we have never published this record before, so we need to gather it all up into a
+   * brand new message
+   */
+  internal fun publishFirstRecord(existing: DbFeatureValue, featureValue: FeatureValue) {
+    val lockUpdate = SingleFeatureValueUpdate(hasChanged = featureValue.locked, updated = featureValue.locked, previous = false)
+    val defaultValueUpdate = if (existing.feature.valueType == FeatureValueType.BOOLEAN)
+      SingleNullableFeatureValueUpdate<String?>(hasChanged = existing.defaultValue !== "false", previous = "false", updated = existing.defaultValue)
+      else SingleNullableFeatureValueUpdate<String?>(hasChanged = existing.defaultValue !== null, previous = null, updated = existing.defaultValue)
+    val strategyUpdates = MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>()
+    featureValue.rolloutStrategies?.let { rs ->
+      strategyUpdates.hasChanged = rs.isNotEmpty()
+
+      rs.forEach { strategy ->
+        strategyUpdates.updated.add(RolloutStrategyUpdate(type = "added", new = strategy))
+      }
+    }
+    val retiredUpdate = SingleFeatureValueUpdate(hasChanged = featureValue.retired, updated = featureValue.retired, previous = false)
+    publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates,
+      SingleNullableFeatureValueUpdate(true, featureValue.version, null))
+
   }
 
   @Throws(OptimisticLockingException::class, FeatureApi.NoAppropriateRole::class)
@@ -254,7 +279,7 @@ class FeatureSqlApi @Inject constructor(
       save(existing, featureValue.version)
       publish(existing)
       publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates,
-        SingleNullableFeatureValueUpdate(true, historical.versionFrom, featureValue.version))
+        SingleNullableFeatureValueUpdate(true, featureValue.version, historical.versionFrom))
     } else {
       log.trace("update created no changes, not saving or publishing")
     }
