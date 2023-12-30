@@ -6,6 +6,8 @@ import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
 import io.featurehub.db.api.*
 import io.featurehub.db.listener.FeatureUpdateBySDKApi
+import io.featurehub.db.messaging.FeatureMessagingParameter
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbAcl
 import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbEnvironment
@@ -15,9 +17,6 @@ import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.query.*
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.db.utils.EnvironmentUtils
-import io.featurehub.messaging.converter.FeatureMessagingConverter
-import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
-import io.featurehub.messaging.converter.FeatureMessagingParameter
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
 import jakarta.inject.Inject
@@ -61,7 +60,7 @@ class FeatureSqlApi @Inject constructor(
   private val convertUtils: Conversions,
   private val cacheSource: CacheSource,
   private val rolloutStrategyValidator: RolloutStrategyValidator,
-  private val featureMessagingConverter: FeatureMessagingConverter,
+  private val featureMessagePublisher: FeatureMessagingPublisher,
   private val featureGroupApi: CacheSourceFeatureGroupApi,
 ) : FeatureApi, FeatureUpdateBySDKApi {
 
@@ -296,7 +295,7 @@ class FeatureSqlApi @Inject constructor(
     try {
       val featureMessagingParameter =
         FeatureMessagingParameter(featureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates, versionUpdate)
-      featureMessagingConverter.publish(featureMessagingParameter)
+      featureMessagePublisher.publish(featureMessagingParameter)
     } catch (e: Exception) {
       log.error("Failed to publish feature messaging update {}", featureValue, e)
     }

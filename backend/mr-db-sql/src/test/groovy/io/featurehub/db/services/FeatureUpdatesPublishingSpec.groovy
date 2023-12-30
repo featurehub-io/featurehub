@@ -5,18 +5,17 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.RolloutStrategyValidator
+import io.featurehub.db.messaging.FeatureMessagingParameter
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
-import io.featurehub.messaging.converter.FeatureMessagingConverter
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
-import io.featurehub.messaging.converter.FeatureMessagingParameter
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.CreateEnvironment
 import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.CreatePortfolio
 import io.featurehub.mr.model.Environment
-import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.RoleType
@@ -24,7 +23,6 @@ import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
-import io.featurehub.encryption.WebhookEncryptionService
 
 class FeatureUpdatesPublishingSpec extends Base2Spec {
   PortfolioSqlApi portfolioSqlApi
@@ -38,7 +36,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
   RolloutStrategyValidator rsValidator
   PersonFeaturePermission perms
   RolloutStrategyValidator rsv
-  FeatureMessagingConverter featureMessagingCloudEventPublisher
+  FeatureMessagingPublisher featureMessagingCloudEventPublisher
   UUID envIdApp1
   UUID appId
 

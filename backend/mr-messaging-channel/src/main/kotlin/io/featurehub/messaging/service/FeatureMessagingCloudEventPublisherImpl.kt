@@ -2,6 +2,8 @@ package io.featurehub.messaging.service
 
 import io.cloudevents.core.builder.CloudEventBuilder
 import io.featurehub.db.api.RolloutStrategyUpdate
+import io.featurehub.db.messaging.FeatureMessagingParameter
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.events.CloudEventDynamicPublisherRegistry
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.DynamicCloudEventDestination
@@ -48,7 +50,7 @@ class FeatureMessagingCloudEventInitializer @Inject constructor(publisher: Featu
 open class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
   private val cloudEventPublisher: CloudEventPublisher,
   private val supplier: ExecutorSupplier
-) : FeatureMessagingCloudEventPublisher {
+) : FeatureMessagingCloudEventPublisher, FeatureMessagingPublisher {
   private val log: Logger = LoggerFactory.getLogger(FeatureMessagingCloudEventPublisherImpl::class.java)
   private val hooks = mutableListOf<DynamicCloudEventDestination>();
   private var executor: ExecutorService? = null

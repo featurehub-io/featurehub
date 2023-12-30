@@ -4,6 +4,7 @@ import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.api.SingleNullableFeatureValueUpdate
+import io.featurehub.db.messaging.FeatureMessagingParameter
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.messaging.model.MessagingRolloutStrategy

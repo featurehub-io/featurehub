@@ -1,11 +1,10 @@
-package io.featurehub.messaging.service
+package io.featurehub.db.messaging
 
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.api.SingleNullableFeatureValueUpdate
 import io.featurehub.db.model.DbFeatureValue
-import io.featurehub.events.DynamicCloudEventDestination
 import io.featurehub.mr.model.RolloutStrategy
 
 data class FeatureMessagingParameter(
@@ -17,13 +16,6 @@ data class FeatureMessagingParameter(
   val versionUpdate: SingleNullableFeatureValueUpdate<Long>
 )
 
-interface FeatureMessagingCloudEventPublisher {
-  /**
-   * This is set up by the initializer
-   */
-  fun setHooks(hooks: List<DynamicCloudEventDestination>)
-
-  val isEnabled: Boolean
-
+interface FeatureMessagingPublisher {
   fun publish(featureMessagingParameter: FeatureMessagingParameter)
 }

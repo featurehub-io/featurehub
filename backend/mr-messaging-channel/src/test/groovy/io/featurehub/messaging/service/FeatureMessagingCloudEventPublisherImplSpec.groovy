@@ -3,11 +3,11 @@ package io.featurehub.messaging.service
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.api.SingleNullableFeatureValueUpdate
+import io.featurehub.db.messaging.FeatureMessagingParameter
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.events.CloudEventDynamicPublisherRegistry
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.DynamicCloudEventDestination
-import io.featurehub.events.DynamicCloudEventDestinationMapper
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.messaging.model.MessagingFeatureValueUpdate
 import io.featurehub.utils.ExecutorSupplier

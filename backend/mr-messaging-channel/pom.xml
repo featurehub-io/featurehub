@@ -3,9 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub.messaging</groupId>
-  <artifactId>messaging-channel</artifactId>
+  <artifactId>mr-messaging-channel</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>messaging-channel</name>
+  <name>mr-messaging-channel</name>
 
   <description>
     This artifact simply deals with publishing and receiving feature messaging update cloud events.
