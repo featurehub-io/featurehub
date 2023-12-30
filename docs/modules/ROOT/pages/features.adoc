@@ -29,7 +29,7 @@ When you add a feature flag, this will also automatically create a feature value
 This field can hold a feature description, max 300 characters.
 
 == Feature reference link
-This field can hold a link for example to your task management system, e.g. Jira or Azure DevOps.
+This field can hold a link for example to your task management system, e.g. Jira, Azure DevOps, etc.
 
 == Feature metadata
 

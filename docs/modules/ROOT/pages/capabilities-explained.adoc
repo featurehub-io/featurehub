@@ -122,6 +122,8 @@ it is extremely scalable as everything is evaluated locally rather than needing 
 For Client Evaluated Keys, going through the Context to get your features means all features are always evaluated
 as they pertain to the current context, locally.
 
+
+
 ==== Server Evaluated API Keys
 Server Side evaluation is more suitable when you are using an _insecure client_. (e.g. Browser or Mobile). This also means you evaluate one user per client.
 

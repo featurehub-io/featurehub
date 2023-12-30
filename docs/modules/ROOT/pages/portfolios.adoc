@@ -7,6 +7,6 @@ Portfolios can only be created and edited with "Super Admin" permission.
 
 image::fh_portfolios.png[Portfolios,1500]
 
-The diagram representing Portfolio and components that belong within a portfolio
+The diagram below representing a Portfolio structure and components, such as Application, Environments and Features that belong within a portfolio
 
 image::fh_overview.svg[Overview,500]

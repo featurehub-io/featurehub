@@ -1,9 +1,20 @@
 = Applications
 
 Application is where the feature flags will be created under. How you split your applications depends on your unique product requirements and feature flags arrangements for them.
-You can create multiple applications in a portfolio. The number of applications is not limited. Every application will hold the features, feature values and environments.
+
+== Creating an application
+You can create multiple applications in a portfolio from the Applications menu. The number of applications is not limited. Applications can be created and managed with "Portfolio Admin" or "Organization Super Admin" permission.
+
 You are required to provide an application name and a description when creating an application.
-If you decide to delete an application, all features and environments associated with the application will be deleted.
-Applications can only be created and managed with "Portfolio Admin" or "Organization Super Admin" permission.
+
+Once you create an application, the environment called "Production" will be automatically created by default. You can rename this at any time and add more environments. 
+
+You can switch between applications using the drop-down on the Applications page. 
+
+The application tiles display total number of environments and features within an application. 
+
 
 image::fh_apps_page.png[Apppplications, 1500]
+
+== Deleting an application
+If you decide to delete an application, all features and environments associated with the application will be deleted. You are required to have "Portfolio Admin" or "Organization Super Admin" permission.

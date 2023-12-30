@@ -31,7 +31,7 @@ in a multi-threaded environment. Typically, Go, Java, .NET or standalone Python 
 |===================================
 ||Recommended use case|URL| Known limitations
 |GET|In browser and mobile applications, can also be used in server apps| /features?apiKey=your_key_value|
-|PUT|Support test automation by controlling feature flag values|/features?apiKey=your_key_value |
+|PUT|Support test automation by controlling feature flag values|/features?apiKey=your_key_value | Updates only for default feature values, rollout strategies values updates are not supported
 |SSE|In server applications for real-time streaming updates|connection initiated via GET to /features/{your_key_value} and reconnects automatically every 60 seconds | In FeatureHub SaaS, SSE is not supported with the use of the server eval API key (see link:sdks#_client_and_server_api_keys[here] for more details on API keys)
 |===================================
 == SDK Usage

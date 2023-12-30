@@ -1,10 +1,8 @@
-= Monitoring your copy of FeatureHub
+= FeatureHub Monitoring
 
 FeatureHub uses the industry standard Prometheus standard for metrics. Each of the different services (the Management
 Repository, Edge and Dacha) all provide metric endpoints at `/metrics` to allow you to setup how you would like
 to monitor.
-
-We would like to include some standard Grafana dashboards as well at some point, and some recommended alerts.
 
 In this document we will go through each of the services, starting with a section on what is common for all
 the services.
@@ -249,4 +247,5 @@ Edge exposes a number of metrics specific to SSE,
 |edge_publish_time|Histogram|Amount of time it is taking to publish stats
 |===
 
+Grafana dashboard template and recommended alerts are not available yet, but will be considered in the future releases.
 
