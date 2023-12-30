@@ -1,37 +1,36 @@
-package io.featurehub.messaging.converter
+package io.featurehub.messaging.service
 
-import io.featurehub.db.model.DbFeatureValue
-import io.featurehub.messaging.MessagingConfig
-import io.featurehub.messaging.common.DbFeatureTestProvider
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.api.SingleNullableFeatureValueUpdate
+import io.featurehub.db.model.DbFeatureValue
+import io.featurehub.events.CloudEventPublisher
 import io.featurehub.messaging.model.MessagingRolloutStrategy
 import io.featurehub.messaging.model.MessagingRolloutStrategyAttribute
 import io.featurehub.messaging.model.StrategyUpdateType
-import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
+import io.featurehub.utils.ExecutorSupplier
 import spock.lang.Specification
 
 import java.time.ZoneOffset
 
 class FeatureMessagingConverterImplSpec extends Specification {
-  FeatureMessagingConverterImpl featureMessagingConverter
+  FeatureMessagingCloudEventPublisherImpl featureMessagingConverter
   DbFeatureValue dbFeatureValue
-  FeatureMessagingCloudEventPublisher publisher
-  MessagingConfig config
+  CloudEventPublisher publisher
   SingleNullableFeatureValueUpdate<Long> version
+  ExecutorSupplier executorSupplier
 
   def setup() {
     dbFeatureValue = DbFeatureTestProvider.provideFeatureValue()
     publisher = Mock()
-    config = Mock()
-    featureMessagingConverter = new FeatureMessagingConverterImpl(config, publisher)
+    executorSupplier = Mock()
+    featureMessagingConverter = new FeatureMessagingCloudEventPublisherImpl(publisher, executorSupplier)
     version = new SingleNullableFeatureValueUpdate<>(true, 1L, null)
   }
 

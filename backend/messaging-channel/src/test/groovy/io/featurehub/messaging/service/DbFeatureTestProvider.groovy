@@ -1,4 +1,4 @@
-package io.featurehub.messaging.common
+package io.featurehub.messaging.service
 
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbApplicationFeature

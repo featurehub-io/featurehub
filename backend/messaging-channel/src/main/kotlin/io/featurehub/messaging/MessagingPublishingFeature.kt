@@ -17,7 +17,6 @@ class MessagingPublishingFeature : Feature {
       override fun configure() {
         bind(FeatureMessagingCloudEventPublisherImpl::class.java).to(FeatureMessagingCloudEventPublisher::class.java)
           .`in`(Singleton::class.java)
-        bind(MessagingConfigImpl::class.java).to(MessagingConfig::class.java).`in`(Singleton::class.java)
       }
 
     })

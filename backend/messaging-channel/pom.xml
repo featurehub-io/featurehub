@@ -44,19 +44,13 @@
 
     <dependency>
       <groupId>io.featurehub.events</groupId>
-      <artifactId>eventing-nats</artifactId>
+      <artifactId>eventing-cloudevents</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
-      <groupId>io.featurehub.events</groupId>
-      <artifactId>eventing-google-pubsub</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.events</groupId>
-      <artifactId>eventing-kinesis</artifactId>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-db-services</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 

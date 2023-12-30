@@ -50,7 +50,7 @@ class WebhookResource @Inject constructor(
         )
       )
 
-    if (WebhookEncryptionFeature.isWebhookEncryptionEnabled) {
+    if (WebhookEncryptionFeature.isWebhookEncryptionEnabled && cloudEventPublisher.hasListeners("integration/slack-v1")) {
       types.types.add(
         WebhookTypeDetail()
           .messageType("integration/slack-v1")
