@@ -65,6 +65,8 @@ class DynamicCloudEventDestinationMapper(
             return "webhook.default"
           }
         }
+      } else {
+        log.trace("Webhook integration  {} not  found","webhook.${infix}.enabled")
       }
 
       return null

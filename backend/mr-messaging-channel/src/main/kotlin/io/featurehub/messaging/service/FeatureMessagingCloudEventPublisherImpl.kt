@@ -37,8 +37,11 @@ import java.util.concurrent.ExecutorService
 @LifecyclePriority(priority = 12) // this is after all the dynamic registries have registered (they register at priority 5)
 class FeatureMessagingCloudEventInitializer @Inject constructor(publisher: FeatureMessagingCloudEventPublisher,
                                                           dynamicPublisherRegistry: CloudEventDynamicPublisherRegistry) : LifecycleListener {
+  private val log: Logger = LoggerFactory.getLogger(FeatureMessagingCloudEventInitializer::class.java)
+
   init {
     val hooks = mapOf(Pair("integration.slack", "integration/slack-v1")).map {
+      log.trace("Looking for dynamic config {} for message {}", it.key, it.value)
       val prefix = DynamicCloudEventDestinationMapper.infix(it.key, dynamicPublisherRegistry)
       if (prefix != null) DynamicCloudEventDestinationMapper(it.value, prefix, it.key, dynamicPublisherRegistry) else null
     }.filterNotNull()

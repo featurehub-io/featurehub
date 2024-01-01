@@ -295,6 +295,7 @@ class FeatureSqlApi @Inject constructor(
     try {
       val featureMessagingParameter =
         FeatureMessagingParameter(featureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates, versionUpdate)
+      log.trace("publishing {}",  featureMessagingParameter)
       featureMessagePublisher.publish(featureMessagingParameter)
     } catch (e: Exception) {
       log.error("Failed to publish feature messaging update {}", featureValue, e)
