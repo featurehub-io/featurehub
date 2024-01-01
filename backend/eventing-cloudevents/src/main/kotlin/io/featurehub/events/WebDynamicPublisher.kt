@@ -84,6 +84,8 @@ class WebDynamicDestination(
     }
 
     try {
+      log.trace("publishing CE {}:{} to {}", ce.type, ce.id, destination)
+
       val response = target.post(Entity.entity(ce.data?.toBytes(), if (compressed) "application/json+gzip" else MediaType.APPLICATION_JSON))
 
 //      data.status(response.status).result(response.readEntity(String::class.java)?.take(1000))
@@ -92,7 +94,7 @@ class WebDynamicDestination(
 //        data.incomingHeaders?.put(k, v.joinToString(";"))
 //      }
     } catch (e: Exception) {
-      log.error("failed to post", e.message)
+      log.error("failed to post CE {}", ce.type, e)
 //      data.status(0).result(e.message?.take(1000))
     }
   }
@@ -115,6 +117,8 @@ class WebDynamicPublisher @Inject constructor(dynamicPublisher: CloudEventDynami
   @ConfigKey("webhooks.features.timeout.read")
   var readTimeout = FallbackPropertyConfig.getConfig("webhooks.default.timeout.read", "4000")
 
+  private val log: Logger = LoggerFactory.getLogger(WebDynamicPublisher::class.java)
+
   init {
     dynamicPublisher.registerDymamicPublisherProvider(listOf("http://", "https://"), this::registerType)
   }
@@ -126,6 +130,8 @@ class WebDynamicPublisher @Inject constructor(dynamicPublisher: CloudEventDynami
     destSuffix: String,
     metric: CloudEventChannelMetric
   ) {
+    log.info("registering destination webhook for cloud event {} outputting to {}", cloudEventType, destination)
+
     val dest = WebDynamicDestination(params, cloudEventType, destination, destSuffix, metric, connectTimeout, readTimeout)
     publisherRegistry.registerForPublishing(
       cloudEventType,
