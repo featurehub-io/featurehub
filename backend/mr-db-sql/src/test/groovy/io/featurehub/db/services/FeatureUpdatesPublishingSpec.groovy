@@ -47,7 +47,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     rsValidator.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     rsValidator.validateStrategies(_, _, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     ThreadLocalConfigurationSource.createContext(
-      ['auditing.enable': 'true','messaging.publisher.thread-pool': "1",'messaging.publish.enabled': 'true'])
+      ['auditing.enable': 'true','messaging.publisher.thread-pool': "1"])
 
     rsv = Mock()
     rsv.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
