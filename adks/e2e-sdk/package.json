@@ -8,7 +8,7 @@
     "debug-test": "PUBSUB_EMULATOR_HOST=localhost:8075 npm run clean && node --inspect node_modules/.bin/cucumber-js --require-module ts-node/register --require 'app/**/*.ts' ",
     "setup": "npm link featurehub-javascript-client-sdk featurehub-javascript-node-sdk",
     "test": "npm run clean && node node_modules/.bin/cucumber-js --require-module ts-node/register --require 'app/**/*.ts' ",
-    "e2e-test": "npm run clean && npm run link && node node_modules/.bin/cucumber-js --require-module ts-node/register --require 'app/**/*.ts' ",
+    "e2e-test": "npm run clean && npm run setup && node node_modules/.bin/cucumber-js --require-module ts-node/register --require 'app/**/*.ts' ",
     "lint": "./node_modules/.bin/eslint . --ext .js,.jsx,.ts,.tsx --fix"
   },
   "author": "FeatureHub.io",
