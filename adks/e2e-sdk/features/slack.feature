@@ -1,4 +1,4 @@
-@needs-webserver @streamingvariants
+@needs-webserver
 Feature: System supports Slack
 
   @slack
