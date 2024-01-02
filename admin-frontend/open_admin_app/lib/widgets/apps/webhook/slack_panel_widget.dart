@@ -84,6 +84,9 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                                 }
                                 return null;
                               }))),
+                      FilledButton(onPressed: () {
+                        setState(() { _token.text = ''; });
+                      }, child: Text('Clear'))
                     ]),
                     Row(children: [
                       Expanded(

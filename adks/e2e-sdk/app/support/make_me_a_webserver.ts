@@ -1,10 +1,9 @@
-
 import * as restify from 'restify';
 
-import { networkInterfaces } from 'os';
-import { IncomingHttpHeaders } from 'http';
-import { EnrichedFeatures, EnrichedFeaturesTypeTransformer } from '../apis/webhooks';
-import { logger } from './logging';
+import {networkInterfaces} from 'os';
+import {IncomingHttpHeaders} from 'http';
+import {logger} from './logging';
+import {CloudEvent, HTTP} from "cloudevents";
 
 const nets = networkInterfaces();
 const results: any = {};
@@ -32,17 +31,6 @@ if (networkName  ===  undefined)  {
   results[networkName]  =  ['localhost'];
 }
 
-let webhookData: EnrichedFeatures | undefined;
-let webhookHeaders: IncomingHttpHeaders;
-
-export function getWebhookData(): EnrichedFeatures | undefined {
-  return webhookData;
-}
-
-export function  clearWebhookData() {
-  webhookData = undefined;
-}
-
 export function getWebserverExternalAddress(): string | undefined {
   if (process.env.EXTERNAL_NGROK) {
     return process.env.EXTERNAL_NGROK;
@@ -53,61 +41,67 @@ export function getWebserverExternalAddress(): string | undefined {
 
 let server: restify.Server;
 
-function mergeResults(data: EnrichedFeatures, headers: IncomingHttpHeaders) : boolean {
-  if (webhookData === undefined) {
-    webhookData = data;
-    return true;
-  }
+export const cloudEvents: Array<CloudEvent<any>> = [];
 
-  if (webhookHeaders['ce-id'] === headers['ce-id']) {
-    return false; // same message
-  }
+export function resetCloudEvents() {
+  cloudEvents.length = 0;
+  logger.info("------------\ncloud events reset\n--------")
+}
 
-  if (webhookData.environment.environment.version < data.environment.environment.version) {
-    webhookData = data;
-    return true;
-  }
+function mergeCloudEvent<T>(body: T, headers: IncomingHttpHeaders) : CloudEvent<T>[] {
+  const ce = HTTP.toEvent<T>({headers: headers, body: body});
 
-  let changed = false;
-  for (const fv of data.environment.fv) {
-    const existing = webhookData.environment.fv.findIndex(f => f.feature.key === fv.feature.key);
-    if (existing === -1) {
-      changed = true;
-      break;
-      // webhookData.environment.fv.push(fv);
-    } else {
-      const pos = webhookData.environment.fv[existing];
-      if (pos.feature.version < fv.feature.version || (pos.value?.version || -1) < (fv.value?.version || -1)) {
-        changed = true;
-        break;
-        // webhookData.environment.fv[existing] = fv;
-      }
-    }
-  }
+  let events = Array.isArray(ce) ? (ce as CloudEvent<T>[]) : [ce as CloudEvent<T>];
 
-  if (changed) {
-    webhookData = data;
-  }
+  cloudEvents.push(...events);
 
-  return changed;
+  logger.debug(`Cloud Events provided ${events}`);
+
+  return events;
 }
 
 function setupServer() {
   server.use(restify.plugins.acceptParser(server.acceptable));
   server.use(restify.plugins.queryParser());
-  server.use(restify.plugins.bodyParser());
+  server.use (function(req, res, next) {
+    logger.info('received request on path', req.path());
+    if (req.contentType() === 'application/json') {
+      var data='';
+      req.setEncoding('utf8');
+      req.on('data', function(chunk) {
+        data += chunk;
+      });
+
+      req.on('end', function() {
+        req.body = JSON.parse(data);
+        logger.info(`'------------------------------\\nbody was ${data}\n---------------------------'`);
+        next();
+      });
+    } else if (req.contentType() === 'application/json+gzip') {
+      let data = Buffer.from([]);
+
+      req.on('data', function(chunk) {
+        data = Buffer.concat([data, Buffer.from(chunk)]);
+        data += chunk;
+      });
+
+      req.on('end', function() {
+        req.body = data;
+        next();
+      });
+    }
+  });
+
+  // server.use(restify.plugins.bodyParser());
+
+  server.post('/featurehub/slack', function (req, res, next) {
+    mergeCloudEvent(req.body, req.headers);
+    res.send(200, 'ok');
+    return next();
+  });
 
   server.post('/webhook', function (req, res, next) {
-    if (mergeResults(EnrichedFeaturesTypeTransformer.fromJson(req.body), req.headers)) {
-      webhookHeaders =  req.headers;
-      logger.log({level: 'info', message: `<<incoming-webhook-data>> ${JSON.stringify(req.body)}`});
-      logger.log({level: 'info', message: `<<incoming-webhook-headers>> ${JSON.stringify(req.headers)}`});
-      logger.log({level: 'info', message: `<<webhook-data>> ${JSON.stringify(webhookData)}`});
-      logger.log({level: 'info', message: `<<webhook-headers>> ${JSON.stringify(webhookHeaders)}`});
-    } else {
-      logger.log({level: 'info', message: `<<ignored-webhook-data>> ${JSON.stringify(req.body)}`});
-      logger.log({level: 'info', message: `<<ignored-webhook-headers>> ${JSON.stringify(req.headers)}`});
-    }
+    mergeCloudEvent(req.body, req.headers);
 
     res.send( 200,'Ok');
     return next();

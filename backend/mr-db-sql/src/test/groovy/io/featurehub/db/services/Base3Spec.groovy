@@ -4,10 +4,10 @@ import io.ebean.DB
 import io.ebean.Database
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.RolloutStrategyValidator
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.encryption.WebhookEncryptionService
-import io.featurehub.messaging.converter.FeatureMessagingConverter
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.CreateApplication
@@ -41,7 +41,7 @@ class Base3Spec extends Specification {
   @Shared Portfolio portfolio
   @Shared Application app1
   @Shared Environment env1
-  @Shared FeatureMessagingConverter featureMessagingCloudEventPublisher
+  @Shared FeatureMessagingPublisher featureMessagingCloudEventPublisher
   @Shared ExecutorSupplier executorSupplier
 
   String ranName() {

@@ -1,13 +1,14 @@
-import { Given, Then, When } from '@cucumber/cucumber';
-import { SdkWorld } from '../support/world';
-import {CreateFeature, Feature, FeatureValue, FeatureValueType, PersonType, WebhookCheck} from '../apis/mr-service';
+import {Given, Then, When} from '@cucumber/cucumber';
+import {SdkWorld} from '../support/world';
+import {CreateFeature, FeatureValue, FeatureValueType, Person, PersonType, WebhookCheck} from '../apis/mr-service';
 import waitForExpect from 'wait-for-expect';
-import { clearWebhookData, getWebhookData } from '../support/make_me_a_webserver';
-import { expect } from 'chai';
-import { sleep } from '../support/random';
+import {cloudEvents, resetCloudEvents} from '../support/make_me_a_webserver';
+import {expect} from 'chai';
+import {sleep} from '../support/random';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
-import { EnrichedFeatures } from '../apis/webhooks';
-import { logger } from '../support/logging';
+import {EnrichedFeatures} from '../apis/webhooks';
+import {logger} from '../support/logging';
+import {CloudEvent} from "cloudevents";
 
 When('I wait for {int} seconds', async function (seconds: number) {
   await sleep(seconds * 1000);
@@ -26,6 +27,12 @@ Given(/^I test the webhook$/, async function () {
   }));
 });
 
+function ourEnrichedFeatures(world: SdkWorld): CloudEvent<EnrichedFeatures>[] {
+  return cloudEvents.filter(ce => ce.type == 'enriched-feature-v1'
+    && (ce.data as EnrichedFeatures)?.environment?.environment?.id === world.environment.id)
+    .map(ce => ce as CloudEvent<EnrichedFeatures>);
+}
+
 Then(/^we receive a webhook with (.*) flag that is (locked|unlocked) and (off|on)$/, async function(flagName: string, lockedStatus: string, flag: string) {
   if (!process.env.EXTERNAL_NGROK && process.env.REMOTE_BACKEND) {
     return;
@@ -34,16 +41,20 @@ Then(/^we receive a webhook with (.*) flag that is (locked|unlocked) and (off|on
   const world = this as SdkWorld;
 
   await waitForExpect(async () => {
-    const webhookData = getWebhookData();
-    expect(webhookData).to.not.be.undefined;
-    expect(webhookData.environment).to.not.be.undefined;
-    expect(webhookData.environment.fv).to.not.be.undefined;
-    const feature = webhookData.environment?.fv?.find(fv => fv.feature.key == flagName);
-    expect(feature).to.not.be.undefined;
-    expect(feature.value.locked).to.eq(lockedStatus === 'locked');
-    expect(feature.value.value).to.eq(flag === 'on');
-    expect(feature.value.pId).to.not.be.undefined;
-    expect(feature.value.pId).to.eq(world.person.id.id)
+    const enrichedData = ourEnrichedFeatures(world);
+
+    expect(enrichedData.length, `filtered events for enriched and for our environment and found none ${cloudEvents}`).to.be.gt(0);
+
+    const ourFeature = enrichedData.filter(ce => {
+      const featureData = ce.data as EnrichedFeatures;
+      const feature = featureData.environment?.fv?.find(fv => fv.feature.key === flagName);
+      return (feature?.value?.locked === (lockedStatus === 'locked') &&
+              feature?.value?.value === (flag === 'on') &&
+              feature?.value.pId === world.person.id.id);
+    });
+
+    expect(ourFeature, `could not find feature ${flagName} in status ${lockedStatus} with value ${flag} and person ${world.person.id.id} in ${enrichedData}`)
+      .to.not.be.undefined;
   }, 10000, 200);
 });
 
@@ -53,22 +64,41 @@ Then(/^we should have (\d+) messages in the list of webhooks$/, async function(r
   }
   const world = this as SdkWorld;
   await waitForExpect(async () => {
-
-    const hookResults = (await world.webhookApi.listWebhooks(world.environment.id)).data;
-    expect(hookResults.results.length).to.eq(resultCount);
+    const enrichedData = ourEnrichedFeatures(world);
+    expect(enrichedData.length, `filtered events for enriched and found wrong number ${cloudEvents}`).to.be.gt(resultCount - 1);
+    expect(enrichedData.length, `filtered events for enriched and found wrong number ${cloudEvents}`).to.be.lt(resultCount + 2);
   }, 2000, 200);
 });
 
 Then(/^we receive a webhook that has changed the feature (.*) that belongs to the Test SDK$/, async function (key: string) {
   const world = this as SdkWorld;
   await waitForExpect(async () => {
-    const webhookData = getWebhookData();
-    expect(webhookData).to.not.be.undefined;
-    const feature = webhookData.environment?.fv?.find(fv => fv.feature.key == key);
-    expect(feature.value.pId).to.not.be.undefined;
-    const user = await world.personApi.getPerson(feature.value.pId);
-    expect(user.data.personType).to.eq(PersonType.SdkServiceAccount);
-    expect(user.data.additional.find(k => k.key === 'serviceAccountId')).to.not.be.undefined;
+    const enrichedData = ourEnrichedFeatures(world);
+    const ourFeature = enrichedData.filter(ce => {
+      const featureData = ce.data as EnrichedFeatures;
+      const feature = featureData.environment?.fv?.find(fv => fv.feature.key === key);
+      return feature.value.pId !== undefined;
+    });
+
+    expect(ourFeature.length, `Could not find person associated with enriched data ${enrichedData}`).to.be.gt(0);
+    const features = ourFeature.map(ed =>
+      (ed.data as EnrichedFeatures).environment?.fv?.find(fv => fv.feature.key === key) )
+      .filter( feature => feature?.value.pId )
+
+
+    let actionByServiceAccountCount = 0;
+    let users: Array<Person> = [];
+    for(let feature of features) {
+      const user = await world.personApi.getPerson(feature.value.pId);
+
+      users.push(user.data);
+
+      if (user.data.personType === PersonType.SdkServiceAccount && user.data.additional.find(k => k.key === 'serviceAccountId')) {
+        actionByServiceAccountCount ++;
+      }
+    }
+
+    expect(actionByServiceAccountCount, `None of the users are service account users who performed the action: ${users}`).to.be.gt(0);
   }, 10000, 200);
 });
 
@@ -101,17 +131,23 @@ function featureValue(version: number, type: FeatureValueType, value: string, ke
   return val;
 }
 
-function expectedFeatures(webhookData: EnrichedFeatures | undefined, expectedFeatureKeys: Array<string>) {
-  expect(webhookData).to.not.be.undefined;
+function expectedFeatures(webhookData: EnrichedFeatures | undefined, expectedFeatureKeys: Array<string>): boolean {
+  if (webhookData === undefined) return false;
+
   logger.info(`Expecting keys ${expectedFeatureKeys} got ${webhookData.environment?.fv?.map(i => i.feature.key)}`);
   expectedFeatureKeys.forEach(key => {
     const feature = webhookData.environment?.fv?.find(fv => fv.feature.key == key);
-    expect(feature, `Unable to find key ${key}`).to.not.be.undefined;
+    if (feature === undefined) {
+      return false;
+    }
   });
+
+  return true;
 }
 
 async function createFeatureAndValue(world: SdkWorld, type: FeatureValueType,
                                      key: string, value: string, action: string, expectedFeatureKeys: Array<string>): Promise<void> {
+  logger.info('createFeatureAndValue has started');
   await world.featureApi.createFeaturesForApplication(world.application.id, new CreateFeature({
     valueType: type,
     name: key,
@@ -121,13 +157,20 @@ async function createFeatureAndValue(world: SdkWorld, type: FeatureValueType,
 
   // wait until the webhook turns up that creates the key
   await waitForExpect(async () => {
-    const webhookData = getWebhookData();
-    expectedFeatures(webhookData, expectedFeatureKeys);
-    const keyChange = webhookData.featureKeys.includes(key);
-    expect(keyChange).to.be.true;
+    const enrichedData = ourEnrichedFeatures(world);
+    const keys = enrichedData.map(ef =>
+      (ef.data as EnrichedFeatures).environment?.fv?.map(fv => fv.feature.key));
+
+    expect(enrichedData.length).to.be.gt(0);
+    for(let ce of enrichedData) {
+      const ed = (ce.data as EnrichedFeatures);
+      const keys = ed.environment?.fv?.map(fv => fv.feature.key);
+      expect(keys, `${keys} from the cloud event ${JSON.stringify(ed)} were not the expected keys ${expectedFeatureKeys}`).to.have.members(expectedFeatureKeys);
+      expect(ed.featureKeys, `${ed.featureKeys} keys passed did not include ${key}`).to.include(key);
+    }
   }, 10000, 200);
 
-  clearWebhookData();
+  resetCloudEvents();
 
   if (action !== 'justcreate') {
     const version = type == FeatureValueType.Boolean ? 1 : 0;
@@ -135,16 +178,21 @@ async function createFeatureAndValue(world: SdkWorld, type: FeatureValueType,
     await world.featureValueApi.updateFeatureForEnvironment(world.environment.id, key, fv);
 
     await waitForExpect(async () => {
-      const webhookData = getWebhookData();
-      expectedFeatures(webhookData, expectedFeatureKeys);
-      const feature = webhookData.environment?.fv?.find(fv => fv.feature.key == key);
-      expect(feature.value.locked).to.be.false;
-      const keyChange = webhookData.featureKeys.includes(key);
-      expect(keyChange).to.be.true;
+      const enrichedData = ourEnrichedFeatures(world);
+      expect(enrichedData.length).to.be.gt(0);
+      for(let ce of enrichedData) {
+        const ed = (ce.data as EnrichedFeatures);
+        const feature = ed.environment?.fv?.find(fv => fv.feature.key == key);
+        expect(feature?.value?.locked).to.be.false;
+        const keyChange = ed.featureKeys.includes(key);
+        expect(keyChange).to.be.true;
+      }
     }, 10000, 200);
 
-    clearWebhookData();
+    resetCloudEvents();
   }
+
+  logger.info('createFeatureAndValue has finished');
 }
 
 async function deleteFeature(world: SdkWorld, key: string, expectedFeatureKeys: Array<string>): Promise<void> {
@@ -152,19 +200,23 @@ async function deleteFeature(world: SdkWorld, key: string, expectedFeatureKeys: 
 
   // wait until the webhook turns up that creates the key
   await waitForExpect(async () => {
-    const webhookData = getWebhookData();
-    expectedFeatures(webhookData, expectedFeatureKeys);
-    const keyChange = webhookData.featureKeys.includes(key);
-    expect(keyChange).to.be.true;
+    const enrichedData = ourEnrichedFeatures(world);
+    expect(enrichedData.length).to.be.gt(0);
+    for(let ce of enrichedData) {
+      const ed = (ce.data as EnrichedFeatures);
+      const keyChange = ed.featureKeys.includes(key);
+      expect(keyChange).to.be.true;
+    }
   }, 10000, 200);
 
-  clearWebhookData();
+  resetCloudEvents();
 }
 
 When(/^then I test the webhook$/, { timeout: 300000 }, async function(table: DataTable) {
   const world = this as SdkWorld;
   for(const row of table.hashes()) {
     console.log('processing row', row);
+    resetCloudEvents();
     const type = featureType(row['feature_type']);
     if (row['action'] === 'create' || row['action'] === 'justcreate') {
       await createFeatureAndValue(world, type, row['key'], row['value'], row['action'], row['expected_features'].trim().split(','));

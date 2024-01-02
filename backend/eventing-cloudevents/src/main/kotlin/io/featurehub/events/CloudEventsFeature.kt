@@ -1,5 +1,6 @@
 package io.featurehub.events
 
+import io.featurehub.lifecycle.LifecycleListeners
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
@@ -16,6 +17,9 @@ class CloudEventsFeature : Feature {
         bind(CloudEventDynamicPublisherRegistryImpl::class.java).to(CloudEventDynamicPublisherRegistry::class.java).`in`(Singleton::class.java)
       }
     })
+
+    LifecycleListeners.starter(WebDynamicPublisher::class.java, context)
+
     return true
   }
 }
