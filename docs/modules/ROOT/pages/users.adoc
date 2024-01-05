@@ -86,12 +86,13 @@ image::fh-group-permissions.png[Group permissions, 1500]
 There are two types of administrator groups that are available by default, *Organization Super Admin* and *Portfolio Admin*.
 
 ==== Portfolio Administrators
-*Portfolio Administrators* can:
+Portfolio Administrators permissions:
 
 ** Create and manage portfolio groups
 ** Create and manage applications
 ** Create and manage environments
 ** Create and manage features in any application and environment
+** Create and manage feature groups
 ** Create and manage service accounts
 ** Manage groups access to applications
 ** Add and delete user from a group
@@ -100,7 +101,7 @@ NOTE: Every Portfolio automatically gets a group called "Administrators", simply
 will make them administrators for this portfolio.
 
 ==== Organization Super Admin
-*Organization Super Admin* can:
+Organization Super Admin permissions:
 
 Inherits all permissions "Portfolio Admin" has, plus:
 ** Create and manage users of the system

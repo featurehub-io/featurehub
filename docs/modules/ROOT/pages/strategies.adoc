@@ -131,6 +131,6 @@ If you only have five users, this probably won't turn a feature "on" for anyone,
 be more accurate.
 
 == Rollout strategies evaluation order
-As you can assign multiple rollout strategies to a feature, the order of the strategies becomes important. Strategies evaluated in order from first to last (in the Admin UI, as they are displayed from top to bottom), and stops when it hits a matching one. Strategies order can be set by dragging them in the Admin UI console - feature editing panel. 
+As you can assign multiple rollout strategies to a feature, the order of the strategies becomes important. Strategies evaluated in order from first to last (in the Admin UI, as they are displayed from top to bottom), and stops when it hits a matching one. If no strategies match, then "default" feature value is served. Strategies order can be set by dragging them in the Admin UI console - feature editing panel. 
 
 image::fh_reorder_strategies.png[Split targeting,500]
