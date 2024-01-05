@@ -6,8 +6,8 @@ Features are the main components of FeatureHub, you can create them from the "Fe
 
 You can create features of the following types:
 
-* `BOOLEAN` used for basic boolean feature flags (toggles)
-* `NUMBER` numerical values
+* `BOOLEAN` used for basic boolean feature flags (toggles). Can be `true` or `false` values
+* `NUMBER` numerical values. Can be any number, including decimals
 * `STRING` string values
 * `JSON`  JSON values (typically used for remote configuration, or to override internal values of an application, etc.)
 
