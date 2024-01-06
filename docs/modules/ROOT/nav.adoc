@@ -44,6 +44,8 @@
 
 * xref:hosted:index.adoc[Overview]
 
+* xref:hosted:architecture.adoc[SaaS Architecture]
+
 * xref:hosted:saml.adoc[SSO / SAML Configuration]
 
 * xref:hosted:pricing.adoc[Pricing & Billing]
