@@ -1,28 +1,23 @@
 = Installation of FeatureHub
 
-There are several deployment options for running FeatureHub. As FeatureHub is packaged as a _Cloud Native_ bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker/OCI or Kubernetes).
+There are several deployment options available for running FeatureHub. All options come as _Cloud Native_ Docker image (or multiple images) and are intended to be used with that technology (i.e. Docker/OCI or Kubernetes). That means FeatureHub can be deployed to any cloud, like Google Cloud, AWS, Azure, etc.
 
-There is a GitHub https://github.com/featurehub-io/featurehub-install[repository] where you can find sample docker-compose style deployment options.
+There is a GitHub https://github.com/featurehub-io/featurehub-install[repository] where you can find docker-compose style deployment options.
 
 All the deployment options mount the database volume separately from the main set of containers, allowing you to upgrade your database and versions of FeatureHub without destroying your database.
 
-NOTE: As FeatureHub is an open source project, we develop on only a limited number of databases, primarily Postgres.
-
 We provide and maintain database migrations scripts for Postgres, MySQL, MariaDB, and Oracle.
 
-There is also a MariaDB and Oracle example docker-compose install, and the MariaDB and MySQL drivers are installed in all
+There is also a MariaDB and Oracle example docker-compose installation, and the MariaDB and MySQL drivers are installed in all
 server runtimes. Further we include support for Google's Cloud SQL libraries in the base images if you need to
 use their secure tunnelling capability.
 
-Other databases can potentially be added, please feel free to lodge a ticket on our Github Issues register, particularly if
-you are willing to test it out.
+Other database types can potentially be added, please feel free to lodge a ticket on our https://github.com/featurehub-io/featurehub/issues[GitHub]
 
 == Deployment Options
 
-As explained in the link:architecture{outfilesuffix}[Architecture] section, there are a number of different combinations
-for deployment of FeatureHub. Those typically focus on _where_ you will deploy the infrastructure, _how_ you want
-your clients to use it and _how much_  use it will get. FeatureHub as of 1.5.0 is designed to support
-very low use cases of only hundreds of requests a day up to tens of millions of requests a day or more.
+There are a number of different combinations
+for deployment of FeatureHub. Those typically focus on how you deploy the infrastructure, how much traffic you get through your app and whether you need Streaming or REST methods to get feature updates. 
 
 To get you up and going quickly, we have created a number of different Docker options using Docker-Compose.
 
@@ -32,8 +27,8 @@ To install, clone the https://github.com/featurehub-io/featurehub-install[featur
 
 `curl -sL https://github.com/featurehub-io/featurehub-install/tarball/main | tar -xvz`
 
-Make sure you have your docker server running and docker-compose installed if you are using it (or your swarm
-set up if you are using docker stack). These example stacks are great for experimenting or to understand what the
+Make sure you have your docker server running and docker-compose installed if you are using it (or your Docker Swarm
+set up if you are using docker stack). These examples are great for experimenting or to understand what the
 different capabilities of the FeatureHub stack are - for example read replica databases, OAuth2 configuration for your
 provider, multiple NATs servers and so forth.
 
@@ -45,7 +40,7 @@ For the _Evaluation_ option (not recommended for production):
 
 `docker compose up`
 
-This will install all the necessary components including FeatureHub Admin Console. You can now load it on http://localhost:8085
+This will install all the necessary components including FeatureHub Admin Console. You can access it on http://localhost:8085
 
 What makes it only an evaluation option is simply the database used (H2), it writes to the local
 disk and is not intended to be used for a long-running or highly performant, concurrent system.
@@ -61,7 +56,7 @@ disk and is not intended to be used for a long-running or highly performant, con
 |No|Mid|2b|Suits a MR deployment with a single master and one or more read replicas, with Edge-Rest pointed at the read replicas.
 |===================================
 
-=== Option 1a - Low Volume Deployment (Streaming)
+=== Option 1a - Low Volume Deployment (Streaming + REST feature updates)
 
 image::fh_deployment_option_1a.svg[Architecture,600]
 
@@ -99,33 +94,17 @@ Or for MySQL option:
 
 This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085
 
-=== Option 1b - Low Volume Deployment (Non-streaming)
-
-image::fh_architecture_non_streaming.svg[Architecture,600]
-
-In this case, this deployment, known as `party-server-ish` is different from the evaluation image, and deploys only the Management
-Repository and a version of Edge that talks to the database. The `party-server-ish` serves the website, Admin App and Edge-Rest applications
-running inside a single process. There is no NATS or Dacha, and no SSE based
-streaming capability available.
-
-This kind of option is suitable if you are only using GET requests  (being
-able to use the test API to update features remains available), such as for
-mobile or Web applications.
-
-As with all deploys, you can configure a read replica for each container, and
-Edge requests will hit the replica by default (as they are read only).
-
-=== Option 2a - Streaming Scalable Deployment
+=== Option 2a - Scalable Deployment (Streaming + REST feature updates)
 
 image::fh_deployment_option_2a.svg[Option 2a,600]
 
 This option is best if you want to run FeatureHub in production at scale. Running separate instances of Edge, Cache, NATS and
 FeatureHub MR Server, means you can deploy these components independently for scalability and redundancy, and Docker images
-are provided for each of these services (see our docker-compose section below).
+are provided for each of these services.
 
 Because they are deployed in separate containers, you have considerably greater control over what
 network traffic gains access to each of these pieces, and they do not all sit under the same Web server. This kind of
-deployment is intended for situations where you want streaming support, or where you want much greater volume or response
+deployment is intended for situations where you want both streaming and REST support for feature updates, or where you want much greater volume or response
 than the 2b solution can provide you. The Dacha servers are able to support massive horizontal scaling of features and
 feature updates, further scaling up and not creating a load on the database as necessary by the use of the NATS cluster.
 
@@ -142,7 +121,34 @@ how you can use a different URL to serve traffic for feature consumers from your
 There is also a helm chart available for production Kubernetes deployment for this option. Please follow documentation link:https://github.com/featurehub-io/featurehub-helm[here]. It doesn't include a Postgres or NATs server as generally your cloud
 provider will have a managed Postgres service, and NATs have their own Kubernetes Helm charts for scalable, reliable deploys.
 
-=== Option 2b - Non-Streaming Scalable Deployment
+
+=== Option 1b - Low Volume Deployment (REST feature updates only)
+
+The non-streaming option `party-server-ish` is designed to scale to less - tens of thousands, possibly
+more if you have a limited number of environments, or a larger number of read replicas.
+It is also designed to be much
+_simpler and cheaper_ to deploy on environments like Google Cloud Run or Azure Container Instances.
+Deployed, conceptually it looks like this:
+
+image::fh_architecture_non_streaming.svg[Architecture,600]
+In this case, `party-server-ish` deploys only the Management
+Repository and a version of Edge that talks to the database. The `party-server-ish` serves the Admin web app, MR API, and Edge-Rest applications
+running inside a single process. There is no NATS or Dacha.
+
+This option is suitable if you are only using REST to get feature flags updates, such as for
+mobile or Web applications. SSE based
+streaming capability is not included into this bundle.
+
+As with all deploys, you can configure a read replica for each container, and
+Edge requests will hit the replica by default (as they are read only).
+
+==== Setup Instructions
+
+`cd docker-compose-options/party-server-ish-postgres`
+
+`docker compose up`
+
+=== Option 2b - Scalable Deployment (REST feature updates only)
 
 image::fh_deployment_option_2b.svg[Option 2b,600]
 
@@ -152,9 +158,15 @@ them together and configuring a read replica for `edge-rest` (the only time we r
 allow you to configure multiple active read replicas, potentially across different zones of the world, this allows you to scale
 your connectivity across those replicas. See the documentation below on Database Read Replicas for how to configure this.
 
+==== Setup Instructions
+
+`cd docker-compose-options/mr-edge-rest-postgres`
+
+`docker compose up`
+
 == Cloud Deployments
 
-=== Deploying FeatureHub (non-streaming) on Google Cloud Run
+=== Deploying FeatureHub on Google Cloud Run (party-server-ish example)
 
 Google Cloud Run lets you spin up a container instance and multiplex requests to it, making it directly available as
 soon as you have configured it. These are basic instructions on how to do this.

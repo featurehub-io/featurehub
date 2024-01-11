@@ -1,65 +1,37 @@
 = FeatureHub Architecture
 
 == Overview
-FeatureHub's original and primary architecture reflects its focus on it being a *streaming update platform*,
-one where updates to feature values are streamed out to listening clients in near-realtime.
+FeatureHub architecture is primarily focused on being highly scalable and resilient cloud-native platform, that can deliver feature flags updates securely in near-realtime. Two types of feature flags updates are supported - Streaming (via SSE) and REST (GET). You can choose which one is suitable for you, based on your application type and requirements. 
 
-Since its release, other patterns for use
-have emerged and we are, with the 1.5.0 release, making a few additions and alterations to match these expectations.
+The way that FeatureHub is architected is designed for various different implementation sizes and scales.
+Fundamentally there is a separation of concerns of all the main components, so they can be scaled independently
+and when needed. All components are Docker images and are intended to be used with that technology (i.e. Docker/OCI or Kubernetes). You can find documentation for the main deployment options of FeatureHub in the link:installation{outfilesuffix}[installation section].
 
-With the 1.5.9 release we have moved to using Cloud Events and supporting an increased number of async layers -
-NATS (preferred), Google PubSub (Release), AWS Kinesis (beta).
-
-[#_streaming]
-=== Streaming - Party Server
-FeatureHub is available as a bundle (for streaming this is the Party Server) or as individual
-pieces for better scalability and isolation of your Administration side from your applications that require their
-features.
-
-The extended streaming deployment is designed to scale to millions, even billions of requests, while mostly isolating
-your backend system from being overwhelmed by requests. With release 1.5.9 we have moved to the preferred "Dacha2" Lazy Cache system,
-and deployed it conceptually looks like this:
+=== High level architecture example
 
 image::fh_architecture_streaming.svg[Architecture,600]
 NOTE: Communication between Edge and Dacha(Cache) is shown via REST on this image, which can be configured optionally. By default, it is via NATS.
 
-=== Non-Streaming - Party-Server-Ish
-The non-streaming platform (Party-Server-Ish) is designed to scale to less - tens of thousands, possibly
-more if you have a limited number of environments, or a larger number of read replicas.
-It is also designed to be much
-_simpler and cheaper_ to deploy on environments like Google Cloud Run or Azure Container Instances.
-Deployed, conceptually it looks like this:
+This example shows Streaming + REST feature updates deployment which is designed to scale to millions, even billions of requests. Since version 1.5.9 we recommend to use "Dacha2" Lazy Cache system.
 
-image::fh_architecture_non_streaming.svg[Architecture,600]
-
-The way that FeatureHub is architected is designed for various different implementation sizes and scales, but
-fundamentally there is a separation of concerns of all the main components, so they can be scaled independently
-as and when needed.
-
-We discuss the main deployment options of FeatureHub in the link:installation{outfilesuffix}[installation section]
-and what each part is for.
 
 == Platform Components
 
-=== The Management Repository (MR, the FeatureHub Server)
+=== The Management Repository - MR (FeatureHub Server)
 
-This is the main admin server and is the source of truth for the application. All users login here (via local, OAuth2 or SAML),
-all portfolios, applications, environments, groups, features, etc are all controlled via this. This is always bundled with a UI
+This is the main admin server and is the source of truth for the FeatureHub application. All users login here (via local, OAuth2 or SAML),
+all portfolios, applications, environments, groups, features, etc. are all controlled via this. This is always bundled with an Admin UI
 and backend server and is configured to talk to some external database.
 
 If MR server goes down, it won't affect the operation of end-user clients, all their data is in the cache (or in
 the database if you use _party-server-ish_ or _edge-rest_).
 
-=== The Management Repository API
-
-The "Admin" API is defined in an OpenAPI schema and can be generated for a wide variety of platforms. We currently
-include generated clients for Dart, Typescript, C# and Java, but it is not limited to these.
 
 === https://nats.io/[NATS]
 
-NATS is the Cloud Native Open Source messaging platform that has been around for a very long time, is very fast
+NATS is the Cloud Native Open Source messaging platform that is very fast
 and is very adept at scaling to huge volume in a hugely distributed fashion. We use it for FeatureHub
-to transfer environments, features and service accounts around the network to feed Dacha and Edge.
+to transfer messages about environments, features and service accounts to feed Dacha and Edge.
 
 === Dacha
 
@@ -71,38 +43,40 @@ Dacha which holds permissions, environments, features, and pre-calculated etags 
 
 There are two choice for Dacha: Dacha1 and Dacha2 (Dacha2 is available from v1.5.9).
 
-- It must use NATS as it relies on features only NATS has
-- When it starts it completely fills its internal cache, either from another NATS or via the MR. This makes it completely
+- It must use NATS as it relies on features provided by NATS
+- When it starts, it completely fills its internal cache, either from another NATS or via the MR. This makes it completely
 isolate your servers from MR, no deliberate "miss" traffic can impact your Management Repository
-- Edge is able to talk to Dacha ove NATS
+- Edge is able to talk to Dacha over NATS
 - Filling its internal cache can take some time with hundreds or thousands of environments, and MR must be available
 for it to do so, so it can lead to a complicated start for a new k8s cluster or rollout. This can delay it from being
-healthy depending on how fast it can fill its cache, which can lead to operational complexity.
+healthy, depending on how fast it can fill its cache, which can lead to operational complexity.
 
-Dacha2 is introduced in 1.5.9 and exists to support multiple async layers. It is a lazy cache:
+Dacha2 supports multiple async layers. It is a lazy cache:
 
-- it supports multiple async layers (NATS, Google Pub/Sub, AWS Kinesis (beta), we are looking at others)
-- it is Cloud Events first
+- it supports multiple async layers (NATS, Google Pub/Sub, AWS Kinesis (beta))
+- it is based on Cloud Events
 - it caches misses as well as hits to ensure consistent misses do not make it to MR
 - it automatically updates itself as new environments, features, and service account changes are broadcast from MR, so
 a newly created environment will be a "cache hit" by default.
+
+
 
 === Edge (Streaming+REST)
 
 Edge is intended to be where the communication with the SDKs live. It is intended to be high volume endpoint but retain
 little data - only who is connected to it and which environment they are listening to for feature updates. Access to
-Edge is given by a combination of Service Account and Environment IDs (the API key). That combination is given a permission structure
-back in MR, and is usually simply READ. For test accounts, a service account can also have the ability to change
+Edge is given by a combination of Service Account and Environment IDs (the API Key). That combination is given a permission structure
+that can be set in MR, and is usually READ permission. For test accounts, a service account can also have the ability to change, lock/unlock
 features as it may need to while doing end-to-end tests.
 
-It does not attempt to retain the active feature list for each Service Account + Environment. It is highly multithreaded
+Edge does not attempt to retain the active feature list for each Service Account + Environment. It is highly multithreaded
 and concentrates requests to Dacha.
 
-It is expected that you will normally run at least two of these in any kind of environment.
+It is expected that you will normally run at least two Edge services in any kind of systems setup.
 
-=== Edge (REST)
+=== Edge (REST only)
 
-Edge-REST provides only GET and PUT (for updating features for tests) API options. It allows the
+Edge-REST provides only GET and PUT (PUT is normally used for updating features for tests) API options. It allows the
 SDK to poll for updates but not get realtime updates, and will talk directly to the database. It
 can be deployed on its own or as part of party-server-_ish_.
 
@@ -113,4 +87,6 @@ can save costs on deployment infrastructure and make the FeatureHub application 
 
 We can provide you with the environment variables, and the configuration steps
 necessary to integrate Fastly with FeatureHub. Pulumi configuration, which can be translated easily into Terraform is also available on demand. Please contact us on info@featurehub.io for further information.
+
+Fastly is also used in FeatureHub SaaS platform to ensure your feature updates are delivered as fast as possible across the globe.
 
