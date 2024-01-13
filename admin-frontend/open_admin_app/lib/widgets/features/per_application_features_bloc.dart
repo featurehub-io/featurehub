@@ -115,7 +115,7 @@ class PerApplicationFeaturesBloc
   Future<void> hiddenEnvironmentChanged(HiddenEnvironments? env) async {
     if (env != null) {
       await getApplicationFeatureValuesData(applicationId!, searchFieldTerm,
-          selectedFeatureTypesByUser, rowsPerPage, currentPageIndex);
+          selectedFeatureTypesByUser, currentRowsPerPage, currentPageIndex);
     }
   }
 
