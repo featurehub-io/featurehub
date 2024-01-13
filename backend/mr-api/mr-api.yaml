@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: ManagementResourceApi
   description: This describes the API clients use for accessing features. This reflects the API from 1.6.1 onwards.
-  version: "1.2.0"
+  version: "1.2.1"
 #  CRUD for portfolios, environments, features, service account, people, and groups (edited)
 #  roles are fixed
 #  then people<->group association
