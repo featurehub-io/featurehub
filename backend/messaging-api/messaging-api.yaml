@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: Feature Messaging API
   description: This is an OpenAPI document for featurehub messaging data. It is used to publish feature updates to messaging listeners.
-  version: "1.1.4"
+  version: "1.2.0"
 paths:
   /v2/fake:
     get:
@@ -20,36 +20,33 @@ components:
       x-cloudevent-subject: io.featurehub.events.messaging
       x-publish-include: messaging
       x-package: io.featurehub.messaging.model
-      description: "Changes made to a specific feature and who changed it"
+      description: "Changes made to a specific feature and optionally value and who changed it. This will currently only occur when a feature value changes, not on feature creation or deletion."
       type: object
-      required:
-        - environmentId
-        - applicationId
-        - portfolioId
-        - organizationId
-        - whenUpdated
-        - whoUpdated
-        - featureKey
-        - featureId
-        - featureValueId
-        - featureValueType
-        - whatUpdated
       properties:
-        targetDestination:
-          description: "If there is a specific target for the data, everything else _should_ ignore it"
+        environmentName:
+          x-basename: eName
           type: string
         environmentId:
           x-basename: eId
           type: string
           format: uuid
+        portfolioName:
+          x-basename: pName
+          type: string
         portfolioId:
           x-basename: pId
           type: string
           format: uuid
+        orgName:
+          x-basename: oName
+          type: string
         organizationId:
           x-basename: oId
           type: string
           format: uuid
+        appName:
+          x-basename: aName
+          type: string
         applicationId:
           x-basename: aId
           type: string
@@ -57,13 +54,23 @@ components:
         whenUpdated:
           type: string
           format: date-time
+        whoUpdatedId:
+          type: string
+          format: uuid
+          description: "The ID of the person who updated the feature"
         whoUpdated:
           type: string
           description: Name of the user who made the change to the feature
+        featureName:
+          description: "The name of the feature"
+          x-basename: fName
+          type: string
         featureKey:
+          x-basename: fKey
           description: "Feature key that got updated"
           type: string
         featureId:
+          x-basename: fId
           description: "Id of the Feature that got updated"
           type: string
           format: uuid
@@ -71,10 +78,25 @@ components:
           description: "Id of Feature value that got updated"
           type: string
           format: uuid
+          nullable: true
+        operation:
+          description: "The basic operation performed, create a feature, update a feature in an environment, delete a feature"
         featureValueType:
           description: "Type of the feature value"
           allOf:
             - $ref: "#/components/schemas/FeatureValueType"
+        desc:
+          description: "Feature description"
+          nullable: true
+          type: string
+        link:
+          description: "Link associated with feature (if any)"
+          nullable: true
+          type: string
+        version:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/FeatureVersion"
         featureValueUpdated:
           nullable: true
           #description: "Feature value changes"
@@ -103,9 +125,23 @@ components:
             - $ref: '#/components/schemas/MessagingStrategiesReorder'
         additionalInfo:
           description: "Any additional info, webhook headers etc"
+          nullable: true
           type: string
           additionalProperties:
             type: string
+    FeatureVersion:
+      type: object
+      description: "Describes the previous and current versions"
+      properties:
+        prev:
+          description: "Prior version - version we are changing"
+          type: integer
+          format: int64
+          nullable: true
+        curr:
+          description: "Current version, version we are changing to"
+          type: integer
+          format: int64
     MessagingFeatureValueUpdate:
       x-package: io.featurehub.messaging.model
       type: object
@@ -196,10 +232,10 @@ components:
       allOf:
         - $ref: "#/components/schemas/BaseRolloutStrategy"
         - type: object
-          required:
-            - id
-            - attributes
           properties:
+            name:
+              description: "strategy name"
+              type: string
             id:
               description: "strategy id"
               type: string

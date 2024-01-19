@@ -2,19 +2,33 @@ package io.featurehub.events.pubsub
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import cd.connect.lifecycle.ApplicationLifecycleManager
-import cd.connect.lifecycle.LifecycleStatus
 import com.google.api.gax.core.CredentialsProvider
 import com.google.api.gax.core.NoCredentialsProvider
 import com.google.api.gax.grpc.GrpcTransportChannel
 import com.google.api.gax.rpc.FixedTransportChannelProvider
-import com.google.cloud.pubsub.v1.*
+import com.google.cloud.pubsub.v1.MessageReceiver
+import com.google.cloud.pubsub.v1.Publisher
+import com.google.cloud.pubsub.v1.Subscriber
+import com.google.cloud.pubsub.v1.SubscriptionAdminClient
+import com.google.cloud.pubsub.v1.SubscriptionAdminSettings
+import com.google.cloud.pubsub.v1.TopicAdminClient
+import com.google.cloud.pubsub.v1.TopicAdminSettings
 import com.google.protobuf.Duration
-import com.google.pubsub.v1.*
+import com.google.pubsub.v1.ProjectName
+import com.google.pubsub.v1.ProjectSubscriptionName
+import com.google.pubsub.v1.ProjectTopicName
+import com.google.pubsub.v1.PushConfig
+import com.google.pubsub.v1.RetryPolicy
+import com.google.pubsub.v1.Subscription
+import com.google.pubsub.v1.TopicName
 import io.cloudevents.CloudEvent
 import io.featurehub.health.HealthSource
+import io.featurehub.lifecycle.ApplicationLifecycleManager
+import io.featurehub.lifecycle.ApplicationStarted
+import io.featurehub.lifecycle.LifecycleStatus
 import io.featurehub.utils.FallbackPropertyConfig
 import io.grpc.ManagedChannelBuilder
+import jakarta.inject.Inject
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -49,6 +63,10 @@ interface PubSubFactory {
     subscriptionPrefix: String,
     message: (msg: CloudEvent) -> Boolean
   ): PubSubSubscriber
+
+  fun start()
+
+  fun shutdown()
 }
 
 interface PubSubLocalEnricher {
@@ -56,7 +74,7 @@ interface PubSubLocalEnricher {
   fun enrichSubscriberClient(subscriptionBuilder: Subscriber.Builder)
 }
 
-class PubSubFactoryService : PubSubFactory, PubSubLocalEnricher, HealthSource {
+class PubSubFactoryService @Inject constructor(private val applicationStarted: ApplicationStarted) : PubSubFactory, PubSubLocalEnricher, HealthSource {
   private val log: Logger = LoggerFactory.getLogger(PubSubFactoryService::class.java)
 
   @ConfigKey("cloudevents.pubsub.local.host")
@@ -122,23 +140,8 @@ class PubSubFactoryService : PubSubFactory, PubSubLocalEnricher, HealthSource {
     }
 
     // we only start when everything is wired up and ready to go
-    if (ApplicationLifecycleManager.isReady()) {
+    if (applicationStarted.status == LifecycleStatus.STARTED) {
       startSubscribers()
-    } else {
-      // we only start when everything is wired up and ready to go
-      ApplicationLifecycleManager.registerListener { trans ->
-        if (trans.next == LifecycleStatus.STARTED) {
-          startSubscribers()
-        }
-      }
-    }
-
-    // register so when the system shuts down we stop listening
-    ApplicationLifecycleManager.registerListener { trans ->
-      if (trans.next == LifecycleStatus.TERMINATING) {
-        deleteDynamicSubscribers()
-        stopSubscribers()
-      }
     }
   }
 
@@ -318,6 +321,14 @@ class PubSubFactoryService : PubSubFactory, PubSubLocalEnricher, HealthSource {
     }
     dynamicSubscriber.add(subscriptionName)
     return makeSubscriber(subscriptionName, message)
+  }
+
+  override fun start() {
+    startSubscribers()
+  }
+
+  override fun shutdown() {
+    stopSubscribers()
   }
 
   override fun enrichPublisherClient(publisherBuilder: Publisher.Builder) {

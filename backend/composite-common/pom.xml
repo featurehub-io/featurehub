@@ -128,11 +128,6 @@
 
     <dependency>
       <groupId>cd.connect.common</groupId>
-      <artifactId>connect-app-lifecycle</artifactId>
-      <version>1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>cd.connect.common</groupId>
       <artifactId>connect-app-declare-config</artifactId>
       <version>2.1</version>
       <exclusions>

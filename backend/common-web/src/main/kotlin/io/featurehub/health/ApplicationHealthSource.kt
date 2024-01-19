@@ -1,13 +1,14 @@
 package io.featurehub.health
 
-import cd.connect.lifecycle.ApplicationLifecycleManager
-import cd.connect.lifecycle.LifecycleStatus
+import io.featurehub.lifecycle.ApplicationStarted
+import io.featurehub.lifecycle.LifecycleStatus
+import jakarta.inject.Inject
 import jakarta.inject.Singleton
 
 @Singleton
-class ApplicationHealthSource : HealthSource {
+class ApplicationHealthSource @Inject constructor(private val app: ApplicationStarted) : HealthSource {
   override val healthy: Boolean
-    get() = ApplicationLifecycleManager.getStatus() == LifecycleStatus.STARTED
+    get() = app.status == LifecycleStatus.STARTED
   override val sourceName: String
     get() = "Application Overall Health"
 }

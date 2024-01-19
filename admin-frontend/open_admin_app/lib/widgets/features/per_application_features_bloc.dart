@@ -99,28 +99,29 @@ class PerApplicationFeaturesBloc
     _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
     _featureServiceApi = FeatureServiceApi(_mrClient.apiClient);
     _userStateServiceApi = UserStateServiceApi(_mrClient.apiClient);
-    _rolloutStrategyServiceApi = ApplicationRolloutStrategyServiceApi(_mrClient.apiClient);
+    _rolloutStrategyServiceApi =
+        ApplicationRolloutStrategyServiceApi(_mrClient.apiClient);
     _environmentServiceApi = EnvironmentServiceApi(_mrClient.apiClient);
 
     _currentPid = _mrClient.streamValley.currentPortfolioIdStream
         .listen(addApplicationsToStream);
 
-    _currentEnvironmentFilter = _hiddenEnvironmentSource.listen(hiddenEnvironmentChanged);
+    _currentEnvironmentFilter =
+        _hiddenEnvironmentSource.listen(hiddenEnvironmentChanged);
 
     _currentAppId = _mrClient.streamValley.currentAppIdStream.listen(setAppId);
   }
 
   Future<void> hiddenEnvironmentChanged(HiddenEnvironments? env) async {
-      if (env != null) {
-        await getApplicationFeatureValuesData(
-            applicationId!, searchFieldTerm, selectedFeatureTypesByUser, rowsPerPage, currentPageIndex
-        );
-      }
+    if (env != null) {
+      await getApplicationFeatureValuesData(applicationId!, searchFieldTerm,
+          selectedFeatureTypesByUser, currentRowsPerPage, currentPageIndex);
+    }
   }
 
   Future<void> updateHiddenEnvironments() async {
     HiddenEnvironments envs =
-      await _userStateServiceApi.getHiddenEnvironments(applicationId!);
+        await _userStateServiceApi.getHiddenEnvironments(applicationId!);
 
     _hiddenEnvironmentSource.add(envs);
     _updateSelectedEnvironmentNames(envs);
@@ -128,14 +129,13 @@ class PerApplicationFeaturesBloc
 
   void _updateSelectedEnvironmentNames(HiddenEnvironments envs) {
     final candidateEnvs =
-    (envs.environmentIds.isEmpty && (envs.noneSelected != true))
-        ? _environments
-        : _environments
-        .where((env) => envs.environmentIds.contains(env.id))
-        .toList();
+        (envs.environmentIds.isEmpty && (envs.noneSelected != true))
+            ? _environments
+            : _environments
+                .where((env) => envs.environmentIds.contains(env.id))
+                .toList();
 
-    selectedEnvironmentNamesByUser =
-        candidateEnvs.map((e) => e.name).toList();
+    selectedEnvironmentNamesByUser = candidateEnvs.map((e) => e.name).toList();
   }
 
   @override
@@ -148,7 +148,8 @@ class PerApplicationFeaturesBloc
   }
 
   Future<void> setAppId(String? appId) async {
-    _currentAppId.pause(); // as we are async, we tell the subscription to not let any other requests thru
+    _currentAppId
+        .pause(); // as we are async, we tell the subscription to not let any other requests thru
     try {
       _log.fine("setAppId: $appId");
       applicationId = appId;
@@ -221,8 +222,8 @@ class PerApplicationFeaturesBloc
       if (pid != null) {
         List<Application>? appList;
         try {
-          appList = await _appServiceApi.findApplications(pid,
-              order: SortOrder.ASC);
+          appList =
+              await _appServiceApi.findApplications(pid, order: SortOrder.ASC);
           if (!_appSearchResultSource.isClosed) {
             _appSearchResultSource.add(appList);
           }
@@ -259,8 +260,8 @@ class PerApplicationFeaturesBloc
         alias: featureAlias,
         link: featureLink,
         description: featureDescription);
-    List<Feature> allFeatures = await _featureServiceApi.createFeaturesForApplication(
-        applicationId!, feature);
+    List<Feature> allFeatures = await _featureServiceApi
+        .createFeaturesForApplication(applicationId!, feature);
 
     final feat = allFeatures.firstWhereOrNull((e) => e.key == key);
 
@@ -327,40 +328,51 @@ class PerApplicationFeaturesBloc
       List<FeatureValueType> featureTypes,
       int rowsPerPage,
       int pageOffset) async {
-    fhosLogger.fine("started: getApplicationFeatureValuesData with $appId search $searchTerm");
+    fhosLogger.fine(
+        "started: getApplicationFeatureValuesData with $appId search $searchTerm");
     if (!_hiddenEnvironmentSource.hasValue) {
       return;
     }
 
     final hiddenEnvs = _hiddenEnvironmentSource.value!;
     var allFeatureValues = await _featureServiceApi
-        .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
-      appId,
-      max: rowsPerPage,
-      page: pageOffset,
-      filter: searchTerm,
-      featureTypes: featureTypes,
-      environmentIds: (hiddenEnvs.environmentIds.isEmpty && (hiddenEnvs.noneSelected != true)) ? null : hiddenEnvs.environmentIds
-    );
+        .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(appId,
+            max: rowsPerPage,
+            page: pageOffset,
+            filter: searchTerm,
+            featureTypes: featureTypes,
+            environmentIds: (hiddenEnvs.environmentIds.isEmpty &&
+                    (hiddenEnvs.noneSelected != true))
+                ? null
+                : hiddenEnvs.environmentIds);
 
-
-    _appFeatureValues.add(CollectedFeatureTableData(allFeatureValues, _environments));
+    _appFeatureValues
+        .add(CollectedFeatureTableData(allFeatureValues, _environments));
     // set current values
     searchFieldTerm = searchTerm;
     totalFeatures = allFeatureValues.maxFeatures;
     currentPageIndex = pageOffset;
     selectedFeatureTypesByUser = featureTypes;
     currentRowsPerPage = rowsPerPage;
-    fhosLogger.fine("finished: getApplicationFeatureValuesData with $appId search $searchTerm");
+    fhosLogger.fine(
+        "finished: getApplicationFeatureValuesData with $appId search $searchTerm");
   }
 
   updateApplicationFeatureValuesStream() async {
-    await getApplicationFeatureValuesData(applicationId!, searchFieldTerm, selectedFeatureTypesByUser, rowsPerPage, currentPageIndex);
+    await getApplicationFeatureValuesData(applicationId!, searchFieldTerm,
+        selectedFeatureTypesByUser, currentRowsPerPage, currentPageIndex);
   }
 
   EditingFeatureValueBloc perFeatureStateTrackingBloc(
-      Feature feature, FeatureValue featureValue, EnvironmentFeatureValues environmentFeatureValue) {
+      Feature feature,
+      FeatureValue featureValue,
+      EnvironmentFeatureValues environmentFeatureValue) {
     return EditingFeatureValueBloc(
-        applicationId!, feature, featureValue, environmentFeatureValue, this, _appFeatureValues.value!.applicationFeatureValues);
+        applicationId!,
+        feature,
+        featureValue,
+        environmentFeatureValue,
+        this,
+        _appFeatureValues.value!.applicationFeatureValues);
   }
 }

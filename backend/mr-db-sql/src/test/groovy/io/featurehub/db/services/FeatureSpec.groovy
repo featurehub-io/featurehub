@@ -7,6 +7,7 @@ import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyValidator
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
@@ -16,7 +17,6 @@ import io.featurehub.encryption.SymmetricEncrypter
 import io.featurehub.encryption.SymmetricEncrypterImpl
 import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.encryption.WebhookEncryptionServiceImpl
-import io.featurehub.messaging.converter.FeatureMessagingConverter
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.ApplicationFeatureValues
 import io.featurehub.mr.model.ApplicationRoleType
@@ -57,7 +57,7 @@ class FeatureSpec extends Base2Spec {
   Group groupInPortfolio1
   Group adminGroupInPortfolio1
   RolloutStrategyValidator rsv
-  FeatureMessagingConverter featureMessagingCloudEventPublisher
+  FeatureMessagingPublisher featureMessagingCloudEventPublisher
   CacheSourceFeatureGroupApi mockCacheSourceFeatureGroupApi
   WebhookEncryptionService webhookEncryptionService
   SymmetricEncrypter symmetricEncyrpter

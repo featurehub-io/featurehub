@@ -1,11 +1,8 @@
 package io.featurehub.web.security.saml
 
 import bathe.BatheBooter
-import cd.connect.lifecycle.ApplicationLifecycleManager
-import cd.connect.lifecycle.LifecycleStatus
 import io.featurehub.health.CommonFeatureHubFeatures
 import io.featurehub.jersey.FeatureHubJerseyHost
-import io.featurehub.lifecycle.TelemetryFeature
 import org.glassfish.hk2.api.Immediate
 import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.glassfish.jersey.server.ResourceConfig
@@ -26,7 +23,6 @@ class SamlTestServer {
 
   static void main(String[] args) {
     try {
-      ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTING)
       def config = new ResourceConfig(SamlResource, CommonFeatureHubFeatures)
 
       config.register(new AbstractBinder() {

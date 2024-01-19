@@ -4,9 +4,9 @@ import cd.connect.app.config.ThreadLocalConfigurationSource
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyValidator
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.encryption.WebhookEncryptionService
-import io.featurehub.messaging.converter.FeatureMessagingConverter
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.CreateApplication
@@ -33,7 +33,7 @@ class FeatureAuditingSpec extends Base2Spec {
   Environment env
   RolloutStrategyValidator rsValidator
   PersonFeaturePermission perms
-  FeatureMessagingConverter featureMessagingCloudEventPublisher
+  FeatureMessagingPublisher featureMessagingCloudEventPublisher
   ServiceAccountSqlApi serviceAccountApi
   InternalPersonApi internalPersonApi
 

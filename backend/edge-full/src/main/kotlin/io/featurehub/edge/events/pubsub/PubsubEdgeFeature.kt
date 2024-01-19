@@ -7,6 +7,10 @@ import io.featurehub.edge.events.StreamingEventPublisher
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.events.pubsub.PubSubFactory
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecycleListeners
+import io.featurehub.lifecycle.LifecyclePriority
+import io.featurehub.lifecycle.LifecycleStarted
 import io.featurehub.mr.messaging.StreamedFeatureUpdate
 import io.featurehub.webhook.common.WebhookCommonFeature
 import io.featurehub.webhook.events.WebhookEnvironmentResult
@@ -23,22 +27,17 @@ class PubsubEdgeFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     if (!GoogleEventFeature.isEnabled()) return false
 
-    context.register(object: AbstractBinder() {
-      override fun configure() {
-        bind(PubsubFeaturesListener::class.java)
-          .to(PubsubFeaturesListener::class.java).`in`(Immediate::class.java)
-        bind(PubsubFeatureUpdatePublisher::class.java)
-          .to(PubsubFeatureUpdatePublisher::class.java).`in`(Immediate::class.java)
-      }
-    })
+    LifecycleListeners.starter(PubsubFeaturesListener::class.java, context)
+    LifecycleListeners.starter(PubsubFeatureUpdatePublisher::class.java, context)
 
     return true
   }
 }
 
+@LifecyclePriority(priority = 12)
 class PubsubFeaturesListener @Inject constructor(
   private val controller: EdgeSubscriber,
-  pubsubFactory: PubSubFactory) {
+  pubsubFactory: PubSubFactory) : LifecycleListener {
   @ConfigKey("cloudevents.mr-edge.pubsub.topic-name")
   private var edgeTopicName: String? = "featurehub-mr-edge"
   @ConfigKey("cloudevents.mr-edge.pubsub.subscription-prefix")
@@ -60,7 +59,8 @@ class PubsubFeaturesListener @Inject constructor(
   }
 }
 
-class PubsubFeatureUpdatePublisher @Inject constructor(pubsubFactory: PubSubFactory, cloudEventPublisher: CloudEventPublisher) {
+@LifecyclePriority(priority = 12)
+class PubsubFeatureUpdatePublisher @Inject constructor(pubsubFactory: PubSubFactory, cloudEventPublisher: CloudEventPublisher) : LifecycleListener {
   @ConfigKey("cloudevents.edge-mr.pubsub.topic-name")
   private val updateChannelName: String = "featurehub-edge-updates"
 

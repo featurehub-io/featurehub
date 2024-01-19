@@ -1,7 +1,7 @@
 package io.featurehub.jersey
 
-import cd.connect.lifecycle.ApplicationLifecycleManager
-import cd.connect.lifecycle.LifecycleStatus
+import io.featurehub.lifecycle.ApplicationLifecycleManager
+import io.featurehub.lifecycle.LifecycleStatus
 import org.glassfish.jersey.server.monitoring.ApplicationEvent
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener
 import org.glassfish.jersey.server.monitoring.RequestEvent
@@ -21,12 +21,12 @@ class ApplicationLifecycleListener : ApplicationEventListener {
     if (event.type == ApplicationEvent.Type.INITIALIZATION_FINISHED) {
       if (!ApplicationLifecycleManager.isReady()) {
         log.info("Application started, triggering started events")
-        ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTED)
+        ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTED, event)
       }
     } else if (event.type == ApplicationEvent.Type.DESTROY_FINISHED) {
       log.info("Application complete, triggering shutdown events")
       if (ApplicationLifecycleManager.getStatus() != LifecycleStatus.TERMINATED) {
-        ApplicationLifecycleManager.updateStatus(LifecycleStatus.TERMINATED)
+        ApplicationLifecycleManager.updateStatus(LifecycleStatus.TERMINATED, event)
       }
     }
   }

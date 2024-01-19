@@ -2,6 +2,7 @@ package io.featurehub.db.services
 
 import io.ebean.Database
 import io.featurehub.db.api.RolloutStrategyValidator
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbEnvironment
@@ -9,7 +10,6 @@ import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersionKey
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
-import io.featurehub.messaging.converter.FeatureMessagingConverter
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Person
@@ -21,7 +21,7 @@ class FeatureAuditingBaseUnitSpec extends Specification {
   Conversions conversions
   CacheSource cacheSource
   RolloutStrategyValidator rolloutStrategyValidator
-  FeatureMessagingConverter featureMessagingCloudEventPublisher
+  FeatureMessagingPublisher featureMessagingCloudEventPublisher
 
   FeatureSqlApi fsApi
   Person person

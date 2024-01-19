@@ -10,6 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import org.jetbrains.annotations.NotNull;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -91,6 +93,7 @@ public class DbApplication extends DbVersionedBase {
     this.features = features;
   }
 
+  @NotNull
   public String getName() {
     return name;
   }

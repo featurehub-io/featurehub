@@ -130,7 +130,7 @@ Full documentation can be found at https://docs.featurehub.io[docs.featurehub.io
 === Getting started
 
 If you are just curious to see how FeatureHub works and would like to play with it there is a simple way of doing it,
-please follow instructions https://docs.featurehub.io/featurehub/latest/index.html#_evaluating_featurehub[here].
+please follow instructions https://docs.featurehub.io/featurehub/latest/evaluation.html[here].
 
 Alternatively, you can join FeatureHub SaaS https://app.featurehub.io/[here] and experiment while on free trial.
 

@@ -3,7 +3,7 @@ import { AuthServiceApi, PortfolioServiceApi, SetupServiceApi, UserCredentials }
 import { makeid } from './random';
 import { SdkWorld } from './world';
 import { discover } from './discovery';
-import { startWebServer, terminateServer } from './make_me_a_webserver';
+import {resetCloudEvents, startWebServer, terminateServer} from './make_me_a_webserver';
 
 const superuserEmailAddress = 'irina@i.com';
 // const superuserEmailAddress = 'superuser@mailinator.com';
@@ -53,6 +53,7 @@ async function ensureLoggedIn(world: SdkWorld) {
 
 Before(async function () {
   await ensureLoggedIn(this as SdkWorld);
+  resetCloudEvents();
 });
 
 Before(function () {

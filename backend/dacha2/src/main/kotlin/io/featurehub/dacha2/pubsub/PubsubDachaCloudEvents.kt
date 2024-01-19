@@ -7,14 +7,18 @@ import io.featurehub.enricher.FeatureEnricher
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.pubsub.PubSubFactory
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecyclePriority
+import io.featurehub.lifecycle.LifecycleStarted
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@LifecyclePriority(priority = 12)
 class PubsubDachaCloudEvents @Inject constructor(
   pubSubFactory: PubSubFactory,
   eventListener: CloudEventReceiverRegistry,
-  featureEnricher: FeatureEnricher) {
+  featureEnricher: FeatureEnricher) : LifecycleListener {
   @ConfigKey("cloudevents.mr-dacha2.pubsub.topic-name")
   var topicName: String? = "featurehub-mr-dacha2"
   @ConfigKey("cloudevents.enricher.pubsub.subscription-name")

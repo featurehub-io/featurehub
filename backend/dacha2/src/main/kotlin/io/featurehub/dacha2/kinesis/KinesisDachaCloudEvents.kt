@@ -7,16 +7,19 @@ import io.featurehub.enricher.FeatureEnricher
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.kinesis.KinesisFactory
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecyclePriority
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 
+@LifecyclePriority(priority = 12)
 class KinesisDachaCloudEvents @Inject constructor(
   kinesisFactory: KinesisFactory,
   eventListener: CloudEventReceiverRegistry,
   featureEnricher: FeatureEnricher,
-  cloudEventPublisher: CloudEventPublisher) {
+  cloudEventPublisher: CloudEventPublisher) : LifecycleListener {
   @ConfigKey("cloudevents.inbound.kinesis.mr-features-name")
   var topicName: String? = "featurehub-mr-dacha2"
   @ConfigKey("cloudevents.enricher.channel-name")

@@ -2,15 +2,15 @@ package io.featurehub.edge
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import cd.connect.lifecycle.ApplicationLifecycleManager
-import cd.connect.lifecycle.LifecycleStatus
-import cd.connect.lifecycle.LifecycleTransition
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.cache.RemovalListener
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.edge.client.ClientConnection
 import io.featurehub.edge.features.DachaFeatureRequestSubmitter
+import io.featurehub.lifecycle.ApplicationLifecycleManager
+import io.featurehub.lifecycle.LifecycleStatus
+import io.featurehub.lifecycle.LifecycleTransition
 import io.opentelemetry.context.Context
 import io.prometheus.client.Gauge
 import jakarta.inject.Inject

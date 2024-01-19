@@ -7,6 +7,8 @@ import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.enriched.model.EnricherPing
 import io.featurehub.enricher.FeatureEnricher
 import io.featurehub.events.CloudEventReceiverRegistry
+import io.featurehub.lifecycle.LifecyclePriority
+import io.featurehub.lifecycle.LifecycleStarted
 import io.featurehub.utils.ExecutorSupplier
 import jakarta.annotation.PostConstruct
 import jakarta.inject.Inject
@@ -19,13 +21,14 @@ import java.util.concurrent.ExecutorService
 /**
  * We pass in the dacha2 cache directly as
  */
+@LifecyclePriority(priority = 10)
 class Dacha2CloudEventListenerImpl @Inject constructor(
   private val dacha2Caches: IterableProvider<Dacha2CacheListener>,
   private val dacha2Cache: Dacha2Cache,
   featureEnricher: FeatureEnricher,
   register: CloudEventReceiverRegistry,
   executorSupplier: ExecutorSupplier
-) {
+) : LifecycleStarted {
   private val log: Logger = LoggerFactory.getLogger(Dacha2CloudEventListenerImpl::class.java)
   var dacha2CacheList = mutableListOf<Dacha2CacheListener>()
   @ConfigKey("dacha2.thread-processors")
@@ -76,8 +79,7 @@ class Dacha2CloudEventListenerImpl @Inject constructor(
     }
   }
 
-  @PostConstruct
-  fun init() {
+  override fun started() {
     dacha2CacheList.addAll(dacha2Caches)
   }
 }

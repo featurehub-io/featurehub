@@ -27,6 +27,7 @@ class Dacha2NatsListenerSpec extends Specification {
   def "a listener to will process the message"() {
     when:
       make()
+      listener.started()
       listener.shutdown()
     then:
       1 * nats.createTopicListener(_, _,) >> natsListener

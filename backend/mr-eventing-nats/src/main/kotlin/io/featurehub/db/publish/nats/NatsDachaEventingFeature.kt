@@ -1,7 +1,7 @@
 package io.featurehub.db.publish.nats
 
+import io.featurehub.lifecycle.LifecycleListeners
 import io.featurehub.mr.events.common.CacheBroadcast
-import io.featurehub.mr.events.common.CloudEventCacheBroadcaster
 import io.featurehub.mr.events.nats.NatsCloudEventsPublishers
 import io.featurehub.mr.events.nats.NatsMRCloudEventsQueueUpdateListener
 import io.featurehub.publish.NATSFeature
@@ -28,22 +28,22 @@ class NatsDachaEventingFeature : Feature {
     if (NATSFeature.isNatsConfigured()) {
       context.register(object : AbstractBinder() {
         override fun configure() {
-          // this binds all of the respective cloud events to appropriate outbound channels
-          bind(NatsCloudEventsPublishers::class.java).to(NatsCloudEventsPublishers::class.java)
-            .`in`(Immediate::class.java)
-
-          // always listen for Edge updates in Cloud Events format
-          bind(NatsMRCloudEventsQueueUpdateListener::class.java).to(NatsMRCloudEventsQueueUpdateListener::class.java)
-            .`in`(Immediate::class.java)
-
           if (isDacha1Enabled()) {
-            // we want this to fire up immediately on start and start listening. It listens from edge for updates
-            // about feature updates and webhook success/failure
-            bind(NATSSetupCacheFillers::class.java).to(NATSSetupCacheFillers::class.java).`in`(Immediate::class.java)
             bind(NatsDachaBroadcaster::class.java).to(CacheBroadcast::class.java).`in`(Singleton::class.java)
           }
         }
       })
+
+      // this binds all of the respective cloud events to appropriate outbound channels
+      LifecycleListeners.starter(NatsCloudEventsPublishers::class.java, context)
+      // always listen for Edge updates in Cloud Events format, use wrap even tho it doesn't have a startup method
+      LifecycleListeners.wrap(NatsMRCloudEventsQueueUpdateListener::class.java, context)
+
+      if (isDacha1Enabled()) {
+        // we want this to fire up immediately on start and start listening. It listens from edge for updates
+        // about feature updates and webhook success/failure
+        LifecycleListeners.wrap(NATSSetupCacheFillers::class.java, context)
+      }
 
       return true
     }
