@@ -35,7 +35,7 @@ default: &defaults
       - publish-feature-v1
       - publish-environment-v1
       - publish-serviceaccount-v1
-    config:
+    channelName:
       property: "cloudevents.inbound.mr-features-name"
       default: featurehub-mr-dacha2
     subscribers:
@@ -56,7 +56,7 @@ default: &defaults
     cloudEvents:
       - enriched-feature-v1
     description: "This is the channel on which enriched environment data is published after being processed by Dacha2"
-    config:
+    channelName:
       property: "cloudevents.enricher.channel-name"
       default: "featurehub-enriched-events"
     conditional:
@@ -80,6 +80,7 @@ default: &defaults
       - webhook-environment-result-v1
     subscribers:
       notifications:
+        multiSupport: true  # supports multiple channel names in property name
         tags:
           - mr
     publishers:
@@ -91,29 +92,29 @@ default: &defaults
 kinesis:
   <<: *defaults
   "cache-channel":
-    config:
+    channelName:
       property: "cloudevents.inbound.kinesis.mr-features-name"
 
   "feature-only-channel":
-    config:
+    channelName:
       property: "cloudevents.mr-edge.kinesis.stream-name"
       default: "featurehub-mr-edge"
     subscribers:
-      enricher:
+      dacha2-enricher:
         name: "edge-"
         prefixConfig:
           property: "cloudevents.enricher.kinesis.queue-name"
           default: "enricher-queue"
 
   "mr-notifications-channel":
-    config:
+    channelName:
       property: "cloudevents.edge-mr.kinesis.stream-name"
       default: "featurehub-edge-updates"
 
 pubsub:
   <<: *defaults
   "cache-channel":
-    config:
+    channelName:
       property: "cloudevents.mr-dacha2.pubsub.topic-name"
       default: "featurehub-mr-dacha2"
     subscribers:
@@ -124,42 +125,66 @@ pubsub:
         prefixConfig:
           property: "cloudevents.mr-dacha2.pubsub.subscription-prefix"
           default: "featurehub-dacha2-listener"
-    publishers:
-
 
   "feature-only-channel":
+    channelName:
+      property: "cloudevents.mr-edge.pubsub.topic-name"
+      default: "featurehub-mr-edge"
     subscribers:
-      enricher:
+      edge-features:
+        prefix:
+          property: "cloudevents.mr-edge.pubsub.subscription-prefix"
+          default: "featurehub-edge-listener"
+      dacha2-enricher:
         config:
           description: "In pubsub, there are different topics"
           property: "cloudevents.enricher.pubsub.subscription-name"
           default: "enricher-updates-sub"
 
   "enriched-environment-channel":
-    config:
-      default: "featurehub-enriched-events"
     subscribers:
       enricher:
         config:
-          property: "cloudevents.enricher.pubsub.enriched-subscription-name"
-          default: "enrich-listener"
+          description: "In pubsub, there are different topics"
+          property: "cloudevents.enricher.pubsub.subscription-name"
+          default: "enricher-updates-sub"
     publishers:
       enricher:
         property: "cloudevents.enricher.pubsub.enriched-subscription-name"
         default: "enrich-listener"
 
+  "mr-notifications-channel":
+    channelName:
+      property: "cloudevents.edge-mr.pubsub.topic-name"
+      default: "featurehub-edge-updates"
+    subscribers:
+      notifications:
+        config:
+          property: "cloudevents.edge-mr.channel-names"
+          default: "featurehub-edge-updates-mr-sub"
 
 nats:
   <<: *defaults
-  "dacha2-feature-channel":
-    config:
-      property: "cloudevents.inbound.kinesis.mr-features-name"
-      default: featurehub/mr-dacha2-channel
-  "dacha2-enricher-channel":
-    config:
-      default: "featurehub/enriched-events"
+  "cache-channel":
+    channelName:
+      property: "cloudevents.mr-dacha2.nats.channel-name"
+      default: "featurehub/mr-dacha2-channel"
+
+  "feature-only-channel":
+    channelName:
+      property: "cloudevents.mr-edge.nats.channel-name"
+      default: "featurehub/mr-edge-channel"
     subscribers:
-      enricher:
+      dacha2-enricher:
+        name: "enricher"
+
+  "mr-notifications-channel":
+    channelName:
+      property: "cloudevents.edge-mr.nats.channel-name"
+      default: "featurehub/mr-updates-queue"
+    subscribers:
+      notifications:
         prefixConfig:
-          property: "cloudevents.enricher.queue-name"
-          default: "enrich-listener"
+          property: "cloudevents.edge-mr.nats.queue-name"
+          default: "featurehub/mr-update"
+

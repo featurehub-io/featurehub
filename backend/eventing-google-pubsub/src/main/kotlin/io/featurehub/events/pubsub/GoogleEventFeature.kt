@@ -1,5 +1,6 @@
 package io.featurehub.events.pubsub
 
+import io.featurehub.events.EventingFeatureSource
 import io.featurehub.health.HealthSource
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecycleListeners
@@ -10,6 +11,11 @@ import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
 import org.glassfish.hk2.api.Immediate
 import org.glassfish.jersey.internal.inject.AbstractBinder
+
+class PubsubEventingFeatureSource : EventingFeatureSource {
+  override val featureSource: Class<out Feature>?
+    get() = if (GoogleEventFeature.isEnabled()) GoogleEventFeature::class.java else null
+}
 
 class GoogleEventFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {

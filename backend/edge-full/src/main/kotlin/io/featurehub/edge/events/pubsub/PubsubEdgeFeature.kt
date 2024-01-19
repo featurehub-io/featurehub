@@ -10,7 +10,6 @@ import io.featurehub.events.pubsub.PubSubFactory
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecycleListeners
 import io.featurehub.lifecycle.LifecyclePriority
-import io.featurehub.lifecycle.LifecycleStarted
 import io.featurehub.mr.messaging.StreamedFeatureUpdate
 import io.featurehub.webhook.common.WebhookCommonFeature
 import io.featurehub.webhook.events.WebhookEnvironmentResult
@@ -18,8 +17,6 @@ import io.features.webhooks.features.WebhookFeature
 import jakarta.inject.Inject
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
-import org.glassfish.hk2.api.Immediate
-import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
