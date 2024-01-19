@@ -1,0 +1,165 @@
+default: &defaults
+  "feature-only-channel":
+    description: "This describes the channel which publishes only public-feature-v1 updates. It is used by dacha for enriching and edge for streaming."
+    cloudEvents:
+      - publish-feature-v1
+      - enricher-ping-v1
+    subscribers:
+      edge-features:
+        tags:
+          - edge
+        broadcast: true
+        description: "All of the features come in and each edge gets a copy"
+        name: dacha2
+        ceRegistry: common
+        cloudEventsInclude:   # we only want features in edge, ignore the enricher-pings
+          - publish-feature-v1
+      dacha2-enricher:
+        tags:
+          - dacha2
+        broadcast: false
+        conditional: # only create this subscriber if this conditional is true
+          property: enricher.enabled
+          default: true
+        description: "Shared across all Dacha's for processing - subscriber is shared across all dacha instances"
+        ceRegistry: enricher  # these messages go into a special cloud-event-registry
+    publishers:
+      mr-features:
+        tags:
+          - mr
+        ceRegistry: common
+
+  "cache-channel":
+    description: "This is the channel on which features get published"
+    cloudEvents:
+      - publish-feature-v1
+      - publish-environment-v1
+      - publish-serviceaccount-v1
+    config:
+      property: "cloudevents.inbound.mr-features-name"
+      default: featurehub-mr-dacha2
+    subscribers:
+      dacha2:
+        tags:
+          - dacha2
+        broadcast: true
+        description: "All of the features come in and each dacha gets a copy"
+        name: dacha2
+        ceRegistry: common
+    publishers:
+      cache:
+        ceRegistry: common
+        tags:
+          - mr
+
+  "enriched-environment-channel":
+    cloudEvents:
+      - enriched-feature-v1
+    description: "This is the channel on which enriched environment data is published after being processed by Dacha2"
+    config:
+      property: "cloudevents.enricher.channel-name"
+      default: "featurehub-enriched-events"
+    conditional:
+      property: "webhooks.features.enabled"
+      default: "false"
+    subscribers:
+      enricher:
+        tags:
+          - edge
+    publishers:
+      enricher:
+        ceRegistry: common
+        tags:
+          - dacha
+          - dacha2
+
+  "mr-notifications-channel":
+    description: "This holds all of the information where outside systems wish to pass back information to MR"
+    cloudEvents:
+      - feature-update-v1
+      - webhook-environment-result-v1
+    subscribers:
+      notifications:
+        tags:
+          - mr
+    publishers:
+      notifications:
+        ceRegistry: common
+        tags:
+          - edge
+
+kinesis:
+  <<: *defaults
+  "cache-channel":
+    config:
+      property: "cloudevents.inbound.kinesis.mr-features-name"
+
+  "feature-only-channel":
+    config:
+      property: "cloudevents.mr-edge.kinesis.stream-name"
+      default: "featurehub-mr-edge"
+    subscribers:
+      enricher:
+        name: "edge-"
+        prefixConfig:
+          property: "cloudevents.enricher.kinesis.queue-name"
+          default: "enricher-queue"
+
+  "mr-notifications-channel":
+    config:
+      property: "cloudevents.edge-mr.kinesis.stream-name"
+      default: "featurehub-edge-updates"
+
+pubsub:
+  <<: *defaults
+  "cache-channel":
+    config:
+      property: "cloudevents.mr-dacha2.pubsub.topic-name"
+      default: "featurehub-mr-dacha2"
+    subscribers:
+      dacha2:
+        config:
+          property: "cloudevents.enricher.pubsub.subscription-name"
+          default: "enricher-updates-sub"
+        prefixConfig:
+          property: "cloudevents.mr-dacha2.pubsub.subscription-prefix"
+          default: "featurehub-dacha2-listener"
+    publishers:
+
+
+  "feature-only-channel":
+    subscribers:
+      enricher:
+        config:
+          description: "In pubsub, there are different topics"
+          property: "cloudevents.enricher.pubsub.subscription-name"
+          default: "enricher-updates-sub"
+
+  "enriched-environment-channel":
+    config:
+      default: "featurehub-enriched-events"
+    subscribers:
+      enricher:
+        config:
+          property: "cloudevents.enricher.pubsub.enriched-subscription-name"
+          default: "enrich-listener"
+    publishers:
+      enricher:
+        property: "cloudevents.enricher.pubsub.enriched-subscription-name"
+        default: "enrich-listener"
+
+
+nats:
+  <<: *defaults
+  "dacha2-feature-channel":
+    config:
+      property: "cloudevents.inbound.kinesis.mr-features-name"
+      default: featurehub/mr-dacha2-channel
+  "dacha2-enricher-channel":
+    config:
+      default: "featurehub/enriched-events"
+    subscribers:
+      enricher:
+        prefixConfig:
+          property: "cloudevents.enricher.queue-name"
+          default: "enrich-listener"
