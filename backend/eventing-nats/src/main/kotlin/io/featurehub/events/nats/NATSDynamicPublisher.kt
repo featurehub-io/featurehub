@@ -1,10 +1,11 @@
-package io.featurehub.publish
+package io.featurehub.events.nats
 
 import io.featurehub.events.CloudEventChannelMetric
 import io.featurehub.events.CloudEventDynamicPublisherRegistry
 import io.featurehub.events.CloudEventPublisher
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
+import io.featurehub.publish.NATSSource
 import jakarta.inject.Inject
 
 /**

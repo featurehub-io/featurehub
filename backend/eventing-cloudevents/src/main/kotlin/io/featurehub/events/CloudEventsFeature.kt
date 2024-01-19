@@ -21,11 +21,16 @@ class CloudEventsFeature : Feature {
 
     LifecycleListeners.starter(WebDynamicPublisher::class.java, context)
 
+    // discover eventing (if any)
     findEventingLayer(context)
 
     return true
   }
 
+  /**
+   * This determines if we have an eventing layer, finding each of the eventing feature source classes and asking it
+   * if it is configured.
+   */
   private fun findEventingLayer(context: FeatureContext) {
     val sources = ServiceLoader.load(EventingFeatureSource::class.java)
 

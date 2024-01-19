@@ -1,4 +1,5 @@
-default: &defaults
+# these are pre-merged into all lower down
+default:
   "feature-only-channel":
     description: "This describes the channel which publishes only public-feature-v1 updates. It is used by dacha for enriching and edge for streaming."
     cloudEvents:
@@ -90,7 +91,6 @@ default: &defaults
           - edge
 
 kinesis:
-  <<: *defaults
   "cache-channel":
     channelName:
       property: "cloudevents.inbound.kinesis.mr-features-name"
@@ -112,7 +112,6 @@ kinesis:
       default: "featurehub-edge-updates"
 
 pubsub:
-  <<: *defaults
   "cache-channel":
     channelName:
       property: "cloudevents.mr-dacha2.pubsub.topic-name"
@@ -132,7 +131,7 @@ pubsub:
       default: "featurehub-mr-edge"
     subscribers:
       edge-features:
-        prefix:
+        prefixConfig:
           property: "cloudevents.mr-edge.pubsub.subscription-prefix"
           default: "featurehub-edge-listener"
       dacha2-enricher:
@@ -150,8 +149,9 @@ pubsub:
           default: "enricher-updates-sub"
     publishers:
       enricher:
-        property: "cloudevents.enricher.pubsub.enriched-subscription-name"
-        default: "enrich-listener"
+        config:
+          property: "cloudevents.enricher.pubsub.enriched-subscription-name"
+          default: "enrich-listener"
 
   "mr-notifications-channel":
     channelName:
@@ -164,7 +164,6 @@ pubsub:
           default: "featurehub-edge-updates-mr-sub"
 
 nats:
-  <<: *defaults
   "cache-channel":
     channelName:
       property: "cloudevents.mr-dacha2.nats.channel-name"
