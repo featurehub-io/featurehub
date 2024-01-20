@@ -1,53 +1,53 @@
 = Features
 
-Features are the main components of FeatureHub, they can be simple feature flags, strings, numbers or more advanced JSON
-formats intended for forms of configuration.
+Features are the main components of FeatureHub, you can create them from the "Features" menu.
 
 == Feature types
 
 You can create features of the following types:
 
-* `BOOLEAN` used for basic boolean feature flags (toggles)
-* `NUMBER` numerical values
+* `BOOLEAN` used for basic boolean feature flags (toggles). Can be `true` or `false` values
+* `NUMBER` numerical values. Can be any number, including decimals
 * `STRING` string values
-* `JSON` valid JSON only (typically used for remote configuration, or otherwise overriding internal values of an application)
+* `JSON`  JSON values (typically used for remote configuration, or to override internal values of an application, etc.)
 
 image::fh_create_feature.png[Create Feature, 1500]
 
 
 == Feature key
 
-The feature key is the reference you use in your application, when you use the SDK,
-you can check the value of a feature, referencing the feature key.
-It *must be unique* for your application. For example "FEATURE_LANDING_PAGE"
+When you use the SDK, you can check the value of a feature, referencing the feature key.
+It *must be unique* for your application. For example, a valid key: "FEATURE_LANDING_PAGE". (numbers, letters and underscores are allowed).
 
 == Feature value
 
-When you add a feature flag, this will also automatically create a feature value in each environment. The default feature value will be set to `*off*` for `boolean` type and to `*null*` for `string`, `number` and `json`. By default, each feature value will be locked. Essentially feature value is always associated with an application and an environment for that application.
+When you add a feature flag, this will also automatically create a "default" feature value in each environment. The default feature value will be set to `*off*` for `boolean` type and to `*not set*` for `string`, `number` and `json`. By default, boolean feature value will be locked. Essentially feature value is always associated with an application and an environment for that application.
+
+As well as having a "default" value, a feature can have a value assigned to a "strategy" in each environment. This is for example, when you want to add a strategy with a split targeting rule, e.g. target a segment of users with `device=mobile` rule. You could set the "default" value on a feature as "OFF" and "strategy" value as "ON".
 
 == Feature description
-This field can hold a feature description, max 300 characters.
+This field can hold a feature description, max 300 characters. The field is optional.
 
 == Feature reference link
-This field can hold a link for example to your task management system, e.g. Jira or Azure DevOps.
+This field can hold a link for example to your task management system, e.g. Jira, Azure DevOps, etc. The field is optional.
 
 == Feature metadata
 
 The intention of this field is to store additional information that you may need to provide about your feature, for example when you want to access this information from your CI/CD pipeline. This could be JSON string, simple string, property entries or other types of data. It is stored as a string and has no data limit (stored as CLOB).
-Metadata field can be accessible once feature is created from the Edit menu.
+Metadata field can be accessible once feature is created from the Edit menu. The field is optional.
 
 image::fh-metadata-edit.png[Feature Metadata, 600]
 
 
 == Deleting and retiring a feature
 
-When feature flag is not needed any longer in your application, and you are ready to remove it, you can first "retire" this feature in a single environment to test how your application behaves, by setting it to the "Retired" state. This means that the feature won't be visible by the SDKs, imitating the "deleted" state. You can always "un-retire" a feature if you change your mind as this operation is reversible. Once you retire feature values across all the environments and test that your application behaves as expected, you can delete your entire feature. Deleting a feature means it is completely deleted from the system for all environments. This operation is not reversible. To retire a feature you will need environment specific "CHANGE_VALUE" permission. To delete a feature, you require an application specific permission to create, edit and delete features.
+When feature flag is not needed any longer in your application, and you are ready to remove it, you can first "retire" this feature in a single environment to test how your application behaves. This means that the feature won't be visible by the SDKs, imitating the "deleted" state. You can always "un-retire" a feature if you change your mind as this operation is reversible. Once you retire feature values across all the environments and test that your application behaves as expected, you can delete your entire feature. Deleting a feature means it is completely deleted from the system for all environments. This operation is not reversible. To retire a feature you will need environment specific "CHANGE_VALUE" permission. To delete a feature, you require an application specific permission to create, edit and delete features.
 
 image::fh_retire_feature.png[Retire Feature, 1500]
 
 
 == Locking a feature
-Locking provides an additional safety net per environment when deploying incomplete code into production. It locks a feature, so its value can't be changed for a given environment.
+Locking provides an additional safety net per environment when deploying incomplete code into production. It locks a feature, so its value, targeting rules, "retired" statues can't be changed for a given environment.
 Typically, developers keep features locked until they are finished and ready to be set, for example when they are ready to be tested in one of the test environments. Another use case for feature locking would be when developers or testers keep it locked in production environment, indicating to release management team that it is not ready to be turned on. Only groups or service accounts with `LOCK/UNLOCK` or `CHANGE_VALUE` permission can lock or unlock the feature value.  `CHANGE_VALUE` permission supersedes the `LOCK/UNLOCK`.
 
 image::fh_lock_feature.png[Lock Feature, 1500]

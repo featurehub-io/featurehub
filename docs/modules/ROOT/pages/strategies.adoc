@@ -2,14 +2,14 @@
 
 == Rollout strategies
 
-Rollout strategies provide an ability to roll out features to a limited audience based on targeting rules, for example imagine you have a feature flag of type string which controls a _"button color"_ that can be in multiple states,
+Rollout strategies provide an ability to roll out features to a segment of audience based on targeting rules. For example, a feature flag of type `string` which controls a _"button color"_ that can be in multiple states,
 e.g. green, blue, red etc. With rollout strategies, you can serve a `green` value to users on `iOS` devices,
 `blue` value to users whose emails ending with `gmail.com` and `red` value to users whose location is
-`New Zealand or United States or United Kingdom`. You can also use percentage based rollouts and for example, turn your feature "on" only to 50% of the audience.
+`New Zealand or United States or United Kingdom`. You can also use percentage based rollouts and turn your feature "on" only to 50% of the audience.
 
-Rollout strategies are created and added per link:features{outfilesuffix}[Feature value]. Once you add a strategy you can set a feature value to serve to users that will match this strategy, for example "on" or "off". In case a user doesn't match any of the provided strategies, they will be served a "default value". You can change the default strategy and rollout strategy feature values at any time (given you have permissions).
+Once you add a strategy you can set a link:features{outfilesuffix}[feature value] to serve to users that will match this strategy, for example "on" or "off". If a user doesn't match any of the provided strategies, they will be served a "default value". You can change the default strategy and rollout strategy feature values at any time (given you have permissions).
 
-You can apply zero or more rollout strategies to a feature. Each rollout strategy can be assigned a different feature value.
+You can apply zero or more rollout strategies to a feature. Each rollout strategy can be assigned a different feature value. See link:strategies{outfilesuffix}[Rollout strategies evaluation order] for details on strategies ordering. 
 
 image::fh_split_targeting_2.png[Split targeting,600]
 
@@ -34,7 +34,9 @@ the strategy will be ignored. There is no limit on how many rules you can apply.
 
 == Targeting rule types
 
-=== Preset
+=== Preset rules
+
+Preset rules are defined in FeatureHub SDKs and can be accessed via SDK functions, e.g. in JS SDK `await fhContext.country(StrategyAttributeCountryName.NewZealand).build();`
 
 - Country
 
@@ -61,7 +63,7 @@ Requires to be in semantic version format, e.g. `1.2.0` -  read more about seman
 
 === Custom
 
-If you cannot find a suitable rule from those listed above, you can create your own rule. When setting up a custom rule you will be required to select a rule type.
+If Preset rules do not satisfy your requirements you also have an ability to attach a custom rule.
 
 *Supported custom rules types:*
 
@@ -73,14 +75,33 @@ If you cannot find a suitable rule from those listed above, you can create your 
 
 `semantic version` - as per semantic version format. If you are only targeting Java you also get the additional formats supported by Maven and Gradle.
 
-`date` - international format only - ``YYYY-MM-DD ``
+`date` - international format only - `YYYY-MM-DD`
 
 `date-time` - international format only - `YYYY-MM-DDTHH:MM:SS.NNN` with an optional timezone, UTC is assumed
 
 `ip-address` - CIDR or specific IP addresses are supported.
 
+To create a custom rule, select "Add split targeting rules" from the Feature editing menu and select "Custom" option. Enter "custom key", for example `languages`, set the type, e.g. `string`, a matching condition, e.g. `equals` and provide matching value or a list of values, e.g. `english, spanish, french`
 
-Note, if you do not set the value in the _user context_ in the SDK, and the rule indicates to match `blank` value then this rule will evaluate to true.
+image::fh_split_targeting_custom.png[Split targeting custom rule,1500]
+
+When you need to evaluate a user in the SDK, you can pass the "custom key" and user attributes (in this case language attribute values), e.g. in JS SDK:
+
+[source]
+----
+await fhContext.attributeValue('languages', 'italian').build();
+----
+
+or for an array of values:
+
+[source]
+----
+await fhContext.attributeValue('languages', ['italian', 'english', 'german']).build();
+----
+
+
+
+NOTE: if you do not set the value in the _user context_ in the SDK, and the rule indicates to match `blank` value then this rule will evaluate to true.
 
 == Percentage split rule
 
@@ -95,7 +116,7 @@ In case of multiple rollout strategies assigned to a feature that contain percen
 If you add percentage based rollout strategies that do not add to 100%, then the remainder continues to use the
 default value.
 
-You can also use percentage rules to perform *_A-B testing_* or *_run experiments_*. Given FeatureHub provides a GoogleAnalytics connector - you can see the result of your experimentation in the Google Analytics Events dashboard in real time.
+You can also use percentage rules to perform *_A-B testing_* or *_run experiments_*. Given FeatureHub provides a Google Analytics connector - you can see the result of your experimentation in the Google Analytics Events dashboard in real time.
 
 Percentage rules can be mixed with other rules, for example a strategy can have a country rule and a percentage rule, e.g. turn on the feature flag to 25% of the audience in New Zealand.
 
@@ -106,10 +127,10 @@ NOTE: It is important to note that the percentages are an approximation, the alg
 in SDK in the client side (either a `sessionId` or a `userKey`, ideally consistent for the user across platforms). It uses
 an algorithm to spread that across a range giving you control down to four decimal points, but the algorithm is more accurate
 the greater the number of clients you have. i.e. you can roll out to 0.0001% of your usage base if you wish.
-If you only have five users, this probably won't turn it on for anyone, if you have a million it will
+If you only have five users, this probably won't turn a feature "on" for anyone, if you have a million it will
 be more accurate.
 
-== Rollout strategies order
-As you can assign multiple rollout strategies to a feature, the order of the strategies becomes important. The SDK applies the strategies  in order from first to last, and stops when it hits a matching one. Strategies order can be set by dragging them in the Admin UI console - feature editing panel.
+== Rollout strategies evaluation order
+As you can assign multiple rollout strategies to a feature, the order of the strategies becomes important. Strategies evaluated in order from first to last (in the Admin UI, as they are displayed from top to bottom), and stops when it hits a matching one. If no strategies match, then "default" feature value is served. Strategies order can be set by dragging them in the Admin UI console - feature editing panel. 
 
 image::fh_reorder_strategies.png[Split targeting,500]

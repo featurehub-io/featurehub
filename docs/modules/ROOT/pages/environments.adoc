@@ -1,28 +1,33 @@
 = Environments
 
 Applications have one or more environments, these typically refer to groups of co-operating deployments of your
-application in different environments. There are often multiple environments, for example: development,
-acceptance testing, UAT, production. You can create as many environments as you need.
-The values of your features are set per environment.
+application in different environments. There are often multiple environments, for example: development, test, UAT, production. 
+
+== Creating an environment 
+
+You can add environments from the Environments menu (within Application Settings). The number of environments is unlimited. You will require "Portfolio Admin" or "Organization Super Admin" permission.
 
 When an application is created there is always an initial environment
-called `Production` created and marked as "Production". Marking an environment as "Production" doesn't impact any feature values or the way they are served, it will just throw an additional warning if you attempt to remove it.
+called `Production` created and marked as "Production". This doesn't impact any feature values or the way they are served, it will just throw an additional warning if you attempt to remove it.
 
-Every FeatureHub environment has a unique ID, this ID plus a Service Account form an API Key, which you reference in your application via the
+Every FeatureHub environment has a unique ID, this ID plus a Service Account ID form an API Key, which you reference in your application via the
 SDK when you query for the value of the features.
 
-Environments can only be created and managed with "Portfolio Admin" or "Organization Super Admin" permission.
+The values of your features are set per environment.
+
 
 == Environments ordering
 
-Environments ordering allows you to drag and drop environments according to the deployment order in your CI/CD pipeline, in other words you can refer to this as "environments promotion order". Environments ordering is useful as it will reflect on the "Features console" and display feature values for the environments in the order that you have specified.
+Environments ordering allows you to drag and drop environments according to the deployment order in your CI/CD pipeline, for example, or in the order of how your code gets promoted and tested in the different environments. Environments ordering is useful as it will reflect visually on the "Features console" and display feature values for the environments in the order that you have specified.
 
 *Application settings*
 
 image::fh_env_order.png[Apppplications, 1000]
 
-*Features console*
+*Ordered environments on the Features console*
 
-image::fh_features_dahsboard.png[Apppplications, 1500]
+image::fh_features_dashboard.png[Apppplications, 1500]
 
+== Deleting an environment
 
+You can delete an environment at any time with the "Portfolio Admin" or "Organization Super Admin" permission. When environment is deleted it removes feature values settings in that environment and API keys, so make sure you are deleting it safely. 
