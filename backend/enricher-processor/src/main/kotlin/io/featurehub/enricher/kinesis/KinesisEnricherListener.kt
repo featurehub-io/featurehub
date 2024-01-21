@@ -4,18 +4,12 @@ import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.enriched.model.EnrichedFeatures
 import io.featurehub.enricher.FeatureEnricher
-import io.featurehub.enricher.nats.NatsEnricherBase
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.kinesis.KinesisFactory
-import io.featurehub.events.nats.NatsListener
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
-import io.featurehub.publish.NATSSource
-import jakarta.annotation.PreDestroy
 import jakarta.inject.Inject
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.*
 
 open class KinesisEnricherBase {
@@ -52,7 +46,7 @@ class KinesisEnricherListener @Inject constructor(
 class KinesisEnricherPublisher @Inject constructor(
   kinesisFactory: KinesisFactory,
   featureEnricher: FeatureEnricher,
-  cloudEventsPublisher: CloudEventPublisher
+  cloudEventsPublisher: CloudEventPublisherRegistry
 ) : KinesisEnricherBase(), LifecycleListener {
   init {
     val publisher = kinesisFactory.makePublisher(enricherChannelName!!)

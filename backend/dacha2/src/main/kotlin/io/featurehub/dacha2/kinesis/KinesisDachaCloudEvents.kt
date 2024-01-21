@@ -4,7 +4,7 @@ import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.enriched.model.EnrichedFeatures
 import io.featurehub.enricher.FeatureEnricher
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.kinesis.KinesisFactory
 import io.featurehub.lifecycle.LifecycleListener
@@ -19,7 +19,7 @@ class KinesisDachaCloudEvents @Inject constructor(
   kinesisFactory: KinesisFactory,
   eventListener: CloudEventReceiverRegistry,
   featureEnricher: FeatureEnricher,
-  cloudEventPublisher: CloudEventPublisher) : LifecycleListener {
+  cloudEventPublisher: CloudEventPublisherRegistry) : LifecycleListener {
   @ConfigKey("cloudevents.inbound.kinesis.mr-features-name")
   var topicName: String? = "featurehub-mr-dacha2"
   @ConfigKey("cloudevents.enricher.channel-name")

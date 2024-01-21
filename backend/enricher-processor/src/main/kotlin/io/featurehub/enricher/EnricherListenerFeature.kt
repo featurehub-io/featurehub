@@ -4,7 +4,7 @@ import io.featurehub.enricher.kinesis.KinesisEnricherListener
 import io.featurehub.enricher.nats.NatsEnricherListener
 import io.featurehub.enricher.pubsub.PubsubEnricherListener
 import io.featurehub.events.kinesis.KinesisEventFeature
-import io.featurehub.events.pubsub.GoogleEventFeature
+import io.featurehub.events.pubsub.PubsubEventFeature
 import io.featurehub.lifecycle.LifecycleListeners
 import io.featurehub.publish.NATSFeature
 import jakarta.ws.rs.core.Feature
@@ -12,7 +12,7 @@ import jakarta.ws.rs.core.FeatureContext
 
 class EnricherListenerFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
-    val wireRequired = EnricherConfig.enabled() && (NATSFeature.isNatsConfigured() || KinesisEventFeature.isEnabled() || GoogleEventFeature.isEnabled())
+    val wireRequired = EnricherConfig.enabled() && (NATSFeature.isNatsConfigured() || KinesisEventFeature.isEnabled() || PubsubEventFeature.isEnabled())
 
     if (wireRequired) {
       if (NATSFeature.isNatsConfigured()) {
@@ -21,7 +21,7 @@ class EnricherListenerFeature : Feature {
       if (KinesisEventFeature.isEnabled()) {
         LifecycleListeners.starter(KinesisEnricherListener::class.java, context)
       }
-      if (GoogleEventFeature.isEnabled()) {
+      if (PubsubEventFeature.isEnabled()) {
         LifecycleListeners.starter(PubsubEnricherListener::class.java, context)
       }
 

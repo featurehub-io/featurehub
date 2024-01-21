@@ -4,8 +4,8 @@ import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.edge.events.EdgeSubscriber
 import io.featurehub.edge.events.StreamingEventPublisher
-import io.featurehub.events.CloudEventPublisher
-import io.featurehub.events.pubsub.GoogleEventFeature
+import io.featurehub.events.CloudEventPublisherRegistry
+import io.featurehub.events.pubsub.PubsubEventFeature
 import io.featurehub.events.pubsub.PubSubFactory
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecycleListeners
@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory
 
 class PubsubEdgeFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
-    if (!GoogleEventFeature.isEnabled()) return false
+    if (!PubsubEventFeature.isEnabled()) return false
 
     LifecycleListeners.starter(PubsubFeaturesListener::class.java, context)
     LifecycleListeners.starter(PubsubFeatureUpdatePublisher::class.java, context)
@@ -57,7 +57,7 @@ class PubsubFeaturesListener @Inject constructor(
 }
 
 @LifecyclePriority(priority = 12)
-class PubsubFeatureUpdatePublisher @Inject constructor(pubsubFactory: PubSubFactory, cloudEventPublisher: CloudEventPublisher) : LifecycleListener {
+class PubsubFeatureUpdatePublisher @Inject constructor(pubsubFactory: PubSubFactory, cloudEventPublisher: CloudEventPublisherRegistry) : LifecycleListener {
   @ConfigKey("cloudevents.edge-mr.pubsub.topic-name")
   private val updateChannelName: String = "featurehub-edge-updates"
 

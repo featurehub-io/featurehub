@@ -6,7 +6,7 @@ import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.api.SingleNullableFeatureValueUpdate
 import io.featurehub.db.messaging.FeatureMessagingParameter
 import io.featurehub.db.model.DbFeatureValue
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.messaging.model.MessagingRolloutStrategy
 import io.featurehub.messaging.model.MessagingRolloutStrategyAttribute
 import io.featurehub.messaging.model.StrategyUpdateType
@@ -23,7 +23,7 @@ import java.time.ZoneOffset
 class FeatureMessagingConverterImplSpec extends Specification {
   FeatureMessagingCloudEventPublisherImpl featureMessagingConverter
   DbFeatureValue dbFeatureValue
-  CloudEventPublisher publisher
+  CloudEventPublisherRegistry publisher
   SingleNullableFeatureValueUpdate<Long> version
   ExecutorSupplier executorSupplier
 

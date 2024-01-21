@@ -12,7 +12,7 @@ import io.featurehub.dacha.model.PublishFeatureValue
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.enriched.model.EnrichedFeatures
 import io.featurehub.events.CloudEventChannelMetric
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.events.CloudEventsTelemetryReader
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.model.FeatureValueType
@@ -24,7 +24,7 @@ import spock.lang.Specification
 class FeatureEnricherProcessorSpec extends Specification {
   CloudEventsTelemetryReader telemetryReader
   FeatureEnrichmentCache cache
-  CloudEventPublisher publisher
+  CloudEventPublisherRegistry publisher
   FeatureEnricherProcessor enricher
 
   static class FakeTelemetryReader implements CloudEventsTelemetryReader {

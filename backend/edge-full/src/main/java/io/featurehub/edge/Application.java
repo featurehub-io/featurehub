@@ -2,12 +2,10 @@ package io.featurehub.edge;
 
 import cd.connect.app.config.DeclaredConfigResolver;
 import io.featurehub.dacha.api.DachaClientFeature;
-import io.featurehub.dacha.api.DachaClientServiceRegistry;
 import io.featurehub.events.CloudEventsFeature;
-import io.featurehub.events.pubsub.GoogleEventFeature;
+import io.featurehub.events.pubsub.PubsubEventFeature;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
-import io.featurehub.lifecycle.LifecycleListener;
 import io.featurehub.lifecycle.LifecycleListeners;
 import io.featurehub.publish.NATSFeature;
 import io.featurehub.rest.CorsFilter;
@@ -15,8 +13,6 @@ import io.featurehub.utils.FallbackPropertyConfig;
 import io.features.webhooks.features.WebhookFeature;
 import io.featurehub.encryption.WebhookEncryptionFeature;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.spi.Container;
-import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 
 import static io.featurehub.rest.Info.APPLICATION_NAME_PROPERTY;
 
@@ -32,7 +28,7 @@ public class Application {
             DachaClientFeature.class,
             EdgeFeature.class,
             CloudEventsFeature.class,
-            GoogleEventFeature.class,
+            PubsubEventFeature.class,
             NATSFeature.class,
             EdgeResourceFeature.class,
             WebhookEncryptionFeature.class,

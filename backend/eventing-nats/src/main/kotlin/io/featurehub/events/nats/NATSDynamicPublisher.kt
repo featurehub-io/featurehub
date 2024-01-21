@@ -2,7 +2,7 @@ package io.featurehub.events.nats
 
 import io.featurehub.events.CloudEventChannelMetric
 import io.featurehub.events.CloudEventDynamicPublisherRegistry
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.publish.NATSSource
@@ -17,7 +17,7 @@ import jakarta.inject.Inject
 class NATSDynamicPublisher @Inject constructor(
   private val nats: NATSSource,
   dynamicPublisher: CloudEventDynamicPublisherRegistry,
-  private val publisherRegistry: CloudEventPublisher
+  private val publisherRegistry: CloudEventPublisherRegistry
 ): LifecycleListener {
   init {
     dynamicPublisher.registerDymamicPublisherProvider(listOf("nats://"), this::registerType)

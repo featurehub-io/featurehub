@@ -7,8 +7,7 @@ import io.cloudevents.CloudEvent
 import io.cloudevents.core.v1.CloudEventBuilder
 import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.enriched.model.EnrichedFeatures
-import io.featurehub.enricher.EnricherListenerFeature
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.jersey.config.CommonConfiguration
@@ -26,13 +25,10 @@ import jakarta.ws.rs.client.Entity
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
 import jakarta.ws.rs.core.MediaType
-import org.glassfish.hk2.api.Immediate
 import org.glassfish.jersey.client.ClientProperties
-import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
-import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.OffsetDateTime
@@ -47,7 +43,7 @@ class WebhookFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     if (enabled) {
       log.info("webhooks: registering for outbound feature webhook processing")
-      context.register(EnricherListenerFeature::class.java)
+//      context.register(EnricherListenerFeature::class.java)
 
       LifecycleListeners.starter(WebhookEnricherListener::class.java, context)
     }
@@ -64,7 +60,7 @@ class WebhookFeature : Feature {
 @LifecyclePriority(priority = 12)
 class WebhookEnricherListener @Inject constructor(
   cloudEventReceiverRegistry: CloudEventReceiverRegistry,
-  private val cloudEventPublisher: CloudEventPublisher,
+  private val cloudEventPublisher: CloudEventPublisherRegistry,
   private val baggageSource: BaggageChecker,
   private val encryptionService: WebhookEncryptionService
   ) : LifecycleListener {

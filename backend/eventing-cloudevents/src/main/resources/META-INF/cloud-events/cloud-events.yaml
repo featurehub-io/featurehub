@@ -11,8 +11,11 @@ default:
           - edge
         broadcast: true
         description: "All of the features come in and each edge gets a copy"
-        name: dacha2
+        name: edge
         ceRegistry: common
+        conditional: # edge only listens to cloud events in dacha2 mode
+          property: dacha2.enabled
+          default: false
         cloudEventsInclude:   # we only want features in edge, ignore the enricher-pings
           - publish-feature-v1
       dacha2-enricher:
@@ -25,10 +28,24 @@ default:
         description: "Shared across all Dacha's for processing - subscriber is shared across all dacha instances"
         ceRegistry: enricher  # these messages go into a special cloud-event-registry
     publishers:
-      mr-features:
+      mr-enricher:
+        description: "Only publish the enricher ping via cloud events if using dacha1"
         tags:
           - mr
         ceRegistry: common
+        cloudEventsInclude:
+          - enricher-ping-v1
+        conditional: # edge only publishes
+          property: dacha1.enabled
+          default: true
+      mr-features:
+        description: "publish all listed events if dacha2 is enabled"
+        tags:
+          - mr
+        ceRegistry: common
+        conditional: # edge only publishes
+          property: dacha2.enabled
+          default: false
 
   "cache-channel":
     description: "This is the channel on which features get published"
@@ -47,8 +64,14 @@ default:
         description: "All of the features come in and each dacha gets a copy"
         name: dacha2
         ceRegistry: common
+        conditional: # only publish in dacha2 mode
+          property: dacha2.enabled
+          default: false
     publishers:
       cache:
+        conditional: # only publish in dacha2 mode
+          property: dacha2.enabled
+          default: false
         ceRegistry: common
         tags:
           - mr
@@ -118,9 +141,6 @@ pubsub:
       default: "featurehub-mr-dacha2"
     subscribers:
       dacha2:
-        config:
-          property: "cloudevents.enricher.pubsub.subscription-name"
-          default: "enricher-updates-sub"
         prefixConfig:
           property: "cloudevents.mr-dacha2.pubsub.subscription-prefix"
           default: "featurehub-dacha2-listener"
@@ -145,13 +165,13 @@ pubsub:
       enricher:
         config:
           description: "In pubsub, there are different topics"
-          property: "cloudevents.enricher.pubsub.subscription-name"
-          default: "enricher-updates-sub"
+          property: "cloudevents.enricher.pubsub.enriched-subscription-name"
+          default: "featurehub-enriched-events"
     publishers:
       enricher:
-        config:
-          property: "cloudevents.enricher.pubsub.enriched-subscription-name"
-          default: "enrich-listener"
+        multiCast:
+          property: "cloudevents.enricher.pubsub.channels"
+          prefixProperty: "cloudevents.enricher.pubsub.channel"
 
   "mr-notifications-channel":
     channelName:
@@ -176,6 +196,12 @@ nats:
     subscribers:
       dacha2-enricher:
         name: "enricher"
+    publishers:
+      mr-enricher:
+        config:
+          description: "CE are only used for the enricher in dacha1"
+          property: "dacha1.inbound.nats.channel-name"
+          default: "featurehub-dacha1-cloudevents"
 
   "mr-notifications-channel":
     channelName:

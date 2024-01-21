@@ -2,6 +2,7 @@ package io.featurehub.events.kinesis
 
 import io.featurehub.events.EventingFeatureSource
 import io.featurehub.health.HealthSource
+import io.featurehub.lifecycle.LifecycleListeners
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
@@ -23,6 +24,8 @@ class KinesisEventFeature : Feature {
         bind(KinesisFactoryImpl::class.java).to(KinesisFactory::class.java).to(HealthSource::class.java).`in`(Singleton::class.java)
       }
     })
+
+    LifecycleListeners.starter(KinesisConfiguredSource::class.java, context)
 
     return true
   }

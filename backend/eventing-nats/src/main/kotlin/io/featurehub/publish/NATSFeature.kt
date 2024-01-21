@@ -1,5 +1,6 @@
 package io.featurehub.publish
 
+import io.featurehub.events.nats.NATSConfiguredSource
 import io.featurehub.events.nats.NATSDynamicPublisher
 import io.featurehub.health.HealthSource
 import io.featurehub.lifecycle.LifecycleListeners
@@ -26,6 +27,7 @@ class NATSFeature : Feature {
     })
 
     LifecycleListeners.starter(NATSDynamicPublisher::class.java, context)
+    LifecycleListeners.wrap(NATSConfiguredSource::class.java, context)
 
     return true
   }

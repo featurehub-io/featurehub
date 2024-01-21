@@ -8,14 +8,12 @@ import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.enriched.model.EnricherPing
 import io.featurehub.events.CloudEventChannelMetric
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.events.kinesis.KinesisAppNameProvider
 import io.featurehub.events.kinesis.KinesisCloudEventsPublisher
 import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.kinesis.KinesisFactory
-import io.featurehub.events.kinesis.KinesisListenAllTheThings
 import io.featurehub.lifecycle.LifecycleListener
-import io.featurehub.lifecycle.LifecycleListeners
 import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.mr.events.common.CacheMetrics
 import jakarta.inject.Inject
@@ -35,8 +33,8 @@ class KinesisMRFeature : Feature {
       }
     })
 
-    LifecycleListeners.starter(KinesisMROutboundStream::class.java, context)
-    LifecycleListeners.starter(KinesisListenAllTheThings::class.java, context)
+//    LifecycleListeners.starter(KinesisMROutboundStream::class.java, context)
+//    LifecycleListeners.starter(KinesisListenAllTheThings::class.java, context)
 
     return true
   }
@@ -47,7 +45,7 @@ class MrAppNameProvider : KinesisAppNameProvider {
 }
 
 @LifecyclePriority(priority = 12)
-class KinesisMROutboundStream @Inject constructor(kinesisFactory: KinesisFactory, cloudEventsPublisher: CloudEventPublisher) : LifecycleListener {
+class KinesisMROutboundStream @Inject constructor(kinesisFactory: KinesisFactory, cloudEventsPublisher: CloudEventPublisherRegistry) : LifecycleListener {
   @ConfigKey("cloudevents.outbound.kinesis.stream-name")
   private var streamName: String? = "featurehub-mr-stream"
   @ConfigKey("cloudevents.outbound.kinesis.randomise-partition-key")

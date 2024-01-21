@@ -4,8 +4,7 @@ import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import com.lmax.disruptor.EventHandler
 import io.featurehub.events.kinesis.KinesisEventFeature
-import io.featurehub.events.kinesis.KinesisFactory
-import io.featurehub.events.pubsub.GoogleEventFeature
+import io.featurehub.events.pubsub.PubsubEventFeature
 import io.featurehub.lifecycle.LifecycleListeners
 import io.featurehub.publish.NATSFeature
 import jakarta.inject.Singleton
@@ -39,7 +38,7 @@ class StatsFeature : Feature {
           bind(NATSStatPublisher::class.java).to(CloudEventStatPublisher::class.java).`in`(Singleton::class.java)
         }
 
-        if (GoogleEventFeature.isEnabled()) {
+        if (PubsubEventFeature.isEnabled()) {
           bind(PubsubStatsPublisher::class.java).to(CloudEventStatPublisher::class.java).`in`(Singleton::class.java)
         }
 
@@ -47,7 +46,7 @@ class StatsFeature : Feature {
           bind(KinesisStatsPublisher::class.java).to(CloudEventStatPublisher::class.java).`in`(Singleton::class.java)
         }
 
-        if (!NATSFeature.isNatsConfigured() && !GoogleEventFeature.isEnabled() && !KinesisEventFeature.isEnabled()) {
+        if (!NATSFeature.isNatsConfigured() && !PubsubEventFeature.isEnabled() && !KinesisEventFeature.isEnabled()) {
           log.error("No messaging platform configured for stat publishing")
           throw IllegalStateException("No messaging platform configured for stat publishing")
         }

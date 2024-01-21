@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutorService
  * This is a generic publisher, it just takes cloud events messages and routes them to channels that ask for them,
  * like the reverse of the listener
  */
-interface CloudEventPublisher {
+interface CloudEventPublisherRegistry {
   fun hasListeners(type: String): Boolean
   /**
    * parts of the code that want to publish call this and this method will route the two
@@ -30,16 +30,16 @@ interface CloudEventPublisher {
   fun registerForPublishing(type: String, metric: CloudEventChannelMetric, compress: Boolean, handler: (msg: CloudEvent) -> Unit)
 }
 
-class CloudEventPublisherRegistry @Inject constructor(
+class CloudEventPublisherRegistryProcessor @Inject constructor(
   private val cloudEventsTelemetryWriter: CloudEventsTelemetryWriter,
   executorSupplier: ExecutorSupplier
-) : CloudEventPublisher {
+) : CloudEventPublisherRegistry {
   @ConfigKey("cloudevents.publisher.thread-pool")
   val threadPoolSize: Int? = 20
 
   val threadPool: ExecutorService
 
-  private val log: Logger = LoggerFactory.getLogger(CloudEventPublisherRegistry::class.java)
+  private val log: Logger = LoggerFactory.getLogger(CloudEventPublisherRegistryProcessor::class.java)
   data class CallbackHolder(val type: String, val metric: CloudEventChannelMetric, val compress: Boolean, val handler: (msg: CloudEvent) -> Unit)
   protected val eventHandlers = mutableMapOf<String, MutableList<CallbackHolder>>()
 

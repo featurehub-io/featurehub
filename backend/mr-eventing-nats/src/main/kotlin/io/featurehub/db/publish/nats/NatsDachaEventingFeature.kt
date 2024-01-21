@@ -35,9 +35,9 @@ class NatsDachaEventingFeature : Feature {
       })
 
       // this binds all of the respective cloud events to appropriate outbound channels
-      LifecycleListeners.starter(NatsCloudEventsPublishers::class.java, context)
+//      LifecycleListeners.starter(NatsCloudEventsPublishers::class.java, context)
       // always listen for Edge updates in Cloud Events format, use wrap even tho it doesn't have a startup method
-      LifecycleListeners.wrap(NatsMRCloudEventsQueueUpdateListener::class.java, context)
+//      LifecycleListeners.wrap(NatsMRCloudEventsQueueUpdateListener::class.java, context)
 
       if (isDacha1Enabled()) {
         // we want this to fire up immediately on start and start listening. It listens from edge for updates

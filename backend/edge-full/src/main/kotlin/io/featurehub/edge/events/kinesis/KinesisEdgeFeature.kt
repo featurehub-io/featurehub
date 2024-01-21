@@ -4,7 +4,7 @@ import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.edge.events.EdgeSubscriber
 import io.featurehub.edge.events.StreamingEventPublisher
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.events.kinesis.KinesisEventFeature
 import io.featurehub.events.kinesis.KinesisFactory
 import io.featurehub.lifecycle.LifecycleListener
@@ -49,7 +49,7 @@ class KinesisFeaturesListener @Inject constructor(
 }
 
 @LifecyclePriority(priority = 12)
-class KinesisFeatureUpdatePublisher @Inject constructor(kinesisFactory: KinesisFactory, cloudEventPublisher: CloudEventPublisher) : LifecycleListener {
+class KinesisFeatureUpdatePublisher @Inject constructor(kinesisFactory: KinesisFactory, cloudEventPublisher: CloudEventPublisherRegistry) : LifecycleListener {
   @ConfigKey("cloudevents.edge-mr.kinesis.stream-name")
   private val updateStreamName: String = "featurehub-edge-updates"
   @ConfigKey("cloudevents.edge-mr.kinesis.randomise")

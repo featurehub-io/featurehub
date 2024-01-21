@@ -3,7 +3,7 @@ package io.featurehub.dacha2
 import io.featurehub.dacha2.client.Dacha2MRClientFeature
 import io.featurehub.events.CloudEventsFeature
 import io.featurehub.events.kinesis.KinesisEventFeature
-import io.featurehub.events.pubsub.GoogleEventFeature
+import io.featurehub.events.pubsub.PubsubEventFeature
 import io.featurehub.health.CommonFeatureHubFeatures
 import io.featurehub.health.MetricsHealthRegistration
 import io.featurehub.jersey.FeatureHubJerseyHost
@@ -26,7 +26,7 @@ class Application {
       TelemetryFeature::class.java,
       Dacha2Feature::class.java,
       CloudEventsFeature::class.java,
-      GoogleEventFeature::class.java,
+      PubsubEventFeature::class.java,
       NATSFeature::class.java,
       KinesisEventFeature::class.java,
       Dacha2MRClientFeature::class.java, // the Api to the MR instance, (party-server mocks them)

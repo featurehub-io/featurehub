@@ -1,7 +1,7 @@
 package io.featurehub;
 
 import io.featurehub.events.kinesis.KinesisEventFeature;
-import io.featurehub.events.pubsub.GoogleEventFeature;
+import io.featurehub.events.pubsub.PubsubEventFeature;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.lifecycle.LifecycleStatus;
@@ -42,7 +42,7 @@ public class Application {
       ManagementRepositoryFeature.class,
       SamlEnvironmentalFeature.class,
       NATSFeature.class,
-      GoogleEventFeature.class,
+      PubsubEventFeature.class,
       KinesisEventFeature.class,
       TelemetryFeature.class
       );

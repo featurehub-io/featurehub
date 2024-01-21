@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutorService
 class Dacha2CloudEventListenerImpl @Inject constructor(
   private val dacha2Caches: IterableProvider<Dacha2CacheListener>,
   private val dacha2Cache: Dacha2Cache,
-  featureEnricher: FeatureEnricher,
+//  featureEnricher: FeatureEnricher,
   register: CloudEventReceiverRegistry,
   executorSupplier: ExecutorSupplier
 ) : LifecycleStarted {
@@ -38,12 +38,12 @@ class Dacha2CloudEventListenerImpl @Inject constructor(
   init {
     executorService = executorSupplier.executorService(nThreads!!)
 
-    if (featureEnricher.isEnabled()) {
-      log.trace("registering enricher for ping")
-      register.listen(EnricherPing::class.java) { ep, ce ->
-        featureEnricher.enricherPing(ce, ep)
-      }
-    }
+//    if (featureEnricher.isEnabled()) {
+//      log.trace("registering enricher for ping")
+//      register.listen(EnricherPing::class.java) { ep, ce ->
+//        featureEnricher.enricherPing(ce, ep)
+//      }
+//    }
 
 
     register.listen(PublishEnvironment::class.java) { env, ce ->

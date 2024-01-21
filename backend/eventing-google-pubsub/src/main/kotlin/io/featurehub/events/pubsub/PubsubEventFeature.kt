@@ -2,22 +2,19 @@ package io.featurehub.events.pubsub
 
 import io.featurehub.events.EventingFeatureSource
 import io.featurehub.health.HealthSource
-import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecycleListeners
-import io.featurehub.mr.events.listeners.PubsubChannelSubscribers
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
-import org.glassfish.hk2.api.Immediate
 import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class PubsubEventingFeatureSource : EventingFeatureSource {
   override val featureSource: Class<out Feature>?
-    get() = if (GoogleEventFeature.isEnabled()) GoogleEventFeature::class.java else null
+    get() = if (PubsubEventFeature.isEnabled()) PubsubEventFeature::class.java else null
 }
 
-class GoogleEventFeature : Feature {
+class PubsubEventFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     if (isEnabled()) {
       context.register(object: AbstractBinder() {
@@ -28,8 +25,9 @@ class GoogleEventFeature : Feature {
 
       // register it so others can register against it
       LifecycleListeners.starter(PubsubDynamicPublisher::class.java, context)
+      LifecycleListeners.starter(PubsubConfiguredSource::class.java, context)
       // start listening to all the channels up front
-      LifecycleListeners.starter(PubsubChannelSubscribers::class.java, context)
+//      LifecycleListeners.starter(PubsubChannelSubscribers::class.java, context)
 
       return true
     }

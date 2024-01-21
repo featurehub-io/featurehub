@@ -13,27 +13,34 @@ class MetricsCollector {
     val gauges: MutableMap<String, Gauge> = ConcurrentHashMap()
     val counters: MutableMap<String, Counter> = ConcurrentHashMap()
 
-
     fun histogram(key: String, help: String): Histogram {
-      return histograms.computeIfAbsent(key) {
+      return histograms.computeIfAbsent(rationaliseKey(key)) {
         Histogram.build(it, help).register()!!
       }
     }
 
     fun summary(key: String, help: String): Summary {
-      return summaries.computeIfAbsent(key) {
+      return summaries.computeIfAbsent(rationaliseKey(key)) {
         Summary.build(it, help).register()!!
       }
     }
 
     fun gauge(key: String, help: String): Gauge {
-      return gauges.computeIfAbsent(key) {
+      return gauges.computeIfAbsent(rationaliseKey(key)) {
         Gauge.build(it, help).register()!!
       }
     }
 
+    private fun rationaliseKey(key: String): String {
+      var k = key.replace("-", "_").replace(".", "_")
+      while (k.endsWith("_")) {
+        k = k.substring(0, k.length - 1)
+      }
+      return k
+    }
+
     fun counter(key: String, help: String): Counter {
-      return counters.computeIfAbsent(key) {
+      return counters.computeIfAbsent(rationaliseKey(key)) {
         Counter.build(it, help).register()!!
       }
     }

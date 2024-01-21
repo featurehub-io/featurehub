@@ -126,6 +126,8 @@ class LifecycleListenerProcessor<T : LifecycleListener>(
     // we create an executor just for this process, even if the max threads is 1
     val executor = ExecutorUtil().executorService(maxThreads)
 
+    var currentHandles: List<Class<T>>? = null
+
     failed = false
     try {
       for (key in collected.keys.sorted()) {
@@ -133,6 +135,8 @@ class LifecycleListenerProcessor<T : LifecycleListener>(
           break
         }
         collected[key]?.let { handles ->
+          currentHandles = handles
+
           if (handles.size == 1) {
             run(handles[0])
           } else {
@@ -145,7 +149,7 @@ class LifecycleListenerProcessor<T : LifecycleListener>(
     }
 
     if (failed && !allowFailure) {
-      log.error("Lifecycle failed for {}", clazz.name)
+      log.error("Lifecycle failed for {} - handles {}", clazz.name, currentHandles)
       throw RuntimeException("Lifecycle failed for ${clazz.name}")
     }
   }

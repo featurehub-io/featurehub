@@ -4,7 +4,6 @@ import cd.connect.app.config.ConfigKey
 import cd.connect.jersey.common.LoggingConfiguration
 import io.cloudevents.CloudEvent
 import io.featurehub.jersey.config.CommonConfiguration
-import io.featurehub.lifecycle.BaggageChecker
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.utils.FallbackPropertyConfig
@@ -16,9 +15,6 @@ import jakarta.ws.rs.core.MediaType
 import org.glassfish.jersey.client.ClientProperties
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-import java.time.OffsetDateTime
 
 
 class WebDynamicDestination(
@@ -110,7 +106,7 @@ class WebDynamicDestination(
 
 @LifecyclePriority(priority = 5)
 class WebDynamicPublisher @Inject constructor(dynamicPublisher: CloudEventDynamicPublisherRegistry,
-                                              private val publisherRegistry: CloudEventPublisher) : LifecycleListener {
+                                              private val publisherRegistry: CloudEventPublisherRegistry) : LifecycleListener {
   @ConfigKey("webhooks.features.timeout.connect")
   var connectTimeout = FallbackPropertyConfig.getConfig("webhooks.default.timeout.connect", "4000")
 

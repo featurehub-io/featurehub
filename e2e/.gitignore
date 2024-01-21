@@ -33,6 +33,7 @@ doc/api/
 # (Library packages only! Remove pattern if developing an application package)
 pubspec.lock
 .packages
+/app_mr_layer
 
 test/ogurets_run.dart
 

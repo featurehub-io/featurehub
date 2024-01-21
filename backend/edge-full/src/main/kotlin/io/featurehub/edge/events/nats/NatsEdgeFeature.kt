@@ -11,12 +11,12 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class NatsEdgeFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
-    if (!NATSFeature.isNatsConfigured()) return false
+//    if (!NATSFeature.isNatsConfigured()) return false
     context.register(NATSFeature::class.java)
 
-    LifecycleListeners.starter(NatsFeatureUpdatePublisher::class.java, context)
+//    LifecycleListeners.starter(NatsFeatureUpdatePublisher::class.java, context)
     if (isDacha2Enabled()) {
-      LifecycleListeners.wrap(NatsFeatureListener::class.java, context)
+//      LifecycleListeners.wrap(NatsFeatureListener::class.java, context)
     }
     if (isDacha1Enabled()) {
       LifecycleListeners.wrap(NatsOriginalListener::class.java, context)

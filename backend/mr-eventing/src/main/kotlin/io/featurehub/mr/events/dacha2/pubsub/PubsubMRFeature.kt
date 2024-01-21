@@ -7,8 +7,8 @@ import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.enriched.model.EnricherPing
 import io.featurehub.events.CloudEventChannelMetric
-import io.featurehub.events.CloudEventPublisher
-import io.featurehub.events.pubsub.GoogleEventFeature
+import io.featurehub.events.CloudEventPublisherRegistry
+import io.featurehub.events.pubsub.PubsubEventFeature
 import io.featurehub.events.pubsub.PubSubFactory
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecycleListeners
@@ -20,7 +20,7 @@ import jakarta.ws.rs.core.FeatureContext
 
 class PubsubMRFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
-    if (!GoogleEventFeature.isEnabled()) return false
+    if (!PubsubEventFeature.isEnabled()) return false
 
     LifecycleListeners.starter(PubsubCloudEventsEdgeChannel::class.java, context)
     LifecycleListeners.starter(PubsubCloudEventsDachaChannel::class.java, context)
@@ -30,7 +30,7 @@ class PubsubMRFeature : Feature {
 }
 
 @LifecyclePriority(priority = 12)
-class PubsubCloudEventsEdgeChannel @Inject constructor(pubSubFactory: PubSubFactory, cloudEventsPublisher: CloudEventPublisher): LifecycleListener {
+class PubsubCloudEventsEdgeChannel @Inject constructor(pubSubFactory: PubSubFactory, cloudEventsPublisher: CloudEventPublisherRegistry): LifecycleListener {
   @ConfigKey("cloudevents.mr-edge.pubsub.topic-name")
   private var edgeChannelName: String? = "featurehub-mr-edge"
 
@@ -46,7 +46,7 @@ class PubsubCloudEventsEdgeChannel @Inject constructor(pubSubFactory: PubSubFact
 }
 
 @LifecyclePriority(priority = 12)
-class PubsubCloudEventsDachaChannel @Inject constructor(pubSubFactory: PubSubFactory, cloudEventsPublisher: CloudEventPublisher): LifecycleListener {
+class PubsubCloudEventsDachaChannel @Inject constructor(pubSubFactory: PubSubFactory, cloudEventsPublisher: CloudEventPublisherRegistry): LifecycleListener {
   @ConfigKey("cloudevents.mr-dacha2.pubsub.topic-name")
   private var dachaChannelName: String? = "featurehub-mr-dacha2"
 

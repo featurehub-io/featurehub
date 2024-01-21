@@ -2,14 +2,11 @@ package io.featurehub.dacha2.pubsub
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import io.featurehub.enriched.model.EnrichedFeatures
 import io.featurehub.enricher.FeatureEnricher
-import io.featurehub.events.CloudEventPublisher
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.pubsub.PubSubFactory
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
-import io.featurehub.lifecycle.LifecycleStarted
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

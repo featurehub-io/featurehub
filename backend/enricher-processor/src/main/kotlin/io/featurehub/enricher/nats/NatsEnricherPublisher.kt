@@ -4,14 +4,13 @@ import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.enriched.model.EnrichedFeatures
 import io.featurehub.enricher.FeatureEnricher
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.nats.NatsListener
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.lifecycle.LifecycleShutdown
 import io.featurehub.publish.NATSSource
-import jakarta.annotation.PreDestroy
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -35,7 +34,7 @@ open class NatsEnricherBase {
 class NatsEnricherPublisher @Inject constructor(
   natsSource: NATSSource,
   featureEnricher: FeatureEnricher,
-  cloudEventsPublisher: CloudEventPublisher
+  cloudEventsPublisher: CloudEventPublisherRegistry
 ) : NatsEnricherBase(), LifecycleListener {
   init {
     val publisher = natsSource.createPublisher(enricherChannelName!!)

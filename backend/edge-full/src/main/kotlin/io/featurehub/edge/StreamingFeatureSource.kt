@@ -107,14 +107,14 @@ class StreamingFeatureSource @Inject constructor(
    */
   override fun updateFeatures(features: PublishFeatureValues) {
     if (log.isTraceEnabled) {
-      log.trace("received features {}", features)
+      log.trace("edge: received features {}", features)
     }
 
     if (features.features.isEmpty()) {
       return
     }
 
-    log.trace("sending feature {}", features)
+    log.trace("edge: sending feature {}", features)
 
     val environmentId = features.features[0].environmentId
 
