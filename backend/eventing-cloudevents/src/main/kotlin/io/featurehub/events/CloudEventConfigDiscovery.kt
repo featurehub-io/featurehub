@@ -319,6 +319,9 @@ constructor(
     s: InternalCloudEventPublisherConfig,
     config: InternalCloudEventConfig
   ): CloudEventPublisherConfig? {
+    if (name == "mr-features") {
+      println("here")
+    }
     if (!isEnabled(s.conditional)) return null
     val configProperty = s.config ?: config.channelName
     val channelNames = if (s.multiCast == null) multiSupport(s.multiSupport, configProperty) else decodeMultiCast(s.multiCast)

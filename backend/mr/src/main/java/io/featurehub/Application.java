@@ -1,5 +1,7 @@
 package io.featurehub;
 
+import io.featurehub.events.CloudEventConfigDiscovery;
+import io.featurehub.events.CloudEventConfigDiscoveryService;
 import io.featurehub.events.kinesis.KinesisEventFeature;
 import io.featurehub.events.pubsub.PubsubEventFeature;
 import io.featurehub.health.MetricsHealthRegistration;
@@ -25,6 +27,7 @@ public class Application {
   public static void main(String[] args) {
     System.setProperty("user.timezone", "UTC");
     System.setProperty(APPLICATION_NAME_PROPERTY, "management-repository");
+    CloudEventConfigDiscoveryService.Companion.addTags("mr");
 
     try {
       new Application().run();

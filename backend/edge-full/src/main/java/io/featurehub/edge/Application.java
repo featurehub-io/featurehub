@@ -2,6 +2,7 @@ package io.featurehub.edge;
 
 import cd.connect.app.config.DeclaredConfigResolver;
 import io.featurehub.dacha.api.DachaClientFeature;
+import io.featurehub.events.CloudEventConfigDiscoveryService;
 import io.featurehub.events.CloudEventsFeature;
 import io.featurehub.events.pubsub.PubsubEventFeature;
 import io.featurehub.health.MetricsHealthRegistration;
@@ -55,6 +56,7 @@ public class Application {
   public static void main(String[] args) {
     System.setProperty("user.timezone", "UTC");
     System.setProperty(APPLICATION_NAME_PROPERTY, "edge-full");
+    CloudEventConfigDiscoveryService.Companion.addTags("edge");
 
     try {
       new Application().run();
