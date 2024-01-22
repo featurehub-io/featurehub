@@ -2,7 +2,7 @@ name: e2e_tests
 description: An app built using Flutter for web
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.12.0 <3.99.0'
 
 dependencies:
   rxdart: ^0.27.2
