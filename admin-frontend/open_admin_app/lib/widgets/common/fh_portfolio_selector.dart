@@ -8,11 +8,11 @@ class PortfolioSelectorWidget extends StatefulWidget {
   const PortfolioSelectorWidget({Key? key}) : super(key: key);
 
   @override
-  _PortfolioSelectorWidgetState createState() =>
-      _PortfolioSelectorWidgetState();
+  PortfolioSelectorWidgetState createState() =>
+      PortfolioSelectorWidgetState();
 }
 
-class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
+class PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);

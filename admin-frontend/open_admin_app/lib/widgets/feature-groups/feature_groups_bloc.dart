@@ -147,7 +147,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
         version: featureGroupListGroup.version,
         features: features,
         strategies: strategies);
-    fhosLogger.fine('Updating feature group with ${fgc}');
+    fhosLogger.fine('Updating feature group with $fgc');
     if (appId != null) {
       await featureGroupServiceApi.updateFeatureGroup(appId!, fgc);
       getCurrentFeatureGroups();

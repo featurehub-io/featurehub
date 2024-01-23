@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
 
 class SlackPanelWidget extends StatefulWidget {
   final WebhookEnvironmentBloc bloc;
   final EnvironmentAndWebhookType env;
 
-  SlackPanelWidget(this.env, this.bloc);
+  const SlackPanelWidget(this.env, this.bloc, {super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -37,9 +36,9 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
   _setup() {
     final env = widget.env.environment?.webhookEnvironmentInfo ?? {};
     final prefix = widget.env.type!.envPrefix;
-    _enabled = env['${prefix}.enabled'] == 'true';
-    _token.text = env['${prefix}.token'] ?? '';
-    _channelName.text = env['${prefix}.channel_name'] ?? '';
+    _enabled = env['$prefix.enabled'] == 'true';
+    _token.text = env['$prefix.token'] ?? '';
+    _channelName.text = env['$prefix.channel_name'] ?? '';
   }
 
   @override
@@ -86,7 +85,7 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                               }))),
                       FilledButton(onPressed: () {
                         setState(() { _token.text = ''; });
-                      }, child: Text('Clear'))
+                      }, child: const Text('Clear'))
                     ]),
                     Row(children: [
                       Expanded(
@@ -148,11 +147,11 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
   Future<void> _updateData() async {
     final env = widget.env.environment?.webhookEnvironmentInfo ?? {};
     final prefix = widget.env.type!.envPrefix;
-    env['${prefix}.enabled'] = _enabled.toString();
-    env['${prefix}.token'] = _token.text;
-    env['${prefix}.channel_name'] = _channelName.text;
-    env['${prefix}.encrypt'] = '${prefix}.token';
-    widget.bloc.mrBloc.addSnackbar(Text("Saving Slack webhook"));
+    env['$prefix.enabled'] = _enabled.toString();
+    env['$prefix.token'] = _token.text;
+    env['$prefix.channel_name'] = _channelName.text;
+    env['$prefix.encrypt'] = '$prefix.token';
+    widget.bloc.mrBloc.addSnackbar(const Text("Saving Slack webhook"));
     await widget.bloc.updateEnvironmentWithWebhookData(
         widget.env.environment!, env, "$prefix.");
   }

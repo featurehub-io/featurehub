@@ -22,7 +22,7 @@ class ApplicationStepdefs {
     var app = await userCommon.findExactApplication(name, p!.id);
     if (app == null) {
       app = await userCommon.applicationService.createApplication(
-          p.id!, api.Application(name: name, description: desc));
+          p.id, CreateApplication(name: name, description: desc));
     }
 
     shared.application = app;
@@ -36,7 +36,7 @@ class ApplicationStepdefs {
     assert(p != null, 'Could not find portfolio');
 
     var apps = await userCommon.applicationService
-        .findApplications(p!.id!, filter: name);
+        .findApplications(p!.id, filter: name);
     assert(apps.firstWhereOrNull((a) => a.name == name) != null,
         'could not find app $name');
   }
@@ -44,7 +44,7 @@ class ApplicationStepdefs {
   @Then(r'I am able to find application called {string}')
   void iAmAbleToFindApplicationCalled(String name) async {
     var apps = await userCommon.applicationService
-        .findApplications(shared.portfolio.id!, filter: name);
+        .findApplications(shared.portfolio.id, filter: name);
     assert(apps.firstWhereOrNull((a) => a.name == name) != null,
         'could not find app $name');
   }
@@ -60,9 +60,9 @@ class ApplicationStepdefs {
     var app = await userCommon.findExactApplication(name, p!.id);
     assert(app != null, 'Unable to find app $name');
 
-    await userCommon.applicationService.updateApplication(
-        app!.id!,
-        api.Application(
+    await userCommon.applicationService.updateApplicationOnPortfolio(p.id,
+        Application(
+            id: app!.id,
             name: newName, description: newDesc, version: app.version));
   }
 
@@ -73,10 +73,9 @@ class ApplicationStepdefs {
     var app = await userCommon.findExactApplication(name, shared.portfolio.id);
     assert(app != null, 'Unable to find app $name');
 
-    await userCommon.applicationService.updateApplication(
-        app!.id!,
+    await userCommon.applicationService.updateApplicationOnPortfolio(shared.portfolio.id,
         api.Application(
-            name: newName, description: newDesc, id: app.id!, version: app.version));
+            name: newName, description: newDesc, id: app!.id, version: app.version));
   }
 
   @And(r'I delete the application called {string} in the portfolio {string}')
@@ -88,7 +87,7 @@ class ApplicationStepdefs {
     var app = await userCommon.findExactApplication(name, p!.id);
     assert(app != null, 'Unable to find app $name');
 
-    assert(await userCommon.applicationService.deleteApplication(app!.id!),
+    assert(await userCommon.applicationService.deleteApplication(app!.id),
         'Unable to delete app $name');
   }
 
@@ -97,7 +96,7 @@ class ApplicationStepdefs {
     var app = await userCommon.findExactApplication(name, shared.portfolio.id);
     assert(app != null, 'Unable to find app $name');
 
-    assert(await userCommon.applicationService.deleteApplication(app!.id!),
+    assert(await userCommon.applicationService.deleteApplication(app!.id),
         'Unable to delete app $name');
   }
 
@@ -122,7 +121,7 @@ class ApplicationStepdefs {
   void theApplicationHasEnvironments() async {
     var app = shared.application;
     var currentApp = await userCommon.applicationService
-        .getApplication(app.id!, includeEnvironments: true);
+        .getApplication(app.id, includeEnvironments: true);
 
     assert(
         currentApp.environments.isNotEmpty, 'Application has no environments');
@@ -147,12 +146,8 @@ class ApplicationStepdefs {
     FeatureValueType fvt = mapFeatureValueType(valueType);
 
     final result = await userCommon.featureService.createFeaturesForApplication(
-        shared.application.id!,
-        api.Feature(name: name)
-          ..key = key
-          ..alias = alias
-          ..link = link
-          ..valueType = fvt);
+        shared.application.id,
+        CreateFeature(name: name, key: key, alias: alias, link: link, valueType: fvt));
 
     assert(result.firstWhereOrNull((f) => f.key == key) != null,
         'Was not able to create feature');
@@ -164,7 +159,7 @@ class ApplicationStepdefs {
 
     try {
       await userCommon.featureService
-          .deleteFeatureForApplication(shared.application.id!, key);
+          .deleteFeatureForApplication(shared.application.id, key);
     } catch (e) {}
   }
 
@@ -172,13 +167,13 @@ class ApplicationStepdefs {
   void iDeleteTheFeatureWithTheKey(String key) async {
     // this will throw a 404 if not found
     await userCommon.featureService
-        .deleteFeatureForApplication(shared.application.id!, key);
+        .deleteFeatureForApplication(shared.application.id, key);
   }
 
   @And(r'I can find the feature with a key {string}')
   void iCanFindTheFeatureWithAName(String key) async {
     final features = await userCommon.featureService
-        .getAllFeaturesForApplication(shared.application.id!);
+        .getAllFeaturesForApplication(shared.application.id);
 
     assert(features.firstWhereOrNull((f) => f.key == key) != null,
         'Cannot find feature with key $key');
@@ -187,7 +182,7 @@ class ApplicationStepdefs {
   @And(r'I cannot find the feature with a key {string}')
   void iCannotFindTheFeatureWithAName(String key) async {
     final features = await userCommon.featureService
-        .getAllFeaturesForApplication(shared.application.id!);
+        .getAllFeaturesForApplication(shared.application.id);
 
     assert(features.firstWhereOrNull((f) => f.key == key) == null,
         'Found feature of name $key and should not have.');
@@ -196,13 +191,13 @@ class ApplicationStepdefs {
   @And(r'I rename the feature with the key {string} to {string}')
   void iRenameTheFeatureWithTheKeyTo(String originalKey, String newKey) async {
     final features = await userCommon.featureService
-        .getAllFeaturesForApplication(shared.application.id!);
+        .getAllFeaturesForApplication(shared.application.id);
     final oldFeature = features.firstWhereOrNull((f) => f.key == originalKey);
     assert(
         oldFeature != null, 'Could not find feature to rename: $originalKey.');
     oldFeature!.key = newKey;
     await userCommon.featureService.updateFeatureForApplication(
-        shared.application.id!, originalKey, oldFeature);
+        shared.application.id, originalKey, oldFeature);
   }
 
   mapFeatureValueType(String valueType) {
@@ -228,7 +223,7 @@ class ApplicationStepdefs {
         .firstWhereOrNull((agr) => agr.applicationId == shared.application.id);
     if (agr == null) {
       agr = api.ApplicationGroupRole(
-          applicationId: shared.application.id!, groupId: group.id!, roles: []);
+          applicationId: shared.application.id, groupId: group.id, roles: []);
       group.applicationRoles.add(agr);
     }
 
@@ -240,7 +235,7 @@ class ApplicationStepdefs {
     }
 
     await userCommon.groupService
-        .updateGroup(group.id!, group, updateApplicationGroupRoles: true);
+        .updateGroupOnPortfolio(shared.portfolio.id, group, updateApplicationGroupRoles: true);
   }
 
   @And(
@@ -262,7 +257,7 @@ class ApplicationStepdefs {
   void iCanGetAllFeatureValuesForThisPerson() async {
     api.ApplicationFeatureValues afv = await userCommon.featureService
         .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
-            shared.application.id!);
+            shared.application.id);
     final env = afv.environments.firstWhereOrNull(
         (element) => element.environmentId == shared.environment.id);
     assert(env != null, 'shared environment id not included!');
@@ -282,8 +277,8 @@ class ApplicationStepdefs {
   void iCreateAnApplicationWithTheName(String appName) async {
     try {
       shared.application = await userCommon.applicationService
-          .createApplication(shared.portfolio.id!,
-              api.Application(name: appName, description: appName),
+          .createApplication(shared.portfolio.id,
+              CreateApplication(name: appName, description: appName),
               includeEnvironments: true);
 
       if (shared.application.environments.isNotEmpty) {
@@ -305,7 +300,7 @@ class ApplicationStepdefs {
   @And(r'I can list applications')
   void iCanListApplications() async {
     // we will get a 401 if we aren't allowed to
-    await userCommon.applicationService.findApplications(shared.portfolio.id!);
+    await userCommon.applicationService.findApplications(shared.portfolio.id);
   }
 
   @And(r'I cannot list the applications')
@@ -315,7 +310,7 @@ class ApplicationStepdefs {
 
     try {
       await userCommon.applicationService.findApplications(
-          shared.portfolio.id!);
+          shared.portfolio.id);
     } catch (e) {
       failed = false;
     }

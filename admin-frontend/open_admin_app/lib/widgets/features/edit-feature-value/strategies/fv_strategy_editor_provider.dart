@@ -20,7 +20,7 @@ class FeatureValueStrategyProvider extends StrategyEditorProvider {
     var strategy = rs.toRolloutStrategy(null)!;
 
     final customStrategies = [strategy, ...
-        fvStrategyBloc.featureValue.rolloutStrategies!.where((rs) => rs.id != strategy)];
+        fvStrategyBloc.featureValue.rolloutStrategies!.where((rs) => rs.id != strategy.id)];
 
     return fvStrategyBloc.perApplicationFeaturesBloc.validationCheck(
         customStrategies,

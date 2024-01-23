@@ -1,5 +1,6 @@
 
 
+
 import 'package:openapi_dart_common/openapi.dart';
 
 class Host {

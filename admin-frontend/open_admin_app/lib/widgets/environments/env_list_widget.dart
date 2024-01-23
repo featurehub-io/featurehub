@@ -15,10 +15,10 @@ class EnvListWidget extends StatefulWidget {
   const EnvListWidget({Key? key}) : super(key: key);
 
   @override
-  _EnvListState createState() => _EnvListState();
+  EnvListState createState() => EnvListState();
 }
 
-class _EnvListState extends State<EnvListWidget> {
+class EnvListState extends State<EnvListWidget> {
   List<Environment>? _environments;
 
   @override

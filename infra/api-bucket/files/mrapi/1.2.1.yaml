@@ -5849,6 +5849,18 @@ components:
     UpdateApplicationRolloutStrategy:
       type: object
       properties:
+        percentage:
+          type: integer
+          description: value between 0 and 1000000 - for four decimal places
+          nullable: true
+        percentageAttributes:
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you\
+            \ can use one or more attributes defined here"
+          nullable: true
+          items:
+            type: string
+          default: []
         name:
           maxLength: 150
           type: string

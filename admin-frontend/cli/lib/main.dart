@@ -65,7 +65,7 @@ main(List<String> passedArgs) async {
     }
 
     final application =
-        await identity.findApplication(portfolio.id!, applicationName);
+        await identity.findApplication(portfolio.id, applicationName);
 
     if (application == null) {
       print(

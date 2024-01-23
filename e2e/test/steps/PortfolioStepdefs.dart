@@ -18,18 +18,14 @@ class PortfolioStepdefs {
   void iAddAGroup(String portfolioName, String groupName) async {
     Portfolio? p = await userCommon.findExactPortfolio(portfolioName);
 
-    Group group = new Group(name: groupName);
-    await userCommon.groupService.createGroup(p!.id!, group);
+    await userCommon.groupService.createGroup(p!.id, CreateGroup(name: groupName));
   }
 
   @Given(r'I add a group with name {string}')
   void iAddAGroupToSharedPortfolio(String groupName) async {
     Portfolio? p = shared.portfolio;
 
-
-
-    Group group = new Group(name: groupName);
-    final createdGroup = await userCommon.groupService.createGroup(p.id!, group);
+    final createdGroup = await userCommon.groupService.createGroup(p.id, CreateGroup(name: groupName));
     shared.group = createdGroup;
   }
 
@@ -46,7 +42,7 @@ class PortfolioStepdefs {
 
     try {
       await userCommon.groupService
-          .addPersonToGroup(shared.portfolioAdminGroup!.id!, person!.id!.id);
+          .addPersonToGroup(shared.portfolioAdminGroup!.id, person!.id!.id);
     } on ApiException catch (e) {
       print("duplcate user, this is ok $e");
     }
@@ -58,7 +54,7 @@ class PortfolioStepdefs {
       String portfolioName, String groupName) async {
     Portfolio? p = await userCommon.findExactPortfolio(portfolioName);
     assert(p != null, 'Cannot find portfolio $portfolioName');
-    List<Group> groups = await userCommon.groupService.findGroups(p!.id!);
+    List<Group> groups = await userCommon.groupService.findGroups(p!.id);
     List<String> groupNames = groups.map((g) => g.name).toList();
     assert(groupNames.contains(groupName),
         'Group name is not contained in ${groupNames}');
@@ -70,8 +66,8 @@ class PortfolioStepdefs {
     assert(p != null);
     if (!p!.groups.map((g) => g.name).toList().contains(groupName)) {
       await userCommon.groupService.createGroup(
-          p.id!,
-          Group(
+          p.id,
+          CreateGroup(
             name: groupName,
           ));
     }
@@ -114,10 +110,8 @@ class PortfolioStepdefs {
     ServiceAccount? sa =
         await userCommon.findExactServiceAccount(serviceAccountName, p!.id);
     if (sa == null) {
-      ServiceAccount serviceAccount =
-          ServiceAccount(portfolioId: p.id, name: serviceAccountName);
       await userCommon.serviceAccountService
-          .createServiceAccountInPortfolio(p.id!, serviceAccount);
+          .createServiceAccountInPortfolio(p.id, CreateServiceAccount(name: serviceAccountName));
     }
   }
 
@@ -143,7 +137,7 @@ class PortfolioStepdefs {
   @Then(r'portfolio has service account {string} with attached API keys')
   void portfolioHasServiceAccount(String serviceAccountName) async {
     Portfolio? p =
-        await userCommon.portfolioService.getPortfolio(shared.portfolio.id!);
+        await userCommon.portfolioService.getPortfolio(shared.portfolio.id);
     // assert(p != null, 'The portfolio ${shared.portfolio} could not be found');
     ServiceAccount? sa =
         await userCommon.findExactServiceAccount(serviceAccountName, p.id);
@@ -174,8 +168,8 @@ class PortfolioStepdefs {
     var environment;
     if (app == null) {
       app = await userCommon.applicationService.createApplication(
-          p.id!,
-          Application(
+          p.id,
+          CreateApplication(
             name: appName,
             description: appName,
           ));
@@ -183,8 +177,8 @@ class PortfolioStepdefs {
     environment = await userCommon.findExactEnvironment(envName, app.id);
     if (environment == null) {
       environment = await userCommon.environmentService
-          .createEnvironment(
-              app.id!, new Environment(name: envName, description: envName))
+          .createEnvironmentOnApplication(
+              app.id, new CreateEnvironment(name: envName, description: envName))
           .catchError((e, s) {
         print("error creating environment: " + e.toString());
         throw e;
@@ -194,10 +188,8 @@ class PortfolioStepdefs {
     ServiceAccount? sa =
         await userCommon.findExactServiceAccount(serviceAccountName, p.id);
     if (sa == null) {
-      ServiceAccount serviceAccount =
-          ServiceAccount(portfolioId: p.id, name: serviceAccountName);
       sa = await userCommon.serviceAccountService
-          .createServiceAccountInPortfolio(p.id!, serviceAccount,
+          .createServiceAccountInPortfolio(p.id, CreateServiceAccount(name: serviceAccountName),
               includePermissions: true);
     }
 
@@ -217,7 +209,7 @@ class PortfolioStepdefs {
       saPermission.permissions.add(permission);
     }
     await userCommon.serviceAccountService
-        .updateServiceAccount(sa.id!, sa, includePermissions: true);
+        .updateServiceAccountOnPortfolio(p.id, sa, includePermissions: true);
   }
 
   @When(
@@ -229,15 +221,15 @@ class PortfolioStepdefs {
     var app = await userCommon.findExactApplication(appName, p!.id);
     if (app == null) {
       app = await userCommon.applicationService.createApplication(
-          p.id!,
-          Application(
+          p.id,
+          CreateApplication(
             name: appName,
             description: appName,
           ));
       var exists = await userCommon.findExactEnvironment(envName, app.id);
       if (exists == null) {
-        exists = await userCommon.environmentService.createEnvironment(
-            app.id!, new Environment(name: envName, description: envName));
+        exists = await userCommon.environmentService.createEnvironmentOnApplication(
+            app.id, new CreateEnvironment(name: envName, description: envName));
       }
     }
   }
@@ -251,14 +243,14 @@ class PortfolioStepdefs {
 
     final sa =
         await userCommon.serviceAccountService.createServiceAccountInPortfolio(
-            shared.portfolio.id!,
-            ServiceAccount(
+            shared.portfolio.id,
+            CreateServiceAccount(
               name: saName,
               description: saName,
               permissions: [
                 ServiceAccountPermission(
                   permissions: [permissionType],
-                  environmentId: shared.environment.id!,
+                  environmentId: shared.environment.id,
                 )
               ],
             ));
@@ -314,7 +306,7 @@ class PortfolioStepdefs {
     var apiKey =
         keysType == "client" ? sa!.apiKeyClientSide : sa!.apiKeyServerSide;
     ServiceAccount updatedSa = await userCommon.serviceAccountService
-        .resetApiKey(sa.id!,
+        .resetApiKey(sa.id,
             apiKeyType: keysType == "client"
                 ? ResetApiKeyType.clientEvalOnly
                 : ResetApiKeyType.serverEvalOnly);

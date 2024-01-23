@@ -18,7 +18,7 @@ class FeatureListCommand extends PortfolioApplicationCommand {
 
     final ps = await findStructure(login);
     if (ps.application != null) {
-      final features = await login.identity.findFeatures(ps.application!.id!);
+      final features = await login.identity.findFeatures(ps.application!.id);
       print(jsonEncode(features));
     }
   }

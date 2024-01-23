@@ -17,7 +17,7 @@ class UserCommon {
   final ServiceAccountServiceApi serviceAccountService;
   final EnvironmentFeatureServiceApi environmentFeatureServiceApi;
   final UserStateServiceApi userStateService;
-  final RolloutStrategyServiceApi rolloutStrategyService;
+  final ApplicationRolloutStrategyServiceApi rolloutStrategyService;
   final ApiClient apiClient;
 
   UserCommon._(
@@ -51,7 +51,7 @@ class UserCommon {
         ServiceAccountServiceApi(apiClient),
         EnvironmentFeatureServiceApi(apiClient),
         UserStateServiceApi(apiClient),
-        RolloutStrategyServiceApi(apiClient));
+        ApplicationRolloutStrategyServiceApi(apiClient));
   }
 
   Person? _person;
@@ -167,7 +167,7 @@ class UserCommon {
     Group? group = groups.firstWhereOrNull((g) => g.name == groupName);
     return group?.id == null
         ? null
-        : await _gService.getGroup(group!.id!,
+        : await _gService.getGroup(group!.id,
             includeGroupRoles: true, includeMembers: true);
   }
 

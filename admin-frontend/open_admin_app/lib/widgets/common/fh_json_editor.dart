@@ -16,10 +16,10 @@ class FHJsonEditorWidget extends StatefulWidget {
       : super(key: key);
 
   @override
-  _FHJsonEditorState createState() => _FHJsonEditorState();
+  FHJsonEditorState createState() => FHJsonEditorState();
 }
 
-class _FHJsonEditorState extends State<FHJsonEditorWidget> {
+class FHJsonEditorState extends State<FHJsonEditorWidget> {
   late bool isJsonOn;
 
   @override
