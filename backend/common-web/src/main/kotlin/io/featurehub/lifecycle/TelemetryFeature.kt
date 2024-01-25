@@ -8,22 +8,15 @@ import io.featurehub.utils.FallbackPropertyConfig
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.baggage.Baggage
 import io.opentelemetry.api.baggage.BaggageEntry
-import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.Scope
-import io.opentelemetry.context.propagation.ContextPropagators
 import io.opentelemetry.context.propagation.TextMapGetter
-import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.context.propagation.TextMapSetter
-import io.opentelemetry.exporters.logging.LoggingSpanExporter
-import io.opentelemetry.sdk.OpenTelemetrySdk
-import io.opentelemetry.sdk.trace.SdkTracerProvider
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import jakarta.ws.rs.client.Client
@@ -33,7 +26,6 @@ import jakarta.ws.rs.client.ClientResponseContext
 import jakarta.ws.rs.container.ContainerRequestContext
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
-import org.apache.log4j.MDC
 import org.glassfish.hk2.api.IterableProvider
 import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.jersey.client.spi.PostInvocationInterceptor
@@ -46,6 +38,7 @@ import org.glassfish.jersey.server.monitoring.RequestEvent
 import org.glassfish.jersey.server.monitoring.RequestEventListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -336,22 +329,15 @@ class TelemetryFeature : Feature {
     context.register(TelemetryApplicationEventListener::class.java)
     context.register(BaggageFeature::class.java)
 
-    val sdkTracerProvider = SdkTracerProvider.builder()
+    // ensure we have no exporters set by default, its just noise
+    listOf("otel.traces.exporter", "otel.metrics.exporter", "otel.logs.exporter").forEach { check ->
+      if (System.getProperty(check) == null) {
+        System.setProperty(check, "none")
+      }
+    }
 
-    if (logTelemetry == true)
-      sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter()))
-
-    val openTelemetry: OpenTelemetry = OpenTelemetrySdk.builder()
-      .setTracerProvider(sdkTracerProvider.build())
-      .setPropagators(
-        ContextPropagators.create(
-          TextMapPropagator.composite(
-            W3CBaggagePropagator.getInstance(),
-            W3CTraceContextPropagator.getInstance()
-          )
-        )
-      )
-      .buildAndRegisterGlobal()
+    // this will register tracecontext + baggage by default
+    val openTelemetry: OpenTelemetry = AutoConfiguredOpenTelemetrySdk.builder().build().openTelemetrySdk
 
     val tracer = openTelemetry.getTracer("featurehub")
 
