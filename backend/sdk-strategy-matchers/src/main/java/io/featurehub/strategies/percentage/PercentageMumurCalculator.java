@@ -11,12 +11,12 @@ public class PercentageMumurCalculator implements PercentageCalculator {
   }
 
   public PercentageMumurCalculator() {
-    this.hashFunction = new Murmur3_32HashFunction(Murmur3_32HashFunction.GOOD_FAST_HASH_SEED);
+    this.hashFunction = new Murmur3_32HashFunction(0);
   }
 
-  public int determineClientPercentage(String userKey, String id) {
+  public int determineClientPercentage(String percentageKey, String featureId) {
     int hashCode = hashFunction.hashString(
-      (userKey + id), StandardCharsets.UTF_8
+      (percentageKey + featureId), StandardCharsets.UTF_8
     );
 
     double ratio = (double) (hashCode & 0xFFFFFFFFL) / Math.pow(2, 32);

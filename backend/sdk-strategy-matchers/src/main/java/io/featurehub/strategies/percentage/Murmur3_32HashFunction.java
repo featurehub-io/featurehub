@@ -51,12 +51,6 @@ final class Murmur3_32HashFunction implements Serializable {
   public static final int CHAR_BYTES = Character.SIZE / Byte.SIZE;
   static final Murmur3_32HashFunction MURMUR3_32 = new Murmur3_32HashFunction(0);
 
-  @SuppressWarnings("GoodTime") // reading system time without TimeSource
-  static final int GOOD_FAST_HASH_SEED = (int) System.currentTimeMillis();
-
-  static final Murmur3_32HashFunction GOOD_FAST_HASH_32 =
-    new Murmur3_32HashFunction(GOOD_FAST_HASH_SEED);
-
   private static final int CHUNK_SIZE = 4;
 
   private static final int C1 = 0xcc9e2d51;
