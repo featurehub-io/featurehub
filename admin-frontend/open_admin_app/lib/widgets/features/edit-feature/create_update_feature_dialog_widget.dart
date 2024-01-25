@@ -103,7 +103,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                       return 'Please enter feature key';
                     }
                     if (!validateFeatureKey(v)) {
-                      return ('Can only include alphanumeric characters and underscores');
+                      return ('Cannnot contain whitespace');
                     }
                     return null;
                   })),

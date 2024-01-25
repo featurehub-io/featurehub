@@ -44,8 +44,8 @@ bool validateUrl(String? url) {
       .hasMatch(url);
 }
 
-bool validateFeatureKey(key) {
-  return RegExp(r'^[A-Za-z0-9_]+$').hasMatch(key);
+bool validateFeatureKey(String key) {
+  return !key.contains(' ');
 }
 
 
