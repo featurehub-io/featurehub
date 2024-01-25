@@ -139,10 +139,10 @@ class FeaturesWuCommand {
 
     // now find all the environments and start pushing the values of the features
     final envs =
-        await envApi.findEnvironments(application.id!, includeFeatures: true);
+        await envApi.findEnvironments(application.id, includeFeatures: true);
 
     for (final env in envs) {
-      final featureVals = (await envFeatApi.getFeaturesForEnvironment(env.id!))
+      final featureVals = (await envFeatApi.getFeaturesForEnvironment(env.id))
           .featureValues
           .toList();
 
@@ -162,25 +162,25 @@ class FeaturesWuCommand {
 
         if (feat.strategies.isNotEmpty) {
           feat.strategies.forEach((readStrategy) {
-            RolloutStrategy? existingRS = fv.rolloutStrategies.firstWhereOrNull(
+            RolloutStrategy? existingRS = fv.rolloutStrategies!.firstWhereOrNull(
                 (rs) =>
-                    rs.attributes.length == 1 &&
-                    rs.attributes[0].fieldName == readStrategy.name,
+                    rs.attributes!.length == 1 &&
+                    rs.attributes![0].fieldName == readStrategy.name,
                 );
 
             var updatingRS = existingRS ?? RolloutStrategy(name: readStrategy.name);
 
             if (existingRS == null) {
-              fv.rolloutStrategies.add(updatingRS);
+              fv.rolloutStrategies!.add(updatingRS);
             }
 
             updatingRS.value = readStrategy.defaultValue;
             updatingRS.attributes = [
-              new RolloutStrategyAttribute()
-                ..fieldName = readStrategy.name
-                ..type = RolloutStrategyFieldType.STRING
-                ..values = readStrategy.values
-                ..conditional = readStrategy.conditional
+              RolloutStrategyAttribute(
+                fieldName: readStrategy.name,
+                type:RolloutStrategyFieldType.STRING,
+                values: readStrategy.values,
+                conditional: readStrategy.conditional)
             ];
           });
         }
@@ -188,21 +188,21 @@ class FeaturesWuCommand {
 
       print(
           "updating features for environment ${env.name} in application ${application.name}");
-      await envFeatApi.updateAllFeaturesForEnvironment(env.id!, featureVals);
+      await envFeatApi.updateAllFeaturesForEnvironment(env.id, featureVals);
     }
   }
 
   Future<Feature?> createFeature(
       Application app, String featureName, FeatureValueType type) async {
-    final newFeature = Feature(name: featureName, key: featureName, valueType: type);
+    final newFeature = CreateFeature(name: featureName, key: featureName, valueType: type);
 
-    final features = await api.createFeaturesForApplication(app.id!, newFeature);
+    final features = await api.createFeaturesForApplication(app.id, newFeature);
 
     return features.firstWhereOrNull((f) => f.name == featureName);
   }
 
   Future<Feature?> findFeature(Application app, String featureName) async {
-    final features = await api.getAllFeaturesForApplication(app.id!);
+    final features = await api.getAllFeaturesForApplication(app.id);
 
     return features.firstWhereOrNull((f) => f.name == featureName);
   }

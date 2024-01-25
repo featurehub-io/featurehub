@@ -17,7 +17,7 @@ image::fh_create_feature.png[Create Feature, 1500]
 == Feature key
 
 When you use the SDK, you can check the value of a feature, referencing the feature key.
-It *must be unique* for your application. For example, a valid key: "FEATURE_LANDING_PAGE". (numbers, letters and underscores are allowed).
+It *must be unique* for your application. For example, a valid key: "FEATURE_LANDING_PAGE". (whitespace is not allowed, all other characters are).
 
 == Feature value
 

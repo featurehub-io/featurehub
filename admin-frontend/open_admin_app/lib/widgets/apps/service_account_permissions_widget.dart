@@ -18,11 +18,11 @@ class ServiceAccountPermissionsWidget extends StatefulWidget {
   const ServiceAccountPermissionsWidget({Key? key}) : super(key: key);
 
   @override
-  _ServiceAccountPermissionState createState() =>
-      _ServiceAccountPermissionState();
+  ServiceAccountPermissionState createState() =>
+      ServiceAccountPermissionState();
 }
 
-class _ServiceAccountPermissionState
+class ServiceAccountPermissionState
     extends State<ServiceAccountPermissionsWidget> {
   @override
   void didChangeDependencies() {

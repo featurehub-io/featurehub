@@ -19,11 +19,11 @@ class AdminServiceAccountsListWidget extends StatefulWidget {
   const AdminServiceAccountsListWidget({Key? key}) : super(key: key);
 
   @override
-  _AdminServiceAccountsListWidgetState createState() =>
-      _AdminServiceAccountsListWidgetState();
+  AdminServiceAccountsListWidgetState createState() =>
+      AdminServiceAccountsListWidgetState();
 }
 
-class _AdminServiceAccountsListWidgetState
+class AdminServiceAccountsListWidgetState
     extends State<AdminServiceAccountsListWidget> {
   var sortIndex = 0;
   var sortAsc = true;

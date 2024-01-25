@@ -38,7 +38,7 @@ class WebhookHeader {
   }
 }
 
-final _encryptedText = 'ENCRYPTED-TEXT';
+const _encryptedText = 'ENCRYPTED-TEXT';
 
 class _WebhookHeadersDataSource extends DataGridSource with WebhookEncryption {
   final List<WebhookHeader> _headers = [];
@@ -484,7 +484,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
           removeEncrypt("endpoint");
         });
 
-      }, child: Text('Reset URL'))
+      }, child: const Text('Reset URL'))
     ];
   }
 

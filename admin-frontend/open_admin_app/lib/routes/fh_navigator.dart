@@ -23,7 +23,7 @@ class FHRoutePath {
   RouteInformation make() {
     final p =
         params.entries.map((e) => '${e.key}=${e.value.join(',')}').join('&');
-    return RouteInformation(location: _routeName + (p.isNotEmpty ? '?$p' : ''));
+    return RouteInformation(uri: Uri.parse(_routeName + (p.isNotEmpty ? '?$p' : '')));
   }
 
   @override
@@ -246,11 +246,7 @@ class FHRouteInformationParser extends RouteInformationParser<FHRoutePath> {
   @override
   Future<FHRoutePath> parseRouteInformation(
       RouteInformation routeInformation) async {
-    if (routeInformation.location == null) {
-      return FHRoutePath('/');
-    }
-
-    final uri = Uri.parse(routeInformation.location!);
+    final uri = routeInformation.uri;
 
     if (uri.pathSegments.isEmpty) {
       return FHRoutePath('/');

@@ -20,7 +20,7 @@ class FeatureStepdefs {
     assert(environment != null, 'Could not find environment $envName');
 
     final val = await userCommon.environmentFeatureServiceApi
-        .getFeatureForEnvironment(environment!.id!, key);
+        .getFeatureForEnvironment(environment!.id, key);
 
     assert(val.valueBoolean.toString() == value);
   }
@@ -36,10 +36,10 @@ class FeatureStepdefs {
     bool b = boolAsString == 'true';
 
     FeatureValue featureValue = await userCommon.environmentFeatureServiceApi
-        .getFeatureForEnvironment(environment!.id!, featureKey);
+        .getFeatureForEnvironment(environment!.id, featureKey);
 
     await userCommon.environmentFeatureServiceApi.updateFeatureForEnvironment(
-        environment.id!, featureKey, featureValue..valueBoolean = b);
+        environment.id, featureKey, featureValue..valueBoolean = b);
   }
 
   @And(
@@ -53,11 +53,11 @@ class FeatureStepdefs {
     bool b = boolAsString == 'true';
 
     FeatureValue featureValue = await userCommon.environmentFeatureServiceApi
-        .getFeatureForEnvironment(environment!.id!, featureKey);
+        .getFeatureForEnvironment(environment!.id, featureKey);
 
     try {
       await userCommon.environmentFeatureServiceApi.updateFeatureForEnvironment(
-          environment.id!, featureKey, featureValue..valueBoolean = b);
+          environment.id, featureKey, featureValue..valueBoolean = b);
 
       throw Exception("Was able to set feature value and should not be able to");
     } catch (e) {
@@ -81,17 +81,17 @@ class FeatureStepdefs {
       String featureName, GherkinTable table) async {
     final data = await userCommon.featureService
         .getAllFeatureValuesByApplicationForKey(
-            shared.application.id!, featureName);
+            shared.application.id, featureName);
     final environments = await userCommon.environmentService
-        .findEnvironments(shared.application.id!);
+        .findEnvironments(shared.application.id);
     final features = await userCommon.featureService
-        .getAllFeaturesForApplication(shared.application.id!);
+        .getAllFeaturesForApplication(shared.application.id);
     final foundFeature = features.firstWhereOrNull((f) => f.key == featureName);
     assert(foundFeature != null, 'no feature called $featureName exits');
     List<FeatureValue> values = [];
     table.forEach((env) {
       final e = environments.firstWhere((e) => e.name == env['envName']);
-      final existing = data.firstWhere((fe) => fe.environment!.id == e.id);
+      final existing = data.firstWhere((fe) => fe.environment.id == e.id);
       if (existing.featureValue == null) {
         existing.featureValue = FeatureValue(
           key: featureName,
@@ -105,14 +105,14 @@ class FeatureStepdefs {
     });
 
     await userCommon.featureService.updateAllFeatureValuesByApplicationForKey(
-        shared.application.id!, featureName, values);
+        shared.application.id, featureName, values);
 
     final newData = await userCommon.featureService
         .getAllFeatureValuesByApplicationForKey(
-            shared.application.id!, featureName);
+            shared.application.id, featureName);
     table.forEach((env) {
       final e = environments.firstWhere((e) => e.name == env['envName']);
-      final existing = newData.firstWhere((fe) => fe.environment!.id == e.id);
+      final existing = newData.firstWhere((fe) => fe.environment.id == e.id);
       if (existing.featureValue == null) {
         assert(env['value'] == 'null',
             'attempting to set ${env['envName']} to null and failed.');
@@ -128,8 +128,8 @@ class FeatureStepdefs {
   @And(r'I create a feature flag {string}')
   void iCreateAFeature(String feature1) async {
     await userCommon.featureService.createFeaturesForApplication(
-        shared.application.id!,
-        Feature(
+        shared.application.id,
+        CreateFeature(
           name: feature1,
           key: feature1,
           valueType: FeatureValueType.BOOLEAN,
@@ -139,11 +139,11 @@ class FeatureStepdefs {
   @And(r'all environments should have {int} feature flags')
   void allEnvironmentsShouldHaveFeatureFlags(int count) async {
     final app = await userCommon.applicationService
-        .getApplication(shared.application.id!, includeEnvironments: true);
+        .getApplication(shared.application.id, includeEnvironments: true);
 
     for (var e in app.environments) {
       final env = await userCommon.environmentFeatureServiceApi
-          .getFeaturesForEnvironment(e.id!);
+          .getFeaturesForEnvironment(e.id);
 
       assert(env.featureValues.length == count);
     }
@@ -154,11 +154,11 @@ class FeatureStepdefs {
       String envName, String flagValueText) async {
     bool flagValue = flagValueText == 'true';
     final app = await userCommon.applicationService
-        .getApplication(shared.application.id!, includeEnvironments: true);
+        .getApplication(shared.application.id, includeEnvironments: true);
     final env =
         app.environments.firstWhere((element) => element.name == envName);
     final efv = await userCommon.environmentFeatureServiceApi
-        .getFeaturesForEnvironment(env.id!);
+        .getFeaturesForEnvironment(env.id);
 
     for (var val in efv.featureValues) {
       assert(val.valueBoolean == flagValue,
@@ -171,10 +171,10 @@ class FeatureStepdefs {
         await userCommon.findExactEnvironment(env, shared.application.id);
 
     FeatureValue? featureValue = await userCommon.environmentFeatureServiceApi
-        .getFeatureForEnvironment(environment!.id!, featureKey);
+        .getFeatureForEnvironment(environment!.id, featureKey);
 
     await userCommon.environmentFeatureServiceApi.updateFeatureForEnvironment(
-        environment.id!, featureKey, featureValue..locked = lock);
+        environment.id, featureKey, featureValue..locked = lock);
   }
 
   @And(
@@ -191,7 +191,7 @@ class FeatureStepdefs {
 
     try {
       FeatureValue featureValue = await userCommon.environmentFeatureServiceApi
-          .getFeatureForEnvironment(environment.id!, featureKey);
+          .getFeatureForEnvironment(environment.id, featureKey);
 
       if (lock == "read") {
         assert(allowed == "can",
@@ -202,14 +202,14 @@ class FeatureStepdefs {
 
       if (lock.contains("lock")) {
         await userCommon.environmentFeatureServiceApi
-            .updateFeatureForEnvironment(environment.id!, featureKey,
+            .updateFeatureForEnvironment(environment.id, featureKey,
                 featureValue..locked = (lock == "lock"));
         assert((allowed == "can"),
             "was able to $lock feature flag but shouldn't have been able to");
       } else if (lock.contains("change")) {
         await userCommon.environmentFeatureServiceApi
             .updateFeatureForEnvironment(
-                environment.id!,
+                environment.id,
                 featureKey,
                 featureValue
                   ..valueBoolean = !(featureValue.valueBoolean == true));
@@ -255,12 +255,12 @@ class FeatureStepdefs {
 
     try {
       feature = await userCommon.featureService
-          .getFeatureByKey(shared.application.id!, featureKey);
+          .getFeatureByKey(shared.application.id, featureKey);
     } catch (e) {
       final features = await userCommon.featureService
           .createFeaturesForApplication(
-              shared.application.id!,
-              new Feature(
+              shared.application.id,
+              new CreateFeature(
                   valueType: actualType, name: featureKey, key: featureKey));
 
       feature = features.firstWhere((element) => element.key == featureKey);
@@ -273,7 +273,7 @@ class FeatureStepdefs {
 
     final allFeatures = await userCommon.featureService
         .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
-            shared.application.id!);
+            shared.application.id);
 
     final efv = allFeatures.environments
         .firstWhere((efv) => efv.environmentId == shared.environment.id);
@@ -282,7 +282,7 @@ class FeatureStepdefs {
     if (fv == null) {
       fv = FeatureValue(
           key: featureKey,
-          environmentId: shared.environment.id!,
+          environmentId: shared.environment.id,
           locked: false);
     }
 
@@ -304,7 +304,7 @@ class FeatureStepdefs {
     fv.locked = false;
 
     await userCommon.featureService.updateAllFeatureValuesByApplicationForKey(
-        shared.application.id!, featureKey, [fv]);
+        shared.application.id, featureKey, [fv]);
 
     shared.featureValue = fv;
   }
@@ -314,8 +314,8 @@ class FeatureStepdefs {
   void iCreateAFeatureFlagWithADescriptionAndMetaData(
       String flagName, String desc, String metaData) async {
     await userCommon.featureService.createFeaturesForApplication(
-        shared.application.id!,
-        Feature(
+        shared.application.id,
+        CreateFeature(
           name: flagName,
           key: flagName,
           description: desc,
@@ -328,7 +328,7 @@ class FeatureStepdefs {
   void theFeatureHasTheDescription(
       String featureName, String description) async {
     final feature = await userCommon.featureService
-        .getFeatureByKey(shared.application.id!, featureName);
+        .getFeatureByKey(shared.application.id, featureName);
 
     assert(feature.description == description,
         "Feature description ${feature.description} and $description are not the same");
@@ -337,7 +337,7 @@ class FeatureStepdefs {
   @Then(r'the feature {string} has the metadata {string}')
   void theFeatureHasTheMetadata(String featureName, String metaData) async {
     final feature = await userCommon.featureService.getFeatureByKey(
-        shared.application.id!, featureName,
+        shared.application.id, featureName,
         includeMetaData: true);
 
     assert(feature.metaData == metaData,
@@ -348,7 +348,7 @@ class FeatureStepdefs {
   void iSetTheFeatureFEATURE_MARYMetadataTo(
       String featureName, String field, String val) async {
     final feature = await userCommon.featureService
-        .getFeatureByKey(shared.application.id!, featureName);
+        .getFeatureByKey(shared.application.id, featureName);
 
     if (field == 'metadata') {
       feature.metaData = val;
@@ -357,6 +357,6 @@ class FeatureStepdefs {
     }
 
     await userCommon.featureService.updateFeatureForApplication(
-        shared.application.id!, feature.key!, feature);
+        shared.application.id, feature.key, feature);
   }
 }
