@@ -9,9 +9,9 @@ import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.propagation.TextMapGetter
 import jakarta.inject.Inject
-import org.apache.log4j.MDC
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 
 internal class CloudEventTextMapGetter : TextMapGetter<CloudEvent> {
   override fun keys(carrier: CloudEvent): MutableIterable<String> =

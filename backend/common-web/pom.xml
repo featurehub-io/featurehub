@@ -50,25 +50,36 @@
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>1.24.0</version>
+      <version>1.34.1</version>
     </dependency>
 
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-sdk</artifactId>
-      <version>1.24.0</version>
+      <version>1.34.1</version>
     </dependency>
 
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-sdk-trace</artifactId>
-      <version>1.24.0</version>
+      <version>1.34.1</version>
     </dependency>
 
     <dependency>
       <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporters-logging</artifactId>
-      <version>0.9.1</version>
+      <artifactId>opentelemetry-exporter-otlp</artifactId>
+      <version>1.34.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+      <version>1.34.1</version>
+    </dependency>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-extension-trace-propagators</artifactId>
+      <version>1.34.1</version>
     </dependency>
 
     <dependency>

@@ -333,6 +333,11 @@ audit.logging.user=true
 
 ----
 
+==== OpenTelemetry AutoConfiguration
+
+OpenTelemetry configuration is done using
+the https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure[AutoConfiguration] style definition. It allows
+you to specify your own tracing exporters, propagators, etc based on system properties (in the config files) or by environment variables.
 
 === Common to Party, SSE Edge and Management Repository
 
