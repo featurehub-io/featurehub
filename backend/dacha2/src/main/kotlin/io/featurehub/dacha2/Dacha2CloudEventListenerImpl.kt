@@ -4,13 +4,10 @@ import cd.connect.app.config.ConfigKey
 import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
-import io.featurehub.enriched.model.EnricherPing
-import io.featurehub.enricher.FeatureEnricher
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.lifecycle.LifecycleStarted
 import io.featurehub.utils.ExecutorSupplier
-import jakarta.annotation.PostConstruct
 import jakarta.inject.Inject
 import org.glassfish.hk2.api.IterableProvider
 import org.slf4j.Logger
@@ -25,7 +22,6 @@ import java.util.concurrent.ExecutorService
 class Dacha2CloudEventListenerImpl @Inject constructor(
   private val dacha2Caches: IterableProvider<Dacha2CacheListener>,
   private val dacha2Cache: Dacha2Cache,
-//  featureEnricher: FeatureEnricher,
   register: CloudEventReceiverRegistry,
   executorSupplier: ExecutorSupplier
 ) : LifecycleStarted {

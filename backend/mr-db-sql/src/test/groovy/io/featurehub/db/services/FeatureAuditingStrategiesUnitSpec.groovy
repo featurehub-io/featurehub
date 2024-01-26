@@ -9,12 +9,9 @@ import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersion
-import io.featurehub.db.model.FeatureState
 import io.featurehub.mr.model.FeatureValue
-import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.RolloutStrategy
-import scala.collection.mutable.MutableList
 
 import java.time.LocalDateTime
 

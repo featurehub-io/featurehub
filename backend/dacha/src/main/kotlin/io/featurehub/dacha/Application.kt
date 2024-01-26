@@ -6,7 +6,6 @@ import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.ApplicationLifecycleManager
 import io.featurehub.lifecycle.LifecycleStatus
 import io.featurehub.lifecycle.TelemetryFeature
-import io.featurehub.publish.NATSFeature
 import io.featurehub.rest.Info
 import org.glassfish.jersey.server.ResourceConfig
 import org.slf4j.LoggerFactory
@@ -16,10 +15,8 @@ object Application {
   private fun initializeCommonJerseyLayer() {
     // register our resources, try and tag them as singleton as they are instantiated faster
     val config = ResourceConfig(
-      NATSFeature::class.java,
       TelemetryFeature::class.java,
       DachaFeature::class.java,
-
       CloudEventsFeature::class.java
     )
 

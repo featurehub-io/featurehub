@@ -113,6 +113,16 @@ default:
         tags:
           - edge
 
+  "edge-stats-emitter":
+    description: "This holds all of the usage events tracked by Edge"
+    cloudEvents:
+      - edge-stat-bundle-v1
+    publishers:
+      edge-stats:
+        ceRegistry: common
+        tags:
+          - edge
+
 kinesis:
   "cache-channel":
     channelName:
@@ -133,6 +143,11 @@ kinesis:
     channelName:
       property: "cloudevents.edge-mr.kinesis.stream-name"
       default: "featurehub-edge-updates"
+
+  "edge-stats-emitter":
+    channelName:
+      property: "cloudevents.stats.kinesis.stream-name"
+      default: "featurehub-stats"
 
 pubsub:
   "cache-channel":
@@ -183,6 +198,11 @@ pubsub:
           property: "cloudevents.edge-mr.channel-names"
           default: "featurehub-edge-updates-mr-sub"
 
+  "edge-stats-emitter":
+    channelName:
+      property: "cloudevents.stats.pubsub.topic-name"
+      default: "featurehub-stats"
+
 nats:
   "cache-channel":
     channelName:
@@ -213,3 +233,7 @@ nats:
           property: "cloudevents.edge-mr.nats.queue-name"
           default: "featurehub/mr-update"
 
+  "edge-stats-emitter":
+    channelName:
+      property: "cloudevents.stats.nats.channel-name"
+      default: "featurehub/edge-stats"

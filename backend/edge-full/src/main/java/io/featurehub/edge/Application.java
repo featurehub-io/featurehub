@@ -4,11 +4,9 @@ import cd.connect.app.config.DeclaredConfigResolver;
 import io.featurehub.dacha.api.DachaClientFeature;
 import io.featurehub.events.CloudEventConfigDiscoveryService;
 import io.featurehub.events.CloudEventsFeature;
-import io.featurehub.events.pubsub.PubsubEventFeature;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.lifecycle.LifecycleListeners;
-import io.featurehub.publish.NATSFeature;
 import io.featurehub.rest.CorsFilter;
 import io.featurehub.utils.FallbackPropertyConfig;
 import io.features.webhooks.features.WebhookFeature;
@@ -29,8 +27,6 @@ public class Application {
             DachaClientFeature.class,
             EdgeFeature.class,
             CloudEventsFeature.class,
-            PubsubEventFeature.class,
-            NATSFeature.class,
             EdgeResourceFeature.class,
             WebhookEncryptionFeature.class,
             CorsFilter.class);

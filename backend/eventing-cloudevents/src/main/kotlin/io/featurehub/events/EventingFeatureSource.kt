@@ -11,5 +11,6 @@ import java.io.InputStreamReader
 
 interface EventingFeatureSource {
   val featureSource: Class<out Feature>?
+  val enabled: Boolean
 }
 

@@ -13,6 +13,9 @@ class KinesisEventingFeatureSource : EventingFeatureSource {
   override val featureSource: Class<out Feature>?
     get() = if (KinesisEventFeature.isEnabled()) KinesisEventFeature::class.java else null
 
+  override val enabled: Boolean
+    get() = KinesisEventFeature.isEnabled()
+
 }
 
 class KinesisEventFeature : Feature {

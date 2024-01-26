@@ -36,11 +36,27 @@ class CloudEventsFeature : Feature {
     val sources = ServiceLoader.load(EventingFeatureSource::class.java)
 
     for(source in sources) {
-      val featureSource = source.featureSource
+      if (source.enabled) {
+        val featureSource = source.featureSource
 
-      if (featureSource != null) {
-        context.register(featureSource)
+        if (featureSource != null) {
+          context.register(featureSource)
+        }
       }
+    }
+  }
+
+  companion object {
+    fun publishingEnabled(): Boolean {
+      val sources = ServiceLoader.load(EventingFeatureSource::class.java)
+
+      for(source in sources) {
+        if (source.enabled) {
+          return true
+        }
+      }
+
+      return false
     }
   }
 }

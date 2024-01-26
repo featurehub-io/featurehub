@@ -4,8 +4,8 @@ import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.caching.FastlyPublisher
 import io.featurehub.dacha2.resource.DachaApiKeyResource
 import io.featurehub.dacha2.resource.DachaEnvironmentResource
-import io.featurehub.enricher.FeatureEnrichmentCache
 import io.featurehub.enricher.EnrichmentProcessingFeature
+import io.featurehub.enricher.FeatureEnrichmentCache
 import io.featurehub.lifecycle.LifecycleListeners
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
@@ -32,19 +32,7 @@ class Dacha2Feature : Feature {
       }
     })
 
-//    if (NatsDachaEventsListener.isEnabled()) {
-//      context.register(NatsDachaEventsListener::class.java)
-//    }
-
     LifecycleListeners.starter(Dacha2CloudEventListenerImpl::class.java, context)
-
-//    if (GoogleEventFeature.isEnabled()) {
-//      LifecycleListeners.starter(PubsubDachaCloudEvents::class.java, context)
-//    }
-//
-//    if (KinesisEventFeature.isEnabled()) {
-//      LifecycleListeners.starter(KinesisDachaCloudEvents::class.java, context)
-//    }
 
     return true
   }

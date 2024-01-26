@@ -6,8 +6,6 @@ import io.featurehub.dacha.api.DachaClientServiceRegistry
 import io.featurehub.edge.EdgeFeature
 import io.featurehub.edge.EdgeResourceFeature
 import io.featurehub.events.CloudEventConfigDiscoveryService
-import io.featurehub.events.kinesis.KinesisEventFeature
-import io.featurehub.events.pubsub.PubsubEventFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.LifecycleListeners
@@ -17,7 +15,6 @@ import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
 import io.featurehub.mr.dacha2.Dacha2Feature
 import io.featurehub.publish.ChannelConstants
-import io.featurehub.publish.NATSFeature
 import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info.Companion.APPLICATION_NAME_PROPERTY
@@ -44,9 +41,6 @@ class Application {
   private fun run() {
     // register our resources, try and tag them as singleton as they are instantiated faster
     val config = ResourceConfig(
-      NATSFeature::class.java,
-      PubsubEventFeature::class.java,
-      KinesisEventFeature::class.java,
       CorsFilter::class.java,
       ManagementRepositoryFeature::class.java,
       EdgeResourceFeature::class.java,

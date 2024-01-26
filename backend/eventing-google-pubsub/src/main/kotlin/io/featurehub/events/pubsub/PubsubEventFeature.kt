@@ -12,6 +12,8 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 class PubsubEventingFeatureSource : EventingFeatureSource {
   override val featureSource: Class<out Feature>?
     get() = if (PubsubEventFeature.isEnabled()) PubsubEventFeature::class.java else null
+  override val enabled: Boolean
+    get() = PubsubEventFeature.isEnabled()
 }
 
 class PubsubEventFeature : Feature {

@@ -28,7 +28,6 @@ import java.time.OffsetDateTime
 import java.util.*
 
 interface FeatureEnricher {
-  fun enrich(event: CloudEvent): Boolean
   fun isEnabled(): Boolean
   fun metric(): CloudEventChannelMetric
   fun processFeature(fv: PublishFeatureValue)
@@ -43,9 +42,11 @@ interface FeatureEnrichmentCache {
   fun updateFeature(feature: PublishFeatureValue)
 }
 
+/**
+ * Dacha1 needs FeatureEnricher as an API, Dacha2 does not, it just needs the class to be instantiated.
+ */
 @LifecyclePriority(LifecyclePriority.INTERNAL_PRIORITY_END)
 class FeatureEnricherProcessor @Inject constructor(
-  private val openTelemetryReader: CloudEventsTelemetryReader,
   private val cache: FeatureEnrichmentCache,
   private val cloudEventPubisher: CloudEventPublisherRegistry,
   cloudReceiverRegistry: CloudEventReceiverRegistry
@@ -87,20 +88,18 @@ class FeatureEnricherProcessor @Inject constructor(
   }
 
   /**
-   * dacha2
+   * internal testing only
    */
-  override fun enrich(event: CloudEvent): Boolean {
-//    log.trace("enricher received CE of type {}", event.type)
-//    if (isEnabled()) {
-//      openTelemetryReader.receive(event) {
-//        if (event.type == PublishFeatureValues.CLOUD_EVENT_TYPE) {
-//          CacheJsonMapper.fromEventData(event, PublishFeatureValues::class.java)?.let { featureData ->
-//
-//            enrichData(featureData, event.time)
-//          }
-//        }
-//      }
-//    }
+  fun enrich(event: CloudEvent): Boolean {
+    log.trace("enricher received CE of type {}", event.type)
+    if (isEnabled()) {
+        if (event.type == PublishFeatureValues.CLOUD_EVENT_TYPE) {
+          CacheJsonMapper.fromEventData(event, PublishFeatureValues::class.java)?.let { featureData ->
+
+            enrichData(featureData, event.time)
+          }
+        }
+    }
 
     return true
   }

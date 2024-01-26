@@ -4,8 +4,11 @@ import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.caching.FastlyPublisher
 import io.featurehub.dacha.resource.*
 import io.featurehub.enricher.EnrichmentProcessingFeature
+import io.featurehub.enricher.FeatureEnricher
+import io.featurehub.enricher.FeatureEnricherProcessor
 import io.featurehub.enricher.FeatureEnrichmentCache
 import io.featurehub.health.HealthSource
+import io.featurehub.lifecycle.LifecycleListeners
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
@@ -28,6 +31,7 @@ class DachaFeature : Feature {
         if (FastlyPublisher.fastlyEnabled()) {
           bind(FastlyPublisher::class.java).to(CacheUpdateListener::class.java).`in`(Singleton::class.java)
         }
+        bind(FeatureEnricherProcessor::class.java).to(FeatureEnricher::class.java).`in`(Singleton::class.java)
         bind(ServerConfig::class.java).to(ServerConfig::class.java).`in`(Singleton::class.java)
         bind(CacheManager::class.java).to(CacheManager::class.java).to(HealthSource::class.java).`in`(Immediate::class.java)
         bind(DacheEdgeNATSAdapterService::class.java).to(DachaEdgeNATSAdapter::class.java).`in`(Singleton::class.java)

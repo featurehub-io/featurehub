@@ -2,13 +2,10 @@ package io.featurehub.dacha2
 
 import io.featurehub.dacha2.client.Dacha2MRClientFeature
 import io.featurehub.events.CloudEventsFeature
-import io.featurehub.events.kinesis.KinesisEventFeature
-import io.featurehub.events.pubsub.PubsubEventFeature
 import io.featurehub.health.CommonFeatureHubFeatures
 import io.featurehub.health.MetricsHealthRegistration
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
-import io.featurehub.publish.NATSFeature
 import io.featurehub.rest.Info
 import org.glassfish.jersey.server.ResourceConfig
 import org.slf4j.Logger
@@ -26,9 +23,6 @@ class Application {
       TelemetryFeature::class.java,
       Dacha2Feature::class.java,
       CloudEventsFeature::class.java,
-      PubsubEventFeature::class.java,
-      NATSFeature::class.java,
-      KinesisEventFeature::class.java,
       Dacha2MRClientFeature::class.java, // the Api to the MR instance, (party-server mocks them)
     )
 

@@ -3,17 +3,13 @@ package io.featurehub.edge;
 import io.featurehub.edge.bucket.BucketService;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.events.CloudEventsFeatureUpdatePublisherImpl;
-import io.featurehub.edge.events.EdgeSubscriber;
 //import io.featurehub.edge.events.EdgeSubscriberImpl;
 import io.featurehub.edge.events.EdgeSubscriberListener;
-import io.featurehub.edge.events.kinesis.KinesisEdgeFeature;
 import io.featurehub.edge.events.nats.NatsEdgeFeature;
-import io.featurehub.edge.events.pubsub.PubsubEdgeFeature;
 import io.featurehub.edge.rest.FeatureSse;
 import io.featurehub.edge.rest.FeatureSseProcessor;
 import io.featurehub.edge.rest.FeatureUpdatePublisher;
 import io.featurehub.edge.stats.StatsFeature;
-import io.featurehub.events.CloudEventsFeature;
 import io.featurehub.lifecycle.LifecycleListeners;
 import io.featurehub.lifecycle.TelemetryFeature;
 import jakarta.inject.Singleton;
@@ -48,10 +44,7 @@ public class EdgeFeature implements Feature {
               }
             });
 
-    context.register(NatsEdgeFeature.class);
     LifecycleListeners.Companion.wrap(EdgeSubscriberListener.class, context);
-//    context.register(PubsubEdgeFeature.class);
-//    context.register(KinesisEdgeFeature.class);
 
     return true;
   }
