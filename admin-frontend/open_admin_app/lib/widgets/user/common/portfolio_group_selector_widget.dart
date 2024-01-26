@@ -10,10 +10,10 @@ class PortfolioGroupSelector extends StatefulWidget {
   const PortfolioGroupSelector({Key? key}) : super(key: key);
 
   @override
-  _PortfolioGroupSelectorState createState() => _PortfolioGroupSelectorState();
+  PortfolioGroupSelectorState createState() => PortfolioGroupSelectorState();
 }
 
-class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
+class PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
   String? selectedPortfolio;
   String? selectedGroupID;
 
@@ -113,13 +113,11 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                     isExpanded: true,
                     isDense: true,
                     underline: Container(),
-                    items: snapshot.data != null
-                        ? snapshot.data!.map((Group dropDownStringItem) {
+                    items: snapshot.data?.map((Group dropDownStringItem) {
                             return DropdownMenuItem<String>(
                                 value: dropDownStringItem.id,
                                 child: Text(dropDownStringItem.name));
-                          }).toList()
-                        : null,
+                          }).toList(),
                     hint: Text('Select group',
                         style: Theme.of(context).textTheme.bodyLarge),
                     onChanged: (String? value) {

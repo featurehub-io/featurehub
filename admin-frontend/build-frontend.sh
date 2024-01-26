@@ -12,7 +12,7 @@ tar xvf *.tar
 if which flutter >/dev/null; then
   sh build.sh
 else
-  docker run --rm -e BUILD_VERSION="$1" -v $PWD:/opt/app --entrypoint /bin/bash featurehub/flutter_web:1.11 -c "cd /opt/app && ./build.sh"
+  docker run --rm -e BUILD_VERSION="$1" -v $PWD:/opt/app --entrypoint /bin/bash featurehub/flutter_web:1.12 -c "cd /opt/app && ./build.sh"
 fi
 
 #docker run -it -v $PWD/open_admin_app:/opt/app/app -v $PWD/app_mr_layer:/opt/app/app_mr_layer -v $PWD/build:/opt/build featurehub/flutter_web:1.1 /bin/sh /opt/build/build.sh

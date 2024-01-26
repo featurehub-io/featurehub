@@ -113,7 +113,7 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
           .firstWhere((feature) => feature.id == _selectedFeatureToAdd!);
       if (!latestFeatureGroupFeatures
           .any((feature) => feature.id == currentFeatureGF.id)) {
-        fhosLogger.fine("adding feature ${currentFeatureGF} to tracking");
+        fhosLogger.fine("adding feature $currentFeatureGF to tracking");
         latestFeatureGroupFeatures.add(currentFeatureGF);
         _trackingUpdatesGroupFeaturesStream.add(latestFeatureGroupFeatures);
         _isGroupUpdatedSource.add(true);

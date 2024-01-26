@@ -13,12 +13,12 @@ class GroupStepdefs {
 
   Future<Group> findCurrentPortfolioGroup() async {
     final p = await userCommon.portfolioService
-        .getPortfolio(shared.portfolio.id!, includeGroups: true);
+        .getPortfolio(shared.portfolio.id, includeGroups: true);
 
     final g = p.groups.firstWhere((g) => g.admin!);
 
     final group =
-        await userCommon.groupService.getGroup(g.id!, includeMembers: true);
+        await userCommon.groupService.getGroup(g.id, includeMembers: true);
 
     return group;
   }
@@ -48,9 +48,9 @@ class GroupStepdefs {
   void iRemoveTheUserFromTheSuperuserGroup() async {
     final sr = await userCommon.setupService.isInstalled();
     final superuserGroup =
-        await userCommon.groupService.getSuperuserGroup(sr.organization!.id!);
+        await userCommon.groupService.getSuperuserGroup(sr.organization.id);
     await userCommon.groupService
-        .deletePersonFromGroup(superuserGroup.id!, shared.person.id!.id);
+        .deletePersonFromGroup(superuserGroup.id, shared.person.id!.id);
   }
 
   @And(r'the portfolio admin group does not contain the current user')
@@ -70,7 +70,7 @@ class GroupStepdefs {
 
     try {
       await userCommon.groupService
-          .deletePersonFromGroup(group.id!, shared.person.id!.id);
+          .deletePersonFromGroup(group.id, shared.person.id!.id);
       assert(true == false, 'Should not have succeeded');
     } catch (e) {
       assert(e is ApiException && e.code == 404,
@@ -81,7 +81,7 @@ class GroupStepdefs {
   Future<Group> _findSuperuserGroup() async {
     final sr = await userCommon.setupService.isInstalled();
     return await userCommon.groupService
-        .getSuperuserGroup(sr.organization!.id!);
+        .getSuperuserGroup(sr.organization.id);
   }
 
   @When(
@@ -89,8 +89,7 @@ class GroupStepdefs {
   void iAddTheSharedPersonToTheSuperuserGroup() async {
     Group superuserGroup = await _findSuperuserGroup();
     superuserGroup.members.add(shared.person);
-    await userCommon.groupService
-        .updateGroup(superuserGroup.id!, superuserGroup, updateMembers: true);
+    await userCommon.groupService.addPersonToGroup(superuserGroup.id, shared.person.id!.id);
   }
 
   @When(
@@ -99,8 +98,7 @@ class GroupStepdefs {
     Group superuserGroup = await _findSuperuserGroup();
     // remove this specific user
     superuserGroup.members.retainWhere((m) => m.id!.id != shared.person.id!.id);
-    await userCommon.groupService
-        .updateGroup(superuserGroup.id!, superuserGroup, updateMembers: true);
+    await userCommon.groupService.deletePersonFromGroup(superuserGroup.id, shared.person.id!.id);
   }
 
   @And(
@@ -109,14 +107,13 @@ class GroupStepdefs {
       iAttemptToRemoveTheSuperuserFromTheSharedPortfolioGroupViaTheGroupMembership() async {
     final group = await findCurrentPortfolioGroup();
     group.members.retainWhere((m) => m.id!.id != shared.person.id!.id);
-    await userCommon.groupService
-        .updateGroup(group.id!, group, updateMembers: true);
+    await userCommon.groupService.updateGroupOnPortfolio(group.portfolioId!, group, updateMembers: true);
   }
 
   @And(r'I add the shared user to the current portfolio admin group')
   void iAddTheSharedUserToTheCurrentPortfolioAdminGroup() async {
     final group = await findCurrentPortfolioGroup();
     await userCommon.groupService
-        .addPersonToGroup(group.id!, shared.person.id!.id);
+        .addPersonToGroup(group.id, shared.person.id!.id);
   }
 }

@@ -21,7 +21,7 @@ abstract class PortfolioApplicationCommand extends Command {
         print('error: unknown portfolio');
       } else {
         ps.application = await login.identity
-            .findApplication(ps.portfolio!.id!, globalResults!['application']);
+            .findApplication(ps.portfolio!.id, globalResults!['application']);
 
         if (ps.application == null) {
           print('error: unknown application');

@@ -16,32 +16,30 @@ class StrategiesStepdefs {
         'environment is not in application');
     assert(shared.feature != null, 'must know what the feature is');
 
-    final existing = await userCommon.rolloutStrategyService
-        .listApplicationRolloutStrategies(shared.application.id!);
+    final existing = (await userCommon.rolloutStrategyService
+            .listApplicationStrategies(shared.application.id))
+        .items;
 
     for (var g in table) {
-      var strategy = existing
-          .firstWhereOrNull(
-              (s) => s.rolloutStrategy.name.toLowerCase() == g['name'])
-          ?.rolloutStrategy;
-      if (strategy == null) {
-        strategy = RolloutStrategy(
-          name: g['name'],
-        );
-      }
-      strategy.percentage = g['percentage'] != null
+      var strategy =
+          existing.firstWhereOrNull((s) => s.name.toLowerCase() == g['name']);
+
+      var percentage = g['percentage'] != null
           ? (double.parse(g['percentage']) * 10000).round()
           : null;
 
-      if (strategy.id != null) {
-        strategy = (await userCommon.rolloutStrategyService
-                .updateRolloutStrategy(
-                    shared.application.id!, strategy.id!, strategy))
-            .rolloutStrategy;
+      if (strategy == null) {
+        await userCommon.rolloutStrategyService.createApplicationStrategy(
+            shared.application.id,
+            CreateApplicationRolloutStrategy(
+                name: g['name'], percentage: percentage));
       } else {
-        strategy = (await userCommon.rolloutStrategyService
-                .createRolloutStrategy(shared.application.id!, strategy))
-            .rolloutStrategy;
+        strategy.percentage = percentage;
+
+        await userCommon.rolloutStrategyService.updateApplicationStrategy(
+            shared.application.id,
+            strategy.id,
+            UpdateApplicationRolloutStrategy(percentage: percentage));
       }
     }
   }
@@ -57,10 +55,11 @@ class StrategiesStepdefs {
     try {
       fv = await userCommon.environmentFeatureServiceApi
           .getFeatureForEnvironment(
-              shared.environment.id!, shared.feature!.key!);
+              shared.environment.id, shared.feature!.key);
     } catch (e) {
       fv = FeatureValue(
-        key: shared.feature!.key!,
+        key: shared.feature!.key,
+        rolloutStrategyInstances: [],
         locked: false,
       );
     }
@@ -70,15 +69,14 @@ class StrategiesStepdefs {
       String name = g["name"];
 
       final strategy = await userCommon.rolloutStrategyService
-          .getRolloutStrategy(shared.application.id!, name);
+          .getApplicationStrategy(shared.application.id, name);
 
-      var rsi = fv.rolloutStrategyInstances.firstWhere(
-          (element) => element.strategyId == strategy.rolloutStrategy.id,
-          orElse: () {
+      var rsi = fv.rolloutStrategyInstances!.firstWhere(
+          (element) => element.strategyId == strategy.id, orElse: () {
         final r = RolloutStrategyInstance(
-          strategyId: strategy.rolloutStrategy.id,
+          strategyId: strategy.id, name: name
         );
-        fv.rolloutStrategyInstances.add(r);
+        fv.rolloutStrategyInstances!.add(r);
         return r;
       });
 
@@ -87,11 +85,11 @@ class StrategiesStepdefs {
 
     if (fv.id != null) {
       shared.featureValue = (await userCommon.environmentFeatureServiceApi
-          .updateAllFeaturesForEnvironment(shared.environment.id!, [fv]))[0];
+          .updateAllFeaturesForEnvironment(shared.environment.id, [fv]))[0];
     } else {
       shared.featureValue = await userCommon.environmentFeatureServiceApi
           .createFeatureForEnvironment(
-              shared.environment.id!, shared.feature!.key!, fv);
+              shared.environment.id, shared.feature!.key, fv);
     }
   }
 
@@ -103,8 +101,8 @@ class StrategiesStepdefs {
 
     final fv =
         await userCommon.environmentFeatureServiceApi.getFeatureForEnvironment(
-      shared.environment.id!,
-      shared.feature!.key!,
+      shared.environment.id,
+      shared.feature!.key,
     );
 
     print(
@@ -112,9 +110,9 @@ class StrategiesStepdefs {
 
     assert(
         ListEquality().equals(
-            fv.rolloutStrategyInstances.sortedBy((element) => element.name!),
-            shared.featureValue!.rolloutStrategyInstances
-                .sortedBy((element) => element.name!)),
+            fv.rolloutStrategyInstances!.sortedBy((element) => element.name),
+            shared.featureValue!.rolloutStrategyInstances!
+                .sortedBy((element) => element.name)),
         'not equal');
   }
 
@@ -126,15 +124,15 @@ class StrategiesStepdefs {
 
     final fv =
         await userCommon.environmentFeatureServiceApi.getFeatureForEnvironment(
-      shared.environment.id!,
-      shared.feature!.key!,
+      shared.environment.id,
+      shared.feature!.key,
     );
 
     fv.rolloutStrategies = [];
-    _updateStrategiesFromTable(table, fv.rolloutStrategies);
+    _updateStrategiesFromTable(table, fv.rolloutStrategies!);
 
     shared.featureValue = (await userCommon.environmentFeatureServiceApi
-        .updateAllFeaturesForEnvironment(shared.environment.id!, [fv]))[0];
+        .updateAllFeaturesForEnvironment(shared.environment.id, [fv]))[0];
   }
 
   void _updateStrategiesFromTable(
@@ -150,8 +148,6 @@ class StrategiesStepdefs {
       });
 
       switch (shared.feature!.valueType) {
-        case null:
-          throw Exception('failed to understand shared feature type');
         case FeatureValueType.BOOLEAN:
           rs.value = 'true' == g['value'];
           break;
@@ -188,8 +184,8 @@ class StrategiesStepdefs {
 
     final fv =
         await userCommon.environmentFeatureServiceApi.getFeatureForEnvironment(
-      shared.environment.id!,
-      shared.feature!.key!,
+      shared.environment.id,
+      shared.feature!.key,
     );
 
     print(
@@ -197,9 +193,9 @@ class StrategiesStepdefs {
 
     final rs1 = fv.rolloutStrategies;
     final rs2 = shared.featureValue!.rolloutStrategies;
-    assert(rs1.length == rs2.length);
-    for (var count = 0; count < rs2.length; count++) {
-      final r1 = rs1[count];
+    assert(rs1!.length == rs2!.length);
+    for (var count = 0; count < rs2!.length; count++) {
+      final r1 = rs1![count];
       final r2 = rs2[count];
 
       assert(ListEquality()

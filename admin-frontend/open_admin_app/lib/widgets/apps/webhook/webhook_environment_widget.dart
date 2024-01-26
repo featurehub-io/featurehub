@@ -82,13 +82,15 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
                 return const SizedBox.shrink();
               }
 
-              if (_currentWebhookType?.messageType == "webhook-environment-result-v1")
+              if (_currentWebhookType?.messageType == "webhook-environment-result-v1") {
                 return WebhookEnvironmentTable(snapshot.data!, bloc);
+              }
 
-              if (_currentWebhookType?.messageType == "integration/slack-v1")
+              if (_currentWebhookType?.messageType == "integration/slack-v1") {
                 return SlackPanelWidget(snapshot.data!, bloc);
+              }
 
-              return SizedBox.shrink();
+              return const SizedBox.shrink();
             },
           ),
         ],

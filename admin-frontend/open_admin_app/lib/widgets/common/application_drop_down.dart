@@ -12,10 +12,10 @@ class ApplicationDropDown extends StatefulWidget {
       : super(key: key);
 
   @override
-  _ApplicationDropDownState createState() => _ApplicationDropDownState();
+  ApplicationDropDownState createState() => ApplicationDropDownState();
 }
 
-class _ApplicationDropDownState extends State<ApplicationDropDown> {
+class ApplicationDropDownState extends State<ApplicationDropDown> {
   @override
   Widget build(BuildContext context) {
     return OutlinedButton(

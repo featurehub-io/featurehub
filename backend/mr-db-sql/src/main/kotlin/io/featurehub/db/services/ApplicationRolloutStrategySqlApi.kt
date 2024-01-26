@@ -129,6 +129,14 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
         }
       }
 
+      update.percentage?.let { percent ->
+        strategy.strategy.percentage = percent
+      }
+
+      update.percentageAttributes?.let { percentAttrs ->
+        strategy.strategy.percentageAttributes = percentAttrs
+      }
+
       update.attributes?.let { attr ->
         rationaliseAttributeIds(attr)
         strategy.strategy.attributes = attr

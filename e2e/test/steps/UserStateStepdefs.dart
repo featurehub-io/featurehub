@@ -24,7 +24,7 @@ class UserStateStepdefs {
   @Then(r'I get the stored hidden environment ids and they are the same')
   void iGetTheEnvIdsAndTheyAreTheSame() async {
     final stored = await userCommon.userStateService
-        .getHiddenEnvironments(shared.application.id!);
+        .getHiddenEnvironments(shared.application.id);
 
     assert(storedEnvironments != null, 'must store environment ids first');
 
@@ -44,7 +44,7 @@ class UserStateStepdefs {
 
     try {
       await userCommon.userStateService.saveHiddenEnvironments(
-          shared.application.id!,
+          shared.application.id,
           HiddenEnvironments(
             environmentIds: storedEnvironments!,
           ));
@@ -63,11 +63,11 @@ class UserStateStepdefs {
 
     final environments = (await Future.wait(envs.map((envName) async =>
             await userCommon.findExactEnvironment(
-                envName, shared.application.id!))))
+                envName, shared.application.id))))
         .whereNotNull()
         .toList();
 
-    storedEnvironments = environments.map((e) => e.id!).toList();
+    storedEnvironments = environments.map((e) => e.id).toList();
   }
 
   @When(r'I try and store hidden environments')
@@ -75,7 +75,7 @@ class UserStateStepdefs {
     assert(storedEnvironments != null, 'must store environment ids first');
 
     await userCommon.userStateService.saveHiddenEnvironments(
-        shared.application.id!,
+        shared.application.id,
         HiddenEnvironments(
           environmentIds: storedEnvironments!,
         ));

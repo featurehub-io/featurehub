@@ -22,7 +22,7 @@ class AdminGroupStepdefs {
 
     assert(portfolio != null, 'No portfolio by name $portfolioName');
     List<Group> groups =
-        await common.groupService.findGroups(portfolio!.id!, filter: groupName);
+        await common.groupService.findGroups(portfolio!.id, filter: groupName);
 
     assert(
         null != groups.firstWhereOrNull((g) => g.admin! && g.name == groupName),
@@ -40,7 +40,7 @@ class AdminGroupStepdefs {
 
     assert(portfolio != null, 'No portfolio by name $portfolioName');
 
-    var group = await userCommon.findExactGroup(groupName, portfolio!.id!,
+    var group = await userCommon.findExactGroup(groupName, portfolio!.id,
         groupServiceApi: common.groupService);
     assert(group != null, 'You havent created the group $groupName yet');
 
@@ -49,7 +49,7 @@ class AdminGroupStepdefs {
     assert(person != null, 'Cannot find person by email $email');
 
     try {
-      await common.groupService.addPersonToGroup(group!.id!, person!.id!.id);
+      await common.groupService.addPersonToGroup(group!.id, person!.id!.id);
     } on ApiException catch (e) {
       print("duplicate, which is ok $e");
     }
@@ -64,7 +64,7 @@ class AdminGroupStepdefs {
           await userCommon.findExactGroup(groupName, shared.portfolio.id);
       if (group == null) {
         await userCommon.groupService
-            .createGroup(shared.portfolio.id!, Group(name: g["groupName"], admin: false, id: '', version: -1));
+            .createGroup(shared.portfolio.id, CreateGroup(name: g["groupName"], admin: false));
       }
     }
   }
@@ -82,10 +82,10 @@ class AdminGroupStepdefs {
     assert(env != null, 'env must exist and doesnt $envName');
 
     var er = group!.environmentRoles
-        .firstWhereOrNull((er) => er.environmentId == env!.id!);
+        .firstWhereOrNull((er) => er.environmentId == env!.id);
     if (er == null) {
       er = EnvironmentGroupRole(
-          environmentId: env!.id!, groupId: group.id!, roles: []);
+          environmentId: env!.id, groupId: group.id, roles: []);
 
       group.environmentRoles.add(er);
     }
@@ -93,13 +93,13 @@ class AdminGroupStepdefs {
     if (!er.roles.contains(roleType)) {
       er.roles.add(roleType!);
     }
-    await userCommon.groupService.updateGroup(group.id!, group);
+    await userCommon.groupService.updateGroupOnPortfolio(shared.portfolio.id, group);
   }
 
   @And(r'I add the shared person to the shared group')
   void iAddTheSharedPersonToTheSharedGroup() async {
     var personId = shared.person.id!.id;
-    final result = await common.groupService.addPersonToGroup(shared.group.id!, personId, includeMembers: true);
+    final result = await common.groupService.addPersonToGroup(shared.group.id, personId, includeMembers: true);
 
     assert(result.members.any((member) => member.id!.id == personId), 'Cannot find the person in the list of members after adding them');
   }

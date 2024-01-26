@@ -17,11 +17,17 @@ class FeatureValueStrategyProvider extends StrategyEditorProvider {
 
   @override
   Future<RolloutStrategyValidationResponse?> validateStrategy(EditingRolloutStrategy rs) {
+    // convert the "editing rollout strategy" we have been editing back to a normal strategy
+    // but with a null value
     var strategy = rs.toRolloutStrategy(null)!;
 
+    // create a list of strategies, taking all the existing ones except for one where the id of
+    // the one we were editing matches the one in the list (i.e. replace the one in the list with
+    // this one)
     final customStrategies = [strategy, ...
-        fvStrategyBloc.featureValue.rolloutStrategies!.where((rs) => rs.id != strategy)];
+        fvStrategyBloc.featureValue.rolloutStrategies!.where((rs) => rs.id != strategy.id)];
 
+    // now go and do an evaluation
     return fvStrategyBloc.perApplicationFeaturesBloc.validationCheck(
         customStrategies,
         fvStrategyBloc.featureValue.rolloutStrategyInstances ?? []);

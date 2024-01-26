@@ -25,7 +25,7 @@ ARG cachebust=1
 # Install Flutter.
 ENV FLUTTER_ROOT="/opt/flutter"
 ENV FLUTTER="/opt/flutter"
-ARG FLUTTER_VERSION=3.10.1
+ARG FLUTTER_VERSION=3.16.6
 RUN git clone --depth=1 --single-branch --branch $FLUTTER_VERSION https://github.com/flutter/flutter "${FLUTTER_ROOT}"
 ENV PATH="${FLUTTER_ROOT}/bin:${PATH}"
 
