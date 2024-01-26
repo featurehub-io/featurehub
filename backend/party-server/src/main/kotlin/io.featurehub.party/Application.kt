@@ -84,7 +84,7 @@ class Application {
       System.setProperty("dacha2.enabled", "true")
       System.setProperty(APPLICATION_NAME_PROPERTY, "party-server")
 
-      CloudEventConfigDiscoveryService.addTags("dacha2", "edge", "mr")
+      CloudEventConfigDiscoveryService.addTags("dacha2", "edge-dacha2", "mr", "mr-dacha2")
 
       try {
         Application().run()

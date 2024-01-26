@@ -11,6 +11,7 @@ import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.mr.ManagementRepositoryFeature;
 import io.featurehub.mr.dacha2.Dacha2Feature;
 import io.featurehub.mr.events.dacha2.CacheApi;
+import io.featurehub.mr.utils.ConfigurationUtils;
 import io.featurehub.web.security.saml.SamlEnvironmentalFeature;
 import jakarta.inject.Singleton;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -24,6 +25,7 @@ public class Application {
     System.setProperty("user.timezone", "UTC");
     System.setProperty(APPLICATION_NAME_PROPERTY, "management-repository");
     CloudEventConfigDiscoveryService.Companion.addTags("mr");
+    CloudEventConfigDiscoveryService.Companion.addTags(ConfigurationUtils.Companion.getDacha1Enabled() ? "mr-dacha1" : "mr-dacha2");
 
     try {
       new Application().run();

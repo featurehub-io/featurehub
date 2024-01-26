@@ -31,7 +31,7 @@ default:
       mr-enricher:
         description: "Only publish the enricher ping via cloud events if using dacha1"
         tags:
-          - mr
+          - mr-dacha2
         ceRegistry: common
         cloudEventsInclude:
           - enricher-ping-v1
@@ -41,7 +41,7 @@ default:
       mr-features:
         description: "publish all listed events if dacha2 is enabled"
         tags:
-          - mr
+          - mr-dacha2
         ceRegistry: common
         conditional: # edge only publishes
           property: dacha2.enabled
@@ -74,7 +74,7 @@ default:
           default: false
         ceRegistry: common
         tags:
-          - mr
+          - mr-dacha2
 
   "enriched-environment-channel":
     cloudEvents:
