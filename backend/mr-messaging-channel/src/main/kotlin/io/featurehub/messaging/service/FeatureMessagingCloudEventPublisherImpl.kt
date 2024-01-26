@@ -123,7 +123,7 @@ open class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
         .applicationId(parentApplication.id)
         .appName(parentApplication.name)
         .portfolioId(portfolio.id)
-        .portfolioName(portfolio.name)
+        .portfolioName(portfolio.name ?: "")
         .organizationId(portfolio.organization.id)
         .orgName(portfolio.organization.name)
         .version(FeatureVersion().curr(featureMessagingParameter.versionUpdate.updated!!).prev(featureMessagingParameter.versionUpdate.previous))

@@ -8,7 +8,7 @@ default:
     subscribers:
       edge-features:
         tags:
-          - edge
+          - edge-dacha2
         broadcast: true
         description: "All of the features come in and each edge gets a copy"
         name: edge
@@ -89,7 +89,8 @@ default:
     subscribers:
       enricher:
         tags:
-          - edge
+          - edge-dacha1
+          - edge-dacha2
     publishers:
       enricher:
         ceRegistry: common
@@ -111,7 +112,8 @@ default:
       notifications:
         ceRegistry: common
         tags:
-          - edge
+          - edge-dacha1
+          - edge-dacha2
 
   "edge-stats-emitter":
     description: "This holds all of the usage events tracked by Edge"
@@ -121,7 +123,8 @@ default:
       edge-stats:
         ceRegistry: common
         tags:
-          - edge
+          - edge-dacha1
+          - edge-dacha2
 
 kinesis:
   "cache-channel":

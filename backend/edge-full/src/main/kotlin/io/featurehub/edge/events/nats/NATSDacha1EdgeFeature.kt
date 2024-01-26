@@ -6,7 +6,7 @@ import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
 
-class NatsEdgeFeature : Feature {
+class NATSDacha1EdgeFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     if (!NATSFeature.isNatsConfigured() || !isDacha1Enabled() ) return false
     LifecycleListeners.wrap(NatsOriginalListener::class.java, context)
@@ -14,6 +14,8 @@ class NatsEdgeFeature : Feature {
     return true
   }
 
-  fun isDacha1Enabled(): Boolean =
-    FallbackPropertyConfig.getConfig("dacha1.enabled") != "false"
+  companion object {
+    fun isDacha1Enabled(): Boolean =
+      FallbackPropertyConfig.getConfig("dacha1.enabled") != "false"
+  }
 }

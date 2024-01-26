@@ -3,9 +3,8 @@ package io.featurehub.edge;
 import io.featurehub.edge.bucket.BucketService;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.events.CloudEventsFeatureUpdatePublisherImpl;
-//import io.featurehub.edge.events.EdgeSubscriberImpl;
 import io.featurehub.edge.events.EdgeSubscriberListener;
-import io.featurehub.edge.events.nats.NatsEdgeFeature;
+import io.featurehub.edge.events.nats.NATSDacha1EdgeFeature;
 import io.featurehub.edge.rest.FeatureSse;
 import io.featurehub.edge.rest.FeatureSseProcessor;
 import io.featurehub.edge.rest.FeatureUpdatePublisher;
@@ -25,6 +24,7 @@ public class EdgeFeature implements Feature {
   public boolean configure(FeatureContext context) {
     context.register(TelemetryFeature.class);
     context
+      .register(NATSDacha1EdgeFeature.class)
         .register(StatsFeature.class)
         .register(EdgeCommonFeature.class)
         .register(

@@ -214,18 +214,26 @@ constructor(
     }
 
     discoveries.forEach { config ->
-      log.trace("{}: processing publishers channel {}, publishers {}", type, config.name, config.publishers.map { it.name })
-      config.publishers.forEach { processor.processPublisher(it, config) }
-      log.trace("{}: finished publishers channel {}", type,config.name)
+      if (config.publishers.isNotEmpty()) {
+        log.trace("{}: processing publishers channel {}, publishers {}", type, config.name, config.publishers.map { it.name })
+        config.publishers.forEach { processor.processPublisher(it, config) }
+        log.trace("{}: finished publishers channel {}", type,config.name)
+      } else {
+        log.trace("{}: channel {} not used for publishing", type, config.name)
+      }
     }
 
     discoveries.forEach { config ->
-      log.trace("{}: processing subscribers channel {}, subscribers: {}", type, config.name, config.subscribers.map { it.name })
-      config.subscribers.forEach {
+      if (config.subscribers.isNotEmpty()) {
+          log.trace("{}: processing subscribers channel {}, subscribers: {}", type, config.name, config.subscribers.map { it.name })
+        config.subscribers.forEach {
 
-        processor.processSubscriber(it, config)
+          processor.processSubscriber(it, config)
+        }
+        log.trace("{}: processing subscribers channel {}", type, config.name)
+      } else {
+        log.trace("{}: channel {} not used for subscribers", type, config.name)
       }
-      log.trace("{}: processing subscribers channel {}", type, config.name)
     }
 
     log.info("{}: static configuration ended", type)
