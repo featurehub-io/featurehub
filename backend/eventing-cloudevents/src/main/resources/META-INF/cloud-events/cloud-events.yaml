@@ -21,6 +21,7 @@ default:
       dacha2-enricher:
         tags:
           - dacha2
+          - dacha
         broadcast: false
         conditional: # only create this subscriber if this conditional is true
           property: enricher.enabled
@@ -31,7 +32,7 @@ default:
       mr-enricher:
         description: "Only publish the enricher ping via cloud events if using dacha1"
         tags:
-          - mr-dacha2
+          - mr
         ceRegistry: common
         cloudEventsInclude:
           - enricher-ping-v1

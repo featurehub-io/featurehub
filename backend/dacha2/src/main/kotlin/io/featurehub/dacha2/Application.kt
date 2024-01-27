@@ -42,6 +42,7 @@ class Application {
     fun main(args: Array<String>) {
       System.setProperty("user.timezone", "UTC")
       System.setProperty(Info.APPLICATION_NAME_PROPERTY, "dacha2")
+      System.setProperty("dacha2.enabled", "true")
 
       try {
         val app = Application()
