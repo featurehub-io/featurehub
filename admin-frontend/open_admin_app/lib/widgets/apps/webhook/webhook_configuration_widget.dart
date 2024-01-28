@@ -48,8 +48,8 @@ class _WebhookHeadersDataSource extends DataGridSource with WebhookEncryption {
 
   _WebhookHeadersDataSource(this.encryptionEnabled);
 
-  void fillFromConfig(
-      Map<String, String?> headers, String prefix, List<String> encryptedFields) {
+  void fillFromConfig(Map<String, String?> headers, String prefix,
+      List<String> encryptedFields) {
     _headers.clear();
     _encryptFields = encryptedFields;
     for (var item in headers.entries) {
@@ -115,7 +115,6 @@ class _WebhookHeadersDataSource extends DataGridSource with WebhookEncryption {
   @override
   Future<void> onCellSubmit(DataGridRow dataGridRow,
       RowColumnIndex rowColumnIndex, GridColumn column) async {
-
     final index = dataGridRow.getCells().indexWhere(
         (DataGridCell dataGridCell) =>
             dataGridCell.columnName == column.columnName);
@@ -183,10 +182,12 @@ class _WebhookHeadersDataSource extends DataGridSource with WebhookEncryption {
             alignment: Alignment.centerLeft,
             child: (row.getCells()[1].value == _encryptedText)
                 ? Checkbox(
-                    value: isEncryptEnabled("headers.${_headers[rowIndex].key}"),
+                    value:
+                        isEncryptEnabled("headers.${_headers[rowIndex].key}"),
                     onChanged: null)
                 : Checkbox(
-                    value: isEncryptEnabled("headers.${_headers[rowIndex].key}"),
+                    value:
+                        isEncryptEnabled("headers.${_headers[rowIndex].key}"),
                     onChanged: (changedValue) {
                       toggleEncrypt("headers.${_headers[rowIndex].key}");
                       notifyListeners();
@@ -239,8 +240,7 @@ class WebhookConfiguration extends StatefulWidget {
   @override
   State<WebhookConfiguration> createState() => _WebhookConfigurationState(
       bloc.mrBloc.identityProviders.capabilityWebhookEncryption,
-      bloc.mrBloc.identityProviders.capabilityWebhookDecryption
-  );
+      bloc.mrBloc.identityProviders.capabilityWebhookDecryption);
 }
 
 class _WebhookConfigurationState extends State<WebhookConfiguration>
@@ -255,8 +255,8 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
 
   // List<String> encrypt = [];
 
-  _WebhookConfigurationState(this.encryptionEnabled, this.decryptionEnabled):
-        _headers = _WebhookHeadersDataSource(encryptionEnabled);
+  _WebhookConfigurationState(this.encryptionEnabled, this.decryptionEnabled)
+      : _headers = _WebhookHeadersDataSource(encryptionEnabled);
 
   @override
   void initState() {
@@ -347,11 +347,13 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
                             });
                           }),
                       const Text('Enabled'),
-                      if (encryptionEnabled && decryptionEnabled && (_url.text == _encryptedText ||
-                          _headers._headers
-                              .where((element) =>
-                                  element.value == _encryptedText)
-                              .isNotEmpty))
+                      if (encryptionEnabled &&
+                          decryptionEnabled &&
+                          (_url.text == _encryptedText ||
+                              _headers._headers
+                                  .where((element) =>
+                                      element.value == _encryptedText)
+                                  .isNotEmpty))
                         TextButton.icon(
                             icon: const Icon(Icons.lock_open),
                             label: const Text("Show encrypted values"),
@@ -364,7 +366,8 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
                             controller: _url,
                             autofocus: true,
                             textInputAction: TextInputAction.next,
-                            readOnly: _url.text == _encryptedText && decryptionEnabled,
+                            readOnly: _url.text == _encryptedText &&
+                                decryptionEnabled,
                             decoration:
                                 const InputDecoration(labelText: 'Webhook URL'),
                             validator: ((v) {
@@ -372,7 +375,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
                                 return 'Please enter a valid webhook URL';
                               }
                               if (!v.startsWith("http://") &&
-                                  v.startsWith("https://")) {
+                                  !v.startsWith("https://")) {
                                 return 'Please enter a valid URL';
                               }
                               return null;
@@ -478,13 +481,14 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
 
     // it is encrypted
     return [
-      TextButton(onPressed: () {
-        setState( () {
-          _url.text = '';
-          removeEncrypt("endpoint");
-        });
-
-      }, child: const Text('Reset URL'))
+      TextButton(
+          onPressed: () {
+            setState(() {
+              _url.text = '';
+              removeEncrypt("endpoint");
+            });
+          },
+          child: const Text('Reset URL'))
     ];
   }
 
@@ -511,13 +515,13 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
     envInfo['${widget.type.envPrefix}.endpoint'] = _url.text;
 
     final headers =
-    _headers.getHeadersMapWithPrefix("${widget.type.envPrefix}.headers.");
+        _headers.getHeadersMapWithPrefix("${widget.type.envPrefix}.headers.");
     final deletedHeaders = _headers
         .getDeletedHeadersMapWithPrefix("${widget.type.envPrefix}.headers.");
 
     // remove all the existing header entries for this prefix from the webhookEnvInfo
     envInfo.removeWhere(
-            (key, v) => key.startsWith('${widget.type.envPrefix}.headers'));
+        (key, v) => key.startsWith('${widget.type.envPrefix}.headers'));
 
     // add all the header entries - this will have the updated headers
     envInfo.addAll(headers);

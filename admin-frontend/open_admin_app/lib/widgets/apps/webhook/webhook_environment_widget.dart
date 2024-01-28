@@ -72,7 +72,7 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
               link:
                   "https://docs.featurehub.io/featurehub/latest/webhooks.html",
               icon: Icon(Icons.arrow_outward_outlined),
-              label: 'Webhooks Documentation',
+              label: 'Integrations Documentation',
             ),
           ]),
           StreamBuilder<EnvironmentAndWebhookType>(
@@ -82,7 +82,8 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
                 return const SizedBox.shrink();
               }
 
-              if (_currentWebhookType?.messageType == "webhook-environment-result-v1") {
+              if (_currentWebhookType?.messageType ==
+                  "webhook-environment-result-v1") {
                 return WebhookEnvironmentTable(snapshot.data!, bloc);
               }
 
