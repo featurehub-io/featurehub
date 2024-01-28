@@ -1,15 +1,22 @@
 package io.featurehub.events
 
 import cd.connect.app.config.ConfigKey
+import cd.connect.cloudevents.CloudEventSubject
+import cd.connect.cloudevents.CloudEventType
 import cd.connect.cloudevents.CloudEventUtils
 import cd.connect.cloudevents.TaggedCloudEvent
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.v1.CloudEventBuilder
 import io.featurehub.jersey.config.CacheJsonMapper
+import io.featurehub.rest.Info
 import io.featurehub.utils.ExecutorSupplier
+import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.net.URI
+import java.time.OffsetDateTime
+import java.util.*
 import java.util.concurrent.ExecutorService
 
 
@@ -23,6 +30,8 @@ interface CloudEventPublisherRegistry {
    * parts of the code that want to publish call this and this method will route the two
    */
   fun publish(type: String, data: Any, eventBuilder: CloudEventBuilder)
+
+  fun <T : TaggedCloudEvent>  publish(data: T, eventEnricher: (ce: CloudEventBuilder) -> CloudEventBuilder = { ce -> ce })
 
   /**
    * channels that know how to publish an event register here, so the individual NATS or GCP or Kinesis channels
@@ -42,9 +51,11 @@ class CloudEventPublisherRegistryProcessor @Inject constructor(
   private val log: Logger = LoggerFactory.getLogger(CloudEventPublisherRegistryProcessor::class.java)
   data class CallbackHolder(val type: String, val metric: CloudEventChannelMetric, val compress: Boolean, val handler: (msg: CloudEvent) -> Unit)
   protected val eventHandlers = mutableMapOf<String, MutableList<CallbackHolder>>()
+  protected val defaultCloudEventSource: String
 
   init {
     threadPool = executorSupplier.executorService(threadPoolSize!!)
+    defaultCloudEventSource = FallbackPropertyConfig.getConfig("cloudevents.outbound.source", "http://${Info.applicationName()}")
   }
 
   override fun hasListeners(type: String): Boolean {
@@ -76,6 +87,10 @@ class CloudEventPublisherRegistryProcessor @Inject constructor(
       eventBuilder.withSubject(CloudEventUtils.subject(data.javaClass))
     }
 
+    publishFullyFormed(type, data, eventBuilder)
+  }
+
+  private fun publishFullyFormed(type: String, data: Any, eventBuilder: CloudEventBuilder) {
     val handlers = eventHandlers[type]
 
     if (handlers == null) {
@@ -95,6 +110,23 @@ class CloudEventPublisherRegistryProcessor @Inject constructor(
         publishEvent(uncompressedHandlers, eventBuilder)
       }
     }
+  }
+
+  override fun <T : TaggedCloudEvent> publish(data: T, eventEnricher: (ce: CloudEventBuilder) -> CloudEventBuilder) {
+    val type = data.javaClass.getAnnotation(CloudEventType::class.java).value
+    val subject = data.javaClass.getAnnotation(CloudEventSubject::class.java).value
+
+    val event = io.cloudevents.core.builder.CloudEventBuilder.v1().newBuilder().apply {
+      withSubject(subject)
+      withId(UUID.randomUUID().toString())
+      withType(type)
+      withSource(URI(defaultCloudEventSource))
+      withTime(OffsetDateTime.now())
+
+      eventEnricher(this)
+    }
+
+    publishFullyFormed(type, data, event)
   }
 
   override fun registerForPublishing(type: String, metric: CloudEventChannelMetric, compress: Boolean, handler: (msg: CloudEvent) -> Unit) {

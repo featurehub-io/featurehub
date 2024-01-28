@@ -85,16 +85,15 @@ data class CloudEventSubscriberConfig(
   val tags: List<String>,
   val description: String?,
   val ceRegistry: String,
-  val channelNames: List<String>,
+  var channelNames: List<String>,
   val originalConfigProperty: String?,
   val broadcast: Boolean,
-  val name: String?,
+  val name: String,
   val prefix: String,
-  val cloudEventsInclude: List<String>,
-  val handler: (event: CloudEvent) -> Unit
+  var cloudEventsInclude: List<String>,
+  var handler: (event: CloudEvent) -> Unit
 )
 
-data class CloudEventPublisherMulticast(val config: String, val prefix: String)
 
 data class CloudEventPublisherConfig(
   val name: String,
@@ -128,8 +127,8 @@ internal data class InternalCloudEventConfig(
 
 class CloudEventConfig(
   val name: String, val description: String?,
-  private val cloudEvents: List<String>, val channelName: String?, val enabled: Boolean,
-  val subscribers: List<CloudEventSubscriberConfig>,
+  val cloudEvents: List<String>, val channelName: String?, val enabled: Boolean,
+  val subscribers: MutableList<CloudEventSubscriberConfig>,
   val publishers: List<CloudEventPublisherConfig>,
   private val publisherRegistry: CloudEventPublisherRegistry
 ) {
@@ -164,6 +163,8 @@ interface CloudEventConfigDiscovery {
   fun discover(type: String, processor: CloudEventConfigDiscoveryProcessor)
 }
 
+internal data class SubscriberMergeConfig(val config: CloudEventConfig, var subscriber: CloudEventSubscriberConfig)
+
 /**
  * this class is implemented by each messaging layer, and it is responsible for finding its own config files and understanding them
  */
@@ -185,6 +186,11 @@ constructor(
      */
     fun addTags(vararg tag: String) {
       tag.forEach { tags.add(it) }
+    }
+
+    // only used in testing
+    fun clearTags() {
+      tags.clear()
     }
   }
 
@@ -243,7 +249,7 @@ constructor(
     return recode(yaml.load(yml), type)
   }
 
-  private fun explode(source: Map<String, Any>, target: MutableMap<String, Any>) {
+  private fun explode(source: Map<String, Any>, target: MutableMap<String, Any>): MutableMap<String, Any> {
     for (entry in source) {
       var targetMap = target
       val keySegments = entry.key.split(".")
@@ -263,6 +269,8 @@ constructor(
       // Put values into it
       targetMap[keySegments.last()] = entry.value
     }
+
+    return target
   }
 
   private fun flatten(source: Map<String, Any>, target: MutableMap<String, Any>, prefix: String = "") {
@@ -282,11 +290,13 @@ constructor(
 
     val squashMap = config[type] as Map<String, Any>? ?: return listOf()
 
-    val squashed = mutableMapOf<String, Any>()
-    flatten(config["default"] as Map<String, Any>, squashed)
-    flatten(squashMap, squashed)
-    val exploded = mutableMapOf<String, Any>()
-    explode(squashed, exploded)
+    val exploded = if (config.containsKey("default")) {
+      val squashed = mutableMapOf<String, Any>()
+      flatten(config["default"] as Map<String, Any>, squashed)
+      flatten(squashMap, squashed)
+
+      explode(squashed, mutableMapOf())
+    } else squashMap
 
     val data: Map<String, InternalCloudEventConfig> =
       mapper.convertValue(exploded, object : TypeReference<Map<String, InternalCloudEventConfig>>() {})
@@ -296,9 +306,70 @@ constructor(
   private fun recodeData(source: Map<String, InternalCloudEventConfig>?): List<CloudEventConfig> {
     if (source == null) return listOf()
 
-    return source.map { channel ->
+    val channels = source.map { channel ->
       recodeChannel(channel.key, channel.value)
     }
+
+    // now we have subscribers only for this service, if several of them share the same config property, they should be turned
+    // into a single subscriber with multiple acceptable cloud events and potentially multiple subscribers (if they were multiSupports)
+    // you can have a service that simply goes cloud.events.inbound=x,y,z for example but those are logically events from different
+    // services and so will all be coming in from different channels. This only works for non-broadcast events and events
+
+
+    val mergeConfigs = mutableMapOf<String,SubscriberMergeConfig>()
+    channels.forEach { channel ->
+      val removeSubscribers = mutableListOf<CloudEventSubscriberConfig>()
+      channel.subscribers.forEach { sub ->
+        if (sub.originalConfigProperty != null) {
+          // is this config property already used somewhere else? if so, we need to combine them
+          if (mergeConfigs.containsKey(sub.originalConfigProperty)) {
+            val originalConfig = mergeConfigs[sub.originalConfigProperty]!!.config
+            val original = mergeConfigs[sub.originalConfigProperty]!!.subscriber
+            val name = sub.name // should really be an array :-(
+            val ceFilter =
+              ((sub.cloudEventsInclude.ifEmpty { channel.cloudEvents }) +
+              (original.cloudEventsInclude.ifEmpty { originalConfig.cloudEvents })).distinct()
+            val ceRegistry = sub.ceRegistry
+
+            original.channelNames = (original.channelNames + sub.channelNames).distinct()
+            original.cloudEventsInclude = ceFilter
+            original.handler = { ce ->
+              log.trace("ce: subscription {} compare {} against {}", name, ce.type, ceFilter)
+              if (ceFilter.contains(ce.type)) {
+                if (ceRegistry != "common") {
+                  receiverRegistry.registry(ceRegistry).process(ce)
+                } else {
+                  receiverRegistry.process(ce)
+                }
+              } else {
+                log.trace("ce: type {} not in filter on channel {}, ignored", ce.type, name)
+              }
+            }
+//            = CloudEventSubscriberConfig(
+//              (original.tags + sub.tags).distinct(),
+//              sub.description ?: original.description,
+//              sub.ceRegistry,
+//              ,
+//              sub.originalConfigProperty,
+//              sub.broadcast || original.broadcast,
+//              name,
+//              sub.prefix,
+//              ceFilter
+
+
+            removeSubscribers.add(sub)
+          } else {
+            mergeConfigs[sub.originalConfigProperty] = SubscriberMergeConfig(channel, sub)
+          }
+        }
+
+      }
+
+      channel.subscribers.removeAll(removeSubscribers)
+    }
+
+
+    return channels
   }
 
   private fun recodeChannel(name: String, config: InternalCloudEventConfig): CloudEventConfig {
@@ -341,22 +412,23 @@ constructor(
   }
 
   private fun decodeMultiCast(multiCast: InternalCloudEventPublisherMultiCast): List<String> {
-    val config = FallbackPropertyConfig.getConfig(multiCast.property)
-    if (config == null) return listOf()
+    val config = FallbackPropertyConfig.getConfig(multiCast.property) ?: return listOf()
 
-    return config.split(",").map { it.trim() }.filter { it.isNotEmpty() }.map {
+    return config.split(",").map { it.trim() }.filter { it.isNotEmpty() }.mapNotNull {
       FallbackPropertyConfig.getConfig("${multiCast.prefixProperty}.${it}")
-    }.filterNotNull()
+    }
   }
 
   private fun recodeSubscribers(
     subscribers: Map<String, InternalCloudEventSubscriberConfig>?,
     config: InternalCloudEventConfig
-  ): List<CloudEventSubscriberConfig> {
-    if (subscribers == null) return listOf()
-    return subscribers.map { recodeSubscriber(it.key, it.value, config) }
+  ): MutableList<CloudEventSubscriberConfig> {
+    if (subscribers == null) return mutableListOf()
+    val subscribers = subscribers.map { recodeSubscriber(it.key, it.value, config) }
       .filterNotNull()
-      .filter { it.tags.intersect(tags).isNotEmpty() }
+      .filter { it.tags.intersect(tags).isNotEmpty() }.toMutableList()
+
+    return subscribers
   }
 
   private fun recodeSubscriber(
@@ -402,7 +474,7 @@ constructor(
 
   private fun isEnabled(conditional: InternalCloudEventProperty?): Boolean {
     if (conditional?.property == null) return true
-    // negative has no use case at the moment so it isn't used
+    // negative has no use case at the moment, so it isn't used
     val negative = conditional.property.startsWith("!")
     val cond = if (negative) conditional.property.substring(1) else conditional.property
     val prop = FallbackPropertyConfig.getConfig(cond, conditional.default ?: "")

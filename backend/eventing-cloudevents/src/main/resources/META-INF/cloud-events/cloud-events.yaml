@@ -117,15 +117,14 @@ default:
           - edge-dacha2
 
   "edge-stats-emitter":
-    description: "This holds all of the usage events tracked by Edge"
+    description: "This holds all of the usage events tracked by Edge. SaaS does not emit from Edge."
     cloudEvents:
       - edge-stat-bundle-v1
     publishers:
       edge-stats:
         ceRegistry: common
         tags:
-          - edge-dacha1
-          - edge-dacha2
+          - fhos-usage-emitter
 
 kinesis:
   "cache-channel":

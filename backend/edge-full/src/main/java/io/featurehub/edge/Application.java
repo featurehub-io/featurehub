@@ -53,7 +53,7 @@ public class Application {
   public static void main(String[] args) {
     System.setProperty("user.timezone", "UTC");
     System.setProperty(APPLICATION_NAME_PROPERTY, "edge-full");
-    CloudEventConfigDiscoveryService.Companion.addTags(NATSDacha1EdgeFeature.Companion.isDacha1Enabled() ? "edge-dacha1" : "edge-dacha2");
+    CloudEventConfigDiscoveryService.Companion.addTags("fhos-usage-emitter", NATSDacha1EdgeFeature.Companion.isDacha1Enabled() ? "edge-dacha1" : "edge-dacha2");
 
     try {
       new Application().run();

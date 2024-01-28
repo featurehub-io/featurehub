@@ -44,6 +44,7 @@ class Application {
       System.setProperty(Info.APPLICATION_NAME_PROPERTY, "dacha2")
       System.setProperty("dacha2.enabled", "true")
 
+
       try {
         val app = Application()
         app.run()
