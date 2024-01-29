@@ -11,40 +11,25 @@ import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValue
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.enriched.model.EnrichedFeatures
-import io.featurehub.events.CloudEventChannelMetric
-import io.featurehub.events.CloudEventPublisher
-import io.featurehub.events.CloudEventsTelemetryReader
+import io.featurehub.events.CloudEventPublisherRegistry
+import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.model.FeatureValueType
-import kotlin.Unit
-import kotlin.jvm.functions.Function1
-import org.jetbrains.annotations.NotNull
 import spock.lang.Specification
 
 class FeatureEnricherProcessorSpec extends Specification {
-  CloudEventsTelemetryReader telemetryReader
   FeatureEnrichmentCache cache
-  CloudEventPublisher publisher
+  CloudEventPublisherRegistry publisher
+  CloudEventReceiverRegistry receiverRegistry
   FeatureEnricherProcessor enricher
-
-  static class FakeTelemetryReader implements CloudEventsTelemetryReader {
-    @Override
-    void receive(@NotNull String subject, @NotNull CloudEvent event, @NotNull CloudEventChannelMetric metrics, @NotNull Function1<? super CloudEvent, Unit> process) {
-      process(event)
-    }
-
-    @Override
-    void receive(@NotNull CloudEvent event, @NotNull Function1<? super CloudEvent, Unit> process) {
-      process(event)
-    }
-  }
 
   def setup() {
     ThreadLocalConfigurationSource.createContext(['enricher.enabled': 'true', 'enricher.ignore-when-empty': 'false'])
-    telemetryReader = Spy(FakeTelemetryReader)
     cache = Mock()
     publisher = Mock()
-    enricher = new FeatureEnricherProcessor(telemetryReader, cache, publisher)
+    receiverRegistry = Mock()
+    receiverRegistry.registry("enricher") >> receiverRegistry
+    enricher = new FeatureEnricherProcessor(cache, publisher, receiverRegistry)
   }
 
   def cleanup() {
@@ -66,7 +51,6 @@ class FeatureEnricherProcessorSpec extends Specification {
     when:
       enricher.enrich(ce)
     then:
-      1 * telemetryReader.receive(ce, _)
       0 * _
   }
 
@@ -76,7 +60,6 @@ class FeatureEnricherProcessorSpec extends Specification {
     when:
       enricher.enrich(ce)
     then:
-      1 * telemetryReader.receive(ce, _)
       0 * _
   }
 
@@ -109,7 +92,6 @@ class FeatureEnricherProcessorSpec extends Specification {
     when:
       enricher.enrich(ce)
     then:
-      1 * telemetryReader.receive(ce, _)
       1 * cache.updateFeature(feature)
       1 * cache.getEnrichableEnvironment(envId) >> { -> throw new RuntimeException() }
       0 * _
@@ -132,7 +114,6 @@ class FeatureEnricherProcessorSpec extends Specification {
     when:
       enricher.enrich(ce)
     then:
-      1 * telemetryReader.receive(ce, _)
       1 * cache.updateFeature(feature)
       1 * cache.getEnrichableEnvironment(envId) >> enrichedEnv
       1 * publisher.publish(EnrichedFeatures.CLOUD_EVENT_TYPE, { EnrichedFeatures ef ->

@@ -619,7 +619,7 @@ open class ConvertUtils @Inject constructor(
       return null
     }
     val portfolio = Portfolio()
-      .name(stripArchived(p.name, p.whenArchived))
+      .name(stripArchived(p.name ?: "", p.whenArchived))
       .description(p.description)
       .version(p.version)
       .organizationId(p.organization.id)

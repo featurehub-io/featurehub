@@ -18,7 +18,7 @@ class NATSErrorListener : ErrorListener {
   }
 
   override fun messageDiscarded(conn: Connection?, msg: Message?) {
-    log.error("NATS message discarded")
+    log.error("NATS message discarded {}", msg)
   }
 
   override fun heartbeatAlarm(

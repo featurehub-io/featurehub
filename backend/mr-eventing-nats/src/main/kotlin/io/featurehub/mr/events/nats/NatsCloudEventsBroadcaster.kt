@@ -7,7 +7,7 @@ import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.enriched.model.EnricherPing
 import io.featurehub.events.CloudEventChannelMetric
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.events.nats.NatsCloudEventsPublisher
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
@@ -21,7 +21,7 @@ import jakarta.inject.Inject
  * This broadcasts events specifically for the consumption of Edge (which is just feature updates)
  */
 @LifecyclePriority(priority = 10)
-class NatsCloudEventsPublishers @Inject constructor(nats: NATSSource, cloudEventsPublisher: CloudEventPublisher) : LifecycleListener {
+class NatsCloudEventsPublishers @Inject constructor(nats: NATSSource, cloudEventsPublisher: CloudEventPublisherRegistry) : LifecycleListener {
   @ConfigKey("cloudevents.mr-edge.nats.channel-name")
   private var edgeChannelName: String? = "featurehub/mr-edge-channel"
   @ConfigKey("cloudevents.mr-dacha2.nats.channel-name")
@@ -38,7 +38,7 @@ class NatsCloudEventsPublishers @Inject constructor(nats: NATSSource, cloudEvent
     publishEventsToDacha1(nats, cloudEventsPublisher)
   }
 
-  fun publishFeaturesToEdge(nats: NATSSource, cloudEventsPublisher: CloudEventPublisher) {
+  fun publishFeaturesToEdge(nats: NATSSource, cloudEventsPublisher: CloudEventPublisherRegistry) {
     val natsChannel = nats.createPublisher(edgeChannelName!!)
 
     cloudEventsPublisher.registerForPublishing(PublishFeatureValues.CLOUD_EVENT_TYPE,
@@ -47,7 +47,7 @@ class NatsCloudEventsPublishers @Inject constructor(nats: NATSSource, cloudEvent
     }
   }
 
-  fun publishEventsToDacha1(nats: NATSSource, cloudEventsPublisher: CloudEventPublisher) {
+  fun publishEventsToDacha1(nats: NATSSource, cloudEventsPublisher: CloudEventPublisherRegistry) {
     if (!Dacha2Config.isDacha2Enabled()) {
       // this ia a QUEUE not a TOPIC
       val natsChannel = nats.createPublisher(dacha1CloudEventsChannel!!)
@@ -55,7 +55,7 @@ class NatsCloudEventsPublishers @Inject constructor(nats: NATSSource, cloudEvent
     }
   }
 
-  fun publishEventsToDacha2(nats: NATSSource, cloudEventsPublisher: CloudEventPublisher) {
+  fun publishEventsToDacha2(nats: NATSSource, cloudEventsPublisher: CloudEventPublisherRegistry) {
     if (Dacha2Config.isDacha2Enabled()) {
       val natsChannel = nats.createPublisher(dachaChannelName!!)
 
@@ -79,7 +79,7 @@ class NatsCloudEventsPublishers @Inject constructor(nats: NATSSource, cloudEvent
   }
 
   private fun publishEnricherPing(
-    cloudEventsPublisher: CloudEventPublisher,
+    cloudEventsPublisher: CloudEventPublisherRegistry,
     natsChannel: NatsCloudEventsPublisher
   ) {
     cloudEventsPublisher.registerForPublishing(

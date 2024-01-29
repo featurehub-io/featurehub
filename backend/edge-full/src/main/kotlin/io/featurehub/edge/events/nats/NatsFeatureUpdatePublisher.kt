@@ -3,7 +3,7 @@ package io.featurehub.edge.events.nats
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.edge.events.StreamingEventPublisher
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.mr.messaging.StreamedFeatureUpdate
@@ -16,7 +16,7 @@ import jakarta.inject.Inject
 @LifecyclePriority(priority = 12)
 class NatsFeatureUpdatePublisher @Inject constructor(
   natsSource: NATSSource,
-  cloudEventPublisher: CloudEventPublisher
+  cloudEventPublisher: CloudEventPublisherRegistry
 ) :LifecycleListener  {
   @ConfigKey("cloudevents.edge-mr.nats.channel-name")
   private val updatesSubject: String = "featurehub/mr-updates-queue"

@@ -3,18 +3,14 @@ package io.featurehub.mr.events
 import io.featurehub.db.api.CacheRefresherApi
 import io.featurehub.db.publish.DbCacheSource
 import io.featurehub.db.publish.DummyPublisher
-import io.featurehub.db.publish.nats.NatsDachaEventingFeature
+import io.featurehub.db.publish.nats.NatsDacha1EventingFeature
 import io.featurehub.events.CloudEventsFeature
-import io.featurehub.events.kinesis.KinesisEventFeature
-import io.featurehub.events.pubsub.GoogleEventFeature
 import io.featurehub.messaging.MessagingPublishingFeature
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.events.common.CloudEventCacheBroadcaster
 import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
 import io.featurehub.mr.events.dacha2.CacheApi
-import io.featurehub.mr.events.dacha2.kinesis.KinesisMRFeature
-import io.featurehub.mr.events.dacha2.pubsub.PubsubMRFeature
 import io.featurehub.mr.events.service.FeatureUpdateListenerImpl
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
@@ -24,13 +20,10 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class EventingFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
-    var amPublishing =
-      GoogleEventFeature.isEnabled() || NatsDachaEventingFeature.isEnabled() || KinesisEventFeature.isEnabled()
+    val amPublishing = CloudEventsFeature.publishingEnabled()
 
     context.register(CloudEventsFeature::class.java)
-    context.register(PubsubMRFeature::class.java) // this will in fact not register anything if it is not enabled
-    context.register(KinesisMRFeature::class.java) // this will in fact not register anything if it is not enabled
-    context.register(NatsDachaEventingFeature::class.java) // this will in fact not register anything if it is not enabled
+    context.register(NatsDacha1EventingFeature::class.java) // this will in fact not register anything if it is not enabled
 
     context.register(MessagingPublishingFeature::class.java)
 
@@ -46,7 +39,6 @@ class EventingFeature : Feature {
             .`in`(
               Singleton::class.java
             )
-
         } else {
           bind(DummyPublisher::class.java).to(CacheRefresherApi::class.java).to(CacheSource::class.java).`in`(
             Singleton::class.java

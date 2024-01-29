@@ -26,6 +26,7 @@
     <AsyncLogger name="jersey-logging" level="trace"/>
     <AsyncLogger name="io.featurehub.events.pubsub" level="trace"/>
     <AsyncLogger name="io.featurehub.db.publish" level="trace"/>
+    <AsyncLogger name="io.featurehub.edge" level="trace"/>
     <AsyncLogger name="io.featurehub.db.services.FeatureSqlApi" level="trace"/>
     <AsyncLogger name="io.featurehub.events" level="trace"/>
 

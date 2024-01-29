@@ -29,10 +29,14 @@ class PubSubscriberMessageReceiver(
 
     try {
       PubsubMessageFactory.createReader(incomingMessage).toEvent()?.let {
-        if (message(it)) {
-          consumer.ack()
-        } else {
-          consumer.nack()
+        try {
+          if (message(it)) {
+            consumer.ack()
+          } else {
+            consumer.nack()
+          }
+        } catch (retry: RetryException) {
+          consumer.nack() // retry
         }
       } ?: failed(incomingMessage, consumer)
     } catch (e: Exception) {
@@ -70,9 +74,9 @@ class PubSubSubscriberImpl(
 
   override fun start() {
     if (subscriber == null) {
-      log.error("Attempting to start {} and it is not initialized", subName)
+      log.error("pubsub: error attempting to start {} - there is no configuration for it (it has been stopped)", subName)
     } else {
-      log.info("Starting {} and it is not initialized", subName)
+      log.info("pubsub: starting subscriber async {}", subName)
       subscriber!!.startAsync()
     }
   }

@@ -6,7 +6,7 @@ import io.featurehub.db.api.SingleNullableFeatureValueUpdate
 import io.featurehub.db.messaging.FeatureMessagingParameter
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.events.CloudEventDynamicPublisherRegistry
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.events.DynamicCloudEventDestination
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.messaging.model.MessagingFeatureValueUpdate
@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutorService
 class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
   FeatureMessagingCloudEventPublisherImpl cePublisher
   DbFeatureValue dbFeatureValue
-  CloudEventPublisher publisher
+  CloudEventPublisherRegistry publisher
   SingleNullableFeatureValueUpdate<Long> version
   ExecutorSupplier executorSupplier
   ExecutorService executor

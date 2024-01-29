@@ -6,8 +6,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.WebhookApi
 import io.featurehub.encryption.WebhookEncryptionFeature
 import io.featurehub.enriched.model.EnricherPing
-import io.featurehub.events.CloudEventPublisher
-import io.featurehub.messaging.model.FeatureMessagingUpdate
+import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.mr.api.WebhookServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.*
@@ -22,7 +21,7 @@ import java.util.*
 
 class WebhookResource @Inject constructor(
   private val webhookApi: WebhookApi,
-  private val cloudEventPublisher: CloudEventPublisher,
+  private val cloudEventPublisher: CloudEventPublisherRegistry,
   private val authManagerService: AuthManagerService,
 ) : WebhookServiceDelegate {
   override fun getWebhookDetails(envId: UUID, id: UUID, securityContext: SecurityContext): WebhookDetail {

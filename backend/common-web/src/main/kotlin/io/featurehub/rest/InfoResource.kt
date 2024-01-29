@@ -17,6 +17,10 @@ data class RestInfoVersion (
 class Info {
   companion object {
     const val APPLICATION_NAME_PROPERTY = "application.name"
+
+    fun applicationName(): String {
+      return System.getProperty(APPLICATION_NAME_PROPERTY) ?: "unknown"
+    }
   }
 }
 

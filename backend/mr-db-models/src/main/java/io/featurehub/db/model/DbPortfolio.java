@@ -9,6 +9,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -55,6 +58,7 @@ public class DbPortfolio extends DbVersionedBase {
   private String name;
   private String description;
 
+  @Nullable
   public DbPerson getWhoCreated() {
     return whoCreated;
   }
@@ -63,11 +67,12 @@ public class DbPortfolio extends DbVersionedBase {
     this.whoCreated = whoCreated;
   }
 
+  @NotNull
   public DbOrganization getOrganization() {
     return organization;
   }
 
-  public void setOrganization(DbOrganization organization) {
+  public void setOrganization(@NotNull DbOrganization organization) {
     this.organization = organization;
   }
 
@@ -87,6 +92,7 @@ public class DbPortfolio extends DbVersionedBase {
     this.groups = groups;
   }
 
+  @Nullable
   public String getName() {
     return name;
   }
@@ -95,6 +101,7 @@ public class DbPortfolio extends DbVersionedBase {
     this.name = name;
   }
 
+  @Nullable
   public String getDescription() {
     return description;
   }
@@ -111,11 +118,12 @@ public class DbPortfolio extends DbVersionedBase {
     this.serviceAccounts = serviceAccounts;
   }
 
+  @Nullable
   public LocalDateTime getWhenArchived() {
     return whenArchived;
   }
 
-  public void setWhenArchived(LocalDateTime whenArchived) {
+  public void setWhenArchived(@Nullable LocalDateTime whenArchived) {
     this.whenArchived = whenArchived;
   }
 

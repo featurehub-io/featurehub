@@ -22,7 +22,7 @@ class NatsCloudEventQueueListener constructor(
 
   init {
     subscription = dispatcher.subscribe(subject, queue, this::process)
-    log.info("nats: listening on queue {}/{}", subject, queue)
+    log.info("nats: listening on topic {} + queue {}", subject, queue)
   }
 
   override fun close() {

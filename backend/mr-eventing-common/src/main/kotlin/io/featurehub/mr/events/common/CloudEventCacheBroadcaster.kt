@@ -5,7 +5,7 @@ import io.featurehub.dacha.model.PublishAction
 import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -13,7 +13,7 @@ import java.net.URI
 import java.time.OffsetDateTime
 
 class CloudEventCacheBroadcaster @Inject constructor(
-  private val cloudEventsPublisher: CloudEventPublisher
+  private val cloudEventsPublisher: CloudEventPublisherRegistry
 ) : CacheBroadcast {
   private val log: Logger = LoggerFactory.getLogger(CloudEventCacheBroadcaster::class.java)
 

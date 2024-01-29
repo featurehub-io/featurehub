@@ -1,16 +1,14 @@
 package io.featurehub.publish
 
+import io.featurehub.events.nats.NATSConfiguredSource
+import io.featurehub.events.nats.NATSDynamicPublisher
 import io.featurehub.health.HealthSource
-import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecycleListeners
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
-import org.glassfish.hk2.api.Immediate
 import org.glassfish.jersey.internal.inject.AbstractBinder
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 class NATSFeature : Feature {
   companion object {
@@ -29,6 +27,7 @@ class NATSFeature : Feature {
     })
 
     LifecycleListeners.starter(NATSDynamicPublisher::class.java, context)
+    LifecycleListeners.wrap(NATSConfiguredSource::class.java, context)
 
     return true
   }

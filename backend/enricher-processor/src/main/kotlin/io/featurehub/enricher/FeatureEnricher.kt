@@ -10,9 +10,13 @@ import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.enriched.model.EnrichedFeatures
 import io.featurehub.enriched.model.EnricherPing
 import io.featurehub.events.CloudEventChannelMetric
-import io.featurehub.events.CloudEventPublisher
+import io.featurehub.events.CloudEventPublisherRegistry
+import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.CloudEventsTelemetryReader
 import io.featurehub.jersey.config.CacheJsonMapper
+import io.featurehub.lifecycle.LifecycleListener
+import io.featurehub.lifecycle.LifecyclePriority
+import io.featurehub.lifecycle.LifecycleStarted
 import io.featurehub.metrics.MetricsCollector
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
@@ -24,7 +28,6 @@ import java.time.OffsetDateTime
 import java.util.*
 
 interface FeatureEnricher {
-  fun enrich(event: CloudEvent): Boolean
   fun isEnabled(): Boolean
   fun metric(): CloudEventChannelMetric
   fun processFeature(fv: PublishFeatureValue)
@@ -39,11 +42,15 @@ interface FeatureEnrichmentCache {
   fun updateFeature(feature: PublishFeatureValue)
 }
 
+/**
+ * Dacha1 needs FeatureEnricher as an API, Dacha2 does not, it just needs the class to be instantiated.
+ */
+@LifecyclePriority(LifecyclePriority.INTERNAL_PRIORITY_END)
 class FeatureEnricherProcessor @Inject constructor(
-  private val openTelemetryReader: CloudEventsTelemetryReader,
   private val cache: FeatureEnrichmentCache,
-  private val cloudEventPubisher: CloudEventPublisher
-) : FeatureEnricher {
+  private val cloudEventPubisher: CloudEventPublisherRegistry,
+  cloudReceiverRegistry: CloudEventReceiverRegistry
+) : FeatureEnricher, LifecycleListener {
   private val log: Logger = LoggerFactory.getLogger(FeatureEnricherProcessor::class.java)
 
   val publishOnlyWhenEnvironmentNotEmpty = FallbackPropertyConfig.getConfig("enricher.ignore-when-empty", "true").lowercase() == "true"
@@ -56,6 +63,16 @@ class FeatureEnricherProcessor @Inject constructor(
       MetricsCollector.counter("enrich_publish_fail", "Enrichment Feature publishing failures"),
       MetricsCollector.histogram("enrich_publish", "Enrichment Feature publishing")
     )
+
+    cloudReceiverRegistry.registry("enricher").listen(PublishFeatureValues::class.java) { featureData, ce ->
+      log.trace("enricher received CE of type {}", ce.type)
+      enrichData(featureData, ce.time)
+    }
+
+    cloudReceiverRegistry.registry("enricher").listen(EnricherPing::class.java) { ping, ce ->
+      log.trace("enricher received CE of type {}", ce.type)
+      enricherPing(ce, ping)
+    }
   }
 
   override fun isEnabled(): Boolean = EnricherConfig.enabled()
@@ -71,19 +88,17 @@ class FeatureEnricherProcessor @Inject constructor(
   }
 
   /**
-   * dacha2
+   * internal testing only
    */
-  override fun enrich(event: CloudEvent): Boolean {
+  fun enrich(event: CloudEvent): Boolean {
     log.trace("enricher received CE of type {}", event.type)
     if (isEnabled()) {
-      openTelemetryReader.receive(event) {
         if (event.type == PublishFeatureValues.CLOUD_EVENT_TYPE) {
           CacheJsonMapper.fromEventData(event, PublishFeatureValues::class.java)?.let { featureData ->
 
             enrichData(featureData, event.time)
           }
         }
-      }
     }
 
     return true

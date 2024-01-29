@@ -2,20 +2,14 @@ package io.featurehub.dacha2
 
 import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.caching.FastlyPublisher
-import io.featurehub.dacha2.kinesis.KinesisDachaCloudEvents
-import io.featurehub.dacha2.nats.NatsDachaEventsListener
-import io.featurehub.dacha2.pubsub.PubsubDachaCloudEvents
 import io.featurehub.dacha2.resource.DachaApiKeyResource
 import io.featurehub.dacha2.resource.DachaEnvironmentResource
-import io.featurehub.enricher.FeatureEnrichmentCache
 import io.featurehub.enricher.EnrichmentProcessingFeature
-import io.featurehub.events.kinesis.KinesisEventFeature
-import io.featurehub.events.pubsub.GoogleEventFeature
+import io.featurehub.enricher.FeatureEnrichmentCache
 import io.featurehub.lifecycle.LifecycleListeners
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
-import org.glassfish.hk2.api.Immediate
 import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class Dacha2Feature : Feature {
@@ -25,9 +19,6 @@ class Dacha2Feature : Feature {
     context.register(DachaEnvironmentResource::class.java)
     context.register(EnrichmentProcessingFeature::class.java)
 
-    if (NatsDachaEventsListener.isEnabled()) {
-      context.register(NatsDachaEventsListener::class.java)
-    }
 
     context.register(object: AbstractBinder() {
       override fun configure() {
@@ -42,14 +33,6 @@ class Dacha2Feature : Feature {
     })
 
     LifecycleListeners.starter(Dacha2CloudEventListenerImpl::class.java, context)
-
-    if (GoogleEventFeature.isEnabled()) {
-      LifecycleListeners.starter(PubsubDachaCloudEvents::class.java, context)
-    }
-
-    if (KinesisEventFeature.isEnabled()) {
-      LifecycleListeners.starter(KinesisDachaCloudEvents::class.java, context)
-    }
 
     return true
   }

@@ -55,7 +55,7 @@ function mergeCloudEvent<T>(body: T, headers: IncomingHttpHeaders) : CloudEvent<
 
   cloudEvents.push(...events);
 
-  logger.debug(`Cloud Events provided ${events}`);
+  logger.info(`Cloud Events provided ${events}`);
 
   return events;
 }
@@ -64,7 +64,7 @@ function setupServer() {
   server.use(restify.plugins.acceptParser(server.acceptable));
   server.use(restify.plugins.queryParser());
   server.use (function(req, res, next) {
-    logger.info('received request on path', req.path());
+    logger.info(`received request on path ${req.path()}`);
     if (req.contentType() === 'application/json') {
       var data='';
       req.setEncoding('utf8');

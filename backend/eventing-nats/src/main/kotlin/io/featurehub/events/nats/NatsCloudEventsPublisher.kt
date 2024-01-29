@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 
 class NatsCloudEventsPublisher constructor(private val natsSource: NATSSource, private val subject: String) {
   private val log: Logger = LoggerFactory.getLogger(NatsCloudEventsPublisher::class.java)
+//  private val natsWriter =
 
   init {
     log.info("nats: ready to publish on topic {}", subject)
@@ -16,9 +17,8 @@ class NatsCloudEventsPublisher constructor(private val natsSource: NATSSource, p
   fun publish(event: CloudEvent) {
     try {
       log.trace("publishing event on channel {}: {} / {}", subject, event.type, event.subject)
-      natsSource.connection.publish(
-        NatsMessageFactory.createWriter(subject).writeBinary(event)
-      )
+      natsSource.connection.publish(NatsMessageFactory.createWriter(subject).writeBinary(event))
+
     } catch (e: Exception) {
       log.error("Unable to publish event {}", event, e)
     }
