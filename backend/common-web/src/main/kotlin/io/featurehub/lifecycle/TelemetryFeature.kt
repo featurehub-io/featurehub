@@ -234,6 +234,8 @@ interface BaggageChecker {
 
   // this cannot be done on incoming request as the jax-rs request is last.
   fun addBaggageToCurrentContext(key: String, value: String)
+
+  fun splitAndAddMDC(line: String)
 }
 
 class OpenTelemetryBaggageChecker : BaggageChecker {
@@ -251,6 +253,25 @@ class OpenTelemetryBaggageChecker : BaggageChecker {
 
   override fun addBaggageToCurrentContext(key: String, value: String) {
     Baggage.current().toBuilder().put(key.lowercase(), value).build().storeInContext(Context.current())
+  }
+
+  override fun splitAndAddMDC(line: String) {
+    val builder = Baggage.current().toBuilder()
+
+    line.split(",").forEach { b ->
+      val parts = b.split("=")
+      if (parts.size == 2) {
+        builder.put(parts[0], parts[1])
+      }
+    }
+
+    builder.build().storeInContext(Context.current())
+
+    val baggage = Baggage.fromContext(Context.current())
+
+    if (baggage.size() > 0) {
+      baggage.forEach { k, v -> MDC.put(k, v.value) }
+    }
   }
 }
 

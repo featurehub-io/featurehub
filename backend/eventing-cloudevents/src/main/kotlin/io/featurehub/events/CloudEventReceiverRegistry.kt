@@ -119,7 +119,7 @@ open class CloudEventReceiverRegistryInternal(
     openTelemetryReader.receive(event) {
       CacheJsonMapper.fromEventData(event, handlers[0].clazz)?.let { eventData ->
         if (log.isTraceEnabled) {
-          log.debug("cloudevent: incoming message on {}/{} : {}", event.type, event.subject, eventData.toString())
+          log.debug("cloudevent: incoming message on {}/{} : {}", event.type, event.id, eventData.toString())
         }
 
         handlers.forEach { handler ->
@@ -127,7 +127,7 @@ open class CloudEventReceiverRegistryInternal(
             handler.handler(eventData as TaggedCloudEvent, event)
           }
         }
-      } ?: log.error("cloudevent: failed to handle message {} : {}", event.subject, event.type)
+      } ?: log.error("cloudevent: failed to handle message {} : {}", event.type, event.id)
     }
   }
 }
