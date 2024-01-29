@@ -263,7 +263,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration> {
                           return 'Please enter a valid webhook URL';
                         }
                         if (!v.startsWith("http://") &&
-                            v.startsWith("https://")) {
+                            !v.startsWith("https://")) {
                           return 'Please enter a valid URL';
                         }
                         return null;

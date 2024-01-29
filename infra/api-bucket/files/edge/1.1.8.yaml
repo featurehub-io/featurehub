@@ -1,0 +1,601 @@
+openapi: 3.0.1
+info:
+  title: FeatureServiceApi
+  description: This describes the API clients use for accessing features
+  version: 1.1.8
+  x-version-api: fragment of version API
+servers:
+- url: /
+paths:
+  /info/version:
+    get:
+      tags:
+      - InfoService
+      description: Gets information as to what this server is.
+      operationId: getInfoVersion
+      responses:
+        "200":
+          description: The basic  information on this server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationVersionInfo'
+  /features/:
+    get:
+      tags:
+      - FeatureService
+      description: Requests all features for this sdkurl and disconnects
+      operationId: getFeatureStates
+      parameters:
+      - name: apiKey
+        in: query
+        description: A list of API keys to retrieve information about
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      - name: contextSha
+        in: query
+        description: "A SHA of the context in string form designed to break any cache\
+          \ if the client changes context. It is not used by the server in any way,\
+          \ but if Fastly support is turned on it must be present."
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "feature request successful, all environments you have permission\
+            \ to or that were found are returned"
+          headers:
+            x-fh-version:
+              required: false
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureEnvironmentCollection'
+        "236":
+          description: "its not you, its me, environment stagnant."
+          headers:
+            x-fh-version:
+              required: false
+              style: simple
+              explode: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureEnvironmentCollection'
+        "400":
+          description: you didn't ask for any environments
+          headers:
+            x-fh-version:
+              required: false
+              style: simple
+              explode: false
+              schema:
+                type: string
+  /features/{sdkUrl}/{featureKey}:
+    put:
+      tags:
+      - FeatureService
+      description: Updates the feature state if allowed.
+      operationId: setFeatureState
+      parameters:
+      - name: sdkUrl
+        in: path
+        description: The API Key for the environment and service account
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: featureKey
+        in: path
+        description: The key you wish to update/action
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeatureStateUpdate'
+        required: true
+      responses:
+        "200":
+          description: update was accepted but not actioned because feature is already
+            in that state
+          headers:
+            x-fh-version:
+              required: false
+              style: simple
+              explode: false
+              schema:
+                type: string
+        "201":
+          description: update was accepted and actioned
+          headers:
+            x-fh-version:
+              required: false
+              style: simple
+              explode: false
+              schema:
+                type: string
+        "202":
+          description: Neither lock or value was changing
+        "400":
+          description: you have made a request that doesn't make sense. e.g. it has
+            no data
+        "403":
+          description: "update was not accepted, attempted change is outside the permissions\
+            \ of this user"
+        "404":
+          description: "something about the presented data isn't right and we couldn't\
+            \ find it, could be the service key, the environment or the feature"
+        "412":
+          description: you have made a request that isn't possible. e.g. changing
+            a value without unlocking it.
+components:
+  schemas:
+    FeatureValueType:
+      type: string
+      enum:
+      - BOOLEAN
+      - STRING
+      - NUMBER
+      - JSON
+    BaseStrategy:
+      properties:
+        percentage:
+          type: integer
+          description: value between 0 and 1000000 - for four decimal places
+          nullable: true
+        percentageAttributes:
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you\
+            \ can use one or more attributes defined here"
+          nullable: true
+          items:
+            type: string
+          default: []
+        attributes:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RolloutStrategyAttribute'
+          default: []
+      description: "if the feature in an environment is different from its default,\
+        \ this will be the reason for it. a rollout strategy is defined at the Application\
+        \ level and then applied to a specific feature value. When they are copied\
+        \ to the cache layer they are cloned and the feature value for that strategy\
+        \ is inserted into the clone and those are published."
+    BaseRolloutStrategy:
+      allOf:
+      - $ref: '#/components/schemas/BaseStrategy'
+      - type: object
+        properties:
+          value:
+            description: when we attach the RolloutStrategy for Dacha or SSE this
+              lets us push the value out. Only visible in SDK and SSE Edge.
+            nullable: true
+    RolloutStrategyAttribute:
+      required:
+      - conditional
+      - fieldName
+      - type
+      properties:
+        id:
+          type: string
+          description: An ID that needs to exist for validation
+          nullable: true
+        conditional:
+          $ref: '#/components/schemas/RolloutStrategyAttributeConditional'
+        fieldName:
+          type: string
+        values:
+          type: array
+          description: the value(s) associated with this rule
+          items:
+            $ref: '#/components/schemas/RolloutStrategyArrayType'
+          default: []
+        type:
+          $ref: '#/components/schemas/RolloutStrategyFieldType'
+    RolloutStrategyArrayType:
+      description: values depend on the field type
+    RolloutStrategyFieldType:
+      type: string
+      enum:
+      - STRING
+      - SEMANTIC_VERSION
+      - NUMBER
+      - DATE
+      - DATETIME
+      - BOOLEAN
+      - IP_ADDRESS
+    RolloutStrategyAttributeConditional:
+      type: string
+      enum:
+      - EQUALS
+      - ENDS_WITH
+      - STARTS_WITH
+      - GREATER
+      - GREATER_EQUALS
+      - LESS
+      - LESS_EQUALS
+      - NOT_EQUALS
+      - INCLUDES
+      - EXCLUDES
+      - REGEX
+    StrategyAttributeWellKnownNames:
+      type: string
+      enum:
+      - device
+      - country
+      - platform
+      - userkey
+      - session
+      - version
+    StrategyAttributeDeviceName:
+      type: string
+      enum:
+      - browser
+      - mobile
+      - desktop
+      - server
+      - watch
+      - embedded
+    StrategyAttributePlatformName:
+      type: string
+      enum:
+      - linux
+      - windows
+      - macos
+      - android
+      - ios
+    StrategyAttributeCountryName:
+      type: string
+      description: https://www.britannica.com/topic/list-of-countries-1993160 - we
+        put these in API so everyone can have the same list
+      enum:
+      - afghanistan
+      - albania
+      - algeria
+      - andorra
+      - angola
+      - antigua_and_barbuda
+      - argentina
+      - armenia
+      - australia
+      - austria
+      - azerbaijan
+      - the_bahamas
+      - bahrain
+      - bangladesh
+      - barbados
+      - belarus
+      - belgium
+      - belize
+      - benin
+      - bhutan
+      - bolivia
+      - bosnia_and_herzegovina
+      - botswana
+      - brazil
+      - brunei
+      - bulgaria
+      - burkina_faso
+      - burundi
+      - cabo_verde
+      - cambodia
+      - cameroon
+      - canada
+      - central_african_republic
+      - chad
+      - chile
+      - china
+      - colombia
+      - comoros
+      - congo_democratic_republic_of_the
+      - congo_republic_of_the
+      - costa_rica
+      - cote_divoire
+      - croatia
+      - cuba
+      - cyprus
+      - czech_republic
+      - denmark
+      - djibouti
+      - dominica
+      - dominican_republic
+      - east_timor
+      - ecuador
+      - egypt
+      - el_salvador
+      - equatorial_guinea
+      - eritrea
+      - estonia
+      - eswatini
+      - ethiopia
+      - fiji
+      - finland
+      - france
+      - gabon
+      - the_gambia
+      - georgia
+      - germany
+      - ghana
+      - greece
+      - grenada
+      - guatemala
+      - guinea
+      - guinea_bissau
+      - guyana
+      - haiti
+      - honduras
+      - hungary
+      - iceland
+      - india
+      - indonesia
+      - iran
+      - iraq
+      - ireland
+      - israel
+      - italy
+      - jamaica
+      - japan
+      - jordan
+      - kazakhstan
+      - kenya
+      - kiribati
+      - korea_north
+      - korea_south
+      - kosovo
+      - kuwait
+      - kyrgyzstan
+      - laos
+      - latvia
+      - lebanon
+      - lesotho
+      - liberia
+      - libya
+      - liechtenstein
+      - lithuania
+      - luxembourg
+      - madagascar
+      - malawi
+      - malaysia
+      - maldives
+      - mali
+      - malta
+      - marshall_islands
+      - mauritania
+      - mauritius
+      - mexico
+      - micronesia_federated_states_of
+      - moldova
+      - monaco
+      - mongolia
+      - montenegro
+      - morocco
+      - mozambique
+      - myanmar
+      - namibia
+      - nauru
+      - nepal
+      - netherlands
+      - new_zealand
+      - nicaragua
+      - niger
+      - nigeria
+      - north_macedonia
+      - norway
+      - oman
+      - pakistan
+      - palau
+      - panama
+      - papua_new_guinea
+      - paraguay
+      - peru
+      - philippines
+      - poland
+      - portugal
+      - qatar
+      - romania
+      - russia
+      - rwanda
+      - saint_kitts_and_nevis
+      - saint_lucia
+      - saint_vincent_and_the_grenadines
+      - samoa
+      - san_marino
+      - sao_tome_and_principe
+      - saudi_arabia
+      - senegal
+      - serbia
+      - seychelles
+      - sierra_leone
+      - singapore
+      - slovakia
+      - slovenia
+      - solomon_islands
+      - somalia
+      - south_africa
+      - spain
+      - sri_lanka
+      - sudan
+      - sudan_south
+      - suriname
+      - sweden
+      - switzerland
+      - syria
+      - taiwan
+      - tajikistan
+      - tanzania
+      - thailand
+      - togo
+      - tonga
+      - trinidad_and_tobago
+      - tunisia
+      - turkey
+      - turkmenistan
+      - tuvalu
+      - uganda
+      - ukraine
+      - united_arab_emirates
+      - united_kingdom
+      - united_states
+      - uruguay
+      - uzbekistan
+      - vanuatu
+      - vatican_city
+      - venezuela
+      - vietnam
+      - yemen
+      - zambia
+      - zimbabwe
+    ApplicationVersionInfo:
+      required:
+      - name
+      - version
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+    FeatureStateUpdate:
+      type: object
+      properties:
+        value:
+          description: the new value
+          nullable: true
+        updateValue:
+          type: boolean
+          description: "indicates whether you are trying to update the value, as value\
+            \ can be null"
+          nullable: true
+        lock:
+          type: boolean
+          description: "set only if you wish to lock or unlock, otherwise null"
+          nullable: true
+    SSEResultState:
+      type: string
+      description: error is an inherent state
+      enum:
+      - ack
+      - bye
+      - failure
+      - features
+      - feature
+      - delete_feature
+      - config
+      - error
+    FeatureEnvironmentCollection:
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          format: uuid
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureState'
+      description: This represents a collection of features as per a request from
+        a GET api. GET's can request multiple API Keys at the same time.
+      x-renamed-from: Environment
+    FeatureState:
+      required:
+      - id
+      - key
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: false
+        key:
+          type: string
+          nullable: false
+        l:
+          type: boolean
+          description: "Is this feature locked. Usually this doesn't matter because\
+            \ the value is the value, but for FeatureInterceptors it can matter."
+          nullable: false
+          default: false
+        version:
+          type: integer
+          description: "The version of the feature, this allows features to change\
+            \ values and it means we don't trigger events"
+          format: int64
+          nullable: false
+        type:
+          nullable: false
+          allOf:
+          - $ref: '#/components/schemas/FeatureValueType'
+        value:
+          description: the current value
+          nullable: true
+        v:
+          type: string
+          description: strategy id that was applied if this was a server evaluated
+            feature
+          nullable: true
+        fp:
+          type: object
+          additionalProperties:
+            type: string
+          description: Any additional properties configured by System Operator
+          x-longname: featureProperties
+        environmentId:
+          type: string
+          description: "This field is filled in from the client side in the GET api\
+            \ as the GET api is able to request multiple environments. It is never\
+            \ passed from the server, as an array of feature states is wrapped in\
+            \ an environment."
+          format: uuid
+          nullable: true
+        strategies:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/FeatureRolloutStrategy'
+    FeatureRolloutStrategy:
+      description: This is the model for the rollout strategy as required by Dacha
+        and Edge
+      allOf:
+      - $ref: '#/components/schemas/BaseRolloutStrategy'
+      - required:
+        - id
+        type: object
+        properties:
+          id:
+            type: string
+            description: strategy id
+          attributes:
+            type: array
+            items:
+              $ref: '#/components/schemas/FeatureRolloutStrategyAttribute'
+    FeatureRolloutStrategyAttribute:
+      allOf:
+      - $ref: '#/components/schemas/RolloutStrategyAttribute'
+      - required:
+        - conditional
+        - fieldName
+        - type
+        type: object
