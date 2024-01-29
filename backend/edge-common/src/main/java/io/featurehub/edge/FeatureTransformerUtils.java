@@ -40,7 +40,9 @@ public class FeatureTransformerUtils implements FeatureTransformer {
         new FeatureState()
             .key(rf.getFeature().getKey())
             .type(rf.getFeature().getValueType()) // they are the same
+            .featureProperties(rf.getFeatureProperties())
             .id(rf.getFeature().getId());
+
 
     if (rf.getValue() == null) {
       fs.setVersion(0L);

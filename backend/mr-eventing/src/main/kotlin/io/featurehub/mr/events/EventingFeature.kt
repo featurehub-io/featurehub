@@ -3,6 +3,8 @@ package io.featurehub.mr.events
 import io.featurehub.db.api.CacheRefresherApi
 import io.featurehub.db.publish.DbCacheSource
 import io.featurehub.db.publish.DummyPublisher
+import io.featurehub.db.publish.FeatureModelWalker
+import io.featurehub.db.publish.FeatureModelWalkerService
 import io.featurehub.db.publish.nats.NatsDacha1EventingFeature
 import io.featurehub.events.CloudEventsFeature
 import io.featurehub.messaging.MessagingPublishingFeature
@@ -34,6 +36,7 @@ class EventingFeature : Feature {
         if (amPublishing) {
           // the broadcaster will determine if dacha2 is enabled and not publish to that channel if not
           bind(CloudEventCacheBroadcaster::class.java).to(CacheBroadcast::class.java).`in`(Singleton::class.java)
+          bind(FeatureModelWalkerService::class.java).to(FeatureModelWalker::class.java).`in`(Singleton::class.java)
           bind(DbCacheSource::class.java).to(CacheSource::class.java).to(CacheApi::class.java)
             .to(CacheRefresherApi::class.java)
             .`in`(

@@ -355,7 +355,7 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
 
       if (feature.action == PublishAction.CREATE || feature.action == PublishAction.UPDATE) {
         if (existingFeature.version < newFeature.version) {
-          log.trace("feature itself updated, storing the updated feature")
+          log.trace("feature itself updated (old {} new {}), storing the updated feature", existingFeature.version, newFeature.version)
           ef.setFeature(feature.feature)
         }
 

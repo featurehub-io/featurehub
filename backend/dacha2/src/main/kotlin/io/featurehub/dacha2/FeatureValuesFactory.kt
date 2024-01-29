@@ -69,6 +69,7 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
 
       log.trace("replacing feature {} with {}", existed.feature, feature.feature)
       existed.feature = feature.feature
+      existed.featureProperties = feature.featureProperties
     }
 
     env.featureValues = featureValues.toList()

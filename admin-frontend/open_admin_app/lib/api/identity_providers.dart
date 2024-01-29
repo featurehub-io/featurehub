@@ -48,4 +48,5 @@ class ServerCapabilities {
   bool get dacha1Enabled => _capabilities['dacha1Enabled'] == 'true';
   bool get featureGroupsEnabled => _capabilities['featureGroupsEnabled'] == 'true';
   bool get integrationsEnabled => true || capabilityWebhooks;
+  bool get featurePropertyExtendedDataEnabled => true;
 }

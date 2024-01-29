@@ -40,6 +40,7 @@
     </license>
   </licenses>
 
+
   <dependencies>
     <dependency>
       <groupId>io.featurehub.api</groupId>
@@ -76,6 +77,7 @@
       <artifactId>eventing-google-pubsub</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
+
     <dependency>
       <groupId>io.featurehub.common</groupId>
       <artifactId>common-db-test</artifactId>

@@ -1,9 +1,11 @@
 package io.featurehub.dacha2.resource
 
 import io.featurehub.dacha.api.DachaApiKeyService
+import io.featurehub.dacha.model.CacheEnvironmentFeature
 import io.featurehub.dacha.model.DachaKeyDetailsResponse
 import io.featurehub.dacha.model.DachaPermissionResponse
 import io.featurehub.dacha2.Dacha2Cache
+import io.featurehub.mr.model.RoleType
 import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
 import java.util.*
@@ -23,8 +25,17 @@ class DachaApiKeyResource @Inject constructor(private val cache: Dacha2Cache) : 
       .serviceKeyId(collection.serviceAccountId)
       .etag(collection.features.getEtag())
       .environmentInfo(environment.environment.environmentInfo)
-      .features(filteredList.toList())
+      .features(if (collection.perms.permissions.contains(RoleType.EXTENDED_DATA)) filteredList.toList() else stripExtendedData(filteredList))
   }
+
+  private fun stripExtendedData(filteredList: Collection<CacheEnvironmentFeature>): List<CacheEnvironmentFeature> {
+    return filteredList.map { ef -> if (ef.featureProperties?.isNotEmpty() == true) stripFeatureProperties(ef) else ef }.toList()
+  }
+
+  private fun stripFeatureProperties(ef: CacheEnvironmentFeature): CacheEnvironmentFeature {
+    return CacheEnvironmentFeature().feature(ef.feature).value(ef.value)
+  }
+
 
   // this is used by the PUT api
   override fun getApiKeyPermissions(eId: UUID, serviceAccountKey: String, featureKey: String): DachaPermissionResponse {
@@ -40,6 +51,6 @@ class DachaApiKeyResource @Inject constructor(private val cache: Dacha2Cache) : 
       .serviceKeyId(collection.serviceAccountId)
       .roles(collection.perms.permissions)
       .environmentInfo(environment.environment.environmentInfo)
-      .feature(feature)
+      .feature(if (collection.perms.permissions.contains(RoleType.EXTENDED_DATA)) feature else stripFeatureProperties(feature))
   }
 }
