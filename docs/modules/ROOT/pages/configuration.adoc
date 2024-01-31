@@ -148,40 +148,7 @@ For testing locally there are extra fields if you are using the emulator - they 
 
 === AWS Kinesis
 
-We are supporting AWS Kinesis from v1.5.9 of FeatureHub
-
-Disable NATS:
-
-- `nats.enabled=false`
-
-Enable Kinesis:
-
-- `cloudevents.kinesis.enabled=true`
-
-Some global Kinesis settings for all apps:
-
-- `cloudevents.kinesis.aws.region` - (default `us-east-1`)
-- `cloudevents.kinesis.shutdown-length` - (default 20) how long we will wait to try and shutdown the Kinesis stream before closing it by force
-- `cloudevents.kinesis.put-sync` - (default true) put events onto the stream synchronously, i.e. wait for them. We have found this is more reliable when true.
-- `cloudevents.kinesis.endpointUrl` - (optional) in case you are using something like localstack or wish to specify a specific endpoint url
-
-Then MR, Edge and MR need to know the streams settings:
-
-- `cloudevents.mr-edge.kinesis.stream-name=featurehub-mr-edge` - the stream for MR -> Edge communication
-- `cloudevents.mr-edge.kinesis.randomise-partition-key=false` - if you have > 1 shard, make sure this is true, unless you have a lot of traffic you probably don't need it
-- `cloudevents.stats.kinesis.stream-name=featurehub-stats` - if you are publishing stats, the stream for doing so
-- `cloudevents.mr-dacha2.kinesis.stream-name=featurehub-mr-dacha2` - the stream for MR -> Dacha2 communication
-- `cloudevents.mr-dacha2.kinesis.randomise-partition-key=false` - if you have > 1 shard, make sure this is true, unless you have a lot of traffic you probably don't need it
-
-MR needs to know the stream for TestSDK updates:
-
-- `cloudevents.inbound.stream-names=featurehub-edge-updates` -
-
-Edge needs to know the stream to publish on:
-
-- `cloudevents.edge-mr.kinesis.stream-name=featurehub-edge-updates`
-
-NOTE: We haven't conducted performance tests with AWS Kinesis, we recommend for you to run your own tests before using this setup in production
+We are supporting AWS Kinesis from v1.5.9 of FeatureHub. We discontinued support in 1.8.0 due to lack of interest.
 
 === Management Repository
 
@@ -210,6 +177,51 @@ countdown, where after n number of retries, it will automatically disable the we
 - `enricher.enabled` - The enricher pipeline, currently only required to be enabled for webhooks to work. True by default. To reduce unnecessary "load" if you do not use webhooks, disable as follows: `enricher.enabled=false`
 - `ga.tracking-id` - If provided, this will enable tracking on the usage of your Admin UI and tell you what features people are using. 
 - `mr.dacha2.api-keys` - This swaps the Dacha2 endpoint to the public interface and protects it to expect a `key` header with one of the keys listed here. See Dacha2 below for more details.
+
+==== SDK Feature Extension Properties
+
+The system is capable of letting you _extend_ the data you publish to the SDK and control access to that data
+using the Service Accounts. Each Service Account has Read/Unlock/Lock/Change Value and also *Read Extended Feature Value*.
+
+ - `sdk.feature.enhance.map` - In the Management Repository (and Party Server/Party-Server-ish) you can define this environment variable or system property and it is a *name/value* pair of data which will appear in your "Feature Properties" section in your SDK (if the associated Service Account is given permission). It is an advanced feature and it requires understanding of the Object model of Feature Hub - and it is available only in the Open Source version.
+- `sdk.feature.enhance.size` - this controls the cache size. If you are using metadata (see below), the system will hold onto the JSON parsed metadata to speed up publishing, it will hold onto this many features. It is set by default to 100.
+
+The *name/value* pairs are pairs of names and https://github.com/jknack/handlebars.java?tab=readme-ov-file#helpers[Handlebars templates]. The templates feature lets you walk the tree of data provided. 
+
+The values in the name/value pair can be actual templates, or if the value starts with a `#` then a reference to an absolute file location. The latter is useful if you wish to store your definitions in files as part of your Kubernetes deployment. We recommend experimenting with a local copy of FeatureHub to get your templates just the way you want them.
+
+An example:
+
+----
+sdk.feature.enhance.map=appName={{{feature.parentApplication.name}}},portfolio={{{feature.parentApplication.portfolio.name}}},category={{{metadata.category}}}
+----
+
+If you curl your SDK endpoint, you will see something like: 
+
+----
+"fp":{"appName":"D2nbUfr8LH1i","portfolio":"D2nbUfr8LH1i","category":"shoes"}
+----
+
+`fp` meaning "feature properties".
+
+Your template will be handed the following fields which you refer to by name in your template:
+
+- `feature` - this represents the DbApplicationFeature definition and lets you walk around the https://github.com/featurehub-io/featurehub/blob/main/backend/mr-db-models/src/main/java/io/featurehub/db/model/DbApplicationFeature.java[Feature definition] (it is not the value but the feature itself).
+- `featureValue` - this represents the https://github.com/featurehub-io/featurehub/blob/main/backend/mr-db-models/src/main/java/io/featurehub/db/model/DbFeatureValue.java[DbFeatureValue definition]. For flags, it will always have a value, for the other types it may be empty.
+- `metadata` - this represents `feature.metaData` that has been parsed into a JSON object and is thus navigable in Handlebars. If you want the _raw_ metadata, use `{{{feature.metaData}}}`, if for example you want the `category` inside the metadata in your features, use `{{{metadata.category}}}`. If there is no metadata or no category or the metadata
+isn't JSON for some features, that won't cause problems, it will just be left out (see below).
+
+In addition to these we give you:
+
+- `pubFeature` - this is the feature that is about to be published and is https://github.com/featurehub-io/featurehub/blob/main/infra/api-bucket/files/webhooks/1.2.1.yaml#L132[documented in the API].
+- `pubFeatureValue` - this is the value of the feature (if any) that is about to be published, can be null and is also https://github.com/featurehub-io/featurehub/blob/main/infra/api-bucket/files/webhooks/1.2.1.yaml#L152[documented in the API].
+- `fgStrategies` - these are the strategies coming from feature groups this feature is associated with. They are RolloutStrategies and basically follow the same https://github.com/featurehub-io/featurehub/blob/main/infra/api-bucket/files/webhooks/1.2.1.yaml#L187[API pattern].
+
+A few things to note 
+
+- in Handlebars if you don't want it to _HTML escape_ your data, you need to use triple braces, e.g. `{{{feature.parentApplication.name}}}`.
+- null values are safe to navigate, Handlebars will just return an empty value
+- the data is _sparse_ - if a key returns a null or empty value, it will drop that key to keep data transfer down.
 
 === Dacha1 Config
 
