@@ -54,6 +54,8 @@ Feature: All flag based functionality works as expected
        | false  | false   | on    | 25/orange-roughy/on,16/green-diamon/on,50/blue-peter/off |
 
 
+    # assumes server is configured with
+    # sdk.feature.properties=appName={{{feature.parentApplication.name}}},portfolio={{{feature.parentApplication.portfolio.name}}},category={{{metadata.category}}}
   @extended-data
   Scenario: When an API key is allowed extended data access, we will get enriched feature properties
     Given There is a new feature flag
