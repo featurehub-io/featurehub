@@ -24,10 +24,10 @@ public class FeatureTransformerUtils implements FeatureTransformer {
       new ApplyFeature(new PercentageMumurCalculator(), new MatcherRegistry());
 
   public List<FeatureState> transform(
-      List<CacheEnvironmentFeature> features, ClientContext clientAttributes) {
+      List<CacheEnvironmentFeature> features, ClientContext clientAttributes, boolean allowExtendedProperties) {
     try {
       return features.stream()
-          .map(f -> transform(f, clientAttributes))
+          .map(f -> transform(f, clientAttributes, allowExtendedProperties))
           .collect(Collectors.toList());
     } catch (Exception e) {
       log.error("Failed transform", e);
@@ -35,14 +35,16 @@ public class FeatureTransformerUtils implements FeatureTransformer {
     }
   }
 
-  public FeatureState transform(CacheEnvironmentFeature rf, ClientContext clientAttributes) {
+  public FeatureState transform(CacheEnvironmentFeature rf, ClientContext clientAttributes, boolean allowExtendedProperties) {
     FeatureState fs =
         new FeatureState()
             .key(rf.getFeature().getKey())
             .type(rf.getFeature().getValueType()) // they are the same
-            .featureProperties(rf.getFeatureProperties())
             .id(rf.getFeature().getId());
 
+    if (allowExtendedProperties) {
+      fs.featureProperties(rf.getFeatureProperties());
+    }
 
     if (rf.getValue() == null) {
       fs.setVersion(0L);

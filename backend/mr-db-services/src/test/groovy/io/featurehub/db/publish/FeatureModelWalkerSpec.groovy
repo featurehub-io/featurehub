@@ -40,7 +40,7 @@ class FeatureModelWalkerSpec extends DbSpecification {
 
   def "a basic template will walk the model and provide the right results"() {
     setup:
-      ThreadLocalConfigurationSource.createContext(['sdk.feature.enhance.map': 'name={{feature.name}},category={{metadata.category.name}},portfolio={{feature.parentApplication.portfolio.name}}'])
+      ThreadLocalConfigurationSource.createContext(['sdk.feature.properties': 'name={{feature.name}},category={{metadata.category.name}},portfolio={{feature.parentApplication.portfolio.name}}'])
     when:
       def walker = new FeatureModelWalkerService()
     then:
@@ -59,7 +59,7 @@ class FeatureModelWalkerSpec extends DbSpecification {
     setup:
       def tmp = File.createTempFile('enhance', '.hbs')
       tmp.text = '{ "featureId": {{feature.id}}", "portfolioName": "{{ feature.parentApplication.portfolio.name }}, "environment": "{{ featureValue.environment.name }}, "valid": {{ metadata.valid }} }'
-      ThreadLocalConfigurationSource.createContext(['sdk.feature.enhance.map': "info=#${tmp.absolutePath}".toString()])
+      ThreadLocalConfigurationSource.createContext(['sdk.feature.properties': "info=#${tmp.absolutePath}".toString()])
     when:
       def walker = new FeatureModelWalkerService()
     then:
@@ -74,7 +74,7 @@ class FeatureModelWalkerSpec extends DbSpecification {
 
   def "changing the metadata is possible"() {
     setup:
-      ThreadLocalConfigurationSource.createContext(['sdk.feature.enhance.map': 'category={{metadata.category.name}}'])
+      ThreadLocalConfigurationSource.createContext(['sdk.feature.properties': 'category={{metadata.category.name}}'])
     when:
       def walker = new FeatureModelWalkerService()
       def result = walker.walk(feature, null, new CacheFeature(), null, [])
@@ -94,7 +94,7 @@ class FeatureModelWalkerSpec extends DbSpecification {
 
   def "you can ask for the raw metadata"() {
     setup:
-    ThreadLocalConfigurationSource.createContext(['sdk.feature.enhance.map': 'meta={{{feature.metaData}}}'])
+    ThreadLocalConfigurationSource.createContext(['sdk.feature.properties': 'meta={{{feature.metaData}}}'])
     when:
       def walker = new FeatureModelWalkerService()
       def result = walker.walk(feature, null, new CacheFeature(), null, [])

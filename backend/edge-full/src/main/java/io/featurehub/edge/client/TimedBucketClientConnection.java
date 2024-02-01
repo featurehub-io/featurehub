@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -39,6 +38,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   @NotNull protected final KeyParts apiKey;
   private final Map<UUID, EjectHandler> handlers = new HashMap<>();
   protected final String extraContext;
+  protected boolean allowExtendedProperties = false;
   @NotNull protected final BucketService bucketService;
   private List<PublishFeatureValue> heldFeatureUpdates = new ArrayList<>();
   @NotNull protected final FeatureTransformer featureTransformer;
@@ -235,6 +235,7 @@ public class TimedBucketClientConnection implements ClientConnection {
             break;
           case SUCCESS:
             final List<FeatureState> features = edgeResponse.getEnvironment().getFeatures();
+            this.allowExtendedProperties = edgeResponse.getAllowExtendedData();
             writeMessage(
                 SSEResultState.FEATURES,
                 ETagSplitter.Companion.makeEtags(
@@ -291,7 +292,7 @@ public class TimedBucketClientConnection implements ClientConnection {
         try {
           String data =
               CacheJsonMapper.mapper.writeValueAsString(
-                  featureTransformer.transform(rf.getFeature(), attributesForStrategy));
+                  featureTransformer.transform(rf.getFeature(), attributesForStrategy, allowExtendedProperties));
           // if it was a DELETE or it was being triggered as a retired feature
           if (rf.getAction() == PublishAction.DELETE
               || (rf.getFeature().getValue() != null

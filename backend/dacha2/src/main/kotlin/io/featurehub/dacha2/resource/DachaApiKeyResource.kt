@@ -15,6 +15,7 @@ class DachaApiKeyResource @Inject constructor(private val cache: Dacha2Cache) : 
   override fun getApiKeyDetails(eId: UUID, serviceAccountKey: String, excludeRetired: Boolean?): DachaKeyDetailsResponse {
     val collection = cache.getFeatureCollection(eId, serviceAccountKey) ?: throw NotFoundException()
 
+    val allowedFeatureProperties = collection.perms.permissions.contains(RoleType.EXTENDED_DATA)
     val environment = collection.features.environment
     val pureFeatureList = collection.features.getFeatures()
     val filteredList = if (excludeRetired == true) pureFeatureList.filter { it.value?.retired != true } else pureFeatureList
@@ -23,9 +24,10 @@ class DachaApiKeyResource @Inject constructor(private val cache: Dacha2Cache) : 
       .portfolioId(environment.portfolioId)
       .applicationId(environment.applicationId)
       .serviceKeyId(collection.serviceAccountId)
-      .etag(collection.features.getEtag())
+      .etag(collection.features.getEtag()+ (if (allowedFeatureProperties) "1" else "0")) // we do this to break the etag if the service account permission changes
       .environmentInfo(environment.environment.environmentInfo)
-      .features(if (collection.perms.permissions.contains(RoleType.EXTENDED_DATA)) filteredList.toList() else stripExtendedData(filteredList))
+      .extendedDataAllowed(allowedFeatureProperties)
+      .features(if (allowedFeatureProperties) filteredList.toList() else stripExtendedData(filteredList))
   }
 
   private fun stripExtendedData(filteredList: Collection<CacheEnvironmentFeature>): List<CacheEnvironmentFeature> {

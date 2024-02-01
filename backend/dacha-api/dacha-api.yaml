@@ -220,6 +220,11 @@ components:
           x-basename: eInf
           additionalProperties:
             type: string
+        extendedDataAllowed:
+          description: "The permissions this service account has, so the Edge client can removed extended data"
+          x-basename: ed
+          type: boolean
+          nullable: true
         features:
           type: array
           items:

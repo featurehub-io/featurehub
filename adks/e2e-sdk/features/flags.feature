@@ -54,6 +54,27 @@ Feature: All flag based functionality works as expected
        | false  | false   | on    | 25/orange-roughy/on,16/green-diamon/on,50/blue-peter/off |
 
 
+  @extended-data
+  Scenario: When an API key is allowed extended data access, we will get enriched feature properties
+    Given There is a new feature flag
+    Then there is no enriched data
+    When we update the metadata to include '{"category":"shoes"}'
+    Then there is no enriched data
+    When we allow the service account access to the enriched data
+    And I sleep for 5 seconds
+    And I bounce the feature server connection
+    Then there is enriched data
+      | field     | value            |
+      | portfolio | portfolio.name   |
+      | appName   | application.name |
+      | category  | shoes            |
+    When we update the metadata to include '{"kebabFlavour":"lamb"}'
+    Then there is enriched data
+      | field | value |
+      | portfolio | portfolio.name |
+      | appName   | application.name |
+
+
   @flags
   Scenario: A new portfolio with a boolean feature
 #    Given I connect to the Edge server using <ConnectionType>

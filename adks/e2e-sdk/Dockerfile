@@ -11,7 +11,7 @@ RUN git checkout $branch || true
 RUN cd featurehub-javascript-sdk/featurehub-javascript-client-sdk && \
     npm install && npm run compile && \
     cd ../featurehub-javascript-node-sdk && \
-    npm install && npm run link && npm run compile
+    npm install && npm run setup && npm run compile
 
 WORKDIR /app
 

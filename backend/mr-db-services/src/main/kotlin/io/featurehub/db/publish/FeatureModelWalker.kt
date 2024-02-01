@@ -49,7 +49,7 @@ class FeatureModelWalkerService : FeatureModelWalker {
   private val metadataUsed: Boolean
   private val objectMapper = ObjectMapper()
   private val featureMetadataCache: Cache<UUID,TemplateFeature> = CacheBuilder.newBuilder()
-    .maximumSize(Integer.valueOf(FallbackPropertyConfig.getConfig("sdk.feature.enhance.size", "100")).toLong())
+    .maximumSize(Integer.valueOf(FallbackPropertyConfig.getConfig("sdk.feature.properties.size", "100")).toLong())
     .build()
 
   companion object {
@@ -59,7 +59,7 @@ class FeatureModelWalkerService : FeatureModelWalker {
 
   init {
     var usingMetadata = false
-    FallbackPropertyConfig.getConfig("sdk.feature.enhance.map")?.let { cacheYam ->
+    FallbackPropertyConfig.getConfig("sdk.feature.properties")?.let { cacheYam ->
       cacheYam.trim().split(",").map { s -> s.trim() }.filter { it.isNotEmpty() }.forEach { yam ->
         val parts = yam.split("=")
         if (parts.size == 2) {

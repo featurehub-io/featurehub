@@ -183,8 +183,8 @@ countdown, where after n number of retries, it will automatically disable the we
 The system is capable of letting you _extend_ the data you publish to the SDK and control access to that data
 using the Service Accounts. Each Service Account has Read/Unlock/Lock/Change Value and also *Read Extended Feature Value*.
 
- - `sdk.feature.enhance.map` - In the Management Repository (and Party Server/Party-Server-ish) you can define this environment variable or system property and it is a *name/value* pair of data which will appear in your "Feature Properties" section in your SDK (if the associated Service Account is given permission). It is an advanced feature and it requires understanding of the Object model of Feature Hub - and it is available only in the Open Source version.
-- `sdk.feature.enhance.size` - this controls the cache size. If you are using metadata (see below), the system will hold onto the JSON parsed metadata to speed up publishing, it will hold onto this many features. It is set by default to 100.
+ - `sdk.feature.properties` - In the Management Repository (and Party Server/Party-Server-ish) you can define this environment variable or system property and it is a *name/value* pair of data which will appear in your "Feature Properties" section in your SDK (if the associated Service Account is given permission). It is an advanced feature and it requires understanding of the Object model of Feature Hub - and it is available only in the Open Source version.
+- `sdk.feature.properties.size` - this controls the cache size. If you are using metadata (see below), the system will hold onto the JSON parsed metadata to speed up publishing, it will hold onto this many features. It is set by default to 100.
 
 The *name/value* pairs are pairs of names and https://github.com/jknack/handlebars.java?tab=readme-ov-file#helpers[Handlebars templates]. The templates feature lets you walk the tree of data provided. 
 
@@ -193,7 +193,7 @@ The values in the name/value pair can be actual templates, or if the value start
 An example:
 
 ----
-sdk.feature.enhance.map=appName={{{feature.parentApplication.name}}},portfolio={{{feature.parentApplication.portfolio.name}}},category={{{metadata.category}}}
+sdk.feature.properties=appName={{{feature.parentApplication.name}}},portfolio={{{feature.parentApplication.portfolio.name}}},category={{{metadata.category}}}
 ----
 
 If you curl your SDK endpoint, you will see something like: 
@@ -222,6 +222,8 @@ A few things to note
 - in Handlebars if you don't want it to _HTML escape_ your data, you need to use triple braces, e.g. `{{{feature.parentApplication.name}}}`.
 - null values are safe to navigate, Handlebars will just return an empty value
 - the data is _sparse_ - if a key returns a null or empty value, it will drop that key to keep data transfer down.
+- on SSE (streaming) connections, until the connection is re-established, the change in permission won't become visible as Edge does not get updated as to changes in permissions of Service Accounts. If you are running your SSE
+connections in  HeartBeat mode then you won't get updates until they drop and re-establish.
 
 === Dacha1 Config
 

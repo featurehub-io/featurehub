@@ -7,6 +7,6 @@ import io.featurehub.sse.model.FeatureState;
 import java.util.List;
 
 public interface FeatureTransformer {
-  List<FeatureState> transform(List<CacheEnvironmentFeature> features, ClientContext clientAttributes);
-  FeatureState transform(CacheEnvironmentFeature rf, ClientContext clientAttributes);
+  List<FeatureState> transform(List<CacheEnvironmentFeature> features, ClientContext clientAttributes, boolean allowExtendedProperties);
+  FeatureState transform(CacheEnvironmentFeature rf, ClientContext clientAttributes, boolean allowExtendedProperties);
 }

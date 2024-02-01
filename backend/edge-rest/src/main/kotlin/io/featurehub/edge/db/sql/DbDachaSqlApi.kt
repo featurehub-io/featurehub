@@ -70,7 +70,7 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
           .features(features.filter { featureValues[it.key]?.retired != true }
             .map { toFeatureValueCacheItem(it, featureValues[it.key], fgStrategies[it.id], allowedFeatureProperties) }.filterNotNull())
 
-        response.etag = calculateEtag(response)
+        response.etag = calculateEtag(response) + (if (allowedFeatureProperties) "1" else "0")
         log.trace("etag is {}", response.etag)
 
         response
@@ -170,7 +170,7 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
   private fun calculateEtag(details: DachaKeyDetailsResponse): String {
     val det =
       details
-        .features!!.map { fvci -> fvci.feature.id.toString() + "-" + (fvci.value?.version ?: "0000") }
+        .features.map { fvci -> fvci.feature.id.toString() + "-" + (fvci.value?.version ?: "0000") }
         .joinToString("-")
     return Integer.toHexString(det.hashCode())
   }
