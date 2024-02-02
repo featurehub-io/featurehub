@@ -1,7 +1,7 @@
 import {Then, When} from "@cucumber/cucumber";
 import {SdkWorld} from "../support/world";
 import waitForExpect from "wait-for-expect";
-import {FeatureStateHolder} from "../../../../../featurehub-javascript-sdk/featurehub-javascript-node-sdk/app";
+import {FeatureStateHolder} from "featurehub-javascript-node-sdk";
 import {logger} from "../support/logging";
 import {expect} from "chai";
 import {RoleType} from "../apis/mr-service";
