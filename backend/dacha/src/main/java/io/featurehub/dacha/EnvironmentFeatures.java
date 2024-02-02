@@ -29,7 +29,7 @@ public class EnvironmentFeatures implements InternalCache.FeatureValues {
 
   public void calculateEtag() {
     String val = features.values().stream()
-      .map(fvci -> fvci.getFeature().getId() + "-" + (fvci.getValue() == null ? "0000" :  fvci.getValue().getVersion()))
+      .map(fvci -> fvci.getFeature().getId() + fvci.getFeature().getVersion().toString() + "-" + (fvci.getValue() == null ? "0000" :  fvci.getValue().getVersion()))
       .collect(Collectors.joining("-"));
     etag =
         Integer.toHexString(val.hashCode());

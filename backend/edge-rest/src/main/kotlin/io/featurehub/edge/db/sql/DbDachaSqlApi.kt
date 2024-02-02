@@ -44,6 +44,7 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
       .environment.parentApplication.features.fetch(
       QDbApplicationFeature.Alias.key,
       QDbApplicationFeature.Alias.id,
+      QDbApplicationFeature.Alias.version,
       QDbApplicationFeature.Alias.valueType,
     )
       .environment.environmentFeatures.fetch(
@@ -67,6 +68,7 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
           .applicationId(fakeApplicationId)
           .portfolioId(fakePortfolioId)
           .organizationId(fakeOrganisationId)
+          .extendedDataAllowed(allowedFeatureProperties)
           .features(features.filter { featureValues[it.key]?.retired != true }
             .map { toFeatureValueCacheItem(it, featureValues[it.key], fgStrategies[it.id], allowedFeatureProperties) }.filterNotNull())
 
@@ -106,7 +108,7 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
     featureGroupRolloutStrategies: List<RolloutStrategy>?,
     allowedFeatureProperties: Boolean
   ): CacheEnvironmentFeature? {
-    val cacheFeature = CacheFeature().key(feature.key).id(feature.id).valueType(feature.valueType)
+    val cacheFeature = CacheFeature().version(feature.version).key(feature.key).id(feature.id).valueType(feature.valueType)
     val cacheFeatureValue =
       if (fv == null) toEmptyFeatureValue(feature) else toFeatureValue(fv, featureGroupRolloutStrategies)
     return CacheEnvironmentFeature()
@@ -170,7 +172,7 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
   private fun calculateEtag(details: DachaKeyDetailsResponse): String {
     val det =
       details
-        .features.map { fvci -> fvci.feature.id.toString() + "-" + (fvci.value?.version ?: "0000") }
+        .features.map { fvci -> fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version ?: "0000") }
         .joinToString("-")
     return Integer.toHexString(det.hashCode())
   }
