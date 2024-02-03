@@ -1,0 +1,36 @@
+= Slack Integration
+
+You can integrate FeatureHub with Slack to receive feature updates directly into a Slack channel 
+
+Integration setup slightly differs for our Open Source and SaaS versions. In the section below we will cover Open Source version. For SaaS please follow the docs here[] 
+
+== FeatureHub Open Source Slack Integration
+
+NOTE: For FeatureHub Open Source, you will need to first enable Slack Integration in the system config. Please follow the instructions here[] 
+
+1. Once you enable the integration in the system config, go to the Integrations tab on the Application Settings page, then select an environment and "Integration type: Slack" from the drop-down.
+
+image::slack-fh-integration-page.png[Slack integration, 1500]
+
+1. Click "Connect FeatureHub to Slack" button, which will redirect you to Slack apps installation in your workspace. Make sure you are logged in as your workspace Slack admin. Follow the instructions to add FeatureHub app to your workspace. When you complete this step, click the "Install to Workspace" button. 
+
+image::1-slack-install-to-workspace.png[Slack install to workspace, 1500]
+
+1. Follow instructions to allow access
+
+image::2-slack-allow-access.png[Slack allow featurehub access, 1500]
+
+1. Once the app is installed, copy the Bot User OAuth Token 
+
+image::3-slack-copy-oauth-token.png[Slack integration, 1500]
+
+and paste it into the field in the FeatureHub Slack Configuration form
+
+image::slack-bot-token.png[Slack featurehub bot token, 1500]
+
+1. Provide Slack channel ID where you would like the notifications to go to. You can find and copy it from the Channel Details menu in your Slack workspace. Once you set this up, don't forget to enable configuration by ticking the box "Enabled". You should be all set now and notifications should be streamed out to your Slack channel for a chosen environment.
+
+image::slack-enabled.png[Slack featurehub enabled, 1500]
+
+
+
