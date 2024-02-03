@@ -225,7 +225,7 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
     )
 
     // it wants roles, valueType, key, locked, the feature value
-    val cacheFeature = CacheFeature().key(featureKey).id(feature.id).valueType(feature.valueType)
+    val cacheFeature = CacheFeature().key(featureKey).version(feature.version).id(feature.id).valueType(feature.valueType)
     return DachaPermissionResponse()
       .feature(
         CacheEnvironmentFeature()

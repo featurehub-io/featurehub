@@ -52,7 +52,7 @@ class DachaApiKeyResourceSpec extends Specification {
             .applicationId(appId)
             .featureValues([
               new CacheEnvironmentFeature()
-                .feature(new CacheFeature().id(UUID.randomUUID()))
+                .feature(new CacheFeature().version(1).id(UUID.randomUUID()))
             ])
             .action(PublishAction.CREATE)
             .count(1)
@@ -109,7 +109,7 @@ class DachaApiKeyResourceSpec extends Specification {
       def key = 'FEATURE_ONE'
       def fc = randomCollection()
       def ef = fc.features as EnvironmentFeatures
-      ef.set(new CacheEnvironmentFeature().feature(new CacheFeature().id(UUID.randomUUID()).key(key)))
+      ef.set(new CacheEnvironmentFeature().feature(new CacheFeature().version(1).id(UUID.randomUUID()).key(key)))
       fc.perms.permissions([RoleType.CHANGE_VALUE])
 
       cache.getFeaturesByEnvironmentAndServiceAccount(_, _) >> fc

@@ -99,7 +99,7 @@ class Dacha2CacheImplSpec extends Specification {
     and: "then we publish an update"
       cache.updateFeature(new PublishFeatureValue()
         .action(PublishAction.CREATE)
-        .environmentId(envId).feature(new CacheEnvironmentFeature().feature(new CacheFeature().id(UUID.randomUUID()).key("fred"))))
+        .environmentId(envId).feature(new CacheEnvironmentFeature().feature(new CacheFeature().version(1).id(UUID.randomUUID()).key("fred"))))
     and: "get the update again"
       def result2 = cache.getFeatureCollection(envId, apiKeyClientSide)
     then:
@@ -372,7 +372,7 @@ class Dacha2CacheImplSpec extends Specification {
     and: "we send a feature update which adds a feature"
       cache.updateFeature(new PublishFeatureValue()
         .action(PublishAction.CREATE)
-        .environmentId(envId).feature(new CacheEnvironmentFeature().feature(new CacheFeature().id(UUID.randomUUID()).key("fred"))))
+        .environmentId(envId).feature(new CacheEnvironmentFeature().feature(new CacheFeature().version(1).id(UUID.randomUUID()).key("fred"))))
     then:
       cache.getFeatureCollection(envId, apiKeyServerSide).features.features.find({it.feature.key == 'fred'})
       cache.findEnvironment(envId) != null

@@ -12,7 +12,8 @@ class EnvironmentFeaturesSpec extends Specification {
     given: "we have an environment features object with no data"
       def env = new EnvironmentFeatures(new PublishEnvironment().featureValues([]))
     and: "we have 20 threads"
-      def futures = (1..20).collect { new FeatureHolderThread(env, new CacheEnvironmentFeature().feature(new CacheFeature().id(UUID.randomUUID()))) }
+      def futures = (1..20).collect { new FeatureHolderThread(env,
+        new CacheEnvironmentFeature().feature(new CacheFeature().version(1).id(UUID.randomUUID()))) }
     when: "we update with 20 threads"
       futures.each { it.start() }
     and: "we wait for them to finish"
