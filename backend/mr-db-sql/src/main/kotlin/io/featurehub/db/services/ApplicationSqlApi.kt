@@ -328,18 +328,14 @@ class ApplicationSqlApi @Inject constructor(
         }
         bumpVersionOfAllEnvironmentsWithFeatureChanged(appId)
       }
-      val changed = feature.key != null && feature.key != appFeature.key || feature.valueType != appFeature.valueType
+      val changed = feature.key != appFeature.key || feature.valueType != appFeature.valueType
       appFeature.name = feature.name
       appFeature.alias = feature.alias
-      if (feature.key != null) {
-        appFeature.key = feature.key
-      }
+      appFeature.key = feature.key
       if (feature.link != null) {
         appFeature.link = feature.link
       }
-      if (feature.valueType != null) {
-        appFeature.valueType = feature.valueType
-      }
+      appFeature.valueType = feature.valueType
       appFeature.isSecret = feature.secret != null && feature.secret!!
       if (feature.metaData != null) {
         appFeature.metaData = feature.metaData
@@ -358,7 +354,11 @@ class ApplicationSqlApi @Inject constructor(
 
   @Transactional
   private fun updateApplicationFeature(appFeature: DbApplicationFeature) {
+    val changedVersion = appFeature.version
     appFeature.update()
+    if (appFeature.version != changedVersion) {
+      cacheSource.publishFeatureChange(appFeature, PublishAction.UPDATE)
+    }
   }
 
   @Transactional

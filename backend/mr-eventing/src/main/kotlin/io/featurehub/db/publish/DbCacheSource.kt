@@ -11,7 +11,6 @@ import io.featurehub.db.services.Conversions
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.events.dacha2.CacheApi
-import io.featurehub.mr.model.ApplicationRolloutStrategy
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
@@ -58,6 +57,7 @@ open class DbCacheSource @Inject constructor(
   private val convertUtils: Conversions, dsConfig: DataSourceConfig,
   private val cacheBroadcasters: IterableProvider<CacheBroadcast>,
   private val internalFeatureGroupApi: CacheSourceFeatureGroupApi,
+  private val featureModelWalker: FeatureModelWalker,
   executorSupplier: ExecutorSupplier
 ) : CacheSource, CacheApi, CacheRefresherApi {
   private val executor: ExecutorService
@@ -244,8 +244,10 @@ open class DbCacheSource @Inject constructor(
 
       // now add in the remaining features with empty values
       features.values.forEach { feature: DbApplicationFeature ->
+        val toCacheFeature = toCacheFeature(feature)
         eci.addFeatureValuesItem(
-          CacheEnvironmentFeature().feature(toCacheFeature(feature))
+          CacheEnvironmentFeature().feature(toCacheFeature)
+            .featureProperties(featureModelWalker.walk(feature, null, toCacheFeature, null, null))
         )
       }
 
@@ -266,9 +268,13 @@ open class DbCacheSource @Inject constructor(
     log.trace("cache-environment-feature")
     val feature = features[dfv.feature.id]
     features.remove(dfv.feature.id)
+    val toCacheFeature = toCacheFeature(feature!!)
+    val toCacheFeatureValue = toCacheFeatureValue(dfv, feature, featureGroupRolloutStrategies)
+
     return CacheEnvironmentFeature()
-      .feature(toCacheFeature(feature!!))
-      .value(toCacheFeatureValue(dfv, feature, featureGroupRolloutStrategies))
+      .feature(toCacheFeature)
+      .value(toCacheFeatureValue)
+      .featureProperties(featureModelWalker.walk(feature, dfv, toCacheFeature, toCacheFeatureValue, featureGroupRolloutStrategies))
   }
 
   // we should select out only the details we need to publish
@@ -571,7 +577,8 @@ open class DbCacheSource @Inject constructor(
       .whenUnpublished.isNull.findList()
       .forEach { env: DbEnvironment ->
         val featureGroupStrategies = if (featureGroupsEnabled) internalFeatureGroupApi.collectStrategiesFromGroupsForEnvironmentFeature(env.id, appFeature.id) else listOf()
-        val toCacheFeatureValue = toCacheFeatureValue(featureValues[env.id], appFeature, featureGroupStrategies)
+        val dfv = featureValues[env.id]
+        val toCacheFeatureValue = toCacheFeatureValue(dfv, appFeature, featureGroupStrategies)
         // deletes cause the key to change, so this restores it, SDKs should be using the ID in any case
         if (originalKey != null && toCacheFeatureValue != null) {
           toCacheFeatureValue.key = originalKey
@@ -584,6 +591,13 @@ open class DbCacheSource @Inject constructor(
                 CacheEnvironmentFeature()
                   .feature(cacheFeature)
                   .value(toCacheFeatureValue)
+                  .featureProperties(featureModelWalker.walk(
+                    appFeature,
+                    dfv,
+                    cacheFeature,
+                    toCacheFeatureValue,
+                    featureGroupStrategies
+                  ))
               )
               .environmentId(env.id).action(action)
           )

@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: Cache (Dache) API
   description: This is used by the Edge servers to access features and environments quickly.
-  version: "1.1.1"
+  version: "1.1.2"
 paths:
   /v2/environment/{eId}/{serviceAccountKey}:
     parameters:
@@ -220,6 +220,11 @@ components:
           x-basename: eInf
           additionalProperties:
             type: string
+        extendedDataAllowed:
+          description: "The permissions this service account has, so the Edge client can removed extended data"
+          x-basename: ed
+          type: boolean
+          nullable: true
         features:
           type: array
           items:

@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: FeatureServiceApi
   description: This describes the API clients use for accessing features
-  version: "1.1.7"
+  version: "1.1.8"
 paths:
   /features/:
     get:
@@ -159,9 +159,12 @@ components:
         id:
           type: string
           format: uuid
+          nullable: false
         key:
           type: string
+          nullable: false
         l:
+          nullable: false
           default: false
           description: "Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter."
           type: boolean
@@ -169,8 +172,11 @@ components:
           description: "The version of the feature, this allows features to change values and it means we don't trigger events"
           type: integer
           format: int64
+          nullable: false
         type:
-          $ref: "#/components/schemas/FeatureValueType"
+          nullable: false
+          allOf:
+            - $ref: "#/components/schemas/FeatureValueType"
         value:
           nullable: true
           description: "the current value"
@@ -178,6 +184,12 @@ components:
           nullable: true
           description: "strategy id that was applied if this was a server evaluated feature"
           type: string
+        fp:
+          nullable: true
+          description: "Any additional properties configured by System Operator"
+          x-longname: "featureProperties"
+          additionalProperties:
+            type: string
         environmentId:
           nullable: true
           description: "This field is filled in from the client side in the GET api as the GET api is able to request multiple environments.

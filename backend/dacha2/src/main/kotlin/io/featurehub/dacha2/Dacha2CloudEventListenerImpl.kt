@@ -34,14 +34,6 @@ class Dacha2CloudEventListenerImpl @Inject constructor(
   init {
     executorService = executorSupplier.executorService(nThreads!!)
 
-//    if (featureEnricher.isEnabled()) {
-//      log.trace("registering enricher for ping")
-//      register.listen(EnricherPing::class.java) { ep, ce ->
-//        featureEnricher.enricherPing(ce, ep)
-//      }
-//    }
-
-
     register.listen(PublishEnvironment::class.java) { env, ce ->
       log.trace("received environment {}", env)
       dacha2Cache.updateEnvironment(env)

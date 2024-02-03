@@ -231,6 +231,7 @@ class _ServiceAccountPermissionDetailState
                     getPermissionCheckbox(env.id, RoleType.LOCK),
                     getPermissionCheckbox(env.id, RoleType.UNLOCK),
                     getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
+                    getPermissionCheckbox(env.id, RoleType.EXTENDED_DATA),
                   ]));
                 }
 
@@ -331,6 +332,16 @@ class _ServiceAccountPermissionDetailState
           style: headerStyle,
         ),
       )),
+      if (widget.bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
+        Center(
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(
+                'Read\nExtended\nFeature Data',
+                style: headerStyle,
+              ),
+            )),
+
     ]);
   }
 

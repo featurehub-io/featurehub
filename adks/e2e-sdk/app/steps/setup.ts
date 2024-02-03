@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {Given, Then} from '@cucumber/cucumber';
+import {Given, Then, When} from '@cucumber/cucumber';
 import {
   Application,
   CreatePortfolio,
@@ -107,6 +107,8 @@ async function serviceAccountPermission(envId: string, roleTypes: string, world:
   }), true);
   expect(serviceAccountCreate.status).to.eq(200);
   expect(serviceAccountCreate.data.permissions.length).to.eq(permissions.length);
+  world.serviceAccount = serviceAccountCreate.data;
+  logger.info(`storing service account ${world.serviceAccount}`);
 
   // this adds a new permission based on the environment we are actually in
   if (world.environment.id !== world.application.environments[0].id) {
@@ -123,6 +125,8 @@ async function serviceAccountPermission(envId: string, roleTypes: string, world:
 
     expect(saUpdate.status).to.eq(200);
     expect(saUpdate.data.permissions.length).to.eq(permissions.length);
+    world.serviceAccount = saUpdate.data;
+    logger.info(`storing service account ${world.serviceAccount}`);
 
     const accounts = await serviceAccountApi.searchServiceAccountsInPortfolio(world.portfolio.id, true,
       saUpdate.data.name, world.application.id, true);
@@ -183,8 +187,19 @@ Given('the edge connection is no longer available', async function () {
   }, 10000, 1000);
 });
 
+When('I bounce the feature server connection', async function() {
+  const world = this as SdkWorld;
+  world.edgeServer.close();
+  await connectToFeatureServer(world);
+})
+
 Given(/^I connect to the feature server$/, async function () {
   const world = this as SdkWorld;
+  await connectToFeatureServer(world);
+});
+
+async function connectToFeatureServer(world: SdkWorld) {
+
   const serviceAccountPerm: ServiceAccountPermission = world.serviceAccountPermission;
 
   await waitForExpect(async () => {
@@ -224,7 +239,7 @@ Given(/^I connect to the feature server$/, async function () {
       logger.info('repository is ready for action');
     }, 2000, 500);
   }, 4000, 200);
-});
+}
 
 Then(/^I sleep for (\d+) seconds$/, async function (seconds) {
   await sleep(parseInt(seconds) * 1000);

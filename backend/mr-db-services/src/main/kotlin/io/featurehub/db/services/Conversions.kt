@@ -54,7 +54,8 @@ interface Conversions {
   fun toPerson(person: DbPerson?): Person?
   fun toPerson(dbp: DbPerson?, opts: Opts): Person?
   fun toPerson(dbp: DbPerson?, org: DbOrganization?, opts: Opts): Person?
-  fun stripArchived(name: String, whenArchived: LocalDateTime?): String {
+  fun stripArchived(name: String?, whenArchived: LocalDateTime?): String {
+    if (name == null) return "org"
     if (whenArchived == null) {
       return name
     }

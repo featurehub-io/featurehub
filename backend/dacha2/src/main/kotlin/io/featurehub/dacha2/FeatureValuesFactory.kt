@@ -36,7 +36,7 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
   fun etagCalculator(): String {
     // we convert to list to protect against changes while we are evaluating it
     val calcTag = featureValues.toList()
-      .map { fvci -> fvci.feature.id.toString() + "-" + (fvci.value?.version ?: "0000") }
+      .map { fvci -> fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version ?: "0000") }
       .joinToString("-")
 
     log.trace("etag is {}", calcTag)
@@ -69,6 +69,7 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
 
       log.trace("replacing feature {} with {}", existed.feature, feature.feature)
       existed.feature = feature.feature
+      existed.featureProperties = feature.featureProperties
     }
 
     env.featureValues = featureValues.toList()

@@ -80,6 +80,8 @@ extension RoleTypeExtensions on RoleType {
         return 'Lock';
       case RoleType.READ:
         return 'Read';
+      case RoleType.EXTENDED_DATA:
+        return 'Read Extended Data';
     }
   }
 }
