@@ -10,7 +10,7 @@ import {
   FeatureServiceApi,
   FeatureValue, Person, PersonServiceApi,
   Portfolio,
-  PortfolioServiceApi,
+  PortfolioServiceApi, ServiceAccount,
   ServiceAccountPermission,
   ServiceAccountServiceApi,
   TokenizedPerson,
@@ -63,6 +63,7 @@ export class SdkWorld extends World {
   private scenarioId: string;
   public person: Person
   public featureGroup: FeatureGroup;
+  public serviceAccount?: ServiceAccount;
 
   constructor(props: any) {
     super(props);

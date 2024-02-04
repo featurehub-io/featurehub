@@ -8,7 +8,7 @@
 
   <Loggers>
 
-    <AsyncLogger name="io.featurehub" level="debug"/>
+    <AsyncLogger name="io.featurehub" level="trace"/>
     <AsyncLogger name="io.ebean.SQL" level="trace"/>
     <AsyncLogger name="io.ebean.TXN" level="trace"/>
     <AsyncLogger name="io.ebean.SUM" level="trace"/>

@@ -38,9 +38,9 @@ class FeatureRequestCollection(
 
   private fun decodeWebFailure(failure: WebApplicationException, key: KeyParts, env: FeatureEnvironmentCollection): FeatureRequestResponse? {
     if (failure.response == null || failure.response.status == 412) {
-      return FeatureRequestResponse(env, FeatureRequestSuccess.DACHA_NOT_READY, key, "", null)
+      return FeatureRequestResponse(env, FeatureRequestSuccess.DACHA_NOT_READY, key, "", null, false)
     } else if (failure.response.status == 404) {
-      return FeatureRequestResponse(env, FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE, key, "", null)
+      return FeatureRequestResponse(env, FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE, key, "", null, false)
     }
 
     return null
@@ -62,7 +62,7 @@ class FeatureRequestCollection(
       } else if (failure is ProcessingException) {
         failure.cause?.let { cause ->
           if (cause is ConnectException || cause is SocketTimeoutException) {
-            return FeatureRequestResponse(env, FeatureRequestSuccess.DACHA_NOT_READY, key, "", null)
+            return FeatureRequestResponse(env, FeatureRequestSuccess.DACHA_NOT_READY, key, "", null, false)
           } else if (cause is WebApplicationException) {
             val resp = decodeWebFailure(cause, key, env)
             if (resp != null) {
@@ -74,20 +74,21 @@ class FeatureRequestCollection(
     }
 
     if (details == null) {
-      return FeatureRequestResponse(env, FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE, key, "0", null)
+      return FeatureRequestResponse(env, FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE, key, "0", null, false)
     }
 
     if (!sendFullResults) {
-      return FeatureRequestResponse(env, FeatureRequestSuccess.NO_CHANGE, key, "", details.environmentInfo)
+      return FeatureRequestResponse(env, FeatureRequestSuccess.NO_CHANGE, key, "", details.environmentInfo, false)
     }
 
     return FeatureRequestResponse(
       env
-        .features(featureTransformer.transform(details.features, clientContext)),
+        .features(featureTransformer.transform(details.features, clientContext, details.extendedDataAllowed ?: false)),
       FeatureRequestSuccess.SUCCESS,
       key,
-      details.etag!!,
-      details.environmentInfo
+      details.etag,
+      details.environmentInfo,
+      details.extendedDataAllowed ?: false
     )
   }
 }

@@ -5080,6 +5080,7 @@ components:
       - LOCK
       - UNLOCK
       - CHANGE_VALUE
+      - EXTENDED_DATA
     BaseStrategy:
       properties:
         percentage:

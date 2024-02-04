@@ -16,6 +16,7 @@ components:
         - LOCK
         - UNLOCK
         - CHANGE_VALUE
+        - EXTENDED_DATA
     BaseStrategy:
       x-package: io.featurehub.mr.model
       description: "if the feature in an environment is different from its default, this will be the reason for it.

@@ -15,6 +15,8 @@ import io.featurehub.db.model.query.QDbApplicationFeature
 import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.model.query.QDbServiceAccountEnvironment
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
+import io.featurehub.db.publish.FeatureModelWalker
+import io.featurehub.db.services.Conversions
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.RolloutStrategy
@@ -23,7 +25,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 
-class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroupApi) : DachaApiKeyService {
+class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroupApi,
+                    private val featureModelWalker: FeatureModelWalker,
+                    private val conversions: Conversions) : DachaApiKeyService {
   private val log: Logger = LoggerFactory.getLogger(DbDachaSqlApi::class.java)
 
   // these are not actually required because the stats API isn't used, so we make them up
@@ -40,6 +44,7 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
       .environment.parentApplication.features.fetch(
       QDbApplicationFeature.Alias.key,
       QDbApplicationFeature.Alias.id,
+      QDbApplicationFeature.Alias.version,
       QDbApplicationFeature.Alias.valueType,
     )
       .environment.environmentFeatures.fetch(
@@ -56,16 +61,18 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
       // we have to filter here otherwise the SQL query can "not return"
       val featureValues = saEnv.environment.environmentFeatures.filter { it.feature.whenArchived == null }.map { it.feature.key to it }.toMap()
       val features = saEnv.environment.parentApplication.features.filter { it.whenArchived == null }
+      val allowedFeatureProperties = conversions.splitEnvironmentRoles(saEnv.permissions).contains(RoleType.EXTENDED_DATA)
       try {
         val response = DachaKeyDetailsResponse()
           .serviceKeyId(saEnv.serviceAccount.id)
           .applicationId(fakeApplicationId)
           .portfolioId(fakePortfolioId)
           .organizationId(fakeOrganisationId)
+          .extendedDataAllowed(allowedFeatureProperties)
           .features(features.filter { featureValues[it.key]?.retired != true }
-            .map { toFeatureValueCacheItem(it, featureValues[it.key], fgStrategies[it.id]) }.filterNotNull())
+            .map { toFeatureValueCacheItem(it, featureValues[it.key], fgStrategies[it.id], allowedFeatureProperties) }.filterNotNull())
 
-        response.etag = calculateEtag(response)
+        response.etag = calculateEtag(response) + (if (allowedFeatureProperties) "1" else "0")
         log.trace("etag is {}", response.etag)
 
         response
@@ -98,11 +105,16 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
   private fun toFeatureValueCacheItem(
     feature: DbApplicationFeature,
     fv: DbFeatureValue?,
-    featureGroupRolloutStrategies: List<RolloutStrategy>?
+    featureGroupRolloutStrategies: List<RolloutStrategy>?,
+    allowedFeatureProperties: Boolean
   ): CacheEnvironmentFeature? {
+    val cacheFeature = CacheFeature().version(feature.version).key(feature.key).id(feature.id).valueType(feature.valueType)
+    val cacheFeatureValue =
+      if (fv == null) toEmptyFeatureValue(feature) else toFeatureValue(fv, featureGroupRolloutStrategies)
     return CacheEnvironmentFeature()
-      .feature(CacheFeature().key(feature.key).id(feature.id).valueType(feature.valueType))
-      .value(if (fv == null) toEmptyFeatureValue(feature) else toFeatureValue(fv, featureGroupRolloutStrategies))
+      .feature(cacheFeature)
+      .featureProperties(if (allowedFeatureProperties) featureModelWalker.walk(feature, fv, cacheFeature, cacheFeatureValue, featureGroupRolloutStrategies) else null)
+      .value(cacheFeatureValue)
   }
 
 
@@ -160,7 +172,7 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
   private fun calculateEtag(details: DachaKeyDetailsResponse): String {
     val det =
       details
-        .features!!.map { fvci -> fvci.feature.id.toString() + "-" + (fvci.value?.version ?: "0000") }
+        .features.map { fvci -> fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version ?: "0000") }
         .joinToString("-")
     return Integer.toHexString(det.hashCode())
   }
@@ -213,10 +225,11 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
     )
 
     // it wants roles, valueType, key, locked, the feature value
+    val cacheFeature = CacheFeature().key(featureKey).version(feature.version).id(feature.id).valueType(feature.valueType)
     return DachaPermissionResponse()
       .feature(
         CacheEnvironmentFeature()
-          .feature(CacheFeature().key(featureKey).id(feature.id).valueType(feature.valueType))
+          .feature(cacheFeature)
           .value(featureValue)
       )
       .roles(serviceAccount.permissions?.split(",")?.filterNot { it.isEmpty() }?.map { RoleType.valueOf(it) }

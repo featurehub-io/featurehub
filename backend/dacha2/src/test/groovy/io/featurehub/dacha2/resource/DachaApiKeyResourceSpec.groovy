@@ -78,7 +78,7 @@ class DachaApiKeyResourceSpec extends Specification {
       result1.applicationId == appId
       result1.portfolioId == portId
       result1.serviceKeyId == serviceAccountId
-      result1.etag == fc.features.etag
+      result1.etag == ( fc.features.etag + '0' )
       result1.environmentInfo == envInfo
       result1.features.size() == 1
       result2.features.size() == 2

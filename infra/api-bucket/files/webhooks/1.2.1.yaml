@@ -124,6 +124,13 @@ components:
       properties:
         feature:
           $ref: '#/components/schemas/CacheFeature'
+        fp:
+          type: object
+          additionalProperties:
+            type: string
+          description: Any additional properties configured by System Operator
+          nullable: true
+          x-longname: featureProperties
         value:
           nullable: true
           allOf:

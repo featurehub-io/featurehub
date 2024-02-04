@@ -11,4 +11,10 @@ public class DbVersionedBase extends DbBase {
   public long getVersion() {
     return version;
   }
+
+  // used in testing
+  public void setVersion(long version) {
+
+    this.version = version;
+  }
 }
