@@ -8,7 +8,6 @@
 ** xref:feature-groups.adoc[Feature Groups]
 ** xref:service-accounts.adoc[Service Accounts & API Keys]
 ** xref:users.adoc[Users & User Groups Permissions]
-** xref:webhooks.adoc[Webhooks]
 ** xref:app_setup_helper.adoc[Quick Setup Helper]
 
 * FeatureHub Management Via an API
@@ -33,6 +32,9 @@
 ** xref:sdks-development.adoc[Developing an SDK]
 ** xref:sdk-api-definition.adoc[SDK API Reference]
 
+* Integrations
+** xref:webhooks.adoc[Webhooks]
+** xref:slack-integration.adoc[Slack]
 
 * Analytics
 ** xref:analytics.adoc[Google Analytics Integration]
