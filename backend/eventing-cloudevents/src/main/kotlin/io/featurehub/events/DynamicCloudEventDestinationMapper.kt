@@ -17,7 +17,7 @@ interface DynamicCloudEventDestination {
  */
 class DynamicCloudEventDestinationMapper(
   override val cloudEventType: String, private val prefix: String,
-  private val configInfix: String, dynamicPublisherRegistry: CloudEventDynamicPublisherRegistry
+  val configInfix: String, dynamicPublisherRegistry: CloudEventDynamicPublisherRegistry
 ) : DynamicCloudEventDestination {
   // used to determine where to send this
   override val destination = FallbackPropertyConfig.getMandatoryConfig("${prefix}.destination")

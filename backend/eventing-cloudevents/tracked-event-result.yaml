@@ -1,0 +1,76 @@
+openapi: 3.0.1
+info:
+  title: Tracked Event Messaging API
+  description: "This is intended to document the structure of the message that delivery of tracked events should respond to MR with. When a tracked
+  event is delivered, it should hold a 'trackedevent' extension header which must contain the originating organisation id.
+  This will respond with the delivery information along
+  with a trackedresponsemessageid, trackedoriginaltype, trackedorg to complete the loop. "
+  version: "1.1.1"
+paths:
+  /fake:
+    get:
+      tags:
+        - TrackedEventServicce
+      description: "This is fake exists for generating components"
+      operationId: trackedEvent
+      responses:
+        "200":
+          description: fake
+          content:
+            application/json:
+              schema:
+                type: string
+components:
+  schemas:
+    TrackedEventMethod:
+      type: string
+      enum:
+        - POST
+        - PUT
+        - GET
+        - DELETE
+        - ASYNC
+    TrackedEventResult:
+      x-cloudevent-type: tracked-event-result-v1
+      x-cloudevent-subject: io.featurehub.trackedevents
+      type: object
+      description: "This allows a generic way to respond with delivery info on tracked events"
+      properties:
+        status:
+          description: "The status of the call. The recognized values are:
+              - 200 - everything is ok
+              - 400 - there was some bad input, message is included
+              - 418 - it couldn't generate a payload to send to downstream
+              - 422 - configuration is missing (e.g. bad auth)
+              - 424 - system error talking to destination system
+              - 500 - system responded with null
+              - 503 - complete failure to connect & deliver (e.g. name doesn't exist)
+          "
+          type: integer
+        method:
+          $ref: "#/components/schemas/TrackedEventMethod"
+        content:
+          nullable: true
+          type: string
+        originatingOrganisationId:
+          description: "The organisation this event was for"
+          type: string
+          format: UUID
+          x-basename: oceOrgId
+        originatingCloudEventMessageId:
+          x-basename: oceId
+          type: string
+          format: UUID
+        originatingCloudEventType:
+          x-basename: oceType
+          type: string
+        incomingHeaders:
+          nullable: true
+          description: "The headers that came back, if relevant"
+          additionalProperties:
+            type: string
+        extra:
+          nullable: true
+          description: "Any extra information"
+          additionalProperties:
+            type: string

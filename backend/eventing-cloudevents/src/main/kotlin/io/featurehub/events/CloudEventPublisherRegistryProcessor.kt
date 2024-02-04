@@ -1,6 +1,5 @@
 package io.featurehub.events
 
-import cd.connect.app.config.ConfigKey
 import cd.connect.cloudevents.CloudEventSubject
 import cd.connect.cloudevents.CloudEventType
 import cd.connect.cloudevents.CloudEventUtils
@@ -37,25 +36,24 @@ interface CloudEventPublisherRegistry {
    * channels that know how to publish an event register here, so the individual NATS or GCP or Kinesis channels
    */
   fun registerForPublishing(type: String, metric: CloudEventChannelMetric, compress: Boolean, handler: (msg: CloudEvent) -> Unit)
+
+  val cloudEventSource: URI
 }
 
 class CloudEventPublisherRegistryProcessor @Inject constructor(
   private val cloudEventsTelemetryWriter: CloudEventsTelemetryWriter,
   executorSupplier: ExecutorSupplier
 ) : CloudEventPublisherRegistry {
-  @ConfigKey("cloudevents.publisher.thread-pool")
-  val threadPoolSize: Int? = 20
-
-  val threadPool: ExecutorService
+  val threadPoolSize = FallbackPropertyConfig.getConfig("cloudevents.publisher.thread-pool", "20").toInt()
+  val threadPool: ExecutorService = executorSupplier.executorService(threadPoolSize)
 
   private val log: Logger = LoggerFactory.getLogger(CloudEventPublisherRegistryProcessor::class.java)
   data class CallbackHolder(val type: String, val metric: CloudEventChannelMetric, val compress: Boolean, val handler: (msg: CloudEvent) -> Unit)
   protected val eventHandlers = mutableMapOf<String, MutableList<CallbackHolder>>()
-  protected val defaultCloudEventSource: String
+  protected val defaultCloudEventSource: URI
 
   init {
-    threadPool = executorSupplier.executorService(threadPoolSize!!)
-    defaultCloudEventSource = FallbackPropertyConfig.getConfig("cloudevents.outbound.source", "http://${Info.applicationName()}")
+    defaultCloudEventSource = URI(FallbackPropertyConfig.getConfig("cloudevents.outbound.source", "http://${Info.applicationName()}"))
   }
 
   override fun hasListeners(type: String): Boolean {
@@ -120,7 +118,7 @@ class CloudEventPublisherRegistryProcessor @Inject constructor(
       withSubject(subject)
       withId(UUID.randomUUID().toString())
       withType(type)
-      withSource(URI(defaultCloudEventSource))
+      withSource(defaultCloudEventSource)
       withTime(OffsetDateTime.now())
 
       eventEnricher(this)
@@ -134,5 +132,6 @@ class CloudEventPublisherRegistryProcessor @Inject constructor(
     handlers.add(CallbackHolder(type, metric, compress, handler))
   }
 
-
+  override val cloudEventSource: URI
+    get() = defaultCloudEventSource
 }

@@ -1,5 +1,6 @@
 package io.featurehub.db.messaging
 
+import io.cloudevents.CloudEvent
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
@@ -17,5 +18,10 @@ data class FeatureMessagingParameter(
 )
 
 interface FeatureMessagingPublisher {
+  /**
+   * Sets off the chain in motion of publishing a cloud event. This sets it all up, creates all the
+   * data and forms a cloud event that it subsequently sends back to the caller, before proceeding to
+   * send it to downstream systems.
+   */
   fun publish(featureMessagingParameter: FeatureMessagingParameter)
 }
