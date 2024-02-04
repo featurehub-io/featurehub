@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_outlined_widget.dart';
+import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 
 class SlackPanelWidget extends StatefulWidget {
   final WebhookEnvironmentBloc bloc;
@@ -57,6 +58,13 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                 Text(
                   'Slack Configuration',
                   style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const FHExternalLinkWidget(
+                  tooltipMessage: "View documentation",
+                  link:
+                      "https://docs.featurehub.io/featurehub/latest/slack.html",
+                  icon: Icon(Icons.arrow_outward_outlined),
+                  label: 'Slack Integration Documentation',
                 ),
               ],
             ),
