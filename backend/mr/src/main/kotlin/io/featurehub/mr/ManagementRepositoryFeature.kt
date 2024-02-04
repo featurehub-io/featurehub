@@ -65,13 +65,14 @@ class ManagementRepositoryFeature : Feature {
     }
 
     context.register(CommonDbFeature::class.java)
-    context.register(ApiToSqlApiBinder())
+    context.register(ApiToSqlApiBinder::class.java)
     context.register(ComplexUpdateMigrations())
     context.register(EventingFeature::class.java)
     context.register(ManagementRepositoryWebhookFeature::class.java)
 
     context.register(object : AbstractBinder() {
       override fun configure() {
+
         if (oauth2ProvidersExist() || samlProvidersExist()) {
           bind(AuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
         } else {

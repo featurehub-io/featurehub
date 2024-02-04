@@ -104,6 +104,7 @@ default:
     cloudEvents:
       - feature-update-v1
       - webhook-environment-result-v1
+      - tracked-event-result-v1
     subscribers:
       notifications:
         multiSupport: true  # supports multiple channel names in property name
