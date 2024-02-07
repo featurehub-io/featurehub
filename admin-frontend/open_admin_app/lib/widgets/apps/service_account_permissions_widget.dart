@@ -231,7 +231,8 @@ class _ServiceAccountPermissionDetailState
                     getPermissionCheckbox(env.id, RoleType.LOCK),
                     getPermissionCheckbox(env.id, RoleType.UNLOCK),
                     getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
-                    getPermissionCheckbox(env.id, RoleType.EXTENDED_DATA),
+                    if (widget.bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
+                      getPermissionCheckbox(env.id, RoleType.EXTENDED_DATA),
                   ]));
                 }
 
