@@ -67,13 +67,6 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
             const SizedBox(
               width: 32,
             ),
-            const FHExternalLinkWidget(
-              tooltipMessage: "View documentation",
-              link:
-                  "https://docs.featurehub.io/featurehub/latest/webhooks.html",
-              icon: Icon(Icons.arrow_outward_outlined),
-              label: 'Integrations Documentation',
-            ),
           ]),
           StreamBuilder<EnvironmentAndWebhookType>(
             stream: bloc.environmentStream,
