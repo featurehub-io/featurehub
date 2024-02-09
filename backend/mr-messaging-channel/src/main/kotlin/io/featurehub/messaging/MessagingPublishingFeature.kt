@@ -5,7 +5,6 @@ import io.featurehub.lifecycle.LifecycleListeners
 import io.featurehub.messaging.service.FeatureMessagingCloudEventInitializer
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisher
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisherImpl
-import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
