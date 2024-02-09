@@ -59,11 +59,13 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
                   borderSide: BorderSide(
                 color: Colors.grey,
               )),
-              hintText: widget.canEdit
-                  ? widget.unlocked
-                      ? 'Enter string value'
-                      : 'Unlock to edit'
-                  : 'No editing rights',
+              hintText: widget.groupRolloutStrategy == null
+                  ? (widget.canEdit
+                      ? (widget.unlocked
+                          ? 'Enter string value'
+                          : 'Unlock to edit')
+                      : 'No editing rights')
+                  : 'not set',
               hintStyle: Theme.of(context).textTheme.bodySmall),
           onChanged: (value) {
             final replacementValue = value.isEmpty ? null : tec.text.trim();
