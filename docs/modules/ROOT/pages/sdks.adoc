@@ -8,7 +8,7 @@ Each SDK is designed to be idiomatic to that language. The capabilities of each 
 We provide the API description in OpenAPI format.
 
 You can either download and view the latest version
-link:sdk-api-definition.adoc[here] or locate it on
+link:sdk-api-definition.html[here] or locate it on
 https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/edge[GitHub]
 
 Alternatively, it can be served from (filtered by version):

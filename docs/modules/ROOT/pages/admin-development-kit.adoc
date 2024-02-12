@@ -3,7 +3,7 @@
 == Admin SDK API
 
 The Admin SDK API is designed to provide access to the Management Repository API. It is an OpenAPI driven API, based on the MR OpenAPI file. You can either download and view the latest version
-link:api-definition.adoc[here] or locate it on
+link:api-definition.html[here] or locate it on
 https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[GitHub]
 
 The API is broken up into a number of services representing different facets of the Management Repository, e.g.
@@ -319,7 +319,7 @@ EnvironmentFeatureServiceApi featureValueService = new EnvironmentFeatureService
 === ADK API and OpenAPI Files
 
 You can either download and view the latest version
-link:api-definition.adoc[here] or locate it on
+link:api-definition.html[here] or locate it on
 https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[GitHub]
 
 Alternatively, it can be served from (filtered by version):

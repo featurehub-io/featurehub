@@ -36,8 +36,8 @@ NOTE: A recommended metric is to alert on error level logs, you should not have 
 
 === REST API endpoints metrics
 
-All API endpoints have Histogram metric around them The names of the endpoints are derived from the `operationId`'s in
-the <<admin-development-kit.adoc#_openapi_files,OpenAPI document>>, and will not have a prefix unless you specify the system property or
+All API endpoints have Histogram metric around them. The names of the endpoints are derived from the `operationId` property in
+the https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[OpenAPI specification], and will not have a prefix unless you specify the system property or
 environment variable of `prometheus.jersey.prefix`.
 
 You can turn these endpoint metrics off if you wish, by setting the env var `prometheus.jersey.none=true`. This will keep the metrics around response codes, but not put a histogram around 
@@ -195,7 +195,7 @@ monitor what is happening.
 
 == Management Repository
 
-The Management Repository has some special metrics of its own designed to allow you to determine if things are working,
+The Management Repository has some special metrics of its own designed to allow you to determine if things are working
 and flowing properly. All of these are in the Party Server as well unless otherwise specified.
 
 === Feature Publishing
