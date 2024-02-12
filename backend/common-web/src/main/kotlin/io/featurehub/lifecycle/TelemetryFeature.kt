@@ -4,6 +4,7 @@ import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.jersey.common.LoggingConfiguration
 import io.featurehub.jersey.config.CommonConfiguration
+import io.featurehub.rest.Info
 import io.featurehub.utils.FallbackPropertyConfig
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.baggage.Baggage
@@ -352,10 +353,13 @@ class TelemetryFeature : Feature {
 
     // ensure we have no exporters set by default, its just noise
     listOf("otel.traces.exporter", "otel.metrics.exporter", "otel.logs.exporter").forEach { check ->
-      if (System.getProperty(check) == null) {
+      if (System.getProperty(check) == null && System.getenv(check.uppercase().replace(".", "_")) == null) {
         System.setProperty(check, "none")
       }
     }
+
+    System.setProperty("otel.service.name", Info.applicationName())
+    System.setProperty("otel.java.global-autoconfigure.enabled", "true")
 
     // this will register tracecontext + baggage by default
     val openTelemetry: OpenTelemetry = AutoConfiguredOpenTelemetrySdk.builder().build().openTelemetrySdk
