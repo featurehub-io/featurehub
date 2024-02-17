@@ -1,6 +1,6 @@
 openapi: 3.0.1
 info:
-  title: Tracked Event Messaging API
+  title: Tracked (Cloud) Event Messaging API
   description: "This is intended to document the structure of the message that delivery of tracked events should respond to MR with. When a tracked
   event is delivered, it should hold a 'trackedevent' extension header which must contain the originating organisation id.
   This will respond with the delivery information along
@@ -10,7 +10,7 @@ paths:
   /fake:
     get:
       tags:
-        - TrackedEventServicce
+        - TrackedEventService
       description: "This is fake exists for generating components"
       operationId: trackedEvent
       responses:

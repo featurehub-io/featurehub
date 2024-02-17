@@ -29,6 +29,7 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 class ManagementRepositoryFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     listOf( //ValidationFeature.class,
+      TrackEventsServiceDelegator::class.java,
       ApplicationServiceDelegator::class.java,
       FeatureHistoryServiceDelegator::class.java,
       WebhookServiceDelegator::class.java,
@@ -95,6 +96,7 @@ class ManagementRepositoryFeature : Feature {
         if (ConfigurationUtils.dacha1Enabled) {
           bind(CacheResource::class.java).to(CacheServiceDelegate::class.java).`in`(Singleton::class.java)
         }
+        bind(TrackEventResource::class.java).to(TrackEventsServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(AuthResource::class.java).to(AuthServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(WebhookResource::class.java).to(WebhookServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(EnvironmentFeatureResource::class.java).to(

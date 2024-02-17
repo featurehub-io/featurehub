@@ -15,7 +15,7 @@ class PubsubDynamicPublisher @Inject constructor(private val pubSubFactory: PubS
                                                  private val publisherRegistry: CloudEventPublisherRegistry
 ) : LifecycleListener {
   init {
-    dynamicPublisher.registerDymamicPublisherProvider(listOf("pubsub://"), this::registerType)
+    dynamicPublisher.registerDynamicPublisherProvider(listOf("pubsub://"), this::registerType)
   }
 
   fun registerType(

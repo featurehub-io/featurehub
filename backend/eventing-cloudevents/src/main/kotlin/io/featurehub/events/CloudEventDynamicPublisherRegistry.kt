@@ -12,10 +12,10 @@ interface CloudEventDynamicPublisherRegistry {
    *
    * This is called by the PROVIDER of the networking infrastructure.
    */
-  fun registerDymamicPublisherProvider(prefixes: List<String>, callback: (params: Map<String, String>,
+  fun registerDynamicPublisherProvider(prefixes: List<String>, callback: (params: Map<String, String>,
                                                                           cloudEventType: String, destination: String,
                                                                           destSuffix: String,
-                                      metric: CloudEventChannelMetric
+                                                                          metric: CloudEventChannelMetric
     ) -> Unit);
 
   /**
@@ -39,7 +39,7 @@ class CloudEventDynamicPublisherRegistryImpl : CloudEventDynamicPublisherRegistr
   private var defaultPublisher: String? = null
   private var counter = 1
 
-  override fun registerDymamicPublisherProvider(
+  override fun registerDynamicPublisherProvider(
     prefixes: List<String>,
     callback: (params: Map<String, String>, cloudEventType: String, destination: String, destSuffix: String, metric: CloudEventChannelMetric) -> Unit
   ) {

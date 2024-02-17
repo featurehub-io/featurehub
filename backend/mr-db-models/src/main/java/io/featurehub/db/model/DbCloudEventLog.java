@@ -14,11 +14,19 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "fh_celog")
-@Index(name = "idx_cloudevents", columnNames = {"type", "link_type", "link"})
+@Index(name = "idx_cloudevents", columnNames = {"type", "link_type", "link", "when_upd"})
+@Index(name = "idx_cloudevents_st", columnNames = {"type", "link_type", "link", "s"})
+@Index(name = "idx_cloudevents_owner", columnNames = {"id", "fk_org", "type"})
 @ChangeLog
 public class DbCloudEventLog extends Model {
   @Id
   private UUID id;
+
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "fk_org")
+  @Column(name = "fk_org")
+  @NotNull
+  private DbOrganization owner;
 
   @Version
   private long version;
@@ -60,15 +68,22 @@ public class DbCloudEventLog extends Model {
   @Column(name = "when_cre")
   private Instant whenCreated;
 
-  public DbCloudEventLog(@NotNull UUID id, @NotNull String type, @NotNull String linkType, @NotNull UUID link, @NotNull String data, @Nullable String metadata) {
+  @Column(name = "s", nullable = true)
+  private Integer status;
+
+  public DbCloudEventLog(@NotNull UUID id, @NotNull DbOrganization owner, @NotNull String type,
+                         @NotNull String linkType, @NotNull UUID link, @NotNull String data,
+                         @NotNull Instant whenCreated,
+                         @Nullable String metadata) {
     this.id = id;
+    this.owner = owner;
     this.type = type;
     this.linkType = linkType;
     this.link = link;
     this.data = data;
     this.metadata = metadata;
-    this.whenUpdated = Instant.now();
-    this.whenCreated = this.whenUpdated;
+    this.whenUpdated = whenCreated;
+    this.whenCreated = whenCreated;
   }
 
   @Nullable
@@ -101,7 +116,7 @@ public class DbCloudEventLog extends Model {
     return metadata;
   }
 
-  public void setId(UUID id) {
+  public void setId(@NotNull UUID id) {
     this.id = id;
   }
 
@@ -123,11 +138,31 @@ public class DbCloudEventLog extends Model {
     this.version = version;
   }
 
+  @NotNull
+  public Instant getWhenCreated() {
+    return whenCreated;
+  }
+
+  @NotNull
   public Instant getWhenUpdated() {
     return whenUpdated;
   }
 
-  public void setWhenUpdated(Instant whenUpdated) {
+  public void setWhenUpdated(@NotNull Instant whenUpdated) {
     this.whenUpdated = whenUpdated;
+  }
+
+  @Nullable
+  public Integer getStatus() {
+    return status;
+  }
+
+  public void setStatus(@Nullable Integer status) {
+    this.status = status;
+  }
+
+  @NotNull
+  public DbOrganization getOwner() {
+    return owner;
   }
 }

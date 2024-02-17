@@ -8,6 +8,7 @@ interface DynamicCloudEventDestination {
   val destination: String
   val headers: Map<String, String>
   val cloudEventType: String
+  val configInfix: String
   fun additionalProperties(sourceWebhookMap: Map<String, String>): Map<String, String>
 }
 /**
@@ -17,7 +18,7 @@ interface DynamicCloudEventDestination {
  */
 class DynamicCloudEventDestinationMapper(
   override val cloudEventType: String, private val prefix: String,
-  val configInfix: String, dynamicPublisherRegistry: CloudEventDynamicPublisherRegistry
+  override val configInfix: String, dynamicPublisherRegistry: CloudEventDynamicPublisherRegistry
 ) : DynamicCloudEventDestination {
   // used to determine where to send this
   override val destination = FallbackPropertyConfig.getMandatoryConfig("${prefix}.destination")
