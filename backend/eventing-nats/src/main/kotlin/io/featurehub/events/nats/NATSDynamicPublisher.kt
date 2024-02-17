@@ -20,7 +20,7 @@ class NATSDynamicPublisher @Inject constructor(
   private val publisherRegistry: CloudEventPublisherRegistry
 ): LifecycleListener {
   init {
-    dynamicPublisher.registerDymamicPublisherProvider(listOf("nats://"), this::registerType)
+    dynamicPublisher.registerDynamicPublisherProvider(listOf("nats://"), this::registerType)
   }
 
   fun registerType(

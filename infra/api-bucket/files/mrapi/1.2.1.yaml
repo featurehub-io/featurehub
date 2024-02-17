@@ -3132,6 +3132,73 @@ paths:
       explode: true
       schema:
         type: string
+  /mr-api/track-events/{id}:
+    get:
+      tags:
+      - TrackEventsService
+      description: Gets a paginated form of tracked events (usually cloud event logs)
+      operationId: getTrackedEvents
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uuid
+      - name: source
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: pageSize
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: cloudEventType
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: firstOnly
+        in: query
+        description: Whether to return the first result per entry even if there are
+          multiple. Defaults to true.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: the webhook type details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackEventsSummary'
+        "404":
+          description: no such data
+        "401":
+          description: not authenticated
+        "403":
+          description: no permission
+      security:
+      - bearerAuth: []
   /mr-api/application/{appId}/feature-history:
     get:
       tags:
@@ -5616,6 +5683,49 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FeatureHistoryItem'
+    TrackEventsSummary:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: The maximum number of items returned by this query
+          format: int64
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrackEventsSummaryItem'
+    TrackEventsSummaryItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: false
+        whenSent:
+          type: string
+          format: date-time
+          nullable: false
+        eventResponses:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/TrackEventResponse'
+    TrackEventResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+        whenReceived:
+          type: string
+          format: date-time
+        message:
+          type: string
+          nullable: true
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
     FeatureGroupFeature:
       required:
       - id

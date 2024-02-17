@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/widgets/apps/webhook/track_events_panel_widget.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_outlined_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
@@ -81,103 +82,109 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
             const SizedBox(
               height: 16.0,
             ),
-            Form(
-              key: _formKey,
-              child: Column(children: <Widget>[
-                Row(
-                  children: [
-                    const Text('Enabled'),
-                    Checkbox(
-                      autofocus: true,
-                      value: _enabled,
-                      onChanged: (value) => setState(() {
-                        _enabled = value ?? false;
-                      }),
-                    )
-                  ],
-                ),
-                const SizedBox(height: 24.0),
-                Row(children: [
-                  Container(
-                      constraints: const BoxConstraints(maxWidth: 600),
-                      child: TextFormField(
-                          controller: _token,
-                          autofocus: true,
-                          textInputAction: TextInputAction.next,
-                          obscureText: _token.text == 'ENCRYPTED-TEXT',
-                          obscuringCharacter: '*',
-                          readOnly: _token.text == 'ENCRYPTED-TEXT',
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText:
-                                'e.g. xoxb-1182138673840-5153275439522-sYLjc5KVxFaLrr2wY9fh8jd',
-                            labelText: 'Slack Bot User OAuth Token',
-                          ),
-                          validator: ((v) {
-                            if (v == null || v.isEmpty) {
-                              return 'Please enter Slack Bot User OAuth Token';
-                            }
-                            return null;
-                          }))),
-                  const SizedBox(width: 8.0),
-                  if (widget.bloc.mrBloc.identityProviders
-                          .capabilityWebhookEncryption &&
-                      widget.bloc.mrBloc.identityProviders
-                          .capabilityWebhookDecryption)
-                    if (_token.text == 'ENCRYPTED-TEXT')
-                      TextButton(
-                          onPressed: () => widget.bloc
-                              .decryptEncryptedFields(widget.env.environment!),
-                          child: const Text('Reveal hidden values')),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _token.text = '';
-                      });
-                    },
-                    child: const Text('Reset'),
-                  )
-                ]),
-                const SizedBox(height: 36.0),
-                Row(children: [
-                  Container(
-                      constraints: const BoxConstraints(maxWidth: 600),
-                      child: TextFormField(
-                          controller: _channelName,
-                          autofocus: true,
-                          textInputAction: TextInputAction.next,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: 'e.g. C0150T7AF25',
-                            labelText: 'Slack channel ID',
-                          ),
-                          validator: ((v) {
-                            if (v == null || v.isEmpty) {
-                              return 'Please enter a Slack channel ID';
-                            }
-                            return null;
-                          }))),
-                ]),
-                const SizedBox(
-                  height: 24.0,
-                ),
-                const SizedBox(width: 16.0),
-                Row(
-                  children: [
-                    FilledButton(
-                        onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
-                            _formKey.currentState!.save();
-                            await _updateData();
-                          }
-                        },
-                        child: const Text('Save')),
-                  ],
-                )
-              ]),
-            )
+            _form(),
+            if (widget.env.environment?.id != null)
+              TrackingEventPanelListViewWidget(bloc: widget.bloc, envId: widget.env.environment!.id, cloudEventType: widget.env.type!.messageType)
           ]),
         ));
+  }
+
+  Form _form() {
+    return Form(
+      key: _formKey,
+      child: Column(children: <Widget>[
+        Row(
+          children: [
+            const Text('Enabled'),
+            Checkbox(
+              autofocus: true,
+              value: _enabled,
+              onChanged: (value) => setState(() {
+                _enabled = value ?? false;
+              }),
+            )
+          ],
+        ),
+        const SizedBox(height: 24.0),
+        Row(children: [
+          Container(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: TextFormField(
+                  controller: _token,
+                  autofocus: true,
+                  textInputAction: TextInputAction.next,
+                  obscureText: _token.text == 'ENCRYPTED-TEXT',
+                  obscuringCharacter: '*',
+                  readOnly: _token.text == 'ENCRYPTED-TEXT',
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText:
+                    'e.g. xoxb-1182138673840-5153275439522-sYLjc5KVxFaLrr2wY9fh8jd',
+                    labelText: 'Slack Bot User OAuth Token',
+                  ),
+                  validator: ((v) {
+                    if (v == null || v.isEmpty) {
+                      return 'Please enter Slack Bot User OAuth Token';
+                    }
+                    return null;
+                  }))),
+          const SizedBox(width: 8.0),
+          if (widget.bloc.mrBloc.identityProviders
+              .capabilityWebhookEncryption &&
+              widget.bloc.mrBloc.identityProviders
+                  .capabilityWebhookDecryption)
+            if (_token.text == 'ENCRYPTED-TEXT')
+              TextButton(
+                  onPressed: () => widget.bloc
+                      .decryptEncryptedFields(widget.env.environment!),
+                  child: const Text('Reveal hidden values')),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _token.text = '';
+              });
+            },
+            child: const Text('Reset'),
+          )
+        ]),
+        const SizedBox(height: 36.0),
+        Row(children: [
+          Container(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: TextFormField(
+                  controller: _channelName,
+                  autofocus: true,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'e.g. C0150T7AF25',
+                    labelText: 'Slack channel ID',
+                  ),
+                  validator: ((v) {
+                    if (v == null || v.isEmpty) {
+                      return 'Please enter a Slack channel ID';
+                    }
+                    return null;
+                  }))),
+        ]),
+        const SizedBox(
+          height: 24.0,
+        ),
+        const SizedBox(width: 16.0),
+        Row(
+          children: [
+            FilledButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+                    await _updateData();
+                  }
+                },
+                child: const Text('Save')),
+          ],
+        )
+      ]),
+    );
   }
 
   Future<void> _updateData() async {

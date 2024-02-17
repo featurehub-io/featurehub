@@ -51,6 +51,11 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
     Map<String, String> additionalProperties(@NotNull Map<String, String> sourceWebhookMap) {
       return [:]
     }
+
+    @Override
+    String getConfigInfix() {
+      return "fake"
+    }
   }
 
   def setup() {

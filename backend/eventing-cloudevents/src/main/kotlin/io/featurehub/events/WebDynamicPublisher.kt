@@ -159,7 +159,7 @@ class WebDynamicPublisher @Inject constructor(
   private val log: Logger = LoggerFactory.getLogger(WebDynamicPublisher::class.java)
 
   init {
-    dynamicPublisher.registerDymamicPublisherProvider(listOf("http://", "https://"), this::registerType)
+    dynamicPublisher.registerDynamicPublisherProvider(listOf("http://", "https://"), this::registerType)
   }
 
   private fun registerType(
