@@ -23,8 +23,8 @@ The SDK is typically broken into three main API calls:
 - `GET` the basic HTTP GET API is used for polling, and is intended primarily for use by customer applications, such as
 browsers and mobile clients. Polling time is configurable in the SDKs.
 - `SSE` - holds a connection open to the server for as long as the server allows
-and the server will push changes as they occur down to the client. This is generally recommended for server based applications
-in a multi-threaded environment. Typically, Go, Java, .NET or standalone Python or Ruby services can use this.
+and the server will push changes as they occur down to the client.This is generally recommended for server based applications
+in a multi-threaded environment.Typically, Go, Java, .NET or standalone Python or Ruby services can use this.
 - `PUT` this is the TEST API that FeatureHub provides, it is intended for QA Automated tests to allow QA environments to set feature values.
 
 [options="header"]
@@ -34,6 +34,7 @@ in a multi-threaded environment. Typically, Go, Java, .NET or standalone Python 
 |PUT|Support test automation by controlling feature flag values|/features?apiKey=your_key_value | Updates only for default feature values, rollout strategies values updates are not supported
 |SSE|In server applications for real-time streaming updates|connection initiated via GET to /features/{your_key_value} and reconnects automatically every 60 seconds | In FeatureHub SaaS, SSE is not supported with the use of the server eval API key (see link:sdks#_client_and_server_api_keys[here] for more details on API keys)
 |===================================
+[#_sdk_usage]
 == SDK Usage
 
 Choose from your development language / framework and follow the links for the implementation details and examples:
@@ -48,6 +49,7 @@ link:https://github.com/featurehub-io/featurehub-javascript-sdk/tree/main/exampl
 
 NOTE: We have now added dedicated https://www.npmjs.com/package/featurehub-react-sdk[React SDK] for the best developer experience, however you can continue using https://www.npmjs.com/package/featurehub-javascript-client-sdk[Javascript Client SDK] on which React SDK is based.
 
+[#_sdk_capabilities_overview]
 == SDK Capabilities overview
 
 include::capabilities-table.adoc[]

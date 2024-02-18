@@ -14,10 +14,11 @@ use their secure tunnelling capability.
 
 Other database types can potentially be added, please feel free to lodge a ticket on our https://github.com/featurehub-io/featurehub/issues[GitHub]
 
+[#_deployment_options]
 == Deployment Options
 
 There are a number of different combinations
-for deployment of FeatureHub. Those typically focus on how you deploy the infrastructure, how much traffic you get through your app and whether you need Streaming or REST methods to get feature updates. 
+for deployment of FeatureHub.Those typically focus on how you deploy the infrastructure, how much traffic you get through your app and whether you need Streaming or REST methods to get feature updates.
 
 To get you up and going quickly, we have created a number of different Docker options using Docker-Compose.
 
@@ -28,10 +29,11 @@ To install, clone the https://github.com/featurehub-io/featurehub-install[featur
 `curl -sL https://github.com/featurehub-io/featurehub-install/tarball/main | tar -xvz`
 
 Make sure you have your docker server running and docker-compose installed if you are using it (or your Docker Swarm
-set up if you are using docker stack). These examples are great for experimenting or to understand what the
+set up if you are using docker stack).These examples are great for experimenting or to understand what the
 different capabilities of the FeatureHub stack are - for example read replica databases, OAuth2 configuration for your
 provider, multiple NATs servers and so forth.
 
+[#_evaluation_deployment]
 == Evaluation Deployment
 
 For the _Evaluation_ option (not recommended for production):
@@ -40,7 +42,7 @@ For the _Evaluation_ option (not recommended for production):
 
 `docker compose up`
 
-This will install all the necessary components including FeatureHub Admin Console. You can access it on http://localhost:8085
+This will install all the necessary components including FeatureHub Admin Console.You can access it on http://localhost:8085
 
 What makes it only an evaluation option is simply the database used (H2), it writes to the local
 disk and is not intended to be used for a long-running or highly performant, concurrent system.

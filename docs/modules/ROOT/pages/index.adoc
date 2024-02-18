@@ -1,25 +1,85 @@
-= FeatureHub Documentation
+= Welcome to the FeatureHub Documentation
 
 image::fh_primary_navy.png[Feature Hub,500]
 
+
 == Overview
 
-https://www.featurehub.io/[FeatureHub] is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.
-It's an essential ingredient for enabling the feedback loop and feature testing and experimentation in production with real users (see diagram below).
+https://www.featurehub.io/[FeatureHub] is a Cloud Native Feature Flags, Remote Configuration and A/B Testing Platform suitable for mobile, web and server applications and available with the variety of SDKs.
 
-FeatureHub comes as a self-hosted platform, so you can run it on your own infrastructure. Alternatively, we also provide cloud hosted SaaS solution with a simple pay-as-you-go pricing. You
+FeatureHub comes as a self-hosted Open Source platform, so you can run it on your own infrastructure. Alternatively, we also provide fully managed cloud SaaS offering with a simple pay-as-you-go pricing. You
 can join today and get 30 days free trial https://app.featurehub.io/[here].
 
-Building software with feature management encourages DevOps practices like
-https://trunkbaseddevelopment.com[trunk based development], continuous delivery and importantly, separating deployment from release management.
-Enabling teams to deliver value to customers early and often, whilst maintaining high quality and keeping risk low.
-
-FeatureHub can be used with small startups through to large enterprises with many applications and teams.
-It has an enterprise grade security and permission model, that's intuitive and easy to use, so you can be up and running quickly.
+FeatureHub can be used in small teams or large enterprises with many applications, environments and users.
+It has an enterprise grade security and permission model that is intuitive and easy to use. 
 
 This documentation covers both Open Source and SaaS platforms.
 
+== SaaS Documentation
 
-image::fh_learn_build_measure.png[Learn,Build,Measure]
+https://docs.featurehub.io/featurehub/latest/hosted/pricing.html[SaaS Pricing & Billing]
+
+https://docs.featurehub.io/featurehub/latest/hosted/saml.html[SSO & SAML Configuration]
+
+https://docs.featurehub.io/featurehub/latest/hosted/sdks.html[SDKs Usage]
+
+== Self-hosting with FeatureHub Open Source
+xref:evaluation.adoc[Evaluating FeatureHub with simple Docker example]
+
+xref:installation.adoc#_deployment_options[Deployment options]
+
+link:https://github.com/featurehub-io/featurehub-helm[Deploying on Kubernetes with Helm Chart]
+
+xref:identity.adoc[Identity Management]
+
+== SDKs 
+
+xref:sdks.adoc#_sdk_usage[SDKs documentation and examples links]
+
+xref:sdks.adoc#_sdk_capabilities_overview[SDKs capabilities]
+
+xref:sdks.adoc#_client_and_server_api_keys[Client & Server API Keys]
+
+== API headless access to manage FeatureHub
+
+xref:api-definition.adoc[Admin SDK API Definition]
+
+xref:admin-development-kit.adoc[Admin SDK API Documentation and Usage]
+
+== Tutorials
+https://irinasouthwell-220.medium.com/introducing-featurehub-open-source-feature-flag-management-and-experimentation-platform-f6dba7418dc5[FeatureHub Quick Setup with JavaScript SDK example]
+
+https://www.featurehub.io/post/how-to-use-targeting-rule-with-python[How to Use Targeting by Country Rule and Implementation Code with Python FeatureHub SDK]
+
+https://www.featurehub.io/post/deploying-featurehub-on-gcp-cloud-run-with-pulumi-part-1[Deploying FeatureHub on GCP Cloud Run with Pulumi (Part 1)]
+
+https://irinasouthwell-220.medium.com/test-automation-with-feature-flags-fd75b252b655[Test Automation with Feature Flags]
+
+https://irinasouthwell-220.medium.com/client-side-feature-flags-with-react-featurehub-and-catch-release-mode-cb4722e9928d[Client-side feature flags with React, FeatureHub and Catch & Release mode]
+
+== Articles and Blogs
+https://www.featurehub.io/post/what-is-featurehub[What is FeatureHub]
+
+https://www.featurehub.io/post/how-to-convince-your-manager-to-adopt-a-feature-flags-service[How to Convince Your Manager to adopt a Feature Flags Service]
+
+https://www.featurehub.io/post/feature-flags-and-webhooks-with-featurehub-io[Harnessing the Power of Feature Flags and Webhooks with FeatureHub]
+
+https://www.featurehub.io/post/building-for-resilience-with-featurehub[Building for Resilience with FeatureHub]
+
+https://www.featurehub.io/post/featurehub-introducing-feature-groups-in-release-1-7-0[FeatureHub Introducing Feature Groups]
+
+
+== FeatureHub Support & Help
+Please use one of the "Contact Us" options https://www.featurehub.io/contact-us[here]
+
+Our https://github.com/featurehub-io/featurehub[official GitHub repository]
+
+
+
+
+
+
+
+
 
 
