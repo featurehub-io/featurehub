@@ -419,6 +419,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
                             gridLinesVisibility: GridLinesVisibility.both,
                             headerGridLinesVisibility: GridLinesVisibility.both,
                             allowEditing: true,
+                            editingGestureType: EditingGestureType.tap,
                             columns: [
                               GridColumn(
                                   columnName: 'header',
