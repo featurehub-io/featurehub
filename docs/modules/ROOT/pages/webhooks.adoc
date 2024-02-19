@@ -1,30 +1,26 @@
 = Webhooks
 
-With the 1.6.0 release comes a new feature of Webhooks. This allows you to configure a URL endpoint
-and appropriate authorisation or configuration headers, and the application will deliver the complete
-set of feature flags changes to that endpoint. E.g. changes of feature values, adding or deleting features.
-Configuration is done per environment.
+Webhooks is a powerful mechanism that allows you to subscribe to feature flag events and changes. For example, this can be useful when integrating with other systems and workflows to enable actions based on feature flags updates, this could be CI/CD pipelines, deployment systems, notification systems and so on. 
+
+FeatureHub allows you to configure a URL endpoint and appropriate authorisation or configuration headers, to which it will deliver the complete
+set of feature flags changes. Such as changes of feature values, feature strategies, adding or deleting features.
 
 == Usage
+To access Webhooks Configuration, select "Integrations" from the main menu and select Integration type as *Webhook: feature updates*. Switch to the Webhook Configuration sub-tab.
 
-Webhooks are designed to be per environment - you can have one webhook per environment. The system
-allows you to configure, enable/disable and test your webhook, and see what the results of the webhook
-are. All attempts at delivery are captured and stored in the system.
+image:webhook-config.png[Webhook Config]
 
-image:webhooks_menu.png[Webhook Menu]
+Webhooks configuration is designed to be per environment for a given application - you can have one webhook per environment. 
 
-The Webhook UI allows you to see the webhook traffic for a given environment.
+You can enable/disable a webhook, configure the url destination and any extra headers you need. Options to encrypt URL and headers are available. Once you have
+saved configuration, you can test it out. Test button will only appear if webhook is enabled. Switch to the Webhooks History sub-tab to see the webhook history results/logs. 
 
-image:webhook_view.png[Webhook Summary traffic]
+image:webhook_history.png[Webhook History]
 
 You can also drill down into the details of an individual request.
 
-image:webhook_details.png[Webhook Delivery details]
+image:webhook-log.png[Webhook Delivery details]
 
-You can configure a webhook as shown on the screen below: the enabled status, the url destination, and any extra headers you need. Once you have
-saved it, you can test it and the result will show up on the Webhook Traffic page. Test button will only appear if webhook is enabled.
-
-image:webhook_config.png[Webhook Configuration]
 
 == Data Format
 
