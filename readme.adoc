@@ -65,7 +65,7 @@ https://docs.featurehub.io/featurehub/latest/sdk-api-definition.html[SDK API] is
 
 == FeatureHub Users
 
-image:docs/images/Whistic_Logo.png[link="https://www.whistic.com/",300] image:docs/images/jio-logo.png[link="https://www.jio.com/",180] image:docs/images/flexe-logo.png[link="https://www.flexe.com/",250] image:docs/images/eroad-logo.png[link="https://www.eroad.com/",250] image:docs/images/Ruby_NewLogo_Vertical.png[link="https://www.rubyplaynet.com/", 150] image:docs/images/lovebonito_logo.png[link="https://www.lovebonito.com/",200]
+image:docs/images/Whistic_Logo.png[link="https://www.whistic.com/",300] image:docs/images/jio-logo.png[link="https://www.jio.com/",180] image:docs/images/flexe-logo.png[link="https://www.flexe.com/",250] image:docs/images/eroad-logo.png[link="https://www.eroad.com/",250] image:docs/images/Ruby_NewLogo_Vertical.png[link="https://www.rubyplaynet.com/", 150] image:docs/images/lovebonito_logo.png[link="https://www.lovebonito.com/",200] image:docs/images/adarga-logo.png[link="https://www.adarga.ai/",250]
 
 
 == Are you also using FeatureHub?
@@ -79,7 +79,7 @@ We are looking for companies that have successfully adopted FeatureHub to help u
 
 * Unlimited users
 * Unlimited features
-* Unlimited clients requesting features
+* Unlimited feature requests
 * Unlimited Applications and Environments
 * Unlimited scalability. FeatureHub is the only open source and cloud native platform that can scale for large enterprises needs
 
@@ -100,19 +100,20 @@ We are looking for companies that have successfully adopted FeatureHub to help u
 
 === Enterprise ready
 
-* Run on your own infrastructure (self-hosted) or use SaaS option
-* External auth support - login with Google, Microsoft, GitHub, Keycloak
+* Run on your own infrastructure (self-hosted) or use fully managed SaaS option
+* External auth support - login with Google, Microsoft, GitHub, Keycloak, generic OAuth2, Okta, SAML/SSO
 * Access control levels to allow different teams/groups permissions.
-* Multiple portfolios (department) support
+* Multiple portfolios (org departments) support
 
 === Best development experience
 
-* Easy to set up, Cloud Native - docker containers and full Kubernetes ready helm chart available
-* Use FeatureHub API
-* Easy to integrate with test automation - API to control feature states from the tests is available
+* Easy to set up, Cloud Native - docker containers and full Kubernetes ready Helm chart
+* Use FeatureHub API to integrate with CI/CD pipelines
+* Use webhooks to listen to feature updates
+* Easy to integrate with test automation - API to control feature states from the tests
 * Support for feature flags, numbers, strings and Json structure (remote configuration)
 * Easy to log events with analytics with attached feature state
-* Documentation and tutorials available
+* Documentation and tutorials
 
 === Supported SDKs
 
