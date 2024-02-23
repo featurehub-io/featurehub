@@ -56,6 +56,8 @@ class TrackingEventListViewState
   }
 
   Future<void> _fetchPage(int pageKey) async {
+    if (_isLoading) return;
+
     try {
       setState(() {
         _error = null;

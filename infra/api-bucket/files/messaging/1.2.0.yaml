@@ -124,6 +124,7 @@ components:
       description: "Changes made to a specific feature and optionally value and who\
         \ changed it. This will currently only occur when a feature value changes,\
         \ not on feature creation or deletion."
+      x-implements: io.featurehub.events.messaging.AdditionalInfoMessage
     FeatureVersion:
       type: object
       properties:

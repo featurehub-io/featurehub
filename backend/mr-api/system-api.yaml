@@ -1,0 +1,104 @@
+openapi: 3.0.1
+info:
+  title: ManagementResourceApi
+  description: This describes the API clients use for accessing features.
+paths:
+  /mr-api/system-api:
+    get:
+      security:
+        -  bearerAuth: []
+      parameters:
+        - in: query
+          name: filters
+          schema:
+            type: array
+            items:
+              type: string
+      operationId: getSystemConfig
+      tags:
+        - SystemConfigService
+      responses:
+        200:
+          description: "System configs matching the requested pattern"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemConfigs"
+        401:
+          description: "Unidentified and no permission"
+        403:
+          description: "Identified but no permission"
+        500:
+          description: "Unknown error"
+    post:
+      security:
+        -  bearerAuth: []
+      description: "Configs that are included are either created or replaced. Only recognized configs will be stored."
+      operationId: createOrUpdateSystemConfigs
+      tags:
+        - SystemConfigService
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatedSystemConfigs"
+      responses:
+        200:
+          description: "System configs that were saved"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemConfigs"
+        401:
+          description: "Unidentified and no permission"
+        403:
+          description: "Identified but no permission"
+        500:
+          description: "Unknown error"
+components:
+  schemas:
+    SystemConfigs:
+      type: object
+      properties:
+        configs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SystemConfig"
+    SystemConfig:
+      type: object
+      properties:
+        key:
+          nullable: false
+          type: string
+        encrypted:
+          nullable: false
+          type: boolean
+        version:
+          nullable: false
+          type: integer
+          format: int64
+        value:
+          description: "Some value. This value gets stored as a faux-JSON object"
+    UpdatedSystemConfigs:
+      type: object
+      properties:
+        configs:
+          type: array
+          items:
+            $ref: "#/components/schemas/UpdatedSystemConfig"
+    UpdatedSystemConfig:
+      type: object
+      properties:
+        key:
+          nullable: false
+          type: string
+        version:
+          nullable: false
+          type: integer
+          format: int64
+        encrypted:
+          nullable: false
+          type: boolean
+        value:
+          description: "Some value. This value gets stored as a faux-JSON object"

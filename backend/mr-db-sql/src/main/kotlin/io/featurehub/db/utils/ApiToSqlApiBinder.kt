@@ -49,6 +49,7 @@ import io.featurehub.db.services.UserStateSqlApi
 import io.featurehub.db.services.WebhookSqlApi
 import io.featurehub.db.services.strategies.RolloutStrategyValidationUtils
 import io.featurehub.lifecycle.LifecycleListeners
+import io.featurehub.systemcfg.SystemConfigFeature
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
@@ -56,6 +57,7 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class ApiToSqlApiBinder : Feature {
   override fun configure(context: FeatureContext): Boolean {
+    context.register(SystemConfigFeature::class.java)
     context.register(object: AbstractBinder() {
       override fun configure() {
         bind(OrganizationSqlApi::class.java).to(OrganizationApi::class.java).`in`(Singleton::class.java)

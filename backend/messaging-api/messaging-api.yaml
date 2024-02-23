@@ -20,6 +20,7 @@ components:
       x-cloudevent-subject: io.featurehub.events.messaging
       x-publish-include: messaging
       x-package: io.featurehub.messaging.model
+      x-implements: io.featurehub.events.messaging.AdditionalInfoMessage
       description: "Changes made to a specific feature and optionally value and who changed it. This will currently only occur when a feature value changes, not on feature creation or deletion."
       type: object
       properties:
