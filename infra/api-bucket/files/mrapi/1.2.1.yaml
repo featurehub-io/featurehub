@@ -1,8 +1,7 @@
 openapi: 3.0.1
 info:
   title: ManagementResourceApi
-  description: This describes the API clients use for accessing features. This reflects
-    the API from 1.5.7 onwards.
+  description: This describes the API clients use for accessing features.
   version: 1.2.1
   x-version-api: fragment of version API
 servers:
@@ -3716,6 +3715,62 @@ paths:
       explode: true
       schema:
         type: boolean
+  /mr-api/system-api:
+    get:
+      tags:
+      - SystemConfigService
+      operationId: getSystemConfig
+      parameters:
+      - name: filters
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        "200":
+          description: System configs matching the requested pattern
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemConfigs'
+        "401":
+          description: Unidentified and no permission
+        "403":
+          description: Identified but no permission
+        "500":
+          description: Unknown error
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - SystemConfigService
+      description: Configs that are included are either created or replaced. Only
+        recognized configs will be stored.
+      operationId: createOrUpdateSystemConfigs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatedSystemConfigs'
+      responses:
+        "200":
+          description: System configs that were saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemConfigs'
+        "401":
+          description: Unidentified and no permission
+        "403":
+          description: Identified but no permission
+        "500":
+          description: Unknown error
+      security:
+      - bearerAuth: []
 components:
   schemas:
     EnvironmentFeaturesResult:
@@ -6005,6 +6060,50 @@ components:
             type: string
             description: unique id of the strategy
             format: uuid
+    SystemConfigs:
+      type: object
+      properties:
+        configs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SystemConfig'
+    SystemConfig:
+      type: object
+      properties:
+        key:
+          type: string
+          nullable: false
+        encrypted:
+          type: boolean
+          nullable: false
+        version:
+          type: integer
+          format: int64
+          nullable: false
+        value:
+          description: Some value. This value gets stored as a faux-JSON object
+    UpdatedSystemConfigs:
+      type: object
+      properties:
+        configs:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpdatedSystemConfig'
+    UpdatedSystemConfig:
+      type: object
+      properties:
+        key:
+          type: string
+          nullable: false
+        version:
+          type: integer
+          format: int64
+          nullable: false
+        encrypted:
+          type: boolean
+          nullable: false
+        value:
+          description: Some value. This value gets stored as a faux-JSON object
   securitySchemes:
     bearerAuth:
       type: http

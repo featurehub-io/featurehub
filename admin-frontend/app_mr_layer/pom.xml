@@ -67,6 +67,7 @@
                 <file>${project.basedir}/../../backend/mr-api/feature-group.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/feature-history.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/application-strategies.yaml</file>
+                <file>${project.basedir}/../../backend/mr-api/system-api.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
             </configuration>

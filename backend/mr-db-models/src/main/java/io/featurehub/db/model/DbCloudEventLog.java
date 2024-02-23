@@ -19,6 +19,7 @@ import java.util.UUID;
 @Index(name = "idx_cloudevents_owner", columnNames = {"id", "fk_org", "type"})
 @ChangeLog
 public class DbCloudEventLog extends Model {
+
   @Id
   private UUID id;
 

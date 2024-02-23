@@ -1,8 +1,10 @@
 package io.featurehub.messaging.service
 
+
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.api.SingleNullableFeatureValueUpdate
+import io.featurehub.db.api.TrackingEventApi
 import io.featurehub.db.messaging.FeatureMessagingParameter
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.events.CloudEventDynamicPublisherRegistry
@@ -11,7 +13,6 @@ import io.featurehub.events.DynamicCloudEventDestination
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.messaging.model.MessagingFeatureValueUpdate
 import io.featurehub.utils.ExecutorSupplier
-import org.jetbrains.annotations.NotNull
 import spock.lang.Specification
 
 import java.time.LocalDateTime
@@ -26,47 +27,22 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
   ExecutorSupplier executorSupplier
   ExecutorService executor
   CloudEventDynamicPublisherRegistry dynamicPublisherRegistry
-
-  static class FakeDynamicPublisherDestination implements DynamicCloudEventDestination {
-    final String destination = "https://blah"
-    final Map<String,String> headers
-    final String cloudEventType
-
-    FakeDynamicPublisherDestination(String cloudEventType, Map<String, String> headers) {
-      this.cloudEventType = cloudEventType
-      this.headers = headers
-    }
-
-//    @Override
-//    String getDestination() {
-//      return this.destination
-//    }
-//
-//    @Override
-//    Map<String, String> getHeaders() {
-//      return this.headers
-//    }
-
-    @Override
-    Map<String, String> additionalProperties(@NotNull Map<String, String> sourceWebhookMap) {
-      return [:]
-    }
-
-    @Override
-    String getConfigInfix() {
-      return "fake"
-    }
-  }
+  TrackingEventApi trackingEventApi
+  UUID orgId
+  DynamicCloudEventDestination hook
 
   def setup() {
+    orgId = UUID.randomUUID()
     publisher = Mock()
     dynamicPublisherRegistry = Mock()
     executorSupplier = Mock()
     executor = Mock()
+    trackingEventApi = Mock()
     executorSupplier.executorService(_) >> executor
-    cePublisher = new FeatureMessagingCloudEventPublisherImpl(publisher, executorSupplier)
+    cePublisher = new FeatureMessagingCloudEventPublisherImpl(executorSupplier, trackingEventApi)
     dbFeatureValue = DbFeatureTestProvider.provideFeatureValue()
     version = new SingleNullableFeatureValueUpdate<>(true, 1L, null)
+    hook = Mock()
   }
 
   FeatureMessagingUpdate fmUpdate() {
@@ -97,18 +73,19 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
       def featureMessagingUpdate = fmUpdate()
       def featureMessagingParameter = fmParam()
     and:
-      cePublisher = new FeatureMessagingCloudEventPublisherImpl(publisher, executorSupplier) {
+      cePublisher = new FeatureMessagingCloudEventPublisherImpl(executorSupplier, trackingEventApi) {
         public FeatureMessagingUpdate toFeatureMessagingUpdate(FeatureMessagingParameter featureMessagingParam) {
           return featureMessagingUpdate
         }
       }
     and:
-      cePublisher.setHooks([new FakeDynamicPublisherDestination(FeatureMessagingUpdate.CLOUD_EVENT_TYPE, [:])])
+      cePublisher.addHook(hook)
     when:
-      cePublisher.publish(featureMessagingParameter)
+      cePublisher.publish(featureMessagingParameter, orgId)
     then:
       1 * executor.submit(_) >> { Runnable task -> task.run() }
       1 * publisher.publish(FeatureMessagingUpdate.CLOUD_EVENT_TYPE, featureMessagingUpdate, _)
+      1 * hook.enabled([:], orgId) >> true
       0 * _
   }
 
@@ -116,9 +93,9 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
     given:
       def featureMessagingParameter = fmParam()
     and:
-      cePublisher = new FeatureMessagingCloudEventPublisherImpl(publisher, executorSupplier)
+      cePublisher = new FeatureMessagingCloudEventPublisherImpl(executorSupplier, trackingEventApi)
     when:
-      cePublisher.publish(featureMessagingParameter)
+      cePublisher.publish(featureMessagingParameter, orgId)
     then:
       0 * _
 

@@ -6,12 +6,8 @@ import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.TrackingEventApi
 import io.featurehub.db.messaging.FeatureMessagingParameter
 import io.featurehub.db.messaging.FeatureMessagingPublisher
-import io.featurehub.events.CloudEventDynamicPublisherRegistry
 import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.events.DynamicCloudEventDestination
-import io.featurehub.events.DynamicCloudEventDestinationMapper
-import io.featurehub.lifecycle.LifecycleListener
-import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.messaging.model.MessagingFeatureValueUpdate
 import io.featurehub.messaging.model.MessagingLockUpdate
@@ -36,57 +32,41 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 
 
-@LifecyclePriority(priority = 12) // this is after all the dynamic registries have registered (they register at priority 5)
-class FeatureMessagingCloudEventInitializer @Inject constructor(publisher: FeatureMessagingCloudEventPublisher,
-                                                          dynamicPublisherRegistry: CloudEventDynamicPublisherRegistry,
-                                                                trackingEventApi: TrackingEventApi) : LifecycleListener {
-  private val log: Logger = LoggerFactory.getLogger(FeatureMessagingCloudEventInitializer::class.java)
-
-  init {
-    val hooks = mapOf(Pair("integration.slack", "integration/slack-v1")).map {
-      log.trace("Looking for dynamic config {} for message {}", it.key, it.value)
-      val prefix = DynamicCloudEventDestinationMapper.infix(it.key, dynamicPublisherRegistry)
-      if (prefix != null) DynamicCloudEventDestinationMapper(it.value, prefix, it.key, dynamicPublisherRegistry) else null
-    }.filterNotNull()
-
-    publisher.setHooks(hooks)
-    // tell the event tracking system what events to look for
-    trackingEventApi.registerTrackingConfig(hooks)
-  }
+interface FeatureMessagingPublisherConfiguration {
+  fun addHook(hook: DynamicCloudEventDestination)
 }
 
 open class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
-  private val cloudEventPublisher: CloudEventPublisherRegistry,
   private val supplier: ExecutorSupplier,
   private val trackingEventApi: TrackingEventApi
-) : FeatureMessagingCloudEventPublisher, FeatureMessagingPublisher {
+) : FeatureMessagingPublisherConfiguration, FeatureMessagingPublisher {
   private val log: Logger = LoggerFactory.getLogger(FeatureMessagingCloudEventPublisherImpl::class.java)
   private val hooks = mutableListOf<DynamicCloudEventDestination>();
   private var executor: ExecutorService? = null
 
-  override fun setHooks(hooks: List<DynamicCloudEventDestination>) {
-    this.hooks.clear()
-    this.hooks.addAll(hooks)
-
-    if (hooks.isNotEmpty()) {
+  override fun addHook(hook: DynamicCloudEventDestination) {
+    if (hooks.isEmpty()) {
       executor = supplier.executorService(FallbackPropertyConfig.getConfig("messaging.publish.thread-pool", "4").toInt())
     }
+
+    hooks.add(hook)
   }
 
-  override val isEnabled: Boolean
-    get() = hooks.isNotEmpty()
-
-  override fun publish(featureMessagingParameter: FeatureMessagingParameter) {
-    if (hooks.isEmpty()) return // skip as we have no enabled hooks
+  override fun publish(featureMessagingParameter: FeatureMessagingParameter, orgId: UUID) {
+    val webhookEnvironmentInfo = featureMessagingParameter.featureValue.environment.webhookEnvironmentInfo ?: mapOf()
+    if (hooks.isEmpty() || hooks.none { it.enabled(webhookEnvironmentInfo, orgId) } ) return // skip as we have no enabled hooks
 
     executor?.let {
       it.submit {
         try {
           val featureMessagingUpdate = toFeatureMessagingUpdate(featureMessagingParameter)
-          val webhookEnvironmentInfo = featureMessagingParameter.featureValue.environment.webhookEnvironmentInfo ?: mapOf()
           val messageId = UUID.randomUUID()
 
-          hooks.forEach { hook ->
+          for (hook in hooks) {
+            if (!hook.enabled(webhookEnvironmentInfo, orgId)) {
+              continue
+            }
+
             log.trace("publishing feature messaging update for {}", featureMessagingUpdate)
             val event = CloudEventBuilder.v1().newBuilder()
             event.withSubject(FeatureMessagingUpdate.CLOUD_EVENT_SUBJECT)
@@ -100,14 +80,11 @@ open class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
             val whenCreated = OffsetDateTime.now()
             event.withTime(whenCreated)
 
-            // this is all the config info from the webhook, which can include encrypted data
-            featureMessagingUpdate.additionalInfo = hook.additionalProperties(webhookEnvironmentInfo)
-
             trackingEventApi.createInitialRecord(messageId, hook.cloudEventType,
               CloudEventLinkType.env, featureMessagingUpdate.environmentId,
               featureMessagingUpdate, whenCreated, null)
 
-            cloudEventPublisher.publish(hook.cloudEventType, featureMessagingUpdate, event)
+            hook.publish(FeatureMessagingUpdate.CLOUD_EVENT_TYPE, orgId, featureMessagingUpdate, event)
           }
         } catch (e: Exception) {
           log.error("Failed to publish messaging update for feature", e)

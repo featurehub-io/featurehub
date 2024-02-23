@@ -170,6 +170,11 @@ class RouteCreator {
         child: const ManageAdminServiceAccountsRoute());
   }
 
+  Widget systemConfig(mrBloc,
+      {Map<String, List<String?>> params = const {}}) {
+    return SizedBox.shrink();
+  }
+
   Widget serviceAccount(mrBloc,
       {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<ManageServiceAccountsBloc>(

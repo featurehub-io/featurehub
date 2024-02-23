@@ -22,58 +22,37 @@ import java.util.*
 
 
 class WebDynamicDestination(
-  private val params: Map<String, String>,
-  private val cloudEventType: String,
-  private val destination: String,
-  destSuffix: String,
-  metric: CloudEventChannelMetric,
-  defaultConnectTimeout: String,
-  defaultReadTimeout: String,
   private val publisherRegistry: CloudEventPublisherRegistry
 ) {
   private val client: Client = ClientBuilder.newClient()
     .register(CommonConfiguration::class.java)
     .register(LoggingConfiguration::class.java)
-  private val paramsCopy = mutableMapOf<String, String>()
-  private val compressed: Boolean
 
   init {
-    client.property(ClientProperties.CONNECT_TIMEOUT, timeout("timeout.connect", defaultConnectTimeout))
-    client.property(ClientProperties.READ_TIMEOUT, timeout("timeout.read", defaultReadTimeout))
-
-    paramsCopy.putAll(params)
-    compressed = (paramsCopy.remove("compress") ?: "false") == "true"
-
     // support individual override of proxies
     checkParams(ClientProperties.PROXY_URI, ClientProperties.PROXY_PASSWORD, ClientProperties.PROXY_USERNAME)
   }
 
-  fun checkParams(vararg properties: String) {
+  private fun checkParams(vararg properties: String) {
     for (property in properties) {
-      if (params.containsKey(property)) {
-        client.property(property, params[property])
-        paramsCopy.remove(property)
-      } else {
-        val defaultParam = FallbackPropertyConfig.getConfig("webhooks.default.${property}")
-        if (defaultParam != null) {
-          client.property(property, defaultParam)
-        }
+      val propertyName = if (property.startsWith(JERSEY_PREFIX)) property.substring(JERSEY_PREFIX.length) else property
+      val defaultParam = FallbackPropertyConfig.getConfig("webhooks.default.${propertyName}")
+      if (defaultParam != null) {
+        client.property(property, defaultParam)
       }
     }
-
   }
 
-  fun publish(ce: CloudEvent) {
+  fun publish(
+    ce: CloudEvent,
+    config: CloudEventDynamicDeliveryDetails,
+    metric: CloudEventChannelMetric,
+    destination: String
+  ) {
     val target = client.target(destination).request()
 
-    val outboundHeaders = mutableMapOf<String, String>()
-
-    paramsCopy.forEach { header ->
-      val key = header.key
-
-      val value = header.value
-      outboundHeaders[key] = value
-      target.header(key, value)
+    config.headers?.forEach { header ->
+      target.header(header.key, header.value)
     }
 
     ce.attributeNames.forEach { name ->
@@ -93,26 +72,32 @@ class WebDynamicDestination(
       .originatingOrganisationId(UUID.fromString(trackedEventOrgId))
       .originatingCloudEventType(ce.type)
 
+    val perfTimer = metric.perf.startTimer()
+
     try {
-      log.trace("publishing CE {}:{} to {}", ce.type, ce.id, destination)
+      log.trace("publishing CE {}:{} to {}", ce.type, ce.id, config.url!!)
 
       val response = target.post(
         Entity.entity(
           ce.data?.toBytes(),
-          if (compressed) "application/json+gzip" else MediaType.APPLICATION_JSON
+          if (config.compressed) "application/json+gzip" else MediaType.APPLICATION_JSON
         )
       )
 
       if (te != null && response != null) {
-        fireCompletedTrackedEvent(te, response)
+        captureCompletedWebPost(te, response)
       }
     } catch (e: Exception) {
+      metric.failures.inc()
+
       log.error("failed to post CE {}", ce.type, e)
 
       if (te != null) {
         te.status(503)
         te.content(e.message?.take(1000))
       }
+    } finally {
+      perfTimer.observeDuration()
     }
 
     if (te != null) {
@@ -120,72 +105,59 @@ class WebDynamicDestination(
     }
   }
 
-  private fun fireCompletedTrackedEvent(te: TrackedEventResult, response: Response) {
+  private fun captureCompletedWebPost(te: TrackedEventResult, response: Response) {
     te.status(response.status)
 
     te.content(response.readEntity(String::class.java)?.take(1000))
 
     val headers = mutableMapOf<String, String?>()
-    response.stringHeaders.forEach { k, v ->
-      headers.put(k, v?.joinToString(";"))
+    response.stringHeaders.forEach { (k, v) ->
+      headers[k] = v?.joinToString(";")
     }
     te.incomingHeaders(headers)
   }
 
-  private fun fireFailedTrackedEventOrgId(te: TrackedEventResult, e: Exception) {
-    TODO("Not yet implemented")
-  }
-
-  fun timeout(key: String, defaultVal: String): Int {
-    return if (params.containsKey(key)) params[key]!!.toInt() else defaultVal.toInt()
+  fun timeout(connectTimeout: String, readTimeout: String) {
+    client.property(ClientProperties.CONNECT_TIMEOUT, connectTimeout)
+    client.property(ClientProperties.READ_TIMEOUT, readTimeout)
   }
 
   companion object {
     private val log: Logger = LoggerFactory.getLogger(WebDynamicDestination::class.java)
+
+    const val JERSEY_PREFIX = "jersey.config.client."
   }
 }
 
 @LifecyclePriority(priority = 5)
 class WebDynamicPublisher @Inject constructor(
   dynamicPublisher: CloudEventDynamicPublisherRegistry,
-  private val publisherRegistry: CloudEventPublisherRegistry
+  publisherRegistry: CloudEventPublisherRegistry
 ) : LifecycleListener {
-  @ConfigKey("webhooks.features.timeout.connect")
+  @ConfigKey("webhooks.default.timeout.connect")
   var connectTimeout = FallbackPropertyConfig.getConfig("webhooks.default.timeout.connect", "4000")
 
-  @ConfigKey("webhooks.features.timeout.read")
+  @ConfigKey("webhooks.default.timeout.read")
   var readTimeout = FallbackPropertyConfig.getConfig("webhooks.default.timeout.read", "4000")
 
   private val log: Logger = LoggerFactory.getLogger(WebDynamicPublisher::class.java)
-
-  init {
-    dynamicPublisher.registerDynamicPublisherProvider(listOf("http://", "https://"), this::registerType)
+  private val webhookDestination = WebDynamicDestination(publisherRegistry).apply {
+    timeout(connectTimeout, readTimeout)
   }
 
-  private fun registerType(
-    params: Map<String, String>,
-    cloudEventType: String,
+  init {
+    dynamicPublisher.registerDynamicPublisherProvider(listOf("http://", "https://"), this::publish)
+  }
+
+  private fun publish(
+    config: CloudEventDynamicDeliveryDetails,
+    cloudEvent: CloudEvent,
     destination: String,
     destSuffix: String,
     metric: CloudEventChannelMetric
   ) {
-    log.info("registering destination webhook for cloud event {} outputting to {}", cloudEventType, destination)
+    log.info("registering destination webhook for cloud event {} outputting to {}", cloudEvent.type, destination)
 
-    val dest = WebDynamicDestination(
-      params,
-      cloudEventType,
-      destination,
-      destSuffix,
-      metric,
-      connectTimeout,
-      readTimeout,
-      publisherRegistry
-    )
-    publisherRegistry.registerForPublishing(
-      cloudEventType,
-      metric,
-      params["compress"]?.lowercase() == "false",
-      dest::publish
-    )
+    webhookDestination.publish(cloudEvent, config, metric, destination)
   }
 }

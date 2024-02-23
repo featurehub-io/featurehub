@@ -154,6 +154,10 @@ class Routes {
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.adminServiceAccount),
         permissionType: PermissionType.portfolioadmin);
+    router.define('/system-config',
+        routeSlots: [RouteSlot.portfolio],
+        handler: handleRouteChangeRequest(routeCreator.systemConfig),
+        permissionType: PermissionType.superadmin);
 
     return router;
   }

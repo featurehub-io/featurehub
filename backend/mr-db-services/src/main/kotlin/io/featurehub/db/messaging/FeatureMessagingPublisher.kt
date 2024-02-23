@@ -7,6 +7,7 @@ import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.api.SingleNullableFeatureValueUpdate
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.mr.model.RolloutStrategy
+import java.util.UUID
 
 data class FeatureMessagingParameter(
   val featureValue: DbFeatureValue,
@@ -23,5 +24,5 @@ interface FeatureMessagingPublisher {
    * data and forms a cloud event that it subsequently sends back to the caller, before proceeding to
    * send it to downstream systems.
    */
-  fun publish(featureMessagingParameter: FeatureMessagingParameter)
+  fun publish(featureMessagingParameter: FeatureMessagingParameter, orgId: UUID)
 }
