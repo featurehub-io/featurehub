@@ -3715,10 +3715,50 @@ paths:
       explode: true
       schema:
         type: boolean
+  /mr-api/system-api/{key}/decrypt:
+    get:
+      tags:
+      - SystemConfigService
+      description: "When passed a key and decrypt is enabled and the user has the\
+        \ right permissions, it will decrypt the key"
+      operationId: decryptSystemConfig
+      parameters:
+      - name: key
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: mapKey
+        in: query
+        description: "If the config is a map, then this is the key in the map to decrypt"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: System config decrypted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemConfigDecryptResult'
+        "401":
+          description: Unidentified and no permission
+        "403":
+          description: Identified but no permission
+        "500":
+          description: Unknown error
+      security:
+      - bearerAuth: []
   /mr-api/system-api:
     get:
       tags:
       - SystemConfigService
+      description: Provides either the list of all flags (if no filters are specified)
+        or the stored values against the system if filters are specified.
       operationId: getSystemConfig
       parameters:
       - name: filters
@@ -3756,6 +3796,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdatedSystemConfigs'
+        required: true
       responses:
         "200":
           description: System configs that were saved
@@ -6060,6 +6101,12 @@ components:
             type: string
             description: unique id of the strategy
             format: uuid
+    SystemConfigDecryptResult:
+      type: object
+      properties:
+        result:
+          type: string
+          nullable: true
     SystemConfigs:
       type: object
       properties:
@@ -6098,9 +6145,6 @@ components:
         version:
           type: integer
           format: int64
-          nullable: false
-        encrypted:
-          type: boolean
           nullable: false
         value:
           description: Some value. This value gets stored as a faux-JSON object

@@ -66,7 +66,7 @@ class TrackingEventSqlApi @Inject constructor(private val conversions: Conversio
   override fun registerTrackingConfig(mappers: List<DynamicCloudEventDestination>) {
     val defaultVal = defaultKeepSuccesses.toString()
     mappers.forEach { mapper ->
-      val config = FallbackPropertyConfig.getConfig("tracking-event.${mapper.configInfix}.keep-successes", defaultVal) == "true"
+      val config = FallbackPropertyConfig.getConfig("tracking-event.TODO.keep-successes", defaultVal) == "true"
       keepIndividualTypeSuccess[mapper.cloudEventType] = config
     }
   }

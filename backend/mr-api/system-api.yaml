@@ -3,6 +3,39 @@ info:
   title: ManagementResourceApi
   description: This describes the API clients use for accessing features.
 paths:
+  /mr-api/system-api/{key}/decrypt:
+    get:
+      security:
+        -  bearerAuth: []
+      parameters:
+        - in: path
+          required: true
+          name: key
+          schema:
+            type: string
+        - in: query
+          required: false
+          name: mapKey
+          description: "If the config is a map, then this is the key in the map to decrypt"
+          schema:
+            type: string
+      operationId: decryptSystemConfig
+      description: "When passed a key and decrypt is enabled and the user has the right permissions, it will decrypt the key"
+      tags:
+        - SystemConfigService
+      responses:
+        200:
+          description: "System config decrypted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemConfigDecryptResult"
+        401:
+          description: "Unidentified and no permission"
+        403:
+          description: "Identified but no permission"
+        500:
+          description: "Unknown error"
   /mr-api/system-api:
     get:
       security:
@@ -10,11 +43,13 @@ paths:
       parameters:
         - in: query
           name: filters
+          required: false
           schema:
             type: array
             items:
               type: string
       operationId: getSystemConfig
+      description: "Provides either the list of all flags (if no filters are specified) or the stored values against the system if filters are specified."
       tags:
         - SystemConfigService
       responses:
@@ -58,6 +93,12 @@ paths:
           description: "Unknown error"
 components:
   schemas:
+    SystemConfigDecryptResult:
+      type: object
+      properties:
+        result:
+          type: string
+          nullable: true
     SystemConfigs:
       type: object
       properties:
@@ -97,8 +138,5 @@ components:
           nullable: false
           type: integer
           format: int64
-        encrypted:
-          nullable: false
-          type: boolean
         value:
           description: "Some value. This value gets stored as a faux-JSON object"

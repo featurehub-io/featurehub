@@ -3,6 +3,7 @@ package io.featurehub.mr.resources
 import io.cloudevents.core.v1.CloudEventBuilder
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
+import io.featurehub.db.api.SystemConfigApi
 import io.featurehub.db.api.WebhookApi
 import io.featurehub.encryption.WebhookEncryptionFeature
 import io.featurehub.enriched.model.EnricherPing
@@ -22,6 +23,7 @@ import java.util.*
 class WebhookResource @Inject constructor(
   private val webhookApi: WebhookApi,
   private val cloudEventPublisher: CloudEventPublisherRegistry,
+  private val systemConfigApi: SystemConfigApi,
   private val authManagerService: AuthManagerService,
 ) : WebhookServiceDelegate {
   override fun getWebhookDetails(envId: UUID, id: UUID, securityContext: SecurityContext): WebhookDetail {
@@ -42,14 +44,10 @@ class WebhookResource @Inject constructor(
             .messageType(WebhookEnvironmentResult.CLOUD_EVENT_TYPE)
             .envPrefix("webhook.features")
             .description("Webhook: Feature updates"),
-//          WebhookTypeDetail()
-//            .messageType(FeatureMessagingUpdate.CLOUD_EVENT_TYPE)
-//            .envPrefix("webhook.messaging")
-//            .description("Feature updates for messaging integration")
         )
       )
 
-    if (WebhookEncryptionFeature.isWebhookEncryptionEnabled && cloudEventPublisher.hasListeners("integration/slack-v1")) {
+    if (systemConfigApi.isEnabled("slack")) {
       types.types.add(
         WebhookTypeDetail()
           .messageType("integration/slack-v1")

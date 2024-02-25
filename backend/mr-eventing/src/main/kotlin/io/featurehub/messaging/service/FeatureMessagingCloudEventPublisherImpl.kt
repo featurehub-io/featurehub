@@ -84,7 +84,7 @@ open class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
               CloudEventLinkType.env, featureMessagingUpdate.environmentId,
               featureMessagingUpdate, whenCreated, null)
 
-            hook.publish(FeatureMessagingUpdate.CLOUD_EVENT_TYPE, orgId, featureMessagingUpdate, event)
+            hook.publish(FeatureMessagingUpdate.CLOUD_EVENT_TYPE, orgId, featureMessagingUpdate, webhookEnvironmentInfo, event)
           }
         } catch (e: Exception) {
           log.error("Failed to publish messaging update for feature", e)

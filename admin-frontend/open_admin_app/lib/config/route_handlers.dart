@@ -32,6 +32,8 @@ import 'package:open_admin_app/widgets/group/group_bloc.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';
 import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
 import 'package:open_admin_app/widgets/simple_widget.dart';
+import 'package:open_admin_app/widgets/systemconfig/systemconfig_bloc.dart';
+import 'package:open_admin_app/widgets/systemconfig/systemconfig_widget.dart';
 import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 import 'package:open_admin_app/widgets/user/create/create_user_bloc.dart';
 import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
@@ -172,7 +174,8 @@ class RouteCreator {
 
   Widget systemConfig(mrBloc,
       {Map<String, List<String?>> params = const {}}) {
-    return SizedBox.shrink();
+    return BlocProvider<SystemConfigBloc>(creator: (context,bag) => SystemConfigBloc(mrBloc),
+      child: SystemConfigPanel());
   }
 
   Widget serviceAccount(mrBloc,
