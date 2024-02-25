@@ -2,9 +2,12 @@ package io.featurehub.db.model;
 
 import io.ebean.Model;
 import io.ebean.annotation.ChangeLog;
+import io.ebean.annotation.WhenCreated;
+import io.ebean.annotation.WhenModified;
 import jakarta.persistence.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -19,15 +22,28 @@ public class DbSystemConfig extends Model {
   @JoinColumn(name = "fk_who_updated")
   private DbPerson whoUpdated;
 
+  @NotNull
+  @WhenModified
+  @Column(name = "w_upd")
+  private Instant whenLastUpdated;
+
+  @NotNull
+  @WhenCreated
+  @Column(name = "w_cre")
+  private final Instant whenCreated;
+
   @Version
   private long version;
 
   @Lob
+  @Column(name = "vl")
   private String value;
 
   public DbSystemConfig(@NotNull String key, @NotNull UUID organisationId, @NotNull DbPerson whoUpdated) {
     id = new DbSystemConfigKey(key, organisationId);
     this.whoUpdated = whoUpdated;
+    whenCreated = Instant.now();
+    whenLastUpdated = whenCreated;
   }
 
   @ManyToOne(optional = false)
@@ -62,5 +78,17 @@ public class DbSystemConfig extends Model {
 
   public void setWhoUpdated(DbPerson whoUpdated) {
     this.whoUpdated = whoUpdated;
+  }
+
+  public Instant getWhenLastUpdated() {
+    return whenLastUpdated;
+  }
+
+  public Instant getWhenCreated() {
+    return whenCreated;
+  }
+
+  public long getVersion() {
+    return version;
   }
 }

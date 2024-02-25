@@ -57,7 +57,7 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
             Row(
               children: [
                 Text(
-                  'Slack Configuration',
+                  'Environment Slack Configuration',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const FHExternalLinkWidget(
@@ -69,16 +69,6 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                 ),
               ],
             ),
-            const SizedBox(
-              height: 16.0,
-            ),
-            const FHExternalLinkOutlinedWidget(
-                label: 'Connect FeatureHub to Slack',
-                tooltipMessage:
-                    'Install FeatureHub Bot app to your Slack workspace',
-                link:
-                    'https://api.slack.com/apps?new_app=1&manifest_yaml=display_information%3A%0A%20%20name%3A%20FeatureHub%0A%20%20description%3A%20FeatureHub%20Notifications%20Bot%0A%20%20background_color%3A%20%22%23536dfe%22%0A%20%20long_description%3A%20Receive%20notifications%20from%20the%20FeatureHub%20Bot.%20Notifications%20include%20features%20and%20feature%20values%20updates%2C%20strategy%20updates%20and%20other%20feature%20settings.%20For%20details%2C%20please%20view%20our%20documentation%20on%20https%3A%2F%2Fdocs.featurehub.io%0Afeatures%3A%0A%20%20bot_user%3A%0A%20%20%20%20display_name%3A%20featurehub%0A%20%20%20%20always_online%3A%20true%0Aoauth_config%3A%0A%20%20scopes%3A%0A%20%20%20%20bot%3A%0A%20%20%20%20%20%20-%20chat%3Awrite%0Asettings%3A%0A%20%20org_deploy_enabled%3A%20false%0A%20%20socket_mode_enabled%3A%20false%0A%20%20token_rotation_enabled%3A%20false%0A',
-                icon: Icon(Icons.arrow_outward_outlined)),
             const SizedBox(
               height: 16.0,
             ),
@@ -110,55 +100,13 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
           Container(
               constraints: const BoxConstraints(maxWidth: 600),
               child: TextFormField(
-                  controller: _token,
-                  autofocus: true,
-                  textInputAction: TextInputAction.next,
-                  obscureText: _token.text == 'ENCRYPTED-TEXT',
-                  obscuringCharacter: '*',
-                  readOnly: _token.text == 'ENCRYPTED-TEXT',
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText:
-                    'e.g. xoxb-1182138673840-5153275439522-sYLjc5KVxFaLrr2wY9fh8jd',
-                    labelText: 'Slack Bot User OAuth Token',
-                  ),
-                  validator: ((v) {
-                    if (v == null || v.isEmpty) {
-                      return 'Please enter Slack Bot User OAuth Token';
-                    }
-                    return null;
-                  }))),
-          const SizedBox(width: 8.0),
-          if (widget.bloc.mrBloc.identityProviders
-              .capabilityWebhookEncryption &&
-              widget.bloc.mrBloc.identityProviders
-                  .capabilityWebhookDecryption)
-            if (_token.text == 'ENCRYPTED-TEXT')
-              TextButton(
-                  onPressed: () => widget.bloc
-                      .decryptEncryptedFields(widget.env.environment!),
-                  child: const Text('Reveal hidden values')),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _token.text = '';
-              });
-            },
-            child: const Text('Reset'),
-          )
-        ]),
-        const SizedBox(height: 36.0),
-        Row(children: [
-          Container(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: TextFormField(
                   controller: _channelName,
                   autofocus: true,
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     hintText: 'e.g. C0150T7AF25',
-                    labelText: 'Slack channel ID',
+                    labelText: 'Slack channel ID (leave empty to use default)',
                   ),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {

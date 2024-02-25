@@ -17,7 +17,7 @@ interface DynamicCloudEventDestination {
   val cloudEventType: String
 
   fun enabled(info: Map<String,String>, orgId: UUID): Boolean
-  fun publish(cloudEventType: String, orgId: UUID, data: AdditionalInfoMessage<*>, event: CloudEventBuilder)
+  fun publish(cloudEventType: String, orgId: UUID, data: AdditionalInfoMessage<*>, info: Map<String,String>, event: CloudEventBuilder)
 }
 
 //@LifecyclePriority(priority = 12) // this is after all the dynamic registries have registered (they register at priority 5)

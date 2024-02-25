@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Embeddable
 public class DbSystemConfigKey {
-  @Column(nullable = false, name = "key")
+  @Column(nullable = false, name = "code")
   @NotNull
   private final String key;
 

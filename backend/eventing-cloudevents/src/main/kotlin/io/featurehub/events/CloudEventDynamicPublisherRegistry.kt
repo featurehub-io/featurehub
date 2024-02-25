@@ -47,6 +47,8 @@ interface CloudEventDynamicPublisherRegistry {
     ) -> Unit
   );
 
+  val supportedPrefixes: List<String>
+
   /**
    * This is called by the code requiring a publisher.
    */
@@ -84,6 +86,9 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(private val web
       dynamicDelivery[it] = callback
     }
   }
+
+  override val supportedPrefixes: List<String>
+    get() = dynamicDelivery.keys.toList()
 
   private fun extractDestinationType(destination: String): String? {
     val pos = destination.indexOf("//")

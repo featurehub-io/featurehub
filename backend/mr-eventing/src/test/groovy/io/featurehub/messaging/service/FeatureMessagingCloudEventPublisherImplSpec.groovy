@@ -1,6 +1,6 @@
 package io.featurehub.messaging.service
 
-
+import io.featurehub.db.api.CloudEventLinkType
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.api.SingleNullableFeatureValueUpdate
@@ -49,6 +49,7 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
     def oldFeatureValue = "old"
     return new FeatureMessagingUpdate()
       .whoUpdated("Alfie")
+      .organizationId(orgId)
       .whenUpdated(LocalDateTime.now().atOffset(ZoneOffset.UTC))
       .portfolioId(dbFeatureValue.environment.parentApplication.portfolio.id)
       .environmentId(dbFeatureValue.environment.id)
@@ -84,8 +85,10 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
       cePublisher.publish(featureMessagingParameter, orgId)
     then:
       1 * executor.submit(_) >> { Runnable task -> task.run() }
-      1 * publisher.publish(FeatureMessagingUpdate.CLOUD_EVENT_TYPE, featureMessagingUpdate, _)
-      1 * hook.enabled([:], orgId) >> true
+      2 * hook.enabled([:], orgId) >> true
+      1 * hook.getCloudEventType() >> "blah/blah"
+      1 * trackingEventApi.createInitialRecord(_, "blah/blah", CloudEventLinkType.env, featureMessagingUpdate.environmentId, _, _, _)
+      1 * hook.publish('messaging-feature-v1', orgId, _, _, _)
       0 * _
   }
 
