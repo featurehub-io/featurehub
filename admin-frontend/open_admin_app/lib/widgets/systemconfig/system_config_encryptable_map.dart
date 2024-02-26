@@ -7,12 +7,25 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/systemconfig/systemconfig_bloc.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
+/**
+ * the parent widget needs to pass this in as a controller style so
+ * when it is due to submit/validate, the state of the map can be fixed up.
+ */
+class SystemConfigEncryptionController {
+  Function? callback;
+
+  submit() {
+    callback?.call();
+  }
+}
+
 class SystemConfigEncryptableMapWidget extends StatefulWidget {
   final SystemConfig field;
   final String keyHeaderName;
   final String valueHeaderName;
   final String defaultNewKeyName;
   final String defaultNewValueName;
+  final SystemConfigEncryptionController controller;
 
   SystemConfigEncryptableMapWidget(
       {super.key,
@@ -20,7 +33,8 @@ class SystemConfigEncryptableMapWidget extends StatefulWidget {
       required this.keyHeaderName,
       required this.valueHeaderName,
       required this.defaultNewKeyName,
-      required this.defaultNewValueName});
+      required this.defaultNewValueName,
+      required this.controller});
 
   @override
   State<StatefulWidget> createState() {
@@ -34,9 +48,13 @@ class _SystemConfigDataSource extends DataGridSource {
   final bool decryptable;
   final String systemConfigKey;
   final Map<String, String> sourceData;
+  // this key tracks that which refers to encrypted fields - it ends in .encrypt
   String _encryptedKey = '';
+  // this key tracks which fields were deleted, we need to pass them back so the backend knows to remove the keys
+  String _deletedKey = '';
   List<DataGridRow> _rows = [];
   List<String> encryptedRows = [];
+  List<String> deletedRows = [];
   final String keyRowName;
   final String valueRowName;
   final SystemConfigBloc configBloc;
@@ -45,17 +63,27 @@ class _SystemConfigDataSource extends DataGridSource {
       this.sourceData, this.keyRowName, this.valueRowName, this.configBloc) {
     _rows = sourceData.keys
         .sorted()
-        .where((e) => !e.endsWith('.encrypted') )
+        .where((e) => !e.endsWith('.encrypt') && !e.endsWith(".deleted") )
         .map((e) => DataGridRow(cells: [
               DataGridCell(columnName: keyRowName, value: e),
               DataGridCell(columnName: valueRowName, value: sourceData[e])
             ]))
         .toList();
 
-    _encryptedKey = sourceData.keys.firstWhere((e) => e.endsWith('.encrypted'), orElse: () => '' );
-    if (_encryptedKey.isNotEmpty) {
-      encryptedRows = sourceData[_encryptedKey]!.split(',');
+    _encryptedKey = '${systemConfigKey}.encrypt';
+    encryptedRows = sourceData[_encryptedKey]?.split(',') ?? [];
+
+    // prefill
+    _deletedKey = '${systemConfigKey}.deleted';
+  }
+
+  submit() {
+    fhosLogger.info("sourceData is ${sourceData}, e-rows ${encryptedRows}, d-rows ${deletedRows}");
+    var _deletedRows = deletedRows.where((k) => sourceData[k] == null).where((k) => k.isNotEmpty);
+    if (_deletedRows.isNotEmpty) {
+      sourceData[_deletedKey] = _deletedRows.join(',');
     }
+    sourceData[_encryptedKey] = encryptedRows.where((k) => k.isNotEmpty).join(",");
   }
 
   TextEditingController editingController = TextEditingController();
@@ -72,6 +100,7 @@ class _SystemConfigDataSource extends DataGridSource {
       GridColumn column) {
     if (rowColumnIndex.columnIndex > 1) return false;
 
+    // can't rename encrypted headers or edit them
     final key = dataGridRow.getCells()[0].value;
     final encrypted = encryptedRows.contains(key);
     if (encrypted)  return false;
@@ -132,6 +161,9 @@ class _SystemConfigDataSource extends DataGridSource {
     if (rowColumnIndex.columnIndex == 0) {
       sourceData[newCellValue] = sourceData[oldValue]!;
       sourceData.remove(oldValue);
+      if (deletedRows.contains(newCellValue)) {
+        deletedRows.remove(newCellValue);
+      }
     } else if (column.columnName == 'value') {
       sourceData[rows[rowColumnIndex.rowIndex].getCells()[0].value] =
           newCellValue;
@@ -170,7 +202,25 @@ class _SystemConfigDataSource extends DataGridSource {
   }
 
   Widget _actions(String? valueCell, String key, int rowIndex) {
-    if (valueCell == _encryptedText && decryptable) {
+    if (valueCell != _encryptedKey && encryptedRows.contains(key)) {
+      return Row(
+        children: [
+          FHFlatButton(
+              onPressed: () => _reveal(key, rowIndex), title: 'Reveal'),
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: FHFlatButton(
+                onPressed: () => _clear(key, rowIndex), title: 'Clear'),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: FHFlatButton(onPressed: () => _delete(key, rowIndex), title: 'Delete'),
+          )
+        ],
+      );
+    }
+
+    if (encryptedRows.contains(key) && decryptable) {
       return Row(
         children: [
           FHFlatButton(
@@ -180,7 +230,10 @@ class _SystemConfigDataSource extends DataGridSource {
             child: FHFlatButton(
                 onPressed: () => _clear(key, rowIndex), title: 'Clear'),
           ),
-          FHFlatButton(onPressed: () => _delete(key, rowIndex), title: 'Delete')
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: FHFlatButton(onPressed: () => _delete(key, rowIndex), title: 'Delete'),
+          )
         ],
       );
     }
@@ -199,12 +252,30 @@ class _SystemConfigDataSource extends DataGridSource {
 
     return Row(children: [
       FHFlatButton(onPressed: () => _encrypt(key, rowIndex), title: 'Encrypt'),
-      FHFlatButton(onPressed: () => _delete(key, rowIndex), title: 'Delete')
+      Padding(
+        padding: const EdgeInsets.only(left: 8.0),
+        child: FHFlatButton(onPressed: () => _delete(key, rowIndex), title: 'Delete'),
+      )
     ],);
   }
 
+  _addEncryptedKey(String key) {
+    if (key.isNotEmpty) {
+      encryptedRows.add(key);
+    }
+  }
+
+  _removeEncryptedKey(String key) {
+    encryptedRows.remove(key);
+  }
+
+  _reveal(String key, int rowIndex) async {
+    _removeEncryptedKey(key);
+    notifyListeners();
+  }
+
   _encrypt(String key, int rowIndex) async {
-    encryptedRows.add(key);
+    _addEncryptedKey(key);
     notifyListeners();
   }
 
@@ -213,6 +284,7 @@ class _SystemConfigDataSource extends DataGridSource {
       final decrypted = await configBloc.systemConfigServiceApi
           .decryptSystemConfig(systemConfigKey, mapKey: key);
       if (decrypted.result != null) {
+        _removeEncryptedKey(key);
         _rows[rowIndex].getCells()[1] =
             DataGridCell(columnName: valueRowName, value: decrypted.result ?? '');
         notifyListeners();
@@ -221,7 +293,7 @@ class _SystemConfigDataSource extends DataGridSource {
   }
 
   _clear(String key, int rowIndex) {
-    encryptedRows.remove(key);
+    _removeEncryptedKey(key);
     _rows[rowIndex].getCells()[1] =
         DataGridCell(columnName: valueRowName, value: '');
     notifyListeners();
@@ -229,7 +301,7 @@ class _SystemConfigDataSource extends DataGridSource {
 
   _delete(String key, int rowIndex) {
     sourceData.remove(key);
-    encryptedRows.remove(key);
+    _removeEncryptedKey(key);
     _rows.removeAt(rowIndex);
     notifyListeners();
   }
@@ -261,6 +333,10 @@ class SystemConfigEncryptableMapWidgetState
     _setup();
   }
 
+  submit() {
+    _dataSource.submit();
+  }
+
   @override
   void didUpdateWidget(SystemConfigEncryptableMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -275,11 +351,15 @@ class SystemConfigEncryptableMapWidgetState
 
   _setup() {
     configBloc = BlocProvider.of(context);
+
+    // this converts it from a Map<dynamic,dynamic> to a Map<String,String>, which is a wee bit annoying but...
     final value = Map<String,String>.from(widget.field.value
         .map((key, value) =>
         MapEntry(key.toString(), value?.toString() ?? '')));
+
     // put it back in, now with the correct types so it will be saved
     widget.field.value = value;
+
     _dataSource = _SystemConfigDataSource(
         widget.field.key,
         configBloc.mrClient.identityProviders.capabilityWebhookDecryption,
@@ -287,6 +367,8 @@ class SystemConfigEncryptableMapWidgetState
         widget.keyHeaderName,
         widget.valueHeaderName,
         configBloc);
+
+    widget.controller.callback = () => _dataSource.submit();
   }
 
   @override
@@ -344,7 +426,8 @@ class SystemConfigEncryptableMapWidgetState
                                       TextStyle(fontWeight: FontWeight.bold)))),
                       GridColumn(
                           columnName: 'actions',
-                          allowEditing: true,
+                          allowEditing: false,
+                          columnWidthMode: ColumnWidthMode.fill,
                           label: Container(
                               padding: const EdgeInsets.all(8.0),
                               alignment: Alignment.center,

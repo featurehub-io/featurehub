@@ -163,14 +163,20 @@ class SystemConfigSqlApi @Inject constructor(
   fun mapToStoredValue(config: UpdatedSystemConfig, definition: ValidSystemConfig): UpdateResult {
     var updatedVal = config.value ?: return UpdateResult(null, false)
 
-    if (definition.requiresEncryption && updatedVal == WebhookEncryptionService.ENCRYPTEDTEXT) {
+    if (definition.requiresEncryption && definition.dataType == KnownSystemConfigSource.stringRef &&
+          updatedVal == WebhookEncryptionService.ENCRYPTEDTEXT) {
       return UpdateResult(null, true) // don't bother using this, it hasn't actually changed
     }
 
     if (definition.requiresEncryption) {
       if (definition.dataType == KnownSystemConfigSource.encryptableHeaderRef) {
         if (updatedVal is Map<*,*>) {
-          val value = updatedVal as Map<String,String>
+          val value = (updatedVal as Map<String,String>).toMutableMap()
+          val deleteFields = value["${config.key}.deleted"]
+          deleteFields?.let {
+            it.split(",").forEach { k -> value.remove(k) }
+            value.remove("${config.key}.deleted")
+          }
           updatedVal = encryptionService.encrypt(value)
         }
       } else if (definition.dataType == KnownSystemConfigSource.stringRef) {
@@ -234,7 +240,7 @@ class SystemConfigSqlApi @Inject constructor(
     val sysConfig = systemConfigMap[config.key]
     val encrypted = sysConfig?.requiresEncryption ?: false
     val value = if (config.value == null) null else (if (encrypted)
-      mapEncryptedVal(config.value, sysConfig?.dataType ?: KnownSystemConfigSource.stringRef)
+      mapEncryptedVal(config.value, sysConfig?.dataType ?: KnownSystemConfigSource.stringRef, config.key)
       else mapVal(config.value, sysConfig?.dataType ?: KnownSystemConfigSource.stringRef))
     return SystemConfig()
       .key(config.key)
@@ -243,14 +249,14 @@ class SystemConfigSqlApi @Inject constructor(
       .value(value)
   }
 
-  private fun mapEncryptedVal(json: String, ref: TypeReference<*>): Any? {
+  private fun mapEncryptedVal(json: String, ref: TypeReference<*>, key: String): Any? {
     if (ref == KnownSystemConfigSource.stringRef) {
       return WebhookEncryptionService.ENCRYPTEDTEXT
     } else if (ref == KnownSystemConfigSource.encryptableHeaderRef) {
       val map = mapper.readValue(json, KnownSystemConfigSource.encryptableHeaderRef)
       val data = encryptionService.filterAndReplaceWithPlaceholder(map)
-      if (!data.containsKey("slack.encrypted")) {
-        data["slack.encrypted"] = ""
+      if (data["${key}.encrypt"] == null) {
+        data["${key}.encrypt"] = "";
       }
       return data
     }
