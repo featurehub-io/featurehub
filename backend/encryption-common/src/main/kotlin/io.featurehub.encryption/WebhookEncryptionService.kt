@@ -154,8 +154,9 @@ class WebhookEncryptionServiceImpl @Inject constructor(
 
     // for each key in encrypt item keys, encrypt item and replace value, salt and encrypted
     encryptItemKeys.forEach { encryptItemKey ->
-      val value = result[encryptItemKey]!!
-      callbackHandler(encryptItemKey, value, result)
+      result[encryptItemKey]?.let { value ->
+        callbackHandler(encryptItemKey, value, result)
+      }
     }
 
     return result.toMap()

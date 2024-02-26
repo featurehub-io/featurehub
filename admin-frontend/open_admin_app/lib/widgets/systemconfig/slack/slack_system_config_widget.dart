@@ -32,6 +32,7 @@ class _SystemConfig {
 
 class SlackSystemConfigState extends State<SlackSystemConfigWidget> {
   late SystemConfigBloc configBloc;
+  final SystemConfigEncryptionController _deliveryHeadersController = SystemConfigEncryptionController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final Map<String, SystemConfig> settings = {};
   final List<_SystemConfig> unchangedSettings = [];
@@ -165,7 +166,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget> {
                           ),
                         if (settings['slack.delivery.headers'] != null)
                           SystemConfigEncryptableMapWidget(field: settings['slack.delivery.headers']!,
-
+                              controller: _deliveryHeadersController,
                               keyHeaderName: 'Header', valueHeaderName: 'Value',
                               defaultNewKeyName: 'X-Header', defaultNewValueName: 'value')
                       ],
@@ -179,6 +180,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget> {
                   FilledButton(
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
+                          _deliveryHeadersController.submit();
                           _formKey.currentState!.save();
                           await _save();
                         }
@@ -200,22 +202,25 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget> {
     final changed = <SystemConfig>[];
     settings.forEach((key, value) {
       final original = unchangedSettings.firstWhere((e) => e.key == key);
-      fhosLogger.info("comparing ${original} to ${value}");
+      fhosLogger.info("comparing ${original.value} to ${value}");
       if (original.value != value.value) {
+        fhosLogger.info("changed");
         changed.add(value);
       }
     });
 
-    try {
-      await configBloc.systemConfigServiceApi.createOrUpdateSystemConfigs(
-          UpdatedSystemConfigs(configs: changed.map((e) =>
-              UpdatedSystemConfig(key: e.key,
-                  version: e.version,
-                  value: e.value)).toList()));
+    if (changed.isNotEmpty) {
+      try {
+        await configBloc.systemConfigServiceApi.createOrUpdateSystemConfigs(
+            UpdatedSystemConfigs(configs: changed.map((e) =>
+                UpdatedSystemConfig(key: e.key,
+                    version: e.version,
+                    value: e.value)).toList()));
 
-      await _refresh(wrapState: false);
-    } catch (e, s) {
-      configBloc.mrClient.addError(FHError('Unable to save Slack updates', exception: e, stackTrace: s));
+        await _refresh(wrapState: false);
+      } catch (e, s) {
+        configBloc.mrClient.addError(FHError('Unable to save Slack updates', exception: e, stackTrace: s));
+      }
     }
   }
 
