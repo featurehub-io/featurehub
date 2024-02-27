@@ -172,11 +172,20 @@ class SystemConfigSqlApi @Inject constructor(
       if (definition.dataType == KnownSystemConfigSource.encryptableHeaderRef) {
         if (updatedVal is Map<*,*>) {
           val value = (updatedVal as Map<String,String>).toMutableMap()
+
+          // if any fields hold deleted values, delete them
           val deleteFields = value["${config.key}.deleted"]
+
           deleteFields?.let {
-            it.split(",").forEach { k -> value.remove(k) }
+            it.split(",").forEach { deletedKey ->
+              value.remove(deletedKey)
+              value.remove("$deletedKey.deleted")
+              value.remove("$deletedKey.salt")
+              value.remove("$deletedKey.encrypted")
+            }
             value.remove("${config.key}.deleted")
           }
+
           updatedVal = encryptionService.encrypt(value)
         }
       } else if (definition.dataType == KnownSystemConfigSource.stringRef) {
