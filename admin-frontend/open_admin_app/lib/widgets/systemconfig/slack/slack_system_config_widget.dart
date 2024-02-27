@@ -71,9 +71,6 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget> {
       final bearer = settings['slack.bearerToken']!;
       final defaultChannel = settings['slack.defaultChannel']!;
 
-      final deliveryUrlValidator = (settings['slack.delivery.prefixes'] == null) ? <String>[] : (settings['slack.delivery.prefixes']!.value as List<dynamic>).map((e) => e.toString()).toList();
-      final deliveryUrlHelp = deliveryUrlValidator.join(", ");
-
       return Container(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -144,37 +141,13 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget> {
                           ),
                         ),
                         if (settings['slack.delivery.url'] != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16.0),
-                            child: SystemConfigTextField(
-                                field: settings['slack.delivery.url']!,
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  hintText:
-                                      'e.g. http://slack-service.cluster.local',
-                                  labelText:
-                                      'External Slack message delivery service (optional, valid prefixes ${deliveryUrlHelp})',
-                                ),
-                            validator: (String? val) {
-                                  if (val == null || val.isEmpty) return null;
-
-                                  if (deliveryUrlValidator.none((e) => val.startsWith(e) == true))
-                                    return 'You must choose a valid url prefix';
-
-                                  return null;
-                            } ,),
-                          ),
-                        if (settings['slack.delivery.headers'] != null)
-                          SystemConfigEncryptableMapWidget(field: settings['slack.delivery.headers']!,
-                              controller: _deliveryHeadersController,
-                              keyHeaderName: 'Header', valueHeaderName: 'Value',
-                              defaultNewKeyName: 'X-Header', defaultNewValueName: 'value')
+                          externalDelivery(),
                       ],
                     ),
                   ),
                 )),
             Padding(
-              padding: const EdgeInsets.only(top: 8.0),
+              padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
                   FilledButton(
@@ -196,6 +169,54 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget> {
       fhosLogger.severe("failed ${e}: ${s}");
       return SizedBox.shrink();
     }
+  }
+
+  Widget externalDelivery() {
+    final deliveryUrlValidator = (settings['slack.delivery.prefixes'] == null) ? <String>[] : (settings['slack.delivery.prefixes']!.value as List<dynamic>).map((e) => e.toString()).toList();
+    final deliveryUrlHelp = deliveryUrlValidator.join(", ");
+
+    return Card(
+      child:
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: const Text('If your Slack delivery is offloaded to an external application, please specify the details here.'),
+            ),
+            if (settings['slack.delivery.url'] != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: SystemConfigTextField(
+                  field: settings['slack.delivery.url']!,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText:
+                    'e.g. http://slack-service.cluster.local',
+                    labelText:
+                    'External Slack message delivery service (optional, valid prefixes ${deliveryUrlHelp})',
+                  ),
+                  validator: (String? val) {
+                    if (val == null || val.isEmpty) return null;
+
+                    if (deliveryUrlValidator.none((e) => val.startsWith(e) == true))
+                      return 'You must choose a valid url prefix';
+
+                    return null;
+                  } ,),
+              ),
+            if (settings['slack.delivery.headers'] != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: SystemConfigEncryptableMapWidget(field: settings['slack.delivery.headers']!,
+                    controller: _deliveryHeadersController,
+                    keyHeaderName: 'Header', valueHeaderName: 'Value',
+                    defaultNewKeyName: 'X-Header', defaultNewValueName: 'value'),
+              )
+          ],),
+        )
+      ,
+    );
   }
 
   Future _save() async {
@@ -251,6 +272,9 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget> {
     configs.forEach((cfg) {
     settings[cfg.key] = cfg;
     });
+    if (settings['slack.delivery.headers'] != null) {
+      _deliveryHeadersController.updateField(settings['slack.delivery.headers']!);
+    }
     unchangedSettings.clear();
     unchangedSettings.addAll(configs.map((e) => _SystemConfig(e.key, e.value)));
   }

@@ -7,15 +7,22 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/systemconfig/systemconfig_bloc.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
+typedef SystemUpdateConfigCallback = void Function(SystemConfig);
+
 /**
  * the parent widget needs to pass this in as a controller style so
  * when it is due to submit/validate, the state of the map can be fixed up.
  */
 class SystemConfigEncryptionController {
-  Function? callback;
+  Function? submitCallback;
+  SystemUpdateConfigCallback? updateConfigCallback;
+
+  updateField(SystemConfig config) {
+    updateConfigCallback?.call(config);
+  }
 
   submit() {
-    callback?.call();
+    submitCallback?.call();
   }
 }
 
@@ -47,7 +54,7 @@ const _encryptedText = 'ENCRYPTED-TEXT';
 class _SystemConfigDataSource extends DataGridSource {
   final bool decryptable;
   final String systemConfigKey;
-  final Map<String, String> sourceData;
+  late Map<String, String> sourceData;
   // this key tracks that which refers to encrypted fields - it ends in .encrypt
   String _encryptedKey = '';
   // this key tracks which fields were deleted, we need to pass them back so the backend knows to remove the keys
@@ -60,21 +67,32 @@ class _SystemConfigDataSource extends DataGridSource {
   final SystemConfigBloc configBloc;
 
   _SystemConfigDataSource(this.systemConfigKey, this.decryptable,
-      this.sourceData, this.keyRowName, this.valueRowName, this.configBloc) {
+      dynamic fieldValue, this.keyRowName, this.valueRowName, this.configBloc) {
+    _reset(fieldValue);
+  }
+
+  _reset(dynamic fieldValue) {
+    sourceData = Map<String,String>.from(fieldValue
+        .map((key, value) =>
+        MapEntry(key.toString(), value?.toString() ?? '')));
+
     _rows = sourceData.keys
         .sorted()
         .where((e) => !e.endsWith('.encrypt') && !e.endsWith(".deleted") )
         .map((e) => DataGridRow(cells: [
-              DataGridCell(columnName: keyRowName, value: e),
-              DataGridCell(columnName: valueRowName, value: sourceData[e])
-            ]))
+      DataGridCell(columnName: keyRowName, value: e),
+      DataGridCell(columnName: valueRowName, value: sourceData[e])
+    ]))
         .toList();
 
     _encryptedKey = '${systemConfigKey}.encrypt';
-    encryptedRows = sourceData[_encryptedKey]?.split(',') ?? [];
+    encryptedRows = sourceData[_encryptedKey]?.split(',').whereNot((k) => k.isEmpty).toList() ?? [];
+
+    fhosLogger.info("reset to ${sourceData}, e-rows ${encryptedRows}");
 
     // prefill
     _deletedKey = '${systemConfigKey}.deleted';
+    deletedRows.clear();
   }
 
   submit() {
@@ -150,6 +168,7 @@ class _SystemConfigDataSource extends DataGridSource {
 
     final oldValue = dataGridRow.getCells()[rowColumnIndex.columnIndex].value;
 
+    // nothing changed or the new cell value is null, so bail
     if (newCellValue == null || oldValue == newCellValue) {
       return;
     }
@@ -159,7 +178,9 @@ class _SystemConfigDataSource extends DataGridSource {
             columnName: column.columnName, value: newCellValue.toString());
 
     if (rowColumnIndex.columnIndex == 0) {
+      // copy old cell to new cell
       sourceData[newCellValue] = sourceData[oldValue]!;
+      // remove old cell
       sourceData.remove(oldValue);
       if (deletedRows.contains(newCellValue)) {
         deletedRows.remove(newCellValue);
@@ -168,6 +189,8 @@ class _SystemConfigDataSource extends DataGridSource {
       sourceData[rows[rowColumnIndex.rowIndex].getCells()[0].value] =
           newCellValue;
     }
+
+    fhosLogger.info("sourceMap is now ${sourceData}, e-rows ${encryptedRows}");
 
     // To reset the new cell value after successfully updated to DataGridRow
     //and underlying mode.
@@ -196,43 +219,45 @@ class _SystemConfigDataSource extends DataGridSource {
       Container(
           padding: const EdgeInsets.all(8.0),
           alignment: Alignment.centerLeft,
-          child: _actions(
-              row.getCells()[1].value, row.getCells()[0].value, rowIndex))
+          child: _actions(rowIndex))
     ]);
   }
 
-  Widget _actions(String? valueCell, String key, int rowIndex) {
-    if (valueCell != _encryptedKey && encryptedRows.contains(key)) {
+  Widget _actions(int rowIndex) {
+    String? valueCell = rows[rowIndex].getCells()[1].value;
+    DataGridCell keyCell = rows[rowIndex].getCells()[0];
+
+    if (valueCell != _encryptedText && encryptedRows.contains(keyCell.value)) {
       return Row(
         children: [
           FHFlatButton(
-              onPressed: () => _reveal(key, rowIndex), title: 'Reveal'),
+              onPressed: () => _reveal(rowIndex), title: 'Reveal'),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: FHFlatButton(
-                onPressed: () => _clear(key, rowIndex), title: 'Clear'),
+                onPressed: () => _clear(rowIndex), title: 'Clear'),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
-            child: FHFlatButton(onPressed: () => _delete(key, rowIndex), title: 'Delete'),
+            child: FHFlatButton(onPressed: () => _delete(rowIndex), title: 'Delete'),
           )
         ],
       );
     }
 
-    if (encryptedRows.contains(key) && decryptable) {
+    if (encryptedRows.contains(keyCell.value) && decryptable) {
       return Row(
         children: [
           FHFlatButton(
-              onPressed: () => _decrypt(key, rowIndex), title: 'Decrypt'),
+              onPressed: () => _decrypt(rowIndex), title: 'Decrypt'),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: FHFlatButton(
-                onPressed: () => _clear(key, rowIndex), title: 'Clear'),
+                onPressed: () => _clear(rowIndex), title: 'Clear'),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
-            child: FHFlatButton(onPressed: () => _delete(key, rowIndex), title: 'Delete'),
+            child: FHFlatButton(onPressed: () => _delete(rowIndex), title: 'Delete'),
           )
         ],
       );
@@ -240,21 +265,21 @@ class _SystemConfigDataSource extends DataGridSource {
     if (valueCell == _encryptedText && !decryptable) {
       return Row(
         children: [
-          FHFlatButton(onPressed: () => _clear(key, rowIndex), title: 'Clear'),
+          FHFlatButton(onPressed: () => _clear(rowIndex), title: 'Clear'),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: FHFlatButton(
-                onPressed: () => _delete(key, rowIndex), title: 'Delete'),
+                onPressed: () => _delete(rowIndex), title: 'Delete'),
           )
         ],
       );
     }
 
     return Row(children: [
-      FHFlatButton(onPressed: () => _encrypt(key, rowIndex), title: 'Encrypt'),
+      FHFlatButton(onPressed: () => _encrypt(rowIndex), title: 'Encrypt'),
       Padding(
         padding: const EdgeInsets.only(left: 8.0),
-        child: FHFlatButton(onPressed: () => _delete(key, rowIndex), title: 'Delete'),
+        child: FHFlatButton(onPressed: () => _delete(rowIndex), title: 'Delete'),
       )
     ],);
   }
@@ -263,23 +288,30 @@ class _SystemConfigDataSource extends DataGridSource {
     if (key.isNotEmpty) {
       encryptedRows.add(key);
     }
+    fhosLogger.info(", e-rows ${encryptedRows}");
+  }
+
+  // we have to do it this way, getting the key at the last second as it may change
+  _key(int rowIndex) {
+    return rows[rowIndex].getCells()[0].value;
   }
 
   _removeEncryptedKey(String key) {
     encryptedRows.remove(key);
   }
 
-  _reveal(String key, int rowIndex) async {
-    _removeEncryptedKey(key);
+  _reveal(int rowIndex) async {
+    _removeEncryptedKey(_key(rowIndex));
     notifyListeners();
   }
 
-  _encrypt(String key, int rowIndex) async {
-    _addEncryptedKey(key);
+  _encrypt(int rowIndex) async {
+    _addEncryptedKey(_key(rowIndex));
     notifyListeners();
   }
 
-  _decrypt(String key, int rowIndex) async {
+  _decrypt(int rowIndex) async {
+    String key = _key(rowIndex);
     try {
       final decrypted = await configBloc.systemConfigServiceApi
           .decryptSystemConfig(systemConfigKey, mapKey: key);
@@ -292,17 +324,19 @@ class _SystemConfigDataSource extends DataGridSource {
     } catch (e) {}
   }
 
-  _clear(String key, int rowIndex) {
-    _removeEncryptedKey(key);
+  _clear(int rowIndex) {
+    _removeEncryptedKey(_key(rowIndex));
     _rows[rowIndex].getCells()[1] =
         DataGridCell(columnName: valueRowName, value: '');
     notifyListeners();
   }
 
-  _delete(String key, int rowIndex) {
+  _delete(int rowIndex) {
+    String key = _key(rowIndex);
     sourceData.remove(key);
     _removeEncryptedKey(key);
     _rows.removeAt(rowIndex);
+    deletedRows.add(key);
     notifyListeners();
   }
 
@@ -317,6 +351,12 @@ class _SystemConfigDataSource extends DataGridSource {
     ]));
 
     notifyListeners();
+  }
+
+  Map<String,String> changeConfig(SystemConfig config) {
+    _reset(config.value);
+    notifyListeners();
+    return sourceData;
   }
 }
 
@@ -353,22 +393,19 @@ class SystemConfigEncryptableMapWidgetState
     configBloc = BlocProvider.of(context);
 
     // this converts it from a Map<dynamic,dynamic> to a Map<String,String>, which is a wee bit annoying but...
-    final value = Map<String,String>.from(widget.field.value
-        .map((key, value) =>
-        MapEntry(key.toString(), value?.toString() ?? '')));
-
-    // put it back in, now with the correct types so it will be saved
-    widget.field.value = value;
-
     _dataSource = _SystemConfigDataSource(
         widget.field.key,
         configBloc.mrClient.identityProviders.capabilityWebhookDecryption,
-        value,
+        widget.field.value,
         widget.keyHeaderName,
         widget.valueHeaderName,
         configBloc);
 
-    widget.controller.callback = () => _dataSource.submit();
+    // put it back in, now with the correct types so it will be saved
+    widget.field.value = _dataSource.sourceData;
+
+    widget.controller.submitCallback = () => _dataSource.submit();
+    widget.controller.updateConfigCallback = (config) => _dataSource.changeConfig(config);
   }
 
   @override
