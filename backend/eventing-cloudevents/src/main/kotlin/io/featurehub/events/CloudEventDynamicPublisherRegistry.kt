@@ -52,7 +52,11 @@ interface CloudEventDynamicPublisherRegistry {
   /**
    * This is called by the code requiring a publisher.
    */
-  fun requireDynamicPublisher(destination: String, config: CloudEventDynamicDeliveryDetails, cloudEventType: String): Boolean
+  fun requireDynamicPublisher(
+    destination: String,
+    config: CloudEventDynamicDeliveryDetails,
+    cloudEventType: String
+  ): Boolean
 
   /**
    * Depending on which platform we are using for messaging, this will get set. It could be null if none is being used
@@ -69,10 +73,15 @@ interface CloudEventDynamicPublisherRegistry {
   )
 }
 
-class CloudEventDynamicPublisherRegistryImpl @Inject constructor(private val webhookEncryptionService: WebhookEncryptionService,) : CloudEventDynamicPublisherRegistry {
+class CloudEventDynamicPublisherRegistryImpl @Inject constructor(
+  private val webhookEncryptionService: WebhookEncryptionService,
+  private val cloudEventPublisherRegistry: CloudEventPublisherRegistry) :
+  CloudEventDynamicPublisherRegistry {
   private val log: Logger = LoggerFactory.getLogger(CloudEventDynamicPublisherRegistryImpl::class.java)
-  private val dynamicDelivery: MutableMap<String, (config: CloudEventDynamicDeliveryDetails, ce: CloudEvent,
-                                                   destination: String, destSuffix: String, metric: CloudEventChannelMetric) -> Unit> =
+  private val dynamicDelivery: MutableMap<String, (
+    config: CloudEventDynamicDeliveryDetails, ce: CloudEvent,
+    destination: String, destSuffix: String, metric: CloudEventChannelMetric
+  ) -> Unit> =
     mutableMapOf()
   private var defaultPublisher: String? = null
   private var counter = 1
@@ -130,7 +139,7 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(private val web
 
     return CloudEventChannelMetric(
       MetricsCollector.counter(
-        config.param("metric.fail.name","dynamic_counter${dynamicSuffix}"),
+        config.param("metric.fail.name", "dynamic_counter${dynamicSuffix}"),
         config.param("metric.fail.desc", "Failures when trying to publish to ${destination}")
       ),
       MetricsCollector.histogram(
@@ -156,24 +165,35 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(private val web
     delivery: CloudEventDynamicDeliveryDetails,
     event: CloudEventBuilder
   ) {
-    val destination = delivery.url!!
+    // if the delivery config is valid, use it, otherwise try and publish it on the bus in case there
+    // is a default listener for that message type (e.g. slack)
+    if (delivery.isValid()) {
+      val destination = delivery.url!!
 
-    val type = extractDestinationType(destination)
-    val pos = destination.indexOf("//")
+      val type = extractDestinationType(destination)
+      val pos = destination.indexOf("//")
 
-    if (type != null) {
-      dynamicDelivery[type]?.let { publish ->
-        delivery.headers?.let {
-          delivery.headers = webhookEncryptionService.decrypt(it)
-        }
+      if (type != null) {
+        dynamicDelivery[type]?.let { publish ->
+          delivery.headers?.let {
+            delivery.headers = webhookEncryptionService.decrypt(it)
+          }
 
-        publish(delivery,
+          publish(
+            delivery,
             event
               .withType(cloudEventType)
               .withDataContentType("application/json")
               .withData(mapper.writeValueAsBytes(data)).build(),
-              destination, destination.substring(pos + 2), makeMetric(delivery, destination))
+            destination, destination.substring(pos + 2), makeMetric(delivery, destination)
+          )
+        }
       }
+
+    } else if (cloudEventPublisherRegistry.hasListeners(cloudEventType)) {
+      cloudEventPublisherRegistry.publish(cloudEventType, data, event)
+    } else {
+      log.error("Configuration error - there is no listener for message type {} - dropping", cloudEventType)
     }
   }
 }

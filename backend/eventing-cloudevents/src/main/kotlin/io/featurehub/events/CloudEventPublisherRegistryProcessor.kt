@@ -28,7 +28,7 @@ interface CloudEventPublisherRegistry {
   /**
    * parts of the code that want to publish call this and this method will route the two
    */
-  fun publish(type: String, data: Any, eventBuilder: CloudEventBuilder)
+  fun <T : TaggedCloudEvent> publish(type: String, data: T, eventBuilder: CloudEventBuilder)
 
   fun <T : TaggedCloudEvent>  publish(data: T, eventEnricher: (ce: CloudEventBuilder) -> CloudEventBuilder = { ce -> ce })
 
@@ -40,21 +40,18 @@ interface CloudEventPublisherRegistry {
   val cloudEventSource: URI
 }
 
-class CloudEventPublisherRegistryProcessor @Inject constructor(
+open class CloudEventPublisherRegistryProcessor @Inject constructor(
   private val cloudEventsTelemetryWriter: CloudEventsTelemetryWriter,
+  private val cloudEventsReceiverRegistry: CloudEventReceiverRegistry,
   executorSupplier: ExecutorSupplier
 ) : CloudEventPublisherRegistry {
-  val threadPoolSize = FallbackPropertyConfig.getConfig("cloudevents.publisher.thread-pool", "20").toInt()
-  val threadPool: ExecutorService = executorSupplier.executorService(threadPoolSize)
+  private val threadPoolSize = FallbackPropertyConfig.getConfig("cloudevents.publisher.thread-pool", "20").toInt()
+  private val threadPool: ExecutorService = executorSupplier.executorService(threadPoolSize)
 
   private val log: Logger = LoggerFactory.getLogger(CloudEventPublisherRegistryProcessor::class.java)
   data class CallbackHolder(val type: String, val metric: CloudEventChannelMetric, val compress: Boolean, val handler: (msg: CloudEvent) -> Unit)
   protected val eventHandlers = mutableMapOf<String, MutableList<CallbackHolder>>()
-  protected val defaultCloudEventSource: URI
-
-  init {
-    defaultCloudEventSource = URI(FallbackPropertyConfig.getConfig("cloudevents.outbound.source", "http://${Info.applicationName()}"))
-  }
+  protected val defaultCloudEventSource: URI = URI(FallbackPropertyConfig.getConfig("cloudevents.outbound.source", "http://${Info.applicationName()}"))
 
   override fun hasListeners(type: String): Boolean {
     return eventHandlers[type] != null
@@ -78,21 +75,23 @@ class CloudEventPublisherRegistryProcessor @Inject constructor(
     }
   }
 
-  override fun publish(type: String, data: Any, eventBuilder: CloudEventBuilder) {
+  override fun <T : TaggedCloudEvent> publish(type: String, data: T, eventBuilder: CloudEventBuilder) {
     eventBuilder.withType(type)
 
-    if (data is TaggedCloudEvent) {
-      eventBuilder.withSubject(CloudEventUtils.subject(data.javaClass))
-    }
+    eventBuilder.withSubject(CloudEventUtils.subject(data.javaClass))
 
     publishFullyFormed(type, data, eventBuilder)
   }
 
-  private fun publishFullyFormed(type: String, data: Any, eventBuilder: CloudEventBuilder) {
+  private fun <T : TaggedCloudEvent> publishFullyFormed(type: String, data: T, eventBuilder: CloudEventBuilder) {
     val handlers = eventHandlers[type]
 
     if (handlers == null) {
-      log.error("Attempting to publish event with no destination {} : {}", eventBuilder, data)
+      if (cloudEventsReceiverRegistry.hasListeners(type)) {
+        cloudEventsReceiverRegistry.process(data, eventBuilder.build())
+      } else {
+        log.error("Attempting to publish event with no destination {} : {}", eventBuilder, data)
+      }
     } else {
       val compressHandlers = handlers.filter { it.compress }
 
@@ -106,6 +105,10 @@ class CloudEventPublisherRegistryProcessor @Inject constructor(
       if (uncompressedHandlers.isNotEmpty()) {
         CacheJsonMapper.toEventData(eventBuilder, data, false)
         publishEvent(uncompressedHandlers, eventBuilder)
+      }
+
+      if (cloudEventsReceiverRegistry.hasListeners(type)) {
+        cloudEventsReceiverRegistry.process(data, eventBuilder.build())
       }
     }
   }

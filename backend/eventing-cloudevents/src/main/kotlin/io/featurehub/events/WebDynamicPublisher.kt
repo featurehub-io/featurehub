@@ -10,6 +10,7 @@ import io.featurehub.trackedevent.models.TrackedEventMethod
 import io.featurehub.trackedevent.models.TrackedEventResult
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
+import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.client.Client
 import jakarta.ws.rs.client.ClientBuilder
 import jakarta.ws.rs.client.Entity
@@ -21,10 +22,8 @@ import org.slf4j.LoggerFactory
 import java.util.*
 
 
-class WebDynamicDestination(
-  private val publisherRegistry: CloudEventPublisherRegistry
-) {
-  private val client: Client = ClientBuilder.newClient()
+open class BaseWebhook {
+  protected val client: Client = ClientBuilder.newClient()
     .register(CommonConfiguration::class.java)
     .register(LoggingConfiguration::class.java)
 
@@ -35,7 +34,8 @@ class WebDynamicDestination(
 
   private fun checkParams(vararg properties: String) {
     for (property in properties) {
-      val propertyName = if (property.startsWith(JERSEY_PREFIX)) property.substring(JERSEY_PREFIX.length) else property
+      val propertyName = if (property.startsWith(WebDynamicDestination.JERSEY_PREFIX)) property.substring(
+        WebDynamicDestination.JERSEY_PREFIX.length) else property
       val defaultParam = FallbackPropertyConfig.getConfig("webhooks.default.${propertyName}")
       if (defaultParam != null) {
         client.property(property, defaultParam)
@@ -43,6 +43,38 @@ class WebDynamicDestination(
     }
   }
 
+  protected fun captureException(e: Exception, te: TrackedEventResult) {
+    if (e is WebApplicationException) {
+      te.status(e.response.status)
+      te.content(e.response.readEntity(String::class.java)?.take(1000))
+    } else {
+      te.status(503)
+      te.content(e.message?.take(1000))
+    }
+  }
+
+  protected fun captureCompletedWebPost(te: TrackedEventResult, response: Response) {
+    te.status(response.status)
+
+    te.content(response.readEntity(String::class.java)?.take(1000))
+
+    val headers = mutableMapOf<String, String?>()
+    response.stringHeaders.forEach { (k, v) ->
+      headers[k] = v?.joinToString(";")
+    }
+    te.incomingHeaders(headers)
+  }
+
+  fun timeout(connectTimeout: String, readTimeout: String) {
+    client.property(ClientProperties.CONNECT_TIMEOUT, connectTimeout)
+    client.property(ClientProperties.READ_TIMEOUT, readTimeout)
+  }
+
+}
+
+class WebDynamicDestination(
+  private val publisherRegistry: CloudEventPublisherRegistry
+) : BaseWebhook() {
   fun publish(
     ce: CloudEvent,
     config: CloudEventDynamicDeliveryDetails,
@@ -93,8 +125,7 @@ class WebDynamicDestination(
       log.error("failed to post CE {}", ce.type, e)
 
       if (te != null) {
-        te.status(503)
-        te.content(e.message?.take(1000))
+        captureException(e, te)
       }
     } finally {
       perfTimer.observeDuration()
@@ -103,23 +134,6 @@ class WebDynamicDestination(
     if (te != null) {
       publisherRegistry.publish(te)
     }
-  }
-
-  private fun captureCompletedWebPost(te: TrackedEventResult, response: Response) {
-    te.status(response.status)
-
-    te.content(response.readEntity(String::class.java)?.take(1000))
-
-    val headers = mutableMapOf<String, String?>()
-    response.stringHeaders.forEach { (k, v) ->
-      headers[k] = v?.joinToString(";")
-    }
-    te.incomingHeaders(headers)
-  }
-
-  fun timeout(connectTimeout: String, readTimeout: String) {
-    client.property(ClientProperties.CONNECT_TIMEOUT, connectTimeout)
-    client.property(ClientProperties.READ_TIMEOUT, readTimeout)
   }
 
   companion object {
