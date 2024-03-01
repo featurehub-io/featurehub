@@ -1,5 +1,6 @@
 package io.featurehub.mr.events.common
 
+import cd.connect.cloudevents.TaggedCloudEvent
 import io.cloudevents.core.builder.CloudEventBuilder
 import io.featurehub.dacha.model.PublishAction
 import io.featurehub.dacha.model.PublishEnvironment
@@ -12,6 +13,9 @@ import org.slf4j.LoggerFactory
 import java.net.URI
 import java.time.OffsetDateTime
 
+/**
+ * This is designed to send environment, service account and feature value updates to the caches and edge
+ */
 class CloudEventCacheBroadcaster @Inject constructor(
   private val cloudEventsPublisher: CloudEventPublisherRegistry
 ) : CacheBroadcast {
@@ -19,7 +23,7 @@ class CloudEventCacheBroadcaster @Inject constructor(
 
   fun publish(
     subject: String,
-    data: Any,
+    data: TaggedCloudEvent,
     id: String?,
     type: String,
     action: PublishAction
@@ -52,7 +56,7 @@ class CloudEventCacheBroadcaster @Inject constructor(
       publish(
         PublishServiceAccount.CLOUD_EVENT_SUBJECT,
         saci,
-        saci.serviceAccount?.id.toString(),
+        saci.serviceAccount.id.toString(),
         PublishServiceAccount.CLOUD_EVENT_TYPE, saci.action
       )
     }

@@ -3,6 +3,7 @@ package io.featurehub.systemcfg
 import io.cloudevents.core.v1.CloudEventBuilder
 import io.featurehub.db.services.InternalSystemConfigApi
 import io.featurehub.db.services.SystemConfigChange
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.events.CloudEventDynamicDeliveryDetails
 import io.featurehub.events.CloudEventDynamicPublisherRegistry
 import io.featurehub.events.DynamicCloudEventDestination
@@ -161,6 +162,7 @@ class SlackConfig @Inject constructor(
   }
 
   override fun publish(cloudEventType: String, orgId: UUID, data: AdditionalInfoMessage<*>, info: Map<String,String>, event: CloudEventBuilder) {
+    // this brings in the bearer token
     val configs = internalSystemConfigApi.findConfigs(delivery + additionalInfoMapping.keys, orgId, allPossibleConfigs)
 
     val map = configs.filter { additionalInfoMapping.containsKey(it.key) && it.value.value != null }
@@ -168,7 +170,13 @@ class SlackConfig @Inject constructor(
 
     val defaultChannel = configs[cfg_defaultChannel]?.value?.toString()
     val definedChannel: String? = info["integration.slack.channel"]
-    map.put("slack.channel", (definedChannel ?: defaultChannel)!!)
+    val actualChannel = definedChannel ?: defaultChannel
+    if (actualChannel == null) {
+      log.warn("Slack: attempted to publish via slack but no channel defined.")
+      return
+    }
+
+    map.put("slack.channel", actualChannel)
 
     data.additionalInfo?.let { map.putAll(it) }
     data.additionalInfo = map
@@ -185,11 +193,7 @@ class SlackConfig @Inject constructor(
       true // always send compressed
     )
 
-    if (delivery.isValid()) {
-      // we give it to something else to deliver
-      publisherRegistry.publish(cloudEventType, data, delivery, event)
-    } else {
-      log.error("Unable to deliver, server cannot post to Slack directly")
-    }
+    publisherRegistry.publish(cloudEventType, data, delivery, event)
   }
 }
+

@@ -1,8 +1,8 @@
 package io.featurehub.messaging
 
 import io.featurehub.db.messaging.FeatureMessagingPublisher
-import io.featurehub.messaging.service.FeatureMessagingPublisherConfiguration
 import io.featurehub.messaging.service.FeatureMessagingCloudEventPublisherImpl
+import io.featurehub.messaging.service.FeatureMessagingPublisherConfiguration
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
