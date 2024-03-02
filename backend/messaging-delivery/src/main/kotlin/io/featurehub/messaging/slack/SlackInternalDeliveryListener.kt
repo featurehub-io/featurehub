@@ -1,5 +1,6 @@
 package io.featurehub.messaging.slack
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import io.cloudevents.CloudEvent
 import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.events.BaseWebhook
@@ -18,6 +19,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class SlackDeliveryResponse(val ok: Boolean?, val error: String?)
 
 @LifecyclePriority(priority = 10)
 class SlackWebClient @Inject constructor(
@@ -102,9 +106,10 @@ Portfolio: *{{ pName }}*, Application: *{{ aName }}*"""
     }
   }
 
-  private fun bakeMeASlackCake(message: String): String {
+  private fun bakeMeASlackCake(message: String, channelName: String): String {
     val insertMessage = message.replace("\"", "\\\"")
-    return """[{"type":"section", "text":{"type":"mrkdwn","text":"$insertMessage"}}]"""
+    val channel = channelName.replace("\"", "\\\"")
+    return """{"channel": "$channel", "blocks":[{"type":"section", "text":{"type":"mrkdwn","text":"$insertMessage"}}]}"""
     /*
         const message : Array<SlackBlock> = [{
       type: 'section',
@@ -113,6 +118,11 @@ Portfolio: *{{ pName }}*, Application: *{{ aName }}*"""
         text: body
       }
     }];
+    const body =     {
+        channel: slackChannel,
+        blocks: message
+      }
+
      */
   }
 
@@ -141,15 +151,28 @@ Portfolio: *{{ pName }}*, Application: *{{ aName }}*"""
 
       val response = request.post(
         Entity.entity(
-          bakeMeASlackCake(formatted),
+          bakeMeASlackCake(formatted, config.channel),
           "application/json; charset=utf-8"
         )
       )
 
-      if (te != null && response != null) {
-        captureCompletedWebPost(te, response)
+      if (te != null) {
+        if (response?.status == 200) {
+          val data = response.readEntity(SlackDeliveryResponse::class.java)
+          if (data.ok == false) {
+            te.status = 400
+            te.content = "Slack message failed with code: '${data.error ?: "unknown error"}'"
+          } else if (data.ok == true) {
+            te.status = 200
+            te.content = "Slack message posted successfully"
+          } else {
+            te.status = 503
+            te.content = "Slack communication unknown"
+          }
+        } else {
+          captureCompletedWebPost(te, response)
+        }
       }
-
     } catch (e: Exception) {
       failures.inc()
 

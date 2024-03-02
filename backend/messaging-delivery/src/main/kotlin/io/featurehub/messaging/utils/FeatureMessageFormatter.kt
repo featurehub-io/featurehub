@@ -13,6 +13,7 @@ import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.messaging.model.StrategyUpdateType
 import io.featurehub.utils.FallbackPropertyConfig
 import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 
 interface FeatureMessageFormatter {
   fun enhanceMessagingUpdateForHandlebars(fmData: FeatureMessagingUpdate): Map<String,Any>
@@ -32,7 +33,6 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
     }
 
     val ref = object: TypeReference<Map<String,Any>>() {}
-    val dateFormat = SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z")
     private val handlebars = Handlebars()
   }
 
@@ -48,7 +48,7 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
     // convert the object tree into a map
     val data = mapper.readValue(mapper.writeValueAsString(fmData), ref).toMutableMap()
 
-    data["whenUpdatedReadable"] = dateFormat.format(fmData.whenUpdated)
+    data["whenUpdatedReadable"] = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").format(fmData.whenUpdated)
 
     fmData.strategiesUpdated?.let { strategies ->
       if (strategies.isNotEmpty()) {

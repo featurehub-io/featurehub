@@ -54,7 +54,7 @@ open class CloudEventPublisherRegistryProcessor @Inject constructor(
   protected val defaultCloudEventSource: URI = URI(FallbackPropertyConfig.getConfig("cloudevents.outbound.source", "http://${Info.applicationName()}"))
 
   override fun hasListeners(type: String): Boolean {
-    return eventHandlers[type] != null
+    return eventHandlers[type] != null || cloudEventsReceiverRegistry.hasListeners(type)
   }
 
   fun publishEvent(handlers: List<CallbackHolder>, eventBuilder: CloudEventBuilder) {

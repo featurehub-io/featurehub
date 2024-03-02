@@ -115,6 +115,13 @@ class SlackConfig @Inject constructor(
       Pair(cfg_bearerToken, "slack.token"),
       Pair(cfg_msgFormatFeatureChange, "slack.messageFormat")
     )
+
+    val deliveryMetrics = mapOf(
+      Pair("metric.fail.name", "slack_fail"),
+      Pair("metric.fail.desc", "Slack publish fails"),
+      Pair("metric.histogram.name", "slack_publishes"),
+      Pair("metric.histogram.desc", "Slack publishes")
+    )
   }
 
   override val knownConfig: List<ValidSystemConfig>
@@ -158,7 +165,8 @@ class SlackConfig @Inject constructor(
     val configs = internalSystemConfigApi.findConfigs(enabledCheckConfig, orgId, allPossibleConfigs)
 
     return configs[cfg_enabled]?.value == true && configs[cfg_bearerToken]?.value != null &&
-      (info["integration.slack.channel"] != null || configs[cfg_defaultChannel]?.value != null)
+      (info["integration.slack.channel_name"] != null || configs[cfg_defaultChannel]?.value != null) &&
+      (info["integration.slack.enabled"] == "true") // the env itself is enabled
   }
 
   override fun publish(cloudEventType: String, orgId: UUID, data: AdditionalInfoMessage<*>, info: Map<String,String>, event: CloudEventBuilder) {
@@ -169,8 +177,8 @@ class SlackConfig @Inject constructor(
       .map { Pair(additionalInfoMapping[it.key]!!, it.value.value!!.toString()) }.toMap().toMutableMap()
 
     val defaultChannel = configs[cfg_defaultChannel]?.value?.toString()
-    val definedChannel: String? = info["integration.slack.channel"]
-    val actualChannel = definedChannel ?: defaultChannel
+    val definedChannel: String? = info["integration.slack.channel_name"]
+    val actualChannel = if (definedChannel.isNullOrBlank()) defaultChannel else definedChannel
     if (actualChannel == null) {
       log.warn("Slack: attempted to publish via slack but no channel defined.")
       return
@@ -184,16 +192,11 @@ class SlackConfig @Inject constructor(
     val delivery = CloudEventDynamicDeliveryDetails(
       if (slackDeliveryUrl == null) configs[cfg_deliveryUrl]?.value as String? else slackDeliveryUrl,
       if (slackDeliveryUrl == null) configs[cfg_deliveryHeaders]?.value as Map<String, String>? else null,
-      mapOf(
-        Pair("metric.fail.name", "slack_fail"),
-        Pair("metric.fail.desc", "Slack publish fails"),
-        Pair("metric.histogram.name", "slack_publishes"),
-        Pair("metric.histogram.desc", "Slack publishes")
-      ),
+      deliveryMetrics,
       true // always send compressed
     )
 
-    publisherRegistry.publish(cloudEventType, data, delivery, event)
+    publisherRegistry.publish("integration/slack-v1", data, delivery, event)
   }
 }
 
