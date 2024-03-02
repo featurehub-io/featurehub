@@ -18,7 +18,7 @@ data class CloudEventDynamicDeliveryDetails(
   val compressed: Boolean
 ) {
   fun isValid(): Boolean {
-    return url != null
+    return url?.isNotEmpty() == true
   }
 
   fun param(key: String): String? {

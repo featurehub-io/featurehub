@@ -108,12 +108,7 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                     hintText: 'e.g. C0150T7AF25',
                     labelText: 'Slack channel ID (leave empty to use default)',
                   ),
-                  validator: ((v) {
-                    if (v == null || v.isEmpty) {
-                      return 'Please enter a Slack channel ID';
-                    }
-                    return null;
-                  }))),
+                  )),
         ]),
         const SizedBox(
           height: 24.0,
