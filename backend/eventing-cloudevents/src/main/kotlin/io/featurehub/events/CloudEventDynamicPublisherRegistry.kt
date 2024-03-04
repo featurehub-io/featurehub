@@ -50,15 +50,6 @@ interface CloudEventDynamicPublisherRegistry {
   val supportedPrefixes: List<String>
 
   /**
-   * This is called by the code requiring a publisher.
-   */
-  fun requireDynamicPublisher(
-    destination: String,
-    config: CloudEventDynamicDeliveryDetails,
-    cloudEventType: String
-  ): Boolean
-
-  /**
    * Depending on which platform we are using for messaging, this will get set. It could be null if none is being used
    * (e.g. the REST only platform)
    */
@@ -107,31 +98,6 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(
     }
 
     return null
-  }
-
-  override fun requireDynamicPublisher(
-    destination: String,
-    config: CloudEventDynamicDeliveryDetails,
-    cloudEventType: String
-  ): Boolean {
-    val type = extractDestinationType(destination)
-    val pos = destination.indexOf("//")
-
-//    if (type != null) {
-//      dynamicDelivery[type]?.let { publisher ->
-//        publisher(config, cloudEventType, destination, destination.substring(pos + 2), makeMetric(config, destination))
-//        return true
-//      }
-//    } else if (defaultPublisher != null && dynamicDelivery.containsKey(defaultPublisher)) {
-//      dynamicDelivery[defaultPublisher]?.let { publisher ->
-//        publisher(config, cloudEventType, destination, destination.substring(pos + 2), makeMetric(config, destination))
-//        return true
-//      }
-//    } else {
-//      log.error("Unable to register destination {}, no publisher found", destination)
-//    }
-
-    return false
   }
 
   private fun makeMetric(config: CloudEventDynamicDeliveryDetails, destination: String): CloudEventChannelMetric {

@@ -4,6 +4,7 @@ import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.api.SingleNullableFeatureValueUpdate
+import io.featurehub.db.api.TrackingEventApi
 import io.featurehub.db.messaging.FeatureMessagingParameter
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.events.CloudEventPublisherRegistry
@@ -26,12 +27,14 @@ class FeatureMessagingConverterImplSpec extends Specification {
   CloudEventPublisherRegistry publisher
   SingleNullableFeatureValueUpdate<Long> version
   ExecutorSupplier executorSupplier
+  TrackingEventApi trackingApi
 
   def setup() {
     dbFeatureValue = DbFeatureTestProvider.provideFeatureValue()
     publisher = Mock()
+    trackingApi = Mock()
     executorSupplier = Mock()
-    featureMessagingConverter = new FeatureMessagingCloudEventPublisherImpl(publisher, executorSupplier)
+    featureMessagingConverter = new FeatureMessagingCloudEventPublisherImpl(executorSupplier, trackingApi)
     version = new SingleNullableFeatureValueUpdate<>(true, 1L, null)
   }
 

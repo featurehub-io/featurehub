@@ -112,7 +112,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
         !retiredUpdate.hasChanged
         !strategyUpdates.hasChanged
       }
-    })
+    }, org.id)
     1 * cacheSource.publishFeatureChange(_)
 
   }
@@ -142,7 +142,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
         !retiredUpdate.hasChanged
         !strategyUpdates.hasChanged
       }
-    })
+    }, org.id)
 
     when: "i set the feature value "
     featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.valueBoolean(true).locked(true), pers)
@@ -159,7 +159,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
         !retiredUpdate.hasChanged
         !strategyUpdates.hasChanged
       }
-    })
+    }, org.id)
     when: "i update the feature value"
     def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey)
     fv.valueBoolean(false)
@@ -178,7 +178,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
         !retiredUpdate.hasChanged
         !strategyUpdates.hasChanged
       }
-    })
+    }, org.id)
   }
 
   def "feature updates are published when i add rollout strategies"() {
@@ -215,7 +215,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
         !retiredUpdate.hasChanged
         !strategyUpdates.hasChanged
       }
-    })
+    }, org.id)
     when: "i add new rollout strategy"
     def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey)
 
@@ -236,6 +236,6 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
         strategyUpdates.hasChanged
       }
       param.strategyUpdates.updated[0]  == rolloutStrategyUpdate
-    })
+    }, org.id)
   }
 }

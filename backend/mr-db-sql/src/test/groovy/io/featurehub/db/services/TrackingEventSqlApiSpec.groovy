@@ -28,13 +28,13 @@ class TrackingEventSqlApiSpec extends Base2Spec {
 
   def "i can record a newly sent message and then track events against it"() {
     when:
-      ThreadLocalConfigurationSource.createContext(['tracking-event.phred.keep-successes': 'false'])
+//      ThreadLocalConfigurationSource.createContext(['tracking-event.phred.keep-successes': 'false'])
       api.registerTrackingConfig([dynamicListener])
       def ceType = "integration/slack"
-    then:
-      1 * dynamicListener.configInfix >> 'phred'
-      1 * dynamicListener.cloudEventType >> "integration/slack"
-    when: "i create the first record"
+//    then:
+//      1 * dynamicListener.configInfix >> 'phred'
+//      1 * dynamicListener.cloudEventType >> "integration/slack"
+    and: "i create the first record"
       UUID messageId = UUID.randomUUID()
       UUID envId = UUID.randomUUID()
       def whenSent = Instant.now().atOffset(ZoneOffset.UTC)

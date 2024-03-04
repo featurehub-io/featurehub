@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 data class CloudEventChannelMetric(val failures: Counter, val perf: Histogram)
 
 interface CloudEventsTelemetryWriter {
-  fun publish(subject: String, builder: CloudEventBuilder, metrics: CloudEventChannelMetric,
+  fun publish(type: String, builder: CloudEventBuilder, metrics: CloudEventChannelMetric,
               broadcastWriter: (event: CloudEventBuilder) -> Unit)
 }
 
@@ -32,9 +32,9 @@ class CloudEventsTelemetryWriterImpl @Inject constructor(private val openTelemet
   private val log: Logger = LoggerFactory.getLogger(CloudEventsTelemetryWriterImpl::class.java)
   private val telemetrySetter = CloudEventsTextMapSetter()
 
-  override fun publish(subject: String, builder: CloudEventBuilder, metrics: CloudEventChannelMetric,
+  override fun publish(type: String, builder: CloudEventBuilder, metrics: CloudEventChannelMetric,
                        broadcastWriter: (event: CloudEventBuilder) -> Unit) {
-    val span = tracer.spanBuilder(subject)
+    val span = tracer.spanBuilder(type)
       .setSpanKind(SpanKind.PRODUCER)
       .startSpan()
 
@@ -57,7 +57,7 @@ class CloudEventsTelemetryWriterImpl @Inject constructor(private val openTelemet
       }
     } catch (e: Exception) {
       metrics.failures.inc()
-      log.error("Unable to publish {}", subject, e)
+      log.error("Unable to publish {}", type, e)
     } finally {
       timer.observeDuration()
     }
