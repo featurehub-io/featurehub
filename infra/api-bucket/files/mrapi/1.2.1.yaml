@@ -6132,6 +6132,11 @@ components:
     UpdatedSystemConfigs:
       type: object
       properties:
+        tryOut:
+          type: array
+          nullable: true
+          items:
+            type: string
         configs:
           type: array
           items:

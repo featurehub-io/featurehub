@@ -124,6 +124,11 @@ components:
     UpdatedSystemConfigs:
       type: object
       properties:
+        tryOut:
+          nullable: true
+          type: array
+          items:
+            type: string
         configs:
           type: array
           items:
