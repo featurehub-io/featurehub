@@ -48,6 +48,10 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
     // convert the object tree into a map
     val data = mapper.readValue(mapper.writeValueAsString(fmData), ref).toMutableMap()
 
+    fmData.additionalInfo?.let { aInfo ->
+      data.putAll(aInfo)
+    }
+
     data["whenUpdatedReadable"] = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").format(fmData.whenUpdated)
 
     fmData.strategiesUpdated?.let { strategies ->

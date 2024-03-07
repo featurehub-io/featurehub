@@ -41,7 +41,7 @@ class SlackWebClient @Inject constructor(
   companion object {
     private val log: Logger = LoggerFactory.getLogger(SlackWebClient::class.java)
     const val DEFAULT_MESSAGE_FORMAT =
-      """Feature *{{fName}}* (`{{fKey}}`) in *{{ eName }}* was changed by *{{ whoUpdated }}* at {{ whenUpdatedReadable }}
+      """Feature <{{{site_url}}}/features#key={{{fKey}}}p={{pId}}&a={{aId}}&e={{eId}}&o={{oId}}|*{{fName}}*> (`{{fKey}}`) in *{{ eName }}* was changed by *{{ whoUpdated }}* at {{ whenUpdatedReadable }}
 
 Summary of changes:
 
@@ -73,8 +73,12 @@ Portfolio: *{{ pName }}*, Application: *{{ aName }}*"""
 
     val info = fmUpdate.additionalInfo!!
 
+    var url = info["site.url"] ?: "http://localhost:8085"
+    if (url.endsWith("/")) {
+      url = url.substring(0, url.length - 1)
+    }
     // wipe this so the message formatter can't get it
-    fmUpdate.additionalInfo = mapOf()
+    fmUpdate.additionalInfo = mapOf(Pair("site_url", url))
     if (info["slack.channel"] == null) {
       log.error("Received Slack message with no channel, earlier code should have prevented")
       return null

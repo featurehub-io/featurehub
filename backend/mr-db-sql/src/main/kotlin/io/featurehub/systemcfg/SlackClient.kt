@@ -170,11 +170,13 @@ class SlackConfig @Inject constructor(
   }
 
   override fun publish(cloudEventType: String, orgId: UUID, data: AdditionalInfoMessage<*>, info: Map<String,String>, event: CloudEventBuilder) {
+    val infoHeaders = additionalInfoMapping.keys + SiteConfig.cfg_url
     // this brings in the bearer token
-    val configs = internalSystemConfigApi.findConfigs(delivery + additionalInfoMapping.keys, orgId, allPossibleConfigs)
+    val configs = internalSystemConfigApi.findConfigs(delivery + infoHeaders, orgId,
+      allPossibleConfigs + SiteConfig.config)
 
-    val map = configs.filter { additionalInfoMapping.containsKey(it.key) && it.value.value != null }
-      .map { Pair(additionalInfoMapping[it.key]!!, it.value.value!!.toString()) }.toMap().toMutableMap()
+    val map = configs.filter { infoHeaders.contains(it.key) && it.value.value != null }
+      .map { Pair(additionalInfoMapping[it.key] ?: it.key, it.value.value!!.toString()) }.toMap().toMutableMap()
 
     val defaultChannel = configs[cfg_defaultChannel]?.value?.toString()
     val definedChannel: String? = info["integration.slack.channel_name"]
