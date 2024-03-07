@@ -19,6 +19,8 @@ class SystemConfigFeature : Feature {
           bind(SlackConfig::class.java).to(KnownSystemConfigSource::class.java).to(SlackConfigApi::class.java).`in`(Singleton::class.java)
         }
 
+        bind(SiteConfig::class.java).to(KnownSystemConfigSource::class.java).`in`(Singleton::class.java)
+
         bind(SystemConfigSqlApi::class.java).to(SystemConfigApi::class.java).`in`(Singleton::class.java)
         bind(InternalSystemConfigSqlApi::class.java).to(InternalSystemConfigApi::class.java).`in`(Singleton::class.java)
       }
