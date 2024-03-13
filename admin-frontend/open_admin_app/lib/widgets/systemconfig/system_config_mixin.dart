@@ -1,5 +1,3 @@
-
-
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
@@ -33,20 +31,23 @@ mixin SystemConfigMixin<T extends StatefulWidget> on State<T> {
     if (changed.isNotEmpty) {
       try {
         await configBloc.systemConfigServiceApi.createOrUpdateSystemConfigs(
-            UpdatedSystemConfigs(configs: changed.map((e) =>
-                UpdatedSystemConfig(key: e.key,
-                    version: e.version,
-                    value: e.value)).toList()));
+            UpdatedSystemConfigs(
+                configs: changed
+                    .map((e) => UpdatedSystemConfig(
+                        key: e.key, version: e.version, value: e.value))
+                    .toList()));
 
         await refresh(wrapState: true);
 
-        configBloc.mrClient.addSnackbar(Text(
-            "${namedSection} was successfully updated"));
+        configBloc.mrClient
+            .addSnackbar(Text("$namedSection was successfully updated"));
       } catch (e, s) {
-        configBloc.mrClient.addError(FHError('Unable to save Slack updates', exception: e, stackTrace: s));
+        configBloc.mrClient.addError(FHError('Unable to save Slack updates',
+            exception: e, stackTrace: s));
       }
     } else {
-      configBloc.mrClient.addSnackbar(Text("No updates for ${namedSection} found"));
+      configBloc.mrClient
+          .addSnackbar(Text("No updates for $namedSection found"));
     }
   }
 
@@ -81,7 +82,8 @@ mixin SystemConfigMixin<T extends StatefulWidget> on State<T> {
     });
     stateReset();
     unchangedSettings.clear();
-    unchangedSettings.addAll(configs.map((e) => LocalSystemConfig(e.key, e.value)));
+    unchangedSettings
+        .addAll(configs.map((e) => LocalSystemConfig(e.key, e.value)));
   }
 
   void stateReset() {

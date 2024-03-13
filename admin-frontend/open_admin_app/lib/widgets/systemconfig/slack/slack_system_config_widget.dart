@@ -230,7 +230,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
   List<String> get filters => ['slack.'];
 
   @override
-  String get namedSection => 'Slack';
+  String get namedSection => 'Slack Configuration';
 
   @override
   void stateReset() {

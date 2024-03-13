@@ -10,10 +10,7 @@ class SystemConfigEncryptableTextField extends StatefulWidget {
   final FormFieldValidator<String>? validator;
 
   const SystemConfigEncryptableTextField(
-      {super.key,
-        required this.field,
-        this.decoration,
-        this.validator});
+      {super.key, required this.field, this.decoration, this.validator});
 
   @override
   State<StatefulWidget> createState() {
@@ -54,43 +51,42 @@ class SystemConfigEncryptableTextFieldState
       children: [
         Expanded(
             child: TextFormField(
-              controller: _textField,
-              readOnly: _textField.text == 'ENCRYPTED-TEXT',
-              textInputAction: TextInputAction.next,
-              obscuringCharacter: '*',
-              autofocus: true,
-              autocorrect: false,
-              validator: widget.validator,
-              onSaved: (val) => widget.field.value = val,
-              decoration: widget.decoration,
-            )),
+          controller: _textField,
+          readOnly: _textField.text == 'ENCRYPTED-TEXT',
+          textInputAction: TextInputAction.next,
+          obscuringCharacter: '*',
+          autofocus: true,
+          autocorrect: false,
+          validator: widget.validator,
+          onSaved: (val) => widget.field.value = val,
+          decoration: widget.decoration,
+        )),
         if (_textField.text == 'ENCRYPTED-TEXT')
           Padding(
             padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-            child: FHFlatButton(
-                onPressed: () {
-                  setState(() {
-                    _textField.text = '';
-                  });
-                },
-                title: 'Clear field'),
+            child: TextButton(
+              onPressed: () {
+                setState(() {
+                  _textField.text = '';
+                });
+              },
+              child: const Text('Clear'),
+            ),
           ),
-        if (configBloc.mrClient.identityProviders
-            .capabilityWebhookEncryption &&
-            configBloc.mrClient.identityProviders
-                .capabilityWebhookDecryption)
+        if (configBloc.mrClient.identityProviders.capabilityWebhookEncryption &&
+            configBloc.mrClient.identityProviders.capabilityWebhookDecryption)
           if (_textField.text == 'ENCRYPTED-TEXT')
             TextButton(
                 onPressed: () async {
-                  final val = await configBloc.systemConfigServiceApi.decryptSystemConfig(widget.field.key);
+                  final val = await configBloc.systemConfigServiceApi
+                      .decryptSystemConfig(widget.field.key);
                   if (val.result != null) {
                     setState(() {
                       _textField.text = val.result!;
                     });
                   }
                 },
-                child: const Text('Reveal value')),
-
+                child: const Text('Show value')),
       ],
     );
   }
