@@ -72,21 +72,24 @@ class _SystemConfigDataSource extends DataGridSource {
   }
 
   _reset(dynamic fieldValue) {
-    sourceData = Map<String,String>.from(fieldValue
-        .map((key, value) =>
-        MapEntry(key.toString(), value?.toString() ?? '')));
+    sourceData = Map<String, String>.from(fieldValue.map(
+        (key, value) => MapEntry(key.toString(), value?.toString() ?? '')));
 
     _rows = sourceData.keys
         .sorted()
-        .where((e) => !e.endsWith('.encrypt') && !e.endsWith(".deleted") )
+        .where((e) => !e.endsWith('.encrypt') && !e.endsWith(".deleted"))
         .map((e) => DataGridRow(cells: [
-      DataGridCell(columnName: keyRowName, value: e),
-      DataGridCell(columnName: valueRowName, value: sourceData[e])
-    ]))
+              DataGridCell(columnName: keyRowName, value: e),
+              DataGridCell(columnName: valueRowName, value: sourceData[e])
+            ]))
         .toList();
 
     _encryptedKey = '${systemConfigKey}.encrypt';
-    encryptedRows = sourceData[_encryptedKey]?.split(',').whereNot((k) => k.isEmpty).toList() ?? [];
+    encryptedRows = sourceData[_encryptedKey]
+            ?.split(',')
+            .whereNot((k) => k.isEmpty)
+            .toList() ??
+        [];
 
     fhosLogger.info("reset to ${sourceData}, e-rows ${encryptedRows}");
 
@@ -96,12 +99,16 @@ class _SystemConfigDataSource extends DataGridSource {
   }
 
   submit() {
-    fhosLogger.info("sourceData is ${sourceData}, e-rows ${encryptedRows}, d-rows ${deletedRows}");
-    var _deletedRows = deletedRows.where((k) => sourceData[k] == null).where((k) => k.isNotEmpty);
+    fhosLogger.info(
+        "sourceData is ${sourceData}, e-rows ${encryptedRows}, d-rows ${deletedRows}");
+    var _deletedRows = deletedRows
+        .where((k) => sourceData[k] == null)
+        .where((k) => k.isNotEmpty);
     if (_deletedRows.isNotEmpty) {
       sourceData[_deletedKey] = _deletedRows.join(',');
     }
-    sourceData[_encryptedKey] = encryptedRows.where((k) => k.isNotEmpty).join(",");
+    sourceData[_encryptedKey] =
+        encryptedRows.where((k) => k.isNotEmpty).join(",");
   }
 
   TextEditingController editingController = TextEditingController();
@@ -121,7 +128,7 @@ class _SystemConfigDataSource extends DataGridSource {
     // can't rename encrypted headers or edit them
     final key = dataGridRow.getCells()[0].value;
     final encrypted = encryptedRows.contains(key);
-    if (encrypted)  return false;
+    if (encrypted) return false;
 
     return true;
   }
@@ -136,7 +143,8 @@ class _SystemConfigDataSource extends DataGridSource {
     // if (encrypted)  return const SizedBox.shrink();
 
     // To set the value for TextField when cell is moved into edit mode.
-    final String displayText = dataGridRow.getCells()[rowColumnIndex.columnIndex].value;
+    final String displayText =
+        dataGridRow.getCells()[rowColumnIndex.columnIndex].value;
 
     return Container(
         padding: const EdgeInsets.all(8.0),
@@ -207,14 +215,14 @@ class _SystemConfigDataSource extends DataGridSource {
       Container(
         padding: const EdgeInsets.all(8.0),
         alignment: Alignment.centerLeft,
-        child: Tooltip(
-            message: "Click to edit", child: Text(key)),
+        child: Tooltip(message: "Click to edit", child: Text(key)),
       ),
       Container(
         padding: const EdgeInsets.all(8.0),
         alignment: Alignment.centerLeft,
-        child: encrypted ? Text(value) : Tooltip(
-            message: "Click to edit", child: Text(value)),
+        child: encrypted
+            ? Text(value)
+            : Tooltip(message: "Click to edit", child: Text(value)),
       ),
       Container(
           padding: const EdgeInsets.all(8.0),
@@ -230,16 +238,16 @@ class _SystemConfigDataSource extends DataGridSource {
     if (valueCell != _encryptedText && encryptedRows.contains(keyCell.value)) {
       return Row(
         children: [
-          FHFlatButton(
-              onPressed: () => _reveal(rowIndex), title: 'Reveal'),
+          FHFlatButton(onPressed: () => _reveal(rowIndex), title: 'Reveal'),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
-            child: FHFlatButton(
-                onPressed: () => _clear(rowIndex), title: 'Clear'),
+            child:
+                FHFlatButton(onPressed: () => _clear(rowIndex), title: 'Clear'),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
-            child: FHFlatButton(onPressed: () => _delete(rowIndex), title: 'Delete'),
+            child: FHFlatButton(
+                onPressed: () => _delete(rowIndex), title: 'Delete'),
           )
         ],
       );
@@ -248,16 +256,16 @@ class _SystemConfigDataSource extends DataGridSource {
     if (encryptedRows.contains(keyCell.value) && decryptable) {
       return Row(
         children: [
-          FHFlatButton(
-              onPressed: () => _decrypt(rowIndex), title: 'Decrypt'),
+          FHFlatButton(onPressed: () => _decrypt(rowIndex), title: 'Decrypt'),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
-            child: FHFlatButton(
-                onPressed: () => _clear(rowIndex), title: 'Clear'),
+            child:
+                FHFlatButton(onPressed: () => _clear(rowIndex), title: 'Clear'),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
-            child: FHFlatButton(onPressed: () => _delete(rowIndex), title: 'Delete'),
+            child: FHFlatButton(
+                onPressed: () => _delete(rowIndex), title: 'Delete'),
           )
         ],
       );
@@ -275,13 +283,16 @@ class _SystemConfigDataSource extends DataGridSource {
       );
     }
 
-    return Row(children: [
-      FHFlatButton(onPressed: () => _encrypt(rowIndex), title: 'Encrypt'),
-      Padding(
-        padding: const EdgeInsets.only(left: 8.0),
-        child: FHFlatButton(onPressed: () => _delete(rowIndex), title: 'Delete'),
-      )
-    ],);
+    return Row(
+      children: [
+        FHFlatButton(onPressed: () => _encrypt(rowIndex), title: 'Encrypt'),
+        Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child:
+              FHFlatButton(onPressed: () => _delete(rowIndex), title: 'Delete'),
+        )
+      ],
+    );
   }
 
   _addEncryptedKey(String key) {
@@ -317,8 +328,8 @@ class _SystemConfigDataSource extends DataGridSource {
           .decryptSystemConfig(systemConfigKey, mapKey: key);
       if (decrypted.result != null) {
         _removeEncryptedKey(key);
-        _rows[rowIndex].getCells()[1] =
-            DataGridCell(columnName: valueRowName, value: decrypted.result ?? '');
+        _rows[rowIndex].getCells()[1] = DataGridCell(
+            columnName: valueRowName, value: decrypted.result ?? '');
         notifyListeners();
       }
     } catch (e) {}
@@ -353,7 +364,7 @@ class _SystemConfigDataSource extends DataGridSource {
     notifyListeners();
   }
 
-  Map<String,String> changeConfig(SystemConfig config) {
+  Map<String, String> changeConfig(SystemConfig config) {
     _reset(config.value);
     notifyListeners();
     return sourceData;
@@ -405,23 +416,25 @@ class SystemConfigEncryptableMapWidgetState
     widget.field.value = _dataSource.sourceData;
 
     widget.controller.submitCallback = () => _dataSource.submit();
-    widget.controller.updateConfigCallback = (config) => _dataSource.changeConfig(config);
+    widget.controller.updateConfigCallback =
+        (config) => _dataSource.changeConfig(config);
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-          border: Border.all(color: Colors.blueAccent)
-      ),
+      decoration: BoxDecoration(border: Border.all(color: Colors.blueAccent)),
       child: Column(
         children: [
           Row(children: [
-            TextButton.icon(
-                icon: const Icon(Icons.add),
-                label: Text("Add ${widget.keyHeaderName}"),
-                onPressed: () => _dataSource.addRow(
-                    widget.defaultNewKeyName, widget.defaultNewValueName)),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: Text("Add ${widget.keyHeaderName}"),
+                  onPressed: () => _dataSource.addRow(
+                      widget.defaultNewKeyName, widget.defaultNewValueName)),
+            ),
           ]),
           Row(
             children: [
@@ -432,8 +445,9 @@ class SystemConfigEncryptableMapWidgetState
                     allowColumnsResizing: true,
                     allowPullToRefresh: false,
                     showCheckboxColumn: false,
-                    checkboxColumnSettings: const DataGridCheckboxColumnSettings(
-                        showCheckboxOnHeader: false),
+                    checkboxColumnSettings:
+                        const DataGridCheckboxColumnSettings(
+                            showCheckboxOnHeader: false),
                     selectionMode: SelectionMode.single,
                     navigationMode: GridNavigationMode.cell,
                     controller: _dataGridController,
@@ -469,7 +483,8 @@ class SystemConfigEncryptableMapWidgetState
                               padding: const EdgeInsets.all(8.0),
                               alignment: Alignment.center,
                               child: const Text('Actions',
-                                  style: TextStyle(fontWeight: FontWeight.bold))))
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold))))
                     ]),
               ),
             ],
