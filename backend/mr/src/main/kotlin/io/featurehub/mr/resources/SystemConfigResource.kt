@@ -21,6 +21,8 @@ class SystemConfigResource @Inject constructor(
     updatedSystemConfigs: UpdatedSystemConfigs,
     securityContext: SecurityContext?
   ): SystemConfigs {
+    if (!SystemConfigApi.systemConfigEnabled) throw NotFoundException()
+
     val from = authManagerService.from(securityContext)
     if (!authManagerService.isOrgAdmin(from)) {
       throw ForbiddenException()
@@ -42,6 +44,8 @@ class SystemConfigResource @Inject constructor(
     holder: SystemConfigServiceDelegate.DecryptSystemConfigHolder,
     securityContext: SecurityContext
   ): SystemConfigDecryptResult {
+    if (!SystemConfigApi.systemConfigEnabled) throw NotFoundException()
+
     val from = authManagerService.from(securityContext)
     if (!authManagerService.isOrgAdmin(from)) {
       throw ForbiddenException()
@@ -64,6 +68,8 @@ class SystemConfigResource @Inject constructor(
     holder: SystemConfigServiceDelegate.GetSystemConfigHolder,
     securityContext: SecurityContext
   ): SystemConfigs {
+    if (!SystemConfigApi.systemConfigEnabled) throw NotFoundException()
+
     if (!WebhookEncryptionFeature.isWebhookEncryptionEnabled) {
       throw NotFoundException()
     }
