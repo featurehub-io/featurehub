@@ -238,16 +238,18 @@ class _SystemConfigDataSource extends DataGridSource {
     if (valueCell != _encryptedText && encryptedRows.contains(keyCell.value)) {
       return Row(
         children: [
-          FHFlatButton(onPressed: () => _reveal(rowIndex), title: 'Reveal'),
+          TextButton(
+              onPressed: () => _reveal(rowIndex), child: const Text('Show')),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
-            child:
-                FHFlatButton(onPressed: () => _clear(rowIndex), title: 'Clear'),
+            child: TextButton(
+                onPressed: () => _clear(rowIndex), child: const Text('Clear')),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
-            child: FHFlatButton(
-                onPressed: () => _delete(rowIndex), title: 'Delete'),
+            child: TextButton(
+                onPressed: () => _delete(rowIndex),
+                child: const Text('Delete')),
           )
         ],
       );
@@ -256,16 +258,22 @@ class _SystemConfigDataSource extends DataGridSource {
     if (encryptedRows.contains(keyCell.value) && decryptable) {
       return Row(
         children: [
-          FHFlatButton(onPressed: () => _decrypt(rowIndex), title: 'Decrypt'),
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child:
-                FHFlatButton(onPressed: () => _clear(rowIndex), title: 'Clear'),
+          TextButton(
+            onPressed: () => _decrypt(rowIndex),
+            child: const Text('Decrypt'),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
-            child: FHFlatButton(
-                onPressed: () => _delete(rowIndex), title: 'Delete'),
+            child: TextButton(
+              onPressed: () => _clear(rowIndex),
+              child: const Text('Clear'),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: TextButton(
+                onPressed: () => _delete(rowIndex),
+                child: const Text('Delete')),
           )
         ],
       );
@@ -273,11 +281,13 @@ class _SystemConfigDataSource extends DataGridSource {
     if (valueCell == _encryptedText && !decryptable) {
       return Row(
         children: [
-          FHFlatButton(onPressed: () => _clear(rowIndex), title: 'Clear'),
+          TextButton(
+              onPressed: () => _clear(rowIndex), child: const Text('Clear')),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
-            child: FHFlatButton(
-                onPressed: () => _delete(rowIndex), title: 'Delete'),
+            child: TextButton(
+                onPressed: () => _delete(rowIndex),
+                child: const Text('Delete')),
           )
         ],
       );
@@ -285,11 +295,16 @@ class _SystemConfigDataSource extends DataGridSource {
 
     return Row(
       children: [
-        FHFlatButton(onPressed: () => _encrypt(rowIndex), title: 'Encrypt'),
+        TextButton(
+          onPressed: () => _encrypt(rowIndex),
+          child: const Text('Encrypt'),
+        ),
         Padding(
           padding: const EdgeInsets.only(left: 8.0),
-          child:
-              FHFlatButton(onPressed: () => _delete(rowIndex), title: 'Delete'),
+          child: TextButton(
+            onPressed: () => _delete(rowIndex),
+            child: const Text('Delete'),
+          ),
         )
       ],
     );
