@@ -46,7 +46,7 @@ class CloudEventPublisherRegistrySpec extends Specification {
     when: "i trigger an event"
       proc.publish("simple1", new Simple1(), ceBuilder)
     then:
-      1 * receiverRegistry.hasListeners("simple1") >> false
+//      1 * receiverRegistry.hasListeners("simple1") >> false
       telemetryWriter.triggered == 1
       fake1.event.type == "simple1"
       fake1.event.subject == "io.featurehub.events.messaging"
@@ -65,10 +65,10 @@ class CloudEventPublisherRegistrySpec extends Specification {
     when: "i trigger an event"
       proc.publish("simple1", data, ceBuilder)
     then:
-      1 * receiverRegistry.hasListeners("simple1") >> true
-      1 * receiverRegistry.process(data, { CloudEvent evt ->
-        evt.type == 'simple1'
-      })
+//      1 * receiverRegistry.hasListeners("simple1") >> true
+//      1 * receiverRegistry.process(data, { CloudEvent evt ->
+//        evt.type == 'simple1'
+//      })
       telemetryWriter.triggered == 2
       fake1.event != null
       fake2.event != null
@@ -86,7 +86,7 @@ class CloudEventPublisherRegistrySpec extends Specification {
     when: "i trigger an event"
       proc.publish("simple1", data, ceBuilder)
     then:
-      1 * receiverRegistry.hasListeners("simple1") >> false
+//      1 * receiverRegistry.hasListeners("simple1") >> false
       fake1.event.dataContentType == 'application/json+gzip'
       fake2.event.dataContentType == 'application/json'
       0 * _
@@ -114,7 +114,7 @@ class CloudEventPublisherRegistrySpec extends Specification {
       def callback = new FakePublishEnricherCallback(proc)
       callback.publish(data)
     then:
-      1 * receiverRegistry.hasListeners("simple1") >> false
+//      1 * receiverRegistry.hasListeners("simple1") >> false
       fake2.event.dataContentType == "application/json"
       callback.trigger == 1
   }

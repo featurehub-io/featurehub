@@ -56,7 +56,7 @@ class CloudEventCacheBroadcaster @Inject constructor(
       publish(
         PublishServiceAccount.CLOUD_EVENT_SUBJECT,
         saci,
-        saci.serviceAccount.id.toString(),
+        saci.serviceAccount?.id.toString(),
         PublishServiceAccount.CLOUD_EVENT_TYPE, saci.action
       )
     }

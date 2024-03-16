@@ -31,7 +31,9 @@ class NatsCloudEventTopicListener constructor(
 
   fun process(msg: Message) {
     try {
-      handler(NatsMessageFactory.createReader(msg).toEvent())
+      val ce = NatsMessageFactory.createReader(msg).toEvent()
+      log.trace("cloudevent/nats: received {}/{} on topic subject {}", ce.type, ce.subject, subject)
+      handler(ce)
     } catch (e: Exception) {
       log.error("Unable to process cloud event", e)
     }

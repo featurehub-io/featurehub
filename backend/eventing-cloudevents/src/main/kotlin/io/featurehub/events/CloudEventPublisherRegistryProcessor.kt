@@ -88,6 +88,7 @@ open class CloudEventPublisherRegistryProcessor @Inject constructor(
 
     if (handlers == null) {
       if (cloudEventsReceiverRegistry.hasListeners(type)) {
+        log.trace("cloudevents: publishing directly to receiver registry {}", type)
         cloudEventsReceiverRegistry.process(data, eventBuilder.build())
       } else {
         log.error("Attempting to publish event with no destination {} : {}", eventBuilder, data)
@@ -107,9 +108,10 @@ open class CloudEventPublisherRegistryProcessor @Inject constructor(
         publishEvent(uncompressedHandlers, eventBuilder)
       }
 
-      if (cloudEventsReceiverRegistry.hasListeners(type)) {
-        cloudEventsReceiverRegistry.process(data, eventBuilder.build())
-      }
+      // cannot do this as it leads to double handling.
+//      if (cloudEventsReceiverRegistry.hasListeners(type)) {
+//        cloudEventsReceiverRegistry.process(data, eventBuilder.build())
+//      }
     }
   }
 
@@ -131,6 +133,9 @@ open class CloudEventPublisherRegistryProcessor @Inject constructor(
   }
 
   override fun registerForPublishing(type: String, metric: CloudEventChannelMetric, compress: Boolean, handler: (msg: CloudEvent) -> Unit) {
+    if (type == "publish-features-v1") {
+      print("s")
+    }
     val handlers = eventHandlers.computeIfAbsent(type) { mutableListOf() }
     handlers.add(CallbackHolder(type, metric, compress, handler))
   }

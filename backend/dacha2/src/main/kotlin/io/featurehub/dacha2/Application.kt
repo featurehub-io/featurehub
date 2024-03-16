@@ -1,6 +1,7 @@
 package io.featurehub.dacha2
 
 import io.featurehub.dacha2.client.Dacha2MRClientFeature
+import io.featurehub.encryption.WebhookEncryptionFeature
 import io.featurehub.events.CloudEventsFeature
 import io.featurehub.health.CommonFeatureHubFeatures
 import io.featurehub.health.MetricsHealthRegistration
@@ -23,6 +24,7 @@ class Application {
       TelemetryFeature::class.java,
       Dacha2Feature::class.java,
       CloudEventsFeature::class.java,
+      WebhookEncryptionFeature::class.java,
       Dacha2MRClientFeature::class.java, // the Api to the MR instance, (party-server mocks them)
     )
 

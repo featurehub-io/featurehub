@@ -193,7 +193,7 @@ class SlackConfig @Inject constructor(
 
     val delivery = CloudEventDynamicDeliveryDetails(
       if (slackDeliveryUrl == null) configs[cfg_deliveryUrl]?.value as String? else slackDeliveryUrl,
-      if (slackDeliveryUrl == null) configs[cfg_deliveryHeaders]?.value as Map<String, String>? else null,
+      if (slackDeliveryUrl == null) configs[cfg_deliveryHeaders]?.value as Map<String, String>? else null, // map may contain encrypted values, dest has to decrypt
       deliveryMetrics,
       true // always send compressed
     )
