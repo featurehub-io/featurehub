@@ -3,72 +3,95 @@ package io.featurehub.events
 import cd.connect.app.config.ConfigKey
 import cd.connect.jersey.common.LoggingConfiguration
 import io.cloudevents.CloudEvent
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
+import io.featurehub.trackedevent.models.TrackedEventMethod
+import io.featurehub.trackedevent.models.TrackedEventResult
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
+import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.client.Client
 import jakarta.ws.rs.client.ClientBuilder
 import jakarta.ws.rs.client.Entity
 import jakarta.ws.rs.core.MediaType
+import jakarta.ws.rs.core.Response
 import org.glassfish.jersey.client.ClientProperties
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.*
 
 
-class WebDynamicDestination(
-  private val params: Map<String, String>,
-  private val cloudEventType: String,
-  private val destination: String,
-  destSuffix: String,
-  metric: CloudEventChannelMetric,
-  defaultConnectTimeout: String,
-  defaultReadTimeout: String
-) {
-  private val client: Client = ClientBuilder.newClient()
+open class BaseWebhook {
+  protected val client: Client = ClientBuilder.newClient()
     .register(CommonConfiguration::class.java)
     .register(LoggingConfiguration::class.java)
-  private val paramsCopy = mutableMapOf<String,String>()
-  private val compressed: Boolean
 
   init {
-    client.property(ClientProperties.CONNECT_TIMEOUT, timeout("timeout.connect", defaultConnectTimeout))
-    client.property(ClientProperties.READ_TIMEOUT, timeout("timeout.read", defaultReadTimeout))
-
-    paramsCopy.putAll(params)
-    compressed = (paramsCopy.remove("compress") ?: "false") == "true"
-
     // support individual override of proxies
     checkParams(ClientProperties.PROXY_URI, ClientProperties.PROXY_PASSWORD, ClientProperties.PROXY_USERNAME)
   }
 
-  fun checkParams(vararg properties: String) {
-    for(property in properties) {
-      if (params.containsKey(property)) {
-        client.property(property, params[property])
-        paramsCopy.remove(property)
-      } else {
-        val defaultParam = FallbackPropertyConfig.getConfig("webhooks.default.${property}")
-        if (defaultParam != null) {
-          client.property(property, defaultParam)
-        }
+  private fun checkParams(vararg properties: String) {
+    for (property in properties) {
+      val propertyName = if (property.startsWith(WebDynamicDestination.JERSEY_PREFIX)) property.substring(
+        WebDynamicDestination.JERSEY_PREFIX.length) else property
+      val defaultParam = FallbackPropertyConfig.getConfig("webhooks.default.${propertyName}")
+      if (defaultParam != null) {
+        client.property(property, defaultParam)
       }
     }
-
   }
 
-  fun publish(ce: CloudEvent) {
+  protected fun captureException(e: Exception, te: TrackedEventResult) {
+    if (e is WebApplicationException) {
+      te.status(e.response.status)
+      te.content(e.response.readEntity(String::class.java)?.take(1000))
+    } else {
+      te.status(503)
+      te.content(e.message?.take(1000))
+    }
+  }
+
+  protected fun captureCompletedWebPost(te: TrackedEventResult, response: Response) {
+    te.status(response.status)
+
+    te.content(response.readEntity(String::class.java)?.take(1000))
+
+    val headers = mutableMapOf<String, String?>()
+    response.stringHeaders.forEach { (k, v) ->
+      headers[k] = v?.joinToString(";")
+    }
+    te.incomingHeaders(headers)
+  }
+
+  fun timeout(connectTimeout: String, readTimeout: String) {
+    client.property(ClientProperties.CONNECT_TIMEOUT, connectTimeout)
+    client.property(ClientProperties.READ_TIMEOUT, readTimeout)
+  }
+
+}
+
+class WebDynamicDestination(
+  private val publisherRegistry: CloudEventPublisherRegistry,
+  private val webhookEncryptionService: WebhookEncryptionService
+) : BaseWebhook() {
+  fun publish(
+    ce: CloudEvent,
+    config: CloudEventDynamicDeliveryDetails,
+    metric: CloudEventChannelMetric,
+    destination: String
+  ) {
     val target = client.target(destination).request()
 
-    val outboundHeaders = mutableMapOf<String, String>()
-
-    paramsCopy.forEach { header ->
-      val key = header.key
-
-      val value = header.value
-      outboundHeaders[key] = value
-      target.header(key, value)
+    config.headers?.let { headers ->
+      webhookEncryptionService.decrypt(headers).let { resultingHeaders ->
+        resultingHeaders.forEach { header ->
+          if (header.value.isNotEmpty() && !header.key.endsWith(".encrypt"))
+            target.header(header.key, header.value)
+        }
+      }
     }
 
     ce.attributeNames.forEach { name ->
@@ -79,61 +102,85 @@ class WebDynamicDestination(
       target.header("ce-$name", ce.getExtension(name))
     }
 
+    val trackedEventOrgId = ce.getExtension("trackedevent") as String?
+
+    val te = if (trackedEventOrgId == null) null else TrackedEventResult()
+      .method(TrackedEventMethod.POST)
+      .status(500)
+      .originatingCloudEventMessageId(UUID.fromString(ce.id))
+      .originatingOrganisationId(UUID.fromString(trackedEventOrgId))
+      .originatingCloudEventType(ce.type)
+
+    val perfTimer = metric.perf.startTimer()
+
     try {
-      log.trace("publishing CE {}:{} to {}", ce.type, ce.id, destination)
+      log.trace("publishing CE {}:{} to {}", ce.type, ce.id, config.url!!)
 
-      val response = target.post(Entity.entity(ce.data?.toBytes(), if (compressed) "application/json+gzip" else MediaType.APPLICATION_JSON))
+      // we match the content-type to the data-contenttype
+      val response = target.post(
+        Entity.entity(
+          ce.data?.toBytes(),
+          if (config.compressed) "application/json+gzip" else MediaType.APPLICATION_JSON
+        )
+      )
 
-//      data.status(response.status).result(response.readEntity(String::class.java)?.take(1000))
-//      data.incomingHeaders(mutableMapOf())
-//      response.stringHeaders.forEach { (k, v) ->
-//        data.incomingHeaders?.put(k, v.joinToString(";"))
-//      }
+      if (te != null && response != null) {
+        captureCompletedWebPost(te, response)
+      }
     } catch (e: Exception) {
-      log.error("failed to post CE {}", ce.type, e)
-//      data.status(0).result(e.message?.take(1000))
-    }
-  }
+      metric.failures.inc()
 
-  fun timeout(key: String, defaultVal: String): Int {
-    return if (params.containsKey(key)) params[key]!!.toInt() else defaultVal.toInt()
+      log.error("failed to post CE {}", ce.type, e)
+
+      if (te != null) {
+        captureException(e, te)
+      }
+    } finally {
+      perfTimer.observeDuration()
+    }
+
+    if (te != null) {
+      publisherRegistry.publish(te)
+    }
   }
 
   companion object {
     private val log: Logger = LoggerFactory.getLogger(WebDynamicDestination::class.java)
+
+    const val JERSEY_PREFIX = "jersey.config.client."
   }
 }
 
 @LifecyclePriority(priority = 5)
-class WebDynamicPublisher @Inject constructor(dynamicPublisher: CloudEventDynamicPublisherRegistry,
-                                              private val publisherRegistry: CloudEventPublisherRegistry) : LifecycleListener {
-  @ConfigKey("webhooks.features.timeout.connect")
+class WebDynamicPublisher @Inject constructor(
+  dynamicPublisher: CloudEventDynamicPublisherRegistry,
+  publisherRegistry: CloudEventPublisherRegistry,
+  webhookEncryptionService: WebhookEncryptionService,
+) : LifecycleListener {
+  @ConfigKey("webhooks.default.timeout.connect")
   var connectTimeout = FallbackPropertyConfig.getConfig("webhooks.default.timeout.connect", "4000")
 
-  @ConfigKey("webhooks.features.timeout.read")
+  @ConfigKey("webhooks.default.timeout.read")
   var readTimeout = FallbackPropertyConfig.getConfig("webhooks.default.timeout.read", "4000")
 
   private val log: Logger = LoggerFactory.getLogger(WebDynamicPublisher::class.java)
-
-  init {
-    dynamicPublisher.registerDymamicPublisherProvider(listOf("http://", "https://"), this::registerType)
+  private val webhookDestination = WebDynamicDestination(publisherRegistry, webhookEncryptionService).apply {
+    timeout(connectTimeout, readTimeout)
   }
 
-  private fun registerType(
-    params: Map<String, String>,
-    cloudEventType: String,
+  init {
+    dynamicPublisher.registerDynamicPublisherProvider(listOf("http://", "https://"), this::publish)
+  }
+
+  private fun publish(
+    config: CloudEventDynamicDeliveryDetails,
+    cloudEvent: CloudEvent,
     destination: String,
     destSuffix: String,
     metric: CloudEventChannelMetric
   ) {
-    log.info("registering destination webhook for cloud event {} outputting to {}", cloudEventType, destination)
+    log.info("registering destination webhook for cloud event {} outputting to {}", cloudEvent.type, destination)
 
-    val dest = WebDynamicDestination(params, cloudEventType, destination, destSuffix, metric, connectTimeout, readTimeout)
-    publisherRegistry.registerForPublishing(
-      cloudEventType,
-      metric,
-      params["compress"]?.lowercase() == "false",
-      dest::publish
-    )
+    webhookDestination.publish(cloudEvent, config, metric, destination)
   }
 }

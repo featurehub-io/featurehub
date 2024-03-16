@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.featurehub.composites</groupId>
+    <artifactId>composite-parent</artifactId>
+    <version>1.2-SNAPSHOT</version>
+    <relativePath>../composite-parent</relativePath>
+  </parent>
+  <groupId>io.featurehub.common</groupId>
+  <artifactId>messaging-delivery</artifactId>
+  <version>1.1-SNAPSHOT</version>
+  <name>messaging-delivery</name>
+
+  <description>
+    Services that listen to known messages (e.g. Slack, Teams) and know how to deliver them.
+  </description>
+
+  <url>https://featurehub.io</url>
+  <developers>
+    <developer>
+      <email>irina@featurehub.io</email>
+      <id>isouthwell</id>
+      <name>Irina Southwell</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+
+    <developer>
+      <email>richard@featurehub.io</email>
+      <id>rvowles</id>
+      <name>Richard Vowles</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>Apache 2 with Commons Clause</name>
+      <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
+    </license>
+  </licenses>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.featurehub.api</groupId>
+      <artifactId>messaging-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.jknack</groupId>
+      <artifactId>handlebars</artifactId>
+      <version>${handlebars-version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.events</groupId>
+      <artifactId>eventing-cloudevents</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.encryption</groupId>
+      <artifactId>encryption-common</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.repaint.maven</groupId>
+        <artifactId>tiles-maven-plugin</artifactId>
+        <version>2.32</version>
+        <extensions>true</extensions>
+        <configuration>
+          <filtering>false</filtering>
+          <tiles>
+            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+          </tiles>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+
+</project>

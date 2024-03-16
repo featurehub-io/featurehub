@@ -39,10 +39,20 @@ default:
         conditional: # edge only publishes
           property: dacha1.enabled
           default: true
+      party-enricher:
+        tags:
+          - party-server
+        ceRegistry: common
+        cloudEventsInclude:
+          - enricher-ping-v1
+        conditional: # party server will only publish ping, it relies on cache channel for feature
+          property: dacha2.enabled
+          default: true
       mr-features:
         description: "publish all listed events if dacha2 is enabled"
         tags:
           - mr-dacha2
+          - "!party-server"
         ceRegistry: common
         conditional: # edge only publishes
           property: dacha2.enabled
@@ -74,8 +84,8 @@ default:
           property: dacha2.enabled
           default: false
         ceRegistry: common
-        tags:
-          - mr-dacha2
+        tags: # don't publish to dacha2 in party-server mode, otherwise we end up publishing the message twice
+          - "mr-dacha2"
 
   "enriched-environment-channel":
     cloudEvents:
@@ -104,6 +114,7 @@ default:
     cloudEvents:
       - feature-update-v1
       - webhook-environment-result-v1
+      - tracked-event-result-v1
     subscribers:
       notifications:
         multiSupport: true  # supports multiple channel names in property name

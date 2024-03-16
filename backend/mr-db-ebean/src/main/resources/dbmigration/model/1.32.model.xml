@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="fh_sysconfig" pkName="pk_fh_sysconfig">
+            <column name="code" type="varchar" notnull="true" primaryKey="true"/>
+            <column name="org_id" type="uuid" notnull="true" primaryKey="true" references="fh_organization.id" foreignKeyName="fk_fh_sysconfig_org_id" foreignKeyIndex="ix_fh_sysconfig_org_id"/>
+            <column name="fk_who_updated" type="uuid" references="fh_person.id" foreignKeyName="fk_fh_sysconfig_fk_who_updated" foreignKeyIndex="ix_fh_sysconfig_fk_who_updated"/>
+            <column name="vl" type="clob"/>
+            <column name="w_upd" type="timestamp" notnull="true"/>
+            <column name="w_cre" type="timestamp" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+        </createTable>
+    </changeSet>
+</migration>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="fh_celog" identityType="external" pkName="pk_fh_celog">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="fk_org" type="uuid" notnull="true" references="fh_organization.id" foreignKeyName="fk_fh_celog_fk_org" foreignKeyIndex="ix_fh_celog_fk_org"/>
+            <column name="type" type="varchar" notnull="true"/>
+            <column name="link_type" type="varchar(6)" notnull="true"/>
+            <column name="link" type="uuid" notnull="true"/>
+            <column name="data" type="clob" notnull="true"/>
+            <column name="metadata" type="clob"/>
+            <column name="te" type="clob"/>
+            <column name="s" type="integer"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_upd" type="timestamp" notnull="true"/>
+            <column name="when_cre" type="timestamp" notnull="true"/>
+        </createTable>
+        <createIndex indexName="idx_cloudevents" tableName="fh_celog" columns="type,link_type,link,when_upd"/>
+        <createIndex indexName="idx_cloudevents_st" tableName="fh_celog" columns="type,link_type,link,s"/>
+        <createIndex indexName="idx_cloudevents_owner" tableName="fh_celog" columns="id,fk_org,type"/>
+    </changeSet>
+</migration>

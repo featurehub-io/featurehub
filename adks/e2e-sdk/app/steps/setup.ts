@@ -46,11 +46,9 @@ Given(/^I create an application$/, async function () {
 Given(/^I update the environment for feature webhooks$/, async function() {
   const world = this as SdkWorld;
 
-  if (world.environment === undefined) {
-    const app = await world.applicationApi.getApplication(world.application.id, true);
-    world.application = app.data;
-    world.environment = app.data.environments[0];
-  }
+  const app = await world.applicationApi.getApplication(world.application.id, true);
+  world.application = app.data;
+  world.environment = app.data.environments[0];
 
   // console.log("ensure previous environment has propagated");
   // await sleep(3);

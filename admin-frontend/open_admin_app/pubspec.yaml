@@ -64,6 +64,9 @@ flutter:
         - asset: assets/fonts/SourceCodePro-Regular.ttf
         - asset: assets/fonts/SourceCodePro-Light.ttf
           weight: 300
+    - family: FlutterIcon
+      fonts:
+        - asset: assets/fonts/FlutterIcon.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

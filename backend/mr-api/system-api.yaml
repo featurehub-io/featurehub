@@ -1,0 +1,147 @@
+openapi: 3.0.1
+info:
+  title: ManagementResourceApi
+  description: This describes the API clients use for accessing features.
+paths:
+  /mr-api/system-api/{key}/decrypt:
+    get:
+      security:
+        -  bearerAuth: []
+      parameters:
+        - in: path
+          required: true
+          name: key
+          schema:
+            type: string
+        - in: query
+          required: false
+          name: mapKey
+          description: "If the config is a map, then this is the key in the map to decrypt"
+          schema:
+            type: string
+      operationId: decryptSystemConfig
+      description: "When passed a key and decrypt is enabled and the user has the right permissions, it will decrypt the key"
+      tags:
+        - SystemConfigService
+      responses:
+        200:
+          description: "System config decrypted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemConfigDecryptResult"
+        401:
+          description: "Unidentified and no permission"
+        403:
+          description: "Identified but no permission"
+        500:
+          description: "Unknown error"
+  /mr-api/system-api:
+    get:
+      security:
+        -  bearerAuth: []
+      parameters:
+        - in: query
+          name: filters
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      operationId: getSystemConfig
+      description: "Provides either the list of all flags (if no filters are specified) or the stored values against the system if filters are specified."
+      tags:
+        - SystemConfigService
+      responses:
+        200:
+          description: "System configs matching the requested pattern"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemConfigs"
+        401:
+          description: "Unidentified and no permission"
+        403:
+          description: "Identified but no permission"
+        500:
+          description: "Unknown error"
+    post:
+      security:
+        -  bearerAuth: []
+      description: "Configs that are included are either created or replaced. Only recognized configs will be stored."
+      operationId: createOrUpdateSystemConfigs
+      tags:
+        - SystemConfigService
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatedSystemConfigs"
+      responses:
+        200:
+          description: "System configs that were saved"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemConfigs"
+        401:
+          description: "Unidentified and no permission"
+        403:
+          description: "Identified but no permission"
+        500:
+          description: "Unknown error"
+components:
+  schemas:
+    SystemConfigDecryptResult:
+      type: object
+      properties:
+        result:
+          type: string
+          nullable: true
+    SystemConfigs:
+      type: object
+      properties:
+        configs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SystemConfig"
+    SystemConfig:
+      type: object
+      properties:
+        key:
+          nullable: false
+          type: string
+        encrypted:
+          nullable: false
+          type: boolean
+        version:
+          nullable: false
+          type: integer
+          format: int64
+        value:
+          description: "Some value. This value gets stored as a faux-JSON object"
+    UpdatedSystemConfigs:
+      type: object
+      properties:
+        tryOut:
+          nullable: true
+          type: array
+          items:
+            type: string
+        configs:
+          type: array
+          items:
+            $ref: "#/components/schemas/UpdatedSystemConfig"
+    UpdatedSystemConfig:
+      type: object
+      properties:
+        key:
+          nullable: false
+          type: string
+        version:
+          nullable: false
+          type: integer
+          format: int64
+        value:
+          description: "Some value. This value gets stored as a faux-JSON object"

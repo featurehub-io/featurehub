@@ -62,6 +62,12 @@
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
+    <dependency>
+      <groupId>io.featurehub.encryption</groupId>
+      <artifactId>encryption-common</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
     <!-- this is for communication with MR -->
     <dependency>
       <groupId>io.featurehub.mr</groupId>

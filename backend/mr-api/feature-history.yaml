@@ -7,6 +7,60 @@ info:
 #  then people<->group association
 #  and group<->role association
 paths:
+  /mr-api/track-events/{id}:
+    get:
+      description: "Gets a paginated form of tracked events (usually cloud event logs)"
+      parameters:
+        - in: path
+          required: true
+          name: id
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          required: true
+          name: source
+          schema:
+            type: string
+        - in: query
+          required: true
+          name: page
+          schema:
+            type: integer
+        - in: query
+          required: true
+          name: pageSize
+          schema:
+            type: integer
+        - in: query
+          required: true
+          name: cloudEventType
+          schema:
+            type: string
+        - in: query
+          required: false
+          name: firstOnly
+          description: "Whether to return the first result per entry even if there are multiple. Defaults to true."
+          schema:
+            type: boolean
+      operationId: getTrackedEvents
+      tags:
+        - TrackEventsService
+      security:
+        -  bearerAuth: []
+      responses:
+        "200":
+          description: "the webhook type details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackEventsSummary"
+        "404":
+          description: "no such data"
+        "401":
+          description: "not authenticated"
+        "403":
+          description: "no permission"
   /mr-api/application/{appId}/feature-history:
     get:
       description: "Gets a paginated list of history of feature value changes"
@@ -134,4 +188,46 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FeatureHistoryItem"
+    TrackEventsSummary:
+      type: object
+      properties:
+        count:
+          description: "The maximum number of items returned by this query"
+          type: integer
+          format: int64
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackEventsSummaryItem"
+    TrackEventsSummaryItem:
+      type: object
+      properties:
+        id:
+          nullable: false
+          type: string
+          format: uuid
+        whenSent:
+          nullable: false
+          type: string
+          format: date-time
+        eventResponses:
+          nullable: true
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackEventResponse"
+    TrackEventResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+        whenReceived:
+          type: string
+          format: date-time
+        message:
+          nullable: true
+          type: string
+        headers:
+          nullable: true
+          additionalProperties:
+            type: string
 

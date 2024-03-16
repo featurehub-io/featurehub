@@ -4,6 +4,7 @@ import { makeid } from './random';
 import { SdkWorld } from './world';
 import { discover } from './discovery';
 import {resetCloudEvents, startWebServer, terminateServer} from './make_me_a_webserver';
+import {logger} from "./logging";
 
 const superuserEmailAddress = 'irina@i.com';
 // const superuserEmailAddress = 'superuser@mailinator.com';
@@ -62,10 +63,14 @@ Before(function () {
 
 After(function () {
   const world = this as SdkWorld;
-  if (world.edgeServer) {
-    console.log('shutting down edge connection', world.edgeServer.getApiKeys(), world.edgeServer.url());
-    world.edgeServer.close();
-    console.log('edge connection closed');
+  try {
+    if (world.edgeServer) {
+      console.log('shutting down edge connection', world.edgeServer.getApiKeys(), world.edgeServer.url());
+      world.edgeServer.close();
+      console.log('edge connection closed');
+    }
+  } catch (e) {
+    logger.error('failed', e);
   }
 });
 
@@ -74,7 +79,11 @@ Before('@needs-webserver', async function() {
 });
 
 After('@needs-webserver', async function() {
-  await terminateServer();
+  try {
+    await terminateServer();
+  } catch (e) {
+    logger.error('failed to terminate web server', e);
+  }
 });
 
 BeforeAll(async function() {

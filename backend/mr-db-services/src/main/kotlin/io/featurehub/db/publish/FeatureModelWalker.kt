@@ -2,6 +2,8 @@ package io.featurehub.db.publish
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.github.jknack.handlebars.Handlebars
 import com.github.jknack.handlebars.Template
 import com.google.common.cache.Cache
@@ -47,7 +49,10 @@ class FeatureModelWalkerService : FeatureModelWalker {
   private val walkerTemplates = mutableMapOf<String, Template>()
   private val handlebars = Handlebars()
   private val metadataUsed: Boolean
-  private val objectMapper = ObjectMapper()
+  private val objectMapper = ObjectMapper().apply {
+    registerModule(KotlinModule.Builder().build())
+    .registerModule(JavaTimeModule())
+  }
   private val featureMetadataCache: Cache<UUID,TemplateFeature> = CacheBuilder.newBuilder()
     .maximumSize(Integer.valueOf(FallbackPropertyConfig.getConfig("sdk.feature.properties.size", "100")).toLong())
     .build()

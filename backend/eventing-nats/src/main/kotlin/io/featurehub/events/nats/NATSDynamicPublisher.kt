@@ -1,12 +1,14 @@
 package io.featurehub.events.nats
 
+import io.cloudevents.CloudEvent
 import io.featurehub.events.CloudEventChannelMetric
+import io.featurehub.events.CloudEventDynamicDeliveryDetails
 import io.featurehub.events.CloudEventDynamicPublisherRegistry
-import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.publish.NATSSource
 import jakarta.inject.Inject
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * The NATS Dynamic Publisher will respond to a request for a dynamic publication channel and create it on the
@@ -17,26 +19,28 @@ import jakarta.inject.Inject
 class NATSDynamicPublisher @Inject constructor(
   private val nats: NATSSource,
   dynamicPublisher: CloudEventDynamicPublisherRegistry,
-  private val publisherRegistry: CloudEventPublisherRegistry
 ): LifecycleListener {
+  val publishers: ConcurrentHashMap<String, NatsCloudEventsPublisher> = ConcurrentHashMap()
+
   init {
-    dynamicPublisher.registerDymamicPublisherProvider(listOf("nats://"), this::registerType)
+    dynamicPublisher.registerDynamicPublisherProvider(listOf("nats://"), this::publish)
   }
 
-  fun registerType(
-    params: Map<String, String>,
-    cloudEventType: String,
-    destination: String,
+  fun publish(
+    config: CloudEventDynamicDeliveryDetails,
+    ce: CloudEvent, destination: String,
     destSuffix: String,
     metric: CloudEventChannelMetric
   ) {
-    val channel = nats.createPublisher(destSuffix)
+    val channel = publishers.computeIfAbsent(destSuffix) { nats.createPublisher(destSuffix) }
 
-    publisherRegistry.registerForPublishing(
-      cloudEventType,
-      metric,
-      params["compress"]?.lowercase() == "false",
-      channel::publish
-    )
+    val timer = metric.perf.startTimer()
+    try {
+      channel.publish(ce)
+    } catch (e: Exception) {
+      metric.failures.inc()
+    } finally {
+      timer.observeDuration()
+    }
   }
 }

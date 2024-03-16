@@ -5,7 +5,7 @@ import {expect} from "chai";
 import {SdkWorld} from "../support/world";
 import {UpdateEnvironment} from "../apis/mr-service";
 import {sleep} from "../support/random";
-import {featurehubCloudEventBodyParser} from 'featurehub-cloud-event-tools';
+import {featurehubCloudEventBodyParser} from "featurehub-cloud-event-tools";
 
 When('I clear cloud events', function() {
   resetCloudEvents();
@@ -27,7 +27,7 @@ Then('I receive a cloud event of type {string}', async function (ceType: string)
 });
 
 Given(/^I update the environment for Slack$/, async function() {
-  const world = this as SdkWorld;
+  const world= this as SdkWorld;
 
   if (world.environment === undefined) {
     const app = await world.applicationApi.getApplication(world.application.id, true);

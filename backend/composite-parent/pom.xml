@@ -56,6 +56,7 @@
     <ebean.version>13.17.0-jakarta</ebean.version>
     <ebean.tile.version>13.17.0</ebean.tile.version>
     <h2.version>2.2.222</h2.version>
+    <handlebars-version>4.3.1</handlebars-version>
   </properties>
 
   <build>

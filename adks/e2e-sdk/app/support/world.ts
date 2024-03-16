@@ -9,6 +9,7 @@ import {
   Feature, FeatureGroup, FeatureGroupListGroup, FeatureGroupServiceApi, FeatureHistoryServiceApi,
   FeatureServiceApi,
   FeatureValue, Person, PersonServiceApi,
+  SystemConfigServiceApi,
   Portfolio,
   PortfolioServiceApi, ServiceAccount,
   ServiceAccountPermission,
@@ -55,6 +56,7 @@ export class SdkWorld extends World {
   public readonly featureValueApi: EnvironmentFeatureServiceApi;
   public readonly edgeApi: EdgeService;
   public readonly historyApi: FeatureHistoryServiceApi;
+  public readonly systemConfigApi: SystemConfigServiceApi;
 
   public readonly webhookApi: WebhookServiceApi;
   private _clientContext: ClientContext;
@@ -89,6 +91,7 @@ export class SdkWorld extends World {
     this.featureValueApi = new EnvironmentFeatureServiceApi(this.adminApiConfig);
     this.webhookApi = new WebhookServiceApi(this.adminApiConfig);
     this.historyApi = new FeatureHistoryServiceApi(this.adminApiConfig);
+    this.systemConfigApi = new SystemConfigServiceApi(this.adminApiConfig);
 
     const edgeConfig = new EdgeConfig({ basePath: this.featureUrl, axiosInstance: this.adminApiConfig.axiosInstance});
     this.edgeApi = new EdgeService(edgeConfig);

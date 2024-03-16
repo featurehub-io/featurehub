@@ -49,4 +49,5 @@ class ServerCapabilities {
   bool get featureGroupsEnabled => _capabilities['featureGroupsEnabled'] == 'true';
   bool get integrationsEnabled => true || capabilityWebhooks;
   bool get featurePropertyExtendedDataEnabled => true;
+  bool get systemConfigEnabled => _capabilities['system.config'] == 'true';
 }

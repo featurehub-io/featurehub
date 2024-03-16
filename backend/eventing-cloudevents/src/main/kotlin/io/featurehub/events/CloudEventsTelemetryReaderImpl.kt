@@ -31,7 +31,11 @@ internal class CloudEventTextMapGetter : TextMapGetter<CloudEvent> {
 }
 
 interface CloudEventsTelemetryReader {
+  /*
+   * This one is not used
+   */
   fun receive(subject: String, event: CloudEvent, metrics: CloudEventChannelMetric, process: (event: CloudEvent) -> Unit)
+  /* this is primarily used */
   fun receive(event: CloudEvent, process: (event: CloudEvent) -> Unit)
 }
 

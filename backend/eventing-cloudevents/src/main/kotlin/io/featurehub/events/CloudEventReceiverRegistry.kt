@@ -1,7 +1,5 @@
 package io.featurehub.events
 
-import cd.connect.app.config.ConfigKey
-import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.cloudevents.CloudEventUtils
 import cd.connect.cloudevents.TaggedCloudEvent
 import io.cloudevents.CloudEvent
@@ -14,59 +12,108 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.time.OffsetDateTime
-import java.util.concurrent.*
+import java.util.concurrent.ExecutorService
 
 /**
  * Creates a central registry for receiving events
  */
 
 interface CloudEventBaseReceiverRegistry {
+  fun hasListeners(cloudEventType: String): Boolean
+
+  /**
+   * If you know your TaggedCloudEvent class and message type are the same, use this listener
+   */
   fun <T> listen(clazz: Class<T>, handler: (msg: T, ce: CloudEvent) -> Unit) where T : TaggedCloudEvent
+
+  /**
+   * If you wish to listen to an event of a particular *type* but which must have a known format, use this listener.
+   * Normally you don't need the clazz as the data is being passed directly in, but its required to decomplicate the API.
+   */
+  fun <T> listen(clazz: Class<T>, type: String, subject: String?, handler: (msg: T, ce: CloudEvent) -> Unit) where T : TaggedCloudEvent
   fun process(event: CloudEvent)
+
+  // if this was published internally then we have the raw data and should use it, but we don't want to faff about
+  // with OpenTelemetry & so forth as its an internal call
+  fun <T : TaggedCloudEvent>process(data: T, event: CloudEvent)
 }
 
 interface CloudEventReceiverRegistry : CloudEventBaseReceiverRegistry {
   fun registry(name: String): CloudEventBaseReceiverRegistry
 }
 
-abstract class CloudEventReceiverRegistryImpl : CloudEventBaseReceiverRegistry {
-  data class CallbackHolder(val clazz: Class<*>, val handler: (msg: TaggedCloudEvent, ce: CloudEvent) -> Unit)
+data class CallbackHolder<T: TaggedCloudEvent>(val clazz: Class<T>, val handler: (msg: T, ce: CloudEvent) -> Unit)
 
-  protected val eventHandlers = mutableMapOf<String, MutableMap<String, MutableList<CallbackHolder>>>()
+class CallbackHolderList(val clazz: Class<out TaggedCloudEvent>) {
+  private val list = mutableListOf<CallbackHolder<out TaggedCloudEvent>>()
+
+  fun <T : CallbackHolder<out TaggedCloudEvent>> add(value: T) {
+    list.add(value)
+  }
+
+  fun size(): Int { return list.size }
+
+  @Suppress("UNCHECKED_CAST")
+  fun iterable(): Iterable<CallbackHolder<in TaggedCloudEvent>> {
+    return list.map { it as CallbackHolder<in TaggedCloudEvent> }
+  }
+}
+
+abstract class CloudEventReceiverRegistryImpl (private val registryName: String) : CloudEventBaseReceiverRegistry {
+  protected val eventHandlers = mutableMapOf<String, MutableMap<String, CallbackHolderList>>()
+
   protected val ignoredEvent = mutableMapOf<String, String>()
   protected val log: Logger = LoggerFactory.getLogger(CloudEventReceiverRegistry::class.java)
 
-  @Suppress("UNCHECKED_CAST")
   override fun <T> listen(clazz: Class<T>, handler: (msg: T, ce: CloudEvent) -> Unit) where T : TaggedCloudEvent {
-    val type = CloudEventUtils.type(clazz)
-    val subject = CloudEventUtils.subject(clazz)
+    registerListener(CloudEventUtils.type(clazz), CloudEventUtils.subject(clazz), clazz, handler)
+  }
 
-    val handlerList = eventHandlers.getOrPut(type) { mutableMapOf() }.getOrPut(subject) { mutableListOf() }
-    handlerList.add(CallbackHolder(clazz) { msg, ce: CloudEvent -> handler(msg as T, ce ) })
+  @Suppress("UNCHECKED_CAST")
+  private fun <T: TaggedCloudEvent> registerListener(type: String, subject: String, clazz: Class<T>, handler: (msg: T, ce: CloudEvent) -> Unit) {
+    val handlerList = eventHandlers.computeIfAbsent(type) { mutableMapOf() }.computeIfAbsent(subject) { CallbackHolderList(clazz) }
+    handlerList.add(CallbackHolder(clazz) { msg: TaggedCloudEvent, ce: CloudEvent ->
+      handler(msg as T, ce )
+    })
 
     if (log.isTraceEnabled) {
-      log.trace("cloudevent: receiving {} / {}", subject, type)
+      log.trace("cloudevent: registry `{}`, receiving type `{}`, subject `{}`", registryName, type, subject)
     }
+  }
+
+  override fun <T : TaggedCloudEvent> listen(clazz: Class<T>, type: String, subject: String?, handler: (msg: T, ce: CloudEvent) -> Unit) {
+    registerListener(type, subject?: CloudEventUtils.subject(clazz), clazz, handler)
+  }
+
+  override fun hasListeners(cloudEventType: String): Boolean {
+    return eventHandlers[cloudEventType]?.isNotEmpty() == true
   }
 }
 
 /**
  * This is used for testing, its included in the core codebase as its tiny
  */
-class CloudEventReceiverRegistryMock : CloudEventReceiverRegistryImpl(), CloudEventReceiverRegistry {
+class CloudEventReceiverRegistryMock : CloudEventReceiverRegistryImpl("mock"), CloudEventReceiverRegistry {
   private val registries = mutableMapOf<String, CloudEventBaseReceiverRegistry>()
   override fun registry(name: String): CloudEventBaseReceiverRegistry {
-    return registries.computeIfAbsent(name) { key -> CloudEventReceiverRegistryMock() }
+    return registries.computeIfAbsent(name) { _ -> CloudEventReceiverRegistryMock() }
   }
 
-  override fun process(event: CloudEvent) {
-    val handlers = eventHandlers[event.type]?.get(event.subject!!)
 
-    if (handlers != null) {
-      CacheJsonMapper.fromEventData(event, handlers[0].clazz)?.let { eventData ->
-        handlers.parallelStream().forEach { handler ->
-          handler.handler(eventData as TaggedCloudEvent, event)
+  override fun process(event: CloudEvent) {
+    eventHandlers[event.type]?.get(event.subject!!)?.let { handlers ->
+      CacheJsonMapper.fromEventData(event, handlers.clazz)?.let {  eventData ->
+        handlers.iterable().forEach { handler ->
+          handler.handler(eventData, event)
         }
+      }
+    }
+  }
+
+  override fun <T : TaggedCloudEvent> process(data: T, event: CloudEvent) {
+    eventHandlers[event.type]?.get(event.subject!!)?.let { handlers ->
+      handlers.iterable().forEach { handler ->
+        handler.handler(data, event)
       }
     }
   }
@@ -75,9 +122,9 @@ class CloudEventReceiverRegistryMock : CloudEventReceiverRegistryImpl(), CloudEv
     val type = CloudEventUtils.type(obj.javaClass)
     val subject = CloudEventUtils.subject(obj.javaClass)
     val handlers = eventHandlers[type]?.get(subject)
-      ?: throw java.lang.RuntimeException("No handler for " + obj.toString())
+      ?: throw java.lang.RuntimeException("No handler for $obj")
 
-    handlers.parallelStream().forEach { handler ->
+    handlers.iterable().forEach { handler ->
       handler.handler(obj,
         CloudEventBuilder().newBuilder().withType(subject).withSource(URI.create("/fred")).withId("1").withTime(OffsetDateTime.now()).withSubject(subject).build())
     }
@@ -85,27 +132,28 @@ class CloudEventReceiverRegistryMock : CloudEventReceiverRegistryImpl(), CloudEv
 }
 
 open class CloudEventReceiverRegistryInternal(
+  private val registryName: String,
   private val openTelemetryReader: CloudEventsTelemetryReader,
-  protected val executorService: ExecutorService) : CloudEventReceiverRegistryImpl() {
+  protected val executorService: ExecutorService) : CloudEventReceiverRegistryImpl(registryName) {
 
   init {
     log.info("initializing the cloud receiver registry")
   }
 
-  override fun process(event: CloudEvent) {
+  private fun findHandlers(event: CloudEvent): CallbackHolderList? {
     if (event.subject == null || event.type == null) {
       log.error("received a cloud event with no type or subject")
-      return
+      return null
     }
 
     val handlers = eventHandlers[event.type]?.get(event.subject!!)
 
     if (log.isTraceEnabled) {
-      log.debug("cloudevent: {} / {} has {} handlers", event.type, event.subject, handlers?.size ?: 0)
+      log.debug("cloudevent: {} / {} has {} handlers", event.type, event.subject, handlers?.size() ?: 0)
     }
 
     if (handlers == null) {
-      event.subject?.let { it ->
+      event.subject?.let {
         // if we can't handle this message, warn about it once and then stick it in
         // the ignore bucket
         ignoredEvent.putIfAbsent(event.type, it)?.let {
@@ -113,33 +161,53 @@ open class CloudEventReceiverRegistryInternal(
         }
       }
 
-      return
+      return null
     }
 
-    openTelemetryReader.receive(event) {
-      CacheJsonMapper.fromEventData(event, handlers[0].clazz)?.let { eventData ->
-        if (log.isTraceEnabled) {
-          log.debug("cloudevent: incoming message on {}/{} : {}", event.type, event.id, eventData.toString())
-        }
+    return handlers
+  }
 
-        handlers.forEach { handler ->
-          executorService.submit {
-            handler.handler(eventData as TaggedCloudEvent, event)
-          }
-        }
-      } ?: log.error("cloudevent: failed to handle message {} : {}", event.type, event.id)
+  private fun <T> deliverEvent(event: CloudEvent, eventData: T, handlers: CallbackHolderList) where T: TaggedCloudEvent {
+    if (log.isTraceEnabled) {
+      log.debug("cloudevent: incoming message in registry {} on {}/{} to {} handlers : {}", registryName, event.type, event.id, handlers.size(), eventData.toString())
+    }
+
+    handlers.iterable().forEach { handler ->
+      executorService.submit {
+        handler.handler(eventData, event)
+      }
+    }
+  }
+
+  override fun process(event: CloudEvent) {
+    findHandlers(event)?.let { handlers ->
+      openTelemetryReader.receive(event) {
+        CacheJsonMapper.fromEventData(event, handlers.clazz)?.let { eventData ->
+          deliverEvent(event, eventData, handlers)
+        } ?: log.error("cloudevent: failed to handle message {} : {}", event.type, event.id)
+      }
+    }
+  }
+
+  override fun <T : TaggedCloudEvent> process(data: T, event: CloudEvent) {
+    findHandlers(event)?.let { handlers ->
+      deliverEvent(event, data, handlers)
     }
   }
 }
 
 class CloudEventReceiverRegistryProcessor @Inject
   constructor(private val openTelemetryReader: CloudEventsTelemetryReader,
-              executorSupplier: ExecutorSupplier) : CloudEventReceiverRegistryInternal(openTelemetryReader,
+              executorSupplier: ExecutorSupplier) : CloudEventReceiverRegistryInternal("common", openTelemetryReader,
               executorSupplier.executorService(Integer.valueOf(FallbackPropertyConfig.getConfig("cloudevents.receiver-pool-size", "20")))), CloudEventReceiverRegistry {
 
   private val registries = mutableMapOf<String, CloudEventBaseReceiverRegistry>()
 
+  init {
+    registries["common"] = this
+  }
+
   override fun registry(name: String): CloudEventBaseReceiverRegistry {
-    return registries.computeIfAbsent(name) { key -> CloudEventReceiverRegistryInternal(openTelemetryReader, executorService) }
+    return registries.computeIfAbsent(name) { CloudEventReceiverRegistryInternal(name, openTelemetryReader, executorService) }
   }
 }

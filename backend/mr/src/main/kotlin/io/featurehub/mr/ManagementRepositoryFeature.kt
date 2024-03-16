@@ -5,6 +5,7 @@ import io.featurehub.db.utils.ApiToSqlApiBinder
 import io.featurehub.db.utils.ComplexUpdateMigrations
 import io.featurehub.encryption.WebhookEncryptionFeature
 import io.featurehub.lifecycle.WebBaggageSource
+import io.featurehub.messaging.InternalDeliveryFeature
 import io.featurehub.mr.api.*
 import io.featurehub.mr.auth.*
 import io.featurehub.mr.dacha2.Dacha2Feature
@@ -29,6 +30,8 @@ import org.glassfish.jersey.internal.inject.AbstractBinder
 class ManagementRepositoryFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     listOf( //ValidationFeature.class,
+      SystemConfigServiceDelegator::class.java,
+      TrackEventsServiceDelegator::class.java,
       ApplicationServiceDelegator::class.java,
       FeatureHistoryServiceDelegator::class.java,
       WebhookServiceDelegator::class.java,
@@ -65,13 +68,15 @@ class ManagementRepositoryFeature : Feature {
     }
 
     context.register(CommonDbFeature::class.java)
-    context.register(ApiToSqlApiBinder())
+    context.register(ApiToSqlApiBinder::class.java)
     context.register(ComplexUpdateMigrations())
     context.register(EventingFeature::class.java)
     context.register(ManagementRepositoryWebhookFeature::class.java)
+    context.register(InternalDeliveryFeature::class.java)
 
     context.register(object : AbstractBinder() {
       override fun configure() {
+
         if (oauth2ProvidersExist() || samlProvidersExist()) {
           bind(AuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
         } else {
@@ -94,6 +99,8 @@ class ManagementRepositoryFeature : Feature {
         if (ConfigurationUtils.dacha1Enabled) {
           bind(CacheResource::class.java).to(CacheServiceDelegate::class.java).`in`(Singleton::class.java)
         }
+        bind(SystemConfigResource::class.java).to(SystemConfigServiceDelegate::class.java).`in`(Singleton::class.java)
+        bind(TrackEventResource::class.java).to(TrackEventsServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(AuthResource::class.java).to(AuthServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(WebhookResource::class.java).to(WebhookServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(EnvironmentFeatureResource::class.java).to(

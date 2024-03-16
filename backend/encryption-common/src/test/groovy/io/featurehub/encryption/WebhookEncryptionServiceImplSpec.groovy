@@ -17,6 +17,17 @@ class WebhookEncryptionServiceImplSpec extends Specification {
     ThreadLocalConfigurationSource.clearContext()
   }
 
+  def "i can encrypt and decrypt a single string"() {
+    when:
+      def encrypted = webhookEncryptionService.encryptSingle("single")
+      def decrypt = webhookEncryptionService.decryptSingle(encrypted)
+    then:
+      1 * symmetricEncrypter.encrypt("single", _) >> "zoot"
+      1 * symmetricEncrypter.decrypt("zoot", _) >> "single"
+      encrypted.endsWith("\tzoot")
+      decrypt == "single"
+  }
+
   def "hasEncryptSuffixAndEnabled should return true when key ends with encrypt and value is true"() {
     given:
     def key = "alfie.encrypt"

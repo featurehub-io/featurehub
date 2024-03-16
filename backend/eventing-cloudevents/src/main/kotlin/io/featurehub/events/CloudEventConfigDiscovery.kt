@@ -2,6 +2,7 @@ package io.featurehub.events
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.cloudevents.CloudEvent
 import io.featurehub.metrics.MetricsCollector
@@ -83,6 +84,7 @@ internal data class InternalCloudEventPublisherConfig(
 
 data class CloudEventSubscriberConfig(
   val tags: List<String>,
+  val negativeTags: List<String>,
   val description: String?,
   val ceRegistry: String,
   var channelNames: List<String>,
@@ -98,6 +100,7 @@ data class CloudEventSubscriberConfig(
 data class CloudEventPublisherConfig(
   val name: String,
   val tags: List<String>,
+  val negativeTags: List<String>,
   val description: String?,
   val ceRegistry: String,
   val channelNames: List<String>,
@@ -175,7 +178,9 @@ constructor(
 ) : CloudEventConfigDiscovery {
   private val log: Logger = LoggerFactory.getLogger(CloudEventConfigDiscovery::class.java)
   private val yaml = Yaml()
-  private val mapper = ObjectMapper().apply { registerModule(KotlinModule.Builder().build()) }
+  private val mapper = ObjectMapper().apply { registerModule(KotlinModule.Builder().build()).registerModule(
+    JavaTimeModule()
+  ) }
 
   companion object {
     private val tags = mutableSetOf<String>()
@@ -390,7 +395,7 @@ constructor(
     if (publishers == null) return listOf()
     return publishers.map { recodePublisher(it.key, it.value, config) }
       .filterNotNull()
-      .filter { it.tags.intersect(tags).isNotEmpty() }
+      .filter { it.negativeTags.intersect(tags).isEmpty() && it.tags.intersect(tags).isNotEmpty() }
   }
 
   private fun recodePublisher(
@@ -403,12 +408,22 @@ constructor(
     val channelNames = if (s.multiCast == null) multiSupport(s.multiSupport, configProperty) else decodeMultiCast(s.multiCast)
     return CloudEventPublisherConfig(
       name,
-      s.tags ?: listOf(), s.description, s.ceRegistry ?: "common",
+      positiveTags(s.tags), negativeTags(s.tags), s.description, s.ceRegistry ?: "common",
       channelNames,
       configProperty?.property,
       resolveConfig(s.metricName),
       s.cloudEventsInclude ?: listOf(),
     )
+  }
+
+  private fun positiveTags(tags: List<String>?): List<String> {
+    if (tags == null) return listOf()
+    return tags.filter { !it.startsWith("!") }
+  }
+
+  private fun negativeTags(tags: List<String>?): List<String> {
+    if (tags == null) return listOf()
+    return tags.filter { it.startsWith("!") }.map { it.substring(1) }
   }
 
   private fun decodeMultiCast(multiCast: InternalCloudEventPublisherMultiCast): List<String> {
@@ -426,7 +441,7 @@ constructor(
     if (subscribers == null) return mutableListOf()
     val subscribers = subscribers.map { recodeSubscriber(it.key, it.value, config) }
       .filterNotNull()
-      .filter { it.tags.intersect(tags).isNotEmpty() }.toMutableList()
+      .filter { it.negativeTags.intersect(tags).isEmpty() && it.tags.intersect(tags).isNotEmpty() }.toMutableList()
 
     return subscribers
   }
@@ -448,7 +463,7 @@ constructor(
     val configProperty = s.config ?: config.channelName
 
     return CloudEventSubscriberConfig(
-      s.tags ?: listOf(), s.description, s.ceRegistry ?: "common",
+      positiveTags(s.tags), negativeTags(s.tags), s.description, s.ceRegistry ?: "common",
       multiSupport(s.multiSupport, configProperty),
       configProperty?.property,
       s.broadcast == true, name, s.name ?: resolveConfig(s.prefixConfig) ?: name,
