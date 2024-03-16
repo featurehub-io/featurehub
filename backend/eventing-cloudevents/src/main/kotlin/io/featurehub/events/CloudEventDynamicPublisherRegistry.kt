@@ -1,11 +1,13 @@
 package io.featurehub.events
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.v1.CloudEventBuilder
 import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.events.messaging.AdditionalInfoMessage
+import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.metrics.MetricsCollector
 import jakarta.inject.Inject
 import org.slf4j.Logger
@@ -76,7 +78,9 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(
     mutableMapOf()
   private var defaultPublisher: String? = null
   private var counter = 1
-  private val mapper = ObjectMapper().apply { registerModule(KotlinModule.Builder().build()) }
+  private val mapper = ObjectMapper().apply { registerModule(KotlinModule.Builder().build()).registerModule(
+    JavaTimeModule()
+  ) }
 
   override fun registerDynamicPublisherProvider(
     prefixes: List<String>,
@@ -145,12 +149,13 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(
             delivery.headers = webhookEncryptionService.decrypt(it)
           }
 
+          CacheJsonMapper.toEventData(event, data, delivery.compressed)
+
           publish(
             delivery,
             event
               .withType(cloudEventType)
-              .withDataContentType("application/json")
-              .withData(mapper.writeValueAsBytes(data)).build(),
+              .build(),
             destination, destination.substring(pos + 2), makeMetric(delivery, destination)
           )
         }

@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory
 
 class NatsCloudEventQueueListener constructor(
   private val natsSource: NATSSource,
-  subject: String,
-  queue: String,
+  private val subject: String,
+  private val queue: String,
   private val handler: (event: CloudEvent) -> Unit
 ) : NatsListener {
   private val subscription: Subscription
@@ -31,7 +31,9 @@ class NatsCloudEventQueueListener constructor(
 
   fun process(msg: Message) {
     try {
-      handler(NatsMessageFactory.createReader(msg).toEvent())
+      val ce = NatsMessageFactory.createReader(msg).toEvent()
+      log.trace("cloudevent/nats: received {}/{} on subject {}, queue {}", ce.type, ce.subject, subject, queue)
+      handler(ce)
     } catch (e: Exception) {
       log.error("Unable to process cloud event", e)
     }

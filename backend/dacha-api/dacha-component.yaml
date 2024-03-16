@@ -193,7 +193,9 @@ components:
         - count
       properties:
         serviceAccount:
-          $ref: "#/components/schemas/CacheServiceAccount"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/CacheServiceAccount"
         action:
           $ref: "#/components/schemas/PublishAction"
         count:

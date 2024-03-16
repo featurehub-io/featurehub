@@ -3,6 +3,7 @@ package io.featurehub.events
 import cd.connect.app.config.ConfigKey
 import cd.connect.jersey.common.LoggingConfiguration
 import io.cloudevents.CloudEvent
+import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
@@ -73,7 +74,8 @@ open class BaseWebhook {
 }
 
 class WebDynamicDestination(
-  private val publisherRegistry: CloudEventPublisherRegistry
+  private val publisherRegistry: CloudEventPublisherRegistry,
+  private val webhookEncryptionService: WebhookEncryptionService
 ) : BaseWebhook() {
   fun publish(
     ce: CloudEvent,
@@ -83,8 +85,13 @@ class WebDynamicDestination(
   ) {
     val target = client.target(destination).request()
 
-    config.headers?.forEach { header ->
-      target.header(header.key, header.value)
+    config.headers?.let { headers ->
+      webhookEncryptionService.decrypt(headers).let { resultingHeaders ->
+        resultingHeaders.forEach { header ->
+          if (header.value.isNotEmpty() && !header.key.endsWith(".encrypt"))
+            target.header(header.key, header.value)
+        }
+      }
     }
 
     ce.attributeNames.forEach { name ->
@@ -109,6 +116,7 @@ class WebDynamicDestination(
     try {
       log.trace("publishing CE {}:{} to {}", ce.type, ce.id, config.url!!)
 
+      // we match the content-type to the data-contenttype
       val response = target.post(
         Entity.entity(
           ce.data?.toBytes(),
@@ -146,7 +154,8 @@ class WebDynamicDestination(
 @LifecyclePriority(priority = 5)
 class WebDynamicPublisher @Inject constructor(
   dynamicPublisher: CloudEventDynamicPublisherRegistry,
-  publisherRegistry: CloudEventPublisherRegistry
+  publisherRegistry: CloudEventPublisherRegistry,
+  webhookEncryptionService: WebhookEncryptionService,
 ) : LifecycleListener {
   @ConfigKey("webhooks.default.timeout.connect")
   var connectTimeout = FallbackPropertyConfig.getConfig("webhooks.default.timeout.connect", "4000")
@@ -155,7 +164,7 @@ class WebDynamicPublisher @Inject constructor(
   var readTimeout = FallbackPropertyConfig.getConfig("webhooks.default.timeout.read", "4000")
 
   private val log: Logger = LoggerFactory.getLogger(WebDynamicPublisher::class.java)
-  private val webhookDestination = WebDynamicDestination(publisherRegistry).apply {
+  private val webhookDestination = WebDynamicDestination(publisherRegistry, webhookEncryptionService).apply {
     timeout(connectTimeout, readTimeout)
   }
 

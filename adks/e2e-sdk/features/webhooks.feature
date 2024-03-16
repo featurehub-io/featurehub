@@ -9,15 +9,21 @@ Feature: Webhooks work as expected
     And I update the environment for feature webhooks
     And I clear cloud events
     And I wait for 5 seconds
+    # creating a feature flag creates an event
     When There is a feature flag with the key FEATURE_TITLE_TO_UPPERCASE
-    And I wait for 5 seconds
+    Then we should have 1 messages in the list of webhooks
+    Then we receive a webhook with FEATURE_TITLE_TO_UPPERCASE flag that is locked and off and version 1
+    When I clear the cloud events
     And I test the webhook
-    Then we receive a webhook with FEATURE_TITLE_TO_UPPERCASE flag that is locked and off
+    Then we should have 1 messages in the list of webhooks
+    Then we receive a webhook with FEATURE_TITLE_TO_UPPERCASE flag that is locked and off and version 1
+    When I clear the cloud events
     And I set the feature flag to unlocked and on
-    Then we receive a webhook with FEATURE_TITLE_TO_UPPERCASE flag that is unlocked and on
+    Then we receive a webhook with FEATURE_TITLE_TO_UPPERCASE flag that is unlocked and on and version 2
+    And we should have 1 messages in the list of webhooks
     And I set the feature flag to unlocked and off
-    Then we receive a webhook with FEATURE_TITLE_TO_UPPERCASE flag that is unlocked and off
-    And we should have 4 messages in the list of webhooks
+    Then we receive a webhook with FEATURE_TITLE_TO_UPPERCASE flag that is unlocked and off and version 3
+    And we should have 1 messages in the list of webhooks
 
   @webhook2 @webhooks
   Scenario: I test a webhook that is triggered by a TestSDK changing a value

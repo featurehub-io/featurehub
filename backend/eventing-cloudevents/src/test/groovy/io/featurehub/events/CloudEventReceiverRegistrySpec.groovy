@@ -17,7 +17,7 @@ class CloudEventReceiverRegistrySpec extends Specification {
   def setup() {
     writer = new FakeOpenTelemetryWriter()
     executorService = new FakeExecutorService()
-    reg = new CloudEventReceiverRegistryInternal(writer, executorService)
+    reg = new CloudEventReceiverRegistryInternal("common", writer, executorService)
   }
 
   @CloudEventType("simple1")

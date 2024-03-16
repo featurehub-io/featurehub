@@ -51,7 +51,7 @@ class CallbackHolderList(val clazz: Class<out TaggedCloudEvent>) {
     list.add(value)
   }
 
-  val size: Int = list.size
+  fun size(): Int { return list.size }
 
   @Suppress("UNCHECKED_CAST")
   fun iterable(): Iterable<CallbackHolder<in TaggedCloudEvent>> {
@@ -59,7 +59,7 @@ class CallbackHolderList(val clazz: Class<out TaggedCloudEvent>) {
   }
 }
 
-abstract class CloudEventReceiverRegistryImpl : CloudEventBaseReceiverRegistry {
+abstract class CloudEventReceiverRegistryImpl (private val registryName: String) : CloudEventBaseReceiverRegistry {
   protected val eventHandlers = mutableMapOf<String, MutableMap<String, CallbackHolderList>>()
 
   protected val ignoredEvent = mutableMapOf<String, String>()
@@ -77,7 +77,7 @@ abstract class CloudEventReceiverRegistryImpl : CloudEventBaseReceiverRegistry {
     })
 
     if (log.isTraceEnabled) {
-      log.trace("cloudevent: receiving {} / {}", subject, type)
+      log.trace("cloudevent: registry `{}`, receiving type `{}`, subject `{}`", registryName, type, subject)
     }
   }
 
@@ -93,7 +93,7 @@ abstract class CloudEventReceiverRegistryImpl : CloudEventBaseReceiverRegistry {
 /**
  * This is used for testing, its included in the core codebase as its tiny
  */
-class CloudEventReceiverRegistryMock : CloudEventReceiverRegistryImpl(), CloudEventReceiverRegistry {
+class CloudEventReceiverRegistryMock : CloudEventReceiverRegistryImpl("mock"), CloudEventReceiverRegistry {
   private val registries = mutableMapOf<String, CloudEventBaseReceiverRegistry>()
   override fun registry(name: String): CloudEventBaseReceiverRegistry {
     return registries.computeIfAbsent(name) { _ -> CloudEventReceiverRegistryMock() }
@@ -132,8 +132,9 @@ class CloudEventReceiverRegistryMock : CloudEventReceiverRegistryImpl(), CloudEv
 }
 
 open class CloudEventReceiverRegistryInternal(
+  private val registryName: String,
   private val openTelemetryReader: CloudEventsTelemetryReader,
-  protected val executorService: ExecutorService) : CloudEventReceiverRegistryImpl() {
+  protected val executorService: ExecutorService) : CloudEventReceiverRegistryImpl(registryName) {
 
   init {
     log.info("initializing the cloud receiver registry")
@@ -148,7 +149,7 @@ open class CloudEventReceiverRegistryInternal(
     val handlers = eventHandlers[event.type]?.get(event.subject!!)
 
     if (log.isTraceEnabled) {
-      log.debug("cloudevent: {} / {} has {} handlers", event.type, event.subject, handlers?.size ?: 0)
+      log.debug("cloudevent: {} / {} has {} handlers", event.type, event.subject, handlers?.size() ?: 0)
     }
 
     if (handlers == null) {
@@ -168,7 +169,7 @@ open class CloudEventReceiverRegistryInternal(
 
   private fun <T> deliverEvent(event: CloudEvent, eventData: T, handlers: CallbackHolderList) where T: TaggedCloudEvent {
     if (log.isTraceEnabled) {
-      log.debug("cloudevent: incoming message on {}/{} : {}", event.type, event.id, eventData.toString())
+      log.debug("cloudevent: incoming message in registry {} on {}/{} to {} handlers : {}", registryName, event.type, event.id, handlers.size(), eventData.toString())
     }
 
     handlers.iterable().forEach { handler ->
@@ -197,12 +198,16 @@ open class CloudEventReceiverRegistryInternal(
 
 class CloudEventReceiverRegistryProcessor @Inject
   constructor(private val openTelemetryReader: CloudEventsTelemetryReader,
-              executorSupplier: ExecutorSupplier) : CloudEventReceiverRegistryInternal(openTelemetryReader,
+              executorSupplier: ExecutorSupplier) : CloudEventReceiverRegistryInternal("common", openTelemetryReader,
               executorSupplier.executorService(Integer.valueOf(FallbackPropertyConfig.getConfig("cloudevents.receiver-pool-size", "20")))), CloudEventReceiverRegistry {
 
   private val registries = mutableMapOf<String, CloudEventBaseReceiverRegistry>()
 
+  init {
+    registries["common"] = this
+  }
+
   override fun registry(name: String): CloudEventBaseReceiverRegistry {
-    return registries.computeIfAbsent(name) { CloudEventReceiverRegistryInternal(openTelemetryReader, executorService) }
+    return registries.computeIfAbsent(name) { CloudEventReceiverRegistryInternal(name, openTelemetryReader, executorService) }
   }
 }

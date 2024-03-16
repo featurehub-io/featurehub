@@ -5,12 +5,15 @@ import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.SystemConfigApi
 import io.featurehub.db.api.WebhookApi
-import io.featurehub.encryption.WebhookEncryptionFeature
 import io.featurehub.enriched.model.EnricherPing
 import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.mr.api.WebhookServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
-import io.featurehub.mr.model.*
+import io.featurehub.mr.model.WebhookCheck
+import io.featurehub.mr.model.WebhookDetail
+import io.featurehub.mr.model.WebhookSummary
+import io.featurehub.mr.model.WebhookTypeDetail
+import io.featurehub.mr.model.WebhookTypeDetails
 import io.featurehub.webhook.events.WebhookEnvironmentResult
 import jakarta.inject.Inject
 import jakarta.ws.rs.ForbiddenException
