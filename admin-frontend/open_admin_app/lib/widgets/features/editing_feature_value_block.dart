@@ -23,6 +23,11 @@ class EditingFeatureValueBloc implements Bloc {
   late final BehaviorSubject<List<RolloutStrategy>> _strategySource;
   final _rolloutStrategyAttributeList =
       BehaviorSubject<List<RolloutStrategyAttribute>>();
+
+  final _isFeatureValueUpdatedSource = BehaviorSubject<bool>.seeded(false);
+  BehaviorSubject<bool> get isFeatureValueUpdatedStream =>
+      _isFeatureValueUpdatedSource;
+
   Stream<List<RolloutStrategyAttribute>> get attributes =>
       _rolloutStrategyAttributeList.stream;
 
@@ -69,14 +74,19 @@ class EditingFeatureValueBloc implements Bloc {
   }
 
   void updateStrategy() {
-    final strategies = _strategySource.value;
-    _strategySource.add(strategies);
+    // final strategies = _strategySource.value;
+    // _strategySource.add(strategies);
+    featureValueHasChanged();
   }
 
   void updateStrategyAndFeatureValue() {
     final strategies = _strategySource.value;
     _strategySource.add(strategies);
     updateFeatureValueStrategies(strategies);
+  }
+
+  void featureValueHasChanged() {
+    _isFeatureValueUpdatedSource.add(true);
   }
 
   void removeStrategy(RolloutStrategy rs) {
@@ -86,22 +96,26 @@ class EditingFeatureValueBloc implements Bloc {
         "removing strategy ${rs.id} from list ${strategies.map((e) => e.id)}");
     strategies.removeWhere((e) => e.id == rs.id);
     _strategySource.add(strategies);
+    featureValueHasChanged();
   }
 
   updateFeatureValueLockedStatus(bool locked) {
     currentFeatureValue.locked = locked;
     addFeatureValueToStream(currentFeatureValue);
+    featureValueHasChanged();
   }
 
   void updateFeatureValueRetiredStatus(bool? retired) {
     currentFeatureValue.retired = retired ?? false;
     addFeatureValueToStream(currentFeatureValue);
+    featureValueHasChanged();
   }
 
   void updateFeatureValueStrategies(List<RolloutStrategy> strategies) {
     currentFeatureValue.rolloutStrategies = strategies;
     addFeatureValueToStream(currentFeatureValue);
     _strategySource.add(strategies);
+    featureValueHasChanged();
   }
 
   void updateFeatureValueDefault(replacementValue) {
@@ -120,6 +134,7 @@ class EditingFeatureValueBloc implements Bloc {
         break;
     }
     addFeatureValueToStream(currentFeatureValue);
+    featureValueHasChanged();
   }
 
   final _currentFv = BehaviorSubject<FeatureValue>();
