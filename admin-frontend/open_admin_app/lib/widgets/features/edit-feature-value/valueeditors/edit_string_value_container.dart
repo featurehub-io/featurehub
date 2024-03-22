@@ -71,7 +71,7 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
             final replacementValue = value.isEmpty ? null : tec.text.trim();
             if (widget.rolloutStrategy != null) {
               widget.rolloutStrategy!.value = replacementValue;
-              //widget.strBloc.updateStrategy();
+              widget.strBloc.updateStrategyValue();
             } else {
               widget.strBloc.updateFeatureValueDefault(replacementValue);
             }

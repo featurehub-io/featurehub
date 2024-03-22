@@ -222,7 +222,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
           ..removeWhere((element) => element.id == items.id)
           ..insert(newIndex, items);
 
-        widget.bloc.updateStrategyAndFeatureValue();
+        widget.bloc.updateStrategyValue();
       },
     );
   }

@@ -11,7 +11,6 @@ class FeatureValueStrategyProvider extends StrategyEditorProvider {
   @override
   Future<void> updateStrategy(EditingRolloutStrategy rs) async {
     fvStrategyBloc.addStrategy(rs);
-    fvStrategyBloc.featureValueHasChanged();
   }
 
   @override
