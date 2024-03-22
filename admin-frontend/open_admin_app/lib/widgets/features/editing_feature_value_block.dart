@@ -25,17 +25,14 @@ class EditingFeatureValueBloc implements Bloc {
   late StreamSubscription<FeatureValue> _featureValueStreamSubscription;
 
   late final BehaviorSubject<List<RolloutStrategy>> _strategySource;
-  final _rolloutStrategyAttributeList =
-      BehaviorSubject<List<RolloutStrategyAttribute>>();
+  Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
 
   final _isFeatureValueUpdatedSource = BehaviorSubject<bool>.seeded(false);
   BehaviorSubject<bool> get isFeatureValueUpdatedStream =>
       _isFeatureValueUpdatedSource;
 
-  Stream<List<RolloutStrategyAttribute>> get attributes =>
-      _rolloutStrategyAttributeList.stream;
-
-  Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
+  final _currentFv = BehaviorSubject<FeatureValue>();
+  get currentFv => _currentFv.stream;
 
   EditingFeatureValueBloc(
       this.applicationId,
@@ -132,10 +129,6 @@ class EditingFeatureValueBloc implements Bloc {
     addFeatureValueToStream(currentFeatureValue);
   }
 
-  final _currentFv = BehaviorSubject<FeatureValue>();
-
-  get currentFv => _currentFv.stream;
-
   PerApplicationFeaturesBloc get perApplicationFeaturesBloc =>
       _featureStatusBloc;
 
@@ -145,7 +138,10 @@ class EditingFeatureValueBloc implements Bloc {
 
   @override
   void dispose() {
+    _featureValueStreamSubscription.cancel();
     _currentFv.close();
+    _isFeatureValueUpdatedSource.close();
+    _strategySource.close();
   }
 
   saveFeatureValueUpdates() async {
