@@ -42,6 +42,8 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
 
   @override
   Widget build(BuildContext context) {
+    final debouncer = Debouncer(milliseconds: 1000);
+
     return SizedBox(
         width: 200,
         height: 36,
@@ -71,9 +73,13 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
                 validateNumber(tec.text) != null ? 'Not a valid number' : null,
           ),
           onChanged: (value) {
-            final replacementValue =
-                value.trim().isEmpty ? null : double.parse(tec.text.trim());
-            _updateFeatureValue(replacementValue);
+            debouncer.run(
+              () {
+                final replacementValue =
+                    value.trim().isEmpty ? null : double.parse(tec.text.trim());
+                _updateFeatureValue(replacementValue);
+              },
+            );
           },
           inputFormatters: [
             DecimalTextInputFormatter(
