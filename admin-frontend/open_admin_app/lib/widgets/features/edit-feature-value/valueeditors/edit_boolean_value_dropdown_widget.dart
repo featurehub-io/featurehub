@@ -80,7 +80,7 @@ class _EditBooleanValueDropDownWidgetState
       widget.strBloc.updateFeatureValueDefault(replacementBoolean);
     } else {
       widget.rolloutStrategy!.value = replacementBoolean;
-      // widget.strBloc.updateStrategy();
+      widget.strBloc.updateStrategyValue();
     }
   }
 }

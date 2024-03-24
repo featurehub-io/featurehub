@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 
 final ThemeData myTheme = ThemeData(
-  colorScheme: flexSchemeLight,
-  useMaterial3: true,
-  brightness: Brightness.light,
-  dataTableTheme: const DataTableThemeData(
-      headingTextStyle: TextStyle(
-          fontSize: 14, fontWeight: FontWeight.w800, color: Colors.black87)),
-);
+    colorScheme: flexSchemeLight,
+    useMaterial3: true,
+    brightness: Brightness.light,
+    dataTableTheme: const DataTableThemeData(
+        headingTextStyle: TextStyle(
+            fontSize: 14, fontWeight: FontWeight.w800, color: Colors.black87)),
+    snackBarTheme: const SnackBarThemeData(backgroundColor: Colors.orange));
 
 final ThemeData darkTheme = ThemeData(
-  useMaterial3: true,
-  brightness: Brightness.dark,
-  colorScheme: flexSchemeDark,
-  dataTableTheme: const DataTableThemeData(
-      headingTextStyle: TextStyle(
-          fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white)),
-);
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    colorScheme: flexSchemeDark,
+    dataTableTheme: const DataTableThemeData(
+        headingTextStyle: TextStyle(
+            fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white)),
+    snackBarTheme: SnackBarThemeData(
+        backgroundColor: Colors.orange.shade800.withOpacity(0.7)));
 
 // Light and dark ColorSchemes made by FlexColorScheme v7.0.1.
 // These ColorScheme objects require Flutter 3.7 or later.

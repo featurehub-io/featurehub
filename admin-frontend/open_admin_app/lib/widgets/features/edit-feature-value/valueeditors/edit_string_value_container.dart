@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 
 class EditStringValueContainer extends StatefulWidget {
@@ -40,6 +41,8 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
 
   @override
   Widget build(BuildContext context) {
+    final debouncer = Debouncer(milliseconds: 1000);
+
     return SizedBox(
         width: 200,
         height: 36,
@@ -68,13 +71,17 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
                   : 'not set',
               hintStyle: Theme.of(context).textTheme.bodySmall),
           onChanged: (value) {
-            final replacementValue = value.isEmpty ? null : tec.text.trim();
-            if (widget.rolloutStrategy != null) {
-              widget.rolloutStrategy!.value = replacementValue;
-              //widget.strBloc.updateStrategy();
-            } else {
-              widget.strBloc.updateFeatureValueDefault(replacementValue);
-            }
+            debouncer.run(
+              () {
+                final replacementValue = value.isEmpty ? null : tec.text.trim();
+                if (widget.rolloutStrategy != null) {
+                  widget.rolloutStrategy!.value = replacementValue;
+                  widget.strBloc.updateStrategyValue();
+                } else {
+                  widget.strBloc.updateFeatureValueDefault(replacementValue);
+                }
+              },
+            );
           },
         ));
   }
