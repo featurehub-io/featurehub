@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/fhos_logger.dart';
@@ -20,13 +22,17 @@ class EditingFeatureValueBloc implements Bloc {
   // actually ORIGINAL feature value (before changes)
   late FeatureValue currentFeatureValue;
 
-  late final BehaviorSubject<List<RolloutStrategy>> _strategySource;
-  final _rolloutStrategyAttributeList =
-      BehaviorSubject<List<RolloutStrategyAttribute>>();
-  Stream<List<RolloutStrategyAttribute>> get attributes =>
-      _rolloutStrategyAttributeList.stream;
+  late StreamSubscription<FeatureValue> _featureValueStreamSubscription;
 
+  late final BehaviorSubject<List<RolloutStrategy>> _strategySource;
   Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
+
+  final _isFeatureValueUpdatedSource = BehaviorSubject<bool>.seeded(false);
+  BehaviorSubject<bool> get isFeatureValueUpdatedStream =>
+      _isFeatureValueUpdatedSource;
+
+  final _currentFv = BehaviorSubject<FeatureValue>();
+  get currentFv => _currentFv.stream;
 
   EditingFeatureValueBloc(
       this.applicationId,
@@ -44,13 +50,14 @@ class EditingFeatureValueBloc implements Bloc {
         [...currentFeatureValue.rolloutStrategies ?? []]);
     environmentId = environmentFeatureValue.environmentId;
     addFeatureValueToStream(featureValue);
+    _featureValueStreamSubscription = _currentFv.listen(featureValueHasChanged);
   }
 
   /*
    * This takes the result of the adding of a new strategy and converts it back to a RolloutStrategy
    */
   void addStrategy(EditingRolloutStrategy rs) {
-    List<RolloutStrategy> strategies = _strategySource.value;
+    var strategies = _strategySource.value;
 
     final index = strategies.indexWhere((s) => s.id == rs.id);
     if (index == -1) {
@@ -65,18 +72,24 @@ class EditingFeatureValueBloc implements Bloc {
       strategies[index] = rs.toRolloutStrategy(strategies[index].value)!;
     }
 
-    updateFeatureValueStrategies(strategies);
-  }
-
-  void updateStrategy() {
-    final strategies = _strategySource.value;
+    currentFeatureValue.rolloutStrategies = strategies;
+    addFeatureValueToStream(currentFeatureValue);
     _strategySource.add(strategies);
   }
 
-  void updateStrategyAndFeatureValue() {
+  void updateStrategyValue() {
     final strategies = _strategySource.value;
     _strategySource.add(strategies);
-    updateFeatureValueStrategies(strategies);
+    currentFeatureValue.rolloutStrategies = strategies;
+    addFeatureValueToStream(currentFeatureValue);
+  }
+
+  void featureValueHasChanged(FeatureValue updatedFeatureValue) {
+    if (featureValue != updatedFeatureValue) {
+      _isFeatureValueUpdatedSource.add(true);
+    } else {
+      _isFeatureValueUpdatedSource.add(false);
+    }
   }
 
   void removeStrategy(RolloutStrategy rs) {
@@ -85,7 +98,7 @@ class EditingFeatureValueBloc implements Bloc {
     fhosLogger.fine(
         "removing strategy ${rs.id} from list ${strategies.map((e) => e.id)}");
     strategies.removeWhere((e) => e.id == rs.id);
-    _strategySource.add(strategies);
+    updateStrategyValue();
   }
 
   updateFeatureValueLockedStatus(bool locked) {
@@ -96,12 +109,6 @@ class EditingFeatureValueBloc implements Bloc {
   void updateFeatureValueRetiredStatus(bool? retired) {
     currentFeatureValue.retired = retired ?? false;
     addFeatureValueToStream(currentFeatureValue);
-  }
-
-  void updateFeatureValueStrategies(List<RolloutStrategy> strategies) {
-    currentFeatureValue.rolloutStrategies = strategies;
-    addFeatureValueToStream(currentFeatureValue);
-    _strategySource.add(strategies);
   }
 
   void updateFeatureValueDefault(replacementValue) {
@@ -122,10 +129,6 @@ class EditingFeatureValueBloc implements Bloc {
     addFeatureValueToStream(currentFeatureValue);
   }
 
-  final _currentFv = BehaviorSubject<FeatureValue>();
-
-  get currentFv => _currentFv.stream;
-
   PerApplicationFeaturesBloc get perApplicationFeaturesBloc =>
       _featureStatusBloc;
 
@@ -135,11 +138,13 @@ class EditingFeatureValueBloc implements Bloc {
 
   @override
   void dispose() {
+    _featureValueStreamSubscription.cancel();
     _currentFv.close();
+    _isFeatureValueUpdatedSource.close();
+    _strategySource.close();
   }
 
   saveFeatureValueUpdates() async {
-    currentFeatureValue.rolloutStrategies = _strategySource.value;
     await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(
         applicationId, feature.key, [currentFeatureValue]);
     await _featureStatusBloc.updateApplicationFeatureValuesStream();

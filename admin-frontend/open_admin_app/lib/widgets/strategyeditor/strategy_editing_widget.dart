@@ -12,7 +12,6 @@ import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.d
 import 'package:open_admin_app/widgets/strategyeditor/rollout_strategies_widget.dart';
 import 'package:open_admin_app/widgets/strategyeditor/strategy_utils.dart';
 
-
 class StrategyEditingWidget extends StatefulWidget {
   final bool editable;
   final StrategyEditorBloc bloc;
@@ -45,8 +44,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     _strategyName.text = widget.bloc.rolloutStrategy.name ?? '';
 
     if (widget.bloc.rolloutStrategy.percentage != null) {
-      _strategyPercentage.text =
-          widget.bloc.rolloutStrategy.percentageText;
+      _strategyPercentage.text = widget.bloc.rolloutStrategy.percentageText;
     }
   }
 
@@ -103,8 +101,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Column(children: [
-                      if ((widget.bloc.rolloutStrategy.percentage !=
-                              null) ||
+                      if ((widget.bloc.rolloutStrategy.percentage != null) ||
                           showPercentageField)
                         Row(
                           children: [
@@ -199,7 +196,9 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                       ),
                       if (widget.editable)
                         FHFlatButton(
-                            title: widget.bloc.rolloutStrategy.saved ? 'Update' : 'Add',
+                            title: widget.bloc.rolloutStrategy.saved
+                                ? 'Update'
+                                : 'Add',
                             onPressed: () => _validationAction()),
                     ],
                   ),
@@ -223,20 +222,23 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
   /// this window.
   Future<void> _processUpdate() async {
     final updatedStrategy = widget.bloc.rolloutStrategy.copy(
-      name: _strategyName.text,
-      attributes: widget.bloc.currentAttributes)
+        name: _strategyName.text, attributes: widget.bloc.currentAttributes)
       ..percentageFromText = _strategyPercentage.text;
 
-    await checkForViolationsAndPop(updatedStrategy, () async => await widget.bloc.strategyEditorProvider.updateStrategy(updatedStrategy));
+    await checkForViolationsAndPop(updatedStrategy, () async {
+      await widget.bloc.strategyEditorProvider.updateStrategy(updatedStrategy);
+    });
   }
 
-  Future<void> checkForViolationsAndPop(EditingRolloutStrategy updatedStrategy, AsyncCallback onSuccess) async {
+  Future<void> checkForViolationsAndPop(
+      EditingRolloutStrategy updatedStrategy, AsyncCallback onSuccess) async {
     final localValidationCheck = updatedStrategy.violations();
 
     if (localValidationCheck.isNotEmpty) {
       widget.bloc.updateLocalViolations(localValidationCheck);
     } else {
-      final validationCheck = await widget.bloc.strategyEditorProvider.validateStrategy(updatedStrategy);
+      final validationCheck = await widget.bloc.strategyEditorProvider
+          .validateStrategy(updatedStrategy);
 
       if (validationCheck != null) {
         if (isValidationOk(validationCheck)) {

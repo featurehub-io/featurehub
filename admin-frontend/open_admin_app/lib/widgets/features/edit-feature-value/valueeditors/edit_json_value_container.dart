@@ -135,7 +135,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
         : json.encode(json.decode(tec.text.trim())).toString();
     if (widget.rolloutStrategy != null) {
       widget.rolloutStrategy!.value = replacementValue;
-      widget.strBloc.updateStrategy();
+      widget.strBloc.updateStrategyValue();
     } else {
       widget.strBloc.updateFeatureValueDefault(replacementValue);
     }
