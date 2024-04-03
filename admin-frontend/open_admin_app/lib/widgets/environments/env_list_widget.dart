@@ -380,12 +380,10 @@ Widget addEnvWidget(BuildContext context, ManageAppBloc bloc) {
             ),
           ),
         const FHInfoCardWidget(
-          message: '''
-Ordering your environments,
-showing the path to production (top to bottom)
-will be reflected on the "Features" dashboard.\n
-It helps your teams see their changes
-per environment in the correct order.''',
+          message: "Environments can be ordered by dragging the cards below,"
+              " showing the deployment promotion order to production (top to bottom). "
+              "This order will be reflected on the 'Features' dashboard. It helps your teams see"
+              " their feature status per environment in the correct order.",
         ),
         const SizedBox(
           width: 32,

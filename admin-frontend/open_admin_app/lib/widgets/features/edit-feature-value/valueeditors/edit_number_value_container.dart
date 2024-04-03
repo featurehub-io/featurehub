@@ -45,7 +45,7 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
     final debouncer = Debouncer(milliseconds: 1000);
 
     return SizedBox(
-        width: 200,
+        width: 250,
         height: 36,
         child: TextField(
           style: Theme.of(context).textTheme.bodyLarge,

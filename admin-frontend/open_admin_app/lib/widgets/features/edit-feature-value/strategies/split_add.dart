@@ -10,33 +10,29 @@ import 'package:open_admin_app/widgets/strategyeditor/strategy_editing_widget.da
 class AddStrategyButton extends StatelessWidget {
   final EditingFeatureValueBloc bloc;
 
-  const AddStrategyButton(
-      {Key? key, required this.bloc})
-      : super(key: key);
+  const AddStrategyButton({Key? key, required this.bloc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextButton.icon(
-        label: const Text('Add split targeting rules'),
+        label: const Text('Add rollout strategy'),
         icon: const Icon(Icons.call_split_outlined),
-        onPressed:() => showDialog(
-                context: context,
-                builder: (_) {
-                  return AlertDialog(
-                    title: const Text('Add split targeting rule'),
-                    content: BlocProvider.builder(
-                      creator: (c, b) =>
-                          StrategyEditorBloc(
-                              EditingRolloutStrategy.newStrategy(
-                                  id: makeStrategyId(existing: bloc.featureValue.rolloutStrategies!)),
-                              FeatureValueStrategyProvider(bloc)),
-                      builder: (ctx, bloc) {
-                        return StrategyEditingWidget(
-                            bloc: bloc, editable: true);
-                      },
-                    ),
-                  );
-                })
-            );
+        onPressed: () => showDialog(
+            context: context,
+            builder: (_) {
+              return AlertDialog(
+                title: const Text('Add rollout strategy targeting rules'),
+                content: BlocProvider.builder(
+                  creator: (c, b) => StrategyEditorBloc(
+                      EditingRolloutStrategy.newStrategy(
+                          id: makeStrategyId(
+                              existing: bloc.featureValue.rolloutStrategies!)),
+                      FeatureValueStrategyProvider(bloc)),
+                  builder: (ctx, bloc) {
+                    return StrategyEditingWidget(bloc: bloc, editable: true);
+                  },
+                ),
+              );
+            }));
   }
 }

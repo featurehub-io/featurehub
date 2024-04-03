@@ -42,7 +42,7 @@ class StrategyCardWidget extends StatelessWidget {
                 mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
                   Expanded(
-                      flex: 3,
+                      flex: 2,
                       child: groupRolloutStrategy != null
                           ? Text(groupRolloutStrategy!.name,
                               maxLines: 2,
@@ -59,9 +59,9 @@ class StrategyCardWidget extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style:
                                       Theme.of(context).textTheme.labelLarge))),
-                  Flexible(flex: 6, child: editableHolderWidget),
+                  Flexible(flex: 3, child: editableHolderWidget),
                   Expanded(
-                      flex: 3,
+                      flex: 1,
                       child: rolloutStrategy != null &&
                               groupRolloutStrategy == null
                           ? Row(
