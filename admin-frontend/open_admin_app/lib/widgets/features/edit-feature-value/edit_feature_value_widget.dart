@@ -42,41 +42,40 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                         child: Container(
                           color:
                               Theme.of(context).snackBarTheme.backgroundColor,
-                          child: ButtonBar(
-                              alignment: MainAxisAlignment.start,
-                              children: [
-                                const Text('You have unsaved changes, save?'),
-                                TextButton(
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Theme.of(context)
-                                          .snackBarTheme
-                                          .actionTextColor,
-                                    ),
-                                    onPressed: () {
-                                      Navigator.pop(
-                                          context); //close the side panel
-                                    },
-                                    child: const Text("Cancel")),
-                                FilledButton(
-                                    onPressed: () async {
-                                      try {
-                                        await widget.bloc
-                                            .saveFeatureValueUpdates();
-                                        Navigator.pop(
-                                            context); //close the side panel
-                                        widget.bloc.perApplicationFeaturesBloc
-                                            .mrClient
-                                            .addSnackbar(Text(
-                                                'Feature ${widget.bloc.feature.name.toUpperCase()} '
-                                                'in the environment ${widget.bloc.environmentFeatureValue.environmentName.toUpperCase()} has been updated!'));
-                                      } catch (e, s) {
-                                        widget.bloc.perApplicationFeaturesBloc
-                                            .mrClient
-                                            .dialogError(e, s);
-                                      }
-                                    },
-                                    child: const Text("Save")),
-                              ]),
+                          child: Row(children: [
+                            const SizedBox(
+                              width: 8.0,
+                            ),
+                            const Text('You have unsaved changes, save?'),
+                            TextButton(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Theme.of(context)
+                                      .snackBarTheme
+                                      .actionTextColor,
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(context); //close the side panel
+                                },
+                                child: const Text("Cancel")),
+                            FilledButton(
+                                onPressed: () async {
+                                  try {
+                                    await widget.bloc.saveFeatureValueUpdates();
+                                    Navigator.pop(
+                                        context); //close the side panel
+                                    widget.bloc.perApplicationFeaturesBloc
+                                        .mrClient
+                                        .addSnackbar(Text(
+                                            'Feature ${widget.bloc.feature.name.toUpperCase()} '
+                                            'in the environment ${widget.bloc.environmentFeatureValue.environmentName.toUpperCase()} has been updated!'));
+                                  } catch (e, s) {
+                                    widget.bloc.perApplicationFeaturesBloc
+                                        .mrClient
+                                        .dialogError(e, s);
+                                  }
+                                },
+                                child: const Text("Save")),
+                          ]),
                         ),
                       );
                     } else {
