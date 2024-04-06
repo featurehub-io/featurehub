@@ -63,11 +63,13 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
                 borderSide: BorderSide(
               color: Colors.grey,
             )),
-            hintText: widget.canEdit
-                ? widget.unlocked
-                    ? 'Enter number value'
-                    : 'Unlock to edit'
-                : 'No editing rights',
+            hintText: widget.groupRolloutStrategy == null
+                ? (widget.canEdit
+                    ? (widget.unlocked
+                        ? 'Enter number value'
+                        : 'Unlock to edit')
+                    : 'No editing rights')
+                : 'not set',
             hintStyle: Theme.of(context).textTheme.bodySmall,
             errorText:
                 validateNumber(tec.text) != null ? 'Not a valid number' : null,
