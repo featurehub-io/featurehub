@@ -64,7 +64,9 @@ class _ValueContainer extends StatelessWidget {
                   builder: (ctx, efvBloc) => EditFeatureValueWidget(
                         bloc: efvBloc,
                       )),
-              width: MediaQuery.of(context).size.width * 0.3,
+              width: MediaQuery.of(context).size.width > 800
+                  ? MediaQuery.of(context).size.width * 0.5
+                  : MediaQuery.of(context).size.width,
               context: context);
         },
         child: Padding(

@@ -47,8 +47,8 @@ image::fh_retire_feature.png[Retire Feature, 1500]
 
 
 == Locking a feature
-Locking provides an additional safety net per environment when deploying incomplete code into production. It locks a feature, so its value, targeting rules, "retired" statues can't be changed for a given environment.
-Typically, developers keep features locked until they are finished and ready to be set, for example when they are ready to be tested in one of the test environments. Another use case for feature locking would be when developers or testers keep it locked in production environment, indicating to release management team that it is not ready to be turned on. Only groups or service accounts with `LOCK/UNLOCK` or `CHANGE_VALUE` permission can lock or unlock the feature value.  `CHANGE_VALUE` permission supersedes the `LOCK/UNLOCK`.
+Locking provides an additional safety net for a feature changes per environment when deploying incomplete code into production. It locks a feature, to prevent any changes to its default value, strategies, strategy values or "retired" status, for a given environment.
+Typically, developers keep features locked until they are finished and ready to be used, for example when they are ready to be tested in one of the test environments. Another use case for feature locking would be when developers or testers keep it locked in production environment, indicating to release management team that it is not ready to be turned on. Only groups or service accounts with `LOCK/UNLOCK` or `CHANGE_VALUE` permission can lock or unlock the feature value.  `CHANGE_VALUE` permission supersedes the `LOCK/UNLOCK`.
 
 image::fh_lock_feature.png[Lock Feature, 1500]
 

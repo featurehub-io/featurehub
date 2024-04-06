@@ -93,13 +93,13 @@ class ServiceAccountPermissionState
                     ),
                     const Padding(
                       padding: EdgeInsets.only(left: 16.0),
-                      child: FHInfoCardWidget(message: '''
-We strongly recommend setting production environments
-with only 'Read' permission for service accounts.
-The 'Lock/Unlock' and 'Change value' permissions
-typically given to service accounts for testing purposes,
-e.g. changing feature values states through the SDK
-when running tests. '''),
+                      child: FHInfoCardWidget(
+                          message:
+                              "We strongly recommend setting production environments "
+                              "with only 'Read' permission for service accounts. "
+                              "The 'Lock/Unlock' and 'Change value' permissions "
+                              "typically given to service accounts for testing purposes, "
+                              "e.g. changing feature values states through the SDK when running tests."),
                     ),
                     const SizedBox(
                       width: 32,
@@ -231,7 +231,8 @@ class _ServiceAccountPermissionDetailState
                     getPermissionCheckbox(env.id, RoleType.LOCK),
                     getPermissionCheckbox(env.id, RoleType.UNLOCK),
                     getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
-                    if (widget.bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
+                    if (widget.bloc.mrClient.identityProviders
+                        .featurePropertyExtendedDataEnabled)
                       getPermissionCheckbox(env.id, RoleType.EXTENDED_DATA),
                   ]));
                 }
@@ -333,16 +334,16 @@ class _ServiceAccountPermissionDetailState
           style: headerStyle,
         ),
       )),
-      if (widget.bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
+      if (widget
+          .bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
         Center(
             child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Text(
-                'Read\nExtended\nFeature Data',
-                style: headerStyle,
-              ),
-            )),
-
+          padding: const EdgeInsets.all(12.0),
+          child: Text(
+            'Read\nExtended\nFeature Data',
+            style: headerStyle,
+          ),
+        )),
     ]);
   }
 

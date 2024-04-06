@@ -8,27 +8,23 @@ class FHInfoCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Tooltip(
-      textStyle: Theme.of(context)
-          .textTheme
-          .bodyMedium!
-          .copyWith(color: Theme.of(context).primaryColor),
-      message: message,
-      padding: const EdgeInsets.all(20),
+      richMessage: WidgetSpan(
+          alignment: PlaceholderAlignment.baseline,
+          baseline: TextBaseline.alphabetic,
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            constraints: const BoxConstraints(maxWidth: 250),
+            child: Text(message),
+          )),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColorLight.withOpacity(0.9),
+        color: Theme.of(context).primaryColorLight,
         borderRadius: const BorderRadius.all(Radius.circular(4)),
       ),
-      verticalOffset: 20,
-      waitDuration: const Duration(milliseconds: 400),
-      child: InkWell(
-        mouseCursor: SystemMouseCursors.click,
-        radius: 36.0,
-        onHover: (_) {},
-        onTap: () {},
-        child: const Icon(
-          Icons.info,
-          size: 22.0,
-        ),
+      preferBelow: false,
+      verticalOffset: 10,
+      child: const Icon(
+        Icons.info_outline,
+        size: 20,
       ),
     );
   }

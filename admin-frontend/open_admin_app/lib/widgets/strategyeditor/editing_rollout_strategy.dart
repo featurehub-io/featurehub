@@ -28,46 +28,71 @@ class EditingRolloutStrategyAttribute {
   /* A temporary id used only when validating. Saving strips these out as they are not otherwise necessary */
   String id;
 
-
   @override
   String toString() {
     return "ersa: field $fieldName, values: $values, type: $type, id: $id, conditional: $conditional";
   }
 
-  EditingRolloutStrategyAttribute({
-      this.conditional, this.fieldName, required this.values, this.type, required this.id});
+  EditingRolloutStrategyAttribute(
+      {this.conditional,
+      this.fieldName,
+      required this.values,
+      this.type,
+      required this.id});
 
   RolloutStrategyAttribute? toRolloutStrategyAttribute() {
     if (conditional == null || fieldName == null || type == null) return null;
-    return RolloutStrategyAttribute(conditional: conditional!, fieldName: fieldName!, type: type!, id: id, values: values);
+    return RolloutStrategyAttribute(
+        conditional: conditional!,
+        fieldName: fieldName!,
+        type: type!,
+        id: id,
+        values: values);
   }
 
   EditingRolloutStrategyAttribute copy() {
-    return EditingRolloutStrategyAttribute(conditional: conditional, fieldName: fieldName, values: values.toList(), type: type, id: id);
+    return EditingRolloutStrategyAttribute(
+        conditional: conditional,
+        fieldName: fieldName,
+        values: values.toList(),
+        type: type,
+        id: id);
   }
 
   List<RolloutStrategyViolation> violations() {
     final violations = <RolloutStrategyViolation>[];
 
     if (fieldName == null) {
-      violations.add(RolloutStrategyViolation(violation:  RolloutStrategyViolationType.attrMissingFieldName, id: id));
+      violations.add(RolloutStrategyViolation(
+          violation: RolloutStrategyViolationType.attrMissingFieldName,
+          id: id));
     }
     if (conditional == null) {
-      violations.add(RolloutStrategyViolation(violation:  RolloutStrategyViolationType.attrMissingConditional, id: id));
+      violations.add(RolloutStrategyViolation(
+          violation: RolloutStrategyViolationType.attrMissingConditional,
+          id: id));
     }
     if (type == null) {
-      violations.add(RolloutStrategyViolation(violation:  RolloutStrategyViolationType.attrMissingFieldType, id: id));
+      violations.add(RolloutStrategyViolation(
+          violation: RolloutStrategyViolationType.attrMissingFieldType,
+          id: id));
     }
     if (values.isEmpty) {
-      violations.add(RolloutStrategyViolation(violation:  RolloutStrategyViolationType.attrMissingValue, id: id));
+      violations.add(RolloutStrategyViolation(
+          violation: RolloutStrategyViolationType.attrMissingValue, id: id));
     }
 
     return violations;
   }
 
-
-  static EditingRolloutStrategyAttribute fromRolloutStrategyAttribute(RolloutStrategyAttribute rsa) {
-    return EditingRolloutStrategyAttribute(values: rsa.values, conditional: rsa.conditional, fieldName: rsa.fieldName, type: rsa.type, id: rsa.id!);
+  static EditingRolloutStrategyAttribute fromRolloutStrategyAttribute(
+      RolloutStrategyAttribute rsa) {
+    return EditingRolloutStrategyAttribute(
+        values: [...rsa.values],
+        conditional: rsa.conditional,
+        fieldName: rsa.fieldName,
+        type: rsa.type,
+        id: rsa.id!);
   }
 }
 
@@ -84,8 +109,13 @@ class EditingRolloutStrategy {
 
   bool saved;
 
-  EditingRolloutStrategy({required this.id, required this.saved, this.percentage, this.percentageAttributes,
-      required this.attributes, this.name});
+  EditingRolloutStrategy(
+      {required this.id,
+      required this.saved,
+      this.percentage,
+      this.percentageAttributes,
+      required this.attributes,
+      this.name});
 
   double get maxPercentage => 1000000.0;
   double get percentageMultiplier => maxPercentage / 100.0;
@@ -97,7 +127,6 @@ class EditingRolloutStrategy {
   String get percentageText =>
       percentage == null ? '' : (percentage! / percentageMultiplier).toString();
 
-
   @override
   String toString() {
     return "name: $name, id: $id, percentage $percentage, percentage attr: $percentageAttributes, $attributes";
@@ -107,52 +136,97 @@ class EditingRolloutStrategy {
     return EditingRolloutStrategy(
         id: rs.id!,
         saved: true,
-        percentage: rs.percentage, percentageAttributes: rs.percentageAttributes,
+        percentage: rs.percentage,
+        percentageAttributes: rs.percentageAttributes,
         name: rs.name,
-        attributes: (rs.attributes ?? []).map((e) => EditingRolloutStrategyAttribute.fromRolloutStrategyAttribute(e)).toList()
-    );
+        attributes: (rs.attributes ?? [])
+            .map((e) =>
+                EditingRolloutStrategyAttribute.fromRolloutStrategyAttribute(e))
+            .toList());
   }
 
   RolloutStrategy? toRolloutStrategy(dynamic value) {
-    if (name == null || attributes.any((rsa) => rsa.toRolloutStrategyAttribute() == null)) return null;
-    return RolloutStrategy(id: id, name: name!, value: value, percentage: percentage, percentageAttributes: percentageAttributes, attributes: attributes.map((e) => e.toRolloutStrategyAttribute()!).toList());
+    if (name == null ||
+        attributes.any((rsa) => rsa.toRolloutStrategyAttribute() == null))
+      return null;
+    return RolloutStrategy(
+        id: id,
+        name: name!,
+        value: value,
+        percentage: percentage,
+        percentageAttributes: percentageAttributes,
+        attributes:
+            attributes.map((e) => e.toRolloutStrategyAttribute()!).toList());
   }
 
-  EditingRolloutStrategy copy({String? id, int? percentage, List<String>? percentageAttributes,
-    dynamic value, List<EditingRolloutStrategyAttribute>? attributes, String? name}) {
-    return EditingRolloutStrategy(id: id ?? this.id, saved: saved, attributes: (attributes ?? this.attributes).map((e) => e.copy()).toList(),
-        percentage: percentage ?? this.percentage, percentageAttributes: percentageAttributes ?? this.percentageAttributes, name: name ?? this.name);
+  EditingRolloutStrategy copy(
+      {String? id,
+      int? percentage,
+      List<String>? percentageAttributes,
+      dynamic value,
+      List<EditingRolloutStrategyAttribute>? attributes,
+      String? name}) {
+    return EditingRolloutStrategy(
+        id: id ?? this.id,
+        saved: saved,
+        attributes:
+            (attributes ?? this.attributes).map((e) => e.copy()).toList(),
+        percentage: percentage ?? this.percentage,
+        percentageAttributes: percentageAttributes ?? this.percentageAttributes,
+        name: name ?? this.name);
   }
 
   List<RolloutStrategyViolation> violations() {
     final violations = <RolloutStrategyViolation>[];
 
     if (name == null) {
-      violations.add(RolloutStrategyViolation(violation:  RolloutStrategyViolationType.noName));
+      violations.add(RolloutStrategyViolation(
+          violation: RolloutStrategyViolationType.noName));
     }
 
-    for (var rsa in attributes) { violations.addAll(rsa.violations()); }
+    for (var rsa in attributes) {
+      violations.addAll(rsa.violations());
+    }
 
     return violations;
   }
 
-  static EditingRolloutStrategy fromGroupRolloutStrategy(GroupRolloutStrategy rs, dynamic value) {
+  static EditingRolloutStrategy fromGroupRolloutStrategy(
+      GroupRolloutStrategy rs, dynamic value) {
     return EditingRolloutStrategy(
         id: rs.id!,
         saved: true,
-        percentage: rs.percentage, percentageAttributes: rs.percentageAttributes,
+        percentage: rs.percentage,
+        percentageAttributes: rs.percentageAttributes,
         name: rs.name,
-        attributes: (rs.attributes ?? []).map((e) => EditingRolloutStrategyAttribute.fromRolloutStrategyAttribute(e)).toList()
-    );
+        attributes: (rs.attributes ?? [])
+            .map((e) =>
+                EditingRolloutStrategyAttribute.fromRolloutStrategyAttribute(e))
+            .toList());
   }
 
   GroupRolloutStrategy? toGroupRolloutStrategy() {
-    return GroupRolloutStrategy(name: name!, id: id, percentage: percentage, percentageAttributes: percentageAttributes, attributes: attributes.map((e) => e.toRolloutStrategyAttribute()!).toList());
+    return GroupRolloutStrategy(
+        name: name!,
+        id: id,
+        percentage: percentage,
+        percentageAttributes: percentageAttributes,
+        attributes:
+            attributes.map((e) => e.toRolloutStrategyAttribute()!).toList());
   }
 
-  static EditingRolloutStrategy newStrategy({int? percentage, String? id, List<String>? percentageAttributes,
-    List<EditingRolloutStrategyAttribute>? attributes, String? name}) {
-    return EditingRolloutStrategy(id: id ?? makeStrategyId(), saved: false, attributes: attributes ?? [],
-        name: name, percentageAttributes: percentageAttributes, percentage: percentage);
+  static EditingRolloutStrategy newStrategy(
+      {int? percentage,
+      String? id,
+      List<String>? percentageAttributes,
+      List<EditingRolloutStrategyAttribute>? attributes,
+      String? name}) {
+    return EditingRolloutStrategy(
+        id: id ?? makeStrategyId(),
+        saved: false,
+        attributes: attributes ?? [],
+        name: name,
+        percentageAttributes: percentageAttributes,
+        percentage: percentage);
   }
 }

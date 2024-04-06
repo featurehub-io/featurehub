@@ -69,7 +69,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
     }
 
     return SizedBox(
-      width: 200,
+      width: 250,
       height: 30,
       child: InkWell(
         canRequestFocus: false,

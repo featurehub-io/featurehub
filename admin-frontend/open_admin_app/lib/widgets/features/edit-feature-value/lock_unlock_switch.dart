@@ -16,11 +16,13 @@ class LockUnlockSwitch extends StatefulWidget {
 
 class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
   bool _locked = false;
+  bool _initiallyLocked = false;
 
   @override
   void initState() {
     super.initState();
-    _locked = widget.fvBloc.currentFeatureValue.locked;
+    _initiallyLocked = widget.fvBloc.currentFeatureValue.locked;
+    _locked = _initiallyLocked;
   }
 
   @override
@@ -35,33 +37,42 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
       children: <Widget>[
         Row(
           children: [
-            Material(
-              child: IconButton(
-                splashRadius: 20,
-                mouseCursor: disabled
-                    ? SystemMouseCursors.basic
-                    : SystemMouseCursors.click,
-                tooltip: disabled
-                    ? null
-                    : (_locked
-                        ? 'Click the lock to make changes'
-                        : 'Click the lock to prevent further changes'),
-                icon: Icon(_locked ? Icons.lock_outline : Icons.lock_open,
-                    size: 20, color: _locked ? Colors.orange : Colors.green),
-                onPressed: disabled
-                    ? null
-                    : () {
-                        setState(() {
-                          _locked = !_locked;
-                        });
-                        widget.fvBloc.updateFeatureValueLockedStatus(_locked);
-                      },
-              ),
+            IconButton.outlined(
+              tooltip: disabled ||
+                      (_initiallyLocked &&
+                          !_locked) // lock/unlock button will not be displayed if feature value was locked and is set to unlocked by user
+                  // - this is to prevent user sending "locked" to the already "locked" feature)
+                  ? null
+                  : (_locked ? 'Click to unlock' : 'Click to lock'),
+              icon: Icon(_locked ? Icons.lock_outline : Icons.lock_open,
+                  size: 20, color: _locked ? Colors.orange : Colors.green),
+              onPressed: disabled || (_initiallyLocked && !_locked)
+                  ? null
+                  : () {
+                      setState(() {
+                        _locked = !_locked;
+                      });
+                      widget.fvBloc.updateFeatureValueLockedStatus(_locked);
+                    },
             ),
-            Text(
-              _locked ? 'Locked' : 'Unlocked',
-              style: Theme.of(context).textTheme.bodySmall,
-            )
+            const SizedBox(
+              width: 8.0,
+            ),
+            _locked
+                ? Text(
+                    'Feature is locked and cannot be changed',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: Colors.orange),
+                  )
+                : Text(
+                    'Feature is unlocked and can be changed',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: Colors.green),
+                  )
           ],
         )
       ],

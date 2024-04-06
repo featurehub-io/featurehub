@@ -45,7 +45,7 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
     final debouncer = Debouncer(milliseconds: 1000);
 
     return SizedBox(
-        width: 200,
+        width: 250,
         height: 36,
         child: TextField(
           style: Theme.of(context).textTheme.bodyLarge,
@@ -63,11 +63,13 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
                 borderSide: BorderSide(
               color: Colors.grey,
             )),
-            hintText: widget.canEdit
-                ? widget.unlocked
-                    ? 'Enter number value'
-                    : 'Unlock to edit'
-                : 'No editing rights',
+            hintText: widget.groupRolloutStrategy == null
+                ? (widget.canEdit
+                    ? (widget.unlocked
+                        ? 'Enter number value'
+                        : 'Unlock to edit')
+                    : 'No editing rights')
+                : 'not set',
             hintStyle: Theme.of(context).textTheme.bodySmall,
             errorText:
                 validateNumber(tec.text) != null ? 'Not a valid number' : null,
