@@ -20,7 +20,7 @@ class FHInfoCardWidget extends StatelessWidget {
         color: Theme.of(context).primaryColorLight,
         borderRadius: const BorderRadius.all(Radius.circular(4)),
       ),
-      preferBelow: false,
+      waitDuration: const Duration(milliseconds: 300),
       verticalOffset: 10,
       child: const Icon(
         Icons.info_outline,
