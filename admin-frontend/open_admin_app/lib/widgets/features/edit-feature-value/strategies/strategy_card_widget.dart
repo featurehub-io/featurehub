@@ -37,12 +37,11 @@ class StrategyCardWidget extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.only(left: 8.0, right: 2.0),
             child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
                   Expanded(
-                      flex: 2,
+                      flex: 4,
                       child: groupRolloutStrategy != null
                           ? Text(groupRolloutStrategy!.name,
                               maxLines: 2,
@@ -59,12 +58,13 @@ class StrategyCardWidget extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style:
                                       Theme.of(context).textTheme.labelLarge))),
-                  Flexible(flex: 3, child: editableHolderWidget),
+                  Expanded(flex: 6, child: editableHolderWidget),
                   Expanded(
-                      flex: 1,
+                      flex: 2,
                       child: rolloutStrategy != null &&
                               groupRolloutStrategy == null
                           ? Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 EditValueStrategyLinkButton(
                                   editable: editable,
