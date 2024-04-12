@@ -10,7 +10,7 @@ interface SystemConfigApi {
   class NoSuchKeyException : RuntimeException()
 
   @Throws(UpdateSystemConfigFailedException::class)
-  fun updateConfigs(configs: List<UpdatedSystemConfig>, whoUpdated: UUID): List<SystemConfig>
+  fun updateConfigs(configs: List<UpdatedSystemConfig>, whoUpdated: UUID?, allowInternal: Boolean = false): List<SystemConfig>
 
   fun findConfigs(filters: List<String>): List<SystemConfig>
   fun isEnabled(configSection: String): Boolean

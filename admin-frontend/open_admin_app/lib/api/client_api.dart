@@ -379,7 +379,8 @@ class ManagementRepositoryClientBloc implements Bloc {
       if (routeChange) {
         routeSlot(RouteSlot.portfolio);
       }
-    }).catchError((_) {
+    }).catchError((e) {
+      _log.fine("failed to request own details $e");
       setBearerToken(null);
       routeSlot(RouteSlot.login);
     });
@@ -403,6 +404,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void routeSlot(RouteSlot slot) {
+    _log.finest("swapping to slot $slot");
     if (_siteInitialisedSource.value != RouteSlot.nowhere) {
       _siteInitialisedSource.add(slot);
     }

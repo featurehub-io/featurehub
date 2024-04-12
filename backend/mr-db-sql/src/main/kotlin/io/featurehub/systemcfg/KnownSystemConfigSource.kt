@@ -14,7 +14,8 @@ data class ValidSystemConfig(
   val requiresEncryption: Boolean,
   val dataType: TypeReference<*>,
   val createIfMissing: Boolean,
-  val defaultValue: Any? // has to be of the format specified in dataType
+  val defaultValue: Any?, // has to be of the format specified in dataType,
+  val internalOnly: Boolean = false
 )
 
 /**

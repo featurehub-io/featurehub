@@ -56,6 +56,7 @@ class SlackConfig @Inject constructor(
     const val cfg_bearerToken = "slack.bearerToken"
     const val cfg_defaultChannel = "slack.defaultChannel"
     const val cfg_msgFormatFeatureChange = "slack.messageFormat.featureChange"
+
     val config = listOf(
       ValidSystemConfig(
         cfg_enabled,

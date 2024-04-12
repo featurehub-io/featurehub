@@ -6,6 +6,7 @@ import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
 import jakarta.persistence.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -18,7 +19,7 @@ public class DbSystemConfig extends Model {
   private final DbSystemConfigKey id;
 
   @ManyToOne
-  @Column(name = "fk_who_updated", nullable = false)
+  @Column(name = "fk_who_updated", nullable = true)
   @JoinColumn(name = "fk_who_updated")
   private DbPerson whoUpdated;
 
@@ -39,7 +40,7 @@ public class DbSystemConfig extends Model {
   @Column(name = "vl")
   private String value;
 
-  public DbSystemConfig(@NotNull String key, @NotNull UUID organisationId, @NotNull DbPerson whoUpdated) {
+  public DbSystemConfig(@NotNull String key, @NotNull UUID organisationId, @Nullable DbPerson whoUpdated) {
     id = new DbSystemConfigKey(key, organisationId);
     this.whoUpdated = whoUpdated;
     whenCreated = Instant.now();
@@ -64,19 +65,21 @@ public class DbSystemConfig extends Model {
     return organization;
   }
 
+  @Nullable
   public String getValue() {
     return value;
   }
 
-  public void setValue(String value) {
+  public void setValue(@Nullable String value) {
     this.value = value;
   }
 
+  @Nullable
   public DbPerson getWhoUpdated() {
     return whoUpdated;
   }
 
-  public void setWhoUpdated(DbPerson whoUpdated) {
+  public void setWhoUpdated(@Nullable DbPerson whoUpdated) {
     this.whoUpdated = whoUpdated;
   }
 

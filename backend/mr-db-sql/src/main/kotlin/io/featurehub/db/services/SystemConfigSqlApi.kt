@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.featurehub.db.api.SystemConfigApi
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbSystemConfig
@@ -29,9 +28,13 @@ interface InternalSystemConfigApi {
   fun findConfigs(vararg keys: String, orgId: UUID, configDefinitions: List<ValidSystemConfig>): Map<String, SystemConfig>
   fun findConfigs(keys: Collection<String>, orgId: UUID, configDefinitions: List<ValidSystemConfig>): Map<String, SystemConfig>
   fun mapVal(config: DbSystemConfig, configDefinitions: List<ValidSystemConfig>): SystemConfig?
+
+  // this allows us to remove some config, such as when we are wiping it at a system level (either we don't know the
+  // person who is doing it or because its the system cleaning up)
+  fun removeConfig(key: String, orgId: UUID)
 }
 
-class InternalSystemConfigSqlApi : InternalSystemConfigApi {
+class InternalSystemConfigSqlApi @Inject constructor(private val conversions: Conversions) : InternalSystemConfigApi {
   private val mapper = ObjectMapper().apply {
     registerModule(KotlinModule.Builder().build())
       .registerModule(JavaTimeModule())
@@ -58,6 +61,10 @@ class InternalSystemConfigSqlApi : InternalSystemConfigApi {
       .key(config.key)
       .encrypted(sysCfg.requiresEncryption)
       .value(mapVal(config.value, sysCfg.dataType))
+  }
+
+  override fun removeConfig(key: String, orgId: UUID) {
+    QDbSystemConfig().id.key.eq(key).id.orgId.eq(orgId).delete()
   }
 
   private fun mapVal(config: String?, ref: TypeReference<*>): Any? {
@@ -92,21 +99,22 @@ class SystemConfigSqlApi @Inject constructor(
     private val log: Logger = LoggerFactory.getLogger(SystemConfigSqlApi::class.java)
   }
 
-  override fun updateConfigs(configs: List<UpdatedSystemConfig>, whoUpdated: UUID): List<SystemConfig> {
+  override fun updateConfigs(configs: List<UpdatedSystemConfig>, whoUpdated: UUID?, allowInternal: Boolean): List<SystemConfig> {
 
     // check for invalid entries
     configProvider.forEach { provider ->
-      provider.presaveUpdateCheck(configs, whoUpdated)?.let { failure ->
+      provider.presaveUpdateCheck(configs, conversions.organizationId())?.let { failure ->
         throw SystemConfigApi.UpdateSystemConfigFailedException(failure)
       }
     }
 
-    val updatedBy = conversions.byPerson(whoUpdated)!!
+    val updatedBy = conversions.byPerson(whoUpdated)
     val originalConfigs = findConfigs(configs.map { it.key })
     val updatedConfigs =
       configs.mapNotNull {
         val systemConfig = systemConfigMap[it.key]
-        val updateResult = if (systemConfig == null) null else mapToStoredValue(it, systemConfig)
+
+        val updateResult = if (systemConfig == null || (systemConfig.internalOnly && !allowInternal) ) null else mapToStoredValue(it, systemConfig)
         if (updateResult == null || updateResult.skip) null else updateConfig(it, updatedBy, updateResult)
       }.map { Pair(it.key, SystemConfigChange(null, it)) }.toMap()
 
@@ -124,7 +132,7 @@ class SystemConfigSqlApi @Inject constructor(
 
   inner class UpdateResult(val value: String?, val skip: Boolean)
 
-  fun updateConfig(config: UpdatedSystemConfig, updatedBy: DbPerson, updateResult: UpdateResult): SystemConfig? {
+  fun updateConfig(config: UpdatedSystemConfig, updatedBy: DbPerson?, updateResult: UpdateResult): SystemConfig? {
     if (!systemConfigMap.containsKey(config.key)) {
       return null
     }
@@ -198,16 +206,16 @@ class SystemConfigSqlApi @Inject constructor(
 
   override fun findConfigs(filters: List<String>): List<SystemConfig> {
     if (filters.isEmpty()) {
-      return systemConfigMap.values.map { SystemConfig().key(it.key).version(-1).encrypted(it.requiresEncryption) }
+      return systemConfigMap.values.filter { !it.internalOnly }.map { SystemConfig().key(it.key).version(-1).encrypted(it.requiresEncryption) }
     }
 
     val foundKeys = filters.map { filter ->
       QDbSystemConfig().id.key.startsWith(filter.lowercase()).findList().map(this::mapVal)
-    }.flatten().associateBy { it.key }
+    }.flatten().filter { !systemConfigMap[it.key]!!.internalOnly }.associateBy { it.key }
 
     // find all those keys that could/should have values but don't
     val valReturn = filters.map { filter ->
-      systemConfigMap.values.filter { it.createIfMissing && foundKeys[it.key] == null && it.key.startsWith(filter) }.map {
+      systemConfigMap.values.filter { !it.internalOnly && it.createIfMissing && foundKeys[it.key] == null && it.key.startsWith(filter) }.map {
         SystemConfig().key(it.key).encrypted(it.requiresEncryption).value(it.defaultValue).version(-1)
       }
     }.flatten()
@@ -226,6 +234,7 @@ class SystemConfigSqlApi @Inject constructor(
 
   override fun decryptSystemConfig(key: String, mapKey: String?): String? {
     val sysConfig = systemConfigMap[key] ?: throw SystemConfigApi.NoSuchKeyException()
+    if (sysConfig.internalOnly) return null
     if (!sysConfig.requiresEncryption) return null
     val config = QDbSystemConfig().id.key.eq(key).id.orgId.eq(conversions.organizationId()).findOne() ?: return null
     if (config.value == null) return null
@@ -249,8 +258,8 @@ class SystemConfigSqlApi @Inject constructor(
     val sysConfig = systemConfigMap[config.key]
     val encrypted = sysConfig?.requiresEncryption ?: false
     val value = if (config.value == null) null else (if (encrypted)
-      mapEncryptedVal(config.value, sysConfig?.dataType ?: KnownSystemConfigSource.stringRef, config.key)
-      else mapVal(config.value, sysConfig?.dataType ?: KnownSystemConfigSource.stringRef))
+      mapEncryptedVal(config.value!!, sysConfig?.dataType ?: KnownSystemConfigSource.stringRef, config.key)
+      else mapVal(config.value!!, sysConfig?.dataType ?: KnownSystemConfigSource.stringRef))
     return SystemConfig()
       .key(config.key)
       .encrypted(encrypted)

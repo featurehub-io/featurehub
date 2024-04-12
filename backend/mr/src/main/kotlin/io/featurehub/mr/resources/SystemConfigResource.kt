@@ -32,7 +32,7 @@ class SystemConfigResource @Inject constructor(
     }
 
     try {
-      return SystemConfigs().configs(systemConfigApi.updateConfigs(updatedSystemConfigs.configs, from.id!!.id))
+      return SystemConfigs().configs(systemConfigApi.updateConfigs(updatedSystemConfigs.configs, from.id!!.id, false))
     } catch (e: SystemConfigApi.UpdateSystemConfigFailedException) {
       throw BadRequestException(e.message)
     }

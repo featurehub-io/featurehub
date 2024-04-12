@@ -1,10 +1,9 @@
-import 'dart:html'; // ignore: avoid_web_libraries_in_flutter
 
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/fhos_logger.dart';
+import 'package:open_admin_app/widget_creator.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_outlined_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
@@ -12,6 +11,7 @@ import 'package:open_admin_app/widgets/systemconfig/system_config_encryptable_ma
 import 'package:open_admin_app/widgets/systemconfig/system_config_encrypted_text_field.dart';
 import 'package:open_admin_app/widgets/systemconfig/system_config_mixin.dart';
 import 'package:open_admin_app/widgets/systemconfig/system_config_text_field.dart';
+import 'dart:html'; // ignore: avoid_web_libraries_in_flutter
 
 class SlackSystemConfigWidget extends StatefulWidget {
   final List<SystemConfig> knownConfigs;
@@ -65,6 +65,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
       // as is the bearer token, but it might be encrypted
       final bearer = settings['slack.bearerToken']!;
       final defaultChannel = settings['slack.defaultChannel']!;
+      final knownSiteUrl = settings['knownsite.url'];
 
       return Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -92,32 +93,33 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                 padding: const EdgeInsets.only(left: 8.0, right: 8.0),
                 child: Column(
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
-                      child: FHExternalLinkOutlinedWidget(
-                          label: 'Connect FeatureHub to Slack',
-                          tooltipMessage:
-                              'Install FeatureHub Bot app to your Slack workspace',
-                          link:
-                              'https://api.slack.com/apps?new_app=1&manifest_yaml=display_information%3A%0A%20%20name%3A%20FeatureHub%0A%20%20description%3A%20FeatureHub%20Notifications%20Bot%0A%20%20background_color%3A%20%22%23536dfe%22%0A%20%20long_description%3A%20Receive%20notifications%20from%20the%20FeatureHub%20Bot.%20Notifications%20include%20features%20and%20feature%20values%20updates%2C%20strategy%20updates%20and%20other%20feature%20settings.%20For%20details%2C%20please%20view%20our%20documentation%20on%20https%3A%2F%2Fdocs.featurehub.io%0Afeatures%3A%0A%20%20bot_user%3A%0A%20%20%20%20display_name%3A%20featurehub%0A%20%20%20%20always_online%3A%20true%0Aoauth_config%3A%0A%20%20scopes%3A%0A%20%20%20%20bot%3A%0A%20%20%20%20%20%20-%20chat%3Awrite%0Asettings%3A%0A%20%20org_deploy_enabled%3A%20false%0A%20%20socket_mode_enabled%3A%20false%0A%20%20token_rotation_enabled%3A%20false%0A',
-                          icon: Icon(Icons.arrow_outward_outlined)),
-                    ),
-                    const SizedBox(
-                      height: 16.0,
-                    ),
-                    Row(
-                      children: [
-                        FilledButton.icon(
-                          icon: const Icon(slack),
-                          onPressed: () {
-                            window.open(
-                                'https://slack.com/oauth/v2/authorize?scope=chat:write&client_id=1182138673840.6580731873186&redirect_uri=https://app.test.featurehub.dev/app-settings?tab=integrations',
-                                'new tab');
-                          },
-                          label: const Text('Add to Slack'),
-                        ),
-                      ],
-                    ),
+                    if (knownSiteUrl == null)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+                        child: FHExternalLinkOutlinedWidget(
+                            label: 'Connect FeatureHub to Slack',
+                            tooltipMessage:
+                                'Install FeatureHub Bot app to your Slack workspace',
+                            link:
+                                'https://api.slack.com/apps?new_app=1&manifest_yaml=display_information%3A%0A%20%20name%3A%20FeatureHub%0A%20%20description%3A%20FeatureHub%20Notifications%20Bot%0A%20%20background_color%3A%20%22%23536dfe%22%0A%20%20long_description%3A%20Receive%20notifications%20from%20the%20FeatureHub%20Bot.%20Notifications%20include%20features%20and%20feature%20values%20updates%2C%20strategy%20updates%20and%20other%20feature%20settings.%20For%20details%2C%20please%20view%20our%20documentation%20on%20https%3A%2F%2Fdocs.featurehub.io%0Afeatures%3A%0A%20%20bot_user%3A%0A%20%20%20%20display_name%3A%20featurehub%0A%20%20%20%20always_online%3A%20true%0Aoauth_config%3A%0A%20%20scopes%3A%0A%20%20%20%20bot%3A%0A%20%20%20%20%20%20-%20chat%3Awrite%0Asettings%3A%0A%20%20org_deploy_enabled%3A%20false%0A%20%20socket_mode_enabled%3A%20false%0A%20%20token_rotation_enabled%3A%20false%0A',
+                            icon: Icon(Icons.arrow_outward_outlined)),
+                      ),
+                    if (knownSiteUrl != null)
+                      Row(
+                        children: [
+                          FilledButton.icon(
+                            icon: const Icon(slack),
+                            onPressed: () async {
+                              final url = await configBloc.knownSiteRedirectUrl('/mr-api/slack/oauth2/connect');
+                              if (url != null) {
+                                window.open(url, 'new tab');
+                              }
+
+                            },
+                            label: const Text('Add to Slack'),
+                          ),
+                        ],
+                      ),
                     const SizedBox(
                       height: 16.0,
                     ),
@@ -227,7 +229,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
   }
 
   @override
-  List<String> get filters => ['slack.'];
+  List<String> get filters => ['slack.', 'knownsite.'];
 
   @override
   String get namedSection => 'Slack Configuration';

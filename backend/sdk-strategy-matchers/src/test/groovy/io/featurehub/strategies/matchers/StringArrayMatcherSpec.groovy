@@ -26,6 +26,7 @@ class StringArrayMatcherSpec extends Specification {
         'Android'        | RolloutStrategyAttributeConditional.EQUALS         | ['Android']                  || true
         'Android'        | RolloutStrategyAttributeConditional.EQUALS         | ['android']                  || false
         'Android'        | RolloutStrategyAttributeConditional.NOT_EQUALS     | ['Android']                  || false
+        'Windows'        | RolloutStrategyAttributeConditional.EXCLUDES     | ['Android', 'ios']                  || true
         'Android'        | RolloutStrategyAttributeConditional.NOT_EQUALS     | ['android']                  || true
         'ios'            | RolloutStrategyAttributeConditional.INCLUDES       | ['android', 'ios', 'chrome'] || true
         'linux'          | RolloutStrategyAttributeConditional.INCLUDES       | ['android', 'ios', 'chrome'] || false

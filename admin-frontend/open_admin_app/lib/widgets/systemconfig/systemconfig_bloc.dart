@@ -1,9 +1,14 @@
 
 
+import 'dart:convert';
+
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:dio/dio.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/fhos_logger.dart';
 import 'package:rxdart/rxdart.dart';
+
 
 class SystemConfigBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
@@ -30,5 +35,13 @@ class SystemConfigBloc implements Bloc {
   @override
   void dispose() {
     knownConfigs.close();
+  }
+
+  Future<String?> knownSiteRedirectUrl(String externalOrganisationUrl) async {
+    final data = await mrClient.apiClient.invokeAPI(externalOrganisationUrl, [], null, ['bearerAuth'], Options());
+    if (data.statusCode == 200 && data.body != null) {
+      return await utf8.decodeStream(data.body!);
+    }
+    return null;
   }
 }
