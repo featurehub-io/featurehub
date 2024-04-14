@@ -60,9 +60,9 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                             FilledButton(
                                 onPressed: () async {
                                   try {
-                                    await widget.bloc.saveFeatureValueUpdates();
                                     Navigator.pop(
                                         context); //close the side panel
+                                    await widget.bloc.saveFeatureValueUpdates();
                                     widget.bloc.perApplicationFeaturesBloc
                                         .mrClient
                                         .addSnackbar(Text(
