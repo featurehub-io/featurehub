@@ -87,8 +87,7 @@ class EditAttributeStrategyWidgetState
   Widget _nameField() {
     if (_wellKnown != null) {
       return Text(_nameFieldMap[_wellKnown!]!,
-          style: Theme.of(context).textTheme.titleSmall!.copyWith(
-          ));
+          style: Theme.of(context).textTheme.titleSmall!.copyWith());
     } else {
       return TextFormField(
           controller: _fieldName,
@@ -160,7 +159,7 @@ class EditAttributeStrategyWidgetState
                 padding: const EdgeInsets.all(4.0),
                 // margin: EdgeInsets.all(8.0),
                 decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
                 ),
                 height: 42,
                 child: OutlinedButton(
@@ -173,13 +172,13 @@ class EditAttributeStrategyWidgetState
                       ),
                       isExpanded: true,
                       items: _matchers.map((RolloutStrategyAttributeConditional
-                      dropDownStringItem) {
+                          dropDownStringItem) {
                         return DropdownMenuItem<
-                            RolloutStrategyAttributeConditional>(
+                                RolloutStrategyAttributeConditional>(
                             value: dropDownStringItem,
                             child: Text(
                                 transformStrategyAttributeConditionalValueToString(
-                                    dropDownStringItem),
+                                    dropDownStringItem, _wellKnown),
                                 style: Theme.of(context).textTheme.bodyMedium));
                       }).toList(),
                       hint: Text('Select condition',
@@ -229,26 +228,26 @@ class EditAttributeStrategyWidgetState
                   StrategyAttributeDeviceNameExtension.fromJson(e),
             ))
       else if (_wellKnown == StrategyAttributeWellKnownNames.platform)
-          Expanded(
-              flex: 4,
-              child: MultiSelectDropdown(
-                values: widget.attribute.values,
-                possibleValues: StrategyAttributePlatformName.values,
-                enumToDisplayNameMapper: _platformNameMapper,
-                hint: 'Select Platform',
-                enumToJsonMapper: (e) =>
-                    (e as StrategyAttributePlatformName).toJson(),
-                jsonToEnumMapper: (e) =>
-                    StrategyAttributePlatformNameExtension.fromJson(e),
-              ))
-        else
-          Expanded(flex: 4, child: _fieldValueEditorByFieldType())
+        Expanded(
+            flex: 4,
+            child: MultiSelectDropdown(
+              values: widget.attribute.values,
+              possibleValues: StrategyAttributePlatformName.values,
+              enumToDisplayNameMapper: _platformNameMapper,
+              hint: 'Select Platform',
+              enumToJsonMapper: (e) =>
+                  (e as StrategyAttributePlatformName).toJson(),
+              jsonToEnumMapper: (e) =>
+                  StrategyAttributePlatformNameExtension.fromJson(e),
+            ))
+      else
+        Expanded(flex: 4, child: _fieldValueEditorByFieldType())
     ]);
   }
 
   void _updateAttributeFieldName() {
     final newWellKnown =
-    StrategyAttributeWellKnownNamesExtension.fromJson(_fieldName.text);
+        StrategyAttributeWellKnownNamesExtension.fromJson(_fieldName.text);
 
     if (newWellKnown != _wellKnown) {
       setState(() {
@@ -264,7 +263,7 @@ class EditAttributeStrategyWidgetState
       padding: const EdgeInsets.all(4.0),
       margin: const EdgeInsets.all(8.0),
       decoration: const BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+        borderRadius: BorderRadius.all(Radius.circular(6.0)),
       ),
       height: 42,
       child: OutlinedButton(
@@ -348,7 +347,7 @@ class EditAttributeStrategyWidgetState
               padding: const EdgeInsets.all(4.0),
               margin: const EdgeInsets.all(8.0),
               decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                borderRadius: BorderRadius.all(Radius.circular(6.0)),
               ),
               height: 42,
               child: OutlinedButton(
@@ -400,7 +399,7 @@ class EditAttributeStrategyWidgetState
       padding: const EdgeInsets.all(4.0),
       margin: const EdgeInsets.all(8.0),
       decoration: const BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+        borderRadius: BorderRadius.all(Radius.circular(6.0)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -429,8 +428,10 @@ class EditAttributeStrategyWidgetState
                 child: Tooltip(
                   message: 'Add value',
                   child: TextButton.icon(
-                      onPressed: () => _valueFieldChanged(_value.text),
-                    icon: const Icon(Icons.add_outlined, size: 16.0), label: const Text("Add"),),
+                    onPressed: () => _valueFieldChanged(_value.text),
+                    icon: const Icon(Icons.add_outlined, size: 16.0),
+                    label: const Text("Add"),
+                  ),
                 ),
               )
             ],
@@ -463,9 +464,8 @@ class EditAttributeStrategyWidgetState
     if (val.isEmpty) {
       return;
     } else {
-      List<String> valuesList = val.split(",")
-          .map((name) => name.trim())
-          .toList();
+      List<String> valuesList =
+          val.split(",").map((name) => name.trim()).toList();
       if (_attributeType == RolloutStrategyFieldType.NUMBER) {
         for (var element in valuesList) {
           try {
@@ -480,9 +480,7 @@ class EditAttributeStrategyWidgetState
             // ignore: empty_catches
           } catch (e) {}
         }
-      }
-
-      else {
+      } else {
         if (!widget.attribute.values.contains(val)) {
           setState(() {
             for (var element in valuesList) {
@@ -498,8 +496,8 @@ class EditAttributeStrategyWidgetState
 
 String _countryNameMapper(dynamic val) {
   return ((val is StrategyAttributeCountryName)
-      ? val.toJson().toString()
-      : val.toString())
+          ? val.toJson().toString()
+          : val.toString())
       .toString()
       .replaceAll('_', ' ')
       .replaceAll('of the', '')

@@ -5,7 +5,9 @@ List<RolloutStrategyAttributeConditional> defineMatchers(
     StrategyAttributeWellKnownNames? wellKnown) {
   final equalsOnlyMatchers = <RolloutStrategyAttributeConditional>[
     RolloutStrategyAttributeConditional.EQUALS,
-    RolloutStrategyAttributeConditional.NOT_EQUALS
+    RolloutStrategyAttributeConditional.NOT_EQUALS,
+    RolloutStrategyAttributeConditional.EXCLUDES,
+    RolloutStrategyAttributeConditional.INCLUDES
   ];
 
   final semanticVersionMatchers = <RolloutStrategyAttributeConditional>[
