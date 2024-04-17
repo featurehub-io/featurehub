@@ -1,7 +1,8 @@
 import 'package:mrapi/api.dart';
 
 String transformStrategyAttributeConditionalValueToString(
-    RolloutStrategyAttributeConditional dropDownStringItem) {
+    RolloutStrategyAttributeConditional dropDownStringItem,
+    StrategyAttributeWellKnownNames? wellKnown) {
   switch (dropDownStringItem) {
     case RolloutStrategyAttributeConditional.EQUALS:
       return 'equals';
@@ -20,8 +21,18 @@ String transformStrategyAttributeConditionalValueToString(
     case RolloutStrategyAttributeConditional.LESS_EQUALS:
       return 'less or equals';
     case RolloutStrategyAttributeConditional.INCLUDES:
+      if (wellKnown == StrategyAttributeWellKnownNames.platform &&
+          wellKnown == StrategyAttributeWellKnownNames.country &&
+          wellKnown == StrategyAttributeWellKnownNames.device) {
+        return 'includes';
+      }
       return 'includes substring';
     case RolloutStrategyAttributeConditional.EXCLUDES:
+      if (wellKnown == StrategyAttributeWellKnownNames.platform &&
+          wellKnown == StrategyAttributeWellKnownNames.country &&
+          wellKnown == StrategyAttributeWellKnownNames.device) {
+        return 'excludes';
+      }
       return 'excludes substring';
     case RolloutStrategyAttributeConditional.REGEX:
       return 'regex';
