@@ -15,7 +15,7 @@ class SystemConfigFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     context.register(object: AbstractBinder() {
       override fun configure() {
-        if (WebhookEncryptionFeature.isWebhookEncryptionEnabled) {
+        if (WebhookEncryptionFeature.isWebhookEncryptionEnabled && SlackConfig.slackIntegrationEnabled) {
           bind(SlackConfig::class.java).to(KnownSystemConfigSource::class.java).to(SlackConfigApi::class.java).`in`(Singleton::class.java)
         }
 
@@ -26,7 +26,7 @@ class SystemConfigFeature : Feature {
       }
     })
 
-    if (WebhookEncryptionFeature.isWebhookEncryptionEnabled) {
+    if (WebhookEncryptionFeature.isWebhookEncryptionEnabled && SlackConfig.slackIntegrationEnabled) {
       LifecycleListeners.starter(SlackLifecycleListener::class.java, context)
       LifecycleListeners.starter(SlackReadOnlyConfigLifecycleListener::class.java, context)
     }

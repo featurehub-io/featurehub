@@ -123,6 +123,8 @@ class SlackConfig @Inject constructor(
       Pair("metric.histogram.name", "slack_publishes"),
       Pair("metric.histogram.desc", "Slack publishes")
     )
+
+    val slackIntegrationEnabled = FallbackPropertyConfig.getConfig("integration.slack.enabled", "false") == "true"
   }
 
   override val knownConfig: List<ValidSystemConfig>
