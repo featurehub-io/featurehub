@@ -26,6 +26,8 @@ class WidgetCreator {
   List<Widget> extraGlobalMenuItems(ManagementRepositoryClientBloc client) =>
       [];
 
+  String externalOrganisationUrl(String urlPrefix, String urlPartial, ManagementRepositoryClientBloc client) => "";
+
   Widget errorMessageDetailsWidget({required FHError fhError}) {
     return FHErrorMessageDetailsWidget(fhError: fhError);
   }

@@ -18,6 +18,7 @@ import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.lifecycle.LifecycleStarted
 import io.featurehub.metrics.MetricsCollector
+import io.featurehub.rest.Info
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
 import jakarta.validation.constraints.NotNull
@@ -64,7 +65,7 @@ class FeatureEnricherProcessor @Inject constructor(
       MetricsCollector.histogram("enrich_publish", "Enrichment Feature publishing")
     )
 
-    cloudReceiverRegistry.registry("enricher").listen(PublishFeatureValues::class.java) { featureData, ce ->
+    cloudReceiverRegistry.registry(if (Info.applicationName() == "party-server") "common" else "enricher").listen(PublishFeatureValues::class.java) { featureData, ce ->
       log.trace("enricher received CE of type {}", ce.type)
       enrichData(featureData, ce.time)
     }

@@ -9,6 +9,7 @@ import DataTable from '@cucumber/cucumber/lib/models/data_table';
 import {EnrichedFeatures} from '../apis/webhooks';
 import {logger} from '../support/logging';
 import {CloudEvent} from "cloudevents";
+import {featurehubCloudEventBodyParser} from "featurehub-cloud-event-tools";
 
 When('I wait for {int} seconds', async function (seconds: number) {
   await sleep(seconds * 1000);
@@ -27,34 +28,44 @@ Given(/^I test the webhook$/, async function () {
   }));
 });
 
+Given('I clear the cloud events', function () {
+  resetCloudEvents();
+});
+
 function ourEnrichedFeatures(world: SdkWorld): CloudEvent<EnrichedFeatures>[] {
   return cloudEvents.filter(ce => ce.type == 'enriched-feature-v1'
     && (ce.data as EnrichedFeatures)?.environment?.environment?.id === world.environment.id)
     .map(ce => ce as CloudEvent<EnrichedFeatures>);
 }
 
-Then(/^we receive a webhook with (.*) flag that is (locked|unlocked) and (off|on)$/, async function(flagName: string, lockedStatus: string, flag: string) {
+Then(/^we receive a webhook with (.*) flag that is (locked|unlocked) and (off|on) and version (.*)$/, async function(flagName: string,
+                                                                                                                     lockedStatus: string, flag: string, version: string) {
   if (!process.env.EXTERNAL_NGROK && process.env.REMOTE_BACKEND) {
     return;
   }
 
   const world = this as SdkWorld;
 
+  console.log('looking for ', flagName, lockedStatus, flag, version);
   await waitForExpect(async () => {
     const enrichedData = ourEnrichedFeatures(world);
 
     expect(enrichedData.length, `filtered events for enriched and for our environment and found none ${cloudEvents}`).to.be.gt(0);
 
     const ourFeature = enrichedData.filter(ce => {
-      const featureData = ce.data as EnrichedFeatures;
+      const featureData = featurehubCloudEventBodyParser(ce) as EnrichedFeatures;
+      console.log('feature data is ', featureData, featureData?.environment?.fv);
       const feature = featureData.environment?.fv?.find(fv => fv.feature.key === flagName);
-      return (feature?.value?.locked === (lockedStatus === 'locked') &&
-              feature?.value?.value === (flag === 'on') &&
-              feature?.value.pId === world.person.id.id);
+      return (feature != null && feature.value != null && feature.value.locked === (lockedStatus === 'locked') &&
+              feature.value.value === (flag === 'on') &&
+              feature.value.version == parseInt(version) &&
+              feature.value.pId === world.person.id.id);
     });
 
     expect(ourFeature, `could not find feature ${flagName} in status ${lockedStatus} with value ${flag} and person ${world.person.id.id} in ${enrichedData}`)
       .to.not.be.undefined;
+    expect(ourFeature, `could not find feature ${flagName} in status ${lockedStatus} with value ${flag} and person ${world.person.id.id} in ${enrichedData}`)
+      .to.not.be.empty;
   }, 10000, 200);
 });
 

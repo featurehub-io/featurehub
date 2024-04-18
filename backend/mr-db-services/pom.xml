@@ -56,6 +56,11 @@
       <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
+      <groupId>io.featurehub.api</groupId>
+      <artifactId>messaging-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
       <groupId>io.featurehub.common</groupId>
       <artifactId>common-db</artifactId>
       <version>1.1-SNAPSHOT</version>
@@ -71,6 +76,11 @@
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
+    <dependency>
+      <groupId>io.featurehub.events</groupId>
+      <artifactId>eventing-cloudevents</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
 
     <dependency>
       <groupId>io.featurehub.common</groupId>

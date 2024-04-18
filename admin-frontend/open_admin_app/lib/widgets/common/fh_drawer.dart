@@ -179,6 +179,13 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
                 iconData: Icons.api_outlined,
                 path: '/admin-service-accounts',
                 params: {}),
+            if (client.identityProviders.systemConfigEnabled)
+              const FHMenuItem(
+                  name: 'System Config',
+                  permissionType: PermissionType.superadmin,
+                  iconData: Icons.bike_scooter_rounded,
+                  path: '/system-config',
+                  params: {}),
           ];
           menus.addAll(widgetCreator.extraGlobalMenuItems(client));
           return Column(children: menus);

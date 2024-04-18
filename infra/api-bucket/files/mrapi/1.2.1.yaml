@@ -1,8 +1,7 @@
 openapi: 3.0.1
 info:
   title: ManagementResourceApi
-  description: This describes the API clients use for accessing features. This reflects
-    the API from 1.5.7 onwards.
+  description: This describes the API clients use for accessing features.
   version: 1.2.1
   x-version-api: fragment of version API
 servers:
@@ -3132,6 +3131,73 @@ paths:
       explode: true
       schema:
         type: string
+  /mr-api/track-events/{id}:
+    get:
+      tags:
+      - TrackEventsService
+      description: Gets a paginated form of tracked events (usually cloud event logs)
+      operationId: getTrackedEvents
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uuid
+      - name: source
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: pageSize
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: cloudEventType
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: firstOnly
+        in: query
+        description: Whether to return the first result per entry even if there are
+          multiple. Defaults to true.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: the webhook type details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackEventsSummary'
+        "404":
+          description: no such data
+        "401":
+          description: not authenticated
+        "403":
+          description: no permission
+      security:
+      - bearerAuth: []
   /mr-api/application/{appId}/feature-history:
     get:
       tags:
@@ -3649,6 +3715,103 @@ paths:
       explode: true
       schema:
         type: boolean
+  /mr-api/system-api/{key}/decrypt:
+    get:
+      tags:
+      - SystemConfigService
+      description: "When passed a key and decrypt is enabled and the user has the\
+        \ right permissions, it will decrypt the key"
+      operationId: decryptSystemConfig
+      parameters:
+      - name: key
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: mapKey
+        in: query
+        description: "If the config is a map, then this is the key in the map to decrypt"
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: System config decrypted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemConfigDecryptResult'
+        "401":
+          description: Unidentified and no permission
+        "403":
+          description: Identified but no permission
+        "500":
+          description: Unknown error
+      security:
+      - bearerAuth: []
+  /mr-api/system-api:
+    get:
+      tags:
+      - SystemConfigService
+      description: Provides either the list of all flags (if no filters are specified)
+        or the stored values against the system if filters are specified.
+      operationId: getSystemConfig
+      parameters:
+      - name: filters
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        "200":
+          description: System configs matching the requested pattern
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemConfigs'
+        "401":
+          description: Unidentified and no permission
+        "403":
+          description: Identified but no permission
+        "500":
+          description: Unknown error
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - SystemConfigService
+      description: Configs that are included are either created or replaced. Only
+        recognized configs will be stored.
+      operationId: createOrUpdateSystemConfigs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatedSystemConfigs'
+        required: true
+      responses:
+        "200":
+          description: System configs that were saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemConfigs'
+        "401":
+          description: Unidentified and no permission
+        "403":
+          description: Identified but no permission
+        "500":
+          description: Unknown error
+      security:
+      - bearerAuth: []
 components:
   schemas:
     EnvironmentFeaturesResult:
@@ -5616,6 +5779,49 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FeatureHistoryItem'
+    TrackEventsSummary:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: The maximum number of items returned by this query
+          format: int64
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrackEventsSummaryItem'
+    TrackEventsSummaryItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: false
+        whenSent:
+          type: string
+          format: date-time
+          nullable: false
+        eventResponses:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/TrackEventResponse'
+    TrackEventResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+        whenReceived:
+          type: string
+          format: date-time
+        message:
+          type: string
+          nullable: true
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
     FeatureGroupFeature:
       required:
       - id
@@ -5895,6 +6101,58 @@ components:
             type: string
             description: unique id of the strategy
             format: uuid
+    SystemConfigDecryptResult:
+      type: object
+      properties:
+        result:
+          type: string
+          nullable: true
+    SystemConfigs:
+      type: object
+      properties:
+        configs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SystemConfig'
+    SystemConfig:
+      type: object
+      properties:
+        key:
+          type: string
+          nullable: false
+        encrypted:
+          type: boolean
+          nullable: false
+        version:
+          type: integer
+          format: int64
+          nullable: false
+        value:
+          description: Some value. This value gets stored as a faux-JSON object
+    UpdatedSystemConfigs:
+      type: object
+      properties:
+        tryOut:
+          type: array
+          nullable: true
+          items:
+            type: string
+        configs:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpdatedSystemConfig'
+    UpdatedSystemConfig:
+      type: object
+      properties:
+        key:
+          type: string
+          nullable: false
+        version:
+          type: integer
+          format: int64
+          nullable: false
+        value:
+          description: Some value. This value gets stored as a faux-JSON object
   securitySchemes:
     bearerAuth:
       type: http

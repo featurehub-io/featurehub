@@ -21,6 +21,8 @@ class EnvironmentAndWebhookType {
   }
 }
 
+
+
 class WebhookEnvironmentBloc extends Bloc {
   final ManagementRepositoryClientBloc mrBloc;
   final List<Environment> environments;
@@ -107,6 +109,13 @@ class WebhookEnvironmentBloc extends Bloc {
     // final envData = await mrBloc.environment2ServiceApi.
     final envData = await mrBloc.environmentServiceApi.getEnvironment(e.id, includeDetails: true, decryptWebhookDetails: true);
     _environmentSource.add(_currentSource.fromEnv(envData));
+  }
 
+  Future<TrackEventsSummary> fetchTrackSummaryList(
+      String environmentId,
+      String cloudEventType,
+      int pageKey, int pageSize) async {
+    final data = await mrBloc.trackEventsServiceApi.getTrackedEvents(environmentId, 'env', pageKey, pageSize, cloudEventType, firstOnly: true);
+    return data;
   }
 }

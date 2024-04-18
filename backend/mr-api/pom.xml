@@ -134,6 +134,7 @@
                 <file>${project.basedir}/feature-history.yaml</file>
                 <file>${project.basedir}/feature-group.yaml</file>
                 <file>${project.basedir}/application-strategies.yaml</file>
+                <file>${project.basedir}/system-api.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
             </configuration>

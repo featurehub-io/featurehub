@@ -3,7 +3,8 @@ import * as restify from 'restify';
 import {networkInterfaces} from 'os';
 import {IncomingHttpHeaders} from 'http';
 import {logger} from './logging';
-import {CloudEvent, HTTP} from "cloudevents";
+import {CloudEvent, CloudEventV1, HTTP} from "cloudevents";
+import * as Zlib from 'zlib';
 
 const nets = networkInterfaces();
 const results: any = {};
@@ -31,12 +32,14 @@ if (networkName  ===  undefined)  {
   results[networkName]  =  ['localhost'];
 }
 
+const port = 3001;
+
 export function getWebserverExternalAddress(): string | undefined {
   if (process.env.EXTERNAL_NGROK) {
     return process.env.EXTERNAL_NGROK;
   }
 
-  return networkName ? `http://${results[networkName][0]}:3000` : undefined;
+  return networkName ? `http://${results[networkName][0]}:${port}` : undefined;
 }
 
 let server: restify.Server;
@@ -46,9 +49,13 @@ export const cloudEvents: Array<CloudEvent<any>> = [];
 export function resetCloudEvents() {
   cloudEvents.length = 0;
   logger.info("------------\ncloud events reset\n--------")
+  console.log("------------\ncloud events reset\n--------")
 }
 
+
 function mergeCloudEvent<T>(body: T, headers: IncomingHttpHeaders) : CloudEvent<T>[] {
+  console.log('headers are ', headers);
+  console.log(`body is of type ${typeof body}`);
   const ce = HTTP.toEvent<T>({headers: headers, body: body});
 
   let events = Array.isArray(ce) ? (ce as CloudEvent<T>[]) : [ce as CloudEvent<T>];
@@ -64,7 +71,7 @@ function setupServer() {
   server.use(restify.plugins.acceptParser(server.acceptable));
   server.use(restify.plugins.queryParser());
   server.use (function(req, res, next) {
-    logger.info(`received request on path ${req.path()}`);
+    logger.info(`received request on path ${req.path()} of content-type ${req.contentType()}`);
     if (req.contentType() === 'application/json') {
       var data='';
       req.setEncoding('utf8');
@@ -73,35 +80,57 @@ function setupServer() {
       });
 
       req.on('end', function() {
+        logger.debug(`'------------------------------\\nbody was ${data}\n---------------------------'`);
         req.body = JSON.parse(data);
-        logger.info(`'------------------------------\\nbody was ${data}\n---------------------------'`);
         next();
       });
     } else if (req.contentType() === 'application/json+gzip') {
       let data = Buffer.from([]);
 
+      console.log(`data created is of type ${typeof data}`);
+
       req.on('data', function(chunk) {
         data = Buffer.concat([data, Buffer.from(chunk)]);
-        data += chunk;
       });
 
       req.on('end', function() {
-        req.body = data;
+        try {
+
+          // const inflated = Zlib.inflateSync(data).toString();
+          // logger.info(`'------------------------------\\nbody was ${inflated}\n---------------------------'`);
+          console.log(`data is of type ${typeof data}`);
+          req.body = data;
+        } catch (e) {
+          logger.error('failed to parse', e);
+          res.send(500, 'failed to parse');
+        }
         next();
       });
+    } else {
+      next();
     }
   });
 
   // server.use(restify.plugins.bodyParser());
 
   server.post('/featurehub/slack', function (req, res, next) {
-    mergeCloudEvent(req.body, req.headers);
+    console.log('received');
+    try {
+      mergeCloudEvent(req.body, req.headers);
+    } catch (e) {
+      logger.error("failed", e);
+    }
+    console.log('responding ok');
     res.send(200, 'ok');
     return next();
   });
 
   server.post('/webhook', function (req, res, next) {
-    mergeCloudEvent(req.body, req.headers);
+    try {
+      mergeCloudEvent(req.body, req.headers);
+    } catch (e) {
+      logger.error("failed", e);
+    }
 
     res.send( 200,'Ok');
     return next();
@@ -118,7 +147,8 @@ export function startWebServer(): Promise<void> {
     setupServer();
 
     try {
-      server.listen(3000, function () {
+      server.listen(port, function () {
+        console.log(`${server.name} listening at ${server.url}`);
         logger.info(`${server.name} listening at ${server.url}`);
         resolve();
       });

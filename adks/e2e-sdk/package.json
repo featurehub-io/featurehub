@@ -5,6 +5,7 @@
   "scripts": {
     "clean": "rm -rf target/dist",
     "build": "npm run clean && node ./node_modules/typescript/bin/tsc",
+    "ws": "node_modules/.bin/ts-node app/support/run_webserver.ts",
     "debug-test": "PUBSUB_EMULATOR_HOST=localhost:8075 npm run clean && node --inspect node_modules/.bin/cucumber-js --require-module ts-node/register --require 'app/**/*.ts' ",
     "setup": "npm link featurehub-javascript-client-sdk featurehub-javascript-node-sdk",
     "test": "npm run clean && node node_modules/.bin/cucumber-js --require-module ts-node/register --require 'app/**/*.ts' ",

@@ -1,7 +1,5 @@
 package io.featurehub.db.services
 
-import cd.connect.app.config.ConfigKey
-import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.WebhookApi
@@ -12,17 +10,13 @@ import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.model.WebhookDetail
 import io.featurehub.mr.model.WebhookSummary
 import io.featurehub.mr.model.WebhookSummaryItem
+import io.featurehub.utils.FallbackPropertyConfig
 import io.featurehub.webhook.events.WebhookEnvironmentResult
 import java.lang.Integer.min
 import java.util.*
 
 class WebhookSqlApi : WebhookApi{
-  @ConfigKey("webhook.features.max-fails")
-  var webhookFailsBeforeDisable: Long? = 5
-
-  init {
-    DeclaredConfigResolver.resolve(this)
-  }
+  var webhookFailsBeforeDisable = FallbackPropertyConfig.getConfig("webhook.features.max-fails", "5").toInt().toLong()
 
   override fun saveWebhook(webhookResult: WebhookEnvironmentResult) {
     QDbEnvironment().select(QDbEnvironment.Alias.id).id.eq(webhookResult.environmentId).findOne()?.let { env ->
@@ -44,8 +38,8 @@ class WebhookSqlApi : WebhookApi{
           .webhookCloudEventType.eq(WebhookEnvironmentResult.CLOUD_EVENT_TYPE)
           .environment.id.eq(webhookResult.environmentId)
             .order().whenSent.desc()
-            .setMaxRows(webhookFailsBeforeDisable!!.toInt()).findList()
-            .sumOf { if (it.status < 200 || it.status >= 300) 1L else 0L } == webhookFailsBeforeDisable!!
+            .setMaxRows(webhookFailsBeforeDisable.toInt()).findList()
+            .sumOf { if (it.status < 200 || it.status >= 300) 1L else 0L } == webhookFailsBeforeDisable
           ) {
           // need to disable and we need the existing environment data
           QDbEnvironment().select(QDbEnvironment.Alias.environmentFeatures).id.eq(webhookResult.environmentId).findOne()?.let { updateEnv ->

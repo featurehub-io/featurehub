@@ -1,5 +1,6 @@
 package io.featurehub.dacha
 
+import io.featurehub.encryption.WebhookEncryptionFeature
 import io.featurehub.events.CloudEventsFeature
 import io.featurehub.health.MetricsHealthRegistration
 import io.featurehub.jersey.FeatureHubJerseyHost
@@ -17,6 +18,7 @@ object Application {
     val config = ResourceConfig(
       TelemetryFeature::class.java,
       DachaFeature::class.java,
+      WebhookEncryptionFeature::class.java,
       CloudEventsFeature::class.java
     )
 

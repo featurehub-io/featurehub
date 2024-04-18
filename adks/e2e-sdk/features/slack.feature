@@ -6,6 +6,7 @@ Feature: System supports Slack
     Given I am logged in and have a person configured
     And I create a new portfolio
     And I create an application
+    And I update the system config for Slack delivery
     And I update the environment for Slack
     And I wait for 5 seconds
     And I clear cloud events

@@ -90,13 +90,14 @@
     <module>backend/mr-eventing</module>
     <module>backend/mr-eventing-common</module>
     <module>backend/messaging-api</module>
-    <module>backend/mr-messaging-channel</module>
+    <module>backend/messaging-delivery</module>
     <module>backend/mr-eventing-nats</module>
     <module>backend/edge-feature-update-async-api</module>
     <module>backend/eventing-nats</module>
     <module>backend/eventing-google-pubsub</module>
     <module>backend/eventing-kinesis</module>
     <module>backend/eventing-cloudevents</module>
+    <module>backend/eventing-tracker</module>
     <module>backend/sdk-strategy-matchers</module>
     <module>backend/party-server</module>
     <module>backend/party-server-ish</module>
