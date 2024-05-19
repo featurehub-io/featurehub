@@ -3275,6 +3275,13 @@ paths:
         explode: true
         schema:
           type: integer
+      - name: order
+        in: query
+        required: false
+        style: form
+        explode: true
+        schema:
+          $ref: '#/components/schemas/FeatureHistoryOrder'
       responses:
         "200":
           description: the webhook type details
@@ -5725,6 +5732,11 @@ components:
           description: "Any configuration to pass to the check, e.g. webhook.feature.url,\
             \ headers, etc - this ensures the updates get to the destination and are\
             \ used. They get merged info the envInfo, replacing anything there"
+    FeatureHistoryOrder:
+      type: string
+      enum:
+      - asc
+      - desc
     FeatureHistoryItem:
       type: object
       properties:

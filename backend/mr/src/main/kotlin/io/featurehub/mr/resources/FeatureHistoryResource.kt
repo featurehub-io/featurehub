@@ -5,8 +5,8 @@ import io.featurehub.db.api.FeatureHistoryApi
 import io.featurehub.mr.api.FeatureHistoryServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.FeatureHistoryList
+import io.featurehub.mr.model.FeatureHistoryOrder
 import jakarta.inject.Inject
-import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.core.SecurityContext
 import java.util.*
@@ -35,6 +35,6 @@ class FeatureHistoryResource @Inject constructor(private val authManager: AuthMa
 
     return featureHistoryApi.listHistory(appId, envs, holder.versions ?: listOf(),
       holder.featureKeys ?: listOf(), holder.featureIds ?: listOf(),
-      holder.max, holder.startAt)
+      holder.max, holder.startAt,  holder.order == FeatureHistoryOrder.DESC)
   }
 }
