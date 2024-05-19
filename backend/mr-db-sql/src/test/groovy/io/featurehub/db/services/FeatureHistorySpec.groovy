@@ -28,7 +28,7 @@ class FeatureHistorySpec extends Base3Spec {
     and:
       def historyApi = new FeatureHistorySqlApi()
     when: "i ask for version history for all environments"
-      def result = historyApi.listHistory(app1.id, [env1.id, env2.id, env3.id], [], [], [], null, null)
+      def result = historyApi.listHistory(app1.id, [env1.id, env2.id, env3.id], [], [], [], null, null, false)
     then:
       result.max == 9
       result.items.size() == 9
@@ -38,7 +38,7 @@ class FeatureHistorySpec extends Base3Spec {
       def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, features[1].key)
       featureSqlApi.updateFeatureValueForEnvironment(env1.id, features[1].key, fv.valueBoolean(true).locked(false), new PersonFeaturePermission(superPerson,
               [RoleType.CHANGE_VALUE, RoleType.UNLOCK] as Set<RoleType>))
-      def result2 = historyApi.listHistory(app1.id, [env1.id], [], [], [features[1].id], null, null)
+      def result2 = historyApi.listHistory(app1.id, [env1.id], [], [], [features[1].id], null, null, false)
     then:
       result2.max == 2
       result2.items.size() == 1
@@ -49,18 +49,22 @@ class FeatureHistorySpec extends Base3Spec {
       result2.items[0].history[1].value
       result2.items[0].history[1].who.id == superPerson.id.id
       result2.items[0].history[1].who.name == superPerson.name
+    when: "i do the same query but reverse the order..."
+      def result2Rev = historyApi.listHistory(app1.id, [env1.id], [], [], [features[1].id], null, null, true)
+    then:
+      result2Rev.max == 2
     when: "i update the first number and I see a single number version"
       def num = featureSqlApi.getFeatureValueForEnvironment(env2.id, features[3].key)
       featureSqlApi.updateFeatureValueForEnvironment(env2.id, features[3].key, fv.valueNumber(45.32).locked(false), new PersonFeaturePermission(superPerson,
         [RoleType.CHANGE_VALUE, RoleType.UNLOCK] as Set<RoleType>))
-      def result3 = historyApi.listHistory(app1.id, [env2.id], [], [features[3].key], [], null, null)
+      def result3 = historyApi.listHistory(app1.id, [env2.id], [], [features[3].key], [], null, null, false)
     then:
       result3.max == 1
       result3.items.size() == 1
       result3.items[0].history.size() == 1
       result3.items[0].history[0].value == 45.32
     when: "i use an app id that doesn't relate to the features"
-      def result4 = historyApi.listHistory(UUID.randomUUID(), [env2.id], [], [features[3].key], [], null, null)
+      def result4 = historyApi.listHistory(UUID.randomUUID(), [env2.id], [], [features[3].key], [], null, null, false)
     then:
       result4.max == 0
       result4.items.size() == 0

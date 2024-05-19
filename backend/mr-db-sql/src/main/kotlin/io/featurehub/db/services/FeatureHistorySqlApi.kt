@@ -26,7 +26,8 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
     keys: List<String>,
     featureIds: List<UUID>,
     max: Int?,
-    startAt: Int?
+    startAt: Int?,
+    orderDescending: Boolean
   ): FeatureHistoryList {
     val highest = ((max ?: 20).coerceAtLeast(1)).coerceAtMost(100)
     val start = (startAt?.coerceAtLeast(0) ?: 0)
@@ -60,7 +61,15 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
     }
 
     val count = finder.findFutureCount()
-    val data =  finder.setMaxRows(highest).setFirstRow(start).orderBy().id.version.asc().findList()
+    finder =  finder.setMaxRows(highest).setFirstRow(start)
+
+    if (orderDescending) {
+      finder = finder.orderBy().id.version.desc()
+    } else {
+      finder = finder.orderBy().id.version.asc()
+    }
+
+    val data = finder.findList()
 
     val items = mutableMapOf<FeatureHistoryItem, FeatureHistoryItem>()
 

@@ -132,8 +132,17 @@ paths:
           schema:
             type: integer
           description: "what position in the results to start at"
+        - name: order
+          in: query
+          schema:
+            $ref: "#/components/schemas/FeatureHistoryOrder"
 components:
   schemas:
+    FeatureHistoryOrder:
+      type: string
+      enum:
+        - asc
+        - desc
     FeatureHistoryItem:
       type: object
       properties:
