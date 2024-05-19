@@ -58,7 +58,13 @@ class SystemConfigEncryptableTextFieldState
           autofocus: true,
           autocorrect: false,
           validator: widget.validator,
-          onSaved: (val) => widget.field.value = val,
+          onSaved: (val) {
+            if (val?.trim().isEmpty == true) {
+              widget.field.value = null;
+            } else {
+              widget.field.value = val;
+            }
+           },
           decoration: widget.decoration,
         )),
         if (_textField.text == 'ENCRYPTED-TEXT')
@@ -68,6 +74,7 @@ class SystemConfigEncryptableTextFieldState
               onPressed: () {
                 setState(() {
                   _textField.text = '';
+                  widget.field.value = null;
                 });
               },
               child: const Text('Clear'),
@@ -83,6 +90,7 @@ class SystemConfigEncryptableTextFieldState
                   if (val.result != null) {
                     setState(() {
                       _textField.text = val.result!;
+                      widget.field.value = val.result;
                     });
                   }
                 },

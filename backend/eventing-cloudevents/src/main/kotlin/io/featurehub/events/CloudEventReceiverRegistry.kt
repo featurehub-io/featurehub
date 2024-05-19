@@ -12,6 +12,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.time.OffsetDateTime
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 
 /**
@@ -60,9 +61,9 @@ class CallbackHolderList(val clazz: Class<out TaggedCloudEvent>) {
 }
 
 abstract class CloudEventReceiverRegistryImpl (private val registryName: String) : CloudEventBaseReceiverRegistry {
-  protected val eventHandlers = mutableMapOf<String, MutableMap<String, CallbackHolderList>>()
+  protected val eventHandlers = ConcurrentHashMap<String, MutableMap<String, CallbackHolderList>>()
 
-  protected val ignoredEvent = mutableMapOf<String, String>()
+  protected val ignoredEvent = ConcurrentHashMap<String, String>()
   protected val log: Logger = LoggerFactory.getLogger(CloudEventReceiverRegistry::class.java)
 
   override fun <T> listen(clazz: Class<T>, handler: (msg: T, ce: CloudEvent) -> Unit) where T : TaggedCloudEvent {
@@ -201,7 +202,7 @@ class CloudEventReceiverRegistryProcessor @Inject
               executorSupplier: ExecutorSupplier) : CloudEventReceiverRegistryInternal("common", openTelemetryReader,
               executorSupplier.executorService(Integer.valueOf(FallbackPropertyConfig.getConfig("cloudevents.receiver-pool-size", "20")))), CloudEventReceiverRegistry {
 
-  private val registries = mutableMapOf<String, CloudEventBaseReceiverRegistry>()
+  private val registries = ConcurrentHashMap<String, CloudEventBaseReceiverRegistry>()
 
   init {
     registries["common"] = this
