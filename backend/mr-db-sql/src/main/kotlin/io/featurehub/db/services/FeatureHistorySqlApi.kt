@@ -41,7 +41,7 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
         QDbFeatureValueVersion.Alias.rolloutStrategies,
         QDbFeatureValueVersion.Alias.whenCreated,
       )
-      .whoUpdated.fetch(QDbPerson.Alias.id, QDbPerson.Alias.name)
+      .whoUpdated.fetch(QDbPerson.Alias.id, QDbPerson.Alias.name, QDbPerson.Alias.personType, QDbPerson.Alias.email)
       .featureValue.fetch(QDbFeatureValue.Alias.id, QDbFeatureValue.Alias.environment.id)
       .feature.fetch(QDbApplicationFeature.Alias.key, QDbApplicationFeature.Alias.id, QDbApplicationFeature.Alias.valueType)
       .feature.parentApplication.id.eq(appId)
@@ -87,7 +87,7 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
           .versionFrom(it.versionFrom)
           .value(convert(it.defaultValue, it.feature.valueType)).version(it.id.version).retired(it.isRetired)
           .locked(it.isLocked).rolloutStrategies(it.rolloutStrategies).`when`(it.whenCreated.atOffset(ZoneOffset.UTC))
-          .who(AnemicPerson().id(it.whoUpdated.id).name(it.whoUpdated.name))
+          .who(AnemicPerson().id(it.whoUpdated.id).name(it.whoUpdated.name).type(it.whoUpdated.personType).email(it.whoUpdated.email))
       )
     }
 

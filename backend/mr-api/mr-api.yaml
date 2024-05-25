@@ -4028,5 +4028,8 @@ components:
           format: uuid
         name:
           type: string
+        email:
+          type: string
+          nullable: true
         type:
           $ref: "#/components/schemas/PersonType"

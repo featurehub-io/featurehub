@@ -6,6 +6,7 @@ import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.mr.model.CreateEnvironment
 import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.FeatureValueType
+import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.RoleType
 import org.apache.commons.lang3.RandomStringUtils
 
@@ -49,6 +50,8 @@ class FeatureHistorySpec extends Base3Spec {
       result2.items[0].history[1].value
       result2.items[0].history[1].who.id == superPerson.id.id
       result2.items[0].history[1].who.name == superPerson.name
+      result2.items[0].history[1].who.type == PersonType.PERSON
+      result2.items[0].history[1].who.email == superPerson.email
     when: "i do the same query but reverse the order..."
       def result2Rev = historyApi.listHistory(app1.id, [env1.id], [], [], [features[1].id], null, null, true)
     then:
