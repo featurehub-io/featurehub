@@ -12,6 +12,7 @@ class EditingFeatureValueBloc implements Bloc {
   final String applicationId;
 
   late FeatureServiceApi _featureServiceApi;
+  late FeatureHistoryServiceApi _featureHistoryServiceApi;
 
   final ApplicationFeatureValues applicationFeatureValues;
   final EnvironmentFeatureValues environmentFeatureValue;
@@ -34,6 +35,9 @@ class EditingFeatureValueBloc implements Bloc {
   final _currentFv = BehaviorSubject<FeatureValue>();
   get currentFv => _currentFv.stream;
 
+  final _featureHistoryListSource = BehaviorSubject<FeatureHistoryItem?>();
+  get featureHistoryListSource => _featureHistoryListSource.stream;
+
   EditingFeatureValueBloc(
       this.applicationId,
       this.feature,
@@ -44,6 +48,8 @@ class EditingFeatureValueBloc implements Bloc {
       : _featureStatusBloc = featureStatusBloc {
     _featureServiceApi =
         FeatureServiceApi(featureStatusBloc.mrClient.apiClient);
+    _featureHistoryServiceApi =
+        FeatureHistoryServiceApi(featureStatusBloc.mrClient.apiClient);
     currentFeatureValue = FeatureValue.fromJson(featureValue
         .toJson()); // keeping original featureValue cached for resets
     _strategySource = BehaviorSubject<List<RolloutStrategy>>.seeded(
@@ -142,11 +148,28 @@ class EditingFeatureValueBloc implements Bloc {
     _currentFv.close();
     _isFeatureValueUpdatedSource.close();
     _strategySource.close();
+    _featureHistoryListSource.close();
   }
 
   saveFeatureValueUpdates() async {
     await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(
         applicationId, feature.key, [currentFeatureValue]);
     await _featureStatusBloc.updateApplicationFeatureValuesStream();
+  }
+
+  getHistory() async {
+    var featureHistory = await _featureHistoryServiceApi.listFeatureHistory(
+      applicationId,
+      order: FeatureHistoryOrder.desc,
+    );
+    var filtered = featureHistory.items
+        .where((value) =>
+            value.envId == environmentId && value.featureId == feature.id)
+        .toList()[0];
+    _featureHistoryListSource.add(filtered);
+  }
+
+  void clearHistory() {
+    _featureHistoryListSource.add(null);
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/theme/custom_text_style.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_info_card.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/feature_value_updated_by.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/lock_unlock_switch.dart';
@@ -21,6 +23,10 @@ class EditFeatureValueWidget extends StatefulWidget {
 }
 
 class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
+  bool sortToggle = true;
+  int sortColumnIndex = 0;
+  bool _isHistoryPresent = false;
+
   @override
   Widget build(BuildContext context) {
     final roles = widget.bloc.environmentFeatureValue.roles;
@@ -309,6 +315,218 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                               return const SizedBox.shrink();
                             }
                           }),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _isHistoryPresent
+                              ? TextButton(
+                                  onPressed: () {
+                                    widget.bloc.clearHistory();
+                                    setState(() {
+                                      _isHistoryPresent = false;
+                                    });
+                                  },
+                                  child: const Text("Hide actions"))
+                              : TextButton(
+                                  onPressed: () {
+                                    widget.bloc.getHistory();
+                                    setState(() {
+                                      _isHistoryPresent = true;
+                                    });
+                                  },
+                                  child: const Text("Show actions")),
+                          StreamBuilder<FeatureHistoryItem?>(
+                              stream: widget.bloc.featureHistoryListSource,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  FeatureHistoryItem item = snapshot.data!;
+                                  return Column(
+                                    children: [
+                                      Card(
+                                          child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: SelectionArea(
+                                          child: DataTable(
+                                            dataRowMinHeight: 36,
+                                            dataRowMaxHeight: double.infinity,
+                                            showCheckboxColumn: false,
+                                            sortAscending: sortToggle,
+                                            sortColumnIndex: sortColumnIndex,
+                                            columns: [
+                                              DataColumn(
+                                                  label: const Padding(
+                                                    padding: EdgeInsets.only(
+                                                        left: 12.0),
+                                                    child: Text('Timestamp'),
+                                                  ),
+                                                  onSort:
+                                                      (columnIndex, ascending) {
+                                                    onSortColumn(
+                                                        snapshot.data!.history,
+                                                        columnIndex,
+                                                        ascending);
+                                                  }),
+                                              DataColumn(
+                                                  label: const Text('Name'),
+                                                  onSort:
+                                                      (columnIndex, ascending) {
+                                                    onSortColumn(
+                                                        snapshot.data!.history,
+                                                        columnIndex,
+                                                        ascending);
+                                                  }),
+                                              DataColumn(
+                                                label: const Text('Type'),
+                                                onSort:
+                                                    (columnIndex, ascending) {
+                                                  onSortColumn(
+                                                      snapshot.data!.history,
+                                                      columnIndex,
+                                                      ascending);
+                                                },
+                                              ),
+                                              DataColumn(
+                                                label:
+                                                    const Text('Default Value'),
+                                                onSort:
+                                                    (columnIndex, ascending) {
+                                                  onSortColumn(
+                                                      snapshot.data!.history,
+                                                      columnIndex,
+                                                      ascending);
+                                                },
+                                              ),
+                                              DataColumn(
+                                                label: const Text('Locked'),
+                                                onSort:
+                                                    (columnIndex, ascending) {
+                                                  onSortColumn(
+                                                      snapshot.data!.history,
+                                                      columnIndex,
+                                                      ascending);
+                                                },
+                                              ),
+                                              DataColumn(
+                                                label: const Text('Retired'),
+                                                onSort:
+                                                    (columnIndex, ascending) {
+                                                  onSortColumn(
+                                                      snapshot.data!.history,
+                                                      columnIndex,
+                                                      ascending);
+                                                },
+                                              ),
+                                              const DataColumn(
+                                                label:
+                                                    Text('Rollout Strategies'),
+                                              ),
+                                            ],
+                                            rows: [
+                                              for (FeatureHistoryValue value
+                                                  in item.history)
+                                                DataRow(cells: [
+                                                  DataCell(Text(DateFormat(
+                                                          'yyyy-MM-dd HH:mm:ss')
+                                                      .format(value.when))),
+                                                  DataCell(
+                                                    Text(value.who.name ?? ''),
+                                                  ),
+                                                  DataCell(Text(
+                                                      value.who.type ==
+                                                              PersonType.person
+                                                          ? 'User'
+                                                          : 'Service Account')),
+                                                  DataCell(ConstrainedBox(
+                                                    constraints:
+                                                        const BoxConstraints(
+                                                            maxWidth: 300),
+                                                    child: Text(
+                                                        value.value.toString()),
+                                                  )),
+                                                  DataCell(Text(value.locked
+                                                      ? "true"
+                                                      : 'false')),
+                                                  DataCell(Text(value.retired
+                                                      ? "true"
+                                                      : 'false')),
+                                                  DataCell(Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      for (var i in value
+                                                          .rolloutStrategies)
+                                                        ConstrainedBox(
+                                                          constraints:
+                                                              const BoxConstraints(
+                                                                  maxWidth:
+                                                                      500),
+                                                          child: Wrap(
+                                                            crossAxisAlignment:
+                                                                WrapCrossAlignment
+                                                                    .center,
+                                                            children: [
+                                                              Text(
+                                                                  '${i.name} = ${i.value}'),
+                                                              TextButton(
+                                                                  onPressed: () =>
+                                                                      showDialog(
+                                                                          context:
+                                                                              context,
+                                                                          builder:
+                                                                              (_) {
+                                                                            return AlertDialog(
+                                                                                content: Column(
+                                                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                                                  mainAxisSize: MainAxisSize.min,
+                                                                                  children: [
+                                                                                    Text(
+                                                                                      "Strategy Rules",
+                                                                                      style: Theme.of(context).textTheme.titleLarge,
+                                                                                    ),
+                                                                                    if (i.attributes != null) SelectableText('${i.attributes?.join("\n")}'),
+                                                                                    const SizedBox(
+                                                                                      height: 16.0,
+                                                                                    ),
+                                                                                    if (i.percentage != null)
+                                                                                      Text(
+                                                                                        "Percentage Rollout",
+                                                                                        style: Theme.of(context).textTheme.titleLarge,
+                                                                                      ),
+                                                                                    if (i.percentage != null) Text('${i.percentage! / 10000}'),
+                                                                                  ],
+                                                                                ),
+                                                                                actions: <Widget>[
+                                                                                  FHFlatButton(
+                                                                                    title: 'OK',
+                                                                                    onPressed: () {
+                                                                                      Navigator.pop(context);
+                                                                                    },
+                                                                                  )
+                                                                                ]);
+                                                                          }),
+                                                                  child: Text(
+                                                                      "more"))
+                                                            ],
+                                                          ),
+                                                        )
+                                                    ],
+                                                  )),
+                                                ])
+                                            ],
+                                          ),
+                                        ),
+                                      ))
+                                    ],
+                                  );
+                                } else {
+                                  return const SizedBox.shrink();
+                                }
+                              }),
+                        ],
+                      )
                     ])),
               ),
             ],
@@ -346,5 +564,81 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
         widget.bloc.updateStrategyValue();
       },
     );
+  }
+
+  void onSortColumn(List<FeatureHistoryValue> featureHistoryValue,
+      int columnIndex, bool ascending) {
+    setState(() {
+      if (columnIndex == 0) {
+        if (ascending) {
+          featureHistoryValue.sort((a, b) {
+            return a.when.compareTo(b.when);
+          });
+        } else {
+          featureHistoryValue.sort((a, b) {
+            return b.when.compareTo(a.when);
+          });
+        }
+      }
+      if (columnIndex == 1) {
+        if (ascending) {
+          featureHistoryValue.sort((a, b) =>
+              a.who.name.toLowerCase().compareTo(b.who.name.toLowerCase()));
+        } else {
+          featureHistoryValue.sort((a, b) =>
+              b.who.name.toLowerCase().compareTo(a.who.name.toLowerCase()));
+        }
+      }
+      if (columnIndex == 2) {
+        if (ascending) {
+          featureHistoryValue.sort((a, b) => a.who.type
+              .toString()
+              .toLowerCase()
+              .compareTo(b.who.type.toString().toLowerCase()));
+        } else {
+          featureHistoryValue.sort((a, b) => b.who.type
+              .toString()
+              .toLowerCase()
+              .compareTo(a.who.type.toString().toLowerCase()));
+        }
+      }
+      if (columnIndex == 3) {
+        if (ascending) {
+          featureHistoryValue.sort((a, b) => a.value
+              .toString()
+              .toLowerCase()
+              .compareTo(b.value.toString().toLowerCase()));
+        } else {
+          featureHistoryValue.sort((a, b) => b.value
+              .toString()
+              .toLowerCase()
+              .compareTo(a.value.toString().toLowerCase()));
+        }
+      }
+      if (columnIndex == 4) {
+        if (ascending) {
+          featureHistoryValue.sort((a, b) =>
+              a.locked.toString().compareTo(b.locked.toString().toLowerCase()));
+        } else {
+          featureHistoryValue.sort((a, b) =>
+              b.locked.toString().compareTo(a.locked.toString().toLowerCase()));
+        }
+      }
+      if (columnIndex == 5) {
+        if (ascending) {
+          featureHistoryValue.sort((a, b) => a.retired
+              .toString()
+              .compareTo(b.retired.toString().toLowerCase()));
+        } else {
+          featureHistoryValue.sort((a, b) => b.retired
+              .toString()
+              .compareTo(a.retired.toString().toLowerCase()));
+        }
+      }
+      if (sortColumnIndex == columnIndex) {
+        sortToggle = !sortToggle;
+      }
+      sortColumnIndex = columnIndex;
+    });
   }
 }
