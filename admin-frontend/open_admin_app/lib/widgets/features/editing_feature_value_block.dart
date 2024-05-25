@@ -159,14 +159,12 @@ class EditingFeatureValueBloc implements Bloc {
 
   getHistory() async {
     var featureHistory = await _featureHistoryServiceApi.listFeatureHistory(
-      applicationId,
-      order: FeatureHistoryOrder.desc,
-    );
-    var filtered = featureHistory.items
-        .where((value) =>
-            value.envId == environmentId && value.featureId == feature.id)
-        .toList()[0];
-    _featureHistoryListSource.add(filtered);
+        applicationId,
+        order: FeatureHistoryOrder.desc,
+        environmentIds: [environmentId],
+        featureIds: [feature.id!],
+        max: 20); //showing last 20
+    _featureHistoryListSource.add(featureHistory.items.first);
   }
 
   void clearHistory() {

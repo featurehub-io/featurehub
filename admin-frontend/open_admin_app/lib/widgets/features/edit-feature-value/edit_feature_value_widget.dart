@@ -341,7 +341,16 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                 if (snapshot.hasData) {
                                   FeatureHistoryItem item = snapshot.data!;
                                   return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text("Showing last 20",
+                                            style:
+                                                CustomTextStyle.bodySmallLight(
+                                                    context)),
+                                      ),
                                       Card(
                                           child: SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
