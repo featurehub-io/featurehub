@@ -385,6 +385,15 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                         ascending);
                                                   }),
                                               DataColumn(
+                                                  label: const Text('Email'),
+                                                  onSort:
+                                                      (columnIndex, ascending) {
+                                                    onSortColumn(
+                                                        snapshot.data!.history,
+                                                        columnIndex,
+                                                        ascending);
+                                                  }),
+                                              DataColumn(
                                                 label: const Text('Type'),
                                                 onSort:
                                                     (columnIndex, ascending) {
@@ -439,6 +448,12 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                       .format(value.when))),
                                                   DataCell(
                                                     Text(value.who.name ?? ''),
+                                                  ),
+                                                  DataCell(
+                                                    Text(value.who.type ==
+                                                            PersonType.person
+                                                        ? value.who.email ?? ''
+                                                        : ''),
                                                   ),
                                                   DataCell(Text(
                                                       value.who.type ==
@@ -516,8 +531,9 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                                                   )
                                                                                 ]);
                                                                           }),
-                                                                  child: Text(
-                                                                      "more"))
+                                                                  child:
+                                                                      const Text(
+                                                                          "more"))
                                                             ],
                                                           ),
                                                         )
@@ -600,6 +616,15 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
       }
       if (columnIndex == 2) {
         if (ascending) {
+          featureHistoryValue.sort((a, b) =>
+              a.who.email!.toLowerCase().compareTo(b.who.email!.toLowerCase()));
+        } else {
+          featureHistoryValue.sort((a, b) =>
+              b.who.email!.toLowerCase().compareTo(a.who.email!.toLowerCase()));
+        }
+      }
+      if (columnIndex == 3) {
+        if (ascending) {
           featureHistoryValue.sort((a, b) => a.who.type
               .toString()
               .toLowerCase()
@@ -611,7 +636,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
               .compareTo(a.who.type.toString().toLowerCase()));
         }
       }
-      if (columnIndex == 3) {
+      if (columnIndex == 4) {
         if (ascending) {
           featureHistoryValue.sort((a, b) => a.value
               .toString()
@@ -624,7 +649,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
               .compareTo(a.value.toString().toLowerCase()));
         }
       }
-      if (columnIndex == 4) {
+      if (columnIndex == 5) {
         if (ascending) {
           featureHistoryValue.sort((a, b) =>
               a.locked.toString().compareTo(b.locked.toString().toLowerCase()));
@@ -633,7 +658,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
               b.locked.toString().compareTo(a.locked.toString().toLowerCase()));
         }
       }
-      if (columnIndex == 5) {
+      if (columnIndex == 6) {
         if (ascending) {
           featureHistoryValue.sort((a, b) => a.retired
               .toString()
