@@ -65,7 +65,7 @@ class _ValueContainer extends StatelessWidget {
                         bloc: efvBloc,
                       )),
               width: MediaQuery.of(context).size.width > 800
-                  ? MediaQuery.of(context).size.width * 0.5
+                  ? MediaQuery.of(context).size.width * 0.8
                   : MediaQuery.of(context).size.width,
               context: context);
         },
