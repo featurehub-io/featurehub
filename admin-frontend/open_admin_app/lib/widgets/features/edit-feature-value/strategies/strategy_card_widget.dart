@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/theme/custom_text_style.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/split_edit.dart';
 import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
@@ -58,9 +59,13 @@ class StrategyCardWidget extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style:
                                       Theme.of(context).textTheme.labelLarge))),
-                  Expanded(flex: 6, child: editableHolderWidget),
                   Expanded(
-                      flex: 2,
+                      flex: 1,
+                      child: Text("serve",
+                          style: CustomTextStyle.bodySmallLight(context))),
+                  Expanded(flex: 4, child: editableHolderWidget),
+                  Expanded(
+                      flex: 3,
                       child: rolloutStrategy != null &&
                               groupRolloutStrategy == null
                           ? Row(
