@@ -4,6 +4,7 @@ import 'package:advanced_datatable/advanced_datatable_source.dart';
 import 'package:advanced_datatable/datatable.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/utils/utils.dart';
@@ -87,7 +88,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                 label: Text('Groups'),
               ),
               const DataColumn(
-                label: Text('Last logged in'),
+                label: Text('Last sign in (UTC)'),
               ),
               const DataColumn(
                 label: Padding(
@@ -169,8 +170,10 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
               : "active")),
           DataCell(Text(personEntry.person.email)),
           DataCell(Text('${personEntry.person.groupCount}')),
-          DataCell(Text(
-              '${personEntry.person.whenLastAuthenticated?.toLocal() ?? ""}')),
+          DataCell(personEntry.person.whenLastAuthenticated != null
+              ? Text(DateFormat('yyyy-MM-dd HH:mm:ss')
+                  .format(personEntry.person.whenLastAuthenticated!))
+              : const Text("")),
           if (personEntry.person.whenDeactivated != null)
             DataCell(
               FHIconButton(

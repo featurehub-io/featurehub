@@ -183,7 +183,7 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
               const FHMenuItem(
                   name: 'System Config',
                   permissionType: PermissionType.superadmin,
-                  iconData: Icons.bike_scooter_rounded,
+                  iconData: Icons.settings_applications_outlined,
                   path: '/system-config',
                   params: {}),
           ];
@@ -297,7 +297,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
         if (mrBloc.identityProviders.featureGroupsEnabled)
           const FHMenuItem(
             name: 'Feature Groups',
-            iconData: Icons.settings_suggest_sharp,
+            iconData: Icons.auto_awesome_motion_outlined,
             path: 'feature-groups',
             params: {},
             displayNewLabel: true,
