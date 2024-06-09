@@ -86,15 +86,21 @@ class StrategyCardWidget extends StatelessWidget {
                               ],
                             )
                           : groupRolloutStrategy != null
-                              ? IconButton(
-                                  tooltip: 'Edit Feature Groups',
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    ManagementRepositoryClientBloc.router
-                                        .navigateTo(context, '/feature-groups');
-                                  },
-                                  icon:
-                                      const Icon(Icons.arrow_forward, size: 18),
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    IconButton(
+                                      tooltip: 'Edit Feature Groups',
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        ManagementRepositoryClientBloc.router
+                                            .navigateTo(
+                                                context, '/feature-groups');
+                                      },
+                                      icon: const Icon(Icons.arrow_forward,
+                                          size: 18),
+                                    ),
+                                  ],
                                 )
                               : const SizedBox.shrink())
                 ]),

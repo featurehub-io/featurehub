@@ -363,11 +363,8 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                             sortColumnIndex: sortColumnIndex,
                                             columns: [
                                               DataColumn(
-                                                  label: const Padding(
-                                                    padding: EdgeInsets.only(
-                                                        left: 12.0),
-                                                    child: Text('Timestamp'),
-                                                  ),
+                                                  label: const Text(
+                                                      'Timestamp (UTC)'),
                                                   onSort:
                                                       (columnIndex, ascending) {
                                                     onSortColumn(
