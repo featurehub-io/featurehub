@@ -41,7 +41,7 @@ class SlackWebClient @Inject constructor(
   companion object {
     private val log: Logger = LoggerFactory.getLogger(SlackWebClient::class.java)
     const val DEFAULT_MESSAGE_FORMAT =
-      """Feature <{{{site_url}}}/features#key={{{fKey}}}p={{pId}}&a={{aId}}&e={{eId}}&o={{oId}}|*{{fName}}*> (`{{fKey}}`) in *{{ eName }}* was changed by *{{ whoUpdated }}* at {{ whenUpdatedReadable }}
+      """Feature *{{fName}}* (`{{fKey}}`) in *{{ eName }}* was changed by *{{ whoUpdated }}* at {{ whenUpdatedReadable }}
 
 Summary of changes:
 
@@ -49,7 +49,8 @@ Summary of changes:
 {{~#lockUpdated~}}{{#wasLocked}}
 • feature is now locked{{/wasLocked}}
 {{^wasLocked}}• feature is now unlocked{{/wasLocked}}{{~/lockUpdated~}}
-{{#retiredUpdated}}• {{#if wasRetired}}was retired{{/if}}{{#unless wasRetired}}was reinstated (from retired){{/unless}}{{/retiredUpdated}}{{#strategiesReordered}}
+{{#retiredUpdated}}
+• {{#if wasRetired}}was retired{{/if}}{{#unless wasRetired}}was reinstated (from retired){{/unless}}{{/retiredUpdated}}{{#strategiesReordered}}
 • strategies were re-ordered from {{#previous}}{{name}}{{#unless @last}},{{/unless}}{{/previous}} to {{#reordered}}{{name}}{{^last}},{{/last}}{{/reordered}}{{/strategiesReordered}}{{#if addedStrategies}}
 • added new strategies: {{#addedStrategies}}{{name}}{{#unless @last}},{{/unless}}{{/addedStrategies}}{{/if}}{{~#if updatedStrategies}}
 • updated strategies: {{#updatedStrategies}}{{#if nameChanged}}{{oldStrategy.name}} ⇒ {{newStrategy.name}}{{#unless @last}},{{/unless}}{{/if}}{{#unless nameChanged}}{{newStrategy.name}}{{/unless}}{{/updatedStrategies}}{{/if}}{{~#if deletedStrategies}}
