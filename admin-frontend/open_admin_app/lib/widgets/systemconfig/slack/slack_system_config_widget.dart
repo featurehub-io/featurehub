@@ -137,7 +137,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                       validator: (val) {
                         if (enabled.value == true &&
                             (val == null || val.trim().isEmpty)) {
-                          return 'Cannot enable Slack if the bearer token is empty';
+                          return 'Please enter Slack Bot User OAuth token';
                         }
 
                         return null;
@@ -153,6 +153,12 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                         hintText: 'e.g. C0150T7AF25',
                         labelText: 'Default Slack channel ID',
                       ),
+                      validator: (v) {
+                        if (v?.trim().isEmpty == true) {
+                          return 'Please enter Slack channel ID';
+                        }
+                        return null;
+                      },
                     ),
                     if (settings['slack.delivery.url'] != null)
                       externalDelivery(),

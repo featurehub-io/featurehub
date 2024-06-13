@@ -185,6 +185,7 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
                   permissionType: PermissionType.superadmin,
                   iconData: Icons.settings_applications_outlined,
                   path: '/system-config',
+                  displayNewLabel: true,
                   params: {}),
           ];
           menus.addAll(widgetCreator.extraGlobalMenuItems(client));
@@ -300,7 +301,6 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
             iconData: Icons.auto_awesome_motion_outlined,
             path: 'feature-groups',
             params: {},
-            displayNewLabel: true,
           ),
         const FHMenuItem(
           name: 'API Keys',
