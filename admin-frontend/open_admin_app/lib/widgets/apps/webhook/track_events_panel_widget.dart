@@ -153,7 +153,7 @@ class TrackEventItemWidget extends StatelessWidget {
     if (event.eventResponses == null) {
       return Card(
           elevation: 4.0,
-          color: Colors.lightGreenAccent,
+          color: Colors.green,
           shadowColor: Colors.transparent,
           child: Padding(
               padding: const EdgeInsets.all(8.0),
@@ -173,7 +173,7 @@ class TrackEventItemWidget extends StatelessWidget {
     if (_isSuccess(response)) {
       return Card(
           elevation: 4.0,
-          color: Colors.lightGreenAccent,
+          color: Colors.green,
           shadowColor: Colors.transparent,
           child: Padding(
               padding: const EdgeInsets.all(8.0),
