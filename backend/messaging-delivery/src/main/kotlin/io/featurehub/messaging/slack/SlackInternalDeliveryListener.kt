@@ -115,20 +115,6 @@ Portfolio: *{{ pName }}*, Application: *{{ aName }}*"""
     val insertMessage = message.replace("\"", "\\\"")
     val channel = channelName.replace("\"", "\\\"")
     return """{"channel": "$channel", "blocks":[{"type":"section", "text":{"type":"mrkdwn","text":"$insertMessage"}}]}"""
-    /*
-        const message : Array<SlackBlock> = [{
-      type: 'section',
-      text: {
-        type: TEXT_MARKDOWN,
-        text: body
-      }
-    }];
-    const body =     {
-        channel: slackChannel,
-        blocks: message
-      }
-
-     */
   }
 
   fun process(

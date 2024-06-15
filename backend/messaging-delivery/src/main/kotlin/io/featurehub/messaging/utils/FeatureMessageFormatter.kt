@@ -73,10 +73,10 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
     }
 
     fmData.lockUpdated?.let { locked ->
-      data["wasLocked"] = locked.previous && locked.updated
+      data["wasLocked"] = !locked.previous && locked.updated
     }
     fmData.retiredUpdated?.let { retired ->
-      data["wasRetired"] = retired.previous && retired.updated
+      data["wasRetired"] = !retired.previous && retired.updated
     }
 
     return data
