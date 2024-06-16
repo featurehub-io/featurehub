@@ -66,6 +66,12 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
           data["updatedStrategies"] = it
         }
 
+        strategies.filter { it.updateType == StrategyUpdateType.CHANGED }.map {
+          mapOf<String,Any?>(Pair("newStrategy", it.newStrategy), Pair("oldStrategy", it.oldStrategy), Pair("valueChanged", it.newStrategy?.value != it.oldStrategy?.value))
+        }.let {
+          data["updatedStrategiesValues"] = it
+        }
+
         strategies.filter { it.updateType == StrategyUpdateType.DELETED }.map { it.oldStrategy }.let {
           data["deletedStrategies"] = it
         }
