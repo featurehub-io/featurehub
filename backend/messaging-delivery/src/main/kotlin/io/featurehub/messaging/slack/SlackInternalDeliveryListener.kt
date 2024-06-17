@@ -41,32 +41,30 @@ class SlackWebClient @Inject constructor(
   companion object {
     private val log: Logger = LoggerFactory.getLogger(SlackWebClient::class.java)
     const val DEFAULT_MESSAGE_FORMAT =
-      """--------------------------------------
+      """----------------------------------------------------------------------------
 Feature *{{fName}}* (`{{fKey}}`) in *{{ eName }}* was changed by *{{ whoUpdated }}* at {{ whenUpdatedReadable }}
 
 Summary of changes:
-{{#featureValueUpdated}}• default value now `{{updated}}` was `{{previous}}`{{/featureValueUpdated}}
-{{~#lockUpdated~}}{{#wasLocked}}
-• feature set to locked{{/wasLocked}}
-{{^wasLocked}}• feature set to unlocked{{/wasLocked}}{{~/lockUpdated~}}
-{{#retiredUpdated}}
-• {{#if wasRetired}}feature set to retired{{/if}}{{#unless wasRetired}}feature set to unretired{{/unless}}{{/retiredUpdated}}{{#strategiesReordered}}
-• strategies were re-ordered from {{#previous}}*{{name}}*{{#unless @last}}, {{/unless}}{{/previous}} to {{#reordered}}*{{name}}*{{^last}}, {{/last}}{{/reordered}}{{/strategiesReordered}}{{#if addedStrategies}}
-• added new strategies: {{#addedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}{{/addedStrategies}}{{/if}}
+{{#featureValueUpdated}}>• Default value now `{{updated}}` was `{{previous}}`{{/featureValueUpdated}}
 {{~#if updatedStrategies}}
-{{#updatedStrategies}}{{#if nameChanged}}• strategy name changed from *{{oldStrategy.name}}* to *{{newStrategy.name}}*
-{{/if}}{{/updatedStrategies}}{{/if}}
-{{~#if updatedStrategiesValues}}
-{{#updatedStrategiesValues}}{{#if valueChanged}}• *{{newStrategy.name}}* strategy set to {{newStrategy.value}}
-{{/if}}{{/updatedStrategiesValues}}{{/if}}
-{{~#if updatedStrategies}}
-{{#updatedStrategies}}{{#unless nameChanged}}• *{{newStrategy.name}}* strategy rules have been updated
-{{/unless}}{{/updatedStrategies}}{{/if}}
+{{#updatedStrategies}}{{~#if nameChanged}}>• Strategy name changed from `{{oldStrategy.name}}` to `{{newStrategy.name}}`   
+{{else}}{{~#if valueChanged}}>• *{{newStrategy.name}}* strategy value set to `{{newStrategy.value}}`
+{{else}}>• *{{newStrategy.name}}* strategy rules have been updated
+{{/if}}{{/if}}{{/updatedStrategies}}{{/if}}
+{{~#if addedStrategies}}
+>• Added new strategies: {{#addedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}{{/addedStrategies}}{{/if}}
+{{~#strategiesReordered}}>• Strategies were re-ordered from {{#previous}}*{{name}}*, {{/previous}} to {{#reordered}}*{{name}}*{{^last}}{{#unless @last}}, {{/unless}} {{/last}}{{/reordered}}{{/strategiesReordered}}
 {{~#if deletedStrategies}}
-• deleted strategies: {{#deletedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}{{/deletedStrategies}}{{/if}}
+>• Deleted strategies: {{#deletedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
+{{/deletedStrategies}}{{/if}}
+{{~#lockUpdated~}}
+{{~#wasLocked}}>• Feature set to `locked`{{/wasLocked}}
+{{^wasLocked}}>• Feature set to `unlocked`{{/wasLocked}}{{~/lockUpdated~}}
+{{~#retiredUpdated}}
+>• {{~#if wasRetired}} Feature set to `retired`{{/if}}{{#unless wasRetired}} Feature set to `unretired`{{/unless}}{{/retiredUpdated}}
 
 Portfolio: *{{ pName }}*, Application: *{{ aName }}*
---------------------------------------"""
+----------------------------------------------------------------------------"""
   }
 
   internal data class PreprocessSlack(
