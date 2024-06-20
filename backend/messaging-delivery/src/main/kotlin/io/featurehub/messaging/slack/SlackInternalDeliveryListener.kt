@@ -45,10 +45,10 @@ class SlackWebClient @Inject constructor(
 Feature *{{fName}}* (`{{fKey}}`) in *{{ eName }}* was changed by *{{ whoUpdated }}* at {{ whenUpdatedReadable }}
 
 Summary of changes:
-{{#featureValueUpdated}}>• Default value now `{{updated}}` was `{{previous}}`{{/featureValueUpdated}}
+{{#featureValueUpdated}}>• Default value now `{{{updated}}}` was `{{{previous}}}`{{/featureValueUpdated}}
 {{~#if updatedStrategies}}
 {{#updatedStrategies}}{{~#if nameChanged}}>• Strategy name changed from `{{oldStrategy.name}}` to `{{newStrategy.name}}`   
-{{else}}{{~#if valueChanged}}>• *{{newStrategy.name}}* strategy value set to `{{newStrategy.value}}`
+{{else}}{{~#if valueChanged}}>• *{{newStrategy.name}}* strategy value set to `{{{newStrategy.value}}}`
 {{else}}>• *{{newStrategy.name}}* strategy rules have been updated
 {{/if}}{{/if}}{{/updatedStrategies}}{{/if}}
 {{~#if addedStrategies}}

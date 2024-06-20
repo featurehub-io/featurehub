@@ -29,7 +29,7 @@ interface FeatureMessageFormatter {
 
 class FeatureMessageFormatterImpl : FeatureMessageFormatter {
   companion object {
-    val maxValueLength = FallbackPropertyConfig.getConfig("slack.value-max-length", "20").toInt()
+    val maxValueLength = FallbackPropertyConfig.getConfig("slack.value-max-length", "50").toInt()
 
     val mapper = ObjectMapper().apply {
       registerModule(KotlinModule.Builder().build())
