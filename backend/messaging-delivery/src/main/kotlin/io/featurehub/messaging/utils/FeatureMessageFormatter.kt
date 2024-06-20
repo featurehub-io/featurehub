@@ -10,29 +10,33 @@ import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
 import io.featurehub.messaging.model.FeatureMessagingUpdate
+import io.featurehub.messaging.model.MessagingRolloutStrategy
 import io.featurehub.messaging.model.StrategyUpdateType
+import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.utils.FallbackPropertyConfig
 import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
 
 interface FeatureMessageFormatter {
-  fun enhanceMessagingUpdateForHandlebars(fmData: FeatureMessagingUpdate): Map<String,Any>
+  fun enhanceMessagingUpdateForHandlebars(fmData: FeatureMessagingUpdate): Map<String, Any>
 
   /**
    * This takes a message and formats it using Handlebars. It will SHA the message and store the compiled template using,
    * an LRU cache so it doesn't need to keep recompiling the message format over and over again
    */
-  fun formatMessage(data: Map<String,Any>, fmt: String): String
+  fun formatMessage(data: Map<String, Any>, fmt: String): String
 }
 
 class FeatureMessageFormatterImpl : FeatureMessageFormatter {
   companion object {
+    val maxValueLength = FallbackPropertyConfig.getConfig("slack.value-max-length", "20").toInt()
+
     val mapper = ObjectMapper().apply {
       registerModule(KotlinModule.Builder().build())
         .registerModule(JavaTimeModule())
     }
 
-    val ref = object: TypeReference<Map<String,Any>>() {}
+    val ref = object : TypeReference<Map<String, Any>>() {}
     private val handlebars = Handlebars()
   }
 
@@ -44,7 +48,27 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
       }
     })
 
-  override fun enhanceMessagingUpdateForHandlebars(fmData: FeatureMessagingUpdate): Map<String,Any> {
+  private fun truncValue(valueType: FeatureValueType, strat: MessagingRolloutStrategy): MessagingRolloutStrategy {
+    if (strat.value == null || valueType != FeatureValueType.JSON && valueType != FeatureValueType.STRING) {
+      return strat
+    }
+
+    strat.value = strat.value.toString().take(maxValueLength)
+
+    return strat
+  }
+
+  override fun enhanceMessagingUpdateForHandlebars(fmData: FeatureMessagingUpdate): Map<String, Any> {
+    fmData.featureValueUpdated?.let { fv ->
+      if (fmData.featureValueType == FeatureValueType.JSON || fmData.featureValueType == FeatureValueType.STRING) {
+        if (fv.updated != null) {
+          fv.updated = fv.updated.toString().take(maxValueLength)
+        }
+        if (fv.previous != null) {
+          fv.previous = fv.previous.toString().take(maxValueLength)
+        }
+      }
+    }
     // convert the object tree into a map
     val data = mapper.readValue(mapper.writeValueAsString(fmData), ref).toMutableMap()
 
@@ -56,20 +80,23 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
 
     fmData.strategiesUpdated?.let { strategies ->
       if (strategies.isNotEmpty()) {
-        strategies.filter { it.updateType == StrategyUpdateType.ADDED }.map { it.newStrategy }.let {
+        strategies.filter { it.updateType == StrategyUpdateType.ADDED }
+          .map { truncValue(fmData.featureValueType, it.newStrategy!!) }.let {
           data["addedStrategies"] = it
         }
 
         strategies.filter { it.updateType == StrategyUpdateType.CHANGED }.map {
-          mapOf<String,Any?>(Pair("newStrategy", it.newStrategy), Pair("oldStrategy", it.oldStrategy),
-                  Pair("nameChanged", it.newStrategy?.name != it.oldStrategy?.name),
-                  Pair("valueChanged", it.newStrategy?.value != it.oldStrategy?.value)
+          mapOf<String, Any?>(
+            Pair("newStrategy", truncValue(fmData.featureValueType, it.newStrategy!!)),
+            Pair("oldStrategy", truncValue(fmData.featureValueType, it.oldStrategy!!)),
+            Pair("nameChanged", it.newStrategy?.name != it.oldStrategy?.name),
+            Pair("valueChanged", it.newStrategy?.value != it.oldStrategy?.value),
           )
         }.let {
           data["updatedStrategies"] = it
         }
 
-        strategies.filter { it.updateType == StrategyUpdateType.DELETED }.map { it.oldStrategy }.let {
+        strategies.filter { it.updateType == StrategyUpdateType.DELETED }.map { truncValue(fmData.featureValueType, it.oldStrategy!!) }.let {
           data["deletedStrategies"] = it
         }
       }
