@@ -53,7 +53,7 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
       return strat
     }
 
-    strat.value = strat.value.toString().take(maxValueLength)
+    strat.value = strat.value.toString().take(maxValueLength).replace('\"', '\u0022')
 
     return strat
   }
@@ -62,10 +62,10 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
     fmData.featureValueUpdated?.let { fv ->
       if (fmData.featureValueType == FeatureValueType.JSON || fmData.featureValueType == FeatureValueType.STRING) {
         if (fv.updated != null) {
-          fv.updated = fv.updated.toString().take(maxValueLength)
+          fv.updated = fv.updated.toString().take(maxValueLength).replace('\"', '\u0022')
         }
         if (fv.previous != null) {
-          fv.previous = fv.previous.toString().take(maxValueLength)
+          fv.previous = fv.previous.toString().take(maxValueLength).replace('\"', '\u0022')
         }
       }
     }
