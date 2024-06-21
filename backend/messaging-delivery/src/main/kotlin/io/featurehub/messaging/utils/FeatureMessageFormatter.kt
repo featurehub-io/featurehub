@@ -72,10 +72,16 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
     fmData.featureValueUpdated?.let { fv ->
       if (fmData.featureValueType == FeatureValueType.JSON || fmData.featureValueType == FeatureValueType.STRING) {
         if (fv.updated != null) {
-          fv.updated = fv.updated.toString().take(maxValueLength).replace('\"', '\u0022')
+          if(fv.updated.toString().length > maxValueLength) {
+            fv.updated = fv.updated.toString().take(maxValueLength) + "...(value truncated)"
+          }
+          fv.updated = fv.updated.toString().replace('\"', '\u0022')
         }
         if (fv.previous != null) {
-          fv.previous = fv.previous.toString().take(maxValueLength).replace('\"', '\u0022')
+          if(fv.previous.toString().length > maxValueLength) {
+            fv.previous = fv.previous.toString().take(maxValueLength) + "...(value truncated)"
+          }
+          fv.previous = fv.previous.toString().replace('\"', '\u0022')
         }
       }
     }
@@ -110,17 +116,6 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
 
         strategies.filter { it.updateType == StrategyUpdateType.DELETED }.map { truncValue(fmData.featureValueType, it.oldStrategy!!) }.let {
           data["deletedStrategies"] = it
-        }
-      }
-    }
-
-    fmData.featureValueUpdated?.let { fv ->
-      if (fmData.featureValueType == FeatureValueType.JSON || fmData.featureValueType == FeatureValueType.STRING) {
-        if (fv.updated != null) {
-          fv.updated = fv.updated.toString().take(maxValueLength).replace('\"', '\u0022')
-        }
-        if (fv.previous != null) {
-          fv.previous = fv.previous.toString().take(maxValueLength).replace('\"', '\u0022')
         }
       }
     }

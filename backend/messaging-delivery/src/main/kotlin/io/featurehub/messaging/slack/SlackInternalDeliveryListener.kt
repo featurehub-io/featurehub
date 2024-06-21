@@ -46,13 +46,15 @@ Feature *{{fName}}* (`{{fKey}}`) in *{{ eName }}* was changed by *{{ whoUpdated 
 
 Summary of changes:
 {{#featureValueUpdated}}>• Default value now `{{{updated}}}` was `{{{previous}}}`{{/featureValueUpdated}}
-{{~#if updatedStrategies}}
-{{#updatedStrategies}}{{~#if nameChanged}}>• Strategy name changed from `{{oldStrategy.name}}` to `{{newStrategy.name}}`   
-{{else}}{{~#if valueChanged}}>• *{{newStrategy.name}}* strategy value set to `{{{newStrategy.value}}}`
-{{else}}{{~#if percentageChanged}}>• *{{newStrategy.name}}* strategy rollout percentage set to `{{newStrategy.percentage}}%`
-{{else}}{{~#if attributesChanged}}>• *{{newStrategy.name}}* strategy rules have been updated
-{{else}}>• *{{newStrategy.name}}* strategy settings have been updated
-{{/if}}{{/if}}{{/if}}{{/if}}{{/updatedStrategies}}{{/if}}
+{{~#if updatedStrategies}}{{#updatedStrategies}}{{~#if nameChanged}}
+>• Strategy name changed from `{{oldStrategy.name}}` to `{{newStrategy.name}}`{{/if}}   
+{{~#if valueChanged}}
+>• *{{newStrategy.name}}* strategy value set to `{{{newStrategy.value}}}`{{/if}}
+{{~#if percentageChanged}}
+>• *{{newStrategy.name}}* strategy rollout percentage set to `{{newStrategy.percentage}}%`{{/if}}
+{{~#if attributesChanged}}
+>• *{{newStrategy.name}}* strategy rules have been updated{{/if}}
+{{/updatedStrategies}}{{/if}}
 {{~#if addedStrategies}}
 >• Added new strategies: {{#addedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}{{/addedStrategies}}{{/if}}
 {{~#strategiesReordered}}>• Strategies were re-ordered from {{#previous}}*{{name}}*, {{/previous}} to {{#reordered}}*{{name}}*{{^last}}{{#unless @last}}, {{/unless}} {{/last}}{{/reordered}}{{/strategiesReordered}}
