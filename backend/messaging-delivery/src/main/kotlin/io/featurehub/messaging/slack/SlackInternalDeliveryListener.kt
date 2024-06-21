@@ -41,7 +41,7 @@ class SlackWebClient @Inject constructor(
   companion object {
     private val log: Logger = LoggerFactory.getLogger(SlackWebClient::class.java)
     const val DEFAULT_MESSAGE_FORMAT =
-      """----------------------------------------------------------------------------
+      """
 Feature *{{fName}}* (`{{fKey}}`) in *{{ eName }}* was changed by *{{ whoUpdated }}* at {{ whenUpdatedReadable }}
 
 Summary of changes:
@@ -49,8 +49,10 @@ Summary of changes:
 {{~#if updatedStrategies}}
 {{#updatedStrategies}}{{~#if nameChanged}}>• Strategy name changed from `{{oldStrategy.name}}` to `{{newStrategy.name}}`   
 {{else}}{{~#if valueChanged}}>• *{{newStrategy.name}}* strategy value set to `{{{newStrategy.value}}}`
-{{else}}>• *{{newStrategy.name}}* strategy rules have been updated
-{{/if}}{{/if}}{{/updatedStrategies}}{{/if}}
+{{else}}{{~#if percentageChanged}}>• *{{newStrategy.name}}* strategy rollout percentage set to `{{newStrategy.percentage}}%`
+{{else}}{{~#if attributesChanged}}>• *{{newStrategy.name}}* strategy rules have been updated
+{{else}}>• *{{newStrategy.name}}* strategy settings have been updated
+{{/if}}{{/if}}{{/if}}{{/if}}{{/updatedStrategies}}{{/if}}
 {{~#if addedStrategies}}
 >• Added new strategies: {{#addedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}{{/addedStrategies}}{{/if}}
 {{~#strategiesReordered}}>• Strategies were re-ordered from {{#previous}}*{{name}}*, {{/previous}} to {{#reordered}}*{{name}}*{{^last}}{{#unless @last}}, {{/unless}} {{/last}}{{/reordered}}{{/strategiesReordered}}

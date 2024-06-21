@@ -29,7 +29,7 @@ interface FeatureMessageFormatter {
 
 class FeatureMessageFormatterImpl : FeatureMessageFormatter {
   companion object {
-    val maxValueLength = FallbackPropertyConfig.getConfig("slack.value-max-length", "50").toInt()
+    val maxValueLength = FallbackPropertyConfig.getConfig("slack.value-max-length", "150").toInt()
 
     val mapper = ObjectMapper().apply {
       registerModule(KotlinModule.Builder().build())
@@ -49,11 +49,21 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
     })
 
   private fun truncValue(valueType: FeatureValueType, strat: MessagingRolloutStrategy): MessagingRolloutStrategy {
+    if (strat.percentage != null) {
+      val percent = strat.percentage
+      if (percent != null) {
+        strat.percentage = percent/10000
+      }
+    }
     if (strat.value == null || valueType != FeatureValueType.JSON && valueType != FeatureValueType.STRING) {
       return strat
     }
 
-    strat.value = strat.value.toString().take(maxValueLength).replace('\"', '\u0022')
+    if(strat.value.toString().length > maxValueLength) {
+      strat.value = strat.value.toString().take(maxValueLength) + "...(value truncated)"
+    }
+
+    strat.value = strat.value.toString().replace('\"', '\u0022')
 
     return strat
   }
@@ -87,17 +97,30 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
 
         strategies.filter { it.updateType == StrategyUpdateType.CHANGED }.map {
           mapOf<String, Any?>(
-            Pair("newStrategy", truncValue(fmData.featureValueType, it.newStrategy!!)),
-            Pair("oldStrategy", truncValue(fmData.featureValueType, it.oldStrategy!!)),
             Pair("nameChanged", it.newStrategy?.name != it.oldStrategy?.name),
             Pair("valueChanged", it.newStrategy?.value != it.oldStrategy?.value),
-          )
+                  Pair("percentageChanged", it.newStrategy?.percentage != it.oldStrategy?.percentage),
+                  Pair("attributesChanged", it.newStrategy?.attributes != it.oldStrategy?.attributes),
+                  Pair("newStrategy", truncValue(fmData.featureValueType, it.newStrategy!!)),
+                  Pair("oldStrategy", truncValue(fmData.featureValueType, it.oldStrategy!!)),
+                  )
         }.let {
           data["updatedStrategies"] = it
         }
 
         strategies.filter { it.updateType == StrategyUpdateType.DELETED }.map { truncValue(fmData.featureValueType, it.oldStrategy!!) }.let {
           data["deletedStrategies"] = it
+        }
+      }
+    }
+
+    fmData.featureValueUpdated?.let { fv ->
+      if (fmData.featureValueType == FeatureValueType.JSON || fmData.featureValueType == FeatureValueType.STRING) {
+        if (fv.updated != null) {
+          fv.updated = fv.updated.toString().take(maxValueLength).replace('\"', '\u0022')
+        }
+        if (fv.previous != null) {
+          fv.previous = fv.previous.toString().take(maxValueLength).replace('\"', '\u0022')
         }
       }
     }
