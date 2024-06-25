@@ -8,14 +8,16 @@ import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 
 import 'webhook_env_bloc.dart';
 
-
 class TrackingEventPanelListViewWidget extends StatefulWidget {
   final WebhookEnvironmentBloc bloc;
   final String envId;
   final String cloudEventType;
 
   const TrackingEventPanelListViewWidget(
-      {super.key, required this.bloc, required this.envId, required this.cloudEventType});
+      {super.key,
+      required this.bloc,
+      required this.envId,
+      required this.cloudEventType});
 
   @override
   State<StatefulWidget> createState() {
@@ -47,7 +49,6 @@ class TrackingEventListViewState
     _fetchPage(_pageKey);
   }
 
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -64,8 +65,8 @@ class TrackingEventListViewState
         _isLoading = true;
       });
 
-      final summary =
-          await widget.bloc.fetchTrackSummaryList(widget.envId, widget.cloudEventType, pageKey, _pageSize);
+      final summary = await widget.bloc.fetchTrackSummaryList(
+          widget.envId, widget.cloudEventType, pageKey, _pageSize);
 
       setState(() {
         _isLoading = false;
@@ -73,13 +74,11 @@ class TrackingEventListViewState
         _isLastPage = summary.items.length < _pageSize;
       });
     } catch (error) {
-      setState( () {
+      setState(() {
         _isLoading = false;
         _error = error;
       });
-    } finally {
-
-    }
+    } finally {}
   }
 
   @override
@@ -87,34 +86,39 @@ class TrackingEventListViewState
     return Padding(
       padding: const EdgeInsets.only(top: 14.0),
       child: Card(
-        child: Column(children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                const Expanded(child: Text('Activity Logs')),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: FHFlatButton(onPressed: () => _reload(), title: 'Refresh'),
-                )
-              ],
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  const Expanded(child: Text('Message delivery status')),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: TextButton.icon(
+                      onPressed: () => _reload(),
+                      icon: const Icon(Icons.refresh_outlined),
+                      label: const Text('Refresh'),
+                    ),
+                  )
+                ],
+              ),
             ),
-          ),
-          if (_error == null && _items.isEmpty && !_isLastPage && _isLoading)
-            const FHLoadingIndicator(),
-          if (_error == null && _items.isEmpty && _isLastPage && !_isLoading)
-            const Text("There is no activity as yet."),
-          for(final item in _items)
-            TrackEventItemWidget(event: item),
-          if (_error != null)
-            const FHLoadingError(),
-          if (_error == null && !_isLastPage && !_isLoading)
-            _buttonRefresh('More items...'),
-          if (_error != null && !_isLastPage && !_isLoading)
-            _buttonRefresh('Retry...'),
-          if ((_error != null || _items.isNotEmpty || _isLastPage) && _isLoading)
-            const FHLoadingIndicator(),
-        ],),
+            if (_error == null && _items.isEmpty && !_isLastPage && _isLoading)
+              const FHLoadingIndicator(),
+            if (_error == null && _items.isEmpty && _isLastPage && !_isLoading)
+              const Text("There is no activity as yet."),
+            for (final item in _items) TrackEventItemWidget(event: item),
+            if (_error != null) const FHLoadingError(),
+            if (_error == null && !_isLastPage && !_isLoading)
+              _buttonRefresh('More items...'),
+            if (_error != null && !_isLastPage && !_isLoading)
+              _buttonRefresh('Retry...'),
+            if ((_error != null || _items.isNotEmpty || _isLastPage) &&
+                _isLoading)
+              const FHLoadingIndicator(),
+          ],
+        ),
       ),
     );
   }
@@ -125,7 +129,9 @@ class TrackingEventListViewState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          FHFlatButton(onPressed: () => _fetchPage(_pageKey + 1), title: 'More items...'),
+          FHFlatButton(
+              onPressed: () => _fetchPage(_pageKey + 1),
+              title: 'More items...'),
         ],
       ),
     );
@@ -147,7 +153,7 @@ class TrackEventItemWidget extends StatelessWidget {
     if (event.eventResponses == null) {
       return Card(
           elevation: 4.0,
-          color: Colors.lightGreenAccent,
+          color: Colors.green,
           shadowColor: Colors.transparent,
           child: Padding(
               padding: const EdgeInsets.all(8.0),
@@ -167,7 +173,7 @@ class TrackEventItemWidget extends StatelessWidget {
     if (_isSuccess(response)) {
       return Card(
           elevation: 4.0,
-          color: Colors.lightGreenAccent,
+          color: Colors.green,
           shadowColor: Colors.transparent,
           child: Padding(
               padding: const EdgeInsets.all(8.0),
@@ -182,7 +188,6 @@ class TrackEventItemWidget extends StatelessWidget {
                 ],
               )));
     }
-
 
     final headers = response.headers;
     return Card(

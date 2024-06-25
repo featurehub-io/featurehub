@@ -210,7 +210,7 @@ class SystemConfigSqlApi @Inject constructor(
     }
 
     val foundKeys = filters.map { filter ->
-      QDbSystemConfig().id.key.startsWith(filter.lowercase()).findList().map(this::mapVal)
+      QDbSystemConfig().id.key.startsWith(filter.lowercase()).id.orgId.eq(conversions.organizationId()).findList().map(this::mapVal)
     }.flatten().filter { !systemConfigMap[it.key]!!.internalOnly }.associateBy { it.key }
 
     // find all those keys that could/should have values but don't

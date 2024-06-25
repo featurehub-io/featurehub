@@ -1,4 +1,3 @@
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
@@ -93,7 +92,9 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                 padding: const EdgeInsets.only(left: 8.0, right: 8.0),
                 child: Column(
                   children: [
-                    if (knownSiteUrl == null)
+                    if (knownSiteUrl == null &&
+                        (bearer.value == null ||
+                            bearer.value?.toString().isEmpty == true))
                       const Padding(
                         padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
                         child: FHExternalLinkOutlinedWidget(
@@ -104,17 +105,19 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                                 'https://api.slack.com/apps?new_app=1&manifest_yaml=display_information%3A%0A%20%20name%3A%20FeatureHub%0A%20%20description%3A%20FeatureHub%20Notifications%20Bot%0A%20%20background_color%3A%20%22%23536dfe%22%0A%20%20long_description%3A%20Receive%20notifications%20from%20the%20FeatureHub%20Bot.%20Notifications%20include%20features%20and%20feature%20values%20updates%2C%20strategy%20updates%20and%20other%20feature%20settings.%20For%20details%2C%20please%20view%20our%20documentation%20on%20https%3A%2F%2Fdocs.featurehub.io%0Afeatures%3A%0A%20%20bot_user%3A%0A%20%20%20%20display_name%3A%20featurehub%0A%20%20%20%20always_online%3A%20true%0Aoauth_config%3A%0A%20%20scopes%3A%0A%20%20%20%20bot%3A%0A%20%20%20%20%20%20-%20chat%3Awrite%0Asettings%3A%0A%20%20org_deploy_enabled%3A%20false%0A%20%20socket_mode_enabled%3A%20false%0A%20%20token_rotation_enabled%3A%20false%0A',
                             icon: Icon(Icons.arrow_outward_outlined)),
                       ),
-                    if (knownSiteUrl != null)
+                    if (knownSiteUrl != null &&
+                        (bearer.value == null ||
+                            bearer.value?.toString().isEmpty == true))
                       Row(
                         children: [
                           FilledButton.icon(
                             icon: const Icon(slack),
                             onPressed: () async {
-                              final url = await configBloc.knownSiteRedirectUrl('/mr-api/slack/oauth2/connect');
+                              final url = await configBloc.knownSiteRedirectUrl(
+                                  '/mr-api/slack/oauth2/connect');
                               if (url != null) {
-                                window.open(url, 'new tab');
+                                window.location.href = url;
                               }
-
                             },
                             label: const Text('Add to Slack'),
                           ),
@@ -134,7 +137,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                       validator: (val) {
                         if (enabled.value == true &&
                             (val == null || val.trim().isEmpty)) {
-                          return 'Cannot enable Slack if the bearer token is empty';
+                          return 'Please enter Slack Bot User OAuth token';
                         }
 
                         return null;
@@ -150,6 +153,12 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                         hintText: 'e.g. C0150T7AF25',
                         labelText: 'Default Slack channel ID',
                       ),
+                      validator: (v) {
+                        if (v?.trim().isEmpty == true) {
+                          return 'Please enter Slack channel ID';
+                        }
+                        return null;
+                      },
                     ),
                     if (settings['slack.delivery.url'] != null)
                       externalDelivery(),

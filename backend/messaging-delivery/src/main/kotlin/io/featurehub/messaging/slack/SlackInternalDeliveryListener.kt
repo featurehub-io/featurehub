@@ -41,21 +41,34 @@ class SlackWebClient @Inject constructor(
   companion object {
     private val log: Logger = LoggerFactory.getLogger(SlackWebClient::class.java)
     const val DEFAULT_MESSAGE_FORMAT =
-      """Feature <{{{site_url}}}/features#key={{{fKey}}}p={{pId}}&a={{aId}}&e={{eId}}&o={{oId}}|*{{fName}}*> (`{{fKey}}`) in *{{ eName }}* was changed by *{{ whoUpdated }}* at {{ whenUpdatedReadable }}
+      """
+Feature *{{fName}}* (`{{fKey}}`) in *{{ eName }}* was changed by *{{ whoUpdated }}* at {{ whenUpdatedReadable }}
 
 Summary of changes:
+{{#featureValueUpdated}}>• Default value now `{{{updated}}}` was `{{{previous}}}`{{/featureValueUpdated}}
+{{~#if updatedStrategies}}{{#updatedStrategies}}{{~#if nameChanged}}
+>• Strategy name changed from `{{oldStrategy.name}}` to `{{newStrategy.name}}`{{/if}}   
+{{~#if valueChanged}}
+>• *{{newStrategy.name}}* strategy value set to `{{{newStrategy.value}}}`{{/if}}
+{{~#if percentageChanged}}
+>• *{{newStrategy.name}}* strategy rollout percentage set to `{{newStrategy.percentage}}%`{{/if}}
+{{~#if attributesChanged}}
+>• *{{newStrategy.name}}* strategy rules have been updated{{/if}}
+{{/updatedStrategies}}{{/if}}
+{{~#if addedStrategies}}
+>• Added new strategies: {{#addedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}{{/addedStrategies}}{{/if}}
+{{~#strategiesReordered}}>• Strategies were re-ordered from {{#previous}}*{{name}}*, {{/previous}} to {{#reordered}}*{{name}}*{{^last}}{{#unless @last}}, {{/unless}} {{/last}}{{/reordered}}{{/strategiesReordered}}
+{{~#if deletedStrategies}}
+>• Deleted strategies: {{#deletedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
+{{/deletedStrategies}}{{/if}}
+{{~#lockUpdated~}}
+{{~#wasLocked}}>• Feature set to `locked`{{/wasLocked}}
+{{~^wasLocked}}>• Feature set to `unlocked`{{/wasLocked}}{{~/lockUpdated~}}
+{{~#retiredUpdated}}
+>• {{~#if wasRetired}} Feature set to `retired`{{/if}}{{#unless wasRetired}} Feature set to `unretired`{{/unless}}{{/retiredUpdated}}
 
-{{#featureValueUpdated}}• default value now `{{updated}}`, was `{{previous}}`{{/featureValueUpdated}}
-{{~#lockUpdated~}}{{#wasLocked}}
-• feature is now locked{{/wasLocked}}
-{{^wasLocked}}• feature is now unlocked{{/wasLocked}}{{~/lockUpdated~}}
-{{#retiredUpdated}}• {{#if wasRetired}}was retired{{/if}}{{#unless wasRetired}}was reinstated (from retired){{/unless}}{{/retiredUpdated}}{{#strategiesReordered}}
-• strategies were re-ordered from {{#previous}}{{name}}{{#unless @last}},{{/unless}}{{/previous}} to {{#reordered}}{{name}}{{^last}},{{/last}}{{/reordered}}{{/strategiesReordered}}{{#if addedStrategies}}
-• added new strategies: {{#addedStrategies}}{{name}}{{#unless @last}},{{/unless}}{{/addedStrategies}}{{/if}}{{~#if updatedStrategies}}
-• updated strategies: {{#updatedStrategies}}{{#if nameChanged}}{{oldStrategy.name}} ⇒ {{newStrategy.name}}{{#unless @last}},{{/unless}}{{/if}}{{#unless nameChanged}}{{newStrategy.name}}{{/unless}}{{/updatedStrategies}}{{/if}}{{~#if deletedStrategies}}
-• deleted strategies: {{#deletedStrategies}}{{name}}{{#unless @last}},{{/unless}}{{/deletedStrategies}}{{/if}}
-
-Portfolio: *{{ pName }}*, Application: *{{ aName }}*"""
+Portfolio: *{{ pName }}*, Application: *{{ aName }}*
+----------------------------------------------------------------------------"""
   }
 
   internal data class PreprocessSlack(
@@ -114,20 +127,6 @@ Portfolio: *{{ pName }}*, Application: *{{ aName }}*"""
     val insertMessage = message.replace("\"", "\\\"")
     val channel = channelName.replace("\"", "\\\"")
     return """{"channel": "$channel", "blocks":[{"type":"section", "text":{"type":"mrkdwn","text":"$insertMessage"}}]}"""
-    /*
-        const message : Array<SlackBlock> = [{
-      type: 'section',
-      text: {
-        type: TEXT_MARKDOWN,
-        text: body
-      }
-    }];
-    const body =     {
-        channel: slackChannel,
-        blocks: message
-      }
-
-     */
   }
 
   fun process(
