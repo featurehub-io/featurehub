@@ -140,7 +140,8 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
     env['$prefix.token'] = _token.text;
     env['$prefix.channel_name'] = _channelName.text;
     env['$prefix.encrypt'] = '$prefix.token';
-    widget.bloc.mrBloc.addSnackbar(const Text("Saving Slack webhook"));
+    widget.bloc.mrBloc
+        .addSnackbar(const Text("Slack settings have been updated"));
     await widget.bloc.updateEnvironmentWithWebhookData(
         widget.env.environment!, env, "$prefix.");
   }

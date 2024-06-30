@@ -108,41 +108,46 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                     if (knownSiteUrl != null &&
                         (bearer.value == null ||
                             bearer.value?.toString().isEmpty == true))
-                      Row(
-                        children: [
-                          FilledButton.icon(
-                            icon: const Icon(slack),
-                            onPressed: () async {
-                              final url = await configBloc.knownSiteRedirectUrl(
-                                  '/mr-api/slack/oauth2/connect');
-                              if (url != null) {
-                                window.location.href = url;
-                              }
-                            },
-                            label: const Text('Add to Slack'),
-                          ),
-                        ],
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                        child: Row(
+                          children: [
+                            FilledButton.icon(
+                              icon: const Icon(slack),
+                              onPressed: () async {
+                                final url =
+                                    await configBloc.knownSiteRedirectUrl(
+                                        '/mr-api/slack/oauth2/connect');
+                                if (url != null) {
+                                  window.location.href = url;
+                                }
+                              },
+                              label: const Text('Connect to Slack'),
+                            ),
+                          ],
+                        ),
                       ),
                     const SizedBox(
                       height: 16.0,
                     ),
-                    SystemConfigEncryptableTextField(
-                      field: bearer,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText:
-                            'e.g. xoxb-1182138673840-5153275439522-sYLjc5KVxFaLrr2wY9fh8jd',
-                        labelText: 'Slack Bot User OAuth Token',
-                      ),
-                      validator: (val) {
-                        if (enabled.value == true &&
-                            (val == null || val.trim().isEmpty)) {
-                          return 'Please enter Slack Bot User OAuth token';
-                        }
+                    if (knownSiteUrl == null)
+                      SystemConfigEncryptableTextField(
+                        field: bearer,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText:
+                              'e.g. xoxb-1182138673840-5153275439522-sYLjc5KVxFaLrr2wY9fh8jd',
+                          labelText: 'Slack Bot User OAuth Token',
+                        ),
+                        validator: (val) {
+                          if (enabled.value == true &&
+                              (val == null || val.trim().isEmpty)) {
+                            return 'Please enter Slack Bot User OAuth token';
+                          }
 
-                        return null;
-                      },
-                    ),
+                          return null;
+                        },
+                      ),
                     const SizedBox(
                       height: 16.0,
                     ),
