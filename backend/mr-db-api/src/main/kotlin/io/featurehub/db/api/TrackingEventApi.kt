@@ -32,6 +32,7 @@ interface TrackingEventApi {
    */
   fun <T: TaggedCloudEvent> createInitialRecord(messageId: UUID,
                                                 cloudEventType: String,
+                                                organizationId: UUID,
                                                 linkType: CloudEventLinkType,
                                                 linkId: UUID, data: T,
                                                 whenCreated: OffsetDateTime,
