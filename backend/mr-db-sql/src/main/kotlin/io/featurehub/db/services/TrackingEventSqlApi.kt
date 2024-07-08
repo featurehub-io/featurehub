@@ -11,6 +11,7 @@ import io.featurehub.db.api.CloudEventLinkType
 import io.featurehub.db.api.TrackingEventApi
 import io.featurehub.db.model.DbCloudEventLog
 import io.featurehub.db.model.query.QDbCloudEventLog
+import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.DynamicCloudEventDestination
 import io.featurehub.lifecycle.LifecycleListener
@@ -52,7 +53,7 @@ class TrackingEventListener @Inject constructor(cloudEventReceiverRegistry: Clou
  * We keep the first successful response after it gets sent or when recovering from a failure. We keep all failures.
  */
 
-class TrackingEventSqlApi @Inject constructor(private val conversions: Conversions) : TrackingEventApi {
+class TrackingEventSqlApi: TrackingEventApi {
   private val defaultKeepSuccesses = FallbackPropertyConfig.getConfig("tracking-event.keep-successes", "false") == "true"
   private val keepIndividualTypeSuccess = mutableMapOf<String, Boolean>()
 
@@ -118,12 +119,13 @@ class TrackingEventSqlApi @Inject constructor(private val conversions: Conversio
   override fun <T : TaggedCloudEvent> createInitialRecord(
     messageId: UUID,
     cloudEventType: String,
+    organizationId: UUID,
     linkType: CloudEventLinkType,
     linkId: UUID,
     data: T,
     whenCreated: OffsetDateTime, metadata: String?
   ) {
-    DbCloudEventLog(messageId, conversions.dbOrganization(),
+    DbCloudEventLog(messageId, QDbOrganization().id.eq(organizationId).findOne()!!,
       cloudEventType, linkType.name, linkId, mapper.writeValueAsString(data), whenCreated.toInstant(), metadata).save()
   }
 

@@ -12,7 +12,6 @@ import java.time.Instant
 import java.time.ZoneOffset
 
 class TrackingEventSqlApiSpec extends Base2Spec {
-  Conversions conversions
   TrackingEventSqlApi api
   DynamicCloudEventDestination dynamicListener
 
@@ -21,9 +20,8 @@ class TrackingEventSqlApiSpec extends Base2Spec {
   }
 
   def setup() {
-    conversions = Mock()
     dynamicListener = Mock()
-    api = new TrackingEventSqlApi(conversions)
+    api = new TrackingEventSqlApi()
   }
 
   def "i can record a newly sent message and then track events against it"() {
@@ -38,10 +36,8 @@ class TrackingEventSqlApiSpec extends Base2Spec {
       UUID messageId = UUID.randomUUID()
       UUID envId = UUID.randomUUID()
       def whenSent = Instant.now().atOffset(ZoneOffset.UTC)
-      api.createInitialRecord(messageId, ceType, CloudEventLinkType.env, envId, new Phred(val: "hello"), whenSent, null)
-    then:
-      1 * conversions.dbOrganization() >> findOrganization()
-    when: "i record a success against the message it will be saved"
+      api.createInitialRecord(messageId, ceType, org.id, CloudEventLinkType.env, envId, new Phred(val: "hello"), whenSent, null)
+    and: "i record a success against the message it will be saved"
       api.trackEvent(new TrackedEventResult()
         .method(TrackedEventMethod.ASYNC)
         .content("content1").status(200)
@@ -73,11 +69,10 @@ class TrackingEventSqlApiSpec extends Base2Spec {
       Thread.sleep(100) // this one is defintely later
       UUID message2Id = UUID.randomUUID()
       whenSent = Instant.now().atOffset(ZoneOffset.UTC)
-      api.createInitialRecord(message2Id, ceType, CloudEventLinkType.env, envId, new Phred(val: "hello"), whenSent, null)
+      api.createInitialRecord(message2Id, ceType, org.id, CloudEventLinkType.env, envId, new Phred(val: "hello"), whenSent, null)
       DB.currentTransaction().commitAndContinue()
       pages = api.findEvents("env", envId, ceType, 0, 20, true)
     then: "we have 3 records but the 1st one has no response"
-      1 * conversions.dbOrganization() >> findOrganization()
       pages.count == 2
 
       pages.items[0].eventResponses == null
@@ -108,11 +103,9 @@ class TrackingEventSqlApiSpec extends Base2Spec {
       Thread.sleep(100) // this one is defintely later
       UUID message3Id = UUID.randomUUID()
       whenSent = Instant.now().atOffset(ZoneOffset.UTC)
-      api.createInitialRecord(message3Id, ceType, CloudEventLinkType.env, envId, new Phred(val: "hello"), whenSent, null)
+      api.createInitialRecord(message3Id, ceType, org.id, CloudEventLinkType.env, envId, new Phred(val: "hello"), whenSent, null)
       DB.currentTransaction().commitAndContinue()
-    then: "we have 3 records but the 1st one has no response"
-      1 * conversions.dbOrganization() >> findOrganization()
-    when: "we send a track event that is failure, it will get recorded and be the first item returned"
+    and: "we send a track event that is failure, it will get recorded and be the first item returned"
       api.trackEvent(new TrackedEventResult()
         .method(TrackedEventMethod.POST)
         .content("content13").status(418)

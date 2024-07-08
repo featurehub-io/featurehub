@@ -81,6 +81,7 @@ open class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
             event.withTime(whenCreated)
 
             trackingEventApi.createInitialRecord(messageId, hook.cloudEventType,
+              featureMessagingUpdate.organizationId,
               CloudEventLinkType.env, featureMessagingUpdate.environmentId,
               featureMessagingUpdate, whenCreated, null)
 

@@ -87,7 +87,8 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
       1 * executor.submit(_) >> { Runnable task -> task.run() }
       2 * hook.enabled([:], orgId) >> true
       1 * hook.getCloudEventType() >> "blah/blah"
-      1 * trackingEventApi.createInitialRecord(_, "blah/blah", CloudEventLinkType.env, featureMessagingUpdate.environmentId, _, _, _)
+      1 * trackingEventApi.createInitialRecord(_, "blah/blah", featureMessagingUpdate.organizationId,
+        CloudEventLinkType.env, featureMessagingUpdate.environmentId, _, _, _)
       1 * hook.publish('messaging-feature-v1', orgId, _, _, _)
       0 * _
   }
