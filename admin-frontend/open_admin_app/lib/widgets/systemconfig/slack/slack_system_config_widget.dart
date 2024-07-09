@@ -70,22 +70,23 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           header,
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                const Text('Enable Slack'),
-                Checkbox(
-                    value: enabled.value,
-                    onChanged: (val) {
-                      setState(() {
-                        enabled.value = val;
-                      });
-                    }),
-              ],
+          if (bearer.value != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const Text('Enable Slack'),
+                  Checkbox(
+                      value: enabled.value,
+                      onChanged: (val) {
+                        setState(() {
+                          enabled.value = val;
+                        });
+                      }),
+                ],
+              ),
             ),
-          ),
           Form(
               key: _formKey,
               child: Padding(
