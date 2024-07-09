@@ -4,16 +4,13 @@ You can integrate FeatureHub with Slack to receive feature updates directly into
 
 image::slack-message-example.png[Slack install to workspace, 800]
 
+== FeatureHub Slack Integration
 
-Integration setup slightly differs for our Open Source and SaaS versions. In the section below we will cover Open Source version. For SaaS please follow the docs https://docs.featurehub.io/featurehub/latest/hosted/index.html[here]
-
-== FeatureHub Open Source Slack Integration
-
-. For FeatureHub Open Source you will need to first enable Slack Integration in the System Config page. This is a global Slack setup page, which will help you to connect FeatureHub instance with Slack. This can be accessed by users with Super Admin permission.
+. Firstly, you will need to enable Slack Integration in the System Config page. This is a global Slack setup page, which will help you to connect FeatureHub organisation (or deployed instance of Open Source version) with Slack. This can be accessed by users with Super Admin permission.
 +
 image::slack-system-config.png[Slack system config, 1500]
 
-. Click "Connect FeatureHub to Slack" button, this will redirect you to Slack app installation in your workspace. Make sure you are logged in as your workspace Slack admin. Follow the instructions to add FeatureHub app to your workspace. When you complete this step, click the "Install to Workspace" button.
+. Click "Connect FeatureHub to Slack" button, this will redirect you to Slack app installation in your workspace. Make sure you are logged in as your workspace Slack admin. Follow the instructions to add FeatureHub app to your workspace. For FeatureHub Open Source there will be one extra step to select the "Install to Workspace" option.
 +
 image::1-slack-install-to-workspace.png[Slack install to workspace, 1500]
 
@@ -21,7 +18,7 @@ image::1-slack-install-to-workspace.png[Slack install to workspace, 1500]
 +
 image::2-slack-allow-access.png[Slack allow featurehub access, 1500]
 
-. Once the app is installed, copy the Bot User OAuth Token
+. Once the app is installed, copy the Bot User OAuth Token (only for FeatureHub Open Source installation)
 +
 image::3-slack-copy-oauth-token.png[Slack copy token, 1500]
 +
@@ -39,6 +36,6 @@ image::slack-env-settings.png[Slack per environment settings, 1500]
 
 TIP:  If you are sending Slack updates to a private channel, you may need to invite @FeatureHub bot first. To send an invitation, type @featurehub and press send.
 
-== Offloading Slack delivery to an external app
+== Offloading Slack delivery to an external app (FeatureHub Open Source only)
 
 If you would like to customise Slack messages or perform any other additional operations with raw FeatureHub events, there is an option to use an external service that you can build yourself. You can connect your service by providing a URL and additional headers on the Slack System Config page.
