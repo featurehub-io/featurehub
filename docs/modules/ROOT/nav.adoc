@@ -9,6 +9,7 @@
 ** xref:service-accounts.adoc[Service Accounts & API Keys]
 ** xref:users.adoc[Users & User Groups Permissions]
 ** xref:app_setup_helper.adoc[Quick Setup Helper]
+** xref:system-configuration.adoc[System Configuration]
 
 * FeatureHub Management Via an API
 ** xref:admin-service-accounts.adoc[Admin Service Accounts]
