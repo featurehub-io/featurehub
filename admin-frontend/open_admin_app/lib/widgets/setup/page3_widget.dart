@@ -54,7 +54,7 @@ class _FinalSetupPageOverlayWidget extends StatelessWidget {
                   child: Text(
                       'Next step is to create your first application and add some features.'
                       ' Your first environment called "Production" will be created by default.'
-                      ' Or you can follow the "Quick Setup" helper by clicking the "rocket" icon on the right of the app bar.',
+                      ' You can follow the "Quick Setup" helper by clicking the "rocket" icon on the right of the app bar to see your progress.',
                       style: Theme.of(context).textTheme.bodyLarge),
                 ),
               ),

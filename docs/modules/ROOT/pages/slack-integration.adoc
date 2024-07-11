@@ -9,8 +9,18 @@ image::slack-message-example.png[Slack install to workspace, 800]
 . Firstly, you will need to enable Slack Integration in the System Config page. This is a global Slack setup page, which will help you to connect FeatureHub organisation (or deployed instance of Open Source version) with Slack. This can be accessed by users with Super Admin permission.
 +
 image::slack-system-config.png[Slack system config, 1500]
++
+NOTE: For Open Source version only, ensure you have provided correct website URL for your FeatureHub app in the Site Configuration section of the System Configuration page.
++
+image::fh-website-url-config.png[FeatureHub system config website URL, 1500]
 
-. Click "Connect FeatureHub to Slack" button, this will redirect you to Slack app installation in your workspace. Make sure you are logged in as your workspace Slack admin. Follow the instructions to add FeatureHub app to your workspace. For FeatureHub Open Source there will be one extra step to select the "Install to Workspace" option.
+
+. Click "Connect FeatureHub to Slack" button, this will redirect you to Slack app installation in your workspace. Make sure you are logged in as your workspace Slack admin. Follow the instructions to add FeatureHub app to your workspace. For FeatureHub Open Source you will be asked to create the app from a manifest:
++
+image::slack-install-manifest.png[Slack install from manifest, 800]
+
++
+For Open Source version you will have to complete an extra step by selecting "Install to Workspace".
 +
 image::1-slack-install-to-workspace.png[Slack install to workspace, 1500]
 
@@ -26,15 +36,17 @@ and paste it into the field in the FeatureHub Slack Configuration form
 +
 image::slack-oauth-token.png[Slack access token, 1500]
 
-. Provide Slack channel ID where you would like the notifications to go to. You can find and copy it from the Channel Details menu in your Slack workspace. This will be your default channel ID, but you can override it for each application/environment later. Once you set this up, don't forget to enable your global configuration by ticking the box "Enabled".
+. Provide Slack channel ID where you would like the notifications to go to. You can find and copy it from the Channel Details menu in your Slack workspace. This will be your default channel ID, but you can override it for each application/environment later. Once you set this up, don't forget to enable your global configuration by ticking the box "Enabled" and by saving the form.
 +
 image::slack-channel-id.png[Slack channel ID, 1500]
 
-. Go to the Integrations tab on the Application Settings page, then select an environment and "Integration type: Slack" from the drop-down. Here you can enable Slack message delivery and if required override the default channel ID set in the previous step. You should now be able to receive Slack updates. There is also a log with message delivery status to indicate any errors in case message delivery is not successful.
+. Go to the Integrations tab on the Application Settings page, then select an environment and "Integration type: Slack" from the drop-down. Here you can enable Slack message delivery and if required override the default channel ID set in the previous step.
 +
 image::slack-env-settings.png[Slack per environment settings, 1500]
 
-TIP:  If you are sending Slack updates to a private channel, you may need to invite @FeatureHub bot first. To send an invitation, type @featurehub and press send.
+IMPORTANT:  If you are sending Slack updates to a private channel, you may need to invite @FeatureHub bot first. To send an invitation, type @featurehub and press send.
+
+You should now be able to receive Slack updates. Message delivery status log is available to indicate any errors in the case of unsuccessful message delivery.
 
 == Offloading Slack delivery to an external app (FeatureHub Open Source only)
 

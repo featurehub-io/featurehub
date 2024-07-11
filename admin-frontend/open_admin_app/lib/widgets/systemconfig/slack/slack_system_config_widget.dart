@@ -44,7 +44,8 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
         children: [
           FHExternalLinkWidget(
             tooltipMessage: "View documentation",
-            link: "https://docs.featurehub.io/featurehub/latest/slack.html",
+            link:
+                "https://docs.featurehub.io/featurehub/latest/slack-integration.html",
             icon: Icon(Icons.arrow_outward_outlined),
             label: 'Slack Integration Documentation',
           )
@@ -72,7 +73,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
           header,
           if (bearer.value != null)
             Padding(
-              padding: const EdgeInsets.only(left: 8.0),
+              padding: const EdgeInsets.only(left: 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -172,7 +173,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                 ),
               )),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.only(top: 16.0, left: 8.0, bottom: 16.0),
             child: Row(
               children: [
                 FilledButton(

@@ -16,7 +16,8 @@ class SiteSystemConfigWidget extends StatefulWidget {
   }
 }
 
-class SiteSystemConfigState extends State<SiteSystemConfigWidget> with SystemConfigMixin {
+class SiteSystemConfigState extends State<SiteSystemConfigWidget>
+    with SystemConfigMixin {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
@@ -50,15 +51,17 @@ class SiteSystemConfigState extends State<SiteSystemConfigWidget> with SystemCon
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               hintText:
-                              'https://featurehub.yourorganisation.ai',
-                              labelText: "The url of your organisation's Featurehub Website",
+                                  'https://featurehub.yourorganisation.ai',
+                              labelText:
+                                  "The URL of your organisation's FeatureHub app",
                             ),
                             validator: (val) {
                               if ((val == null || val.trim().isEmpty)) {
                                 return 'You cannot specify an empty url';
                               }
 
-                              if (val.startsWith('http://') || val.startsWith('https://')) {
+                              if (val.startsWith('http://') ||
+                                  val.startsWith('https://')) {
                                 return null;
                               }
 
@@ -74,7 +77,9 @@ class SiteSystemConfigState extends State<SiteSystemConfigWidget> with SystemCon
                             children: [
                               const Text('Allow search robots to index'),
                               Checkbox(
-                                  value: robotsEnabled.value == true ? true : false,
+                                  value: robotsEnabled.value == true
+                                      ? true
+                                      : false,
                                   onChanged: (val) {
                                     setState(() {
                                       robotsEnabled.value = val;
@@ -89,9 +94,12 @@ class SiteSystemConfigState extends State<SiteSystemConfigWidget> with SystemCon
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              const Text('Redirect traffic with bad Hosts header'),
+                              const Text(
+                                  'Redirect traffic with bad Hosts header'),
                               Checkbox(
-                                  value: defaultChannel.value == true ? true : false,
+                                  value: defaultChannel.value == true
+                                      ? true
+                                      : false,
                                   onChanged: (val) {
                                     setState(() {
                                       defaultChannel.value = val;
@@ -135,7 +143,3 @@ class SiteSystemConfigState extends State<SiteSystemConfigWidget> with SystemCon
   @override
   String get namedSection => 'Site';
 }
-
-
-
-
