@@ -61,11 +61,11 @@ Summary of changes:
 {{~#if deletedStrategies}}
 >• Deleted strategies: {{#deletedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
 {{/deletedStrategies}}{{/if}}
-{{~#lockUpdated~}}
+{{~#lockUpdated}}
 {{~#wasLocked}}
 >• Feature set to `locked`{{/wasLocked}}
 {{~^wasLocked}}
->• Feature set to `unlocked`{{/wasLocked}}{{~/lockUpdated~}}
+>• Feature set to `unlocked`{{/wasLocked}}{{~/lockUpdated}}
 {{~#retiredUpdated}}
 >• {{~#if wasRetired}} Feature set to `retired`{{/if}}{{#unless wasRetired}} Feature set to `unretired`{{/unless}}{{/retiredUpdated}}
 

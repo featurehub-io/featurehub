@@ -111,9 +111,9 @@ class TrackingEventListViewState
             for (final item in _items) TrackEventItemWidget(event: item),
             if (_error != null) const FHLoadingError(),
             if (_error == null && !_isLastPage && !_isLoading)
-              _buttonRefresh('More items...'),
+              _buttonRefresh('More records'),
             if (_error != null && !_isLastPage && !_isLoading)
-              _buttonRefresh('Retry...'),
+              _buttonRefresh('Retry'),
             if ((_error != null || _items.isNotEmpty || _isLastPage) &&
                 _isLoading)
               const FHLoadingIndicator(),
@@ -129,9 +129,7 @@ class TrackingEventListViewState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          FHFlatButton(
-              onPressed: () => _fetchPage(_pageKey + 1),
-              title: 'More items...'),
+          FHFlatButton(onPressed: () => _fetchPage(_pageKey + 1), title: title),
         ],
       ),
     );

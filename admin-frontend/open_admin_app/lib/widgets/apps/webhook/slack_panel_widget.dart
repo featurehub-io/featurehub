@@ -63,7 +63,7 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                 const FHExternalLinkWidget(
                   tooltipMessage: "View documentation",
                   link:
-                      "https://docs.featurehub.io/featurehub/latest/slack.html",
+                      "https://docs.featurehub.io/featurehub/latest/slack-integration.html",
                   icon: Icon(Icons.arrow_outward_outlined),
                   label: 'Slack Integration Documentation',
                 ),
