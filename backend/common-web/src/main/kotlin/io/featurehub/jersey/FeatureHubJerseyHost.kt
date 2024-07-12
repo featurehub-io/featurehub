@@ -9,10 +9,12 @@ import io.featurehub.lifecycle.LifecycleListeners
 import io.featurehub.lifecycle.LifecycleStatus
 import io.featurehub.lifecycle.LifecycleTransition
 import io.featurehub.utils.FallbackPropertyConfig
+import org.glassfish.grizzly.http.server.ErrorPageGenerator
 import org.glassfish.grizzly.http.server.HttpHandlerChain
 import org.glassfish.grizzly.http.server.HttpHandlerRegistration
 import org.glassfish.grizzly.http.server.HttpServer
 import org.glassfish.grizzly.http.server.NetworkListener
+import org.glassfish.grizzly.http.server.Request
 import org.glassfish.grizzly.http2.Http2AddOn
 import org.glassfish.grizzly.utils.Charsets
 import org.glassfish.jersey.grizzly2.httpserver.HttpGrizzlyContainer
@@ -75,11 +77,25 @@ class FeatureHubJerseyHost(private val config: ResourceConfig) {
     listener.registerAddOn(Http2AddOn())
 
     val server = HttpServer()
+    // if some error occurs even before our error handlers, fundamentally in
+    server.serverConfiguration.defaultErrorPageGenerator = object: ErrorPageGenerator {
+      override fun generate(
+        request: Request?,
+        status: Int,
+        reasonPhrase: String?,
+        description: String?,
+        exception: Throwable?
+      ): String {
+        log.error("error occurred in grizzly", exception)
+        return ""
+      }
+    }
     server.addListener(listener)
 
     val serverConfig = server.serverConfiguration
 
     val handlerChain = HttpHandlerChain(server)
+
     val resourceHandler =  HttpGrizzlyContainer.makeHandler(config)
 
     val contextPath: String =
