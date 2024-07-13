@@ -11,11 +11,12 @@ FeatureHub comes as a self-hosted Open Source platform, so you can run it on you
 can join today and get 30 days free trial https://app.featurehub.io/[here].
 
 FeatureHub can be used in small teams or large enterprises with many applications, environments and users.
-It has an enterprise grade security and permission model that is intuitive and easy to use. 
+It has an enterprise grade security and permission model that is intuitive and easy to use.
 
 This documentation covers both Open Source and SaaS platforms.
 
 == SaaS Documentation
+https://docs.featurehub.io/featurehub/latest/hosted/architecture.html[SaaS Architecture]
 
 https://docs.featurehub.io/featurehub/latest/hosted/pricing.html[SaaS Pricing & Billing]
 
@@ -32,7 +33,7 @@ link:https://github.com/featurehub-io/featurehub-helm[Deploying on Kubernetes wi
 
 xref:identity.adoc[Identity Management]
 
-== SDKs 
+== SDKs
 
 xref:sdks.adoc#_sdk_usage[SDKs documentation and examples links]
 
@@ -47,6 +48,10 @@ xref:api-definition.adoc[Admin SDK API Definition]
 xref:admin-development-kit.adoc[Admin SDK API Documentation and Usage]
 
 == Tutorials
+https://www.youtube.com/watch?v=0_e0-WvtaZc[YouTube demo - Adding application, environments and setting up a feature of "String" type]
+
+https://www.youtube.com/watch?v=hooUGxpLVLk[YouTube demo - Create Service Accounts and API Keys to connect with SDKs]
+
 https://irinasouthwell-220.medium.com/introducing-featurehub-open-source-feature-flag-management-and-experimentation-platform-f6dba7418dc5[FeatureHub Quick Setup with JavaScript SDK example]
 
 https://www.featurehub.io/post/how-to-use-targeting-rule-with-python[How to Use Targeting by Country Rule and Implementation Code with Python FeatureHub SDK]
@@ -67,6 +72,17 @@ https://www.featurehub.io/post/feature-flags-and-webhooks-with-featurehub-io[Har
 https://www.featurehub.io/post/building-for-resilience-with-featurehub[Building for Resilience with FeatureHub]
 
 https://www.featurehub.io/post/featurehub-introducing-feature-groups-in-release-1-7-0[FeatureHub Introducing Feature Groups]
+
+== Mentions in blogs and articles
+https://www.infracloud.io/blogs/feature-flag-tools-to-confidently-release-new-features/[Infracloud blog - 10 Feature Flag Tools to Confidently Release New Features]
+
+https://posthog.com/blog/best-open-source-feature-flag-tools[Posthog blog - The 8 best free and open-source feature flag services]
+
+https://www.featbit.co/blogs/What-Are-the-Best-Open-Source-Feature-Flags-Tools-Available-in-2023[FeatBit blog - What Are the Best Open Source Feature Flags Tools Available in 2023?]
+
+https://medevel.com/a-b-testing-150/[Medevel.com - 15 Essential A/B Testing and Feature Flagging Tools for Seamless Development Progress]
+
+https://www.dev-insider.de/9-freie-feature-flag-plattformen-a-817eafcea08feeb6f84480f6a7e1ab2a/[Dev-insider.de - 9 free feature flag platforms]
 
 
 == FeatureHub Support & Help
