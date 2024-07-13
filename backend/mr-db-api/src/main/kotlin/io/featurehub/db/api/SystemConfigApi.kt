@@ -19,6 +19,6 @@ interface SystemConfigApi {
   fun decryptSystemConfig(key: String, mapKey: String?): String?
 
   companion object {
-    val systemConfigEnabled = FallbackPropertyConfig.getConfig("system-config.enabled","false") == "true"
+    val systemConfigEnabled = FallbackPropertyConfig.getConfig("system-config.enabled","true") == "true"
   }
 }
