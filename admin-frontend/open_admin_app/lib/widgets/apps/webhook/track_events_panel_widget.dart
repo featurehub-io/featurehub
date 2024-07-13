@@ -159,7 +159,7 @@ class TrackEventItemWidget extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
+                      SelectableText(
                           'Unacknowledged request sent at ${event.whenSent.toLocal()}')
                     ],
                   ),
@@ -179,7 +179,7 @@ class TrackEventItemWidget extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
+                      SelectableText(
                           'Status: ${_decodeStatus(response.status)}, received at ${response.whenReceived.toLocal()}')
                     ],
                   ),
@@ -198,7 +198,7 @@ class TrackEventItemWidget extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
+                    SelectableText(
                         '${_decodeStatus(response.status)} received at ${response.whenReceived.toLocal()}'),
                   ],
                 ),
@@ -209,7 +209,7 @@ class TrackEventItemWidget extends StatelessWidget {
                       Column(
                         children: [
                           for (var header in headers.keys)
-                            Text("$header: ${headers[header]}")
+                            SelectableText("$header: ${headers[header]}")
                         ],
                       )
                     ],
@@ -218,7 +218,7 @@ class TrackEventItemWidget extends StatelessWidget {
                   Row(
                     children: [
                       const Text('Content'),
-                      Text("${response.message}")
+                      SelectableText("${response.message}")
                     ],
                   )
               ],
