@@ -95,7 +95,7 @@ class Base3Spec extends Specification {
 
     featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher, Mock(CacheSourceFeatureGroupApi))
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, Mock(WebhookEncryptionService))
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi(), Mock(WebhookEncryptionService))
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi())
 
     portfolio = portfolioSqlApi.createPortfolio(new CreatePortfolio().name(RandomStringUtils.randomAlphabetic(10)).description("desc1"), Opts.empty(), superuser)

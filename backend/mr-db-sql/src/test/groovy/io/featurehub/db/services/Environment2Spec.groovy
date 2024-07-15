@@ -45,7 +45,7 @@ class Environment2Spec extends Base2Spec {
     cacheSource = Mock(CacheSource)
 
     appApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureApi))
-    envApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, Mock(WebhookEncryptionService))
+    envApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi(), Mock(WebhookEncryptionService))
 
     // now set up the environments we need
     DbOrganization organization = Finder.findDbOrganization()
