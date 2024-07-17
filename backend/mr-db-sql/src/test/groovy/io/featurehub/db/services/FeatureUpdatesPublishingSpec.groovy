@@ -54,8 +54,9 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     featureMessagingCloudEventPublisher = Mock()
 
     featureSqlApi = new FeatureSqlApi( convertUtils, cacheSource, rsv, featureMessagingCloudEventPublisher, Mock(CacheSourceFeatureGroupApi))
+
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, Mock(WebhookEncryptionService))
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi(), Mock(WebhookEncryptionService))
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi())
 
     p1 = portfolioSqlApi.getPortfolio("basic")

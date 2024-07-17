@@ -24,6 +24,7 @@ class EnvironmentSqlApi @Inject constructor(
   private val convertUtils: Conversions,
   private val cacheSource: CacheSource,
   private val archiveStrategy: ArchiveStrategy,
+  private val internalFeatureApi: InternalFeatureApi,
   private val webhookEncryptionService: WebhookEncryptionService
 ) : EnvironmentApi {
 
@@ -352,24 +353,25 @@ class EnvironmentSqlApi @Inject constructor(
     whoCreated: DbPerson
   ) {
 
-    val newFeatures =
-      QDbApplicationFeature().whenArchived.isNull.parentApplication.eq(createdEnvironment.parentApplication).valueType.eq(
-        FeatureValueType.BOOLEAN
-      ).findList()
-        .map { af ->
-          DbFeatureValue(whoCreated, true, af, createdEnvironment, false.toString())
-        }
-
-    saveAllFeatures(newFeatures)
-    for (nf in newFeatures) {
+    for (nf in saveAllFeatures(createdEnvironment, whoCreated)) {
       cacheSource.publishFeatureChange(nf)
     }
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
-  private fun saveAllFeatures(newFeatures: List<DbFeatureValue>) {
-    database.saveAll(newFeatures)
-//    newFeatures.forEach { bean: DbFeatureValue -> database.save(bean) }
+  private fun saveAllFeatures(createdEnvironment: DbEnvironment,
+                              whoCreated: DbPerson): List<DbFeatureValue> {
+    val newFeatures =
+      QDbApplicationFeature().whenArchived.isNull.parentApplication.eq(createdEnvironment.parentApplication).valueType.eq(
+        FeatureValueType.BOOLEAN
+      ).findList()
+        .map { af ->
+          val fv = DbFeatureValue(whoCreated, true, af, createdEnvironment, false.toString())
+          internalFeatureApi.saveFeatureValue(fv, null)
+          fv
+        }
+
+    return newFeatures
   }
 
   private fun promotionSortedEnvironments(environments: List<DbEnvironment>?) {

@@ -89,7 +89,7 @@ class FeatureSpec extends Base2Spec {
 
     symmetricEncyrpter = new SymmetricEncrypterImpl("password")
     webhookEncryptionService = new WebhookEncryptionServiceImpl(symmetricEncyrpter)
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, webhookEncryptionService)
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, new InternalFeatureSqlApi(), webhookEncryptionService)
     envIdApp1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("feature-app-1-env-1"), appId, superPerson).id
 
     def averageJoe = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) + "averagejoe-fvs@featurehub.io").name("Average Joe").build()
