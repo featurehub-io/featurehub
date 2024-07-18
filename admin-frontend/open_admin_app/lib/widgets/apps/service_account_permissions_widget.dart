@@ -277,7 +277,8 @@ class _ServiceAccountPermissionDetailState
                             newSa.permissions = newList;
                             widget.bloc
                                 .updateServiceAccountPermissions(
-                                    newSa.id, saSnapshot.data!)
+                                    newSa.id, saSnapshot.data!,
+                                    (envSnapshot.data?.isNotEmpty == true) ? envSnapshot.data?.first.applicationId : null)
                                 .then((serviceAccount) => widget.bloc.mrClient
                                     .addSnackbar(Text(
                                         "Service account '${serviceAccount?.name ?? '<unknown>'}' updated!")))
