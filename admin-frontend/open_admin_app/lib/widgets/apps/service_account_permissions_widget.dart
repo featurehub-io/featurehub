@@ -212,12 +212,9 @@ class _ServiceAccountPermissionDetailState
                   );
                 }
 
-                if (currentServiceAccount == null ||
-                    currentServiceAccount!.id != saSnapshot.data!.id) {
-                  newServiceAccountPermission =
-                      createMap(envSnapshot.data!, saSnapshot.data!);
-                  currentServiceAccount = saSnapshot.data;
-                }
+                newServiceAccountPermission =
+                    createMap(envSnapshot.data!, saSnapshot.data!);
+                currentServiceAccount = saSnapshot.data;
 
                 final rows = <TableRow>[];
                 rows.add(getHeader());
