@@ -304,7 +304,7 @@ class ServiceAccount2Spec extends Base2Spec {
           ]
         )
 
-      def secondUpdate = sapi.update(createdServiceAccount.id, superPerson, updated, Opts.opts(FillOpts.Permissions))
+      def secondUpdate = sapi.update(createdServiceAccount.id, superPerson, updated, app1.id, Opts.opts(FillOpts.Permissions))
     and: "search for the result"
       def updatedResult = sapi.search(portfolio1Id, "sa-1", application1.id, superPerson, Opts.opts(FillOpts.Permissions)).find({it.id == createdServiceAccount.id})
 
@@ -334,14 +334,14 @@ class ServiceAccount2Spec extends Base2Spec {
       newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).sdkUrlClientEval.contains("/" + newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).serviceAccount.apiKeyClientSide)
       newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).sdkUrlServerEval.contains("/" + newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).serviceAccount.apiKeyServerSide)
     when: "we update a second time using the new API"
-      def thirdUpdate = sapi.update(portfolio1Id, superuser, secondUpdate.permissions([]), Opts.opts(FillOpts.Permissions))
+      def thirdUpdate = sapi.update(portfolio1Id, superuser, secondUpdate.permissions([]), app1.id, Opts.opts(FillOpts.Permissions))
     then:
       thirdUpdate.permissions.isEmpty()
   }
 
   def "I cannot request or update an unknown service account"() {
     when:
-      def x = sapi.update(UUID.randomUUID(), superPerson, new ServiceAccount(), Opts.empty())
+      def x = sapi.update(UUID.randomUUID(), superPerson, new ServiceAccount(), null, Opts.empty())
       def y = sapi.get(UUID.randomUUID(), Opts.empty())
     then:
       x == null
