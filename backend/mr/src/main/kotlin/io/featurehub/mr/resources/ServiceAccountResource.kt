@@ -134,6 +134,7 @@ class ServiceAccountResource @Inject constructor(
           id,
           person,
           serviceAccount,
+          holder.appId,
           Opts().add(FillOpts.Permissions, holder.includePermissions)
         ) ?: throw NotFoundException()
       } catch (e: OptimisticLockingException) {
@@ -163,6 +164,7 @@ class ServiceAccountResource @Inject constructor(
           serviceAccountId,
           person,
           serviceAccount,
+          null,
           Opts().add(FillOpts.Permissions, holder.includePermissions)
         ) ?: throw NotFoundException()
       } catch (e: OptimisticLockingException) {

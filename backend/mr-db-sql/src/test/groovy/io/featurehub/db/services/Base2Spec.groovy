@@ -11,6 +11,7 @@ import io.featurehub.db.test.DbSpecification
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
+import org.apache.commons.lang3.RandomStringUtils
 
 class Base2Spec extends DbSpecification {
   ConvertUtils convertUtils
@@ -21,6 +22,10 @@ class Base2Spec extends DbSpecification {
   DbArchiveStrategy archiveStrategy
   Organization org
   WebhookEncryptionService encryptionService
+
+  String ranName() {
+    return RandomStringUtils.randomAlphabetic(10)
+  }
 
   def setup() {
     System.setProperty("webhooks.encryption.password", "foof")

@@ -1,6 +1,5 @@
 package io.featurehub.db.services
 
-import io.ebean.Database
 import io.ebean.DuplicateKeyException
 import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
@@ -48,7 +47,7 @@ class ServiceAccountSqlApi @Inject constructor(
   }
 
   @Throws(OptimisticLockingException::class)
-  override fun update(portfolioId: UUID, personId: UUID, serviceAccount: ServiceAccount, opts: Opts): ServiceAccount? {
+  override fun update(portfolioId: UUID, personId: UUID, serviceAccount: ServiceAccount, appId: UUID?, opts: Opts): ServiceAccount? {
     val sa = QDbServiceAccount().id.eq(serviceAccount.id).whenArchived.isNull.portfolio.id.eq(portfolioId).findOne() ?: return null
 
     if (serviceAccount.version == null || serviceAccount.version != sa.version) {
@@ -56,7 +55,7 @@ class ServiceAccountSqlApi @Inject constructor(
     }
 
     val whoUpdated = convertUtils.byPerson(personId) ?: return null
-    return update(sa, whoUpdated, serviceAccount, opts)
+    return update(sa, whoUpdated, serviceAccount, appId, opts)
   }
 
   @Throws(OptimisticLockingException::class)
@@ -64,6 +63,7 @@ class ServiceAccountSqlApi @Inject constructor(
     serviceAccountId: UUID,
     updater: Person,
     serviceAccount: ServiceAccount,
+    appId: UUID?,
     opts: Opts
   ): ServiceAccount? {
     val sa = QDbServiceAccount().id.eq(serviceAccountId).whenArchived.isNull.findOne() ?: return null
@@ -72,10 +72,10 @@ class ServiceAccountSqlApi @Inject constructor(
       throw OptimisticLockingException()
     }
     val whoUpdated = convertUtils.byPerson(updater) ?: return null
-    return update(sa, whoUpdated, serviceAccount, opts)
+    return update(sa, whoUpdated, serviceAccount, appId, opts)
   }
 
-  private fun update(sa: DbServiceAccount, whoUpdated: DbPerson, serviceAccount: ServiceAccount, opts: Opts): ServiceAccount {
+  private fun update(sa: DbServiceAccount, whoUpdated: DbPerson, serviceAccount: ServiceAccount, appId: UUID?, opts: Opts): ServiceAccount {
     val updatedEnvironments: MutableMap<UUID, ServiceAccountPermission> = HashMap()
     val newEnvironments: MutableList<UUID> = ArrayList()
     serviceAccount
@@ -88,9 +88,16 @@ class ServiceAccountSqlApi @Inject constructor(
     val createPerms = mutableListOf<DbServiceAccountEnvironment>()
 
     // we drop out of this knowing which perms to delete and update
-    QDbServiceAccountEnvironment().environment.id
+    var finder = QDbServiceAccountEnvironment().environment.id
       .`in`(updatedEnvironments.keys).serviceAccount
       .eq(sa)
+
+    // limit our area of interest
+    if (appId != null) {
+      finder = finder.environment.parentApplication.id.eq(appId)
+    }
+
+    finder
       .findEach { upd: DbServiceAccountEnvironment ->
         val envId = upd.environment.id
         val perm = updatedEnvironments[envId]
@@ -106,7 +113,13 @@ class ServiceAccountSqlApi @Inject constructor(
         }
       }
 
-    QDbServiceAccountEnvironment().environment.id.notIn(updatedEnvironments.keys).serviceAccount.eq(sa).findEach { toDelete ->
+    var deleteFinder = QDbServiceAccountEnvironment().environment.id.notIn(updatedEnvironments.keys).serviceAccount.eq(sa)
+
+    if (appId != null) {
+      deleteFinder = deleteFinder.environment.parentApplication.id.eq(appId)
+    }
+
+    deleteFinder.findEach { toDelete ->
       deletePerms.add(toDelete)
     }
 
@@ -313,7 +326,7 @@ class ServiceAccountSqlApi @Inject constructor(
           .permissions(convertPermissionsToString(sap.permissions))
           .build()
       }
-    }.toMutableSet() ?: mutableSetOf()
+    }.toMutableSet()
 
     val sdkPerson = internalPersonApi.createSdkServiceAccountUser(serviceAccount.name, who, false)
     // now create the SA and attach the perms to form the links
@@ -338,8 +351,8 @@ class ServiceAccountSqlApi @Inject constructor(
   }
 
   private fun environmentMap(serviceAccount: CreateServiceAccount): Map<UUID, DbEnvironment> {
-    // find all of the UUIDs in the environment list
-    val envIds = serviceAccount.permissions.map { obj: ServiceAccountPermission -> obj.environmentId } ?: listOf()
+    // find all the UUIDs in the environment list
+    val envIds = serviceAccount.permissions.map { obj: ServiceAccountPermission -> obj.environmentId }
 
     // now find them in the db in one swoop using "in" syntax
     return QDbEnvironment().id.`in`(envIds).whenArchived.isNull.findList().associateBy { e -> e.id }
@@ -410,7 +423,7 @@ class ServiceAccountSqlApi @Inject constructor(
   }
 
   /**
-   * This is a transitional job that assumes that all of the attached people to the sdkUser are invalid and created
+   * This is a transitional job that assumes that all the attached people to the sdkUser are invalid and created
    * new SDK style user accounts for them. After the migration that inserts the job, this is in fact TRUE.
    */
   @Transactional
@@ -433,6 +446,6 @@ class ServiceAccountSqlApi @Inject constructor(
 
   // allow us to identify the user who created a feature change for instance
   override fun findServiceAccountByUserId(personId: UUID): UUID? {
-    return QDbServiceAccount().sdkPerson.id.eq(personId).findOne()?.let { it.id }
+    return QDbServiceAccount().sdkPerson.id.eq(personId).findOne()?.id
   }
 }

@@ -305,13 +305,14 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   }
 
   Future<ServiceAccount?> updateServiceAccountPermissions(
-      String sid, ServiceAccount serviceAccount) async {
+      String sid, ServiceAccount serviceAccount, String? appId) async {
     try {
       final updatedServiceAccount =
           await _serviceAccountServiceApi.updateServiceAccountOnPortfolio(
         portfolio!.id,
         serviceAccount,
         includePermissions: true,
+        appId: appId
       );
 
       _serviceAccountPS.add(updatedServiceAccount);
