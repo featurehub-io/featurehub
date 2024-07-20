@@ -31,7 +31,7 @@ class ConvertUtilsSpec extends Base2Spec {
       def email = 'new-person0@me.com'
       def person = new DbPerson.Builder().email(email).name(email).build()
       db.save(new DbPerson.Builder().email(email).name(email).build())
-      db.commitTransaction()  // have to do this otherwise we can't find them
+      db.currentTransaction().commitAndContinue()  // have to do this otherwise we can't find them
     when: "i find the person"
       def people = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), null, Opts.opts(FillOpts.PersonLastLoggedIn))
     then:
@@ -45,7 +45,7 @@ class ConvertUtilsSpec extends Base2Spec {
       def email = 'new-person1@me.com'
       def person = new DbPerson.Builder().email(email).name(email).build()
       db.save(person)
-      db.commitTransaction()
+      db.currentTransaction().commitAndContinue()
       def whenLastAuthenticated = Instant.now()
       authenticationSqlApi.updateLastAuthenticated(person, whenLastAuthenticated)
     when: "i find the person"
@@ -73,7 +73,7 @@ class ConvertUtilsSpec extends Base2Spec {
       def login = new DbLogin.Builder().person(person).lastSeen(whenLastSeen).token("xxxx").build()
       db.save(login)
     and: "we commit the transaction"
-      db.commitTransaction()
+      db.currentTransaction().commitAndContinue()
     when: "i find the person"
       def people = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), null, Opts.opts(FillOpts.PersonLastLoggedIn))
     and: "i find them again without the fill opts"

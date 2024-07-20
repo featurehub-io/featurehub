@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.kotlin.KotlinFeature;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.v1.CloudEventBuilder;
@@ -27,7 +28,7 @@ public class CacheJsonMapper {
   static {
     mapper = new ObjectMapper();
     mapper.registerModule(new JavaTimeModule());
-    mapper.registerModule(new KotlinModule());
+    mapper.registerModule(new KotlinModule.Builder().build());
     mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);

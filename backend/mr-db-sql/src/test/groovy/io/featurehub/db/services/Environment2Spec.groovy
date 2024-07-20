@@ -40,7 +40,7 @@ class Environment2Spec extends Base2Spec {
   CacheSource cacheSource
 
   def setup() {
-    db.commitTransaction()
+    db.currentTransaction().commitAndContinue()
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     cacheSource = Mock(CacheSource)
 
@@ -65,7 +65,7 @@ class Environment2Spec extends Base2Spec {
     appTreeEnvs = appApi.createApplication(portfolio2.id, new CreateApplication().description("x").name('app-tree-env'), superPerson)
     assert appTreeEnvs != null
     if (db.currentTransaction() != null && db.currentTransaction().active) {
-      db.commitTransaction()
+      db.currentTransaction().commitAndContinue()
     }
   }
 

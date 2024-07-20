@@ -49,7 +49,7 @@ class Base2Spec extends DbSpecification {
     Group adminGroup
     def newOrganisation = !convertUtils.hasOrganisation()
     if (newOrganisation) {
-      org = organizationSqlApi.save(new Organization().name("org1"))
+      org = organizationSqlApi.save(new Organization().name(ranName()))
     } else {
       org = organizationSqlApi.get()
     }
@@ -57,7 +57,7 @@ class Base2Spec extends DbSpecification {
     superPerson = convertUtils.toPerson(dbSuperPerson, Opts.empty())
 
     if (newOrganisation) {
-      adminGroup = groupSqlApi.createOrgAdminGroup(org.id, 'admin group', superPerson)
+      adminGroup = groupSqlApi.createOrgAdminGroup(org.id, ranName(), superPerson)
     } else {
       adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
     }

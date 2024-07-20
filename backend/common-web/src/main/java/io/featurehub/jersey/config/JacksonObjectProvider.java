@@ -7,7 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
 
 public class JacksonObjectProvider {
-  public static ObjectMapper mapper = new ObjectMapper().registerModule(new KotlinModule());
+  public static ObjectMapper mapper = new ObjectMapper().registerModule(new KotlinModule.Builder().build());
 
   public JacksonObjectProvider() {
   }

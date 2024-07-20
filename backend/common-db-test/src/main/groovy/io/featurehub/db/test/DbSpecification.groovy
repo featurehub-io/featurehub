@@ -21,7 +21,7 @@ class DbSpecification extends Specification {
   def cleanup() {
     // roll all changes back again, so we can isolate our tests. if Exceptions are thrown, then there is no current transaction
     if (DB.currentTransaction() != null) {
-      DB.rollbackTransaction()
+      DB.currentTransaction().rollback()
     }
   }
 }

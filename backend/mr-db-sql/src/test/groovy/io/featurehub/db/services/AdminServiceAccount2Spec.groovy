@@ -7,7 +7,7 @@ class AdminServiceAccount2Spec extends Base2Spec {
   def setup() {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, groupSqlApi)
     authenticationSqlApi = new AuthenticationSqlApi(convertUtils)
-    db.commitTransaction()
+    db.currentTransaction().commitAndContinue()
   }
 
   def "i cannot perform authentication operations with a service account user"() {

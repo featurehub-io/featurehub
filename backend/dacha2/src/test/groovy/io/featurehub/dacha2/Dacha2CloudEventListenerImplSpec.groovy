@@ -1,6 +1,7 @@
 package io.featurehub.dacha2
 
-import io.cloudevents.core.v1.CloudEventBuilder
+import groovy.transform.CompileStatic
+import io.cloudevents.core.builder.CloudEventBuilder
 import io.featurehub.dacha.model.CacheEnvironment
 import io.featurehub.dacha.model.CacheEnvironmentFeature
 import io.featurehub.dacha.model.CacheFeature

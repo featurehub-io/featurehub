@@ -63,7 +63,7 @@ class FeatureSpec extends Base2Spec {
   SymmetricEncrypter symmetricEncyrpter
 
   def setup() {
-    db.commitTransaction()
+    db.currentTransaction().commitAndContinue()
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     serviceAccountSqlApi = new ServiceAccountSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, personSqlApi)
 
@@ -80,37 +80,39 @@ class FeatureSpec extends Base2Spec {
     // now set up the environments we need
     portfolio1 = new DbPortfolio.Builder().name("p1-app-feature" + RandomStringUtils.randomAlphabetic(8) ).whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
     db.save(portfolio1)
-    app1 = new DbApplication.Builder().whoCreated(dbSuperPerson).portfolio(portfolio1).name("feature-app-1").build()
+    app1 = new DbApplication.Builder().whoCreated(dbSuperPerson).portfolio(portfolio1).name(ranName()).build()
     db.save(app1)
     appId = app1.id
-    app2 = new DbApplication.Builder().whoCreated(dbSuperPerson).portfolio(portfolio1).name("feature-app-2").build()
+    app2 = new DbApplication.Builder().whoCreated(dbSuperPerson).portfolio(portfolio1).name(ranName()).build()
     db.save(app2)
     app2Id = app2.id
+
+    db.currentTransaction().commitAndContinue()
 
     symmetricEncyrpter = new SymmetricEncrypterImpl("password")
     webhookEncryptionService = new WebhookEncryptionServiceImpl(symmetricEncyrpter)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, new InternalFeatureSqlApi(), webhookEncryptionService)
     envIdApp1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("feature-app-1-env-1"), appId, superPerson).id
 
-    def averageJoe = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) + "averagejoe-fvs@featurehub.io").name("Average Joe").build()
+    def averageJoe = new DbPerson.Builder().email(ranName() + "averagejoe-fvs@featurehub.io").name("Average Joe").build()
     db.save(averageJoe)
     averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("fsspec-1-p1"), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
 
-    def averageIrina = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) +"averageirina@featurehub.io").name("Average Irina").build()
+    def averageIrina = new DbPerson.Builder().email(ranName() +"averageirina@featurehub.io").name("Average Irina").build()
     db.save(averageIrina)
     averageIrinaNotPortfolioMember = convertUtils.toPerson(averageIrina)
 
-    def portfolioAdmin = new DbPerson.Builder().email(RandomStringUtils.randomAlphabetic(8) +"pee-admin-fvs@featurehub.io").name("Portfolio Admin p1 fvs").build()
+    def portfolioAdmin = new DbPerson.Builder().email(ranName() +"pee-admin-fvs@featurehub.io").name(ranName()).build()
     db.save(portfolioAdmin)
     portfolioAdminOfPortfolio1 = convertUtils.toPerson(portfolioAdmin)
 
-    adminGroupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().admin(true).name("fsspec-admin-1-p1"), superPerson)
+    adminGroupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().admin(true).name(ranName()), superPerson)
     groupSqlApi.addPersonToGroup(adminGroupInPortfolio1.id, portfolioAdminOfPortfolio1.id.id, Opts.empty())
 
     if (db.currentTransaction() != null && db.currentTransaction().active) {
-      db.commitTransaction()
+      db.currentTransaction().commit()
     }
   }
 
@@ -122,7 +124,8 @@ class FeatureSpec extends Base2Spec {
     given: "i create a new feature"
       Map<UUID, Long> envBeforeFeatures = appApi.getApplication(appId, Opts.opts(FillOpts.Environments)).environments.collectEntries({ [it.id, it.version]})
       def features = appApi.createApplicationFeature(appId,
-        new CreateFeature().description("x").description("x").key("FEATURE_ONE").name("The neo feature").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+        new CreateFeature().description("x").description("x")
+          .key("FEATURE_ONE").name("The neo feature").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     when:
       def foundFeatures = appApi.getApplicationFeatures(appId, Opts.empty())
     and: "i get the version after addition"

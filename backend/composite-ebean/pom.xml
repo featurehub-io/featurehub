@@ -45,13 +45,13 @@
     <dependency>
       <groupId>io.ebean</groupId>
       <artifactId>ebean-datasource</artifactId>
-      <version>8.5</version>
+      <version>9.0</version>
     </dependency>
 
     <dependency>
       <groupId>io.ebean</groupId>
       <artifactId>ebean-migration</artifactId>
-      <version>13.7.0</version>
+      <version>14.2.0</version>
     </dependency>
     <dependency>
       <groupId>io.ebean</groupId>
@@ -67,27 +67,27 @@
     <dependency>
       <groupId>io.ebean</groupId>
       <artifactId>ebean-platform-h2</artifactId>
-      <version>13.17.0-jakarta</version>
+      <version>${ebean.version}</version>
     </dependency>
     <dependency>
       <groupId>io.ebean</groupId>
       <artifactId>ebean-platform-mysql</artifactId>
-      <version>13.17.0-jakarta</version>
+      <version>${ebean.version}</version>
     </dependency>
     <dependency>
       <groupId>io.ebean</groupId>
       <artifactId>ebean-platform-mariadb</artifactId>
-      <version>13.17.0-jakarta</version>
+      <version>${ebean.version}</version>
     </dependency>
     <dependency>
       <groupId>io.ebean</groupId>
       <artifactId>ebean-platform-oracle</artifactId>
-      <version>13.17.0-jakarta</version>
+      <version>${ebean.version}</version>
     </dependency>
     <dependency>
       <groupId>io.ebean</groupId>
       <artifactId>ebean-platform-postgres</artifactId>
-      <version>13.17.0-jakarta</version>
+      <version>${ebean.version}</version>
     </dependency>
     <dependency>
       <groupId>io.ebean</groupId>

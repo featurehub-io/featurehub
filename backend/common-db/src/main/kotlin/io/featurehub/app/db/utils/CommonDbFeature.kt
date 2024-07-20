@@ -7,7 +7,6 @@ import io.ebean.DatabaseFactory
 import io.ebean.config.DatabaseConfig
 import io.ebean.datasource.DataSourceConfig
 import io.ebean.datasource.DataSourceFactory
-import io.ebean.migration.DbPlatformNames
 import io.ebean.migration.MigrationConfig
 import io.ebean.migration.MigrationRunner
 import io.featurehub.health.HealthSource
@@ -98,27 +97,27 @@ open class CommonDbFeature : Feature {
 
     if (databaseUrl.contains("postgres")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/postgres"
-      migrationConfig.platform = DbPlatformNames.POSTGRES
+      migrationConfig.platform = "postgres"
       defaultDriver = "org.postgresql.Driver"
     } else if (databaseUrl.contains("mariadb")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/mariadb"
-      migrationConfig.platform = DbPlatformNames.MARIADB
+      migrationConfig.platform = "mariadb"
       defaultDriver = "com.mysql.jdbc.Driver"
   } else if (databaseUrl.contains("mysql")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/mysql"
-      migrationConfig.platform = DbPlatformNames.MYSQL
+      migrationConfig.platform = "mysql"
       defaultDriver = "com.mysql.jdbc.Driver"
     } else if (databaseUrl.contains("sqlserver")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/mssql"
-      migrationConfig.platform = DbPlatformNames.SQLSERVER
+      migrationConfig.platform = "sqlserver"
       defaultDriver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
     } else if (databaseUrl.contains("oracle")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/oracle"
-      migrationConfig.platform = DbPlatformNames.ORACLE
+      migrationConfig.platform = "oracle"
       defaultDriver = "oracle.jdbc.OracleDriver"
     } else {
       migrationConfig.migrationPath = "classpath:/dbmigration/h2"
-      migrationConfig.platform = DbPlatformNames.H2
+      migrationConfig.platform = "h2"
       defaultDriver = "org.h2.Driver"
     }
 
@@ -169,7 +168,7 @@ open class CommonDbFeature : Feature {
 
     if (dsReplicaConfig != null) {
       log.info("Database Read Replica configured at {}", dsReplicaConfig.dsConfig.url)
-      dbConfig.readOnlyDataSourceConfig = dsReplicaConfig.dsConfig
+      dbConfig.readOnlyDataSource = DataSourceFactory.create("readOnly", dsReplicaConfig.dsConfig)
     }
 
     enhanceDbConfig(dbConfig)

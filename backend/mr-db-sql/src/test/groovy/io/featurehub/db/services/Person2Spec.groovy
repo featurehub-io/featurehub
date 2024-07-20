@@ -14,7 +14,7 @@ class Person2Spec extends Base2Spec {
   def setup() {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, groupSqlApi)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
-    db.commitTransaction()
+    db.currentTransaction().commit()
   }
 
   def "when i create a new superuser they have access to portfolios and if i remove them, they don't"() {

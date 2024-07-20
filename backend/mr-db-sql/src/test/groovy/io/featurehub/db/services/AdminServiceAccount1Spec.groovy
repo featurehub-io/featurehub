@@ -9,7 +9,7 @@ class AdminServiceAccount1Spec extends Base2Spec {
 
   def setup() {
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, groupSqlApi)
-    db.commitTransaction()
+    db.currentTransaction().commitAndContinue()
   }
 
   // this needs to be committed, hence it is isolated
