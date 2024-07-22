@@ -249,10 +249,22 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                       padding: const EdgeInsets.all(8.0),
                       child: SelectableText(env.name),
                     ),
-                    getPermissionCheckbox(env.id, RoleType.READ),
-                    getPermissionCheckbox(env.id, RoleType.LOCK),
-                    getPermissionCheckbox(env.id, RoleType.UNLOCK),
-                    getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
+                    PermissionsCheckbox(
+                        envId: env.id,
+                        newEnvironmentRoles: newEnvironmentRoles,
+                        roleType: RoleType.READ),
+                    PermissionsCheckbox(
+                        envId: env.id,
+                        newEnvironmentRoles: newEnvironmentRoles,
+                        roleType: RoleType.LOCK),
+                    PermissionsCheckbox(
+                        envId: env.id,
+                        newEnvironmentRoles: newEnvironmentRoles,
+                        roleType: RoleType.UNLOCK),
+                    PermissionsCheckbox(
+                        envId: env.id,
+                        newEnvironmentRoles: newEnvironmentRoles,
+                        roleType: RoleType.CHANGE_VALUE),
                   ]));
                 }
 
@@ -399,25 +411,6 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
     ]);
   }
 
-  Widget getPermissionCheckbox(String envId, RoleType roleType) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Checkbox(
-        value: newEnvironmentRoles.containsKey(envId) &&
-            newEnvironmentRoles[envId]!.roles.contains(roleType),
-        onChanged: (value) {
-          setState(() {
-            if (value == true) {
-              newEnvironmentRoles[envId]!.roles.add(roleType);
-            } else {
-              newEnvironmentRoles[envId]!.roles.remove(roleType);
-            }
-          });
-        },
-      ),
-    );
-  }
-
   bool hasEditPermission(Group group, String aid) {
     final agr = group.applicationRoles.firstWhereOrNull(
         (item) => item.applicationId == aid && item.groupId == group.id);
@@ -492,5 +485,45 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
           groupId: newGroup.id,
           roles: adminFeatureRole.roles));
     }
+  }
+}
+
+class PermissionsCheckbox extends StatefulWidget {
+  final Map<String, EnvironmentGroupRole> newEnvironmentRoles;
+  final String envId;
+  final RoleType roleType;
+  const PermissionsCheckbox(
+      {Key? key,
+      required this.envId,
+      required this.newEnvironmentRoles,
+      required this.roleType})
+      : super(key: key);
+
+  @override
+  State<PermissionsCheckbox> createState() => _PermissionsCheckboxState();
+}
+
+class _PermissionsCheckboxState extends State<PermissionsCheckbox> {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Checkbox(
+        value: widget.newEnvironmentRoles.containsKey(widget.envId) &&
+            widget.newEnvironmentRoles[widget.envId]!.roles
+                .contains(widget.roleType),
+        onChanged: (value) {
+          setState(() {
+            if (value == true) {
+              widget.newEnvironmentRoles[widget.envId]!.roles
+                  .add(widget.roleType);
+            } else {
+              widget.newEnvironmentRoles[widget.envId]!.roles
+                  .remove(widget.roleType);
+            }
+          });
+        },
+      ),
+    );
   }
 }

@@ -224,13 +224,33 @@ class _ServiceAccountPermissionDetailState
                       padding: const EdgeInsets.all(8.0),
                       child: SelectableText(env.name),
                     ),
-                    getPermissionCheckbox(env.id, RoleType.READ),
-                    getPermissionCheckbox(env.id, RoleType.LOCK),
-                    getPermissionCheckbox(env.id, RoleType.UNLOCK),
-                    getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
+                    PermissionsCheckbox(
+                        newServiceAccountPermission:
+                            newServiceAccountPermission,
+                        envId: env.id,
+                        permissionType: RoleType.READ),
+                    PermissionsCheckbox(
+                        newServiceAccountPermission:
+                            newServiceAccountPermission,
+                        envId: env.id,
+                        permissionType: RoleType.LOCK),
+                    PermissionsCheckbox(
+                        newServiceAccountPermission:
+                            newServiceAccountPermission,
+                        envId: env.id,
+                        permissionType: RoleType.UNLOCK),
+                    PermissionsCheckbox(
+                        newServiceAccountPermission:
+                            newServiceAccountPermission,
+                        envId: env.id,
+                        permissionType: RoleType.CHANGE_VALUE),
                     if (widget.bloc.mrClient.identityProviders
                         .featurePropertyExtendedDataEnabled)
-                      getPermissionCheckbox(env.id, RoleType.EXTENDED_DATA),
+                      PermissionsCheckbox(
+                          newServiceAccountPermission:
+                              newServiceAccountPermission,
+                          envId: env.id,
+                          permissionType: RoleType.EXTENDED_DATA),
                   ]));
                 }
 
@@ -274,8 +294,11 @@ class _ServiceAccountPermissionDetailState
                             newSa.permissions = newList;
                             widget.bloc
                                 .updateServiceAccountPermissions(
-                                    newSa.id, saSnapshot.data!,
-                                    (envSnapshot.data?.isNotEmpty == true) ? envSnapshot.data?.first.applicationId : null)
+                                    newSa.id,
+                                    saSnapshot.data!,
+                                    (envSnapshot.data?.isNotEmpty == true)
+                                        ? envSnapshot.data?.first.applicationId
+                                        : null)
                                 .then((serviceAccount) => widget.bloc.mrClient
                                     .addSnackbar(Text(
                                         "Service account '${serviceAccount?.name ?? '<unknown>'}' updated!")))
@@ -345,30 +368,6 @@ class _ServiceAccountPermissionDetailState
     ]);
   }
 
-  Widget getPermissionCheckbox(String envId, RoleType permissionType) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Checkbox(
-        value: newServiceAccountPermission[envId]!
-            .permissions
-            .contains(permissionType),
-        onChanged: (bool? value) {
-          setState(() {
-            if (value == true) {
-              newServiceAccountPermission[envId]!
-                  .permissions
-                  .add(permissionType);
-            } else {
-              newServiceAccountPermission[envId]!
-                  .permissions
-                  .remove(permissionType);
-            }
-          });
-        },
-      ),
-    );
-  }
-
   Map<String, ServiceAccountPermission> createMap(
       List<Environment> environments, ServiceAccount serviceAccount) {
     final retMap = <String, ServiceAccountPermission>{};
@@ -385,5 +384,44 @@ class _ServiceAccountPermissionDetailState
     }
 
     return retMap;
+  }
+}
+
+class PermissionsCheckbox extends StatefulWidget {
+  final Map<String, ServiceAccountPermission> newServiceAccountPermission;
+  final String envId;
+  final RoleType permissionType;
+  const PermissionsCheckbox(
+      {Key? key,
+      required this.newServiceAccountPermission,
+      required this.envId,
+      required this.permissionType})
+      : super(key: key);
+
+  @override
+  State<PermissionsCheckbox> createState() => _PermissionsCheckboxState();
+}
+
+class _PermissionsCheckboxState extends State<PermissionsCheckbox> {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Checkbox(
+        value: widget.newServiceAccountPermission[widget.envId]!.permissions
+            .contains(widget.permissionType),
+        onChanged: (bool? value) {
+          setState(() {
+            if (value == true) {
+              widget.newServiceAccountPermission[widget.envId]!.permissions
+                  .add(widget.permissionType);
+            } else {
+              widget.newServiceAccountPermission[widget.envId]!.permissions
+                  .remove(widget.permissionType);
+            }
+          });
+        },
+      ),
+    );
   }
 }
