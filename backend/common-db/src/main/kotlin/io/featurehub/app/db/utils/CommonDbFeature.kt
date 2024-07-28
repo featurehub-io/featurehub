@@ -40,10 +40,13 @@ open class CommonDbFeature : Feature {
   var enableChangesets: Boolean? = false
 
   init {
-      DeclaredConfigResolver.resolve(this)
+    DeclaredConfigResolver.resolve(this)
   }
 
-  internal class FeatureHubDatabaseSource constructor(val dsConfig: DataSourceConfig, val migrationConfig: MigrationConfig)
+  internal class FeatureHubDatabaseSource constructor(
+    val dsConfig: DataSourceConfig,
+    val migrationConfig: MigrationConfig
+  )
 
   private fun supportHome(dbUrl: String): String =
     dbUrl.replace("\$home", System.getProperty("user.home"))
@@ -98,32 +101,36 @@ open class CommonDbFeature : Feature {
     if (databaseUrl.contains("postgres")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/postgres"
       migrationConfig.platform = "postgres"
+      dsConfig.platform = "postgres"
       defaultDriver = "org.postgresql.Driver"
     } else if (databaseUrl.contains("mariadb")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/mariadb"
       migrationConfig.platform = "mariadb"
-      defaultDriver = "com.mysql.jdbc.Driver"
-  } else if (databaseUrl.contains("mysql")) {
+      dsConfig.platform = "mariadb"
+      defaultDriver = "org.mariadb.jdbc.Driver"
+    } else if (databaseUrl.contains("mysql")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/mysql"
       migrationConfig.platform = "mysql"
-      defaultDriver = "com.mysql.jdbc.Driver"
+      dsConfig.platform = "mysql"
+      defaultDriver = "com.mysql.cj.jdbc.Driver"
     } else if (databaseUrl.contains("sqlserver")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/mssql"
       migrationConfig.platform = "sqlserver"
+      dsConfig.platform = "sqlserver"
       defaultDriver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
     } else if (databaseUrl.contains("oracle")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/oracle"
       migrationConfig.platform = "oracle"
+      dsConfig.platform = "oracle"
       defaultDriver = "oracle.jdbc.OracleDriver"
     } else {
       migrationConfig.migrationPath = "classpath:/dbmigration/h2"
       migrationConfig.platform = "h2"
+      dsConfig.platform = "h2"
       defaultDriver = "org.h2.Driver"
     }
 
-    if (dsConfig.driver == null) {
-      dsConfig.driver = defaultDriver
-    }
+    dsConfig.driver = defaultDriver
 
     if (dsConfig.maxConnections < 5 && dsConfig.waitTimeoutMillis < 4000) {
       log.warn("Max database connections < 5, increasing wait timeout to 4s")
@@ -175,7 +182,7 @@ open class CommonDbFeature : Feature {
 
     val database = DatabaseFactory.create(dbConfig)
 
-    context.register(object: AbstractBinder() {
+    context.register(object : AbstractBinder() {
       override fun configure() {
         bind(database).to(Database::class.java).`in`(Singleton::class.java)
         bind(dsMasterConfig.dsConfig).to(DataSourceConfig::class.java).`in`(Singleton::class.java)
@@ -183,7 +190,7 @@ open class CommonDbFeature : Feature {
       }
     })
 
-    context.register(object: ContainerLifecycleListener {
+    context.register(object : ContainerLifecycleListener {
       override fun onStartup(container: Container?) {
       }
 

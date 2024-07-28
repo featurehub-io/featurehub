@@ -40,7 +40,7 @@
   </licenses>
 
   <properties>
-    <google-pubsub.version>1.125.1</google-pubsub.version>
+    <google-pubsub.version>1.131.0</google-pubsub.version>
   </properties>
 
   <dependencies>
@@ -61,6 +61,11 @@
       <version>[${google-pubsub.version}]</version>
     </dependency>
     <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>[3.25.3]</version>
+    </dependency>
+    <dependency>
       <groupId>io.featurehub.cloudevents</groupId>
       <artifactId>cloudevents-google-pubsub</artifactId>
       <version>1.2</version>
@@ -72,11 +77,11 @@
       </exclusions>
     </dependency>
     <!-- kinesis is lowering this value causing pubsub to fail -->
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-      <version>[3.23.2]</version>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>com.google.protobuf</groupId>-->
+<!--      <artifactId>protobuf-java</artifactId>-->
+<!--      <version>[3.23.2]</version>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>io.featurehub.events</groupId>
       <artifactId>eventing-cloudevents</artifactId>
