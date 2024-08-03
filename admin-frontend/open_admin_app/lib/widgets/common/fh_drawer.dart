@@ -281,28 +281,27 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       children: [
-        const FHMenuItem(
+        FHMenuItem(
           name: 'Applications',
           iconData: Icons.apps_outlined,
           path: '/applications',
           params: {},
         ),
-        const FHMenuItem(
+        FHMenuItem(
           name: 'Features',
           iconData: Icons.flag_outlined,
           path: routeNameFeatureDashboard,
           params: {},
         ),
-        if (mrBloc.identityProviders.featureGroupsEnabled)
-          const FHMenuItem(
-            name: 'Feature Groups',
-            iconData: Icons.auto_awesome_motion_outlined,
-            path: 'feature-groups',
-            params: {},
-          ),
-        const FHMenuItem(
+        FHMenuItem(
+          name: 'Feature Groups',
+          iconData: Icons.auto_awesome_motion_outlined,
+          path: 'feature-groups',
+          params: {},
+        ),
+        FHMenuItem(
           name: 'API Keys',
           iconData: Icons.key_outlined,
           path: '/api-keys',
