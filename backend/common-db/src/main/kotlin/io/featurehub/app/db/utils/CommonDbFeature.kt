@@ -7,7 +7,6 @@ import io.ebean.DatabaseFactory
 import io.ebean.config.DatabaseConfig
 import io.ebean.datasource.DataSourceConfig
 import io.ebean.datasource.DataSourceFactory
-import io.ebean.migration.DbPlatformNames
 import io.ebean.migration.MigrationConfig
 import io.ebean.migration.MigrationRunner
 import io.featurehub.health.HealthSource
@@ -41,10 +40,13 @@ open class CommonDbFeature : Feature {
   var enableChangesets: Boolean? = false
 
   init {
-      DeclaredConfigResolver.resolve(this)
+    DeclaredConfigResolver.resolve(this)
   }
 
-  internal class FeatureHubDatabaseSource constructor(val dsConfig: DataSourceConfig, val migrationConfig: MigrationConfig)
+  internal class FeatureHubDatabaseSource constructor(
+    val dsConfig: DataSourceConfig,
+    val migrationConfig: MigrationConfig
+  )
 
   private fun supportHome(dbUrl: String): String =
     dbUrl.replace("\$home", System.getProperty("user.home"))
@@ -98,33 +100,37 @@ open class CommonDbFeature : Feature {
 
     if (databaseUrl.contains("postgres")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/postgres"
-      migrationConfig.platform = DbPlatformNames.POSTGRES
+      migrationConfig.platform = "postgres"
+      dsConfig.platform = "postgres"
       defaultDriver = "org.postgresql.Driver"
     } else if (databaseUrl.contains("mariadb")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/mariadb"
-      migrationConfig.platform = DbPlatformNames.MARIADB
-      defaultDriver = "com.mysql.jdbc.Driver"
-  } else if (databaseUrl.contains("mysql")) {
+      migrationConfig.platform = "mariadb"
+      dsConfig.platform = "mariadb"
+      defaultDriver = "org.mariadb.jdbc.Driver"
+    } else if (databaseUrl.contains("mysql")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/mysql"
-      migrationConfig.platform = DbPlatformNames.MYSQL
-      defaultDriver = "com.mysql.jdbc.Driver"
+      migrationConfig.platform = "mysql"
+      dsConfig.platform = "mysql"
+      defaultDriver = "com.mysql.cj.jdbc.Driver"
     } else if (databaseUrl.contains("sqlserver")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/mssql"
-      migrationConfig.platform = DbPlatformNames.SQLSERVER
+      migrationConfig.platform = "sqlserver"
+      dsConfig.platform = "sqlserver"
       defaultDriver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
     } else if (databaseUrl.contains("oracle")) {
       migrationConfig.migrationPath = "classpath:/dbmigration/oracle"
-      migrationConfig.platform = DbPlatformNames.ORACLE
+      migrationConfig.platform = "oracle"
+      dsConfig.platform = "oracle"
       defaultDriver = "oracle.jdbc.OracleDriver"
     } else {
       migrationConfig.migrationPath = "classpath:/dbmigration/h2"
-      migrationConfig.platform = DbPlatformNames.H2
+      migrationConfig.platform = "h2"
+      dsConfig.platform = "h2"
       defaultDriver = "org.h2.Driver"
     }
 
-    if (dsConfig.driver == null) {
-      dsConfig.driver = defaultDriver
-    }
+    dsConfig.driver = defaultDriver
 
     if (dsConfig.maxConnections < 5 && dsConfig.waitTimeoutMillis < 4000) {
       log.warn("Max database connections < 5, increasing wait timeout to 4s")
@@ -169,14 +175,14 @@ open class CommonDbFeature : Feature {
 
     if (dsReplicaConfig != null) {
       log.info("Database Read Replica configured at {}", dsReplicaConfig.dsConfig.url)
-      dbConfig.readOnlyDataSourceConfig = dsReplicaConfig.dsConfig
+      dbConfig.readOnlyDataSource = DataSourceFactory.create("readOnly", dsReplicaConfig.dsConfig)
     }
 
     enhanceDbConfig(dbConfig)
 
     val database = DatabaseFactory.create(dbConfig)
 
-    context.register(object: AbstractBinder() {
+    context.register(object : AbstractBinder() {
       override fun configure() {
         bind(database).to(Database::class.java).`in`(Singleton::class.java)
         bind(dsMasterConfig.dsConfig).to(DataSourceConfig::class.java).`in`(Singleton::class.java)
@@ -184,7 +190,7 @@ open class CommonDbFeature : Feature {
       }
     })
 
-    context.register(object: ContainerLifecycleListener {
+    context.register(object : ContainerLifecycleListener {
       override fun onStartup(container: Container?) {
       }
 

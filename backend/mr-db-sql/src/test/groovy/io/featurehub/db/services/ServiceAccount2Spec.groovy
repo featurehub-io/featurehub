@@ -45,7 +45,7 @@ class ServiceAccount2Spec extends Base2Spec {
   InternalGroupSqlApi internalGroupSqlApi
 
   def setup() {
-    db.commitTransaction()
+    db.currentTransaction().commitAndContinue()
     internalGroupSqlApi = Mock()
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, internalGroupSqlApi)
     cacheSource = Mock(CacheSource)
@@ -80,7 +80,7 @@ class ServiceAccount2Spec extends Base2Spec {
     ), null, false, false, true, Opts.empty())
 
     if (db.currentTransaction() != null && db.currentTransaction().active) {
-      db.commitTransaction()
+      db.currentTransaction().commitAndContinue()
     }
   }
 
@@ -126,6 +126,7 @@ class ServiceAccount2Spec extends Base2Spec {
   def "service ACL filtering works by application"() {
     given: "i have a second application"
       def app2 = applicationSqlApi.createApplication(portfolio1Id, new CreateApplication().name("acl-sa-test-filter").description("acl test filter"), superPerson)
+      db.currentTransaction().commitAndContinue()
     and: "i have an environment in the second application"
       def env2 = environmentSqlApi.create(new CreateEnvironment().name("acl-sa-test-filter-env").description("acl-test-filter-env"), app2.id, superPerson)
     and: "i create a new service account"
