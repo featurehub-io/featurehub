@@ -6,6 +6,7 @@ import 'package:open_admin_app/widgets/common/fh_error_message_details_widget.da
 import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
 import 'package:open_admin_app/widgets/user/signin/signin_widget.dart';
+import 'package:open_admin_app/widgets/version-check/version-check-widget.dart';
 
 import 'api/client_api.dart';
 
@@ -43,6 +44,8 @@ class WidgetCreator {
   adminSdkBaseUrlWidget(ManagementRepositoryClientBloc mrClient) {
     return const SizedBox.shrink();
   }
+
+  Widget newVersionCheckWidget() => VersionCheckWidget();
 }
 
 WidgetCreator widgetCreator = WidgetCreator();
