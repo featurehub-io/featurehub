@@ -60,7 +60,10 @@ class FHappBar extends StatelessWidget {
                     ' (v$appVersion)',
                     style: const TextStyle(fontSize: 10.0),
                   ),
-                  widgetCreator.newVersionCheckWidget()
+                  const SizedBox(
+                    width: 16.0,
+                  ),
+                  if (isWide) widgetCreator.newVersionCheckWidget()
                 ],
               ),
             )

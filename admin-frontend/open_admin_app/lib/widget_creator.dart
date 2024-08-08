@@ -6,7 +6,7 @@ import 'package:open_admin_app/widgets/common/fh_error_message_details_widget.da
 import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
 import 'package:open_admin_app/widgets/user/signin/signin_widget.dart';
-import 'package:open_admin_app/widgets/version-check/version-check-widget.dart';
+import 'package:open_admin_app/widgets/version-check/version_check_widget.dart';
 
 import 'api/client_api.dart';
 
@@ -27,7 +27,9 @@ class WidgetCreator {
   List<Widget> extraGlobalMenuItems(ManagementRepositoryClientBloc client) =>
       [];
 
-  String externalOrganisationUrl(String urlPrefix, String urlPartial, ManagementRepositoryClientBloc client) => "";
+  String externalOrganisationUrl(String urlPrefix, String urlPartial,
+          ManagementRepositoryClientBloc client) =>
+      "";
 
   Widget errorMessageDetailsWidget({required FHError fhError}) {
     return FHErrorMessageDetailsWidget(fhError: fhError);
@@ -45,7 +47,7 @@ class WidgetCreator {
     return const SizedBox.shrink();
   }
 
-  Widget newVersionCheckWidget() => VersionCheckWidget();
+  Widget newVersionCheckWidget() => const VersionCheckWidget();
 }
 
 WidgetCreator widgetCreator = WidgetCreator();
