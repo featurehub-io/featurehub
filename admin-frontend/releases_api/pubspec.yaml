@@ -1,0 +1,14 @@
+name: releases
+version: 1.0.0
+description: OpenAPI API client
+homepage: homepage
+environment:
+  sdk: '>=2.15.0 <3.99.0'
+dependencies:
+  dio: '^5.0.1'
+  openapi_dart_common: ^5.1.0
+  collection: '^1.16.0'
+dev_dependencies:
+  test: ^1.23.1
+  flutter_lints: ^2.0.1
+# bought to you by the folks from FeatureHub https://featurehub.io
