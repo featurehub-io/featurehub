@@ -23,7 +23,7 @@ class SiteSystemConfigState extends State<SiteSystemConfigWidget>
   @override
   Widget build(BuildContext context) {
     if (settings.isEmpty || loading) {
-      return FHLoadingIndicator();
+      return const FHLoadingIndicator();
     }
 
     try {
@@ -132,8 +132,8 @@ class SiteSystemConfigState extends State<SiteSystemConfigWidget>
         ],
       );
     } catch (e, s) {
-      fhosLogger.severe("failed ${e}: ${s}");
-      return SizedBox.shrink();
+      fhosLogger.severe("failed $e: $s");
+      return const SizedBox.shrink();
     }
   }
 

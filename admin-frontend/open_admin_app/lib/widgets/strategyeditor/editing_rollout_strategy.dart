@@ -147,8 +147,9 @@ class EditingRolloutStrategy {
 
   RolloutStrategy? toRolloutStrategy(dynamic value) {
     if (name == null ||
-        attributes.any((rsa) => rsa.toRolloutStrategyAttribute() == null))
+        attributes.any((rsa) => rsa.toRolloutStrategyAttribute() == null)) {
       return null;
+    }
     return RolloutStrategy(
         id: id,
         name: name!,

@@ -1,7 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/systemconfig/systemconfig_bloc.dart';
 
 class SystemConfigEncryptableTextField extends StatefulWidget {
@@ -64,7 +63,7 @@ class SystemConfigEncryptableTextFieldState
             } else {
               widget.field.value = val;
             }
-           },
+          },
           decoration: widget.decoration,
         )),
         if (_textField.text == 'ENCRYPTED-TEXT')
