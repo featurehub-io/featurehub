@@ -1,6 +1,7 @@
 = Slack Integration
 
 You can integrate FeatureHub with Slack to receive feature updates directly into a Slack channel.
+Remember you need to have set an link:configuration.adoc#_encryption[encryption token] to be able to use this functionality.
 
 image::slack-message-example.png[Slack install to workspace, 800]
 

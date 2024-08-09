@@ -2,10 +2,13 @@
 
 This section explains if additional configuration is needed to support webhooks functionality.
 
-NOTE: If your installation is using NATS, you are not required to do any additional configuration, NATS will automatically start
+== NATS
+If your installation is using NATS, you are not required to do any additional configuration, NATS will automatically start
 processing updates for environments/features relevant to the webhooks.
 
-If your installation is using Pub/Sub, you will need to do additional configuration as described below.
+== Google(TM) Pub/Sub
+
+If your installation is using *Google(TM) Pub/Sub*, you will need to do additional configuration as described below.
 
 == Dacha2
 
@@ -16,7 +19,7 @@ Webhooks use the new Feature Enrichment pipeline, which will take the single
 feature update (e.g. a feature changed, was added or was deleted), and pull all of the environment's
 data out of the cache and then publish the complete set of Feature data for that environment. But
 you only want *one* of the Dacha2 instances processing that. As such, you need to a new subscriber
-just for the enrichment pipeline.
+just for the enrichment channel. This will allow the Dacha2 instances to balance the load between each other. 
 
 ----
 cloudevents.enricher.pubsub.subscription-name=enricher-updates-sub
