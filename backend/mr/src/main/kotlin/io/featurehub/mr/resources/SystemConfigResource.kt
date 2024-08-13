@@ -27,9 +27,6 @@ class SystemConfigResource @Inject constructor(
     if (!authManagerService.isOrgAdmin(from)) {
       throw ForbiddenException()
     }
-    if (!WebhookEncryptionFeature.isWebhookEncryptionEnabled) {
-      throw NotFoundException()
-    }
 
     try {
       return SystemConfigs().configs(systemConfigApi.updateConfigs(updatedSystemConfigs.configs, from.id!!.id, false))
@@ -69,10 +66,6 @@ class SystemConfigResource @Inject constructor(
     securityContext: SecurityContext
   ): SystemConfigs {
     if (!SystemConfigApi.systemConfigEnabled) throw NotFoundException()
-
-    if (!WebhookEncryptionFeature.isWebhookEncryptionEnabled) {
-      throw NotFoundException()
-    }
 
     if (!authManagerService.isOrgAdmin(authManagerService.from(securityContext))) {
       throw ForbiddenException()
