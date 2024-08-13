@@ -350,14 +350,24 @@ audit.logging.user=true
 ==== Encryption
 
 To enable link:slack-integration.adoc[Slack configuration] or header encryption for Webhooks,
-you will need to specify a encryption token to be used for these items which are encrypted at
+you will need to specify a encryption key to be used for these items which are encrypted at
 rest (i.e. the are encrypted until they are explicitly used, in Slack's case they are encrypted
 until the system is about to POST to Slack, in Webhooks the same is true). 
 
 The configuration to enable encryption is:
 
-- `webhooks.encryption.password` - this was set at a default value in `1.8.0` but it was removed as a security precaution in `1.8.1`. If you have installed and used encryption in `1.8.0` we recommend removing any security tokens from the database and changing your token. 
-- `webhooks.decryption.enabled` - this defaults to `false` - which means once encrypted, you cannot reveal the password that has been set on the front end. If you wish to be able to do this (i.e. allow people who can set the password to be able to see the password), you can set this to true. If you wish to reset your encrypted headers from Webhooks, we recommend you turn this on first, and remove them using the Web interface.
+- `webhooks.encryption.password` - this was set at a default value in `1.8.0` but it was removed as a security precaution in `1.8.1`. If you have installed and used encryption in `1.8.0` we recommend removing any security tokens from the database and changing your token. This can
+be set to anything, we recommend using a randomiser or password generator to set a reasonably long
+key (16+ characters).
+- `webhooks.decryption.enabled` - this defaults to `false` - which means once encrypted, you cannot reveal the password that has been set on the front end. If you wish to be able to do this (i.e. allow people who can set the password to be able to see the password), you can set this to true. If you wish to reset your encrypted headers from Webhooks, we recommend you turn this on first, and remove them using the Web interface. You can also use this to reveal your Slack Bearer token
+if you are changing your key.
+
+===== Kubernetes
+
+The official helm chart has configuration to support supplying an external secret which is your
+key. Please refer to the Helm chart documentation.
+
+===== Removing the existing slack bearer token from the database
 
 To remove your Slack token from the database use:
 

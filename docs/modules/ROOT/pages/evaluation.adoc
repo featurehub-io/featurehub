@@ -17,6 +17,10 @@ docker run --network host --user 999:999 -p 8085:8085 -v $HOME/party:/db feature
 
 NOTE: `$HOME/tmp` is where you wish to store the database (h2).
 
+If you wish to enable Slack integration or use encryption in your local database, add the
+option: `-e webhooks.encryption.password=<random-password>` - where `random-long-password` is a made up key, like you would get from a password generator. This is used to ensure secure third-party
+tokens are encrypted when in the database. See link:configuration.adoc#_encryption[configuration documentation] for more details.
+
 An alternative is to use the link:installation{outfilesuffix}#_evaluation_deployment[Docker Compose] based
 evaluation example.
 
