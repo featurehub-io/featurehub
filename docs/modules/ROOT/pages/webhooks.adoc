@@ -1,6 +1,6 @@
 = Webhooks
 
-Webhooks is a powerful mechanism that allows you to subscribe to feature flag events and changes. For example, this can be useful when integrating with other systems and workflows to enable actions based on feature flags updates, this could be CI/CD pipelines, deployment systems, notification systems and so on. 
+Webhooks is a powerful mechanism that allows you to subscribe to feature flag events and changes. For example, this can be useful when integrating with other systems and workflows to enable actions based on feature flags updates, this could be CI/CD pipelines, deployment systems, notification systems and so on.
 
 FeatureHub allows you to configure a URL endpoint and appropriate authorisation or configuration headers, to which it will deliver the complete
 set of feature flags changes. Such as changes of feature values, feature strategies, adding or deleting features.
@@ -10,10 +10,10 @@ To access Webhooks Configuration, select "Integrations" from the main menu and s
 
 image:webhook-config.png[Webhook Config]
 
-Webhooks configuration is designed to be per environment for a given application - you can have one webhook per environment. 
+Webhooks configuration is designed to be per environment for a given application - you can have one webhook per environment.
 
-You can enable/disable a webhook, configure the url destination and any extra headers you need. Options to encrypt URL and headers are available. Once you have
-saved configuration, you can test it out. Test button will only appear if webhook is enabled. Switch to the Webhooks History sub-tab to see the webhook history results/logs. 
+You can enable/disable a webhook, configure the url destination and any extra headers you need. Optionally you can enable encryption for URL and headers in the system config, see link:configuration.adoc#_encryption[encryption]. Once you have
+saved webhook settings, you can test it out. Test button will only appear if webhook is enabled. Switch to the Webhooks History sub-tab to see the webhook history results/logs.
 
 image:webhook_history.png[Webhook History]
 
