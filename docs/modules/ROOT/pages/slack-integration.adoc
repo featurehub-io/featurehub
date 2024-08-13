@@ -1,7 +1,8 @@
 = Slack Integration
 
 You can integrate FeatureHub with Slack to receive feature updates directly into a Slack channel.
-Remember you need to have set an link:configuration.adoc#_encryption[encryption key] to be able to use this functionality.
+
+IMPORTANT: For Open Source version there is a pre-condition to set an link:configuration.adoc#_encryption[encryption key]
 
 image::slack-message-example.png[Slack install to workspace, 800]
 
@@ -69,6 +70,6 @@ FeatureHub provides a sample stack that would allow you to run an external servi
 - a GCP cloud function
 - a Knative express service
 
-You get complete control over how messages are formatted and delivered if you do this. 
+You get complete control over how messages are formatted and delivered if you do this.
 
 The sample repository and code is https://github.com/featurehub-io/featurehub-messaging[here].
