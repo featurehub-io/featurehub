@@ -349,19 +349,26 @@ audit.logging.user=true
 
 ==== Encryption
 
-To enable link:slack-integration.adoc[Slack configuration] or URL and header encryption for Webhooks,
+To enable link:slack-integration.adoc[Slack integration] or URL and header encryption for Webhooks,
 you will need to specify an encryption key/password to be used for these items which are encrypted at
 rest (i.e. they are encrypted until they are explicitly used, in Slack's case they are encrypted
 until the system is about to POST to Slack, in Webhooks the same is true).
 
-The configuration to enable encryption is:
+Config options to enable encryption:
 
-- `webhooks.encryption.password` - this was set at a default value in `1.8.0` but it was removed as a security precaution in `1.8.1`. If you have installed and used encryption in `1.8.0` we recommend removing any security tokens (e.g. Slack Bot User OAuth Token) from the database and changing your token. This can
+- `webhooks.encryption.password` - this is encryption key/password. Required for Slack integration to work. This can
 be set to anything, we recommend using a randomiser or password generator to set a reasonably long
-key (16+ characters).
+key (16+ characters). 
 - `webhooks.decryption.enabled` - this defaults to `false` - which means
 1) Once Slack Bot User OAuth Token is set in the Admin app, it cannot be viewed again and will show as hidden. Set this to `true` to be able to view or change the token.
 2) Once webhook URL or header value is set and an option to "Encrypt" is checked in the Admin app, they cannot be viewed again and will be shown as hidden. Set this to `true` to be able to view, delete or reset the webhook URL or header values.
+
+NOTE: *If you are migrating from v1.8.0 to 1.8.1 only, earlier version not affected.* +
+The `webhooks.encryption.password` property was set at a default value in `1.8.0` but it was removed as a security precaution in `1.8.1`. It will affect your Slack integration if you used it in 1.8.0. You will need to: +
+1. Set this property with your own generated value, e.g. `webhooks.encryption.password=foobar`, then set `webhooks.decryption.enabled=true` +
+2. Go to FeatureHub Admin UI System Config page, select disable Slack checkbox, reveal and copy Slack Bot User OAuth Token then clear it and Save. Re-enter Slack Bot User OAuth Token and Save. This should re-enable Slack with new encryption key. +
+If you cannot view and copy Slack Bot User OAuth Token, go to Slack Workspace settings here https://api.slack.com/apps and find FeatureHub app. Go to OAuth and Permissions screen and find your Slack Bot User OAuth Token.   
+
 
 ===== Kubernetes
 
