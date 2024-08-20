@@ -54,9 +54,17 @@ class FHappBar extends StatelessWidget {
           if (appVersion != 'main')
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
-              child: Text(
-                ' (v$appVersion)',
-                style: const TextStyle(fontSize: 10.0),
+              child: Row(
+                children: [
+                  Text(
+                    ' (v$appVersion)',
+                    style: const TextStyle(fontSize: 10.0),
+                  ),
+                  const SizedBox(
+                    width: 16.0,
+                  ),
+                  if (isWide) widgetCreator.newVersionCheckWidget()
+                ],
               ),
             )
         ],

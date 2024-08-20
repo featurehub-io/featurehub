@@ -1,0 +1,44 @@
+openapi: 3.0.1
+info:
+  title: ReleaseApi
+  description: Describes the API used for getting information about features
+  version: "1.0.0"
+servers:
+  - description: Releases endpoint
+    url: https://api.dev.featurehub.io
+paths:
+  /releases.json:
+    get:
+      operationId: getReleases
+      description: Gets the history of releases and status of them
+      tags:
+        - ReleaseService
+      responses:
+        200:
+          description: All of the released version of FeatureHub
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Releases"
+components:
+  schemas:
+    Releases:
+      type: object
+      properties:
+        latest:
+          type: string
+        versions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Release"
+    Release:
+      type: object
+      properties:
+        version:
+          type: string
+        critical:
+          type: string
+          nullable: true
+        releaseNotes:
+          type: string
+          nullable: true

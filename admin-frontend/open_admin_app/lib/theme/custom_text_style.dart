@@ -7,6 +7,6 @@ class CustomTextStyle {
   }
 
   static TextStyle bodyMediumBold(BuildContext context) {
-    return TextStyle(fontWeight: FontWeight.bold);
+    return const TextStyle(fontWeight: FontWeight.bold);
   }
 }

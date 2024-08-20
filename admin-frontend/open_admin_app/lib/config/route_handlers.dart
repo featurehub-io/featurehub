@@ -172,10 +172,10 @@ class RouteCreator {
         child: const ManageAdminServiceAccountsRoute());
   }
 
-  Widget systemConfig(mrBloc,
-      {Map<String, List<String?>> params = const {}}) {
-    return BlocProvider<SystemConfigBloc>(creator: (context,bag) => SystemConfigBloc(mrBloc),
-      child: SystemConfigPanel());
+  Widget systemConfig(mrBloc, {Map<String, List<String?>> params = const {}}) {
+    return BlocProvider<SystemConfigBloc>(
+        creator: (context, bag) => SystemConfigBloc(mrBloc),
+        child: const SystemConfigPanel());
   }
 
   Widget serviceAccount(mrBloc,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/widgets/apps/webhook/track_events_panel_widget.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
-import 'package:open_admin_app/widgets/common/fh_external_link_outlined_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 
 class SlackPanelWidget extends StatefulWidget {

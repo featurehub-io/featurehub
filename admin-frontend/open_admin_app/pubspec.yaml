@@ -22,6 +22,8 @@ dependencies:
   logging: ^1.0.1
   mrapi:
     path: ../app_mr_layer
+  releases:
+    path: ../releases_api
   openapi_dart_common: ^5.0.0
   uuid: ^3.0.4
   zxcvbn: ^1.0.0
