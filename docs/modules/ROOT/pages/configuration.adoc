@@ -104,7 +104,7 @@ Edge publishes on the following channels (and consumed by MR):
 
 - `featurehub/mr-updates-queue` - configured using `cloudevents.edge-mr.nats.channel-name`. This sends
 back updates from PUT requests on the FeatureApi by valid ApiKeys who have write permissions, and also
-any other traffic (e.g. webhook status data). 
+any other traffic (e.g. webhook status data).
 
 Edge publishes on the Stats channel only if you have turned it on:
 - `featurehub/edge-stats` - configured using `cloudevents.stats.nats.channel-name`
@@ -175,7 +175,7 @@ Note, internally webhooks are dependent on enrichment pipeline, see below for `e
 200 range (including 0 - where a connection is refused) then the FeatureHub app begins a
 countdown, where after n number of retries, it will automatically disable the webhook. Default value is 5. To change, set to the desired number: `webhook.features.max-fails=10`
 - `enricher.enabled` - The enricher pipeline, currently only required to be enabled for webhooks to work. True by default. To reduce unnecessary "load" if you do not use webhooks, disable as follows: `enricher.enabled=false`
-- `ga.tracking-id` - If provided, this will enable tracking on the usage of your Admin UI and tell you what features people are using. 
+- `ga.tracking-id` - If provided, this will enable tracking on the usage of your Admin UI and tell you what features people are using.
 - `mr.dacha2.api-keys` - This swaps the Dacha2 endpoint to the public interface and protects it to expect a `key` header with one of the keys listed here. See Dacha2 below for more details.
 
 ==== SDK Feature Extension Properties
@@ -186,7 +186,7 @@ using the Service Accounts. Each Service Account has Read/Unlock/Lock/Change Val
  - `sdk.feature.properties` - In the Management Repository (and Party Server/Party-Server-ish) you can define this environment variable or system property and it is a *name/value* pair of data which will appear in your "Feature Properties" section in your SDK (if the associated Service Account is given permission). It is an advanced feature and it requires understanding of the Object model of Feature Hub - and it is available only in the Open Source version.
 - `sdk.feature.properties.size` - this controls the cache size. If you are using metadata (see below), the system will hold onto the JSON parsed metadata to speed up publishing, it will hold onto this many features. It is set by default to 100.
 
-The *name/value* pairs are pairs of names and https://github.com/jknack/handlebars.java?tab=readme-ov-file#helpers[Handlebars templates]. The templates feature lets you walk the tree of data provided. 
+The *name/value* pairs are pairs of names and https://github.com/jknack/handlebars.java?tab=readme-ov-file#helpers[Handlebars templates]. The templates feature lets you walk the tree of data provided.
 
 The values in the name/value pair can be actual templates, or if the value starts with a `#` then a reference to an absolute file location. The latter is useful if you wish to store your definitions in files as part of your Kubernetes deployment. We recommend experimenting with a local copy of FeatureHub to get your templates just the way you want them.
 
@@ -196,7 +196,7 @@ An example:
 sdk.feature.properties=appName={{{feature.parentApplication.name}}},portfolio={{{feature.parentApplication.portfolio.name}}},category={{{metadata.category}}}
 ----
 
-If you curl your SDK endpoint, you will see something like: 
+If you curl your SDK endpoint, you will see something like:
 
 ----
 "fp":{"appName":"D2nbUfr8LH1i","portfolio":"D2nbUfr8LH1i","category":"shoes"}
@@ -217,7 +217,7 @@ In addition to these we give you:
 - `pubFeatureValue` - this is the value of the feature (if any) that is about to be published, can be null and is also https://github.com/featurehub-io/featurehub/blob/main/infra/api-bucket/files/webhooks/1.2.1.yaml#L152[documented in the API].
 - `fgStrategies` - these are the strategies coming from feature groups this feature is associated with. They are RolloutStrategies and basically follow the same https://github.com/featurehub-io/featurehub/blob/main/infra/api-bucket/files/webhooks/1.2.1.yaml#L187[API pattern].
 
-A few things to note 
+A few things to note
 
 - in Handlebars if you don't want it to _HTML escape_ your data, you need to use triple braces, e.g. `{{{feature.parentApplication.name}}}`.
 - null values are safe to navigate, Handlebars will just return an empty value
@@ -309,7 +309,7 @@ cache any headers. It is on by default. See also the `cache-control.web` configu
 - `opentelemetry.valid-baggage-headers` - this allows you to filter out the valid W3C Baggage headers that you will accept from incoming clients. The Web UI adds its own (the request-id for that session) and the
 server adds in the UUID of the user who is performing the action. Your clients can add anything further
 they wish to baggage headers, but you need to specify them here to allow them to be added to the baggage.
-The side effect of this is that _all baggage_ will be logged in the logs. This gives you very good 
+The side effect of this is that _all baggage_ will be logged in the logs. This gives you very good
 OpenTelemetry and log level tracebility for actions from clients.
 
 .Config
@@ -345,6 +345,43 @@ audit.logging.user=true
 ----
 {"@timestamp":"2022-01-22T14:58:15.854+1300","message":"txn[1109] select t0.id, t0.when_archived, t0.feature_key, t0.alias, t0.name, t0.secret, t0.link, t0.value_type, t0.when_updated, t0.when_created, t0.version, t0.fk_app_id from fh_app_feature t0 where t0.id = ?; --bind(2b86605b-1a81-4fc7-80b7-17edc5e3206e, ) --micros(697)","priority":"DEBUG","path":"io.ebean.SQL","thread":"grizzly-http-server-1","host":"my-computer","user":{"id":"68c09a3d-6e44-4379-bfc1-3e75af59af38","email":"irina@i.com"}}
 
+----
+
+==== Encryption
+
+To enable link:slack-integration.adoc[Slack integration] or URL and header encryption for Webhooks,
+you will need to specify an encryption key/password to be used for these items which are encrypted at
+rest (i.e. they are encrypted until they are explicitly used, in Slack's case they are encrypted
+until the system is about to POST to Slack, in Webhooks the same is true).
+
+Config options to enable encryption:
+
+- `webhooks.encryption.password` - this is encryption key/password. Required for Slack integration to work. This can
+be set to anything, we recommend using a randomiser or password generator to set a reasonably long
+key (16+ characters). 
+- `webhooks.decryption.enabled` - this defaults to `false` - which means
+1) Once Slack Bot User OAuth Token is set in the Admin app, it cannot be viewed again and will show as hidden. Set this to `true` to be able to view or change the token.
+2) Once webhook URL or header value is set and an option to "Encrypt" is checked in the Admin app, they cannot be viewed again and will be shown as hidden. Set this to `true` to be able to view, delete or reset the webhook URL or header values.
+
+NOTE: *If you are migrating from v1.8.0 to 1.8.1 only, earlier version not affected.* +
+The `webhooks.encryption.password` property was set at a default value in `1.8.0` but it was removed as a security precaution in `1.8.1`. It will affect your Slack integration if you used it in 1.8.0. You will need to: +
+1. Set this property with your own generated value, e.g. `webhooks.encryption.password=foobar`, then set `webhooks.decryption.enabled=true` +
+2. Go to FeatureHub Admin UI System Config page, select disable Slack checkbox, reveal and copy Slack Bot User OAuth Token then clear it and Save. Re-enter Slack Bot User OAuth Token and Save. This should re-enable Slack with new encryption key. +
+If you cannot view and copy Slack Bot User OAuth Token, go to Slack Workspace settings here https://api.slack.com/apps and find FeatureHub app. Go to OAuth and Permissions screen and find your Slack Bot User OAuth Token.   
+
+
+===== Kubernetes
+
+The official helm chart has configuration to support supplying an external secret which is your
+key. Please refer to the Helm chart documentation.
+
+===== Removing the existing Slack Bot User OAuth Token from the database
+
+To remove your Slack token from the database use:
+
+[source,sql]
+----
+delete from fh_sysconfig where code='slack.bearerToken';
 ----
 
 ==== OpenTelemetry AutoConfiguration

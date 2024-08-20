@@ -2,6 +2,8 @@
 
 You can integrate FeatureHub with Slack to receive feature updates directly into a Slack channel.
 
+IMPORTANT: For Open Source version there is a pre-condition to set an link:configuration.adoc#_encryption[encryption key]
+
 image::slack-message-example.png[Slack install to workspace, 800]
 
 == FeatureHub Slack Integration
@@ -48,6 +50,26 @@ IMPORTANT:  If you are sending Slack updates to a private channel, you may need 
 
 You should now be able to receive Slack updates. Message delivery status log is available to indicate any errors in the case of unsuccessful message delivery.
 
+== Configuring your own message
+
+The Slack message is a transformed variant of the "Difference Payload" that FeatureHub emits when
+a feature changes. This payload is documented using https://github.com/featurehub-io/featurehub/blob/main/backend/messaging-api/messaging-api.yaml#L18[OpenAPI here].
+
+The payload is transformed and the format used is the `DEFAULT_MESSAGE_FORMAT` https://github.com/featurehub-io/featurehub/blob/main/backend/messaging-delivery/src/main/kotlin/io/featurehub/messaging/slack/SlackInternalDeliveryListener.kt[documented in the
+code].
+
+If there is a demand we can provide an in-situ override capability, but the best way to get flexibility in the message to Slack is to use the Offloading capability below.
+
 == Offloading Slack delivery to an external app (FeatureHub Open Source only)
 
 If you would like to customise Slack messages or perform any other additional operations with raw FeatureHub events, there is an option to use an external service that you can build yourself. You can connect your service by providing a URL and additional headers on the Slack System Config page.
+
+FeatureHub provides a sample stack that would allow you to run an external service such as:
+
+- an AWS lambda
+- a GCP cloud function
+- a Knative express service
+
+You get complete control over how messages are formatted and delivered if you do this.
+
+The sample repository and code is https://github.com/featurehub-io/featurehub-messaging[here].
