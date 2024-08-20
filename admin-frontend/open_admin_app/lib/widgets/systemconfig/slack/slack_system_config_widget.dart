@@ -2,7 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/fhos_logger.dart';
-import 'package:open_admin_app/widget_creator.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_outlined_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
@@ -192,7 +191,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
       );
     } catch (e, s) {
       fhosLogger.severe("failed $e: $s");
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
   }
 

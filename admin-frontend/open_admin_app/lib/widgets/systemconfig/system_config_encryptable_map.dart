@@ -3,7 +3,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/fhos_logger.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/systemconfig/systemconfig_bloc.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
@@ -84,28 +83,28 @@ class _SystemConfigDataSource extends DataGridSource {
             ]))
         .toList();
 
-    _encryptedKey = '${systemConfigKey}.encrypt';
+    _encryptedKey = '$systemConfigKey.encrypt';
     encryptedRows = sourceData[_encryptedKey]
             ?.split(',')
             .whereNot((k) => k.isEmpty)
             .toList() ??
         [];
 
-    fhosLogger.info("reset to ${sourceData}, e-rows ${encryptedRows}");
+    fhosLogger.info("reset to $sourceData, e-rows $encryptedRows");
 
     // prefill
-    _deletedKey = '${systemConfigKey}.deleted';
+    _deletedKey = '$systemConfigKey.deleted';
     deletedRows.clear();
   }
 
   submit() {
     fhosLogger.info(
-        "sourceData is ${sourceData}, e-rows ${encryptedRows}, d-rows ${deletedRows}");
-    var _deletedRows = deletedRows
+        "sourceData is $sourceData, e-rows $encryptedRows, d-rows $deletedRows");
+    var rows = deletedRows
         .where((k) => sourceData[k] == null)
         .where((k) => k.isNotEmpty);
-    if (_deletedRows.isNotEmpty) {
-      sourceData[_deletedKey] = _deletedRows.join(',');
+    if (rows.isNotEmpty) {
+      sourceData[_deletedKey] = rows.join(',');
     }
     sourceData[_encryptedKey] =
         encryptedRows.where((k) => k.isNotEmpty).join(",");
@@ -121,6 +120,7 @@ class _SystemConfigDataSource extends DataGridSource {
     return _rows;
   }
 
+  @override
   bool onCellBeginEdit(DataGridRow dataGridRow, RowColumnIndex rowColumnIndex,
       GridColumn column) {
     if (rowColumnIndex.columnIndex > 1) return false;
@@ -171,8 +171,9 @@ class _SystemConfigDataSource extends DataGridSource {
   @override
   Future<void> onCellSubmit(DataGridRow dataGridRow,
       RowColumnIndex rowColumnIndex, GridColumn column) async {
-    if (rowColumnIndex.columnIndex < 0 || rowColumnIndex.columnIndex > 1)
+    if (rowColumnIndex.columnIndex < 0 || rowColumnIndex.columnIndex > 1) {
       return;
+    }
 
     final oldValue = dataGridRow.getCells()[rowColumnIndex.columnIndex].value;
 
@@ -198,7 +199,7 @@ class _SystemConfigDataSource extends DataGridSource {
           newCellValue;
     }
 
-    fhosLogger.info("sourceMap is now ${sourceData}, e-rows ${encryptedRows}");
+    fhosLogger.info("sourceMap is now $sourceData, e-rows $encryptedRows");
 
     // To reset the new cell value after successfully updated to DataGridRow
     //and underlying mode.
@@ -314,7 +315,7 @@ class _SystemConfigDataSource extends DataGridSource {
     if (key.isNotEmpty) {
       encryptedRows.add(key);
     }
-    fhosLogger.info(", e-rows ${encryptedRows}");
+    fhosLogger.info(", e-rows $encryptedRows");
   }
 
   // we have to do it this way, getting the key at the last second as it may change
@@ -369,7 +370,7 @@ class _SystemConfigDataSource extends DataGridSource {
   addRow(String key, String value) {
     if (sourceData[key] != null) return;
 
-    fhosLogger.info("adding ${key} with value ${value}");
+    fhosLogger.info("adding $key with value $value");
     sourceData[key] = value;
     _rows.add(DataGridRow(cells: [
       DataGridCell(columnName: keyRowName, value: key),
@@ -479,7 +480,8 @@ class SystemConfigEncryptableMapWidgetState
                               alignment: Alignment.center,
                               child: Text(
                                 widget.keyHeaderName,
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
                               ))),
                       GridColumn(
                           columnName: 'value',
@@ -488,8 +490,8 @@ class SystemConfigEncryptableMapWidgetState
                               padding: const EdgeInsets.all(8.0),
                               alignment: Alignment.center,
                               child: Text(widget.valueHeaderName,
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)))),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold)))),
                       GridColumn(
                           columnName: 'actions',
                           allowEditing: false,
