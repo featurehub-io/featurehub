@@ -25,5 +25,15 @@
         <exclude>pom.xml</exclude>
       </excludes>
     </fileSet>
+    <fileSet>
+      <directory>releases_api</directory>
+      <outputDirectory>releases_api</outputDirectory>
+      <excludes>
+        <exclude>.dart_tool/**/*</exclude>
+        <exclude>build/**/*</exclude>
+        <exclude>target/**/*</exclude>
+        <exclude>pom.xml</exclude>
+      </excludes>
+    </fileSet>
   </fileSets>
 </assembly>
