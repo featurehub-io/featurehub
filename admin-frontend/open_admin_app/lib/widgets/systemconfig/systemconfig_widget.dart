@@ -31,6 +31,8 @@ class SystemConfigPanel extends StatelessWidget {
 
           final config = snapshot.data!;
 
+          var isSlackEnabled = config.any((cfg) => cfg.key == 'slack.enabled');
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -57,7 +59,7 @@ class SystemConfigPanel extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleSmall),
                 controlAffinity: ListTileControlAffinity.leading,
                 children: [
-                  if (!config.any((cfg) => cfg.key == 'slack.enabled'))
+                  if (!isSlackEnabled)
                     const Row(
                       children: [
                         Text(
@@ -70,11 +72,11 @@ class SystemConfigPanel extends StatelessWidget {
                           link:
                               "https://docs.featurehub.io/featurehub/latest/configuration.html#_encryption",
                           icon: Icon(Icons.arrow_outward_outlined),
-                          label: 'Encryption key documentation',
+                          label: 'Encryption documentation',
                         )
                       ],
                     ),
-                  if (config.any((cfg) => cfg.key == 'slack.enabled'))
+                  if (isSlackEnabled)
                     Card(child: SlackSystemConfigWidget(knownConfigs: config))
                 ],
               )
