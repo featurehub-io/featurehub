@@ -2,7 +2,7 @@
 
 You can integrate FeatureHub with Slack to receive feature updates directly into a Slack channel.
 
-IMPORTANT: For Open Source version there is a pre-condition to set an link:configuration.adoc#_encryption[encryption key]
+IMPORTANT: For Open Source version there is a pre-condition to set an link:configuration#_encryption[encryption key]
 
 image::slack-message-example.png[Slack install to workspace, 800]
 
