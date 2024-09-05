@@ -12,7 +12,7 @@ image:webhook-config.png[Webhook Config]
 
 Webhooks configuration is designed to be per environment for a given application - you can have one webhook per environment.
 
-You can enable/disable a webhook, configure the url destination and any extra headers you need. Optionally you can enable encryption for URL and headers in the system config, see link:configuration.adoc#_encryption[encryption]. Once you have
+You can enable/disable a webhook, configure the url destination and any extra headers you need. Optionally you can enable encryption for URL and headers in the system config, see link:configuration#_encryption[encryption]. Once you have
 saved webhook settings, you can test it out. Test button will only appear if webhook is enabled. Switch to the Webhooks History sub-tab to see the webhook history results/logs.
 
 image:webhook_history.png[Webhook History]
