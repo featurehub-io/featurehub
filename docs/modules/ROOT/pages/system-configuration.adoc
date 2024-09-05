@@ -5,14 +5,14 @@ System Configuration pages can be accessed by users with Super Admin permission.
 == Site Configuration (Open Source version only)
 
 Site Configuration allows you to configure correct website URL for your FeatureHub app, for example this is a prerequisite for enabling Slack integration.
-+
+
 image::fh-website-url-config.png[FeatureHub system config website URL, 1500]
 
 == Slack Configuration
 
-This is a global Slack setup page, which will help you to connect FeatureHub organisation (or deployed instance of Open Source version) with Slack. See more details on link:slack-integration.adoc[Slack integration] page.
+This is a global Slack setup page, which will help you to connect FeatureHub organisation (or deployed instance of Open Source version) with Slack. See more details on link:slack-integration[Slack integration] page.
 
-link:configuration.adoc#_encryption[Encryption needs to be enabled and configured] to allow for Slack to be
+link:configuration#_encryption[Encryption needs to be enabled and configured] to allow for Slack to be
 enabled. Slack will not appear if and encryption key is not configured.
 
 image::slack-system-config.png[Slack system config, 1500]
