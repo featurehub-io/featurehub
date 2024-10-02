@@ -55,12 +55,12 @@ class GroupBloc implements Bloc {
   Future<void> getGroup(String? groupId) async {
     if (groupId != null && groupId.length > 1) {
       try {
-        final fetchedGroup = await _groupServiceApi
-            .getGroup(groupId, includeMembers: true);
+        final fetchedGroup =
+            await _groupServiceApi.getGroup(groupId, includeMembers: true);
         // publish it out...
         group = fetchedGroup;
         _groupSource.add(fetchedGroup);
-      } catch (e,s) {
+      } catch (e, s) {
         mrClient.dialogError(e, s);
       }
     }
@@ -68,8 +68,8 @@ class GroupBloc implements Bloc {
 
   Future<void> deleteGroup(String groupId, bool includeMembers) async {
     try {
-      await _groupServiceApi
-          .deleteGroup(groupId, includeMembers: includeMembers);
+      await _groupServiceApi.deleteGroup(groupId,
+          includeMembers: includeMembers);
       group = null;
       this.groupId = null;
       _groupSource.add(null);
@@ -87,12 +87,13 @@ class GroupBloc implements Bloc {
     }
   }
 
-  Future<bool> updateGroup(Group groupToUpdate, { String? name }) async {
+  Future<bool> updateGroup(Group groupToUpdate, {String? name}) async {
     try {
       if (name != null) {
         groupToUpdate.name = name;
       }
-      final newGroup = await _groupServiceApi.updateGroupOnPortfolio(mrClient.currentPortfolio!.id, groupToUpdate,
+      final newGroup = await _groupServiceApi.updateGroupOnPortfolio(
+          mrClient.currentPortfolio!.id, groupToUpdate,
           includeMembers: true, updateMembers: true);
       await getGroups(focusGroup: groupToUpdate);
       group = newGroup;
@@ -108,8 +109,8 @@ class GroupBloc implements Bloc {
   }
 
   Future<void> createGroup(String name) async {
-    final createdGroup = await _groupServiceApi
-        .createGroup(mrClient.currentPid!, CreateGroup(name: name));
+    final createdGroup = await _groupServiceApi.createGroup(
+        mrClient.currentPid!, CreateGroup(name: name));
     await getGroups(focusGroup: createdGroup);
     groupId = createdGroup.id;
     group = createdGroup;

@@ -302,6 +302,13 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
           params: {},
         ),
         FHMenuItem(
+          name: 'Application Strategies',
+          iconData: Icons.rule,
+          path: 'application-strategies',
+          displayNewLabel: true,
+          params: {},
+        ),
+        FHMenuItem(
           name: 'API Keys',
           iconData: Icons.key_outlined,
           path: '/api-keys',

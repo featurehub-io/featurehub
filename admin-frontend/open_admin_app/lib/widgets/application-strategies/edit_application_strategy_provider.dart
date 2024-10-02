@@ -1,12 +1,12 @@
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
+import 'package:open_admin_app/widgets/application-strategies/edit_application_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 import 'package:open_admin_app/widgets/strategyeditor/strategy_editor_provider.dart';
 
-class GroupRolloutStrategyProvider extends StrategyEditorProvider {
-  final FeatureGroupBloc bloc;
+class EditApplicationStrategyProvider extends StrategyEditorProvider {
+  final EditApplicationStrategyBloc bloc;
 
-  GroupRolloutStrategyProvider(this.bloc);
+  EditApplicationStrategyProvider(this.bloc);
 
   @override
   Future<void> updateStrategy(EditingRolloutStrategy rs) async {
@@ -14,7 +14,7 @@ class GroupRolloutStrategyProvider extends StrategyEditorProvider {
   }
 
   @override
-  Future<RolloutStrategyValidationResponse?> validateStrategy(
+  Future<RolloutStrategyValidationResponse> validateStrategy(
       EditingRolloutStrategy rs) {
     return bloc.validationCheck(rs.toRolloutStrategy(null)!);
   }
