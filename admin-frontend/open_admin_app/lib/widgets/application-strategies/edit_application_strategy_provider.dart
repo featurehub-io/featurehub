@@ -10,7 +10,7 @@ class EditApplicationStrategyProvider extends StrategyEditorProvider {
 
   @override
   Future<void> updateStrategy(EditingRolloutStrategy rs) async {
-    bloc.addStrategy(rs);
+    await bloc.addStrategy(rs);
   }
 
   @override
