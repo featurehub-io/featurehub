@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 class ApplicationRolloutStrategySqlApi @Inject constructor(
-  private val database: Database, private val conversions: Conversions, private val cacheSource: CacheSource
+  private val conversions: Conversions, private val cacheSource: CacheSource
 ) : ApplicationRolloutStrategyApi {
 
   override fun createStrategy(
@@ -97,7 +97,7 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
 
   @Transactional
   private fun save(rs: DbApplicationRolloutStrategy) {
-    database.save(rs)
+    rs.save()
   }
 
 
@@ -115,7 +115,7 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
     if (strategy.application.id == app.id) {
       // check if we are renaming it and if so, are we using a duplicate name
       update.name?.let { newName ->
-        if (!strategy.name.equals(update.name, ignoreCase = true)) {
+        if (!strategy.name.equals(newName, ignoreCase = true)) {
           // is there something using the existing name?
           val existing = QDbApplicationRolloutStrategy().application
             .eq(app).name
@@ -127,6 +127,9 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
             throw ApplicationRolloutStrategyApi.DuplicateNameException()
           }
         }
+
+        strategy.name = newName
+        strategy.strategy.name = newName
       }
 
       update.percentage?.let { percent ->
