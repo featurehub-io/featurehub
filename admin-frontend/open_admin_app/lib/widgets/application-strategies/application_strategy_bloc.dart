@@ -55,8 +55,8 @@ class ApplicationStrategyBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  deleteStrategy(String strategyId) {
-    _applicationRolloutStrategyServiceApi.deleteApplicationStrategy(
+  Future deleteStrategy(String strategyId) {
+    return _applicationRolloutStrategyServiceApi.deleteApplicationStrategy(
         appId!, strategyId);
   }
 }

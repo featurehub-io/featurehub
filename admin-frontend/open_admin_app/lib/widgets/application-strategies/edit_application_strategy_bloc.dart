@@ -39,14 +39,26 @@ class EditApplicationStrategyBloc implements Bloc {
     return rolloutStrategy;
   }
 
-  void addStrategy(EditingRolloutStrategy ers) {
+  Future<ApplicationRolloutStrategy> addStrategy(EditingRolloutStrategy ers) {
     RolloutStrategy? rs = ers.toRolloutStrategy(null);
-    var appStrategy = CreateApplicationRolloutStrategy(
-        name: rs!.name,
-        percentageAttributes: rs.percentageAttributes,
-        attributes: rs.attributes);
-    _applicationRolloutStrategyServiceApi.createApplicationStrategy(
-        mrBloc.currentAid!, appStrategy);
+    if (strId == null) {
+      var appStrategy = CreateApplicationRolloutStrategy(
+          name: rs!.name,
+          percentage: rs.percentage,
+          percentageAttributes: rs.percentageAttributes,
+          attributes: rs.attributes);
+      return _applicationRolloutStrategyServiceApi.createApplicationStrategy(
+          mrBloc.currentAid!, appStrategy);
+    } else {
+      UpdateApplicationRolloutStrategy update =
+          UpdateApplicationRolloutStrategy(
+              name: rs!.name,
+              percentage: rs.percentage,
+              percentageAttributes: rs.percentageAttributes,
+              attributes: rs.attributes);
+      return _applicationRolloutStrategyServiceApi.updateApplicationStrategy(
+          mrBloc.currentAid!, ers.id, update);
+    }
   }
 
   Future<RolloutStrategyValidationResponse> validationCheck(strategy) async {
