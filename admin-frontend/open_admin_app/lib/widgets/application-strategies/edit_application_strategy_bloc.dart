@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
+import 'package:openapi_dart_common/openapi.dart';
 
 class EditApplicationStrategyBloc implements Bloc {
   final ManagementRepositoryClientBloc mrBloc;
@@ -39,25 +40,36 @@ class EditApplicationStrategyBloc implements Bloc {
     return rolloutStrategy;
   }
 
-  Future<ApplicationRolloutStrategy> addStrategy(EditingRolloutStrategy ers) {
+  Future<void> addStrategy(EditingRolloutStrategy ers) async {
     RolloutStrategy? rs = ers.toRolloutStrategy(null);
-    if (strId == null) {
-      var appStrategy = CreateApplicationRolloutStrategy(
-          name: rs!.name,
-          percentage: rs.percentage,
-          percentageAttributes: rs.percentageAttributes,
-          attributes: rs.attributes);
-      return _applicationRolloutStrategyServiceApi.createApplicationStrategy(
-          mrBloc.currentAid!, appStrategy);
-    } else {
-      UpdateApplicationRolloutStrategy update =
-          UpdateApplicationRolloutStrategy(
-              name: rs!.name,
-              percentage: rs.percentage,
-              percentageAttributes: rs.percentageAttributes,
-              attributes: rs.attributes);
-      return _applicationRolloutStrategyServiceApi.updateApplicationStrategy(
-          mrBloc.currentAid!, ers.id, update);
+    try {
+      if (strId == null) {
+        var appStrategy = CreateApplicationRolloutStrategy(
+            name: rs!.name,
+            percentage: rs.percentage,
+            percentageAttributes: rs.percentageAttributes,
+            attributes: rs.attributes);
+        await _applicationRolloutStrategyServiceApi.createApplicationStrategy(
+            mrBloc.currentAid!, appStrategy);
+      } else {
+        UpdateApplicationRolloutStrategy update =
+            UpdateApplicationRolloutStrategy(
+                name: rs!.name,
+                percentage: rs.percentage,
+                percentageAttributes: rs.percentageAttributes,
+                attributes: rs.attributes);
+        await _applicationRolloutStrategyServiceApi.updateApplicationStrategy(
+            mrBloc.currentAid!, ers.id, update);
+      }
+    } catch (e, s) {
+      if (e is ApiException && e.code == 409) {
+        await mrBloc.dialogError(e, s,
+            messageTitle:
+                "Application strategy with name '${rs!.name}' already exists",
+            showDetails: false);
+      } else {
+        await mrBloc.dialogError(e, s);
+      }
     }
   }
 
