@@ -11,12 +11,14 @@ class EditStringValueContainer extends StatefulWidget {
     this.rolloutStrategy,
     this.groupRolloutStrategy,
     required this.strBloc,
+    this.applicationRolloutStrategy,
   }) : super(key: key);
 
   final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupRolloutStrategy;
+  final RolloutStrategy? applicationRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   @override
@@ -35,7 +37,9 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
         ? widget.rolloutStrategy!.value
         : widget.groupRolloutStrategy != null
             ? widget.groupRolloutStrategy!.value
-            : widget.strBloc.featureValue.valueString;
+            : widget.applicationRolloutStrategy != null
+                ? widget.applicationRolloutStrategy!.value
+                : widget.strBloc.featureValue.valueString;
     tec.text = (valueSource ?? '').toString();
   }
 
@@ -76,6 +80,9 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
                 if (widget.rolloutStrategy != null) {
                   widget.rolloutStrategy!.value = replacementValue;
                   widget.strBloc.updateStrategyValue();
+                } else if (widget.applicationRolloutStrategy != null) {
+                  widget.applicationRolloutStrategy!.value = replacementValue;
+                  widget.strBloc.updateApplicationStrategyValue();
                 } else {
                   widget.strBloc.updateFeatureValueDefault(replacementValue);
                 }
