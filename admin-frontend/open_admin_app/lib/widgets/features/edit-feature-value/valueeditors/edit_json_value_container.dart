@@ -16,12 +16,14 @@ class EditJsonValueContainer extends StatefulWidget {
     this.rolloutStrategy,
     required this.strBloc,
     this.groupRolloutStrategy,
+    this.applicationRolloutStrategy,
   }) : super(key: key);
 
   final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupRolloutStrategy;
+  final RolloutStrategy? applicationRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   @override
@@ -40,7 +42,9 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
         ? widget.rolloutStrategy!.value
         : widget.groupRolloutStrategy != null
             ? widget.groupRolloutStrategy!.value
-            : widget.strBloc.featureValue.valueJson;
+            : widget.applicationRolloutStrategy != null
+                ? widget.applicationRolloutStrategy!.value
+                : widget.strBloc.featureValue.valueJson;
     if (valueSource != null) {
       try {
         tec.text = const JsonEncoder.withIndent('  ')
@@ -135,6 +139,9 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
     if (widget.rolloutStrategy != null) {
       widget.rolloutStrategy!.value = replacementValue;
       widget.strBloc.updateStrategyValue();
+    } else if (widget.applicationRolloutStrategy != null) {
+      widget.applicationRolloutStrategy!.value = replacementValue;
+      widget.strBloc.updateApplicationStrategyValue();
     } else {
       widget.strBloc.updateFeatureValueDefault(replacementValue);
     }

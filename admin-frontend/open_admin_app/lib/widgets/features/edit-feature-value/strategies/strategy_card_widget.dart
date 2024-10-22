@@ -11,6 +11,7 @@ class StrategyCardWidget extends StatelessWidget {
   final Widget editableHolderWidget;
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupRolloutStrategy;
+  final RolloutStrategy? applicationRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   const StrategyCardWidget(
@@ -19,7 +20,8 @@ class StrategyCardWidget extends StatelessWidget {
       required this.editableHolderWidget,
       this.rolloutStrategy,
       required this.strBloc,
-      this.groupRolloutStrategy})
+      this.groupRolloutStrategy,
+      this.applicationRolloutStrategy})
       : super(key: key);
 
   @override
@@ -27,14 +29,16 @@ class StrategyCardWidget extends StatelessWidget {
     return SizedBox(
       height: 50,
       child: InkWell(
-        mouseCursor: rolloutStrategy == null ? null : SystemMouseCursors.grab,
+        mouseCursor: rolloutStrategy != null ? SystemMouseCursors.grab : null,
         child: Card(
           elevation: 0.0, // if this is not set, then colors are screwed up
           color: rolloutStrategy != null
               ? strategyTextColor.withOpacity(0.15)
               : groupRolloutStrategy != null
                   ? groupStrategyTextColor.withOpacity(0.15)
-                  : defaultTextColor.withOpacity(0.15),
+                  : applicationRolloutStrategy != null
+                      ? applicationStrategyTextColor.withOpacity(0.15)
+                      : defaultTextColor.withOpacity(0.15),
           child: Padding(
             padding: const EdgeInsets.only(left: 8.0, right: 2.0),
             child: Row(
@@ -48,61 +52,84 @@ class StrategyCardWidget extends StatelessWidget {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.labelLarge)
-                          : (rolloutStrategy?.name == null
-                              ? Text('default',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall!
-                                      .copyWith(color: defaultTextColor))
-                              : Text(rolloutStrategy!.name,
+                          : applicationRolloutStrategy != null
+                              ? Text(applicationRolloutStrategy!.name,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style:
-                                      Theme.of(context).textTheme.labelLarge))),
+                                  style: Theme.of(context).textTheme.labelLarge)
+                              : (rolloutStrategy?.name == null
+                                  ? Text('default',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall!
+                                          .copyWith(color: defaultTextColor))
+                                  : Text(rolloutStrategy!.name,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge))),
                   Expanded(
                       flex: 1,
                       child: Text("serve",
                           style: CustomTextStyle.bodySmallLight(context))),
                   Expanded(flex: 4, child: editableHolderWidget),
-                  Expanded(
+                  if (rolloutStrategy != null && groupRolloutStrategy == null)
+                    Expanded(
                       flex: 3,
-                      child: rolloutStrategy != null &&
-                              groupRolloutStrategy == null
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                EditValueStrategyLinkButton(
-                                  editable: editable,
-                                  rolloutStrategy: rolloutStrategy!,
-                                  fvBloc: strBloc,
-                                ),
-                                if (editable)
-                                  IconButton(
-                                    mouseCursor: SystemMouseCursors.click,
-                                    icon: const Icon(Icons.delete, size: 16),
-                                    onPressed: () => strBloc
-                                        .removeStrategy(rolloutStrategy!),
-                                  ),
-                              ],
-                            )
-                          : groupRolloutStrategy != null
-                              ? Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    IconButton(
-                                      tooltip: 'Edit Feature Groups',
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        ManagementRepositoryClientBloc.router
-                                            .navigateTo(
-                                                context, '/feature-groups');
-                                      },
-                                      icon: const Icon(Icons.arrow_forward,
-                                          size: 18),
-                                    ),
-                                  ],
-                                )
-                              : const SizedBox.shrink())
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          EditValueStrategyLinkButton(
+                            editable: editable,
+                            rolloutStrategy: rolloutStrategy!,
+                            fvBloc: strBloc,
+                          ),
+                          if (editable)
+                            IconButton(
+                              mouseCursor: SystemMouseCursors.click,
+                              icon: const Icon(Icons.delete, size: 16),
+                              onPressed: () =>
+                                  strBloc.removeStrategy(rolloutStrategy!),
+                            ),
+                        ],
+                      ),
+                    ),
+                  if (groupRolloutStrategy != null)
+                    Expanded(
+                      flex: 3,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            tooltip: 'Edit Feature Groups',
+                            onPressed: () {
+                              Navigator.pop(context);
+                              ManagementRepositoryClientBloc.router
+                                  .navigateTo(context, '/feature-groups');
+                            },
+                            icon: const Icon(Icons.arrow_forward, size: 18),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (applicationRolloutStrategy != null)
+                    Expanded(
+                      flex: 3,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(onPressed: () {}, child: Text("Edit")),
+                          if (editable)
+                            IconButton(
+                              mouseCursor: SystemMouseCursors.click,
+                              icon: const Icon(Icons.delete, size: 16),
+                              onPressed: () => strBloc
+                                  .removeStrategy(applicationRolloutStrategy!),
+                            ),
+                        ],
+                      ),
+                    ),
                 ]),
           ),
         ),

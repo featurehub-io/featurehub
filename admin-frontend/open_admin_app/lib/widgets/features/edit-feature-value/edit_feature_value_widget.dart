@@ -5,6 +5,7 @@ import 'package:open_admin_app/theme/custom_text_style.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_info_card.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/application_strategies_dropdown.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/feature_value_updated_by.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/lock_unlock_switch.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/retire_feature_value_checkbox_widget.dart';
@@ -173,9 +174,9 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                   .contains(RoleType.CHANGE_VALUE);
                               var editable = !featureValueLatest.data!.locked &&
                                   canChangeValue;
-                              List<Widget> widgets = [];
+                              List<Widget> strategyWidgets = [];
                               if (strategiesLatest.hasData) {
-                                widgets = strategiesLatest.data!
+                                strategyWidgets = strategiesLatest.data!
                                     .map((RolloutStrategy strategy) {
                                   return Column(
                                     children: [
@@ -230,10 +231,10 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                             ),
                                         ],
                                       ),
-                                      if (widgets.isEmpty)
+                                      if (strategyWidgets.isEmpty)
                                         const Text("No strategies"),
                                       buildReorderableListView(
-                                          widgets,
+                                          strategyWidgets,
                                           featureValueLatest,
                                           canChangeValue,
                                           strategiesLatest,
@@ -249,8 +250,8 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                           ),
                                           const FHInfoCardWidget(
                                               message:
-                                                  "Feature groups are recommended when you want to set the same strategy for multiple features. "
-                                                  "Feature group strategy can be created and edited from the Feature Groups screen.")
+                                                  "Feature groups are recommended when you want to set the same strategy for multiple features in the same environment. "
+                                                  "Feature group strategy can be created and edited from the Feature Groups page.")
                                         ],
                                       ),
                                       if (featureValueLatest
@@ -273,6 +274,91 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                               strBloc: widget.bloc,
                                               featureValueType: widget
                                                   .bloc.feature.valueType),
+                                      const SizedBox(height: 24.0),
+                                      Row(
+                                        children: [
+                                          Text(
+                                              "Application strategy variations",
+                                              style: CustomTextStyle
+                                                  .bodySmallLight(context)),
+                                          const SizedBox(
+                                            width: 4.0,
+                                          ),
+                                          const FHInfoCardWidget(
+                                              message:
+                                                  "Application strategies are created at application level and can be assigned to various features in any environment. "
+                                                  "Application strategy can be created and edited from the Application Strategies page.")
+                                        ],
+                                      ),
+                                      StreamBuilder<List<RolloutStrategy>>(
+                                          stream:
+                                              widget.bloc.applicationStrategies,
+                                          builder: (context, snapshot) {
+                                            if (snapshot.hasData &&
+                                                snapshot.data != null &&
+                                                snapshot.data!.isNotEmpty) {
+                                              strategyWidgets = snapshot.data!
+                                                  .map((RolloutStrategy
+                                                      strategy) {
+                                                return Column(
+                                                  children: [
+                                                    StrategyCard(
+                                                        key: ValueKey(strategy),
+                                                        strBloc: widget.bloc,
+                                                        applicationRolloutStrategy:
+                                                            strategy,
+                                                        featureValueType: widget
+                                                            .bloc
+                                                            .feature
+                                                            .valueType),
+                                                  ],
+                                                );
+                                              }).toList();
+                                              return Column(
+                                                  children: strategyWidgets);
+                                            }
+                                            return const Text(
+                                                "No application strategies");
+                                          }),
+                                      TextButton(
+                                          onPressed: () => widget.bloc
+                                              .getApplicationStrategies(),
+                                          child: const Text(
+                                              "Show available strategies")),
+                                      StreamBuilder<
+                                              List<ApplicationRolloutStrategy>>(
+                                          stream: widget.bloc
+                                              .availableApplicationStrategies,
+                                          builder: (context, snapshot) {
+                                            if (snapshot.hasData &&
+                                                snapshot.data != null &&
+                                                snapshot.data!.isNotEmpty) {
+                                              return Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: [
+                                                  ApplicationStrategiesDropDown(
+                                                    strategies: snapshot.data!,
+                                                    bloc: widget.bloc,
+                                                  ),
+                                                  const SizedBox(
+                                                    width: 8.0,
+                                                  ),
+                                                  TextButton.icon(
+                                                      icon:
+                                                          const Icon(Icons.add),
+                                                      label: const Text(
+                                                          'Add Strategy'),
+                                                      onPressed: () => {
+                                                            widget.bloc
+                                                                .addApplicationStrategy()
+                                                          }),
+                                                ],
+                                              );
+                                            } else {
+                                              return const SizedBox.shrink();
+                                            }
+                                          }),
                                       const SizedBox(height: 24.0),
                                       Row(
                                         children: [

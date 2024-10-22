@@ -10,6 +10,7 @@ import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart
 class StrategyCard extends StatelessWidget {
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupRolloutStrategy;
+  final RolloutStrategy? applicationRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
   final FeatureValueType featureValueType;
 
@@ -18,7 +19,8 @@ class StrategyCard extends StatelessWidget {
       this.rolloutStrategy,
       required this.strBloc,
       required this.featureValueType,
-      this.groupRolloutStrategy})
+      this.groupRolloutStrategy,
+      this.applicationRolloutStrategy})
       : super(key: key);
 
   @override
@@ -35,6 +37,7 @@ class StrategyCard extends StatelessWidget {
               strBloc: strBloc,
               rolloutStrategy: rolloutStrategy,
               groupRolloutStrategy: groupRolloutStrategy,
+              applicationRolloutStrategy: applicationRolloutStrategy,
               editableHolderWidget: EditValueContainer(
                 key: ValueKey(
                     '${strBloc.environmentFeatureValue.environmentId}-${strBloc.feature.key}'),
@@ -42,6 +45,7 @@ class StrategyCard extends StatelessWidget {
                 unlocked: unlocked,
                 rolloutStrategy: rolloutStrategy,
                 groupRolloutStrategy: groupRolloutStrategy,
+                applicationRolloutStrategy: applicationRolloutStrategy,
                 strBloc: strBloc,
                 featureValueType: featureValueType,
               ),
@@ -59,6 +63,7 @@ class EditValueContainer extends StatelessWidget {
   final bool unlocked;
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupRolloutStrategy;
+  final RolloutStrategy? applicationRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   const EditValueContainer(
@@ -68,7 +73,8 @@ class EditValueContainer extends StatelessWidget {
       required this.unlocked,
       this.rolloutStrategy,
       required this.strBloc,
-      this.groupRolloutStrategy})
+      this.groupRolloutStrategy,
+      this.applicationRolloutStrategy})
       : super(key: key);
 
   @override
@@ -80,6 +86,7 @@ class EditValueContainer extends StatelessWidget {
           unlocked: unlocked,
           rolloutStrategy: rolloutStrategy,
           groupRolloutStrategy: groupRolloutStrategy,
+          applicationRolloutStrategy: applicationRolloutStrategy,
           strBloc: strBloc,
         );
       case FeatureValueType.BOOLEAN:
@@ -87,6 +94,7 @@ class EditValueContainer extends StatelessWidget {
           unlocked: unlocked,
           rolloutStrategy: rolloutStrategy,
           groupRolloutStrategy: groupRolloutStrategy,
+          applicationRolloutStrategy: applicationRolloutStrategy,
           strBloc: strBloc,
           editable: editable,
         );
