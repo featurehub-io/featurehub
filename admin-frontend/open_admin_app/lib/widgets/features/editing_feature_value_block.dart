@@ -138,11 +138,10 @@ class EditingFeatureValueBloc implements Bloc {
   }
 
   void removeApplicationStrategy(RolloutStrategy rs) {
-    // tag it to ensure it has a number so we can remove it
     final strategies = _applicationStrategySource.value;
     fhosLogger.fine(
         "removing strategy ${rs.id} from list ${strategies.map((e) => e.id)}");
-    strategies.removeWhere((e) => e.id == rs.id);
+    _applicationStrategySource.value.removeWhere((e) => e.id == rs.id);
     updateApplicationStrategyValue();
   }
 
@@ -219,18 +218,23 @@ class EditingFeatureValueBloc implements Bloc {
   addApplicationStrategy() {
     if (_selectedStrategyIdToAdd != null) {
       final strategyList = _availableApplicationStrategiesSource.value;
+
       ApplicationRolloutStrategy ars = strategyList
           .firstWhere((strategy) => strategy.id == _selectedStrategyIdToAdd!);
       var currentApplicationStrategies = _applicationStrategySource.value;
-      var rolloutStrategy = RolloutStrategy(
-          value: feature.valueType == FeatureValueType.BOOLEAN ? false : null,
-          id: ars.id, // do we need to copy this?
-          name: ars.name,
-          percentage: ars.percentage,
-          attributes: ars.attributes);
-      currentApplicationStrategies.add(rolloutStrategy);
-      _applicationStrategySource.add(currentApplicationStrategies);
-      updateApplicationStrategyValue();
+      if (!currentApplicationStrategies
+          .any((strategy) => strategy.id == _selectedStrategyIdToAdd!)) {
+        var rolloutStrategy = RolloutStrategy(
+            value: feature.valueType == FeatureValueType.BOOLEAN ? false : null,
+            id: ars.id,
+            // do we need to copy this?
+            name: ars.name,
+            percentage: ars.percentage,
+            attributes: ars.attributes);
+        currentApplicationStrategies.add(rolloutStrategy);
+        _applicationStrategySource.add(currentApplicationStrategies);
+        updateApplicationStrategyValue();
+      }
     }
   }
 }
