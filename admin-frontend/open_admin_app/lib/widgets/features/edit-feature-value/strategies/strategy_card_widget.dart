@@ -119,13 +119,26 @@ class StrategyCardWidget extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          TextButton(onPressed: () {}, child: Text("Edit")),
+                          if (editable)
+                            IconButton(
+                                mouseCursor: SystemMouseCursors.click,
+                                icon: const Icon(Icons.edit, size: 16),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  ManagementRepositoryClientBloc.router
+                                      .navigateTo(
+                                          context, '/edit-application-strategy',
+                                          params: {
+                                        'id': [applicationRolloutStrategy!.id!]
+                                      });
+                                }),
                           if (editable)
                             IconButton(
                               mouseCursor: SystemMouseCursors.click,
                               icon: const Icon(Icons.delete, size: 16),
-                              onPressed: () => strBloc
-                                  .removeStrategy(applicationRolloutStrategy!),
+                              onPressed: () =>
+                                  strBloc.removeApplicationStrategy(
+                                      applicationRolloutStrategy!),
                             ),
                         ],
                       ),

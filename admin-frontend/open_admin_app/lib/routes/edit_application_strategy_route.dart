@@ -25,32 +25,42 @@ class EditApplicationStrategyRoute extends StatelessWidget {
         ),
         Row(
           children: [
-            FutureBuilder(
-                future: bloc.getStrategy(bloc.strId),
-                builder: (BuildContext context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const FHLoadingIndicator();
-                  } else if (snapshot.connectionState ==
-                          ConnectionState.active ||
-                      snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.hasError) {
-                      return const FHLoadingError();
-                    } else if (snapshot.hasData) {
-                      return BlocProvider.builder(
-                        creator: (c, b) {
-                          var rs = snapshot.data;
-                          return StrategyEditorBloc(rs!.toEditing(),
-                              EditApplicationStrategyProvider(bloc));
-                        },
-                        builder: (c, b) => StrategyEditingWidget(
-                          bloc: b,
-                          editable: true,
-                          returnToRoute: '/application-strategies',
-                        ),
-                      );
-                    }
+            StreamBuilder<String?>(
+                stream: bloc.mrBloc.streamValley.currentAppIdStream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data != null) {
+                    return FutureBuilder(
+                        future: bloc.getStrategy(bloc.strId),
+                        builder: (BuildContext context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const FHLoadingIndicator();
+                          } else if (snapshot.connectionState ==
+                                  ConnectionState.active ||
+                              snapshot.connectionState ==
+                                  ConnectionState.done) {
+                            if (snapshot.hasError) {
+                              return const FHLoadingError();
+                            } else if (snapshot.hasData) {
+                              return BlocProvider.builder(
+                                creator: (c, b) {
+                                  var rs = snapshot.data;
+                                  return StrategyEditorBloc(rs!.toEditing(),
+                                      EditApplicationStrategyProvider(bloc));
+                                },
+                                builder: (c, b) => StrategyEditingWidget(
+                                  bloc: b,
+                                  editable: true,
+                                  returnToRoute: '/application-strategies',
+                                ),
+                              );
+                            }
+                          }
+                          return const SizedBox.shrink();
+                        });
+                  } else {
+                    return const SizedBox.shrink();
                   }
-                  return const SizedBox.shrink();
                 }),
           ],
         )
