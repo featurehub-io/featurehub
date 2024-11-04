@@ -8,5 +8,5 @@ import java.util.*
  */
 data class SharedRolloutStrategyVersion(
     val strategyId : UUID, val version: Long,
-    val enabled: Boolean, val value: Any
+    val enabled: Boolean, val value: Any?
 )
