@@ -290,7 +290,8 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                   "Application strategy can be created and edited from the Application Strategies page.")
                                         ],
                                       ),
-                                      StreamBuilder<List<RolloutStrategy>>(
+                                      StreamBuilder<
+                                              List<RolloutStrategyInstance>>(
                                           stream:
                                               widget.bloc.applicationStrategies,
                                           builder: (context, snapshot) {
@@ -298,7 +299,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                 snapshot.data != null &&
                                                 snapshot.data!.isNotEmpty) {
                                               strategyWidgets = snapshot.data!
-                                                  .map((RolloutStrategy
+                                                  .map((RolloutStrategyInstance
                                                       strategy) {
                                                 return Column(
                                                   children: [

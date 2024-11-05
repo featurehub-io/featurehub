@@ -10,7 +10,7 @@ import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart
 class StrategyCard extends StatelessWidget {
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupRolloutStrategy;
-  final RolloutStrategy? applicationRolloutStrategy;
+  final RolloutStrategyInstance? applicationRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
   final FeatureValueType featureValueType;
 
@@ -63,7 +63,7 @@ class EditValueContainer extends StatelessWidget {
   final bool unlocked;
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupRolloutStrategy;
-  final RolloutStrategy? applicationRolloutStrategy;
+  final RolloutStrategyInstance? applicationRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   const EditValueContainer(

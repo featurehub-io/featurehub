@@ -29,8 +29,9 @@ class EditingFeatureValueBloc implements Bloc {
   late final BehaviorSubject<List<RolloutStrategy>> _strategySource;
   Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
 
-  late final BehaviorSubject<List<RolloutStrategy>> _applicationStrategySource;
-  Stream<List<RolloutStrategy>> get applicationStrategies =>
+  late final BehaviorSubject<List<RolloutStrategyInstance>>
+      _applicationStrategySource;
+  Stream<List<RolloutStrategyInstance>> get applicationStrategies =>
       _applicationStrategySource
           .stream; // should it be ApplicationRolloutStrategy type?
 
@@ -67,8 +68,9 @@ class EditingFeatureValueBloc implements Bloc {
         .toJson()); // keeping original featureValue cached for resets
     _strategySource = BehaviorSubject<List<RolloutStrategy>>.seeded(
         [...currentFeatureValue.rolloutStrategies ?? []]);
-    _applicationStrategySource = BehaviorSubject<List<RolloutStrategy>>.seeded(
-        [...currentFeatureValue.sharedRolloutStrategies ?? []]);
+    _applicationStrategySource =
+        BehaviorSubject<List<RolloutStrategyInstance>>.seeded(
+            [...currentFeatureValue.rolloutStrategyInstances ?? []]);
     _availableApplicationStrategiesSource =
         BehaviorSubject<List<ApplicationRolloutStrategy>>.seeded([]);
     environmentId = environmentFeatureValue.environmentId;
@@ -116,7 +118,7 @@ class EditingFeatureValueBloc implements Bloc {
   void updateApplicationStrategyValue() {
     final strategies = _applicationStrategySource.value;
     _applicationStrategySource.add(strategies);
-    currentFeatureValue.sharedRolloutStrategies = strategies;
+    currentFeatureValue.rolloutStrategyInstances = strategies;
     addFeatureValueToStream(currentFeatureValue);
   }
 
@@ -137,11 +139,12 @@ class EditingFeatureValueBloc implements Bloc {
     updateStrategyValue();
   }
 
-  void removeApplicationStrategy(RolloutStrategy rs) {
+  void removeApplicationStrategy(RolloutStrategyInstance rs) {
     final strategies = _applicationStrategySource.value;
     fhosLogger.fine(
-        "removing strategy ${rs.id} from list ${strategies.map((e) => e.id)}");
-    _applicationStrategySource.value.removeWhere((e) => e.id == rs.id);
+        "removing strategy ${rs.strategyId} from list ${strategies.map((e) => e.strategyId)}");
+    _applicationStrategySource.value
+        .removeWhere((e) => e.strategyId == rs.strategyId);
     updateApplicationStrategyValue();
   }
 
@@ -222,15 +225,12 @@ class EditingFeatureValueBloc implements Bloc {
       ApplicationRolloutStrategy ars = strategyList
           .firstWhere((strategy) => strategy.id == _selectedStrategyIdToAdd!);
       var currentApplicationStrategies = _applicationStrategySource.value;
-      if (!currentApplicationStrategies
-          .any((strategy) => strategy.id == _selectedStrategyIdToAdd!)) {
-        var rolloutStrategy = RolloutStrategy(
+      if (!currentApplicationStrategies.any(
+          (strategy) => strategy.strategyId == _selectedStrategyIdToAdd!)) {
+        var rolloutStrategy = RolloutStrategyInstance(
             value: feature.valueType == FeatureValueType.BOOLEAN ? false : null,
-            id: ars.id,
-            // do we need to copy this?
             name: ars.name,
-            percentage: ars.percentage,
-            attributes: ars.attributes);
+            strategyId: ars.id);
         currentApplicationStrategies.add(rolloutStrategy);
         _applicationStrategySource.add(currentApplicationStrategies);
         updateApplicationStrategyValue();

@@ -110,9 +110,10 @@ class _ValueContainer extends StatelessWidget {
                         fv: fv!,
                         feature: feature,
                       ),
-                  if (fv!.sharedRolloutStrategies != null &&
-                      fv!.sharedRolloutStrategies!.isNotEmpty)
-                    for (RolloutStrategy rsi in fv!.sharedRolloutStrategies!)
+                  if (fv!.rolloutStrategyInstances != null &&
+                      fv!.rolloutStrategyInstances!.isNotEmpty)
+                    for (RolloutStrategyInstance rsi
+                        in fv!.rolloutStrategyInstances!)
                       _ValueCard(
                         applicationStrategy: rsi,
                         fv: fv!,
@@ -170,7 +171,7 @@ class _ValueCard extends StatelessWidget {
   final Feature feature;
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupStrategy;
-  final RolloutStrategy? applicationStrategy;
+  final RolloutStrategyInstance? applicationStrategy;
 
   const _ValueCard({
     Key? key,
