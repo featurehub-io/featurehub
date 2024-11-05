@@ -53,7 +53,7 @@ class StrategyCardWidget extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.labelLarge)
                           : applicationRolloutStrategy != null
-                              ? Text(applicationRolloutStrategy!.name,
+                              ? Text(applicationRolloutStrategy!.name!,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context).textTheme.labelLarge)
