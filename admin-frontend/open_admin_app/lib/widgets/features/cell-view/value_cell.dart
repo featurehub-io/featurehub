@@ -265,7 +265,7 @@ class _ValueCard extends StatelessWidget {
                                 child: Padding(
                                   padding: const EdgeInsets.all(4.0),
                                   child: Text(
-                                    applicationStrategy!.name,
+                                    applicationStrategy!.name!,
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,
                                     style: Theme.of(context)
