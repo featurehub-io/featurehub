@@ -15,7 +15,7 @@ import {
   ServiceAccountPermission,
   ServiceAccountServiceApi,
   TokenizedPerson,
-  WebhookServiceApi
+  WebhookServiceApi, ApplicationRolloutStrategyServiceApi, ApplicationRolloutStrategy
 } from '../apis/mr-service';
 import { axiosLoggingAttachment, logger } from './logging';
 import globalAxios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
@@ -57,6 +57,7 @@ export class SdkWorld extends World {
   public readonly edgeApi: EdgeService;
   public readonly historyApi: FeatureHistoryServiceApi;
   public readonly systemConfigApi: SystemConfigServiceApi;
+  public readonly applicationStrategyApi: ApplicationRolloutStrategyServiceApi;
 
   public readonly webhookApi: WebhookServiceApi;
   private _clientContext: ClientContext;
@@ -66,6 +67,7 @@ export class SdkWorld extends World {
   public person: Person
   public featureGroup: FeatureGroup;
   public serviceAccount?: ServiceAccount;
+  public applicationStrategy?: ApplicationRolloutStrategy;
 
   constructor(props: any) {
     super(props);
@@ -92,6 +94,7 @@ export class SdkWorld extends World {
     this.webhookApi = new WebhookServiceApi(this.adminApiConfig);
     this.historyApi = new FeatureHistoryServiceApi(this.adminApiConfig);
     this.systemConfigApi = new SystemConfigServiceApi(this.adminApiConfig);
+    this.applicationStrategyApi = new ApplicationRolloutStrategyServiceApi(this.adminApiConfig);
 
     const edgeConfig = new EdgeConfig({ basePath: this.featureUrl, axiosInstance: this.adminApiConfig.axiosInstance});
     this.edgeApi = new EdgeService(edgeConfig);

@@ -251,6 +251,7 @@ components:
           maxLength: 200
         disabled:
           nullable: true
+          default: false
           type: boolean
         attributes:
           nullable: true

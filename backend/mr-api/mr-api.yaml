@@ -3224,6 +3224,7 @@ components:
         name:
           description: "This is copied from the shared rollout strategy on return, it is read only from the client perspective"
           type: string
+          nullable: true
         strategyId:
           type: string
           format: uuid
@@ -3232,6 +3233,7 @@ components:
           description: "the value for this rollout strategy for this feature value"
         disabled:
           nullable: true
+          default: false
           type: boolean
     Audit:
       properties:

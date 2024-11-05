@@ -217,7 +217,7 @@ class FeatureSqlApi @Inject constructor(
       updateSelectively(featureValue, person, existing, dbPerson, historical, changingDefaultValue, updatingLock)
     }
 
-    return convertUtils.toFeatureValue(existing)
+    return convertUtils.toFeatureValue(existing, Opts.opts(FillOpts.RolloutStrategies))
   }
 
   /**
@@ -955,7 +955,7 @@ class FeatureSqlApi @Inject constructor(
     Conversions.nonNullEnvironmentId(eid)
     val featureValue =
       QDbFeatureValue().environment.id.eq(eid).feature.key.eq(key).sharedRolloutStrategies.fetch().findOne()
-    return if (featureValue == null) null else convertUtils.toFeatureValue(featureValue)
+    return if (featureValue == null) null else convertUtils.toFeatureValue(featureValue, Opts.opts(FillOpts.RolloutStrategies))
   }
 
   override fun getAllFeatureValuesForEnvironment(eid: UUID, includeFeatures: Boolean): EnvironmentFeaturesResult {
@@ -1288,10 +1288,11 @@ class FeatureSqlApi @Inject constructor(
     val featureValueFinder = QDbFeatureValue()
       .environment.eq(environment)
       .environment.whenArchived.isNull
+      .sharedRolloutStrategies.fetch()
       .feature.whenArchived.isNull
       .feature.key.`in`(featureKeys)
 
-    return featureValueFinder.findList().map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs)!! }
+    return featureValueFinder.findList().map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs, Opts.opts(FillOpts.RolloutStrategies))!! }
   }
 
   /*
