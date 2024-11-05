@@ -11,7 +11,7 @@ class StrategyCardWidget extends StatelessWidget {
   final Widget editableHolderWidget;
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupRolloutStrategy;
-  final RolloutStrategy? applicationRolloutStrategy;
+  final RolloutStrategyInstance? applicationRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   const StrategyCardWidget(
@@ -129,7 +129,10 @@ class StrategyCardWidget extends StatelessWidget {
                                       .navigateTo(
                                           context, '/edit-application-strategy',
                                           params: {
-                                        'id': [applicationRolloutStrategy!.id!]
+                                        'id': [
+                                          applicationRolloutStrategy!
+                                              .strategyId!
+                                        ]
                                       });
                                 }),
                           if (editable)
