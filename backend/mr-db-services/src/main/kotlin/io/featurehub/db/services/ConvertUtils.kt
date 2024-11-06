@@ -555,9 +555,9 @@ open class ConvertUtils @Inject constructor(
     return featureValue
   }
 
-  private fun sharedRolloutStrategyToObject(value: String, valueType: FeatureValueType): Any {
+  private fun sharedRolloutStrategyToObject(value: String?, valueType: FeatureValueType): Any? {
     return when (valueType) {
-      FeatureValueType.BOOLEAN -> java.lang.Boolean.parseBoolean(value)
+      FeatureValueType.BOOLEAN -> if (value == null) false else java.lang.Boolean.parseBoolean(value)
       FeatureValueType.STRING, FeatureValueType.JSON -> value
       FeatureValueType.NUMBER -> BigDecimal(value)
     }
