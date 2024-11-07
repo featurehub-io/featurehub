@@ -509,7 +509,33 @@ class FeatureSqlApi @Inject constructor(
       }
     }
 
-    existingDbFeatureValue.sharedRolloutStrategies = originalSharedStategyList
+    // none of the above checks if we simply _reordered_ the existing list of strategies, so now we need do check that
+    // ok, now just honour the order of the incoming strategies and keep track if they actually changed
+
+    // at this point, originalSharedStategyList contains all of the strategies but not in any particular order
+
+    // this maps all of the incoming updates to their now DbStrategyForFeatureValue variants
+    val desiredList = incomingStrategyUpdates.mapNotNull { newStrategy ->
+        originalSharedStategyList.find { it.rolloutStrategy.id == newStrategy.strategyId } }
+        .toMutableList()
+    val desiredOrderedIds = desiredList.map { it.rolloutStrategy.id }
+    val historicalOrderedIds = historical.map { it.strategyId }
+
+    if (desiredOrderedIds != historicalOrderedIds) {
+      if (!personCanChangeValues) {
+        log.debug("trying to reorder strategies and no change value permission")
+        throw FeatureApi.NoAppropriateRole()
+      }
+      addToStrategyReorders(strategyUpdates, desiredList.map { toRolloutStrategy(it) }.toMutableList(),
+        historical.map { sharedStrategyToRolloutStrategyForReporting(it, foundApplicationStrategies) })
+
+      changed = true
+    }
+
+    // now the desiredList has been ordered according to the incoming strategies but picked from the
+    // list of DbStrategyForFeatureValue's
+
+    existingDbFeatureValue.sharedRolloutStrategies = desiredList
 
     strategyUpdates.hasChanged = changed
 

@@ -13,4 +13,4 @@ Feature: We can save, change and retrieve application strategies on feature valu
     Then I create an application strategy tagged "second"
     When I attach application strategy "second" to the current environment feature value
     And there is an application strategy called "first" in the current environment feature value
-
+    And I swap the order of "first" and "second" they remain swapped
