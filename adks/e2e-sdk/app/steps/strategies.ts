@@ -68,6 +68,29 @@ When('I attach application strategy {string} to the current environment feature 
     rsi.strategyId === strategy.id && rsi.value)).to.not.be.undefined;
 });
 
+When('I swap the order of {string} and {string} they remain swapped', async function (key1: string, key2: string) {
+  const world = this as SdkWorld;
+
+  const strategy1 = world.applicationStrategies[key1];
+  validateWorldForApplicationStrategies(world, strategy1, key1);
+  const strategy2 = world.applicationStrategies[key2];
+  validateWorldForApplicationStrategies(world, strategy2, key2);
+
+  const featureValue = await world.getFeatureValue();
+  const key1Index = featureValue.rolloutStrategyInstances.findIndex(s => s.strategyId == strategy1.id);
+  expect(key1Index, `cannot find strategy ${key1} in strategies`).to.not.eq(-1);
+  const key2Index= featureValue.rolloutStrategyInstances.findIndex(s => s.strategyId == strategy2.id);
+  expect(key2Index, `cannot find strategy ${key2} in strategies`).to.not.eq(-1);
+
+  const rsi = featureValue.rolloutStrategyInstances[key1Index];
+  featureValue.rolloutStrategyInstances[key1Index] = featureValue.rolloutStrategyInstances[key2Index];
+  featureValue.rolloutStrategyInstances[key2Index] = rsi;
+
+  const updatedValue = await world.updateFeature(featureValue);
+  expect(updatedValue.rolloutStrategyInstances[key1Index].strategyId, `Strategy 2 did not swap`).to.eq(strategy2.id);
+  expect(updatedValue.rolloutStrategyInstances[key2Index].strategyId).to.eq(strategy1.id);
+});
+
 Then('there is an application strategy called {string} in the current environment feature value', async function (strategyKey: string) {
   const world = this as SdkWorld;
 

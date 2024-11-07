@@ -67,12 +67,23 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
     return RandomStringUtils.randomAlphabetic(10)
   }
 
+  String ranCode() {
+    return RandomStringUtils.randomAlphabetic(4)
+  }
+
+  @CompileStatic
   DbApplicationFeature af(FeatureValueType type = FeatureValueType.BOOLEAN) {
     return new DbApplicationFeature.Builder().parentApplication(dbApplication).key(ranName()).name('choochoo').valueType(type).build()
   }
 
+  @CompileStatic
   DbFeatureValue featureValue(String val, DbApplicationFeature feat) {
     return new DbFeatureValue(dbSuperPerson, false, feat, dbEnvironment, val)
+  }
+
+  @CompileStatic
+  DbApplicationRolloutStrategy appStrategy(UUID id) {
+    return new QDbApplicationRolloutStrategy().id.eq(id).application.id.eq(app1.id).findOne()
   }
 
   MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy> updateStrategies(List<DbStrategyForFeatureValue> current,
@@ -99,7 +110,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
         new CreateApplicationRolloutStrategy().name(ranName()), superuser, Opts.empty())
     and: "i have an incoming feature change"
       def incoming = [
-        new RolloutStrategyInstance().name(sharedStrategy.name)
+        new RolloutStrategyInstance()
           .disabled(false).value(true).strategyId(sharedStrategy.id)]
     when:
       def result = updateStrategies([], [], incoming,
@@ -109,5 +120,51 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
       result.updated == [new RolloutStrategyUpdate("added", null, toRolloutStrategy(sharedStrategy))]
       result.previous == []
       currentFeature.sharedRolloutStrategies.find { it.rolloutStrategy.id == sharedStrategy.id }
+  }
+
+  def "when i have two application strategies in history and i try and swap them, they swap"() {
+    given: "i have two strategies"
+      def ss1 = applicationRolloutStrategySqlApi.createStrategy(app1.id,
+        new CreateApplicationRolloutStrategy().name(ranName()), superuser, Opts.empty())
+      def ss2 = applicationRolloutStrategySqlApi.createStrategy(app1.id,
+        new CreateApplicationRolloutStrategy().name(ranName()), superuser, Opts.empty())
+    and: "i have a historical strategies in the 1/2 order"
+      def his1 = new SharedRolloutStrategyVersion(ss1.id, 1, true, true)
+      def his2 = new SharedRolloutStrategyVersion(ss2.id, 1, true, true)
+    and: "i swap the strategy order"
+      def incoming1 = [
+        new RolloutStrategyInstance()
+          .disabled(false).value(true).strategyId(ss2.id),
+        new RolloutStrategyInstance()
+          .disabled(false).value(true).strategyId(ss1.id),
+      ]
+    and: "i have a current feature"
+      currentFeature = featureValue("y", feature).with {
+        it.locked = currentLock;
+        it }
+    and: "i have the following existing strategies"
+      def existing = [
+        new DbStrategyForFeatureValue.Builder().value("true")
+          .featureValue(currentFeature).rolloutStrategy(appStrategy(ss1.id)).build(),
+        new DbStrategyForFeatureValue.Builder().value("true")
+          .featureValue(currentFeature).rolloutStrategy(appStrategy(ss2.id)).build(),
+      ]
+      currentFeature.sharedRolloutStrategies = existing
+    when:
+      def result =
+        featureSqlApi.updateSelectivelyApplicationRolloutStrategies(
+          new PersonFeaturePermission(superPerson, defaultRoles),
+          new FeatureValue().rolloutStrategyInstances(incoming1),
+          new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], feature, 0),
+          currentFeature, lockChanged, app1.id
+        )
+    then:
+      result.hasChanged
+      currentFeature.sharedRolloutStrategies.size() == 2
+      currentFeature.sharedRolloutStrategies[0].rolloutStrategy.id == ss2.id
+      currentFeature.sharedRolloutStrategies[1].rolloutStrategy.id == ss1.id
+
+      //result.updated == [new RolloutStrategyUpdate("added", null, toRolloutStrategy(sharedStrategy))]
+
   }
 }
