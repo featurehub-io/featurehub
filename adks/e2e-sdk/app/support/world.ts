@@ -67,7 +67,7 @@ export class SdkWorld extends World {
   public person: Person
   public featureGroup: FeatureGroup;
   public serviceAccount?: ServiceAccount;
-  public applicationStrategy?: ApplicationRolloutStrategy;
+  public applicationStrategies: Record<string,ApplicationRolloutStrategy> = {};
 
   constructor(props: any) {
     super(props);
