@@ -1,7 +1,12 @@
 import {Given, Then, When} from '@cucumber/cucumber';
 import { SdkWorld } from '../support/world';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
-import {CreateApplicationRolloutStrategy, RolloutStrategy, RolloutStrategyInstance} from '../apis/mr-service';
+import {
+  ApplicationRolloutStrategy,
+  CreateApplicationRolloutStrategy,
+  RolloutStrategy,
+  RolloutStrategyInstance
+} from '../apis/mr-service';
 import waitForExpect from 'wait-for-expect';
 import { expect } from 'chai';
 import {makeid} from "../support/random";
@@ -29,7 +34,7 @@ Then(/^I (cannot|can) create custom flag rollout strategies$/, async function(ca
   }
 });
 
-Given('I have an application strategy', async function() {
+Given('I create an application strategy tagged {string}', async function(strategyKey: string) {
   const world = this as SdkWorld;
 
   expect(world.application, 'You must have an application to create an application strategy').to.not.be.undefined;
@@ -38,24 +43,41 @@ Given('I have an application strategy', async function() {
     name: makeid(10), disabled: false, attributes: []
   }));
   expect(data.status).to.eq(201);
-  world.applicationStrategy = data.data;
+  world.applicationStrategies[strategyKey] = data.data;
 });
 
-When('I attach the application strategy to the current environment feature value', async function () {
-  const world = this as SdkWorld;
-
-  expect(world.applicationStrategy).to.not.be.undefined;
+function validateWorldForApplicationStrategies(world: SdkWorld, strategy: ApplicationRolloutStrategy, strategyKey: string) {
+  expect(strategy, `The strategy referenced by key ${strategyKey} does not exist`).to.not.be.undefined;
   expect(world.environment).to.not.be.undefined;
   expect(world.feature).to.not.be.undefined;
+}
+
+When('I attach application strategy {string} to the current environment feature value', async function (strategyKey: string) {
+  const world = this as SdkWorld;
+
+  const strategy = world.applicationStrategies[strategyKey];
+  validateWorldForApplicationStrategies(world, strategy, strategyKey);
 
   const featureValue = await world.getFeatureValue();
 
-  featureValue.rolloutStrategyInstances.push(new RolloutStrategyInstance({ strategyId: world.applicationStrategy.id,
+  featureValue.rolloutStrategyInstances.push(new RolloutStrategyInstance({ strategyId: strategy.id,
     value: true }));
 
   const updatedValue = await world.updateFeature(featureValue);
   expect(updatedValue.rolloutStrategyInstances.find(rsi =>
-    rsi.strategyId === world.applicationStrategy.id && rsi.value)).to.not.be.undefined;
+    rsi.strategyId === strategy.id && rsi.value)).to.not.be.undefined;
+});
+
+Then('there is an application strategy called {string} in the current environment feature value', async function (strategyKey: string) {
+  const world = this as SdkWorld;
+
+  const strategy = world.applicationStrategies[strategyKey];
+  validateWorldForApplicationStrategies(world, strategy, strategyKey);
+
+  const featureValue = await world.getFeatureValue();
+
+  expect(featureValue.rolloutStrategyInstances.find(rsi =>
+    rsi.strategyId === strategy.id && rsi.value)).to.not.be.undefined;
 });
 
 Then("the edge repository has a feature {string} with a strategy", async function(key: string, table: DataTable) {

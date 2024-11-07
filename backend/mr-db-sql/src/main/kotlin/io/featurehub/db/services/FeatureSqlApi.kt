@@ -292,7 +292,7 @@ class FeatureSqlApi @Inject constructor(
       throw OptimisticLockingException()
     }
 
-    if (lockChanged || defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged) {
+    if (lockChanged || defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged || applicationStrategyUpdates.hasChanged) {
       existing.whoUpdated = dbPerson
       save(existing, featureValue.version)
       publish(existing)
