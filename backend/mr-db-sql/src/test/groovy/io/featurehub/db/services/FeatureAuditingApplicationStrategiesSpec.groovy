@@ -150,7 +150,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
           .featureValue(currentFeature).rolloutStrategy(appStrategy(ss2.id)).build(),
       ]
       currentFeature.sharedRolloutStrategies = existing
-    when:
+    when: "i swap a strategy"
       def result =
         featureSqlApi.updateSelectivelyApplicationRolloutStrategies(
           new PersonFeaturePermission(superPerson, defaultRoles),
@@ -163,8 +163,16 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
       currentFeature.sharedRolloutStrategies.size() == 2
       currentFeature.sharedRolloutStrategies[0].rolloutStrategy.id == ss2.id
       currentFeature.sharedRolloutStrategies[1].rolloutStrategy.id == ss1.id
-
-      //result.updated == [new RolloutStrategyUpdate("added", null, toRolloutStrategy(sharedStrategy))]
-
+    when: "i delete a strategy"
+      def resultDeleted
+        = featureSqlApi.updateSelectivelyApplicationRolloutStrategies(
+      new PersonFeaturePermission(superPerson, defaultRoles),
+      new FeatureValue().rolloutStrategyInstances([incoming1.first()]),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], feature, 0),
+      currentFeature, lockChanged, app1.id
+    )
+    then: "we only have one rollout strategy instance in the current feature"
+      currentFeature.sharedRolloutStrategies.size() == 1
+      currentFeature.sharedRolloutStrategies[0].rolloutStrategy.id == ss2.id
   }
 }

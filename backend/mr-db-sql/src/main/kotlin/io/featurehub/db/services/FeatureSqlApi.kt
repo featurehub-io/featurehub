@@ -498,6 +498,9 @@ class FeatureSqlApi @Inject constructor(
 
       // remove all strategies where the strategy-id is in  the "to-delete" column
       originalSharedStategyList.removeIf { strategy ->
+        // cache this as we need it for the historical mapping
+        foundApplicationStrategies[strategy.rolloutStrategy.id] = strategy.rolloutStrategy
+
         val todel = strategiesToDelete.containsKey(strategy.rolloutStrategy.id)
         changed = true
         if (todel) {
@@ -1535,6 +1538,23 @@ class FeatureSqlApi @Inject constructor(
     }
 
     log.info("feature value upgrade complete")
+  }
+
+
+  override fun duplicateRolloutStrategyInstances(featureValue: FeatureValue): Boolean {
+    featureValue.rolloutStrategyInstances?.let { rsInstances ->
+      val dupes = mutableMapOf<UUID,UUID>()
+
+      for(rsi in rsInstances) {
+        if (dupes.containsKey(rsi.strategyId)) {
+          return true
+        }
+
+        dupes[rsi.strategyId] = rsi.strategyId
+      }
+    }
+
+    return false
   }
 
   companion object {

@@ -35,6 +35,7 @@ interface FeatureApi {
   class NoAppropriateRole : Exception()
   class NoSuchFeature : Exception()
   class LockedException : RuntimeException()
+  class InvalidUpdateException : RuntimeException()
 
   @Throws(
     OptimisticLockingException::class,
@@ -47,6 +48,11 @@ interface FeatureApi {
     eid: UUID, key: String, featureValue: FeatureValue,
     person: PersonFeaturePermission
   ): FeatureValue?
+
+  /**
+   * Detects if there are duplicate strategy ids in feature value
+   */
+  fun duplicateRolloutStrategyInstances(featureValue: FeatureValue): Boolean
 
   @Throws(
     OptimisticLockingException::class,
