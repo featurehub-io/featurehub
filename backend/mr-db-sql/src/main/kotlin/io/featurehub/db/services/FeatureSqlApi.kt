@@ -246,10 +246,16 @@ class FeatureSqlApi @Inject constructor(
         strategyUpdates.updated.add(RolloutStrategyUpdate(type = "added", new = strategy))
       }
     }
+    val applicationStrategyUpdates = MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>()
+    applicationStrategyUpdates.hasChanged = existing.sharedRolloutStrategies.isNotEmpty()
+    existing.sharedRolloutStrategies.forEach { rsi ->
+      applicationStrategyUpdates.updated.add(RolloutStrategyUpdate(type = "added", new = toRolloutStrategy(rsi)))
+    }
     val retiredUpdate =
       SingleFeatureValueUpdate(hasChanged = featureValue.retired, updated = featureValue.retired, previous = false)
     publishChangesForMessaging(
       existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates,
+      applicationStrategyUpdates,
       SingleNullableFeatureValueUpdate(true, featureValue.version, null)
     )
 
@@ -298,6 +304,7 @@ class FeatureSqlApi @Inject constructor(
       publish(existing)
       publishChangesForMessaging(
         existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates,
+        applicationStrategyUpdates,
         SingleNullableFeatureValueUpdate(true, featureValue.version, historical.versionFrom)
       )
     } else {
@@ -311,6 +318,7 @@ class FeatureSqlApi @Inject constructor(
     defaultValueUpdate: SingleNullableFeatureValueUpdate<String?>,
     retiredUpdate: SingleFeatureValueUpdate<Boolean>,
     strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
+    applicationStrategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
     versionUpdate: SingleNullableFeatureValueUpdate<Long>
   ) {
     try {
@@ -321,6 +329,7 @@ class FeatureSqlApi @Inject constructor(
           defaultValueUpdate,
           retiredUpdate,
           strategyUpdates,
+          applicationStrategyUpdates,
           versionUpdate
         )
       log.trace("publishing {}", featureMessagingParameter)
@@ -533,6 +542,10 @@ class FeatureSqlApi @Inject constructor(
         historical.map { sharedStrategyToRolloutStrategyForReporting(it, foundApplicationStrategies) })
 
       changed = true
+    }
+
+    if (changed && existingDbFeatureValue.isLocked && !lockChanged) {
+      throw FeatureApi.LockedException()
     }
 
     // now the desiredList has been ordered according to the incoming strategies but picked from the

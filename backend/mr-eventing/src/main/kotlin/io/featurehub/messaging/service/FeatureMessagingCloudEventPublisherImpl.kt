@@ -6,7 +6,6 @@ import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.TrackingEventApi
 import io.featurehub.db.messaging.FeatureMessagingParameter
 import io.featurehub.db.messaging.FeatureMessagingPublisher
-import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.events.DynamicCloudEventDestination
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.messaging.model.MessagingFeatureValueUpdate
