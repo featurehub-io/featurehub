@@ -35,7 +35,6 @@ interface FeatureApi {
   class NoAppropriateRole : Exception()
   class NoSuchFeature : Exception()
   class LockedException : RuntimeException()
-  class InvalidUpdateException : RuntimeException()
 
   @Throws(
     OptimisticLockingException::class,

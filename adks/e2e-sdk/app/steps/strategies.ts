@@ -52,6 +52,19 @@ function validateWorldForApplicationStrategies(world: SdkWorld, strategy: Applic
   expect(world.feature).to.not.be.undefined;
 }
 
+When('I delete the application strategy called {string} from the current environment feature value', async function (strategyKey: string) {
+  const world = this as SdkWorld;
+
+  const strategy = world.applicationStrategies[strategyKey];
+  validateWorldForApplicationStrategies(world, strategy, strategyKey);
+
+  const featureValue = await world.getFeatureValue();
+  featureValue.rolloutStrategyInstances = featureValue.rolloutStrategyInstances.filter(rsi => rsi.strategyId != strategy.id);
+  const updatedValue = await world.updateFeature(featureValue);
+  expect(updatedValue.rolloutStrategyInstances.find(rsi =>
+    rsi.strategyId === strategy.id)).to.be.undefined;
+});
+
 When('I attach application strategy {string} to the current environment feature value', async function (strategyKey: string) {
   const world = this as SdkWorld;
 

@@ -40,7 +40,9 @@ class EnvironmentFeatureResource @Inject constructor(
     featureForEnvironment = try {
       featureApi.createFeatureValueForEnvironment(eid, key, featureValue, requireRoleCheck(eid, securityContext))
     } catch (e: OptimisticLockingException) {
-      throw WebApplicationException(409)
+      throw WebApplicationException("Feature Value has changed in an incompatible way since client received value", 409)
+    } catch (l: FeatureApi.LockedException) {
+      throw WebApplicationException("Feature Value is locked", 409)
     } catch (noAppropriateRole: FeatureApi.NoAppropriateRole) {
       throw ForbiddenException(noAppropriateRole)
     } catch (bad: RolloutStrategyValidator.InvalidStrategyCombination) {
@@ -120,7 +122,9 @@ class EnvironmentFeatureResource @Inject constructor(
       )!!
     } catch (e: OptimisticLockingException) {
       log.error("optimistic locking", e)
-      throw WebApplicationException(409)
+      throw WebApplicationException("Optimistic locking problem", 409)
+    } catch (l: FeatureApi.LockedException) {
+      throw WebApplicationException("Feature Value is locked", 409)
     } catch (noAppropriateRole: FeatureApi.NoAppropriateRole) {
       throw ForbiddenException(noAppropriateRole)
     } catch (bad: RolloutStrategyValidator.InvalidStrategyCombination) {
