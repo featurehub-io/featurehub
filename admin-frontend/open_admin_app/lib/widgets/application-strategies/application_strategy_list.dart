@@ -55,13 +55,79 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                         spacing: 16.0,
                         runSpacing: 16.0,
                         children: [
-                          ApplicationDropDown(
-                              applications: snapshot.data!, bloc: bloc),
+                          Row(
+                            children: [
+                              ApplicationDropDown(
+                                  applications: snapshot.data!, bloc: bloc),
+                              const SizedBox(
+                                width: 16.0,
+                              ),
+                              if (bloc.appId != null)
+                                FilledButton.icon(
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Create new strategy'),
+                                  onPressed: () {
+                                    ManagementRepositoryClientBloc.router
+                                        .navigateTo(context,
+                                            '/create-application-strategy');
+                                  },
+                                )
+                            ],
+                          ),
                         ],
                       ),
                     ),
                     const FHPageDivider(),
                     const SizedBox(height: 16.0),
+                    Container(
+                        constraints: const BoxConstraints(maxWidth: 300),
+                        child: TextField(
+                          decoration: const InputDecoration(
+                            hintText: 'Search strategy',
+                            icon: Icon(Icons.search),
+                          ),
+                          onChanged: (val) {
+                            debouncer.run(
+                              () {
+                                source.filterServerSide(val);
+                              },
+                            );
+                          },
+                        )),
+                    const SizedBox(height: 16.0),
+                    SelectionArea(
+                      child: AdvancedPaginatedDataTable(
+                        rowsPerPage: rowsPerPage,
+                        showCheckboxColumn: false,
+                        showFirstLastButtons: true,
+                        addEmptyRows: false,
+                        availableRowsPerPage: const [10, 20, 50, 100],
+                        sortAscending: sortAsc,
+                        sortColumnIndex: sortIndex,
+                        showHorizontalScrollbarAlways: true,
+                        onRowsPerPageChanged: (newRowsPerPage) {
+                          if (newRowsPerPage != null) {
+                            setState(() {
+                              rowsPerPage = newRowsPerPage;
+                            });
+                          }
+                        },
+                        columns: [
+                          DataColumn(
+                              label: const Text('Name'), onSort: setSort),
+                          const DataColumn(
+                            label: Text('Used in'),
+                          ),
+                          const DataColumn(
+                            label: Padding(
+                              padding: EdgeInsets.only(left: 12.0),
+                              child: Text('Actions'),
+                            ),
+                          ),
+                        ],
+                        source: source,
+                      ),
+                    )
                   ],
                 );
               }
@@ -74,7 +140,7 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                         return Row(
                           children: <Widget>[
                             SelectableText(
-                                'There are no applications in this portfolio',
+                                'Cannot create application strategy as there are no applications in this portfolio',
                                 style: Theme.of(context).textTheme.bodySmall),
                           ],
                         );
@@ -88,54 +154,6 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
               }
               return const SizedBox.shrink();
             }),
-        Container(
-            constraints: const BoxConstraints(maxWidth: 300),
-            child: TextField(
-              decoration: const InputDecoration(
-                hintText: 'Search strategy',
-                icon: Icon(Icons.search),
-              ),
-              onChanged: (val) {
-                debouncer.run(
-                  () {
-                    source.filterServerSide(val);
-                  },
-                );
-              },
-            )),
-        const SizedBox(height: 16.0),
-        SelectionArea(
-          child: AdvancedPaginatedDataTable(
-            rowsPerPage: rowsPerPage,
-            showCheckboxColumn: false,
-            showFirstLastButtons: true,
-            addEmptyRows: false,
-            availableRowsPerPage: const [10, 20, 50, 100],
-            sortAscending: sortAsc,
-            sortColumnIndex: sortIndex,
-            showHorizontalScrollbarAlways: true,
-            onRowsPerPageChanged: (newRowsPerPage) {
-              if (newRowsPerPage != null) {
-                setState(() {
-                  rowsPerPage = newRowsPerPage;
-                });
-              }
-            },
-            columns: [
-              DataColumn(label: const Text('Name'), onSort: setSort),
-              const DataColumn(
-                label: Text('Used in'),
-              ),
-              const DataColumn(
-                label: Padding(
-                  padding: EdgeInsets.only(left: 12.0),
-                  child: Text('Actions'),
-                ),
-              ),
-            ],
-            source: source,
-          ),
-        )
       ],
     );
   }
