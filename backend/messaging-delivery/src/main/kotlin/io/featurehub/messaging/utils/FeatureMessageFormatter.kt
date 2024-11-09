@@ -11,10 +11,11 @@ import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.messaging.model.MessagingRolloutStrategy
+import io.featurehub.messaging.model.MessagingStrategyUpdate
 import io.featurehub.messaging.model.StrategyUpdateType
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.utils.FallbackPropertyConfig
-import java.text.SimpleDateFormat
+import jakarta.validation.Valid
 import java.time.format.DateTimeFormatter
 
 interface FeatureMessageFormatter {
@@ -94,31 +95,8 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
 
     data["whenUpdatedReadable"] = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").format(fmData.whenUpdated)
 
-    fmData.strategiesUpdated?.let { strategies ->
-      if (strategies.isNotEmpty()) {
-        strategies.filter { it.updateType == StrategyUpdateType.ADDED }
-          .map { truncValue(fmData.featureValueType, it.newStrategy!!) }.let {
-          data["addedStrategies"] = it
-        }
-
-        strategies.filter { it.updateType == StrategyUpdateType.CHANGED }.map {
-          mapOf<String, Any?>(
-            Pair("nameChanged", it.newStrategy?.name != it.oldStrategy?.name),
-            Pair("valueChanged", it.newStrategy?.value != it.oldStrategy?.value),
-                  Pair("percentageChanged", it.newStrategy?.percentage != it.oldStrategy?.percentage),
-                  Pair("attributesChanged", it.newStrategy?.attributes != it.oldStrategy?.attributes),
-                  Pair("newStrategy", truncValue(fmData.featureValueType, it.newStrategy!!)),
-                  Pair("oldStrategy", truncValue(fmData.featureValueType, it.oldStrategy!!)),
-                  )
-        }.let {
-          data["updatedStrategies"] = it
-        }
-
-        strategies.filter { it.updateType == StrategyUpdateType.DELETED }.map { truncValue(fmData.featureValueType, it.oldStrategy!!) }.let {
-          data["deletedStrategies"] = it
-        }
-      }
-    }
+    fmData.strategiesUpdated?.let { strategiesUpdated("", it, data, fmData ) }
+    fmData.applicationStrategiesUpdated?.let { strategiesUpdated("", it, data, fmData ) }
 
     fmData.lockUpdated?.let { locked ->
       data["wasLocked"] = !locked.previous && locked.updated
@@ -128,6 +106,33 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
     }
 
     return data
+  }
+
+  private fun strategiesUpdated(prefix: String, strategies: List<MessagingStrategyUpdate>,
+                                data: MutableMap<String,Any>, fmData: FeatureMessagingUpdate) {
+    if (strategies.isNotEmpty()) {
+      strategies.filter { it.updateType == StrategyUpdateType.ADDED }
+        .map { truncValue(fmData.featureValueType, it.newStrategy!!) }.let {
+          data["${prefix}addedStrategies"] = it
+        }
+
+      strategies.filter { it.updateType == StrategyUpdateType.CHANGED }.map {
+        mapOf<String, Any?>(
+          Pair("nameChanged", it.newStrategy?.name != it.oldStrategy?.name),
+          Pair("valueChanged", it.newStrategy?.value != it.oldStrategy?.value),
+          Pair("percentageChanged", it.newStrategy?.percentage != it.oldStrategy?.percentage),
+          Pair("attributesChanged", it.newStrategy?.attributes != it.oldStrategy?.attributes),
+          Pair("newStrategy", truncValue(fmData.featureValueType, it.newStrategy!!)),
+          Pair("oldStrategy", truncValue(fmData.featureValueType, it.oldStrategy!!)),
+        )
+      }.let {
+        data["${prefix}updatedStrategies"] = it
+      }
+
+      strategies.filter { it.updateType == StrategyUpdateType.DELETED }.map { truncValue(fmData.featureValueType, it.oldStrategy!!) }.let {
+        data["${prefix}deletedStrategies"] = it
+      }
+    }
   }
 
   override fun formatMessage(data: Map<String, Any>, fmt: String): String {
