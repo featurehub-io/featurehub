@@ -56,11 +56,13 @@ class ApplicationRolloutStrategyResource @Inject constructor(
     securityContext: SecurityContext
   ): ApplicationRolloutStrategy {
     applicationUtils.featureReadCheck(securityContext, appId)
+    log.info("getApplicationStrategy: {}", holder)
+
     return applicationRolloutStrategyApi.getStrategy(
       appId, appStrategyId, Opts().add(
         FillOpts.SimplePeople,
         holder.includeWhoChanged
-      )
+      ).add(FillOpts.Usage, holder.includeUsage)
     ) ?: throw NotFoundException()
   }
 
@@ -73,7 +75,7 @@ class ApplicationRolloutStrategyResource @Inject constructor(
     return applicationRolloutStrategyApi.listStrategies(
       appId,
       true == holder.includeArchived,
-      Opts().add(FillOpts.SimplePeople, holder.includeWhoChanged)
+      Opts().add(FillOpts.SimplePeople, holder.includeWhoChanged).add(FillOpts.Usage, holder.includeUsage)
     )
   }
 
