@@ -96,7 +96,7 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
     data["whenUpdatedReadable"] = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").format(fmData.whenUpdated)
 
     fmData.strategiesUpdated?.let { strategiesUpdated("", it, data, fmData ) }
-    fmData.applicationStrategiesUpdated?.let { strategiesUpdated("", it, data, fmData ) }
+    fmData.applicationStrategiesUpdated?.let { strategiesUpdated("application", it, data, fmData ) }
 
     fmData.lockUpdated?.let { locked ->
       data["wasLocked"] = !locked.previous && locked.updated
