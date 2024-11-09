@@ -18,6 +18,12 @@ paths:
         schema:
           type: boolean
         required: false
+      - name: includeUsage
+        in: query
+        description: "include usage information - which environments and feature counts"
+        schema:
+          type: boolean
+        required: false
     get:
       security:
         - bearerAuth: [ ]
@@ -131,6 +137,13 @@ paths:
           type: boolean
         required: false
     get:
+      parameters:
+        - name: includeUsage
+          in: query
+          description: "include usage information - which environments and feature counts"
+          schema:
+            type: boolean
+          required: false
       security:
         - bearerAuth: [ ]
       tags:
@@ -268,3 +281,19 @@ components:
               description: "unique id of the strategy"
               type: string
               format: uuid
+            usage:
+              description: "usage of the strategy"
+              type: array
+              nullable: true
+              items:
+                $ref: "#/components/schemas/ApplicationRolloutStrategyEnvironment"
+    ApplicationRolloutStrategyEnvironment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        featuresCount:
+          type: integer

@@ -594,6 +594,23 @@ open class ConvertUtils @Inject constructor(
 
     val info = rs.strategy
 
+    opts?.contains(FillOpts.Usage)?.let {
+      val envs = mutableMapOf<UUID,ApplicationRolloutStrategyEnvironment>()
+
+      QDbFeatureValue()
+        .sharedRolloutStrategies.rolloutStrategy.id.eq(rs.id)
+        .environment.fetch(QDbEnvironment.Alias.id, QDbEnvironment.Alias.name)
+        .select(QDbFeatureValue.Alias.id).findList().forEach { fv ->
+          envs.getOrPut(fv.environment.id) { ApplicationRolloutStrategyEnvironment().featuresCount(0) }.let { env ->
+            env.id = fv.environment.id
+            env.name = fv.environment.name
+            env.featuresCount += 1
+          }
+        }
+
+      info.usage = envs.values.toMutableList()
+    }
+
 //    if (opts!!.contains(FillOpts.SimplePeople)) {
 //      info.changedBy(toPerson(rs.whoChanged)!!)
 //    }
