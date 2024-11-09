@@ -17,14 +17,14 @@ class ApplicationStrategyRoute extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ApplicationStrategyBloc>(context);
     FHAnalytics.sendScreenView("application-strategy-list");
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const SizedBox(height: 8.0),
+        SizedBox(height: 8.0),
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            const FHHeader(
+            FHHeader(
               title: 'Application strategies',
               children: [
                 FHExternalLinkWidget(
@@ -36,21 +36,12 @@ class ApplicationStrategyRoute extends StatelessWidget {
                 )
               ],
             ),
-            if (bloc.mrClient.userIsSuperAdmin == true)
-              FilledButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('Create new strategy'),
-                onPressed: () {
-                  ManagementRepositoryClientBloc.router
-                      .navigateTo(context, '/create-application-strategy');
-                },
-              )
           ],
         ),
-        const SizedBox(height: 8.0),
-        const FHPageDivider(),
-        const SizedBox(height: 8.0),
-        const ApplicationStrategyList()
+        SizedBox(height: 8.0),
+        FHPageDivider(),
+        SizedBox(height: 8.0),
+        ApplicationStrategyList()
       ],
     );
   }
