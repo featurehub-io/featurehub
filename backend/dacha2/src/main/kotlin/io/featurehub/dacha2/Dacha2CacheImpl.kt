@@ -1,16 +1,24 @@
 package io.featurehub.dacha2
 
-import cd.connect.app.config.ConfigKey
-import com.google.common.cache.*
-import io.featurehub.dacha.model.*
+import com.google.common.cache.Cache
+import com.google.common.cache.CacheBuilder
+import com.google.common.cache.CacheLoader
+import com.google.common.cache.LoadingCache
+import com.google.common.cache.RemovalListener
+import io.featurehub.dacha.model.CacheServiceAccount
+import io.featurehub.dacha.model.CacheServiceAccountPermission
+import io.featurehub.dacha.model.PublishAction
+import io.featurehub.dacha.model.PublishEnvironment
+import io.featurehub.dacha.model.PublishFeatureValue
+import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.dacha2.api.Dacha2ServiceClient
 import io.featurehub.enricher.EnrichmentEnvironment
 import io.featurehub.enricher.FeatureEnrichmentCache
+import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.lang.RuntimeException
 import java.util.*
 
 
@@ -32,11 +40,109 @@ interface Dacha2Cache {
    * This will throw an exception if it can't be found
    */
   fun findEnvironment(eId: UUID): FeatureValues
+  fun enableCache(cacheEnable: Boolean)
 }
 
-class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2ServiceClient,
-                                          private val featureValueFactory: FeatureValuesFactory) : Dacha2Cache,
-  FeatureEnrichmentCache {
+abstract class Dacha2BaseCache : Dacha2Cache, FeatureEnrichmentCache {}
+
+class Dacha2DelegatingCache @Inject constructor(private val mrDacha2Api: Dacha2ServiceClient,
+                                                private val featureValueFactory: FeatureValuesFactory) : Dacha2BaseCache() {
+  private var cache: Dacha2BaseCache
+  private var cacheEnabled: Boolean = false
+  private val log: Logger = LoggerFactory.getLogger(Dacha2DelegatingCache::class.java)
+
+  init {
+    cache = Dacha2PassthroughImpl(mrDacha2Api, featureValueFactory)
+    log.info("started dacha2 in uncached passthrough mode (waiting on confirmed connection to streaming layer)")
+  }
+
+  override fun updateServiceAccount(serviceAccount: PublishServiceAccount) {
+    cache.updateServiceAccount(serviceAccount)
+  }
+
+  override fun updateEnvironment(env: PublishEnvironment) {
+    cache.updateEnvironment(env)
+  }
+
+  override fun updateFeature(feature: PublishFeatureValue) {
+    cache.updateFeature(feature)
+  }
+
+  override fun getFeatureCollection(eId: UUID, apiKey: String): FeatureCollection? {
+    return cache.getFeatureCollection(eId, apiKey)
+  }
+
+  override fun findEnvironment(eId: UUID): FeatureValues {
+    return cache.findEnvironment(eId)
+  }
+
+  override fun enableCache(cacheEnable: Boolean) {
+    if (cacheEnabled && !cacheEnable) {
+      log.info("lost connectivity, swapping dacha2 in uncached passthrough mode")
+      cache = Dacha2PassthroughImpl(mrDacha2Api, featureValueFactory)
+    } else if (!cacheEnabled && cacheEnable) {
+      log.info("connectivity to streaming established, swapping dacha2 to cached mode (empty cache)")
+      cache = Dacha2CacheImpl(mrDacha2Api, featureValueFactory)
+    }
+
+    cacheEnabled = cacheEnable
+  }
+
+  override fun getEnrichableEnvironment(eId: UUID): EnrichmentEnvironment {
+    return cache.getEnrichableEnvironment(eId)
+  }
+}
+
+class Dacha2PassthroughImpl(private val mrDacha2Api: Dacha2ServiceClient, private val featureValueFactory: FeatureValuesFactory) : Dacha2BaseCache() {
+  private val apiKey = FallbackPropertyConfig.getConfig("dacha2.cache.api-key")
+
+  override fun updateServiceAccount(serviceAccount: PublishServiceAccount) {
+  }
+
+  override fun updateEnvironment(env: PublishEnvironment) {
+  }
+
+  override fun updateFeature(feature: PublishFeatureValue) {
+  }
+
+  override fun getEnrichableEnvironment(eId: UUID): EnrichmentEnvironment {
+    val envFeatures = findEnvironment(eId)
+    return EnrichmentEnvironment(envFeatures.getFeatures(), envFeatures.environment)
+  }
+
+  private fun getEnvironment(eId: UUID): EnvironmentFeatures {
+    val env = mrDacha2Api.getEnvironment(eId, apiKey).env
+    return featureValueFactory.create(env)
+  }
+
+  private fun getServiceAccount(key: String): CacheServiceAccount {
+    return mrDacha2Api.getServiceAccount(key, apiKey).serviceAccount
+  }
+
+  override fun getFeatureCollection(eId: UUID, apiKey: String): FeatureCollection? {
+    val sa = getServiceAccount(apiKey)
+
+    var collection: FeatureCollection? = null
+
+    sa.permissions.find { it.environmentId == eId }?.let { perms ->
+      if (perms.permissions.isNotEmpty()) {
+        collection = FeatureCollection(getEnvironment(eId), perms, getServiceAccount(apiKey).id)
+      }
+    }
+
+    return collection
+  }
+
+  override fun findEnvironment(eId: UUID): FeatureValues {
+    return getEnvironment(eId)
+  }
+
+  override fun enableCache(cacheEnable: Boolean) {
+  }
+}
+
+class Dacha2CacheImpl(private val mrDacha2Api: Dacha2ServiceClient,
+                      private val featureValueFactory: FeatureValuesFactory) : Dacha2BaseCache() {
   private val log: Logger = LoggerFactory.getLogger(Dacha2CacheImpl::class.java)
   private val serviceAccountApiKeyCache: LoadingCache<String, CacheServiceAccount>
   private val serviceAccountCache: Cache<UUID, CacheServiceAccount>
@@ -49,42 +155,35 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
   // environment id, environment-features
   private val permsCache: Cache<String, CacheServiceAccountPermission>
 
-  @ConfigKey("dacha2.cache.service-account.miss-size")
-  var maximumServiceAccountMisses: Long? = 10000
+  private var maximumServiceAccountMisses = FallbackPropertyConfig.getConfig("dacha2.cache.service-account.miss-size", "10000").toLong()
 
-  @ConfigKey("dacha2.cache.service-account.perms-size")
-  var maximumServiceAccountPermissionsSize: Long? = 10000
+  private var maximumServiceAccountPermissionsSize = FallbackPropertyConfig.getConfig("dacha2.cache.service-account.perms-size", "10000").toLong()
 
-  @ConfigKey("dacha2.cache.service-account.size")
-  var maximumServiceAccounts: Long? = 10000
+  private var maximumServiceAccounts = FallbackPropertyConfig.getConfig("dacha2.cache.service-account.size", "10000").toLong()
 
-  @ConfigKey("dacha2.cache.environment.size")
-  var maximumEnvironments: Long? = 10000
+  private var maximumEnvironments = FallbackPropertyConfig.getConfig("dacha2.cache.environment.size", "10000").toLong()
 
-  @ConfigKey("dacha2.cache.environment.miss-size")
-  var maximumEnvironmentMisses: Long? = 10000
+  private var maximumEnvironmentMisses = FallbackPropertyConfig.getConfig("dacha2.cache.environment.miss-size", "10000").toLong()
 
-  @ConfigKey("dacha2.cache.all-updates")
-  var cacheStreamedUpdates: Boolean? = true
+  private var cacheStreamedUpdates: Boolean? = FallbackPropertyConfig.getConfig("dacha2.cache.all-updates") != "false"
 
-  @ConfigKey("dacha2.cache.api-key")
-  var apiKey: String? = null
+  var apiKey: String? = FallbackPropertyConfig.getConfig("dacha2.cache.api-key")
 
   init {
     environmentMissCache = CacheBuilder.newBuilder()
-      .maximumSize(maximumEnvironmentMisses!!)
+      .maximumSize(maximumEnvironmentMisses)
       .build()
 
     serviceAccountMissCache = CacheBuilder.newBuilder()
-      .maximumSize(maximumServiceAccountMisses!!)
+      .maximumSize(maximumServiceAccountMisses)
       .build()
 
     permsCache = CacheBuilder.newBuilder()
-      .maximumSize(maximumServiceAccountPermissionsSize!!)
+      .maximumSize(maximumServiceAccountPermissionsSize)
       .build()
 
     environmentCache = CacheBuilder.newBuilder()
-      .maximumSize(maximumEnvironments!!)
+      .maximumSize(maximumEnvironments)
       .build(object : CacheLoader<UUID, EnvironmentFeatures>() {
         override fun load(id: UUID): EnvironmentFeatures {
           try {
@@ -102,10 +201,10 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
       })
 
 
-    serviceAccountCache = CacheBuilder.newBuilder().maximumSize(maximumServiceAccounts!! / 2).build()
+    serviceAccountCache = CacheBuilder.newBuilder().maximumSize(maximumServiceAccounts / 2).build()
 
     serviceAccountApiKeyCache = CacheBuilder.newBuilder()
-      .maximumSize(maximumServiceAccounts!!)
+      .maximumSize(maximumServiceAccounts)
       .removalListener(RemovalListener<String, CacheServiceAccount> { notification ->
         val value = notification.value!!
 
@@ -198,6 +297,9 @@ class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Service
     }
 
     return environmentCache.get(eId)
+  }
+
+  override fun enableCache(cacheEnable: Boolean) {
   }
 
   fun isEnvironmentPresent(eId: UUID): Boolean {

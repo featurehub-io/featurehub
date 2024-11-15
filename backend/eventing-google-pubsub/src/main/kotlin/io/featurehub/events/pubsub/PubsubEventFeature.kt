@@ -1,5 +1,7 @@
 package io.featurehub.events.pubsub
 
+import io.featurehub.events.DefaultEventingConnection
+import io.featurehub.events.EventingConnection
 import io.featurehub.events.EventingFeatureSource
 import io.featurehub.health.HealthSource
 import io.featurehub.lifecycle.LifecycleListeners
@@ -22,6 +24,7 @@ class PubsubEventFeature : Feature {
       context.register(object: AbstractBinder() {
         override fun configure() {
           bind(PubSubFactoryService::class.java).to(PubSubFactory::class.java).to(HealthSource::class.java).`in`(Singleton::class.java)
+          bind(DefaultEventingConnection::class.java).to(EventingConnection::class.java).`in`(Singleton::class.java)
         }
       })
 

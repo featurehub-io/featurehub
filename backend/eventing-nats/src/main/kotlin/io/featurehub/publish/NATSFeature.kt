@@ -1,5 +1,6 @@
 package io.featurehub.publish
 
+import io.featurehub.events.EventingConnection
 import io.featurehub.events.nats.NATSConfiguredSource
 import io.featurehub.events.nats.NATSDynamicPublisher
 import io.featurehub.health.HealthSource
@@ -21,7 +22,7 @@ class NATSFeature : Feature {
 
     context.register(object : AbstractBinder() {
       override fun configure() {
-        bind(NATSConnectionSource::class.java).to(NATSSource::class.java).`in`(Singleton::class.java)
+        bind(NATSConnectionSource::class.java).to(NATSSource::class.java).to(EventingConnection::class.java).`in`(Singleton::class.java)
         bind(NATSHealthSource::class.java).to(HealthSource::class.java).`in`(Singleton::class.java)
       }
     })

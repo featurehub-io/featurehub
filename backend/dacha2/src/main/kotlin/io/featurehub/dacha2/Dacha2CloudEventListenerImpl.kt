@@ -5,9 +5,11 @@ import io.featurehub.dacha.model.PublishEnvironment
 import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.events.CloudEventReceiverRegistry
+import io.featurehub.events.EventingConnection
 import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.lifecycle.LifecycleStarted
 import io.featurehub.utils.ExecutorSupplier
+import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
 import org.glassfish.hk2.api.IterableProvider
 import org.slf4j.Logger
@@ -23,16 +25,22 @@ class Dacha2CloudEventListenerImpl @Inject constructor(
   private val dacha2Caches: IterableProvider<Dacha2CacheListener>,
   private val dacha2Cache: Dacha2Cache,
   register: CloudEventReceiverRegistry,
-  executorSupplier: ExecutorSupplier
+  executorSupplier: ExecutorSupplier,
+  eventingConnection: EventingConnection
 ) : LifecycleStarted {
   private val log: Logger = LoggerFactory.getLogger(Dacha2CloudEventListenerImpl::class.java)
   var dacha2CacheList = mutableListOf<Dacha2CacheListener>()
-  @ConfigKey("dacha2.thread-processors")
-  var nThreads: Int? = 20
+  var nThreads = FallbackPropertyConfig.getConfig("dacha2.thread-processors", "20").toInt()
   val executorService: ExecutorService
 
   init {
     executorService = executorSupplier.executorService(nThreads!!)
+
+    eventingConnection.registerForConnectionEvents { event ->
+      dacha2Cache.enableCache(event == EventingConnection.ConnectionStatus.CONNECTED)
+    }
+
+    dacha2Cache.enableCache(eventingConnection.status() == EventingConnection.ConnectionStatus.CONNECTED)
 
     register.listen(PublishEnvironment::class.java) { env, ce ->
       log.trace("received environment {}", env)
