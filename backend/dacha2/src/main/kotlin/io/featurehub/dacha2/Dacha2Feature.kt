@@ -23,15 +23,22 @@ class Dacha2Feature : Feature {
 
     context.register(object: AbstractBinder() {
       override fun configure() {
-        if (FallbackPropertyConfig.getConfig("dacha2.cache-dump-on-disconnect") == "false") {
+        val streamingDisconnectBehaviour = FallbackPropertyConfig.getConfig("dacha2.streaming.disconnect-behaviour", "on-reconnect")
+
+        if (streamingDisconnectBehaviour == "on-reconnect") {
+
+          bind(Dacha2DumpOnReconnectCache::class.java).to(Dacha2Cache::class.java).to(
+            FeatureEnrichmentCache::class.java).`in`(Singleton::class.java)
+        } else if (streamingDisconnectBehaviour == "use-passthrough") {
+          bind(Dacha2DelegatingCache::class.java).to(Dacha2Cache::class.java).to(
+            FeatureEnrichmentCache::class.java).`in`(Singleton::class.java)
+        } else {
           // if this is turned off, we assume straight cache usage and that the environment is tolerant of NATs pod
           // movement
           bind(Dacha2CacheImpl::class.java).to(Dacha2Cache::class.java).to(
             FeatureEnrichmentCache::class.java).`in`(Singleton::class.java)
-        } else {
-          bind(Dacha2DelegatingCache::class.java).to(Dacha2Cache::class.java).to(
-            FeatureEnrichmentCache::class.java).`in`(Singleton::class.java)
         }
+
         if (FastlyPublisher.fastlyEnabled()) {
           bind(FastlyPublisher::class.java).to(Dacha2CacheListener::class.java).`in`(Singleton::class.java)
         }

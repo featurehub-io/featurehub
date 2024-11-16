@@ -141,19 +141,19 @@ class Dacha2PassthroughImpl(private val mrDacha2Api: Dacha2ServiceClient, privat
   }
 }
 
-class Dacha2CacheImpl(private val mrDacha2Api: Dacha2ServiceClient,
+open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2ServiceClient,
                       private val featureValueFactory: FeatureValuesFactory) : Dacha2BaseCache() {
   private val log: Logger = LoggerFactory.getLogger(Dacha2CacheImpl::class.java)
-  private val serviceAccountApiKeyCache: LoadingCache<String, CacheServiceAccount>
-  private val serviceAccountCache: Cache<UUID, CacheServiceAccount>
-  private val serviceAccountMissCache: Cache<String, Boolean>
-  private val environmentCache: LoadingCache<UUID, EnvironmentFeatures>
+  protected val serviceAccountApiKeyCache: LoadingCache<String, CacheServiceAccount>
+  protected val serviceAccountCache: Cache<UUID, CacheServiceAccount>
+  protected val serviceAccountMissCache: Cache<String, Boolean>
+  protected val environmentCache: LoadingCache<UUID, EnvironmentFeatures>
 
   // any environment id misses get put into here
-  private val environmentMissCache: Cache<UUID, Boolean>
+  protected val environmentMissCache: Cache<UUID, Boolean>
 
   // environment id, environment-features
-  private val permsCache: Cache<String, CacheServiceAccountPermission>
+  protected val permsCache: Cache<String, CacheServiceAccountPermission>
 
   private var maximumServiceAccountMisses = FallbackPropertyConfig.getConfig("dacha2.cache.service-account.miss-size", "10000").toLong()
 
@@ -475,5 +475,35 @@ class Dacha2CacheImpl(private val mrDacha2Api: Dacha2ServiceClient,
         }
       }
     } ?: log.debug("received update for unknown feature {}: {}", feature.environmentId, feature.feature.feature.key)
+  }
+}
+
+class Dacha2DumpOnReconnectCache @Inject constructor(mrDacha2Api: Dacha2ServiceClient,
+                                 featureValueFactory: FeatureValuesFactory) : Dacha2CacheImpl(mrDacha2Api, featureValueFactory) {
+  private var cacheEnabled = true
+  private val log: Logger = LoggerFactory.getLogger(Dacha2DumpOnReconnectCache::class.java)
+
+  init {
+    log.info("Dacha2 - using dump on streaming layer reconnect")
+  }
+
+  override fun enableCache(cacheEnable: Boolean) {
+    // if we are being enabled and we were "disabled", we dump the cache on this situation
+    if (cacheEnable && !cacheEnabled) {
+      log.info("streaming has reconnected, dumping cache as assuming potential poisoning")
+
+      serviceAccountApiKeyCache.invalidateAll()
+      serviceAccountCache.invalidateAll()
+      serviceAccountMissCache.invalidateAll()
+      environmentCache.invalidateAll()
+      environmentMissCache.invalidateAll()
+      permsCache.invalidateAll()
+    }
+
+    if (!cacheEnable) {
+      log.info("streaming layer has gone away, continuning to serve from cache and will drop cache when reconnected")
+    }
+
+    cacheEnabled = cacheEnable
   }
 }
