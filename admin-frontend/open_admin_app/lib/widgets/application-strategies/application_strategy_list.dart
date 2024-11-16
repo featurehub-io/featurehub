@@ -1,6 +1,7 @@
 import 'package:advanced_datatable/advanced_datatable_source.dart';
 import 'package:advanced_datatable/datatable.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
@@ -212,7 +213,8 @@ class ApplicationStrategyDataTableSource
           DataCell(Text(
             strategy.name,
           )),
-          DataCell(Text('features: 5, environments: 8')),
+          DataCell(Text(
+              'environments: ${strategy.usage!.length}, feature values: ${strategy.usage!.map((e) => e.featuresCount).sum}')),
           DataCell(Row(children: <Widget>[
             FHIconButton(
                 icon: const Icon(Icons.edit),
