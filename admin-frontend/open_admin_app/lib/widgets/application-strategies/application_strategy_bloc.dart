@@ -49,7 +49,8 @@ class ApplicationStrategyBloc implements Bloc, ManagementRepositoryAwareBloc {
       String? s, SortOrder sortOrder) async {
     if (appId != null) {
       return await _applicationRolloutStrategyServiceApi
-          .listApplicationStrategies(appId!);
+          .listApplicationStrategies(appId!,
+              includeUsage: true, includeWhoChanged: true);
     } else {
       return ApplicationRolloutStrategyList(max: 0, page: 0, items: []);
     }
