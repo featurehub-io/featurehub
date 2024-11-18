@@ -2,6 +2,7 @@ package io.featurehub.db.services
 
 import io.ebean.Database
 import io.ebean.annotation.Transactional
+import io.featurehub.dacha.model.PublishAction
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.ApplicationRolloutStrategyApi
@@ -153,7 +154,7 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
 
       return try {
         save(strategy)
-        cacheSource.publishApplicationRolloutStrategyChange(strategy)
+        cacheSource.publishApplicationRolloutStrategyChange(PublishAction.UPDATE, strategy)
         conversions.toApplicationRolloutStrategy(strategy, opts)!!
       } catch (e: Exception) {
         throw ApplicationRolloutStrategyApi.DuplicateNameException()
@@ -206,7 +207,7 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
       strategy.whoChanged = p
       strategy.whenArchived = LocalDateTime.now()
       save(strategy)
-      cacheSource.publishApplicationRolloutStrategyChange(strategy)
+      cacheSource.publishApplicationRolloutStrategyChange(PublishAction.DELETE, strategy)
     }
 
     return true

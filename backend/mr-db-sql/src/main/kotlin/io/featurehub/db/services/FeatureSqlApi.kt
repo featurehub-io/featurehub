@@ -526,7 +526,7 @@ class FeatureSqlApi @Inject constructor(
 
     // at this point, originalSharedStategyList contains all of the strategies but not in any particular order
 
-    // this maps all of the incoming updates to their now DbStrategyForFeatureValue variants
+    // this maps all the incoming updates to their now DbStrategyForFeatureValue variants
     val desiredList = incomingStrategyUpdates.mapNotNull { newStrategy ->
         originalSharedStategyList.find { it.rolloutStrategy.id == newStrategy.strategyId } }
         .toMutableList()
@@ -560,7 +560,7 @@ class FeatureSqlApi @Inject constructor(
 
   private fun sharedStrategyToRolloutStrategyForReporting(sharedRolloutStrategyVersion: SharedRolloutStrategyVersion,
                                                           appStrategies: Map<UUID,DbApplicationRolloutStrategy>): RolloutStrategy {
-    val appStrategy = appStrategies[sharedRolloutStrategyVersion.strategyId]!!
+    val appStrategy = appStrategies[sharedRolloutStrategyVersion.strategyId] ?: QDbApplicationRolloutStrategy().id.eq(sharedRolloutStrategyVersion.strategyId).findOne()!!
     return RolloutStrategy().id(appStrategy.shortUniqueCode).name(appStrategy.name).value(sharedRolloutStrategyVersion.value).disabled(false)
   }
 

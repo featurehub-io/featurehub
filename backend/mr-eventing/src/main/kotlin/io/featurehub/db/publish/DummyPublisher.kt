@@ -12,6 +12,9 @@ import java.util.*
 class DummyPublisher : CacheSource, CacheRefresherApi {
   override fun publishObjectsAssociatedWithCache() {}
   override fun publishFeatureChange(featureValue: DbFeatureValue) {}
+  override fun publishApplicationRolloutStrategyChange(update: PublishAction, rs: DbApplicationRolloutStrategy) {
+  }
+
   override fun deleteFeatureChange(feature: DbApplicationFeature, environmentId: UUID) {}
   override fun updateServiceAccount(serviceAccount: DbServiceAccount, publishAction: PublishAction) {}
   override fun deleteServiceAccount(id: UUID) {}
