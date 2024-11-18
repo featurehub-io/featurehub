@@ -619,10 +619,13 @@ open class DbCacheSource @Inject constructor(
    *
    * @param rs - the rollout strategy that changed
    */
-  override fun publishApplicationRolloutStrategyChange(rs: DbApplicationRolloutStrategy) {
+  override fun publishApplicationRolloutStrategyChange(action: PublishAction, rs: DbApplicationRolloutStrategy) {
     executor.submit {
       val updatedValues =
-        addSelectorToFeatureValue(QDbFeatureValue()).sharedRolloutStrategies.rolloutStrategy.eq(rs).sharedRolloutStrategies.enabled.isTrue.findList()
+        addSelectorToFeatureValue(QDbFeatureValue())
+          .sharedRolloutStrategies.rolloutStrategy.eq(rs)
+          .sharedRolloutStrategies.enabled.isTrue.findList()
+
       if (updatedValues.isNotEmpty()) {
         // they are all the same application and
         // hence the same cache

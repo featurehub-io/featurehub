@@ -174,5 +174,13 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
     then: "we only have one rollout strategy instance in the current feature"
       currentFeature.sharedRolloutStrategies.size() == 1
       currentFeature.sharedRolloutStrategies[0].rolloutStrategy.id == ss2.id
+    when: "i try and delete the same strategy against the historical version, it accepts it and makes no changes"
+      featureSqlApi.updateSelectivelyApplicationRolloutStrategies(
+      new PersonFeaturePermission(superPerson, defaultRoles),
+      new FeatureValue().rolloutStrategyInstances([incoming1.first()]),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], feature, 0),
+      currentFeature, lockChanged, app1.id)
+    then:
+      currentFeature.sharedRolloutStrategies.size() == 1
   }
 }
