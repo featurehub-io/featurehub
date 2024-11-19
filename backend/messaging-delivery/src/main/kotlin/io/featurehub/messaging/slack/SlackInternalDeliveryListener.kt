@@ -61,6 +61,16 @@ Summary of changes:
 {{~#if deletedStrategies}}
 >• Deleted strategies: {{#deletedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
 {{/deletedStrategies}}{{/if}}
+{{~#if applicationaddedStrategies}}
+>• Added application strategies: {{#applicationaddedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
+{{/applicationaddedStrategies}}{{/if}}
+{{~#if applicationupdatedStrategies}}{{#applicationupdatedStrategies}}
+{{~#if valueChanged}}
+>• *{{newStrategy.name}}* strategy value set to `{{{newStrategy.value}}}`{{/if}}
+{{/applicationupdatedStrategies}}{{/if}}
+{{~#if applicationdeletedStrategies}}
+>• Deleted application strategies: {{#applicationdeletedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
+{{/applicationdeletedStrategies}}{{/if}}
 {{~#lockUpdated}}
 {{~#wasLocked}}
 >• Feature set to `locked`{{/wasLocked}}
