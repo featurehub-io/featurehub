@@ -66,7 +66,8 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
     def lockUpdate = new SingleFeatureValueUpdate(false, false, false)
     def retiredUpdate = new SingleFeatureValueUpdate(false, false, false)
     def strategiesUpdate = new MultiFeatureValueUpdate(false, [], [], [])
-    return new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategiesUpdate, version)
+    def appStrategiesUpdate = new MultiFeatureValueUpdate(false, [], [], [])
+    return new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategiesUpdate, appStrategiesUpdate, version)
   }
 
   def "should publish FeatureMessagingUpdate cloud event"() {
