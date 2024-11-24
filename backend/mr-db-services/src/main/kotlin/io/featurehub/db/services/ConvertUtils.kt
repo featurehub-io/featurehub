@@ -559,7 +559,7 @@ open class ConvertUtils @Inject constructor(
     return when (valueType) {
       FeatureValueType.BOOLEAN -> if (value == null) false else java.lang.Boolean.parseBoolean(value)
       FeatureValueType.STRING, FeatureValueType.JSON -> value
-      FeatureValueType.NUMBER -> BigDecimal(value)
+      FeatureValueType.NUMBER -> if (value == null) null else  BigDecimal(value)
     }
   }
 

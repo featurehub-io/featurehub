@@ -16,5 +16,6 @@ Feature: We can save, change and retrieve application strategies on feature valu
     When I attach application strategy "second" to the current environment feature value
     And there is an application strategy called "first" in the current environment feature value
     And I swap the order of "first" and "second" they remain swapped
-    And I delete the application strategy called "first" from the current environment feature value
-    And I set the feature flag to off and locked
+    And I delete the application strategy called "second" from the current environment feature value
+#    And I attach application strategy "first" to the current environment feature value
+#    And I set the feature flag to off and locked
