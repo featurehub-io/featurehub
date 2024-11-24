@@ -367,7 +367,7 @@ class EnvironmentSqlApi @Inject constructor(
       ).findList()
         .map { af ->
           val fv = DbFeatureValue(whoCreated, true, af, createdEnvironment, false.toString())
-          internalFeatureApi.saveFeatureValue(fv, null)
+          internalFeatureApi.saveFeatureValue(fv)
           fv
         }
 

@@ -31,18 +31,23 @@ import java.util.function.Function
 import kotlin.math.max
 
 interface InternalFeatureApi {
-  fun saveFeatureValue(featureValue: DbFeatureValue, versionFrom: Long?)
+  fun saveFeatureValue(featureValue: DbFeatureValue, forceUpdate: Boolean = false)
   fun forceVersionBump(featureIds: List<UUID>, envId: UUID)
 }
 
 class InternalFeatureSqlApi : InternalFeatureApi {
-  override fun saveFeatureValue(featureValue: DbFeatureValue, versionFrom: Long?) {
+  override fun saveFeatureValue(featureValue: DbFeatureValue, forceUpdate: Boolean) {
     val originalVersion = featureValue.version
+
+    if (forceUpdate) {
+      featureValue.markAsDirty()
+    }
+
     featureValue.save()
 
     if (originalVersion != featureValue.version) { // have we got auditing enabled and did the feature change
       // now saved a versioned copy
-      DbFeatureValueVersion.fromDbFeatureValue(featureValue, versionFrom).save()
+      DbFeatureValueVersion.fromDbFeatureValue(featureValue, featureValue.version).save()
     }
   }
 
@@ -52,9 +57,7 @@ class InternalFeatureSqlApi : InternalFeatureApi {
       .feature.id.`in`(featureIds)
       .environment.id.eq(envId)
       .findList().forEach {
-        val version = it.version
-        it.markAsDirty()
-        saveFeatureValue(it, version)
+        saveFeatureValue(it, true)
       }
   }
 }
@@ -171,7 +174,7 @@ class FeatureSqlApi @Inject constructor(
       retired = convertUtils.safeConvert(featureValue.retired)
     }
 
-    save(dbFeatureValue, null)
+    save(dbFeatureValue)
     publish(dbFeatureValue)
     publishFirstRecord(dbFeatureValue, featureValue)
 
@@ -179,8 +182,8 @@ class FeatureSqlApi @Inject constructor(
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
-  private fun save(featureValue: DbFeatureValue, versionFrom: Long?) {
-    internalFeatureApi.saveFeatureValue(featureValue, versionFrom)
+  private fun save(featureValue: DbFeatureValue, forceUpdate: Boolean = false) {
+    internalFeatureApi.saveFeatureValue(featureValue, forceUpdate)
   }
 
   private fun publish(featureValue: DbFeatureValue) {
@@ -209,7 +212,7 @@ class FeatureSqlApi @Inject constructor(
       log.trace("historical is null, updating old way")
       updateFeatureValue(featureValue, person, existing, existing.feature.valueType, dbPerson)
 
-      save(existing, featureValue.version)
+      save(existing, true)
       publish(existing)
       publishFirstRecord(existing, featureValue)
     } else {
@@ -224,7 +227,7 @@ class FeatureSqlApi @Inject constructor(
    * This happens because we have never published this record before, so we need to gather it all up into a
    * brand new message
    */
-  internal fun publishFirstRecord(existing: DbFeatureValue, featureValue: FeatureValue) {
+  private fun publishFirstRecord(existing: DbFeatureValue, featureValue: FeatureValue) {
     val lockUpdate =
       SingleFeatureValueUpdate(hasChanged = featureValue.locked, updated = featureValue.locked, previous = false)
     val defaultValueUpdate = if (existing.feature.valueType == FeatureValueType.BOOLEAN)
@@ -300,7 +303,7 @@ class FeatureSqlApi @Inject constructor(
 
     if (lockChanged || defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged || applicationStrategyUpdates.hasChanged) {
       existing.whoUpdated = dbPerson
-      save(existing, featureValue.version)
+      save(existing, true)
       publish(existing)
       publishChangesForMessaging(
         existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates,
@@ -1174,7 +1177,7 @@ class FeatureSqlApi @Inject constructor(
     val envIdToDbFeatureValues = featureValueList
       .associateBy { it.environment.id }.toMutableMap()
 
-    val adminRoles = listOf(*RoleType.values())
+    val adminRoles = RoleType.entries
     if (!personAdmin) { // is they aren't a portfolio admin, figure out what their permissions are to each environment
       QDbAcl().environment.parentApplication.id.eq(appId).group.groupMembers.person.id.eq(person.id!!.id).findList()
         .forEach { fe: DbAcl ->
@@ -1310,7 +1313,7 @@ class FeatureSqlApi @Inject constructor(
     featureKeys: List<String>
   ): EnvironmentFeatureValues? {
     val roles: List<RoleType> = if (personIsAdmin) {
-      listOf(*RoleType.values())
+      RoleType.entries
     } else {
       convertUtils.splitEnvironmentRoles(acl.roles)
     }
@@ -1471,7 +1474,7 @@ class FeatureSqlApi @Inject constructor(
         }
         val environments = environmentsQl.findList()
         // envId, DbEnvi
-        val roles = if (personAdmin) listOf(*RoleType.values()) else listOf()
+        val roles = if (personAdmin) RoleType.entries else listOf()
         environments.forEach { e: DbEnvironment ->
           if (envs[e.id] == null) {
             environmentOrderingMap[e.id] = e
@@ -1542,7 +1545,7 @@ class FeatureSqlApi @Inject constructor(
       count++
 
       if (rationaliseStrategyIdsAndAttributeIds(fv.rolloutStrategies)) {
-        save(fv, null)
+        save(fv)
       }
 
       if (count % 50 == 0) {

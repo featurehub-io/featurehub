@@ -289,7 +289,7 @@ class ApplicationSqlApi @Inject constructor(
   @Transactional(type = TxType.REQUIRES_NEW)
   private fun saveAllFeatures(newFeatures: List<DbFeatureValue>) {
     for (newFeature in newFeatures) {
-      internalFeatureSqlApi.saveFeatureValue(newFeature, null)
+      internalFeatureSqlApi.saveFeatureValue(newFeature)
     }
   }
 
