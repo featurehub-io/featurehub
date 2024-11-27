@@ -64,6 +64,7 @@ Summary of changes:
 {{~#if applicationaddedStrategies}}
 >• Added application strategies: {{#applicationaddedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
 {{/applicationaddedStrategies}}{{/if}}
+{{~#applicationStrategiesReordered}}>• Application strategies were re-ordered from {{#previous}}*{{name}}*, {{/previous}} to {{#reordered}}*{{name}}*{{^last}}{{#unless @last}}, {{/unless}} {{/last}}{{/reordered}}{{/applicationStrategiesReordered}}
 {{~#if applicationupdatedStrategies}}{{#applicationupdatedStrategies}}
 {{~#if valueChanged}}
 >• *{{newStrategy.name}}* strategy value set to `{{{newStrategy.value}}}`{{/if}}

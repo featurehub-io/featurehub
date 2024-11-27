@@ -29,7 +29,10 @@ class StrategyCardWidget extends StatelessWidget {
     return SizedBox(
       height: 50,
       child: InkWell(
-        mouseCursor: rolloutStrategy != null ? SystemMouseCursors.grab : null,
+        mouseCursor:
+            rolloutStrategy != null || applicationRolloutStrategy != null
+                ? SystemMouseCursors.grab
+                : null,
         child: Card(
           elevation: 0.0, // if this is not set, then colors are screwed up
           color: rolloutStrategy != null
