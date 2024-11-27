@@ -234,11 +234,12 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                       if (strategyWidgets.isEmpty)
                                         const Text("No strategies"),
                                       buildReorderableListView(
-                                          strategyWidgets,
-                                          featureValueLatest,
-                                          canChangeValue,
-                                          strategiesLatest,
-                                          widget.bloc),
+                                        strategyWidgets,
+                                        featureValueLatest,
+                                        canChangeValue,
+                                        widget.bloc,
+                                        strategiesLatest: strategiesLatest,
+                                      ),
                                       const SizedBox(height: 24.0),
                                       Row(
                                         children: [
@@ -315,17 +316,23 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                   ],
                                                 );
                                               }).toList();
-                                              return Column(
-                                                  children: strategyWidgets);
+                                              return buildReorderableListView(
+                                                  strategyWidgets,
+                                                  featureValueLatest,
+                                                  canChangeValue,
+                                                  widget.bloc,
+                                                  appStrategiesLatest:
+                                                      snapshot);
                                             }
                                             return const Text(
                                                 "No application strategies");
                                           }),
-                                      TextButton(
-                                          onPressed: () => widget.bloc
-                                              .getApplicationStrategies(),
-                                          child: const Text(
-                                              "Show available strategies")),
+                                      if (editable)
+                                        TextButton(
+                                            onPressed: () => widget.bloc
+                                                .getApplicationStrategies(),
+                                            child: const Text(
+                                                "Show available strategies")),
                                       StreamBuilder<
                                               List<ApplicationRolloutStrategy>>(
                                           stream: widget.bloc
@@ -647,8 +654,9 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
       List<Widget> widgets,
       AsyncSnapshot<FeatureValue> featureValueLatest,
       bool canChangeValue,
-      AsyncSnapshot<List<RolloutStrategy>> strategiesLatest,
-      EditingFeatureValueBloc bloc) {
+      EditingFeatureValueBloc bloc,
+      {AsyncSnapshot<List<RolloutStrategy>>? strategiesLatest,
+      AsyncSnapshot<List<RolloutStrategyInstance>>? appStrategiesLatest}) {
     return ReorderableListView(
       shrinkWrap: true,
       buildDefaultDragHandles: false,
@@ -664,13 +672,23 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
         if (newIndex > oldIndex) {
           newIndex -= 1;
         }
-        final items = strategiesLatest.data![oldIndex];
+        if (strategiesLatest != null) {
+          final items = strategiesLatest.data![oldIndex];
 
-        strategiesLatest.data!
-          ..removeWhere((element) => element.id == items.id)
-          ..insert(newIndex, items);
+          strategiesLatest.data!
+            ..removeWhere((element) => element.id == items.id)
+            ..insert(newIndex, items);
 
-        widget.bloc.updateStrategyValue();
+          widget.bloc.updateStrategyValue();
+        } else if (appStrategiesLatest != null) {
+          final items = appStrategiesLatest.data![oldIndex];
+
+          appStrategiesLatest.data!
+            ..removeWhere((element) => element.strategyId == items.strategyId)
+            ..insert(newIndex, items);
+
+          widget.bloc.updateApplicationStrategyValue();
+        }
       },
     );
   }
