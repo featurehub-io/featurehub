@@ -3942,6 +3942,9 @@ components:
         - FEATURE_EDIT
         - FEATURE_CREATE
         - FEATURE_EDIT_AND_DELETE
+        - APP_STRATEGY_EDIT
+        - APP_STRATEGY_CREATE
+        - APP_STRATEGY_EDIT_AND_DELETE
     EnvironmentGroupRole:
       required:
         - environmentId
