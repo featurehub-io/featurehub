@@ -98,24 +98,18 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                     const SizedBox(height: 16.0),
                     SelectionArea(
                       child: AdvancedPaginatedDataTable(
-                        rowsPerPage: rowsPerPage,
                         showCheckboxColumn: false,
-                        showFirstLastButtons: true,
                         addEmptyRows: false,
-                        availableRowsPerPage: const [10, 20, 50, 100],
                         sortAscending: sortAsc,
                         sortColumnIndex: sortIndex,
-                        showHorizontalScrollbarAlways: true,
-                        onRowsPerPageChanged: (newRowsPerPage) {
-                          if (newRowsPerPage != null) {
-                            setState(() {
-                              rowsPerPage = newRowsPerPage;
-                            });
-                          }
+                        customTableFooter: (source, offset) {
+                          return const Text("");
                         },
+                        showHorizontalScrollbarAlways: false,
                         columns: [
                           DataColumn(
                               label: const Text('Name'), onSort: setSort),
+                          const DataColumn(label: Text("Date added")),
                           const DataColumn(
                             label: Text('Used in'),
                           ),
@@ -212,6 +206,9 @@ class ApplicationStrategyDataTableSource
         cells: [
           DataCell(Text(
             strategy.name,
+          )),
+          DataCell(Text(
+            "",
           )),
           DataCell(Text(
               'environments: ${strategy.usage!.length}, feature values: ${strategy.usage!.map((e) => e.featuresCount).sum}')),
