@@ -417,11 +417,11 @@ open class ConvertUtils @Inject constructor(
 
           if (agr != null) {
             if (agr.roles.isEmpty()) {
-              agr.roles = mutableListOf(ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE)
+              agr.roles = mutableListOf(ApplicationRoleType.FEATURE_EDIT_AND_DELETE, ApplicationRoleType.FEATURE_CREATE)
             }
           } else {
             group.addApplicationRolesItem(ApplicationGroupRole().groupId(group.id).applicationId(appId).roles(
-              mutableListOf(ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE)
+              mutableListOf(ApplicationRoleType.FEATURE_EDIT_AND_DELETE, ApplicationRoleType.FEATURE_CREATE)
             ))
           }
 

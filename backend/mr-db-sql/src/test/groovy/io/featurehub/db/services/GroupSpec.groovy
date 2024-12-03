@@ -481,7 +481,7 @@ class GroupSpec extends BaseSpec {
         new CreateGroup().name("app acl group1")
           .applicationRoles([
             new ApplicationGroupRole()
-              .roles([ApplicationRoleType.EDIT])
+              .roles([ApplicationRoleType.FEATURE_EDIT])
               .applicationId(commonApplication1.id)
           ]), superPerson)
     and: "i find the group including the acls"
@@ -491,7 +491,7 @@ class GroupSpec extends BaseSpec {
       updating.environmentRoles = [
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE]).environmentId(env1App1.id).groupId(g1.id)
       ]
-      updating.applicationRoles.add(new ApplicationGroupRole().roles([ApplicationRoleType.EDIT]).applicationId(commonApplication2.id))
+      updating.applicationRoles.add(new ApplicationGroupRole().roles([ApplicationRoleType.FEATURE_EDIT]).applicationId(commonApplication2.id))
       def up1 = groupSqlApi.updateGroup(g1.id, updating, null, true, true, true, Opts.opts(FillOpts.Acls))
     when: "i find the group"
       def found1 = groupSqlApi.getGroup(g1.id, Opts.opts(FillOpts.Acls), superPerson)

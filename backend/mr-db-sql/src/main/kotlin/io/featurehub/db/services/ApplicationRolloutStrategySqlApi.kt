@@ -14,6 +14,7 @@ import jakarta.inject.Inject
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.*
 
 class ApplicationRolloutStrategySqlApi @Inject constructor(
@@ -180,7 +181,13 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
     val strategies = qRS.findList()
 
     return ApplicationRolloutStrategyList().max(strategies.size).page(0)
-      .items(strategies.mapNotNull { conversions.toApplicationRolloutStrategy(it, opts) })
+      .items(strategies.mapNotNull {
+        ListApplicationRolloutStrategyItem()
+          .strategy(conversions.toApplicationRolloutStrategy(it, opts)!!)
+          .whenUpdated(it.whenUpdated.atOffset(ZoneOffset.UTC))
+          .whenCreated(it.whenCreated.atOffset(ZoneOffset.UTC))
+          .updatedBy(ListApplicationRolloutStrategyItemUser().name(it.whoChanged.name).email(it.whoChanged.email))
+      })
   }
 
   @Transactional(readOnly = true)

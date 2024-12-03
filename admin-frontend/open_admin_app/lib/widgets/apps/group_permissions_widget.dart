@@ -173,9 +173,9 @@ class _AdminFeatureRole {
 
 final _adminFeatureRoles = [
   _AdminFeatureRole('none', 'No feature permissions', []),
-  _AdminFeatureRole('creator', 'Create features', [ApplicationRoleType.CREATE]),
+  _AdminFeatureRole('creator', 'Create features', [ApplicationRoleType.FEATURE_CREATE]),
   _AdminFeatureRole('editor', 'Create / Edit / Delete features',
-      [ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE])
+      [ApplicationRoleType.FEATURE_CREATE, ApplicationRoleType.EDIT_AND_DELETE])
 ];
 
 final _noFeaturePermissionRole = _adminFeatureRoles[0];
@@ -447,7 +447,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
           groupId: group.id,
           roles: [
             ApplicationRoleType.EDIT_AND_DELETE,
-            ApplicationRoleType.CREATE
+            ApplicationRoleType.FEATURE_CREATE
           ]);
       group.applicationRoles.add(agr);
     }
