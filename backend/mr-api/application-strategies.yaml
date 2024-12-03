@@ -271,6 +271,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RolloutStrategyAttribute"
+        whenCreated:
+          type: string
+          format: date-time
+          nullable: true
+        whenUpdated:
+          type: string
+          format: date-time
+          nullable: true
+        lastUpdatedByEmail:
+          type: string
+        lastUpdatedByName:
+          type: string
     ApplicationRolloutStrategy:
       allOf:
         - $ref: "#/components/schemas/BaseStrategy"
