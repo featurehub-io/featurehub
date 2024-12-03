@@ -229,7 +229,7 @@ components:
           description: "the application rollout strategies on this page"
           type: array
           items:
-            $ref: "#/components/schemas/ApplicationRolloutStrategy"
+            $ref: "#/components/schemas/ListApplicationRolloutStrategyItem"
     CreateApplicationRolloutStrategy:
       allOf:
         - $ref: "#/components/schemas/BaseUIStrategy"
@@ -299,6 +299,28 @@ components:
               nullable: true
               items:
                 $ref: "#/components/schemas/ApplicationRolloutStrategyEnvironment"
+    ListApplicationRolloutStrategyItemUser:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+          description: "They may not have set their name yet"
+          nullable: true
+    ListApplicationRolloutStrategyItem:
+      type: object
+      properties:
+        strategy:
+          $ref: "#/components/schemas/ApplicationRolloutStrategy"
+        whenUpdated:
+          type: string
+          format: date-time
+        whenCreated:
+          type: string
+          format: date-time
+        updatedBy:
+          $ref: "#/components/schemas/ListApplicationRolloutStrategyItemUser"
     ApplicationRolloutStrategyEnvironment:
       type: object
       properties:

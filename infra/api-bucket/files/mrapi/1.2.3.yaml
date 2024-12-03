@@ -5189,6 +5189,9 @@ components:
       - FEATURE_EDIT
       - FEATURE_CREATE
       - FEATURE_EDIT_AND_DELETE
+      - APP_STRATEGY_EDIT
+      - APP_STRATEGY_CREATE
+      - APP_STRATEGY_EDIT_AND_DELETE
     EnvironmentGroupRole:
       required:
       - environmentId
@@ -6099,7 +6102,7 @@ components:
           type: array
           description: the application rollout strategies on this page
           items:
-            $ref: '#/components/schemas/ApplicationRolloutStrategy'
+            $ref: '#/components/schemas/ListApplicationRolloutStrategyItem'
     CreateApplicationRolloutStrategy:
       allOf:
       - $ref: '#/components/schemas/BaseUIStrategy'
@@ -6143,6 +6146,18 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/RolloutStrategyAttribute'
+        whenCreated:
+          type: string
+          format: date-time
+          nullable: true
+        whenUpdated:
+          type: string
+          format: date-time
+          nullable: true
+        lastUpdatedByEmail:
+          type: string
+        lastUpdatedByName:
+          type: string
     ApplicationRolloutStrategy:
       allOf:
       - $ref: '#/components/schemas/BaseStrategy'
@@ -6159,6 +6174,28 @@ components:
             nullable: true
             items:
               $ref: '#/components/schemas/ApplicationRolloutStrategyEnvironment'
+    ListApplicationRolloutStrategyItemUser:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+          description: They may not have set their name yet
+          nullable: true
+    ListApplicationRolloutStrategyItem:
+      type: object
+      properties:
+        strategy:
+          $ref: '#/components/schemas/ApplicationRolloutStrategy'
+        whenUpdated:
+          type: string
+          format: date-time
+        whenCreated:
+          type: string
+          format: date-time
+        updatedBy:
+          $ref: '#/components/schemas/ListApplicationRolloutStrategyItemUser'
     ApplicationRolloutStrategyEnvironment:
       type: object
       properties:

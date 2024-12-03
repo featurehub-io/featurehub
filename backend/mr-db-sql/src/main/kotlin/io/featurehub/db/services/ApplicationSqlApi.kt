@@ -81,8 +81,8 @@ class ApplicationSqlApi @Inject constructor(
           .roles(
             GroupSqlApi.appRolesToString(
               listOf(
-                ApplicationRoleType.CREATE,
-                ApplicationRoleType.EDIT_AND_DELETE
+                ApplicationRoleType.FEATURE_CREATE,
+                ApplicationRoleType.FEATURE_EDIT_AND_DELETE
               )
             )
           )
@@ -420,10 +420,10 @@ class ApplicationSqlApi @Inject constructor(
     return if (af.isValid) convertUtils.toApplicationFeature(af.appFeature, opts)!! else null
   }
 
-  private val editorRoles = setOf(ApplicationRoleType.EDIT, ApplicationRoleType.EDIT_AND_DELETE)
+  private val editorRoles = setOf(ApplicationRoleType.FEATURE_EDIT, ApplicationRoleType.FEATURE_EDIT_AND_DELETE)
   private val creatorRoles = setOf(
-    ApplicationRoleType.EDIT, ApplicationRoleType.CREATE,
-    ApplicationRoleType.EDIT_AND_DELETE
+    ApplicationRoleType.FEATURE_EDIT, ApplicationRoleType.FEATURE_CREATE,
+    ApplicationRoleType.FEATURE_EDIT_AND_DELETE
   )
 
   // finds all the groups attached to this application  that have application roles

@@ -48,7 +48,7 @@ class EnvironmentSqlApi @Inject constructor(
       // is this person a portfolio admin? if so, they have all access to all environments in the portfolio
       if (convertUtils.isPersonEnvironmentAdmin(current, eid)) {
         return EnvironmentRoles.Builder()
-          .applicationRoles(mutableSetOf(ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE))
+          .applicationRoles(mutableSetOf(ApplicationRoleType.FEATURE_CREATE, ApplicationRoleType.FEATURE_EDIT_AND_DELETE))
           .environmentRoles(HashSet(listOf(*RoleType.values()))).build()
       }
 

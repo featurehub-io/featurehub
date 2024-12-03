@@ -174,12 +174,12 @@ class ApplicationSpec extends BaseSpec {
       def group = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("loicoudot"), superPerson)
     when:
       def group1 = groupSqlApi.updateGroup(group.id,
-        group.applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.EDIT])]),
+        group.applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])]),
         app1.id,
         false, true, false, Opts.opts(FillOpts.Acls))
     and:
       def group2 = groupSqlApi.getGroup(group1.id, Opts.empty(), superPerson)
-      group2.applicationRoles.add(new ApplicationGroupRole().applicationId(app2.id).roles([ApplicationRoleType.EDIT]))
+      group2.applicationRoles.add(new ApplicationGroupRole().applicationId(app2.id).roles([ApplicationRoleType.FEATURE_EDIT]))
       def group3 = groupSqlApi.updateGroup(group.id, group2, app2.id, false, true, false,
         Opts.opts(FillOpts.Acls))
     and: "i delete the role but just from application 2"
@@ -188,8 +188,8 @@ class ApplicationSpec extends BaseSpec {
         Opts.opts(FillOpts.Acls))
     then:
       group3.applicationRoles.size() == 2
-      group3.applicationRoles.find({it.applicationId == app1.id}).roles.contains(ApplicationRoleType.EDIT)
-      group3.applicationRoles.find({it.applicationId == app2.id}).roles.contains(ApplicationRoleType.EDIT)
+      group3.applicationRoles.find({it.applicationId == app1.id}).roles.contains(ApplicationRoleType.FEATURE_EDIT)
+      group3.applicationRoles.find({it.applicationId == app2.id}).roles.contains(ApplicationRoleType.FEATURE_EDIT)
       group5.applicationRoles.size() == 1
       group5.applicationRoles.find({it.applicationId == app2.id}) == null
   }
@@ -201,8 +201,8 @@ class ApplicationSpec extends BaseSpec {
     when: "i convert the portfolio group to a model"
       def group = groupSqlApi.getGroup(adminGroup.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app1.id), superPerson)
     then:
-      group.applicationRoles.find({ it.applicationId == app1.id }).roles.containsAll([ApplicationRoleType.EDIT_AND_DELETE,
-                                                                                      ApplicationRoleType.CREATE])
+      group.applicationRoles.find({ it.applicationId == app1.id }).roles.containsAll([ApplicationRoleType.FEATURE_EDIT_AND_DELETE,
+                                                                                      ApplicationRoleType.FEATURE_CREATE])
   }
 
   def "application groups can store multiple Acls"() {
@@ -219,7 +219,7 @@ class ApplicationSpec extends BaseSpec {
       def group = groupSqlApi.updateGroup(createdGroup.id, createdGroup, null, true, false, false, Opts.opts(FillOpts.Acls))
     when: "i add create permissions for the app to the group"
       def groupWithCreatePerms = groupSqlApi.updateGroup(group.id,
-        group.applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.CREATE])]),
+        group.applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_CREATE])]),
         app1.id,
         false, true, false, Opts.opts(FillOpts.Acls))
       def creators1 = appApi.findFeatureCreators(app1.id)
@@ -228,7 +228,7 @@ class ApplicationSpec extends BaseSpec {
       def personIsEditor1 = appApi.personIsFeatureEditor(app1.id, deepme.id)
     and: "i add edit permissions"
       def group2 = groupSqlApi.getGroup(group.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app1.id), superPerson)
-      group2.applicationRoles[0].roles.add(ApplicationRoleType.EDIT_AND_DELETE)
+      group2.applicationRoles[0].roles.add(ApplicationRoleType.FEATURE_EDIT_AND_DELETE)
       def groupWithEditAndCreatePerms = groupSqlApi.updateGroup(group.id, group2, app1.id, false,
         true, false, Opts.opts(FillOpts.Acls))
       def creators2 = appApi.findFeatureCreators(app1.id)
@@ -237,16 +237,16 @@ class ApplicationSpec extends BaseSpec {
       def personIsEditor2 = appApi.personIsFeatureEditor(app1.id, deepme.id)
     and: "i remove the create role"
       def group3 = groupSqlApi.getGroup(group.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app1.id), superPerson)
-      group3.applicationRoles[0].roles.removeIf { it == ApplicationRoleType.EDIT_AND_DELETE }
+      group3.applicationRoles[0].roles.removeIf { it == ApplicationRoleType.FEATURE_EDIT_AND_DELETE }
       def groupWithEditPerms = groupSqlApi.updateGroup(group.id, group3, app1.id, false, true, false, Opts.opts(FillOpts.Acls))
       def creators3 = appApi.findFeatureCreators(app1.id)
       def editors3 = appApi.findFeatureEditors(app1.id)
       def personIsCreator3 = appApi.personIsFeatureCreator(app1.id, deepme.id)
       def personIsEditor3 = appApi.personIsFeatureEditor(app1.id, deepme.id)
     then:
-      groupWithCreatePerms.applicationRoles.find({it.applicationId == app1.id}).roles.containsAll([ApplicationRoleType.CREATE])
-      groupWithEditAndCreatePerms.applicationRoles.find({it.applicationId == app1.id}).roles.containsAll([ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE])
-      !groupWithEditPerms.applicationRoles.find({it.applicationId == app1.id}).roles.containsAll([ApplicationRoleType.EDIT_AND_DELETE])
+      groupWithCreatePerms.applicationRoles.find({it.applicationId == app1.id}).roles.containsAll([ApplicationRoleType.FEATURE_CREATE])
+      groupWithEditAndCreatePerms.applicationRoles.find({it.applicationId == app1.id}).roles.containsAll([ApplicationRoleType.FEATURE_CREATE, ApplicationRoleType.FEATURE_EDIT_AND_DELETE])
+      !groupWithEditPerms.applicationRoles.find({it.applicationId == app1.id}).roles.containsAll([ApplicationRoleType.FEATURE_EDIT_AND_DELETE])
       // admin group always has the superadmin in it with a creator + edit role
       creators1.size() == 2
       creators1.contains(deepme.id)

@@ -40,7 +40,7 @@ class PersonState {
     _personSource.add(p);
   }
 
-  final _featureCreateRoles = [ApplicationRoleType.EDIT, ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE];
+  final _featureCreateRoles = [ApplicationRoleType.EDIT, ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.FEATURE_CREATE];
   final _featureEditDeleteRoles = [ApplicationRoleType.EDIT, ApplicationRoleType.EDIT_AND_DELETE];
 
   bool personCanEditFeaturesForApplication(String? appId) {
