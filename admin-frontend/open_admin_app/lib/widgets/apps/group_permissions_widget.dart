@@ -173,9 +173,12 @@ class _AdminFeatureRole {
 
 final _adminFeatureRoles = [
   _AdminFeatureRole('none', 'No feature permissions', []),
-  _AdminFeatureRole('creator', 'Create features', [ApplicationRoleType.FEATURE_CREATE]),
-  _AdminFeatureRole('editor', 'Create / Edit / Delete features',
-      [ApplicationRoleType.FEATURE_CREATE, ApplicationRoleType.EDIT_AND_DELETE])
+  _AdminFeatureRole(
+      'creator', 'Create features', [ApplicationRoleType.FEATURE_CREATE]),
+  _AdminFeatureRole('editor', 'Create / Edit / Delete features', [
+    ApplicationRoleType.FEATURE_CREATE,
+    ApplicationRoleType.FEATURE_EDIT_AND_DELETE
+  ])
 ];
 
 final _noFeaturePermissionRole = _adminFeatureRoles[0];
@@ -187,7 +190,7 @@ _AdminFeatureRole _discoverAdminRoleType(
           .firstWhereOrNull((element) => element.applicationId == applicationId)
           ?.roles ??
       [];
-  if (roles.length == 1 && roles.contains(ApplicationRoleType.EDIT)) {
+  if (roles.length == 1 && roles.contains(ApplicationRoleType.FEATURE_EDIT)) {
     return _editorFeaturePermissionRole;
   }
   return _adminFeatureRoles
@@ -433,8 +436,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
         (item) => item.applicationId == aid && item.groupId == group.id);
 
     if (agr == null ||
-        !(agr.roles.contains(ApplicationRoleType.EDIT) ||
-            agr.roles.contains(ApplicationRoleType.EDIT_AND_DELETE))) {
+        !(agr.roles.contains(ApplicationRoleType.FEATURE_EDIT) ||
+            agr.roles.contains(ApplicationRoleType.FEATURE_EDIT_AND_DELETE))) {
       return false;
     }
     return true;
@@ -446,7 +449,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
           applicationId: aid,
           groupId: group.id,
           roles: [
-            ApplicationRoleType.EDIT_AND_DELETE,
+            ApplicationRoleType.FEATURE_EDIT_AND_DELETE,
             ApplicationRoleType.FEATURE_CREATE
           ]);
       group.applicationRoles.add(agr);

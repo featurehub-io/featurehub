@@ -3,6 +3,7 @@ import 'package:advanced_datatable/datatable.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
@@ -109,7 +110,9 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                         columns: [
                           DataColumn(
                               label: const Text('Name'), onSort: setSort),
-                          const DataColumn(label: Text("Date added")),
+                          const DataColumn(label: Text("Date created (UTC)")),
+                          const DataColumn(label: Text("Date updated (UTC)")),
+                          const DataColumn(label: Text("Created by")),
                           const DataColumn(
                             label: Text('Used in'),
                           ),
@@ -160,7 +163,7 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
 }
 
 class ApplicationStrategyDataTableSource
-    extends AdvancedDataTableSource<ApplicationRolloutStrategy> {
+    extends AdvancedDataTableSource<ListApplicationRolloutStrategyItem> {
   String lastSearchTerm = '';
   final ApplicationStrategyBloc bloc;
   final BuildContext context;
@@ -183,14 +186,14 @@ class ApplicationStrategyDataTableSource
   }
 
   @override
-  Future<RemoteDataSourceDetails<ApplicationRolloutStrategy>> getNextPage(
-      NextPageRequest pageRequest) async {
+  Future<RemoteDataSourceDetails<ListApplicationRolloutStrategyItem>>
+      getNextPage(NextPageRequest pageRequest) async {
     final data = await bloc.getStrategiesData(
         lastSearchTerm.isNotEmpty ? lastSearchTerm : null,
         (pageRequest.sortAscending ?? true) == true
             ? SortOrder.ASC
             : SortOrder.DESC);
-    List<ApplicationRolloutStrategy> rs = data.items;
+    List<ListApplicationRolloutStrategyItem> rs = data.items;
     return RemoteDataSourceDetails(
       data.max,
       rs,
@@ -205,13 +208,19 @@ class ApplicationStrategyDataTableSource
         index: index,
         cells: [
           DataCell(Text(
-            strategy.name,
+            strategy.strategy.name,
           )),
           DataCell(Text(
-            "",
+            DateFormat('yyyy-MM-dd HH:mm:ss').format(strategy.whenCreated),
           )),
           DataCell(Text(
-              'environments: ${strategy.usage!.length}, feature values: ${strategy.usage!.map((e) => e.featuresCount).sum}')),
+            DateFormat('yyyy-MM-dd HH:mm:ss').format(strategy.whenUpdated),
+          )),
+          DataCell(
+            Text(strategy.updatedBy.email),
+          ),
+          DataCell(Text(
+              'environments: ${strategy.strategy.usage!.length}, feature values: ${strategy.strategy.usage!.map((e) => e.featuresCount).sum}')),
           DataCell(Row(children: <Widget>[
             FHIconButton(
                 icon: const Icon(Icons.edit),
@@ -219,7 +228,7 @@ class ApplicationStrategyDataTableSource
                       ManagementRepositoryClientBloc.router.navigateTo(
                           context, '/edit-application-strategy',
                           params: {
-                            'id': [strategy.id]
+                            'id': [strategy.strategy.id]
                           })
                     }),
             // const SizedBox(
@@ -229,16 +238,16 @@ class ApplicationStrategyDataTableSource
               icon: const Icon(Icons.delete),
               onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
                 return FHDeleteThingWarningWidget(
-                  thing: "Application strategy '${strategy.name}'",
+                  thing: "Application strategy '${strategy.strategy.name}'",
                   content:
                       'This application strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!',
                   bloc: bloc.mrClient,
                   deleteSelected: () async {
                     try {
-                      await bloc.deleteStrategy(strategy.id);
+                      await bloc.deleteStrategy(strategy.strategy.id);
                       setNextView(); // triggers reload from server with latest settings and rebuilds state
                       bloc.mrClient.addSnackbar(Text(
-                          "Application strategy '${strategy.name}' deleted!"));
+                          "Application strategy '${strategy.strategy.name}' deleted!"));
                       return true;
                     } catch (e, s) {
                       await bloc.mrClient.dialogError(e, s);
@@ -253,7 +262,7 @@ class ApplicationStrategyDataTableSource
         onSelectChanged: (newValue) {
           ManagementRepositoryClientBloc.router
               .navigateTo(context, '/edit-application-strategy', params: {
-            'id': [strategy.id]
+            'id': [strategy.strategy.id]
           });
         });
   }

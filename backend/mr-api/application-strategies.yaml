@@ -279,10 +279,6 @@ components:
           type: string
           format: date-time
           nullable: true
-        lastUpdatedByEmail:
-          type: string
-        lastUpdatedByName:
-          type: string
     ApplicationRolloutStrategy:
       allOf:
         - $ref: "#/components/schemas/BaseStrategy"
