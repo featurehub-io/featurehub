@@ -5,7 +5,7 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 
 class ApplicationStrategiesDropDown extends StatefulWidget {
-  final List<ApplicationRolloutStrategy> strategies;
+  final List<ListApplicationRolloutStrategyItem> strategies;
   final EditingFeatureValueBloc bloc;
 
   const ApplicationStrategiesDropDown(
@@ -42,11 +42,11 @@ class _ApplicationStrategiesDropDownState
               isDense: true,
               items: widget.strategies.isNotEmpty
                   ? widget.strategies
-                      .map((ApplicationRolloutStrategy strategy) {
+                      .map((ListApplicationRolloutStrategyItem strategy) {
                       return DropdownMenuItem<String>(
-                          value: strategy.id,
+                          value: strategy.strategy.id,
                           child: Text(
-                            strategy.name,
+                            strategy.strategy.name,
                             style: Theme.of(context).textTheme.bodyMedium,
                             overflow: TextOverflow.ellipsis,
                           ));

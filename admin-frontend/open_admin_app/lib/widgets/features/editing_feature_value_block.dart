@@ -35,10 +35,11 @@ class EditingFeatureValueBloc implements Bloc {
       _applicationStrategySource
           .stream; // should it be ApplicationRolloutStrategy type?
 
-  late final BehaviorSubject<List<ApplicationRolloutStrategy>>
+  late final BehaviorSubject<List<ListApplicationRolloutStrategyItem>>
       _availableApplicationStrategiesSource;
-  Stream<List<ApplicationRolloutStrategy>> get availableApplicationStrategies =>
-      _availableApplicationStrategiesSource.stream;
+  Stream<List<ListApplicationRolloutStrategyItem>>
+      get availableApplicationStrategies =>
+          _availableApplicationStrategiesSource.stream;
 
   final _isFeatureValueUpdatedSource = BehaviorSubject<bool>.seeded(false);
   BehaviorSubject<bool> get isFeatureValueUpdatedStream =>
@@ -72,7 +73,7 @@ class EditingFeatureValueBloc implements Bloc {
         BehaviorSubject<List<RolloutStrategyInstance>>.seeded(
             [...currentFeatureValue.rolloutStrategyInstances ?? []]);
     _availableApplicationStrategiesSource =
-        BehaviorSubject<List<ApplicationRolloutStrategy>>.seeded([]);
+        BehaviorSubject<List<ListApplicationRolloutStrategyItem>>.seeded([]);
     environmentId = environmentFeatureValue.environmentId;
     addFeatureValueToStream(featureValue);
     _featureValueStreamSubscription = _currentFv.listen(featureValueHasChanged);
@@ -222,15 +223,15 @@ class EditingFeatureValueBloc implements Bloc {
     if (_selectedStrategyIdToAdd != null) {
       final strategyList = _availableApplicationStrategiesSource.value;
 
-      ApplicationRolloutStrategy ars = strategyList
-          .firstWhere((strategy) => strategy.id == _selectedStrategyIdToAdd!);
+      ListApplicationRolloutStrategyItem ars = strategyList.firstWhere(
+          (strategy) => strategy.strategy.id == _selectedStrategyIdToAdd!);
       var currentApplicationStrategies = _applicationStrategySource.value;
       if (!currentApplicationStrategies.any(
           (strategy) => strategy.strategyId == _selectedStrategyIdToAdd!)) {
         var rolloutStrategy = RolloutStrategyInstance(
             value: feature.valueType == FeatureValueType.BOOLEAN ? false : null,
-            name: ars.name,
-            strategyId: ars.id);
+            name: ars.strategy.name,
+            strategyId: ars.strategy.id);
         currentApplicationStrategies.add(rolloutStrategy);
         _applicationStrategySource.add(currentApplicationStrategies);
         updateApplicationStrategyValue();

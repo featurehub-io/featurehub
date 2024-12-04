@@ -334,7 +334,8 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                             child: const Text(
                                                 "Show available strategies")),
                                       StreamBuilder<
-                                              List<ApplicationRolloutStrategy>>(
+                                              List<
+                                                  ListApplicationRolloutStrategyItem>>(
                                           stream: widget.bloc
                                               .availableApplicationStrategies,
                                           builder: (context, snapshot) {
