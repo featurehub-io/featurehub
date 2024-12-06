@@ -37,6 +37,24 @@ paths:
           schema:
             type: boolean
           required: false
+        - name: filter
+          description: "A filter to apply to the application strategies - partial match of name"
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: max
+          description: "The maximum number of application strategies to get for this page"
+          in: query
+          schema:
+            type: integer
+          required: false
+        - name: page
+          description: "The page number of the results. 0 indexed."
+          in: query
+          schema:
+            type: integer
+          required: false
       responses:
         200:
           description: "Get all strategies for this application, regardless if they are in use"
