@@ -1,6 +1,5 @@
 package io.featurehub.db.services
 
-import io.ebean.Database
 import io.ebean.annotation.Transactional
 import io.featurehub.dacha.model.PublishAction
 import io.featurehub.db.api.FillOpts
@@ -167,8 +166,12 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
   }
 
   @Transactional(readOnly = true)
-  override fun listStrategies(appId: UUID, includeArchived: Boolean, opts: Opts): ApplicationRolloutStrategyList {
-    var qRS = QDbApplicationRolloutStrategy().application.id.eq(appId)
+  override fun listStrategies(appId: UUID, page: Int, max: Int, filter: String?, includeArchived: Boolean, opts: Opts): ApplicationRolloutStrategyList {
+    var qRS = QDbApplicationRolloutStrategy().application.id.eq(appId).orderBy().name.asc()
+
+    filter?.let {
+      qRS = qRS.name.ilike("%${it.lowercase()}%")
+    }
 
     if (!includeArchived) {
       qRS = qRS.whenArchived.isNull()
@@ -178,9 +181,10 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
       qRS.whoChanged.fetch()
     }
 
-    val strategies = qRS.findList()
+    val strategies = qRS.setFirstRow(page * max).setMaxRows(max).findList()
+    val count = qRS.findCount()
 
-    return ApplicationRolloutStrategyList().max(strategies.size).page(0)
+    return ApplicationRolloutStrategyList().max(count).page(page)
       .items(strategies.mapNotNull {
         ListApplicationRolloutStrategyItem()
           .strategy(conversions.toApplicationRolloutStrategy(it, opts)!!)

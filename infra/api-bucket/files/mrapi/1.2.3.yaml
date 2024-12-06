@@ -3546,6 +3546,32 @@ paths:
         explode: true
         schema:
           type: boolean
+      - name: filter
+        in: query
+        description: A filter to apply to the application strategies - partial match
+          of name or description
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: max
+        in: query
+        description: The maximum number of application strategies to get for this
+          page
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: page
+        in: query
+        description: The page number of the results. 0 indexed.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
       responses:
         "200":
           description: "Get all strategies for this application, regardless if they\
@@ -6154,10 +6180,6 @@ components:
           type: string
           format: date-time
           nullable: true
-        lastUpdatedByEmail:
-          type: string
-        lastUpdatedByName:
-          type: string
     ApplicationRolloutStrategy:
       allOf:
       - $ref: '#/components/schemas/BaseStrategy'
