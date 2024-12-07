@@ -3,6 +3,7 @@ package io.featurehub.db.services
 import io.ebean.DB
 import io.ebean.Database
 import io.featurehub.db.api.Opts
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbPerson
 import io.featurehub.encryption.SymmetricEncrypter
 import io.featurehub.encryption.SymmetricEncrypterImpl
@@ -27,6 +28,9 @@ class BaseSpec extends Specification {
   @Shared Group adminGroup
   @Shared WebhookEncryptionService webhookEncryptionService
   @Shared SymmetricEncrypter symmetricEncrypter
+  @Shared InternalFeatureApi internalFeatureApi
+  @Shared FeatureMessagingPublisher featureMessagingPublisher
+  @Shared CacheSource cacheSource
 
   def baseSetupSpec() {
     System.setProperty("ebean.ddl.generate", "true")
@@ -35,7 +39,10 @@ class BaseSpec extends Specification {
     symmetricEncrypter = new SymmetricEncrypterImpl("password")
     webhookEncryptionService = new WebhookEncryptionServiceImpl(symmetricEncrypter)
     convertUtils = new ConvertUtils(webhookEncryptionService)
-    archiveStrategy = new DbArchiveStrategy(database, Mock(CacheSource))
+    featureMessagingPublisher = Mock()
+    cacheSource = Mock()
+    internalFeatureApi = new InternalFeatureSqlApi(convertUtils, cacheSource, featureMessagingPublisher)
+    archiveStrategy = new DbArchiveStrategy(cacheSource)
     groupSqlApi = new GroupSqlApi(database, convertUtils, archiveStrategy)
 
     dbSuperPerson = Finder.findByEmail("irina@featurehub.io")

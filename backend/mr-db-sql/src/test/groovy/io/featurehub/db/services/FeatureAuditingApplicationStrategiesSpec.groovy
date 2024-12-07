@@ -40,7 +40,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
   DbFeatureValueVersionKey histId
 
   def setup() {
-    applicationRolloutStrategySqlApi = new ApplicationRolloutStrategySqlApi(convertUtils, cacheSource)
+    applicationRolloutStrategySqlApi = new ApplicationRolloutStrategySqlApi(convertUtils, archiveStrategy, internalFeatureApi)
 
     dbEnvironment = findEnvironment(env1.id)
     dbApplication = findApplication(app1.id)

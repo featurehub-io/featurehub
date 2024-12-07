@@ -45,7 +45,7 @@ class GroupSpec extends BaseSpec {
     baseSetupSpec()
 
     portfolioApi = new PortfolioSqlApi(database, convertUtils, archiveStrategy)
-    environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy, new InternalFeatureSqlApi(), Mock(WebhookEncryptionService))
+    environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy, internalFeatureApi, Mock(WebhookEncryptionService))
 
     user = dbSuperPerson
 

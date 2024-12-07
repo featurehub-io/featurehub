@@ -44,7 +44,4 @@ interface CacheSource {
    * Whenever a feature value changes in any way, publish it out.
    */
   fun publishFeatureChange(featureValue: DbFeatureValue)
-
-
-  fun publishApplicationRolloutStrategyChange(update: PublishAction, rs: DbApplicationRolloutStrategy)
 }

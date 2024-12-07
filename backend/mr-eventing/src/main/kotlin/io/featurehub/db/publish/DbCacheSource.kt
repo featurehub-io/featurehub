@@ -613,34 +613,6 @@ open class DbCacheSource @Inject constructor(
     executor.submit { publishAppLevelFeatureChange(appFeature, update, featureKey) } // background as not going away
   }
 
-  /**
-   * This is triggered when a rollout strategy updates or is deleted. We need to find all attached feature values
-   * and republish them.
-   *
-   * @param rs - the rollout strategy that changed
-   */
-  override fun publishApplicationRolloutStrategyChange(action: PublishAction, rs: DbApplicationRolloutStrategy) {
-    executor.submit {
-      val updatedValues =
-        addSelectorToFeatureValue(QDbFeatureValue())
-          .sharedRolloutStrategies.rolloutStrategy.eq(rs)
-          .sharedRolloutStrategies.enabled.isTrue.findList()
-
-      if (updatedValues.isNotEmpty()) {
-        // they are all the same application and
-        // hence the same cache
-        updatedValues.forEach { fv: DbFeatureValue ->
-          executor.submit {
-            innerPublishFeatureValueChange(
-              fv,
-              cacheBroadcast
-            )
-          }
-        }
-      }
-    }
-  }
-
   companion object {
     private val log = LoggerFactory.getLogger(DbCacheSource::class.java)
   }
