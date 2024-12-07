@@ -13,7 +13,7 @@ class ApplicationStrategySpec extends Base3Spec {
   ApplicationRolloutStrategySqlApi appStrategyApi
 
   def setup() {
-    appStrategyApi = new ApplicationRolloutStrategySqlApi(convertUtils, cacheSource)
+    appStrategyApi = new ApplicationRolloutStrategySqlApi(convertUtils, archiveStrategy, internalFeatureApi)
   }
 
   def "i can create, update and delete an application strategy"() {

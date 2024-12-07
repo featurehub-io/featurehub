@@ -307,12 +307,6 @@ components:
               description: "unique id of the strategy"
               type: string
               format: uuid
-            usage:
-              description: "usage of the strategy"
-              type: array
-              nullable: true
-              items:
-                $ref: "#/components/schemas/ApplicationRolloutStrategyEnvironment"
     ListApplicationRolloutStrategyItemUser:
       type: object
       properties:
@@ -335,6 +329,12 @@ components:
           format: date-time
         updatedBy:
           $ref: "#/components/schemas/ListApplicationRolloutStrategyItemUser"
+        usage:
+          description: "usage of the strategy"
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/ApplicationRolloutStrategyEnvironment"
     ApplicationRolloutStrategyEnvironment:
       type: object
       properties:

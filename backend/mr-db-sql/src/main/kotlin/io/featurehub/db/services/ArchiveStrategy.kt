@@ -1,8 +1,13 @@
 package io.featurehub.db.services
 
 import io.featurehub.db.model.*
+import java.time.format.DateTimeFormatter
 
 interface ArchiveStrategy {
+  companion object {
+    val isoDate = DateTimeFormatter.ISO_DATE_TIME
+  }
+
   fun archivePortfolio(portfolio: DbPortfolio)
   fun archiveApplication(application: DbApplication)
   fun archiveEnvironment(environment: DbEnvironment)
@@ -17,4 +22,5 @@ interface ArchiveStrategy {
   fun archiveApplicationFeature(feature: DbApplicationFeature)
   fun featureListener(listener: (DbApplicationFeature) -> Unit)
   fun archivePerson(person: DbPerson)
+  fun archiveApplicationStrategy(strategy: DbApplicationRolloutStrategy, personWhoArchived: DbPerson)
 }

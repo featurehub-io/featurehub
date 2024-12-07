@@ -2,6 +2,7 @@ package io.featurehub.db.services
 
 import groovy.transform.CompileStatic
 import io.featurehub.db.api.Opts
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.query.QDbEnvironment
@@ -30,10 +31,15 @@ class FeatureGroupSpec extends Base3Spec {
   FeatureGroupSqlApi fgApi
   ApplicationPermissions permsToEnv1
   CacheSource cacheSource
+  FeatureMessagingPublisher featureMessagingPublisher
+  InternalFeatureApi internalFeatureApi
 
   def setup() {
     cacheSource = Mock()
-    fgApi = new FeatureGroupSqlApi(convertUtils, cacheSource, new InternalFeatureSqlApi(), archiveStrategy)
+    featureMessagingPublisher = Mock()
+    internalFeatureApi = new InternalFeatureSqlApi(convertUtils, cacheSource, featureMessagingPublisher)
+    fgApi = new FeatureGroupSqlApi(convertUtils, cacheSource,
+      internalFeatureApi, archiveStrategy)
     permsToEnv1 = new ApplicationPermissions().environments([new EnvironmentPermission().id(env1.id)])
   }
 
@@ -63,7 +69,7 @@ class FeatureGroupSpec extends Base3Spec {
     given: "i have a mock archive strategy"
       def myArchive = Mock(ArchiveStrategy)
     when: "when i create the group sql api"
-      fgApi = new FeatureGroupSqlApi(convertUtils, cacheSource, new InternalFeatureSqlApi(), myArchive)
+      fgApi = new FeatureGroupSqlApi(convertUtils, cacheSource, internalFeatureApi, myArchive)
     then: "the it self registers with the archive strategy"
       1 * myArchive.environmentArchiveListener(_)
   }

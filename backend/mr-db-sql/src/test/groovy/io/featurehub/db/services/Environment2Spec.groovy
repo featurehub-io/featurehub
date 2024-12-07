@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
@@ -38,14 +39,17 @@ class Environment2Spec extends Base2Spec {
   Application appTreeEnvs
   Group groupInPortfolio1
   CacheSource cacheSource
+  FeatureMessagingPublisher featureMessagingPublisher
 
   def setup() {
     db.currentTransaction().commitAndContinue()
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
-    cacheSource = Mock(CacheSource)
+    cacheSource = Mock()
+    featureMessagingPublisher = Mock()
 
     appApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureApi))
-    envApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi(), Mock(WebhookEncryptionService))
+    envApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy,
+      new InternalFeatureSqlApi(convertUtils,cacheSource,featureMessagingPublisher), Mock(WebhookEncryptionService))
 
     // now set up the environments we need
     DbOrganization organization = Finder.findDbOrganization()

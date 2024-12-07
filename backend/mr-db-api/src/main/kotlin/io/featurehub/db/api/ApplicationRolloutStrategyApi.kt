@@ -19,7 +19,7 @@ interface ApplicationRolloutStrategyApi {
     fun updateStrategy(
         appId: UUID,
         strategyId: UUID,
-        rolloutStrategy: UpdateApplicationRolloutStrategy,
+        update: UpdateApplicationRolloutStrategy,
         person: UUID,
         opts: Opts
     ): ApplicationRolloutStrategy?

@@ -3549,7 +3549,7 @@ paths:
       - name: filter
         in: query
         description: A filter to apply to the application strategies - partial match
-          of name or description
+          of name
         required: false
         style: form
         explode: true
@@ -6190,12 +6190,6 @@ components:
             type: string
             description: unique id of the strategy
             format: uuid
-          usage:
-            type: array
-            description: usage of the strategy
-            nullable: true
-            items:
-              $ref: '#/components/schemas/ApplicationRolloutStrategyEnvironment'
     ListApplicationRolloutStrategyItemUser:
       type: object
       properties:
@@ -6218,6 +6212,12 @@ components:
           format: date-time
         updatedBy:
           $ref: '#/components/schemas/ListApplicationRolloutStrategyItemUser'
+        usage:
+          type: array
+          description: usage of the strategy
+          nullable: true
+          items:
+            $ref: '#/components/schemas/ApplicationRolloutStrategyEnvironment'
     ApplicationRolloutStrategyEnvironment:
       type: object
       properties:

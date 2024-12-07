@@ -385,7 +385,7 @@ open class ConvertUtils @Inject constructor(
     if (opts!!.contains(FillOpts.Members)) {
       val org = if (dbg.owningOrganization == null) dbg.owningPortfolio.organization else dbg.owningOrganization
       group.members = QDbPerson()
-        .order().name.asc().whenArchived.isNull.groupMembers.group.eq(dbg).findList()
+        .orderBy().name.asc().whenArchived.isNull.groupMembers.group.eq(dbg).findList()
         .map { p: DbPerson? ->
           this.toPerson(
             p, org, opts.minus(FillOpts.Members, FillOpts.Acls, FillOpts.Groups)
@@ -594,23 +594,6 @@ open class ConvertUtils @Inject constructor(
 
     val info = rs.strategy
 
-    opts?.contains(FillOpts.Usage)?.let {
-      val envs = mutableMapOf<UUID,ApplicationRolloutStrategyEnvironment>()
-
-      QDbFeatureValue()
-        .sharedRolloutStrategies.rolloutStrategy.id.eq(rs.id)
-        .environment.fetch(QDbEnvironment.Alias.id, QDbEnvironment.Alias.name)
-        .select(QDbFeatureValue.Alias.id).findList().forEach { fv ->
-          envs.getOrPut(fv.environment.id) { ApplicationRolloutStrategyEnvironment().featuresCount(0) }.let { env ->
-            env.id = fv.environment.id
-            env.name = fv.environment.name
-            env.featuresCount += 1
-          }
-        }
-
-      info.usage = envs.values.toMutableList()
-    }
-
 //    if (opts!!.contains(FillOpts.SimplePeople)) {
 //      info.changedBy(toPerson(rs.whoChanged)!!)
 //    }
@@ -649,14 +632,14 @@ open class ConvertUtils @Inject constructor(
     }
     if (opts.contains(FillOpts.Groups)) {
       portfolio.groups =
-        QDbGroup().whenArchived.isNull.owningPortfolio.eq(p).order().name.asc().findList()
+        QDbGroup().whenArchived.isNull.owningPortfolio.eq(p).orderBy().name.asc().findList()
           .map { g: DbGroup? -> toGroup(g, opts) }
     }
     if (opts.contains(FillOpts.Applications)) {
       var appFinder = QDbApplication()
         .whenArchived.isNull
         .portfolio.eq(p)
-        .order().name.asc()
+        .orderBy().name.asc()
 
       personId?.let {
         val portAdmin = isPersonMemberOfPortfolioAdminGroup(portfolio.id, personId)

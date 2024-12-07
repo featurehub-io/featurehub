@@ -5,6 +5,7 @@ import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PortfolioApi
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.encryption.WebhookEncryptionService
@@ -27,7 +28,8 @@ class ApplicationSpec extends BaseSpec {
 
     personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
 
-    environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy, new InternalFeatureSqlApi(), Mock(WebhookEncryptionService))
+    environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, cacheSource, archiveStrategy,
+      new InternalFeatureSqlApi(convertUtils,cacheSource,featureMessagingPublisher), Mock(WebhookEncryptionService))
 
     appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureApi))
 
