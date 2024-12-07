@@ -64,7 +64,9 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                               const SizedBox(
                                 width: 16.0,
                               ),
-                              if (bloc.appId != null)
+                              if (bloc.appId != null &&
+                                  bloc.mrClient
+                                      .userHasAppStrategyCreationRoleInCurrentApplication)
                                 FilledButton.icon(
                                   icon: const Icon(Icons.add),
                                   label: const Text('Create new strategy'),
@@ -234,29 +236,31 @@ class ApplicationStrategyDataTableSource
             // const SizedBox(
             //   width: 8.0,
             // ),
-            FHIconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
-                return FHDeleteThingWarningWidget(
-                  thing: "Application strategy '${strategy.strategy.name}'",
-                  content:
-                      'This application strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!',
-                  bloc: bloc.mrClient,
-                  deleteSelected: () async {
-                    try {
-                      await bloc.deleteStrategy(strategy.strategy.id);
-                      setNextView(); // triggers reload from server with latest settings and rebuilds state
-                      bloc.mrClient.addSnackbar(Text(
-                          "Application strategy '${strategy.strategy.name}' deleted!"));
-                      return true;
-                    } catch (e, s) {
-                      await bloc.mrClient.dialogError(e, s);
-                      return false;
-                    }
-                  },
-                );
-              }),
-            ),
+            if (bloc.mrClient.userHasAppStrategyEditRoleInCurrentApplication)
+              FHIconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () =>
+                    bloc.mrClient.addOverlay((BuildContext context) {
+                  return FHDeleteThingWarningWidget(
+                    thing: "Application strategy '${strategy.strategy.name}'",
+                    content:
+                        'This application strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!',
+                    bloc: bloc.mrClient,
+                    deleteSelected: () async {
+                      try {
+                        await bloc.deleteStrategy(strategy.strategy.id);
+                        setNextView(); // triggers reload from server with latest settings and rebuilds state
+                        bloc.mrClient.addSnackbar(Text(
+                            "Application strategy '${strategy.strategy.name}' deleted!"));
+                        return true;
+                      } catch (e, s) {
+                        await bloc.mrClient.dialogError(e, s);
+                        return false;
+                      }
+                    },
+                  );
+                }),
+              ),
           ])),
         ],
         onSelectChanged: (newValue) {

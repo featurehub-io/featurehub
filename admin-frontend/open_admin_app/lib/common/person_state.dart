@@ -50,12 +50,30 @@ class PersonState {
     ApplicationRoleType.FEATURE_EDIT_AND_DELETE
   ];
 
+  final _appStrategyCreateRoles = [
+    ApplicationRoleType.FEATURE_EDIT,
+    ApplicationRoleType.FEATURE_EDIT_AND_DELETE,
+    ApplicationRoleType.FEATURE_CREATE
+  ];
+  final _appStrategyEditDeleteRoles = [
+    ApplicationRoleType.FEATURE_EDIT,
+    ApplicationRoleType.FEATURE_EDIT_AND_DELETE
+  ];
+
   bool personCanEditFeaturesForApplication(String? appId) {
     return _personHasApplicationRoleInApp(appId, _featureEditDeleteRoles);
   }
 
+  bool personCanEditStrategiesForApplication(String? appId) {
+    return _personHasApplicationRoleInApp(appId, _appStrategyEditDeleteRoles);
+  }
+
   bool personCanCreateFeaturesForApplication(String? appId) {
     return _personHasApplicationRoleInApp(appId, _featureCreateRoles);
+  }
+
+  bool personCanCreateStrategiesForApplication(String? appId) {
+    return _personHasApplicationRoleInApp(appId, _appStrategyCreateRoles);
   }
 
   // if we add roles that are NOT feature related, this will need to change to exclude them
