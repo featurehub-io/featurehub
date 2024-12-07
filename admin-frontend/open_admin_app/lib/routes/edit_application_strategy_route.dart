@@ -50,7 +50,8 @@ class EditApplicationStrategyRoute extends StatelessWidget {
                                 },
                                 builder: (c, b) => StrategyEditingWidget(
                                   bloc: b,
-                                  editable: true,
+                                  editable: bloc.mrBloc
+                                      .userHasAppStrategyEditRoleInCurrentApplication,
                                   returnToRoute: '/application-strategies',
                                 ),
                               );
