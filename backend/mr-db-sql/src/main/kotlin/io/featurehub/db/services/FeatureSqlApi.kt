@@ -36,15 +36,30 @@ interface InternalFeatureApi {
   fun forceVersionBump(featureIds: List<UUID>, envId: UUID)
   fun updatedApplicationStrategy(
     strategyForFeatureValue: DbStrategyForFeatureValue,
+    originalStrategy: RolloutStrategy,
     personWhoUpdated: DbPerson
   )
   fun detachApplicationStrategy(
     strategyForFeatureValue: DbStrategyForFeatureValue,
-    strategy: DbApplicationRolloutStrategy,
+    originalStrategy: RolloutStrategy,
     personWhoArchived: DbPerson
   )
 
-  fun toRolloutStrategy(sharedStrategy: DbStrategyForFeatureValue): RolloutStrategy
+  companion object  {
+    fun toRolloutStrategy(appStrategy: DbApplicationRolloutStrategy): RolloutStrategy {
+      return RolloutStrategy().id(appStrategy.shortUniqueCode)
+        .percentage(appStrategy.strategy.percentage)
+        .percentageAttributes(appStrategy.strategy.percentageAttributes)
+        .attributes(appStrategy.strategy.attributes)
+        .avatar(appStrategy.strategy.avatar)
+        .colouring(appStrategy.strategy.colouring)
+        .name(appStrategy.name).disabled(false)
+    }
+
+    fun toRolloutStrategy(sharedStrategy: DbStrategyForFeatureValue): RolloutStrategy {
+      return toRolloutStrategy(sharedStrategy.rolloutStrategy).value(sharedStrategy.value)
+    }
+  }
 }
 
 class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conversions,
@@ -67,10 +82,6 @@ class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conver
     }
   }
 
-  override fun toRolloutStrategy(sharedStrategy: DbStrategyForFeatureValue): RolloutStrategy {
-    val appStrategy = sharedStrategy.rolloutStrategy
-    return RolloutStrategy().id(appStrategy.shortUniqueCode).name(appStrategy.name).value(sharedStrategy.value).disabled(false)
-  }
 
   override fun forceVersionBump(featureIds: List<UUID>, envId: UUID) {
     // force a version change on all these features
@@ -84,11 +95,12 @@ class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conver
 
   override fun updatedApplicationStrategy(
     strategyForFeatureValue: DbStrategyForFeatureValue,
+    originalStrategy: RolloutStrategy,
     personWhoUpdated: DbPerson
   ) {
     // we need to bump the feature value version even though nothing ostensibly changed
     strategyForFeatureValue.featureValue.let { fv ->
-      val priorStrategies = fv.sharedRolloutStrategies.map { toRolloutStrategy(it) }
+      val priorStrategies = fv.sharedRolloutStrategies.map { InternalFeatureApi.toRolloutStrategy(it) }
 
       fv.whoUpdated = personWhoUpdated
       saveFeatureValue(fv, true)
@@ -96,12 +108,16 @@ class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conver
       // this will cause an audit webhook automatically
       cacheSource.publishFeatureChange(fv)
 
-      publishFeatureMessage(fv, strategyForFeatureValue, "updated", priorStrategies)
+      publishFeatureMessage(fv, "updated", priorStrategies, originalStrategy,
+        InternalFeatureApi.toRolloutStrategy(strategyForFeatureValue))
     }
   }
 
   private fun publishFeatureMessage(fv: DbFeatureValue,
-                                    ue: DbStrategyForFeatureValue, action: String, priorStrategies: List<RolloutStrategy>) {
+                                    action: String,
+                                    priorStrategies: List<RolloutStrategy>,
+                                    originalStrategy: RolloutStrategy,
+                                    newStrategy: RolloutStrategy?) {
     val singleNotUpdated = SingleFeatureValueUpdate(hasChanged = false, updated = false, previous = false)
 
     try {
@@ -113,7 +129,7 @@ class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conver
           MultiFeatureValueUpdate(),
           MultiFeatureValueUpdate(
             true,
-            mutableListOf(RolloutStrategyUpdate(type = action, old = toRolloutStrategy(ue))),
+            mutableListOf(RolloutStrategyUpdate(type = action, old = originalStrategy, new = newStrategy)),
             mutableListOf(),
             priorStrategies
           ),
@@ -129,12 +145,14 @@ class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conver
   // this needs to remove the connection, create an audit trail, and publish a new record to Edge, and trigger webhooks
   override fun detachApplicationStrategy(
     strategyForFeatureValue: DbStrategyForFeatureValue,
-    strategy: DbApplicationRolloutStrategy,
+    originalStrategy: RolloutStrategy,
     personWhoArchived: DbPerson
   ) {
     // this removes the strategy and forces the feature to update & create a new historical record
     QDbFeatureValue().id.eq(strategyForFeatureValue.featureValue.id).findOne()?.let { fv ->
-      val priorStrategies = fv.sharedRolloutStrategies.map { toRolloutStrategy(it) }
+      val priorStrategies = fv.sharedRolloutStrategies.map { InternalFeatureApi.toRolloutStrategy(it) }
+      // hold onto it because the object will be deleted
+      val originalValue = strategyForFeatureValue.value
 
       if (fv.sharedRolloutStrategies.removeIf { it.id == strategyForFeatureValue.id }) {
         fv.whoUpdated = personWhoArchived
@@ -142,7 +160,9 @@ class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conver
 
         // this will cause an audit webhook automatically
         cacheSource.publishFeatureChange(fv)
-        publishFeatureMessage(fv, strategyForFeatureValue, "deleted", priorStrategies)
+        publishFeatureMessage(fv, "deleted",
+          priorStrategies,
+          originalStrategy.value(originalValue), null)
       }
     }
   }
@@ -338,7 +358,7 @@ class FeatureSqlApi @Inject constructor(
     val applicationStrategyUpdates = MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>()
     applicationStrategyUpdates.hasChanged = existing.sharedRolloutStrategies.isNotEmpty()
     existing.sharedRolloutStrategies.forEach { rsi ->
-      applicationStrategyUpdates.updated.add(RolloutStrategyUpdate(type = "added", new = internalFeatureApi.toRolloutStrategy(rsi)))
+      applicationStrategyUpdates.updated.add(RolloutStrategyUpdate(type = "added", new = InternalFeatureApi.toRolloutStrategy(rsi)))
     }
     val retiredUpdate =
       SingleFeatureValueUpdate(hasChanged = featureValue.retired, updated = featureValue.retired, previous = false)
@@ -603,7 +623,7 @@ class FeatureSqlApi @Inject constructor(
         changed = true
         if (todel) {
           addToStrategyUpdates(type = "deleted",
-            oldStrategy = internalFeatureApi.toRolloutStrategy(strategy),
+            oldStrategy = InternalFeatureApi.toRolloutStrategy(strategy),
             strategyUpdates = strategyUpdates)
         }
         todel
@@ -627,7 +647,7 @@ class FeatureSqlApi @Inject constructor(
         log.debug("trying to reorder strategies and no change value permission")
         throw FeatureApi.NoAppropriateRole()
       }
-      addToStrategyReorders(strategyUpdates, desiredList.map { internalFeatureApi.toRolloutStrategy(it) }.toMutableList(),
+      addToStrategyReorders(strategyUpdates, desiredList.map { InternalFeatureApi.toRolloutStrategy(it) }.toMutableList(),
         historical.map { sharedStrategyToRolloutStrategyForReporting(it, foundApplicationStrategies) })
 
       changed = true

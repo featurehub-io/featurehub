@@ -19,7 +19,7 @@ import java.util.*
 
 class ApplicationRolloutStrategySqlApi @Inject constructor(
   private val conversions: Conversions,
-  private val archiveStrategy: ArchiveStrategy, private val internalFeatureApi: InternalFeatureApi
+  private val internalFeatureApi: InternalFeatureApi
 ) : ApplicationRolloutStrategyApi {
 
   override fun createStrategy(
@@ -118,6 +118,8 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
     if (strategy.application.id == app.id) {
       var notifyAttachedFeatures = false
 
+      val originalRolloutStrategy = InternalFeatureApi.toRolloutStrategy(strategy)
+
       // check if we are renaming it and if so, are we using a duplicate name
       update.name?.let { newName ->
         if (!strategy.name.equals(newName, ignoreCase = true)) {
@@ -166,7 +168,7 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
           // now we have to update all of the tagged features, add an additional history element, force republishing of everything associated
           strategy.sharedRolloutStrategies?.let { strategies ->
             strategies.forEach { strategyForFeatureValue ->
-              internalFeatureApi.updatedApplicationStrategy(strategyForFeatureValue, p)
+              internalFeatureApi.updatedApplicationStrategy(strategyForFeatureValue, originalRolloutStrategy, p)
             }
           }
         }
@@ -253,6 +255,8 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
     // only update and publish if it _actually_ changed. We do this here instead of in ArchiveStrategy
     // because its not a simple publish. That class normally orchestrates it, but its simply too complex.
     if (strategy.whenArchived == null) {
+      val originalRolloutStrategy = InternalFeatureApi.toRolloutStrategy(strategy)
+
       strategy.whenArchived = LocalDateTime.now()
       strategy.name = (strategy.name + Conversions.archivePrefix + isoDate.format(strategy.whenArchived)).take(150)
       strategy.whoChanged = p
@@ -264,7 +268,7 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
 
         copy.forEach { strategyForFeatureValue ->
           // this needs to remove the connection, create an audit trail, and publish a new record to Edge, and trigger webhooks
-          internalFeatureApi.detachApplicationStrategy(strategyForFeatureValue, strategy, p)
+          internalFeatureApi.detachApplicationStrategy(strategyForFeatureValue, originalRolloutStrategy, p)
         }
       }
     }

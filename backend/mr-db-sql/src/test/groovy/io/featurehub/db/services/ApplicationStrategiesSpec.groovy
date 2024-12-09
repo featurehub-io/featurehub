@@ -1,13 +1,13 @@
 package io.featurehub.db.services
 
-import io.featurehub.dacha.model.PublishAction
+
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
+import io.featurehub.db.messaging.FeatureMessagingParameter
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbApplicationRolloutStrategy
 import io.featurehub.db.model.DbFeatureValue
-import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbStrategyForFeatureValue
-import io.featurehub.db.model.RoleType
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.ApplicationRoleType
@@ -16,6 +16,7 @@ import io.featurehub.mr.model.CreateApplicationRolloutStrategy
 import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueType
+import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyInstance
 import io.featurehub.mr.model.UpdateApplicationRolloutStrategy
 
@@ -26,7 +27,7 @@ class ApplicationStrategiesSpec extends Base3Spec {
     cacheSource = Mock(CacheSource)
     archiveStrategy = Mock(ArchiveStrategy)
     internalFeatureApi = Mock(InternalFeatureApi)
-    applicationRolloutStrategySqlApi = new ApplicationRolloutStrategySqlApi(convertUtils, archiveStrategy, internalFeatureApi)
+    applicationRolloutStrategySqlApi = new ApplicationRolloutStrategySqlApi(convertUtils, internalFeatureApi)
     featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher, Mock(CacheSourceFeatureGroupApi))
   }
 
@@ -65,13 +66,12 @@ class ApplicationStrategiesSpec extends Base3Spec {
   def "full lifecycle of application strategies"() {
     given: "i have a feature for the application"
       String key = createFeature()
-    and: "full permissions"
-      def perms = allPermissions()
     and: "i have an application strategy"
       def strategy = createStrategy()
+
       def updateName = ranName()
     when: "i associate the strategy with the feature value in the default environment"
-      def fv = associateStrategyWithFeatureValue(key, strategy)
+      associateStrategyWithFeatureValue(key, strategy)
     then:
       with(cacheSource) {
         1 * publishFeatureChange( { DbFeatureValue v ->
@@ -81,10 +81,16 @@ class ApplicationStrategiesSpec extends Base3Spec {
       0 * _
     when: "i update the application strategy"
       applicationRolloutStrategySqlApi.updateStrategy(app1.id, strategy.id,
-        new UpdateApplicationRolloutStrategy().name(updateName), superPerson.id.id, Opts.empty())
+        new UpdateApplicationRolloutStrategy().percentage(20).name(updateName), superPerson.id.id, Opts.empty())
     then:
+      1 *
       1 * internalFeatureApi.updatedApplicationStrategy({ DbStrategyForFeatureValue fvStrategy ->
         fvStrategy.rolloutStrategy.strategy.name == updateName
+        fvStrategy.rolloutStrategy.strategy.percentage == 20
+      }, { RolloutStrategy original ->
+        original != null
+        original.percentage == null
+        original.name == strategy.name
       }, _)
   }
 
@@ -97,7 +103,7 @@ class ApplicationStrategiesSpec extends Base3Spec {
       keys.each { associateStrategyWithFeatureValue(it, strategy) }
     and: "we reset the mock"
       internalFeatureApi = Mock(InternalFeatureApi)
-      applicationRolloutStrategySqlApi = new ApplicationRolloutStrategySqlApi(convertUtils, archiveStrategy, internalFeatureApi)
+      applicationRolloutStrategySqlApi = new ApplicationRolloutStrategySqlApi(convertUtils, internalFeatureApi)
     when: "we update the strategy name"
       applicationRolloutStrategySqlApi.updateStrategy(app1.id, strategy.id, new UpdateApplicationRolloutStrategy().name(ranName()), superuser, Opts.empty())
     then: "there is no interaction with the features as nothing changed that was important"
@@ -108,18 +114,54 @@ class ApplicationStrategiesSpec extends Base3Spec {
     then:
       2 * internalFeatureApi.updatedApplicationStrategy({ DbStrategyForFeatureValue fvStrategy ->
         keys.contains(fvStrategy.featureValue.feature.key)
-      }, _)
+      }, { RolloutStrategy rs -> rs.percentage == null }, _)
     when:
       applicationRolloutStrategySqlApi.archiveStrategy(app1.id, strategy.id, superuser)
-    then:
+    then: // if we do this in separate then:'s then we can recognize the different calls the same method
       1 * internalFeatureApi.detachApplicationStrategy({ DbStrategyForFeatureValue fv ->
         fv.featureValue.feature.key == keys.first()
-      }, { DbApplicationRolloutStrategy s ->
-        s.name != strategy.name
-      }, _)
+      }, { RolloutStrategy rs -> rs.percentage == 1000 },  _)
     then:
       1 * internalFeatureApi.detachApplicationStrategy({ DbStrategyForFeatureValue fv ->
         fv.featureValue.feature.key == keys.last()
       }, _, _)
+  }
+
+  def "when we use the real internal feature service and update and delete strategies"() {
+    given: "we create two features"
+      def keys = [createFeature()]
+    and: "we create one strategy"
+      def strategy = createStrategy()
+    and: "we associate the strategy with both features"
+      keys.each { associateStrategyWithFeatureValue(it, strategy) }
+    and: "we ensure we are not using a mock internal feature service"
+      FeatureMessagingPublisher fmp = Mock()
+      internalFeatureApi = new InternalFeatureSqlApi(convertUtils, cacheSource, fmp)
+      applicationRolloutStrategySqlApi = new ApplicationRolloutStrategySqlApi(convertUtils, internalFeatureApi)
+    when: "we update the strategy percentage"
+      applicationRolloutStrategySqlApi.updateStrategy(app1.id, strategy.id,
+        new UpdateApplicationRolloutStrategy().percentage(1000), superuser, Opts.empty())
+    then:
+      1 * cacheSource.publishFeatureChange({ DbFeatureValue fv ->
+        fv.feature.key == keys.first()
+        fv.version == 3
+      })
+      1 * fmp.publish({ FeatureMessagingParameter p ->
+        p.applicationStrategyUpdates.hasChanged
+        p.applicationStrategyUpdates.updated[0].new.percentage == 1000
+        p.applicationStrategyUpdates.updated[0].old.percentage == null
+      }, _)
+    when: "we delete the application strategy"
+      applicationRolloutStrategySqlApi.archiveStrategy(app1.id, strategy.id, superuser)
+    then:
+      1 * cacheSource.publishFeatureChange({ DbFeatureValue fv ->
+        fv.feature.key == keys.first()
+        fv.version == 4
+      })
+      1 * fmp.publish({ FeatureMessagingParameter p ->
+        p.applicationStrategyUpdates.hasChanged
+        p.applicationStrategyUpdates.updated[0].new == null
+        p.applicationStrategyUpdates.updated[0].old.percentage == 1000
+      }, _)
   }
 }
