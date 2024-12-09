@@ -445,10 +445,10 @@ class ApplicationSqlApi @Inject constructor(
   override fun findApplicationPermissions(appId: UUID, personId: UUID): ApplicationPermissions {
     // superusers get everything
     if (convertUtils.personIsSuperAdmin(personId) || convertUtils.isPersonApplicationAdmin(personId, appId) ) {
-      val allRoles = RoleType.values().toList()
+      val allRoles = RoleType.entries
 
       return ApplicationPermissions()
-        .applicationRoles(ApplicationRoleType.values().toList())
+        .applicationRoles(ApplicationRoleType.entries)
         .environments(QDbEnvironment()
           .select(QDbEnvironment.Alias.name, QDbEnvironment.Alias.id)
           .whenArchived.isNull
@@ -515,6 +515,24 @@ class ApplicationSqlApi @Inject constructor(
       return collect
     }
     return HashSet()
+  }
+
+  override fun personApplicationRoles(appId: UUID, personId: UUID): Set<ApplicationRoleType> {
+    // if they are a super user or portfolio admin, they have all roles
+    if (convertUtils.personIsSuperAdmin(personId) || convertUtils.isPersonApplicationAdmin(personId, appId)) {
+      return ApplicationRoleType.entries.toSet()
+    }
+
+    val roles = mutableSetOf<ApplicationRoleType>()
+
+    QDbAcl()
+      .application.id.eq(appId)
+      .group.whenArchived.isNull()
+      .group.groupMembers.person.id.eq(personId).findList().forEach { acl ->
+        roles.addAll(convertUtils.splitApplicationRoles(acl.roles))
+      }
+
+    return roles
   }
 
   override fun findFeatureReaders(appId: UUID): Set<UUID> {
