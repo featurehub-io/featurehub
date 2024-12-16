@@ -81,8 +81,8 @@ class ApplicationSqlApi @Inject constructor(
           .roles(
             GroupSqlApi.appRolesToString(
               listOf(
-                ApplicationRoleType.CREATE,
-                ApplicationRoleType.EDIT_AND_DELETE
+                ApplicationRoleType.FEATURE_CREATE,
+                ApplicationRoleType.FEATURE_EDIT_AND_DELETE
               )
             )
           )
@@ -289,7 +289,7 @@ class ApplicationSqlApi @Inject constructor(
   @Transactional(type = TxType.REQUIRES_NEW)
   private fun saveAllFeatures(newFeatures: List<DbFeatureValue>) {
     for (newFeature in newFeatures) {
-      internalFeatureSqlApi.saveFeatureValue(newFeature, null)
+      internalFeatureSqlApi.saveFeatureValue(newFeature)
     }
   }
 
@@ -420,10 +420,10 @@ class ApplicationSqlApi @Inject constructor(
     return if (af.isValid) convertUtils.toApplicationFeature(af.appFeature, opts)!! else null
   }
 
-  private val editorRoles = setOf(ApplicationRoleType.EDIT, ApplicationRoleType.EDIT_AND_DELETE)
+  private val editorRoles = setOf(ApplicationRoleType.FEATURE_EDIT, ApplicationRoleType.FEATURE_EDIT_AND_DELETE)
   private val creatorRoles = setOf(
-    ApplicationRoleType.EDIT, ApplicationRoleType.CREATE,
-    ApplicationRoleType.EDIT_AND_DELETE
+    ApplicationRoleType.FEATURE_EDIT, ApplicationRoleType.FEATURE_CREATE,
+    ApplicationRoleType.FEATURE_EDIT_AND_DELETE
   )
 
   // finds all the groups attached to this application  that have application roles
@@ -445,10 +445,10 @@ class ApplicationSqlApi @Inject constructor(
   override fun findApplicationPermissions(appId: UUID, personId: UUID): ApplicationPermissions {
     // superusers get everything
     if (convertUtils.personIsSuperAdmin(personId) || convertUtils.isPersonApplicationAdmin(personId, appId) ) {
-      val allRoles = RoleType.values().toList()
+      val allRoles = RoleType.entries
 
       return ApplicationPermissions()
-        .applicationRoles(ApplicationRoleType.values().toList())
+        .applicationRoles(ApplicationRoleType.entries)
         .environments(QDbEnvironment()
           .select(QDbEnvironment.Alias.name, QDbEnvironment.Alias.id)
           .whenArchived.isNull
@@ -515,6 +515,24 @@ class ApplicationSqlApi @Inject constructor(
       return collect
     }
     return HashSet()
+  }
+
+  override fun personApplicationRoles(appId: UUID, personId: UUID): Set<ApplicationRoleType> {
+    // if they are a super user or portfolio admin, they have all roles
+    if (convertUtils.personIsSuperAdmin(personId) || convertUtils.isPersonApplicationAdmin(personId, appId)) {
+      return ApplicationRoleType.entries.toSet()
+    }
+
+    val roles = mutableSetOf<ApplicationRoleType>()
+
+    QDbAcl()
+      .application.id.eq(appId)
+      .group.whenArchived.isNull()
+      .group.groupMembers.person.id.eq(personId).findList().forEach { acl ->
+        roles.addAll(convertUtils.splitApplicationRoles(acl.roles))
+      }
+
+    return roles
   }
 
   override fun findFeatureReaders(appId: UUID): Set<UUID> {

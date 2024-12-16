@@ -30,7 +30,7 @@ class Base3Spec extends Specification {
   @Shared DbPerson dbSuperPerson
   @Shared GroupSqlApi groupSqlApi
   @Shared UUID superuser
-  @Shared DbArchiveStrategy archiveStrategy
+  @Shared ArchiveStrategy archiveStrategy
   @Shared Organization org
   @Shared PortfolioSqlApi portfolioSqlApi
   @Shared ApplicationSqlApi applicationSqlApi
@@ -43,6 +43,7 @@ class Base3Spec extends Specification {
   @Shared Environment env1
   @Shared FeatureMessagingPublisher featureMessagingCloudEventPublisher
   @Shared ExecutorSupplier executorSupplier
+  @Shared InternalFeatureApi internalFeatureApi
 
   String ranName() {
     return RandomStringUtils.randomAlphabetic(10)
@@ -53,8 +54,10 @@ class Base3Spec extends Specification {
 
     convertUtils = new ConvertUtils(Mock(WebhookEncryptionService))
     cacheSource = Mock()
+    featureMessagingCloudEventPublisher = Mock()
+    internalFeatureApi = new InternalFeatureSqlApi(convertUtils, cacheSource, featureMessagingCloudEventPublisher)
 
-    archiveStrategy = new DbArchiveStrategy(db, cacheSource)
+    archiveStrategy = new DbArchiveStrategy(cacheSource)
     groupSqlApi = new GroupSqlApi(db, convertUtils, archiveStrategy)
 
     dbSuperPerson = Finder.findByEmail("irina@featurehub.io")
@@ -91,12 +94,11 @@ class Base3Spec extends Specification {
     rsValidator.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     rsValidator.validateStrategies(_, _, _, _) >> new RolloutStrategyValidator.ValidationFailure()
 
-    featureMessagingCloudEventPublisher = Mock()
 
     featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher, Mock(CacheSourceFeatureGroupApi))
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi(), Mock(WebhookEncryptionService))
-    applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi())
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi(convertUtils,cacheSource,featureMessagingCloudEventPublisher), Mock(WebhookEncryptionService))
+    applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi(convertUtils,cacheSource,featureMessagingCloudEventPublisher))
 
     portfolio = portfolioSqlApi.createPortfolio(new CreatePortfolio().name(RandomStringUtils.randomAlphabetic(10)).description("desc1"), Opts.empty(), superuser)
     app1 = applicationSqlApi.createApplication(portfolio.id, new CreateApplication().name(RandomStringUtils.randomAlphabetic(10)).description("app1"), superPerson)

@@ -94,30 +94,25 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
   }
 
   public static DbFeatureValueVersion fromDbFeatureValue(DbFeatureValue from, @Nullable Long versionFrom) {
-    return new DbFeatureValueVersion(
+    final DbFeatureValueVersion newVersion = new DbFeatureValueVersion(
       new DbFeatureValueVersionKey(from.getId(), from.getVersion()),
-        from.getVersion() == 1L ? from.getWhenCreated() : from.getWhenUpdated(),
-        from.getWhoUpdated(),
-        from.getDefaultValue(),
-        from.isLocked(),
-        from.getRetired() == Boolean.TRUE,
-        from.getRolloutStrategies(),
-        transformSharedStrategies(from.getSharedRolloutStrategies()),
-        from.getFeature(),
-        versionFrom
-      );
+      from.getVersion() == 1L ? from.getWhenCreated() : from.getWhenUpdated(),
+      from.getWhoUpdated(),
+      from.getDefaultValue(),
+      from.isLocked(),
+      from.getRetired() == Boolean.TRUE,
+      from.getRolloutStrategies(),
+      transformSharedStrategies(from.getSharedRolloutStrategies()),
+      from.getFeature(),
+      versionFrom
+    );
+    return newVersion;
   }
 
   private static List<SharedRolloutStrategyVersion> transformSharedStrategies(@NotNull List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
-    return new QDbStrategyForFeatureValue()
-      .id.in(sharedRolloutStrategies.stream().map(DbStrategyForFeatureValue::getId).collect(Collectors.toList()))
-      .select(QDbStrategyForFeatureValue.Alias.rolloutStrategy.id,
-        QDbStrategyForFeatureValue.Alias.rolloutStrategy.version, QDbStrategyForFeatureValue.Alias.value,
-        QDbStrategyForFeatureValue.Alias.enabled).findStream().map(shared -> {
-          return new SharedRolloutStrategyVersion(shared.getRolloutStrategy().getId(),
-            shared.getRolloutStrategy().getVersion(),
-            shared.isEnabled(), shared.getValue());
-      }).collect(Collectors.toList());
+    return sharedRolloutStrategies.stream().map(shared -> new SharedRolloutStrategyVersion(shared.getRolloutStrategy().getId(),
+      shared.getRolloutStrategy().getVersion(),
+      shared.isEnabled(), shared.getValue())).collect(Collectors.toList());
   }
 
   public @Nullable Long getVersionFrom() {
