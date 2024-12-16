@@ -48,9 +48,12 @@ class ApplicationStrategyBloc implements Bloc, ManagementRepositoryAwareBloc {
   Future<ApplicationRolloutStrategyList> getStrategiesData(
       String? s, SortOrder sortOrder) async {
     if (appId != null) {
-      return await _applicationRolloutStrategyServiceApi
-          .listApplicationStrategies(appId!,
-              includeUsage: true, includeWhoChanged: true);
+      return await _applicationRolloutStrategyServiceApi.listApplicationStrategies(
+          appId!,
+          includeUsage: true,
+          includeWhoChanged: true,
+          max:
+              1000); // set max because it defaults to 20 otherwise and we do not use pagination yet
     } else {
       return ApplicationRolloutStrategyList(max: 0, page: 0, items: []);
     }

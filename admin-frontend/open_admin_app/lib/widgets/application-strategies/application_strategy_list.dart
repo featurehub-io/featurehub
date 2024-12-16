@@ -222,7 +222,7 @@ class ApplicationStrategyDataTableSource
             Text(strategy.updatedBy.email),
           ),
           DataCell(Text(
-              'environments: ${strategy.strategy.usage!.length}, feature values: ${strategy.strategy.usage!.map((e) => e.featuresCount).sum}')),
+              'environments: ${strategy.usage!.length}, feature values: ${strategy.usage!.map((e) => e.featuresCount).sum}')),
           DataCell(Row(children: <Widget>[
             FHIconButton(
                 icon: const Icon(Icons.edit),
