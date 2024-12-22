@@ -18,6 +18,8 @@ import {logger} from '../support/logging';
 import {SdkWorld} from '../support/world';
 import {getWebserverExternalAddress} from '../support/make_me_a_webserver';
 import {BackendDiscovery} from "../support/discovery";
+import {decodeAndValidateRoles} from "../support/utils";
+import {serviceAccountPermission, serviceAccountPermissionRoles} from "./service_accounts";
 
 Given(/^I create a new portfolio$/, async function () {
   const world = this as SdkWorld;
@@ -90,79 +92,19 @@ Given(/^I delete the environment$/, async function () {
   expect(aCreate.data).to.be.true;
 });
 
-async function serviceAccountPermission(envId: string, roleTypes: string, world: SdkWorld) {
-  const roles = roleTypes === 'full' ? [RoleType.Read, RoleType.Unlock, RoleType.Lock, RoleType.ChangeValue] : [RoleType.Read];
-  const permissions: ServiceAccountPermission[] = [
-    new ServiceAccountPermission({
-      environmentId: envId,
-      permissions: roles
-    })
-  ];
-
-  const serviceAccountApi: ServiceAccountServiceApi = world.serviceAccountApi;
-  const serviceAccountCreate = await serviceAccountApi.createServiceAccountInPortfolio(world.portfolio.id, new ServiceAccount({
-    name: world.portfolio.name, description: world.portfolio.name, permissions: permissions
-  }), true);
-  expect(serviceAccountCreate.status).to.eq(200);
-  expect(serviceAccountCreate.data.permissions.length).to.eq(permissions.length);
-  world.serviceAccount = serviceAccountCreate.data;
-  logger.info(`storing service account ${world.serviceAccount}`);
-
-  // this adds a new permission based on the environment we are actually in
-  if (world.environment.id !== world.application.environments[0].id) {
-    const updatedAccount = serviceAccountCreate.data;
-    const newPerm = new ServiceAccountPermission({
-      environmentId: world.environment.id,
-      permissions: roles
-    });
-
-    updatedAccount.permissions.push(newPerm);
-    permissions.push(newPerm);
-
-    const saUpdate = await serviceAccountApi.updateServiceAccount(updatedAccount.id, updatedAccount, true);
-
-    expect(saUpdate.status).to.eq(200);
-    expect(saUpdate.data.permissions.length).to.eq(permissions.length);
-    world.serviceAccount = saUpdate.data;
-    logger.info(`storing service account ${world.serviceAccount}`);
-
-    const accounts = await serviceAccountApi.searchServiceAccountsInPortfolio(world.portfolio.id, true,
-      saUpdate.data.name, world.application.id, true);
-
-    const sa = accounts.data.find(sa => sa.id == saUpdate.data.id);
-
-    serviceAccountCreate.data.permissions = sa.permissions;
-  }
-
-  let perm: ServiceAccountPermission;
-
-  for (const p of serviceAccountCreate.data.permissions) {
-    if (p.environmentId === world.environment.id) {
-      perm = p;
-      break;
-    }
-  }
-
-  expect(perm).to.not.be.undefined;
-
-  world.serviceAccountPermission = perm;
-  expect(perm.permissions.length).to.eq(roles.length);
-  expect(perm.sdkUrlClientEval).to.not.be.undefined;
-  expect(perm.sdkUrlServerEval).to.not.be.undefined;
-  expect(perm.environmentId).to.not.be.undefined;
-}
-
-Given(/^I create a service account and (full|read) permissions for environment (.*)$/, async function (roleTypes: string, environment: string) {
-  const world = this as SdkWorld;
-  const env = world.application.environments.find(e => e.name === environment);
-  expect(env, `Unable to find environment ${environment} in application`).to.not.be.undefined;
-
-  await serviceAccountPermission(env.id, roleTypes, world);
-});
 
 Given(/^I create a service account and (full|read) permissions based on the application environments$/, async function (roleTypes) {
   const world = this as SdkWorld;
   await serviceAccountPermission(world.application.environments[0].id, roleTypes, world);
+});
+
+
+Given("I create a service account with named permissions {string} with current environment", async function (roles: string) {
+  const world = this as SdkWorld;
+  expect(world.application).to.not.be.undefined;
+  expect(world.application.environments.length).to.not.eq(0);
+
+  await serviceAccountPermissionRoles(world.application.environments[0].id, decodeAndValidateRoles(roles), world)
 });
 
 Given('the edge connection is no longer available', async function () {
