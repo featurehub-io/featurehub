@@ -15,7 +15,7 @@ import {
   ServiceAccountPermission,
   ServiceAccountServiceApi,
   TokenizedPerson,
-  WebhookServiceApi
+  WebhookServiceApi, RoleType, GroupServiceApi, Group
 } from '../apis/mr-service';
 import { axiosLoggingAttachment, logger } from './logging';
 import globalAxios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
@@ -28,21 +28,13 @@ import {
 } from 'featurehub-javascript-node-sdk';
 import { expect } from 'chai';
 import { edgeHost, mrHost } from './discovery';
+import {Auth} from "nats";
 
 let apiKey: string;
 
 // axiosLoggingAttachment([ globalAxios ]);
 
-export class SdkWorld extends World {
-  private _portfolio: Portfolio;
-  private _application: Application;
-  public feature: Feature;
-  public environment: Environment;
-  public serviceAccountPermission: ServiceAccountPermission;
-  public edgeServer: EdgeFeatureHubConfig;
-  private _repository: FeatureHubRepository;
-  public readonly adminUrl: string;
-  public readonly featureUrl: string;
+export class ApiUser {
   public readonly adminApiConfig: Configuration;
   public readonly portfolioApi: PortfolioServiceApi;
   public readonly applicationApi: ApplicationServiceApi;
@@ -50,6 +42,7 @@ export class SdkWorld extends World {
   public readonly environment2Api: Environment2ServiceApi;
   public readonly featureGroupApi: FeatureGroupServiceApi;
   public readonly featureApi: FeatureServiceApi;
+  public readonly groupApi: GroupServiceApi;
   public readonly loginApi: AuthServiceApi;
   public readonly personApi: PersonServiceApi;
   public readonly serviceAccountApi: ServiceAccountServiceApi;
@@ -57,28 +50,21 @@ export class SdkWorld extends World {
   public readonly edgeApi: EdgeService;
   public readonly historyApi: FeatureHistoryServiceApi;
   public readonly systemConfigApi: SystemConfigServiceApi;
-
+  public readonly adminUrl: string;
   public readonly webhookApi: WebhookServiceApi;
-  private _clientContext: ClientContext;
-  public sdkUrlClientEval: string;
-  public sdkUrlServerEval: string;
-  private scenarioId: string;
-  public person: Person
-  public featureGroup: FeatureGroup;
-  public serviceAccount?: ServiceAccount;
+  public readonly featureUrl: string;
+  public readonly authorisationApi: AuthServiceApi;
+  public readonly anonAuthorizationAPi: AuthServiceApi;
 
-  constructor(props: any) {
-    super(props);
+  public serviceAccounts: Array<ServiceAccount> = [];
 
-    if (process.env.REMOTE_BEARER_TOKEN) {
-      apiKey = process.env.REMOTE_BEARER_TOKEN;
-      console.log('api key is ', apiKey);
-    }
+  constructor(adminUrl: string, featureUrl: string, axiosInstance: AxiosInstance, apiKey: string) {
+    this.adminUrl = adminUrl;
+    this.featureUrl = featureUrl;
+    this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey, axiosInstance: axiosInstance, accessToken: apiKey });
+    const edgeConfig = new EdgeConfig({ basePath: this.featureUrl, axiosInstance: axiosInstance});
+    this.edgeApi = new EdgeService(edgeConfig);
 
-    this.adminUrl = mrHost();
-    this.featureUrl = edgeHost();
-
-    this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey, axiosInstance: globalAxios.create(), accessToken: apiKey });
     this.portfolioApi = new PortfolioServiceApi(this.adminApiConfig);
     this.personApi = new PersonServiceApi(this.adminApiConfig);
     this.applicationApi = new ApplicationServiceApi(this.adminApiConfig);
@@ -92,15 +78,72 @@ export class SdkWorld extends World {
     this.webhookApi = new WebhookServiceApi(this.adminApiConfig);
     this.historyApi = new FeatureHistoryServiceApi(this.adminApiConfig);
     this.systemConfigApi = new SystemConfigServiceApi(this.adminApiConfig);
+    this.authorisationApi = new AuthServiceApi(this.adminApiConfig);
+    this.anonAuthorizationAPi = new AuthServiceApi(new Configuration({ basePath: this.adminUrl, axiosInstance: axiosInstance }));
+    this.groupApi = new GroupServiceApi(this.adminApiConfig);
+  }
+}
 
-    const edgeConfig = new EdgeConfig({ basePath: this.featureUrl, axiosInstance: this.adminApiConfig.axiosInstance});
-    this.edgeApi = new EdgeService(edgeConfig);
+export class SdkWorld extends World {
+  private _portfolio: Portfolio;
+  private _application: Application;
+  public feature: Feature;
+  public environment: Environment;
+  public serviceAccountPermission: ServiceAccountPermission;
+  public edgeServer: EdgeFeatureHubConfig;
+  private _repository: FeatureHubRepository;
+  public readonly adminUrl: string;
+  public readonly featureUrl: string;
+  public readonly superuser: ApiUser;
+  public readonly axiosInstance: AxiosInstance;
+  public  group: Group;
 
-    axiosLoggingAttachment([this.adminApiConfig.axiosInstance]);
+  public get adminApiConfig() { return this.superuser.adminApiConfig; }
+  public get portfolioApi() { return this.superuser.portfolioApi; }
+
+  public get applicationApi() { return this.superuser.applicationApi; }
+  public get environmentApi() { return this.superuser.environmentApi; }
+  public get environment2Api() { return this.superuser.environment2Api; }
+  public get featureGroupApi() { return this.superuser.featureGroupApi; }
+  public get featureApi() { return this.superuser.featureApi; }
+  public get loginApi() { return this.superuser.loginApi; }
+  public get personApi() { return this.superuser.personApi; }
+  public get serviceAccountApi() { return this.superuser.serviceAccountApi; }
+  public get featureValueApi() { return this.superuser.featureValueApi; }
+  public get edgeApi() { return this.superuser.edgeApi; }
+  public get historyApi() { return this.superuser.historyApi; }
+  public get systemConfigApi() { return this.superuser.systemConfigApi; }
+  public get webhookApi() { return this.superuser.webhookApi; }
+
+  private _clientContext: ClientContext;
+  public sdkUrlClientEval: string;
+  public sdkUrlServerEval: string;
+  private scenarioId: string;
+  public person: Person
+  public featureGroup: FeatureGroup;
+  public serviceAccount?: ServiceAccount;
+
+  public user: ApiUser | undefined;
+
+  constructor(props: any) {
+    super(props);
+
+    if (process.env.REMOTE_BEARER_TOKEN) {
+      apiKey = process.env.REMOTE_BEARER_TOKEN;
+      console.log('api key is ', apiKey);
+    }
+
+    this.adminUrl = mrHost();
+    this.featureUrl = edgeHost();
+
+    this.axiosInstance = globalAxios.create();
+    this.superuser = new ApiUser(this.adminUrl, this.featureUrl, this.axiosInstance, apiKey);
+
+    axiosLoggingAttachment([this.axiosInstance]);
     const self = this;
     this.attachBaggageInterceptors(() => {
       return self.baggageHeader();
-    }, [this.adminApiConfig.axiosInstance])
+    }, [this.axiosInstance])
   }
 
   private attachBaggageInterceptors(baggageHeader: () => string | undefined, axiosInstances: Array<AxiosInstance>): void {
@@ -125,6 +168,11 @@ export class SdkWorld extends World {
     }
 
     return headers.length == 0 ? undefined : headers.join(',');
+  }
+
+  public setUser(apiKey: string): ApiUser {
+    this.user = new ApiUser(this.adminUrl, this.featureUrl, this.axiosInstance, apiKey);
+    return this.user;
   }
 
   public setScenarioId(id: string) {
@@ -217,6 +265,8 @@ export class SdkWorld extends World {
     expect(uResult.status).to.eq(status);
     return uResult.data;
   }
+
+
 }
 
 setDefaultTimeout(30 * 1000);
