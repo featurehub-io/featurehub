@@ -265,6 +265,13 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                         envId: env.id,
                         newEnvironmentRoles: newEnvironmentRoles,
                         roleType: RoleType.CHANGE_VALUE),
+                    if (widget.bloc.mrClient.identityProviders
+                        .featurePropertyExtendedDataEnabled)
+                      PermissionsCheckbox(
+                        envId: env.id,
+                        newEnvironmentRoles: newEnvironmentRoles,
+                        roleType: RoleType.EXTENDED_DATA,
+                      ),
                   ]));
                 }
 
@@ -405,6 +412,14 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
         padding: const EdgeInsets.all(12.0),
         child: Text(
           'Change value / Retire',
+          style: headerStyle,
+        ),
+      )),
+      Center(
+          child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Text(
+          'Read Extended Feature Data',
           style: headerStyle,
         ),
       )),
