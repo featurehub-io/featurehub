@@ -30,7 +30,7 @@ class ApplicationUtils @Inject constructor(
   fun check(current: Person, id: UUID, opts: Opts): ApplicationPermissionCheck {
     val app = applicationApi.getApplication(id, opts) ?: throw NotFoundException()
 
-    if (authManager.isOrgAdmin(current) || authManager.isPortfolioAdmin(app.portfolioId, current, null)) {
+    if (isSuperuserOrPortfolioAdmin(current.id!!.id, app.portfolioId!!)) {
       return ApplicationPermissionCheck(current, app)
     } else {
       throw ForbiddenException()
@@ -80,7 +80,7 @@ class ApplicationUtils @Inject constructor(
     val current = authManager.from(securityContext)
     val personId = current.id!!.id
 
-    if (applicationApi.personIsFeatureReader(id, personId) || applicationApi.personApplicationRoles(id, personId).isEmpty()) {
+    if (isSuperuserOrPortfolioAdmin(personId, id) || applicationApi.personIsFeatureReader(id, personId) || applicationApi.personApplicationRoles(id, personId).isEmpty()) {
       return personId
     }
 
@@ -90,11 +90,15 @@ class ApplicationUtils @Inject constructor(
   private fun appStrategyCheck(securityContext: SecurityContext, id: UUID, roles: Set<ApplicationRoleType>): UUID {
     val current = authManager.from(securityContext).id!!.id
 
-    if (applicationApi.personApplicationRoles(id, current).any { roles.contains(it) }) {
+    if (isSuperuserOrPortfolioAdmin(current, id) || applicationApi.personApplicationRoles(id, current).any { roles.contains(it) }) {
       throw ForbiddenException()
     }
 
     return current
+  }
+
+  private fun isSuperuserOrPortfolioAdmin(current: UUID, portfolioId: UUID): Boolean {
+    return authManager.isOrgAdmin(current) || authManager.isPortfolioAdmin(portfolioId, current, null)
   }
 
   fun applicationStrategyCreate(securityContext: SecurityContext, id: UUID): UUID {
