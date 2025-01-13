@@ -239,6 +239,12 @@ If you are using Dacha2 (the "lazy" cache), then the following properties/enviro
 
 - `management-repository.url` - http(s) location of the Management Repository. Needs to include a port number.
 - `dacha2.cache.api-key` - this is used to allow Dacha2 to communicate with a Remote Management Repository to get its cache misses. If an Edge request comes in that Dacha2 hasn't seen, it will make a request to the Management Repository to get the state - which is a fairly heavy call. This call you don't normally want to expose over the internet as it can be a vector of denial of service attack on your Management Repository. If you in fact wish to distribute your Dacha2 instances out to several clusters, potentially across the world, then you can protect the MR API by setting `mr.dacha2.api-keys` (as outlined above) which gives you (a) the ability to rotate keys and (b) different potential keys for each cluster and this key `dacha2.cache.api-key` on your Dacha2 instances. By setting the `mr.dacha2.api-keys` value, the API will swap to the *public interface* and will not be available internally. Note, this traffic need not going through the external load balancer for Dacha2 instances in the same cluster as the Management Repository. The following diagram shows this in more detail.
+- `dacha2.streaming.disconnect-behaviour` - this can have one of three values
+  * `on-reconnect` - this will drop the cache if the streaming layer (e.g. NATs) reports a disconnection. It will continue to cache until a reconnect occurs and then it will drop the entire cache and re-fill from MR. This means for the temporary period while NATs is disconnected to this instance, it could serve inconsistent results compared to the other Dacha2 instances that are still connected, but it is more performant. This is the *default*. 
+  * `use-passthrough` - this will swap Dacha2 into passthrough mode on the disconnect, this means the features will always be 100% accurate with the database but it is the least performant and likely to cause significantly increased load on the Management Repository if this situation occurs.
+  * `standard` - this will operate under the assumption that the streaming layer will
+never disconnect or will retain the traffic for this particular client (such as when
+using Google PubSub or NATs with JetStream).
 
 image::REST_communication_dacha2.svg[REST Traffic between API Servers for Caches]
 

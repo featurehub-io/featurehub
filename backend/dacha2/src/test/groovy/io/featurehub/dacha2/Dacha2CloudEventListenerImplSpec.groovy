@@ -13,6 +13,7 @@ import io.featurehub.dacha.model.PublishFeatureValues
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.events.CloudEventReceiverRegistry
 import io.featurehub.events.CloudEventReceiverRegistryMock
+import io.featurehub.events.EventingConnection
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.utils.ExecutorSupplier
@@ -29,6 +30,7 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
   Dacha2Cache d2Cache
   CloudEventReceiverRegistry register
   IterableProvider<Dacha2CacheListener> cacheProvider
+  EventingConnection eventingConnection
 
   UUID serviceAccountId
   String apiKeyClientSide
@@ -45,12 +47,13 @@ class Dacha2CloudEventListenerImplSpec extends Specification {
     cache = Mock()
     cacheProvider = Mock(IterableProvider)
     cacheProvider.iterator() >> [cache].iterator()
+    eventingConnection = Mock()
     register = new CloudEventReceiverRegistryMock()
     def execSupplierMock = Mock(ExecutorSupplier)
     def execServiceMock = Mock(ExecutorService)
     execSupplierMock.executorService(_) >> execServiceMock
     execServiceMock.submit(_) >> { Runnable task -> task.run() }
-    listener = new Dacha2CloudEventListenerImpl(cacheProvider, d2Cache, register, execSupplierMock)
+    listener = new Dacha2CloudEventListenerImpl(cacheProvider, d2Cache, register, execSupplierMock, eventingConnection)
     listener.started()
     serviceAccountId = UUID.randomUUID()
     apiKeyClientSide = "1234*1"
