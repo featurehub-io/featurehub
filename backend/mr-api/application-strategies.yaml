@@ -155,13 +155,6 @@ paths:
           type: boolean
         required: false
     get:
-      parameters:
-        - name: includeUsage
-          in: query
-          description: "include usage information - which environments and feature counts"
-          schema:
-            type: boolean
-          required: false
       security:
         - bearerAuth: [ ]
       tags:

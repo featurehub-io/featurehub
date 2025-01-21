@@ -63,12 +63,19 @@ Given(/^There is a feature (flag|string|number|json) with the key (.*)$/, async 
   this.feature = feature;
 });
 
-Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (lockedStatus, value) {
-  const world = this as SdkWorld;
+async function repositoryReady(world: SdkWorld) {
+  expect(world.repository, 'You have to "I connect to the feature server" first').to.not.be.undefined;
+
   await waitForExpect(() => {
     expect(world.repository).to.not.be.undefined;
     expect(world.repository.readyness).to.eq(Readyness.Ready);
   }, 2000, 500);
+}
+
+Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (lockedStatus, value) {
+  const world = this as SdkWorld;
+
+  await repositoryReady(world);
 
   await waitForExpect(() => {
     // const f = this.featureState(this.feature.key) as FeatureStateHolder;
@@ -77,6 +84,18 @@ Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (loc
     logger.info('the feature %s is value %s and locked status %s', this.feature.key, f.getBoolean(), f.locked);
     expect(f.getBoolean(), `${f.key} flag is >${f.flag}< and expected to have a value >${value == 'on'}<`).to.eq(value === 'on');
     expect(f.isLocked(), `${f.key} locked ${f.locked} and expected ${lockedStatus}`).to.eq(lockedStatus === 'locked');
+  }, 4000, 500);
+});
+
+Then(/^the feature flag with application strategy "(.*)" should be (locked|unlocked) and (off|on)$/, async function (appStrategy, lockedStatus, value) {
+  const world = this as SdkWorld;
+  await repositoryReady(world);
+
+  const ctx = await world.edgeServer.newContext().attributeValue(appStrategy, appStrategy).build();
+  await waitForExpect(() => {
+     const f = ctx.feature(world.feature.key);
+      expect(f.flag, `${f.key} flag is >${f.flag}< and expected to have a value >${value == 'on'}<`).to.eq(value === 'on');
+      expect(f.isLocked(), `${f.key} locked ${f.locked} and expected ${lockedStatus}`).to.eq(lockedStatus === 'locked');
   }, 4000, 500);
 });
 

@@ -91,10 +91,10 @@ class ApplicationUtils @Inject constructor(
     val current = authManager.from(securityContext).id!!.id
 
     if (isSuperuserOrPortfolioAdmin(current, id) || applicationApi.personApplicationRoles(id, current).any { roles.contains(it) }) {
-      throw ForbiddenException()
+      return current
     }
 
-    return current
+    throw ForbiddenException()
   }
 
   private fun isSuperuserOrPortfolioAdmin(current: UUID, portfolioId: UUID): Boolean {

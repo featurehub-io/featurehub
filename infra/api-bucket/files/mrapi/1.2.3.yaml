@@ -3683,15 +3683,6 @@ paths:
       tags:
       - ApplicationRolloutStrategyService
       operationId: getApplicationStrategy
-      parameters:
-      - name: includeUsage
-        in: query
-        description: include usage information - which environments and feature counts
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: boolean
       responses:
         "200":
           description: The rollout strategy for this application

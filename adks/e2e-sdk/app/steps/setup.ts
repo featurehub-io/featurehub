@@ -200,6 +200,8 @@ async function connectToFeatureServer(world: SdkWorld) {
 
   const serviceAccountPerm: ServiceAccountPermission = world.serviceAccountPermission;
 
+  expect(serviceAccountPerm).to.not.be.undefined;
+
   await waitForExpect(async () => {
     const url = `${world.featureUrl}/features?apiKey=${serviceAccountPerm.sdkUrlClientEval}`;
 
@@ -229,6 +231,7 @@ async function connectToFeatureServer(world: SdkWorld) {
     // give it time to connect
     await sleep(200);
     world.repository = edge.repository();
+
     // its important we wait for it to become ready before stuffing data into it otherwise we can create features at the same
     // time we are waiting for a result back and miss the 1st feature
     await waitForExpect(() => {

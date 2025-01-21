@@ -1,14 +1,18 @@
 import {Given, Then, When} from '@cucumber/cucumber';
-import { SdkWorld } from '../support/world';
+import {SdkWorld} from '../support/world';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
 import {
   ApplicationRolloutStrategy,
   CreateApplicationRolloutStrategy,
+  FeatureValueType,
   RolloutStrategy,
+  RolloutStrategyAttribute,
+  RolloutStrategyAttributeConditional,
+  RolloutStrategyFieldType,
   RolloutStrategyInstance
 } from '../apis/mr-service';
 import waitForExpect from 'wait-for-expect';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import {makeid} from "../support/random";
 
 Then(/^I (cannot|can) create custom flag rollout strategies$/, async function(can: string, table: DataTable) {
@@ -40,7 +44,14 @@ Given('I create an application strategy tagged {string}', async function(strateg
   expect(world.application, 'You must have an application to create an application strategy').to.not.be.undefined;
 
   const data = await world.applicationStrategyApi.createApplicationStrategy(world.application.id, new CreateApplicationRolloutStrategy({
-    name: makeid(10), disabled: false, attributes: []
+    name: makeid(10), disabled: false, attributes: [
+      new RolloutStrategyAttribute({
+        conditional: RolloutStrategyAttributeConditional.Equals,
+        fieldName: strategyKey,
+        values: [strategyKey],
+        type: RolloutStrategyFieldType.String
+      })
+    ]
   }));
   expect(data.status).to.eq(201);
   world.applicationStrategies[strategyKey] = data.data;
@@ -59,15 +70,17 @@ When('the application strategy {string} should be used in {int} environment with
   validateWorldForApplicationStrategies(world, strategy, key);
   const appStrategy =  await world.applicationStrategyApi.getApplicationStrategy(world.application.id, strategy.id, undefined, true);
   expect(appStrategy.status).to.eq(200);
-  expect(appStrategy.data.usage).to.not.be.undefined;
-  expect(appStrategy.data.usage.length).to.eq(envCount);
-  if (envCount > 0) {
-    expect(appStrategy.data.usage[0].featuresCount).to.eq(featureCount);
-  }
+  const data = appStrategy.data;
+  expect(data.name).to.eq(strategy.name);
+  // expect(appStrategy.data.usage).to.not.be.undefined;
+  // expect(appStrategy.data.usage.length).to.eq(envCount);
+  // if (envCount > 0) {
+  //   expect(appStrategy.data.usage[0].featuresCount).to.eq(featureCount);
+  // }
 
   const listStrat = await world.applicationStrategyApi.listApplicationStrategies(world.application.id, undefined, true);
   expect(listStrat.status).to.eq(200);
-  const s = listStrat.data.items.find(str => str.id == strategy.id);
+  const s = listStrat.data.items.find(str => str.strategy.id == strategy.id);
   expect(s.usage.length).to.eq(envCount);
   if (envCount > 0) {
     expect(s.usage[0].featuresCount).to.eq(featureCount);
@@ -89,8 +102,8 @@ When('I delete the application strategy called {string} from the current environ
     rsi.strategyId === strategy.id)).to.be.undefined;
 });
 
-When('I attach application strategy {string} to the current environment feature value', async function (strategyKey: string) {
-  const world = this as SdkWorld;
+async function attachApplicationStrategy(world: SdkWorld, strategyKey: string, val: any) {
+
 
   const strategy = world.applicationStrategies[strategyKey];
   validateWorldForApplicationStrategies(world, strategy, strategyKey);
@@ -98,11 +111,36 @@ When('I attach application strategy {string} to the current environment feature 
   const featureValue = await world.getFeatureValue();
 
   featureValue.rolloutStrategyInstances.push(new RolloutStrategyInstance({ strategyId: strategy.id,
-    value: true }));
+    value: val }));
 
   const updatedValue = await world.updateFeature(featureValue);
   expect(updatedValue.rolloutStrategyInstances.find(rsi =>
-    rsi.strategyId === strategy.id && rsi.value)).to.not.be.undefined;
+    rsi.strategyId === strategy.id && rsi.value === val )).to.not.be.undefined;
+
+}
+
+When('I attach application strategy {string} with value {string} to the current environment feature value', async function (strategyKey: string, val: string) {
+  const world = this as SdkWorld;
+  expect(world.feature).to.not.be.undefined;
+  let value: any;
+  switch (world.feature.valueType) {
+    case FeatureValueType.Boolean:
+      value = (val === "true");
+      break;
+    case FeatureValueType.Json:
+    case FeatureValueType.String:
+      value = val;
+      break;
+    case FeatureValueType.Number:
+      value = parseFloat(val);
+      break;
+  }
+  await attachApplicationStrategy(world, strategyKey, value);
+});
+
+When('I attach application strategy {string} to the current environment feature value', async function (strategyKey: string) {
+  const world = this as SdkWorld;
+  await attachApplicationStrategy(world, strategyKey, true);
 });
 
 When('I swap the order of {string} and {string} they remain swapped', async function (key1: string, key2: string) {
