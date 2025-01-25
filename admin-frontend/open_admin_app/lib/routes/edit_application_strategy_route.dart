@@ -18,9 +18,11 @@ class EditApplicationStrategyRoute extends StatelessWidget {
 
     return Column(
       children: [
-        const Row(
+        Row(
           children: [
-            FHHeader(title: "Edit Application Strategy"),
+            FHHeader(
+                title:
+                    "Edit Application Strategy for ${bloc.mrBloc.streamValley.currentApp.application.name}"),
           ],
         ),
         Row(
