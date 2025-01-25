@@ -73,7 +73,10 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                                   onPressed: () {
                                     ManagementRepositoryClientBloc.router
                                         .navigateTo(context,
-                                            '/create-application-strategy');
+                                            '/create-application-strategy',
+                                            params: {
+                                          'appid': [bloc.appId ?? ""]
+                                        });
                                   },
                                 )
                             ],
@@ -266,7 +269,8 @@ class ApplicationStrategyDataTableSource
         onSelectChanged: (newValue) {
           ManagementRepositoryClientBloc.router
               .navigateTo(context, '/edit-application-strategy', params: {
-            'id': [strategy.strategy.id]
+            'id': [strategy.strategy.id],
+            'appid': [bloc.appId ?? ""]
           });
         });
   }

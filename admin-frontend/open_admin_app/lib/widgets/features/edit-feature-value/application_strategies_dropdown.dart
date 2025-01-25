@@ -23,7 +23,7 @@ class _ApplicationStrategiesDropDownState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 250,
       child: Padding(
         padding: const EdgeInsets.only(left: 8.0, right: 8.0),

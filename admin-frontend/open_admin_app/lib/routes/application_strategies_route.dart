@@ -1,8 +1,5 @@
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/ga_id.dart';
-import 'package:open_admin_app/widgets/application-strategies/application_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/application-strategies/application_strategy_list.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
@@ -15,7 +12,6 @@ class ApplicationStrategyRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<ApplicationStrategyBloc>(context);
     FHAnalytics.sendScreenView("application-strategy-list");
     return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,

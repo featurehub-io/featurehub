@@ -14,7 +14,8 @@ class EditApplicationStrategyBloc implements Bloc {
   late ApplicationRolloutStrategy applicationRolloutStrategy;
   late RolloutStrategy rolloutStrategy;
 
-  EditApplicationStrategyBloc(this.mrBloc, {String? strategyId}) {
+  EditApplicationStrategyBloc(this.mrBloc,
+      {String? strategyId, required String? applicationId}) {
     strId = strategyId;
     _applicationRolloutStrategyServiceApi =
         ApplicationRolloutStrategyServiceApi(mrBloc.apiClient);

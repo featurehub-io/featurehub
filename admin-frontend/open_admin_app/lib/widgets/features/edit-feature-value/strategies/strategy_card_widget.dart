@@ -133,8 +133,7 @@ class StrategyCardWidget extends StatelessWidget {
                                           context, '/edit-application-strategy',
                                           params: {
                                         'id': [
-                                          applicationRolloutStrategy!
-                                              .strategyId!
+                                          applicationRolloutStrategy!.strategyId
                                         ]
                                       });
                                 }),
