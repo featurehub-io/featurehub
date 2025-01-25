@@ -65,11 +65,11 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
   getCurrentFeatureGroups() async {
     if (appId != null) {
       var featureGroupsList = await featureGroupServiceApi
-          .listFeatureGroups(appId!, environmentId: currentEnvId);
+          .listFeatureGroups(appId!, environmentId: currentEnvId, max: 1000);
       _featureGroupsStream.add(featureGroupsList.featureGroups);
       if (userRoles != null) {
-        var envRoles =
-            userRoles!.environments.firstWhereOrNull((env) => env.id == currentEnvId);
+        var envRoles = userRoles!.environments
+            .firstWhereOrNull((env) => env.id == currentEnvId);
 
         if (envRoles != null) {
           _envRoleTypeStream.add(envRoles.roles);
@@ -88,14 +88,12 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
         mrClient.streamValley.getCurrentApplicationEnvironments();
         triggerEnvironmentListener = false;
       }
-      userRoles = await applicationServiceApi
-          .applicationPermissions(appId);
+      userRoles = await applicationServiceApi.applicationPermissions(appId);
     } else {
       userRoles = null;
     }
 
     resetDataStreamsOnAppIdChange(appId);
-
   }
 
   createFeatureGroup(String name, String? description) async {
