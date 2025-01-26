@@ -1,4 +1,3 @@
-https://github.com/featurehub-io/featurehub/actions/workflows/codeql-analysis-java.yml[image:https://github.com/featurehub-io/featurehub/actions/workflows/codeql-analysis-java.yml/badge.svg[Build backend]]
 https://landscape.cncf.io/?item=observability-and-analysis\--feature-flagging\--featurehub[image:https://img.shields.io/badge/CNCF%20Landscape-5699C6[CNCF LANDSCAPE]]
 
 :icons: font
