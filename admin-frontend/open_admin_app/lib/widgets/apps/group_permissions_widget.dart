@@ -415,14 +415,16 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
           style: headerStyle,
         ),
       )),
-      Center(
-          child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Text(
-          'Read Extended Feature Data',
-          style: headerStyle,
-        ),
-      )),
+      if (widget
+          .bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
+        Center(
+            child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Text(
+            'Read Extended Feature Data',
+            style: headerStyle,
+          ),
+        )),
     ]);
   }
 
