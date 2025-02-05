@@ -1,25 +1,31 @@
 package io.featurehub.db.services
 
-import io.ebean.Database
 import io.ebean.annotation.Transactional
 import io.featurehub.dacha.model.PublishAction
-import io.featurehub.db.model.*
+import io.featurehub.db.model.DbApplication
+import io.featurehub.db.model.DbApplicationFeature
+import io.featurehub.db.model.DbApplicationRolloutStrategy
+import io.featurehub.db.model.DbEnvironment
+import io.featurehub.db.model.DbGroup
+import io.featurehub.db.model.DbOrganization
+import io.featurehub.db.model.DbPerson
+import io.featurehub.db.model.DbPortfolio
+import io.featurehub.db.model.DbServiceAccount
 import io.featurehub.db.model.query.QDbEnvironment
+import io.featurehub.db.services.ArchiveStrategy.Companion.isoDate
 import io.featurehub.mr.events.common.CacheSource
 import jakarta.inject.Inject
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
-class DbArchiveStrategy @Inject constructor(private val database: Database, private val cacheSource: CacheSource) :
+class DbArchiveStrategy @Inject constructor(private val cacheSource: CacheSource) :
   ArchiveStrategy {
-  private val isoDate = DateTimeFormatter.ISO_DATE_TIME
 
   @Transactional
   override fun archivePortfolio(portfolio: DbPortfolio) {
     portfolio.whenArchived = LocalDateTime.now()
-    portfolio.name = portfolio.name + Conversions.archivePrefix + isoDate.format(portfolio.whenArchived)
-    database.save(portfolio)
+    portfolio.name = (portfolio.name + Conversions.archivePrefix + isoDate.format(portfolio.whenArchived)).take(250)
+    portfolio.save()
     portfolio.applications.forEach { application: DbApplication -> archiveApplication(application) }
     portfolio.groups.forEach { group: DbGroup -> archiveGroup(group) }
     portfolio.serviceAccounts.forEach { serviceAccount: DbServiceAccount ->
@@ -32,7 +38,7 @@ class DbArchiveStrategy @Inject constructor(private val database: Database, priv
   @Transactional
   override fun archiveApplication(application: DbApplication) {
     application.whenArchived = LocalDateTime.now()
-    database.save(application)
+    application.save()
     application.environments.forEach { environment: DbEnvironment -> archiveEnvironment(environment) }
     application.features.forEach { feature: DbApplicationFeature -> archiveApplicationFeature(feature) }
   }
@@ -40,8 +46,8 @@ class DbArchiveStrategy @Inject constructor(private val database: Database, priv
   @Transactional
   override fun archiveEnvironment(environment: DbEnvironment) {
     environment.whenArchived = LocalDateTime.now()
-    environment.name = environment.name + Conversions.archivePrefix + isoDate.format(environment.whenArchived)
-    database.save(environment)
+    environment.name = (environment.name + Conversions.archivePrefix + isoDate.format(environment.whenArchived)).take(250)
+    environment.save()
     cacheSource.deleteEnvironment(environment.id)
     QDbEnvironment().priorEnvironment.eq(environment).findList().forEach { e: DbEnvironment ->
       if (environment.priorEnvironment != null) {
@@ -50,7 +56,7 @@ class DbArchiveStrategy @Inject constructor(private val database: Database, priv
         } else {
           e.priorEnvironment = environment.priorEnvironment
         }
-        database.save(e)
+        e.save()
       }
     }
 
@@ -68,7 +74,7 @@ class DbArchiveStrategy @Inject constructor(private val database: Database, priv
   @Transactional
   override fun archiveOrganization(organization: DbOrganization) {
     organization.whenArchived = LocalDateTime.now()
-    database.save(organization)
+    organization.save()
     organization.portfolios.forEach { portfolio: DbPortfolio -> archivePortfolio(portfolio) }
   }
 
@@ -76,8 +82,8 @@ class DbArchiveStrategy @Inject constructor(private val database: Database, priv
   override fun archiveServiceAccount(serviceAccount: DbServiceAccount) {
     serviceAccount.whenArchived = LocalDateTime.now()
     serviceAccount.name =
-      serviceAccount.name + Conversions.archivePrefix + isoDate.format(serviceAccount.whenArchived)
-    database.save(serviceAccount)
+      (serviceAccount.name + Conversions.archivePrefix + isoDate.format(serviceAccount.whenArchived)).take(250)
+    serviceAccount.save()
     cacheSource.deleteServiceAccount(serviceAccount.id)
   }
 
@@ -85,8 +91,8 @@ class DbArchiveStrategy @Inject constructor(private val database: Database, priv
   override fun archiveGroup(group: DbGroup) {
     group.whenArchived = LocalDateTime.now()
     group.name =
-      group.name + Conversions.archivePrefix + isoDate.format(group.whenArchived)
-    database.save(group)
+      (group.name + Conversions.archivePrefix + isoDate.format(group.whenArchived)).take(250)
+    group.save()
   }
 
   @Transactional
@@ -95,8 +101,8 @@ class DbArchiveStrategy @Inject constructor(private val database: Database, priv
     // key is unique
     val originalKey = feature.key
     feature.key =
-      feature.key + Conversions.archivePrefix + isoDate.format(feature.whenArchived)
-    database.save(feature)
+      (feature.key + Conversions.archivePrefix + isoDate.format(feature.whenArchived)).take(250)
+    feature.save()
 
     featureListeners.forEach {
       try {
@@ -118,7 +124,11 @@ class DbArchiveStrategy @Inject constructor(private val database: Database, priv
   @Transactional
   override fun archivePerson(person: DbPerson) {
     person.whenArchived = LocalDateTime.now()
-    database.save(person)
+    person.save()
+  }
+
+  @Transactional
+  override fun archiveApplicationStrategy(strategy: DbApplicationRolloutStrategy, personWhoArchived: DbPerson) {
   }
 
   companion object {

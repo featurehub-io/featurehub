@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
@@ -15,11 +16,13 @@ import 'package:open_admin_app/widgets/strategyeditor/strategy_utils.dart';
 class StrategyEditingWidget extends StatefulWidget {
   final bool editable;
   final StrategyEditorBloc bloc;
+  final String? returnToRoute;
 
   const StrategyEditingWidget({
     Key? key,
     required this.editable,
     required this.bloc,
+    this.returnToRoute,
   }) : super(key: key);
 
   @override
@@ -191,7 +194,10 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                         title: 'Cancel',
                         keepCase: true,
                         onPressed: () {
-                          Navigator.pop(context);
+                          widget.returnToRoute != null
+                              ? ManagementRepositoryClientBloc.router
+                                  .navigateTo(context, widget.returnToRoute!)
+                              : Navigator.pop(context);
                         },
                       ),
                       if (widget.editable)
@@ -243,7 +249,10 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
       if (validationCheck != null) {
         if (isValidationOk(validationCheck)) {
           await onSuccess();
-          Navigator.pop(context);
+          widget.returnToRoute != null
+              ? ManagementRepositoryClientBloc.router
+                  .navigateTo(context, widget.returnToRoute!)
+              : Navigator.pop(context);
         } else {
           layoutValidationFailures(validationCheck, updatedStrategy);
         }

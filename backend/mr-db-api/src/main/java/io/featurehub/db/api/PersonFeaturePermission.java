@@ -35,15 +35,26 @@ public class PersonFeaturePermission {
 
   public boolean hasChangeValueRole() {
     return roles.contains(RoleType.CHANGE_VALUE);
+  }
 
+  public boolean hasCreateApplicationStrategyRole() {
+    return appRoles.contains(ApplicationRoleType.APP_STRATEGY_CREATE);
+  }
+
+  public boolean hasEditApplicationStrategyRole() {
+    return appRoles.contains(ApplicationRoleType.APP_STRATEGY_EDIT) || appRoles.contains(ApplicationRoleType.APP_STRATEGY_EDIT_AND_DELETE);
+  }
+
+  public boolean hasDeleteApplicationStrategyRole() {
+    return appRoles.contains(ApplicationRoleType.APP_STRATEGY_EDIT_AND_DELETE);
   }
 
   public boolean hasCreateFeatureRole() {
-    return appRoles.contains(ApplicationRoleType.EDIT) || appRoles.contains(ApplicationRoleType.CREATE);
+    return appRoles.contains(ApplicationRoleType.FEATURE_EDIT) || appRoles.contains(ApplicationRoleType.FEATURE_CREATE);
   }
 
   public boolean hasEditFeatureRole() {
-    return appRoles.contains(ApplicationRoleType.EDIT) || appRoles.contains(ApplicationRoleType.EDIT_AND_DELETE);
+    return appRoles.contains(ApplicationRoleType.FEATURE_EDIT) || appRoles.contains(ApplicationRoleType.FEATURE_EDIT_AND_DELETE);
   }
 
   public boolean hasLockRole() {

@@ -79,8 +79,10 @@ class FeatureMessagingConverterImplSpec extends Specification {
     def retiredUpdate = new SingleFeatureValueUpdate<Boolean>(
       false, false, false)
     def strategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
+    def appStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
 
-    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates, version)
+    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate,
+      retiredUpdate, strategyUpdates, appStrategyUpdates, version)
 
     when:
     def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
@@ -117,7 +119,9 @@ class FeatureMessagingConverterImplSpec extends Specification {
     def retiredUpdate = new SingleFeatureValueUpdate<Boolean>(
       true, true, false)
     def strategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
-    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates, version)
+    def appStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
+    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate,
+      defaultValueUpdate, retiredUpdate, strategyUpdates, appStrategyUpdates, version)
 
     when:
     def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
@@ -161,8 +165,10 @@ class FeatureMessagingConverterImplSpec extends Specification {
       StrategyUpdateType.ADDED.name(), null, newStrategy)
 
     def strategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(true, [addStrategyUpdate], [], [])
+    def appStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
 
-    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates, version)
+    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate,
+      defaultValueUpdate, retiredUpdate, strategyUpdates, appStrategyUpdates, version)
 
     when:
     def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
@@ -210,8 +216,10 @@ class FeatureMessagingConverterImplSpec extends Specification {
       StrategyUpdateType.CHANGED.name(), oldStrategy, changedStrategy)
 
     def strategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(true, [changedStrategyUpdate], [], [])
+    def appStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
 
-    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates, version)
+    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate,
+      strategyUpdates, appStrategyUpdates, version)
 
     when:
     def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
@@ -260,8 +268,9 @@ class FeatureMessagingConverterImplSpec extends Specification {
     def deletedStrategyUpdate = new RolloutStrategyUpdate(
       StrategyUpdateType.DELETED.name(), deletedStrategy, null)
     def strategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(true, [addStrategyUpdate, changedStrategyUpdate, deletedStrategyUpdate], [], [])
-
-    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates, version)
+    def appStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
+    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate,
+      strategyUpdates, appStrategyUpdates, version)
 
     when:
     def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
@@ -308,7 +317,9 @@ class FeatureMessagingConverterImplSpec extends Specification {
     def lockUpdate = new SingleFeatureValueUpdate<Boolean>(false, false, false)
     def retiredUpdate = new SingleFeatureValueUpdate<Boolean>(false, false, false)
     def defaultValueUpdate = new SingleNullableFeatureValueUpdate<String>(false, null, null)
-    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates, version)
+    def appStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
+    def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate,
+      strategyUpdates, appStrategyUpdates, version)
     when:
     def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(featureMessagingParameter)
     then:

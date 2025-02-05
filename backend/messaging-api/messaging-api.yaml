@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: Feature Messaging API
   description: This is an OpenAPI document for featurehub messaging data. It is used to publish feature updates to messaging listeners.
-  version: "1.2.0"
+  version: "1.3.0"
 paths:
   /v2/fake:
     get:
@@ -119,7 +119,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MessagingStrategyUpdate'
+        applicationStrategiesUpdated:
+          nullable: true
+          description: "Strategies changes"
+          type: array
+          items:
+            $ref: '#/components/schemas/MessagingStrategyUpdate'
         strategiesReordered:
+          nullable: true
+          #description: "Strategies reorder changes"
+          allOf:
+            - $ref: '#/components/schemas/MessagingStrategiesReorder'
+        applicationStrategiesReordered:
           nullable: true
           #description: "Strategies reorder changes"
           allOf:

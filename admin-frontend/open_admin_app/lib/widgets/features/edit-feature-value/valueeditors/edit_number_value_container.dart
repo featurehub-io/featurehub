@@ -12,12 +12,14 @@ class EditNumberValueContainer extends StatefulWidget {
     this.rolloutStrategy,
     required this.strBloc,
     this.groupRolloutStrategy,
+    this.applicationRolloutStrategy,
   }) : super(key: key);
 
   final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupRolloutStrategy;
+  final RolloutStrategy? applicationRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   @override
@@ -36,7 +38,9 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
         ? widget.rolloutStrategy!.value
         : widget.groupRolloutStrategy != null
             ? widget.groupRolloutStrategy!.value
-            : widget.strBloc.currentFeatureValue.valueNumber;
+            : widget.applicationRolloutStrategy != null
+                ? widget.applicationRolloutStrategy!.value
+                : widget.strBloc.currentFeatureValue.valueNumber;
     tec.text = (valueSource ?? '').toString();
   }
 
@@ -90,11 +94,14 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
   }
 
   void _updateFeatureValue(double? replacementValue) {
-    if (widget.rolloutStrategy == null) {
-      widget.strBloc.updateFeatureValueDefault(replacementValue);
-    } else {
+    if (widget.rolloutStrategy != null) {
       widget.rolloutStrategy!.value = replacementValue;
       widget.strBloc.updateStrategyValue();
+    } else if (widget.applicationRolloutStrategy != null) {
+      widget.applicationRolloutStrategy!.value = replacementValue;
+      widget.strBloc.updateApplicationStrategyValue();
+    } else {
+      widget.strBloc.updateFeatureValueDefault(replacementValue);
     }
   }
 }

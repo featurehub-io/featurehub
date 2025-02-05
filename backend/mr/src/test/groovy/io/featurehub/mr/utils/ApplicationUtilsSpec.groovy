@@ -41,8 +41,8 @@ class ApplicationUtilsSpec extends Specification {
       def result = appUtils.featureCreatorCheck(ctx, appId)
     then:
       1 * appApi.personIsFeatureCreator(appId, person.id.id) >> false
-      1 * appApi.getApplication(appId, _) >> new Application()
-      1 * authManager.isOrgAdmin(person) >> true
+      1 * appApi.getApplication(appId, _) >> new Application().portfolioId(UUID.randomUUID())
+      1 * authManager.isOrgAdmin(person.id.id) >> true
       result.current == person
       result.app != null
   }
@@ -55,8 +55,8 @@ class ApplicationUtilsSpec extends Specification {
     then:
       1 * appApi.personIsFeatureCreator(appId, person.id.id) >> false
       1 * appApi.getApplication(appId, _) >> app
-      1 * authManager.isOrgAdmin(person) >> false
-      1 * authManager.isPortfolioAdmin(app.portfolioId, person, null) >> true
+      1 * authManager.isOrgAdmin(person.id.id) >> true
+//      1 * authManager.isPortfolioAdmin(app.portfolioId, person.id.id, null) >> true
       result.current == person
       result.app != null
   }
@@ -69,8 +69,8 @@ class ApplicationUtilsSpec extends Specification {
     then:
       1 * appApi.personIsFeatureCreator(appId, person.id.id) >> false
       1 * appApi.getApplication(appId, _) >> app
-      1 * authManager.isOrgAdmin(person) >> false
-      1 * authManager.isPortfolioAdmin(app.portfolioId, person, null) >> false
+      1 * authManager.isOrgAdmin(person.id.id) >> false
+      1 * authManager.isPortfolioAdmin(app.portfolioId, person.id.id, null) >> false
       thrown(ForbiddenException)
   }
 

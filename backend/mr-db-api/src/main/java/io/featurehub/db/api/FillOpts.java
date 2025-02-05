@@ -24,5 +24,6 @@ public enum FillOpts {
   Details, // full details of the current object type (e.g. if people, all details about people)
   CountGroups, // only count groups don't include them
 
-  DecryptWebhookDetails
+  DecryptWebhookDetails,
+  Usage // include usage data if it exists
 }

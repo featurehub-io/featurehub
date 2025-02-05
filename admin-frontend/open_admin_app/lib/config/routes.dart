@@ -98,6 +98,17 @@ class Routes {
     router.define('/applications',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.apps));
+    router.define('/application-strategies',
+        routeSlots: [RouteSlot.portfolio],
+        handler: handleRouteChangeRequest(routeCreator.applicationStrategies));
+    router.define('/create-application-strategy',
+        routeSlots: [RouteSlot.portfolio],
+        handler:
+            handleRouteChangeRequest(routeCreator.createApplicationStrategy));
+    router.define('/edit-application-strategy',
+        routeSlots: [RouteSlot.portfolio],
+        handler:
+            handleRouteChangeRequest(routeCreator.editApplicationStrategy));
     router.define('/feature-groups',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.featureGroups));

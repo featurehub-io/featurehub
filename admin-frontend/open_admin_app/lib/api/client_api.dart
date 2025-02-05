@@ -135,14 +135,17 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     _landingActions = [];
 
-    for (var action in la) { action(this); }
+    for (var action in la) {
+      action(this);
+    }
   }
 
   void swapRoutes(RouteChange route) {
     // this is for gross route changes, and causes the widget to redraw
     // for multi-tabbed routes, we don't want this to happen, so we separate the two
     if (!_routerRedrawRouteSource.hasValue ||
-        (_routerRedrawRouteSource.hasValue && _routerRedrawRouteSource.value?.route != route.route)) {
+        (_routerRedrawRouteSource.hasValue &&
+            _routerRedrawRouteSource.value?.route != route.route)) {
       _routerRedrawRouteSource.add(route);
     }
 
@@ -205,8 +208,16 @@ class ManagementRepositoryClientBloc implements Bloc {
     return personState.personCanEditFeaturesForApplication(getCurrentAid());
   }
 
+  bool get userHasAppStrategyEditRoleInCurrentApplication {
+    return personState.personCanEditStrategiesForApplication(getCurrentAid());
+  }
+
   bool get userHasFeatureCreationRoleInCurrentApplication {
     return personState.personCanCreateFeaturesForApplication(getCurrentAid());
+  }
+
+  bool get userHasAppStrategyCreationRoleInCurrentApplication {
+    return personState.personCanCreateStrategiesForApplication(getCurrentAid());
   }
 
   bool get userHasFeaturePermissionsInCurrentApplication {
@@ -247,12 +258,13 @@ class ManagementRepositoryClientBloc implements Bloc {
     webInterface.setOrigin();
 
     // attach a request id from this client to every outgoing request
-    (_client.apiClientDelegate as DioClientDelegate).client.interceptors.add(InterceptorsWrapper(
-      onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
-        options.headers.putIfAbsent("baggage", () => "x-fh-reqid=${requestIdCounter++}" );
-        return handler.next(options);
-      }
-    ));
+    (_client.apiClientDelegate as DioClientDelegate).client.interceptors.add(
+        InterceptorsWrapper(onRequest:
+            (RequestOptions options, RequestInterceptorHandler handler) {
+      options.headers
+          .putIfAbsent("baggage", () => "x-fh-reqid=${requestIdCounter++}");
+      return handler.next(options);
+    }));
 
     _client.passErrorsAsApiResponses = true;
 
@@ -450,7 +462,6 @@ class ManagementRepositoryClientBloc implements Bloc {
   // currently empty
   void personUpdated(Person person) {}
 
-
   bool isPortfolioOrSuperAdminForCurrentPid() {
     return currentPid == null ? false : isPortfolioOrSuperAdmin(currentPid!);
   }
@@ -558,7 +569,6 @@ class ManagementRepositoryClientBloc implements Bloc {
     _snackbarSource.close();
     personState.dispose();
   }
-
 
   String registrationUrl(String token) {
     var tokenizedPart = 'register-url?token=$token';

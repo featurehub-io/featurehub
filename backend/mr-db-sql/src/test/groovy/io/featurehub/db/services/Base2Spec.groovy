@@ -2,6 +2,7 @@ package io.featurehub.db.services
 
 import groovy.transform.CompileStatic
 import io.featurehub.db.api.Opts
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.query.QDbOrganization
@@ -14,7 +15,7 @@ import io.featurehub.mr.model.Person
 import org.apache.commons.lang3.RandomStringUtils
 
 class Base2Spec extends DbSpecification {
-  ConvertUtils convertUtils
+  Conversions convertUtils
   Person superPerson
   DbPerson dbSuperPerson
   GroupSqlApi groupSqlApi
@@ -22,6 +23,9 @@ class Base2Spec extends DbSpecification {
   DbArchiveStrategy archiveStrategy
   Organization org
   WebhookEncryptionService encryptionService
+  CacheSource cacheSource
+  InternalFeatureApi internalFeatureApi
+  FeatureMessagingPublisher featureMessagingPublisher
 
   String ranName() {
     return RandomStringUtils.randomAlphabetic(10)
@@ -30,8 +34,11 @@ class Base2Spec extends DbSpecification {
   def setup() {
     System.setProperty("webhooks.encryption.password", "foof")
     encryptionService = Mock()
+    cacheSource = Mock()
     convertUtils = new ConvertUtils(encryptionService)
-    archiveStrategy = new DbArchiveStrategy(db, Mock(CacheSource))
+    featureMessagingPublisher = Mock()
+    internalFeatureApi = new InternalFeatureSqlApi(convertUtils, cacheSource, featureMessagingPublisher)
+    archiveStrategy = new DbArchiveStrategy(cacheSource)
     groupSqlApi = new GroupSqlApi(db, convertUtils, archiveStrategy)
 
     dbSuperPerson = Finder.findByEmail("irina@featurehub.io")

@@ -48,6 +48,11 @@ interface FeatureApi {
     person: PersonFeaturePermission
   ): FeatureValue?
 
+  /**
+   * Detects if there are duplicate strategy ids in feature value
+   */
+  fun duplicateRolloutStrategyInstances(featureValue: FeatureValue): Boolean
+
   @Throws(
     OptimisticLockingException::class,
     RolloutStrategyValidator.InvalidStrategyCombination::class,

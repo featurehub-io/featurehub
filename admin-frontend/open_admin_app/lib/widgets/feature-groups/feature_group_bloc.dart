@@ -4,11 +4,10 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/fhos_logger.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
-import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/edit_strategy_interface.dart';
 import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 import 'package:rxdart/rxdart.dart';
 
-class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
+class FeatureGroupBloc implements Bloc {
   final FeatureGroupsBloc featureGroupsBloc;
   final FeatureGroupListGroup featureGroupListGroup;
   late ApplicationRolloutStrategyServiceApi _appStrategyServiceApi;
@@ -80,7 +79,6 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
     _availableFeaturesStream.add(feat);
   }
 
-  @override
   void addStrategy(EditingRolloutStrategy strategy) {
     fhosLogger.fine("adding new strategy $strategy to stream");
     final fgStrategy = strategy.toGroupRolloutStrategy()!;
@@ -90,16 +88,6 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
         _trackingUpdatesGroupStrategiesStream.value;
     strategyList.clear(); // we can only have 1
     strategyList.add(fgStrategy);
-    _trackingUpdatesGroupStrategiesStream.add(strategyList);
-    _isGroupUpdatedSource.add(true);
-  }
-
-  @override
-  void updateStrategy() {
-    GroupRolloutStrategy strategy = _strategySource.value!;
-    List<GroupRolloutStrategy> strategyList =
-        []; // create new list is ok here, as we only have one strategy
-    strategyList.add(strategy);
     _trackingUpdatesGroupStrategiesStream.add(strategyList);
     _isGroupUpdatedSource.add(true);
   }
@@ -157,7 +145,6 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
     _isGroupUpdatedSource.add(true);
   }
 
-  @override
   void removeStrategy(strategy) {
     final strategies = _trackingUpdatesGroupStrategiesStream.value;
     strategies.removeWhere((e) =>
@@ -169,7 +156,6 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
     _isGroupUpdatedSource.add(true);
   }
 
-  @override
   Future<RolloutStrategyValidationResponse> validationCheck(strategy) async {
     var rs = RolloutStrategy(
         id: strategy.id,
@@ -187,7 +173,4 @@ class FeatureGroupBloc implements Bloc, EditStrategyBloc<GroupRolloutStrategy> {
           sharedStrategies: <RolloutStrategyInstance>[],
         ));
   }
-
-  @override
-  get feature {}
 }

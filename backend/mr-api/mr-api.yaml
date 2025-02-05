@@ -1454,6 +1454,8 @@ paths:
           description: "no permission"
         409:
           description: "Conflict in trying to save, someone else updated a record first"
+        412:
+          description: "The data being passed is invalid for some reason"
         422:
           description: "There were validation failures in the rollout strategies"
           content:
@@ -1991,6 +1993,8 @@ paths:
           description: "No environment"
         409:
           description: "Conflict in trying to save, someone else updated a record first"
+        412:
+          description: "Invalid values passed in feature value update"
         422:
           description: "There were validation failures in the rollout strategies"
           content:
@@ -2062,6 +2066,8 @@ paths:
           description: "forbidden"
         409:
           description: "Conflict in trying to save, someone else updated a record first"
+        412:
+          description: "Invalid values passed in feature update"
         422:
           description: "There were validation failures in the rollout strategies"
           content:
@@ -2098,6 +2104,8 @@ paths:
           description: "No feature for that environment found"
         409:
           description: "Conflict in trying to save, someone else updated a record first"
+        412:
+          description: "Invalid values passed in feature value"
         422:
           description: "There were validation failures in the rollout strategies"
           content:
@@ -3224,6 +3232,7 @@ components:
         name:
           description: "This is copied from the shared rollout strategy on return, it is read only from the client perspective"
           type: string
+          nullable: true
         strategyId:
           type: string
           format: uuid
@@ -3232,6 +3241,7 @@ components:
           description: "the value for this rollout strategy for this feature value"
         disabled:
           nullable: true
+          default: false
           type: boolean
     Audit:
       properties:
@@ -3932,6 +3942,9 @@ components:
         - FEATURE_EDIT
         - FEATURE_CREATE
         - FEATURE_EDIT_AND_DELETE
+        - APP_STRATEGY_EDIT
+        - APP_STRATEGY_CREATE
+        - APP_STRATEGY_EDIT_AND_DELETE
     EnvironmentGroupRole:
       required:
         - environmentId
