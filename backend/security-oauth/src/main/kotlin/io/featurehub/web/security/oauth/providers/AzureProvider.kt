@@ -3,12 +3,16 @@ package io.featurehub.web.security.oauth.providers
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.web.security.oauth.AuthClientResult
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 // register your app here: https://go.microsoft.com/fwlink/?linkid=2083908
 // https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow
 class AzureProvider : OAuth2Provider {
+  private val log: Logger = LoggerFactory.getLogger(AzureProvider::class.java)
+
   @ConfigKey("oauth2.providers.azure.tenant")
   protected var tenant: String? = null
 
@@ -30,7 +34,15 @@ class AzureProvider : OAuth2Provider {
 
   override fun discoverProviderUser(authed: AuthClientResult): ProviderUser? {
     val idInfo = Jwt.decodeJwt(authed.idToken) ?: return null
-    return ProviderUser(idInfo["email"]?.toString(), idInfo["name"]?.toString())
+    val email = idInfo["email"]?.toString() ?: idInfo["preferred_username"]?.toString()
+
+    if (email?.contains("@") == true) {
+      return ProviderUser(email, idInfo["name"]?.toString())
+    }
+
+    log.error("Azure Provider is not returning a valid email address in `email` or `preferred_username`")
+
+    return null
   }
 
   override fun providerName(): String {
