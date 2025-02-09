@@ -79,6 +79,7 @@ class ApplicationRolloutStrategyResource @Inject constructor(
       appId,
       holder.page ?: 0, holder.max ?: 20, holder.filter,
       true == holder.includeArchived,
+      holder.sortOrder,
       Opts().add(FillOpts.SimplePeople, holder.includeWhoChanged).add(FillOpts.Usage, holder.includeUsage)
     )
   }

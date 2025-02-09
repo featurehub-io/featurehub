@@ -43,6 +43,11 @@ paths:
           schema:
             type: string
           required: false
+        - name: sortOrder
+          in: query
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+          required: false
         - name: max
           description: "The maximum number of application strategies to get for this page"
           in: query

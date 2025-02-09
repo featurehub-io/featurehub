@@ -6,6 +6,7 @@ import io.featurehub.mr.model.CreateApplicationRolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
+import io.featurehub.mr.model.SortOrder
 import io.featurehub.mr.model.UpdateApplicationRolloutStrategy
 import org.apache.commons.lang3.RandomStringUtils
 
@@ -44,7 +45,7 @@ class ApplicationStrategySpec extends Base3Spec {
       updated.name == "phred22"
       updated.percentage == 10000
     when: "i list the strategies for the app"
-      def list = appStrategyApi.listStrategies(app1.id, 0, 10, null, false, Opts.empty())
+      def list = appStrategyApi.listStrategies(app1.id, 0, 10, null, false, null, Opts.empty())
     then: "there is only 1"
       list.max == 1
       list.page == 0
@@ -77,25 +78,25 @@ class ApplicationStrategySpec extends Base3Spec {
       randomStrategies("jennie", 10, myApp.id)
     when: "i ask for the 1st 10, they are all jennie"
       def list = appStrategyApi.listStrategies(myApp.id, 0, 10,
-        null, false, Opts.empty())
+        null, false, SortOrder.ASC, Opts.empty())
     then:
       list.max == 20
       list.page == 0
       list.items.findAll { it.strategy.name.startsWith("jennie") }.size() == 10
     when: "i ask for the next 10 they are all rose"
-      list = appStrategyApi.listStrategies(myApp.id, 1, 10, null, false, Opts.empty())
+      list = appStrategyApi.listStrategies(myApp.id, 1, 10, null, false, null, Opts.empty())
     then:
       list.max == 20
       list.page == 1
       list.items.findAll { it.strategy.name.startsWith("rose") }.size() == 10
     when: "i ask for those like jennie, i get 10 items with a max of 10"
-      list = appStrategyApi.listStrategies(myApp.id, 0, 10, "Jennie", false, Opts.empty())
+      list = appStrategyApi.listStrategies(myApp.id, 0, 10, "Jennie", false, null, Opts.empty())
     then:
       list.max == 10
       list.page == 0
       list.items.findAll { it.strategy.name.startsWith("jennie") }.size() == 10
     when: "i ask for the second page of jennie with the jennie filter there are no items"
-      list = appStrategyApi.listStrategies(myApp.id, 1, 10, "Jennie", false, Opts.empty())
+      list = appStrategyApi.listStrategies(myApp.id, 1, 10, "Jennie", false, null, Opts.empty())
     then:
       list.max == 10
       list.page == 1

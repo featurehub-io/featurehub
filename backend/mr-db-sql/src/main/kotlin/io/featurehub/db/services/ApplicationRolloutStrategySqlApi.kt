@@ -184,7 +184,15 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
   }
 
   @Transactional(readOnly = true)
-  override fun listStrategies(appId: UUID, page: Int, max: Int, filter: String?, includeArchived: Boolean, opts: Opts): ApplicationRolloutStrategyList {
+  override fun listStrategies(
+    appId: UUID,
+    page: Int,
+    max: Int,
+    filter: String?,
+    includeArchived: Boolean,
+    sortOrder: SortOrder?,
+    opts: Opts
+  ): ApplicationRolloutStrategyList {
     var qRS = QDbApplicationRolloutStrategy().application.id.eq(appId).orderBy().name.asc()
 
     filter?.let {
@@ -199,7 +207,13 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
       qRS.whoChanged.fetch()
     }
 
-    val strategies = qRS.setFirstRow(page * max).setMaxRows(max).findList()
+    val strategiesRS = if (sortOrder == SortOrder.DESC) {
+      qRS.name.desc()
+    } else {
+      qRS.name.asc()
+    }
+
+    val strategies = strategiesRS.setFirstRow(page * max).setMaxRows(max).findList()
     val count = qRS.findCount()
 
     return ApplicationRolloutStrategyList().max(count).page(page)
