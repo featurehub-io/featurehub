@@ -134,7 +134,8 @@ class StrategyCardWidget extends StatelessWidget {
                                           params: {
                                         'id': [
                                           applicationRolloutStrategy!.strategyId
-                                        ]
+                                        ],
+                                        'appid': [strBloc.applicationId ?? ""]
                                       });
                                 }),
                           if (editable)

@@ -54,6 +54,7 @@ class ApplicationStrategyBloc implements Bloc, ManagementRepositoryAwareBloc {
                 includeUsage: true,
                 includeWhoChanged: true,
                 filter: s,
+                sortOrder: sortOrder,
                 max:
                     1000); // set max because it defaults to 20 otherwise and we do not use pagination yet
       } else {
@@ -61,6 +62,7 @@ class ApplicationStrategyBloc implements Bloc, ManagementRepositoryAwareBloc {
             .listApplicationStrategies(appId!,
                 includeUsage: true,
                 includeWhoChanged: true,
+                sortOrder: sortOrder,
                 max:
                     1000); // set max because it defaults to 20 otherwise and we do not use pagination yet
       }

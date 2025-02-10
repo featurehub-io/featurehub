@@ -115,7 +115,9 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                         columns: [
                           DataColumn(
                               label: const Text('Name'), onSort: setSort),
-                          const DataColumn(label: Text("Date created (UTC)")),
+                          const DataColumn(
+                            label: Text("Date created (UTC)"),
+                          ),
                           const DataColumn(label: Text("Date updated (UTC)")),
                           const DataColumn(label: Text("Created by")),
                           const DataColumn(
@@ -193,6 +195,7 @@ class ApplicationStrategyDataTableSource
   @override
   Future<RemoteDataSourceDetails<ListApplicationRolloutStrategyItem>>
       getNextPage(NextPageRequest pageRequest) async {
+    print("sort order " + pageRequest.sortAscending.toString());
     final data = await bloc.getStrategiesData(
         lastSearchTerm.isNotEmpty ? lastSearchTerm : null,
         (pageRequest.sortAscending ?? true) == true
@@ -233,7 +236,8 @@ class ApplicationStrategyDataTableSource
                       ManagementRepositoryClientBloc.router.navigateTo(
                           context, '/edit-application-strategy',
                           params: {
-                            'id': [strategy.strategy.id]
+                            'id': [strategy.strategy.id],
+                            'appid': [bloc.appId ?? ""]
                           })
                     }),
             // const SizedBox(
