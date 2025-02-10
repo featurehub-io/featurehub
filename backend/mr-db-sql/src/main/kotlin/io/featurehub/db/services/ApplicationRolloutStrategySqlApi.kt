@@ -193,7 +193,7 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
     sortOrder: SortOrder?,
     opts: Opts
   ): ApplicationRolloutStrategyList {
-    var qRS = QDbApplicationRolloutStrategy().application.id.eq(appId).orderBy().name.asc()
+    var qRS = QDbApplicationRolloutStrategy().application.id.eq(appId)
 
     filter?.let {
       qRS = qRS.name.ilike("%${it.lowercase()}%")
@@ -204,13 +204,13 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
     }
 
     if (opts.contains(FillOpts.SimplePeople)) {
-      qRS.whoChanged.fetch()
+      qRS = qRS.whoChanged.fetch()
     }
 
     val strategiesRS = if (sortOrder == SortOrder.DESC) {
-      qRS.name.desc()
+      qRS.orderBy().name.desc()
     } else {
-      qRS.name.asc()
+      qRS.orderBy().name.asc()
     }
 
     val strategies = strategiesRS.setFirstRow(page * max).setMaxRows(max).findList()

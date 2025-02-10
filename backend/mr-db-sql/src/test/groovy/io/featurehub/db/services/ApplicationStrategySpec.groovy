@@ -89,6 +89,14 @@ class ApplicationStrategySpec extends Base3Spec {
       list.max == 20
       list.page == 1
       list.items.findAll { it.strategy.name.startsWith("rose") }.size() == 10
+    when: "i ask for 20 of them in descending order"
+      list = appStrategyApi.listStrategies(myApp.id, 0, 20, null, false, SortOrder.DESC, Opts.empty())
+    then:
+      list.max == 20
+      list.page == 0
+    // first 10 are jennie
+      list.items.take(10).findAll { it.strategy.name.startsWith("rose") }.size() == 10
+      list.items.findAll { it.strategy.name.startsWith("jennie") }.size() == 10
     when: "i ask for those like jennie, i get 10 items with a max of 10"
       list = appStrategyApi.listStrategies(myApp.id, 0, 10, "Jennie", false, null, Opts.empty())
     then:
