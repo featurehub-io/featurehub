@@ -174,11 +174,8 @@ final _appFeatureRoles = [
   _AppRole('creator', 'Create features', [ApplicationRoleType.FEATURE_CREATE]),
   _AppRole('editor', 'Create / Edit / Delete features', [
     ApplicationRoleType.FEATURE_CREATE,
-    ApplicationRoleType.FEATURE_EDIT_AND_DELETE
-  ])
-];
-
-final _appStrategyRoles = [
+    ApplicationRoleType.FEATURE_EDIT_AND_DELETE,
+  ]),
   _AppRole('none', 'No app strategy permissions', []),
   _AppRole('creator', 'Create app strategy',
       [ApplicationRoleType.APP_STRATEGY_CREATE]),
@@ -190,6 +187,9 @@ final _appStrategyRoles = [
 
 final _noFeaturePermissionRole = _appFeatureRoles[0];
 final _editorFeaturePermissionRole = _appFeatureRoles[2];
+
+final _noAppStrategyPermissionRole = _appFeatureRoles[3];
+final _editorStrategyPermissionRole = _appFeatureRoles[5];
 
 _AppRole _discoverAdminRoleType(Group currentGroup, String applicationId) {
   final roles = currentGroup.applicationRoles
@@ -212,11 +212,12 @@ _AppRole _discoverAppStrategyRoleType(
       [];
   if (roles.length == 1 &&
       roles.contains(ApplicationRoleType.APP_STRATEGY_EDIT)) {
-    return _editorFeaturePermissionRole;
+    return _editorStrategyPermissionRole;
   }
   return _appFeatureRoles
+          .getRange(3, 6)
           .firstWhereOrNull((adminRole) => adminRole.matches(roles)) ??
-      _noFeaturePermissionRole;
+      _noAppStrategyPermissionRole;
 }
 
 class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
@@ -262,12 +263,16 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                       createMap(envSnapshot.data!, groupSnapshot.data!.group);
                   currentGroup = groupSnapshot.data?.group;
                   applicationId = groupSnapshot.data!.applicationId;
+
                   appFeatureRole = _discoverAdminRoleType(
                       currentGroup!, widget.bloc.applicationId!);
                   originalAppFeatureRole = appFeatureRole;
+
                   appStrategyRole = _discoverAppStrategyRoleType(
                       currentGroup!, widget.bloc.applicationId!);
-                  originalAppStrategyRole = appFeatureRole;
+                  originalAppStrategyRole = appStrategyRole;
+                  print("Original roles" +
+                      originalAppStrategyRole!.roles.toString());
                 }
 
                 final rows = <TableRow>[];
@@ -326,7 +331,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                                       size: 18,
                                     ),
                                   ),
-                                  items: _appFeatureRoles.map((role) {
+                                  items: _appFeatureRoles.take(3).map((role) {
                                     return DropdownMenuItem<_AppRole>(
                                         value: role,
                                         child: Text(
@@ -369,7 +374,9 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                                       size: 18,
                                     ),
                                   ),
-                                  items: _appStrategyRoles.map((role) {
+                                  items: _appFeatureRoles
+                                      .getRange(3, 6)
+                                      .map((role) {
                                     return DropdownMenuItem<_AppRole>(
                                         value: role,
                                         child: Text(
@@ -428,12 +435,21 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             });
                             var newGroup = currentGroup!;
                             newGroup.environmentRoles = newList;
-                            if (appFeatureRole != null &&
-                                originalAppFeatureRole != null &&
-                                originalAppFeatureRole?.id !=
-                                    appFeatureRole?.id) {
-                              replaceGroupRoles(newGroup, applicationId!,
-                                  originalAppFeatureRole!, appFeatureRole!);
+                            if ((appFeatureRole != null &&
+                                    originalAppFeatureRole != null &&
+                                    originalAppFeatureRole?.id !=
+                                        appFeatureRole?.id) ||
+                                appStrategyRole != null &&
+                                    originalAppStrategyRole != null &&
+                                    originalAppStrategyRole?.id !=
+                                        appStrategyRole?.id) {
+                              replaceGroupRoles(
+                                  newGroup,
+                                  applicationId!,
+                                  originalAppFeatureRole!,
+                                  appFeatureRole!,
+                                  originalAppStrategyRole!,
+                                  appStrategyRole!);
                             }
                             await widget.bloc
                                 .updateGroupWithEnvironmentRoles(
@@ -563,8 +579,14 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
     return retMap;
   }
 
-  void replaceGroupRoles(Group newGroup, String appId,
-      _AppRole originalAdminFeatureRole, _AppRole adminFeatureRole) {
+  void replaceGroupRoles(
+      Group newGroup,
+      String appId,
+      _AppRole originalAdminFeatureRole,
+      _AppRole adminFeatureRole,
+      _AppRole originalAppStrategyRole,
+      _AppRole appStrategyRole) {
+    print("In replacing roles");
     final agr = newGroup.applicationRoles.firstWhereOrNull(
         (appGroupRole) => appGroupRole.applicationId == appId);
     if (agr != null) {
@@ -574,13 +596,20 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
       roles.removeWhere((role) =>
           originalAdminFeatureRole.roles.contains(role) ||
           adminFeatureRole.roles.contains(role));
-      roles.addAll(adminFeatureRole.roles);
+      roles.removeWhere((role) =>
+          originalAppStrategyRole.roles.contains(role) ||
+          appStrategyRole.roles.contains(role));
+      roles.addAll(adminFeatureRole.roles + appStrategyRole.roles);
+      print("Added roles" + roles.toString());
       agr.roles = roles;
     } else {
+      print("Added roles" +
+          adminFeatureRole.roles.toString() +
+          appStrategyRole.roles.toString());
       newGroup.applicationRoles.add(ApplicationGroupRole(
           applicationId: appId,
           groupId: newGroup.id,
-          roles: adminFeatureRole.roles));
+          roles: adminFeatureRole.roles + appStrategyRole.roles));
     }
   }
 }
