@@ -11,7 +11,7 @@ on:
 
 jobs:
   adoc_build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     name: docs
     steps:
       - name: Checkout code
