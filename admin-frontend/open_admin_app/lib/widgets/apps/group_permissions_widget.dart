@@ -196,12 +196,22 @@ _AppRole _discoverAdminRoleType(Group currentGroup, String applicationId) {
           .firstWhereOrNull((element) => element.applicationId == applicationId)
           ?.roles ??
       [];
-  if (roles.length == 1 && roles.contains(ApplicationRoleType.FEATURE_EDIT)) {
+  if (roles.contains(ApplicationRoleType.FEATURE_EDIT)) {
     return _editorFeaturePermissionRole;
   }
-  return _appFeatureRoles
-          .firstWhereOrNull((adminRole) => adminRole.matches(roles)) ??
-      _noFeaturePermissionRole;
+  if (roles.contains(ApplicationRoleType.FEATURE_CREATE) &&
+      !roles.contains(ApplicationRoleType.FEATURE_EDIT_AND_DELETE)) {
+    return _appFeatureRoles[1];
+  }
+  if (roles.contains(ApplicationRoleType.FEATURE_EDIT_AND_DELETE)) {
+    return _appFeatureRoles[2];
+  }
+  if (!roles.contains(ApplicationRoleType.FEATURE_EDIT_AND_DELETE) &&
+      !roles.contains(ApplicationRoleType.FEATURE_CREATE) &&
+      !roles.contains(ApplicationRoleType.FEATURE_EDIT)) {
+    return _noFeaturePermissionRole;
+  }
+  return _noFeaturePermissionRole;
 }
 
 _AppRole _discoverAppStrategyRoleType(
@@ -210,14 +220,22 @@ _AppRole _discoverAppStrategyRoleType(
           .firstWhereOrNull((element) => element.applicationId == applicationId)
           ?.roles ??
       [];
-  if (roles.length == 1 &&
-      roles.contains(ApplicationRoleType.APP_STRATEGY_EDIT)) {
+  if (roles.contains(ApplicationRoleType.APP_STRATEGY_EDIT)) {
     return _editorStrategyPermissionRole;
   }
-  return _appFeatureRoles
-          .getRange(3, 6)
-          .firstWhereOrNull((adminRole) => adminRole.matches(roles)) ??
-      _noAppStrategyPermissionRole;
+  if (roles.contains(ApplicationRoleType.APP_STRATEGY_CREATE) &&
+      !roles.contains(ApplicationRoleType.APP_STRATEGY_EDIT_AND_DELETE)) {
+    return _appFeatureRoles[4];
+  }
+  if (roles.contains(ApplicationRoleType.APP_STRATEGY_EDIT_AND_DELETE)) {
+    return _appFeatureRoles[5];
+  }
+  if (!roles.contains(ApplicationRoleType.APP_STRATEGY_EDIT_AND_DELETE) &&
+      !roles.contains(ApplicationRoleType.APP_STRATEGY_CREATE) &&
+      !roles.contains(ApplicationRoleType.APP_STRATEGY_EDIT)) {
+    return _noAppStrategyPermissionRole;
+  }
+  return _noAppStrategyPermissionRole;
 }
 
 class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
@@ -271,8 +289,6 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                   appStrategyRole = _discoverAppStrategyRoleType(
                       currentGroup!, widget.bloc.applicationId!);
                   originalAppStrategyRole = appStrategyRole;
-                  print("Original roles" +
-                      originalAppStrategyRole!.roles.toString());
                 }
 
                 final rows = <TableRow>[];
@@ -586,7 +602,6 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
       _AppRole adminFeatureRole,
       _AppRole originalAppStrategyRole,
       _AppRole appStrategyRole) {
-    print("In replacing roles");
     final agr = newGroup.applicationRoles.firstWhereOrNull(
         (appGroupRole) => appGroupRole.applicationId == appId);
     if (agr != null) {
@@ -600,12 +615,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
           originalAppStrategyRole.roles.contains(role) ||
           appStrategyRole.roles.contains(role));
       roles.addAll(adminFeatureRole.roles + appStrategyRole.roles);
-      print("Added roles" + roles.toString());
       agr.roles = roles;
     } else {
-      print("Added roles" +
-          adminFeatureRole.roles.toString() +
-          appStrategyRole.roles.toString());
       newGroup.applicationRoles.add(ApplicationGroupRole(
           applicationId: appId,
           groupId: newGroup.id,
