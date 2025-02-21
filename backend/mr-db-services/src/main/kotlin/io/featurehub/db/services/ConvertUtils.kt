@@ -415,14 +415,15 @@ open class ConvertUtils @Inject constructor(
         appIdFilter?.let { appId ->
           val agr = group.applicationRoles.find { appId == it.applicationId }
 
+          val roleList = ApplicationRoleType.entries.toMutableList()
+          roleList.remove(ApplicationRoleType.FEATURE_EDIT) // this is an old role we don't want folks to use any longer
+
           if (agr != null) {
             if (agr.roles.isEmpty()) {
-              agr.roles = mutableListOf(ApplicationRoleType.FEATURE_EDIT_AND_DELETE, ApplicationRoleType.FEATURE_CREATE)
+              agr.roles = roleList
             }
           } else {
-            group.addApplicationRolesItem(ApplicationGroupRole().groupId(group.id).applicationId(appId).roles(
-              mutableListOf(ApplicationRoleType.FEATURE_EDIT_AND_DELETE, ApplicationRoleType.FEATURE_CREATE)
-            ))
+            group.addApplicationRolesItem(ApplicationGroupRole().groupId(group.id).applicationId(appId).roles(roleList))
           }
 
           null
