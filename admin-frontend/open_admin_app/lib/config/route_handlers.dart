@@ -253,11 +253,20 @@ class RouteCreator {
 
   Widget editApplicationStrategy(mrBloc,
       {Map<String, List<String?>> params = const {}}) {
-    return BlocProvider<EditApplicationStrategyBloc>(
-        creator: (context, bag) => EditApplicationStrategyBloc(mrBloc,
-            strategyId: params['id']!.elementAt(0),
-            applicationId: params['appid']!.elementAt(0)),
-        child: const EditApplicationStrategyRoute());
+    if (params['appid'] == null ||
+        params['appid']!.elementAt(0) == null ||
+        params['appid']!.elementAt(0) == "") {
+      return SizedBox(
+        height: 600,
+        child: notFound(mrBloc),
+      );
+    } else {
+      return BlocProvider<EditApplicationStrategyBloc>(
+          creator: (context, bag) => EditApplicationStrategyBloc(mrBloc,
+              strategyId: params['id']!.elementAt(0),
+              applicationId: params['appid']!.elementAt(0)),
+          child: const EditApplicationStrategyRoute());
+    }
   }
 
   Widget serviceEnvsHandler(ManagementRepositoryClientBloc mrBloc,
