@@ -9,6 +9,7 @@ import 'package:openapi_dart_common/openapi.dart';
 class EditApplicationStrategyBloc implements Bloc {
   final ManagementRepositoryClientBloc mrBloc;
   String? strId;
+  String? appId;
   late ApplicationRolloutStrategyServiceApi
       _applicationRolloutStrategyServiceApi;
   late ApplicationRolloutStrategy applicationRolloutStrategy;
@@ -17,6 +18,7 @@ class EditApplicationStrategyBloc implements Bloc {
   EditApplicationStrategyBloc(this.mrBloc,
       {String? strategyId, required String? applicationId}) {
     strId = strategyId;
+    appId = applicationId;
     _applicationRolloutStrategyServiceApi =
         ApplicationRolloutStrategyServiceApi(mrBloc.apiClient);
   }
@@ -24,15 +26,17 @@ class EditApplicationStrategyBloc implements Bloc {
   @override
   void dispose() {}
 
-  Future<RolloutStrategy> getStrategy(String? strategyId) async {
-    String? appId = mrBloc.getCurrentAid();
+  Future<RolloutStrategy> getStrategy(String? strategyId, String? appId) async {
+    // String? appId = mrBloc.getCurrentAid();
     if (appId != null && strategyId != null) {
       try {
         applicationRolloutStrategy = await _applicationRolloutStrategyServiceApi
             .getApplicationStrategy(appId, strategyId);
       } catch (e, s) {
         await mrBloc.dialogError(e, s,
-            showDetails: false, messageTitle: "Strategy does not exist");
+            showDetails: false,
+            messageTitle:
+                "We could not load a strategy you are looking for. Please check the provided URL and try again. ");
       }
       rolloutStrategy = RolloutStrategy(
           id: applicationRolloutStrategy.id,

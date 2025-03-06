@@ -32,7 +32,7 @@ class EditApplicationStrategyRoute extends StatelessWidget {
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data != null) {
                     return FutureBuilder(
-                        future: bloc.getStrategy(bloc.strId),
+                        future: bloc.getStrategy(bloc.strId, bloc.appId),
                         builder: (BuildContext context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
