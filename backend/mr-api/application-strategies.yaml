@@ -334,6 +334,10 @@ components:
           format: date-time
         updatedBy:
           $ref: "#/components/schemas/ListApplicationRolloutStrategyItemUser"
+        uniqueCode:
+          description: "The code for this application strategy, usually the ID for strategies"
+          type: string
+          nullable: true
         usage:
           description: "usage of the strategy"
           type: array

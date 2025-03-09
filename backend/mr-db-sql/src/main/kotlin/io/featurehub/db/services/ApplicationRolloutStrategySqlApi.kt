@@ -223,6 +223,7 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
   fun toListApplicationRolloutStrategyItem(rs: DbApplicationRolloutStrategy, opts: Opts): ListApplicationRolloutStrategyItem {
     val info = ListApplicationRolloutStrategyItem()
       .strategy(conversions.toApplicationRolloutStrategy(rs, opts)!!)
+      .uniqueCode(rs.shortUniqueCode)
       .whenUpdated(rs.whenUpdated.atOffset(ZoneOffset.UTC))
       .whenCreated(rs.whenCreated.atOffset(ZoneOffset.UTC))
       .updatedBy(ListApplicationRolloutStrategyItemUser().name(rs.whoChanged.name).email(rs.whoChanged.email))
