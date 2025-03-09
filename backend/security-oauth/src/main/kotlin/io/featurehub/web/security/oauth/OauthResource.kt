@@ -61,6 +61,11 @@ class OauthResource @Inject constructor(
       ?: return Response.status(302).location(URI.create(failureUrl!!)).build()
     val providerUser = providerFromState.discoverProviderUser(authed)
       ?: return Response.status(302).location(URI.create(failureUrl!!)).build()
+    if (providerUser.email == null) {
+      log.error("Provider is returning a null email address in token")
+
+      return Response.status(302).location(URI.create(failureUrl!!)).build()
+    }
     return SSOCompletionListener.successfulCompletion(
         providerUser.email!!,
         providerUser.name,
