@@ -71,7 +71,7 @@ Then("I expect the application strategy {string} to be attached to the feature h
 
   const history =
     await world.featureHistoryApi.listFeatureHistory(world.application.id, [world.feature.key],
-      [], [], [world.environment.id], 10, 1, FeatureHistoryOrder.Desc);
+      [], [], [world.environment.id], 10, 0, FeatureHistoryOrder.Desc);
 
   expect(history.status).to.eq(200);
   expect(history.data.items.length).to.be.gt(0);
