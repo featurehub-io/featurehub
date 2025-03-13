@@ -25,10 +25,11 @@ class ApplicationRolloutStrategyResource @Inject constructor(
     holder: ApplicationRolloutStrategyServiceDelegate.CreateApplicationStrategyHolder,
     securityContext: SecurityContext
   ): ApplicationRolloutStrategy {
-    val person = applicationUtils.featureCreatorCheck(securityContext, appId).current
+    val person = applicationUtils.applicationStrategyCreate(securityContext, appId)
+
     try {
       return applicationRolloutStrategyApi.createStrategy(
-        appId, createRolloutStrategy, person.id!!.id,
+        appId, createRolloutStrategy, person,
         Opts().add(FillOpts.SimplePeople, holder.includeWhoChanged)
       ) ?: throw NotFoundException()
     } catch (e: ApplicationRolloutStrategyApi.DuplicateNameException) {
@@ -42,9 +43,9 @@ class ApplicationRolloutStrategyResource @Inject constructor(
     holder: ApplicationRolloutStrategyServiceDelegate.DeleteApplicationStrategyHolder,
     securityContext: SecurityContext
   ) {
-    val person = applicationUtils.featureCreatorCheck(securityContext, appId).current
+    val person = applicationUtils.applicationStrategyDelete(securityContext, appId)
 
-    if (!applicationRolloutStrategyApi.archiveStrategy(appId, appStrategyId, person.id!!.id)) {
+    if (!applicationRolloutStrategyApi.archiveStrategy(appId, appStrategyId, person)) {
       throw NotFoundException()
     }
   }
@@ -55,12 +56,15 @@ class ApplicationRolloutStrategyResource @Inject constructor(
     holder: ApplicationRolloutStrategyServiceDelegate.GetApplicationStrategyHolder,
     securityContext: SecurityContext
   ): ApplicationRolloutStrategy {
-    applicationUtils.featureReadCheck(securityContext, appId)
+    applicationUtils.applicationStrategyReadCheck(securityContext, appId)
+
+    log.info("getApplicationStrategy: {}", holder)
+
     return applicationRolloutStrategyApi.getStrategy(
       appId, appStrategyId, Opts().add(
         FillOpts.SimplePeople,
         holder.includeWhoChanged
-      )
+      ).add(FillOpts.Usage, holder.includeUsage)
     ) ?: throw NotFoundException()
   }
 
@@ -69,11 +73,14 @@ class ApplicationRolloutStrategyResource @Inject constructor(
     holder: ApplicationRolloutStrategyServiceDelegate.ListApplicationStrategiesHolder,
     securityContext: SecurityContext
   ): ApplicationRolloutStrategyList {
-    applicationUtils.featureReadCheck(securityContext, appId)
+    applicationUtils.applicationStrategyReadCheck(securityContext, appId)
+
     return applicationRolloutStrategyApi.listStrategies(
       appId,
+      holder.page ?: 0, holder.max ?: 20, holder.filter,
       true == holder.includeArchived,
-      Opts().add(FillOpts.SimplePeople, holder.includeWhoChanged)
+      holder.sortOrder,
+      Opts().add(FillOpts.SimplePeople, holder.includeWhoChanged).add(FillOpts.Usage, holder.includeUsage)
     )
   }
 

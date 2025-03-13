@@ -21,11 +21,11 @@ class AdminServiceAccount3Spec extends Base3Spec {
       def portfolio2 = portfolioSqlApi.createPortfolio(new CreatePortfolio().name(ranName()).description("desc1"), Opts.empty(), superuser)
       def app2 = applicationSqlApi.createApplication(portfolio.id, new CreateApplication().name(ranName()).description("app1"), superPerson)
       def group2 = groupSqlApi.createGroup(portfolio2.id, new CreateGroup().name(ranName()).applicationRoles(
-          [new ApplicationGroupRole().roles([ApplicationRoleType.EDIT]).applicationId(app2.id)]
+          [new ApplicationGroupRole().roles([ApplicationRoleType.FEATURE_EDIT]).applicationId(app2.id)]
       ), superPerson)
     and: "a group attached to the first one"
       def group1 = groupSqlApi.createGroup(portfolio.id, new CreateGroup().name(ranName()).applicationRoles(
-        [new ApplicationGroupRole().roles([ApplicationRoleType.EDIT]).applicationId(app1.id)]
+        [new ApplicationGroupRole().roles([ApplicationRoleType.FEATURE_EDIT]).applicationId(app1.id)]
       ), superPerson)
     and: "a service account user"
       def sa1 = personSqlApi.createServicePerson(ranName(), superuser)

@@ -3,6 +3,7 @@ package io.featurehub.db.services
 import io.featurehub.db.api.FeatureHistoryApi
 import io.featurehub.db.model.DbFeatureValueVersion
 import io.featurehub.db.model.query.QDbApplicationFeature
+import io.featurehub.db.model.query.QDbApplicationRolloutStrategy
 import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.model.query.QDbFeatureValueVersion
 import io.featurehub.db.model.query.QDbPerson
@@ -39,6 +40,7 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
         QDbFeatureValueVersion.Alias.locked,
         QDbFeatureValueVersion.Alias.retired,
         QDbFeatureValueVersion.Alias.rolloutStrategies,
+        QDbFeatureValueVersion.Alias.sharedRolloutStrategies,
         QDbFeatureValueVersion.Alias.whenCreated,
       )
       .whoUpdated.fetch(QDbPerson.Alias.id, QDbPerson.Alias.name, QDbPerson.Alias.personType, QDbPerson.Alias.email)
@@ -82,6 +84,23 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
         items[key] = item
       }
 
+
+       if (it.sharedRolloutStrategies.isNotEmpty()) {
+        QDbApplicationRolloutStrategy().id.`in`(it.sharedRolloutStrategies.map { s -> s.strategyId }).application.id.eq(appId).findList().forEach { shared ->
+          val rs = RolloutStrategy()
+            .id(shared.shortUniqueCode)
+            .value(convert(it.sharedRolloutStrategies.first { srs -> srs.strategyId == shared.id }.value, it.feature.valueType))
+            .attributes(mutableListOf())
+            .name(shared.name)
+
+          if (shared.whenArchived != null) {
+            rs.name(shared.name.split(Conversions.archivePrefix)[0])
+          }
+
+          it.rolloutStrategies.add(rs)
+        }
+      }
+
       item!!.addHistoryItem(
         FeatureHistoryValue()
           .versionFrom(it.versionFrom)
@@ -94,6 +113,15 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
     return FeatureHistoryList()
       .max(count.get().toLong())
       .items(items.values.toList())
+  }
+
+  private fun convert(defaultValue: Any?, valueType: FeatureValueType): Any? {
+    return when(valueType) {
+      FeatureValueType.BOOLEAN -> defaultValue?.toString() == "true"
+      FeatureValueType.STRING -> defaultValue as String?
+      FeatureValueType.NUMBER -> defaultValue?.let { BigDecimal(it.toString()) }
+      FeatureValueType.JSON -> defaultValue as String?
+    }
   }
 
   private fun convert(defaultValue: String?, valueType: FeatureValueType): Any? {

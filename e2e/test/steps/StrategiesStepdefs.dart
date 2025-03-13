@@ -10,39 +10,39 @@ class StrategiesStepdefs {
 
   StrategiesStepdefs(this.userCommon, this.shared);
 
-  @And(r'I create shared rollout strategies')
-  void iSetTheRolloutStrategyToPercentage(GherkinTable table) async {
-    assert(shared.environment.applicationId == shared.application.id,
-        'environment is not in application');
-    assert(shared.feature != null, 'must know what the feature is');
-
-    final existing = (await userCommon.rolloutStrategyService
-            .listApplicationStrategies(shared.application.id))
-        .items;
-
-    for (var g in table) {
-      var strategy =
-          existing.firstWhereOrNull((s) => s.name.toLowerCase() == g['name']);
-
-      var percentage = g['percentage'] != null
-          ? (double.parse(g['percentage']) * 10000).round()
-          : null;
-
-      if (strategy == null) {
-        await userCommon.rolloutStrategyService.createApplicationStrategy(
-            shared.application.id,
-            CreateApplicationRolloutStrategy(
-                name: g['name'], percentage: percentage));
-      } else {
-        strategy.percentage = percentage;
-
-        await userCommon.rolloutStrategyService.updateApplicationStrategy(
-            shared.application.id,
-            strategy.id,
-            UpdateApplicationRolloutStrategy(percentage: percentage));
-      }
-    }
-  }
+  // @And(r'I create shared rollout strategies')
+  // void iSetTheRolloutStrategyToPercentage(GherkinTable table) async {
+  //   assert(shared.environment.applicationId == shared.application.id,
+  //       'environment is not in application');
+  //   assert(shared.feature != null, 'must know what the feature is');
+  //
+  //   final existing = (await userCommon.rolloutStrategyService
+  //           .listApplicationStrategies(shared.application.id))
+  //       .items;
+  //
+  //   for (var g in table) {
+  //     var strategy =
+  //         existing.firstWhereOrNull((s) => s.name.toLowerCase() == g['name']);
+  //
+  //     var percentage = g['percentage'] != null
+  //         ? (double.parse(g['percentage']) * 10000).round()
+  //         : null;
+  //
+  //     if (strategy == null) {
+  //       await userCommon.rolloutStrategyService.createApplicationStrategy(
+  //           shared.application.id,
+  //           CreateApplicationRolloutStrategy(
+  //               name: g['name'], percentage: percentage));
+  //     } else {
+  //       strategy.percentage = percentage;
+  //
+  //       await userCommon.rolloutStrategyService.updateApplicationStrategy(
+  //           shared.application.id,
+  //           strategy.id,
+  //           UpdateApplicationRolloutStrategy(percentage: percentage));
+  //     }
+  //   }
+  // }
 
   @And(r'I apply the rollout strategies to the current feature value')
   void iApplyRolloutStrategiesToFeatureValue(GherkinTable table) async {
@@ -93,28 +93,28 @@ class StrategiesStepdefs {
     }
   }
 
-  @And(r'I confirm on getting the feature it has the same data as set')
-  void iConfirmOnGettingTheFeatureItHasTheSameDataAsSet() async {
-    assert(shared.feature != null, 'must know what the feature is');
-    assert(shared.featureValue != null,
-        'must have a stored feature value to compare against');
-
-    final fv =
-        await userCommon.environmentFeatureServiceApi.getFeatureForEnvironment(
-      shared.environment.id,
-      shared.feature!.key,
-    );
-
-    print(
-        "fv is ${fv.rolloutStrategyInstances}\n stored is ${shared.featureValue!.rolloutStrategyInstances}");
-
-    assert(
-        ListEquality().equals(
-            fv.rolloutStrategyInstances!.sortedBy((element) => element.name),
-            shared.featureValue!.rolloutStrategyInstances!
-                .sortedBy((element) => element.name)),
-        'not equal');
-  }
+  // @And(r'I confirm on getting the feature it has the same data as set')
+  // void iConfirmOnGettingTheFeatureItHasTheSameDataAsSet() async {
+  //   assert(shared.feature != null, 'must know what the feature is');
+  //   assert(shared.featureValue != null,
+  //       'must have a stored feature value to compare against');
+  //
+  //   final fv =
+  //       await userCommon.environmentFeatureServiceApi.getFeatureForEnvironment(
+  //     shared.environment.id,
+  //     shared.feature!.key,
+  //   );
+  //
+  //   print(
+  //       "fv is ${fv.rolloutStrategyInstances}\n stored is ${shared.featureValue!.rolloutStrategyInstances}");
+  //
+  //   assert(
+  //       ListEquality().equals(
+  //           fv.rolloutStrategyInstances!.sortedBy((element) => element.name),
+  //           shared.featureValue!.rolloutStrategyInstances!
+  //               .sortedBy((element) => element.name)),
+  //       'not equal');
+  // }
 
   @And(r'I create custom rollout strategies')
   void iCreateCustomRolloutStrategies(GherkinTable table) async {

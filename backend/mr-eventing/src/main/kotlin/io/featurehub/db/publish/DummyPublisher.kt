@@ -12,6 +12,7 @@ import java.util.*
 class DummyPublisher : CacheSource, CacheRefresherApi {
   override fun publishObjectsAssociatedWithCache() {}
   override fun publishFeatureChange(featureValue: DbFeatureValue) {}
+
   override fun deleteFeatureChange(feature: DbApplicationFeature, environmentId: UUID) {}
   override fun updateServiceAccount(serviceAccount: DbServiceAccount, publishAction: PublishAction) {}
   override fun deleteServiceAccount(id: UUID) {}
@@ -19,7 +20,6 @@ class DummyPublisher : CacheSource, CacheRefresherApi {
   override fun deleteEnvironment(id: UUID) {}
   override fun publishFeatureChange(appFeature: DbApplicationFeature, update: PublishAction) {}
   override fun publishFeatureChange(appFeature: DbApplicationFeature, update: PublishAction, featureKey: String) {}
-  override fun publishApplicationRolloutStrategyChange(rs: DbApplicationRolloutStrategy) {}
   override fun refreshPortfolios(portfolioIds: List<UUID>) {
   }
 

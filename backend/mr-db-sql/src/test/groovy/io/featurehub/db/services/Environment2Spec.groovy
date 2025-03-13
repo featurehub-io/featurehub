@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
@@ -38,14 +39,17 @@ class Environment2Spec extends Base2Spec {
   Application appTreeEnvs
   Group groupInPortfolio1
   CacheSource cacheSource
+  FeatureMessagingPublisher featureMessagingPublisher
 
   def setup() {
     db.currentTransaction().commitAndContinue()
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
-    cacheSource = Mock(CacheSource)
+    cacheSource = Mock()
+    featureMessagingPublisher = Mock()
 
     appApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, Mock(InternalFeatureApi))
-    envApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi(), Mock(WebhookEncryptionService))
+    envApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy,
+      new InternalFeatureSqlApi(convertUtils,cacheSource,featureMessagingPublisher), Mock(WebhookEncryptionService))
 
     // now set up the environments we need
     DbOrganization organization = Finder.findDbOrganization()
@@ -348,9 +352,9 @@ class Environment2Spec extends Base2Spec {
       permsAverageJoe.applicationRoles.isEmpty()
       permsAverageJoeAfterAddingPerms.applicationRoles.isEmpty()
       permsAverageJoeAfterAddingPerms.environmentRoles.containsAll([RoleType.CHANGE_VALUE, RoleType.READ])
-      permsAdmin.applicationRoles.containsAll([ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE])
+      permsAdmin.applicationRoles.containsAll([ApplicationRoleType.FEATURE_CREATE, ApplicationRoleType.FEATURE_EDIT_AND_DELETE])
       permsAdmin.environmentRoles.containsAll(RoleType.values() as List)
-      permsWhenSuperAdmin.applicationRoles.containsAll([ApplicationRoleType.CREATE, ApplicationRoleType.EDIT_AND_DELETE])
+      permsWhenSuperAdmin.applicationRoles.containsAll([ApplicationRoleType.FEATURE_CREATE, ApplicationRoleType.FEATURE_EDIT_AND_DELETE])
       permsWhenSuperAdmin.environmentRoles.containsAll(RoleType.values() as List)
       appPermsJoe.applicationRoles.isEmpty()
       appPermsJoe.environments.find({it.id == env.id})
@@ -358,14 +362,14 @@ class Environment2Spec extends Base2Spec {
       appPermsJoe.environments.find({it.id == env.id}).roles.containsAll([RoleType.CHANGE_VALUE, RoleType.READ])
     when: "I make average joe a feature creator"
       g = groupSqlApi.getGroup(groupInPortfolio1.id, Opts.opts(FillOpts.Acls), superPerson)
-      g.applicationRoles.add(new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.CREATE]))
+      g.applicationRoles.add(new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_CREATE]))
       def permsAverageJoeAfterAdminOfApp1 = groupSqlApi.updateGroup(g.id, g, app1.id, false, true, false, Opts.opts(FillOpts.Acls))
       averageJoAccess = envApi.getEnvironmentsUserCanAccess(app1.id, averageJoe.id)
       appPermsJoe = appApi.findApplicationPermissions(app1.id, averageJoe.id)
     then: "the permissions to the portfolio are empty"
-      permsAverageJoeAfterAdminOfApp1.applicationRoles.collect({it.roles}).flatten().containsAll([ApplicationRoleType.CREATE])
+      permsAverageJoeAfterAdminOfApp1.applicationRoles.collect({it.roles}).flatten().containsAll([ApplicationRoleType.FEATURE_CREATE])
       averageJoAccess.size() == 1
-      appPermsJoe.applicationRoles.containsAll([ApplicationRoleType.CREATE])
+      appPermsJoe.applicationRoles.containsAll([ApplicationRoleType.FEATURE_CREATE])
   }
 
   def "i create an environment and update it using the update2"() {

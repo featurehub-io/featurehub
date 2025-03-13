@@ -385,7 +385,7 @@ open class ConvertUtils @Inject constructor(
     if (opts!!.contains(FillOpts.Members)) {
       val org = if (dbg.owningOrganization == null) dbg.owningPortfolio.organization else dbg.owningOrganization
       group.members = QDbPerson()
-        .order().name.asc().whenArchived.isNull.groupMembers.group.eq(dbg).findList()
+        .orderBy().name.asc().whenArchived.isNull.groupMembers.group.eq(dbg).findList()
         .map { p: DbPerson? ->
           this.toPerson(
             p, org, opts.minus(FillOpts.Members, FillOpts.Acls, FillOpts.Groups)
@@ -415,14 +415,15 @@ open class ConvertUtils @Inject constructor(
         appIdFilter?.let { appId ->
           val agr = group.applicationRoles.find { appId == it.applicationId }
 
+          val roleList = ApplicationRoleType.entries.toMutableList()
+          roleList.remove(ApplicationRoleType.FEATURE_EDIT) // this is an old role we don't want folks to use any longer
+
           if (agr != null) {
             if (agr.roles.isEmpty()) {
-              agr.roles = mutableListOf(ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE)
+              agr.roles = roleList
             }
           } else {
-            group.addApplicationRolesItem(ApplicationGroupRole().groupId(group.id).applicationId(appId).roles(
-              mutableListOf(ApplicationRoleType.EDIT_AND_DELETE, ApplicationRoleType.CREATE)
-            ))
+            group.addApplicationRolesItem(ApplicationGroupRole().groupId(group.id).applicationId(appId).roles(roleList))
           }
 
           null
@@ -555,11 +556,11 @@ open class ConvertUtils @Inject constructor(
     return featureValue
   }
 
-  private fun sharedRolloutStrategyToObject(value: String, valueType: FeatureValueType): Any {
+  private fun sharedRolloutStrategyToObject(value: String?, valueType: FeatureValueType): Any? {
     return when (valueType) {
-      FeatureValueType.BOOLEAN -> java.lang.Boolean.parseBoolean(value)
+      FeatureValueType.BOOLEAN -> if (value == null) false else java.lang.Boolean.parseBoolean(value)
       FeatureValueType.STRING, FeatureValueType.JSON -> value
-      FeatureValueType.NUMBER -> BigDecimal(value)
+      FeatureValueType.NUMBER -> if (value == null) null else  BigDecimal(value)
     }
   }
 
@@ -632,14 +633,14 @@ open class ConvertUtils @Inject constructor(
     }
     if (opts.contains(FillOpts.Groups)) {
       portfolio.groups =
-        QDbGroup().whenArchived.isNull.owningPortfolio.eq(p).order().name.asc().findList()
+        QDbGroup().whenArchived.isNull.owningPortfolio.eq(p).orderBy().name.asc().findList()
           .map { g: DbGroup? -> toGroup(g, opts) }
     }
     if (opts.contains(FillOpts.Applications)) {
       var appFinder = QDbApplication()
         .whenArchived.isNull
         .portfolio.eq(p)
-        .order().name.asc()
+        .orderBy().name.asc()
 
       personId?.let {
         val portAdmin = isPersonMemberOfPortfolioAdminGroup(portfolio.id, personId)

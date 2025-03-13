@@ -36,6 +36,7 @@ class FeatureAuditingSpec extends Base2Spec {
   FeatureMessagingPublisher featureMessagingCloudEventPublisher
   ServiceAccountSqlApi serviceAccountApi
   InternalPersonApi internalPersonApi
+  InternalFeatureApi internalFeatureApi
 
   static UUID portfolioId = UUID.fromString('16364b24-b4ef-4052-9c33-5eb66b0d1baf')
 //  static UUID
@@ -60,7 +61,9 @@ class FeatureAuditingSpec extends Base2Spec {
       p1 = portfolioSqlApi.createPortfolio(new CreatePortfolio().name("basic").description("basic"), Opts.empty(), superuser)
     }
 
-    applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi())
+    internalFeatureApi = new InternalFeatureSqlApi(convertUtils, cacheSource, featureMessagingCloudEventPublisher)
+
+    applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, internalFeatureApi)
     app = applicationSqlApi.getApplication(p1.id, "app1")
 
     if (app == null) {
@@ -69,7 +72,7 @@ class FeatureAuditingSpec extends Base2Spec {
 
     db.currentTransaction().commit()
 
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi(), Mock(WebhookEncryptionService))
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, internalFeatureApi, Mock(WebhookEncryptionService))
     env = environmentSqlApi.getEnvironment(app.id, "dev")
 
     if (env == null) {

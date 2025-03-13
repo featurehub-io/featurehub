@@ -4,10 +4,13 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/routes/admin_service_accounts_route.dart';
 import 'package:open_admin_app/routes/api_keys_route.dart';
+import 'package:open_admin_app/routes/application_strategies_route.dart';
 import 'package:open_admin_app/routes/apps_route.dart';
 import 'package:open_admin_app/routes/create_admin_service_accounts_route.dart';
+import 'package:open_admin_app/routes/create_application_strategy_route.dart';
 import 'package:open_admin_app/routes/create_user_route.dart';
 import 'package:open_admin_app/routes/edit_admin_service_account_route.dart';
+import 'package:open_admin_app/routes/edit_application_strategy_route.dart';
 import 'package:open_admin_app/routes/edit_user_route.dart';
 import 'package:open_admin_app/routes/feature_groups_route.dart';
 import 'package:open_admin_app/routes/features_overview_route.dart';
@@ -23,6 +26,8 @@ import 'package:open_admin_app/routes/oauth2_fail_route.dart';
 import 'package:open_admin_app/routes/register_url_route.dart';
 import 'package:open_admin_app/routes/setup_route.dart';
 import 'package:open_admin_app/routes/signin_route.dart';
+import 'package:open_admin_app/widgets/application-strategies/application_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/application-strategies/edit_application_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_app_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
@@ -222,6 +227,50 @@ class RouteCreator {
     return BlocProvider<FeatureGroupsBloc>(
         creator: (context, bag) => FeatureGroupsBloc(mrBloc),
         child: FeatureGroupsRoute(createApp: _actionCreate(params)));
+  }
+
+  Widget applicationStrategies(mrBloc,
+      {Map<String, List<String?>> params = const {}}) {
+    return BlocProvider<ApplicationStrategyBloc>(
+        creator: (context, bag) => ApplicationStrategyBloc(mrBloc),
+        child: ApplicationStrategyRoute(createApp: _actionCreate(params)));
+  }
+
+  Widget createApplicationStrategy(mrBloc,
+      {Map<String, List<String?>> params = const {}}) {
+    if (params['appid'] == null ||
+        params['appid']!.elementAt(0) == null ||
+        params['id'] == null ||
+        params['id']!.elementAt(0) == null) {
+      return SizedBox(
+        height: 600,
+        child: notFound(mrBloc),
+      );
+    } else {
+      return BlocProvider<EditApplicationStrategyBloc>(
+          creator: (context, bag) => EditApplicationStrategyBloc(mrBloc,
+              applicationId: params['appid']!.elementAt(0)),
+          child: const CreateApplicationStrategyRoute());
+    }
+  }
+
+  Widget editApplicationStrategy(mrBloc,
+      {Map<String, List<String?>> params = const {}}) {
+    if (params['appid'] == null ||
+        params['appid']!.elementAt(0) == null ||
+        params['id'] == null ||
+        params['id']!.elementAt(0) == null) {
+      return SizedBox(
+        height: 600,
+        child: notFound(mrBloc),
+      );
+    } else {
+      return BlocProvider<EditApplicationStrategyBloc>(
+          creator: (context, bag) => EditApplicationStrategyBloc(mrBloc,
+              strategyId: params['id']!.elementAt(0),
+              applicationId: params['appid']!.elementAt(0)),
+          child: const EditApplicationStrategyRoute());
+    }
   }
 
   Widget serviceEnvsHandler(ManagementRepositoryClientBloc mrBloc,

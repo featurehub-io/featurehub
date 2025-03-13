@@ -29,7 +29,7 @@ NOTE: FeatureHub doesn't send emails to recover passwords or any registration or
 
 ==== When there is only one Super Admin
 
-When there is only a single Super Admin, and they have forgotten their password, the only way to reset it is to go to the database. To do this, in the database, find the id of the superuser in the `fh_person` table, and reset the `password` field to `1000:caffda0b26e265a0977718a548d784e6:1123a076c3925d0d77f2c902115e8732de25ae22394f74faaa52c8d9d9a829b8021299afd4a1793e47936445bb0ceff0f17f329716342db19f4e428dd5859dc1`. 
+When there is only a single Super Admin, and they have forgotten their password, the only way to reset it is to go to the database. To do this, in the database, find the id of the superuser in the `fh_person` table, and reset the `password` field to `1000:caffda0b26e265a0977718a548d784e6:1123a076c3925d0d77f2c902115e8732de25ae22394f74faaa52c8d9d9a829b8021299afd4a1793e47936445bb0ceff0f17f329716342db19f4e428dd5859dc1`.
 
 You can then login using the password `featurehub`.
 
@@ -69,19 +69,26 @@ NOTE: Once feature is created, feature values will be automatically created with
 
 Following permissions are to control feature values and can be set per each environment for a given application:
 
-* `READ` 
+* `READ`
 ** Can view the value of a feature, feature value strategies assigned, feature properties, lock/unlock status, retirement status and feature auditing
 ** Can view Feature Groups and settings for features and a strategy inside a group
 * `LOCK` Can lock a feature, so it's value can't be changed, this gives us a
 safety net when deploying incomplete code into production.
 (Typically, developers and testers keep features locked until they are finished and ready to be set by business people)
 * `UNLOCK` Can unlock a feature, so it's value can be changed
-* `CHANGE_VALUE` 
-** Can change the value of a feature or can "retire" a feature. 
-** Can create, set and delete strategy on a feature. 
+* `CHANGE_VALUE`
+** Can change the value of a feature or can "retire" a feature.
+** Can create, set and delete strategy on a feature.
 ** Can create, edit and delete feature groups for a given environment. Can change a feature value, create and update strategy in a Feature Group.
 
 image::fh-group-permissions.png[Group permissions, 1500]
+
+==== Application Strategies permissions
+
+* `No app strategy` permission will block a user from creating, updating or deleting app strategy
+* `Create` permission allows to create application strategy
+* `Create / Edit / Delete` permission allows
+to create, edit and delete application strategy
 
 === Administrator groups
 

@@ -6,6 +6,7 @@
 ** xref:features.adoc[Features]
 ** xref:strategies.adoc[Rollout Strategy and User Targeting]
 ** xref:feature-groups.adoc[Feature Groups]
+** xref:application-strategies.adoc[Application Strategies]
 ** xref:service-accounts.adoc[Service Accounts & API Keys]
 ** xref:users.adoc[Users & User Groups Permissions]
 ** xref:app_setup_helper.adoc[Quick Setup Helper]

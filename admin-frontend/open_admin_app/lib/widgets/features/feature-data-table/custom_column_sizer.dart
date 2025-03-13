@@ -17,12 +17,9 @@ class CustomColumnSizer extends ColumnSizer {
           var typedCellData = cell.value as AggregatedFeatureCellData;
           if (typedCellData.fv != null) {
             int stratLength = 0;
-            if (typedCellData.fv!.featureGroupStrategies != null) {
-              stratLength = typedCellData.fv!.rolloutStrategies!.length +
-                  typedCellData.fv!.featureGroupStrategies!.length;
-            } else {
-              stratLength = typedCellData.fv!.rolloutStrategies!.length;
-            }
+            stratLength = typedCellData.fv!.rolloutStrategies!.length +
+                typedCellData.fv!.featureGroupStrategies!.length +
+                typedCellData.fv!.rolloutStrategyInstances!.length;
             if (stratLength * defaultCellHeight > height) {
               height = stratLength * defaultCellHeight;
             }

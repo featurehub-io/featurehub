@@ -1,22 +1,25 @@
 package io.featurehub.db.services
 
-import io.ebean.Database
 import io.ebean.annotation.Transactional
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.ApplicationRolloutStrategyApi
 import io.featurehub.db.model.DbApplicationRolloutStrategy
 import io.featurehub.db.model.query.QDbApplicationRolloutStrategy
-import io.featurehub.mr.events.common.CacheSource
+import io.featurehub.db.model.query.QDbEnvironment
+import io.featurehub.db.model.query.QDbFeatureValue
+import io.featurehub.db.services.ArchiveStrategy.Companion.isoDate
 import io.featurehub.mr.model.*
 import jakarta.inject.Inject
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.*
 
 class ApplicationRolloutStrategySqlApi @Inject constructor(
-  private val conversions: Conversions, private val cacheSource: CacheSource
+  private val conversions: Conversions,
+  private val internalFeatureApi: InternalFeatureApi
 ) : ApplicationRolloutStrategyApi {
 
   override fun createStrategy(
@@ -113,6 +116,10 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
 
     val strategy = byStrategy(appId, strategyId, Opts.empty()).findOne()  ?: return null
     if (strategy.application.id == app.id) {
+      var notifyAttachedFeatures = false
+
+      val originalRolloutStrategy = InternalFeatureApi.toRolloutStrategy(strategy)
+
       // check if we are renaming it and if so, are we using a duplicate name
       update.name?.let { newName ->
         if (!strategy.name.equals(newName, ignoreCase = true)) {
@@ -134,15 +141,18 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
 
       update.percentage?.let { percent ->
         strategy.strategy.percentage = percent
+        notifyAttachedFeatures = true
       }
 
       update.percentageAttributes?.let { percentAttrs ->
         strategy.strategy.percentageAttributes = percentAttrs
+        notifyAttachedFeatures = true
       }
 
       update.attributes?.let { attr ->
         rationaliseAttributeIds(attr)
         strategy.strategy.attributes = attr
+        notifyAttachedFeatures = true
       }
 
       update.avatar?.let { strategy.strategy.avatar = it }
@@ -153,7 +163,16 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
 
       return try {
         save(strategy)
-        cacheSource.publishApplicationRolloutStrategyChange(strategy)
+
+        if (notifyAttachedFeatures) {
+          // now we have to update all of the tagged features, add an additional history element, force republishing of everything associated
+          strategy.sharedRolloutStrategies?.let { strategies ->
+            strategies.forEach { strategyForFeatureValue ->
+              internalFeatureApi.updatedApplicationStrategy(strategyForFeatureValue, originalRolloutStrategy, p)
+            }
+          }
+        }
+
         conversions.toApplicationRolloutStrategy(strategy, opts)!!
       } catch (e: Exception) {
         throw ApplicationRolloutStrategyApi.DuplicateNameException()
@@ -165,21 +184,68 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
   }
 
   @Transactional(readOnly = true)
-  override fun listStrategies(appId: UUID, includeArchived: Boolean, opts: Opts): ApplicationRolloutStrategyList {
+  override fun listStrategies(
+    appId: UUID,
+    page: Int,
+    max: Int,
+    filter: String?,
+    includeArchived: Boolean,
+    sortOrder: SortOrder?,
+    opts: Opts
+  ): ApplicationRolloutStrategyList {
     var qRS = QDbApplicationRolloutStrategy().application.id.eq(appId)
+
+    filter?.let {
+      qRS = qRS.name.ilike("%${it.lowercase()}%")
+    }
 
     if (!includeArchived) {
       qRS = qRS.whenArchived.isNull()
     }
 
     if (opts.contains(FillOpts.SimplePeople)) {
-      qRS.whoChanged.fetch()
+      qRS = qRS.whoChanged.fetch()
     }
 
-    val strategies = qRS.findList()
+    val strategiesRS = if (sortOrder == SortOrder.DESC) {
+      qRS.orderBy().name.desc()
+    } else {
+      qRS.orderBy().name.asc()
+    }
 
-    return ApplicationRolloutStrategyList().max(strategies.size).page(0)
-      .items(strategies.mapNotNull { conversions.toApplicationRolloutStrategy(it, opts) })
+    val strategies = strategiesRS.setFirstRow(page * max).setMaxRows(max).findList()
+    val count = qRS.findCount()
+
+    return ApplicationRolloutStrategyList().max(count).page(page)
+      .items(strategies.mapNotNull { toListApplicationRolloutStrategyItem(it, opts) })
+  }
+
+  fun toListApplicationRolloutStrategyItem(rs: DbApplicationRolloutStrategy, opts: Opts): ListApplicationRolloutStrategyItem {
+    val info = ListApplicationRolloutStrategyItem()
+      .strategy(conversions.toApplicationRolloutStrategy(rs, opts)!!)
+      .uniqueCode(rs.shortUniqueCode)
+      .whenUpdated(rs.whenUpdated.atOffset(ZoneOffset.UTC))
+      .whenCreated(rs.whenCreated.atOffset(ZoneOffset.UTC))
+      .updatedBy(ListApplicationRolloutStrategyItemUser().name(rs.whoChanged.name).email(rs.whoChanged.email))
+
+    opts.contains(FillOpts.Usage).let {
+      val envs = mutableMapOf<UUID,ApplicationRolloutStrategyEnvironment>()
+
+      QDbFeatureValue()
+        .sharedRolloutStrategies.rolloutStrategy.id.eq(rs.id)
+        .environment.fetch(QDbEnvironment.Alias.id, QDbEnvironment.Alias.name)
+        .select(QDbFeatureValue.Alias.id).findList().forEach { fv ->
+          envs.getOrPut(fv.environment.id) { ApplicationRolloutStrategyEnvironment().featuresCount(0) }.let { env ->
+            env.id = fv.environment.id
+            env.name = fv.environment.name
+            env.featuresCount += 1
+          }
+        }
+
+      info.usage = envs.values.toMutableList()
+    }
+
+    return info
   }
 
   @Transactional(readOnly = true)
@@ -201,13 +267,27 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
     val p = conversions.byPerson(person) ?: return  false
     val strategy = byStrategy(appId, strategyId, Opts.empty()).findOne() ?: return false
 
-    // only update and publish if it _actually_ changed
+    // only update and publish if it _actually_ changed. We do this here instead of in ArchiveStrategy
+    // because its not a simple publish. That class normally orchestrates it, but its simply too complex.
     if (strategy.whenArchived == null) {
-      strategy.whoChanged = p
+      val originalRolloutStrategy = InternalFeatureApi.toRolloutStrategy(strategy)
+
       strategy.whenArchived = LocalDateTime.now()
-      save(strategy)
-      cacheSource.publishApplicationRolloutStrategyChange(strategy)
+      strategy.name = (strategy.name + Conversions.archivePrefix + isoDate.format(strategy.whenArchived)).take(150)
+      strategy.whoChanged = p
+      strategy.save()
+
+      strategy.sharedRolloutStrategies?.let { attachedStrategies ->
+        // we are going go and detach all of these, which will require us to create new audit records for this
+        val copy = attachedStrategies.toList()
+
+        copy.forEach { strategyForFeatureValue ->
+          // this needs to remove the connection, create an audit trail, and publish a new record to Edge, and trigger webhooks
+          internalFeatureApi.detachApplicationStrategy(strategyForFeatureValue, originalRolloutStrategy, p)
+        }
+      }
     }
+
 
     return true
   }

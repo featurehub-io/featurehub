@@ -13,6 +13,7 @@ class EditingFeatureValueBloc implements Bloc {
 
   late FeatureServiceApi _featureServiceApi;
   late FeatureHistoryServiceApi _featureHistoryServiceApi;
+  late ApplicationRolloutStrategyServiceApi _applicationStrategyServiceApi;
 
   final ApplicationFeatureValues applicationFeatureValues;
   final EnvironmentFeatureValues environmentFeatureValue;
@@ -27,6 +28,18 @@ class EditingFeatureValueBloc implements Bloc {
 
   late final BehaviorSubject<List<RolloutStrategy>> _strategySource;
   Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
+
+  late final BehaviorSubject<List<RolloutStrategyInstance>>
+      _applicationStrategySource;
+  Stream<List<RolloutStrategyInstance>> get applicationStrategies =>
+      _applicationStrategySource
+          .stream; // should it be ApplicationRolloutStrategy type?
+
+  late final BehaviorSubject<List<ListApplicationRolloutStrategyItem>>
+      _availableApplicationStrategiesSource;
+  Stream<List<ListApplicationRolloutStrategyItem>>
+      get availableApplicationStrategies =>
+          _availableApplicationStrategiesSource.stream;
 
   final _isFeatureValueUpdatedSource = BehaviorSubject<bool>.seeded(false);
   BehaviorSubject<bool> get isFeatureValueUpdatedStream =>
@@ -50,13 +63,26 @@ class EditingFeatureValueBloc implements Bloc {
         FeatureServiceApi(featureStatusBloc.mrClient.apiClient);
     _featureHistoryServiceApi =
         FeatureHistoryServiceApi(featureStatusBloc.mrClient.apiClient);
+    _applicationStrategyServiceApi = ApplicationRolloutStrategyServiceApi(
+        featureStatusBloc.mrClient.apiClient);
     currentFeatureValue = FeatureValue.fromJson(featureValue
         .toJson()); // keeping original featureValue cached for resets
     _strategySource = BehaviorSubject<List<RolloutStrategy>>.seeded(
         [...currentFeatureValue.rolloutStrategies ?? []]);
+    _applicationStrategySource =
+        BehaviorSubject<List<RolloutStrategyInstance>>.seeded(
+            [...currentFeatureValue.rolloutStrategyInstances ?? []]);
+    _availableApplicationStrategiesSource =
+        BehaviorSubject<List<ListApplicationRolloutStrategyItem>>.seeded([]);
     environmentId = environmentFeatureValue.environmentId;
     addFeatureValueToStream(featureValue);
     _featureValueStreamSubscription = _currentFv.listen(featureValueHasChanged);
+  }
+
+  String? _selectedStrategyIdToAdd;
+
+  set selectedStrategyToAdd(String? selectedStrategyToAdd) {
+    _selectedStrategyIdToAdd = selectedStrategyToAdd;
   }
 
   /*
@@ -90,6 +116,13 @@ class EditingFeatureValueBloc implements Bloc {
     addFeatureValueToStream(currentFeatureValue);
   }
 
+  void updateApplicationStrategyValue() {
+    final strategies = _applicationStrategySource.value;
+    _applicationStrategySource.add(strategies);
+    currentFeatureValue.rolloutStrategyInstances = strategies;
+    addFeatureValueToStream(currentFeatureValue);
+  }
+
   void featureValueHasChanged(FeatureValue updatedFeatureValue) {
     if (featureValue != updatedFeatureValue) {
       _isFeatureValueUpdatedSource.add(true);
@@ -105,6 +138,15 @@ class EditingFeatureValueBloc implements Bloc {
         "removing strategy ${rs.id} from list ${strategies.map((e) => e.id)}");
     strategies.removeWhere((e) => e.id == rs.id);
     updateStrategyValue();
+  }
+
+  void removeApplicationStrategy(RolloutStrategyInstance rs) {
+    final strategies = _applicationStrategySource.value;
+    fhosLogger.fine(
+        "removing strategy ${rs.strategyId} from list ${strategies.map((e) => e.strategyId)}");
+    _applicationStrategySource.value
+        .removeWhere((e) => e.strategyId == rs.strategyId);
+    updateApplicationStrategyValue();
   }
 
   updateFeatureValueLockedStatus(bool locked) {
@@ -167,7 +209,33 @@ class EditingFeatureValueBloc implements Bloc {
     _featureHistoryListSource.add(featureHistory.items.first);
   }
 
+  getApplicationStrategies() async {
+    var appStrategiesList = await _applicationStrategyServiceApi
+        .listApplicationStrategies(applicationId);
+    _availableApplicationStrategiesSource.add(appStrategiesList.items);
+  }
+
   void clearHistory() {
     _featureHistoryListSource.add(null);
+  }
+
+  addApplicationStrategy() {
+    if (_selectedStrategyIdToAdd != null) {
+      final strategyList = _availableApplicationStrategiesSource.value;
+
+      ListApplicationRolloutStrategyItem ars = strategyList.firstWhere(
+          (strategy) => strategy.strategy.id == _selectedStrategyIdToAdd!);
+      var currentApplicationStrategies = _applicationStrategySource.value;
+      if (!currentApplicationStrategies.any(
+          (strategy) => strategy.strategyId == _selectedStrategyIdToAdd!)) {
+        var rolloutStrategy = RolloutStrategyInstance(
+            value: feature.valueType == FeatureValueType.BOOLEAN ? false : null,
+            name: ars.strategy.name,
+            strategyId: ars.strategy.id);
+        currentApplicationStrategies.add(rolloutStrategy);
+        _applicationStrategySource.add(currentApplicationStrategies);
+        updateApplicationStrategyValue();
+      }
+    }
   }
 }
