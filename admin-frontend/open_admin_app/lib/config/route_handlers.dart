@@ -238,10 +238,7 @@ class RouteCreator {
 
   Widget createApplicationStrategy(mrBloc,
       {Map<String, List<String?>> params = const {}}) {
-    if (params['appid'] == null ||
-        params['appid']!.elementAt(0) == null ||
-        params['id'] == null ||
-        params['id']!.elementAt(0) == null) {
+    if (params['appid'] == null || params['appid']!.elementAt(0) == null) {
       return SizedBox(
         height: 600,
         child: notFound(mrBloc),
