@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply" dropsFor="1.33">
+        <dropColumn columnName="fk_named_cache" tableName="fh_organization"/>
+        <dropTable name="fh_cache"/>
+    </changeSet>
+</migration>
