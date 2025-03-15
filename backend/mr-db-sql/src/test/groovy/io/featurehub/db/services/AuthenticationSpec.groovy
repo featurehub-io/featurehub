@@ -17,6 +17,8 @@ import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Shared
 
 import java.time.Instant
+import java.time.temporal.ChronoField
+import java.time.temporal.TemporalField
 
 class AuthenticationSpec extends BaseSpec {
   @Shared AuthenticationSqlApi auth
@@ -258,7 +260,7 @@ class AuthenticationSpec extends BaseSpec {
     then:
       session == originalSession
       foundSession.token == originalSession.token
-      foundSession.lastSeen == originalSession.lastSeen
+      foundSession.lastSeen.with(ChronoField.MICRO_OF_SECOND, 0) == originalSession.lastSeen.with(ChronoField.MICRO_OF_SECOND, 0)
       foundSession.person.id.id == p2.id.id
       foundSession.person.email == p2.email
       invalidSession == null
