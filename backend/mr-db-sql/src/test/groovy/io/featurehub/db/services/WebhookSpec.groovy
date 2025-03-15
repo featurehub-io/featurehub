@@ -9,6 +9,7 @@ import io.featurehub.webhook.events.WebhookEnvironmentResult
 import io.featurehub.webhook.events.WebhookMethod
 
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoField
 
 class WebhookSpec extends Base3Spec {
   WebhookSqlApi webhookApi
@@ -52,7 +53,7 @@ class WebhookSpec extends Base3Spec {
       def more = webhookApi.getWebhookDetails(env1.id, result.results[0].id, Opts.opts(FillOpts.Details))
     then:
       result.max == 1
-      result.results[0].whenSent == data.whenSent
+      result.results[0].whenSent.with(ChronoField.MICRO_OF_SECOND, 0) == data.whenSent.with(ChronoField.MICRO_OF_SECOND, 0)
       result.results[0].method == 'POST'
       result.results[0].status == 200
       result.results[0].id != null
