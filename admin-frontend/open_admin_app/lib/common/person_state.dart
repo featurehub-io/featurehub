@@ -51,13 +51,13 @@ class PersonState {
   ];
 
   final _appStrategyCreateRoles = [
-    ApplicationRoleType.FEATURE_EDIT,
-    ApplicationRoleType.FEATURE_EDIT_AND_DELETE,
-    ApplicationRoleType.FEATURE_CREATE
+    ApplicationRoleType.APP_STRATEGY_CREATE,
+    ApplicationRoleType.APP_STRATEGY_EDIT_AND_DELETE,
+    ApplicationRoleType.APP_STRATEGY_CREATE
   ];
   final _appStrategyEditDeleteRoles = [
-    ApplicationRoleType.FEATURE_EDIT,
-    ApplicationRoleType.FEATURE_EDIT_AND_DELETE
+    ApplicationRoleType.APP_STRATEGY_EDIT,
+    ApplicationRoleType.APP_STRATEGY_EDIT_AND_DELETE
   ];
 
   bool personCanEditFeaturesForApplication(String? appId) {
