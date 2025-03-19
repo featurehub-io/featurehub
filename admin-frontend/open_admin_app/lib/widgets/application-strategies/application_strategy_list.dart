@@ -230,16 +230,17 @@ class ApplicationStrategyDataTableSource
           DataCell(Text(
               'environments: ${strategy.usage!.length}, feature values: ${strategy.usage!.map((e) => e.featuresCount).sum}')),
           DataCell(Row(children: <Widget>[
-            FHIconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () => {
-                      ManagementRepositoryClientBloc.router.navigateTo(
-                          context, '/edit-application-strategy',
-                          params: {
-                            'id': [strategy.strategy.id],
-                            'appid': [bloc.appId ?? ""]
-                          })
-                    }),
+            if (bloc.mrClient.userHasAppStrategyEditRoleInCurrentApplication)
+              FHIconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () => {
+                        ManagementRepositoryClientBloc.router.navigateTo(
+                            context, '/edit-application-strategy',
+                            params: {
+                              'id': [strategy.strategy.id],
+                              'appid': [bloc.appId ?? ""]
+                            })
+                      }),
             // const SizedBox(
             //   width: 8.0,
             // ),
@@ -271,11 +272,13 @@ class ApplicationStrategyDataTableSource
           ])),
         ],
         onSelectChanged: (newValue) {
-          ManagementRepositoryClientBloc.router
-              .navigateTo(context, '/edit-application-strategy', params: {
-            'id': [strategy.strategy.id],
-            'appid': [bloc.appId ?? ""]
-          });
+          if (bloc.mrClient.userHasAppStrategyEditRoleInCurrentApplication) {
+            ManagementRepositoryClientBloc.router
+                .navigateTo(context, '/edit-application-strategy', params: {
+              'id': [strategy.strategy.id],
+              'appid': [bloc.appId ?? ""]
+            });
+          }
         });
   }
 }
