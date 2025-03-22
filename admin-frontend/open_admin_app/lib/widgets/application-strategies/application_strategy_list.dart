@@ -28,18 +28,12 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
 
   late ApplicationStrategyDataTableSource source;
   late ApplicationStrategyBloc bloc;
-  String? currentAppId = '';
 
   @override
   void initState() {
     super.initState();
     bloc = BlocProvider.of<ApplicationStrategyBloc>(context);
     source = ApplicationStrategyDataTableSource(bloc, context);
-    bloc.mrClient.streamValley.currentAppIdStream.listen((appId) {
-      setState(() {
-        currentAppId = appId;
-      });
-    });
   }
 
   @override
