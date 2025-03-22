@@ -19,6 +19,9 @@ class ApplicationStrategyBloc implements Bloc, ManagementRepositoryAwareBloc {
   final _currentApplicationsStream = BehaviorSubject<List<Application>>();
   BehaviorSubject<List<Application>> get currentApplicationsStream =>
       _currentApplicationsStream;
+  final _currentApplicationStream = BehaviorSubject<String?>();
+  BehaviorSubject<String?> get currentApplicationStream =>
+      _currentApplicationStream;
   ApplicationStrategyBloc(this.mrClient)
       : _applicationRolloutStrategyServiceApi =
             ApplicationRolloutStrategyServiceApi(mrClient.apiClient) {
@@ -38,6 +41,7 @@ class ApplicationStrategyBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   _setAppId(String? id) {
     appId = id;
+    currentApplicationStream.add(id);
   }
 
   Future<void> _getCurrentPortfolioApplications(

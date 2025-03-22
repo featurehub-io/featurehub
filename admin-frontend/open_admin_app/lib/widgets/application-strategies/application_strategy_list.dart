@@ -28,12 +28,18 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
 
   late ApplicationStrategyDataTableSource source;
   late ApplicationStrategyBloc bloc;
+  String? currentAppId = '';
 
   @override
   void initState() {
     super.initState();
     bloc = BlocProvider.of<ApplicationStrategyBloc>(context);
     source = ApplicationStrategyDataTableSource(bloc, context);
+    bloc.mrClient.streamValley.currentAppIdStream.listen((appId) {
+      setState(() {
+        currentAppId = appId;
+      });
+    });
   }
 
   @override
@@ -64,21 +70,31 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                               const SizedBox(
                                 width: 16.0,
                               ),
-                              if (bloc.appId != null &&
-                                  bloc.mrClient
-                                      .userHasAppStrategyCreationRoleInCurrentApplication)
-                                FilledButton.icon(
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('Create new strategy'),
-                                  onPressed: () {
-                                    ManagementRepositoryClientBloc.router
-                                        .navigateTo(context,
-                                            '/create-application-strategy',
-                                            params: {
-                                          'appid': [bloc.appId ?? ""]
-                                        });
-                                  },
-                                )
+                              if (bloc.mrClient
+                                  .userHasAppStrategyCreationRoleInCurrentApplication)
+                                StreamBuilder<String?>(
+                                    stream: bloc.currentApplicationStream,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData &&
+                                          snapshot.data != null) {
+                                        return FilledButton.icon(
+                                          icon: const Icon(Icons.add),
+                                          label:
+                                              const Text('Create new strategy'),
+                                          onPressed: () {
+                                            ManagementRepositoryClientBloc
+                                                .router
+                                                .navigateTo(context,
+                                                    '/create-application-strategy',
+                                                    params: {
+                                                  'appid': [bloc.appId ?? ""]
+                                                });
+                                          },
+                                        );
+                                      } else {
+                                        return const SizedBox.shrink();
+                                      }
+                                    })
                             ],
                           ),
                         ],
@@ -195,7 +211,6 @@ class ApplicationStrategyDataTableSource
   @override
   Future<RemoteDataSourceDetails<ListApplicationRolloutStrategyItem>>
       getNextPage(NextPageRequest pageRequest) async {
-    print("sort order " + pageRequest.sortAscending.toString());
     final data = await bloc.getStrategiesData(
         lastSearchTerm.isNotEmpty ? lastSearchTerm : null,
         (pageRequest.sortAscending ?? true) == true
