@@ -91,11 +91,11 @@ class ApplicationRolloutStrategyResource @Inject constructor(
     holder: ApplicationRolloutStrategyServiceDelegate.UpdateApplicationStrategyHolder,
     securityContext: SecurityContext
   ): ApplicationRolloutStrategy {
-    val person = applicationUtils.featureCreatorCheck(securityContext, appId).current
+    val person = applicationUtils.applicationStrategyEdit(securityContext, appId)
 
     return try {
       applicationRolloutStrategyApi.updateStrategy(
-        appId, appStrategyId, updateApplicationRolloutStrategy, person.id!!.id,
+        appId, appStrategyId, updateApplicationRolloutStrategy, person,
         Opts().add(FillOpts.SimplePeople, holder.includeWhoChanged)
       ) ?: throw ForbiddenException()
     } catch (e: ApplicationRolloutStrategyApi.DuplicateNameException) {
