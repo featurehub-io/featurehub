@@ -106,11 +106,11 @@ class ApplicationUtils @Inject constructor(
   }
 
   fun applicationStrategyEdit(securityContext: SecurityContext, id: UUID): UUID {
-    return appStrategyCheck(securityContext, id, setOf(ApplicationRoleType.APP_STRATEGY_EDIT, ApplicationRoleType.FEATURE_EDIT_AND_DELETE))
+    return appStrategyCheck(securityContext, id, setOf(ApplicationRoleType.APP_STRATEGY_EDIT, ApplicationRoleType.APP_STRATEGY_EDIT_AND_DELETE))
   }
 
   fun applicationStrategyDelete(securityContext: SecurityContext, id: UUID): UUID {
-    return appStrategyCheck(securityContext, id, setOf(ApplicationRoleType.FEATURE_EDIT_AND_DELETE))
+    return appStrategyCheck(securityContext, id, setOf(ApplicationRoleType.APP_STRATEGY_EDIT_AND_DELETE))
   }
 
   fun featureReadCheck(securityContext: SecurityContext, id: UUID): Person {
