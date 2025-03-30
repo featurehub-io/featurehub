@@ -303,7 +303,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
         ),
         FHMenuItem(
           name: 'Application Strategies',
-          iconData: Icons.rule,
+          iconData: Icons.call_split_outlined,
           path: 'application-strategies',
           displayNewLabel: true,
           params: {},

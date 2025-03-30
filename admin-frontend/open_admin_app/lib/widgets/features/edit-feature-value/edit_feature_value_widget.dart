@@ -147,7 +147,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                   ),
                                   const FHInfoCardWidget(
                                       message:
-                                          "Locking mechanism provides an additional safety net for feature changes when deploying incomplete code to production."
+                                          "Locking mechanism provides an additional safety for feature changes when deploying incomplete code to production."
                                           " Locked status prevents any changes to default value, "
                                           "strategies, strategy values and 'retired' status. "
                                           "Typically, developers keep features locked "
