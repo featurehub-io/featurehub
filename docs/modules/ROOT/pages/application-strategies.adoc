@@ -9,7 +9,7 @@ image::app-strategy-landing.png[Application Strategies page, 1500]
 
 Application Strategies can be created from the Application Strategy page. In order to create one, you need to have at least one application in a portfolio and permissions to create. There are no limitations on how many strategies can be created within an application.
 
-image::fg-create.png[Create Feature Group, 1500]
+image::app-strategy-create.png[Create Application Strategy, 1500]
 
 You can update application strategy name at a later time. If you decide to delete an application strategy, it will be removed from all feature values where it is used. Extra care should be taken when deleting application strategy. The features itself won't be removed.
 
