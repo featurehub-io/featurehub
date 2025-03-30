@@ -232,7 +232,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                         ],
                                       ),
                                       if (strategyWidgets.isEmpty)
-                                        const Text("No strategies"),
+                                        const Text("No strategies set"),
                                       buildReorderableListView(
                                         strategyWidgets,
                                         featureValueLatest,
@@ -260,7 +260,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                               ?.featureGroupStrategies
                                               ?.isEmpty ==
                                           true)
-                                        const Text("No group strategies"),
+                                        const Text("No group strategies set"),
                                       if (featureValueLatest
                                               .data
                                               ?.featureGroupStrategies
@@ -287,7 +287,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                           ),
                                           const FHInfoCardWidget(
                                               message:
-                                                  "Application strategies are created at application level and can be assigned to various features in any environment. "
+                                                  "Application strategies are created at application level and can be assigned to multiple features in any environment. "
                                                   "Application strategy can be created and edited from the Application Strategies page.")
                                         ],
                                       ),
@@ -325,14 +325,14 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                       snapshot);
                                             }
                                             return const Text(
-                                                "No application strategies");
+                                                "No application strategies set");
                                           }),
                                       if (editable)
                                         TextButton(
                                             onPressed: () => widget.bloc
                                                 .getApplicationStrategies(),
                                             child: const Text(
-                                                "Show available strategies")),
+                                                "Show available app strategies")),
                                       StreamBuilder<
                                               List<
                                                   ListApplicationRolloutStrategyItem>>(
