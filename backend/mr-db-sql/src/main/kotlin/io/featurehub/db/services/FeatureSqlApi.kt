@@ -275,9 +275,12 @@ class FeatureSqlApi @Inject constructor(
       featureValField
     )
 
-    with(dbFeatureValue) {
-      rolloutStrategies = convertStrategiesToDbFeatureValueStrategies(featureValue)
-      retired = convertUtils.safeConvert(featureValue.retired)
+    dbFeatureValue.let { dfv ->
+      dfv.rolloutStrategies = convertStrategiesToDbFeatureValueStrategies(featureValue)
+      featureValue.rolloutStrategyInstances?.let {
+        dfv.sharedRolloutStrategies = convertApplicationStrategiesToSharedStrategies(dfv, it, appFeature.parentApplication.id)
+      }
+      dfv.retired = convertUtils.safeConvert(featureValue.retired)
     }
 
     save(dbFeatureValue)
@@ -285,6 +288,24 @@ class FeatureSqlApi @Inject constructor(
     publishFirstRecord(dbFeatureValue, featureValue)
 
     return convertUtils.toFeatureValue(dbFeatureValue)
+  }
+
+  private fun convertApplicationStrategiesToSharedStrategies(
+    dfv: DbFeatureValue,
+    sharedStrategies: List<RolloutStrategyInstance>,
+    appId: UUID
+  ): MutableList<DbStrategyForFeatureValue> {
+    val strategies = QDbApplicationRolloutStrategy().id.`in`(sharedStrategies.map { it.strategyId }.toSet()).application.id.eq(appId).findList().associateBy { it.id }
+
+    return sharedStrategies
+      .filter { strat ->  strategies[strat.strategyId] != null }
+      .map { DbStrategyForFeatureValue.Builder()
+        .featureValue(dfv)
+        .value(it.value?.toString())
+        .enabled(true)
+        .rolloutStrategy(strategies[it.strategyId])
+        .build() }
+      .toMutableList()
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)

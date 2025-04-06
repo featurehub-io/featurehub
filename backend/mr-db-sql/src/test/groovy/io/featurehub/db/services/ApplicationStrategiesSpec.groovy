@@ -19,6 +19,8 @@ import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyInstance
 import io.featurehub.mr.model.UpdateApplicationRolloutStrategy
+import spock.lang.Rollup
+import spock.lang.Unroll
 
 class ApplicationStrategiesSpec extends Base3Spec {
   ApplicationRolloutStrategySqlApi applicationRolloutStrategySqlApi
@@ -31,8 +33,8 @@ class ApplicationStrategiesSpec extends Base3Spec {
     featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher, Mock(CacheSourceFeatureGroupApi))
   }
 
-  String createFeature() {
-    def cFeature = new CreateFeature().name(ranName()).key(ranName()).valueType(FeatureValueType.BOOLEAN).description(ranName())
+  String createFeature(FeatureValueType valueType = FeatureValueType.BOOLEAN) {
+    def cFeature = new CreateFeature().name(ranName()).key(ranName()).valueType(valueType).description(ranName())
 
     applicationSqlApi.createApplicationFeature(app1.id, cFeature, superPerson, Opts.empty())
 
@@ -52,26 +54,32 @@ class ApplicationStrategiesSpec extends Base3Spec {
     )
   }
 
-  FeatureValue associateStrategyWithFeatureValue(String key, ApplicationRolloutStrategy strategy) {
+  FeatureValue associateStrategyWithFeatureValue(String key, ApplicationRolloutStrategy strategy, Object val) {
     def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
 
+    if (fv == null) {
+      fv = new FeatureValue().key(key).rolloutStrategyInstances([])
+    }
+
+    fv.value(val)
     fv.locked(false)
-    fv.rolloutStrategyInstances.add(new RolloutStrategyInstance().value(true).strategyId(strategy.id))
+    fv.rolloutStrategyInstances.add(new RolloutStrategyInstance().value(val).strategyId(strategy.id))
 
     def updatedValue = featureSqlApi.updateFeatureValueForEnvironment(env1.id, key, fv, allPermissions())
 
     return updatedValue
   }
 
+  @Unroll
   def "full lifecycle of application strategies"() {
     given: "i have a feature for the application"
-      String key = createFeature()
+      String key = createFeature(featureType)
     and: "i have an application strategy"
       def strategy = createStrategy()
 
       def updateName = ranName()
     when: "i associate the strategy with the feature value in the default environment"
-      associateStrategyWithFeatureValue(key, strategy)
+      associateStrategyWithFeatureValue(key, strategy, val)
     then:
       with(cacheSource) {
         1 * publishFeatureChange( { DbFeatureValue v ->
@@ -92,6 +100,16 @@ class ApplicationStrategiesSpec extends Base3Spec {
         original.percentage == null
         original.name == strategy.name
       }, _)
+    where:
+      featureType | val
+      FeatureValueType.BOOLEAN | false
+      FeatureValueType.BOOLEAN | true
+      FeatureValueType.NUMBER | null
+      FeatureValueType.NUMBER | 5
+      FeatureValueType.STRING | null
+      FeatureValueType.STRING | "x"
+      FeatureValueType.JSON | null
+      FeatureValueType.JSON | "x"
   }
 
   def "when we update or delete the feature strategy it will update the feature values"() {
@@ -100,7 +118,7 @@ class ApplicationStrategiesSpec extends Base3Spec {
     and: "we create one strategy"
       def strategy = createStrategy()
     and: "we associate the strategy with both features"
-      keys.each { associateStrategyWithFeatureValue(it, strategy) }
+      keys.each { associateStrategyWithFeatureValue(it, strategy, false) }
     and: "we reset the mock"
       internalFeatureApi = Mock(InternalFeatureApi)
       applicationRolloutStrategySqlApi = new ApplicationRolloutStrategySqlApi(convertUtils, internalFeatureApi)
@@ -133,7 +151,7 @@ class ApplicationStrategiesSpec extends Base3Spec {
     and: "we create one strategy"
       def strategy = createStrategy()
     and: "we associate the strategy with both features"
-      keys.each { associateStrategyWithFeatureValue(it, strategy) }
+      keys.each { associateStrategyWithFeatureValue(it, strategy, false) }
     and: "we ensure we are not using a mock internal feature service"
       FeatureMessagingPublisher fmp = Mock()
       internalFeatureApi = new InternalFeatureSqlApi(convertUtils, cacheSource, fmp)
