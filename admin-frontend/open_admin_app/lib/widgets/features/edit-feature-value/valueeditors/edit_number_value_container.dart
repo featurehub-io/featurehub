@@ -19,7 +19,7 @@ class EditNumberValueContainer extends StatefulWidget {
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupRolloutStrategy;
-  final RolloutStrategy? applicationRolloutStrategy;
+  final RolloutStrategyInstance? applicationRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   @override
