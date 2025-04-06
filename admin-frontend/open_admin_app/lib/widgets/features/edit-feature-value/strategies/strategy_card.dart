@@ -104,6 +104,7 @@ class EditValueContainer extends StatelessWidget {
           unlocked: unlocked,
           rolloutStrategy: rolloutStrategy,
           groupRolloutStrategy: groupRolloutStrategy,
+          applicationRolloutStrategy: applicationRolloutStrategy,
           strBloc: strBloc,
         );
       case FeatureValueType.JSON:
@@ -112,6 +113,7 @@ class EditValueContainer extends StatelessWidget {
           unlocked: unlocked,
           rolloutStrategy: rolloutStrategy,
           groupRolloutStrategy: groupRolloutStrategy,
+          applicationRolloutStrategy: applicationRolloutStrategy,
           strBloc: strBloc,
         );
       default:
