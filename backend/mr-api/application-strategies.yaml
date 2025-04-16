@@ -18,6 +18,12 @@ paths:
         schema:
           type: boolean
         required: false
+      - name: includeUsage
+        in: query
+        description: "include usage information - which environments and feature counts"
+        schema:
+          type: boolean
+        required: false
     get:
       security:
         - bearerAuth: [ ]
@@ -30,6 +36,29 @@ paths:
           description: "Include archived strategies"
           schema:
             type: boolean
+          required: false
+        - name: filter
+          description: "A filter to apply to the application strategies - partial match of name"
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: sortOrder
+          in: query
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+          required: false
+        - name: max
+          description: "The maximum number of application strategies to get for this page"
+          in: query
+          schema:
+            type: integer
+          required: false
+        - name: page
+          description: "The page number of the results. 0 indexed."
+          in: query
+          schema:
+            type: integer
           required: false
       responses:
         200:
@@ -131,6 +160,13 @@ paths:
           type: boolean
         required: false
     get:
+      parameters:
+        - name: includeUsage
+          in: query
+          description: "include usage information - which environments and feature counts"
+          schema:
+            type: boolean
+          required: false
       security:
         - bearerAuth: [ ]
       tags:
@@ -216,7 +252,7 @@ components:
           description: "the application rollout strategies on this page"
           type: array
           items:
-            $ref: "#/components/schemas/ApplicationRolloutStrategy"
+            $ref: "#/components/schemas/ListApplicationRolloutStrategyItem"
     CreateApplicationRolloutStrategy:
       allOf:
         - $ref: "#/components/schemas/BaseUIStrategy"
@@ -251,12 +287,21 @@ components:
           maxLength: 200
         disabled:
           nullable: true
+          default: false
           type: boolean
         attributes:
           nullable: true
           type: array
           items:
             $ref: "#/components/schemas/RolloutStrategyAttribute"
+        whenCreated:
+          type: string
+          format: date-time
+          nullable: true
+        whenUpdated:
+          type: string
+          format: date-time
+          nullable: true
     ApplicationRolloutStrategy:
       allOf:
         - $ref: "#/components/schemas/BaseStrategy"
@@ -267,3 +312,45 @@ components:
               description: "unique id of the strategy"
               type: string
               format: uuid
+    ListApplicationRolloutStrategyItemUser:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+          description: "They may not have set their name yet"
+          nullable: true
+    ListApplicationRolloutStrategyItem:
+      type: object
+      properties:
+        strategy:
+          $ref: "#/components/schemas/ApplicationRolloutStrategy"
+        whenUpdated:
+          type: string
+          format: date-time
+        whenCreated:
+          type: string
+          format: date-time
+        updatedBy:
+          $ref: "#/components/schemas/ListApplicationRolloutStrategyItemUser"
+        uniqueCode:
+          description: "The code for this application strategy, usually the ID for strategies"
+          type: string
+          nullable: true
+        usage:
+          description: "usage of the strategy"
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/ApplicationRolloutStrategyEnvironment"
+    ApplicationRolloutStrategyEnvironment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        featuresCount:
+          type: integer

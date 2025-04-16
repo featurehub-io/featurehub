@@ -47,4 +47,5 @@ interface ApplicationApi {
   fun personIsFeatureCreator(appId: UUID, personId: UUID): Boolean
   fun findFeatureReaders(appId: UUID): Set<UUID>
   fun personIsFeatureReader(appId: UUID, personId: UUID): Boolean
+  fun personApplicationRoles(appId: UUID, personId: UUID): Set<ApplicationRoleType>
 }

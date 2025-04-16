@@ -57,10 +57,10 @@ class FeatureSpec extends Base2Spec {
   Group groupInPortfolio1
   Group adminGroupInPortfolio1
   RolloutStrategyValidator rsv
-  FeatureMessagingPublisher featureMessagingCloudEventPublisher
   CacheSourceFeatureGroupApi mockCacheSourceFeatureGroupApi
   WebhookEncryptionService webhookEncryptionService
   SymmetricEncrypter symmetricEncyrpter
+
 
   def setup() {
     db.currentTransaction().commitAndContinue()
@@ -72,10 +72,9 @@ class FeatureSpec extends Base2Spec {
 
     //  these ones generally assume auditing will be off
     ThreadLocalConfigurationSource.createContext(['auditing.enable': 'false'])
-    featureMessagingCloudEventPublisher = Mock()
     mockCacheSourceFeatureGroupApi = Mock()
-    featureSqlApi = new FeatureSqlApi(convertUtils, Mock(CacheSource), rsv, featureMessagingCloudEventPublisher, mockCacheSourceFeatureGroupApi)
-    appApi = new ApplicationSqlApi( convertUtils, Mock(CacheSource), archiveStrategy, new InternalFeatureSqlApi())
+    featureSqlApi = new FeatureSqlApi(convertUtils, Mock(CacheSource), rsv, featureMessagingPublisher, mockCacheSourceFeatureGroupApi)
+    appApi = new ApplicationSqlApi( convertUtils, Mock(CacheSource), archiveStrategy, internalFeatureApi)
 
     // now set up the environments we need
     portfolio1 = new DbPortfolio.Builder().name("p1-app-feature" + RandomStringUtils.randomAlphabetic(8) ).whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
@@ -91,7 +90,7 @@ class FeatureSpec extends Base2Spec {
 
     symmetricEncyrpter = new SymmetricEncrypterImpl("password")
     webhookEncryptionService = new WebhookEncryptionServiceImpl(symmetricEncyrpter)
-    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, new InternalFeatureSqlApi(), webhookEncryptionService)
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy, internalFeatureApi, webhookEncryptionService)
     envIdApp1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("feature-app-1-env-1"), appId, superPerson).id
 
     def averageJoe = new DbPerson.Builder().email(ranName() + "averagejoe-fvs@featurehub.io").name("Average Joe").build()
@@ -601,7 +600,7 @@ class FeatureSpec extends Base2Spec {
       ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true'])
 
 
-      featureSqlApi = new FeatureSqlApi( convertUtils, Mock(CacheSource), rsv, featureMessagingCloudEventPublisher, mockCacheSourceFeatureGroupApi)
+      featureSqlApi = new FeatureSqlApi( convertUtils, Mock(CacheSource), rsv, featureMessagingPublisher, mockCacheSourceFeatureGroupApi)
     when: "i update the fv with the custom strategy"
       def env1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("rstrat-test-env1"), app2Id, superPerson)
       def key = 'FEATURE_MISINTERPRET'

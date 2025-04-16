@@ -10,10 +10,13 @@ import io.featurehub.db.messaging.FeatureMessagingParameter
 import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbAcl
 import io.featurehub.db.model.DbApplicationFeature
+import io.featurehub.db.model.DbApplicationRolloutStrategy
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbFeatureValueVersion
 import io.featurehub.db.model.DbPerson
+import io.featurehub.db.model.DbStrategyForFeatureValue
+import io.featurehub.db.model.SharedRolloutStrategyVersion
 import io.featurehub.db.model.query.*
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.db.utils.EnvironmentUtils
@@ -22,26 +25,63 @@ import io.featurehub.mr.model.*
 import jakarta.inject.Inject
 import jakarta.persistence.OptimisticLockException
 import org.apache.commons.lang3.RandomStringUtils
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.function.Function
 import kotlin.math.max
 
 interface InternalFeatureApi {
-  fun saveFeatureValue(featureValue: DbFeatureValue, versionFrom: Long?)
+  fun saveFeatureValue(featureValue: DbFeatureValue, forceUpdate: Boolean = false)
   fun forceVersionBump(featureIds: List<UUID>, envId: UUID)
+  fun updatedApplicationStrategy(
+    strategyForFeatureValue: DbStrategyForFeatureValue,
+    originalStrategy: RolloutStrategy,
+    personWhoUpdated: DbPerson
+  )
+  fun detachApplicationStrategy(
+    strategyForFeatureValue: DbStrategyForFeatureValue,
+    originalStrategy: RolloutStrategy,
+    personWhoArchived: DbPerson
+  )
+
+  companion object  {
+    fun toRolloutStrategy(appStrategy: DbApplicationRolloutStrategy): RolloutStrategy {
+      return RolloutStrategy().id(appStrategy.shortUniqueCode)
+        .percentage(appStrategy.strategy.percentage)
+        .percentageAttributes(appStrategy.strategy.percentageAttributes)
+        .attributes(appStrategy.strategy.attributes)
+        .avatar(appStrategy.strategy.avatar)
+        .colouring(appStrategy.strategy.colouring)
+        .name(appStrategy.name).disabled(false)
+    }
+
+    fun toRolloutStrategy(sharedStrategy: DbStrategyForFeatureValue): RolloutStrategy {
+      return toRolloutStrategy(sharedStrategy.rolloutStrategy).value(sharedStrategy.value)
+    }
+  }
 }
 
-class InternalFeatureSqlApi  : InternalFeatureApi {
-  override fun saveFeatureValue(featureValue: DbFeatureValue, versionFrom: Long?) {
+class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conversions,
+                                                private val cacheSource: CacheSource,
+                                                private val featureMessagePublisher: FeatureMessagingPublisher,)  : InternalFeatureApi {
+  private val log: Logger = LoggerFactory.getLogger(InternalFeatureSqlApi::class.java)
+
+  override fun saveFeatureValue(featureValue: DbFeatureValue, forceUpdate: Boolean) {
     val originalVersion = featureValue.version
+
+    if (forceUpdate) {
+      featureValue.markAsDirty()
+    }
+
     featureValue.save()
 
     if (originalVersion != featureValue.version) { // have we got auditing enabled and did the feature change
       // now saved a versioned copy
-      DbFeatureValueVersion.fromDbFeatureValue(featureValue, versionFrom).save()
+      DbFeatureValueVersion.fromDbFeatureValue(featureValue, featureValue.version).save()
     }
   }
+
 
   override fun forceVersionBump(featureIds: List<UUID>, envId: UUID) {
     // force a version change on all these features
@@ -49,10 +89,82 @@ class InternalFeatureSqlApi  : InternalFeatureApi {
       .feature.id.`in`(featureIds)
       .environment.id.eq(envId)
       .findList().forEach {
-        val version = it.version
-        it.markAsDirty()
-        saveFeatureValue(it, version)
+        saveFeatureValue(it, true)
       }
+  }
+
+  override fun updatedApplicationStrategy(
+    strategyForFeatureValue: DbStrategyForFeatureValue,
+    originalStrategy: RolloutStrategy,
+    personWhoUpdated: DbPerson
+  ) {
+    // we need to bump the feature value version even though nothing ostensibly changed
+    strategyForFeatureValue.featureValue.let { fv ->
+      val priorStrategies = fv.sharedRolloutStrategies.map { InternalFeatureApi.toRolloutStrategy(it) }
+
+      fv.whoUpdated = personWhoUpdated
+      saveFeatureValue(fv, true)
+
+      // this will cause an audit webhook automatically
+      cacheSource.publishFeatureChange(fv)
+
+      publishFeatureMessage(fv, "updated", priorStrategies, originalStrategy,
+        InternalFeatureApi.toRolloutStrategy(strategyForFeatureValue))
+    }
+  }
+
+  private fun publishFeatureMessage(fv: DbFeatureValue,
+                                    action: String,
+                                    priorStrategies: List<RolloutStrategy>,
+                                    originalStrategy: RolloutStrategy,
+                                    newStrategy: RolloutStrategy?) {
+    val singleNotUpdated = SingleFeatureValueUpdate(hasChanged = false, updated = false, previous = false)
+
+    try {
+      // this is a more complex diff publish
+      featureMessagePublisher.publish(
+        FeatureMessagingParameter(
+          fv, singleNotUpdated,
+          SingleNullableFeatureValueUpdate(false, null, null), singleNotUpdated,
+          MultiFeatureValueUpdate(),
+          MultiFeatureValueUpdate(
+            true,
+            mutableListOf(RolloutStrategyUpdate(type = action, old = originalStrategy, new = newStrategy)),
+            mutableListOf(),
+            priorStrategies
+          ),
+          SingleNullableFeatureValueUpdate(true, fv.version - 1, fv.version)
+        ), convertUtils.organizationId()
+      )
+    } catch (e: Exception) {
+      log.error("failed to process publish request for feature {} (id {} in app {})",
+        fv.feature.key, fv.feature.id, fv.feature.parentApplication.id, e)
+    }
+  }
+
+  // this needs to remove the connection, create an audit trail, and publish a new record to Edge, and trigger webhooks
+  override fun detachApplicationStrategy(
+    strategyForFeatureValue: DbStrategyForFeatureValue,
+    originalStrategy: RolloutStrategy,
+    personWhoArchived: DbPerson
+  ) {
+    // this removes the strategy and forces the feature to update & create a new historical record
+    QDbFeatureValue().id.eq(strategyForFeatureValue.featureValue.id).findOne()?.let { fv ->
+      val priorStrategies = fv.sharedRolloutStrategies.map { InternalFeatureApi.toRolloutStrategy(it) }
+      // hold onto it because the object will be deleted
+      val originalValue = strategyForFeatureValue.value
+
+      if (fv.sharedRolloutStrategies.removeIf { it.id == strategyForFeatureValue.id }) {
+        fv.whoUpdated = personWhoArchived
+        saveFeatureValue(fv, true)
+
+        // this will cause an audit webhook automatically
+        cacheSource.publishFeatureChange(fv)
+        publishFeatureMessage(fv, "deleted",
+          priorStrategies,
+          originalStrategy.value(originalValue), null)
+      }
+    }
   }
 }
 
@@ -70,7 +182,7 @@ class FeatureSqlApi @Inject constructor(
 
   init {
     DeclaredConfigResolver.resolve(this)
-    internalFeatureApi = InternalFeatureSqlApi()
+    internalFeatureApi = InternalFeatureSqlApi(convertUtils, cacheSource, featureMessagePublisher)
   }
 
   @Throws(
@@ -107,12 +219,13 @@ class FeatureSqlApi @Inject constructor(
     return if (dbFeatureValue != null) {
       rolloutStrategyValidator.validateStrategies(
         dbFeatureValue.feature.valueType,
-        featureValue.rolloutStrategies ?: listOf() ,
+        featureValue.rolloutStrategies ?: listOf(),
         featureValue.rolloutStrategyInstances ?: listOf()
       ).hasFailedValidation()
 
       // this is an update not a create, environment + app-feature key exists
-      onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue,
+      onlyUpdateFeatureValueForEnvironment(
+        featureValue, person, dbFeatureValue,
         changingDefaultValue = true,
         updatingLock = true
       )
@@ -162,21 +275,42 @@ class FeatureSqlApi @Inject constructor(
       featureValField
     )
 
-    with(dbFeatureValue) {
-      rolloutStrategies = convertStrategiesToDbFeatureValueStrategies(featureValue)
-      retired = convertUtils.safeConvert(featureValue.retired)
+    dbFeatureValue.let { dfv ->
+      dfv.rolloutStrategies = convertStrategiesToDbFeatureValueStrategies(featureValue)
+      featureValue.rolloutStrategyInstances?.let {
+        dfv.sharedRolloutStrategies = convertApplicationStrategiesToSharedStrategies(dfv, it, appFeature.parentApplication.id)
+      }
+      dfv.retired = convertUtils.safeConvert(featureValue.retired)
     }
 
-    save(dbFeatureValue, null)
+    save(dbFeatureValue)
     publish(dbFeatureValue)
     publishFirstRecord(dbFeatureValue, featureValue)
 
     return convertUtils.toFeatureValue(dbFeatureValue)
   }
 
+  private fun convertApplicationStrategiesToSharedStrategies(
+    dfv: DbFeatureValue,
+    sharedStrategies: List<RolloutStrategyInstance>,
+    appId: UUID
+  ): MutableList<DbStrategyForFeatureValue> {
+    val strategies = QDbApplicationRolloutStrategy().id.`in`(sharedStrategies.map { it.strategyId }.toSet()).application.id.eq(appId).findList().associateBy { it.id }
+
+    return sharedStrategies
+      .filter { strat ->  strategies[strat.strategyId] != null }
+      .map { DbStrategyForFeatureValue.Builder()
+        .featureValue(dfv)
+        .value(it.value?.toString())
+        .enabled(true)
+        .rolloutStrategy(strategies[it.strategyId])
+        .build() }
+      .toMutableList()
+  }
+
   @Transactional(type = TxType.REQUIRES_NEW)
-  private fun save(featureValue: DbFeatureValue, versionFrom: Long?) {
-    internalFeatureApi.saveFeatureValue(featureValue, versionFrom)
+  private fun save(featureValue: DbFeatureValue, forceUpdate: Boolean = false) {
+    internalFeatureApi.saveFeatureValue(featureValue, forceUpdate)
   }
 
   private fun publish(featureValue: DbFeatureValue) {
@@ -205,7 +339,7 @@ class FeatureSqlApi @Inject constructor(
       log.trace("historical is null, updating old way")
       updateFeatureValue(featureValue, person, existing, existing.feature.valueType, dbPerson)
 
-      save(existing, featureValue.version)
+      save(existing, true)
       publish(existing)
       publishFirstRecord(existing, featureValue)
     } else {
@@ -213,18 +347,27 @@ class FeatureSqlApi @Inject constructor(
       updateSelectively(featureValue, person, existing, dbPerson, historical, changingDefaultValue, updatingLock)
     }
 
-    return convertUtils.toFeatureValue(existing)
+    return convertUtils.toFeatureValue(existing, Opts.opts(FillOpts.RolloutStrategies))
   }
 
   /**
    * This happens because we have never published this record before, so we need to gather it all up into a
    * brand new message
    */
-  internal fun publishFirstRecord(existing: DbFeatureValue, featureValue: FeatureValue) {
-    val lockUpdate = SingleFeatureValueUpdate(hasChanged = featureValue.locked, updated = featureValue.locked, previous = false)
+  private fun publishFirstRecord(existing: DbFeatureValue, featureValue: FeatureValue) {
+    val lockUpdate =
+      SingleFeatureValueUpdate(hasChanged = featureValue.locked, updated = featureValue.locked, previous = false)
     val defaultValueUpdate = if (existing.feature.valueType == FeatureValueType.BOOLEAN)
-      SingleNullableFeatureValueUpdate<String?>(hasChanged = existing.defaultValue !== "false", previous = "false", updated = existing.defaultValue)
-      else SingleNullableFeatureValueUpdate<String?>(hasChanged = existing.defaultValue !== null, previous = null, updated = existing.defaultValue)
+      SingleNullableFeatureValueUpdate<String?>(
+        hasChanged = existing.defaultValue !== "false",
+        previous = "false",
+        updated = existing.defaultValue
+      )
+    else SingleNullableFeatureValueUpdate<String?>(
+      hasChanged = existing.defaultValue !== null,
+      previous = null,
+      updated = existing.defaultValue
+    )
     val strategyUpdates = MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>()
     featureValue.rolloutStrategies?.let { rs ->
       strategyUpdates.hasChanged = rs.isNotEmpty()
@@ -233,9 +376,18 @@ class FeatureSqlApi @Inject constructor(
         strategyUpdates.updated.add(RolloutStrategyUpdate(type = "added", new = strategy))
       }
     }
-    val retiredUpdate = SingleFeatureValueUpdate(hasChanged = featureValue.retired, updated = featureValue.retired, previous = false)
-    publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates,
-      SingleNullableFeatureValueUpdate(true, featureValue.version, null))
+    val applicationStrategyUpdates = MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>()
+    applicationStrategyUpdates.hasChanged = existing.sharedRolloutStrategies.isNotEmpty()
+    existing.sharedRolloutStrategies.forEach { rsi ->
+      applicationStrategyUpdates.updated.add(RolloutStrategyUpdate(type = "added", new = InternalFeatureApi.toRolloutStrategy(rsi)))
+    }
+    val retiredUpdate =
+      SingleFeatureValueUpdate(hasChanged = featureValue.retired, updated = featureValue.retired, previous = false)
+    publishChangesForMessaging(
+      existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates,
+      applicationStrategyUpdates,
+      SingleNullableFeatureValueUpdate(true, featureValue.version, null)
+    )
 
   }
 
@@ -251,8 +403,9 @@ class FeatureSqlApi @Inject constructor(
   ) {
     val feature = existing.feature
 
-    val lockUpdate = if (isFeatureValueChangeUpdatingLockValue) updateSelectivelyLocked(featureValue, historical, existing, person)
-        else SingleFeatureValueUpdate(hasChanged = false, updated = false, previous = false)
+    val lockUpdate =
+      if (isFeatureValueChangeUpdatingLockValue) updateSelectivelyLocked(featureValue, historical, existing, person)
+      else SingleFeatureValueUpdate(hasChanged = false, updated = false, previous = false)
 
     val lockChanged = lockUpdate.hasChanged
 
@@ -260,10 +413,12 @@ class FeatureSqlApi @Inject constructor(
     // allow them to change the value and lock it at the same time
     val defaultValueUpdate = if (changingDefaultValue)
       updateSelectivelyDefaultValue(feature, featureValue, historical, existing, person, lockChanged)
-      else SingleNullableFeatureValueUpdate()
+    else SingleNullableFeatureValueUpdate()
     log.trace("after-update-default: {}, {}", existing.defaultValue, changingDefaultValue)
 
     val strategyUpdates = updateSelectivelyRolloutStrategies(person, featureValue, historical, existing, lockChanged)
+    val applicationStrategyUpdates = updateSelectivelyApplicationRolloutStrategies(person, featureValue, historical,
+      existing, lockChanged, existing.feature.parentApplication.id)
 
     val retiredUpdate = updateSelectivelyRetired(person, featureValue, historical, existing, lockChanged)
 
@@ -273,12 +428,15 @@ class FeatureSqlApi @Inject constructor(
       throw OptimisticLockingException()
     }
 
-    if (lockChanged || defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged) {
+    if (lockChanged || defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged || applicationStrategyUpdates.hasChanged) {
       existing.whoUpdated = dbPerson
-      save(existing, featureValue.version)
+      save(existing, true)
       publish(existing)
-      publishChangesForMessaging(existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates,
-        SingleNullableFeatureValueUpdate(true, featureValue.version, historical.versionFrom))
+      publishChangesForMessaging(
+        existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates,
+        applicationStrategyUpdates,
+        SingleNullableFeatureValueUpdate(true, featureValue.version, historical.versionFrom)
+      )
     } else {
       log.trace("update created no changes, not saving or publishing")
     }
@@ -290,12 +448,21 @@ class FeatureSqlApi @Inject constructor(
     defaultValueUpdate: SingleNullableFeatureValueUpdate<String?>,
     retiredUpdate: SingleFeatureValueUpdate<Boolean>,
     strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
+    applicationStrategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
     versionUpdate: SingleNullableFeatureValueUpdate<Long>
   ) {
     try {
       val featureMessagingParameter =
-        FeatureMessagingParameter(featureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates, versionUpdate)
-      log.trace("publishing {}",  featureMessagingParameter)
+        FeatureMessagingParameter(
+          featureValue,
+          lockUpdate,
+          defaultValueUpdate,
+          retiredUpdate,
+          strategyUpdates,
+          applicationStrategyUpdates,
+          versionUpdate
+        )
+      log.trace("publishing {}", featureMessagingParameter)
       featureMessagePublisher.publish(featureMessagingParameter, convertUtils.organizationId())
     } catch (e: Exception) {
       log.error("Failed to publish feature messaging update {}", featureValue, e)
@@ -345,6 +512,194 @@ class FeatureSqlApi @Inject constructor(
     throw OptimisticLockingException()
   }
 
+  fun updateSelectivelyApplicationRolloutStrategies(
+    person: PersonFeaturePermission,
+    featureValue: FeatureValue,
+    historicalFeatureValueVersion: DbFeatureValueVersion,
+    existingDbFeatureValue: DbFeatureValue,
+    lockChanged: Boolean,
+    appId: UUID
+  ): MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy> {
+    val strategyUpdates = MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>()
+
+    val incomingStrategyUpdates = featureValue.rolloutStrategyInstances ?: return strategyUpdates
+
+    var changed = false
+    val personCanChangeValues = person.hasChangeValueRole()
+
+    val historical = historicalFeatureValueVersion.sharedRolloutStrategies.toList()
+    val existing = existingDbFeatureValue.sharedRolloutStrategies.map { srs ->
+      SharedRolloutStrategyVersion(srs.rolloutStrategy.id, srs.rolloutStrategy.version, true, srs.value)
+    }.toMutableList()
+    val originalSharedStategyList = existingDbFeatureValue.sharedRolloutStrategies
+
+    // we need a map of the existing strategies in the historical version, and as we
+    // loop over the passed strategies, we will detect if they are in  the map and if so, remove them.
+    // this leaves us with a map of strategies in the historical entry that are deleted.
+    val strategiesToDelete = historical.map { it.strategyId }.associateBy { it }.toMutableMap()
+
+    // allows us to keep track of them
+    val foundApplicationStrategies = mutableMapOf<UUID,DbApplicationRolloutStrategy>()
+
+    for ((index, unresolvedIncomingStrategy) in incomingStrategyUpdates.withIndex()) {
+      if (unresolvedIncomingStrategy == null) continue
+
+      val appStrategy =
+        QDbApplicationRolloutStrategy().application.id.eq(appId).id.eq(unresolvedIncomingStrategy.strategyId).findOne()
+          ?: continue
+
+      foundApplicationStrategies[appStrategy.id] = appStrategy
+
+      val incomingSharedStrategy = toSharedRolloutStrategyVersion(appStrategy, unresolvedIncomingStrategy)
+
+      // we are tracking strategies which don't turn up from the client update, if this one turned up, remove it from the delete list
+      strategiesToDelete.remove(appStrategy.id)
+
+      // does the strategy we have been passed exist in the historical strategy list?
+      val historicalStrategy = historical.find { it.strategyId == appStrategy.id }
+
+      // is this strategy  new? if so, it won't be in the list. the client adds ids, but only to associate
+      // errors - we need to make sure they adhere to our rules now
+      if (historicalStrategy == null) { // strategy.id == null || <- can never be because we removed all the null ones in rationaliseStrategyIdsAndAttributeIds
+        if (!personCanChangeValues) {
+          log.debug("trying to add strategy and no permission")
+          throw FeatureApi.NoAppropriateRole()
+        }
+
+        changed = true
+
+        val added = DbStrategyForFeatureValue.Builder().rolloutStrategy(appStrategy).enabled(true).value(incomingSharedStrategy.value?.toString()).build()
+        if (index >= existing.size) {
+          existing.add(incomingSharedStrategy)
+          originalSharedStategyList.add(added)
+        } else {
+          // try and insert this new strategy where they have placed it
+          existing.add(index, incomingSharedStrategy)
+          originalSharedStategyList.add(index, added)
+        }
+
+        addToStrategyUpdates(
+          type = "added",
+          newStrategy = sharedStrategyToRolloutStrategyForReporting(incomingSharedStrategy, foundApplicationStrategies),
+          strategyUpdates = strategyUpdates
+        )
+      } else {
+        // its the same as the HISTORICAL one, then we have to assume that they haven't changed it, so we skip it
+        if (Objects.deepEquals(incomingSharedStrategy, historicalStrategy)) {
+          continue
+        }
+
+        // if this criteria matches, they have changed one that has been deleted, so thats a locking issue
+        val currentStrategy = existing.find { it.strategyId == unresolvedIncomingStrategy.strategyId }
+        if (currentStrategy == null) { // historically it existed, but its been deleted, so ignore it
+          log.debug("feature value strategy was deleted")
+          throw OptimisticLockingException() // it's been deleted
+        }
+
+        // now we have to detect if they have changed it
+        // if the strategy is the same as the CURRENT one - it doesn't matter if they changed it, its the same as the current one
+        if (Objects.deepEquals(incomingSharedStrategy, currentStrategy)) {
+          continue
+        }
+
+        // when they changed it against their historical copy, is it the same as the current version?
+        if (Objects.deepEquals(historicalStrategy, currentStrategy)) { // it hasn't changed from the historical one
+          if (!personCanChangeValues) {
+            log.debug("trying to add strategy and no permission")
+            throw FeatureApi.NoAppropriateRole()
+          }
+
+          // ok - its all good to replace this one
+          changed = true
+          val pos = existing.indexOfFirst { it.strategyId == unresolvedIncomingStrategy.strategyId }
+          existing[pos] = incomingSharedStrategy
+          originalSharedStategyList[pos] = DbStrategyForFeatureValue.Builder().rolloutStrategy(appStrategy)
+            .enabled(true).value(incomingSharedStrategy.value?.toString()).build()
+
+          addToStrategyUpdates(
+            type = "changed",
+            newStrategy = sharedStrategyToRolloutStrategyForReporting(incomingSharedStrategy, foundApplicationStrategies),
+            oldStrategy = sharedStrategyToRolloutStrategyForReporting(historicalStrategy, foundApplicationStrategies),
+            strategyUpdates = strategyUpdates
+          )
+        } else {
+          throw OptimisticLockingException() // it has changed since its history and user wants to change it again
+        }
+      }
+    }
+
+    // now we have to modify the _actual_ list that is attached to this feature value
+    if (strategiesToDelete.isNotEmpty()) {
+      if (!personCanChangeValues) {
+        log.debug("trying to delete strategies and no permission")
+        throw FeatureApi.NoAppropriateRole()
+      }
+
+      // remove all strategies where the strategy-id is in  the "to-delete" column
+      originalSharedStategyList.removeIf { strategy ->
+        // cache this as we need it for the historical mapping
+        foundApplicationStrategies[strategy.rolloutStrategy.id] = strategy.rolloutStrategy
+
+        val todel = strategiesToDelete.containsKey(strategy.rolloutStrategy.id)
+        changed = true
+        if (todel) {
+          addToStrategyUpdates(type = "deleted",
+            oldStrategy = InternalFeatureApi.toRolloutStrategy(strategy),
+            strategyUpdates = strategyUpdates)
+        }
+        todel
+      }
+    }
+
+    // none of the above checks if we simply _reordered_ the existing list of strategies, so now we need do check that
+    // ok, now just honour the order of the incoming strategies and keep track if they actually changed
+
+    // at this point, originalSharedStategyList contains all of the strategies but not in any particular order
+
+    // this maps all the incoming updates to their now DbStrategyForFeatureValue variants
+    val desiredList = incomingStrategyUpdates.mapNotNull { newStrategy ->
+        originalSharedStategyList.find { it.rolloutStrategy.id == newStrategy.strategyId } }
+        .toMutableList()
+    val desiredOrderedIds = desiredList.map { it.rolloutStrategy.id }
+    val historicalOrderedIds = historical.map { it.strategyId }
+
+    if (desiredOrderedIds != historicalOrderedIds) {
+      if (!personCanChangeValues) {
+        log.debug("trying to reorder strategies and no change value permission")
+        throw FeatureApi.NoAppropriateRole()
+      }
+      addToStrategyReorders(strategyUpdates, desiredList.map { InternalFeatureApi.toRolloutStrategy(it) }.toMutableList(),
+        historical.map { sharedStrategyToRolloutStrategyForReporting(it, foundApplicationStrategies) })
+
+      changed = true
+    }
+
+    if (changed && existingDbFeatureValue.isLocked && !lockChanged) {
+      throw FeatureApi.LockedException()
+    }
+
+    // now the desiredList has been ordered according to the incoming strategies but picked from the
+    // list of DbStrategyForFeatureValue's
+
+    existingDbFeatureValue.sharedRolloutStrategies = desiredList
+
+    strategyUpdates.hasChanged = changed
+
+    return strategyUpdates
+  }
+
+  private fun sharedStrategyToRolloutStrategyForReporting(sharedRolloutStrategyVersion: SharedRolloutStrategyVersion,
+                                                          appStrategies: Map<UUID,DbApplicationRolloutStrategy>): RolloutStrategy {
+    val appStrategy = appStrategies[sharedRolloutStrategyVersion.strategyId] ?: QDbApplicationRolloutStrategy().id.eq(sharedRolloutStrategyVersion.strategyId).findOne()!!
+    return RolloutStrategy().id(appStrategy.shortUniqueCode).name(appStrategy.name).value(sharedRolloutStrategyVersion.value).disabled(false)
+  }
+  private fun toSharedRolloutStrategyVersion(
+    appStrategy: DbApplicationRolloutStrategy,
+    incomingStrategyUpdate: RolloutStrategyInstance
+  ): SharedRolloutStrategyVersion {
+    return SharedRolloutStrategyVersion(appStrategy.id, appStrategy.version, true, incomingStrategyUpdate.value)
+  }
+
   /**
    * here deleting and adding new ones isn't the issue. the issue is checking for updates to existing ones, and
    * we need to treat them the same as we do for a "default value".
@@ -361,7 +716,7 @@ class FeatureSqlApi @Inject constructor(
     val personCanChangeValues = person.hasChangeValueRole()
 
     val historicalStrategies = historical.rolloutStrategies.toList() // not mutable
-    val existingStrategies = existing.rolloutStrategies
+    val existingStrategies = existing.rolloutStrategies.toMutableList()
 
     featureValue.rolloutStrategies?.let { strategies ->
       rationaliseStrategyIdsAndAttributeIds(strategies)
@@ -648,6 +1003,7 @@ class FeatureSqlApi @Inject constructor(
     } ?: listOf()
   }
 
+
   /**
    * this is the original logic - do not touch, it is also used for the creation of the feature value the first time
    */
@@ -662,6 +1018,9 @@ class FeatureSqlApi @Inject constructor(
     if (person.hasChangeValueRole() && (!dbFeatureValue.isLocked || java.lang.Boolean.FALSE == featureValue.locked && person.hasUnlockRole())) {
       dbFeatureValue.defaultValue = convertFeatureValueToDefaultValue(featureValue, valueType)
       dbFeatureValue.rolloutStrategies = convertStrategiesToDbFeatureValueStrategies(featureValue)
+      // this should only hit on the 1st try around.
+      dbFeatureValue.sharedRolloutStrategies =
+        updateSharedRolloutStrategies(featureValue, dbFeatureValue, dbFeatureValue.feature.parentApplication.id)
     }
 
     // change locked before changing value, as may not be able to change value if locked
@@ -681,6 +1040,35 @@ class FeatureSqlApi @Inject constructor(
     if (person.hasChangeValueRole()) {
       dbFeatureValue.retired = convertUtils.safeConvert(featureValue.retired)
     }
+  }
+
+  private fun updateSharedRolloutStrategies(
+    featureValue: FeatureValue,
+    dbFeatureValue: DbFeatureValue,
+    appId: UUID
+  ): MutableList<DbStrategyForFeatureValue> {
+    val updatedStrategies = featureValue.rolloutStrategyInstances?.toMutableList() ?: mutableListOf()
+    val existing = dbFeatureValue.sharedRolloutStrategies.toMutableList()
+    val newList = mutableListOf<DbStrategyForFeatureValue>()
+
+    // we have to preserve this new order, so we do it in the order they give us
+    updatedStrategies.forEach { s ->
+      val match = existing.find { strategy -> strategy.rolloutStrategy.id == s.strategyId }
+      if (match != null) { // already in the list
+        match.value = s.value?.toString()
+        newList.add(match)
+      } else { // new shared strategy reference
+        QDbApplicationRolloutStrategy().application.id.eq(appId).id.eq(s.strategyId).findOne()
+          ?.let { foundAppStrategy ->
+            newList.add(
+              DbStrategyForFeatureValue.Builder().featureValue(dbFeatureValue)
+                .rolloutStrategy(foundAppStrategy).value(s.value?.toString()).enabled(true).build()
+            )
+          }
+      }
+    }
+
+    return newList
   }
 
   private fun rationaliseStrategyIdsAndAttributeIds(strategies: List<RolloutStrategy>): Boolean {
@@ -733,13 +1121,15 @@ class FeatureSqlApi @Inject constructor(
     Conversions.nonNullEnvironmentId(eid)
     val featureValue =
       QDbFeatureValue().environment.id.eq(eid).feature.key.eq(key).sharedRolloutStrategies.fetch().findOne()
-    return if (featureValue == null) null else convertUtils.toFeatureValue(featureValue)
+    return if (featureValue == null) null else convertUtils.toFeatureValue(featureValue, Opts.opts(FillOpts.RolloutStrategies))
   }
 
   override fun getAllFeatureValuesForEnvironment(eid: UUID, includeFeatures: Boolean): EnvironmentFeaturesResult {
-    val environment = QDbEnvironment().select(QDbEnvironment.Alias.id).parentApplication.fetch(QDbApplication.Alias.id).id.eq(eid).findOne() ?: return EnvironmentFeaturesResult()
+    val environment =
+      QDbEnvironment().select(QDbEnvironment.Alias.id).parentApplication.fetch(QDbApplication.Alias.id).id.eq(eid)
+        .findOne() ?: return EnvironmentFeaturesResult()
 
-    val env =  EnvironmentFeaturesResult()
+    val env = EnvironmentFeaturesResult()
       .featureValues(
         QDbFeatureValue().environment.id.eq(eid).feature.whenArchived.isNull.findList()
           .map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs) }
@@ -747,9 +1137,10 @@ class FeatureSqlApi @Inject constructor(
       .environments(listOf(convertUtils.toEnvironment(QDbEnvironment().id.eq(eid).findOne(), Opts.empty())))
 
     if (includeFeatures) {
-      env.features(QDbApplicationFeature().parentApplication.eq(environment.parentApplication).whenArchived.isNull.findList().map {
-        convertUtils.toApplicationFeature(it, Opts.empty())
-      })
+      env.features(
+        QDbApplicationFeature().parentApplication.eq(environment.parentApplication).whenArchived.isNull.findList().map {
+          convertUtils.toApplicationFeature(it, Opts.empty())
+        })
     }
 
     return env
@@ -792,7 +1183,8 @@ class FeatureSqlApi @Inject constructor(
       val fv = newValues.remove(strategy.feature.key)
       if (fv != null) {
         // its existing, so update it
-        onlyUpdateFeatureValueForEnvironment(fv, requireRoleCheck, strategy,
+        onlyUpdateFeatureValueForEnvironment(
+          fv, requireRoleCheck, strategy,
           changingDefaultValue = true,
           updatingLock = true
         )
@@ -896,7 +1288,7 @@ class FeatureSqlApi @Inject constructor(
 
     val featureValuesResult = mutableMapOf<UUID, DbFeatureValue>()
     val roles = mutableMapOf<UUID, MutableSet<RoleType>>()
-    val environments = mutableMapOf<UUID, DbEnvironment> ()
+    val environments = mutableMapOf<UUID, DbEnvironment>()
     val personAdmin = convertUtils.isPersonApplicationAdmin(person.id!!.id, appId)
     // this can be empty as the feature may not have a value in this environment if it is a non-bool
     val featureValueList = QDbFeatureValue()
@@ -906,7 +1298,7 @@ class FeatureSqlApi @Inject constructor(
     val envIdToDbFeatureValues = featureValueList
       .associateBy { it.environment.id }.toMutableMap()
 
-    val adminRoles = listOf(*RoleType.values())
+    val adminRoles = RoleType.entries
     if (!personAdmin) { // is they aren't a portfolio admin, figure out what their permissions are to each environment
       QDbAcl().environment.parentApplication.id.eq(appId).group.groupMembers.person.id.eq(person.id!!.id).findList()
         .forEach { fe: DbAcl ->
@@ -1042,7 +1434,7 @@ class FeatureSqlApi @Inject constructor(
     featureKeys: List<String>
   ): EnvironmentFeatureValues? {
     val roles: List<RoleType> = if (personIsAdmin) {
-      listOf(*RoleType.values())
+      RoleType.entries
     } else {
       convertUtils.splitEnvironmentRoles(acl.roles)
     }
@@ -1062,10 +1454,11 @@ class FeatureSqlApi @Inject constructor(
     val featureValueFinder = QDbFeatureValue()
       .environment.eq(environment)
       .environment.whenArchived.isNull
+      .sharedRolloutStrategies.fetch()
       .feature.whenArchived.isNull
       .feature.key.`in`(featureKeys)
 
-    return featureValueFinder.findList().map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs)!! }
+    return featureValueFinder.findList().map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs, Opts.opts(FillOpts.RolloutStrategies))!! }
   }
 
   /*
@@ -1099,9 +1492,9 @@ class FeatureSqlApi @Inject constructor(
         .parentApplication.eq(app)
 
       appFeatureQuery = if (sort == SortOrder.ASC) {
-        appFeatureQuery.order().key.asc()
+        appFeatureQuery.orderBy().key.asc()
       } else {
-        appFeatureQuery.order().key.desc()
+        appFeatureQuery.orderBy().key.desc()
       }
 
       if (filter != null) {
@@ -1194,7 +1587,7 @@ class FeatureSqlApi @Inject constructor(
       if (permEnvs.isNotEmpty() || personAdmin) {
         // now go through all the environments for this app
         var environmentsQl =
-          QDbEnvironment().whenArchived.isNull.order().name.desc().parentApplication.eq(app)
+          QDbEnvironment().whenArchived.isNull.orderBy().name.desc().parentApplication.eq(app)
         environmentIds?.let { requestedEnvIdList ->
           if (requestedEnvIdList.isNotEmpty()) {
             environmentsQl = environmentsQl.id.`in`(requestedEnvIdList)
@@ -1202,7 +1595,7 @@ class FeatureSqlApi @Inject constructor(
         }
         val environments = environmentsQl.findList()
         // envId, DbEnvi
-        val roles = if (personAdmin) listOf(*RoleType.values()) else listOf()
+        val roles = if (personAdmin) RoleType.entries else listOf()
         environments.forEach { e: DbEnvironment ->
           if (envs[e.id] == null) {
             environmentOrderingMap[e.id] = e
@@ -1247,7 +1640,10 @@ class FeatureSqlApi @Inject constructor(
     val envMap = values.associateBy { it.environmentId }
 
     // now will get back a bunch of name/value/envId/featureId pairs,
-    for (fg in featureGroupApi.collectStrategiesFromEnvironmentsWithFeatures(values.map { it.environmentId }.distinct(), features.map { it.id!! }.distinct())) {
+    for (fg in featureGroupApi.collectStrategiesFromEnvironmentsWithFeatures(
+      values.map { it.environmentId }.distinct(),
+      features.map { it.id!! }.distinct()
+    )) {
       val key = featureKeymap[fg.featureId]?.key ?: continue
       val env = envMap[fg.envId] ?: continue
 
@@ -1270,7 +1666,7 @@ class FeatureSqlApi @Inject constructor(
       count++
 
       if (rationaliseStrategyIdsAndAttributeIds(fv.rolloutStrategies)) {
-        save(fv, null)
+        save(fv)
       }
 
       if (count % 50 == 0) {
@@ -1279,6 +1675,23 @@ class FeatureSqlApi @Inject constructor(
     }
 
     log.info("feature value upgrade complete")
+  }
+
+
+  override fun duplicateRolloutStrategyInstances(featureValue: FeatureValue): Boolean {
+    featureValue.rolloutStrategyInstances?.let { rsInstances ->
+      val dupes = mutableMapOf<UUID,UUID>()
+
+      for(rsi in rsInstances) {
+        if (dupes.containsKey(rsi.strategyId)) {
+          return true
+        }
+
+        dupes[rsi.strategyId] = rsi.strategyId
+      }
+    }
+
+    return false
   }
 
   companion object {

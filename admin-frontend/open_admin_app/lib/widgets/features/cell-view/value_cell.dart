@@ -91,11 +91,36 @@ class _ValueContainer extends StatelessWidget {
                 ),
               ),
               _ValueCard(feature: feature, fv: fv!),
-              if (fv!.rolloutStrategies?.isNotEmpty == true)
-                _StrategiesList(feature: feature, fv: fv!),
-              if (fv!.featureGroupStrategies != null &&
-                  fv!.featureGroupStrategies!.isNotEmpty)
-                _FeatureGroupStrategyList(feature: feature, fv: fv!)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (fv!.rolloutStrategies?.isNotEmpty == true)
+                    for (RolloutStrategy rsi in fv!.rolloutStrategies!)
+                      _ValueCard(
+                        rolloutStrategy: rsi,
+                        fv: fv!,
+                        feature: feature,
+                      ),
+                  if (fv!.featureGroupStrategies != null &&
+                      fv!.featureGroupStrategies!.isNotEmpty)
+                    for (ThinGroupRolloutStrategy rsi
+                        in fv!.featureGroupStrategies!)
+                      _ValueCard(
+                        groupStrategy: rsi,
+                        fv: fv!,
+                        feature: feature,
+                      ),
+                  if (fv!.rolloutStrategyInstances != null &&
+                      fv!.rolloutStrategyInstances!.isNotEmpty)
+                    for (RolloutStrategyInstance rsi
+                        in fv!.rolloutStrategyInstances!)
+                      _ValueCard(
+                        applicationStrategy: rsi,
+                        fv: fv!,
+                        feature: feature,
+                      )
+                ],
+              )
             ],
           ),
         ),
@@ -141,65 +166,20 @@ class RetiredIndicator extends StatelessWidget {
   }
 }
 
-class _StrategiesList extends StatelessWidget {
-  final Feature feature;
-  final FeatureValue fv;
-
-  const _StrategiesList({Key? key, required this.feature, required this.fv})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final rolloutStrategies = fv.rolloutStrategies;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (rolloutStrategies != null)
-          for (RolloutStrategy rsi in rolloutStrategies)
-            _ValueCard(rolloutStrategy: rsi, fv: fv, feature: feature)
-      ],
-    );
-  }
-}
-
-class _FeatureGroupStrategyList extends StatelessWidget {
-  final Feature feature;
-  final FeatureValue fv;
-
-  const _FeatureGroupStrategyList(
-      {Key? key, required this.feature, required this.fv})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (fv.featureGroupStrategies != null)
-          for (ThinGroupRolloutStrategy rsi in fv.featureGroupStrategies!)
-            _ValueCard(
-              rolloutStrategy: rsi,
-              fv: fv,
-              feature: feature,
-              isGroupStrategy: true,
-            )
-      ],
-    );
-  }
-}
-
 class _ValueCard extends StatelessWidget {
   final FeatureValue fv;
   final Feature feature;
-  final dynamic rolloutStrategy;
-  final bool? isGroupStrategy;
+  final RolloutStrategy? rolloutStrategy;
+  final ThinGroupRolloutStrategy? groupStrategy;
+  final RolloutStrategyInstance? applicationStrategy;
 
   const _ValueCard({
     Key? key,
     required this.fv,
     required this.feature,
     this.rolloutStrategy,
-    this.isGroupStrategy = false,
+    this.groupStrategy,
+    this.applicationStrategy,
   }) : super(key: key);
 
   @override
@@ -226,11 +206,13 @@ class _ValueCard extends StatelessWidget {
               fit: FlexFit.tight,
               child: Container(
                 decoration: BoxDecoration(
-                  color: rolloutStrategy == null
-                      ? defaultTextColor.withOpacity(0.15)
-                      : (isGroupStrategy!
+                  color: rolloutStrategy != null
+                      ? strategyTextColor.withOpacity(0.15)
+                      : groupStrategy != null
                           ? groupStrategyTextColor.withOpacity(0.15)
-                          : strategyTextColor.withOpacity(0.15)),
+                          : applicationStrategy != null
+                              ? applicationStrategyTextColor.withOpacity(0.15)
+                              : defaultTextColor.withOpacity(0.15),
                   borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(4.0),
                       bottomLeft: Radius.circular(4.0)),
@@ -238,47 +220,72 @@ class _ValueCard extends StatelessWidget {
                 child: rolloutStrategy != null
                     ? Tooltip(
                         richMessage: TextSpan(children: [
-                          if (!isGroupStrategy!)
-                            TextSpan(text: rolloutStrategy!.name),
+                          TextSpan(text: rolloutStrategy!.name),
                           TextSpan(
-                              text: isGroupStrategy!
-                                  ? "Group Strategy"
-                                  : generateTooltipMessage(rolloutStrategy))
+                              text: generateTooltipMessage(rolloutStrategy))
                         ]),
-                        child: rolloutStrategy == null
-                            ? const SizedBox.shrink()
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Text(
+                            rolloutStrategy!.name,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelLarge!
+                                .copyWith(
+                                    color: strategyTextColor,
+                                    // fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.9),
+                          ),
+                        ),
+                      )
+                    : groupStrategy != null
+                        ? Tooltip(
+                            message: "Group Strategy",
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Text(
+                                groupStrategy!.name,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge!
+                                    .copyWith(
+                                        color: groupStrategyTextColor,
+                                        // fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.9),
+                              ),
+                            ),
+                          )
+                        : applicationStrategy != null
+                            ? Tooltip(
+                                message: "Application Strategy",
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Text(
+                                    applicationStrategy!.name!,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(
+                                            color: applicationStrategyTextColor,
+                                            // fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.9),
+                                  ),
+                                ),
+                              )
                             : Padding(
                                 padding: const EdgeInsets.all(4.0),
-                                child: Text(
-                                  rolloutStrategy!.name,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelLarge!
-                                      .copyWith(
-                                          color: isGroupStrategy!
-                                              ? groupStrategyTextColor
-                                              : strategyTextColor,
-                                          // fontWeight: FontWeight.bold,
-                                          letterSpacing: 0.9),
-                                ),
+                                child: Text('default',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(color: defaultTextColor)),
                               ),
-                      )
-                    : Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: isGroupStrategy!
-                            ? Text(rolloutStrategy!.name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelLarge!
-                                    .copyWith(color: defaultTextColor))
-                            : Text('default',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelLarge!
-                                    .copyWith(color: defaultTextColor)),
-                      ),
               ),
             ),
             const SizedBox(width: 4.0),
@@ -288,7 +295,11 @@ class _ValueCard extends StatelessWidget {
                     child: FlagOnOffColoredIndicator(
                         on: rolloutStrategy != null
                             ? rolloutStrategy!.value
-                            : fv.valueBoolean),
+                            : groupStrategy != null
+                                ? groupStrategy!.value
+                                : applicationStrategy != null
+                                    ? applicationStrategy!.value
+                                    : fv.valueBoolean),
                   )
                 : Flexible(
                     fit: FlexFit.tight,
@@ -309,18 +320,23 @@ class _ValueCard extends StatelessWidget {
   }
 
   String _findDisplayValue() {
-    if (rolloutStrategy != null) {
-      if (rolloutStrategy!.value != null) {
-        return rolloutStrategy!.value.toString();
-      } else {
-        return '';
-      }
+    if (rolloutStrategy == null &&
+        groupStrategy == null &&
+        applicationStrategy == null) {
+      return _getDefaultFeatureValue();
+    } else if (rolloutStrategy != null && rolloutStrategy!.value != null) {
+      return rolloutStrategy!.value.toString();
+    } else if (groupStrategy != null && groupStrategy!.value != null) {
+      return groupStrategy!.value.toString();
+    } else if (applicationStrategy != null &&
+        applicationStrategy!.value != null) {
+      return applicationStrategy!.value.toString();
     } else {
-      return _getFeatureValue();
+      return '';
     }
   }
 
-  String _getFeatureValue() {
+  String _getDefaultFeatureValue() {
     switch (feature.valueType) {
       case FeatureValueType.STRING:
         return fv.valueString ?? '';

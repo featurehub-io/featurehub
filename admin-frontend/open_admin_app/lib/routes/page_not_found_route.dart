@@ -9,7 +9,7 @@ class PageNotFoundRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const FHHeader(
-      title: "Looks like this page doesn't exist!",
+      title: "Looks like we couldn't find any relevant information to display!",
     );
   }
 }

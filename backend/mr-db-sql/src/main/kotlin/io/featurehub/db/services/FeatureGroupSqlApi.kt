@@ -131,7 +131,7 @@ class FeatureGroupSqlApi @Inject constructor(
   private fun ensureFeatureValueExists(feat: DbApplicationFeature, env: DbEnvironment, person: DbPerson) {
     val valueExists = QDbFeatureValue().feature.id.eq(feat.id).environment.id.eq(env.id).exists()
     if (!valueExists) {
-      internalFeatureApi.saveFeatureValue(DbFeatureValue(person, false, feat, env, null), null)
+      internalFeatureApi.saveFeatureValue(DbFeatureValue(person, false, feat, env, null))
     }
   }
 
@@ -141,7 +141,7 @@ class FeatureGroupSqlApi @Inject constructor(
 
     features.forEach { feat ->
       if (!values.contains(feat.id)) {
-        internalFeatureApi.saveFeatureValue(DbFeatureValue(person, false, feat, env, null), null)
+        internalFeatureApi.saveFeatureValue(DbFeatureValue(person, false, feat, env, null))
       }
     }
   }

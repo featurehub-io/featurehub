@@ -2,11 +2,11 @@ package io.featurehub.messaging.service
 
 import io.cloudevents.core.builder.CloudEventBuilder
 import io.featurehub.db.api.CloudEventLinkType
+import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.TrackingEventApi
 import io.featurehub.db.messaging.FeatureMessagingParameter
 import io.featurehub.db.messaging.FeatureMessagingPublisher
-import io.featurehub.events.CloudEventPublisherRegistry
 import io.featurehub.events.DynamicCloudEventDestination
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.messaging.model.MessagingFeatureValueUpdate
@@ -154,13 +154,13 @@ open class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
             ) else it
         }
         .let {
-          val messagingStrategiesReorder = MessagingStrategiesReorder()
           val strategyUpdates = featureMessagingParameter.strategyUpdates
           if (strategyUpdates.hasChanged) {
             if (strategyUpdates.updated.isNotEmpty())
               it.strategiesUpdated(
                 strategyUpdates.updated.map { rolloutStrategyUpdate -> toMessagingStrategyUpdate(rolloutStrategyUpdate) })
 
+            val messagingStrategiesReorder = MessagingStrategiesReorder()
             if (strategyUpdates.reordered.isNotEmpty())
               it.strategiesReordered(
                 messagingStrategiesReorder.reordered(
@@ -169,6 +169,28 @@ open class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
 
             if (strategyUpdates.previous.isNotEmpty())
               it.strategiesReordered(
+                messagingStrategiesReorder.previous(
+                  strategyUpdates.previous.map { rolloutStrategy -> toMessagingRolloutStrategy(rolloutStrategy) }
+                ))
+          }
+          it
+        }
+        .let {
+          val strategyUpdates = featureMessagingParameter.applicationStrategyUpdates
+          if (strategyUpdates.hasChanged) {
+            if (strategyUpdates.updated.isNotEmpty())
+              it.applicationStrategiesUpdated(
+                strategyUpdates.updated.map { rolloutStrategyUpdate -> toMessagingStrategyUpdate(rolloutStrategyUpdate) })
+
+            val messagingStrategiesReorder = MessagingStrategiesReorder()
+            if (strategyUpdates.reordered.isNotEmpty())
+              it.applicationStrategiesReordered(
+                messagingStrategiesReorder.reordered(
+                  strategyUpdates.reordered.map { rolloutStrategy -> toMessagingRolloutStrategy(rolloutStrategy) }
+                ))
+
+            if (strategyUpdates.previous.isNotEmpty())
+              it.applicationStrategiesReordered(
                 messagingStrategiesReorder.previous(
                   strategyUpdates.previous.map { rolloutStrategy -> toMessagingRolloutStrategy(rolloutStrategy) }
                 ))

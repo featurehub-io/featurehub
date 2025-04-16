@@ -3,19 +3,32 @@ import {
   Application,
   ApplicationServiceApi,
   AuthServiceApi,
-  Configuration, Environment, Environment2ServiceApi,
+  Configuration,
+  Environment,
+  Environment2ServiceApi,
   EnvironmentFeatureServiceApi,
   EnvironmentServiceApi,
-  Feature, FeatureGroup, FeatureGroupListGroup, FeatureGroupServiceApi, FeatureHistoryServiceApi,
+  Feature,
+  FeatureGroup,
+  FeatureGroupListGroup,
+  FeatureGroupServiceApi,
+  FeatureHistoryServiceApi,
   FeatureServiceApi,
-  FeatureValue, Person, PersonServiceApi,
+  FeatureValue,
+  Person,
+  PersonServiceApi,
   SystemConfigServiceApi,
   Portfolio,
-  PortfolioServiceApi, ServiceAccount,
+  PortfolioServiceApi,
+  ServiceAccount,
   ServiceAccountPermission,
   ServiceAccountServiceApi,
   TokenizedPerson,
-  WebhookServiceApi
+  WebhookServiceApi,
+  ApplicationRolloutStrategyServiceApi,
+  ApplicationRolloutStrategy,
+  FeatureHistoryList,
+  ListApplicationRolloutStrategyItem, FeatureHistoryValue
 } from '../apis/mr-service';
 import { axiosLoggingAttachment, logger } from './logging';
 import globalAxios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
@@ -51,12 +64,14 @@ export class SdkWorld extends World {
   public readonly featureGroupApi: FeatureGroupServiceApi;
   public readonly featureApi: FeatureServiceApi;
   public readonly loginApi: AuthServiceApi;
+  public readonly featureHistoryApi: FeatureHistoryServiceApi;
   public readonly personApi: PersonServiceApi;
   public readonly serviceAccountApi: ServiceAccountServiceApi;
   public readonly featureValueApi: EnvironmentFeatureServiceApi;
   public readonly edgeApi: EdgeService;
   public readonly historyApi: FeatureHistoryServiceApi;
   public readonly systemConfigApi: SystemConfigServiceApi;
+  public readonly applicationStrategyApi: ApplicationRolloutStrategyServiceApi;
 
   public readonly webhookApi: WebhookServiceApi;
   private _clientContext: ClientContext;
@@ -66,6 +81,9 @@ export class SdkWorld extends World {
   public person: Person
   public featureGroup: FeatureGroup;
   public serviceAccount?: ServiceAccount;
+  public applicationStrategies: Record<string,ListApplicationRolloutStrategyItem> = {};
+  public featureHistory: FeatureHistoryList;
+  public featureHistorySave: Record<string, FeatureHistoryValue> = {};
 
   constructor(props: any) {
     super(props);
@@ -92,6 +110,8 @@ export class SdkWorld extends World {
     this.webhookApi = new WebhookServiceApi(this.adminApiConfig);
     this.historyApi = new FeatureHistoryServiceApi(this.adminApiConfig);
     this.systemConfigApi = new SystemConfigServiceApi(this.adminApiConfig);
+    this.applicationStrategyApi = new ApplicationRolloutStrategyServiceApi(this.adminApiConfig);
+    this.featureHistoryApi = new FeatureHistoryServiceApi(this.adminApiConfig);
 
     const edgeConfig = new EdgeConfig({ basePath: this.featureUrl, axiosInstance: this.adminApiConfig.axiosInstance});
     this.edgeApi = new EdgeService(edgeConfig);

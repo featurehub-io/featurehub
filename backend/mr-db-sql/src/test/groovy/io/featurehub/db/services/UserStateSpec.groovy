@@ -31,7 +31,7 @@ class UserStateSpec extends BaseSpec {
     personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
 
     appApi = new ApplicationSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, Mock(InternalFeatureApi))
-    envApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy, new InternalFeatureSqlApi(), Mock(WebhookEncryptionService))
+    envApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy, internalFeatureApi, Mock(WebhookEncryptionService))
     userStateApi = new UserStateSqlApi(convertUtils)
 
     // now set up the environments we need

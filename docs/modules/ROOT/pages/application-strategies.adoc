@@ -1,0 +1,38 @@
+= Application Strategies
+
+Application Strategies can be reused and assigned to multiple features and environments within an application. Application strategies help to minimise repetitive task of creating and/or updating the same strategy in multiple features and environments.
+
+image::app-strategy-landing.png[Application Strategies page, 1500]
+
+
+== Application Strategies Settings
+
+Application Strategies can be created from the Application Strategy page. In order to create one, you need to have at least one application in a portfolio and permissions to create. There are no limitations on how many strategies can be created within an application.
+
+image::app-strategy-create.png[Create Application Strategy, 1500]
+
+You can update application strategy name at a later time. If you decide to delete an application strategy, it will be removed from all feature values where it is used. Extra care should be taken when deleting application strategy. The features itself won't be removed.
+
+== Assigning Application Strategy to a feature
+
+In order to assign an application strategy to a feature value, you first need to have a feature created from the "Features" screen. Once this is done, you can find application strategies in the drop-down list on the feature value editing screen. You can assign as many application strategies as you like and set the desired values.
+
+image::app-strategy-assign.png[Assign app strategy, 1500]
+
+
+NOTE: The order in which application strategy is evaluated, is as following:
+First evaluate against any "standard" rollout strategies assigned (you can set those from the Features screen), if no match, then evaluate against "feature group" strategy, then evaluate against "application strategy", then if no match, use "default" value.
+
+
+== Application Strategies User Permissions
+User group permissions for Application Strategies are set per application.
+
+* `No app strategy` permission will block a user from creating, updating or deleting app strategy, this is a default setting when a user group is created.
+* `Create` permission allows to create application strategy
+* `Create / Edit / Delete` permission allows
+to create, edit and delete application strategy
+
+NOTE: See link:users#_group_permissions[Groups Permissions] for details on the various permission states a feature can have.
+
+image::app-strategy-perms.png[App Strategy Permissions, 800]
+
