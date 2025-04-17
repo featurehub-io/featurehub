@@ -108,8 +108,14 @@ class StrategyCardWidget extends StatelessWidget {
                             tooltip: 'Edit Feature Groups',
                             onPressed: () {
                               Navigator.pop(context);
-                              ManagementRepositoryClientBloc.router
-                                  .navigateTo(context, '/feature-groups');
+                              ManagementRepositoryClientBloc.router.navigateTo(
+                                  context,
+                                  '/edit-feature-group-strategy-values',
+                                  params: {
+                                    'appid': [strBloc.applicationId],
+                                    'envId': [strBloc.environmentId],
+                                    'groupId': ['']
+                                  });
                             },
                             icon: const Icon(Icons.arrow_forward, size: 18),
                           ),

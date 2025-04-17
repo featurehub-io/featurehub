@@ -112,6 +112,10 @@ class Routes {
     router.define('/feature-groups',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.featureGroups));
+    router.define('/edit-feature-group-strategy-values',
+        routeSlots: [RouteSlot.portfolio],
+        handler: handleRouteChangeRequest(
+            routeCreator.editFeatureGroupStrategyValues));
     // NEVER EVER use /features as that is reserved for use by the Edge app
     router.define(routeNameFeatureDashboard,
         routeSlots: [RouteSlot.portfolio],

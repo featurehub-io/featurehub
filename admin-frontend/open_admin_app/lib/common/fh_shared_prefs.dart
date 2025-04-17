@@ -14,8 +14,12 @@ abstract class FHSharedPrefsContract {
   Future<String?> currentPortfolioId();
   Future<void> setCurrentPortfolioId(String? id);
   Future<String?> currentApplicationId();
+  Future<String?> currentEnvId();
   Future<void> setCurrentApplicationId(String? id);
-  Future<void> setPortfolioAndApplicationId(String? portfolioId, String? applicationId);
+  Future<void> setCurrentEnvId(String? id);
+
+  Future<void> setPortfolioAndApplicationId(
+      String? portfolioId, String? applicationId);
   // store the portfolio and return the application id
   Future<Application?> setPortfolio(Portfolio portfolio);
 }
@@ -32,10 +36,15 @@ class FHSharedPrefs extends FHSharedPrefsContract {
   }
 
   @override
-  Future<String?> currentApplicationId() async => await _prefs?.currentApplicationId();
+  Future<String?> currentApplicationId() async =>
+      await _prefs?.currentApplicationId();
 
   @override
-  Future<String?> currentPortfolioId() async => await _prefs?.currentPortfolioId();
+  Future<String?> currentEnvId() async => await _prefs?.currentEnvId();
+
+  @override
+  Future<String?> currentPortfolioId() async =>
+      await _prefs?.currentPortfolioId();
 
   @override
   Future<bool?> getBool(String key) async => await _prefs?.getBool(key);
@@ -47,25 +56,32 @@ class FHSharedPrefs extends FHSharedPrefsContract {
   Future<int?> getInt(String key) async => await _prefs?.getInt(key);
 
   @override
-  Future<void> saveBool(String key, bool value) async => await _prefs?.saveBool(key, value);
+  Future<void> saveBool(String key, bool value) async =>
+      await _prefs?.saveBool(key, value);
 
   @override
-  Future<void> saveInt(String key, int value) async => await _prefs?.saveInt(key, value);
+  Future<void> saveInt(String key, int value) async =>
+      await _prefs?.saveInt(key, value);
 
   @override
-  Future<void> setCurrentApplicationId(String? id) async => await _prefs?.setCurrentApplicationId(id);
+  Future<void> setCurrentApplicationId(String? id) async =>
+      await _prefs?.setCurrentApplicationId(id);
 
   @override
-  Future<void> setCurrentPortfolioId(String? id) async => await _prefs?.setCurrentPortfolioId(id);
+  Future<void> setCurrentPortfolioId(String? id) async =>
+      await _prefs?.setCurrentPortfolioId(id);
 
   @override
   Future<void> setEmail(String value) async => await _prefs?.setEmail(value);
 
   @override
-  Future<void> setPortfolioAndApplicationId(String? portfolioId, String? applicationId) async => await _prefs?.setPortfolioAndApplicationId(portfolioId, applicationId);
+  Future<void> setPortfolioAndApplicationId(
+          String? portfolioId, String? applicationId) async =>
+      await _prefs?.setPortfolioAndApplicationId(portfolioId, applicationId);
 
   @override
-  Future<Application?> setPortfolio(Portfolio portfolio) async => await _prefs?.setPortfolio(portfolio);
+  Future<Application?> setPortfolio(Portfolio portfolio) async =>
+      await _prefs?.setPortfolio(portfolio);
 
   void saveCurrentRoute(String json) => _prefs?.saveCurrentRoute(json);
 
@@ -73,11 +89,17 @@ class FHSharedPrefs extends FHSharedPrefsContract {
   Future<String?> getString(String key) async => await _prefs?.getString(key);
 
   @override
-  Future<void> saveString(String key, String? value) async => _prefs?.saveString(key, value);
+  Future<void> saveString(String key, String? value) async =>
+      _prefs?.saveString(key, value);
+
+  @override
+  Future<void> setCurrentEnvId(String? id) async =>
+      await _prefs?.setCurrentEnvId(id);
 }
 
 const _keyEmail = 'lastUsername';
 const _keyApplicationId = 'currentAid';
+const _keyEnvId = 'currentEid';
 const _keyPortfolioId = 'currentPid';
 const _keyCurrentRoute = 'current-route';
 
@@ -133,12 +155,24 @@ class _FHSharedPrefs extends FHSharedPrefsContract {
   }
 
   @override
-  Future<String?> currentApplicationId() async =>
-    _prefs.getString(_keyApplicationId);
-
+  Future<String?> currentEnvId() async => _prefs.getString(_keyEnvId);
 
   @override
-  Future<String?> currentPortfolioId() async => _prefs.getString(_keyPortfolioId);
+  Future<String?> currentApplicationId() async =>
+      _prefs.getString(_keyApplicationId);
+
+  @override
+  Future<String?> currentPortfolioId() async =>
+      _prefs.getString(_keyPortfolioId);
+
+  @override
+  Future<void> setCurrentEnvId(String? id) async {
+    if (id == null) {
+      await _prefs.remove(_keyEnvId);
+    } else {
+      await _prefs.setString(_keyEnvId, id);
+    }
+  }
 
   @override
   Future<void> setCurrentApplicationId(String? id) async {
@@ -159,7 +193,8 @@ class _FHSharedPrefs extends FHSharedPrefsContract {
   }
 
   @override
-  Future<void> setPortfolioAndApplicationId(String? portfolioId, String? applicationId) async {
+  Future<void> setPortfolioAndApplicationId(
+      String? portfolioId, String? applicationId) async {
     await setCurrentPortfolioId(portfolioId);
     await setCurrentApplicationId(applicationId);
   }
@@ -174,7 +209,10 @@ class _FHSharedPrefs extends FHSharedPrefsContract {
     }
 
     final appId = await currentApplicationId();
-    final app = appId == null ? portfolio.applications[0] : portfolio.applications.firstWhere((a) => a.id == appId, orElse: () => portfolio.applications[0]);
+    final app = appId == null
+        ? portfolio.applications[0]
+        : portfolio.applications.firstWhere((a) => a.id == appId,
+            orElse: () => portfolio.applications[0]);
 
     if (app.id != appId) {
       await setCurrentApplicationId(app.id);

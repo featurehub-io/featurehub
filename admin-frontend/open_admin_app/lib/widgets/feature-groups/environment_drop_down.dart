@@ -24,6 +24,9 @@ class _EnvironmentDropDownState extends State<EnvironmentDropDown> {
     super.initState();
 
     final bloc = BlocProvider.of<FeatureGroupsBloc>(context);
+    _selectedEnvId = bloc.mrClient.getCurrentEnvId();
+    widget.bloc.getCurrentFeatureGroups(widget.bloc.currentEnvId,
+        widget.bloc.appId); // get initial feature groups values
 
     // when application changes, this stream will set appropriate ID or null
     _envStream = bloc.currentEnvironmentStream.listen((env) {
@@ -81,7 +84,9 @@ class _EnvironmentDropDownState extends State<EnvironmentDropDown> {
                         onChanged: (String? value) {
                           setState(() {
                             widget.bloc.currentEnvId = value;
-                            widget.bloc.getCurrentFeatureGroups();
+                            widget.bloc.mrClient.setCurrentEnvId(value);
+                            widget.bloc.getCurrentFeatureGroups(
+                                widget.bloc.currentEnvId, widget.bloc.appId);
                             _selectedEnvId = value;
                           });
                         },

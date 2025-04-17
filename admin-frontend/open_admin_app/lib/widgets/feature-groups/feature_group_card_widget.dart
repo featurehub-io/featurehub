@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/feature-groups/feature_group_settings_side_sheet.dart';
+import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
-import 'package:side_sheet/side_sheet.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'feature_group_bloc.dart';
 import 'feature_group_delete_dialog_widget.dart';
 import 'feature_group_update_dialog_widget.dart';
 
@@ -28,7 +25,7 @@ class FeatureGroupCard extends StatelessWidget {
           mouseCursor: SystemMouseCursors.click,
           borderRadius: BorderRadius.circular(8.0),
           onTap: () {
-            _openFeatureGroupEditSideSheet(bloc, featureGroup, context);
+            navigateToEditFeatureGroupSettingsPage(bloc, featureGroup, context);
           },
           child: Column(
             children: [
@@ -145,7 +142,7 @@ class _PopUpGroupAdminMenu extends StatelessWidget {
           });
         }
         if (value == 'manage') {
-          _openFeatureGroupEditSideSheet(bloc, featureGroup, context);
+          navigateToEditFeatureGroupSettingsPage(bloc, featureGroup, context);
         }
       },
       itemBuilder: (BuildContext context) {
@@ -169,17 +166,14 @@ class _PopUpGroupAdminMenu extends StatelessWidget {
   }
 }
 
-_openFeatureGroupEditSideSheet(FeatureGroupsBloc bloc,
+navigateToEditFeatureGroupSettingsPage(FeatureGroupsBloc bloc,
     FeatureGroupListGroup featureGroup, BuildContext context) {
-  SideSheet.right(
-      body: BlocProvider.builder(
-          creator: (c, b) => FeatureGroupBloc(bloc, featureGroup),
-          builder: (c, b) => FeatureGroupSettings(
-                bloc: b,
-                featureGroup: featureGroup,
-              )),
-      width: MediaQuery.of(context).size.width * 0.8,
-      context: context);
+  ManagementRepositoryClientBloc.router
+      .navigateTo(context, '/edit-feature-group-strategy-values', params: {
+    'appid': [bloc.appId ?? ""],
+    'envId': [bloc.currentEnvId ?? ""],
+    'groupId': [featureGroup.id]
+  });
 }
 
 class FeaturesCounter extends StatelessWidget {
