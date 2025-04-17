@@ -76,6 +76,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   _updateEnvId(String? envId) {
     _currentEnvironmentStream.add(envId);
+    currentEnvId = envId;
   }
 
   _refreshInitialData(String? appId) async {

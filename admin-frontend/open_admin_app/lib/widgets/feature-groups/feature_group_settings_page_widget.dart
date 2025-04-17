@@ -39,13 +39,6 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: IconButton(
-                icon: const Icon(Icons.close, size: 24),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ),
             StreamBuilder<FeatureGroup>(
                 stream: bloc.featureGroupStream,
                 builder: (context, snapshot) {
@@ -160,7 +153,6 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                                                       .mrClient
                                                       .addSnackbar(Text(
                                                           'Settings for group "${bloc.featureGroupStream.value.name}" have been updated'));
-                                                  Navigator.pop(context);
                                                 },
                                               )
                                             ],

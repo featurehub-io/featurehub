@@ -24,7 +24,6 @@ class _EnvironmentDropDownState extends State<EnvironmentDropDown> {
     super.initState();
 
     final bloc = BlocProvider.of<FeatureGroupsBloc>(context);
-    _selectedEnvId = bloc.mrClient.getCurrentEnvId();
     widget.bloc.getCurrentFeatureGroups(widget.bloc.currentEnvId,
         widget.bloc.appId); // get initial feature groups values
 
