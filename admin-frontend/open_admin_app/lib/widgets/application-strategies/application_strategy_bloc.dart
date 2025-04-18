@@ -37,6 +37,7 @@ class ApplicationStrategyBloc implements Bloc, ManagementRepositoryAwareBloc {
     _currentApplicationsListListener.cancel();
     _currentAppIdListener.cancel();
     _currentApplicationsStream.close();
+    _currentApplicationStream.close();
   }
 
   _setAppId(String? id) {
