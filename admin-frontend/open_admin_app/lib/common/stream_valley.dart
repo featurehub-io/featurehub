@@ -266,7 +266,7 @@ class StreamValley {
   }
 
   Future<void> _portfolioChanged(Portfolio found) async {
-    _log.fine('Accepted portfolio id change, triggering');
+    _log.fine('Accepted portfolio id change');
 
     final app = await prefs.setPortfolio(found);
     _currentPortfolioSource.add(ReleasedPortfolio(
@@ -277,7 +277,7 @@ class StreamValley {
     _routeCheckPortfolioSource.add(found);
 
     if (currentAppId != app?.id) {
-      _log.fine("setting to ${app?.id}");
+      _log.fine("Setting App ID to ${app?.id} as a result of portfolio change");
       currentAppId = app?.id;
     }
   }

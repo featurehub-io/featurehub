@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_accent.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
@@ -140,7 +141,10 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                                                 title: 'Cancel',
                                                 keepCase: true,
                                                 onPressed: () {
-                                                  Navigator.pop(context);
+                                                  ManagementRepositoryClientBloc
+                                                      .router
+                                                      .navigateTo(context,
+                                                          '/feature-groups');
                                                 },
                                               ),
                                               FHFlatButtonAccent(
