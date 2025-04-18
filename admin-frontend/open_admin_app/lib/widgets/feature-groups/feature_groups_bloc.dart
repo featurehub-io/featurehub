@@ -80,6 +80,8 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
   }
 
   _refreshInitialData(String? appId) async {
+    _featureGroupsStream
+        .add([]); // because appId changed, clear the groups list
     this.appId = appId;
 
     if (appId != null) {
@@ -90,10 +92,6 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
         triggerEnvironmentListener = false;
       }
       await getPermissions(appId);
-      if (appId != mrClient.streamValley.currentApp.application.id) {
-        // only refresh if appId has changed
-        resetDataStreamsOnAppIdChange();
-      }
     }
   }
 
@@ -129,11 +127,6 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
         _featureGroupsStream.add(featureGroupList);
       }
     }
-  }
-
-  resetDataStreamsOnAppIdChange() {
-    _currentEnvironmentStream.add(null);
-    _featureGroupsStream.add([]);
   }
 
   @override

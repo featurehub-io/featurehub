@@ -240,6 +240,9 @@ class StreamValley {
     if (!_currentAppSource.value.isNull()) {
       if (_currentApplicationEnvironmentsSource.hasListener) {
         getCurrentApplicationEnvironments();
+        prefs.setCurrentEnvId(
+            null); // unset current env ID since the application has changed
+        _currentEnvIdSource.add(null);
       }
     }
   }
