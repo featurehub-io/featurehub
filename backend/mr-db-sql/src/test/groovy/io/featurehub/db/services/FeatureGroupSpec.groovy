@@ -227,6 +227,7 @@ class FeatureGroupSpec extends Base3Spec {
       collected[0].value == 121.67
       collected[0].envId == env1.id
       collected[0].featureId == features[0].id
+      collected[0].featureGroupId == updated.id
     when: "i remove the first feature and add a second feature"
       def updatedAddedRemoved = fgApi.updateGroup(app1.id, superPerson, new FeatureGroupUpdate()
         .id(created.id)

@@ -1648,7 +1648,7 @@ class FeatureSqlApi @Inject constructor(
       val env = envMap[fg.envId] ?: continue
 
       env.features.find { it.key == key }
-        ?.addFeatureGroupStrategiesItem(ThinGroupRolloutStrategy().name(fg.name).value(fg.value))
+        ?.addFeatureGroupStrategiesItem(ThinGroupRolloutStrategy().name(fg.name).value(fg.value).featureGroupId(fg.featureGroupId))
     }
   }
 
