@@ -10,7 +10,8 @@ data class CacheSourceCollectedStrategy(
   val name: String,
   val envId: UUID,
   val featureId: UUID,
-  val value: Any?
+  val value: Any?,
+  val featureGroupId: UUID
 )
 
 interface CacheSourceFeatureGroupApi {
