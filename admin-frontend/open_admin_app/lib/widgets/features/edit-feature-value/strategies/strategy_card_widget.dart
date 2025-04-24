@@ -113,8 +113,8 @@ class StrategyCardWidget extends StatelessWidget {
                                   '/edit-feature-group-strategy-values',
                                   params: {
                                     'appid': [strBloc.applicationId],
-                                    'envId': [strBloc.environmentId],
-                                    'groupId': [
+                                    'envid': [strBloc.environmentId],
+                                    'groupid': [
                                       groupRolloutStrategy!.featureGroupId!
                                     ]
                                   });

@@ -171,8 +171,8 @@ navigateToEditFeatureGroupSettingsPage(FeatureGroupsBloc bloc,
   ManagementRepositoryClientBloc.router
       .navigateTo(context, '/edit-feature-group-strategy-values', params: {
     'appid': [bloc.appId ?? ""],
-    'envId': [bloc.currentEnvId ?? ""],
-    'groupId': [featureGroup.id]
+    'envid': [bloc.currentEnvId ?? ""],
+    'groupid': [featureGroup.id]
   });
 }
 

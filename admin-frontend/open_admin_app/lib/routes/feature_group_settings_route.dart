@@ -18,14 +18,15 @@ import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.d
 import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/strategyeditor/strategy_editing_widget.dart';
 
-class FeatureGroupSettings extends StatefulWidget {
-  const FeatureGroupSettings({Key? key}) : super(key: key);
+class FeatureGroupSettingsRoute extends StatefulWidget {
+  const FeatureGroupSettingsRoute({Key? key}) : super(key: key);
 
   @override
-  State<FeatureGroupSettings> createState() => _FeatureGroupSettingsState();
+  State<FeatureGroupSettingsRoute> createState() =>
+      _FeatureGroupSettingsRouteState();
 }
 
-class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
+class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
   @override
   void initState() {
     super.initState();
