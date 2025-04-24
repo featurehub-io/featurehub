@@ -154,11 +154,14 @@ class StreamValley {
               !portfolioUpdate.portfolio.applications
                   .any((app) => app.id == currentAppId || app.id == appId)) {
             _log.fine(
-                "resetting appid here as $currentAppId not in ${portfolioUpdate.portfolio.applications.map((e) => e.id)}");
+                "resetting appid and envId here as $currentAppId not in ${portfolioUpdate.portfolio.applications.map((e) => e.id)}");
             if (portfolioUpdate.portfolio.applications.isEmpty) {
               currentAppId = null;
+              currentEnvId = null;
             } else {
               currentAppId = portfolioUpdate.portfolio.applications.first.id;
+              currentEnvId = portfolioUpdate
+                  .portfolio.applications.first.environments.first.id;
             }
           }
         }
@@ -280,6 +283,8 @@ class StreamValley {
       _log.fine("Setting App ID to ${app?.id} as a result of portfolio change");
       currentAppId = app?.id;
     }
+
+    _currentEnvIdSource.add(null);
   }
 
   Stream<String?> get currentPortfolioIdStream => _currentPortfolioSource.stream
