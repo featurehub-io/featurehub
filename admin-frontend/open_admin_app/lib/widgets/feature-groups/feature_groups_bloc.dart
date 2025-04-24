@@ -69,7 +69,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
   getCurrentFeatureGroups(String? envId, String? appId) async {
     if (appId != null) {
       var featureGroupsList = await featureGroupServiceApi
-          .listFeatureGroups(appId, environmentId: currentEnvId, max: 1000);
+          .listFeatureGroups(appId, environmentId: envId, max: 1000);
       _featureGroupsStream.add(featureGroupsList.featureGroups);
     }
   }

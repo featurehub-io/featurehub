@@ -105,7 +105,7 @@ class StrategyCardWidget extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           IconButton(
-                            tooltip: 'Edit Feature Groups',
+                            tooltip: 'Edit Strategy Settings',
                             onPressed: () {
                               Navigator.pop(context);
                               ManagementRepositoryClientBloc.router.navigateTo(
@@ -114,8 +114,12 @@ class StrategyCardWidget extends StatelessWidget {
                                   params: {
                                     'appid': [strBloc.applicationId],
                                     'envId': [strBloc.environmentId],
-                                    'groupId': ['']
+                                    'groupId': [
+                                      groupRolloutStrategy!.featureGroupId!
+                                    ]
                                   });
+                              strBloc.perApplicationFeaturesBloc.mrClient
+                                  .setCurrentEnvId(strBloc.environmentId);
                             },
                             icon: const Icon(Icons.arrow_forward, size: 18),
                           ),
@@ -141,7 +145,7 @@ class StrategyCardWidget extends StatelessWidget {
                                         'id': [
                                           applicationRolloutStrategy!.strategyId
                                         ],
-                                        'appid': [strBloc.applicationId ?? ""]
+                                        'appid': [strBloc.applicationId]
                                       });
                                 }),
                           if (editable)
