@@ -1,9 +1,9 @@
-FROM --platform=$BUILDPLATFORM nats:2.9.15-alpine AS builder
+FROM --platform=$BUILDPLATFORM nats:2.10.26-alpine AS builder
 
 WORKDIR /workdir
 RUN cp /usr/local/bin/nats-server /workdir && cp /etc/nats/nats-server.conf /workdir
 
-FROM --platform=$BUILDPLATFORM eclipse-temurin:11-jre-alpine
+FROM --platform=$BUILDPLATFORM eclipse-temurin:23-jre-alpine
 
 # make the non-root user & make appropriate directories
 RUN  (delgroup ping | true) && adduser -g 999 -u 999 -D k8suser && mkdir -p /db /target /etc/app-config /etc/common-config

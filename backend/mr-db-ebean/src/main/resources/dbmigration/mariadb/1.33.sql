@@ -1,0 +1,6 @@
+-- drop dependencies
+-- alter table fh_env_feature_strategy drop foreign key fk_fh_env_feature_strategy_fk_who_updated;
+-- alter table fh_fv_version drop foreign key fk_fh_fv_version_fk_who_updated;
+-- foreign keys and indices
+-- alter table fh_env_feature_strategy add constraint fk_fh_env_feature_strategy_fk_who_updated foreign key (fk_who_updated) references fh_person (id) on delete restrict on update restrict;
+-- alter table fh_fv_version add constraint fk_fh_fv_version_fk_who_updated foreign key (fk_who_updated) references fh_person (id) on delete restrict on update restrict;
