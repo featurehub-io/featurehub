@@ -12,6 +12,7 @@ import 'package:open_admin_app/routes/create_user_route.dart';
 import 'package:open_admin_app/routes/edit_admin_service_account_route.dart';
 import 'package:open_admin_app/routes/edit_application_strategy_route.dart';
 import 'package:open_admin_app/routes/edit_user_route.dart';
+import 'package:open_admin_app/routes/feature_group_settings_route.dart';
 import 'package:open_admin_app/routes/feature_groups_route.dart';
 import 'package:open_admin_app/routes/features_overview_route.dart';
 import 'package:open_admin_app/routes/home_route.dart';
@@ -31,6 +32,7 @@ import 'package:open_admin_app/widgets/application-strategies/edit_application_s
 import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_app_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
+import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:open_admin_app/widgets/group/group_bloc.dart';
@@ -267,6 +269,33 @@ class RouteCreator {
               strategyId: params['id']!.elementAt(0),
               applicationId: params['appid']!.elementAt(0)),
           child: const EditApplicationStrategyRoute());
+    }
+  }
+
+  Widget editFeatureGroupStrategyValues(mrBloc,
+      {Map<String, List<String?>> params = const {}}) {
+    final fgBloc = FeatureGroupsBloc(mrBloc);
+    if (params['appid'] == null ||
+        params['appid']!.elementAt(0) == null ||
+        params['groupid'] == null ||
+        params['groupid']!.elementAt(0) == null ||
+        params['envid'] == null ||
+        params['envid']!.elementAt(0) == null) {
+      return SizedBox(
+        height: 600,
+        child: notFound(mrBloc),
+      );
+    } else {
+      return BlocProvider<FeatureGroupsBloc>(
+          creator: (BuildContext context, BlocCreatorBag bag) => fgBloc,
+          child: BlocProvider<FeatureGroupBloc>(
+            creator: (context, bag) => FeatureGroupBloc(
+                fgBloc,
+                params['groupid']!.elementAt(0) ?? "",
+                params['envid']!.elementAt(0) ?? "",
+                params['appid']!.elementAt(0) ?? ""),
+            child: const FeatureGroupSettingsRoute(),
+          ));
     }
   }
 

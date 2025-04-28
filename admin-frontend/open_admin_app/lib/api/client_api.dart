@@ -436,6 +436,10 @@ class ManagementRepositoryClientBloc implements Bloc {
     }
   }
 
+  void setCurrentEnvId(String? eaid) {
+    streamValley.currentEnvId = eaid;
+  }
+
   void setCurrentAid(String? aid) {
     streamValley.currentAppId = aid;
   }
@@ -451,6 +455,10 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   String? getCurrentAid() {
     return streamValley.currentAppId;
+  }
+
+  String? getCurrentEnvId() {
+    return streamValley.currentEnvId;
   }
 
   void setPerson(Person p) {
