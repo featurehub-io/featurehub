@@ -50,7 +50,7 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
                           ConnectionState.active ||
                       snapshot.connectionState == ConnectionState.done) {
                     if (snapshot.hasError) {
-                      return const FHLoadingError();
+                      return FHLoadingError(error: snapshot.error);
                     } else if (snapshot.hasData) {
                       return Column(
                         children: [

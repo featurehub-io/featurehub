@@ -54,10 +54,6 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
   BehaviorSubject<List<Application>> get currentApplicationsStream =>
       _currentApplicationsStream;
 
-  final _currentEnvironmentStream = BehaviorSubject<String?>();
-  BehaviorSubject<String?> get currentEnvironmentStream =>
-      _currentEnvironmentStream;
-
   final _featureGroupUpdateStream =
       BehaviorSubject<List<FeatureGroupUpdateFeature>>();
 
@@ -75,7 +71,6 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
   }
 
   _updateEnvId(String? envId) {
-    _currentEnvironmentStream.add(envId);
     currentEnvId = envId;
   }
 
@@ -135,7 +130,6 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     _currentAppIdListener.cancel();
     _currentEnvIdListener.cancel();
     _featureGroupsStream.close();
-    _currentEnvironmentStream.close();
     _currentApplicationsStream.close();
     _featureGroupUpdateStream.close();
     _envRoleTypeStream.close();

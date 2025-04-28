@@ -68,21 +68,28 @@ class FeatureGroupBloc implements Bloc {
   }
 
   Future<void> _getFeatureGroup() async {
-    await featureGroupsBloc.getPermissions(applicationId, envId: environmentId);
-    FeatureGroup fg = await featureGroupsBloc.featureGroupServiceApi
-        .getFeatureGroup(applicationId, groupId);
-    _featureGroupStream.add(fg);
-    await featureGroupsBloc.getCurrentFeatureGroups(
-        environmentId, applicationId);
-    FeatureGroupListGroup listGroup = featureGroupsBloc
-        .featureGroupsStream.value
-        .firstWhere((f) => f.id == groupId);
-    featureGroupListGroupStream.add(listGroup);
-    if (fg.strategies?.isNotEmpty == true) {
-      _strategySource.add(fg.strategies![0]);
+    try {
+      await featureGroupsBloc.getPermissions(applicationId,
+          envId: environmentId);
+      FeatureGroup fg = await featureGroupsBloc.featureGroupServiceApi
+          .getFeatureGroup(applicationId, groupId);
+      _featureGroupStream.add(fg);
+      await featureGroupsBloc.getCurrentFeatureGroups(
+          environmentId, applicationId);
+      FeatureGroupListGroup listGroup = featureGroupsBloc
+          .featureGroupsStream.value
+          .firstWhere((f) => f.id == groupId);
+      featureGroupListGroupStream.add(listGroup);
+      if (fg.strategies?.isNotEmpty == true) {
+        _strategySource.add(fg.strategies![0]);
+      }
+      _trackingUpdatesGroupFeaturesStream.add(fg.features);
+      _trackingUpdatesGroupStrategiesStream.add(fg.strategies ?? []);
+    } catch (e) {
+      fhosLogger.severe('Error getting feature group: $e');
+      _featureGroupStream.addError(e);
+      rethrow;
     }
-    _trackingUpdatesGroupFeaturesStream.add(fg.features);
-    _trackingUpdatesGroupStrategiesStream.add(fg.strategies ?? []);
   }
 
   Future<void> _getAllFeaturesPerEnvironment() async {
