@@ -7,6 +7,10 @@ import { FeatureStateHolder, Readyness } from 'featurehub-javascript-node-sdk';
 import { logger } from '../support/logging';
 import { SdkWorld } from '../support/world';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
+import {
+  FeatureStateBaseHolder
+} from "../../../../../featurehub-javascript-sdk/featurehub-javascript-client-sdk/app/feature_state_holders";
+import {validateWorldForApplicationStrategies} from "./strategies";
 
 Given(/^There is a new feature flag$/, async function () {
   const name = makeid(5).toUpperCase();
@@ -79,6 +83,28 @@ Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (loc
     expect(f.isLocked(), `${f.key} locked ${f.locked} and expected ${lockedStatus}`).to.eq(lockedStatus === 'locked');
   }, 4000, 500);
 });
+
+Then('the feature flag has an application strategy {string} which has a value of {string}', async function (key: string, value: string)  {
+  const world = this as SdkWorld;
+  await waitForExpect(() => {
+    expect(world.repository).to.not.be.undefined;
+    expect(world.repository.readyness).to.eq(Readyness.Ready);
+  }, 2000, 500);
+
+  const strategy = world.applicationStrategies[key];
+  validateWorldForApplicationStrategies(world, strategy, key);
+
+  await waitForExpect(() => {
+    // const f = this.featureState(this.feature.key) as FeatureStateHolder;
+    const f = this.featureState(world.feature.key) as FeatureStateBaseHolder<boolean>;
+    const featureState = f.getFeatureState();
+    const strategyFound = featureState.strategies.find(s => s.id === strategy.uniqueCode);
+    expect(strategyFound, `strategy ${strategy.strategy.name} with id ${strategy.uniqueCode} was not found in ${JSON.stringify(featureState.strategies, null, 2)}`).to.not.be.undefined;
+    expect(strategyFound.value, `strategy ${JSON.stringify(strategyFound, null, 2)} should have value of type bool`).to.be.a('boolean');
+    expect(strategyFound.value).to.eq("true" === value);
+  }, 4000, 500);
+
+})
 
 When(/^I (unlock|lock) the feature$/, async function (lockUnlock) {
   const fValue = await (this as SdkWorld).getFeatureValue();
