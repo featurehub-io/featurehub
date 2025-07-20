@@ -23,10 +23,10 @@
     "chai": "^4.3.7",
     "cloudevents": "^8.0.0",
     "featurehub-cloud-event-tools": "^1.0.0",
-    "featurehub-javascript-client-sdk": "^1.3.2",
-    "featurehub-javascript-node-sdk": "^1.3.2",
+    "featurehub-javascript-client-sdk": "^1.4.0",
+    "featurehub-javascript-node-sdk": "^1.4.0",
     "nats": "^2.11.0",
-    "restify": "^11.0.0",
+    "restify": "^11.1.0",
     "wait-for-expect": "^3.0.2",
     "winston": "^3.3.3"
   },
