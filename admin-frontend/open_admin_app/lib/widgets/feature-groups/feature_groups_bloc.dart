@@ -16,6 +16,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   late StreamSubscription<List<Application>> _currentApplicationsListListener;
   late StreamSubscription<String?> _currentAppIdListener;
+  late StreamSubscription<String?> _currentEnvIdListener;
 
   String? currentEnvId;
   String? appId;
@@ -35,7 +36,10 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     WidgetsBinding.instance
         .addPostFrameCallback((_) => mrClient.processLandingActions());
     _currentAppIdListener =
-        _mrClient.streamValley.currentAppIdStream.listen(_getPermissions);
+        _mrClient.streamValley.currentAppIdStream.listen(_refreshInitialData);
+
+    _currentEnvIdListener =
+        _mrClient.streamValley.currentEnvIdStream.listen(_updateEnvId);
   }
 
   final _featureGroupsStream =
@@ -50,10 +54,6 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
   BehaviorSubject<List<Application>> get currentApplicationsStream =>
       _currentApplicationsStream;
 
-  final _currentEnvironmentStream = BehaviorSubject<String?>();
-  BehaviorSubject<String?> get currentEnvironmentStream =>
-      _currentEnvironmentStream;
-
   final _featureGroupUpdateStream =
       BehaviorSubject<List<FeatureGroupUpdateFeature>>();
 
@@ -62,23 +62,21 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     _currentApplicationsStream.add(appList);
   }
 
-  getCurrentFeatureGroups() async {
+  getCurrentFeatureGroups(String? envId, String? appId) async {
     if (appId != null) {
       var featureGroupsList = await featureGroupServiceApi
-          .listFeatureGroups(appId!, environmentId: currentEnvId, max: 1000);
+          .listFeatureGroups(appId, environmentId: envId, max: 1000);
       _featureGroupsStream.add(featureGroupsList.featureGroups);
-      if (userRoles != null) {
-        var envRoles = userRoles!.environments
-            .firstWhereOrNull((env) => env.id == currentEnvId);
-
-        if (envRoles != null) {
-          _envRoleTypeStream.add(envRoles.roles);
-        }
-      }
     }
   }
 
-  _getPermissions(String? appId) async {
+  _updateEnvId(String? envId) {
+    currentEnvId = envId;
+  }
+
+  _refreshInitialData(String? appId) async {
+    _featureGroupsStream
+        .add([]); // because appId changed, clear the groups list
     this.appId = appId;
 
     if (appId != null) {
@@ -88,12 +86,24 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
         mrClient.streamValley.getCurrentApplicationEnvironments();
         triggerEnvironmentListener = false;
       }
+      await getPermissions(appId);
+    }
+  }
+
+  getPermissions(String? appId, {String? envId}) async {
+    if (appId != null) {
       userRoles = await applicationServiceApi.applicationPermissions(appId);
+      if (userRoles != null) {
+        var envRoles = userRoles!.environments
+            .firstWhereOrNull((env) => env.id == (envId ?? currentEnvId));
+
+        if (envRoles != null) {
+          _envRoleTypeStream.add(envRoles.roles);
+        }
+      }
     } else {
       userRoles = null;
     }
-
-    resetDataStreamsOnAppIdChange(appId);
   }
 
   createFeatureGroup(String name, String? description) async {
@@ -114,17 +124,12 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  resetDataStreamsOnAppIdChange(String? id) {
-    _currentEnvironmentStream.add(null);
-    _featureGroupsStream.add([]);
-  }
-
   @override
   void dispose() {
     _currentApplicationsListListener.cancel();
     _currentAppIdListener.cancel();
+    _currentEnvIdListener.cancel();
     _featureGroupsStream.close();
-    _currentEnvironmentStream.close();
     _currentApplicationsStream.close();
     _featureGroupUpdateStream.close();
     _envRoleTypeStream.close();
@@ -148,7 +153,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     fhosLogger.fine('Updating feature group with $fgc');
     if (appId != null) {
       await featureGroupServiceApi.updateFeatureGroup(appId!, fgc);
-      getCurrentFeatureGroups();
+      getCurrentFeatureGroups(currentEnvId, appId);
     }
   }
 

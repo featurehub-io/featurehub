@@ -46,11 +46,13 @@ typedef FindApplicationsFunc = Future<List<Application>> Function(
 final _log = Logger('stream-valley');
 
 final ReleasedPortfolio nullPortfolio = ReleasedPortfolio(
-    portfolio: Portfolio(name: 'null-portfolio', id: '', description: '', version: -1),
+    portfolio:
+        Portfolio(name: 'null-portfolio', id: '', description: '', version: -1),
     currentPortfolioOrSuperAdmin: false);
 
-final ReleasedApplication nullApplication =
-    ReleasedApplication(application: Application(name: 'null-app', id: '', version: -1, portfolioId: ''));
+final ReleasedApplication nullApplication = ReleasedApplication(
+    application:
+        Application(name: 'null-app', id: '', version: -1, portfolioId: ''));
 
 class StreamValley {
   late ManagementRepositoryClientBloc mrClient;
@@ -79,12 +81,17 @@ class StreamValley {
   Stream<List<WebhookTypeDetail>?> get webhookTypeStream =>
       _webhookTypesSource.stream;
   final _currentAppSource = BehaviorSubject.seeded(nullApplication);
+  final _currentEnvIdSource = BehaviorSubject<String?>();
 
-  String? get currentAppId => _currentAppSource.value.isNull() ? null : _currentAppSource.value.application.id;
+  String? get currentAppId => _currentAppSource.value.isNull()
+      ? null
+      : _currentAppSource.value.application.id;
+  String? get currentEnvId => _currentEnvIdSource.valueOrNull;
 
   Stream<bool> get rocketTrigger => _rocketTriggerSource.stream;
   Stream<String?> get currentAppIdStream => _currentAppSource.stream
       .map((app) => app.isNull() ? null : app.application.id);
+  Stream<String?> get currentEnvIdStream => _currentEnvIdSource.stream;
   final _currentPortfolioApplicationsSource =
       BehaviorSubject<List<Application>>.seeded([]);
   final _currentPortfolioGroupsSource = BehaviorSubject<List<Group>>.seeded([]);
@@ -105,7 +112,8 @@ class StreamValley {
       ? _currentPortfolioSource.value
       : nullPortfolio;
 
-  String? get currentPortfolioId => currentPortfolio.isNull() ? null : currentPortfolio.portfolio.id;
+  String? get currentPortfolioId =>
+      currentPortfolio.isNull() ? null : currentPortfolio.portfolio.id;
 
   final _globalRefresherSource = BehaviorSubject<String?>();
 
@@ -140,15 +148,20 @@ class StreamValley {
 
           // the portfolio has changed and the app isn't in the portfolio
           final appId = await prefs.currentApplicationId();
+          final envId = await prefs.currentEnvId();
+          _currentEnvIdSource.add(envId);
           if (_currentAppSource.hasValue &&
               !portfolioUpdate.portfolio.applications
                   .any((app) => app.id == currentAppId || app.id == appId)) {
             _log.fine(
-                "resetting appid here as $currentAppId not in ${portfolioUpdate.portfolio.applications.map((e) => e.id)}");
+                "resetting appid and envId here as $currentAppId not in ${portfolioUpdate.portfolio.applications.map((e) => e.id)}");
             if (portfolioUpdate.portfolio.applications.isEmpty) {
               currentAppId = null;
+              currentEnvId = null;
             } else {
               currentAppId = portfolioUpdate.portfolio.applications.first.id;
+              currentEnvId = portfolioUpdate
+                  .portfolio.applications.first.environments.first.id;
             }
           }
         }
@@ -172,6 +185,18 @@ class StreamValley {
       personState.userIsPortfolioAdmin(currentPortfolioId);
 
   bool get hasCurrentPortfolio => currentPortfolio != nullPortfolio;
+
+  set currentEnvId(String? currentEnvId) {
+    if (currentEnvId != _currentEnvIdSource.valueOrNull) {
+      _log.fine("Env ID set to $currentEnvId");
+      prefs.setCurrentEnvId(currentEnvId);
+      _currentEnvIdSource.add(currentEnvId);
+
+      if (currentEnvId == null) {
+        _currentEnvIdSource.add(null);
+      }
+    }
+  }
 
   set apiClient(ManagementRepositoryClientBloc mrClient) {
     this.mrClient = mrClient;
@@ -218,6 +243,9 @@ class StreamValley {
     if (!_currentAppSource.value.isNull()) {
       if (_currentApplicationEnvironmentsSource.hasListener) {
         getCurrentApplicationEnvironments();
+        prefs.setCurrentEnvId(
+            null); // unset current env ID since the application has changed
+        _currentEnvIdSource.add(null);
       }
     }
   }
@@ -241,7 +269,7 @@ class StreamValley {
   }
 
   Future<void> _portfolioChanged(Portfolio found) async {
-    _log.fine('Accepted portfolio id change, triggering');
+    _log.fine('Accepted portfolio id change');
 
     final app = await prefs.setPortfolio(found);
     _currentPortfolioSource.add(ReleasedPortfolio(
@@ -252,13 +280,15 @@ class StreamValley {
     _routeCheckPortfolioSource.add(found);
 
     if (currentAppId != app?.id) {
-      _log.fine("setting to ${app?.id}");
+      _log.fine("Setting App ID to ${app?.id} as a result of portfolio change");
       currentAppId = app?.id;
     }
+
+    _currentEnvIdSource.add(null);
   }
 
-  Stream<String?> get currentPortfolioIdStream =>
-      _currentPortfolioSource.stream.map((p) => p.isNull() ? null : p.portfolio.id);
+  Stream<String?> get currentPortfolioIdStream => _currentPortfolioSource.stream
+      .map((p) => p.isNull() ? null : p.portfolio.id);
 
   Stream<ReleasedApplication> get currentAppStream => _currentAppSource.stream;
 
