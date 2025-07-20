@@ -423,11 +423,12 @@ open class DbCacheSource @Inject constructor(
   }
 
   private fun fromApplicationRolloutStrategy(rs: DbStrategyForFeatureValue): CacheRolloutStrategy {
+    val value = if (rs.featureValue.feature.valueType == FeatureValueType.BOOLEAN) "true".equals(rs.value) else rs.value
     return CacheRolloutStrategy()
       .id(rs.rolloutStrategy.shortUniqueCode)
       .percentage(rs.rolloutStrategy.strategy.percentage)
       .percentageAttributes(rs.rolloutStrategy.strategy.percentageAttributes)
-      .value(rs.value)
+      .value(value)
       .attributes(if (rs.rolloutStrategy.strategy.attributes == null) mutableListOf() else rs.rolloutStrategy.strategy.attributes!!
         .map { rsa: RolloutStrategyAttribute -> fromRolloutStrategyAttribute(rsa) }
         )
@@ -452,7 +453,7 @@ open class DbCacheSource @Inject constructor(
 
     allStrategies.addAll(activeSharedStrategies.filter { !it.rolloutStrategy.strategy.disabled }.map { shared ->
         val rs = fromApplicationRolloutStrategy(shared)
-        rs.value = shared.value // the value associated with the shared strategy is set here not in the strategy itself
+        rs.value = if (featureValue.feature.valueType == FeatureValueType.BOOLEAN) "true" == shared.value else shared.value // the value associated with the shared strategy is set here not in the strategy itself
         rs
       })
 

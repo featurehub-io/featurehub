@@ -4,6 +4,7 @@ Feature: We can save, change and retrieve application strategies on feature valu
     Given I create a new portfolio
     And I create an application
     And I create a service account and full permissions based on the application environments
+    And I connect to the feature server
 
   @appstrat
   Scenario: I can create a feature value with an application strategy attached
@@ -14,6 +15,7 @@ Feature: We can save, change and retrieve application strategies on feature valu
     When I attach application strategy "first" to the current environment feature value
     And I expect the application strategy "first" to be attached to the feature history
     And the application strategy "first" should be used in 1 environment with 1 feature
+    Then the feature flag has an application strategy "first" which has a value of "true"
     Then I create an application strategy tagged "second"
     And I get the feature history
     When I attach application strategy "second" to the current environment feature value
