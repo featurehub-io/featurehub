@@ -7,7 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "fh_cache")
@@ -19,9 +19,9 @@ public class DbNamedCache extends Model {
   @Id
   private String cacheName;
 
-  @OneToMany(orphanRemoval = false)
-  @JoinColumn(name = "fk_named_cache", referencedColumnName = "cache_name")
-  private Set<DbOrganization> organizations;
+//  @OneToMany(orphanRemoval = false)
+//  @JoinColumn(name = "fk_named_cache", referencedColumnName = "cache_name")
+  private List<DbOrganization> organizations;
 
   public DbNamedCache() {
   }
@@ -34,11 +34,11 @@ public class DbNamedCache extends Model {
     this.cacheName = cacheName;
   }
 
-  public Set<DbOrganization> getOrganizations() {
+  public List<DbOrganization> getOrganizations() {
     return organizations;
   }
 
-  public void setOrganizations(Set<DbOrganization> organizations) {
+  public void setOrganizations(List<DbOrganization> organizations) {
     this.organizations = organizations;
   }
 
@@ -49,7 +49,7 @@ public class DbNamedCache extends Model {
 
   public static final class Builder {
     private String cacheName;
-    private Set<DbOrganization> organizations;
+    private List<DbOrganization> organizations;
 
     public Builder() {
     }
@@ -59,7 +59,7 @@ public class DbNamedCache extends Model {
       return this;
     }
 
-    public Builder organizations(Set<DbOrganization> val) {
+    public Builder organizations(List<DbOrganization> val) {
       organizations = val;
       return this;
     }
