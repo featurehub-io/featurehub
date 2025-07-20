@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_accent.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
@@ -17,19 +18,15 @@ import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.d
 import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/strategyeditor/strategy_editing_widget.dart';
 
-class FeatureGroupSettings extends StatefulWidget {
-  final FeatureGroupListGroup featureGroup;
-  final FeatureGroupBloc bloc;
-
-  const FeatureGroupSettings(
-      {Key? key, required this.featureGroup, required this.bloc})
-      : super(key: key);
+class FeatureGroupSettingsRoute extends StatefulWidget {
+  const FeatureGroupSettingsRoute({Key? key}) : super(key: key);
 
   @override
-  State<FeatureGroupSettings> createState() => _FeatureGroupSettingsState();
+  State<FeatureGroupSettingsRoute> createState() =>
+      _FeatureGroupSettingsRouteState();
 }
 
-class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
+class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
   @override
   void initState() {
     super.initState();
@@ -37,21 +34,15 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
 
   @override
   Widget build(BuildContext context) {
+    final bloc = BlocProvider.of<FeatureGroupBloc>(context);
     return Container(
       color: Theme.of(context).canvasColor,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: IconButton(
-                icon: const Icon(Icons.close, size: 24),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ),
             StreamBuilder<FeatureGroup>(
-                stream: widget.bloc.featureGroupStream,
+                stream: bloc.featureGroupStream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const FHLoadingIndicator();
@@ -59,7 +50,7 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                           ConnectionState.active ||
                       snapshot.connectionState == ConnectionState.done) {
                     if (snapshot.hasError) {
-                      return const FHLoadingError();
+                      return FHLoadingError(error: snapshot.error);
                     } else if (snapshot.hasData) {
                       return Column(
                         children: [
@@ -79,25 +70,34 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                                     ),
                                   ])),
                               const SizedBox(width: 16.0),
-                              SelectableText.rich(TextSpan(
-                                  style: DefaultTextStyle.of(context).style,
-                                  children: [
-                                    const TextSpan(
-                                      text: 'Application: ',
-                                    ),
-                                    TextSpan(
-                                      text: widget.bloc.featureGroupsBloc
-                                          .currentApplicationsStream.value
-                                          .firstWhere((app) =>
-                                              app.id ==
-                                              widget.bloc.featureGroupsBloc
-                                                  .mrClient.currentAid)
-                                          .name,
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ])),
+                              StreamBuilder<List<Application>>(
+                                  stream: bloc.featureGroupsBloc
+                                      .currentApplicationsStream,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData &&
+                                        snapshot.data!.isNotEmpty) {
+                                      return SelectableText.rich(TextSpan(
+                                          style: DefaultTextStyle.of(context)
+                                              .style,
+                                          children: [
+                                            const TextSpan(
+                                              text: 'Application: ',
+                                            ),
+                                            TextSpan(
+                                              text: snapshot.data
+                                                  ?.firstWhere((app) =>
+                                                      app.id ==
+                                                      bloc.applicationId)
+                                                  .name,
+                                              style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ]));
+                                    } else {
+                                      return const SizedBox.shrink();
+                                    }
+                                  }),
                               const SizedBox(
                                 width: 16.0,
                               ),
@@ -108,7 +108,8 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                                       text: 'Environment: ',
                                     ),
                                     TextSpan(
-                                      text: widget.featureGroup.environmentName,
+                                      text: bloc.featureGroupStream.value
+                                          .environmentName,
                                       style: const TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold),
@@ -123,42 +124,52 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                           const SizedBox(
                             height: 8.0,
                           ),
-                          if (widget
-                              .bloc.featureGroupsBloc.envRoleTypeStream.value
-                              .contains(RoleType.CHANGE_VALUE))
-                            StreamBuilder<bool>(
-                                stream: widget.bloc.isGroupUpdatedStream,
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData && snapshot.data!) {
-                                    return ButtonBar(
-                                      alignment: MainAxisAlignment.end,
-                                      children: [
-                                        FHFlatButtonTransparent(
-                                          title: 'Cancel',
-                                          keepCase: true,
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                        ),
-                                        FHFlatButtonAccent(
-                                          title: 'Apply all changes',
-                                          keepCase: true,
-                                          onPressed: () async {
-                                            await widget.bloc
-                                                .saveFeatureGroupUpdates();
-                                            widget
-                                                .bloc.featureGroupsBloc.mrClient
-                                                .addSnackbar(Text(
-                                                    'Settings for group "${widget.featureGroup.name}" have been updated'));
-                                            Navigator.pop(context);
-                                          },
-                                        )
-                                      ],
-                                    );
-                                  } else {
-                                    return const SizedBox.shrink();
-                                  }
-                                }),
+                          StreamBuilder(
+                              stream: bloc.featureGroupsBloc.envRoleTypeStream,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData &&
+                                    snapshot.data!
+                                        .contains(RoleType.CHANGE_VALUE)) {
+                                  return StreamBuilder<bool>(
+                                      stream: bloc.isGroupUpdatedStream,
+                                      builder: (context, snapshot) {
+                                        if (snapshot.hasData &&
+                                            snapshot.data!) {
+                                          return ButtonBar(
+                                            alignment: MainAxisAlignment.end,
+                                            children: [
+                                              FHFlatButtonTransparent(
+                                                title: 'Cancel',
+                                                keepCase: true,
+                                                onPressed: () {
+                                                  ManagementRepositoryClientBloc
+                                                      .router
+                                                      .navigateTo(context,
+                                                          '/feature-groups');
+                                                },
+                                              ),
+                                              FHFlatButtonAccent(
+                                                title: 'Apply all changes',
+                                                keepCase: true,
+                                                onPressed: () async {
+                                                  await bloc
+                                                      .saveFeatureGroupUpdates();
+                                                  bloc.featureGroupsBloc
+                                                      .mrClient
+                                                      .addSnackbar(Text(
+                                                          'Settings for group "${bloc.featureGroupStream.value.name}" have been updated'));
+                                                },
+                                              )
+                                            ],
+                                          );
+                                        } else {
+                                          return const SizedBox.shrink();
+                                        }
+                                      });
+                                } else {
+                                  return const Text("No permissions");
+                                }
+                              }),
                           const SizedBox(height: 32.0),
                           Row(children: [
                             Expanded(
@@ -172,14 +183,14 @@ class _FeatureGroupSettingsState extends State<FeatureGroupSettings> {
                                             width: 0.5))),
                                 child: _FeaturesSettings(
                                   featureGroup: snapshot.data!,
-                                  bloc: widget.bloc,
+                                  bloc: bloc,
                                 ),
                               ),
                             ),
                             Expanded(
                               child: _StrategySettings(
                                 featureGroup: snapshot.data!,
-                                bloc: widget.bloc,
+                                bloc: bloc,
                               ),
                             )
                           ]),

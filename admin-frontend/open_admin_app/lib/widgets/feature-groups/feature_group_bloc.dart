@@ -9,15 +9,24 @@ import 'package:rxdart/rxdart.dart';
 
 class FeatureGroupBloc implements Bloc {
   final FeatureGroupsBloc featureGroupsBloc;
-  final FeatureGroupListGroup featureGroupListGroup;
+  final String groupId;
+  final String environmentId;
+  final String applicationId;
   late ApplicationRolloutStrategyServiceApi _appStrategyServiceApi;
 
-  FeatureGroupBloc(this.featureGroupsBloc, this.featureGroupListGroup) {
+  FeatureGroupBloc(this.featureGroupsBloc, this.groupId, this.environmentId,
+      this.applicationId) {
     _appStrategyServiceApi = ApplicationRolloutStrategyServiceApi(
         featureGroupsBloc.mrClient.apiClient);
+
     _getFeatureGroup();
     _getAllFeaturesPerEnvironment();
   }
+
+  final _featureGroupListGroupStream = BehaviorSubject<FeatureGroupListGroup>();
+
+  BehaviorSubject<FeatureGroupListGroup> get featureGroupListGroupStream =>
+      _featureGroupListGroupStream;
 
   final _featureGroupStream = BehaviorSubject<FeatureGroup>();
 
@@ -59,23 +68,35 @@ class FeatureGroupBloc implements Bloc {
   }
 
   Future<void> _getFeatureGroup() async {
-    FeatureGroup fg = await featureGroupsBloc.featureGroupServiceApi
-        .getFeatureGroup(
-            featureGroupsBloc.mrClient.currentAid!, featureGroupListGroup.id);
-    _featureGroupStream.add(fg);
-    if (fg.strategies?.isNotEmpty == true) {
-      _strategySource.add(fg.strategies![0]);
+    try {
+      await featureGroupsBloc.getPermissions(applicationId,
+          envId: environmentId);
+      FeatureGroup fg = await featureGroupsBloc.featureGroupServiceApi
+          .getFeatureGroup(applicationId, groupId);
+      _featureGroupStream.add(fg);
+      await featureGroupsBloc.getCurrentFeatureGroups(
+          environmentId, applicationId);
+      FeatureGroupListGroup listGroup = featureGroupsBloc
+          .featureGroupsStream.value
+          .firstWhere((f) => f.id == groupId);
+      featureGroupListGroupStream.add(listGroup);
+      if (fg.strategies?.isNotEmpty == true) {
+        _strategySource.add(fg.strategies![0]);
+      }
+      _trackingUpdatesGroupFeaturesStream.add(fg.features);
+      _trackingUpdatesGroupStrategiesStream.add(fg.strategies ?? []);
+    } catch (e) {
+      fhosLogger.severe('Error getting feature group: $e');
+      _featureGroupStream.addError(e);
+      rethrow;
     }
-    _trackingUpdatesGroupFeaturesStream.add(fg.features);
-    _trackingUpdatesGroupStrategiesStream.add(fg.strategies ?? []);
   }
 
   Future<void> _getAllFeaturesPerEnvironment() async {
     // this gets all features available in the environment, and returns them as a List of FeatureGroupFeature so
     // we can list in the drop-down all available features to be added to a group
     var feat = await featureGroupsBloc.featureGroupServiceApi
-        .getFeatureGroupFeatures(featureGroupsBloc.mrClient.currentAid!,
-            featureGroupListGroup.environmentId);
+        .getFeatureGroupFeatures(applicationId, environmentId);
     _availableFeaturesStream.add(feat);
   }
 
@@ -127,8 +148,10 @@ class FeatureGroupBloc implements Bloc {
         ? _trackingUpdatesGroupStrategiesStream.value
         : null;
 
-    await featureGroupsBloc.updateFeatureGroup(featureGroupListGroup,
-        features: features, strategies: strategies);
+    await featureGroupsBloc.updateFeatureGroup(
+        featureGroupListGroupStream.value,
+        features: features,
+        strategies: strategies);
   }
 
   FeatureGroupUpdateFeature convertToFeatureUpdate(
