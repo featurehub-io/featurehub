@@ -7,10 +7,8 @@ import { FeatureStateHolder, Readyness } from 'featurehub-javascript-node-sdk';
 import { logger } from '../support/logging';
 import { SdkWorld } from '../support/world';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
-import {
-  FeatureStateBaseHolder
-} from "../../../../../featurehub-javascript-sdk/featurehub-javascript-client-sdk/app/feature_state_holders";
 import {validateWorldForApplicationStrategies} from "./strategies";
+import { FeatureStateBaseHolder } from "featurehub-javascript-client-sdk";
 
 Given(/^There is a new feature flag$/, async function () {
   const name = makeid(5).toUpperCase();

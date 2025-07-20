@@ -1,4 +1,4 @@
-FROM node:18-buster-slim as build
+FROM node:18-bullseye-slim as build
 
 # install the latest javascript SDK
 WORKDIR /jssdk
