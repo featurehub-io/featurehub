@@ -70,6 +70,18 @@ flutter:
     - family: FlutterIcon
       fonts:
         - asset: assets/fonts/FlutterIcon.ttf
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
+    - family: MaterialIcons
+      fonts:
+        - asset: assets/fonts/MaterialIcons-Regular.ttf
+    - family: NotoSansSymbols
+      fonts:
+        - asset: assets/fonts/NotoSansSymbols-Regular.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:
