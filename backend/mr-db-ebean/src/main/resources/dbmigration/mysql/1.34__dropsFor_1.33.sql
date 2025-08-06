@@ -1,5 +1,4 @@
 -- apply alter tables
-drop index ix_fh_organization_fk_named_cache on fh_organization;
-alter table fh_organization drop column fk_named_cache;
+alter table fh_organization drop foreign key if exists fk_named_cache, drop index if exists fk_named_cache, drop column if exists fk_named_cache;
 -- apply post alter
 drop table if exists fh_cache;
