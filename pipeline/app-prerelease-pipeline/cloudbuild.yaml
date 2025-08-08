@@ -13,6 +13,7 @@ steps:
       - |
         (
           gsutil cp gs://${_GCS_CACHE_BUCKET}/fh-m2-cache.tar.gz /tmp/m2-cache.tar.gz &&
+          mkdir -p /root/.m2/repository &&
           tar -xzf /tmp/m2-cache.tar.gz
         ) || echo 'Cache not found'
     volumes:
@@ -30,7 +31,7 @@ steps:
     volumes:
       - name: user.docker
         path: /root/.docker
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
+  - name: 'maven:3.9.9-eclipse-temurin-23'
     entrypoint: '/bin/sh'
     id: tile-install
     args:
@@ -39,7 +40,7 @@ steps:
     volumes:
       - name: user.home
         path: /root
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
+  - name: 'maven:3.9.9-eclipse-temurin-23'
     entrypoint: '/bin/sh'
     args:
       - '-c'
@@ -51,7 +52,7 @@ steps:
         path: /root
       - name: user.docker
         path: /root/.docker
-#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.8.6-jdk-11'
+#  - name: 'maven:3.9.9-eclipse-temurin-23'
 #    entrypoint: '/bin/sh'
 #    secretEnv: ['REGISTRY_USERNAME', 'REGISTRY_PASSWORD']
 #    args:

@@ -1,16 +1,12 @@
 package io.featurehub.db.services
 
-import io.ebean.Database
 import io.ebean.annotation.Transactional
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.OrganizationApi
-import io.featurehub.db.model.DbNamedCache
 import io.featurehub.db.model.DbOrganization
-import io.featurehub.db.model.query.QDbNamedCache
 import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.mr.model.Organization
-import io.featurehub.publish.ChannelConstants
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 
@@ -29,12 +25,7 @@ class OrganizationSqlApi @Inject constructor(private val convertUtils: Conversio
 
   @Transactional
   override fun save(organization: Organization): Organization? {
-    var cache = QDbNamedCache().cacheName.eq(ChannelConstants.DEFAULT_CACHE_NAME).findOne()
-    if (cache == null) {
-      cache = DbNamedCache.Builder().cacheName(ChannelConstants.DEFAULT_CACHE_NAME).build()
-      cache.save()
-    }
-    val newOrg = DbOrganization.Builder().name(organization.name).namedCache(cache).build()
+    val newOrg = DbOrganization.Builder().name(organization.name).build()
     newOrg.save()
     return convertUtils.toOrganization(newOrg, Opts.opts(FillOpts.Groups))!!
   }

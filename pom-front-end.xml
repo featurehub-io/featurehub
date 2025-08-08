@@ -43,27 +43,4 @@
     <gib.disable>true</gib.disable>
   </properties>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>com.lesfurets</groupId>
-        <artifactId>partial-build-plugin</artifactId>
-        <version>2.7</version>
-        <executions>
-          <execution>
-            <id>changed</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>writeChanged</goal>
-            </goals>
-            <configuration>
-              <referenceBranch>main</referenceBranch>
-              <outputFile>${project.basedir}/front-end-changed.projects</outputFile>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-
 </project>

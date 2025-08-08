@@ -41,6 +41,10 @@
     </license>
   </licenses>
 
+  <properties>
+    <ebean-maven-plugin.args>debug=0</ebean-maven-plugin.args>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>io.featurehub.mr</groupId>
@@ -75,6 +79,53 @@
             <tile>io.ebean.tile:enhancement:${ebean.tile.version}</tile>
           </tiles>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
+        <configuration>
+          <annotationProcessorPaths>
+            <path> <!-- generate ebean query beans -->
+              <groupId>io.ebean</groupId>
+              <artifactId>querybean-generator</artifactId>
+              <version>${ebean.version}</version>
+            </path>
+          </annotationProcessorPaths>
+          <release>23</release>
+          <useIncrementalCompilation>false</useIncrementalCompilation>
+        </configuration>
+        <executions>
+
+          <!-- Replacing default-compile as it is treated specially by maven -->
+          <execution>
+            <id>default-compile</id>
+            <phase>none</phase>
+            <configuration tiles-keep-id="true" />
+          </execution>
+          <!-- Replacing default-testCompile as it is treated specially by maven -->
+          <execution>
+            <id>default-testCompile</id>
+            <phase>none</phase>
+            <configuration tiles-keep-id="true" />
+          </execution>
+          <execution>
+            <id>java-compile</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration tiles-keep-id="true" />
+          </execution>
+          <execution>
+            <id>java-test-compile</id>
+            <phase>test-compile</phase>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+            <configuration tiles-keep-id="true" />
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
