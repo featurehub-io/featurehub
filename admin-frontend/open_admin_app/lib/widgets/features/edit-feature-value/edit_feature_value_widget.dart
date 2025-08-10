@@ -539,7 +539,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                           'yyyy-MM-dd HH:mm:ss')
                                                       .format(value.when))),
                                                   DataCell(
-                                                    Text(value.who.name ?? ''),
+                                                    Text(value.who.name),
                                                   ),
                                                   DataCell(
                                                     Text(value.who.type ==

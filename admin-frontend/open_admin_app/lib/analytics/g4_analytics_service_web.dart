@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:html'; // ignore: avoid_web_libraries_in_flutter
 import 'dart:js' as js; // ignore: avoid_web_libraries_in_flutter
+import 'package:universal_html/html.dart';
 
 import 'package:logging/logging.dart';
 

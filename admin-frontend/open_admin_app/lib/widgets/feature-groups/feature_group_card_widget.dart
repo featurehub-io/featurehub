@@ -20,7 +20,6 @@ class FeatureGroupCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Card(
-        elevation: 4.0,
         child: InkWell(
           mouseCursor: SystemMouseCursors.click,
           borderRadius: BorderRadius.circular(8.0),
@@ -60,7 +59,7 @@ class FeatureGroupCard extends StatelessWidget {
                                           .textTheme
                                           .bodySmall
                                           ?.color
-                                          ?.withOpacity(0.5),
+                                          ?.withAlpha(128),
                                     )),
                           ],
                         ),
@@ -201,7 +200,7 @@ class FeaturesCounter extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color:
-                        Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                        Theme.of(context).colorScheme.primary.withAlpha(51),
                   ),
                 ),
                 Icon(
@@ -220,7 +219,7 @@ class FeaturesCounter extends StatelessWidget {
                         .textTheme
                         .labelSmall
                         ?.color
-                        ?.withOpacity(0.6)),
+                        ?.withAlpha(153)),
               ),
               Text(counter.toString(),
                   style: Theme.of(context).textTheme.titleLarge)
@@ -237,7 +236,7 @@ class FeaturesCounter extends StatelessWidget {
                       .textTheme
                       .labelSmall
                       ?.color
-                      ?.withOpacity(0.6)),
+                      ?.withAlpha(153)),
             ),
             const SizedBox(
               height: 6.0,

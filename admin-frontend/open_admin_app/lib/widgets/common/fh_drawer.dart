@@ -382,7 +382,7 @@ class FHMenuItem extends StatelessWidget {
                   ? Theme.of(context)
                       .colorScheme
                       .primaryContainer
-                      .withOpacity(0.6)
+                      .withAlpha(153)
                   : null,
               child: Row(
                 children: <Widget>[

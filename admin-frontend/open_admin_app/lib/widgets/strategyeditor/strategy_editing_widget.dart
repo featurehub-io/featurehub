@@ -188,7 +188,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                 const SizedBox(height: 8.0),
                 Align(
                   alignment: Alignment.bottomRight,
-                  child: ButtonBar(
+                  child: OverflowBar(
                     children: [
                       FHFlatButtonTransparent(
                         title: 'Cancel',

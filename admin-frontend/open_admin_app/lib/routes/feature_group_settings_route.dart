@@ -135,7 +135,7 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
                                       builder: (context, snapshot) {
                                         if (snapshot.hasData &&
                                             snapshot.data!) {
-                                          return ButtonBar(
+                                          return OverflowBar(
                                             alignment: MainAxisAlignment.end,
                                             children: [
                                               FHFlatButtonTransparent(
@@ -368,7 +368,7 @@ class _FeaturesSettings extends StatelessWidget {
                                                 color: Theme.of(context)
                                                     .iconTheme
                                                     .color
-                                                    ?.withOpacity(0.8))),
+                                                    ?.withAlpha(204))),
                                     ],
                                   ),
                                   if (editable)

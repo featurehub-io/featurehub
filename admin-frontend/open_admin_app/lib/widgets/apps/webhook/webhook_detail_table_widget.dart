@@ -7,8 +7,7 @@ class WebhookDetailTable extends StatelessWidget {
   final WebhookEnvironmentBloc bloc;
   final WebhookDetail data;
 
-  const WebhookDetailTable(this.data, this.bloc, {Key? key})
-      : super(key: key);
+  const WebhookDetailTable(this.data, this.bloc, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +18,7 @@ class WebhookDetailTable extends StatelessWidget {
           padding: const EdgeInsets.all(24.0),
           child: Column(
             children: [
-              for(var count = 0; count < 9; count ++)
+              for (var count = 0; count < 9; count++)
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
@@ -27,11 +26,16 @@ class WebhookDetailTable extends StatelessWidget {
                       if (count != 8)
                         SizedBox(
                           width: 120,
-                          child: Text(byRow(count), style: Theme.of(context).textTheme.bodySmall),
+                          child: Text(byRow(count),
+                              style: Theme.of(context).textTheme.bodySmall),
                         ),
                       Expanded(
-                          child: Text(byRowContent(count), softWrap: false,
-                            overflow: TextOverflow.ellipsis, maxLines: 100,)),
+                          child: Text(
+                        byRowContent(count),
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 100,
+                      )),
                       if (count == 8)
                         FHCopyToClipboard(
                             copyString: byRowContent(count),
@@ -72,9 +76,9 @@ class WebhookDetailTable extends StatelessWidget {
   String byRowContent(int index) {
     switch (index) {
       case 0:
-        return data.whenSent.toString() ?? '';
+        return data.whenSent.toString();
       case 1:
-        return data.deliveredDataCloudEventType ?? '';
+        return data.deliveredDataCloudEventType;
       case 2:
         return data.url ?? '';
       case 3:
@@ -89,7 +93,7 @@ class WebhookDetailTable extends StatelessWidget {
         return keyValue(data.outboundHeaders ?? {});
     }
 
-    return data.content ?? '';
+    return data.content;
   }
 
   String keyValue(Map<String, String> vals) =>

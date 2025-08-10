@@ -99,10 +99,6 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
 
             return Card(
               elevation: 1,
-              color:
-                  Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
-              surfaceTintColor: Colors.transparent,
-              shadowColor: Colors.transparent,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
