@@ -24,8 +24,8 @@ class _FeaturesDropDownState extends State<FeaturesDropDown> {
       padding: const EdgeInsets.only(left: 8.0),
       child: OutlinedButton(
           onPressed: () => {},
-          child: DropdownButtonHideUnderline(
-              child: DropdownButton(
+          child: DropdownButton(
+            underline: const SizedBox.shrink(),
             icon: const Padding(
               padding: EdgeInsets.only(left: 8.0),
               child: Icon(
@@ -55,7 +55,7 @@ class _FeaturesDropDownState extends State<FeaturesDropDown> {
               });
             },
             value: currentValue,
-          ))),
+          )),
     );
   }
 }

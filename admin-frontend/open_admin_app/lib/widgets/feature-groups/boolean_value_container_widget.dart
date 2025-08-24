@@ -33,32 +33,32 @@ class _EditFeatureGroupBooleanValueWidgetState
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonHideUnderline(
-      child: DropdownButton(
-        isDense: true,
-        isExpanded: false,
-        items:
-            <String>['On', 'Off'].map<DropdownMenuItem<String>>((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(
-              value,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          );
-        }).toList(),
-        value: boolFeatureValue,
-        onChanged: widget.editable && !widget.feature.locked? (value) {
-                final replacementBoolean = (value == 'On');
-                _updateFeatureValue(replacementBoolean, widget.feature);
-                setState(() {
-                  boolFeatureValue = replacementBoolean ? 'On' : 'Off';
-                });
-              }
-            : null,
-        disabledHint: Text(boolFeatureValue,
-            style: Theme.of(context).textTheme.bodySmall),
-      ),
+    return DropdownButton(
+      underline: const SizedBox.shrink(),
+      isDense: true,
+      isExpanded: false,
+      items:
+          <String>['On', 'Off'].map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        );
+      }).toList(),
+      value: boolFeatureValue,
+      onChanged: widget.editable && !widget.feature.locked
+          ? (value) {
+              final replacementBoolean = (value == 'On');
+              _updateFeatureValue(replacementBoolean, widget.feature);
+              setState(() {
+                boolFeatureValue = replacementBoolean ? 'On' : 'Off';
+              });
+            }
+          : null,
+      disabledHint:
+          Text(boolFeatureValue, style: Theme.of(context).textTheme.bodySmall),
     );
   }
 

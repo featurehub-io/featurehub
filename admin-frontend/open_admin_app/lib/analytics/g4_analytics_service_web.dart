@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:js' as js; // ignore: avoid_web_libraries_in_flutter
+import 'dart:js_interop' as js;
+import 'dart:js_interop_unsafe';
 import 'package:universal_html/html.dart';
 
 import 'package:logging/logging.dart';
@@ -49,7 +50,7 @@ class GoogleAnalytics4ServiceWeb extends G4AnalyticsService {
 
   static dynamic _evalJs(String code) {
     _logger.finer('JS eval: $code');
-    return js.context.callMethod('eval', [code]);
+    return js.globalContext.callMethod('eval'.toJS, [code.toJS].toJS);
   }
 
   void _logJsDate() {

@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/widgets/strategyeditor/attribute_value_chip_widget.dart';
 
@@ -90,36 +89,35 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
       height: 32,
       child: OutlinedButton(
         onPressed: () => {},
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<dynamic>(
-            icon: const Padding(
-              padding: EdgeInsets.only(left: 8.0),
-              child: Icon(
-                Icons.keyboard_arrow_down,
-                size: 18,
-              ),
+        child: DropdownButton<dynamic>(
+          underline: const SizedBox.shrink(),
+          icon: const Padding(
+            padding: EdgeInsets.only(left: 8.0),
+            child: Icon(
+              Icons.keyboard_arrow_down,
+              size: 18,
             ),
-            isExpanded: true,
-            items: selectableValues
-                .map((e) => DropdownMenuItem(
-                    value: e,
-                    child: Text(widget.enumToDisplayNameMapper(e),
-                        style: Theme.of(context).textTheme.bodyMedium)))
-                .toList(),
-            hint: Text(widget.hint,
-                style: Theme.of(context).textTheme.titleSmall),
-            onChanged: (dynamic value) {
-              var readOnly = false; //TODO parametrise this if needed
-              if (!readOnly) {
-                setState(() {
-                  widget.values.add(widget.enumToJsonMapper(value));
-                  selectedValues.add(value);
-                  selectableValues.remove(value);
-                });
-              }
-            },
-            value: null,
           ),
+          isExpanded: true,
+          items: selectableValues
+              .map((e) => DropdownMenuItem(
+                  value: e,
+                  child: Text(widget.enumToDisplayNameMapper(e),
+                      style: Theme.of(context).textTheme.bodyMedium)))
+              .toList(),
+          hint:
+              Text(widget.hint, style: Theme.of(context).textTheme.titleSmall),
+          onChanged: (dynamic value) {
+            var readOnly = false; //TODO parametrise this if needed
+            if (!readOnly) {
+              setState(() {
+                widget.values.add(widget.enumToJsonMapper(value));
+                selectedValues.add(value);
+                selectableValues.remove(value);
+              });
+            }
+          },
+          value: null,
         ),
       ),
     );

@@ -8,8 +8,7 @@ class PortfolioSelectorWidget extends StatefulWidget {
   const PortfolioSelectorWidget({Key? key}) : super(key: key);
 
   @override
-  PortfolioSelectorWidgetState createState() =>
-      PortfolioSelectorWidgetState();
+  PortfolioSelectorWidgetState createState() => PortfolioSelectorWidgetState();
 }
 
 class PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
@@ -41,38 +40,36 @@ class PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                           mouseCursor: SystemMouseCursors.click,
                           child: OutlinedButton(
                             onPressed: () => {},
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton(
-                                icon: const Padding(
-                                  padding: EdgeInsets.only(left: 8.0),
-                                  child: Icon(
-                                    Icons.keyboard_arrow_down,
-                                    size: 18,
-                                  ),
+                            child: DropdownButton(
+                              underline: const SizedBox.shrink(),
+                              icon: const Padding(
+                                padding: EdgeInsets.only(left: 8.0),
+                                child: Icon(
+                                  Icons.keyboard_arrow_down,
+                                  size: 18,
                                 ),
-                                style: Theme.of(context).textTheme.bodyLarge,
-                                isDense: true,
-                                isExpanded: true,
-                                items:
-                                    snapshot.data!.map((Portfolio portfolio) {
-                                  return DropdownMenuItem<String>(
-                                      value: portfolio.id,
-                                      child: Text(
-                                        portfolio.name,
-                                        overflow: TextOverflow.ellipsis,
-                                      ));
-                                }).toList(),
-                                hint: Text('Select portfolio',
-                                    style:
-                                        Theme.of(context).textTheme.bodyMedium),
-                                onChanged: (String? value) {
-                                  setState(() {
-                                    bloc.setCurrentPid(value);
-                                    bloc.setCurrentAid(null);
-                                  });
-                                },
-                                value: determinePortfolio(currentPortfolioSnap),
                               ),
+                              style: Theme.of(context).textTheme.bodyLarge,
+                              isDense: true,
+                              isExpanded: true,
+                              items: snapshot.data!.map((Portfolio portfolio) {
+                                return DropdownMenuItem<String>(
+                                    value: portfolio.id,
+                                    child: Text(
+                                      portfolio.name,
+                                      overflow: TextOverflow.ellipsis,
+                                    ));
+                              }).toList(),
+                              hint: Text('Select portfolio',
+                                  style:
+                                      Theme.of(context).textTheme.bodyMedium),
+                              onChanged: (String? value) {
+                                setState(() {
+                                  bloc.setCurrentPid(value);
+                                  bloc.setCurrentAid(null);
+                                });
+                              },
+                              value: determinePortfolio(currentPortfolioSnap),
                             ),
                           ),
                         ),

@@ -33,7 +33,6 @@ dependencies:
   flutter_signin_button: ^2.0.0
   advanced_datatable: ^0.0.9
   syncfusion_flutter_datagrid: ^21.2.10
-  multiselect: ^0.1.1
   side_sheet: ^1.0.4+1
   async: ^2.9.0
   collection: ^1.17.1
