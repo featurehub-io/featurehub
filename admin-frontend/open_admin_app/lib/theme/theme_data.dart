@@ -5,7 +5,7 @@ final ThemeData myTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
     appBarTheme: AppBarTheme(
-      backgroundColor: flexSchemeLight.surface,
+      backgroundColor: flexSchemeLight.primaryContainer,
       foregroundColor: flexSchemeLight.onSurface,
       elevation: 0,
     ),
@@ -13,17 +13,15 @@ final ThemeData myTheme = ThemeData(
       backgroundColor: flexSchemeLight.primaryContainer,
       surfaceTintColor: flexSchemeLight.primaryContainer,
     ),
-          navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: flexSchemeLight.primaryContainer,
-        selectedIconTheme:
-            IconThemeData(color: flexSchemeLight.onPrimaryContainer),
-        unselectedIconTheme: IconThemeData(
-            color: flexSchemeLight.onPrimaryContainer.withAlpha(179)),
-        selectedLabelTextStyle:
-            TextStyle(color: flexSchemeLight.onPrimaryContainer),
-        unselectedLabelTextStyle:
-            TextStyle(color: flexSchemeLight.onPrimaryContainer.withAlpha(179)),
-      ),
+    navigationRailTheme: NavigationRailThemeData(
+      backgroundColor: flexSchemeLight.primaryContainer,
+      selectedIconTheme: IconThemeData(color: flexSchemeLight.primary),
+      unselectedIconTheme: IconThemeData(
+          color: flexSchemeLight.onPrimaryContainer.withAlpha(179)),
+      selectedLabelTextStyle: TextStyle(color: flexSchemeLight.primary),
+      unselectedLabelTextStyle:
+          TextStyle(color: flexSchemeLight.onPrimaryContainer.withAlpha(179)),
+    ),
     cardTheme: CardThemeData(
       color: flexSchemeLight.primaryContainer,
       elevation: 3,
@@ -33,7 +31,11 @@ final ThemeData myTheme = ThemeData(
     dataTableTheme: const DataTableThemeData(
         headingTextStyle: TextStyle(
             fontSize: 14, fontWeight: FontWeight.w800, color: Colors.black87)),
-    snackBarTheme: const SnackBarThemeData(backgroundColor: Colors.orange));
+    snackBarTheme: const SnackBarThemeData(backgroundColor: Colors.orange),
+    dividerTheme: DividerThemeData(
+      color: flexSchemeLight.outline,
+      thickness: 1.0,
+    ));
 
 final ThemeData darkTheme = ThemeData(
     useMaterial3: true,
@@ -48,20 +50,20 @@ final ThemeData darkTheme = ThemeData(
       backgroundColor: flexSchemeDark.primaryContainer,
       surfaceTintColor: flexSchemeDark.primaryContainer,
     ),
-          navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: flexSchemeDark.primaryContainer,
-        selectedIconTheme:
-            IconThemeData(color: flexSchemeDark.onPrimaryContainer),
-        unselectedIconTheme: IconThemeData(
-            color: flexSchemeDark.onPrimaryContainer.withAlpha(179)),
-        selectedLabelTextStyle:
-            TextStyle(color: flexSchemeDark.onPrimaryContainer),
-        unselectedLabelTextStyle:
-            TextStyle(color: flexSchemeDark.onPrimaryContainer.withAlpha(179)),
-      ),
+    navigationRailTheme: NavigationRailThemeData(
+      backgroundColor: flexSchemeDark.primaryContainer,
+      selectedIconTheme:
+          IconThemeData(color: flexSchemeDark.onPrimaryContainer),
+      unselectedIconTheme: IconThemeData(
+          color: flexSchemeDark.onPrimaryContainer.withAlpha(179)),
+      selectedLabelTextStyle:
+          TextStyle(color: flexSchemeDark.onPrimaryContainer),
+      unselectedLabelTextStyle:
+          TextStyle(color: flexSchemeDark.onPrimaryContainer.withAlpha(179)),
+    ),
     cardTheme: CardThemeData(
       color: flexSchemeDark.primaryContainer,
-      elevation: 3,
+      elevation: 2,
       surfaceTintColor: Colors.transparent,
       shadowColor: flexSchemeDark.shadow.withAlpha(77),
     ),
@@ -69,7 +71,11 @@ final ThemeData darkTheme = ThemeData(
         headingTextStyle: TextStyle(
             fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white)),
     snackBarTheme: SnackBarThemeData(
-        backgroundColor: Colors.orange.shade800.withAlpha(179)));
+        backgroundColor: Colors.orange.shade800.withAlpha(179)),
+    dividerTheme: DividerThemeData(
+      color: flexSchemeDark.outline,
+      thickness: 1.0,
+    ));
 
 // Light and dark ColorSchemes made by FlexColorScheme v7.0.1.
 // These ColorScheme objects require Flutter 3.7 or later.
@@ -77,8 +83,8 @@ const ColorScheme flexSchemeLight = ColorScheme(
   brightness: Brightness.light,
   primary: Color(0xff536DFE),
   onPrimary: Color(0xffffffff),
-  primaryContainer: Color(0xffd9eafa),
-  onPrimaryContainer: Color(0xff101214),
+  primaryContainer: Color(0xffe9ecef),
+  onPrimaryContainer: Color(0xff2c3e50),
   secondary: Color(0xff039be5),
   onSecondary: Color(0xffffffff),
   secondaryContainer: Color(0xff92deff),
@@ -91,10 +97,10 @@ const ColorScheme flexSchemeLight = ColorScheme(
   onError: Color(0xffffffff),
   errorContainer: Color(0xffffdad6),
   onErrorContainer: Color(0xff410002),
-  surface: Color(0xffe8f2ff),
-  onSurface: Color(0xff040404),
-  outline: Color(0xff7c7c7c),
-  outlineVariant: Color(0xffc8c8c8),
+  surface: Color(0xfff8f9fa),
+  onSurface: Color(0xff212529),
+  outline: Color(0xffadb5bd),
+  outlineVariant: Color(0xffdee2e6),
   shadow: Color(0xff000000),
   scrim: Color(0xff000000),
   inverseSurface: Color(0xff111112),

@@ -100,6 +100,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
 
             return Card(
               elevation: 1,
+              color: Theme.of(context).colorScheme.surface,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
@@ -207,9 +208,10 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                         height: tableHeight,
                         child: SfDataGridTheme(
                           data: SfDataGridThemeData(
-                              headerColor: Theme.of(context)
-                                  .colorScheme
-                                  .primaryContainer),
+                            selectionColor: Colors.blue.withOpacity(0.3),
+                            headerColor:
+                                Theme.of(context).colorScheme.primaryContainer,
+                          ),
                           child: SfDataGrid(
                             source: _featuresDataSource,
                             gridLinesVisibility: GridLinesVisibility.both,
