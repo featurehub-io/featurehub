@@ -1,0 +1,6 @@
+-- drop dependencies
+-- alter table fh_env_feature_strategy drop constraint fk_fh_nv_ftr_strtgy_fk_wh_pdtd;
+-- alter table fh_fv_version drop constraint fk_fh_fv_vrsn_fk_wh_pdtd;
+-- foreign keys and indices
+-- alter table fh_env_feature_strategy add constraint fk_fh_nv_ftr_strtgy_fk_wh_pdtd foreign key (fk_who_updated) references fh_person (id);
+-- alter table fh_fv_version add constraint fk_fh_fv_vrsn_fk_wh_pdtd foreign key (fk_who_updated) references fh_person (id);

@@ -13,7 +13,7 @@
 
   <properties>
     <app.entrypoint>io.featurehub.party.Application</app.entrypoint>
-    <app.baseimage>${app.baseimage.prefix}featurehub/base_party:1.14</app.baseimage>
+    <app.baseimage>${app.baseimage.prefix}featurehub/base_party:2.0</app.baseimage>
     <app.port>8085</app.port>
     <build.version>0.0.1</build.version>
   </properties>

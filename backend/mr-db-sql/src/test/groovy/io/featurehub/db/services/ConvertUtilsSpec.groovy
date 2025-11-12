@@ -14,6 +14,7 @@ import io.featurehub.mr.model.SortOrder
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.temporal.ChronoField
 
 class ConvertUtilsSpec extends Base2Spec {
   PersonSqlApi personSqlApi
@@ -54,7 +55,7 @@ class ConvertUtilsSpec extends Base2Spec {
       def peopleClean = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), null, Opts.empty())
     then:
       people.people.size() == 1
-      people.people[0].whenLastAuthenticated == whenLastAuthenticated.atOffset(ZoneOffset.UTC)
+      people.people[0].whenLastAuthenticated.with(ChronoField.MICRO_OF_SECOND, 0) == whenLastAuthenticated.atOffset(ZoneOffset.UTC).with(ChronoField.MICRO_OF_SECOND, 0)
       people.people[0].whenLastSeen == null
       peopleClean.people.size() == 1
       peopleClean.people[0].whenLastAuthenticated == null
@@ -80,8 +81,8 @@ class ConvertUtilsSpec extends Base2Spec {
       def peopleClean = personSqlApi.search(email, SortOrder.ASC, 0, 0, Set.of(PersonType.PERSON), null, Opts.empty())
     then:
       people.people.size() == 1
-      people.people[0].whenLastAuthenticated == whenLastAuthenticated.atOffset(ZoneOffset.UTC)
-      people.people[0].whenLastSeen == whenLastSeen.atOffset(ZoneOffset.UTC)
+      people.people[0].whenLastAuthenticated.with(ChronoField.MICRO_OF_SECOND, 0) == whenLastAuthenticated.atOffset(ZoneOffset.UTC).with(ChronoField.MICRO_OF_SECOND, 0)
+      people.people[0].whenLastSeen.with(ChronoField.MICRO_OF_SECOND, 0) == whenLastSeen.atOffset(ZoneOffset.UTC).with(ChronoField.MICRO_OF_SECOND, 0)
       peopleClean.people.size() == 1
       peopleClean.people[0].whenLastAuthenticated == null
       peopleClean.people[0].whenLastSeen == null

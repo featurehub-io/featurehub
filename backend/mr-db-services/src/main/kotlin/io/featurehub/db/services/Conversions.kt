@@ -36,7 +36,6 @@ interface Conversions {
   fun limitLength(s: String?, len: Int): String?
   fun toEnvironment(env: DbEnvironment?, opts: Opts?, features: Set<DbApplicationFeature?>?): Environment?
   fun toEnvironment(env: DbEnvironment?, opts: Opts?): Environment?
-  fun getCacheNameByEnvironment(env: DbEnvironment?): String?
   fun toServiceAccountPermission(
     sae: DbServiceAccountEnvironment?,
     rolePerms: Set<RoleType?>?,

@@ -34,4 +34,14 @@ Given('I update the system config for Slack delivery', async function() {
   }
 
   await world.systemConfigApi.createOrUpdateSystemConfigs(update);
+
+  const updatedConfigResult = await world.systemConfigApi.getSystemConfig(['slack.']);
+  expect(updatedConfigResult.status).to.eq(200);
+  const updatedCOnfig = updatedConfigResult.data;
+  expect(updatedCOnfig.configs.find(s => s.key === 'slack.enabled')?.value).to.eq(true);
+  expect(updatedCOnfig.configs.find(s => s.key === 'slack.delivery.url')?.value).to.eq(slackApiUrl);
+
+  const webhooks = await world.webhookApi.getWebhookTypes();
+  expect(webhooks.status).to.eq(200);
+  expect(webhooks.data.types.find(s => s.messageType === 'integration/slack-v1'), `Unable to find slack webhook in ${JSON.stringify(webhooks.data)}`).to.not.be.undefined;
 });

@@ -22,9 +22,11 @@ Given(/^I test the webhook$/, async function () {
   if (!process.env.EXTERNAL_NGROK && process.env.REMOTE_BACKEND) {
     return;
   }
+
   await world.webhookApi.testWebhook(new WebhookCheck({
     messageType: webhookType.messageType,
     envId: world.environment.id,
+    config: {}
   }));
 });
 

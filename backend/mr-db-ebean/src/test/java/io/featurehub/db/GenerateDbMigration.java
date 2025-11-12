@@ -16,7 +16,7 @@ public class GenerateDbMigration {
     dbMigration.setMigrationPath("/dbmigration");
     dbMigration.setStrictMode(false);
 
-//    dbMigration.setGeneratePendingDrop("1.25");
+    dbMigration.setGeneratePendingDrop("1.33");
     // generate the migration ddl and xml
     dbMigration.generateMigration();
     // use this if you wish to introduce another database - it will generate it under dbinit/database with the
