@@ -17,7 +17,7 @@ dependencies:
   flutter:
     sdk: flutter
   dio: '^5.0.1'
-  rxdart: ^0.27.0
+  rxdart: ^0.28.0
   bloc_provider: ^0.8.0
   logging: ^1.0.1
   mrapi:
@@ -32,7 +32,7 @@ dependencies:
   shared_preferences: ^2.1.1
   flutter_signin_button: ^2.0.0
   advanced_datatable: ^0.0.9
-  syncfusion_flutter_datagrid: ^21.2.10
+  syncfusion_flutter_datagrid: ^32.1.19
   side_sheet: ^1.0.4+1
   async: ^2.9.0
   collection: ^1.17.1
@@ -40,7 +40,7 @@ dependencies:
   meta: ^1.8.0
 
 dev_dependencies:
-  flutter_lints: ^2.0.1
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
 
