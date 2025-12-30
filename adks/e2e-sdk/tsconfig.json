@@ -7,7 +7,7 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
-    "strict": true,
+    "strict": false,
     "outDir": "target/dist",
     "strictNullChecks": false,
     "typeRoots": [
