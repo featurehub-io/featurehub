@@ -1,10 +1,9 @@
-import * as restify from 'restify';
+import express from "express";
 
 import {networkInterfaces} from 'os';
 import {IncomingHttpHeaders} from 'http';
 import {logger} from './logging';
 import {CloudEvent, CloudEventV1, HTTP} from "cloudevents";
-import * as Zlib from 'zlib';
 
 const nets = networkInterfaces();
 const results: any = {};
@@ -42,7 +41,7 @@ export function getWebserverExternalAddress(): string | undefined {
   return networkName ? `http://${results[networkName][0]}:${port}` : undefined;
 }
 
-let server: restify.Server;
+// let server : express.Express;
 
 export const cloudEvents: Array<CloudEvent<any>> = [];
 
@@ -68,8 +67,10 @@ function mergeCloudEvent<T>(body: T, headers: IncomingHttpHeaders) : CloudEvent<
 }
 
 function setupServer() {
-  server.use(restify.plugins.acceptParser(server.acceptable));
-  server.use(restify.plugins.queryParser());
+  let server = express()
+  server.use(express.json());
+  server.use(express.urlencoded({ extended: true }));
+
   server.use (function(req, res, next) {
     logger.info(`received request on path ${req.path()} of content-type ${req.contentType()}`);
     if (req.contentType() === 'application/json') {
@@ -135,16 +136,15 @@ function setupServer() {
     res.send( 200,'Ok');
     return next();
   });
+
+  return server;
 }
+
+export let terminateServer: () => Promise<void>;
 
 export function startWebServer(): Promise<void> {
   return new Promise((resolve, reject) => {
-    server = restify.createServer({
-      name: 'myapp',
-      version: '1.0.0'
-    });
-
-    setupServer();
+    let server = setupServer();
 
     try {
       server.listen(port, function () {
@@ -157,22 +157,23 @@ export function startWebServer(): Promise<void> {
       logger.error("Failed to listen", e);
       reject(e);
     }
-  });
-}
 
-export function terminateServer(): Promise<void> {
-  logger.debug("terminating webserver");
-  return new Promise((resolve, reject) => {
-    if (server) {
-      try {
-        server.close(() => { resolve(); });
-        server = undefined;
-      } catch (e) {
-        logger.error("Failed to close server", e);
-        reject(e);
-      }
-    } else {
-      resolve();
+    terminateServer = () => {
+      return new Promise((resolve, reject) => {
+        if (server) {
+          try {
+            server.close(() => {
+              resolve();
+            });
+            server = undefined;
+          } catch (e) {
+            logger.error("Failed to close server", e);
+            reject(e);
+          }
+        } else {
+          resolve();
+        }
+      });
     }
   });
 }
