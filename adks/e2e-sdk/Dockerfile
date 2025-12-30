@@ -1,21 +1,22 @@
-FROM node:18-bullseye-slim as build
+FROM node:24-bullseye-slim as build
 
 # install the latest javascript SDK
 WORKDIR /jssdk
-RUN apt-get update && apt-get install -y git
+RUN apt-get update && apt-get install -y git && npm install -g pnpm@latest
+RUN mkdir -p /pnpm
+ENV PNPM_HOME=/pnpm
 
 ARG branch=main
-RUN git clone https://github.com/featurehub-io/featurehub-javascript-sdk.git && \
+RUN (git clone --depth 1 -b $branch https://github.com/featurehub-io/featurehub-javascript-sdk.git || git clone --depth 1 https://github.com/featurehub-io/featurehub-javascript-sdk.git) && \
      cd featurehub-javascript-sdk && \
      (git checkout $branch || true) && \
-    cd featurehub-javascript-client-sdk && \
-    npm install && npm run compile && \
-    cd ../featurehub-javascript-node-sdk && \
-    npm install && npm run setup && npm run compile
+    export PATH=$PATH:/pnpm && \
+    cd packages/core && pnpm install && pnpm build && pnpm link && \
+    cd ../node && pnpm install && pnpm build && pnpm link
 
 WORKDIR /app
 
 ADD app /app/app/
 ADD features /app/features/
-COPY package.json package-lock.json tsconfig.json run.sh /app/
-RUN npm install && npm run setup && npm run build
+COPY package.json pnpm*.yaml tsconfig.json run.sh /app/
+RUN pnpm install && pnpm run setup && pnpm run build
