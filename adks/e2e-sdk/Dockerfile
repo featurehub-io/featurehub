@@ -20,4 +20,4 @@ ADD app /app/app/
 ADD features /app/features/
 COPY package.json pnpm*.yaml tsconfig.json run.sh /app/
 # need to fix the setup before doing the install otherwise dev based overrides can pollute this
-RUN pnpm run setup && pnpm install && pnpm run build
+RUN pnpm remove featurehub-javascript-node-sdk pnpm run setup && pnpm install && pnpm run build

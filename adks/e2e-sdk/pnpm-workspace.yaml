@@ -1,3 +1,0 @@
-overrides:
-  featurehub-javascript-client-sdk: link:../../../../../Library/pnpm/global/5/node_modules/featurehub-javascript-client-sdk
-  featurehub-javascript-node-sdk: link:../../../../../Library/pnpm/global/5/node_modules/featurehub-javascript-node-sdk
