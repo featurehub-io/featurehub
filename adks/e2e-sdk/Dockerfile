@@ -19,4 +19,5 @@ WORKDIR /app
 ADD app /app/app/
 ADD features /app/features/
 COPY package.json pnpm*.yaml tsconfig.json run.sh /app/
-RUN pnpm install && pnpm run setup && pnpm run build
+# need to fix the setup before doing the install otherwise dev based overrides can pollute this
+RUN pnpm run setup && pnpm install && pnpm run build
