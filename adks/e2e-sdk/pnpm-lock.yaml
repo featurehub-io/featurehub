@@ -4,6 +4,10 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  featurehub-javascript-core-sdk: link:../../../../../Library/pnpm/global/5/node_modules/featurehub-javascript-core-sdk
+  featurehub-javascript-node-sdk: link:../../../../../Library/pnpm/global/5/node_modules/featurehub-javascript-node-sdk
+
 importers:
 
   .:
@@ -38,9 +42,12 @@ importers:
       featurehub-cloud-event-tools:
         specifier: ^1.0.0
         version: 1.0.0
+      featurehub-javascript-core-sdk:
+        specifier: link:../../../../../Library/pnpm/global/5/node_modules/featurehub-javascript-core-sdk
+        version: link:../../../../../Library/pnpm/global/5/node_modules/featurehub-javascript-core-sdk
       featurehub-javascript-node-sdk:
-        specifier: ^1.5.0
-        version: 1.5.0
+        specifier: link:../../../../../Library/pnpm/global/5/node_modules/featurehub-javascript-node-sdk
+        version: link:../../../../../Library/pnpm/global/5/node_modules/featurehub-javascript-node-sdk
       nats:
         specifier: ^2.11.0
         version: 2.29.3
@@ -440,14 +447,6 @@ packages:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
 
-  eventsource-parser@3.0.6:
-    resolution: {integrity: sha512-Vo1ab+QXPzZ4tCa8SwIHJFaSzy4R6SHf7BY79rFBDf0idraZWAkYrDjDj8uWaSm3S2TK+hJ7/t1CEmZ7jXw+pg==}
-    engines: {node: '>=18.0.0'}
-
-  eventsource@4.1.0:
-    resolution: {integrity: sha512-2GuF51iuHX6A9xdTccMTsNb7VO0lHZihApxhvQzJB5A03DvHDd2FQepodbMaztPBmBcE/ox7o2gqaxGhYB9LhQ==}
-    engines: {node: '>=20.0.0'}
-
   express@5.2.1:
     resolution: {integrity: sha512-hIS4idWWai69NezIdRt2xFVofaF4j+6INOpJlVOLDO8zXGpUVEVzIYk12UUi2JzjEzWL3IOAxcTubgz9Po0yXw==}
     engines: {node: '>= 18'}
@@ -460,14 +459,6 @@ packages:
 
   featurehub-cloud-event-tools@1.0.0:
     resolution: {integrity: sha512-5Vxtd0MmnXGyFgb67t7WQVME3ANlfLKcuHDqXET3XUqqAI9QMwvoKt2A8C7kzb57P7PWCesB4fJk26148Aw8lw==}
-
-  featurehub-javascript-core-sdk@1.5.0:
-    resolution: {integrity: sha512-giTlOw7Erh8Mrmejnfgm44BptcsQJLWd681GgXyUpaZPQDRvebat2eKPhWkdgPJNJ6V6QO6SB+bc6r8Sd3Jz6g==}
-    engines: {node: '>=20.0.0'}
-
-  featurehub-javascript-node-sdk@1.5.0:
-    resolution: {integrity: sha512-cGSCP2UkQW7I9AxHajLLRgByXoSZam/6uvjnOllb+QVuSYxfwkdOiXhqBA+nErDvQlhQ5aJW45R016UQc90MEQ==}
-    engines: {node: '>=20.0.0'}
 
   fecha@4.2.3:
     resolution: {integrity: sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==}
@@ -733,9 +724,6 @@ packages:
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
-  murmurhash@2.0.1:
-    resolution: {integrity: sha512-5vQEh3y+DG/lMPM0mCGPDnyV8chYg/g7rl6v3Gd8WMF9S429ox3Xk8qrk174kWhG767KQMqqxLD1WnGd77hiew==}
-
   mz@2.7.0:
     resolution: {integrity: sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==}
 
@@ -746,10 +734,6 @@ packages:
   negotiator@1.0.0:
     resolution: {integrity: sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg==}
     engines: {node: '>= 0.6'}
-
-  netmask@2.0.2:
-    resolution: {integrity: sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==}
-    engines: {node: '>= 0.4.0'}
 
   nkeys.js@1.1.0:
     resolution: {integrity: sha512-tB/a0shZL5UZWSwsoeyqfTszONTt4k2YS0tuQioMOD180+MbombYVgzDUYHlx+gejYK6rgf08n/2Df99WY0Sxg==}
@@ -889,9 +873,6 @@ packages:
 
   seed-random@2.2.0:
     resolution: {integrity: sha512-34EQV6AAHQGhoc0tn/96a9Fsi6v2xdqe/dMUwljGRaFOzR3EgRmECvD0O8vi8X+/uQ50LGHfkNu/Eue5TPKZkQ==}
-
-  semver-compare@1.0.0:
-    resolution: {integrity: sha512-YM3/ITh2MJ5MtzaM429anh+x2jiLVjqILF4m4oyQB18W7Ggea7BfqdH/wGMK7dDiMghv/6WG7znWMwUDzJiXow==}
 
   semver@7.7.3:
     resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
@@ -1564,12 +1545,6 @@ snapshots:
 
   etag@1.8.1: {}
 
-  eventsource-parser@3.0.6: {}
-
-  eventsource@4.1.0:
-    dependencies:
-      eventsource-parser: 3.0.6
-
   express@5.2.1:
     dependencies:
       accepts: 2.0.0
@@ -1610,17 +1585,6 @@ snapshots:
   featurehub-cloud-event-tools@1.0.0:
     dependencies:
       cloudevents: 8.0.3
-
-  featurehub-javascript-core-sdk@1.5.0:
-    dependencies:
-      murmurhash: 2.0.1
-      netmask: 2.0.2
-      semver-compare: 1.0.0
-
-  featurehub-javascript-node-sdk@1.5.0:
-    dependencies:
-      eventsource: 4.1.0
-      featurehub-javascript-core-sdk: 1.5.0
 
   fecha@4.2.3: {}
 
@@ -1863,8 +1827,6 @@ snapshots:
 
   ms@2.1.3: {}
 
-  murmurhash@2.0.1: {}
-
   mz@2.7.0:
     dependencies:
       any-promise: 1.3.0
@@ -1876,8 +1838,6 @@ snapshots:
       nkeys.js: 1.1.0
 
   negotiator@1.0.0: {}
-
-  netmask@2.0.2: {}
 
   nkeys.js@1.1.0:
     dependencies:
@@ -2016,8 +1976,6 @@ snapshots:
   safer-buffer@2.1.2: {}
 
   seed-random@2.2.0: {}
-
-  semver-compare@1.0.0: {}
 
   semver@7.7.3: {}
 

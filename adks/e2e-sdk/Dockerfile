@@ -2,7 +2,11 @@ FROM node:24-bullseye-slim as build
 
 # install the latest javascript SDK
 WORKDIR /jssdk
-RUN apt-get update && apt-get install -y git && npm install -g pnpm@latest
+RUN apt-get update && apt-get install -y git wget &&  \
+    npm install -g pnpm@latest && \
+    wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && \
+    chmod a+x /usr/local/bin/yq
+
 RUN mkdir -p /pnpm
 ENV PNPM_HOME=/pnpm
 
@@ -18,6 +22,9 @@ WORKDIR /app
 
 ADD app /app/app/
 ADD features /app/features/
-COPY package.json pnpm*.yaml tsconfig.json run.sh /app/
+# don't include workspace as it will bring in the lock
+COPY package.json pnpm-lock.yaml tsconfig.json run.sh /app/
 # need to fix the setup before doing the install otherwise dev based overrides can pollute this
-RUN pnpm remove featurehub-javascript-node-sdk pnpm run setup && pnpm install && pnpm run build
+RUN pnpm remove featurehub-javascript-node-sdk featurehub-javascript-core-sdk && yq -i 'del(.overrides)' pnpm-lock.yaml && \
+    pnpm add featurehub-javascript-node-sdk && \
+    pnpm run setup && pnpm install --frozen-lockfile && pnpm run build
