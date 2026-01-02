@@ -68,9 +68,7 @@ function mergeCloudEvent<T>(body: T, headers: IncomingHttpHeaders) : CloudEvent<
 }
 
 function setupServer() {
-  let server = express()
-  server.use(express.json());
-  server.use(express.urlencoded({ extended: true }));
+  let server = express();
 
   server.use (function(req, res, next) {
     logger.info(`received request on path ${req.path} of content-type ${req.header('content-type')}`);
@@ -85,6 +83,11 @@ function setupServer() {
         logger.debug(`'------------------------------\\nbody was ${data}\n---------------------------'`);
         req.body = JSON.parse(data);
         next();
+      });
+
+      req.on('error', (err) => {
+        logger.error(err);
+        res.status(500).send('Server error.');
       });
     } else if (req.header('content-type') === 'application/json+gzip') {
       let data = Buffer.from([]);
