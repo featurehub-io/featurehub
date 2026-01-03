@@ -1,7 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:multiselect/multiselect.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/features/feature-data-table/custom_column_sizer.dart';
 import 'package:open_admin_app/widgets/features/feature-data-table/features_data_source.dart';
@@ -10,6 +9,8 @@ import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+
+import 'package:open_admin_app/widgets/common/fh_multiselect.dart';
 
 class FeaturesDataTable extends StatefulWidget {
   const FeaturesDataTable({Key? key, this.title, required this.bloc})
@@ -99,10 +100,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
 
             return Card(
               elevation: 1,
-              color:
-                  Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
-              surfaceTintColor: Colors.transparent,
-              shadowColor: Colors.transparent,
+              color: Theme.of(context).colorScheme.surface,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
@@ -116,7 +114,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                         Container(
                           constraints: const BoxConstraints(
                               maxWidth: 400, maxHeight: 40),
-                          child: DropDownMultiSelect(
+                          child: FHMultiSelect(
                               hint: Text("Select environments to display",
                                   style:
                                       Theme.of(context).textTheme.bodyMedium),
@@ -131,7 +129,8 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                                 Icons.visibility_sharp,
                                 size: 18,
                               ),
-                              options: snapshot.data!.availableEnvironments
+                              availableValues: snapshot
+                                  .data!.availableEnvironments
                                   .map((e) => e.name)
                                   .toList(),
                               selectedValues: _selectedEnvironmentList
@@ -144,7 +143,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                             maxHeight: 40,
                             minWidth: 30,
                           ),
-                          child: DropDownMultiSelect(
+                          child: FHMultiSelect(
                             icon: const Icon(
                               Icons.filter_alt,
                               size: 18,
@@ -164,7 +163,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                                   widget.bloc.currentRowsPerPage,
                                   _pageIndex);
                             },
-                            options: FeatureValueType.values
+                            availableValues: FeatureValueType.values
                                 .map((e) => e.name!)
                                 .toList(),
                             selectedValues: _selectedFeatureTypes
@@ -209,9 +208,10 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                         height: tableHeight,
                         child: SfDataGridTheme(
                           data: SfDataGridThemeData(
-                              headerColor: Theme.of(context)
-                                  .colorScheme
-                                  .primaryContainer),
+                            selectionColor: Colors.blue.withOpacity(0.3),
+                            headerColor:
+                                Theme.of(context).colorScheme.primaryContainer,
+                          ),
                           child: SfDataGrid(
                             source: _featuresDataSource,
                             gridLinesVisibility: GridLinesVisibility.both,

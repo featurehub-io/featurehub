@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:html'; // ignore: avoid_web_libraries_in_flutter
+import 'package:universal_html/html.dart';
 import 'package:dio/dio.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -293,9 +293,10 @@ class ManagementRepositoryClientBloc implements Bloc {
     _errorSource.add(null);
     streamValley.apiClient = this;
 
-    _personPermissionInPortfolioChanged = streamValley.routeCheckPortfolioStream
-        .listen((portfolio) =>
-            {if (portfolio != null) _checkRouteForPermission(portfolio)});
+    _personPermissionInPortfolioChanged =
+        streamValley.routeCheckPortfolioStream.listen((portfolio) {
+      if (portfolio != null) _checkRouteForPermission(portfolio);
+    });
 
     _initializeRouteStreams();
   }

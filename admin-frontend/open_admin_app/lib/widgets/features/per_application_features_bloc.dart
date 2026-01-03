@@ -7,9 +7,8 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/mr_client_aware.dart';
 import 'package:open_admin_app/fhos_logger.dart';
 import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
-import 'package:rxdart/rxdart.dart' hide Notification;
 import 'package:collection/collection.dart';
-
+import 'package:rxdart/rxdart.dart';
 
 var _log = Logger("per-app-features");
 

@@ -9,7 +9,7 @@ import 'package:open_admin_app/widgets/systemconfig/system_config_encryptable_ma
 import 'package:open_admin_app/widgets/systemconfig/system_config_encrypted_text_field.dart';
 import 'package:open_admin_app/widgets/systemconfig/system_config_mixin.dart';
 import 'package:open_admin_app/widgets/systemconfig/system_config_text_field.dart';
-import 'dart:html'; // ignore: avoid_web_libraries_in_flutter
+import 'package:universal_html/html.dart';
 
 class SlackSystemConfigWidget extends StatefulWidget {
   final List<SystemConfig> knownConfigs;

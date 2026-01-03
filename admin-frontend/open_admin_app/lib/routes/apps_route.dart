@@ -212,10 +212,6 @@ class _ApplicationCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Card(
-        elevation: 4.0,
-        color: Theme.of(context).brightness == Brightness.light
-            ? Theme.of(context).colorScheme.background
-            : null,
         child: InkWell(
           mouseCursor: SystemMouseCursors.click,
           borderRadius: BorderRadius.circular(8.0),

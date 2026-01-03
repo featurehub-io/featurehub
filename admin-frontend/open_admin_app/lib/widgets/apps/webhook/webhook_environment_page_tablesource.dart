@@ -63,7 +63,7 @@ class WebhookTableSource extends AdvancedDataTableSource<WebhookSummaryItem> {
     final item = lastDetails!.rows[index];
 
     return DataRow.byIndex(index: index, cells: [
-      DataCell(Text(item.type ?? '')),
+      DataCell(Text(item.type)),
       DataCell(Text(item.method)),
       DataCell(Text(item.status == 0 ? "undelivered" : item.status.toString())),
       DataCell(Text(item.whenSent.toIso8601String())),

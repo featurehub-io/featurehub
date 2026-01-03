@@ -92,43 +92,42 @@ class _EnvironmentDropDownState extends State<EnvironmentDropDown> {
                 constraints: const BoxConstraints(maxWidth: 300),
                 child: InkWell(
                   mouseCursor: SystemMouseCursors.click,
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      hint: const Text(
-                        'Select environment',
-                        textAlign: TextAlign.end,
-                      ),
-                      icon: const Padding(
-                        padding: EdgeInsets.only(left: 8.0),
-                        child: Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 18,
-                        ),
-                      ),
-                      isDense: true,
-                      isExpanded: true,
-                      items: environments.map((Environment environment) {
-                        return DropdownMenuItem<String>(
-                            value: environment.id,
-                            child: Text(
-                              environment.name,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                              overflow: TextOverflow.ellipsis,
-                            ));
-                      }).toList(),
-                      onChanged: (String? value) {
-                        if (value != null) {
-                          setState(() {
-                            _selectedEnvId = value;
-                          });
-                          widget.bloc.currentEnvId = value;
-                          widget.bloc.mrClient.setCurrentEnvId(value);
-                          widget.bloc.getCurrentFeatureGroups(
-                              widget.bloc.currentEnvId, widget.bloc.appId);
-                        }
-                      },
-                      value: _selectedEnvId,
+                  child: DropdownButton<String>(
+                    underline: const SizedBox.shrink(),
+                    hint: const Text(
+                      'Select environment',
+                      textAlign: TextAlign.end,
                     ),
+                    icon: const Padding(
+                      padding: EdgeInsets.only(left: 8.0),
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 18,
+                      ),
+                    ),
+                    isDense: true,
+                    isExpanded: true,
+                    items: environments.map((Environment environment) {
+                      return DropdownMenuItem<String>(
+                          value: environment.id,
+                          child: Text(
+                            environment.name,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            overflow: TextOverflow.ellipsis,
+                          ));
+                    }).toList(),
+                    onChanged: (String? value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedEnvId = value;
+                        });
+                        widget.bloc.currentEnvId = value;
+                        widget.bloc.mrClient.setCurrentEnvId(value);
+                        widget.bloc.getCurrentFeatureGroups(
+                            widget.bloc.currentEnvId, widget.bloc.appId);
+                      }
+                    },
+                    value: _selectedEnvId,
                   ),
                 ),
               );

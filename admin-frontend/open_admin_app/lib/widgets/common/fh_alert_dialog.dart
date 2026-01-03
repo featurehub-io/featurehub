@@ -14,8 +14,7 @@ class FHAlertDialog extends StatefulWidget {
       required this.title,
       required this.content,
       required this.actions,
-      this.escKey
-      })
+      this.escKey})
       : super(key: key);
 
   @override
@@ -31,14 +30,15 @@ class _FHAlertDialogState extends State<FHAlertDialog> {
   Widget build(BuildContext context) {
     return Stack(children: [
       const ModalBarrier(dismissible: true, color: Colors.black54),
-      RawKeyboardListener(
+      KeyboardListener(
         focusNode: _alertDialog,
-        onKey: (key) {
+        onKeyEvent: (key) {
           if (key.logicalKey == LogicalKeyboardKey.escape) {
             if (widget.escKey != null) {
               widget.escKey!();
             } else {
-              BlocProvider.of<ManagementRepositoryClientBloc>(context).removeOverlay();
+              BlocProvider.of<ManagementRepositoryClientBloc>(context)
+                  .removeOverlay();
             }
           }
         },

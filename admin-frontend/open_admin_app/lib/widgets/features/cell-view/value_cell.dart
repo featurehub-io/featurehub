@@ -207,12 +207,12 @@ class _ValueCard extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: rolloutStrategy != null
-                      ? strategyTextColor.withOpacity(0.15)
+                      ? strategyTextColor.withAlpha(38)
                       : groupStrategy != null
-                          ? groupStrategyTextColor.withOpacity(0.15)
+                          ? groupStrategyTextColor.withAlpha(38)
                           : applicationStrategy != null
-                              ? applicationStrategyTextColor.withOpacity(0.15)
-                              : defaultTextColor.withOpacity(0.15),
+                              ? applicationStrategyTextColor.withAlpha(38)
+                              : defaultTextColor.withAlpha(38),
                   borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(4.0),
                       bottomLeft: Radius.circular(4.0)),

@@ -35,173 +35,167 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<FeatureGroupBloc>(context);
-    return Container(
-      color: Theme.of(context).canvasColor,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(children: [
-            StreamBuilder<FeatureGroup>(
-                stream: bloc.featureGroupStream,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const FHLoadingIndicator();
-                  } else if (snapshot.connectionState ==
-                          ConnectionState.active ||
-                      snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.hasError) {
-                      return FHLoadingError(error: snapshot.error);
-                    } else if (snapshot.hasData) {
-                      return Column(
-                        children: [
-                          Row(
-                            children: [
-                              SelectableText.rich(TextSpan(
-                                  style: DefaultTextStyle.of(context).style,
-                                  children: [
-                                    const TextSpan(
-                                      text: 'Group: ',
-                                    ),
-                                    TextSpan(
-                                      text: snapshot.data!.name,
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ])),
-                              const SizedBox(width: 16.0),
-                              StreamBuilder<List<Application>>(
-                                  stream: bloc.featureGroupsBloc
-                                      .currentApplicationsStream,
-                                  builder: (context, snapshot) {
-                                    if (snapshot.hasData &&
-                                        snapshot.data!.isNotEmpty) {
-                                      return SelectableText.rich(TextSpan(
-                                          style: DefaultTextStyle.of(context)
-                                              .style,
-                                          children: [
-                                            const TextSpan(
-                                              text: 'Application: ',
-                                            ),
-                                            TextSpan(
-                                              text: snapshot.data
-                                                  ?.firstWhere((app) =>
-                                                      app.id ==
-                                                      bloc.applicationId)
-                                                  .name,
-                                              style: const TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ]));
-                                    } else {
-                                      return const SizedBox.shrink();
-                                    }
-                                  }),
-                              const SizedBox(
-                                width: 16.0,
-                              ),
-                              SelectableText.rich(TextSpan(
-                                  style: DefaultTextStyle.of(context).style,
-                                  children: [
-                                    const TextSpan(
-                                      text: 'Environment: ',
-                                    ),
-                                    TextSpan(
-                                      text: bloc.featureGroupStream.value
-                                          .environmentName,
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ])),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8.0,
-                          ),
-                          const FHPageDivider(),
-                          const SizedBox(
-                            height: 8.0,
-                          ),
-                          StreamBuilder(
-                              stream: bloc.featureGroupsBloc.envRoleTypeStream,
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData &&
-                                    snapshot.data!
-                                        .contains(RoleType.CHANGE_VALUE)) {
-                                  return StreamBuilder<bool>(
-                                      stream: bloc.isGroupUpdatedStream,
-                                      builder: (context, snapshot) {
-                                        if (snapshot.hasData &&
-                                            snapshot.data!) {
-                                          return ButtonBar(
-                                            alignment: MainAxisAlignment.end,
-                                            children: [
-                                              FHFlatButtonTransparent(
-                                                title: 'Cancel',
-                                                keepCase: true,
-                                                onPressed: () {
-                                                  ManagementRepositoryClientBloc
-                                                      .router
-                                                      .navigateTo(context,
-                                                          '/feature-groups');
-                                                },
-                                              ),
-                                              FHFlatButtonAccent(
-                                                title: 'Apply all changes',
-                                                keepCase: true,
-                                                onPressed: () async {
-                                                  await bloc
-                                                      .saveFeatureGroupUpdates();
-                                                  bloc.featureGroupsBloc
-                                                      .mrClient
-                                                      .addSnackbar(Text(
-                                                          'Settings for group "${bloc.featureGroupStream.value.name}" have been updated'));
-                                                },
-                                              )
-                                            ],
-                                          );
-                                        } else {
-                                          return const SizedBox.shrink();
-                                        }
-                                      });
-                                } else {
-                                  return const Text("No permissions");
-                                }
-                              }),
-                          const SizedBox(height: 32.0),
-                          Row(children: [
-                            Expanded(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        right: BorderSide(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onPrimaryContainer,
-                                            width: 0.5))),
-                                child: _FeaturesSettings(
-                                  featureGroup: snapshot.data!,
-                                  bloc: bloc,
-                                ),
-                              ),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: SingleChildScrollView(
+        child: Column(children: [
+          StreamBuilder<FeatureGroup>(
+              stream: bloc.featureGroupStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const FHLoadingIndicator();
+                } else if (snapshot.connectionState == ConnectionState.active ||
+                    snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.hasError) {
+                    return FHLoadingError(error: snapshot.error);
+                  } else if (snapshot.hasData) {
+                    return Column(
+                      children: [
+                        Row(
+                          children: [
+                            SelectableText.rich(TextSpan(
+                                style: DefaultTextStyle.of(context).style,
+                                children: [
+                                  const TextSpan(
+                                    text: 'Group: ',
+                                  ),
+                                  TextSpan(
+                                    text: snapshot.data!.name,
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ])),
+                            const SizedBox(width: 16.0),
+                            StreamBuilder<List<Application>>(
+                                stream: bloc.featureGroupsBloc
+                                    .currentApplicationsStream,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData &&
+                                      snapshot.data!.isNotEmpty) {
+                                    return SelectableText.rich(TextSpan(
+                                        style:
+                                            DefaultTextStyle.of(context).style,
+                                        children: [
+                                          const TextSpan(
+                                            text: 'Application: ',
+                                          ),
+                                          TextSpan(
+                                            text: snapshot.data
+                                                ?.firstWhere((app) =>
+                                                    app.id ==
+                                                    bloc.applicationId)
+                                                .name,
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ]));
+                                  } else {
+                                    return const SizedBox.shrink();
+                                  }
+                                }),
+                            const SizedBox(
+                              width: 16.0,
                             ),
-                            Expanded(
-                              child: _StrategySettings(
+                            SelectableText.rich(TextSpan(
+                                style: DefaultTextStyle.of(context).style,
+                                children: [
+                                  const TextSpan(
+                                    text: 'Environment: ',
+                                  ),
+                                  TextSpan(
+                                    text: bloc.featureGroupStream.value
+                                        .environmentName,
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ])),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 8.0,
+                        ),
+                        const FHPageDivider(),
+                        const SizedBox(
+                          height: 8.0,
+                        ),
+                        StreamBuilder(
+                            stream: bloc.featureGroupsBloc.envRoleTypeStream,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData &&
+                                  snapshot.data!
+                                      .contains(RoleType.CHANGE_VALUE)) {
+                                return StreamBuilder<bool>(
+                                    stream: bloc.isGroupUpdatedStream,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData && snapshot.data!) {
+                                        return OverflowBar(
+                                          alignment: MainAxisAlignment.end,
+                                          children: [
+                                            FHFlatButtonTransparent(
+                                              title: 'Cancel',
+                                              keepCase: true,
+                                              onPressed: () {
+                                                ManagementRepositoryClientBloc
+                                                    .router
+                                                    .navigateTo(context,
+                                                        '/feature-groups');
+                                              },
+                                            ),
+                                            FHFlatButtonAccent(
+                                              title: 'Apply all changes',
+                                              keepCase: true,
+                                              onPressed: () async {
+                                                await bloc
+                                                    .saveFeatureGroupUpdates();
+                                                bloc.featureGroupsBloc.mrClient
+                                                    .addSnackbar(Text(
+                                                        'Settings for group "${bloc.featureGroupStream.value.name}" have been updated'));
+                                              },
+                                            )
+                                          ],
+                                        );
+                                      } else {
+                                        return const SizedBox.shrink();
+                                      }
+                                    });
+                              } else {
+                                return const Text("No permissions");
+                              }
+                            }),
+                        const SizedBox(height: 32.0),
+                        Row(children: [
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  border: Border(
+                                      right: BorderSide(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onPrimaryContainer,
+                                          width: 0.5))),
+                              child: _FeaturesSettings(
                                 featureGroup: snapshot.data!,
                                 bloc: bloc,
                               ),
-                            )
-                          ]),
-                        ],
-                      );
-                    }
+                            ),
+                          ),
+                          Expanded(
+                            child: _StrategySettings(
+                              featureGroup: snapshot.data!,
+                              bloc: bloc,
+                            ),
+                          )
+                        ]),
+                      ],
+                    );
                   }
-                  return const SizedBox.shrink();
-                }),
-          ]),
-        ),
+                }
+                return const SizedBox.shrink();
+              }),
+        ]),
       ),
     );
   }
@@ -368,7 +362,7 @@ class _FeaturesSettings extends StatelessWidget {
                                                 color: Theme.of(context)
                                                     .iconTheme
                                                     .color
-                                                    ?.withOpacity(0.8))),
+                                                    ?.withAlpha(204))),
                                     ],
                                   ),
                                   if (editable)
