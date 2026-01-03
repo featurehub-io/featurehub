@@ -25,6 +25,7 @@ class Application {
       CorsFilter::class.java,
       CacheControlFilter::class.java,
       TelemetryFeature::class.java,
+      EdgeRestFeature::class.java, // this is used when this is a standalone app (not part of party-server-rest)
       EdgeGetFeature::class.java,
       CommonDbFeature::class.java,
     )
