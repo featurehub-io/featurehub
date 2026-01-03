@@ -1,3 +1,4 @@
+@allvariants @streamingvariants
 Feature: We can save, change and retrieve application strategies on feature values
 
   Background:
