@@ -86,18 +86,26 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
 
 
        if (it.sharedRolloutStrategies.isNotEmpty()) {
-        QDbApplicationRolloutStrategy().id.`in`(it.sharedRolloutStrategies.map { s -> s.strategyId }).application.id.eq(appId).findList().forEach { shared ->
-          val rs = RolloutStrategy()
-            .id(shared.shortUniqueCode)
-            .value(convert(it.sharedRolloutStrategies.first { srs -> srs.strategyId == shared.id }.value, it.feature.valueType))
-            .attributes(mutableListOf())
-            .name(shared.name)
+         // this returns them in a random order, so we need to stuff them into the rollout strategies in the order they
+         // appear in the sharedRolloutStrategies map
+        val foundSharedStrategies = QDbApplicationRolloutStrategy()
+          .id.`in`(it.sharedRolloutStrategies.map { s -> s.strategyId })
+          .application.id.eq(appId).findList()
 
-          if (shared.whenArchived != null) {
-            rs.name(shared.name.split(Conversions.archivePrefix)[0])
-          }
+         it.sharedRolloutStrategies.forEach { strategy ->
+           foundSharedStrategies.find { it.id == strategy.strategyId }?.let { pairedStrategy ->
+             val rs = RolloutStrategy()
+               .id(pairedStrategy.shortUniqueCode)
+               .value(convert(strategy.value, it.feature.valueType))
+               .attributes(mutableListOf())
+               .name(pairedStrategy.name)
 
-          it.rolloutStrategies.add(rs)
+             if (pairedStrategy.whenArchived != null) {
+               rs.name(pairedStrategy.name.split(Conversions.archivePrefix)[0])
+             }
+
+             it.rolloutStrategies.add(rs)
+           }
         }
       }
 
