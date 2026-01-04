@@ -1,3 +1,0 @@
-overrides:
-  featurehub-javascript-core-sdk: link:../../../../../Library/pnpm/global/5/node_modules/featurehub-javascript-core-sdk
-  featurehub-javascript-node-sdk: link:../../../../../Library/pnpm/global/5/node_modules/featurehub-javascript-node-sdk
