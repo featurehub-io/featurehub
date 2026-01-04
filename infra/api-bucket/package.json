@@ -1,10 +1,10 @@
 {
     "name": "api-bucket",
     "devDependencies": {
-        "@types/node": "^14"
+        "@types/node": "^22"
     },
     "dependencies": {
-        "@pulumi/pulumi": "^3.74.0",
-        "@pulumi/gcp": "^5.0.0"
+        "@pulumi/pulumi": "^3.214.1",
+        "@pulumi/gcp": "^9.7.0"
     }
 }
