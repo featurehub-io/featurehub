@@ -2,7 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as gcp from "@pulumi/gcp";
 
 const config = new pulumi.Config()
-const bucketRegion = config.get("bucketRegion");
+const bucketRegion = config.get("bucketRegion") || 'US-EAST1';
 
 const apiDocsBucket = new gcp.storage.Bucket("featurehub-openapi-docs-bucket", {
   name: "featurehubapidocs",
