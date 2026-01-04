@@ -19,6 +19,27 @@ export abstract class BackendDiscovery {
     return !this._isRESTEdge;
   }
 
+  static async edgeUrlCheck(url: string): Promise<boolean> {
+    try {
+      logger.info(`looking for edge on ${url}`);
+      const versionInfo = await (new InfoServiceApi(new Configuration({ basePath: url }))).getInfoVersion();
+      logger.info('edge version is', versionInfo.data);
+      if (versionInfo.data.name === 'edge-full') {
+        logger.info(`found edge full on ${url}`);
+        return true;
+      } else if (versionInfo.data.name === 'edge-rest') {
+        this._isRESTEdge = true;
+        logger.info(`found edge rest on ${url}`);
+        return true;
+      }
+      // eslint-disable-next-line no-empty
+    } catch (e) {
+      // console.log('failed ', e);
+    }
+
+    return false;
+  }
+
   static async edgePortCheck(port: number): Promise<boolean> {
     try {
       logger.info('looking for edge on port %d', port);
@@ -101,6 +122,10 @@ export abstract class BackendDiscovery {
   static async discover(): Promise<void> {
     if (process.env.REMOTE_BACKEND || process.env.FEATUREHUB_BASE_URL) {
       await this.discoverRestEdge(process.env.REMOTE_BACKEND || process.env.FEATUREHUB_BASE_URL || '');
+      if (process.env.FEATUREHUB_EDGE_URL) {
+        await BackendDiscovery.edgeUrlCheck(process.env.FEATUREHUB_EDGE_URL);
+      }
+
       return;
     }
     if (!BackendDiscovery._discovered) {

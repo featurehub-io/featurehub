@@ -1,13 +1,15 @@
-package io.featurehub.db.publish
+package io.featurehub.mr.events.common
 
 import io.featurehub.dacha.model.PublishAction
 import io.featurehub.db.api.CacheRefresherApi
-import io.featurehub.db.model.*
-import io.featurehub.mr.events.common.CacheSource
-import java.util.*
+import io.featurehub.db.model.DbApplicationFeature
+import io.featurehub.db.model.DbEnvironment
+import io.featurehub.db.model.DbFeatureValue
+import io.featurehub.db.model.DbServiceAccount
+import java.util.UUID
 
 /**
- *
+ * for situations where publishing to the cache isn't required
  */
 class DummyPublisher : CacheSource, CacheRefresherApi {
   override fun publishObjectsAssociatedWithCache() {}

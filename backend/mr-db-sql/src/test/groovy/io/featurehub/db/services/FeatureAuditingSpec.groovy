@@ -4,6 +4,7 @@ import cd.connect.app.config.ThreadLocalConfigurationSource
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.api.RolloutStrategyValidator
+import io.featurehub.db.listener.FeatureUpdateBySDKApi
 import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.encryption.WebhookEncryptionService
@@ -37,6 +38,8 @@ class FeatureAuditingSpec extends Base2Spec {
   ServiceAccountSqlApi serviceAccountApi
   InternalPersonApi internalPersonApi
   InternalFeatureApi internalFeatureApi
+  UpdateFeatureApiImpl updateFeatureApi
+  FeatureUpdateBySDKApi testSdkApi
 
   static UUID portfolioId = UUID.fromString('16364b24-b4ef-4052-9c33-5eb66b0d1baf')
 //  static UUID
@@ -53,7 +56,10 @@ class FeatureAuditingSpec extends Base2Spec {
 
     serviceAccountApi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, internalPersonApi)
 
-    featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher, Mock(CacheSourceFeatureGroupApi))
+    updateFeatureApi = new UpdateFeatureApiImpl(convertUtils, cacheSource, featureMessagingCloudEventPublisher)
+    featureSqlApi = new FeatureSqlApi(convertUtils, rsValidator, Mock(CacheSourceFeatureGroupApi), updateFeatureApi)
+    testSdkApi = new TestSDKFeatureUpdateServiceImpl(updateFeatureApi)
+
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     p1 = portfolioSqlApi.getPortfolio("basic")
 
@@ -138,7 +144,7 @@ class FeatureAuditingSpec extends Base2Spec {
             .description("some desc").permissions([]), Opts.empty())
       db.currentTransaction()?.commit()
     when: "i update the feature using the test-sdk api"
-      featureSqlApi.updateFeatureFromTestSdk(sa.apiKeyServerSide, env.id, feature.key, true, true, { type ->
+      testSdkApi.updateFeatureFromTestSdk(sa.apiKeyServerSide, env.id, feature.key, true, true, { type ->
         return new FeatureValue().retired(false).locked(false).valueBoolean(true)
       })
     and:

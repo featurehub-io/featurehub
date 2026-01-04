@@ -82,6 +82,7 @@
     <module>backend/mr-api-java-server</module>
     <module>backend/mr-db-api</module>
     <module>backend/mr-db-sql</module>
+    <module>backend/mr-db-features</module>
     <module>backend/mr-dacha-api</module>
     <module>backend/mr-dacha-resource</module>
     <module>backend/mr-db-models</module>

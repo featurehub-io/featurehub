@@ -8,12 +8,12 @@
     <relativePath>../composite-parent</relativePath>
   </parent>
   <groupId>io.featurehub.mr</groupId>
-  <artifactId>mr-db-sql</artifactId>
+  <artifactId>mr-db-features</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>mr-db-sql</name>
+  <name>mr-db-features</name>
 
   <description>
-    Management Registry Database API.
+    Deals with feature updating which is required because it is shared with edge-rest.
   </description>
 
   <url>https://featurehub.io</url>
@@ -47,11 +47,6 @@
       <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-db-features</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
       <groupId>io.featurehub.common</groupId>
       <artifactId>common-db</artifactId>
       <version>1.1-SNAPSHOT</version>
@@ -64,13 +59,13 @@
 
     <dependency>
       <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-eventing</artifactId>
+      <artifactId>mr-db-services</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-db-services</artifactId>
+      <artifactId>mr-eventing-common</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 

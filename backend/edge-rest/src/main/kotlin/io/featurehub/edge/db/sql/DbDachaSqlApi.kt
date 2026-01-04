@@ -11,9 +11,12 @@ import io.featurehub.dacha.model.DachaKeyDetailsResponse
 import io.featurehub.dacha.model.DachaPermissionResponse
 import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbFeatureValue
+import io.featurehub.db.model.DbStrategyForFeatureValue
 import io.featurehub.db.model.query.QDbApplicationFeature
+import io.featurehub.db.model.query.QDbApplicationRolloutStrategy
 import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.model.query.QDbServiceAccountEnvironment
+import io.featurehub.db.model.query.QDbStrategyForFeatureValue
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.db.publish.FeatureModelWalker
 import io.featurehub.db.services.Conversions
@@ -140,15 +143,51 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
       else -> fv.value(null)
     }
 
-    val rs = dbFeature.rolloutStrategies.map { fromRolloutStrategy(it) }.toMutableList()
-
-    featureGroupRolloutStrategies?.forEach { s ->
-      rs.add(fromRolloutStrategy(s))
-    }
-
-    fv.rolloutStrategies(rs)
+    fv.rolloutStrategies(collectCombinedRolloutStrategies(dbFeature, featureGroupRolloutStrategies))
 
     return fv
+  }
+
+  // combines the custom and shared rollout strategies
+  private fun collectCombinedRolloutStrategies(
+    featureValue: DbFeatureValue,
+    featureGroupRolloutStrategies: List<RolloutStrategy>?
+  ): List<CacheRolloutStrategy> {
+    log.trace("cache combine strategies")
+
+    val allStrategies = mutableListOf<CacheRolloutStrategy>()
+    allStrategies.addAll(featureValue.rolloutStrategies.map { rs -> fromRolloutStrategy(rs) })
+
+    val activeSharedStrategies = QDbStrategyForFeatureValue()
+      .select(QDbStrategyForFeatureValue.Alias.value)
+      .featureValue.id.eq(featureValue.id)
+      .enabled.isTrue
+      .rolloutStrategy.fetch(QDbApplicationRolloutStrategy.Alias.strategy, QDbApplicationRolloutStrategy.Alias.shortUniqueCode)
+      .findList()
+
+    allStrategies.addAll(activeSharedStrategies.filter { !it.rolloutStrategy.strategy.disabled }.map { shared ->
+      val rs = fromApplicationRolloutStrategy(shared)
+      rs.value = if (featureValue.feature.valueType == FeatureValueType.BOOLEAN) "true" == shared.value else shared.value // the value associated with the shared strategy is set here not in the strategy itself
+      rs
+    })
+
+    featureGroupRolloutStrategies?.let { fgStrategies ->
+      allStrategies.addAll(fgStrategies.map { fromRolloutStrategy(it) })
+    }
+
+    return allStrategies
+  }
+
+  private fun fromApplicationRolloutStrategy(rs: DbStrategyForFeatureValue): CacheRolloutStrategy {
+    val value = if (rs.featureValue.feature.valueType == FeatureValueType.BOOLEAN) "true".equals(rs.value) else rs.value
+    return CacheRolloutStrategy()
+      .id(rs.rolloutStrategy.shortUniqueCode)
+      .percentage(rs.rolloutStrategy.strategy.percentage)
+      .percentageAttributes(rs.rolloutStrategy.strategy.percentageAttributes)
+      .value(value)
+      .attributes(if (rs.rolloutStrategy.strategy.attributes == null) mutableListOf() else rs.rolloutStrategy.strategy.attributes!!
+        .map { rsa: RolloutStrategyAttribute -> fromRolloutStrategyAttribute(rsa) }
+      )
   }
 
   private fun fromRolloutStrategy(rs: RolloutStrategy): CacheRolloutStrategy {
