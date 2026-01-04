@@ -29,7 +29,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
     given:
       def feat = af()
     when:
-      def result = fsApi.updateSelectivelyDefaultValue(
+      def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueBoolean(true),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "false", false, false, [], [], feat, 0),
@@ -44,7 +44,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
     given:
       def feat = af()
     when:
-      def result = fsApi.updateSelectivelyDefaultValue(
+      def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueBoolean(false),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "false", false, false, [], [], feat, 0),
@@ -59,7 +59,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
     given:
       def feat = af(FeatureValueType.STRING)
     when:
-      def result = fsApi.updateSelectivelyDefaultValue(
+      def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueString("x"),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "x", false, false, [], [], feat, 0),
@@ -78,7 +78,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
 
     def newFeatureValue = "x"
     when:
-      def result = fsApi.updateSelectivelyDefaultValue(
+      def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueString(newFeatureValue),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, historicalValue, false, false, [], [], feat, 0),
@@ -96,7 +96,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
     given:
       def feat = af(FeatureValueType.STRING)
     when:
-      def result = fsApi.updateSelectivelyDefaultValue(
+      def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueString("x"),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "z", false, false, [], [], feat, 0),
@@ -111,7 +111,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
     given:
       def feat = af(FeatureValueType.STRING)
     when:
-      def result = fsApi.updateSelectivelyDefaultValue(
+      def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueString("x"),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", false, false, [], [], feat, 0),
@@ -126,7 +126,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
     given:
       def feat = af(FeatureValueType.STRING)
     when:
-      def result = fsApi.updateSelectivelyDefaultValue(
+      def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
         new FeatureValue().valueString("x"),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", false, false, [], [], feat, 0),

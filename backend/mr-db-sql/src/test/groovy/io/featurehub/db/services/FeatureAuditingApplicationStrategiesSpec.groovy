@@ -91,7 +91,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
                                                                                    List<RolloutStrategyInstance> updated, PersonFeaturePermission person) {
     currentFeature = featureValue("y", feature).with { it.locked = currentLock; it.sharedRolloutStrategies = current; it }
 
-    return featureSqlApi.updateSelectivelyApplicationRolloutStrategies(
+    return updateFeatureApi.updateSelectivelyApplicationRolloutStrategies(
       person,
       new FeatureValue().rolloutStrategyInstances(updated),
       new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], historical, feature, 0),
@@ -152,7 +152,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
       currentFeature.sharedRolloutStrategies = existing
     when: "i swap a strategy"
       def result =
-        featureSqlApi.updateSelectivelyApplicationRolloutStrategies(
+        updateFeatureApi.updateSelectivelyApplicationRolloutStrategies(
           new PersonFeaturePermission(superPerson, defaultRoles),
           new FeatureValue().rolloutStrategyInstances(incoming1),
           new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], feature, 0),
@@ -165,7 +165,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
       currentFeature.sharedRolloutStrategies[1].rolloutStrategy.id == ss1.id
     when: "i delete a strategy"
       def resultDeleted
-        = featureSqlApi.updateSelectivelyApplicationRolloutStrategies(
+        = updateFeatureApi.updateSelectivelyApplicationRolloutStrategies(
       new PersonFeaturePermission(superPerson, defaultRoles),
       new FeatureValue().rolloutStrategyInstances([incoming1.first()]),
       new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], feature, 0),
@@ -175,7 +175,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
       currentFeature.sharedRolloutStrategies.size() == 1
       currentFeature.sharedRolloutStrategies[0].rolloutStrategy.id == ss2.id
     when: "i try and delete the same strategy against the historical version, it accepts it and makes no changes"
-      featureSqlApi.updateSelectivelyApplicationRolloutStrategies(
+    updateFeatureApi.updateSelectivelyApplicationRolloutStrategies(
       new PersonFeaturePermission(superPerson, defaultRoles),
       new FeatureValue().rolloutStrategyInstances([incoming1.first()]),
       new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], feature, 0),

@@ -30,7 +30,8 @@ class ApplicationStrategiesSpec extends Base3Spec {
     archiveStrategy = Mock(ArchiveStrategy)
     internalFeatureApi = Mock(InternalFeatureApi)
     applicationRolloutStrategySqlApi = new ApplicationRolloutStrategySqlApi(convertUtils, internalFeatureApi)
-    featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher, Mock(CacheSourceFeatureGroupApi))
+    UpdateFeatureApi updateFeatureApi = new UpdateFeatureApiImpl(convertUtils, cacheSource, featureMessagingCloudEventPublisher)
+    featureSqlApi = new FeatureSqlApi(convertUtils, rsValidator, Mock(CacheSourceFeatureGroupApi), updateFeatureApi)
   }
 
   String createFeature(FeatureValueType valueType = FeatureValueType.BOOLEAN) {

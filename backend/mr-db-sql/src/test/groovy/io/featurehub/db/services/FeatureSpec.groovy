@@ -60,12 +60,15 @@ class FeatureSpec extends Base2Spec {
   CacheSourceFeatureGroupApi mockCacheSourceFeatureGroupApi
   WebhookEncryptionService webhookEncryptionService
   SymmetricEncrypter symmetricEncyrpter
+  UpdateFeatureApi updateFeatureApi
+  CacheSource cacheSource
 
 
   def setup() {
     db.currentTransaction().commitAndContinue()
+    cacheSource = Mock()
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
-    serviceAccountSqlApi = new ServiceAccountSqlApi(convertUtils, Mock(CacheSource), archiveStrategy, personSqlApi)
+    serviceAccountSqlApi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, personSqlApi)
 
     rsv = Mock(RolloutStrategyValidator)
     rsv.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
@@ -73,8 +76,9 @@ class FeatureSpec extends Base2Spec {
     //  these ones generally assume auditing will be off
     ThreadLocalConfigurationSource.createContext(['auditing.enable': 'false'])
     mockCacheSourceFeatureGroupApi = Mock()
-    featureSqlApi = new FeatureSqlApi(convertUtils, Mock(CacheSource), rsv, featureMessagingPublisher, mockCacheSourceFeatureGroupApi)
-    appApi = new ApplicationSqlApi( convertUtils, Mock(CacheSource), archiveStrategy, internalFeatureApi)
+    updateFeatureApi = new UpdateFeatureApiImpl(convertUtils, cacheSource, featureMessagingPublisher)
+    featureSqlApi = new FeatureSqlApi(convertUtils, rsv, mockCacheSourceFeatureGroupApi, updateFeatureApi)
+    appApi = new ApplicationSqlApi( convertUtils, cacheSource, archiveStrategy, internalFeatureApi)
 
     // now set up the environments we need
     portfolio1 = new DbPortfolio.Builder().name("p1-app-feature" + RandomStringUtils.randomAlphabetic(8) ).whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
@@ -599,8 +603,7 @@ class FeatureSpec extends Base2Spec {
     setup:
       ThreadLocalConfigurationSource.createContext(['auditing.enable': 'true'])
 
-
-      featureSqlApi = new FeatureSqlApi( convertUtils, Mock(CacheSource), rsv, featureMessagingPublisher, mockCacheSourceFeatureGroupApi)
+      featureSqlApi = new FeatureSqlApi(convertUtils, rsv, mockCacheSourceFeatureGroupApi, updateFeatureApi)
     when: "i update the fv with the custom strategy"
       def env1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("rstrat-test-env1"), app2Id, superPerson)
       def key = 'FEATURE_MISINTERPRET'
