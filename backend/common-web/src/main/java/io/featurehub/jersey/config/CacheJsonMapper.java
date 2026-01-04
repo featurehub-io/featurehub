@@ -31,7 +31,7 @@ public class CacheJsonMapper {
     mapper.registerModule(new KotlinModule.Builder().build());
     mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-    mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+    mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
   }
 
   static public byte[] writeAsZipBytes(Object o) throws IOException {
