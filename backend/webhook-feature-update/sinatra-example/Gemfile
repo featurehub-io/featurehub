@@ -6,3 +6,5 @@ ruby "3.3.10"
 
 gem "sinatra"
 gem "puma"
+
+gem "rackup", "~> 2.3"

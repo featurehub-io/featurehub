@@ -16,6 +16,8 @@ GEM
     rack-session (2.1.1)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
+    rackup (2.3.1)
+      rack (>= 3)
     ruby2_keywords (0.0.5)
     sinatra (4.2.1)
       logger (>= 1.6.0)
@@ -32,6 +34,7 @@ PLATFORMS
 
 DEPENDENCIES
   puma
+  rackup (~> 2.3)
   sinatra
 
 RUBY VERSION
