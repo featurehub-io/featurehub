@@ -1,7 +1,7 @@
-FROM ruby:2.7.6-bullseye
+FROM ruby:3.3.10-slim-trixie
 
 MAINTAINER info@featurehub.io
-ENV BUNDLER_VERSION 2.3.15
+ENV BUNDLER_VERSION=4.0.3
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
