@@ -102,21 +102,9 @@ final ThemeData darkTheme = ThemeData(
     textColor: Color(0xffE0E0E0), // Light text
   ),
 
-  // Input Fields - underline border like light mode, transparent background
+  // Input Fields - allow individual TextFields to specify their own borders
   inputDecorationTheme: InputDecorationTheme(
     filled: false, // Transparent background
-    border: UnderlineInputBorder(
-      borderSide: BorderSide(color: flexSchemeDark.outline), // Underline border
-    ),
-    enabledBorder: UnderlineInputBorder(
-      borderSide:
-          BorderSide(color: flexSchemeDark.outline), // Underline when enabled
-    ),
-    focusedBorder: UnderlineInputBorder(
-      borderSide: BorderSide(
-          color: flexSchemeDark.primary,
-          width: 2), // Blue underline when focused
-    ),
     labelStyle: const TextStyle(color: Color(0xffB0B0B0)), // Medium grey labels
     hintStyle: const TextStyle(color: Color(0xff606060)), // Darker grey hints
   ),
@@ -170,9 +158,10 @@ final ThemeData darkTheme = ThemeData(
 
   // Snackbars
   snackBarTheme: SnackBarThemeData(
-    backgroundColor: const Color(0xff2C2C2C), // Off-black background
-    contentTextStyle: const TextStyle(color: Color(0xffE0E0E0)),
-    actionTextColor: const Color(0xffE0E0E0),
+    backgroundColor: Colors.orange,
+    contentTextStyle: const TextStyle(
+        color: Colors.white), // White text for better contrast on orange
+    actionTextColor: Colors.white, // White action text for better contrast
   ),
 
   // Dividers
@@ -217,7 +206,7 @@ final ThemeData darkTheme = ThemeData(
         TextStyle(color: Color(0xffB0B0B0)), // Slightly muted for small text
     labelLarge: TextStyle(color: Color(0xffE0E0E0)),
     labelMedium: TextStyle(color: Color(0xffB0B0B0)),
-    labelSmall: TextStyle(color: Color(0xff808080)),
+    labelSmall: TextStyle(color: Color(0xffE0E0E0)),
   ),
 
   // Icon Theme

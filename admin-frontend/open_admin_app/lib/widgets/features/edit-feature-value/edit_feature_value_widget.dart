@@ -53,7 +53,10 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                             const SizedBox(
                               width: 8.0,
                             ),
-                            const Text('You have unsaved changes, save?'),
+                            Text('You have unsaved changes, save?',
+                                style: Theme.of(context)
+                                    .snackBarTheme
+                                    .contentTextStyle),
                             TextButton(
                                 style: TextButton.styleFrom(
                                   foregroundColor: Theme.of(context)
