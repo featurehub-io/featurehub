@@ -432,7 +432,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                       _isHistoryPresent = true;
                                     });
                                   },
-                                  child: const Text("Show actions")),
+                                  child: const Text("Show history")),
                           StreamBuilder<FeatureHistoryItem?>(
                               stream: widget.bloc.featureHistoryListSource,
                               builder: (context, snapshot) {
