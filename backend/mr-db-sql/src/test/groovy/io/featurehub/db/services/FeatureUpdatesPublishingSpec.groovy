@@ -53,7 +53,8 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     rsv.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     featureMessagingCloudEventPublisher = Mock()
 
-    featureSqlApi = new FeatureSqlApi( convertUtils, cacheSource, rsv, featureMessagingCloudEventPublisher, Mock(CacheSourceFeatureGroupApi))
+    UpdateFeatureApi updateFeatureApi = new UpdateFeatureApiImpl(convertUtils, cacheSource, featureMessagingCloudEventPublisher)
+    featureSqlApi = new FeatureSqlApi(convertUtils, rsv, Mock(CacheSourceFeatureGroupApi), updateFeatureApi)
 
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, internalFeatureApi, Mock(WebhookEncryptionService))

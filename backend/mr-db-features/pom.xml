@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.featurehub.composites</groupId>
+    <artifactId>composite-parent</artifactId>
+    <version>1.2-SNAPSHOT</version>
+    <relativePath>../composite-parent</relativePath>
+  </parent>
+  <groupId>io.featurehub.mr</groupId>
+  <artifactId>mr-db-features</artifactId>
+  <version>1.1-SNAPSHOT</version>
+  <name>mr-db-features</name>
+
+  <description>
+    Deals with feature updating which is required because it is shared with edge-rest.
+  </description>
+
+  <url>https://featurehub.io</url>
+  <developers>
+    <developer>
+      <email>irina@featurehub.io</email>
+      <id>isouthwell</id>
+      <name>Irina Southwell</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+
+    <developer>
+      <email>richard@featurehub.io</email>
+      <id>rvowles</id>
+      <name>Richard Vowles</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>Apache 2 with Commons Clause</name>
+      <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
+    </license>
+  </licenses>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-db-models</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>io.featurehub.common</groupId>
+      <artifactId>common-db</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-ebean</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-db-services</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-eventing-common</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.edge</groupId>
+      <artifactId>edge-feature-update-async-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.common</groupId>
+      <artifactId>common-db-test</artifactId>
+      <version>1.1-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.repaint.maven</groupId>
+        <artifactId>tiles-maven-plugin</artifactId>
+        <version>2.32</version>
+        <extensions>true</extensions>
+        <configuration>
+          <filtering>false</filtering>
+          <tiles>
+            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+            <tile>org.avaje.tile:java-compile:1.1</tile>
+            <tile>io.ebean.tile:enhancement:${ebean.tile.version}</tile>
+          </tiles>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+
+</project>

@@ -43,7 +43,7 @@
   </licenses>
 
   <properties>
-    <grizzly.version>4.0.0</grizzly.version>
+    <grizzly.version>4.0.2</grizzly.version>
     <grizzly.npn.version>2.0.0</grizzly.npn.version>
   </properties>
 

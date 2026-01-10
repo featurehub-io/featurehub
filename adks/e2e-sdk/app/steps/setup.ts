@@ -221,6 +221,7 @@ async function connectToFeatureServer(world: SdkWorld) {
     world.sdkUrlClientEval = serviceAccountPerm.sdkUrlClientEval;
     world.sdkUrlServerEval = serviceAccountPerm.sdkUrlServerEval;
     if (!BackendDiscovery.supportsSSE) {
+      logger.info('Backend does not support SSE, using polling');
       edge.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, 200));
     }
 

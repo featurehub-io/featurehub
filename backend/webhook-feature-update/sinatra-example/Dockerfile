@@ -1,12 +1,13 @@
-FROM ruby:2.7.6-bullseye
+FROM ruby:3.3.10-alpine
 
 MAINTAINER info@featurehub.io
-ENV BUNDLER_VERSION 2.3.15
+ENV BUNDLER_VERSION=4.0.3
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y wget tzdata apt-transport-https
+RUN apk update && \
+    apk upgrade && \
+    apk add wget tzdata build-base
+#    apt-transport-https
 
 # set up nsswitch
 COPY conf/nsswitch.conf /etc/nsswitch.conf

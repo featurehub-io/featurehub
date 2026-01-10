@@ -37,6 +37,7 @@ class Base3Spec extends Specification {
   @Shared EnvironmentSqlApi environmentSqlApi
   @Shared CacheSource cacheSource
   @Shared FeatureSqlApi featureSqlApi
+  @Shared UpdateFeatureApiImpl updateFeatureApi
   @Shared RolloutStrategyValidator rsValidator
   @Shared Portfolio portfolio
   @Shared Application app1
@@ -94,8 +95,8 @@ class Base3Spec extends Specification {
     rsValidator.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     rsValidator.validateStrategies(_, _, _, _) >> new RolloutStrategyValidator.ValidationFailure()
 
-
-    featureSqlApi = new FeatureSqlApi(convertUtils, cacheSource, rsValidator, featureMessagingCloudEventPublisher, Mock(CacheSourceFeatureGroupApi))
+    updateFeatureApi = new UpdateFeatureApiImpl(convertUtils, cacheSource, featureMessagingCloudEventPublisher)
+    featureSqlApi = new FeatureSqlApi(convertUtils, rsValidator, Mock(CacheSourceFeatureGroupApi), updateFeatureApi)
     portfolioSqlApi = new PortfolioSqlApi(db, convertUtils, archiveStrategy)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi(convertUtils,cacheSource,featureMessagingCloudEventPublisher), Mock(WebhookEncryptionService))
     applicationSqlApi = new ApplicationSqlApi(convertUtils, cacheSource, archiveStrategy, new InternalFeatureSqlApi(convertUtils,cacheSource,featureMessagingCloudEventPublisher))

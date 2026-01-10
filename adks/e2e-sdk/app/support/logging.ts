@@ -1,10 +1,10 @@
 import { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import * as winston from 'winston';
+import {createLogger, transports, format} from 'winston';
 import { MESSAGE } from 'triple-beam';
 import stringify from 'safe-stable-stringify';
-import { fhLog } from 'featurehub-javascript-client-sdk';
+import { fhLog } from 'featurehub-javascript-node-sdk';
 
-const httpAwareJsonFormatter = winston.format((info) => {
+const httpAwareJsonFormatter = format((info) => {
   const json: any = {};
 
   if (info.message) {
@@ -45,10 +45,10 @@ const httpAwareJsonFormatter = winston.format((info) => {
   return info;
 });
 
-export const logger = winston.createLogger({
+export const logger = createLogger({
   level: process.env.LOG_LEVEL || 'verbose',
-  format: winston.format.combine(
-    winston.format.splat(),
+  format: format.combine(
+    format.splat(),
     httpAwareJsonFormatter()
   ),
   defaultMeta: {service: 'e2e-sdk-testing'},
@@ -57,8 +57,8 @@ export const logger = winston.createLogger({
     // - Write all logs with level `error` and below to `error.log`
     // - Write all logs with level `verbose` and below to `combined.log`
     //
-    new winston.transports.File({filename: 'logs/error.log', level: 'error'}),
-    new winston.transports.File({filename: 'logs/combined.log', level: 'verbose'}),
+    new transports.File({filename:  'logs/error.log', level: 'error'} as transports.FileTransportOptions),
+    new transports.File({filename: 'logs/combined.log', level: 'verbose'} as transports.FileTransportOptions),
   ],
 });
 
@@ -77,12 +77,12 @@ fhLog.trace = (...args: any[]) => {
 fhLog.trace('this is a message');
 
 if (process.env.DEBUG) {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.splat(),
-      winston.format.metadata()
+  logger.add(new transports.Console({
+    format: format.combine(
+      format.splat(),
+      format.metadata()
     ),
-  }));
+  } as transports.ConsoleTransportOptions));
 }
 
 /*

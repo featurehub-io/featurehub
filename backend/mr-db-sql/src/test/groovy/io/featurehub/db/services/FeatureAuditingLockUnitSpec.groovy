@@ -26,7 +26,7 @@ class FeatureAuditingLockUnitSpec extends FeatureAuditingBaseUnitSpec {
   }
 
   SingleFeatureValueUpdate<Boolean> locked(boolean current, boolean historical, boolean changing, Set<RoleType> roles) {
-    return fsApi.updateSelectivelyLocked(
+    return updateFeatureApi.updateSelectivelyLocked(
       new FeatureValue().locked(changing),
       new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", historical, false, [], [], feature, 0),
       featureValue("y", feature).with { it.locked = current; it },

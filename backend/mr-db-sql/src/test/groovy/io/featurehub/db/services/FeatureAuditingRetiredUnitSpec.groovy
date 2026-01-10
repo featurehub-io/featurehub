@@ -26,7 +26,7 @@ class FeatureAuditingRetiredUnitSpec extends FeatureAuditingBaseUnitSpec {
   }
 
   SingleFeatureValueUpdate<Boolean> update(Boolean currentRetired, boolean historicalRetired, boolean changingRetired) {
-    return fsApi.updateSelectivelyRetired(
+    return updateFeatureApi.updateSelectivelyRetired(
       new PersonFeaturePermission(person, roles),
       new FeatureValue().retired(changingRetired),
       new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", featureLocked, historicalRetired, [], [], feature, 0),

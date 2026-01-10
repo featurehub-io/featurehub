@@ -7,9 +7,11 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
-    "strict": true,
+    "strict": false,
     "outDir": "target/dist",
     "strictNullChecks": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
     "typeRoots": [
       "./node_modules/@types"
     ],

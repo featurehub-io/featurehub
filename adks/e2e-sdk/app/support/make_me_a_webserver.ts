@@ -1,10 +1,10 @@
-import * as restify from 'restify';
+import express from "express";
 
 import {networkInterfaces} from 'os';
 import {IncomingHttpHeaders} from 'http';
 import {logger} from './logging';
 import {CloudEvent, CloudEventV1, HTTP} from "cloudevents";
-import * as Zlib from 'zlib';
+import http from "http";
 
 const nets = networkInterfaces();
 const results: any = {};
@@ -42,7 +42,7 @@ export function getWebserverExternalAddress(): string | undefined {
   return networkName ? `http://${results[networkName][0]}:${port}` : undefined;
 }
 
-let server: restify.Server;
+// let server : express.Express;
 
 export const cloudEvents: Array<CloudEvent<any>> = [];
 
@@ -68,11 +68,11 @@ function mergeCloudEvent<T>(body: T, headers: IncomingHttpHeaders) : CloudEvent<
 }
 
 function setupServer() {
-  server.use(restify.plugins.acceptParser(server.acceptable));
-  server.use(restify.plugins.queryParser());
+  let server = express();
+
   server.use (function(req, res, next) {
-    logger.info(`received request on path ${req.path()} of content-type ${req.contentType()}`);
-    if (req.contentType() === 'application/json') {
+    logger.info(`received request on path ${req.path} of content-type ${req.header('content-type')}`);
+    if (req.header('content-type') === 'application/json') {
       var data='';
       req.setEncoding('utf8');
       req.on('data', function(chunk) {
@@ -84,7 +84,12 @@ function setupServer() {
         req.body = JSON.parse(data);
         next();
       });
-    } else if (req.contentType() === 'application/json+gzip') {
+
+      req.on('error', (err) => {
+        logger.error(err);
+        res.status(500).send('Server error.');
+      });
+    } else if (req.header('content-type') === 'application/json+gzip') {
       let data = Buffer.from([]);
 
       console.log(`data created is of type ${typeof data}`);
@@ -102,7 +107,7 @@ function setupServer() {
           req.body = data;
         } catch (e) {
           logger.error('failed to parse', e);
-          res.send(500, 'failed to parse');
+          res.status(500).send('failed to parse');
         }
         next();
       });
@@ -121,7 +126,7 @@ function setupServer() {
       logger.error("failed", e);
     }
     console.log('responding ok');
-    res.send(200, 'ok');
+    res.status(200).send('ok');
     return next();
   });
 
@@ -132,24 +137,23 @@ function setupServer() {
       logger.error("failed", e);
     }
 
-    res.send( 200,'Ok');
+    res.status(200).send( 'Ok');
     return next();
   });
+
+  return server;
 }
+
+export let terminateServer: () => Promise<void>;
 
 export function startWebServer(): Promise<void> {
   return new Promise((resolve, reject) => {
-    server = restify.createServer({
-      name: 'myapp',
-      version: '1.0.0'
-    });
-
-    setupServer();
+    let server = setupServer();
+    let app : http.Server | undefined;
 
     try {
-      server.listen(port, function () {
-        console.log(`${server.name} listening at ${server.url}`);
-        logger.info(`${server.name} listening at ${server.url}`);
+      app = server.listen(port, function () {
+        logger.debug(`${server.name}`);
         resolve();
       });
     } catch (e) {
@@ -157,22 +161,24 @@ export function startWebServer(): Promise<void> {
       logger.error("Failed to listen", e);
       reject(e);
     }
-  });
-}
 
-export function terminateServer(): Promise<void> {
-  logger.debug("terminating webserver");
-  return new Promise((resolve, reject) => {
-    if (server) {
-      try {
-        server.close(() => { resolve(); });
-        server = undefined;
-      } catch (e) {
-        logger.error("Failed to close server", e);
-        reject(e);
-      }
-    } else {
-      resolve();
+    terminateServer = () => {
+      return new Promise((resolve, reject) => {
+        if (server) {
+          try {
+            app?.close(() => {
+              resolve();
+            });
+            server = undefined;
+            app = undefined;
+          } catch (e) {
+            logger.error("Failed to close server", e);
+            reject(e);
+          }
+        } else {
+          resolve();
+        }
+      });
     }
   });
 }

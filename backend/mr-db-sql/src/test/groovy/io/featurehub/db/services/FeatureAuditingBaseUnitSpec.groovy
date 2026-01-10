@@ -29,6 +29,7 @@ class FeatureAuditingBaseUnitSpec extends Specification {
   DbFeatureValueVersionKey histId
   DbEnvironment environment
   DbApplication app
+  UpdateFeatureApiImpl updateFeatureApi
 
 
   def setup() {
@@ -43,7 +44,8 @@ class FeatureAuditingBaseUnitSpec extends Specification {
     histId = new DbFeatureValueVersionKey(UUID.randomUUID(), 1)
     featureMessagingCloudEventPublisher = Mock()
 
-    fsApi =new FeatureSqlApi(conversions, cacheSource, rolloutStrategyValidator, featureMessagingCloudEventPublisher, Mock(CacheSourceFeatureGroupApi))
+    updateFeatureApi = new UpdateFeatureApiImpl(conversions, cacheSource, featureMessagingCloudEventPublisher)
+    fsApi = new FeatureSqlApi(conversions, rolloutStrategyValidator, Mock(CacheSourceFeatureGroupApi), updateFeatureApi)
 
     app = new DbApplication()
   }

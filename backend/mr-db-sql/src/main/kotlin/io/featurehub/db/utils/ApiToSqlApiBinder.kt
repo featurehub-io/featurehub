@@ -43,8 +43,11 @@ import io.featurehub.db.services.PersonSqlApi
 import io.featurehub.db.services.PortfolioSqlApi
 import io.featurehub.db.services.ServiceAccountSqlApi
 import io.featurehub.db.services.SetupSqlApi
+import io.featurehub.db.services.TestSDKFeatureUpdateServiceImpl
 import io.featurehub.db.services.TrackingEventListener
 import io.featurehub.db.services.TrackingEventSqlApi
+import io.featurehub.db.services.UpdateFeatureApi
+import io.featurehub.db.services.UpdateFeatureApiImpl
 import io.featurehub.db.services.UserStateSqlApi
 import io.featurehub.db.services.WebhookSqlApi
 import io.featurehub.db.services.strategies.RolloutStrategyValidationUtils
@@ -80,7 +83,9 @@ class ApiToSqlApiBinder : Feature {
         ).`in`(Singleton::class.java)
         bind(ApplicationSqlApi::class.java).to(ApplicationApi::class.java).`in`(Singleton::class.java)
         bind(EnvironmentSqlApi::class.java).to(EnvironmentApi::class.java).`in`(Singleton::class.java)
-        bind(FeatureSqlApi::class.java).to(FeatureApi::class.java).to(FeatureUpdateBySDKApi::class.java).`in`(
+        bind(UpdateFeatureApiImpl::class.java).to(UpdateFeatureApi::class.java).`in`(Singleton::class.java)
+        bind(TestSDKFeatureUpdateServiceImpl::class.java).to(FeatureUpdateBySDKApi::class.java).`in`(Singleton::class.java)
+        bind(FeatureSqlApi::class.java).to(FeatureApi::class.java).`in`(
           Singleton::class.java
         )
         bind(InternalFeatureSqlApi::class.java).to(InternalFeatureApi::class.java).`in`(Singleton::class.java)
