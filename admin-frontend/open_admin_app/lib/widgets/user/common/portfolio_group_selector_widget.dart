@@ -4,7 +4,6 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/user/common/portfolio_group.dart';
 import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 
-import '../../common/fh_filled_input_decoration.dart';
 
 class PortfolioGroupSelector extends StatefulWidget {
   const PortfolioGroupSelector({Key? key}) : super(key: key);
@@ -98,7 +97,10 @@ class PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
             child: Container(
               constraints: const BoxConstraints(maxWidth: 300),
               child: InputDecorator(
-                decoration: fhFilledInputDecoration(labelText: 'Group'),
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Group',
+                ),
                 child: InkWell(
                   mouseCursor: SystemMouseCursors.click,
                   child: DropdownButton(
@@ -150,7 +152,10 @@ class PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 300),
                 child: InputDecorator(
-                  decoration: fhFilledInputDecoration(labelText: 'Portfolio'),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Portfolio',
+                  ),
                   child: InkWell(
                     mouseCursor: SystemMouseCursors.click,
                     child: DropdownButton<String?>(

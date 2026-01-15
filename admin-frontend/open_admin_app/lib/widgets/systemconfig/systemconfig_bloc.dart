@@ -18,9 +18,8 @@ class SystemConfigBloc implements Bloc {
     _loadConfigs();
   }
 
-  /**
-   * this list does not change between restarts of the app due to system config changes
-   */
+  // this list does not change between restarts of the app due to system config changes
+
   Future _loadConfigs() async {
     final configs = await systemConfigServiceApi.getSystemConfig();
 

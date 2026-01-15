@@ -65,7 +65,6 @@ class _ServiceAccountWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Card(
       margin: const EdgeInsets.all(8.0),
       child: Padding(
@@ -179,7 +178,7 @@ class _ServiceAccountEnvironment extends StatelessWidget {
     // are any app env ids in the perm envs?
     final found = appEnvs.any((appEnvId) => permEnvs.contains(appEnvId));
     return Card(
-      color: Theme.of(context).colorScheme.background,
+      color: Theme.of(context).colorScheme.surface,
       elevation: 4.0,
       child: SizedBox(
         width: 240,
@@ -271,18 +270,17 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
       deleteSelected: () async {
         var success = false;
         try {
-          success = await bloc
-              .deleteServiceAccount(serviceAccount.id);
+          success = await bloc.deleteServiceAccount(serviceAccount.id);
 
           if (success) {
             bloc.mrClient.removeOverlay();
             bloc.mrClient.addSnackbar(
                 Text("Service account '${serviceAccount.name}' deleted!"));
           }
-        } catch (e,s) {
+        } catch (e, s) {
           bloc.mrClient.dialogError(e, s,
               messageTitle:
-              "Couldn't delete service account ${serviceAccount.name}");
+                  "Couldn't delete service account ${serviceAccount.name}");
         }
 
         return success;
@@ -338,19 +336,19 @@ class _ServiceAccountUpdateDialogWidgetState
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               TextFormField(
-                      controller: _name,
-                      autofocus: true,
-                      decoration: const InputDecoration(
-                          labelText: 'Service account name'),
-                      validator: ((v) {
-                        if (v == null || v.isEmpty) {
-                          return 'Please enter a service account name';
-                        }
-                        if (v.length < 4) {
-                          return 'Service account name needs to be at least 4 characters long';
-                        }
-                        return null;
-                      })),
+                  controller: _name,
+                  autofocus: true,
+                  decoration:
+                      const InputDecoration(labelText: 'Service account name'),
+                  validator: ((v) {
+                    if (v == null || v.isEmpty) {
+                      return 'Please enter a service account name';
+                    }
+                    if (v.length < 4) {
+                      return 'Service account name needs to be at least 4 characters long';
+                    }
+                    return null;
+                  })),
               TextFormField(
                   controller: _description,
                   decoration: const InputDecoration(

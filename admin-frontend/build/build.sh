@@ -5,7 +5,7 @@ set -exo pipefail
 echo flutter home is $FLUTTER
 #echo "1.21.0-8.0.pre.110" > $FLUTTER_ROOT/version
 #ls -la $FLUTTER
-VERSION=`cat $FLUTTER/version`
+VERSION=`cat $FLUTTER/.dart_tool/version`
 DVERSION=`cat $FLUTTER/bin/cache/dart-sdk/version`
 echo Flutter version is $VERSION dart version is $DVERSION
 echo FLUTTER: Cleaning up after last build
@@ -53,11 +53,11 @@ rename_main_dart
 mv build/web build_original/web/intranet
 rm -rf build
 
-echo "building html renderer version"
-flutter build web --target=lib/deploy_main.dart --web-renderer html  --release --no-tree-shake-icons
+#echo "building wasm+canvaskit version"
+#flutter build web --target=lib/deploy_main.dart --wasm  --release --no-tree-shake-icons
 
-mv build/web build_original/web/html
-rm -rf build
+#mv build/web build_original/web/html
+#rm -rf build
 
 mv build_original build
 

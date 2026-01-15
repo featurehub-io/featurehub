@@ -41,7 +41,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
     super.initState();
     if (widget.feature != null) {
       _featureName.text = widget.feature!.name;
-      _featureKey.text = widget.feature!.key ?? '';
+      _featureKey.text = widget.feature!.key;
       _featureAlias.text = widget.feature!.alias ?? '';
       _featureLink.text = widget.feature!.link ?? '';
       _featureDesc.text = widget.feature!.description ?? '';

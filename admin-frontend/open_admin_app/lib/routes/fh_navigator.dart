@@ -23,7 +23,8 @@ class FHRoutePath {
   RouteInformation make() {
     final p =
         params.entries.map((e) => '${e.key}=${e.value.join(',')}').join('&');
-    return RouteInformation(uri: Uri.parse(_routeName + (p.isNotEmpty ? '?$p' : '')));
+    return RouteInformation(
+        uri: Uri.parse(_routeName + (p.isNotEmpty ? '?$p' : '')));
   }
 
   @override
@@ -76,14 +77,8 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
         if (_currentSlot == RouteSlot.loading) _loadingPage(context),
         if (_currentSlot != RouteSlot.loading) routeWrapperPage(context)
       ],
-      onPopPage: (route, result) {
-        if (!route.didPop(result)) {
-          return false;
-        }
-
+      onDidRemovePage: (_) {
         notifyListeners();
-
-        return true;
       },
     );
   }
@@ -150,14 +145,17 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
       }
     });
 
-    _globalRefreshListener = bloc.streamValley.globalRefresherStream.listen((g) => routeCheckOnGlobalRefresh());
+    _globalRefreshListener = bloc.streamValley.globalRefresherStream
+        .listen((g) => routeCheckOnGlobalRefresh());
   }
 
   void routeCheckOnGlobalRefresh() {
     //print("swap check ${ManagementRepositoryClientBloc.router.canUseRoute(currentConfiguration.routeName)}");
 
-    if (!ManagementRepositoryClientBloc.router.canUseRoute(currentConfiguration.routeName)) {
-      bloc.swapRoutes(RouteChange(routeSlotMappings[_currentSlot]!.initialRoute));
+    if (!ManagementRepositoryClientBloc.router
+        .canUseRoute(currentConfiguration.routeName)) {
+      bloc.swapRoutes(
+          RouteChange(routeSlotMappings[_currentSlot]!.initialRoute));
     }
   }
 

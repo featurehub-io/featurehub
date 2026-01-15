@@ -1,5 +1,5 @@
 // ignore: avoid_web_libraries_in_flutter
-import 'dart:html';
+import 'package:universal_html/html.dart';
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';

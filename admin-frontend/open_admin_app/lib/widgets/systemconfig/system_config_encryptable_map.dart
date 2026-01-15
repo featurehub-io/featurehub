@@ -8,10 +8,9 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 typedef SystemUpdateConfigCallback = void Function(SystemConfig);
 
-/**
- * the parent widget needs to pass this in as a controller style so
- * when it is due to submit/validate, the state of the map can be fixed up.
- */
+//the parent widget needs to pass this in as a controller style so
+//when it is due to submit/validate, the state of the map can be fixed up.
+
 class SystemConfigEncryptionController {
   Function? submitCallback;
   SystemUpdateConfigCallback? updateConfigCallback;

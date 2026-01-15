@@ -12,7 +12,7 @@ class FHButtonBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(0, 30, 20, 10),
-      child: ButtonBar(
+      child: OverflowBar(
         alignment: MainAxisAlignment.end,
         children: children,
       ),
