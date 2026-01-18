@@ -424,7 +424,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                       _isHistoryPresent = false;
                                     });
                                   },
-                                  child: const Text("Hide actions"))
+                                  child: const Text("Hide history"))
                               : TextButton(
                                   onPressed: () {
                                     widget.bloc.getHistory();
