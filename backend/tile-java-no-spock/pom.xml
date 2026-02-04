@@ -2,13 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.featurehub.edge</groupId>
-  <artifactId>edge-stats-emitter</artifactId>
-  <version>1.1-SNAPSHOT</version>
-  <name>edge-stats-emitter</name>
+  <groupId>io.featurehub.tiles</groupId>
+  <artifactId>tile-java-no-spock</artifactId>
+  <version>1.1</version>
+  <packaging>tile</packaging>
+  <name>tile-java-no-spock</name>
 
   <description>
-    This artifact is the Edge and is responsible for talking to all clients in a scalable fashion.
+    tile-java-no-spock exists because of there is no test Groovy code, the gmavenplus plugin complains and fails.
+    This to me is a bug, but this gets around it for the time being.
   </description>
 
   <url>https://featurehub.io</url>
@@ -35,39 +37,6 @@
     </license>
   </licenses>
 
-  <properties>
-    <app.port>8553</app.port>
-    <app.entrypoint>io.featurehub.edge.Application</app.entrypoint>
-    <app.imagename>edge</app.imagename>
-  </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>io.featurehub.edge</groupId>
-      <artifactId>edge-stats-api</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.events</groupId>
-      <artifactId>eventing-cloudevents</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.edge</groupId>
-      <artifactId>edge-shared</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-test</artifactId>
-      <version>[1.1, 2)</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
   <build>
     <plugins>
       <plugin>
@@ -77,9 +46,6 @@
         <extensions>true</extensions>
         <configuration>
           <filtering>false</filtering>
-          <tiles>
-            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
-          </tiles>
         </configuration>
       </plugin>
     </plugins>

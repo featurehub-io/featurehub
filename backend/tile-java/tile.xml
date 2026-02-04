@@ -5,6 +5,8 @@
 
   <properties>
     <kotlin.compiler.incremental>false</kotlin.compiler.incremental>
+    <maven.compiler.source>25</maven.compiler.source>
+    <maven.compiler.target>25</maven.compiler.target>
   </properties>
 
   <build>
@@ -30,7 +32,7 @@
       <plugin>
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-maven-plugin</artifactId>
-        <version>2.1.10</version>
+        <version>2.3.0</version>
         <executions>
           <execution>
             <id>compile</id>
@@ -109,10 +111,11 @@
         </configuration>
       </plugin>
 
+      <!-- we keep this here cause order of operation is important -->
       <plugin>
         <groupId>org.codehaus.gmavenplus</groupId>
         <artifactId>gmavenplus-plugin</artifactId>
-        <version>4.1.1</version>
+        <version>4.3.0</version>
         <executions>
           <execution>
             <goals>

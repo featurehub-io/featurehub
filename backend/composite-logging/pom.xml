@@ -51,7 +51,7 @@
 
   <properties>
     <log4j.version>2.25.3</log4j.version>
-    <lmax.disruptor>3.4.4</lmax.disruptor>
+    <lmax.disruptor>4.0.0</lmax.disruptor>
   </properties>
 
   <dependencies>
@@ -143,7 +143,6 @@
         <configuration>
           <filtering>false</filtering>
           <tiles>
-            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
             <tile>io.featurehub.tiles:tile-release:[1.1,2)</tile>
           </tiles>
         </configuration>

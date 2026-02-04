@@ -42,8 +42,8 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
   def setup() {
     applicationRolloutStrategySqlApi = new ApplicationRolloutStrategySqlApi(convertUtils, internalFeatureApi)
 
-    dbEnvironment = findEnvironment(env1.id)
-    dbApplication = findApplication(app1.id)
+    dbEnvironment = StaticQueries.findEnvironment(env1.id)
+    dbApplication = StaticQueries.findApplication(app1.id)
 
     lockChanged = false
     currentLock = false
@@ -53,15 +53,6 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
     histId = new DbFeatureValueVersionKey(UUID.randomUUID(), 1)
   }
 
-  @CompileStatic
-  DbEnvironment findEnvironment(UUID id) {
-    return new QDbEnvironment().id.eq(id).findOne()
-  }
-
-  @CompileStatic
-  DbApplication findApplication(UUID id) {
-    return new QDbApplication().id.eq(id).findOne()
-  }
 
   String ranName() {
     return RandomStringUtils.randomAlphabetic(10)
@@ -83,7 +74,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
 
   @CompileStatic
   DbApplicationRolloutStrategy appStrategy(UUID id) {
-    return new QDbApplicationRolloutStrategy().id.eq(id).application.id.eq(app1.id).findOne()
+    return StaticQueries.appStrategy(app1, id)
   }
 
   MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy> updateStrategies(List<DbStrategyForFeatureValue> current,

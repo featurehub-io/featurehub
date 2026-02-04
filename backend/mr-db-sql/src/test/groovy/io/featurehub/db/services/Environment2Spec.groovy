@@ -132,14 +132,7 @@ class Environment2Spec extends Base2Spec {
       envApi.get(e2.id, Opts.empty(), superPerson) != null
   }
 
-  @CompileStatic
-  @Nullable DbEnvironment environment(UUID id) {
-    def env = new QDbEnvironment().id.eq(id).findOne()
-    if (env != null) {
-      env.refresh()
-    }
-    return env
-  }
+
 
   def "I create two environments and they both get unpublished when I asked them to be"() {
     given: "I create two environments"
@@ -150,8 +143,8 @@ class Environment2Spec extends Base2Spec {
     then:
       1 * cacheSource.deleteEnvironment({ UUID id -> id == e1.id })
       1 * cacheSource.deleteEnvironment({ UUID id -> id == e2.id })
-      environment(e1.id).whenUnpublished != null
-      environment(e2.id).whenUnpublished != null
+      StaticQueries.environment(e1.id).whenUnpublished != null
+      StaticQueries.environment(e2.id).whenUnpublished != null
   }
 
   def "I create two environments and I unpublish only one of them"() {
@@ -163,8 +156,8 @@ class Environment2Spec extends Base2Spec {
     then:
       1 * cacheSource.deleteEnvironment({ UUID id -> id == e1.id })
       0 * cacheSource.deleteEnvironment({ UUID id -> id == e2.id })
-      environment(e1.id).whenUnpublished != null
-      environment(e2.id).whenUnpublished == null
+      StaticQueries.environment(e1.id).whenUnpublished != null
+      StaticQueries.environment(e2.id).whenUnpublished == null
   }
 
 

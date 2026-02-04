@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+
+  <properties>
+    <ebean-maven-plugin.version>17.2.0</ebean-maven-plugin.version>
+    <ebean-maven-plugin.args>debug=0</ebean-maven-plugin.args>
+  </properties>
+
+  <build>
+    <plugins>
+
+      <plugin>
+        <groupId>io.ebean</groupId>
+        <artifactId>ebean-maven-plugin</artifactId>
+        <version>${ebean-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>main</id>
+            <phase>process-classes</phase>
+            <configuration tiles-keep-id="true">
+              <transformArgs>${ebean-maven-plugin.args}</transformArgs>
+            </configuration>
+            <goals>
+              <goal>enhance</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>test</id>
+            <phase>process-test-classes</phase>
+            <configuration tiles-keep-id="true">
+              <transformArgs>${ebean-maven-plugin.args}</transformArgs>
+            </configuration>
+            <goals>
+              <goal>testEnhance</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+</project>

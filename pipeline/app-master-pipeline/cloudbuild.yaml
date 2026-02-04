@@ -20,7 +20,7 @@ steps:
     volumes:
       - name: user.home
         path: /root
-  - name: 'maven:3.9.9-eclipse-temurin-23'
+  - name: 'maven:3.9.12-eclipse-temurin-25'
     entrypoint: '/bin/sh'
     id: tile-install
     args:
@@ -29,7 +29,7 @@ steps:
     volumes:
       - name: user.home
         path: /root
-  - name: 'maven:3.9.9-eclipse-temurin-23'
+  - name: 'maven:3.9.12-eclipse-temurin-25'
     entrypoint: '/bin/sh'
     args:
       - '-c'
@@ -39,7 +39,7 @@ steps:
     volumes:
       - name: user.home
         path: /root
-#  - name: 'maven:3.9.9-eclipse-temurin-23'
+#  - name: 'maven:3.9.12-eclipse-temurin-25'
 #    entrypoint: '/bin/sh'
 #    secretEnv: ['REGISTRY_USERNAME', 'REGISTRY_PASSWORD']
 #    args:

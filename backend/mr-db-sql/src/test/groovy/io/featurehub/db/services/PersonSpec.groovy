@@ -101,7 +101,7 @@ class PersonSpec extends BaseSpec {
 
   @CompileStatic
   boolean userInGroup(UUID personId, UUID groupId) {
-    return new QDbGroupMember().person.id.eq(personId).group.id.eq(groupId).exists()
+    return StaticQueries.userInGroup(personId, groupId)
   }
 
   def "When I assign a person to a group and then delete them saying to include groups, they are no longer in the group"() {

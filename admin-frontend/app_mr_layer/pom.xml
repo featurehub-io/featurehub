@@ -143,18 +143,18 @@
         </executions>
       </plugin>
 
-      <plugin>
-        <groupId>io.repaint.maven</groupId>
-        <artifactId>tiles-maven-plugin</artifactId>
-        <version>2.32</version>
-        <extensions>true</extensions>
-        <configuration>
-          <filtering>false</filtering>
-          <tiles>
-            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
-          </tiles>
-        </configuration>
-      </plugin>
+<!--      <plugin>-->
+<!--        <groupId>io.repaint.maven</groupId>-->
+<!--        <artifactId>tiles-maven-plugin</artifactId>-->
+<!--        <version>2.32</version>-->
+<!--        <extensions>true</extensions>-->
+<!--        <configuration>-->
+<!--          <filtering>false</filtering>-->
+<!--          <tiles>-->
+<!--            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>-->
+<!--          </tiles>-->
+<!--        </configuration>-->
+<!--      </plugin>-->
     </plugins>
   </build>
 

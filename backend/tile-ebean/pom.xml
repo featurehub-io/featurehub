@@ -2,19 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>io.featurehub.composites</groupId>
-    <artifactId>composite-parent</artifactId>
-    <version>1.2-SNAPSHOT</version>
-    <relativePath>../composite-parent</relativePath>
-  </parent>
-
-  <artifactId>composite-prometheus</artifactId>
-  <version>1.1-SNAPSHOT</version>
-  <name>composite-prometheus</name>
+  <groupId>io.featurehub.tiles</groupId>
+  <artifactId>tile-ebean</artifactId>
+  <version>1.1</version>
+  <packaging>tile</packaging>
+  <name>tile-ebean</name>
 
   <description>
-    composite prometheus - gathering all the prometheus dependencies
+    tile ebean contains the maven plugin config as the enhancement tile has
+    not been maintained.
   </description>
 
   <url>https://featurehub.io</url>
@@ -36,27 +32,10 @@
 
   <licenses>
     <license>
-      <name>Apache 2 with Commons Clause</name>
+      <name>MIT</name>
       <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
     </license>
   </licenses>
-
-  <properties>
-    <prometheus.version>0.16.0</prometheus.version>
-  </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>io.prometheus</groupId>
-      <artifactId>simpleclient_common</artifactId>
-      <version>[${prometheus.version}]</version>
-    </dependency>
-    <dependency>
-      <groupId>io.prometheus</groupId>
-      <artifactId>simpleclient_hotspot</artifactId>
-      <version>[${prometheus.version}]</version>
-    </dependency>
-  </dependencies>
 
   <build>
     <plugins>
@@ -67,12 +46,10 @@
         <extensions>true</extensions>
         <configuration>
           <filtering>false</filtering>
-          <tiles>
-            <tile>io.featurehub.tiles:tile-release:[1.1,2)</tile>
-          </tiles>
         </configuration>
       </plugin>
     </plugins>
   </build>
+
 
 </project>

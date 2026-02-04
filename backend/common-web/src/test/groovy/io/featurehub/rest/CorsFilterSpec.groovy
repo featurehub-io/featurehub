@@ -4,7 +4,7 @@ import jakarta.ws.rs.container.ContainerRequestContext
 import jakarta.ws.rs.container.ContainerResponseContext
 import jakarta.ws.rs.core.MultivaluedMap
 import jakarta.ws.rs.core.Response
-import org.spockframework.gentyref.TypeToken
+import com.google.common.reflect.TypeToken
 import spock.lang.Specification
 
 class CorsFilterSpec extends Specification {

@@ -40,7 +40,9 @@
 
   <modules>
     <module>tile-java</module>
+    <module>tile-ebean</module>
     <module>tile-java8</module>
+    <module>tile-java-no-spock</module>
     <module>tile-release</module>
     <module>tile-app</module>
     <module>tile-app-with-ui</module>

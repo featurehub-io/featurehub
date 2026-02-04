@@ -51,9 +51,10 @@ class FeatureRequesterSpec extends Specification {
         @Override
         protected FeatureRequestCompleteNotifier getRequestCollector(@NotNull List<? extends FeatureRequester> getters,
                                                                      @NotNull ClientContext context,
-                                                                     @NotNull CompletableFuture<List<FeatureEnvironmentCollection>> future,
-        @NotNull EtagStructureHolder etags) {
-          future.complete(envs)
+                                                                     @NotNull CompletableFuture<List<FeatureRequestResponse>> future,
+                                                                     @NotNull EtagStructureHolder etags) {
+          future.complete(envs.collect({ it -> new FeatureRequestResponse(it, FeatureRequestSuccess.SUCCESS,
+            new KeyParts("", it.getId(), "none"), "1234", [:], true)}))
           return notifier
         }
       }
@@ -69,7 +70,7 @@ class FeatureRequesterSpec extends Specification {
       1 * dacha.getApiKeyService("mary") >> Mock(DachaApiKeyService)
       3 == inflightRequestCounter
       3 * inflightRequest.add(notifier)
-      result == envs
+      result.collect({ it.environment }) == envs
 
   }
 }
