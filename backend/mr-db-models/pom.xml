@@ -92,7 +92,7 @@
               <version>${ebean.version}</version>
             </path>
           </annotationProcessorPaths>
-          <release>23</release>
+          <release>25</release>
           <useIncrementalCompilation>false</useIncrementalCompilation>
         </configuration>
         <executions>
