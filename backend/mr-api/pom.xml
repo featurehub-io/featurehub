@@ -43,10 +43,10 @@
     </dependency>
   </dependencies>
 
+  <!--
   <profiles>
     <profile>
       <id>app-release</id>
-      <!-- otherwise don't active in tiles -->
       <activation>
         <property>
           <name>app-release</name>
@@ -110,6 +110,7 @@
     </profile>
 
   </profiles>
+  -->
 
   <build>
     <plugins>
