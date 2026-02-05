@@ -25,6 +25,6 @@ ADD features /app/features/
 # don't include workspace as it will bring in the lock
 COPY package.json pnpm-lock.yaml tsconfig.json run.sh /app/
 # need to fix the setup before doing the install otherwise dev based overrides can pollute this
-RUN pnpm remove featurehub-javascript-node-sdk featurehub-javascript-core-sdk && yq -i 'del(.overrides)' pnpm-lock.yaml && \
+RUN ( (pnpm remove featurehub-javascript-node-sdk featurehub-javascript-core-sdk && yq -i 'del(.overrides)' pnpm-lock.yaml) || true) && \
     pnpm add featurehub-javascript-node-sdk && \
     pnpm run setup && pnpm install --frozen-lockfile && pnpm run build
