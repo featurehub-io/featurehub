@@ -5,7 +5,10 @@ set -exo pipefail
 echo flutter home is $FLUTTER
 #echo "1.21.0-8.0.pre.110" > $FLUTTER_ROOT/version
 #ls -la $FLUTTER
-VERSION=`cat $FLUTTER/.dart_tool/version`
+HERE=${PWD}
+cd ${FLUTTER}
+VERSION=`git tag`
+cd $HERE
 DVERSION=`cat $FLUTTER/bin/cache/dart-sdk/version`
 echo Flutter version is $VERSION dart version is $DVERSION
 echo FLUTTER: Cleaning up after last build
