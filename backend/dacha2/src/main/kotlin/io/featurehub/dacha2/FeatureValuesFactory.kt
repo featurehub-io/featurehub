@@ -29,6 +29,7 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
   }
 
   fun calculateEtag() {
+    log.trace("etag was ${etag}")
     etag = etagCalculator()
   }
 
@@ -39,9 +40,11 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
       .map { fvci -> fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version ?: "0000") }
       .joinToString("-")
 
-    log.trace("etag is {}", calcTag)
+    val newEtag = Integer.toHexString(calcTag.hashCode())
 
-    return Integer.toHexString(calcTag.hashCode())
+    log.trace("etag is now {} (from '{}')", newEtag, calcTag)
+
+    return newEtag
   }
 
   // the UUID is the FEATURE's UUID NOT the feature value's one
