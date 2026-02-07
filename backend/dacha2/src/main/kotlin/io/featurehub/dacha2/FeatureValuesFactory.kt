@@ -37,7 +37,7 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
   fun etagCalculator(): String {
     // we convert to list to protect against changes while we are evaluating it
     val calcTag = featureValues.toList()
-      .map { fvci -> fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version ?: "0000") }
+      .map { fvci -> fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version?.toString() ?: "0000") }
       .joinToString("-")
 
     val newEtag = Integer.toHexString(calcTag.hashCode())
