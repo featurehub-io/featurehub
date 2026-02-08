@@ -5,6 +5,7 @@
 
   <properties>
     <kotlin.compiler.incremental>false</kotlin.compiler.incremental>
+    <java.release>25</java.release>
     <maven.compiler.source>25</maven.compiler.source>
     <maven.compiler.target>25</maven.compiler.target>
   </properties>
@@ -35,7 +36,7 @@
         <version>2.3.0</version>
         <executions>
           <execution>
-            <id>compile</id>
+            <id>kotlin-compile</id>
             <goals>
               <goal>compile</goal>
             </goals>
@@ -48,7 +49,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>test-compile</id>
+            <id>kotlin-test-compile</id>
             <goals> <goal>test-compile</goal> </goals>
             <configuration>
               <sourceDirs>
