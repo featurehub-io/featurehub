@@ -1,5 +1,4 @@
 import 'package:bloc_provider/bloc_provider.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
@@ -40,17 +39,14 @@ class CreateUserBloc implements Bloc {
       email: email,
       name: name,
       personType: name == null ? PersonType.person : PersonType.serviceAccount,
-      groupIds: listOfAddedPortfolioGroups
-          .map((pg) => pg.group.id)
-          .whereNotNull()
-          .toList(),
+      groupIds:
+          listOfAddedPortfolioGroups.map((pg) => pg.group.id).nonNulls.toList(),
     );
 
     return client.personServiceApi.createPerson(cpd).then((data) {
       registrationUrl = data;
 
       if (registrationUrl != null) {
-
         _formStateStream.add(CreateUserForm.successState);
 
         selectGroupBloc.clearAddedPortfoliosAndGroups();

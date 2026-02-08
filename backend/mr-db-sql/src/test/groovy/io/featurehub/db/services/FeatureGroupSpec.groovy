@@ -10,6 +10,7 @@ import io.featurehub.db.model.query.QDbFeatureGroup
 import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.publish.CacheSourceFeatureGroupSqlApi
 import io.featurehub.mr.events.common.CacheSource
+import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationPermissions
 import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.EnvironmentPermission
@@ -19,6 +20,7 @@ import io.featurehub.mr.model.FeatureGroupCreate
 import io.featurehub.mr.model.FeatureGroupUpdate
 import io.featurehub.mr.model.FeatureGroupUpdateFeature
 import io.featurehub.mr.model.FeatureValueType
+import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
@@ -44,25 +46,19 @@ class FeatureGroupSpec extends Base3Spec {
   }
 
 
-  @CompileStatic
-  @Nullable DbFeatureValue fv(UUID envId, UUID featureId) {
-    return new QDbFeatureValue().environment.id.eq(envId).feature.id.eq(featureId).findOne()
+  @NotNull GroupRolloutStrategy sally() {
+    return new GroupRolloutStrategy().name("sally").attributes([
+      new RolloutStrategyAttribute().conditional(RolloutStrategyAttributeConditional.EQUALS)
+        .fieldName("name").values(["mary"]).type(RolloutStrategyFieldType.STRING)
+    ])
   }
 
-  @CompileStatic
   @NotNull Feature createFeature(FeatureValueType type = FeatureValueType.BOOLEAN) {
     def key = RandomStringUtils.randomAlphabetic(10)
 
     return applicationSqlApi.createApplicationFeature(app1.id,
       new CreateFeature().name(key).description(key).key(key).valueType(type),
       superPerson, Opts.empty()).find { it.key == key }
-  }
-
-  @NotNull GroupRolloutStrategy sally() {
-    return new GroupRolloutStrategy().name("sally").attributes([
-      new RolloutStrategyAttribute().conditional(RolloutStrategyAttributeConditional.EQUALS)
-        .fieldName("name").values(["mary"]).type(RolloutStrategyFieldType.STRING)
-    ])
   }
 
   def "i expect that the archive strategy got a listener attached"() {
@@ -104,7 +100,7 @@ class FeatureGroupSpec extends Base3Spec {
       all.featureGroups[1].hasStrategy
       !fgApi.getGroup(app1.id, created2.id).features[0].value
       fgApi.getGroup(app1.id, created2.id).strategies[0].name == "fred"
-      1 * cacheSource.publishFeatureChange(fv(env1.id, feature.id))
+      1 * cacheSource.publishFeatureChange(StaticQueries.fv(env1.id, feature.id))
   }
 
   def "i can create a feature group and then update it"() {
@@ -186,7 +182,7 @@ class FeatureGroupSpec extends Base3Spec {
       fgApi.getGroup(app1.id, created.id).description == 'hello'
       fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, env1.id, permsToEnv1).featureGroups.find({it.name == "fred"})
       fgApi.listGroups(app1.id, 20, null, 0, SortOrder.ASC, UUID.randomUUID(), permsToEnv1).count == 0
-      1 * cacheSource.publishFeatureChange(fv(env1.id, feature2.id))
+      1 * cacheSource.publishFeatureChange(StaticQueries.fv(env1.id, feature2.id))
       updated2.strategies[0].id.startsWith("!")
       updated2.strategies[0].id.length() == 4
   }

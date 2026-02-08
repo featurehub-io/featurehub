@@ -16,19 +16,22 @@ interface FeatureValues {
 
 class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
   private val log: Logger = LoggerFactory.getLogger(EnvironmentFeatures::class.java)
+
   // Feature::id, CacheFeatureValue
   private val features: MutableMap<UUID, CacheEnvironmentFeature>
   private var etag: String
-  private val featureValues = ConcurrentSkipListSet<CacheEnvironmentFeature> { t1, t2 -> t1.feature.id.compareTo(t2.feature.id) }
+  private val featureValues =
+    ConcurrentSkipListSet<CacheEnvironmentFeature> { t1, t2 -> t1.feature.id.compareTo(t2.feature.id) }
 
   init {
-    features =  ConcurrentHashMap(env.featureValues.associate { f -> f.feature.id to f }.toMutableMap())
+    features = ConcurrentHashMap(env.featureValues.associate { f -> f.feature.id to f }.toMutableMap())
     featureValues.addAll(env.featureValues)
 
     etag = etagCalculator()
   }
 
   fun calculateEtag() {
+    log.trace("etag was ${etag}")
     etag = etagCalculator()
   }
 
@@ -36,12 +39,16 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
   fun etagCalculator(): String {
     // we convert to list to protect against changes while we are evaluating it
     val calcTag = featureValues.toList()
-      .map { fvci -> fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version ?: "0000") }
+      .map { fvci ->
+        fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version?.toString() ?: "0000")
+      }
       .joinToString("-")
 
-    log.trace("etag is {}", calcTag)
+    val newEtag = Integer.toHexString(calcTag.hashCode())
 
-    return Integer.toHexString(calcTag.hashCode())
+    log.trace("etag is now {} (from '{}')", newEtag, calcTag)
+
+    return newEtag
   }
 
   // the UUID is the FEATURE's UUID NOT the feature value's one
@@ -62,14 +69,23 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
         log.warn("another version of the feature {} just got added to the set", feature)
       }
     } else {
-      if (useValue) {
+      if (useValue && (existed.value?.version ?: -1) <= (feature.value?.version ?: -1)) {
         log.trace("replacing feature {} with {}", existed.value, feature.value)
         existed.value = feature.value
+      } else if (useValue) {
+        log.trace("skipping feature value {} with {}", existed.value, feature.value)
       }
 
-      log.trace("replacing feature {} with {}", existed.feature, feature.feature)
-      existed.feature = feature.feature
+      if (existed.feature.version <= feature.feature.version) {
+        log.trace("replacing feature {} with {}", existed.feature, feature.feature)
+        existed.feature = feature.feature
+      } else {
+        log.trace("skipping replacing feature {} with {}", existed.feature, feature.feature)
+      }
+
       existed.featureProperties = feature.featureProperties
+
+      log.trace("new entry in feature array is {}", existed)
     }
 
     env.featureValues = featureValues.toList()

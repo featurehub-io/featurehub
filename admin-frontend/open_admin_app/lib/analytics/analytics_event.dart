@@ -1,8 +1,6 @@
 //
 
-
-
-import 'dart:html'; // ignore: avoid_web_libraries_in_flutter
+import 'package:universal_html/html.dart';
 
 abstract class AnalyticsEvent {
   const AnalyticsEvent({
@@ -19,7 +17,10 @@ class AnalyticsPageView extends AnalyticsEvent {
   final Map<String, dynamic> additionalParams;
   final String title;
 
-  AnalyticsPageView({required this.title, this.additionalParams = const {},}) : super(name: 'page_view');
+  AnalyticsPageView({
+    required this.title,
+    this.additionalParams = const {},
+  }) : super(name: 'page_view');
 
   @override
   Map<String, dynamic> toJson() {
@@ -38,7 +39,10 @@ class AnalyticsPageView extends AnalyticsEvent {
 class AnalyticsEventWithContext extends AnalyticsEvent {
   final Map<String, dynamic> additionalParams;
 
-  AnalyticsEventWithContext({required String name, this.additionalParams = const {},}) : super(name: name);
+  AnalyticsEventWithContext({
+    required String name,
+    this.additionalParams = const {},
+  }) : super(name: name);
 
   @override
   Map<String, dynamic> toJson() {

@@ -74,6 +74,6 @@ class Base2Spec extends DbSpecification {
 
   @CompileStatic
   DbOrganization findOrganization() {
-    return new QDbOrganization().id.eq(org.id).findOne()
+    return StaticQueries.findOrganization(org.id)
   }
 }

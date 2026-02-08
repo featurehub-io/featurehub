@@ -379,10 +379,7 @@ class FHMenuItem extends StatelessWidget {
             return Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
               color: selected
-                  ? Theme.of(context)
-                      .colorScheme
-                      .primaryContainer
-                      .withOpacity(0.6)
+                  ? Theme.of(context).colorScheme.tertiaryContainer
                   : null,
               child: Row(
                 children: <Widget>[

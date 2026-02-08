@@ -432,7 +432,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                                 horizontalInside: BorderSide(
                                     color: Theme.of(context)
                                         .dividerColor
-                                        .withOpacity(0.5))),
+                                        .withAlpha(128))),
                             children: rows)),
                     FHButtonBar(children: [
                       FHFlatButtonTransparent(

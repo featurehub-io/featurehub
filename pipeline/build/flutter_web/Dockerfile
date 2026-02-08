@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:trixie
 
 ENV FLUTTER_VERSION="master"
 
@@ -25,7 +25,7 @@ ARG cachebust=1
 # Install Flutter.
 ENV FLUTTER_ROOT="/opt/flutter"
 ENV FLUTTER="/opt/flutter"
-ARG FLUTTER_VERSION=3.16.6
+ARG FLUTTER_VERSION=3.38.5
 RUN git clone --depth=1 --single-branch --branch $FLUTTER_VERSION https://github.com/flutter/flutter "${FLUTTER_ROOT}"
 ENV PATH="${FLUTTER_ROOT}/bin:${PATH}"
 

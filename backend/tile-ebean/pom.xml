@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.featurehub.tiles</groupId>
+  <artifactId>tile-ebean</artifactId>
+  <version>1.1</version>
+  <packaging>tile</packaging>
+  <name>tile-ebean</name>
+
+  <description>
+    tile ebean contains the maven plugin config as the enhancement tile has
+    not been maintained.
+  </description>
+
+  <url>https://featurehub.io</url>
+  <developers>
+    <developer>
+      <email>irina@featurehub.io</email>
+      <id>isouthwell</id>
+      <name>Irina Southwell</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+
+    <developer>
+      <email>richard@featurehub.io</email>
+      <id>rvowles</id>
+      <name>Richard Vowles</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
+    </license>
+  </licenses>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.repaint.maven</groupId>
+        <artifactId>tiles-maven-plugin</artifactId>
+        <version>2.32</version>
+        <extensions>true</extensions>
+        <configuration>
+          <filtering>false</filtering>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+
+</project>

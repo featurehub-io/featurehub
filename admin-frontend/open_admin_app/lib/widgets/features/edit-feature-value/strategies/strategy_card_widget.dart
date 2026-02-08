@@ -36,12 +36,12 @@ class StrategyCardWidget extends StatelessWidget {
         child: Card(
           elevation: 0.0, // if this is not set, then colors are screwed up
           color: rolloutStrategy != null
-              ? strategyTextColor.withOpacity(0.15)
+              ? strategyTextColor.withAlpha(38)
               : groupRolloutStrategy != null
-                  ? groupStrategyTextColor.withOpacity(0.15)
+                  ? groupStrategyTextColor.withAlpha(38)
                   : applicationRolloutStrategy != null
-                      ? applicationStrategyTextColor.withOpacity(0.15)
-                      : defaultTextColor.withOpacity(0.15),
+                      ? applicationStrategyTextColor.withAlpha(38)
+                      : defaultTextColor.withAlpha(38),
           child: Padding(
             padding: const EdgeInsets.only(left: 8.0, right: 2.0),
             child: Row(

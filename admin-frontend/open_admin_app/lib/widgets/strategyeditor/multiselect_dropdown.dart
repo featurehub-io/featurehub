@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/widgets/strategyeditor/attribute_value_chip_widget.dart';
 
@@ -7,7 +6,8 @@ typedef MultiSelectMapEnumToJson = String Function(dynamic value);
 typedef MultiSelectMapJsonToEnum = dynamic Function(String value);
 
 class MultiSelectDropdown extends StatefulWidget {
-  final List<dynamic> values; // these are the actual values that will be sent back to the server, they *must* be strings
+  final List<dynamic>
+      values; // these are the actual values that will be sent back to the server, they *must* be strings
   final List<dynamic> possibleValues;
   final String hint;
   final MultiSelectMapEnumToDisplayName enumToDisplayNameMapper;
@@ -15,9 +15,13 @@ class MultiSelectDropdown extends StatefulWidget {
   final MultiSelectMapJsonToEnum jsonToEnumMapper;
 
   const MultiSelectDropdown(
-      {required this.values, required this.possibleValues, required this.enumToDisplayNameMapper, required this.hint,
-        required this.enumToJsonMapper, required this.jsonToEnumMapper,
-        Key? key})
+      {required this.values,
+      required this.possibleValues,
+      required this.enumToDisplayNameMapper,
+      required this.hint,
+      required this.enumToJsonMapper,
+      required this.jsonToEnumMapper,
+      Key? key})
       : super(key: key);
 
   @override
@@ -34,7 +38,8 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
   @override
   void didChangeDependencies() {
     // these are JSON values converted to ENUM values
-    selectedValues = widget.values.map((e) => widget.jsonToEnumMapper(e)).whereNotNull().toList();
+    selectedValues =
+        widget.values.map((e) => widget.jsonToEnumMapper(e)).nonNulls.toList();
     // these are the ones in the list that aren't selected
     selectableValues = widget.possibleValues
         .where((e) => !selectedValues.contains(e))
@@ -84,36 +89,35 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
       height: 32,
       child: OutlinedButton(
         onPressed: () => {},
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<dynamic>(
-            icon: const Padding(
-              padding: EdgeInsets.only(left: 8.0),
-              child: Icon(
-                Icons.keyboard_arrow_down,
-                size: 18,
-              ),
+        child: DropdownButton<dynamic>(
+          underline: const SizedBox.shrink(),
+          icon: const Padding(
+            padding: EdgeInsets.only(left: 8.0),
+            child: Icon(
+              Icons.keyboard_arrow_down,
+              size: 18,
             ),
-            isExpanded: true,
-            items: selectableValues
-                .map((e) => DropdownMenuItem(
-                value: e,
-                child: Text(widget.enumToDisplayNameMapper(e),
-                    style: Theme.of(context).textTheme.bodyMedium)))
-                .toList(),
-            hint:
-            Text(widget.hint, style: Theme.of(context).textTheme.titleSmall),
-            onChanged: (dynamic value) {
-              var readOnly = false; //TODO parametrise this if needed
-              if (!readOnly) {
-                setState(() {
-                  widget.values.add(widget.enumToJsonMapper(value));
-                  selectedValues.add(value);
-                  selectableValues.remove(value);
-                });
-              }
-            },
-            value: null,
           ),
+          isExpanded: true,
+          items: selectableValues
+              .map((e) => DropdownMenuItem(
+                  value: e,
+                  child: Text(widget.enumToDisplayNameMapper(e),
+                      style: Theme.of(context).textTheme.bodyMedium)))
+              .toList(),
+          hint:
+              Text(widget.hint, style: Theme.of(context).textTheme.titleSmall),
+          onChanged: (dynamic value) {
+            var readOnly = false; //TODO parametrise this if needed
+            if (!readOnly) {
+              setState(() {
+                widget.values.add(widget.enumToJsonMapper(value));
+                selectedValues.add(value);
+                selectableValues.remove(value);
+              });
+            }
+          },
+          value: null,
         ),
       ),
     );

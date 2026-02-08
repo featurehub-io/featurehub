@@ -53,7 +53,10 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                             const SizedBox(
                               width: 8.0,
                             ),
-                            const Text('You have unsaved changes, save?'),
+                            Text('You have unsaved changes, save?',
+                                style: Theme.of(context)
+                                    .snackBarTheme
+                                    .contentTextStyle),
                             TextButton(
                                 style: TextButton.styleFrom(
                                   foregroundColor: Theme.of(context)
@@ -421,7 +424,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                       _isHistoryPresent = false;
                                     });
                                   },
-                                  child: const Text("Hide actions"))
+                                  child: const Text("Hide history"))
                               : TextButton(
                                   onPressed: () {
                                     widget.bloc.getHistory();
@@ -429,7 +432,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                       _isHistoryPresent = true;
                                     });
                                   },
-                                  child: const Text("Show actions")),
+                                  child: const Text("Show history")),
                           StreamBuilder<FeatureHistoryItem?>(
                               stream: widget.bloc.featureHistoryListSource,
                               builder: (context, snapshot) {
@@ -539,7 +542,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                           'yyyy-MM-dd HH:mm:ss')
                                                       .format(value.when))),
                                                   DataCell(
-                                                    Text(value.who.name ?? ''),
+                                                    Text(value.who.name),
                                                   ),
                                                   DataCell(
                                                     Text(value.who.type ==

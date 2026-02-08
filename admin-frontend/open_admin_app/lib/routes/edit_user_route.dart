@@ -5,7 +5,6 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widget_creator.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
-import 'package:open_admin_app/widgets/common/fh_filled_input_decoration.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
@@ -100,7 +99,10 @@ class EditUserFormState extends State<EditUserFormWidget> {
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   controller: _email,
-                  decoration: fhFilledInputDecoration(labelText: 'Email'),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Email',
+                  ),
                   //initialValue: bloc.person != null ? bloc.person.email : '',
                   validator: (v) =>
                       (v?.isEmpty == true) ? 'Edit email address' : null,
@@ -111,7 +113,10 @@ class EditUserFormState extends State<EditUserFormWidget> {
                     autofocus: true,
                     onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                     controller: _name,
-                    decoration: fhFilledInputDecoration(labelText: 'Name'),
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Name',
+                    ),
                     //  initialValue: bloc.person !=null ? bloc.person.name : '',
                     validator: (v) =>
                         (v?.isEmpty == true) ? 'Edit names' : null,
@@ -203,7 +208,10 @@ class _UserPasswordUpdateDialogWidgetState
               ),
               TextFormField(
                   controller: _password,
-                  decoration: const InputDecoration(labelText: 'New password'),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'New password',
+                  ),
                   validator: ((v) {
                     if (v?.isEmpty == true) {
                       return 'Please enter new password';
@@ -212,8 +220,10 @@ class _UserPasswordUpdateDialogWidgetState
                   })),
               TextFormField(
                   controller: _passwordConfirm,
-                  decoration:
-                      const InputDecoration(labelText: 'Confirm new password'),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Confirm new password',
+                  ),
                   validator: ((v) {
                     if (v?.isEmpty == true) {
                       return 'Please confirm new password';

@@ -136,7 +136,6 @@ class _EnvWidget extends StatelessWidget {
     return ReorderableDragStartListener(
       index: index,
       child: Card(
-        color: Theme.of(context).colorScheme.surface,
         child: InkWell(
           mouseCursor: SystemMouseCursors.grab,
           child: Padding(

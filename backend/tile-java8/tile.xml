@@ -7,7 +7,7 @@
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.release>11</java.release>
-    <kotlin.version>1.9.24</kotlin.version>
+    <kotlin.version>2.3.0</kotlin.version>
     <kotlin.apiVersion>1.6</kotlin.apiVersion>
     <kotlin.jvmTarget>11</kotlin.jvmTarget>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -135,17 +135,13 @@
       <plugin>
         <groupId>org.codehaus.gmavenplus</groupId>
         <artifactId>gmavenplus-plugin</artifactId>
-        <version>3.0.2</version>
+        <version>4.3.0</version>
         <executions>
           <execution>
             <goals>
-              <goal>addSources</goal>
               <goal>addTestSources</goal>
-              <goal>generateStubs</goal>
-              <goal>compile</goal>
               <goal>generateTestStubs</goal>
               <goal>compileTests</goal>
-              <goal>removeStubs</goal>
               <goal>removeTestStubs</goal>
             </goals>
           </execution>

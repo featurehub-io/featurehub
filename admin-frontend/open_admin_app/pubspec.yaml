@@ -17,7 +17,7 @@ dependencies:
   flutter:
     sdk: flutter
   dio: '^5.0.1'
-  rxdart: ^0.27.0
+  rxdart: ^0.28.0
   bloc_provider: ^0.8.0
   logging: ^1.0.1
   mrapi:
@@ -25,24 +25,22 @@ dependencies:
   releases:
     path: ../releases_api
   openapi_dart_common: ^5.0.0
-  uuid: ^3.0.4
   zxcvbn: ^1.0.0
-  universal_html: ^2.0.8
-  url_launcher: ^6.0.3
+  universal_html: ^2.2.4
+  url_launcher: ^6.3.2
   timeago: ^3.0.2
   shared_preferences: ^2.1.1
   flutter_signin_button: ^2.0.0
-  advanced_datatable: ^0.0.8
-  syncfusion_flutter_datagrid: ^21.2.8
-  multiselect: ^0.1.0
-  side_sheet: ^1.0.3
+  advanced_datatable: ^0.0.9
+  syncfusion_flutter_datagrid: ^32.1.19
+  side_sheet: ^1.0.4+1
   async: ^2.9.0
   collection: ^1.17.1
-  intl: ^0.18.1
+  intl: ^0.20.2
+  meta: ^1.8.0
 
 dev_dependencies:
-  meta: ^1.8.0
-  flutter_lints: ^2.0.1
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
 
