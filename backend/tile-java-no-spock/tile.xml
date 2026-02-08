@@ -43,7 +43,7 @@
               <sourceDirs>
                 <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
                 <sourceDir>${project.basedir}/src/main/java</sourceDir>
-                <jvmTarget>23</jvmTarget>
+                <jvmTarget>25</jvmTarget>
               </sourceDirs>
             </configuration>
           </execution>
@@ -54,7 +54,7 @@
               <sourceDirs>
                 <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
                 <sourceDir>${project.basedir}/src/test/java</sourceDir>
-                <jvmTarget>23</jvmTarget>
+                <jvmTarget>25</jvmTarget>
               </sourceDirs>
             </configuration>
           </execution>
