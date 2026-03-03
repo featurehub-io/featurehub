@@ -1,0 +1,178 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What Is FeatureHub
+
+FeatureHub is a Cloud Native feature flag and A/B testing platform. It supports self-hosted (open source) and SaaS modes. The primary open-source repository contains the backend services, Flutter web admin console, and SDK end-to-end tests.
+
+## Build Commands
+
+### Full Build (from root)
+```sh
+# Step 1: Build tiles (Maven build infrastructure) first — required once per environment or after tile changes
+cd backend && mvn -f pom-first.xml install && cd ..
+
+# Step 2: Build all backend modules in parallel
+mvn -T4C clean install
+
+# Combined (as used in CI):
+sh build_all_and_test.sh
+```
+
+### Backend Only
+```sh
+cd backend
+mvn -DskipTests -T4C clean install         # skip tests
+mvn -f pom-apis.xml -DskipTests -T4C clean install  # regenerate OpenAPI artifacts only
+```
+
+### Run a Single Backend Module's Tests
+```sh
+cd backend/<module-name>
+mvn test                                    # run all tests for this module
+mvn test -Dtest=MySpec                      # run a specific Spock/Groovy spec
+```
+
+### Admin Frontend (Flutter)
+The admin frontend is built using Flutter. Locally, requires Flutter installed:
+```sh
+cd admin-frontend
+sh build-frontend.sh <version>              # e.g., sh build-frontend.sh 1.9.3
+# Or with Docker if Flutter not installed:
+# The script auto-detects and uses featurehub/flutter_web Docker image
+```
+
+Run Flutter tests:
+```sh
+cd admin-frontend/open_admin_app
+flutter test
+```
+
+### E2E SDK Tests
+These test the full flow (MR → Dacha → Edge → SDK):
+```sh
+cd adks/e2e-sdk
+pnpm install
+sh run.sh                    # run all e2e tests
+sh run.sh @flag-lock         # run tests with a specific tag
+pnpm run test                # directly via npm script
+```
+
+Requires a running FeatureHub instance. Configure with env vars:
+- `REMOTE_BACKEND`: full URL of the backend
+- `REMOTE_BEARER_TOKEN`: superuser bearer token
+- `FEATUREHUB_EDGE_URL`: edge URL (if different from backend)
+
+### Docker (Evaluation)
+```sh
+docker run -p 8085:8085 --user 999:999 -v $HOME/party:/db featurehub/party-server:latest
+```
+
+### Release Build
+```sh
+sh build_all_and_test.sh           # builds all artifacts + generates APIs
+cd backend && sh build.sh <version> # builds and tags Docker images
+cd backend && sh push.sh <version>  # pushes Docker images
+```
+
+## Architecture
+
+### Deployment Modes
+
+FeatureHub can run as separate microservices or as combined deployments:
+
+| Deployable | Contents |
+|------------|----------|
+| `party-server` | MR + Dacha2 + Edge all-in-one (primary open-source deployment) |
+| `party-server-ish` | Variant of party-server |
+| `mr` | Management Repository alone |
+| `dacha` / `dacha2` | Cache layer alone |
+| `edge-rest` | Edge server alone |
+
+### Backend Service Roles
+
+**MR (Management Repository)** (`backend/mr`, `backend/mr-db-sql`, `backend/mr-db-ebean`, etc.):
+- Central data store and admin API. Handles portfolios, applications, environments, features, rollout strategies, users, groups, service accounts.
+- Persists to PostgreSQL (H2 in tests) via **Ebean ORM**.
+- OpenAPI spec: `backend/mr-api/mr-api.yaml` and companion YAML files — generated into Java model classes.
+
+**Dacha (Cache)** (`backend/dacha`, `backend/dacha2`):
+- In-memory feature state cache that sits between MR and Edge.
+- `dacha2` is the current version using CloudEvents for updates.
+- Edge talks to Dacha via internal HTTP or NATS messaging.
+
+**Edge** (`backend/edge-full`, `backend/edge-rest`, `backend/edge-common`):
+- Client-facing API used by SDKs to retrieve feature states.
+- Supports SSE (Server-Sent Events) for streaming and REST polling.
+- Feature spec: `backend/edge-api/` — generated into Java interfaces.
+
+**Eventing** (`backend/eventing-nats`, `backend/eventing-google-pubsub`, `backend/eventing-kinesis`, `backend/eventing-cloudevents`):
+- Pluggable messaging between MR and Dacha/Edge.
+- CloudEvents is the base abstraction; NATS is the primary open-source transport.
+
+**Security** (`backend/security-oauth`, `backend/security-saml`, `backend/security-common`):
+- Pluggable auth: local password, OAuth2, SAML/SSO. Auth providers are registered via `AuthProviderCollection`.
+
+### Backend Technology Stack
+
+- **Language**: Kotlin (main) + Groovy (Spock tests)
+- **HTTP server**: Grizzly + Jersey (JAX-RS)
+- **Dependency injection**: HK2 (Jersey's DI container), using `AbstractBinder` pattern
+- **ORM**: Ebean with query beans (type-safe queries via `QDb*` classes)
+- **DB migrations**: Ebean migration scripts in `backend/mr-db-ebean/src/main/resources/dbmigration/`
+- **Testing**: Spock (Groovy) for unit/integration tests
+- **Build**: Maven with tiles (`tile.xml`) for shared build configuration
+- **App bootstrap**: `bathe-booter` + `cd.connect` config framework
+
+### Jersey Feature / DI Pattern
+
+Applications are wired using JAX-RS `Feature` classes as modules. Each `Feature.configure(FeatureContext)` registers resources and uses `AbstractBinder` to bind interface→implementation pairs as singletons. For example:
+
+```kotlin
+// In ManagementRepositoryFeature.kt
+context.register(PortfolioServiceDelegator::class.java)
+context.register(object : AbstractBinder() {
+  override fun configure() {
+    bind(PortfolioResource::class.java).to(PortfolioServiceDelegate::class.java).`in`(Singleton::class.java)
+  }
+})
+```
+
+Application entry points (e.g., `party-server/Application.kt`) compose `Feature` instances into a `ResourceConfig` and start with `FeatureHubJerseyHost(config).start()`.
+
+### API Generation
+
+OpenAPI specs live in `backend/mr-api/` (YAML files). Maven plugins generate Java model classes and server stubs during build. Regenerate with:
+```sh
+cd backend && sh make-apis.sh
+```
+Generated artifacts are committed to `infra/api-bucket/files/` for external consumers (SDKs, docs).
+
+### Admin Frontend
+
+- **Flutter** web application in `admin-frontend/open_admin_app/`
+- **Dart API client** in `admin-frontend/app_mr_layer/` (generated from MR OpenAPI spec)
+- Uses `rxdart`, `bloc_provider` for state management
+- Depends on `mrapi` (the app_mr_layer package) for all backend communication
+
+### E2E Tests (adks/e2e-sdk)
+
+- **TypeScript + Cucumber** (cucumber-js)
+- Tests end-to-end SDK data flow: creates portfolio/app/environment/features via MR API, connects via SDK, verifies feature state delivery through the full MR → Dacha → Edge → SDK pipeline
+- Feature files in `adks/e2e-sdk/features/`
+- Step definitions in `adks/e2e-sdk/app/steps/`
+- Uses `featurehub-javascript-node-sdk` linked locally
+
+### Maven Module Organization
+
+- `backend/tile-*`: Shared Maven build tile configuration (must be built first via `pom-first.xml`)
+- `backend/composite-*`: Shared dependency BOM/composites
+- `backend/mr-api`: OpenAPI specs + generated Java models
+- `backend/mr-db-*`: Database layer (Ebean models, SQL implementations, APIs)
+- `backend/mr-*`: MR server code, eventing, webhooks
+- `backend/edge-*`: Edge server and APIs
+- `backend/dacha*`: Cache layer
+- `backend/eventing-*`: Messaging integrations
+- `backend/security-*`: Auth providers
+- `backend/party-server`: Combined all-in-one deployment
