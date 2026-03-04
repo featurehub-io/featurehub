@@ -12,7 +12,7 @@ import {
   UpdateEnvironment
 } from '../apis/mr-service';
 import {makeid, sleep} from '../support/random';
-import {EdgeFeatureHubConfig, FeatureHubPollingClient, Readyness} from 'featurehub-javascript-node-sdk';
+import {EdgeFeatureHubConfig, EdgeType, FeatureHubPollingClient, Readyness} from 'featurehub-javascript-node-sdk';
 import waitForExpect from 'wait-for-expect';
 import {logger} from '../support/logging';
 import {SdkWorld} from '../support/world';
@@ -218,9 +218,12 @@ async function connectToFeatureServer(world: SdkWorld) {
     expect(found, `${serviceAccountPerm.sdkUrlClientEval} failed to connect`).to.be.true;
     logger.info('Successfully completed poll');
     const edge = new EdgeFeatureHubConfig(world.featureUrl, serviceAccountPerm.sdkUrlClientEval);
+
     world.sdkUrlClientEval = serviceAccountPerm.sdkUrlClientEval;
     world.sdkUrlServerEval = serviceAccountPerm.sdkUrlServerEval;
-    if (!BackendDiscovery.supportsSSE) {
+
+    // the node SDK is streaming by default, but env vars will automatically change it
+    if (!BackendDiscovery.supportsSSE && edge.edgeType === EdgeType.STREAMING) {
       logger.info('Backend does not support SSE, using polling');
       edge.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, 200));
     }
