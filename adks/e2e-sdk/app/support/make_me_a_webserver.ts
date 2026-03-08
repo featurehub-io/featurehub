@@ -48,8 +48,19 @@ export const cloudEvents: Array<CloudEvent<any>> = [];
 
 export function resetCloudEvents() {
   cloudEvents.length = 0;
-  logger.info("------------\ncloud events reset\n--------")
-  console.log("------------\ncloud events reset\n--------")
+  logger.info("------------\ncloud events reset\n--------");
+}
+
+export interface SlackMessage {
+  headers: IncomingHttpHeaders;
+  body: any;
+}
+
+export const slackMessages: Array<SlackMessage> = [];
+
+export function resetSlackMessages() {
+  slackMessages.length = 0;
+  logger.info("***** reset slack events ***");
 }
 
 
@@ -67,29 +78,17 @@ function mergeCloudEvent<T>(body: T, headers: IncomingHttpHeaders) : CloudEvent<
   return events;
 }
 
+function jsonEscape(str)  {
+  return str.replace(/\n/g, "\\\\n").replace(/\r/g, "\\\\r").replace(/\t/g, "\\\\t");
+}
+
 function setupServer() {
   let server = express();
 
   server.use (function(req, res, next) {
-    logger.info(`received request on path ${req.path} of content-type ${req.header('content-type')}`);
-    if (req.header('content-type') === 'application/json') {
-      var data='';
-      req.setEncoding('utf8');
-      req.on('data', function(chunk) {
-        data += chunk;
-      });
-
-      req.on('end', function() {
-        logger.debug(`'------------------------------\\nbody was ${data}\n---------------------------'`);
-        req.body = JSON.parse(data);
-        next();
-      });
-
-      req.on('error', (err) => {
-        logger.error(err);
-        res.status(500).send('Server error.');
-      });
-    } else if (req.header('content-type') === 'application/json+gzip') {
+    const contentType = req.header('content-type') || '';
+    logger.info(`received request on path ${req.path} of content-type ${contentType}`);
+    if (contentType === 'application/json+gzip') {
       let data = Buffer.from([]);
 
       console.log(`data created is of type ${typeof data}`);
@@ -111,12 +110,55 @@ function setupServer() {
         }
         next();
       });
+    } else if (contentType.startsWith('application/json')) {
+      var data='';
+      req.setEncoding('utf8');
+      req.on('data', function(chunk) {
+        data += chunk;
+      });
+
+      req.on('end', function() {
+        logger.debug(`'------------------------------\\nbody was ${data}\n---------------------------'`);
+        console.log(`'------------------------------\\nbody was ${data}\n---------------------------'`);
+
+        try {
+          // weirdly, JSON.parse can't cope with control characters and blows up
+          req.body = JSON.parse(jsonEscape(data));
+          next();
+        } catch (e) {
+          logger.error(`failed to parse ${e} -> ${data}`);
+          res.status(500).json({ok: false});
+        }
+      });
+
+      req.on('error', (err) => {
+        logger.error(err);
+        res.status(500).send('Server error.');
+      });
     } else {
       next();
     }
   });
 
   // server.use(restify.plugins.bodyParser());
+
+  server.post('/slack.com/api', function (req, res, next) {
+    console.log('got into slack.api');
+
+    try {
+      const msg = {
+        headers: req.headers,
+        body: req.body
+      };
+      slackMessages.push(msg);
+
+      console.log(`SLACK message body ${JSON.stringify(msg.body)}`)
+
+      res.json({ok: true}).status(200)
+    } finally {
+      next();
+    }
+  })
 
   server.post('/featurehub/slack', function (req, res, next) {
     console.log('received');

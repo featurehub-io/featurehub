@@ -18,6 +18,7 @@ import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.events.common.DummyPublisher
 import io.featurehub.mr.events.common.listeners.FeatureUpdateListener
 import io.featurehub.mr.events.common.listeners.FoundationFeatureUpdateListenerImpl
+import io.featurehub.rest.Info
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
@@ -40,9 +41,13 @@ class EdgeGetFeature : Feature {
         bind(DummyPublisher::class.java).to(CacheRefresherApi::class.java).to(CacheSource::class.java).`in`(
           Singleton::class.java
         )
-        bind(DummyFeatureMessagingPublisher::class.java).to(FeatureMessagingPublisher::class.java).`in`(
-          Singleton::class.java
-        )
+
+        // party-server-ish does in fact publish webhooks, only edge-rest doesn't
+        if (Info.applicationName() == "edge-rest") {
+          bind(DummyFeatureMessagingPublisher::class.java).to(FeatureMessagingPublisher::class.java).`in`(
+            Singleton::class.java
+          )
+        }
       }
     })
 

@@ -46,6 +46,8 @@ class Application {
       System.setProperty(Info.APPLICATION_NAME_PROPERTY, "party-server-ish")
 
       System.clearProperty("nats.urls")
+      System.setProperty("dacha1.enabled", "false")
+      System.setProperty("dacha2.enabled", "false")
 
       try {
         Application().run()
