@@ -5,7 +5,7 @@ import {expect} from "chai";
 import {SdkWorld} from "../support/world";
 import {UpdateEnvironment} from "../apis/mr-service";
 import {sleep} from "../support/random";
-import {featurehubCloudEventBodyParser} from "featurehub-cloud-event-tools";
+import {featurehubCloudEventBodyParser} from "../support/ce_utils";
 
 When('I clear cloud events', function() {
   resetCloudEvents();
