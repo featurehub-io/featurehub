@@ -24,7 +24,7 @@ using the Admin SDK you can configure alternative keys.
 ==== Fastly support
 See https://docs.featurehub.io/featurehub/latest/architecture.html#_fastly[Fastly details]
 
-Fastly CDN is supported for all available SDKs for streaming/SSE updates. Some SDKs, that only support SSE updates, do not support Fastly Polling. Please check in the capabilities table above.
+Fastly CDN is supported for all available SDKs for SSE and Polling. Please check in the capabilities table above.
 
 ==== Background Start
 
@@ -50,17 +50,15 @@ Generally the whole feature is passed to the listener for it to interrogate.
 Some clients like to, or need to (usually UI related) remove listeners they have created.
 This allows them to do that.
 
-==== Analytics Support
+=== Usage
 
-This is where the library has a mechanism to log an event, potentially attach metadata.
-The library captures the state of all the features at the point in time of the request and will pass it on to any registered Analytics provider.
-A platform can have analytics support but no analytics providers.
-We intend over time to support only one, where the data is posted to a backend service which you can then decide where to send and how to send the data.
+This is a much more advanced feature that we have introduced in 2026. It tracks the usage and evaluation of each feature
+and allows you to pass it off to your tracking system of choice. Two examples are generally given:
 
-==== Google Analytics
-
-This is a client side implementation of the Analytics support.
-You need to specify the `User-ID` or `CID`, your `UA-` id and when logging an event, it will fire off into GA the event - one for each value of non-JSON features.
+- *OpenTelemetry*, so 
+it can attach the information about feature evaluation or the current state of features to existing spans using attributes or events
+- *Twilio Segment*, so that tracking events can be sent along with attached user information if required to see which features
+are being used and integrate that with whatever analytics you are using.
 
 ==== Catch & Release
 

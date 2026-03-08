@@ -17,8 +17,9 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |Readiness Listeners|Y|Y|Y|Y|Y|N|N|N
 |Feature Listeners|Y|Y|Y|Y|Y|N|N|N
 |Feature Listener Removal|N|Y|Y|Y|Y|N|N|N
-|Analytics Support|Y|Y|Y|Y|Y|N|N|N
-|Google Analytics|Y|Y|Y|Y|Y|N|N|N
+|Usage Support|Y|N|N|N|N|N|N|N
+|OpenTelemetry Usage Support|Y|N|N|N|N|N|N|N
+|Twilio Segment (tm) Usage Support|Y|N|N|N|N|N|N|N
 |Feature Overrides|N|Y|N|N|N|Y|N|N
 |Fastly Polling Support|Y|Y|N|Y|N|Y|Y|Y
 |Fastly SSE Support|Y|Y|Y|Y|Y|Y|Y|N
@@ -31,5 +32,5 @@ You will need to choose an https://search.maven.org/artifact/io.featurehub.sdk/j
 - *(2)* Javascript and Typescript are supported via a Typescript library.
 This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
 - *(3)* Dart and Flutter are supported by Dart libraries available at https://pub.dev/publishers/featurehub.io/packages[pub.dev].
-- *(4)* C# and .NET is supported by libraries from nuget. https://www.nuget.org/packages/FeatureHub.SDK/1.1.0[Nuget.org]
+- *(4)* C# and .NET is supported by libraries from nuget. https://www.nuget.org/packages/FeatureHub.SDK/[Nuget.org]
 
