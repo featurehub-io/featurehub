@@ -10,6 +10,7 @@ import io.featurehub.lifecycle.LifecycleListener
 import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.messaging.utils.FeatureMessageFormatter
+import io.featurehub.messaging.utils.TestingSlackMessage
 import io.featurehub.metrics.MetricsCollector
 import io.featurehub.trackedevent.models.TrackedEventMethod
 import io.featurehub.trackedevent.models.TrackedEventResult
@@ -32,10 +33,19 @@ class SlackWebClient @Inject constructor(
 ) : BaseWebhook(), LifecycleListener {
   private val perf = MetricsCollector.histogram("slack_publish", "How many times we have published to Slack")
   private val failures = MetricsCollector.counter("slack_failures", "How many times we have failed to publish to Slack")
-  private val target = client.target("https://slack.com/api/chat.postMessage")
+  private var target = client.target("https://slack.com/api/chat.postMessage")
 
   init {
     receiverRegistry.listen(FeatureMessagingUpdate::class.java, "integration/slack-v1", null, this::process)
+
+    receiverRegistry.listen(TestingSlackMessage::class.java,  { msg, _ ->
+      log.info("Received message to reconfigure slack-url: {}", msg.newTargetUrl)
+      if (msg.newTargetUrl != null) {
+        target = client.target(msg.newTargetUrl)
+      } else {
+        target = client.target("https://slack.com/api/chat.postMessage")
+      }
+    })
   }
 
   companion object {
@@ -47,7 +57,7 @@ Feature *{{fName}}* (`{{fKey}}`) in *{{ eName }}* was changed by *{{ whoUpdated 
 Summary of changes:
 {{#featureValueUpdated}}>• Default value now `{{{updated}}}` was `{{{previous}}}`{{/featureValueUpdated}}
 {{~#if updatedStrategies}}{{#updatedStrategies}}{{~#if nameChanged}}
->• Strategy name changed from `{{oldStrategy.name}}` to `{{newStrategy.name}}`{{/if}}   
+>• Strategy name changed from `{{oldStrategy.name}}` to `{{newStrategy.name}}`{{/if}}
 {{~#if valueChanged}}
 >• *{{newStrategy.name}}* strategy value set to `{{{newStrategy.value}}}`{{/if}}
 {{~#if percentageChanged}}

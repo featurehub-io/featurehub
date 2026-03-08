@@ -2,7 +2,7 @@ import { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import {createLogger, transports, format} from 'winston';
 import { MESSAGE } from 'triple-beam';
 import stringify from 'safe-stable-stringify';
-import { fhLog } from 'featurehub-javascript-node-sdk';
+import { fhLog} from 'featurehub-javascript-node-sdk';
 
 const httpAwareJsonFormatter = format((info) => {
   const json: any = {};
@@ -73,8 +73,6 @@ fhLog.log = (...args: any[]) => {
 fhLog.trace = (...args: any[]) => {
   logger.log({level: 'error', message: args?.map(o => (typeof o === 'string') ? o : JSON.stringify(o)?.replace('"', "'")).join(" "), sdkTrace: true});
 };
-
-fhLog.trace('this is a message');
 
 if (process.env.DEBUG) {
   logger.add(new transports.Console({
