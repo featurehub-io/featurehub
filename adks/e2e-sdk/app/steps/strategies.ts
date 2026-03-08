@@ -152,7 +152,7 @@ Then("the edge repository has a feature {string} with a strategy", async functio
 
   await waitForExpect(async () => {
     for (const row of table.hashes()) {
-      const ctx = await world.context.attribute_values((row['fieldName'] as string), (row['values'] as string).split(',').map(t => t.trim())).build();
+      const ctx = await world.context.attributeValue((row['fieldName'] as string), (row['values'] as string).split(',').map(t => t.trim())).build();
       expect(ctx.feature(key).isSet()).to.be.true;
       const value = ctx.feature(key).value.toString();
       const expectedValue = row['expectedValue'].toString();
