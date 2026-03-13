@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub.mr</groupId>
-  <artifactId>mr-dacha-api</artifactId>
+  <artifactId>dacha-api-java-server</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>mr-dacha-api</name>
+  <name>dacha-api-java-server</name>
 
   <description>
-    Management Registry API to support Dacha2 Direct Caching.
+    The API for the caching layer - where features go for a holiday.
   </description>
 
   <url>https://featurehub.io</url>
@@ -37,16 +37,27 @@
 
   <dependencies>
     <dependency>
+      <groupId>io.featurehub.common</groupId>
+      <artifactId>common-web</artifactId>
+      <version>1.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-prometheus</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-logging</artifactId>
+      <version>[1.3-SNAPSHOT, 2)</version>
+    </dependency>
+    <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-jersey</artifactId>
       <version>[1.1, 2)</version>
     </dependency>
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>dacha-api-java-server</artifactId>
-      <version>1.1-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
+    <!-- we need this because these two generate the same code and it can clash if dacha-api isn't built -->
     <dependency>
       <groupId>io.featurehub.mr</groupId>
       <artifactId>mr-api</artifactId>
@@ -73,28 +84,10 @@
                   <groupId>io.featurehub.mr</groupId>
                   <artifactId>dacha-api</artifactId>
                   <version>1.1-SNAPSHOT</version>
-                  <classifier>dacha-components</classifier>
+                  <classifier>dacha-openapi</classifier>
                   <type>yaml</type>
                   <outputDirectory>${project.basedir}/target</outputDirectory>
-                  <destFileName>dacha-components.yaml</destFileName>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>io.featurehub.mr</groupId>
-                  <artifactId>dacha-api</artifactId>
-                  <version>1.1-SNAPSHOT</version>
-                  <classifier>dacha1-mr</classifier>
-                  <type>yaml</type>
-                  <outputDirectory>${project.basedir}/target</outputDirectory>
-                  <destFileName>dacha1-mr.yaml</destFileName>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>io.featurehub.mr</groupId>
-                  <artifactId>mr-api</artifactId>
-                  <version>1.1-SNAPSHOT</version>
-                  <classifier>api-common</classifier>
-                  <type>yaml</type>
-                  <outputDirectory>${project.basedir}/target</outputDirectory>
-                  <destFileName>e2e-common.yaml</destFileName>
+                  <destFileName>final.yaml</destFileName>
                 </artifactItem>
               </artifactItems>
               <overWriteReleases>true</overWriteReleases>
@@ -103,30 +96,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>cd.connect.maven</groupId>
-        <artifactId>merge-yaml-plugin</artifactId>
-        <version>1.4</version>
-        <executions>
-          <execution>
-            <id>combine</id>
-            <goals>
-              <goal>mergeYaml</goal>
-            </goals>
-            <phase>initialize</phase>
-            <configuration>
-              <files>
-                <file>${project.basedir}/mr-dacha-api.yaml</file>
-                <file>${project.basedir}/target/dacha-components.yaml</file>
-                <file>${project.basedir}/target/dacha1-mr.yaml</file>
-                <file>${project.basedir}/target/e2e-common.yaml</file>
-              </files>
-              <finalYaml>${project.basedir}/target/final.yaml</finalYaml>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
@@ -147,7 +116,7 @@
             <phase>generate-sources</phase>
             <configuration>
               <output>${project.basedir}/target/generated-sources/api</output>
-              <apiPackage>io.featurehub.dacha2.api</apiPackage>
+              <apiPackage>io.featurehub.dacha.api</apiPackage>
               <!-- we overlap the models -->
               <modelPackage>io.featurehub.mr.model</modelPackage>
               <inputSpec>${project.basedir}/target/final.yaml</inputSpec>
@@ -172,7 +141,6 @@
         </executions>
       </plugin>
 
-      <!-- here we attach the artifact as the only output so things can depend on this project and pull the full API -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
@@ -185,24 +153,8 @@
             </goals>
             <configuration>
               <sources>
-                <source>${project.build.directory}/generated-sources/api/src/gen</source>
+                <source>${project.build.directory}/generated-sources/api/src/gen/java</source>
               </sources>
-            </configuration>
-          </execution>
-          <execution>
-            <id>attach-final-yaml</id>
-            <phase>package</phase>
-            <goals>
-              <goal>attach-artifact</goal>
-            </goals>
-            <configuration>
-              <artifacts>
-                <artifact>
-                  <file>${project.basedir}/target/final.yaml</file>
-                  <type>yaml</type>
-                  <classifier>api</classifier>
-                </artifact>
-              </artifacts>
             </configuration>
           </execution>
         </executions>
@@ -216,7 +168,7 @@
         <configuration>
           <filtering>false</filtering>
           <tiles>
-            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+            <tile>io.featurehub.tiles:tile-java-no-spock:[1.1,2)</tile>
           </tiles>
         </configuration>
       </plugin>

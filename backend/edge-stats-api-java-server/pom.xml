@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.featurehub.mr</groupId>
-  <artifactId>dacha-api</artifactId>
+  <groupId>io.featurehub.edge</groupId>
+  <artifactId>edge-stats-api-java-server</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>dacha-api</name>
+  <name>edge-stats-api-java-server</name>
 
   <description>
-    The API for the caching layer - where features go for a holiday.
+    Generated Java model classes from the edge-stats-api OpenAPI specification.
   </description>
 
   <url>https://featurehub.io</url>
@@ -35,6 +35,24 @@
     </license>
   </licenses>
 
+  <dependencies>
+    <dependency>
+      <groupId>io.featurehub.edge</groupId>
+      <artifactId>edge-stats-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-jersey</artifactId>
+      <version>[1.1, 2)</version>
+    </dependency>
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-prometheus</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
@@ -42,7 +60,7 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
-            <id>extract common model</id>
+            <id>extract edge stats API</id>
             <phase>initialize</phase>
             <goals>
               <goal>copy</goal>
@@ -50,13 +68,13 @@
             <configuration>
               <artifactItems>
                 <artifactItem>
-                  <groupId>io.featurehub.mr</groupId>
-                  <artifactId>mr-api</artifactId>
+                  <groupId>io.featurehub.edge</groupId>
+                  <artifactId>edge-stats-api</artifactId>
                   <version>1.1-SNAPSHOT</version>
-                  <classifier>api-common</classifier>
+                  <classifier>api</classifier>
                   <type>yaml</type>
                   <outputDirectory>${project.basedir}/target</outputDirectory>
-                  <destFileName>e2e-common.yaml</destFileName>
+                  <destFileName>edge-stats-api.yaml</destFileName>
                 </artifactItem>
               </artifactItems>
               <overWriteReleases>true</overWriteReleases>
@@ -65,24 +83,43 @@
           </execution>
         </executions>
       </plugin>
+
       <plugin>
-        <groupId>cd.connect.maven</groupId>
-        <artifactId>merge-yaml-plugin</artifactId>
-        <version>1.1</version>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>7.18.0</version>
+        <dependencies>
+          <dependency>
+            <groupId>cd.connect.openapi</groupId>
+            <artifactId>connect-openapi-jersey3</artifactId>
+            <version>9.5</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
-            <id>combine</id>
+            <id>featurehub-api</id>
             <goals>
-              <goal>mergeYaml</goal>
+              <goal>generate</goal>
             </goals>
-            <phase>initialize</phase>
+            <phase>generate-sources</phase>
             <configuration>
-              <files>
-                <file>${project.basedir}/dacha-api.yaml</file>
-                <file>${project.basedir}/dacha-component.yaml</file>
-                <file>${project.basedir}/target/e2e-common.yaml</file>
-              </files>
-              <finalYaml>${project.basedir}/target/final.yaml</finalYaml>
+              <output>${project.basedir}/target/generated-sources/api</output>
+              <apiPackage>io.featurehub.sse.stats.api</apiPackage>
+              <modelPackage>io.featurehub.sse.stats.model</modelPackage>
+              <inputSpec>${project.basedir}/target/edge-stats-api.yaml</inputSpec>
+              <generatorName>jersey3-api</generatorName>
+              <generateApis>false</generateApis>
+              <additionalProperties>
+                <additionalProperty>prometheus=true</additionalProperty>
+                <additionalProperty>openApiNullable=false</additionalProperty>
+              </additionalProperties>
+
+              <configOptions>
+                <configOption>
+                  <name>useBeanValidation</name>
+                  <value>true</value>
+                </configOption>
+              </configOptions>
             </configuration>
           </execution>
         </executions>
@@ -93,52 +130,15 @@
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>attach-full-yaml</id>
-            <phase>package</phase>
+            <id>add-generated-source</id>
+            <phase>initialize</phase>
             <goals>
-              <goal>attach-artifact</goal>
+              <goal>add-source</goal>
             </goals>
             <configuration>
-              <artifacts>
-                <artifact>
-                  <file>target/final.yaml</file>
-                  <type>yaml</type>
-                  <classifier>dacha-openapi</classifier>
-                </artifact>
-              </artifacts>
-            </configuration>
-          </execution>
-          <execution>
-            <id>attach-components-yaml</id>
-            <phase>package</phase>
-            <goals>
-              <goal>attach-artifact</goal>
-            </goals>
-            <configuration>
-              <artifacts>
-                <artifact>
-                  <file>dacha-component.yaml</file>
-                  <type>yaml</type>
-                  <classifier>dacha-components</classifier>
-                </artifact>
-              </artifacts>
-            </configuration>
-          </execution>
-          <execution>
-            <!-- these are only used by dacha1 and MR to communicate -->
-            <id>attach-dacha1-mr-yaml</id>
-            <phase>package</phase>
-            <goals>
-              <goal>attach-artifact</goal>
-            </goals>
-            <configuration>
-              <artifacts>
-                <artifact>
-                  <file>dacha1-mr.yaml</file>
-                  <type>yaml</type>
-                  <classifier>dacha1-mr</classifier>
-                </artifact>
-              </artifacts>
+              <sources>
+                <source>${project.build.directory}/generated-sources/api/src/gen/java</source>
+              </sources>
             </configuration>
           </execution>
         </executions>
