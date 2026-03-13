@@ -41,21 +41,6 @@
     <url>git@github.com:featurehub-io/featurehub.git</url>
   </scm>
 
-  <dependencies>
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-jersey</artifactId>
-      <version>[1.1, 2)</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-common</artifactId>
-      <version>1.2-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
-
   <build>
     <plugins>
       <plugin>
@@ -93,55 +78,9 @@
       </plugin>
 
       <plugin>
-        <groupId>org.openapitools</groupId>
-        <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>7.18.0</version>
-        <dependencies>
-          <dependency>
-            <groupId>cd.connect.openapi</groupId>
-            <artifactId>connect-openapi-jersey3</artifactId>
-            <version>9.5</version>
-          </dependency>
-        </dependencies>
-        <executions>
-          <execution>
-            <id>featurehub-api</id>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-            <phase>generate-sources</phase>
-            <configuration>
-              <output>${project.basedir}/target/generated-sources/api</output>
-              <apiPackage>io.featurehub.sse.stats.api</apiPackage>
-              <modelPackage>io.featurehub.sse.stats.model</modelPackage>
-              <inputSpec>${project.basedir}/target/final.yaml</inputSpec>
-              <generatorName>jersey3-api</generatorName>
-              <generateApis>false</generateApis>
-              <additionalProperties>
-                <additionalProperty>prometheus=true</additionalProperty>
-                <additionalProperty>openApiNullable=false</additionalProperty>
-              </additionalProperties>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
-          <execution>
-            <id>add-generated-source</id>
-            <phase>initialize</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${project.build.directory}/generated-sources/api/src/gen/java</source>
-              </sources>
-            </configuration>
-          </execution>
           <!-- publish the API at packaging time -->
           <execution>
             <id>attach-final-yaml</id>
@@ -152,7 +91,7 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.basedir}/async-api.yaml</file>
+                  <file>${project.basedir}/target/final.yaml</file>
                   <type>yaml</type>
                   <classifier>api</classifier>
                 </artifact>

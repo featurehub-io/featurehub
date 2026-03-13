@@ -58,7 +58,7 @@
     <!-- this is for other's to communicate with us as a source of cached state -->
     <dependency>
       <groupId>io.featurehub.mr</groupId>
-      <artifactId>dacha-api</artifactId>
+      <artifactId>dacha-api-java-server</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
