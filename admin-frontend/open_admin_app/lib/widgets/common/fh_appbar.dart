@@ -1,5 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
+import 'package:open_admin_app/widgets/dynamic-locale/fh_dynamic_locale.dart';
 
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
@@ -95,9 +97,10 @@ class FHappBar extends StatelessWidget {
                         const SizedBox(
                           width: 16.0,
                         ),
+                      _LanguageToggleButton(),
                       IconButton(
                           // splashRadius: 20,
-                          tooltip: light ? 'Dark mode' : 'Light mode',
+                          tooltip: light ? AppLocalizations.of(context)!.darkMode : AppLocalizations.of(context)!.lightMode,
                           color: Theme.of(context).colorScheme.primary,
                           icon: Icon(light
                               ? Icons.dark_mode_outlined
@@ -115,7 +118,7 @@ class FHappBar extends StatelessWidget {
                           },
                           color: Theme.of(context).colorScheme.primary,
                           icon: const Icon(Icons.exit_to_app),
-                          tooltip: 'Sign out'),
+                          tooltip: AppLocalizations.of(context)!.signOut),
                     ],
                   ),
                 );
@@ -124,6 +127,30 @@ class FHappBar extends StatelessWidget {
               }
             })
       ],
+    );
+  }
+}
+
+class _LanguageToggleButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final localeState = DynamicLocale.of(context);
+    final isEnglish = localeState.locale.languageCode == 'en';
+    return IconButton(
+      icon: Text(
+        isEnglish ? '中' : 'EN',
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+        ),
+      ),
+      tooltip: isEnglish ? 'Switch to Chinese' : 'Switch to English',
+      onPressed: () {
+        localeState.setLocale(
+          isEnglish ? const Locale('zh') : const Locale('en'),
+        );
+      },
     );
   }
 }

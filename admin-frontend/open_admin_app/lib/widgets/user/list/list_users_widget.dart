@@ -16,6 +16,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 
 class PersonListWidget extends StatefulWidget {
@@ -49,9 +50,9 @@ class _PersonListWidgetState extends State<PersonListWidget> {
         Container(
           constraints: const BoxConstraints(maxWidth: 300),
           child: TextField(
-            decoration: const InputDecoration(
-              hintText: 'Search users',
-              icon: Icon(Icons.search),
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context)!.searchUsers,
+              icon: const Icon(Icons.search),
             ),
             onChanged: (val) {
               debouncer.run(() {
@@ -79,21 +80,15 @@ class _PersonListWidgetState extends State<PersonListWidget> {
               }
             },
             columns: [
-              DataColumn(label: const Text('Name'), onSort: setSort),
-              DataColumn(label: const Text('Status'), onSort: setSort),
-              const DataColumn(
-                label: Text('Email'),
-              ),
-              const DataColumn(
-                label: Text('Groups'),
-              ),
-              const DataColumn(
-                label: Text('Last sign in (UTC)'),
-              ),
-              const DataColumn(
+              DataColumn(label: Text(AppLocalizations.of(context)!.columnName), onSort: setSort),
+              DataColumn(label: Text(AppLocalizations.of(context)!.columnStatus), onSort: setSort),
+              DataColumn(label: Text(AppLocalizations.of(context)!.columnEmail)),
+              DataColumn(label: Text(AppLocalizations.of(context)!.groups)),
+              DataColumn(label: Text(AppLocalizations.of(context)!.columnLastSignIn)),
+              DataColumn(
                 label: Padding(
-                  padding: EdgeInsets.only(left: 12.0),
-                  child: Text('Actions'),
+                  padding: const EdgeInsets.only(left: 12.0),
+                  child: Text(AppLocalizations.of(context)!.columnActions),
                 ),
               ),
             ],
@@ -160,14 +155,14 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
         index: index,
         cells: [
           DataCell(personEntry.person.name == "No name"
-              ? Text('Not yet registered',
+              ? Text(AppLocalizations.of(context)!.notYetRegistered,
                   style: Theme.of(context).textTheme.bodySmall)
               : Text(
                   personEntry.person.name,
                 )),
           DataCell(Text(personEntry.person.whenDeactivated != null
-              ? "deactivated"
-              : "active")),
+              ? AppLocalizations.of(context)!.statusDeactivated
+              : AppLocalizations.of(context)!.statusActive)),
           DataCell(Text(personEntry.person.email)),
           DataCell(Text('${personEntry.person.groupCount}')),
           DataCell(personEntry.person.whenLastAuthenticated != null
@@ -177,32 +172,32 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
           if (personEntry.person.whenDeactivated != null)
             DataCell(
               FHIconButton(
-                tooltip: "Activate user",
+                tooltip: AppLocalizations.of(context)!.activateUserTooltip,
                 icon: const Icon(
                   Icons.restart_alt_sharp,
                   color: Colors.red,
                 ),
                 onPressed: () =>
                     bloc.mrClient.addOverlay((BuildContext context) {
+                  final l10n = AppLocalizations.of(context)!;
                   return FHAlertDialog(
-                      title: Text("Activate user '${personEntry.person.name}'"),
-                      content: Text(
-                          'Are you sure you want to activate user with email address ${personEntry.person.email}?'),
+                      title: Text(l10n.activateUserTitle(personEntry.person.name)),
+                      content: Text(l10n.activateUserConfirm(personEntry.person.email)),
                       actions: [
                         TextButton(
                           onPressed: () {
                             bloc.mrClient.removeOverlay();
                           },
-                          child: const Text("Cancel"),
+                          child: Text(l10n.cancel),
                         ),
                         FHFlatButton(
-                          title: 'Activate',
+                          title: l10n.activate,
                           onPressed: () async {
                             try {
                               await bloc.activatePerson(personEntry.person);
                               setNextView(); // triggers reload from server with latest settings and rebuilds state
                               bloc.mrClient.addSnackbar(Text(
-                                  "User '${personEntry.person.name}' activated!"));
+                                  l10n.userActivated(personEntry.person.name)));
                               bloc.mrClient.removeOverlay();
                             } catch (e, s) {
                               bloc.mrClient.removeOverlay();
@@ -217,7 +212,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
           if (personEntry.person.whenDeactivated == null)
             DataCell(Row(children: <Widget>[
               Tooltip(
-                message: _infoTooltip(personEntry, allowedLocalIdentity),
+                message: _infoTooltip(personEntry, allowedLocalIdentity, AppLocalizations.of(context)!),
                 child: FHIconButton(
                   icon: Icon(Icons.info,
                       color: _infoColour(personEntry, allowedLocalIdentity)),
@@ -247,7 +242,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                       : FHDeleteThingWarningWidget(
                           thing: "user '${personEntry.person.name}'",
                           content:
-                              'This user will be removed from all groups and deactivated in this organization.',
+                              AppLocalizations.of(context)!.deleteUserContent,
                           bloc: bloc.mrClient,
                           deleteSelected: () async {
                             try {
@@ -255,7 +250,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                                   personEntry.person.id, true);
                               setNextView(); // triggers reload from server with latest settings and rebuilds state
                               bloc.mrClient.addSnackbar(Text(
-                                  "User '${personEntry.person.name}' deactivated!"));
+                                  AppLocalizations.of(context)!.userDeactivated(personEntry.person.name)));
                               return true;
                             } catch (e, s) {
                               await bloc.mrClient.dialogError(e, s);
@@ -280,14 +275,13 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
   }
 
   Widget cantDeleteYourselfDialog(ListUsersBloc bloc) {
+    final l10n = AppLocalizations.of(context)!;
     return FHAlertDialog(
-      title: const Text("You can't delete yourself!"),
-      content: const Text(
-          "To delete yourself from the organization, you'll need to contact a site administrator."),
+      title: Text(l10n.cantDeleteYourself),
+      content: Text(l10n.cantDeleteYourselfContent),
       actions: <Widget>[
-        // usually buttons at the bottom of the dialog
         FHFlatButton(
-          title: 'OK',
+          title: l10n.ok,
           onPressed: () {
             bloc.mrClient.removeOverlay();
           },
@@ -306,15 +300,14 @@ class ListUserInfoDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FHAlertDialog(
-      title: const Text(
-        'User information',
-        style: TextStyle(fontSize: 22.0),
+      title: Text(
+        AppLocalizations.of(context)!.userInformation,
+        style: const TextStyle(fontSize: 22.0),
       ),
       content: _ListUserInfo(bloc: bloc, foundPerson: entry),
       actions: <Widget>[
-        // usually buttons at the bottom of the dialog
         FHFlatButton(
-          title: 'OK',
+          title: AppLocalizations.of(context)!.ok,
           onPressed: () {
             bloc.mrClient.removeOverlay();
           },
@@ -355,13 +348,13 @@ class _ListUserInfo extends StatelessWidget {
                 child: ListView(
                   children: [
                     _ListUserRow(
-                      title: 'Name',
+                      title: AppLocalizations.of(context)!.columnName,
                       child: Text(foundPerson.person.name,
                           style: Theme.of(context).textTheme.bodyLarge),
                     ),
                     const SizedBox(height: 8),
                     _ListUserRow(
-                      title: 'Email',
+                      title: AppLocalizations.of(context)!.columnEmail,
                       child: Text(foundPerson.person.email,
                           style: Theme.of(context).textTheme.bodyLarge),
                     ),
@@ -376,7 +369,7 @@ class _ListUserInfo extends StatelessWidget {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              'Registration URL',
+                              AppLocalizations.of(context)!.registrationUrl,
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ),
@@ -394,7 +387,7 @@ class _ListUserInfo extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(fontSize: 11.0))),
                           FHCopyToClipboard(
-                            tooltipMessage: 'Copy URL to Clipboard',
+                            tooltipMessage: AppLocalizations.of(context)!.copyUrlToClipboard,
                             copyString: bloc.mrClient.registrationUrl(
                                 foundPerson.registration.token),
                           )
@@ -402,23 +395,23 @@ class _ListUserInfo extends StatelessWidget {
                       ),
                     if (allowedLocalIdentity &&
                         foundPerson.registration.expired)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 12.0, bottom: 4.0),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
                         child: Text(
-                          'Registration expired',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          AppLocalizations.of(context)!.registrationExpired,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                     if (allowedLocalIdentity &&
                         foundPerson.registration.expired)
                       FHCopyToClipboardFlatButton(
-                        caption: 'Renew registration URL and copy to clipboard',
+                        caption: AppLocalizations.of(context)!.renewRegistrationUrl,
                         textProvider: () async {
                           try {
                             final token = await bloc.mrClient.authServiceApi
                                 .resetExpiredToken(foundPerson.person.email);
-                            bloc.mrClient.addSnackbar(const Text(
-                                'Registration URL renewed and copied to clipboard'));
+                            bloc.mrClient.addSnackbar(Text(
+                                AppLocalizations.of(context)!.registrationUrlRenewed));
                             return bloc.mrClient.registrationUrl(token.token);
                           } catch (e, s) {
                             bloc.mrClient.addError(FHError.createError(e, s));
@@ -438,7 +431,7 @@ class _ListUserInfo extends StatelessWidget {
                           Expanded(
                             flex: 1,
                             child: Text(
-                              'Groups',
+                              AppLocalizations.of(context)!.groups,
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ),
@@ -493,9 +486,9 @@ class _ListUserRow extends StatelessWidget {
   }
 }
 
-String _infoTooltip(SearchPersonEntry entry, bool allowedLocalLogin) {
+String _infoTooltip(SearchPersonEntry entry, bool allowedLocalLogin, AppLocalizations l10n) {
   if (entry.registration.expired) {
-    return "Registration expired";
+    return l10n.registrationExpired;
   }
   return "";
 }

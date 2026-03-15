@@ -1,0 +1,236 @@
+{
+  "@@locale": "en",
+
+  "signInTitle": "Sign in to FeatureHub",
+  "@signInTitle": { "description": "Title on the sign-in screen" },
+
+  "signInWithCredentials": "or sign in with a username and password",
+  "@signInWithCredentials": { "description": "Divider text between SSO and local sign-in" },
+
+  "emailLabel": "Email address",
+  "@emailLabel": { "description": "Label for the email input field" },
+
+  "emailRequired": "Please enter your email",
+  "@emailRequired": { "description": "Validation message when email is empty" },
+
+  "passwordLabel": "Password",
+  "@passwordLabel": { "description": "Label for the password input field" },
+
+  "passwordRequired": "Please enter your password",
+  "@passwordRequired": { "description": "Validation message when password is empty" },
+
+  "incorrectCredentials": "Incorrect email address or password",
+  "@incorrectCredentials": { "description": "Error shown when credentials are wrong" },
+
+  "signInButton": "Sign in",
+  "@signInButton": { "description": "Sign-in submit button label" },
+
+  "darkMode": "Dark mode",
+  "@darkMode": { "description": "Tooltip for the dark mode toggle button" },
+
+  "lightMode": "Light mode",
+  "@lightMode": { "description": "Tooltip for the light mode toggle button" },
+
+  "signOut": "Sign out",
+  "@signOut": { "description": "Tooltip for the sign-out button" },
+
+  "applicationSettings": "Application Settings",
+  "@applicationSettings": { "description": "Drawer section heading for application settings" },
+
+  "portfolioSettings": "Portfolio Settings",
+  "@portfolioSettings": { "description": "Drawer section heading for portfolio settings" },
+
+  "organizationSettings": "Organization Settings",
+  "@organizationSettings": { "description": "Drawer section heading for organization settings" },
+
+  "portfolios": "Portfolios",
+  "@portfolios": { "description": "Navigation menu item for portfolios" },
+
+  "users": "Users",
+  "@users": { "description": "Navigation menu item for users" },
+
+  "adminServiceAccounts": "Admin Service Accounts",
+  "@adminServiceAccounts": { "description": "Navigation menu item for admin service accounts" },
+
+  "systemConfig": "System Config",
+  "@systemConfig": { "description": "Navigation menu item for system configuration" },
+
+  "groups": "Groups",
+  "@groups": { "description": "Navigation menu item for groups" },
+
+  "serviceAccounts": "Service Accounts",
+  "@serviceAccounts": { "description": "Navigation menu item for service accounts" },
+
+  "environments": "Environments",
+  "@environments": { "description": "Navigation menu item for environments" },
+
+  "groupPermissions": "Group permissions",
+  "@groupPermissions": { "description": "Navigation menu item for group permissions" },
+
+  "serviceAccountPermissions": "Service account permissions",
+  "@serviceAccountPermissions": { "description": "Navigation menu item for service account permissions" },
+
+  "integrations": "Integrations",
+  "@integrations": { "description": "Navigation menu item for integrations" },
+
+  "applications": "Applications",
+  "@applications": { "description": "Navigation menu item for applications" },
+
+  "features": "Features",
+  "@features": { "description": "Navigation menu item for features" },
+
+  "featureGroups": "Feature Groups",
+  "@featureGroups": { "description": "Navigation menu item for feature groups" },
+
+  "applicationStrategies": "Application Strategies",
+  "@applicationStrategies": { "description": "Navigation menu item for application strategies" },
+
+  "apiKeys": "API Keys",
+  "@apiKeys": { "description": "Navigation menu item for API keys" },
+
+  "deleteConfirmTitle": "Are you sure you want to delete the {thing}?",
+  "@deleteConfirmTitle": {
+    "description": "Confirmation dialog title when deleting something",
+    "placeholders": {
+      "thing": { "type": "String" }
+    }
+  },
+
+  "cannotBeUndone": "This cannot be undone!",
+  "@cannotBeUndone": { "description": "Warning content in delete confirmation dialog" },
+
+  "cancel": "Cancel",
+  "@cancel": { "description": "Cancel button label" },
+
+  "delete": "Delete",
+  "@delete": { "description": "Delete button label" },
+
+  "reset": "Reset",
+  "@reset": { "description": "Reset button label" },
+
+  "ok": "OK",
+  "@ok": { "description": "OK button label" },
+
+  "edit": "Edit",
+  "@edit": { "description": "Edit action label" },
+
+  "viewDocumentation": "View documentation",
+  "@viewDocumentation": { "description": "Tooltip for documentation links" },
+
+  "createNewApplication": "Create new application",
+  "@createNewApplication": { "description": "Button to create a new application" },
+
+  "applicationsDocumentation": "Applications Documentation",
+  "@applicationsDocumentation": { "description": "Label for applications docs link" },
+
+  "republishPortfolioCache": "Republish portfolio cache",
+  "@republishPortfolioCache": { "description": "Button to republish portfolio cache" },
+
+  "republishPortfolioCacheWarningTitle": "Warning: Intensive system operation",
+  "@republishPortfolioCacheWarningTitle": { "description": "Title of republish cache confirmation dialog" },
+
+  "republishPortfolioCacheWarningContent": "Are you sure you want to republish this entire portfolio's cache?",
+  "@republishPortfolioCacheWarningContent": { "description": "Body of republish cache confirmation dialog" },
+
+  "featureFlags": "Feature flags",
+  "@featureFlags": { "description": "Tooltip label for feature flags count" },
+
+  "showMore": "Show more",
+  "@showMore": { "description": "Tooltip for the app card popup menu" },
+
+  "republishCacheForApp": "Republish cache for this app",
+  "@republishCacheForApp": { "description": "Popup menu item to republish cache for a single app" },
+
+  "manageUsers": "Manage users",
+  "@manageUsers": { "description": "Page header for the manage users screen" },
+
+  "manageUsersDocumentation": "Manage Users Documentation",
+  "@manageUsersDocumentation": { "description": "Label for manage users docs link" },
+
+  "createNewUser": "Create new user",
+  "@createNewUser": { "description": "Button to create a new user" },
+
+  "searchUsers": "Search users",
+  "@searchUsers": { "description": "Hint text in the users search field" },
+
+  "columnName": "Name",
+  "@columnName": { "description": "Table column header: name" },
+
+  "columnStatus": "Status",
+  "@columnStatus": { "description": "Table column header: status" },
+
+  "columnEmail": "Email",
+  "@columnEmail": { "description": "Table column header: email" },
+
+  "columnLastSignIn": "Last sign in (UTC)",
+  "@columnLastSignIn": { "description": "Table column header: last sign-in time" },
+
+  "columnActions": "Actions",
+  "@columnActions": { "description": "Table column header: actions" },
+
+  "notYetRegistered": "Not yet registered",
+  "@notYetRegistered": { "description": "Shown in the name cell when a user hasn't completed registration" },
+
+  "statusActive": "active",
+  "@statusActive": { "description": "User status: active" },
+
+  "statusDeactivated": "deactivated",
+  "@statusDeactivated": { "description": "User status: deactivated" },
+
+  "activateUserTooltip": "Activate user",
+  "@activateUserTooltip": { "description": "Tooltip on the activate-user icon button" },
+
+  "activateUserTitle": "Activate user '{name}'",
+  "@activateUserTitle": {
+    "description": "Dialog title when activating a user",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "activateUserConfirm": "Are you sure you want to activate user with email address {email}?",
+  "@activateUserConfirm": {
+    "description": "Dialog body when activating a user",
+    "placeholders": { "email": { "type": "String" } }
+  },
+
+  "activate": "Activate",
+  "@activate": { "description": "Activate button label" },
+
+  "userActivated": "User '{name}' activated!",
+  "@userActivated": {
+    "description": "Snackbar message after activating a user",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "userDeactivated": "User '{name}' deactivated!",
+  "@userDeactivated": {
+    "description": "Snackbar message after deactivating a user",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "userInformation": "User information",
+  "@userInformation": { "description": "Title of the user info dialog" },
+
+  "registrationUrl": "Registration URL",
+  "@registrationUrl": { "description": "Label for the registration URL in user info dialog" },
+
+  "copyUrlToClipboard": "Copy URL to Clipboard",
+  "@copyUrlToClipboard": { "description": "Tooltip for the copy-registration-URL button" },
+
+  "registrationExpired": "Registration expired",
+  "@registrationExpired": { "description": "Label shown when a registration token has expired" },
+
+  "renewRegistrationUrl": "Renew registration URL and copy to clipboard",
+  "@renewRegistrationUrl": { "description": "Button to renew an expired registration token" },
+
+  "registrationUrlRenewed": "Registration URL renewed and copied to clipboard",
+  "@registrationUrlRenewed": { "description": "Snackbar after renewing registration URL" },
+
+  "cantDeleteYourself": "You can't delete yourself!",
+  "@cantDeleteYourself": { "description": "Dialog title when trying to delete own account" },
+
+  "cantDeleteYourselfContent": "To delete yourself from the organization, you'll need to contact a site administrator.",
+  "@cantDeleteYourselfContent": { "description": "Dialog body when trying to delete own account" },
+
+  "deleteUserContent": "This user will be removed from all groups and deactivated in this organization.",
+  "@deleteUserContent": { "description": "Body of the delete-user confirmation dialog" }
+}

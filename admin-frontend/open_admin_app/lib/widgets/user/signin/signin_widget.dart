@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/fh_shared_prefs.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
@@ -113,7 +114,7 @@ class _SigninState extends State<SigninWidget> {
             SizedBox(
               height: 48.0,
               child: Text(
-                'Sign in to FeatureHub\n\n',
+                '${AppLocalizations.of(context)!.signInTitle}\n\n',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
             ),
@@ -130,7 +131,7 @@ class _SigninState extends State<SigninWidget> {
                   const FHPageDivider(),
                   Padding(
                       padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
-                      child: Text('or sign in with a username and password',
+                      child: Text(AppLocalizations.of(context)!.signInWithCredentials,
                           style: Theme.of(context).textTheme.bodySmall)),
                 ],
               ),
@@ -143,26 +144,25 @@ class _SigninState extends State<SigninWidget> {
                       textInputAction: TextInputAction.next,
                       onFieldSubmitted: (_) => _handleSubmitted,
                       validator: (v) => v == null || v.isEmpty
-                          ? 'Please enter your email'
+                          ? AppLocalizations.of(context)!.emailRequired
                           : null,
-                      decoration:
-                          const InputDecoration(labelText: 'Email address')),
+                      decoration: InputDecoration(labelText: AppLocalizations.of(context)!.emailLabel)),
                   TextFormField(
                       controller: _password,
                       obscureText: true,
                       textInputAction: TextInputAction.next,
                       onFieldSubmitted: (_) => _handleSubmitted(),
                       validator: (v) => v == null || v.isEmpty
-                          ? 'Please enter your password'
+                          ? AppLocalizations.of(context)!.passwordRequired
                           : null,
-                      decoration: const InputDecoration(labelText: 'Password')),
+                      decoration: InputDecoration(labelText: AppLocalizations.of(context)!.passwordLabel)),
                 ],
               ),
             if (widget.bloc.identityProviders.hasLocal)
               Container(
                   child: displayError
                       ? Text(
-                          'Incorrect email address or password',
+                          AppLocalizations.of(context)!.incorrectCredentials,
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium!
@@ -185,7 +185,7 @@ class _SigninState extends State<SigninWidget> {
                       child: FilledButton(
                           onPressed: () {
                             _handleSubmitted();
-                          }, child: const Text('Sign in'),),
+                          }, child: Text(AppLocalizations.of(context)!.signInButton),),
                     )
                   ],
                 ),
