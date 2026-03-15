@@ -44,7 +44,7 @@ jobs:
         run: mvn -B generate-sources
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -61,4 +61,4 @@ jobs:
           push: true
           build-args: |
             branch=${{ steps.branch-names.outputs.current_branch }}
-          tags: ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:${{ steps.branch-names.outputs.current_branch }}
+          tags: ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:${{ steps.branch-names.outputs.current_branch }}-adk-e2e
