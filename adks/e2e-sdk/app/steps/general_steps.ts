@@ -59,7 +59,7 @@ Then(/^I set the context to$/, function (table) {
 
   table.hashes().forEach((row: any) => {
     console.log('setting context', row);
-    ctx.attribute_value(row['Field'], row['Value']);
+    ctx.attributeValue(row['Field'], row['Value']);
   });
 });
 
