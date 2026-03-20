@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/widgets/application-strategies/edit_application_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/application-strategies/edit_application_strategy_provider.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
@@ -21,8 +22,8 @@ class EditApplicationStrategyRoute extends StatelessWidget {
         Row(
           children: [
             FHHeader(
-                title:
-                    "Edit Application Strategy for ${bloc.mrBloc.streamValley.currentApp.application.name}"),
+                title: AppLocalizations.of(context)!.editApplicationStrategyTitle(
+                    bloc.mrBloc.streamValley.currentApp.application.name)),
           ],
         ),
         Row(

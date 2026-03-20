@@ -6,6 +6,7 @@ import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
 import 'package:open_admin_app/widgets/apps/service_account_list_widget.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 
 /// Every user has access to portfolios, they can only see the ones they have access to
@@ -39,15 +40,15 @@ class ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const FHHeader(
-          title: 'Manage service accounts',
+        FHHeader(
+          title: AppLocalizations.of(context)!.manageServiceAccounts,
           children: [
             FHExternalLinkWidget(
-              tooltipMessage: "View documentation",
+              tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
               link:
                   "https://docs.featurehub.io/featurehub/latest/service-accounts.html",
-              icon: Icon(Icons.arrow_outward_outlined),
-              label: 'Service Accounts Documentation',
+              icon: const Icon(Icons.arrow_outward_outlined),
+              label: AppLocalizations.of(context)!.serviceAccountsDocumentation,
             )
           ],
         ),
@@ -65,7 +66,7 @@ class ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
                     children: <Widget>[
                       FilledButton.icon(
                         icon: const Icon(Icons.add),
-                        label: const Text('Create new service account'),
+                        label: Text(AppLocalizations.of(context)!.createNewServiceAccount),
                         onPressed: () => _createServiceAccount(bloc),
                       ),
                     ],

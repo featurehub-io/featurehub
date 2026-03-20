@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/fv_strategy_editor_provider.dart';
 import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
@@ -21,6 +22,7 @@ class EditValueStrategyLinkButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return IconButton(
         mouseCursor:
             editable ? SystemMouseCursors.click : SystemMouseCursors.basic,
@@ -30,8 +32,8 @@ class EditValueStrategyLinkButton extends StatelessWidget {
             builder: (_) {
               return AlertDialog(
                   title: Text(editable
-                      ? 'Edit split targeting rules'
-                      : 'View split targeting rules'),
+                      ? l10n.editSplitTargetingRules
+                      : l10n.viewSplitTargetingRules),
                   content: BlocProvider.builder(
                     creator: (c, b) => StrategyEditorBloc(
                         rolloutStrategy.toEditing(),

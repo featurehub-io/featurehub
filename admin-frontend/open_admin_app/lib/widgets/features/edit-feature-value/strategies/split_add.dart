@@ -1,5 +1,6 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/fv_strategy_editor_provider.dart';
 import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
@@ -14,14 +15,15 @@ class AddStrategyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return TextButton.icon(
-        label: const Text('Add rollout strategy'),
+        label: Text(l10n.addRolloutStrategy),
         icon: const Icon(Icons.call_split_outlined),
         onPressed: () => showDialog(
             context: context,
             builder: (_) {
               return AlertDialog(
-                title: const Text('Add rollout strategy targeting rules'),
+                title: Text(l10n.addRolloutStrategyTargetingRules),
                 content: BlocProvider.builder(
                   creator: (c, b) => StrategyEditorBloc(
                       EditingRolloutStrategy.newStrategy(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
@@ -17,37 +18,35 @@ class AdminSAKeyResetDialogWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return FHDeleteThingWarningWidget(
       bloc: bloc.mrClient,
       removeOverlay: false,
-      wholeWarning:
-          """Are you sure you want to reset the access token for this service account?
-This will invalidate the current token!""",
+      wholeWarning: l10n.adminSaResetTokenWarning,
       isResetThing: true,
       deleteSelected: () async {
         try {
           var token = await bloc.resetApiKey(person);
 
           bloc.mrClient.addOverlay((context) => FHAlertDialog(
-                title: const Text("Admin SDK access token has been reset"),
+                title: Text(l10n.adminSdkTokenReset),
                 content: SizedBox(
                     height: 150,
                     child: AdminSAKeyShowDialogWidget(token: token)),
                 actions: [
                   FHFlatButtonTransparent(
                     keepCase: true,
-                    title: 'Close',
+                    title: l10n.close,
                     onPressed: () {
                       bloc.mrClient.removeOverlay();
                     },
                   ),
                 ],
               ));
-          bloc.mrClient.addSnackbar(
-              const Text("Admin SDK access token has been reset!"));
+          bloc.mrClient.addSnackbar(Text(l10n.adminSdkTokenResetSnackbar));
         } catch (e) {
           bloc.mrClient
-              .customError(messageTitle: "Unable to reset access token");
+              .customError(messageTitle: l10n.unableToResetToken);
         }
 
         return true;

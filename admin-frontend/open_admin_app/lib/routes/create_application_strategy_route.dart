@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/widgets/application-strategies/edit_application_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/application-strategies/edit_application_strategy_provider.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.dart';
@@ -19,8 +20,8 @@ class CreateApplicationStrategyRoute extends StatelessWidget {
         Row(
           children: [
             FHHeader(
-                title:
-                    "Create Application Strategy for ${bloc.mrBloc.streamValley.currentApp.application.name}"),
+                title: AppLocalizations.of(context)!.createApplicationStrategyTitle(
+                    bloc.mrBloc.streamValley.currentApp.application.name)),
           ],
         ),
         Row(

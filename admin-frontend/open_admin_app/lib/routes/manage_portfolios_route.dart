@@ -7,6 +7,7 @@ import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_widget.dart';
 
 /// Every user has access to portfolios, they can only see the ones they have access to
@@ -25,22 +26,22 @@ class PortfolioRoute extends StatelessWidget {
         const SizedBox(height: 8.0),
         Wrap(
           children: [
-            const FHHeader(
-              title: 'Manage portfolios',
+            FHHeader(
+              title: AppLocalizations.of(context)!.managePortfolios,
               children: [
                 FHExternalLinkWidget(
-                  tooltipMessage: "View documentation",
+                  tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
                   link:
                       "https://docs.featurehub.io/featurehub/latest/portfolios.html",
-                  icon: Icon(Icons.arrow_outward_outlined),
-                  label: 'Manage Portfolios Documentation',
+                  icon: const Icon(Icons.arrow_outward_outlined),
+                  label: AppLocalizations.of(context)!.managePortfoliosDocumentation,
                 )
               ],
             ),
             if (bloc.mrClient.userIsSuperAdmin == true)
               FilledButton.icon(
                 icon: const Icon(Icons.add),
-                label: const Text('Create new portfolio'),
+                label: Text(AppLocalizations.of(context)!.createNewPortfolio),
                 onPressed: () =>
                     bloc.mrClient.addOverlay((BuildContext context) {
                   return PortfolioUpdateDialogWidget(
@@ -58,8 +59,8 @@ class PortfolioRoute extends StatelessWidget {
             Container(
               constraints: const BoxConstraints(maxWidth: 300),
               child: TextField(
-                decoration: const InputDecoration(
-                    hintText: 'Search portfolios', icon: Icon(Icons.search)),
+                decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context)!.searchPortfolios, icon: const Icon(Icons.search)),
                 onChanged: (val) => bloc.triggerSearch(val),
               ),
             ),
@@ -73,7 +74,7 @@ class PortfolioRoute extends StatelessWidget {
                       child: OutlinedButton.icon(
                           onPressed: () => _refreshWholeCacheConfirm(bloc),
                           icon: const Icon(Icons.cached),
-                          label: const Text('Republish system cache'))),
+                          label: Text(AppLocalizations.of(context)!.republishSystemCache))),
                 ),
               )
           ],
@@ -86,23 +87,23 @@ class PortfolioRoute extends StatelessWidget {
 
   _refreshWholeCacheConfirm(PortfolioBloc bloc) {
     bloc.mrClient.addOverlay((BuildContext context) {
+      final l10n = AppLocalizations.of(context)!;
       return FHAlertDialog(
-        title: const Text(
-          "Warning: Intensive system operation",
-          style: TextStyle(fontSize: 22.0),
+        title: Text(
+          l10n.republishPortfolioCacheWarningTitle,
+          style: const TextStyle(fontSize: 22.0),
         ),
-        content:
-            const Text("Are you sure you want to republish the entire cache?"),
+        content: Text(l10n.republishEntireCacheWarningContent),
         actions: <Widget>[
           FHFlatButton(
-            title: 'OK',
+            title: l10n.ok,
             onPressed: () {
               bloc.refreshSystemCache();
               bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-            title: 'Cancel',
+            title: l10n.cancel,
             onPressed: () {
               bloc.mrClient.removeOverlay();
             },

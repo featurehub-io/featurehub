@@ -14,6 +14,7 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
 
 class ApiKeysRoute extends StatelessWidget {
@@ -29,15 +30,15 @@ class ApiKeysRoute extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Wrap(
+              Wrap(
                 children: [
-                  FHHeader(title: 'API Keys', children: [
+                  FHHeader(title: AppLocalizations.of(context)!.apiKeys, children: [
                     FHExternalLinkWidget(
-                      tooltipMessage: "View documentation",
+                      tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
                       link:
                           "https://docs.featurehub.io/featurehub/latest/service-accounts.html#_api_keys",
-                      icon: Icon(Icons.arrow_outward_outlined),
-                      label: 'API Keys Documentation',
+                      icon: const Icon(Icons.arrow_outward_outlined),
+                      label: AppLocalizations.of(context)!.apiKeysDocumentation,
                     )
                   ]),
                 ],
@@ -68,7 +69,7 @@ class ApiKeysRoute extends StatelessWidget {
                             return Padding(
                               padding: const EdgeInsets.only(left: 8.0),
                               child: FHUnderlineButton(
-                                  title: 'Go to service accounts settings',
+                                  title: AppLocalizations.of(context)!.goToServiceAccountsSettings,
                                   onPressed: () => {
                                         ManagementRepositoryClientBloc.router
                                             .navigateTo(
@@ -104,7 +105,7 @@ class ApiKeysRoute extends StatelessWidget {
                         return const FHLoadingError();
                       } else if (envSnapshot.hasData) {
                         if (envSnapshot.data!.serviceAccounts.isEmpty) {
-                          return Text('No service accounts available',
+                          return Text(AppLocalizations.of(context)!.noServiceAccountsAvailable,
                               style: Theme.of(context).textTheme.bodySmall);
                         } else {
                           return _ApiKeysDisplayWidget(
@@ -136,8 +137,8 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
     return Column(
       children: [
         widgetCreator.edgeUrlCopyWidget(bloc.mrClient),
-        const Padding(
-          padding: EdgeInsets.all(8.0),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
           child: Row(
             children: [
               Expanded(
@@ -145,24 +146,24 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: SelectionArea(
-                    child: Text("Service account name",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(AppLocalizations.of(context)!.saNameLabel,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
               ),
               Expanded(
                 flex: 2,
-                child: SelectableText("Environments",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                child: SelectableText(AppLocalizations.of(context)!.environments,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
               Expanded(
                   flex: 3,
-                  child: Text("Permissions",
-                      style: TextStyle(fontWeight: FontWeight.bold))),
+                  child: Text(AppLocalizations.of(context)!.permissions,
+                      style: const TextStyle(fontWeight: FontWeight.bold))),
               Expanded(
                   flex: 4,
-                  child: Text("Client & Server API Keys",
-                      style: TextStyle(fontWeight: FontWeight.bold)))
+                  child: Text(AppLocalizations.of(context)!.clientServerApiKeys,
+                      style: const TextStyle(fontWeight: FontWeight.bold)))
             ],
           ),
         ),
@@ -272,7 +273,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
                         fontFamily: 'SourceCodePro',
                         fontSize: 12,
                         letterSpacing: 1.0))
-                : Text('No permissions defined',
+                : Text(AppLocalizations.of(context)!.noPermissionsDefined,
                     style: Theme.of(context).textTheme.bodySmall)),
       ),
     );
@@ -306,7 +307,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                 child: Row(
                   children: [
                     Text(
-                      'Client eval API Key ',
+                      AppLocalizations.of(context)!.clientEvalApiKey,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     FHCopyToClipboard(
@@ -322,7 +323,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                 child: Row(
                   children: [
                     Text(
-                      'Server eval API Key',
+                      AppLocalizations.of(context)!.serverEvalApiKey,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     FHCopyToClipboard(
@@ -332,20 +333,18 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                 ),
               ),
             if (saPermission.sdkUrlClientEval == null)
-              const Tooltip(
-                message:
-                    'API Key is unavailable because your current permissions for this environment are lower level',
-                child: Icon(
+              Tooltip(
+                message: AppLocalizations.of(context)!.apiKeyUnavailable,
+                child: const Icon(
                   Icons.error_outline,
                   size: 24.0,
                   color: Colors.red,
                 ),
               ),
             if (saPermission.sdkUrlServerEval == null)
-              const Tooltip(
-                message:
-                    'API Key is unavailable because your current permissions for this environment are lower level',
-                child: Icon(
+              Tooltip(
+                message: AppLocalizations.of(context)!.apiKeyUnavailable,
+                child: const Icon(
                   Icons.error_outline,
                   size: 24.0,
                   color: Colors.red,

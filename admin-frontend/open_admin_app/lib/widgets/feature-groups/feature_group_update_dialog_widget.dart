@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
@@ -44,13 +45,14 @@ class _FeatureGroupUpdateDialogWidgetState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_busy) {
       return const FHLoadingIndicator();
     } else {
       return FHAlertDialog(
         title: Text(widget.featureGroup == null
-            ? 'Create new Feature Group'
-            : 'Edit Feature Group'),
+            ? l10n.createNewFeatureGroup
+            : l10n.editFeatureGroup),
         content: Form(
             key: _formKey,
             child: SizedBox(
@@ -62,28 +64,28 @@ class _FeatureGroupUpdateDialogWidgetState
                       controller: _featureGroupName,
                       autofocus: true,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                          labelText: 'Feature group name'),
+                      decoration: InputDecoration(
+                          labelText: l10n.featureGroupNameLabel),
                       validator: ((v) {
                         if (v == null || v.isEmpty) {
-                          return 'Please enter feature group name';
+                          return l10n.featureGroupNameRequired;
                         }
                         if (v.length < 4) {
-                          return 'Group name needs to be at least 4 characters long';
+                          return l10n.featureGroupNameTooShort;
                         }
                         return null;
                       })),
                   TextFormField(
                       controller: _featureGroupDescription,
                       textInputAction: TextInputAction.done,
-                      decoration: const InputDecoration(
-                          labelText: 'Feature group description'),
+                      decoration: InputDecoration(
+                          labelText: l10n.featureGroupDescriptionLabel),
                       validator: ((v) {
                         if (v == null || v.isEmpty) {
-                          return 'Please enter feature group description';
+                          return l10n.featureGroupDescriptionRequired;
                         }
                         if (v.length < 4) {
-                          return 'Description needs to be at least 4 characters long';
+                          return l10n.featureGroupDescriptionTooShort;
                         }
                         return null;
                       })),
@@ -92,22 +94,22 @@ class _FeatureGroupUpdateDialogWidgetState
             )),
         actions: [
           FHFlatButtonTransparent(
-            title: 'Cancel',
+            title: l10n.cancel,
             keepCase: true,
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-              title: isUpdate ? 'Update' : 'Create',
+              title: isUpdate ? l10n.update : l10n.create,
               keepCase: true,
-              onPressed: () => _handleValidation()),
+              onPressed: () => _handleValidation(l10n)),
         ],
       );
     }
   }
 
-  void _handleValidation() async {
+  void _handleValidation(AppLocalizations l10n) async {
     if (_formKey.currentState!.validate()) {
       try {
         setState(() {
@@ -119,19 +121,18 @@ class _FeatureGroupUpdateDialogWidgetState
               description: _featureGroupDescription.text);
           widget.bloc.mrClient.removeOverlay();
           widget.bloc.mrClient.addSnackbar(
-              Text('Feature group ${_featureGroupName.text} updated!'));
+              Text(l10n.featureGroupUpdated(_featureGroupName.text)));
         } else {
           await widget.bloc.createFeatureGroup(
               _featureGroupName.text, _featureGroupDescription.text);
           widget.bloc.mrClient.removeOverlay();
           widget.bloc.mrClient.addSnackbar(
-              Text('Feature group ${_featureGroupName.text} created!'));
+              Text(l10n.featureGroupCreated(_featureGroupName.text)));
         }
       } catch (e, s) {
         if (e is ApiException && e.code == 409) {
           widget.bloc.mrClient.customError(
-              messageTitle:
-                  "Feature group '${_featureGroupName.text}' already exists");
+              messageTitle: l10n.featureGroupAlreadyExists(_featureGroupName.text));
         } else {
           await widget.bloc.mrClient.dialogError(e, s);
         }

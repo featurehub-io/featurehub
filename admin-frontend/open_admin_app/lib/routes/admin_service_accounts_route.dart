@@ -8,6 +8,7 @@ import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class ManageAdminServiceAccountsRoute extends StatelessWidget {
   const ManageAdminServiceAccountsRoute({Key? key}) : super(key: key);
@@ -15,23 +16,24 @@ class ManageAdminServiceAccountsRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ListUsersBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
     FHAnalytics.sendScreenView("admin-service-accounts");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         const SizedBox(height: 8.0),
-        const Wrap(
+        Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             FHHeader(
-              title: 'Manage admin SDK service accounts',
+              title: l10n.manageAdminSdkServiceAccounts,
               children: [
                 FHExternalLinkWidget(
-                  tooltipMessage: "View documentation",
+                  tooltipMessage: l10n.viewDocumentation,
                   link:
                       "https://docs.featurehub.io/featurehub/latest/admin-service-accounts.html",
-                  icon: Icon(Icons.arrow_outward_outlined),
-                  label: 'Admin Service Accounts Documentation',
+                  icon: const Icon(Icons.arrow_outward_outlined),
+                  label: l10n.adminServiceAccountsDocumentation,
                 )
               ],
             ),
@@ -43,7 +45,7 @@ class ManageAdminServiceAccountsRoute extends StatelessWidget {
         if (bloc.mrClient.userIsSuperAdmin == true)
           FilledButton.icon(
             icon: const Icon(Icons.add),
-            label: const Text('Create Admin Service Account'),
+            label: Text(l10n.createAdminServiceAccount),
             onPressed: () {
               ManagementRepositoryClientBloc.router
                   .navigateTo(context, '/create-admin-api-key');

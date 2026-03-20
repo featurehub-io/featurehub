@@ -11,6 +11,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/group/group_bloc.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/group/group_update_widget.dart';
 
 /// Every user has access to portfolios, they can only see the ones they have access to
@@ -45,15 +46,15 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
       children: <Widget>[
         Container(
             padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
-            child: const FHHeader(
-              title: 'Manage group members',
+            child: FHHeader(
+              title: AppLocalizations.of(context)!.manageGroupMembers,
               children: [
                 FHExternalLinkWidget(
-                  tooltipMessage: "View documentation",
+                  tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
                   link:
                       "https://docs.featurehub.io/featurehub/latest/users.html#_user_groups",
-                  icon: Icon(Icons.arrow_outward_outlined),
-                  label: 'User Groups Documentation',
+                  icon: const Icon(Icons.arrow_outward_outlined),
+                  label: AppLocalizations.of(context)!.userGroupsDocumentation,
                 ),
               ],
             )),
@@ -69,7 +70,7 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                     if (!snapshot.hasData) {
                       return Container(
                           padding: const EdgeInsets.all(8),
-                          child: const Text('Fetching Groups...'));
+                          child: Text(AppLocalizations.of(context)!.fetchingGroups));
                     } else {
                       return Container(
                         padding: const EdgeInsets.only(top: 24, left: 8),
@@ -90,7 +91,7 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                             flex: 4,
                             child: FloatingActionButton.extended(
                               icon: const Icon(Icons.add),
-                              label: const Text('Create new group'),
+                              label: Text(AppLocalizations.of(context)!.createNewGroup),
                               onPressed: () => _createGroup(bloc),
                             ),
                           ),
@@ -116,7 +117,7 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                           padding: const EdgeInsets.all(8.0),
                           child: FilledButton.icon(
                             icon: const Icon(Icons.add),
-                            label: const Text('Add members'),
+                            label: Text(AppLocalizations.of(context)!.addMembers),
                             onPressed: () => bloc.mrClient
                                 .addOverlay((BuildContext context) {
                               return AddMembersDialogWidget(
@@ -136,30 +137,29 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                             sortColumnIndex: sortColumnIndex,
                             columns: [
                               DataColumn(
-                                  label: const Text('Name'),
+                                  label: Text(AppLocalizations.of(context)!.columnName),
                                   onSort: (columnIndex, ascending) {
                                     onSortColumn(snapshot.data!.members,
                                         columnIndex, ascending);
                                   }),
                               DataColumn(
-                                label: const Text('Email'),
+                                label: Text(AppLocalizations.of(context)!.columnEmail),
                                 onSort: (columnIndex, ascending) {
                                   onSortColumn(snapshot.data!.members,
                                       columnIndex, ascending);
                                 },
                               ),
                               DataColumn(
-                                label: const Text(
-                                    'Type (User or Admin Service Account)'),
+                                label: Text(AppLocalizations.of(context)!.columnMemberType),
                                 onSort: (columnIndex, ascending) {
                                   onSortColumn(snapshot.data!.members,
                                       columnIndex, ascending);
                                 },
                               ),
                               DataColumn(
-                                  label: const Padding(
-                                    padding: EdgeInsets.only(left: 12.0),
-                                    child: Text('Actions'),
+                                  label: Padding(
+                                    padding: const EdgeInsets.only(left: 12.0),
+                                    child: Text(AppLocalizations.of(context)!.columnActions),
                                   ),
                                   onSort: (i, a) => {}),
                             ],
@@ -175,13 +175,13 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                                           : "")),
                                   DataCell(Text(
                                       member.personType == PersonType.person
-                                          ? 'User'
-                                          : 'Service Account')),
+                                          ? AppLocalizations.of(context)!.memberTypeUser
+                                          : AppLocalizations.of(context)!.memberTypeServiceAccount)),
                                   DataCell(bloc.mrClient
                                           .isPortfolioOrSuperAdmin(
                                               snapshot.data!.portfolioId)
                                       ? Tooltip(
-                                          message: "Remove from group",
+                                          message: AppLocalizations.of(context)!.removeFromGroup,
                                           child: FHIconButton(
                                             icon: const Icon(Icons.delete),
                                             onPressed: () async {
@@ -189,7 +189,7 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                                                 await bloc.removeFromGroup(
                                                     snapshot.data!, member);
                                                 bloc.mrClient.addSnackbar(Text(
-                                                    "'${member.name}' removed from group '${snapshot.data!.name}'"));
+                                                    AppLocalizations.of(context)!.memberRemovedFromGroup(member.name ?? '', snapshot.data!.name)));
                                               } catch (e, s) {
                                                 bloc.mrClient.dialogError(e, s);
                                               }
@@ -290,14 +290,15 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
   }
 
   Widget _groupsDropdown(List<Group>? groups, GroupBloc bloc) {
+    final l10n = AppLocalizations.of(context)!;
     return groups == null || groups.isEmpty
-        ? const Text('No groups found in the portfolio')
+        ? Text(l10n.noGroupsFound)
         : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
               Text(
-                'Portfolio groups',
+                l10n.portfolioGroups,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               InkWell(
@@ -322,7 +323,7 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                               overflow: TextOverflow.ellipsis));
                     }).toList(),
                     hint: Text(
-                      'Select group',
+                      l10n.selectGroup,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     onChanged: (value) {
@@ -391,7 +392,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
     return Form(
       key: _formKey,
       child: FHAlertDialog(
-        title: Text('Add members to group ${widget.group.name}'),
+        title: Text(AppLocalizations.of(context)!.addMembersToGroupTitle(widget.group.name)),
         content: SizedBox(
           width: 500,
           child: Column(
@@ -401,14 +402,14 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
         ),
         actions: <Widget>[
           FHFlatButtonTransparent(
-            title: 'Cancel',
+            title: AppLocalizations.of(context)!.cancel,
             keepCase: true,
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-              title: 'Add to group',
+              title: AppLocalizations.of(context)!.addToGroup,
               keepCase: true,
               onPressed: () async {
                 final group = widget.group;
@@ -419,7 +420,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
                 if (success) {
                   widget.bloc.mrClient.removeOverlay();
                   widget.bloc.mrClient
-                      .addSnackbar(Text("Group '${group.name}' updated!"));
+                      .addSnackbar(Text(AppLocalizations.of(context)!.groupUpdated(group.name)));
                 }
               })
         ],
@@ -432,7 +433,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
       initialValue: const [],
       // none, but we could
       decoration:
-          const InputDecoration(labelText: 'Enter members to add to group...'),
+          InputDecoration(labelText: AppLocalizations.of(context)!.enterMembersToAdd),
       findSuggestions: (String query) async {
         if (query.isNotEmpty) {
           var sp = await bloc.mrClient.personServiceApi
