@@ -327,5 +327,52 @@
   "addPercentageRolloutRule": "添加百分比发布规则",
   "addPercentage": "+ 百分比",
   "percentageTotalOver100Error": "所有发布值的百分比总和不能超过 100%。请输入不同的值。",
-  "add": "添加"
+  "add": "添加",
+
+  "filterByFeatureType": "按功能标志类型筛选",
+  "searchFeatures": "搜索功能标志",
+
+  "createNewStrategy": "创建新策略",
+  "searchStrategy": "搜索策略",
+  "columnStrategyName": "名称",
+  "columnDateCreated": "创建时间 (UTC)",
+  "columnDateUpdated": "更新时间 (UTC)",
+  "columnCreatedBy": "创建人",
+  "columnUsedIn": "使用情况",
+  "cannotCreateStrategyNoApps": "此项目组合中没有应用程序，无法创建应用程序策略",
+  "appStrategyDeleteContent": "该应用程序策略将被删除并从所有功能标志中取消分配。\n\n此操作无法撤销！",
+  "appStrategyDeleted": "应用程序策略「{name}」已删除！",
+  "strategyUsage": "环境：{envCount}，功能标志值：{featureCount}",
+
+  "addRule": "添加规则",
+  "addCustomRule": "添加自定义规则",
+  "addCustomButton": "+ 自定义",
+
+  "selectCondition": "选择条件",
+  "selectValueType": "选择值类型",
+  "selectValue": "选择值",
+  "selectCountry": "选择国家/地区",
+  "selectDevice": "选择设备",
+  "selectPlatform": "选择平台",
+
+  "customKey": "自定义键",
+  "customKeyExample": "例如：\"warehouse-id\"",
+  "ruleNameRequired": "请输入规则名称",
+  "deleteRule": "删除规则",
+
+  "userKeys": "用户键",
+  "userKeyExample": "例如：bob@xyz.com",
+  "versions": "版本号",
+  "versionExample": "例如：1.3.4, 7.8.1-SNAPSHOT",
+  "customValues": "自定义值",
+  "customValuesExample": "例如：WarehouseA, WarehouseB",
+  "numbers": "数字",
+  "numberExample": "例如：6, 7.87543",
+  "dates": "日期 - YYYY-MM-DD",
+  "dateExample": "例如：2017-04-16",
+  "dateTimes": "日期/时间 - UTC/ISO8601 格式",
+  "dateTimeExample": "例如：2007-03-01T13:00:00Z",
+  "ipAddresses": "IP 地址（支持 CIDR）",
+  "ipAddressExample": "例如：168.192.54.3 或 192.168.86.1/8",
+  "addValue": "添加值"
 }

@@ -990,4 +990,133 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get add => 'Add';
+
+  @override
+  String get filterByFeatureType => 'Filter by feature type';
+
+  @override
+  String get searchFeatures => 'Search features';
+
+  @override
+  String get createNewStrategy => 'Create new strategy';
+
+  @override
+  String get searchStrategy => 'Search strategy';
+
+  @override
+  String get columnStrategyName => 'Name';
+
+  @override
+  String get columnDateCreated => 'Date created (UTC)';
+
+  @override
+  String get columnDateUpdated => 'Date updated (UTC)';
+
+  @override
+  String get columnCreatedBy => 'Created by';
+
+  @override
+  String get columnUsedIn => 'Used in';
+
+  @override
+  String get cannotCreateStrategyNoApps =>
+      'Cannot create application strategy as there are no applications in this portfolio';
+
+  @override
+  String get appStrategyDeleteContent =>
+      'This application strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!';
+
+  @override
+  String appStrategyDeleted(String name) {
+    return 'Application strategy \'$name\' deleted!';
+  }
+
+  @override
+  String strategyUsage(int envCount, int featureCount) {
+    return 'environments: $envCount, feature values: $featureCount';
+  }
+
+  @override
+  String get addRule => 'Add rule';
+
+  @override
+  String get addCustomRule => 'Add custom rule';
+
+  @override
+  String get addCustomButton => '+ Custom';
+
+  @override
+  String get selectCondition => 'Select condition';
+
+  @override
+  String get selectValueType => 'Select value type';
+
+  @override
+  String get selectValue => 'Select value';
+
+  @override
+  String get selectCountry => 'Select Country';
+
+  @override
+  String get selectDevice => 'Select Device';
+
+  @override
+  String get selectPlatform => 'Select Platform';
+
+  @override
+  String get customKey => 'Custom key';
+
+  @override
+  String get customKeyExample => 'e.g. \"warehouse-id\"';
+
+  @override
+  String get ruleNameRequired => 'Rule name required';
+
+  @override
+  String get deleteRule => 'Delete rule';
+
+  @override
+  String get userKeys => 'User key(s)';
+
+  @override
+  String get userKeyExample => 'e.g. bob@xyz.com';
+
+  @override
+  String get versions => 'Version(s)';
+
+  @override
+  String get versionExample => 'e.g. 1.3.4, 7.8.1-SNAPSHOT';
+
+  @override
+  String get customValues => 'Custom value(s)';
+
+  @override
+  String get customValuesExample => 'e.g. WarehouseA, WarehouseB';
+
+  @override
+  String get numbers => 'Number(s)';
+
+  @override
+  String get numberExample => 'e.g. 6, 7.87543';
+
+  @override
+  String get dates => 'Date(s) - YYYY-MM-DD';
+
+  @override
+  String get dateExample => 'e.g. 2017-04-16';
+
+  @override
+  String get dateTimes => 'Date/Time(s) - UTC/ISO8601 format';
+
+  @override
+  String get dateTimeExample => 'e.g. 2007-03-01T13:00:00Z';
+
+  @override
+  String get ipAddresses => 'IP Address(es) with or without CIDR';
+
+  @override
+  String get ipAddressExample => 'e.g. 168.192.54.3 or 192.168.86.1/8';
+
+  @override
+  String get addValue => 'Add value';
 }

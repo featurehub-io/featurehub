@@ -944,4 +944,132 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get add => '添加';
+
+  @override
+  String get filterByFeatureType => '按功能标志类型筛选';
+
+  @override
+  String get searchFeatures => '搜索功能标志';
+
+  @override
+  String get createNewStrategy => '创建新策略';
+
+  @override
+  String get searchStrategy => '搜索策略';
+
+  @override
+  String get columnStrategyName => '名称';
+
+  @override
+  String get columnDateCreated => '创建时间 (UTC)';
+
+  @override
+  String get columnDateUpdated => '更新时间 (UTC)';
+
+  @override
+  String get columnCreatedBy => '创建人';
+
+  @override
+  String get columnUsedIn => '使用情况';
+
+  @override
+  String get cannotCreateStrategyNoApps => '此项目组合中没有应用程序，无法创建应用程序策略';
+
+  @override
+  String get appStrategyDeleteContent =>
+      '该应用程序策略将被删除并从所有功能标志中取消分配。\n\n此操作无法撤销！';
+
+  @override
+  String appStrategyDeleted(String name) {
+    return '应用程序策略「$name」已删除！';
+  }
+
+  @override
+  String strategyUsage(int envCount, int featureCount) {
+    return '环境：$envCount，功能标志值：$featureCount';
+  }
+
+  @override
+  String get addRule => '添加规则';
+
+  @override
+  String get addCustomRule => '添加自定义规则';
+
+  @override
+  String get addCustomButton => '+ 自定义';
+
+  @override
+  String get selectCondition => '选择条件';
+
+  @override
+  String get selectValueType => '选择值类型';
+
+  @override
+  String get selectValue => '选择值';
+
+  @override
+  String get selectCountry => '选择国家/地区';
+
+  @override
+  String get selectDevice => '选择设备';
+
+  @override
+  String get selectPlatform => '选择平台';
+
+  @override
+  String get customKey => '自定义键';
+
+  @override
+  String get customKeyExample => '例如：\"warehouse-id\"';
+
+  @override
+  String get ruleNameRequired => '请输入规则名称';
+
+  @override
+  String get deleteRule => '删除规则';
+
+  @override
+  String get userKeys => '用户键';
+
+  @override
+  String get userKeyExample => '例如：bob@xyz.com';
+
+  @override
+  String get versions => '版本号';
+
+  @override
+  String get versionExample => '例如：1.3.4, 7.8.1-SNAPSHOT';
+
+  @override
+  String get customValues => '自定义值';
+
+  @override
+  String get customValuesExample => '例如：WarehouseA, WarehouseB';
+
+  @override
+  String get numbers => '数字';
+
+  @override
+  String get numberExample => '例如：6, 7.87543';
+
+  @override
+  String get dates => '日期 - YYYY-MM-DD';
+
+  @override
+  String get dateExample => '例如：2017-04-16';
+
+  @override
+  String get dateTimes => '日期/时间 - UTC/ISO8601 格式';
+
+  @override
+  String get dateTimeExample => '例如：2007-03-01T13:00:00Z';
+
+  @override
+  String get ipAddresses => 'IP 地址（支持 CIDR）';
+
+  @override
+  String get ipAddressExample => '例如：168.192.54.3 或 192.168.86.1/8';
+
+  @override
+  String get addValue => '添加值';
 }

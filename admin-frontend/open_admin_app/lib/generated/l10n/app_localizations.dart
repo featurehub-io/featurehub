@@ -1813,6 +1813,252 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add'**
   String get add;
+
+  /// Hint text on the feature type filter dropdown in the features dashboard
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by feature type'**
+  String get filterByFeatureType;
+
+  /// Hint text in the features search field in the features dashboard
+  ///
+  /// In en, this message translates to:
+  /// **'Search features'**
+  String get searchFeatures;
+
+  /// Button to create a new application strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Create new strategy'**
+  String get createNewStrategy;
+
+  /// Hint text in the application strategies search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search strategy'**
+  String get searchStrategy;
+
+  /// Table column header: strategy name
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get columnStrategyName;
+
+  /// Table column header: creation date
+  ///
+  /// In en, this message translates to:
+  /// **'Date created (UTC)'**
+  String get columnDateCreated;
+
+  /// Table column header: last updated date
+  ///
+  /// In en, this message translates to:
+  /// **'Date updated (UTC)'**
+  String get columnDateUpdated;
+
+  /// Table column header: creator
+  ///
+  /// In en, this message translates to:
+  /// **'Created by'**
+  String get columnCreatedBy;
+
+  /// Table column header: usage summary
+  ///
+  /// In en, this message translates to:
+  /// **'Used in'**
+  String get columnUsedIn;
+
+  /// Empty state when portfolio has no applications for strategy creation
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot create application strategy as there are no applications in this portfolio'**
+  String get cannotCreateStrategyNoApps;
+
+  /// Body of the delete application strategy confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This application strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!'**
+  String get appStrategyDeleteContent;
+
+  /// Snackbar after deleting an application strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Application strategy \'{name}\' deleted!'**
+  String appStrategyDeleted(String name);
+
+  /// Strategy usage cell: how many environments and feature values use this strategy
+  ///
+  /// In en, this message translates to:
+  /// **'environments: {envCount}, feature values: {featureCount}'**
+  String strategyUsage(int envCount, int featureCount);
+
+  /// Label before the well-known rule type buttons in the strategy editor
+  ///
+  /// In en, this message translates to:
+  /// **'Add rule'**
+  String get addRule;
+
+  /// Label before the custom rule button in the strategy editor
+  ///
+  /// In en, this message translates to:
+  /// **'Add custom rule'**
+  String get addCustomRule;
+
+  /// Button to add a custom attribute rule in the strategy editor
+  ///
+  /// In en, this message translates to:
+  /// **'+ Custom'**
+  String get addCustomButton;
+
+  /// Hint on the condition/matcher dropdown in the strategy rule editor
+  ///
+  /// In en, this message translates to:
+  /// **'Select condition'**
+  String get selectCondition;
+
+  /// Hint on the value-type dropdown for custom attribute rules
+  ///
+  /// In en, this message translates to:
+  /// **'Select value type'**
+  String get selectValueType;
+
+  /// Hint on the boolean value dropdown in the strategy rule editor
+  ///
+  /// In en, this message translates to:
+  /// **'Select value'**
+  String get selectValue;
+
+  /// Hint on the country multiselect dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Select Country'**
+  String get selectCountry;
+
+  /// Hint on the device multiselect dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Select Device'**
+  String get selectDevice;
+
+  /// Hint on the platform multiselect dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Select Platform'**
+  String get selectPlatform;
+
+  /// Label for the custom attribute key field
+  ///
+  /// In en, this message translates to:
+  /// **'Custom key'**
+  String get customKey;
+
+  /// Helper text example for the custom attribute key field
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. \"warehouse-id\"'**
+  String get customKeyExample;
+
+  /// Validation message when the custom rule key is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Rule name required'**
+  String get ruleNameRequired;
+
+  /// Tooltip on the delete-rule icon button
+  ///
+  /// In en, this message translates to:
+  /// **'Delete rule'**
+  String get deleteRule;
+
+  /// Label for the user-key value input field
+  ///
+  /// In en, this message translates to:
+  /// **'User key(s)'**
+  String get userKeys;
+
+  /// Helper text example for user key values
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. bob@xyz.com'**
+  String get userKeyExample;
+
+  /// Label for the version value input field
+  ///
+  /// In en, this message translates to:
+  /// **'Version(s)'**
+  String get versions;
+
+  /// Helper text example for version values
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 1.3.4, 7.8.1-SNAPSHOT'**
+  String get versionExample;
+
+  /// Label for the custom attribute value input field
+  ///
+  /// In en, this message translates to:
+  /// **'Custom value(s)'**
+  String get customValues;
+
+  /// Helper text example for custom attribute values
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. WarehouseA, WarehouseB'**
+  String get customValuesExample;
+
+  /// Label for the number value input field
+  ///
+  /// In en, this message translates to:
+  /// **'Number(s)'**
+  String get numbers;
+
+  /// Helper text example for number values
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 6, 7.87543'**
+  String get numberExample;
+
+  /// Label for the date value input field
+  ///
+  /// In en, this message translates to:
+  /// **'Date(s) - YYYY-MM-DD'**
+  String get dates;
+
+  /// Helper text example for date values
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 2017-04-16'**
+  String get dateExample;
+
+  /// Label for the datetime value input field
+  ///
+  /// In en, this message translates to:
+  /// **'Date/Time(s) - UTC/ISO8601 format'**
+  String get dateTimes;
+
+  /// Helper text example for datetime values
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 2007-03-01T13:00:00Z'**
+  String get dateTimeExample;
+
+  /// Label for the IP address value input field
+  ///
+  /// In en, this message translates to:
+  /// **'IP Address(es) with or without CIDR'**
+  String get ipAddresses;
+
+  /// Helper text example for IP address values
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 168.192.54.3 or 192.168.86.1/8'**
+  String get ipAddressExample;
+
+  /// Tooltip and label on the add-value button in the strategy rule editor
+  ///
+  /// In en, this message translates to:
+  /// **'Add value'**
+  String get addValue;
 }
 
 class _AppLocalizationsDelegate

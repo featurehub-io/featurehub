@@ -973,5 +973,137 @@
   "@percentageTotalOver100Error": { "description": "Error when percentage totals exceed 100%" },
 
   "add": "Add",
-  "@add": { "description": "Button label to add/save a new strategy" }
+  "@add": { "description": "Button label to add/save a new strategy" },
+
+  "filterByFeatureType": "Filter by feature type",
+  "@filterByFeatureType": { "description": "Hint text on the feature type filter dropdown in the features dashboard" },
+
+  "searchFeatures": "Search features",
+  "@searchFeatures": { "description": "Hint text in the features search field in the features dashboard" },
+
+  "createNewStrategy": "Create new strategy",
+  "@createNewStrategy": { "description": "Button to create a new application strategy" },
+
+  "searchStrategy": "Search strategy",
+  "@searchStrategy": { "description": "Hint text in the application strategies search field" },
+
+  "columnStrategyName": "Name",
+  "@columnStrategyName": { "description": "Table column header: strategy name" },
+
+  "columnDateCreated": "Date created (UTC)",
+  "@columnDateCreated": { "description": "Table column header: creation date" },
+
+  "columnDateUpdated": "Date updated (UTC)",
+  "@columnDateUpdated": { "description": "Table column header: last updated date" },
+
+  "columnCreatedBy": "Created by",
+  "@columnCreatedBy": { "description": "Table column header: creator" },
+
+  "columnUsedIn": "Used in",
+  "@columnUsedIn": { "description": "Table column header: usage summary" },
+
+  "cannotCreateStrategyNoApps": "Cannot create application strategy as there are no applications in this portfolio",
+  "@cannotCreateStrategyNoApps": { "description": "Empty state when portfolio has no applications for strategy creation" },
+
+  "appStrategyDeleteContent": "This application strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!",
+  "@appStrategyDeleteContent": { "description": "Body of the delete application strategy confirmation dialog" },
+
+  "appStrategyDeleted": "Application strategy '{name}' deleted!",
+  "@appStrategyDeleted": {
+    "description": "Snackbar after deleting an application strategy",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "strategyUsage": "environments: {envCount}, feature values: {featureCount}",
+  "@strategyUsage": {
+    "description": "Strategy usage cell: how many environments and feature values use this strategy",
+    "placeholders": {
+      "envCount": { "type": "int" },
+      "featureCount": { "type": "int" }
+    }
+  },
+
+  "addRule": "Add rule",
+  "@addRule": { "description": "Label before the well-known rule type buttons in the strategy editor" },
+
+  "addCustomRule": "Add custom rule",
+  "@addCustomRule": { "description": "Label before the custom rule button in the strategy editor" },
+
+  "addCustomButton": "+ Custom",
+  "@addCustomButton": { "description": "Button to add a custom attribute rule in the strategy editor" },
+
+  "selectCondition": "Select condition",
+  "@selectCondition": { "description": "Hint on the condition/matcher dropdown in the strategy rule editor" },
+
+  "selectValueType": "Select value type",
+  "@selectValueType": { "description": "Hint on the value-type dropdown for custom attribute rules" },
+
+  "selectValue": "Select value",
+  "@selectValue": { "description": "Hint on the boolean value dropdown in the strategy rule editor" },
+
+  "selectCountry": "Select Country",
+  "@selectCountry": { "description": "Hint on the country multiselect dropdown" },
+
+  "selectDevice": "Select Device",
+  "@selectDevice": { "description": "Hint on the device multiselect dropdown" },
+
+  "selectPlatform": "Select Platform",
+  "@selectPlatform": { "description": "Hint on the platform multiselect dropdown" },
+
+  "customKey": "Custom key",
+  "@customKey": { "description": "Label for the custom attribute key field" },
+
+  "customKeyExample": "e.g. \"warehouse-id\"",
+  "@customKeyExample": { "description": "Helper text example for the custom attribute key field" },
+
+  "ruleNameRequired": "Rule name required",
+  "@ruleNameRequired": { "description": "Validation message when the custom rule key is empty" },
+
+  "deleteRule": "Delete rule",
+  "@deleteRule": { "description": "Tooltip on the delete-rule icon button" },
+
+  "userKeys": "User key(s)",
+  "@userKeys": { "description": "Label for the user-key value input field" },
+
+  "userKeyExample": "e.g. bob@xyz.com",
+  "@userKeyExample": { "description": "Helper text example for user key values" },
+
+  "versions": "Version(s)",
+  "@versions": { "description": "Label for the version value input field" },
+
+  "versionExample": "e.g. 1.3.4, 7.8.1-SNAPSHOT",
+  "@versionExample": { "description": "Helper text example for version values" },
+
+  "customValues": "Custom value(s)",
+  "@customValues": { "description": "Label for the custom attribute value input field" },
+
+  "customValuesExample": "e.g. WarehouseA, WarehouseB",
+  "@customValuesExample": { "description": "Helper text example for custom attribute values" },
+
+  "numbers": "Number(s)",
+  "@numbers": { "description": "Label for the number value input field" },
+
+  "numberExample": "e.g. 6, 7.87543",
+  "@numberExample": { "description": "Helper text example for number values" },
+
+  "dates": "Date(s) - YYYY-MM-DD",
+  "@dates": { "description": "Label for the date value input field" },
+
+  "dateExample": "e.g. 2017-04-16",
+  "@dateExample": { "description": "Helper text example for date values" },
+
+  "dateTimes": "Date/Time(s) - UTC/ISO8601 format",
+  "@dateTimes": { "description": "Label for the datetime value input field" },
+
+  "dateTimeExample": "e.g. 2007-03-01T13:00:00Z",
+  "@dateTimeExample": { "description": "Helper text example for datetime values" },
+
+  "ipAddresses": "IP Address(es) with or without CIDR",
+  "@ipAddresses": { "description": "Label for the IP address value input field" },
+
+  "ipAddressExample": "e.g. 168.192.54.3 or 192.168.86.1/8",
+  "@ipAddressExample": { "description": "Helper text example for IP address values" },
+
+  "addValue": "Add value",
+  "@addValue": { "description": "Tooltip and label on the add-value button in the strategy rule editor" }
 }
