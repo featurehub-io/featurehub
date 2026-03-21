@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
@@ -47,25 +48,27 @@ class _SetFeatureMetadataWidgetState extends State<SetFeatureMetadataWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isReadOnly = !widget.bloc.mrClient.userHasFeatureEditRoleInCurrentApplication;
 
     return (FHAlertDialog(
-        title: Text(
-            " ${isReadOnly ? 'View' : 'Edit'} metadata for '${_feature != null ? _feature!.name : ''}'"),
+        title: Text(isReadOnly
+            ? l10n.viewMetadataFor(_feature?.name ?? '')
+            : l10n.editMetadataFor(_feature?.name ?? '')),
         actions: [
           FHFlatButtonTransparent(
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
-            title: 'Cancel',
+            title: l10n.cancel,
             keepCase: true,
           ),
           !isReadOnly
               ? FHFlatButton(
-                  title: 'Set value',
+                  title: l10n.setValue,
                   onPressed: (() {
                     if (_formKey.currentState!.validate()) {
-                      _changeValue();
+                      _changeValue(l10n);
                       widget.bloc.mrClient.removeOverlay();
                     }
                   }))
@@ -75,11 +78,11 @@ class _SetFeatureMetadataWidgetState extends State<SetFeatureMetadataWidget> {
             controller: tec, formKey: _formKey, onlyJsonValidation: false)));
   }
 
-  Future<void> _changeValue() async {
+  Future<void> _changeValue(AppLocalizations l10n) async {
     try {
       await widget.bloc.updateFeatureMetadata(_feature!, tec.text);
       widget.bloc.mrClient.addSnackbar(
-          Text('Feature ${_feature!.name} metadata has been updated!'));
+          Text(l10n.featureMetadataUpdated(_feature!.name)));
     } catch (e, s) {
       widget.bloc.mrClient.dialogError(e, s);
     }

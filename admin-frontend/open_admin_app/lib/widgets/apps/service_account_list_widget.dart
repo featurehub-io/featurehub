@@ -13,6 +13,7 @@ import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 import 'package:open_admin_app/widgets/service-accounts/apikey_reset_dialog_widget.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'manage_service_accounts_bloc.dart';
 
 class ServiceAccountsListWidget extends StatelessWidget {
@@ -192,15 +193,15 @@ class _ServiceAccountEnvironment extends StatelessWidget {
               SelectableText(application.name),
               Text(
                   found
-                      ? 'The service account has permissions to one or more environments in this application'
-                      : 'The service account has no permissions to any environments in this application',
+                      ? AppLocalizations.of(context)!.saHasPermissions
+                      : AppLocalizations.of(context)!.saHasNoPermissions,
                   style: Theme.of(context).textTheme.bodySmall),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   FHFlatButtonTransparent(
                     keepCase: true,
-                    title: found ? 'Change access' : 'Add access',
+                    title: found ? AppLocalizations.of(context)!.changeAccess : AppLocalizations.of(context)!.addAccess,
                     onPressed: () {
                       BlocProvider.of<ManagementRepositoryClientBloc>(context)
                           .currentAid = application.id;
@@ -262,10 +263,10 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return FHDeleteThingWarningWidget(
       thing: "service account '${serviceAccount.name}'",
-      content:
-          'All applications using this service account will no longer have access to features! \n\nThis cannot be undone!',
+      content: l10n.saDeleteContent,
       bloc: bloc.mrClient,
       deleteSelected: () async {
         var success = false;
@@ -275,12 +276,11 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
           if (success) {
             bloc.mrClient.removeOverlay();
             bloc.mrClient.addSnackbar(
-                Text("Service account '${serviceAccount.name}' deleted!"));
+                Text(l10n.saDeleted(serviceAccount.name)));
           }
         } catch (e, s) {
           bloc.mrClient.dialogError(e, s,
-              messageTitle:
-                  "Couldn't delete service account ${serviceAccount.name}");
+              messageTitle: l10n.saDeleteError(serviceAccount.name));
         }
 
         return success;
@@ -328,8 +328,8 @@ class _ServiceAccountUpdateDialogWidgetState
       key: _formKey,
       child: FHAlertDialog(
         title: Text(widget.serviceAccount == null
-            ? 'Create new service account'
-            : 'Edit service account'),
+            ? AppLocalizations.of(context)!.createNewServiceAccount
+            : AppLocalizations.of(context)!.editServiceAccount),
         content: SizedBox(
           width: 500,
           child: Column(
@@ -338,27 +338,25 @@ class _ServiceAccountUpdateDialogWidgetState
               TextFormField(
                   controller: _name,
                   autofocus: true,
-                  decoration:
-                      const InputDecoration(labelText: 'Service account name'),
+                  decoration: InputDecoration(labelText: AppLocalizations.of(context)!.saNameLabel),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
-                      return 'Please enter a service account name';
+                      return AppLocalizations.of(context)!.saNameRequired;
                     }
                     if (v.length < 4) {
-                      return 'Service account name needs to be at least 4 characters long';
+                      return AppLocalizations.of(context)!.saNameTooShort;
                     }
                     return null;
                   })),
               TextFormField(
                   controller: _description,
-                  decoration: const InputDecoration(
-                      labelText: 'Service account description'),
+                  decoration: InputDecoration(labelText: AppLocalizations.of(context)!.saDescriptionLabel),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
-                      return 'Please enter service account description';
+                      return AppLocalizations.of(context)!.saDescriptionRequired;
                     }
                     if (v.length < 4) {
-                      return 'Service account description needs to be at least 4 characters long';
+                      return AppLocalizations.of(context)!.saDescriptionTooShort;
                     }
                     return null;
                   })),
@@ -367,17 +365,18 @@ class _ServiceAccountUpdateDialogWidgetState
         ),
         actions: <Widget>[
           FHFlatButtonTransparent(
-            title: 'Cancel',
+            title: AppLocalizations.of(context)!.cancel,
             keepCase: true,
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-              title: isUpdate ? 'Update' : 'Create',
+              title: isUpdate ? AppLocalizations.of(context)!.update : AppLocalizations.of(context)!.create,
               onPressed: (() async {
                 if (_formKey.currentState!.validate()) {
                   try {
+                    final l10n = AppLocalizations.of(context)!;
                     if (isUpdate) {
                       await widget.bloc.updateServiceAccount(
                           widget.serviceAccount!,
@@ -385,19 +384,18 @@ class _ServiceAccountUpdateDialogWidgetState
                           _description.text);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.addSnackbar(
-                          Text("Service account '${_name.text}' updated!"));
+                          Text(l10n.saUpdated(_name.text)));
                     } else {
                       await widget.bloc
                           .createServiceAccount(_name.text, _description.text);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.addSnackbar(
-                          Text("Service account '${_name.text}' created!"));
+                          Text(l10n.saCreated(_name.text)));
                     }
                   } catch (e, s) {
                     if (e is ApiException && e.code == 409) {
                       widget.bloc.mrClient.customError(
-                          messageTitle:
-                              "Service account '${_name.text}' already exists");
+                          messageTitle: AppLocalizations.of(context)!.saAlreadyExists(_name.text));
                     } else {
                       await widget.bloc.mrClient.dialogError(e, s);
                     }
@@ -430,8 +428,8 @@ class _ResetApiKeyWidget extends StatelessWidget {
         color: Colors.red,
       ),
       tooltip: isClientKey
-          ? "Reset client eval API keys"
-          : "Reset server eval API keys",
+          ? AppLocalizations.of(context)!.resetClientApiKeys
+          : AppLocalizations.of(context)!.resetServerApiKeys,
       onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
         return ApiKeyResetDialogWidget(
           sa: sa,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
@@ -35,10 +36,11 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Form(
       key: _formKey,
       child: FHAlertDialog(
-        title: Text(widget.group == null ? 'Create new group' : 'Edit group'),
+        title: Text(widget.group == null ? l10n.createNewGroup : l10n.editGroup),
         content: SizedBox(
           width: 500,
           child: Column(
@@ -47,13 +49,13 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
               TextFormField(
                   autofocus: true,
                   controller: _groupName,
-                  decoration: const InputDecoration(labelText: 'Group name'),
+                  decoration: InputDecoration(labelText: l10n.groupNameLabel),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
-                      return 'Please enter a group name';
+                      return l10n.groupNameRequired;
                     }
                     if (v.length < 4) {
-                      return 'Group name needs to be at least 4 characters long';
+                      return l10n.groupNameTooShort;
                     }
                     return null;
                   })),
@@ -62,32 +64,34 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
         ),
         actions: <Widget>[
           FHFlatButtonTransparent(
-            title: 'Cancel',
+            title: l10n.cancel,
             keepCase: true,
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-              title: widget.group == null ? 'Create' : 'Update',
-              onPressed: () => _handleSubmitted())
+              title: widget.group == null ? l10n.create : l10n.update,
+              onPressed: () => _handleSubmitted(l10n))
         ],
       ),
     );
   }
 
-  void _handleSubmitted() {
+  void _handleSubmitted(AppLocalizations l10n) {
     if (_formKey.currentState!.validate()) {
       _callUpdateGroup(_groupName.text).then((onValue) {
         // force list update
         widget.bloc.mrClient.removeOverlay();
         widget.bloc.mrClient.addSnackbar(Text(
-            "Group '${_groupName.text}' ${widget.group == null ? " created" : " updated"}!"));
+            widget.group == null
+                ? l10n.groupCreated(_groupName.text)
+                : l10n.groupUpdated(_groupName.text)));
       }).catchError((e, s) async {
         if (e is ApiException && e.code == 409) {
           widget.bloc.mrClient.removeOverlay();
           widget.bloc.mrClient.customError(
-              messageTitle: "Group '${_groupName.text}' already exists");
+              messageTitle: l10n.groupAlreadyExists(_groupName.text));
         } else {
           await widget.bloc.mrClient.dialogError(e, s);
         }
@@ -111,20 +115,20 @@ class GroupDeleteDialogWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return FHDeleteThingWarningWidget(
       bloc: bloc.mrClient,
       thing: "group '${group.name}'",
-      content:
-          'All permissions belonging to this group will be deleted \n\nThis cannot be undone!',
+      content: l10n.groupDeleteContent,
       deleteSelected: () async {
         try {
           await bloc.deleteGroup(group.id, true);
-          bloc.mrClient.addSnackbar(Text("Group '${group.name}' deleted!"));
+          bloc.mrClient.addSnackbar(Text(l10n.groupDeleted(group.name)));
           return true;
         } catch (e, s) {
           if (e is ApiException && e.code >= 400) {
             bloc.mrClient.customError(
-                messageTitle: 'Could not delete group ${group.name}');
+                messageTitle: l10n.couldNotDeleteGroup(group.name));
           } else {
             await bloc.mrClient.dialogError(e, s);
           }

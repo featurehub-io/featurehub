@@ -16,6 +16,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class AppsRoute extends StatefulWidget {
   final bool createApp;
@@ -45,15 +46,15 @@ class AppsRouteState extends State<AppsRoute> {
         const SizedBox(height: 8.0),
         Wrap(
           children: [
-            const FHHeader(
-              title: 'Applications',
+            FHHeader(
+              title: AppLocalizations.of(context)!.applications,
               children: [
                 FHExternalLinkWidget(
-                  tooltipMessage: "View documentation",
+                  tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
                   link:
                       "https://docs.featurehub.io/featurehub/latest/applications.html",
-                  icon: Icon(Icons.arrow_outward_outlined),
-                  label: 'Applications Documentation',
+                  icon: const Icon(Icons.arrow_outward_outlined),
+                  label: AppLocalizations.of(context)!.applicationsDocumentation,
                 )
               ],
             ),
@@ -64,7 +65,7 @@ class AppsRouteState extends State<AppsRoute> {
                       (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
                     return FilledButton.icon(
                       icon: const Icon(Icons.add),
-                      label: const Text('Create new application'),
+                      label: Text(AppLocalizations.of(context)!.createNewApplication),
                       onPressed: () => _createApp(bloc),
                     );
                   } else {
@@ -88,7 +89,7 @@ class AppsRouteState extends State<AppsRoute> {
                         child: OutlinedButton.icon(
                             onPressed: () => _refreshPortfolioConfirm(bloc),
                             icon: const Icon(Icons.cached),
-                            label: const Text('Republish portfolio cache'))),
+                            label: Text(AppLocalizations.of(context)!.republishPortfolioCache))),
                   );
                 }
 
@@ -111,22 +112,21 @@ class AppsRouteState extends State<AppsRoute> {
   void _refreshPortfolioConfirm(AppsBloc bloc) {
     bloc.mrClient.addOverlay((BuildContext context) {
       return FHAlertDialog(
-        title: const Text(
-          "Warning: Intensive system operation",
-          style: TextStyle(fontSize: 22.0),
+        title: Text(
+          AppLocalizations.of(context)!.republishPortfolioCacheWarningTitle,
+          style: const TextStyle(fontSize: 22.0),
         ),
-        content: const Text(
-            "Are you sure you want to republish this entire portfolio's cache?"),
+        content: Text(AppLocalizations.of(context)!.republishPortfolioCacheWarningContent),
         actions: <Widget>[
           FHFlatButton(
-            title: 'OK',
+            title: AppLocalizations.of(context)!.ok,
             onPressed: () {
               bloc.refreshPortfolioCache();
               bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-            title: 'Cancel',
+            title: AppLocalizations.of(context)!.cancel,
             onPressed: () {
               bloc.mrClient.removeOverlay();
             },
@@ -306,14 +306,14 @@ class _AppTotals extends StatelessWidget {
         children: [
           if (application.environments.isNotEmpty == true)
             _NumberAndIcon(
-              tooltipText: 'Environments',
+              tooltipText: AppLocalizations.of(context)!.environments,
               text: application.environments.length.toString(),
               icon: const Icon(Icons.list,
                   size: 16.0, color: Colors.deepPurpleAccent),
             ),
           if (application.features.isNotEmpty == true)
             _NumberAndIcon(
-              tooltipText: 'Feature flags',
+              tooltipText: AppLocalizations.of(context)!.featureFlags,
               text: application.features.length.toString(),
               icon: const Icon(Icons.flag, size: 16.0, color: Colors.green),
             ),
@@ -381,7 +381,7 @@ class _PopUpAdminMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton(
       splashRadius: 20,
-      tooltip: 'Show more',
+      tooltip: AppLocalizations.of(context)!.showMore,
       icon: const Icon(
         Icons.more_vert,
         size: 22.0,
@@ -414,25 +414,26 @@ class _PopUpAdminMenu extends StatelessWidget {
         }
       },
       itemBuilder: (BuildContext context) {
+        final l10n = AppLocalizations.of(context)!;
         var items = <PopupMenuItem>[
           PopupMenuItem(
               value: 'features',
-              child: Text('Features',
+              child: Text(l10n.features,
                   style: Theme.of(context).textTheme.bodyMedium)),
           PopupMenuItem(
               value: 'edit',
-              child:
-                  Text('Edit', style: Theme.of(context).textTheme.bodyMedium)),
+              child: Text(l10n.edit,
+                  style: Theme.of(context).textTheme.bodyMedium)),
           PopupMenuItem(
               value: 'delete',
-              child: Text('Delete',
+              child: Text(l10n.delete,
                   style: Theme.of(context).textTheme.bodyMedium)),
         ];
         if (bloc.mrClient.identityProviders.dacha1Enabled &&
             bloc.mrClient.personState.userIsSuperAdmin) {
           items.add(PopupMenuItem(
               value: 'publish',
-              child: Text('Republish cache for this app',
+              child: Text(l10n.republishCacheForApp,
                   style: Theme.of(context).textTheme.bodyMedium)));
         }
         return items;

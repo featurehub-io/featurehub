@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_json_editor.dart';
@@ -97,6 +98,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
   }
 
   void _viewJsonEditor(BuildContext context, bool enabled) {
+    final l10n = AppLocalizations.of(context)!;
     var initialValue = tec.text;
     showDialog(
         context: context,
@@ -107,19 +109,19 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
               formKey: _formKey,
               onlyJsonValidation: true,
             ),
-            title: const Text("Set feature value"),
+            title: Text(l10n.setFeatureValue),
             actions: [
               FHFlatButtonTransparent(
                 onPressed: () {
                   tec.text = initialValue;
                   Navigator.pop(context);
                 },
-                title: 'Cancel',
+                title: l10n.cancel,
                 keepCase: true,
               ),
               enabled
                   ? FHFlatButton(
-                      title: 'Set value',
+                      title: l10n.setValue,
                       onPressed: (() {
                         if (_formKey.currentState!.validate()) {
                           _valueChanged();

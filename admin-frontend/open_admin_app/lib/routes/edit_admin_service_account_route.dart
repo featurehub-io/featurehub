@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_filled_input_decoration.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
@@ -59,6 +60,7 @@ class EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<EditUserBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Form(
       key: _formKey,
@@ -67,12 +69,12 @@ class EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               FHHeader(
-                title: 'Edit admin SDK service account',
-                children: <Widget>[],
+                title: l10n.editAdminSdkServiceAccount,
+                children: const <Widget>[],
               ),
             ],
           ),
@@ -86,15 +88,14 @@ class EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
                   padding: const EdgeInsets.only(top: 30),
                   child: TextFormField(
                     controller: _name,
-                    decoration: fhFilledInputDecoration(labelText: 'Name'),
-                    //  initialValue: bloc.person !=null ? bloc.person.name : '',
-                    validator: (v) => (v?.isEmpty == true) ? 'Edit name' : null,
+                    decoration: fhFilledInputDecoration(labelText: l10n.nameLabel),
+                    validator: (v) => (v?.isEmpty == true) ? l10n.editName : null,
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 30.0),
                   child: Text(
-                    'Remove Admin Service Account from a group or add a new one',
+                    l10n.removeOrAddAdminSaToGroup,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
@@ -111,7 +112,7 @@ class EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
                   ManagementRepositoryClientBloc.router
                       .navigateTo(context, '/admin-service-accounts');
                 },
-                title: 'Cancel',
+                title: l10n.cancel,
                 keepCase: true),
             Padding(
                 padding: const EdgeInsets.only(left: 8.0),
@@ -122,7 +123,7 @@ class EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
                         try {
                           bloc.updateApiKeyDetails(_name.text);
                           bloc.mrClient.addSnackbar(Text(
-                              'Admin Service Account ${bloc.person!.name!} has been updated'));
+                              l10n.adminSaUpdated(bloc.person!.name!)));
                           ManagementRepositoryClientBloc.router
                               .navigateTo(context, '/admin-service-accounts');
                         } catch (e, s) {
@@ -130,7 +131,7 @@ class EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
                         }
                       }
                     },
-                    title: 'Save and close',
+                    title: l10n.saveAndClose,
                     keepCase: true))
           ]),
         ],

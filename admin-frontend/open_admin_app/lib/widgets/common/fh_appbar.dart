@@ -1,5 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
+import 'package:open_admin_app/widgets/dynamic-locale/fh_dynamic_locale.dart';
 
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
@@ -95,9 +97,10 @@ class FHappBar extends StatelessWidget {
                         const SizedBox(
                           width: 16.0,
                         ),
+                      _LanguageDropdown(),
                       IconButton(
                           // splashRadius: 20,
-                          tooltip: light ? 'Dark mode' : 'Light mode',
+                          tooltip: light ? AppLocalizations.of(context)!.darkMode : AppLocalizations.of(context)!.lightMode,
                           color: Theme.of(context).colorScheme.primary,
                           icon: Icon(light
                               ? Icons.dark_mode_outlined
@@ -115,7 +118,7 @@ class FHappBar extends StatelessWidget {
                           },
                           color: Theme.of(context).colorScheme.primary,
                           icon: const Icon(Icons.exit_to_app),
-                          tooltip: 'Sign out'),
+                          tooltip: AppLocalizations.of(context)!.signOut),
                     ],
                   ),
                 );
@@ -124,6 +127,49 @@ class FHappBar extends StatelessWidget {
               }
             })
       ],
+    );
+  }
+}
+
+class _LanguageDropdown extends StatelessWidget {
+  static const _languages = <String, String>{
+    'en': 'English',
+    'zh': '中文',
+  };
+
+  static const _abbreviations = <String, String>{
+    'en': 'En',
+    'zh': '中',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final localeState = DynamicLocale.of(context);
+    final currentCode = localeState.locale.languageCode;
+    final currentAbbr = _abbreviations[currentCode] ?? currentCode;
+
+    return PopupMenuButton<String>(
+      tooltip: 'Select language',
+      initialValue: currentCode,
+      offset: const Offset(0, kToolbarHeight),
+      onSelected: (code) => localeState.setLocale(Locale(code)),
+      itemBuilder: (_) => _languages.entries
+          .map<PopupMenuEntry<String>>((e) => PopupMenuItem<String>(
+                value: e.key,
+                child: Text(e.value),
+              ))
+          .toList(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Text(
+          currentAbbr,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+      ),
     );
   }
 }

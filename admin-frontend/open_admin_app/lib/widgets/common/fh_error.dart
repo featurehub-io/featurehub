@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
@@ -37,7 +38,7 @@ class FHErrorWidget extends StatelessWidget {
               ]),
           actions: <Widget>[
             FHFlatButton(
-                title: 'Close',
+                title: AppLocalizations.of(context)!.close,
                 onPressed: () {
                   //clear the error stream so we show the error only once
                   mrBloc.addError(null);

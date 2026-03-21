@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/admin_sdk_service_account/admin_sa_access_key_display_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_filled_input_decoration.dart';
@@ -80,13 +81,14 @@ class TopAdminSAWidgetDefaultState extends State<TopAdminSAWidgetDefault> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Form(
         key: bloc.formKey,
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const FHHeader(title: 'Create Admin Service Account'),
+              FHHeader(title: l10n.createAdminServiceAccount),
               Container(
                 constraints: const BoxConstraints(maxWidth: 300),
                 child: Column(
@@ -96,11 +98,11 @@ class TopAdminSAWidgetDefaultState extends State<TopAdminSAWidgetDefault> {
                       autofocus: true,
                       controller: _name,
                       decoration: fhFilledInputDecoration(
-                        labelText: 'Name',
+                        labelText: l10n.nameLabel,
                       ),
                       validator: (v) {
                         if (v?.isEmpty == true) {
-                          return 'Please provide a name for the Admin Service Account';
+                          return l10n.adminSaNameRequired;
                         }
                         return null;
                       },
@@ -112,7 +114,7 @@ class TopAdminSAWidgetDefaultState extends State<TopAdminSAWidgetDefault> {
               Padding(
                 padding: const EdgeInsets.only(top: 30.0),
                 child: Text(
-                  'Assign to some portfolio groups or leave it blank to add them later',
+                  l10n.adminSaGroupsHint,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -128,11 +130,12 @@ class TopAdminSAWidgetSuccess extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('Admin Service Account "${bloc.name}" created! \n',
+          Text(l10n.adminSaCreated(bloc.name!),
               style: Theme.of(context).textTheme.titleLarge),
           AdminAccessKeyDisplayWidget(token: bloc.registrationUrl!.token),
           FHButtonBar(children: [
@@ -142,12 +145,12 @@ class TopAdminSAWidgetSuccess extends StatelessWidget {
                   ManagementRepositoryClientBloc.router
                       .navigateTo(context, '/admin-service-accounts');
                 },
-                title: 'Close'),
+                title: l10n.close),
             FHFlatButton(
                 onPressed: () {
                   bloc.backToDefault();
                 },
-                title: 'Create another Service Account',
+                title: l10n.createAnotherServiceAccount,
                 keepCase: true),
           ])
         ]);
@@ -179,6 +182,7 @@ class CreateAdminSAFormButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return FHButtonBar(children: <Widget>[
       FHFlatButtonTransparent(
@@ -189,7 +193,7 @@ class CreateAdminSAFormButtons extends StatelessWidget {
           ManagementRepositoryClientBloc.router
               .navigateTo(context, '/admin-service-accounts');
         },
-        title: 'Cancel',
+        title: l10n.cancel,
         keepCase: true,
       ),
       Padding(
@@ -204,14 +208,14 @@ class CreateAdminSAFormButtons extends StatelessWidget {
                     if (e is ApiException && e.code == 409) {
                       await bloc.client.dialogError(e, s,
                           messageTitle:
-                              "Service Account with name '${bloc.name}' already exists"); // will this ever happen?
+                              l10n.adminSaAlreadyExists(bloc.name!));
                     } else {
                       await bloc.client.dialogError(e, s);
                     }
                   }
                 }
               },
-              title: 'Create'))
+              title: l10n.create))
     ]);
   }
 }

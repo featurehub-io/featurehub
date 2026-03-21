@@ -10,6 +10,7 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/link_to_applications_page.dart';
 import 'package:open_admin_app/widgets/features/edit-feature/create_update_feature_dialog_widget.dart';
 import 'package:open_admin_app/widgets/features/feature-data-table/features_data_table.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 
 class FeatureStatusRoute extends StatefulWidget {
@@ -35,15 +36,15 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const FHHeader(
-                title: 'Features console',
+              FHHeader(
+                title: AppLocalizations.of(context)!.featuresConsole,
                 children: [
                   FHExternalLinkWidget(
-                    tooltipMessage: "View documentation",
+                    tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
                     link:
                         "https://docs.featurehub.io/featurehub/latest/features.html",
-                    icon: Icon(Icons.arrow_outward_outlined),
-                    label: 'Features Documentation',
+                    icon: const Icon(Icons.arrow_outward_outlined),
+                    label: AppLocalizations.of(context)!.featuresDocumentation,
                   )
                 ],
               ),
@@ -84,7 +85,7 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
                               return Row(
                                 children: <Widget>[
                                   SelectableText(
-                                      'There are no applications in this portfolio',
+                                      AppLocalizations.of(context)!.noApplicationsInPortfolio,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall),
@@ -96,8 +97,7 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
                               );
                             } else {
                               return SelectableText(
-                                  "Either there are no applications in this portfolio or you don't have access to any of the applications.\n"
-                                  'Please contact your administrator.',
+                                  AppLocalizations.of(context)!.noApplicationsAccessMessage,
                                   style: Theme.of(context).textTheme.bodySmall);
                             }
                           });
@@ -137,7 +137,7 @@ class CreateFeatureButton extends StatelessWidget {
                     });
                   },
                   icon: const Icon(Icons.add),
-                  label: const Text('Create New Feature'));
+                  label: Text(AppLocalizations.of(context)!.createNewFeature));
         });
   }
 }

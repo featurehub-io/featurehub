@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
@@ -43,14 +44,15 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_busy) {
       return const FHLoadingIndicator();
     }
     else {
       return FHAlertDialog(
         title: Text(widget.application == null
-            ? 'Create new application'
-            : 'Edit application'),
+            ? l10n.createNewApplication
+            : l10n.editApplication),
         content: Form(
             key: _formKey,
             child: SizedBox(
@@ -63,27 +65,27 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
                       autofocus: true,
                       textInputAction: TextInputAction.next,
                       decoration:
-                      const InputDecoration(labelText: 'Application name'),
+                      InputDecoration(labelText: l10n.appNameLabel),
                       validator: ((v) {
                         if (v == null || v.isEmpty) {
-                          return 'Please enter an application name';
+                          return l10n.appNameRequired;
                         }
                         if (v.length < 4) {
-                          return 'Application name needs to be at least 4 characters long';
+                          return l10n.appNameTooShort;
                         }
                         return null;
                       })),
                   TextFormField(
                       controller: _appDescription,
                       textInputAction: TextInputAction.done,
-                      decoration: const InputDecoration(
-                          labelText: 'Application description'),
+                      decoration: InputDecoration(
+                          labelText: l10n.appDescriptionLabel),
                       validator: ((v) {
                         if (v == null || v.isEmpty) {
-                          return 'Please enter app description';
+                          return l10n.appDescriptionRequired;
                         }
                         if (v.length < 4) {
-                          return 'Application description needs to be at least 4 characters long';
+                          return l10n.appDescriptionTooShort;
                         }
                         return null;
                       })),
@@ -92,22 +94,22 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
             )),
         actions: [
           FHFlatButtonTransparent(
-            title: 'Cancel',
+            title: l10n.cancel,
             keepCase: true,
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-              title: isUpdate ? 'Update' : 'Create',
+              title: isUpdate ? l10n.update : l10n.create,
               keepCase: true,
-              onPressed: () => _handleValidation()),
+              onPressed: () => _handleValidation(l10n)),
         ],
       );
     }
   }
 
-  void _handleValidation() async {
+  void _handleValidation(AppLocalizations l10n) async {
     if (_formKey.currentState!.validate()) {
       try {
         setState(() {
@@ -118,18 +120,18 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
               widget.application!, _appName.text, _appDescription.text);
           widget.bloc.mrClient.removeOverlay();
           widget.bloc.mrClient
-              .addSnackbar(Text('Application ${_appName.text} updated!'));
+              .addSnackbar(Text(l10n.appUpdated(_appName.text)));
         } else {
           await widget.bloc
               .createApplication(_appName.text, _appDescription.text);
           widget.bloc.mrClient.removeOverlay();
           widget.bloc.mrClient
-              .addSnackbar(Text('Application ${_appName.text} created!'));
+              .addSnackbar(Text(l10n.appCreated(_appName.text)));
         }
       } catch (e, s) {
         if (e is ApiException && e.code == 409) {
           widget.bloc.mrClient.customError(
-              messageTitle: "Application '${_appName.text}' already exists");
+              messageTitle: l10n.appAlreadyExists(_appName.text));
         } else {
           await widget.bloc.mrClient.dialogError(e, s);
         }

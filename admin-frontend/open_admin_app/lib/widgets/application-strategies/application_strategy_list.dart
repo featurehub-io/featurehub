@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/application-strategies/application_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/common/application_drop_down.dart';
@@ -38,6 +39,7 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final debouncer = Debouncer(milliseconds: 500);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,8 +75,7 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                                           snapshot.data != null) {
                                         return FilledButton.icon(
                                           icon: const Icon(Icons.add),
-                                          label:
-                                              const Text('Create new strategy'),
+                                          label: Text(l10n.createNewStrategy),
                                           onPressed: () {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -99,9 +100,9 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                     Container(
                         constraints: const BoxConstraints(maxWidth: 300),
                         child: TextField(
-                          decoration: const InputDecoration(
-                            hintText: 'Search strategy',
-                            icon: Icon(Icons.search),
+                          decoration: InputDecoration(
+                            hintText: l10n.searchStrategy,
+                            icon: const Icon(Icons.search),
                           ),
                           onChanged: (val) {
                             debouncer.run(
@@ -124,19 +125,19 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                         showHorizontalScrollbarAlways: false,
                         columns: [
                           DataColumn(
-                              label: const Text('Name'), onSort: setSort),
-                          const DataColumn(
-                            label: Text("Date created (UTC)"),
+                              label: Text(l10n.columnStrategyName), onSort: setSort),
+                          DataColumn(
+                            label: Text(l10n.columnDateCreated),
                           ),
-                          const DataColumn(label: Text("Date updated (UTC)")),
-                          const DataColumn(label: Text("Created by")),
-                          const DataColumn(
-                            label: Text('Used in'),
+                          DataColumn(label: Text(l10n.columnDateUpdated)),
+                          DataColumn(label: Text(l10n.columnCreatedBy)),
+                          DataColumn(
+                            label: Text(l10n.columnUsedIn),
                           ),
-                          const DataColumn(
+                          DataColumn(
                             label: Padding(
-                              padding: EdgeInsets.only(left: 12.0),
-                              child: Text('Actions'),
+                              padding: const EdgeInsets.only(left: 12.0),
+                              child: Text(l10n.columnActions),
                             ),
                           ),
                         ],
@@ -155,14 +156,13 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                         return Row(
                           children: <Widget>[
                             SelectableText(
-                                'Cannot create application strategy as there are no applications in this portfolio',
+                                l10n.cannotCreateStrategyNoApps,
                                 style: Theme.of(context).textTheme.bodySmall),
                           ],
                         );
                       } else {
                         return SelectableText(
-                            "Either there are no applications in this portfolio or you don't have access to any of the applications.\n"
-                            'Please contact your administrator.',
+                            l10n.noApplicationsAccessMessage,
                             style: Theme.of(context).textTheme.bodySmall);
                       }
                     });
@@ -221,6 +221,7 @@ class ApplicationStrategyDataTableSource
   @override
   DataRow getRow(int index) {
     final strategy = lastDetails!.rows[index];
+    final l10n = AppLocalizations.of(context)!;
     return DataRow.byIndex(
         index: index,
         cells: [
@@ -236,8 +237,9 @@ class ApplicationStrategyDataTableSource
           DataCell(
             Text(strategy.updatedBy.email),
           ),
-          DataCell(Text(
-              'environments: ${strategy.usage!.length}, feature values: ${strategy.usage!.map((e) => e.featuresCount).sum}')),
+          DataCell(Text(l10n.strategyUsage(
+              strategy.usage!.length,
+              strategy.usage!.map((e) => e.featuresCount).sum))),
           DataCell(Row(children: <Widget>[
             if (bloc.mrClient.userHasAppStrategyEditRoleInCurrentApplication)
               FHIconButton(
@@ -260,15 +262,14 @@ class ApplicationStrategyDataTableSource
                     bloc.mrClient.addOverlay((BuildContext context) {
                   return FHDeleteThingWarningWidget(
                     thing: "Application strategy '${strategy.strategy.name}'",
-                    content:
-                        'This application strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!',
+                    content: l10n.appStrategyDeleteContent,
                     bloc: bloc.mrClient,
                     deleteSelected: () async {
                       try {
                         await bloc.deleteStrategy(strategy.strategy.id);
                         setNextView(); // triggers reload from server with latest settings and rebuilds state
                         bloc.mrClient.addSnackbar(Text(
-                            "Application strategy '${strategy.strategy.name}' deleted!"));
+                            l10n.appStrategyDeleted(strategy.strategy.name)));
                         return true;
                       } catch (e, s) {
                         await bloc.mrClient.dialogError(e, s);
