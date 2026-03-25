@@ -35,8 +35,3 @@ m all out and send them to the "notify" method with the first parameter of `SSER
 the same source. When timeout occurs, it will read all the feature states and fire them back at the repository, relying on it to ignore old versions. Warn users not to use this with server evaluated features
 as those will overwrite each other's states.
 
-FeatureHubConfig should take the edge_url and api_keys as optional, it should be able to pick them up from the environment variables FEATUREHUB_EDGE_URL and FEATUREHUB_CLIENT_API_KEY / FEATUREHUB_SERVER_API_KEY if they exist. If none of them exist, the edge service should never attempt to connect. This is useful in situations like
-using the LocalYamlStorage where features are loaded solely from disk.
-            
-Add a value method to the Config and Repository that 
-takes one required parameter (the feature key), and two optional ones - the `defaultValue` and the `attributes` and have it call `feature` method with the key and attributes and check `present?` and if true it returns the value of the feature and if false it returns the defaultValue.
