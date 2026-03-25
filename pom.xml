@@ -99,6 +99,7 @@
     <module>backend/eventing-nats</module>
     <module>backend/eventing-google-pubsub</module>
     <module>backend/eventing-kinesis</module>
+    <module>backend/eventing-kafka</module>
     <module>backend/eventing-cloudevents</module>
     <module>backend/eventing-tracker</module>
     <module>backend/sdk-strategy-matchers</module>
