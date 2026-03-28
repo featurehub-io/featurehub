@@ -48,26 +48,31 @@ The defaults section defines an arbitrary channel name, which is just consistent
 
 In each channel definition is: 
 
-* description - what the channel is for
-* cloudEvents - a list of the cloudevents that will be published in this channel. This confirms to the `x-cloudevent-type` used in the OpenAPI documents in this repository.
-* subscribers - what kind of subscribers are there for this channel
-* channelName - is usually the definition for the default name for the channel and is usually defined by a property and a default field as part of it.
-* publisher - this is a list of publishers of this event. 
+* `description` - what the channel is for
+* `cloudEvents` - a list of the cloudevents that will be published in this channel. This confirms to the `x-cloudevent-type` used in the OpenAPI documents in this repository.
+* `subscribers` - what kind of subscribers are there for this channel
+* `channelName` - is usually the definition for the default name for the channel and is usually defined by a property and a default field as part of it.
+* `publisher` - this is a list of publishers of this event. 
 
 In the subscriber definition is the following:
 
-* broadcast - if true then every subscriber is expected to get a copy
-* ceRegistry - which cloud event registry this is published into - normally it is `common` but there
+* `broadcast` - if true then every subscriber is expected to get a copy
+* `ceRegistry` - which cloud event registry this is published into - normally it is `common` but there
  are specialist registries to ensure event messages in a single application are completely isolated. 
-* tags - these indicate the applications that are responsible for processing them. If the `io.featurehub.rest.Info.applicationName()` matches one of these tags, the subscriber is created. If there is a `!` in front, it means do not do so for this application.
-* conditional - optional, these can cause a client to not to subscribe to this channel at all
-* cloudEventsInclude - optional, these can further filter the cloud event types that are listened for
+* `tags` - these indicate the applications that are responsible for processing them. If the `io.featurehub.rest.Info.applicationName()` matches one of these tags, the subscriber is created. If there is a `!` in front, it means do not do so for this application.
+* `conditional` - optional, these can cause a client to not to subscribe to this channel at all
+* `cloudEventsInclude` - optional, these can further filter the cloud event types that are listened for
+* `config` - this indicates where it gets the subscription will get the name of the
+channel from, it will use FallbackPropertyConfig to get the name based on the `property` field, and fall back to `default` if it cannot find it.
+* `multiSupport` - this indicates that the `config` property can support multiple
+comma separated subscription channels. As they are all cloud events, they will
+just get fed into the same cloud events registry as per this definition.
 
 In the publisher definition is the following:
-* tags - these indicate the applications that are responsible for publishing them. If the `io.featurehub.rest.Info.applicationName()` matches one of these tags, the subscriber is created. If there is a `!` in front, it means do not do so for this application.
-* conditional - optional, these can cause a client to not to subscribe to this channel at all
-* ceRegistry - the register on which we expect these events to turn up and if they do, we publish them via the channel.
-* cloudEventsInclude - which events to include when publishing.
+* `tags` - these indicate the applications that are responsible for publishing them. If the `io.featurehub.rest.Info.applicationName()` matches one of these tags, the subscriber is created. If there is a `!` in front, it means do not do so for this application.
+* `conditional` - optional, these can cause a client to not to subscribe to this channel at all
+* `ceRegistry` - the register on which we expect these events to turn up and if they do, we publish them via the channel.
+* `cloudEventsInclude` - which events to include when publishing.
 
 and then each implementation then providing a way to connect to the underlying platform and publish and subscribe to events on those channels.  
 

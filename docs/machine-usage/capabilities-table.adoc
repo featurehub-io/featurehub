@@ -1,0 +1,41 @@
+=== General Run Capabilities for SDKs
+This overview seeks to indicate the capabilities of the SDKs and explain what they are and what the do.
+If you are considering helping us by writing a new SDK for your favourite language, or expand on an existing library, this table of capability indicates what each different language can support and where extra work is helpful.
+
+[options="header"]
+|===================================
+||Java^1^|Javascript^2^|Go|Dart^3^|C#^4^|Python|Ruby|Swift
+|Streaming API feature updates (SSE) |Y|Y|Y|Y|Y|Y|Y|N
+|REST API by timer polling (GET feature updates )|Y|Y|N|Y|N|Y|Y|N
+|REST API by usage/timeout (GET feature updates )|N|Y|N|N|N|Y|Y|Y
+|REST API one-off GET requests support |Y|Y|N|Y|N|Y|N|Y
+|Test API (PUT requests to update feature values) |Y|Y|N|Y|Y|N|N|N
+|Rollout Strategies - Server Evaluated|Y|Y|N|Y|Y|Y|Y|Y
+|Rollout Strategies - Client Evaluated|Y|Y|Y|N|Y|Y|Y|N
+|Background Start|Y|Y|Y|Y|Y|Y|Y|Y
+|Block until Start|Y|N|Y|N|N|N|N|N
+|Readiness Listeners|Y|Y|Y|Y|Y|N|N|N
+|Feature Update Listeners|Y|Y|Y|Y|Y|N|N|N
+|Usage Support|Y|N|N|N|N|N|N|N
+|OpenTelemetry Usage Support|Y|N|N|N|N|N|N|N
+|Twilio Segment (tm) Usage Support|Y|N|N|N|N|N|N|N
+|Feature Overrides|N|Y|N|N|N|Y|N|N
+|Feature Interceptors|Y|Y|N|Y|N|Y|Y|Y
+|Local Yaml Interceptor|Y|N|N|N|N|N|N|N
+|Alternative Storage Support^5^|Y|N|N|N|N|N|N|N
+|Local Yaml Storage|Y|N|N|N|N|N|N|N
+|Redis Storage|N|N|N|N|N|N|N|N
+|Browser Session Storage|N|N|N|N|N|N|N|N
+|===================================
+
+Specialty features:
+- Catch & Release - this is focused only at Browsers and allows the application stack to pause the updates to  the features from affecting the application, essentially "putting them to one side". It allows an application to indicate "there have been updates, please accept" and then the developer to trigger the features flowing in, triggering any listeners causing the UI to update. 
+
+- *(1)* Java is supported by libraries from https://search.maven.org/artifact/io.featurehub.sdk/java-client-core[Apache Maven Central].
+You will need to choose an https://search.maven.org/artifact/io.featurehub.sdk/java-client-android[OKHttp] or https://search.maven.org/artifact/io.featurehub.sdk/java-client-jersey[Jersey] client.
+- *(2)* Javascript and Typescript are supported via a Typescript library.
+This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
+- *(3)* Dart and Flutter are supported by Dart libraries available at https://pub.dev/publishers/featurehub.io/packages[pub.dev].
+- *(4)* C# and .NET is supported by libraries from nuget. https://www.nuget.org/packages/FeatureHub.SDK/[Nuget.org]
+- *(5)* This allows FeatureHub to completely replace or add alternative sources of storage for the features
+either for caching purposes (such as Redis and Browser Session) or if no connection is required (e.g. local development).
