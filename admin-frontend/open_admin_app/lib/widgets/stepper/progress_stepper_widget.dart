@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/config/route_names.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
@@ -24,6 +25,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
   @override
   Widget build(BuildContext context) {
     var bloc = BlocProvider.of<StepperBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
     final captionStyle = Theme.of(context).textTheme.bodySmall;
     final cardWidgetTextPart =
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
@@ -31,8 +33,8 @@ class _StepperState extends State<FHSetupProgressStepper> {
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Application setup progress',
+          Text(
+            l10n.stepperTitle,
           ),
           IconButton(
               splashRadius: 20,
@@ -69,7 +71,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                               physics: const ClampingScrollPhysics(),
                               steps: [
                                 CustomStep(
-                                    title: const Text('Create application'),
+                                    title: Text(l10n.stepCreateApplication),
                                     state: snapshot.data!.application == true
                                         ? CustomStepState.complete
                                         : CustomStepState.indexed,
@@ -77,9 +79,9 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
-                                        applicationDropDown(bloc),
+                                        applicationDropDown(bloc, l10n),
                                         FHUnderlineButton(
-                                          title: 'Go to Applications',
+                                          title: l10n.goToApplications,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -90,8 +92,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title: const Text('Create team group'),
-//                            isActive: _index == 1,
+                                    title: Text(l10n.stepCreateTeamGroup),
                                     state: snapshot.data!.group == true
                                         ? CustomStepState.complete
                                         : CustomStepState.indexed,
@@ -100,12 +101,12 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          'Groups are portfolio-wide, we recommend creating application specific groups eg “MyApp developers”',
+                                          l10n.stepCreateTeamGroupHint,
                                           style: captionStyle,
                                         ),
                                         const SizedBox(height: 4.0),
                                         FHUnderlineButton(
-                                          title: 'Go to Groups',
+                                          title: l10n.goToGroups,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -115,7 +116,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title: const Text('Create service account'),
+                                    title: Text(l10n.stepCreateServiceAccount),
                                     state: snapshot.data!.serviceAccount == true
                                         ? CustomStepState.complete
                                         : CustomStepState.indexed,
@@ -124,12 +125,12 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          'Service accounts are portfolio-wide, we recommend creating at least two service accounts specific to an application, e.g. “SA-MyApp-Prod” and "SA-MyApp-Non-Prod"',
+                                          l10n.stepCreateServiceAccountHint,
                                           style: captionStyle,
                                         ),
                                         const SizedBox(height: 4.0),
                                         FHUnderlineButton(
-                                          title: 'Go to Service Accounts',
+                                          title: l10n.goToServiceAccounts,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -140,7 +141,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title: const Text('Create environment'),
+                                    title: Text(l10n.stepCreateEnvironment),
                                     state: snapshot.data!.application
                                         ? (snapshot.data!.environment == true
                                             ? CustomStepState.complete
@@ -151,12 +152,12 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          'Create an environment for selected application, e.g. "test", "dev", "prod"',
+                                          l10n.stepCreateEnvironmentHint,
                                           style: captionStyle,
                                         ),
                                         const SizedBox(height: 4.0),
                                         FHUnderlineButton(
-                                          title: 'Go to Environments',
+                                          title: l10n.goToEnvironments,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -173,7 +174,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title: const Text('Give access to groups'),
+                                    title: Text(l10n.stepGiveAccessToGroups),
                                     state: snapshot.data!.environment
                                         ? (snapshot.data!.groupPermission ==
                                                 true
@@ -185,12 +186,12 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          'Assign an application environment level permissions to a group of users',
+                                          l10n.stepGiveAccessToGroupsHint,
                                           style: captionStyle,
                                         ),
                                         const SizedBox(height: 4.0),
                                         FHUnderlineButton(
-                                          title: 'Go to Group Permissions',
+                                          title: l10n.goToGroupPermissions,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -207,8 +208,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title: const Text(
-                                        ' Give access to service\n account'),
+                                    title: Text(l10n.stepGiveAccessToServiceAccount),
                                     state: snapshot.data!.environment &&
                                             snapshot.data!.serviceAccount
                                         ? (snapshot.data!
@@ -222,13 +222,12 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          'Assign an application environment level permissions to a service account',
+                                          l10n.stepGiveAccessToServiceAccountHint,
                                           style: captionStyle,
                                         ),
                                         const SizedBox(height: 4.0),
                                         FHUnderlineButton(
-                                          title:
-                                              'Go to SA Permissions',
+                                          title: l10n.goToSAPermissions,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -245,7 +244,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title: const Text('Create a feature'),
+                                    title: Text(l10n.stepCreateFeature),
                                     state: snapshot.data!.application
                                         ? (snapshot.data!.feature == true
                                             ? CustomStepState.complete
@@ -256,12 +255,12 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          'Create a feature for an application',
+                                          l10n.stepCreateFeatureHint,
                                           style: captionStyle,
                                         ),
                                         const SizedBox(height: 4.0),
                                         FHUnderlineButton(
-                                          title: 'Go to Features',
+                                          title: l10n.goToFeatures,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
@@ -293,7 +292,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
     );
   }
 
-  Widget applicationDropDown(StepperBloc bloc) {
+  Widget applicationDropDown(StepperBloc bloc, AppLocalizations l10n) {
     return StreamBuilder<List<Application>>(
         stream: bloc.appsList,
         builder: (context, snapshot) {
@@ -302,11 +301,11 @@ class _StepperState extends State<FHSetupProgressStepper> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Text('Select application or create a new one by following the link below',
+                  Text(l10n.stepSelectApplicationHint,
                       style: Theme.of(context).textTheme.bodySmall),
                   Container(
                       constraints: const BoxConstraints(maxWidth: 200),
-                      child: applicationsDropdown(snapshot.data!, bloc))
+                      child: applicationsDropdown(snapshot.data!, bloc, l10n))
                 ]);
           }
           return Container();
@@ -314,7 +313,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
   }
 
   Widget applicationsDropdown(
-      List<Application> applications, StepperBloc bloc) {
+      List<Application> applications, StepperBloc bloc, AppLocalizations l10n) {
     return InkWell(
       mouseCursor: SystemMouseCursors.click,
       child: DropdownButton(
@@ -333,7 +332,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
               child: Text(application.name,
                   style: Theme.of(context).textTheme.bodyMedium));
         }).toList(),
-        hint: Text('Select application',
+        hint: Text(l10n.selectApplication,
             style: Theme.of(context).textTheme.titleSmall),
         onChanged: (String? value) {
           setState(() {

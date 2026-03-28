@@ -116,7 +116,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                           constraints: const BoxConstraints(
                               maxWidth: 400, maxHeight: 40),
                           child: FHMultiSelect(
-                              hint: Text("Select environments to display",
+                              hint: Text(AppLocalizations.of(context)!.selectEnvironmentsToDisplay,
                                   style:
                                       Theme.of(context).textTheme.bodyMedium),
                               onChanged: (List<String> selectedValues) {
@@ -202,7 +202,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                     ),
                     const SizedBox(height: 24.0),
                     if (featuresList.applicationFeatureValues.features.isEmpty)
-                      const Text("No features to display"),
+                      Text(AppLocalizations.of(context)!.noFeaturesToDisplay),
                     if (featuresList
                         .applicationFeatureValues.features.isNotEmpty)
                       SizedBox(
@@ -238,8 +238,8 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                                 label: Container(
                                     padding: const EdgeInsets.all(16.0),
                                     alignment: Alignment.center,
-                                    child: const Text("Features",
-                                        style: TextStyle(
+                                    child: Text(AppLocalizations.of(context)!.featuresColumnHeader,
+                                        style: const TextStyle(
                                             fontWeight: FontWeight.bold))),
                               ),
                               ...gridColumnsList,

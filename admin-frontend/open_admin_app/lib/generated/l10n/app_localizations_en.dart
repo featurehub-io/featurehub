@@ -1508,4 +1508,542 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invalidUrlPrefix => 'You must choose a valid URL prefix';
+
+  @override
+  String get clickToEdit => 'Click to edit';
+
+  @override
+  String get showAction => 'Show';
+
+  @override
+  String get clearAction => 'Clear';
+
+  @override
+  String get decryptAction => 'Decrypt';
+
+  @override
+  String get encryptAction => 'Encrypt';
+
+  @override
+  String addRowButton(String name) {
+    return 'Add $name';
+  }
+
+  @override
+  String get headerColumnLabel => 'Header';
+
+  @override
+  String get valueColumnLabel => 'Value';
+
+  @override
+  String get selectEnvironmentsToDisplay => 'Select environments to display';
+
+  @override
+  String appThingLabel(String name) {
+    return 'application \'$name\'';
+  }
+
+  @override
+  String appDeleted(String name) {
+    return 'Application \'$name\' deleted!';
+  }
+
+  @override
+  String appDeleteError(String name) {
+    return 'Couldn\'t delete application $name';
+  }
+
+  @override
+  String get undelivered => 'undelivered';
+
+  @override
+  String get webhookDetailsTitle => 'Webhook details';
+
+  @override
+  String get viewWebhookDetails => 'View webhook details';
+
+  @override
+  String get enableJsonValidation => 'Enable JSON validation';
+
+  @override
+  String get formatJson => 'Format json';
+
+  @override
+  String get jsonValue => 'JSON Value';
+
+  @override
+  String get errorNotFound => 'The requested resource was not found';
+
+  @override
+  String get errorForbidden =>
+      'You do not have permission to access this resource';
+
+  @override
+  String get errorInternalServer => 'An internal server error occurred';
+
+  @override
+  String get errorLoadingData => 'An error occurred while loading the data';
+
+  @override
+  String get yourCurrentPortfolio => 'Your current portfolio';
+
+  @override
+  String get selectPortfolio => 'Select portfolio';
+
+  @override
+  String get selectApplication => 'Select application';
+
+  @override
+  String get featureOn => 'ON';
+
+  @override
+  String get featureOff => 'OFF';
+
+  @override
+  String get notSet => 'not set';
+
+  @override
+  String get retired => 'Retired';
+
+  @override
+  String featureThingLabel(String name) {
+    return 'feature \'$name\'';
+  }
+
+  @override
+  String get featureDeleteContent =>
+      'You need to make sure all your code is cleaned up and can deal without this feature!\n\nThis cannot be undone!';
+
+  @override
+  String featureDeleted(String name) {
+    return 'Feature \'$name\' deleted!';
+  }
+
+  @override
+  String get noPermissionsForOperation =>
+      'You don\'t have permissions to perform this operation';
+
+  @override
+  String featureDeleteError(String name) {
+    return 'Couldn\'t delete feature $name';
+  }
+
+  @override
+  String get featureGroupDeleteContent =>
+      'This action will delete a feature group and a strategy associated with it.\n\nThe features will not be deleted and remain present in your system.\n\nThis cannot be undone!';
+
+  @override
+  String featureGroupDeleted(String name) {
+    return 'Feature group \'$name\' deleted!';
+  }
+
+  @override
+  String featureGroupDeleteError(String name) {
+    return 'Couldn\'t delete feature group $name';
+  }
+
+  @override
+  String get noEnvironmentsAvailable => 'No environments available';
+
+  @override
+  String get selectFeatureToAdd => 'Select feature to add';
+
+  @override
+  String get setupWelcomeTitle => 'Lets get this party started!';
+
+  @override
+  String get setupWelcomeMessage =>
+      'Well done, FeatureHub is up and running.  You\'ll be the first \'Organization super admin\' of your FeatureHub account.';
+
+  @override
+  String get setupOrRegisterBelow =>
+      'or register by providing the details below';
+
+  @override
+  String get next => 'Next';
+
+  @override
+  String get setupAllSet => 'All set!';
+
+  @override
+  String get setupNextStepsMessage =>
+      'Next step is to create your first application and add some features. Your first environment called \"Production\" will be created by default. You can follow the \"Quick Setup\" helper by clicking the \"rocket\" icon on the right of the app bar to see your progress.';
+
+  @override
+  String get stepperTitle => 'Application setup progress';
+
+  @override
+  String get stepCreateApplication => 'Create application';
+
+  @override
+  String get stepSelectApplicationHint =>
+      'Select application or create a new one by following the link below';
+
+  @override
+  String get goToApplications => 'Go to Applications';
+
+  @override
+  String get stepCreateTeamGroup => 'Create team group';
+
+  @override
+  String get stepCreateTeamGroupHint =>
+      'Groups are portfolio-wide, we recommend creating application specific groups eg \"MyApp developers\"';
+
+  @override
+  String get goToGroups => 'Go to Groups';
+
+  @override
+  String get stepCreateServiceAccount => 'Create service account';
+
+  @override
+  String get stepCreateServiceAccountHint =>
+      'Service accounts are portfolio-wide, we recommend creating at least two service accounts specific to an application, e.g. \"SA-MyApp-Prod\" and \"SA-MyApp-Non-Prod\"';
+
+  @override
+  String get goToServiceAccounts => 'Go to Service Accounts';
+
+  @override
+  String get stepCreateEnvironment => 'Create environment';
+
+  @override
+  String get stepCreateEnvironmentHint =>
+      'Create an environment for selected application, e.g. \"test\", \"dev\", \"prod\"';
+
+  @override
+  String get goToEnvironments => 'Go to Environments';
+
+  @override
+  String get stepGiveAccessToGroups => 'Give access to groups';
+
+  @override
+  String get stepGiveAccessToGroupsHint =>
+      'Assign an application environment level permissions to a group of users';
+
+  @override
+  String get goToGroupPermissions => 'Go to Group Permissions';
+
+  @override
+  String get stepGiveAccessToServiceAccount => 'Give access to service account';
+
+  @override
+  String get stepGiveAccessToServiceAccountHint =>
+      'Assign an application environment level permissions to a service account';
+
+  @override
+  String get goToSAPermissions => 'Go to SA Permissions';
+
+  @override
+  String get stepCreateFeature => 'Create a feature';
+
+  @override
+  String get stepCreateFeatureHint => 'Create a feature for an application';
+
+  @override
+  String get goToFeatures => 'Go to Features';
+
+  @override
+  String get featureHubAdministrators => 'FeatureHub Administrators';
+
+  @override
+  String get portfolioLabel => 'Portfolio';
+
+  @override
+  String get andOperator => 'AND';
+
+  @override
+  String systemConfigUpdated(String section) {
+    return '$section was successfully updated';
+  }
+
+  @override
+  String systemConfigNoUpdates(String section) {
+    return 'No updates for $section found';
+  }
+
+  @override
+  String get unableToSaveUpdates => 'Unable to save updates';
+
+  @override
+  String get showValue => 'Show value';
+
+  @override
+  String get strategyNameTooLong => 'Strategy name is too long';
+
+  @override
+  String get strategyEmptyMatchCriteria =>
+      'You have not provided any rules to match against, please add a rule';
+
+  @override
+  String get strategyNegativePercentage =>
+      'Percentage cannot be a negative number';
+
+  @override
+  String get strategyPercentageOver100 =>
+      'The total percentage value across all strategies is above 100%, please decrease the percentage rule';
+
+  @override
+  String get strategyArrayAttributeNoValues =>
+      'Please provide at least one value for this rule';
+
+  @override
+  String get strategyAttrInvalidWellKnownEnum =>
+      'Please select a value for this rule';
+
+  @override
+  String get strategyAttrMissingValue => 'Please provide a value for this rule';
+
+  @override
+  String get strategyAttrMissingConditional =>
+      'Please select a matching condition for this rule';
+
+  @override
+  String get strategyAttrMissingFieldName => 'Please enter the rule name';
+
+  @override
+  String get strategyAttrMissingFieldType =>
+      'Please select a value type for this rule';
+
+  @override
+  String get strategyAttrValNotSemanticVersion =>
+      'Please provide a valid semantic version';
+
+  @override
+  String get strategyAttrValNotNumber => 'Please provide a valid number';
+
+  @override
+  String get strategyAttrValNotDate =>
+      'Please provide a valid date in YYYY-MM-DD format';
+
+  @override
+  String get strategyAttrValNotDateTime =>
+      'Please provide a valid date and time in YYYY-MM-DDTHH:MM:SS format';
+
+  @override
+  String get strategyAttrValNotCidr =>
+      'Please provide a valid IP or CIDR address';
+
+  @override
+  String get strategyAttrUnknownFailure =>
+      'There was an unknown strategy validation error';
+
+  @override
+  String get strategyDefault => 'default';
+
+  @override
+  String get strategyServe => 'serve';
+
+  @override
+  String get editStrategySettings => 'Edit Strategy Settings';
+
+  @override
+  String get selectStrategyToAdd => 'Select strategy to add';
+
+  @override
+  String get wellKnownCountry => 'Country';
+
+  @override
+  String get wellKnownDevice => 'Device';
+
+  @override
+  String get wellKnownPlatform => 'Platform';
+
+  @override
+  String get wellKnownVersion => 'Version';
+
+  @override
+  String get wellKnownUserKey => 'User Key';
+
+  @override
+  String get tooltipAppliedRules => 'Applied rules';
+
+  @override
+  String tooltipPercentage(String value) {
+    return 'Percentage: $value%';
+  }
+
+  @override
+  String get tooltipUserKey => 'User key';
+
+  @override
+  String get tooltipCountry => 'Country';
+
+  @override
+  String get tooltipPlatform => 'Platform';
+
+  @override
+  String get tooltipDevice => 'Device';
+
+  @override
+  String get tooltipVersion => 'Version';
+
+  @override
+  String get tooltipCustom => 'Custom';
+
+  @override
+  String get unsavedChanges => 'You have unsaved changes, save?';
+
+  @override
+  String featureValueUpdated(String feature, String environment) {
+    return 'Feature $feature in the environment $environment has been updated!';
+  }
+
+  @override
+  String get defaultValue => 'Default value';
+
+  @override
+  String get strategyVariations => 'Strategy variations';
+
+  @override
+  String get strategyVariationsInfo =>
+      'Add a strategy variation to serve a value other than default. You can change strategies evaluation order by dragging and dropping the cards below. Strategies are evaluated in order from top to bottom. Evaluation stops when it hits a matching strategy. \'Group Strategy\' evaluation comes last. If no strategies match, then \'default\' feature value is served.';
+
+  @override
+  String get noStrategiesSet => 'No strategies set';
+
+  @override
+  String get groupStrategyVariations => 'Group strategy variations';
+
+  @override
+  String get groupStrategyVariationsInfo =>
+      'Feature groups are recommended when you want to set the same strategy for multiple features in the same environment. Feature group strategy can be created and edited from the Feature Groups page.';
+
+  @override
+  String get noGroupStrategiesSet => 'No group strategies set';
+
+  @override
+  String get applicationStrategyVariations => 'Application strategy variations';
+
+  @override
+  String get applicationStrategyVariationsInfo =>
+      'Application strategies are created at application level and can be assigned to multiple features in any environment. Application strategy can be created and edited from the Application Strategies page.';
+
+  @override
+  String get noApplicationStrategiesSet => 'No application strategies set';
+
+  @override
+  String get showAvailableAppStrategies => 'Show available app strategies';
+
+  @override
+  String get addStrategy => 'Add Strategy';
+
+  @override
+  String get retiredStatus => 'Retired status';
+
+  @override
+  String get retiredStatusInfo =>
+      'When feature flag is not needed any longer in your application, and ready to be removed, you can first \'retire\' this feature in a given environment to test how your application behaves. This means that the feature won\'t be visible by the SDKs, imitating the \'deleted\' state. You can uncheck the box to \'un-retire\' a feature if you change your mind as this operation is reversible. Once you retire feature values across all the environments and test that your application behaves as expected, you can delete your entire feature.';
+
+  @override
+  String get hideHistory => 'Hide history';
+
+  @override
+  String get showHistory => 'Show history';
+
+  @override
+  String get showingLast20 => 'Showing last 20';
+
+  @override
+  String get historyColumnTimestamp => 'Timestamp (UTC)';
+
+  @override
+  String get historyColumnName => 'Name';
+
+  @override
+  String get historyColumnEmail => 'Email';
+
+  @override
+  String get historyColumnType => 'Type';
+
+  @override
+  String get historyColumnDefaultValue => 'Default Value';
+
+  @override
+  String get historyColumnLocked => 'Locked';
+
+  @override
+  String get historyColumnRetired => 'Retired';
+
+  @override
+  String get historyColumnRolloutStrategies => 'Rollout Strategies';
+
+  @override
+  String get historyTypeUser => 'User';
+
+  @override
+  String get historyTypeServiceAccount => 'Service Account';
+
+  @override
+  String get strategyRules => 'Strategy Rules';
+
+  @override
+  String get percentageRollout => 'Percentage Rollout';
+
+  @override
+  String get moreDetails => 'more';
+
+  @override
+  String get groupStrategyTooltip => 'Group Strategy';
+
+  @override
+  String get applicationStrategyTooltip => 'Application Strategy';
+
+  @override
+  String get lockedStatus => 'Locked status';
+
+  @override
+  String get lockedStatusInfo =>
+      'Locking mechanism provides an additional safety for feature changes when deploying incomplete code to production. Locked status prevents any changes to default value, strategies, strategy values and \'retired\' status. Typically, developers keep features locked to indicate they are not ready to be turned on for testers, product owners, customers and other stakeholders.';
+
+  @override
+  String get clickToUnlock => 'Click to unlock';
+
+  @override
+  String get clickToLock => 'Click to lock';
+
+  @override
+  String get featureIsLocked => 'Feature is locked and cannot be changed';
+
+  @override
+  String get featureIsUnlocked => 'Feature is unlocked and can be changed';
+
+  @override
+  String get featuresColumnHeader => 'Features';
+
+  @override
+  String get noFeaturesToDisplay => 'No features to display';
+
+  @override
+  String get noEnvironmentsForApp =>
+      'Either there are no environments defined for this application or you don\'t have permissions to access any of them';
+
+  @override
+  String get goToEnvironmentsSettings => 'Go to environments settings';
+
+  @override
+  String get noFeaturesForApp =>
+      'There are no features defined for this application';
+
+  @override
+  String get setAsOrgSuperAdmin => 'Set this user as organization super admin';
+
+  @override
+  String get copyFeatureKeyToClipboard => 'Copy feature key to clipboard';
+
+  @override
+  String get editDetails => 'Edit details';
+
+  @override
+  String get viewDetails => 'View details';
+
+  @override
+  String get editMetadata => 'Edit metadata';
+
+  @override
+  String get viewMetadata => 'View metadata';
+
+  @override
+  String get manageGroup => 'Manage Group';
+
+  @override
+  String get strategy => 'Strategy';
 }

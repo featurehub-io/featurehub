@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/mr_client_aware.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class ApplicationDropDown extends StatefulWidget {
   final List<Application> applications;
@@ -18,6 +19,7 @@ class ApplicationDropDown extends StatefulWidget {
 class ApplicationDropDownState extends State<ApplicationDropDown> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return OutlinedButton(
       onPressed: () => {},
       child: Container(
@@ -47,7 +49,7 @@ class ApplicationDropDownState extends State<ApplicationDropDown> {
                               ));
                         }).toList()
                       : null,
-                  hint: Text('Select application',
+                  hint: Text(l10n.selectApplication,
                       style: Theme.of(context).textTheme.titleSmall),
                   onChanged: (String? value) {
                     if (value != null) {

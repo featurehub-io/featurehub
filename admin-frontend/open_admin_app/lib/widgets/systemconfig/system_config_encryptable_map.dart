@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/fhos_logger.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/systemconfig/systemconfig_bloc.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
@@ -63,9 +64,10 @@ class _SystemConfigDataSource extends DataGridSource {
   final String keyRowName;
   final String valueRowName;
   final SystemConfigBloc configBloc;
+  final AppLocalizations l10n;
 
   _SystemConfigDataSource(this.systemConfigKey, this.decryptable,
-      dynamic fieldValue, this.keyRowName, this.valueRowName, this.configBloc) {
+      dynamic fieldValue, this.keyRowName, this.valueRowName, this.configBloc, this.l10n) {
     _reset(fieldValue);
   }
 
@@ -215,14 +217,14 @@ class _SystemConfigDataSource extends DataGridSource {
       Container(
         padding: const EdgeInsets.all(8.0),
         alignment: Alignment.centerLeft,
-        child: Tooltip(message: "Click to edit", child: Text(key)),
+        child: Tooltip(message: l10n.clickToEdit, child: Text(key)),
       ),
       Container(
         padding: const EdgeInsets.all(8.0),
         alignment: Alignment.centerLeft,
         child: encrypted
             ? Text(value)
-            : Tooltip(message: "Click to edit", child: Text(value)),
+            : Tooltip(message: l10n.clickToEdit, child: Text(value)),
       ),
       Container(
           padding: const EdgeInsets.all(8.0),
@@ -239,17 +241,17 @@ class _SystemConfigDataSource extends DataGridSource {
       return Row(
         children: [
           TextButton(
-              onPressed: () => _reveal(rowIndex), child: const Text('Show')),
+              onPressed: () => _reveal(rowIndex), child: Text(l10n.showAction)),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: TextButton(
-                onPressed: () => _clear(rowIndex), child: const Text('Clear')),
+                onPressed: () => _clear(rowIndex), child: Text(l10n.clearAction)),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: TextButton(
                 onPressed: () => _delete(rowIndex),
-                child: const Text('Delete')),
+                child: Text(l10n.delete)),
           )
         ],
       );
@@ -260,20 +262,20 @@ class _SystemConfigDataSource extends DataGridSource {
         children: [
           TextButton(
             onPressed: () => _decrypt(rowIndex),
-            child: const Text('Decrypt'),
+            child: Text(l10n.decryptAction),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: TextButton(
               onPressed: () => _clear(rowIndex),
-              child: const Text('Clear'),
+              child: Text(l10n.clearAction),
             ),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: TextButton(
                 onPressed: () => _delete(rowIndex),
-                child: const Text('Delete')),
+                child: Text(l10n.delete)),
           )
         ],
       );
@@ -282,12 +284,12 @@ class _SystemConfigDataSource extends DataGridSource {
       return Row(
         children: [
           TextButton(
-              onPressed: () => _clear(rowIndex), child: const Text('Clear')),
+              onPressed: () => _clear(rowIndex), child: Text(l10n.clearAction)),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: TextButton(
                 onPressed: () => _delete(rowIndex),
-                child: const Text('Delete')),
+                child: Text(l10n.delete)),
           )
         ],
       );
@@ -297,13 +299,13 @@ class _SystemConfigDataSource extends DataGridSource {
       children: [
         TextButton(
           onPressed: () => _encrypt(rowIndex),
-          child: const Text('Encrypt'),
+          child: Text(l10n.encryptAction),
         ),
         Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: TextButton(
             onPressed: () => _delete(rowIndex),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         )
       ],
@@ -395,8 +397,6 @@ class SystemConfigEncryptableMapWidgetState
   @override
   void initState() {
     super.initState();
-
-    _setup();
   }
 
   submit() {
@@ -417,6 +417,7 @@ class SystemConfigEncryptableMapWidgetState
 
   _setup() {
     configBloc = BlocProvider.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     // this converts it from a Map<dynamic,dynamic> to a Map<String,String>, which is a wee bit annoying but...
     _dataSource = _SystemConfigDataSource(
@@ -425,7 +426,8 @@ class SystemConfigEncryptableMapWidgetState
         widget.field.value,
         widget.keyHeaderName,
         widget.valueHeaderName,
-        configBloc);
+        configBloc,
+        l10n);
 
     // put it back in, now with the correct types so it will be saved
     widget.field.value = _dataSource.sourceData;
@@ -437,6 +439,7 @@ class SystemConfigEncryptableMapWidgetState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(border: Border.all(color: Colors.blueAccent)),
       child: Column(
@@ -446,7 +449,7 @@ class SystemConfigEncryptableMapWidgetState
               padding: const EdgeInsets.all(8.0),
               child: TextButton.icon(
                   icon: const Icon(Icons.add),
-                  label: Text("Add ${widget.keyHeaderName}"),
+                  label: Text(l10n.addRowButton(widget.keyHeaderName)),
                   onPressed: () => _dataSource.addRow(
                       widget.defaultNewKeyName, widget.defaultNewValueName)),
             ),
@@ -498,9 +501,9 @@ class SystemConfigEncryptableMapWidgetState
                           label: Container(
                               padding: const EdgeInsets.all(8.0),
                               alignment: Alignment.center,
-                              child: const Text('Actions',
+                              child: Text(l10n.columnActions,
                                   style:
-                                      TextStyle(fontWeight: FontWeight.bold))))
+                                      const TextStyle(fontWeight: FontWeight.bold))))
                     ]),
               ),
             ],

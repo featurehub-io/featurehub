@@ -234,8 +234,8 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
             child: SystemConfigEncryptableMapWidget(
                 field: settings['slack.delivery.headers']!,
                 controller: _deliveryHeadersController,
-                keyHeaderName: 'Header',
-                valueHeaderName: 'Value',
+                keyHeaderName: l10n.headerColumnLabel,
+                valueHeaderName: l10n.valueColumnLabel,
                 defaultNewKeyName: 'X-Header',
                 defaultNewValueName: 'value'),
           )

@@ -1504,5 +1504,488 @@
   },
 
   "invalidUrlPrefix": "You must choose a valid URL prefix",
-  "@invalidUrlPrefix": { "description": "Validation error when the external delivery URL does not match an allowed prefix" }
+  "@invalidUrlPrefix": { "description": "Validation error when the external delivery URL does not match an allowed prefix" },
+
+  "clickToEdit": "Click to edit",
+  "@clickToEdit": { "description": "Tooltip on editable cells in the delivery headers table" },
+
+  "showAction": "Show",
+  "@showAction": { "description": "Action button to reveal an encrypted value in the table" },
+
+  "clearAction": "Clear",
+  "@clearAction": { "description": "Action button to clear a value in the table (removes encryption flag)" },
+
+  "decryptAction": "Decrypt",
+  "@decryptAction": { "description": "Action button to decrypt an encrypted value in the table" },
+
+  "encryptAction": "Encrypt",
+  "@encryptAction": { "description": "Action button to mark a value as encrypted in the table" },
+
+  "addRowButton": "Add {name}",
+  "@addRowButton": {
+    "description": "Button above the table to add a new row, where name is the key column header",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "headerColumnLabel": "Header",
+  "@headerColumnLabel": { "description": "Column header label for the key column in the delivery headers table" },
+
+  "valueColumnLabel": "Value",
+  "@valueColumnLabel": { "description": "Column header label for the value column in the delivery headers table" },
+
+  "selectEnvironmentsToDisplay": "Select environments to display",
+  "@selectEnvironmentsToDisplay": { "description": "Hint text for the environment multi-select dropdown on the features data table" },
+
+  "appThingLabel": "application '{name}'",
+  "@appThingLabel": { "description": "The 'thing' label for the delete dialog for an application", "placeholders": { "name": { "type": "String" } } },
+
+  "appDeleted": "Application '{name}' deleted!",
+  "@appDeleted": { "description": "Snackbar after deleting an application", "placeholders": { "name": { "type": "String" } } },
+
+  "appDeleteError": "Couldn't delete application {name}",
+  "@appDeleteError": { "description": "Error when deleting an application fails", "placeholders": { "name": { "type": "String" } } },
+
+  "undelivered": "undelivered",
+  "@undelivered": { "description": "Status text for an undelivered webhook" },
+
+  "webhookDetailsTitle": "Webhook details",
+  "@webhookDetailsTitle": { "description": "Title of the webhook detail dialog" },
+
+  "viewWebhookDetails": "View webhook details",
+  "@viewWebhookDetails": { "description": "Tooltip on the info icon in the webhook table" },
+
+  "enableJsonValidation": "Enable JSON validation",
+  "@enableJsonValidation": { "description": "Checkbox label to enable JSON validation in the JSON editor" },
+
+  "formatJson": "Format json",
+  "@formatJson": { "description": "Button to pretty-print JSON in the JSON editor" },
+
+  "jsonValue": "JSON Value",
+  "@jsonValue": { "description": "Label above the JSON text editor area" },
+
+  "errorNotFound": "The requested resource was not found",
+  "@errorNotFound": { "description": "Error message for HTTP 404" },
+
+  "errorForbidden": "You do not have permission to access this resource",
+  "@errorForbidden": { "description": "Error message for HTTP 403" },
+
+  "errorInternalServer": "An internal server error occurred",
+  "@errorInternalServer": { "description": "Error message for HTTP 500" },
+
+  "errorLoadingData": "An error occurred while loading the data",
+  "@errorLoadingData": { "description": "Generic error message when data fails to load" },
+
+  "yourCurrentPortfolio": "Your current portfolio",
+  "@yourCurrentPortfolio": { "description": "Label above the portfolio selector in the drawer" },
+
+  "selectPortfolio": "Select portfolio",
+  "@selectPortfolio": { "description": "Hint text for the portfolio selector dropdown" },
+
+  "selectApplication": "Select application",
+  "@selectApplication": { "description": "Hint text for the application selector dropdown" },
+
+  "featureOn": "ON",
+  "@featureOn": { "description": "Label when a boolean feature flag is enabled" },
+
+  "featureOff": "OFF",
+  "@featureOff": { "description": "Label when a boolean feature flag is disabled" },
+
+  "notSet": "not set",
+  "@notSet": { "description": "Placeholder when a feature value has not been set" },
+
+  "retired": "Retired",
+  "@retired": { "description": "Checkbox label for retiring a feature value" },
+
+  "featureThingLabel": "feature '{name}'",
+  "@featureThingLabel": { "description": "The 'thing' label for the delete dialog for a feature", "placeholders": { "name": { "type": "String" } } },
+
+  "featureDeleteContent": "You need to make sure all your code is cleaned up and can deal without this feature!\n\nThis cannot be undone!",
+  "@featureDeleteContent": { "description": "Body text of the delete-feature confirmation dialog" },
+
+  "featureDeleted": "Feature '{name}' deleted!",
+  "@featureDeleted": { "description": "Snackbar after deleting a feature", "placeholders": { "name": { "type": "String" } } },
+
+  "noPermissionsForOperation": "You don't have permissions to perform this operation",
+  "@noPermissionsForOperation": { "description": "Error when the user lacks permission for an operation" },
+
+  "featureDeleteError": "Couldn't delete feature {name}",
+  "@featureDeleteError": { "description": "Error when deleting a feature fails", "placeholders": { "name": { "type": "String" } } },
+
+  "featureGroupDeleteContent": "This action will delete a feature group and a strategy associated with it.\n\nThe features will not be deleted and remain present in your system.\n\nThis cannot be undone!",
+  "@featureGroupDeleteContent": { "description": "Body text of the delete-feature-group confirmation dialog" },
+
+  "featureGroupDeleted": "Feature group '{name}' deleted!",
+  "@featureGroupDeleted": { "description": "Snackbar after deleting a feature group", "placeholders": { "name": { "type": "String" } } },
+
+  "featureGroupDeleteError": "Couldn't delete feature group {name}",
+  "@featureGroupDeleteError": { "description": "Error when deleting a feature group fails", "placeholders": { "name": { "type": "String" } } },
+
+  "noEnvironmentsAvailable": "No environments available",
+  "@noEnvironmentsAvailable": { "description": "Message in the environment dropdown when none exist" },
+
+  "selectFeatureToAdd": "Select feature to add",
+  "@selectFeatureToAdd": { "description": "Hint text for the features dropdown in the feature groups editor" },
+
+  "setupWelcomeTitle": "Lets get this party started!",
+  "@setupWelcomeTitle": { "description": "Heading on setup page 1" },
+
+  "setupWelcomeMessage": "Well done, FeatureHub is up and running.  You'll be the first 'Organization super admin' of your FeatureHub account.",
+  "@setupWelcomeMessage": { "description": "Subtitle on setup page 1 explaining the super admin role" },
+
+  "setupOrRegisterBelow": "or register by providing the details below",
+  "@setupOrRegisterBelow": { "description": "Divider label between SSO and local registration on setup page 1" },
+
+  "next": "Next",
+  "@next": { "description": "Button label to advance to the next step" },
+
+  "setupAllSet": "All set!",
+  "@setupAllSet": { "description": "Title of the final setup confirmation dialog" },
+
+  "setupNextStepsMessage": "Next step is to create your first application and add some features. Your first environment called \"Production\" will be created by default. You can follow the \"Quick Setup\" helper by clicking the \"rocket\" icon on the right of the app bar to see your progress.",
+  "@setupNextStepsMessage": { "description": "Body of the final setup confirmation dialog" },
+
+  "stepperTitle": "Application setup progress",
+  "@stepperTitle": { "description": "Title of the quick-setup progress stepper panel" },
+
+  "stepCreateApplication": "Create application",
+  "@stepCreateApplication": { "description": "Step 1 title in the setup stepper" },
+
+  "stepSelectApplicationHint": "Select application or create a new one by following the link below",
+  "@stepSelectApplicationHint": { "description": "Helper text under the application dropdown in step 1" },
+
+  "goToApplications": "Go to Applications",
+  "@goToApplications": { "description": "Link button in stepper step 1" },
+
+  "stepCreateTeamGroup": "Create team group",
+  "@stepCreateTeamGroup": { "description": "Step 2 title in the setup stepper" },
+
+  "stepCreateTeamGroupHint": "Groups are portfolio-wide, we recommend creating application specific groups eg \"MyApp developers\"",
+  "@stepCreateTeamGroupHint": { "description": "Helper text in stepper step 2" },
+
+  "goToGroups": "Go to Groups",
+  "@goToGroups": { "description": "Link button in stepper step 2" },
+
+  "stepCreateServiceAccount": "Create service account",
+  "@stepCreateServiceAccount": { "description": "Step 3 title in the setup stepper" },
+
+  "stepCreateServiceAccountHint": "Service accounts are portfolio-wide, we recommend creating at least two service accounts specific to an application, e.g. \"SA-MyApp-Prod\" and \"SA-MyApp-Non-Prod\"",
+  "@stepCreateServiceAccountHint": { "description": "Helper text in stepper step 3" },
+
+  "goToServiceAccounts": "Go to Service Accounts",
+  "@goToServiceAccounts": { "description": "Link button in stepper step 3" },
+
+  "stepCreateEnvironment": "Create environment",
+  "@stepCreateEnvironment": { "description": "Step 4 title in the setup stepper" },
+
+  "stepCreateEnvironmentHint": "Create an environment for selected application, e.g. \"test\", \"dev\", \"prod\"",
+  "@stepCreateEnvironmentHint": { "description": "Helper text in stepper step 4" },
+
+  "goToEnvironments": "Go to Environments",
+  "@goToEnvironments": { "description": "Link button in stepper step 4" },
+
+  "stepGiveAccessToGroups": "Give access to groups",
+  "@stepGiveAccessToGroups": { "description": "Step 5 title in the setup stepper" },
+
+  "stepGiveAccessToGroupsHint": "Assign an application environment level permissions to a group of users",
+  "@stepGiveAccessToGroupsHint": { "description": "Helper text in stepper step 5" },
+
+  "goToGroupPermissions": "Go to Group Permissions",
+  "@goToGroupPermissions": { "description": "Link button in stepper step 5" },
+
+  "stepGiveAccessToServiceAccount": "Give access to service account",
+  "@stepGiveAccessToServiceAccount": { "description": "Step 6 title in the setup stepper" },
+
+  "stepGiveAccessToServiceAccountHint": "Assign an application environment level permissions to a service account",
+  "@stepGiveAccessToServiceAccountHint": { "description": "Helper text in stepper step 6" },
+
+  "goToSAPermissions": "Go to SA Permissions",
+  "@goToSAPermissions": { "description": "Link button in stepper step 6" },
+
+  "stepCreateFeature": "Create a feature",
+  "@stepCreateFeature": { "description": "Step 7 title in the setup stepper" },
+
+  "stepCreateFeatureHint": "Create a feature for an application",
+  "@stepCreateFeatureHint": { "description": "Helper text in stepper step 7" },
+
+  "goToFeatures": "Go to Features",
+  "@goToFeatures": { "description": "Link button in stepper step 7" },
+
+  "featureHubAdministrators": "FeatureHub Administrators",
+  "@featureHubAdministrators": { "description": "Chip label for the site-wide admin group in the portfolio group selector" },
+
+  "portfolioLabel": "Portfolio",
+  "@portfolioLabel": { "description": "Label on the portfolio dropdown in the portfolio group selector" },
+
+  "andOperator": "AND",
+  "@andOperator": { "description": "Badge between strategy attribute rules indicating logical AND" },
+
+  "systemConfigUpdated": "{section} was successfully updated",
+  "@systemConfigUpdated": { "description": "Snackbar after a system config section is saved", "placeholders": { "section": { "type": "String" } } },
+
+  "systemConfigNoUpdates": "No updates for {section} found",
+  "@systemConfigNoUpdates": { "description": "Snackbar when saving system config with no changes", "placeholders": { "section": { "type": "String" } } },
+
+  "unableToSaveUpdates": "Unable to save updates",
+  "@unableToSaveUpdates": { "description": "Error message when saving system config fails" },
+
+  "showValue": "Show value",
+  "@showValue": { "description": "Button to reveal an encrypted text field value" },
+
+  "strategyNameTooLong": "Strategy name is too long",
+  "@strategyNameTooLong": { "description": "Validation: strategy name exceeds max length" },
+
+  "strategyEmptyMatchCriteria": "You have not provided any rules to match against, please add a rule",
+  "@strategyEmptyMatchCriteria": { "description": "Validation: strategy has no attribute rules" },
+
+  "strategyNegativePercentage": "Percentage cannot be a negative number",
+  "@strategyNegativePercentage": { "description": "Validation: strategy percentage is negative" },
+
+  "strategyPercentageOver100": "The total percentage value across all strategies is above 100%, please decrease the percentage rule",
+  "@strategyPercentageOver100": { "description": "Validation: total strategy percentage exceeds 100%" },
+
+  "strategyArrayAttributeNoValues": "Please provide at least one value for this rule",
+  "@strategyArrayAttributeNoValues": { "description": "Validation: array attribute rule has no values" },
+
+  "strategyAttrInvalidWellKnownEnum": "Please select a value for this rule",
+  "@strategyAttrInvalidWellKnownEnum": { "description": "Validation: well-known enum attribute rule has invalid value" },
+
+  "strategyAttrMissingValue": "Please provide a value for this rule",
+  "@strategyAttrMissingValue": { "description": "Validation: attribute rule is missing a value" },
+
+  "strategyAttrMissingConditional": "Please select a matching condition for this rule",
+  "@strategyAttrMissingConditional": { "description": "Validation: attribute rule has no condition selected" },
+
+  "strategyAttrMissingFieldName": "Please enter the rule name",
+  "@strategyAttrMissingFieldName": { "description": "Validation: custom attribute rule has no field name" },
+
+  "strategyAttrMissingFieldType": "Please select a value type for this rule",
+  "@strategyAttrMissingFieldType": { "description": "Validation: attribute rule has no field type selected" },
+
+  "strategyAttrValNotSemanticVersion": "Please provide a valid semantic version",
+  "@strategyAttrValNotSemanticVersion": { "description": "Validation: attribute value is not a valid semantic version" },
+
+  "strategyAttrValNotNumber": "Please provide a valid number",
+  "@strategyAttrValNotNumber": { "description": "Validation: attribute value is not a valid number" },
+
+  "strategyAttrValNotDate": "Please provide a valid date in YYYY-MM-DD format",
+  "@strategyAttrValNotDate": { "description": "Validation: attribute value is not a valid date" },
+
+  "strategyAttrValNotDateTime": "Please provide a valid date and time in YYYY-MM-DDTHH:MM:SS format",
+  "@strategyAttrValNotDateTime": { "description": "Validation: attribute value is not a valid datetime" },
+
+  "strategyAttrValNotCidr": "Please provide a valid IP or CIDR address",
+  "@strategyAttrValNotCidr": { "description": "Validation: attribute value is not a valid IP/CIDR" },
+
+  "strategyAttrUnknownFailure": "There was an unknown strategy validation error",
+  "@strategyAttrUnknownFailure": { "description": "Validation: unknown strategy error" },
+
+  "strategyDefault": "default",
+  "@strategyDefault": { "description": "Label for the default (no-name) strategy card" },
+
+  "strategyServe": "serve",
+  "@strategyServe": { "description": "Label preceding the served value in a strategy card" },
+
+  "editStrategySettings": "Edit Strategy Settings",
+  "@editStrategySettings": { "description": "Tooltip on the navigate-to-strategy-settings button in a strategy card" },
+
+  "selectStrategyToAdd": "Select strategy to add",
+  "@selectStrategyToAdd": { "description": "Hint text for the application strategies dropdown" },
+
+  "wellKnownCountry": "Country",
+  "@wellKnownCountry": { "description": "Display label for the Country well-known attribute in strategy editor" },
+
+  "wellKnownDevice": "Device",
+  "@wellKnownDevice": { "description": "Display label for the Device well-known attribute in strategy editor" },
+
+  "wellKnownPlatform": "Platform",
+  "@wellKnownPlatform": { "description": "Display label for the Platform well-known attribute in strategy editor" },
+
+  "wellKnownVersion": "Version",
+  "@wellKnownVersion": { "description": "Display label for the Version well-known attribute in strategy editor" },
+
+  "wellKnownUserKey": "User Key",
+  "@wellKnownUserKey": { "description": "Display label for the User Key well-known attribute in strategy editor" },
+
+  "tooltipAppliedRules": "Applied rules",
+  "@tooltipAppliedRules": { "description": "Section header in the strategy tooltip listing which rules apply" },
+
+  "tooltipPercentage": "Percentage: {value}%",
+  "@tooltipPercentage": { "description": "Tooltip line showing the percentage rollout value", "placeholders": { "value": { "type": "String" } } },
+
+  "tooltipUserKey": "User key",
+  "@tooltipUserKey": { "description": "Tooltip line indicating a user-key rule is applied" },
+
+  "tooltipCountry": "Country",
+  "@tooltipCountry": { "description": "Tooltip line indicating a country rule is applied" },
+
+  "tooltipPlatform": "Platform",
+  "@tooltipPlatform": { "description": "Tooltip line indicating a platform rule is applied" },
+
+  "tooltipDevice": "Device",
+  "@tooltipDevice": { "description": "Tooltip line indicating a device rule is applied" },
+
+  "tooltipVersion": "Version",
+  "@tooltipVersion": { "description": "Tooltip line indicating a version rule is applied" },
+
+  "tooltipCustom": "Custom",
+  "@tooltipCustom": { "description": "Tooltip line indicating a custom attribute rule is applied" },
+
+  "unsavedChanges": "You have unsaved changes, save?",
+  "@unsavedChanges": { "description": "Banner shown in the feature value side sheet when there are unsaved changes" },
+
+  "featureValueUpdated": "Feature {feature} in the environment {environment} has been updated!",
+  "@featureValueUpdated": { "description": "Snackbar after saving a feature value", "placeholders": { "feature": { "type": "String" }, "environment": { "type": "String" } } },
+
+  "defaultValue": "Default value",
+  "@defaultValue": { "description": "Section label above the default strategy card in the feature value editor" },
+
+  "strategyVariations": "Strategy variations",
+  "@strategyVariations": { "description": "Section heading for custom rollout strategy variations in the feature value editor" },
+
+  "strategyVariationsInfo": "Add a strategy variation to serve a value other than default. You can change strategies evaluation order by dragging and dropping the cards below. Strategies are evaluated in order from top to bottom. Evaluation stops when it hits a matching strategy. 'Group Strategy' evaluation comes last. If no strategies match, then 'default' feature value is served.",
+  "@strategyVariationsInfo": { "description": "Info tooltip describing how strategy variations work" },
+
+  "noStrategiesSet": "No strategies set",
+  "@noStrategiesSet": { "description": "Placeholder when no rollout strategy variations have been added" },
+
+  "groupStrategyVariations": "Group strategy variations",
+  "@groupStrategyVariations": { "description": "Section heading for feature group strategy variations" },
+
+  "groupStrategyVariationsInfo": "Feature groups are recommended when you want to set the same strategy for multiple features in the same environment. Feature group strategy can be created and edited from the Feature Groups page.",
+  "@groupStrategyVariationsInfo": { "description": "Info tooltip describing group strategy variations" },
+
+  "noGroupStrategiesSet": "No group strategies set",
+  "@noGroupStrategiesSet": { "description": "Placeholder when no group strategies have been assigned" },
+
+  "applicationStrategyVariations": "Application strategy variations",
+  "@applicationStrategyVariations": { "description": "Section heading for application-level strategy variations" },
+
+  "applicationStrategyVariationsInfo": "Application strategies are created at application level and can be assigned to multiple features in any environment. Application strategy can be created and edited from the Application Strategies page.",
+  "@applicationStrategyVariationsInfo": { "description": "Info tooltip describing application strategy variations" },
+
+  "noApplicationStrategiesSet": "No application strategies set",
+  "@noApplicationStrategiesSet": { "description": "Placeholder when no application strategies have been assigned" },
+
+  "showAvailableAppStrategies": "Show available app strategies",
+  "@showAvailableAppStrategies": { "description": "Button to reveal the list of available application strategies to add" },
+
+  "addStrategy": "Add Strategy",
+  "@addStrategy": { "description": "Button label to add an application strategy to a feature value" },
+
+  "retiredStatus": "Retired status",
+  "@retiredStatus": { "description": "Section label for the retire feature value checkbox" },
+
+  "retiredStatusInfo": "When feature flag is not needed any longer in your application, and ready to be removed, you can first 'retire' this feature in a given environment to test how your application behaves. This means that the feature won't be visible by the SDKs, imitating the 'deleted' state. You can uncheck the box to 'un-retire' a feature if you change your mind as this operation is reversible. Once you retire feature values across all the environments and test that your application behaves as expected, you can delete your entire feature.",
+  "@retiredStatusInfo": { "description": "Info tooltip explaining the retired feature status" },
+
+  "hideHistory": "Hide history",
+  "@hideHistory": { "description": "Button to collapse the feature value change history" },
+
+  "showHistory": "Show history",
+  "@showHistory": { "description": "Button to expand the feature value change history" },
+
+  "showingLast20": "Showing last 20",
+  "@showingLast20": { "description": "Caption above the history table indicating only the last 20 entries are shown" },
+
+  "historyColumnTimestamp": "Timestamp (UTC)",
+  "@historyColumnTimestamp": { "description": "Column header for the timestamp column in the feature value history table" },
+
+  "historyColumnName": "Name",
+  "@historyColumnName": { "description": "Column header for the name column in the feature value history table" },
+
+  "historyColumnEmail": "Email",
+  "@historyColumnEmail": { "description": "Column header for the email column in the feature value history table" },
+
+  "historyColumnType": "Type",
+  "@historyColumnType": { "description": "Column header for the type column in the feature value history table" },
+
+  "historyColumnDefaultValue": "Default Value",
+  "@historyColumnDefaultValue": { "description": "Column header for the default value column in the feature value history table" },
+
+  "historyColumnLocked": "Locked",
+  "@historyColumnLocked": { "description": "Column header for the locked column in the feature value history table" },
+
+  "historyColumnRetired": "Retired",
+  "@historyColumnRetired": { "description": "Column header for the retired column in the feature value history table" },
+
+  "historyColumnRolloutStrategies": "Rollout Strategies",
+  "@historyColumnRolloutStrategies": { "description": "Column header for the rollout strategies column in the feature value history table" },
+
+  "historyTypeUser": "User",
+  "@historyTypeUser": { "description": "History entry type label for a human user" },
+
+  "historyTypeServiceAccount": "Service Account",
+  "@historyTypeServiceAccount": { "description": "History entry type label for a service account" },
+
+  "strategyRules": "Strategy Rules",
+  "@strategyRules": { "description": "Title of the dialog showing rollout strategy rules in the history view" },
+
+  "percentageRollout": "Percentage Rollout",
+  "@percentageRollout": { "description": "Label for the percentage rollout section in the strategy rules dialog" },
+
+  "moreDetails": "more",
+  "@moreDetails": { "description": "Button to show more details about a rollout strategy in the history table" },
+
+  "groupStrategyTooltip": "Group Strategy",
+  "@groupStrategyTooltip": { "description": "Tooltip label on group strategy cells in the feature value table" },
+
+  "applicationStrategyTooltip": "Application Strategy",
+  "@applicationStrategyTooltip": { "description": "Tooltip label on application strategy cells in the feature value table" },
+
+  "lockedStatus": "Locked status",
+  "@lockedStatus": { "description": "Section label for the lock/unlock switch in the feature value side sheet" },
+
+  "lockedStatusInfo": "Locking mechanism provides an additional safety for feature changes when deploying incomplete code to production. Locked status prevents any changes to default value, strategies, strategy values and 'retired' status. Typically, developers keep features locked to indicate they are not ready to be turned on for testers, product owners, customers and other stakeholders.",
+  "@lockedStatusInfo": { "description": "Info tooltip explaining the locked status feature" },
+
+  "clickToUnlock": "Click to unlock",
+  "@clickToUnlock": { "description": "Tooltip on the lock button when feature is currently locked" },
+
+  "clickToLock": "Click to lock",
+  "@clickToLock": { "description": "Tooltip on the lock button when feature is currently unlocked" },
+
+  "featureIsLocked": "Feature is locked and cannot be changed",
+  "@featureIsLocked": { "description": "Status label shown when a feature value is locked" },
+
+  "featureIsUnlocked": "Feature is unlocked and can be changed",
+  "@featureIsUnlocked": { "description": "Status label shown when a feature value is unlocked" },
+
+  "featuresColumnHeader": "Features",
+  "@featuresColumnHeader": { "description": "Column header for the features name column in the dashboard table" },
+
+  "noFeaturesToDisplay": "No features to display",
+  "@noFeaturesToDisplay": { "description": "Placeholder shown when no features match the current filter" },
+
+  "noEnvironmentsForApp": "Either there are no environments defined for this application or you don't have permissions to access any of them",
+  "@noEnvironmentsForApp": { "description": "Message shown when the feature table has no environment columns" },
+
+  "goToEnvironmentsSettings": "Go to environments settings",
+  "@goToEnvironmentsSettings": { "description": "Link button to navigate to the app environments settings tab" },
+
+  "noFeaturesForApp": "There are no features defined for this application",
+  "@noFeaturesForApp": { "description": "Message shown when the selected application has no features" },
+
+  "setAsOrgSuperAdmin": "Set this user as organization super admin",
+  "@setAsOrgSuperAdmin": { "description": "Checkbox label to grant a user organisation-wide super admin rights" },
+
+  "copyFeatureKeyToClipboard": "Copy feature key to clipboard",
+  "@copyFeatureKeyToClipboard": { "description": "Tooltip on the copy-to-clipboard icon in the feature name cell" },
+
+  "editDetails": "Edit details",
+  "@editDetails": { "description": "Popup menu item to edit a feature's details" },
+
+  "viewDetails": "View details",
+  "@viewDetails": { "description": "Popup menu item to view a feature's details (read-only)" },
+
+  "editMetadata": "Edit metadata",
+  "@editMetadata": { "description": "Popup menu item to edit a feature's metadata" },
+
+  "viewMetadata": "View metadata",
+  "@viewMetadata": { "description": "Popup menu item to view a feature's metadata (read-only)" },
+
+  "manageGroup": "Manage Group",
+  "@manageGroup": { "description": "Popup menu item to navigate to the feature group management page" },
+
+  "strategy": "Strategy",
+  "@strategy": { "description": "Label for the strategy status in the feature group card" }
 }

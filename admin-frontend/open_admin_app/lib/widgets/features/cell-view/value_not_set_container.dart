@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class NotSetContainer extends StatelessWidget {
   const NotSetContainer({Key? key}) : super(key: key);
@@ -17,7 +18,7 @@ class NotSetContainer extends StatelessWidget {
               width: 1,
             ),
           ),
-          child: const Text('not set')),
+          child: Text(AppLocalizations.of(context)!.notSet)),
     );
   }
 }

@@ -299,9 +299,10 @@ class _NaughtyDataEntryWidget extends StatelessWidget {
             return const SizedBox.shrink();
           }
 
+          final l10n = AppLocalizations.of(context)!;
           final globalErrors = snapshot.data!
               .where((vio) => vio.id == null)
-              .map((e) => Text(e.violation.toDescription()))
+              .map((e) => Text(e.violation.toDescription(l10n)))
               .toList();
 
           return Column(children: globalErrors);

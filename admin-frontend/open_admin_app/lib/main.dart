@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:syncfusion_localizations/syncfusion_localizations.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:logging/logging.dart';
 import 'package:open_admin_app/routes/fh_navigator.dart';
@@ -72,6 +73,7 @@ class FeatureHubApp extends StatelessWidget {
                     scrollBehavior: CustomScrollBehavior(),
                     localizationsDelegates: const [
                       AppLocalizations.delegate,
+                      SfGlobalLocalizations.delegate,
                       GlobalMaterialLocalizations.delegate,
                       GlobalWidgetsLocalizations.delegate,
                       GlobalCupertinoLocalizations.delegate,

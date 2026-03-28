@@ -10,6 +10,7 @@ import 'package:open_admin_app/widgets/features/edit-feature/create_update_featu
 import 'package:open_admin_app/widgets/features/edit-feature/delete_feature_widget.dart';
 import 'package:open_admin_app/widgets/features/edit-feature/set_feature_metadata.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 
 class FeatureCellHolder extends StatelessWidget {
@@ -20,6 +21,7 @@ class FeatureCellHolder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +68,7 @@ class FeatureCellHolder extends StatelessWidget {
                                   ),
                                 FHCopyToClipboard(
                                     tooltipMessage:
-                                        "Copy feature key to clipboard",
+                                        l10n.copyFeatureKeyToClipboard,
                                     copyString: feature.key),
                               ],
                             ),
@@ -77,7 +79,7 @@ class FeatureCellHolder extends StatelessWidget {
                   ),
                 ),
                 PopupMenuButton(
-                  tooltip: 'Show more',
+                  tooltip: l10n.showMore,
                   icon: Icon(Icons.more_vert,
                       color: Theme.of(context).colorScheme.primary),
                   onSelected: (value) {
@@ -106,18 +108,18 @@ class FeatureCellHolder extends StatelessWidget {
                       PopupMenuItem(
                           value: 'edit',
                           child: Text(
-                              isEditor ? 'Edit details' : 'View details',
+                              isEditor ? l10n.editDetails : l10n.viewDetails,
                               style: Theme.of(context).textTheme.bodyMedium)),
                       PopupMenuItem(
                         value: 'metadata',
                         child: Text(
-                            isEditor ? 'Edit metadata' : 'View metadata',
+                            isEditor ? l10n.editMetadata : l10n.viewMetadata,
                             style: Theme.of(context).textTheme.bodyMedium),
                       ),
                       if (isEditor)
                         PopupMenuItem(
                           value: 'delete',
-                          child: Text('Delete',
+                          child: Text(l10n.delete,
                               style: Theme.of(context).textTheme.bodyMedium),
                         ),
                     ];

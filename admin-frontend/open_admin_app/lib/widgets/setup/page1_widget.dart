@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
@@ -25,7 +26,8 @@ class _SetupPage1State extends State<SetupPage1Widget> {
   final _pw2 = TextEditingController();
   final _passwordScoreThreshold = 1;
 
-  Text _passwordStrength = const Text('');
+  double? _passwordScore;
+  Color _passwordStrengthColor = Colors.white;
 
   final _formKey = GlobalKey<FormState>(debugLabel: 'setup_page1');
 
@@ -42,41 +44,31 @@ class _SetupPage1State extends State<SetupPage1Widget> {
   }
 
   void setPasswordStrength() {
-    String state;
+    double? score;
     Color stateColor;
 
     if (_pw1.text.isEmpty) {
-      state = '';
       stateColor = Colors.white;
     } else {
-      state = 'Weak';
       final result = Zxcvbn().evaluate(_pw1.text);
-      if (result.score == 1) {
-        state = 'Below average';
-      } else if (result.score == 2) {
-        state = 'Good';
-      } else if (result.score == 3) {
-        state = 'Strong';
-      }
-
+      score = result.score;
       stateColor =
           (result.score == null || result.score! < _passwordScoreThreshold)
               ? Colors.red
               : Colors.green;
-      if (result.score == 1) {
+      if (result.score != null && result.score! < 2) {
         stateColor = Colors.orange;
       }
     }
 
-    final stateText = Text(state,
-        style:
-            Theme.of(context).textTheme.bodySmall!.copyWith(color: stateColor));
     setState(() {
-      _passwordStrength = stateText;
+      _passwordScore = score;
+      _passwordStrengthColor = stateColor;
     });
   }
 
   Widget _dataEntry(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final external = widget.bloc.has3rdParty;
     final local = widget.bloc.hasLocal;
 
@@ -96,13 +88,13 @@ class _SetupPage1State extends State<SetupPage1Widget> {
               ),
             ),
             Text(
-              'Lets get this party started!',
+              l10n.setupWelcomeTitle,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),
               child: Text(
-                  "Well done, FeatureHub is up and running.  You'll be the first 'Organization super admin' of your FeatureHub account.",
+                  l10n.setupWelcomeMessage,
                   style: Theme.of(context).textTheme.bodyLarge),
             ),
             if (external)
@@ -117,7 +109,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                   const FHPageDivider(),
                   Padding(
                       padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
-                      child: Text('or register by providing the details below',
+                      child: Text(l10n.setupOrRegisterBelow,
                           style: Theme.of(context).textTheme.bodySmall)),
                 ],
               ),
@@ -127,25 +119,25 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                 TextFormField(
                   controller: _name,
                   autofocus: true,
-                  decoration: const InputDecoration(labelText: 'Name'),
+                  decoration: InputDecoration(labelText: l10n.nameLabel),
                   textInputAction: TextInputAction.next,
                   onFieldSubmitted: (_) => _handleSubmitted(),
                   validator: (v) => (v == null || v.isEmpty)
-                      ? 'Please enter your name'
+                      ? l10n.nameRequired
                       : null,
                 ),
                 TextFormField(
                     controller: _email,
                     decoration:
-                        const InputDecoration(labelText: 'Email address'),
+                        InputDecoration(labelText: l10n.emailLabel),
                     textInputAction: TextInputAction.next,
                     onFieldSubmitted: (_) => _handleSubmitted(),
                     validator: (v) {
                       if (v == null || v.isEmpty) {
-                        return 'Please enter your email address';
+                        return l10n.emailRequired;
                       }
                       if (!validateEmail(v)) {
-                        return ('Please enter a valid email address');
+                        return l10n.invalidEmailAddress;
                       }
                       return null;
                     }),
@@ -154,13 +146,13 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                     obscureText: true,
                     textInputAction: TextInputAction.next,
                     onFieldSubmitted: (_) => _handleSubmitted(),
-                    decoration: const InputDecoration(labelText: 'Password'),
+                    decoration: InputDecoration(labelText: l10n.passwordLabel),
                     validator: (v) {
                       if (v == null || v.isEmpty) {
-                        return 'Please enter your password';
+                        return l10n.passwordRequired;
                       }
                       if (v.length < 7) {
-                        return 'Password must be at least 7 characters';
+                        return l10n.passwordMustBe7Chars;
                       }
                       //this is quite sensitive and annoying at the moment, commenting out
 //                    Result result = Xcvbnm().estimate(v);
@@ -173,7 +165,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                   alignment: Alignment.topLeft,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-                    child: _passwordStrength,
+                    child: _buildPasswordStrengthText(context, l10n),
                   ),
                 ),
                 TextFormField(
@@ -181,10 +173,10 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                     obscureText: true,
                     onFieldSubmitted: (_) => _handleSubmitted(),
                     decoration:
-                        const InputDecoration(labelText: 'Confirm Password'),
+                        InputDecoration(labelText: l10n.confirmPasswordLabel),
                     validator: (v) {
                       if (v != _pw1.text) {
-                        return "Passwords don't match";
+                        return l10n.passwordsDoNotMatch;
                       }
                       return null;
                     }),
@@ -197,7 +189,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                     padding: const EdgeInsets.only(top: 16.0),
                     child: FHFlatButton(
                       onPressed: () => _handleSubmitted(),
-                      title: 'Next',
+                      title: l10n.next,
                     ),
                   )
                 ],
@@ -206,6 +198,24 @@ class _SetupPage1State extends State<SetupPage1Widget> {
         ),
       ),
     );
+  }
+
+  Widget _buildPasswordStrengthText(BuildContext context, AppLocalizations l10n) {
+    if (_passwordScore == null && _pw1.text.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    String label;
+    if (_passwordScore == null || _passwordScore! < 1) {
+      label = l10n.passwordStrengthWeak;
+    } else if (_passwordScore! < 2) {
+      label = l10n.passwordStrengthBelowAverage;
+    } else if (_passwordScore! < 3) {
+      label = l10n.passwordStrengthGood;
+    } else {
+      label = l10n.passwordStrengthStrong;
+    }
+    return Text(label,
+        style: Theme.of(context).textTheme.bodySmall!.copyWith(color: _passwordStrengthColor));
   }
 
   void _handleSelectedExternal(String provider) {

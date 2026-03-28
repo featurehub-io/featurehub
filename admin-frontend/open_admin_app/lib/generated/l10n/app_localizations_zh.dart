@@ -1447,4 +1447,521 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get invalidUrlPrefix => '必须选择有效的 URL 前缀';
+
+  @override
+  String get clickToEdit => '点击编辑';
+
+  @override
+  String get showAction => '显示';
+
+  @override
+  String get clearAction => '清除';
+
+  @override
+  String get decryptAction => '解密';
+
+  @override
+  String get encryptAction => '加密';
+
+  @override
+  String addRowButton(String name) {
+    return '添加 $name';
+  }
+
+  @override
+  String get headerColumnLabel => '标头';
+
+  @override
+  String get valueColumnLabel => '值';
+
+  @override
+  String get selectEnvironmentsToDisplay => '选择要显示的环境';
+
+  @override
+  String appThingLabel(String name) {
+    return '应用程序「$name」';
+  }
+
+  @override
+  String appDeleted(String name) {
+    return '应用程序「$name」已删除！';
+  }
+
+  @override
+  String appDeleteError(String name) {
+    return '无法删除应用程序 $name';
+  }
+
+  @override
+  String get undelivered => '未投递';
+
+  @override
+  String get webhookDetailsTitle => 'Webhook 详情';
+
+  @override
+  String get viewWebhookDetails => '查看 Webhook 详情';
+
+  @override
+  String get enableJsonValidation => '启用 JSON 验证';
+
+  @override
+  String get formatJson => '格式化 JSON';
+
+  @override
+  String get jsonValue => 'JSON 值';
+
+  @override
+  String get errorNotFound => '找不到请求的资源';
+
+  @override
+  String get errorForbidden => '您没有权限访问此资源';
+
+  @override
+  String get errorInternalServer => '发生内部服务器错误';
+
+  @override
+  String get errorLoadingData => '加载数据时发生错误';
+
+  @override
+  String get yourCurrentPortfolio => '您当前的项目组合';
+
+  @override
+  String get selectPortfolio => '选择项目组合';
+
+  @override
+  String get selectApplication => '选择应用程序';
+
+  @override
+  String get featureOn => '开';
+
+  @override
+  String get featureOff => '关';
+
+  @override
+  String get notSet => '未设置';
+
+  @override
+  String get retired => '已停用';
+
+  @override
+  String featureThingLabel(String name) {
+    return '功能标志「$name」';
+  }
+
+  @override
+  String get featureDeleteContent =>
+      '您需要确保所有相关代码已清理，且能够在没有此功能标志的情况下正常运行！\n\n此操作无法撤销！';
+
+  @override
+  String featureDeleted(String name) {
+    return '功能标志「$name」已删除！';
+  }
+
+  @override
+  String get noPermissionsForOperation => '您没有权限执行此操作';
+
+  @override
+  String featureDeleteError(String name) {
+    return '无法删除功能标志 $name';
+  }
+
+  @override
+  String get featureGroupDeleteContent =>
+      '此操作将删除该功能标志组及其关联的策略。\n\n各功能标志不会被删除，仍将保留在系统中。\n\n此操作无法撤销！';
+
+  @override
+  String featureGroupDeleted(String name) {
+    return '功能标志组「$name」已删除！';
+  }
+
+  @override
+  String featureGroupDeleteError(String name) {
+    return '无法删除功能标志组 $name';
+  }
+
+  @override
+  String get noEnvironmentsAvailable => '暂无可用环境';
+
+  @override
+  String get selectFeatureToAdd => '选择要添加的功能标志';
+
+  @override
+  String get setupWelcomeTitle => '让我们开始吧！';
+
+  @override
+  String get setupWelcomeMessage =>
+      '做得好，FeatureHub 已成功运行。您将成为 FeatureHub 账户的第一位「组织超级管理员」。';
+
+  @override
+  String get setupOrRegisterBelow => '或通过填写以下信息进行注册';
+
+  @override
+  String get next => '下一步';
+
+  @override
+  String get setupAllSet => '一切就绪！';
+
+  @override
+  String get setupNextStepsMessage =>
+      '下一步是创建您的第一个应用程序并添加一些功能标志。默认情况下，系统会创建第一个名为「Production」的环境。您可以点击应用栏右侧的「火箭」图标，通过「快速设置」助手查看您的进度。';
+
+  @override
+  String get stepperTitle => '应用程序设置进度';
+
+  @override
+  String get stepCreateApplication => '创建应用程序';
+
+  @override
+  String get stepSelectApplicationHint => '选择一个应用程序，或点击下方链接创建新应用程序';
+
+  @override
+  String get goToApplications => '前往应用程序';
+
+  @override
+  String get stepCreateTeamGroup => '创建团队用户组';
+
+  @override
+  String get stepCreateTeamGroupHint =>
+      '用户组适用于整个项目组合。建议为每个应用程序创建专属用户组，例如「MyApp 开发者」';
+
+  @override
+  String get goToGroups => '前往用户组';
+
+  @override
+  String get stepCreateServiceAccount => '创建服务账号';
+
+  @override
+  String get stepCreateServiceAccountHint =>
+      '服务账号适用于整个项目组合。建议为每个应用程序至少创建两个专属服务账号，例如「SA-MyApp-Prod」和「SA-MyApp-Non-Prod」';
+
+  @override
+  String get goToServiceAccounts => '前往服务账号';
+
+  @override
+  String get stepCreateEnvironment => '创建环境';
+
+  @override
+  String get stepCreateEnvironmentHint => '为所选应用程序创建一个环境，例如「test」、「dev」、「prod」';
+
+  @override
+  String get goToEnvironments => '前往环境';
+
+  @override
+  String get stepGiveAccessToGroups => '授予用户组访问权限';
+
+  @override
+  String get stepGiveAccessToGroupsHint => '为用户组分配应用程序环境级别的权限';
+
+  @override
+  String get goToGroupPermissions => '前往用户组权限';
+
+  @override
+  String get stepGiveAccessToServiceAccount => '授予服务账号访问权限';
+
+  @override
+  String get stepGiveAccessToServiceAccountHint => '为服务账号分配应用程序环境级别的权限';
+
+  @override
+  String get goToSAPermissions => '前往服务账号权限';
+
+  @override
+  String get stepCreateFeature => '创建功能标志';
+
+  @override
+  String get stepCreateFeatureHint => '为应用程序创建一个功能标志';
+
+  @override
+  String get goToFeatures => '前往功能标志';
+
+  @override
+  String get featureHubAdministrators => 'FeatureHub 管理员';
+
+  @override
+  String get portfolioLabel => '项目组合';
+
+  @override
+  String get andOperator => '且';
+
+  @override
+  String systemConfigUpdated(String section) {
+    return '$section 已成功更新';
+  }
+
+  @override
+  String systemConfigNoUpdates(String section) {
+    return '未发现 $section 的更新';
+  }
+
+  @override
+  String get unableToSaveUpdates => '无法保存更新';
+
+  @override
+  String get showValue => '显示值';
+
+  @override
+  String get strategyNameTooLong => '策略名称过长';
+
+  @override
+  String get strategyEmptyMatchCriteria => '您尚未提供任何匹配规则，请添加规则';
+
+  @override
+  String get strategyNegativePercentage => '百分比不能为负数';
+
+  @override
+  String get strategyPercentageOver100 => '所有策略的百分比总和超过 100%，请降低百分比规则';
+
+  @override
+  String get strategyArrayAttributeNoValues => '请为此规则提供至少一个值';
+
+  @override
+  String get strategyAttrInvalidWellKnownEnum => '请为此规则选择一个值';
+
+  @override
+  String get strategyAttrMissingValue => '请为此规则提供一个值';
+
+  @override
+  String get strategyAttrMissingConditional => '请为此规则选择匹配条件';
+
+  @override
+  String get strategyAttrMissingFieldName => '请输入规则名称';
+
+  @override
+  String get strategyAttrMissingFieldType => '请为此规则选择值类型';
+
+  @override
+  String get strategyAttrValNotSemanticVersion => '请提供有效的语义化版本号';
+
+  @override
+  String get strategyAttrValNotNumber => '请提供有效的数字';
+
+  @override
+  String get strategyAttrValNotDate => '请提供 YYYY-MM-DD 格式的有效日期';
+
+  @override
+  String get strategyAttrValNotDateTime => '请提供 YYYY-MM-DDTHH:MM:SS 格式的有效日期时间';
+
+  @override
+  String get strategyAttrValNotCidr => '请提供有效的 IP 或 CIDR 地址';
+
+  @override
+  String get strategyAttrUnknownFailure => '出现未知策略验证错误';
+
+  @override
+  String get strategyDefault => '默认';
+
+  @override
+  String get strategyServe => '提供';
+
+  @override
+  String get editStrategySettings => '编辑策略设置';
+
+  @override
+  String get selectStrategyToAdd => '选择要添加的策略';
+
+  @override
+  String get wellKnownCountry => '国家/地区';
+
+  @override
+  String get wellKnownDevice => '设备';
+
+  @override
+  String get wellKnownPlatform => '平台';
+
+  @override
+  String get wellKnownVersion => '版本';
+
+  @override
+  String get wellKnownUserKey => '用户键';
+
+  @override
+  String get tooltipAppliedRules => '已应用规则';
+
+  @override
+  String tooltipPercentage(String value) {
+    return '百分比：$value%';
+  }
+
+  @override
+  String get tooltipUserKey => '用户键';
+
+  @override
+  String get tooltipCountry => '国家/地区';
+
+  @override
+  String get tooltipPlatform => '平台';
+
+  @override
+  String get tooltipDevice => '设备';
+
+  @override
+  String get tooltipVersion => '版本';
+
+  @override
+  String get tooltipCustom => '自定义';
+
+  @override
+  String get unsavedChanges => '您有未保存的更改，是否保存？';
+
+  @override
+  String featureValueUpdated(String feature, String environment) {
+    return '功能标志 $feature 在环境 $environment 中已更新！';
+  }
+
+  @override
+  String get defaultValue => '默认值';
+
+  @override
+  String get strategyVariations => '策略变体';
+
+  @override
+  String get strategyVariationsInfo =>
+      '添加策略变体以提供非默认值。您可以通过拖放下方的卡片更改策略评估顺序。策略从上到下依次评估，命中匹配策略后停止。「用户组策略」最后评估。如果没有策略匹配，则提供「默认」功能值。';
+
+  @override
+  String get noStrategiesSet => '未设置策略';
+
+  @override
+  String get groupStrategyVariations => '用户组策略变体';
+
+  @override
+  String get groupStrategyVariationsInfo =>
+      '当您希望在同一环境中为多个功能设置相同策略时，建议使用功能分组。功能组策略可在「功能分组」页面中创建和编辑。';
+
+  @override
+  String get noGroupStrategiesSet => '未设置用户组策略';
+
+  @override
+  String get applicationStrategyVariations => '应用程序策略变体';
+
+  @override
+  String get applicationStrategyVariationsInfo =>
+      '应用程序策略在应用程序层面创建，可分配给任意环境中的多个功能。应用程序策略可在「应用程序策略」页面中创建和编辑。';
+
+  @override
+  String get noApplicationStrategiesSet => '未设置应用程序策略';
+
+  @override
+  String get showAvailableAppStrategies => '显示可用的应用程序策略';
+
+  @override
+  String get addStrategy => '添加策略';
+
+  @override
+  String get retiredStatus => '退役状态';
+
+  @override
+  String get retiredStatusInfo =>
+      '当功能标志在您的应用程序中不再需要并准备删除时，您可以先在指定环境中将此功能「退役」，以测试应用程序的行为。这意味着 SDK 将看不到该功能，模拟「已删除」状态。如果改变主意，您可以取消勾选来「取消退役」，此操作是可逆的。在所有环境中退役功能值并确认应用程序行为符合预期后，即可删除整个功能。';
+
+  @override
+  String get hideHistory => '隐藏历史记录';
+
+  @override
+  String get showHistory => '显示历史记录';
+
+  @override
+  String get showingLast20 => '显示最近 20 条';
+
+  @override
+  String get historyColumnTimestamp => '时间戳（UTC）';
+
+  @override
+  String get historyColumnName => '姓名';
+
+  @override
+  String get historyColumnEmail => '邮箱';
+
+  @override
+  String get historyColumnType => '类型';
+
+  @override
+  String get historyColumnDefaultValue => '默认值';
+
+  @override
+  String get historyColumnLocked => '已锁定';
+
+  @override
+  String get historyColumnRetired => '已退役';
+
+  @override
+  String get historyColumnRolloutStrategies => '发布策略';
+
+  @override
+  String get historyTypeUser => '用户';
+
+  @override
+  String get historyTypeServiceAccount => '服务账号';
+
+  @override
+  String get strategyRules => '策略规则';
+
+  @override
+  String get percentageRollout => '百分比发布';
+
+  @override
+  String get moreDetails => '更多';
+
+  @override
+  String get groupStrategyTooltip => '用户组策略';
+
+  @override
+  String get applicationStrategyTooltip => '应用程序策略';
+
+  @override
+  String get lockedStatus => '锁定状态';
+
+  @override
+  String get lockedStatusInfo =>
+      '锁定机制在将未完成代码部署到生产环境时，为功能更改提供了额外的保障。锁定状态会阻止对默认值、策略、策略值和「退役」状态的任何更改。通常，开发人员通过锁定功能来表示该功能尚未准备好向测试人员、产品负责人、客户及其他利益相关者开放。';
+
+  @override
+  String get clickToUnlock => '点击解锁';
+
+  @override
+  String get clickToLock => '点击锁定';
+
+  @override
+  String get featureIsLocked => '功能已锁定，无法更改';
+
+  @override
+  String get featureIsUnlocked => '功能已解锁，可以更改';
+
+  @override
+  String get featuresColumnHeader => '功能标志';
+
+  @override
+  String get noFeaturesToDisplay => '没有可显示的功能标志';
+
+  @override
+  String get noEnvironmentsForApp => '此应用程序尚未定义任何环境，或您没有访问任何环境的权限';
+
+  @override
+  String get goToEnvironmentsSettings => '前往环境设置';
+
+  @override
+  String get noFeaturesForApp => '此应用程序尚未定义任何功能标志';
+
+  @override
+  String get setAsOrgSuperAdmin => '将此用户设为组织超级管理员';
+
+  @override
+  String get copyFeatureKeyToClipboard => '复制功能标志键到剪贴板';
+
+  @override
+  String get editDetails => '编辑详情';
+
+  @override
+  String get viewDetails => '查看详情';
+
+  @override
+  String get editMetadata => '编辑元数据';
+
+  @override
+  String get viewMetadata => '查看元数据';
+
+  @override
+  String get manageGroup => '管理分组';
+
+  @override
+  String get strategy => '策略';
 }

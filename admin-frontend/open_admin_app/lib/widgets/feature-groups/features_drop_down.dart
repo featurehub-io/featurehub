@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
 
 class FeaturesDropDown extends StatefulWidget {
@@ -20,6 +21,7 @@ class _FeaturesDropDownState extends State<FeaturesDropDown> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(left: 8.0),
       child: OutlinedButton(
@@ -46,7 +48,7 @@ class _FeaturesDropDownState extends State<FeaturesDropDown> {
                         ));
                   }).toList()
                 : null,
-            hint: Text('Select feature to add',
+            hint: Text(l10n.selectFeatureToAdd,
                 style: Theme.of(context).textTheme.titleSmall),
             onChanged: (String? value) async {
               setState(() {

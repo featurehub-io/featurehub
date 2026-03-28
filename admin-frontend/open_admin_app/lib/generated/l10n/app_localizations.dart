@@ -2749,6 +2749,966 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You must choose a valid URL prefix'**
   String get invalidUrlPrefix;
+
+  /// Tooltip on editable cells in the delivery headers table
+  ///
+  /// In en, this message translates to:
+  /// **'Click to edit'**
+  String get clickToEdit;
+
+  /// Action button to reveal an encrypted value in the table
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get showAction;
+
+  /// Action button to clear a value in the table (removes encryption flag)
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearAction;
+
+  /// Action button to decrypt an encrypted value in the table
+  ///
+  /// In en, this message translates to:
+  /// **'Decrypt'**
+  String get decryptAction;
+
+  /// Action button to mark a value as encrypted in the table
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypt'**
+  String get encryptAction;
+
+  /// Button above the table to add a new row, where name is the key column header
+  ///
+  /// In en, this message translates to:
+  /// **'Add {name}'**
+  String addRowButton(String name);
+
+  /// Column header label for the key column in the delivery headers table
+  ///
+  /// In en, this message translates to:
+  /// **'Header'**
+  String get headerColumnLabel;
+
+  /// Column header label for the value column in the delivery headers table
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get valueColumnLabel;
+
+  /// Hint text for the environment multi-select dropdown on the features data table
+  ///
+  /// In en, this message translates to:
+  /// **'Select environments to display'**
+  String get selectEnvironmentsToDisplay;
+
+  /// The 'thing' label for the delete dialog for an application
+  ///
+  /// In en, this message translates to:
+  /// **'application \'{name}\''**
+  String appThingLabel(String name);
+
+  /// Snackbar after deleting an application
+  ///
+  /// In en, this message translates to:
+  /// **'Application \'{name}\' deleted!'**
+  String appDeleted(String name);
+
+  /// Error when deleting an application fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete application {name}'**
+  String appDeleteError(String name);
+
+  /// Status text for an undelivered webhook
+  ///
+  /// In en, this message translates to:
+  /// **'undelivered'**
+  String get undelivered;
+
+  /// Title of the webhook detail dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook details'**
+  String get webhookDetailsTitle;
+
+  /// Tooltip on the info icon in the webhook table
+  ///
+  /// In en, this message translates to:
+  /// **'View webhook details'**
+  String get viewWebhookDetails;
+
+  /// Checkbox label to enable JSON validation in the JSON editor
+  ///
+  /// In en, this message translates to:
+  /// **'Enable JSON validation'**
+  String get enableJsonValidation;
+
+  /// Button to pretty-print JSON in the JSON editor
+  ///
+  /// In en, this message translates to:
+  /// **'Format json'**
+  String get formatJson;
+
+  /// Label above the JSON text editor area
+  ///
+  /// In en, this message translates to:
+  /// **'JSON Value'**
+  String get jsonValue;
+
+  /// Error message for HTTP 404
+  ///
+  /// In en, this message translates to:
+  /// **'The requested resource was not found'**
+  String get errorNotFound;
+
+  /// Error message for HTTP 403
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have permission to access this resource'**
+  String get errorForbidden;
+
+  /// Error message for HTTP 500
+  ///
+  /// In en, this message translates to:
+  /// **'An internal server error occurred'**
+  String get errorInternalServer;
+
+  /// Generic error message when data fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred while loading the data'**
+  String get errorLoadingData;
+
+  /// Label above the portfolio selector in the drawer
+  ///
+  /// In en, this message translates to:
+  /// **'Your current portfolio'**
+  String get yourCurrentPortfolio;
+
+  /// Hint text for the portfolio selector dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Select portfolio'**
+  String get selectPortfolio;
+
+  /// Hint text for the application selector dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Select application'**
+  String get selectApplication;
+
+  /// Label when a boolean feature flag is enabled
+  ///
+  /// In en, this message translates to:
+  /// **'ON'**
+  String get featureOn;
+
+  /// Label when a boolean feature flag is disabled
+  ///
+  /// In en, this message translates to:
+  /// **'OFF'**
+  String get featureOff;
+
+  /// Placeholder when a feature value has not been set
+  ///
+  /// In en, this message translates to:
+  /// **'not set'**
+  String get notSet;
+
+  /// Checkbox label for retiring a feature value
+  ///
+  /// In en, this message translates to:
+  /// **'Retired'**
+  String get retired;
+
+  /// The 'thing' label for the delete dialog for a feature
+  ///
+  /// In en, this message translates to:
+  /// **'feature \'{name}\''**
+  String featureThingLabel(String name);
+
+  /// Body text of the delete-feature confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'You need to make sure all your code is cleaned up and can deal without this feature!\n\nThis cannot be undone!'**
+  String get featureDeleteContent;
+
+  /// Snackbar after deleting a feature
+  ///
+  /// In en, this message translates to:
+  /// **'Feature \'{name}\' deleted!'**
+  String featureDeleted(String name);
+
+  /// Error when the user lacks permission for an operation
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have permissions to perform this operation'**
+  String get noPermissionsForOperation;
+
+  /// Error when deleting a feature fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete feature {name}'**
+  String featureDeleteError(String name);
+
+  /// Body text of the delete-feature-group confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This action will delete a feature group and a strategy associated with it.\n\nThe features will not be deleted and remain present in your system.\n\nThis cannot be undone!'**
+  String get featureGroupDeleteContent;
+
+  /// Snackbar after deleting a feature group
+  ///
+  /// In en, this message translates to:
+  /// **'Feature group \'{name}\' deleted!'**
+  String featureGroupDeleted(String name);
+
+  /// Error when deleting a feature group fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete feature group {name}'**
+  String featureGroupDeleteError(String name);
+
+  /// Message in the environment dropdown when none exist
+  ///
+  /// In en, this message translates to:
+  /// **'No environments available'**
+  String get noEnvironmentsAvailable;
+
+  /// Hint text for the features dropdown in the feature groups editor
+  ///
+  /// In en, this message translates to:
+  /// **'Select feature to add'**
+  String get selectFeatureToAdd;
+
+  /// Heading on setup page 1
+  ///
+  /// In en, this message translates to:
+  /// **'Lets get this party started!'**
+  String get setupWelcomeTitle;
+
+  /// Subtitle on setup page 1 explaining the super admin role
+  ///
+  /// In en, this message translates to:
+  /// **'Well done, FeatureHub is up and running.  You\'ll be the first \'Organization super admin\' of your FeatureHub account.'**
+  String get setupWelcomeMessage;
+
+  /// Divider label between SSO and local registration on setup page 1
+  ///
+  /// In en, this message translates to:
+  /// **'or register by providing the details below'**
+  String get setupOrRegisterBelow;
+
+  /// Button label to advance to the next step
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
+
+  /// Title of the final setup confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'All set!'**
+  String get setupAllSet;
+
+  /// Body of the final setup confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Next step is to create your first application and add some features. Your first environment called \"Production\" will be created by default. You can follow the \"Quick Setup\" helper by clicking the \"rocket\" icon on the right of the app bar to see your progress.'**
+  String get setupNextStepsMessage;
+
+  /// Title of the quick-setup progress stepper panel
+  ///
+  /// In en, this message translates to:
+  /// **'Application setup progress'**
+  String get stepperTitle;
+
+  /// Step 1 title in the setup stepper
+  ///
+  /// In en, this message translates to:
+  /// **'Create application'**
+  String get stepCreateApplication;
+
+  /// Helper text under the application dropdown in step 1
+  ///
+  /// In en, this message translates to:
+  /// **'Select application or create a new one by following the link below'**
+  String get stepSelectApplicationHint;
+
+  /// Link button in stepper step 1
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Applications'**
+  String get goToApplications;
+
+  /// Step 2 title in the setup stepper
+  ///
+  /// In en, this message translates to:
+  /// **'Create team group'**
+  String get stepCreateTeamGroup;
+
+  /// Helper text in stepper step 2
+  ///
+  /// In en, this message translates to:
+  /// **'Groups are portfolio-wide, we recommend creating application specific groups eg \"MyApp developers\"'**
+  String get stepCreateTeamGroupHint;
+
+  /// Link button in stepper step 2
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Groups'**
+  String get goToGroups;
+
+  /// Step 3 title in the setup stepper
+  ///
+  /// In en, this message translates to:
+  /// **'Create service account'**
+  String get stepCreateServiceAccount;
+
+  /// Helper text in stepper step 3
+  ///
+  /// In en, this message translates to:
+  /// **'Service accounts are portfolio-wide, we recommend creating at least two service accounts specific to an application, e.g. \"SA-MyApp-Prod\" and \"SA-MyApp-Non-Prod\"'**
+  String get stepCreateServiceAccountHint;
+
+  /// Link button in stepper step 3
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Service Accounts'**
+  String get goToServiceAccounts;
+
+  /// Step 4 title in the setup stepper
+  ///
+  /// In en, this message translates to:
+  /// **'Create environment'**
+  String get stepCreateEnvironment;
+
+  /// Helper text in stepper step 4
+  ///
+  /// In en, this message translates to:
+  /// **'Create an environment for selected application, e.g. \"test\", \"dev\", \"prod\"'**
+  String get stepCreateEnvironmentHint;
+
+  /// Link button in stepper step 4
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Environments'**
+  String get goToEnvironments;
+
+  /// Step 5 title in the setup stepper
+  ///
+  /// In en, this message translates to:
+  /// **'Give access to groups'**
+  String get stepGiveAccessToGroups;
+
+  /// Helper text in stepper step 5
+  ///
+  /// In en, this message translates to:
+  /// **'Assign an application environment level permissions to a group of users'**
+  String get stepGiveAccessToGroupsHint;
+
+  /// Link button in stepper step 5
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Group Permissions'**
+  String get goToGroupPermissions;
+
+  /// Step 6 title in the setup stepper
+  ///
+  /// In en, this message translates to:
+  /// **'Give access to service account'**
+  String get stepGiveAccessToServiceAccount;
+
+  /// Helper text in stepper step 6
+  ///
+  /// In en, this message translates to:
+  /// **'Assign an application environment level permissions to a service account'**
+  String get stepGiveAccessToServiceAccountHint;
+
+  /// Link button in stepper step 6
+  ///
+  /// In en, this message translates to:
+  /// **'Go to SA Permissions'**
+  String get goToSAPermissions;
+
+  /// Step 7 title in the setup stepper
+  ///
+  /// In en, this message translates to:
+  /// **'Create a feature'**
+  String get stepCreateFeature;
+
+  /// Helper text in stepper step 7
+  ///
+  /// In en, this message translates to:
+  /// **'Create a feature for an application'**
+  String get stepCreateFeatureHint;
+
+  /// Link button in stepper step 7
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Features'**
+  String get goToFeatures;
+
+  /// Chip label for the site-wide admin group in the portfolio group selector
+  ///
+  /// In en, this message translates to:
+  /// **'FeatureHub Administrators'**
+  String get featureHubAdministrators;
+
+  /// Label on the portfolio dropdown in the portfolio group selector
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio'**
+  String get portfolioLabel;
+
+  /// Badge between strategy attribute rules indicating logical AND
+  ///
+  /// In en, this message translates to:
+  /// **'AND'**
+  String get andOperator;
+
+  /// Snackbar after a system config section is saved
+  ///
+  /// In en, this message translates to:
+  /// **'{section} was successfully updated'**
+  String systemConfigUpdated(String section);
+
+  /// Snackbar when saving system config with no changes
+  ///
+  /// In en, this message translates to:
+  /// **'No updates for {section} found'**
+  String systemConfigNoUpdates(String section);
+
+  /// Error message when saving system config fails
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to save updates'**
+  String get unableToSaveUpdates;
+
+  /// Button to reveal an encrypted text field value
+  ///
+  /// In en, this message translates to:
+  /// **'Show value'**
+  String get showValue;
+
+  /// Validation: strategy name exceeds max length
+  ///
+  /// In en, this message translates to:
+  /// **'Strategy name is too long'**
+  String get strategyNameTooLong;
+
+  /// Validation: strategy has no attribute rules
+  ///
+  /// In en, this message translates to:
+  /// **'You have not provided any rules to match against, please add a rule'**
+  String get strategyEmptyMatchCriteria;
+
+  /// Validation: strategy percentage is negative
+  ///
+  /// In en, this message translates to:
+  /// **'Percentage cannot be a negative number'**
+  String get strategyNegativePercentage;
+
+  /// Validation: total strategy percentage exceeds 100%
+  ///
+  /// In en, this message translates to:
+  /// **'The total percentage value across all strategies is above 100%, please decrease the percentage rule'**
+  String get strategyPercentageOver100;
+
+  /// Validation: array attribute rule has no values
+  ///
+  /// In en, this message translates to:
+  /// **'Please provide at least one value for this rule'**
+  String get strategyArrayAttributeNoValues;
+
+  /// Validation: well-known enum attribute rule has invalid value
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a value for this rule'**
+  String get strategyAttrInvalidWellKnownEnum;
+
+  /// Validation: attribute rule is missing a value
+  ///
+  /// In en, this message translates to:
+  /// **'Please provide a value for this rule'**
+  String get strategyAttrMissingValue;
+
+  /// Validation: attribute rule has no condition selected
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a matching condition for this rule'**
+  String get strategyAttrMissingConditional;
+
+  /// Validation: custom attribute rule has no field name
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the rule name'**
+  String get strategyAttrMissingFieldName;
+
+  /// Validation: attribute rule has no field type selected
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a value type for this rule'**
+  String get strategyAttrMissingFieldType;
+
+  /// Validation: attribute value is not a valid semantic version
+  ///
+  /// In en, this message translates to:
+  /// **'Please provide a valid semantic version'**
+  String get strategyAttrValNotSemanticVersion;
+
+  /// Validation: attribute value is not a valid number
+  ///
+  /// In en, this message translates to:
+  /// **'Please provide a valid number'**
+  String get strategyAttrValNotNumber;
+
+  /// Validation: attribute value is not a valid date
+  ///
+  /// In en, this message translates to:
+  /// **'Please provide a valid date in YYYY-MM-DD format'**
+  String get strategyAttrValNotDate;
+
+  /// Validation: attribute value is not a valid datetime
+  ///
+  /// In en, this message translates to:
+  /// **'Please provide a valid date and time in YYYY-MM-DDTHH:MM:SS format'**
+  String get strategyAttrValNotDateTime;
+
+  /// Validation: attribute value is not a valid IP/CIDR
+  ///
+  /// In en, this message translates to:
+  /// **'Please provide a valid IP or CIDR address'**
+  String get strategyAttrValNotCidr;
+
+  /// Validation: unknown strategy error
+  ///
+  /// In en, this message translates to:
+  /// **'There was an unknown strategy validation error'**
+  String get strategyAttrUnknownFailure;
+
+  /// Label for the default (no-name) strategy card
+  ///
+  /// In en, this message translates to:
+  /// **'default'**
+  String get strategyDefault;
+
+  /// Label preceding the served value in a strategy card
+  ///
+  /// In en, this message translates to:
+  /// **'serve'**
+  String get strategyServe;
+
+  /// Tooltip on the navigate-to-strategy-settings button in a strategy card
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Strategy Settings'**
+  String get editStrategySettings;
+
+  /// Hint text for the application strategies dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Select strategy to add'**
+  String get selectStrategyToAdd;
+
+  /// Display label for the Country well-known attribute in strategy editor
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get wellKnownCountry;
+
+  /// Display label for the Device well-known attribute in strategy editor
+  ///
+  /// In en, this message translates to:
+  /// **'Device'**
+  String get wellKnownDevice;
+
+  /// Display label for the Platform well-known attribute in strategy editor
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get wellKnownPlatform;
+
+  /// Display label for the Version well-known attribute in strategy editor
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get wellKnownVersion;
+
+  /// Display label for the User Key well-known attribute in strategy editor
+  ///
+  /// In en, this message translates to:
+  /// **'User Key'**
+  String get wellKnownUserKey;
+
+  /// Section header in the strategy tooltip listing which rules apply
+  ///
+  /// In en, this message translates to:
+  /// **'Applied rules'**
+  String get tooltipAppliedRules;
+
+  /// Tooltip line showing the percentage rollout value
+  ///
+  /// In en, this message translates to:
+  /// **'Percentage: {value}%'**
+  String tooltipPercentage(String value);
+
+  /// Tooltip line indicating a user-key rule is applied
+  ///
+  /// In en, this message translates to:
+  /// **'User key'**
+  String get tooltipUserKey;
+
+  /// Tooltip line indicating a country rule is applied
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get tooltipCountry;
+
+  /// Tooltip line indicating a platform rule is applied
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get tooltipPlatform;
+
+  /// Tooltip line indicating a device rule is applied
+  ///
+  /// In en, this message translates to:
+  /// **'Device'**
+  String get tooltipDevice;
+
+  /// Tooltip line indicating a version rule is applied
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get tooltipVersion;
+
+  /// Tooltip line indicating a custom attribute rule is applied
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get tooltipCustom;
+
+  /// Banner shown in the feature value side sheet when there are unsaved changes
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved changes, save?'**
+  String get unsavedChanges;
+
+  /// Snackbar after saving a feature value
+  ///
+  /// In en, this message translates to:
+  /// **'Feature {feature} in the environment {environment} has been updated!'**
+  String featureValueUpdated(String feature, String environment);
+
+  /// Section label above the default strategy card in the feature value editor
+  ///
+  /// In en, this message translates to:
+  /// **'Default value'**
+  String get defaultValue;
+
+  /// Section heading for custom rollout strategy variations in the feature value editor
+  ///
+  /// In en, this message translates to:
+  /// **'Strategy variations'**
+  String get strategyVariations;
+
+  /// Info tooltip describing how strategy variations work
+  ///
+  /// In en, this message translates to:
+  /// **'Add a strategy variation to serve a value other than default. You can change strategies evaluation order by dragging and dropping the cards below. Strategies are evaluated in order from top to bottom. Evaluation stops when it hits a matching strategy. \'Group Strategy\' evaluation comes last. If no strategies match, then \'default\' feature value is served.'**
+  String get strategyVariationsInfo;
+
+  /// Placeholder when no rollout strategy variations have been added
+  ///
+  /// In en, this message translates to:
+  /// **'No strategies set'**
+  String get noStrategiesSet;
+
+  /// Section heading for feature group strategy variations
+  ///
+  /// In en, this message translates to:
+  /// **'Group strategy variations'**
+  String get groupStrategyVariations;
+
+  /// Info tooltip describing group strategy variations
+  ///
+  /// In en, this message translates to:
+  /// **'Feature groups are recommended when you want to set the same strategy for multiple features in the same environment. Feature group strategy can be created and edited from the Feature Groups page.'**
+  String get groupStrategyVariationsInfo;
+
+  /// Placeholder when no group strategies have been assigned
+  ///
+  /// In en, this message translates to:
+  /// **'No group strategies set'**
+  String get noGroupStrategiesSet;
+
+  /// Section heading for application-level strategy variations
+  ///
+  /// In en, this message translates to:
+  /// **'Application strategy variations'**
+  String get applicationStrategyVariations;
+
+  /// Info tooltip describing application strategy variations
+  ///
+  /// In en, this message translates to:
+  /// **'Application strategies are created at application level and can be assigned to multiple features in any environment. Application strategy can be created and edited from the Application Strategies page.'**
+  String get applicationStrategyVariationsInfo;
+
+  /// Placeholder when no application strategies have been assigned
+  ///
+  /// In en, this message translates to:
+  /// **'No application strategies set'**
+  String get noApplicationStrategiesSet;
+
+  /// Button to reveal the list of available application strategies to add
+  ///
+  /// In en, this message translates to:
+  /// **'Show available app strategies'**
+  String get showAvailableAppStrategies;
+
+  /// Button label to add an application strategy to a feature value
+  ///
+  /// In en, this message translates to:
+  /// **'Add Strategy'**
+  String get addStrategy;
+
+  /// Section label for the retire feature value checkbox
+  ///
+  /// In en, this message translates to:
+  /// **'Retired status'**
+  String get retiredStatus;
+
+  /// Info tooltip explaining the retired feature status
+  ///
+  /// In en, this message translates to:
+  /// **'When feature flag is not needed any longer in your application, and ready to be removed, you can first \'retire\' this feature in a given environment to test how your application behaves. This means that the feature won\'t be visible by the SDKs, imitating the \'deleted\' state. You can uncheck the box to \'un-retire\' a feature if you change your mind as this operation is reversible. Once you retire feature values across all the environments and test that your application behaves as expected, you can delete your entire feature.'**
+  String get retiredStatusInfo;
+
+  /// Button to collapse the feature value change history
+  ///
+  /// In en, this message translates to:
+  /// **'Hide history'**
+  String get hideHistory;
+
+  /// Button to expand the feature value change history
+  ///
+  /// In en, this message translates to:
+  /// **'Show history'**
+  String get showHistory;
+
+  /// Caption above the history table indicating only the last 20 entries are shown
+  ///
+  /// In en, this message translates to:
+  /// **'Showing last 20'**
+  String get showingLast20;
+
+  /// Column header for the timestamp column in the feature value history table
+  ///
+  /// In en, this message translates to:
+  /// **'Timestamp (UTC)'**
+  String get historyColumnTimestamp;
+
+  /// Column header for the name column in the feature value history table
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get historyColumnName;
+
+  /// Column header for the email column in the feature value history table
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get historyColumnEmail;
+
+  /// Column header for the type column in the feature value history table
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get historyColumnType;
+
+  /// Column header for the default value column in the feature value history table
+  ///
+  /// In en, this message translates to:
+  /// **'Default Value'**
+  String get historyColumnDefaultValue;
+
+  /// Column header for the locked column in the feature value history table
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get historyColumnLocked;
+
+  /// Column header for the retired column in the feature value history table
+  ///
+  /// In en, this message translates to:
+  /// **'Retired'**
+  String get historyColumnRetired;
+
+  /// Column header for the rollout strategies column in the feature value history table
+  ///
+  /// In en, this message translates to:
+  /// **'Rollout Strategies'**
+  String get historyColumnRolloutStrategies;
+
+  /// History entry type label for a human user
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get historyTypeUser;
+
+  /// History entry type label for a service account
+  ///
+  /// In en, this message translates to:
+  /// **'Service Account'**
+  String get historyTypeServiceAccount;
+
+  /// Title of the dialog showing rollout strategy rules in the history view
+  ///
+  /// In en, this message translates to:
+  /// **'Strategy Rules'**
+  String get strategyRules;
+
+  /// Label for the percentage rollout section in the strategy rules dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Percentage Rollout'**
+  String get percentageRollout;
+
+  /// Button to show more details about a rollout strategy in the history table
+  ///
+  /// In en, this message translates to:
+  /// **'more'**
+  String get moreDetails;
+
+  /// Tooltip label on group strategy cells in the feature value table
+  ///
+  /// In en, this message translates to:
+  /// **'Group Strategy'**
+  String get groupStrategyTooltip;
+
+  /// Tooltip label on application strategy cells in the feature value table
+  ///
+  /// In en, this message translates to:
+  /// **'Application Strategy'**
+  String get applicationStrategyTooltip;
+
+  /// Section label for the lock/unlock switch in the feature value side sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Locked status'**
+  String get lockedStatus;
+
+  /// Info tooltip explaining the locked status feature
+  ///
+  /// In en, this message translates to:
+  /// **'Locking mechanism provides an additional safety for feature changes when deploying incomplete code to production. Locked status prevents any changes to default value, strategies, strategy values and \'retired\' status. Typically, developers keep features locked to indicate they are not ready to be turned on for testers, product owners, customers and other stakeholders.'**
+  String get lockedStatusInfo;
+
+  /// Tooltip on the lock button when feature is currently locked
+  ///
+  /// In en, this message translates to:
+  /// **'Click to unlock'**
+  String get clickToUnlock;
+
+  /// Tooltip on the lock button when feature is currently unlocked
+  ///
+  /// In en, this message translates to:
+  /// **'Click to lock'**
+  String get clickToLock;
+
+  /// Status label shown when a feature value is locked
+  ///
+  /// In en, this message translates to:
+  /// **'Feature is locked and cannot be changed'**
+  String get featureIsLocked;
+
+  /// Status label shown when a feature value is unlocked
+  ///
+  /// In en, this message translates to:
+  /// **'Feature is unlocked and can be changed'**
+  String get featureIsUnlocked;
+
+  /// Column header for the features name column in the dashboard table
+  ///
+  /// In en, this message translates to:
+  /// **'Features'**
+  String get featuresColumnHeader;
+
+  /// Placeholder shown when no features match the current filter
+  ///
+  /// In en, this message translates to:
+  /// **'No features to display'**
+  String get noFeaturesToDisplay;
+
+  /// Message shown when the feature table has no environment columns
+  ///
+  /// In en, this message translates to:
+  /// **'Either there are no environments defined for this application or you don\'t have permissions to access any of them'**
+  String get noEnvironmentsForApp;
+
+  /// Link button to navigate to the app environments settings tab
+  ///
+  /// In en, this message translates to:
+  /// **'Go to environments settings'**
+  String get goToEnvironmentsSettings;
+
+  /// Message shown when the selected application has no features
+  ///
+  /// In en, this message translates to:
+  /// **'There are no features defined for this application'**
+  String get noFeaturesForApp;
+
+  /// Checkbox label to grant a user organisation-wide super admin rights
+  ///
+  /// In en, this message translates to:
+  /// **'Set this user as organization super admin'**
+  String get setAsOrgSuperAdmin;
+
+  /// Tooltip on the copy-to-clipboard icon in the feature name cell
+  ///
+  /// In en, this message translates to:
+  /// **'Copy feature key to clipboard'**
+  String get copyFeatureKeyToClipboard;
+
+  /// Popup menu item to edit a feature's details
+  ///
+  /// In en, this message translates to:
+  /// **'Edit details'**
+  String get editDetails;
+
+  /// Popup menu item to view a feature's details (read-only)
+  ///
+  /// In en, this message translates to:
+  /// **'View details'**
+  String get viewDetails;
+
+  /// Popup menu item to edit a feature's metadata
+  ///
+  /// In en, this message translates to:
+  /// **'Edit metadata'**
+  String get editMetadata;
+
+  /// Popup menu item to view a feature's metadata (read-only)
+  ///
+  /// In en, this message translates to:
+  /// **'View metadata'**
+  String get viewMetadata;
+
+  /// Popup menu item to navigate to the feature group management page
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Group'**
+  String get manageGroup;
+
+  /// Label for the strategy status in the feature group card
+  ///
+  /// In en, this message translates to:
+  /// **'Strategy'**
+  String get strategy;
 }
 
 class _AppLocalizationsDelegate

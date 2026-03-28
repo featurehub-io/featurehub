@@ -1,7 +1,9 @@
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/percentage_utils.dart';
 
-String generateTooltipMessage(RolloutStrategy? rolloutStrategy) {
+String generateTooltipMessage(
+    RolloutStrategy? rolloutStrategy, AppLocalizations l10n) {
   if (rolloutStrategy == null) {
     return '';
   }
@@ -15,41 +17,39 @@ String generateTooltipMessage(RolloutStrategy? rolloutStrategy) {
   var customNameMessage = '';
 
   if (rolloutStrategy.percentage != null) {
-    percentageMessage = 'Percentage: ${rolloutStrategy.percentageText}%\n';
+    percentageMessage = '${l10n.tooltipPercentage(rolloutStrategy.percentageText)}\n';
   }
 
   final attrs = rolloutStrategy.attributes ?? [];
   if (attrs.any(
       (rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.userkey.name)) {
-    userKeyMessage = 'User key\n';
+    userKeyMessage = '${l10n.tooltipUserKey}\n';
   }
 
   if (attrs.any(
       (rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.country.name)) {
-    countryNameMessage = 'Country\n';
+    countryNameMessage = '${l10n.tooltipCountry}\n';
   }
 
   if (attrs.any((rsa) =>
       rsa.fieldName == StrategyAttributeWellKnownNames.platform.name)) {
-    platformNameMessage = 'Platform\n';
+    platformNameMessage = '${l10n.tooltipPlatform}\n';
   }
 
   if (attrs.any(
       (rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.device.name)) {
-    deviceNameMessage = 'Device\n';
+    deviceNameMessage = '${l10n.tooltipDevice}\n';
   }
 
   if (attrs.any(
       (rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.version.name)) {
-    versionNameMessage = 'Version\n';
+    versionNameMessage = '${l10n.tooltipVersion}\n';
   }
 
   if (attrs.any((rsa) => StrategyAttributeWellKnownNames.values
       .every((value) => rsa.fieldName != value.name))) {
-    customNameMessage = 'Custom\n';
+    customNameMessage = '${l10n.tooltipCustom}\n';
   }
 
-  var finalString =
-      '\n\n-- Applied rules -- \n$percentageMessage$userKeyMessage$countryNameMessage$platformNameMessage$deviceNameMessage$versionNameMessage$customNameMessage';
-  return finalString;
+  return '\n\n-- ${l10n.tooltipAppliedRules} -- \n$percentageMessage$userKeyMessage$countryNameMessage$platformNameMessage$deviceNameMessage$versionNameMessage$customNameMessage';
 }

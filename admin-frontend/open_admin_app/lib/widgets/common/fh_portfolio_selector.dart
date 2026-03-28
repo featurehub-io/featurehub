@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class PortfolioSelectorWidget extends StatefulWidget {
   const PortfolioSelectorWidget({Key? key}) : super(key: key);
@@ -15,6 +16,7 @@ class PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
     return StreamBuilder<List<Portfolio>>(
         stream: bloc.streamValley.portfolioListStream,
         builder: (context, snapshot) {
@@ -33,7 +35,7 @@ class PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Your current portfolio',
+                        Text(l10n.yourCurrentPortfolio,
                             style: Theme.of(context).textTheme.bodySmall),
                         const SizedBox(height: 4.0),
                         InkWell(
@@ -60,7 +62,7 @@ class PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                                       overflow: TextOverflow.ellipsis,
                                     ));
                               }).toList(),
-                              hint: Text('Select portfolio',
+                              hint: Text(l10n.selectPortfolio,
                                   style:
                                       Theme.of(context).textTheme.bodyMedium),
                               onChanged: (String? value) {

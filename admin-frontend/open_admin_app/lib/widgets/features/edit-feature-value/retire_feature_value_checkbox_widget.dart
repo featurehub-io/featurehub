@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 
 class RetireFeatureValueCheckboxWidget extends StatefulWidget {
@@ -49,7 +50,8 @@ class _RetireFeatureValueCheckboxWidgetState
             }
           },
         ),
-        Text("Retired", style: Theme.of(context).textTheme.bodySmall),
+        Text(AppLocalizations.of(context)!.retired,
+            style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }

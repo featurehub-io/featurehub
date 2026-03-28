@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class FHLoadingError extends StatelessWidget {
@@ -13,7 +14,7 @@ class FHLoadingError extends StatelessWidget {
     this.error,
   }) : super(key: key);
 
-  String _getErrorMessage() {
+  String _getErrorMessage(AppLocalizations l10n) {
     if (errorMessage != null) {
       return errorMessage!;
     }
@@ -21,21 +22,22 @@ class FHLoadingError extends StatelessWidget {
     if (error is ApiException) {
       final apiError = error as ApiException;
       if (apiError.code == 404) {
-        return 'The requested resource was not found';
+        return l10n.errorNotFound;
       } else if (apiError.code == 403) {
-        return 'You do not have permission to access this resource';
+        return l10n.errorForbidden;
       } else if (apiError.code == 500) {
-        return 'An internal server error occurred';
+        return l10n.errorInternalServer;
       } else if (apiError.message != null) {
         return apiError.message!;
       }
     }
 
-    return 'An error occurred while loading the data';
+    return l10n.errorLoadingData;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -47,7 +49,7 @@ class FHLoadingError extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            _getErrorMessage(),
+            _getErrorMessage(l10n),
             style: Theme.of(context).textTheme.titleMedium,
             textAlign: TextAlign.center,
           ),
@@ -56,7 +58,7 @@ class FHLoadingError extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(l10n.retry),
             ),
           ],
         ],

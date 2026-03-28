@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/theme/custom_text_style.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
@@ -30,6 +31,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final roles = widget.bloc.environmentFeatureValue.roles;
     final canSave = roles.contains(RoleType.CHANGE_VALUE) ||
         roles.contains(RoleType.LOCK) ||
@@ -53,7 +55,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                             const SizedBox(
                               width: 8.0,
                             ),
-                            Text('You have unsaved changes, save?',
+                            Text(l10n.unsavedChanges,
                                 style: Theme.of(context)
                                     .snackBarTheme
                                     .contentTextStyle),
@@ -66,7 +68,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                 onPressed: () {
                                   Navigator.pop(context); //close the side panel
                                 },
-                                child: const Text("Cancel")),
+                                child: Text(l10n.cancel)),
                             FilledButton(
                                 onPressed: () async {
                                   try {
@@ -75,16 +77,16 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                     await widget.bloc.saveFeatureValueUpdates();
                                     widget.bloc.perApplicationFeaturesBloc
                                         .mrClient
-                                        .addSnackbar(Text(
-                                            'Feature ${widget.bloc.feature.name.toUpperCase()} '
-                                            'in the environment ${widget.bloc.environmentFeatureValue.environmentName.toUpperCase()} has been updated!'));
+                                        .addSnackbar(Text(l10n.featureValueUpdated(
+                                            widget.bloc.feature.name.toUpperCase(),
+                                            widget.bloc.environmentFeatureValue.environmentName.toUpperCase())));
                                   } catch (e, s) {
                                     widget.bloc.perApplicationFeaturesBloc
                                         .mrClient
                                         .dialogError(e, s);
                                   }
                                 },
-                                child: const Text("Save")),
+                                child: Text(l10n.save)),
                           ]),
                         ),
                       );
@@ -121,7 +123,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "Environment",
+                              l10n.environmentLabel,
                               style: CustomTextStyle.bodySmallLight(context),
                             ),
                             Text(widget
@@ -141,20 +143,14 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                               Row(
                                 children: [
                                   Text(
-                                    "Locked status",
+                                    l10n.lockedStatus,
                                     style:
                                         CustomTextStyle.bodySmallLight(context),
                                   ),
                                   const SizedBox(
                                     width: 4.0,
                                   ),
-                                  const FHInfoCardWidget(
-                                      message:
-                                          "Locking mechanism provides an additional safety for feature changes when deploying incomplete code to production."
-                                          " Locked status prevents any changes to default value, "
-                                          "strategies, strategy values and 'retired' status. "
-                                          "Typically, developers keep features locked "
-                                          "to indicate they are not ready to be turned on for testers, product owners, customers and other stakeholders."),
+                                  FHInfoCardWidget(message: l10n.lockedStatusInfo),
                                 ],
                               ),
                               const SizedBox(height: 4.0),
@@ -203,7 +199,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text("Default value",
+                                      Text(l10n.defaultValue,
                                           style: CustomTextStyle.bodySmallLight(
                                               context)),
                                       StrategyCard(
@@ -213,18 +209,14 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                       const SizedBox(height: 16.0),
                                       Row(
                                         children: [
-                                          Text("Strategy variations",
+                                          Text(l10n.strategyVariations,
                                               style: CustomTextStyle
                                                   .bodySmallLight(context)),
                                           const SizedBox(
                                             width: 4.0,
                                           ),
-                                          const FHInfoCardWidget(
-                                              message:
-                                                  "Add a strategy variation to serve a value other than default. "
-                                                  "You can change strategies evaluation order by dragging and dropping the cards below. "
-                                                  "Strategies are evaluated in order from top to bottom. Evaluation stops when it hits a matching strategy."
-                                                  " 'Group Strategy' evaluation comes last. If no strategies match, then 'default' feature value is served."),
+                                          FHInfoCardWidget(
+                                              message: l10n.strategyVariationsInfo),
                                           const SizedBox(
                                             width: 8.0,
                                           ),
@@ -235,7 +227,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                         ],
                                       ),
                                       if (strategyWidgets.isEmpty)
-                                        const Text("No strategies set"),
+                                        Text(l10n.noStrategiesSet),
                                       buildReorderableListView(
                                         strategyWidgets,
                                         featureValueLatest,
@@ -246,16 +238,14 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                       const SizedBox(height: 24.0),
                                       Row(
                                         children: [
-                                          Text("Group strategy variations",
+                                          Text(l10n.groupStrategyVariations,
                                               style: CustomTextStyle
                                                   .bodySmallLight(context)),
                                           const SizedBox(
                                             width: 4.0,
                                           ),
-                                          const FHInfoCardWidget(
-                                              message:
-                                                  "Feature groups are recommended when you want to set the same strategy for multiple features in the same environment. "
-                                                  "Feature group strategy can be created and edited from the Feature Groups page.")
+                                          FHInfoCardWidget(
+                                              message: l10n.groupStrategyVariationsInfo)
                                         ],
                                       ),
                                       if (featureValueLatest
@@ -263,7 +253,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                               ?.featureGroupStrategies
                                               ?.isEmpty ==
                                           true)
-                                        const Text("No group strategies set"),
+                                        Text(l10n.noGroupStrategiesSet),
                                       if (featureValueLatest
                                               .data
                                               ?.featureGroupStrategies
@@ -282,16 +272,14 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                       Row(
                                         children: [
                                           Text(
-                                              "Application strategy variations",
+                                              l10n.applicationStrategyVariations,
                                               style: CustomTextStyle
                                                   .bodySmallLight(context)),
                                           const SizedBox(
                                             width: 4.0,
                                           ),
-                                          const FHInfoCardWidget(
-                                              message:
-                                                  "Application strategies are created at application level and can be assigned to multiple features in any environment. "
-                                                  "Application strategy can be created and edited from the Application Strategies page.")
+                                          FHInfoCardWidget(
+                                              message: l10n.applicationStrategyVariationsInfo)
                                         ],
                                       ),
                                       StreamBuilder<
@@ -327,15 +315,15 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                   appStrategiesLatest:
                                                       snapshot);
                                             }
-                                            return const Text(
-                                                "No application strategies set");
+                                            return Text(
+                                                l10n.noApplicationStrategiesSet);
                                           }),
                                       if (editable)
                                         TextButton(
                                             onPressed: () => widget.bloc
                                                 .getApplicationStrategies(),
-                                            child: const Text(
-                                                "Show available app strategies")),
+                                            child: Text(
+                                                l10n.showAvailableAppStrategies)),
                                       StreamBuilder<
                                               List<
                                                   ListApplicationRolloutStrategyItem>>(
@@ -359,8 +347,8 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                   TextButton.icon(
                                                       icon:
                                                           const Icon(Icons.add),
-                                                      label: const Text(
-                                                          'Add Strategy'),
+                                                      label: Text(
+                                                          l10n.addStrategy),
                                                       onPressed: () => {
                                                             widget.bloc
                                                                 .addApplicationStrategy()
@@ -375,7 +363,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                       Row(
                                         children: [
                                           Text(
-                                            "Retired status",
+                                            l10n.retiredStatus,
                                             style:
                                                 CustomTextStyle.bodySmallLight(
                                                     context),
@@ -383,14 +371,8 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                           const SizedBox(
                                             width: 4.0,
                                           ),
-                                          const FHInfoCardWidget(
-                                              message:
-                                                  "When feature flag is not needed any longer in your application,"
-                                                  " and ready to be removed, you can first 'retire' this feature in a given environment"
-                                                  " to test how your application behaves. This means that the feature won't be visible by the SDKs,"
-                                                  " imitating the 'deleted' state. You can uncheck the box to 'un-retire' a feature if you change your mind"
-                                                  " as this operation is reversible. Once you retire feature values across all the environments"
-                                                  "  and test that your application behaves as expected, you can delete your entire feature.")
+                                          FHInfoCardWidget(
+                                              message: l10n.retiredStatusInfo)
                                         ],
                                       ),
                                       RetireFeatureValueCheckboxWidget(
@@ -424,7 +406,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                       _isHistoryPresent = false;
                                     });
                                   },
-                                  child: const Text("Hide history"))
+                                  child: Text(l10n.hideHistory))
                               : TextButton(
                                   onPressed: () {
                                     widget.bloc.getHistory();
@@ -432,7 +414,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                       _isHistoryPresent = true;
                                     });
                                   },
-                                  child: const Text("Show history")),
+                                  child: Text(l10n.showHistory)),
                           StreamBuilder<FeatureHistoryItem?>(
                               stream: widget.bloc.featureHistoryListSource,
                               builder: (context, snapshot) {
@@ -444,7 +426,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                     children: [
                                       Padding(
                                         padding: const EdgeInsets.all(8.0),
-                                        child: Text("Showing last 20",
+                                        child: Text(l10n.showingLast20,
                                             style:
                                                 CustomTextStyle.bodySmallLight(
                                                     context)),
@@ -461,8 +443,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                             sortColumnIndex: sortColumnIndex,
                                             columns: [
                                               DataColumn(
-                                                  label: const Text(
-                                                      'Timestamp (UTC)'),
+                                                  label: Text(l10n.historyColumnTimestamp),
                                                   onSort:
                                                       (columnIndex, ascending) {
                                                     onSortColumn(
@@ -471,7 +452,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                         ascending);
                                                   }),
                                               DataColumn(
-                                                  label: const Text('Name'),
+                                                  label: Text(l10n.historyColumnName),
                                                   onSort:
                                                       (columnIndex, ascending) {
                                                     onSortColumn(
@@ -480,7 +461,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                         ascending);
                                                   }),
                                               DataColumn(
-                                                  label: const Text('Email'),
+                                                  label: Text(l10n.historyColumnEmail),
                                                   onSort:
                                                       (columnIndex, ascending) {
                                                     onSortColumn(
@@ -489,7 +470,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                         ascending);
                                                   }),
                                               DataColumn(
-                                                label: const Text('Type'),
+                                                label: Text(l10n.historyColumnType),
                                                 onSort:
                                                     (columnIndex, ascending) {
                                                   onSortColumn(
@@ -499,8 +480,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                 },
                                               ),
                                               DataColumn(
-                                                label:
-                                                    const Text('Default Value'),
+                                                label: Text(l10n.historyColumnDefaultValue),
                                                 onSort:
                                                     (columnIndex, ascending) {
                                                   onSortColumn(
@@ -510,7 +490,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                 },
                                               ),
                                               DataColumn(
-                                                label: const Text('Locked'),
+                                                label: Text(l10n.historyColumnLocked),
                                                 onSort:
                                                     (columnIndex, ascending) {
                                                   onSortColumn(
@@ -520,7 +500,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                 },
                                               ),
                                               DataColumn(
-                                                label: const Text('Retired'),
+                                                label: Text(l10n.historyColumnRetired),
                                                 onSort:
                                                     (columnIndex, ascending) {
                                                   onSortColumn(
@@ -529,9 +509,8 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                       ascending);
                                                 },
                                               ),
-                                              const DataColumn(
-                                                label:
-                                                    Text('Rollout Strategies'),
+                                              DataColumn(
+                                                label: Text(l10n.historyColumnRolloutStrategies),
                                               ),
                                             ],
                                             rows: [
@@ -553,8 +532,8 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                   DataCell(Text(
                                                       value.who.type ==
                                                               PersonType.person
-                                                          ? 'User'
-                                                          : 'Service Account')),
+                                                          ? l10n.historyTypeUser
+                                                          : l10n.historyTypeServiceAccount)),
                                                   DataCell(ConstrainedBox(
                                                     constraints:
                                                         const BoxConstraints(
@@ -602,7 +581,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                                                   mainAxisSize: MainAxisSize.min,
                                                                                   children: [
                                                                                     Text(
-                                                                                      "Strategy Rules",
+                                                                                      l10n.strategyRules,
                                                                                       style: Theme.of(context).textTheme.titleLarge,
                                                                                     ),
                                                                                     if (i.attributes != null) SelectableText('${i.attributes?.join("\n")}'),
@@ -611,7 +590,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                                                     ),
                                                                                     if (i.percentage != null)
                                                                                       Text(
-                                                                                        "Percentage Rollout",
+                                                                                        l10n.percentageRollout,
                                                                                         style: Theme.of(context).textTheme.titleLarge,
                                                                                       ),
                                                                                     if (i.percentage != null) Text('${i.percentage! / 10000}'),
@@ -619,7 +598,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                                                 ),
                                                                                 actions: <Widget>[
                                                                                   FHFlatButton(
-                                                                                    title: 'OK',
+                                                                                    title: l10n.ok,
                                                                                     onPressed: () {
                                                                                       Navigator.pop(context);
                                                                                     },
@@ -627,8 +606,8 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                                                 ]);
                                                                           }),
                                                                   child:
-                                                                      const Text(
-                                                                          "more"))
+                                                                      Text(
+                                                                          l10n.moreDetails))
                                                             ],
                                                           ),
                                                         )

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
@@ -117,9 +118,10 @@ class _PopUpGroupAdminMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return PopupMenuButton(
       splashRadius: 20,
-      tooltip: 'Show more',
+      tooltip: l10n.showMore,
       icon: const Icon(
         Icons.more_vert,
         size: 22.0,
@@ -148,15 +150,15 @@ class _PopUpGroupAdminMenu extends StatelessWidget {
         var items = <PopupMenuItem>[
           PopupMenuItem(
               value: 'manage',
-              child: Text('Manage Group',
+              child: Text(l10n.manageGroup,
                   style: Theme.of(context).textTheme.bodyMedium)),
           PopupMenuItem(
               value: 'edit',
               child:
-                  Text('Edit', style: Theme.of(context).textTheme.bodyMedium)),
+                  Text(l10n.edit, style: Theme.of(context).textTheme.bodyMedium)),
           PopupMenuItem(
               value: 'delete',
-              child: Text('Delete',
+              child: Text(l10n.delete,
                   style: Theme.of(context).textTheme.bodyMedium)),
         ];
         return items;
@@ -184,6 +186,7 @@ class FeaturesCounter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     var iconSize = 28.0;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -213,7 +216,7 @@ class FeaturesCounter extends StatelessWidget {
             const SizedBox(width: 8.0),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(
-                "Features",
+                l10n.features,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: Theme.of(context)
                         .textTheme
@@ -230,7 +233,7 @@ class FeaturesCounter extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Strategy",
+              l10n.strategy,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: Theme.of(context)
                       .textTheme
@@ -243,7 +246,7 @@ class FeaturesCounter extends StatelessWidget {
             ),
             (featureGroup.features.isNotEmpty && featureGroup.hasStrategy)
                 ? Row(children: [
-                    Text("Active",
+                    Text(l10n.statusActive,
                         style: Theme.of(context)
                             .textTheme
                             .labelMedium
@@ -254,7 +257,7 @@ class FeaturesCounter extends StatelessWidget {
                     Icon(Icons.check_circle_outline_rounded,
                         color: Colors.greenAccent.shade700, size: 18.0),
                   ])
-                : const Text("Not set"),
+                : Text(l10n.notSet),
           ],
         )
       ],

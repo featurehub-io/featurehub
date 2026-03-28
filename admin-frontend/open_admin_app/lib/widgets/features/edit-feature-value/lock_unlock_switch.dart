@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 
 class LockUnlockSwitch extends StatefulWidget {
@@ -27,6 +28,7 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final disabled =
         (!widget.environmentFeatureValue.roles.contains(RoleType.UNLOCK) &&
                 _locked == true) ||
@@ -43,7 +45,7 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
                           !_locked) // lock/unlock button will not be displayed if feature value was locked and is set to unlocked by user
                   // - this is to prevent user sending "locked" to the already "locked" feature)
                   ? null
-                  : (_locked ? 'Click to unlock' : 'Click to lock'),
+                  : (_locked ? l10n.clickToUnlock : l10n.clickToLock),
               icon: Icon(_locked ? Icons.lock_outline : Icons.lock_open,
                   size: 20, color: _locked ? Colors.orange : Colors.green),
               onPressed: disabled || (_initiallyLocked && !_locked)
@@ -60,14 +62,14 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
             ),
             _locked
                 ? Text(
-                    'Feature is locked and cannot be changed',
+                    l10n.featureIsLocked,
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall
                         ?.copyWith(color: Colors.orange),
                   )
                 : Text(
-                    'Feature is unlocked and can be changed',
+                    l10n.featureIsUnlocked,
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall

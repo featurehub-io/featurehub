@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/strategyeditor/strategy_utils.dart';
@@ -19,6 +20,7 @@ class AttributeStrategyWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<StrategyEditorBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return StreamBuilder<List<RolloutStrategyViolation>>(
         stream: bloc.violationStream,
@@ -41,7 +43,7 @@ class AttributeStrategyWidget extends StatelessWidget {
                           const BorderRadius.all(Radius.circular(6.0)),
                       color: Theme.of(context).colorScheme.secondaryContainer,
                     ),
-                    child: Text('AND',
+                    child: Text(l10n.andOperator,
                         style: Theme.of(context).textTheme.labelSmall)),
               EditAttributeStrategyWidget(
                 attribute: attribute,
@@ -50,7 +52,7 @@ class AttributeStrategyWidget extends StatelessWidget {
                 key: ValueKey(attribute.id),
               ),
               if (violation != null)
-                Text(violation.violation.toDescription(),
+                Text(violation.violation.toDescription(l10n),
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium!

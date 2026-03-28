@@ -77,18 +77,17 @@ class EditAttributeStrategyWidgetState
     _didChange();
   }
 
-  final Map<StrategyAttributeWellKnownNames, String> _nameFieldMap = {
-    StrategyAttributeWellKnownNames.country: 'Country',
-    StrategyAttributeWellKnownNames.device: 'Device',
-    StrategyAttributeWellKnownNames.platform: 'Platform',
-    StrategyAttributeWellKnownNames.version: 'Version',
-    StrategyAttributeWellKnownNames.userkey: 'User Key',
-  };
-
   Widget _nameField() {
     final l10n = AppLocalizations.of(context)!;
     if (_wellKnown != null) {
-      return Text(_nameFieldMap[_wellKnown!]!,
+      final nameFieldMap = {
+        StrategyAttributeWellKnownNames.country: l10n.wellKnownCountry,
+        StrategyAttributeWellKnownNames.device: l10n.wellKnownDevice,
+        StrategyAttributeWellKnownNames.platform: l10n.wellKnownPlatform,
+        StrategyAttributeWellKnownNames.version: l10n.wellKnownVersion,
+        StrategyAttributeWellKnownNames.userkey: l10n.wellKnownUserKey,
+      };
+      return Text(nameFieldMap[_wellKnown!]!,
           style: Theme.of(context).textTheme.titleSmall!.copyWith());
     } else {
       return TextFormField(
