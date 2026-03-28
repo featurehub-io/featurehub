@@ -1429,5 +1429,80 @@
   "@copyAccessToken": { "description": "Caption on the copy-to-clipboard button for access tokens" },
 
   "accessTokenSecurityNote": "For security, you will not be able to view the access token once you close this window.",
-  "@accessTokenSecurityNote": { "description": "Security notice shown when displaying an access token" }
+  "@accessTokenSecurityNote": { "description": "Security notice shown when displaying an access token" },
+
+  "systemConfigurationsTitle": "System Configurations",
+  "@systemConfigurationsTitle": { "description": "Page header for the system configurations screen" },
+
+  "siteConfigurationTitle": "Site Configuration",
+  "@siteConfigurationTitle": { "description": "Expansion tile title for site configuration section" },
+
+  "siteConfigurationSubtitle": "Configure your FeatureHub system",
+  "@siteConfigurationSubtitle": { "description": "Expansion tile subtitle for site configuration section" },
+
+  "slackConfigurationTitle": "Slack Configuration",
+  "@slackConfigurationTitle": { "description": "Expansion tile title for Slack configuration section" },
+
+  "slackConfigurationSubtitle": "Enable FeatureHub to send Slack messages",
+  "@slackConfigurationSubtitle": { "description": "Expansion tile subtitle for Slack configuration section" },
+
+  "encryptionRequiredForSlack": "You are required to configure encryption key/password in the FeatureHub system properties file to enable Slack integration",
+  "@encryptionRequiredForSlack": { "description": "Warning shown when encryption is not configured and Slack cannot be enabled" },
+
+  "encryptionDocumentation": "Encryption documentation",
+  "@encryptionDocumentation": { "description": "Label for the encryption documentation external link" },
+
+  "siteUrlLabel": "The URL of your organisation's FeatureHub app",
+  "@siteUrlLabel": { "description": "Label for the site URL input field" },
+
+  "siteUrlEmptyError": "You cannot specify an empty url",
+  "@siteUrlEmptyError": { "description": "Validation error when site URL is empty" },
+
+  "siteUrlInvalidError": "You must specify a valid url for your site",
+  "@siteUrlInvalidError": { "description": "Validation error when site URL does not start with http:// or https://" },
+
+  "allowSearchRobots": "Allow search robots to index",
+  "@allowSearchRobots": { "description": "Checkbox label for allowing search robots to index the site" },
+
+  "redirectBadHostsHeader": "Redirect traffic with bad Hosts header",
+  "@redirectBadHostsHeader": { "description": "Checkbox label for redirecting traffic with invalid Hosts header" },
+
+  "slackIntegrationDocumentation": "Slack Integration Documentation",
+  "@slackIntegrationDocumentation": { "description": "Label for the Slack integration documentation external link" },
+
+  "enableSlack": "Enable Slack",
+  "@enableSlack": { "description": "Checkbox label to enable Slack integration" },
+
+  "connectFeatureHubToSlack": "Connect FeatureHub to Slack",
+  "@connectFeatureHubToSlack": { "description": "Label on the outlined button to connect FeatureHub to Slack workspace" },
+
+  "installFeatureHubBot": "Install FeatureHub Bot app to your Slack workspace",
+  "@installFeatureHubBot": { "description": "Tooltip for the connect-to-Slack outlined button" },
+
+  "connectToSlack": "Connect to Slack",
+  "@connectToSlack": { "description": "Label on the filled button to initiate Slack OAuth connection" },
+
+  "slackBotTokenLabel": "Slack Bot User OAuth Token",
+  "@slackBotTokenLabel": { "description": "Label for the Slack bot token input field" },
+
+  "slackBotTokenRequired": "Please enter Slack Bot User OAuth token",
+  "@slackBotTokenRequired": { "description": "Validation error when Slack bot token is empty and Slack is enabled" },
+
+  "defaultSlackChannelIdLabel": "Default Slack channel ID",
+  "@defaultSlackChannelIdLabel": { "description": "Label for the default Slack channel ID input field" },
+
+  "slackChannelIdRequired": "Please enter Slack channel ID",
+  "@slackChannelIdRequired": { "description": "Validation error when Slack channel ID is empty" },
+
+  "externalSlackDeliveryMessage": "If your Slack delivery is offloaded to an external application, please specify the details here.",
+  "@externalSlackDeliveryMessage": { "description": "Explanatory text above the external Slack delivery URL field" },
+
+  "externalSlackDeliveryUrlLabel": "External Slack message delivery service (optional, valid prefixes {prefixes})",
+  "@externalSlackDeliveryUrlLabel": {
+    "description": "Label for the external Slack delivery URL field, showing valid URL prefixes",
+    "placeholders": { "prefixes": { "type": "String" } }
+  },
+
+  "invalidUrlPrefix": "You must choose a valid URL prefix",
+  "@invalidUrlPrefix": { "description": "Validation error when the external delivery URL does not match an allowed prefix" }
 }

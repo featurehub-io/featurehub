@@ -2312,7 +2312,7 @@ abstract class AppLocalizations {
   /// **'Slack Channel Settings (per environment)'**
   String get slackChannelSettings;
 
-  /// External link label for Slack integration documentation
+  /// Label for the Slack integration documentation external link
   ///
   /// In en, this message translates to:
   /// **'Slack Integration Documentation'**
@@ -2551,6 +2551,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy Content'**
   String get copyContent;
+
+  /// Hint text for the service accounts search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search Service Accounts'**
+  String get searchServiceAccounts;
+
+  /// Table column header and info-row label for name
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get colName;
+
+  /// Table column header and info-row label for groups
+  ///
+  /// In en, this message translates to:
+  /// **'Groups'**
+  String get colGroups;
+
+  /// Tooltip on the reset-token icon button in the admin service accounts table
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Admin SDK access token'**
+  String get resetAdminSdkToken;
+
+  /// Body text of the delete-service-account confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This service account will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!'**
+  String get adminSADeleteContent;
+
+  /// Snackbar after deleting an admin service account
+  ///
+  /// In en, this message translates to:
+  /// **'Service account \'{name}\' deleted!'**
+  String adminSADeleted(String name);
+
+  /// Title of the admin service account info dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Admin Service Account details'**
+  String get adminSADetailsTitle;
+
+  /// Label above the access token value
+  ///
+  /// In en, this message translates to:
+  /// **'Access token'**
+  String get accessToken;
+
+  /// Caption on the copy-to-clipboard button for access tokens
+  ///
+  /// In en, this message translates to:
+  /// **'Copy access token to clipboard'**
+  String get copyAccessToken;
+
+  /// Security notice shown when displaying an access token
+  ///
+  /// In en, this message translates to:
+  /// **'For security, you will not be able to view the access token once you close this window.'**
+  String get accessTokenSecurityNote;
+
+  /// Page header for the system configurations screen
+  ///
+  /// In en, this message translates to:
+  /// **'System Configurations'**
+  String get systemConfigurationsTitle;
+
+  /// Expansion tile title for site configuration section
+  ///
+  /// In en, this message translates to:
+  /// **'Site Configuration'**
+  String get siteConfigurationTitle;
+
+  /// Expansion tile subtitle for site configuration section
+  ///
+  /// In en, this message translates to:
+  /// **'Configure your FeatureHub system'**
+  String get siteConfigurationSubtitle;
+
+  /// Expansion tile title for Slack configuration section
+  ///
+  /// In en, this message translates to:
+  /// **'Slack Configuration'**
+  String get slackConfigurationTitle;
+
+  /// Expansion tile subtitle for Slack configuration section
+  ///
+  /// In en, this message translates to:
+  /// **'Enable FeatureHub to send Slack messages'**
+  String get slackConfigurationSubtitle;
+
+  /// Warning shown when encryption is not configured and Slack cannot be enabled
+  ///
+  /// In en, this message translates to:
+  /// **'You are required to configure encryption key/password in the FeatureHub system properties file to enable Slack integration'**
+  String get encryptionRequiredForSlack;
+
+  /// Label for the encryption documentation external link
+  ///
+  /// In en, this message translates to:
+  /// **'Encryption documentation'**
+  String get encryptionDocumentation;
+
+  /// Label for the site URL input field
+  ///
+  /// In en, this message translates to:
+  /// **'The URL of your organisation\'s FeatureHub app'**
+  String get siteUrlLabel;
+
+  /// Validation error when site URL is empty
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot specify an empty url'**
+  String get siteUrlEmptyError;
+
+  /// Validation error when site URL does not start with http:// or https://
+  ///
+  /// In en, this message translates to:
+  /// **'You must specify a valid url for your site'**
+  String get siteUrlInvalidError;
+
+  /// Checkbox label for allowing search robots to index the site
+  ///
+  /// In en, this message translates to:
+  /// **'Allow search robots to index'**
+  String get allowSearchRobots;
+
+  /// Checkbox label for redirecting traffic with invalid Hosts header
+  ///
+  /// In en, this message translates to:
+  /// **'Redirect traffic with bad Hosts header'**
+  String get redirectBadHostsHeader;
+
+  /// Checkbox label to enable Slack integration
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Slack'**
+  String get enableSlack;
+
+  /// Label on the outlined button to connect FeatureHub to Slack workspace
+  ///
+  /// In en, this message translates to:
+  /// **'Connect FeatureHub to Slack'**
+  String get connectFeatureHubToSlack;
+
+  /// Tooltip for the connect-to-Slack outlined button
+  ///
+  /// In en, this message translates to:
+  /// **'Install FeatureHub Bot app to your Slack workspace'**
+  String get installFeatureHubBot;
+
+  /// Label on the filled button to initiate Slack OAuth connection
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to Slack'**
+  String get connectToSlack;
+
+  /// Label for the Slack bot token input field
+  ///
+  /// In en, this message translates to:
+  /// **'Slack Bot User OAuth Token'**
+  String get slackBotTokenLabel;
+
+  /// Validation error when Slack bot token is empty and Slack is enabled
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter Slack Bot User OAuth token'**
+  String get slackBotTokenRequired;
+
+  /// Label for the default Slack channel ID input field
+  ///
+  /// In en, this message translates to:
+  /// **'Default Slack channel ID'**
+  String get defaultSlackChannelIdLabel;
+
+  /// Validation error when Slack channel ID is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter Slack channel ID'**
+  String get slackChannelIdRequired;
+
+  /// Explanatory text above the external Slack delivery URL field
+  ///
+  /// In en, this message translates to:
+  /// **'If your Slack delivery is offloaded to an external application, please specify the details here.'**
+  String get externalSlackDeliveryMessage;
+
+  /// Label for the external Slack delivery URL field, showing valid URL prefixes
+  ///
+  /// In en, this message translates to:
+  /// **'External Slack message delivery service (optional, valid prefixes {prefixes})'**
+  String externalSlackDeliveryUrlLabel(String prefixes);
+
+  /// Validation error when the external delivery URL does not match an allowed prefix
+  ///
+  /// In en, this message translates to:
+  /// **'You must choose a valid URL prefix'**
+  String get invalidUrlPrefix;
 }
 
 class _AppLocalizationsDelegate

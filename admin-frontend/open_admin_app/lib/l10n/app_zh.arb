@@ -477,5 +477,32 @@
   "adminSADetailsTitle": "管理员服务账号详情",
   "accessToken": "访问令牌",
   "copyAccessToken": "复制访问令牌到剪贴板",
-  "accessTokenSecurityNote": "出于安全考虑，关闭此窗口后将无法再查看访问令牌。"
+  "accessTokenSecurityNote": "出于安全考虑，关闭此窗口后将无法再查看访问令牌。",
+
+  "systemConfigurationsTitle": "系统配置",
+  "siteConfigurationTitle": "站点配置",
+  "siteConfigurationSubtitle": "配置您的 FeatureHub 系统",
+  "slackConfigurationTitle": "Slack 配置",
+  "slackConfigurationSubtitle": "允许 FeatureHub 发送 Slack 消息",
+  "encryptionRequiredForSlack": "您需要在 FeatureHub 系统属性文件中配置加密密钥/密码才能启用 Slack 集成",
+  "encryptionDocumentation": "加密文档",
+
+  "siteUrlLabel": "您组织的 FeatureHub 应用地址",
+  "siteUrlEmptyError": "不能指定空的 URL",
+  "siteUrlInvalidError": "必须为您的站点指定有效的 URL",
+  "allowSearchRobots": "允许搜索引擎爬取",
+  "redirectBadHostsHeader": "重定向无效 Host 头的流量",
+
+  "slackIntegrationDocumentation": "Slack 集成文档",
+  "enableSlack": "启用 Slack",
+  "connectFeatureHubToSlack": "将 FeatureHub 连接到 Slack",
+  "installFeatureHubBot": "将 FeatureHub Bot 应用安装到您的 Slack 工作区",
+  "connectToSlack": "连接到 Slack",
+  "slackBotTokenLabel": "Slack Bot 用户 OAuth 令牌",
+  "slackBotTokenRequired": "请输入 Slack Bot 用户 OAuth 令牌",
+  "defaultSlackChannelIdLabel": "默认 Slack 频道 ID",
+  "slackChannelIdRequired": "请输入 Slack 频道 ID",
+  "externalSlackDeliveryMessage": "如果您的 Slack 消息由外部应用程序负责投递，请在此处指定相关信息。",
+  "externalSlackDeliveryUrlLabel": "外部 Slack 消息投递服务（可选，有效前缀：{prefixes}）",
+  "invalidUrlPrefix": "必须选择有效的 URL 前缀"
 }

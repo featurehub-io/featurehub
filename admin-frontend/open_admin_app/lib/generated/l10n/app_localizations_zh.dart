@@ -1342,4 +1342,109 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get copyContent => '复制内容';
+
+  @override
+  String get searchServiceAccounts => '搜索服务账号';
+
+  @override
+  String get colName => '名称';
+
+  @override
+  String get colGroups => '用户组';
+
+  @override
+  String get resetAdminSdkToken => '重置管理员 SDK 访问令牌';
+
+  @override
+  String get adminSADeleteContent => '该服务账号将从所有用户组中移除并从组织中删除。\n\n此操作无法撤销！';
+
+  @override
+  String adminSADeleted(String name) {
+    return '服务账号「$name」已删除！';
+  }
+
+  @override
+  String get adminSADetailsTitle => '管理员服务账号详情';
+
+  @override
+  String get accessToken => '访问令牌';
+
+  @override
+  String get copyAccessToken => '复制访问令牌到剪贴板';
+
+  @override
+  String get accessTokenSecurityNote => '出于安全考虑，关闭此窗口后将无法再查看访问令牌。';
+
+  @override
+  String get systemConfigurationsTitle => '系统配置';
+
+  @override
+  String get siteConfigurationTitle => '站点配置';
+
+  @override
+  String get siteConfigurationSubtitle => '配置您的 FeatureHub 系统';
+
+  @override
+  String get slackConfigurationTitle => 'Slack 配置';
+
+  @override
+  String get slackConfigurationSubtitle => '允许 FeatureHub 发送 Slack 消息';
+
+  @override
+  String get encryptionRequiredForSlack =>
+      '您需要在 FeatureHub 系统属性文件中配置加密密钥/密码才能启用 Slack 集成';
+
+  @override
+  String get encryptionDocumentation => '加密文档';
+
+  @override
+  String get siteUrlLabel => '您组织的 FeatureHub 应用地址';
+
+  @override
+  String get siteUrlEmptyError => '不能指定空的 URL';
+
+  @override
+  String get siteUrlInvalidError => '必须为您的站点指定有效的 URL';
+
+  @override
+  String get allowSearchRobots => '允许搜索引擎爬取';
+
+  @override
+  String get redirectBadHostsHeader => '重定向无效 Host 头的流量';
+
+  @override
+  String get enableSlack => '启用 Slack';
+
+  @override
+  String get connectFeatureHubToSlack => '将 FeatureHub 连接到 Slack';
+
+  @override
+  String get installFeatureHubBot => '将 FeatureHub Bot 应用安装到您的 Slack 工作区';
+
+  @override
+  String get connectToSlack => '连接到 Slack';
+
+  @override
+  String get slackBotTokenLabel => 'Slack Bot 用户 OAuth 令牌';
+
+  @override
+  String get slackBotTokenRequired => '请输入 Slack Bot 用户 OAuth 令牌';
+
+  @override
+  String get defaultSlackChannelIdLabel => '默认 Slack 频道 ID';
+
+  @override
+  String get slackChannelIdRequired => '请输入 Slack 频道 ID';
+
+  @override
+  String get externalSlackDeliveryMessage =>
+      '如果您的 Slack 消息由外部应用程序负责投递，请在此处指定相关信息。';
+
+  @override
+  String externalSlackDeliveryUrlLabel(String prefixes) {
+    return '外部 Slack 消息投递服务（可选，有效前缀：$prefixes）';
+  }
+
+  @override
+  String get invalidUrlPrefix => '必须选择有效的 URL 前缀';
 }

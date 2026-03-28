@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/fhos_logger.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 import 'package:open_admin_app/widgets/systemconfig/system_config_mixin.dart';
 import 'package:open_admin_app/widgets/systemconfig/system_config_text_field.dart';
@@ -26,6 +27,8 @@ class SiteSystemConfigState extends State<SiteSystemConfigWidget>
       return const FHLoadingIndicator();
     }
 
+    final l10n = AppLocalizations.of(context)!;
+
     try {
       // enabled existing is a constant if this widget is even available
       final url = settings['site.url'];
@@ -48,16 +51,15 @@ class SiteSystemConfigState extends State<SiteSystemConfigWidget>
                           padding: const EdgeInsets.only(top: 16.0),
                           child: SystemConfigTextField(
                             field: url,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              border: const OutlineInputBorder(),
                               hintText:
                                   'https://featurehub.yourorganisation.ai',
-                              labelText:
-                                  "The URL of your organisation's FeatureHub app",
+                              labelText: l10n.siteUrlLabel,
                             ),
                             validator: (val) {
                               if ((val == null || val.trim().isEmpty)) {
-                                return 'You cannot specify an empty url';
+                                return l10n.siteUrlEmptyError;
                               }
 
                               if (val.startsWith('http://') ||
@@ -65,7 +67,7 @@ class SiteSystemConfigState extends State<SiteSystemConfigWidget>
                                 return null;
                               }
 
-                              return 'You must specify a valid url for your site';
+                              return l10n.siteUrlInvalidError;
                             },
                           ),
                         ),
@@ -75,7 +77,7 @@ class SiteSystemConfigState extends State<SiteSystemConfigWidget>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              const Text('Allow search robots to index'),
+                              Text(l10n.allowSearchRobots),
                               Checkbox(
                                   value: robotsEnabled.value == true
                                       ? true
@@ -94,8 +96,7 @@ class SiteSystemConfigState extends State<SiteSystemConfigWidget>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              const Text(
-                                  'Redirect traffic with bad Hosts header'),
+                              Text(l10n.redirectBadHostsHeader),
                               Checkbox(
                                   value: defaultChannel.value == true
                                       ? true
@@ -125,7 +126,7 @@ class SiteSystemConfigState extends State<SiteSystemConfigWidget>
                         fhosLogger.info("not valid");
                       }
                     },
-                    child: const Text('Save')),
+                    child: Text(l10n.save)),
               ],
             ),
           )

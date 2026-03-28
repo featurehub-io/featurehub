@@ -1398,4 +1398,114 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get copyContent => 'Copy Content';
+
+  @override
+  String get searchServiceAccounts => 'Search Service Accounts';
+
+  @override
+  String get colName => 'Name';
+
+  @override
+  String get colGroups => 'Groups';
+
+  @override
+  String get resetAdminSdkToken => 'Reset Admin SDK access token';
+
+  @override
+  String get adminSADeleteContent =>
+      'This service account will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!';
+
+  @override
+  String adminSADeleted(String name) {
+    return 'Service account \'$name\' deleted!';
+  }
+
+  @override
+  String get adminSADetailsTitle => 'Admin Service Account details';
+
+  @override
+  String get accessToken => 'Access token';
+
+  @override
+  String get copyAccessToken => 'Copy access token to clipboard';
+
+  @override
+  String get accessTokenSecurityNote =>
+      'For security, you will not be able to view the access token once you close this window.';
+
+  @override
+  String get systemConfigurationsTitle => 'System Configurations';
+
+  @override
+  String get siteConfigurationTitle => 'Site Configuration';
+
+  @override
+  String get siteConfigurationSubtitle => 'Configure your FeatureHub system';
+
+  @override
+  String get slackConfigurationTitle => 'Slack Configuration';
+
+  @override
+  String get slackConfigurationSubtitle =>
+      'Enable FeatureHub to send Slack messages';
+
+  @override
+  String get encryptionRequiredForSlack =>
+      'You are required to configure encryption key/password in the FeatureHub system properties file to enable Slack integration';
+
+  @override
+  String get encryptionDocumentation => 'Encryption documentation';
+
+  @override
+  String get siteUrlLabel => 'The URL of your organisation\'s FeatureHub app';
+
+  @override
+  String get siteUrlEmptyError => 'You cannot specify an empty url';
+
+  @override
+  String get siteUrlInvalidError =>
+      'You must specify a valid url for your site';
+
+  @override
+  String get allowSearchRobots => 'Allow search robots to index';
+
+  @override
+  String get redirectBadHostsHeader => 'Redirect traffic with bad Hosts header';
+
+  @override
+  String get enableSlack => 'Enable Slack';
+
+  @override
+  String get connectFeatureHubToSlack => 'Connect FeatureHub to Slack';
+
+  @override
+  String get installFeatureHubBot =>
+      'Install FeatureHub Bot app to your Slack workspace';
+
+  @override
+  String get connectToSlack => 'Connect to Slack';
+
+  @override
+  String get slackBotTokenLabel => 'Slack Bot User OAuth Token';
+
+  @override
+  String get slackBotTokenRequired => 'Please enter Slack Bot User OAuth token';
+
+  @override
+  String get defaultSlackChannelIdLabel => 'Default Slack channel ID';
+
+  @override
+  String get slackChannelIdRequired => 'Please enter Slack channel ID';
+
+  @override
+  String get externalSlackDeliveryMessage =>
+      'If your Slack delivery is offloaded to an external application, please specify the details here.';
+
+  @override
+  String externalSlackDeliveryUrlLabel(String prefixes) {
+    return 'External Slack message delivery service (optional, valid prefixes $prefixes)';
+  }
+
+  @override
+  String get invalidUrlPrefix => 'You must choose a valid URL prefix';
 }
