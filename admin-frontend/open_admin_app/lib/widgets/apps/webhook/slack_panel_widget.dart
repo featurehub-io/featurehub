@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/apps/webhook/track_events_panel_widget.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
@@ -56,15 +57,15 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
             Row(
               children: [
                 Text(
-                  'Slack Channel Settings (per environment)',
+                  AppLocalizations.of(context)!.slackChannelSettings,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                const FHExternalLinkWidget(
-                  tooltipMessage: "View documentation",
+                FHExternalLinkWidget(
+                  tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
                   link:
                       "https://docs.featurehub.io/featurehub/latest/slack-integration.html",
-                  icon: Icon(Icons.arrow_outward_outlined),
-                  label: 'Slack Integration Documentation',
+                  icon: const Icon(Icons.arrow_outward_outlined),
+                  label: AppLocalizations.of(context)!.slackIntegrationDocumentation,
                 ),
               ],
             ),
@@ -82,12 +83,13 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
   }
 
   Form _form() {
+    final l10n = AppLocalizations.of(context)!;
     return Form(
       key: _formKey,
       child: Column(children: <Widget>[
         Row(
           children: [
-            const Text('Enabled'),
+            Text(l10n.enabled),
             Checkbox(
               autofocus: true,
               value: _enabled,
@@ -105,10 +107,10 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                 controller: _channelName,
                 autofocus: true,
                 textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'e.g. C0150T7AF25',
-                  labelText: 'Slack channel ID (leave empty to use default)',
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText: l10n.slackChannelIdExample,
+                  labelText: l10n.slackChannelId,
                 ),
               )),
         ]),
@@ -125,7 +127,7 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
                     await _updateData();
                   }
                 },
-                child: const Text('Save')),
+                child: Text(l10n.save)),
           ],
         )
       ]),
@@ -140,7 +142,7 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
     env['$prefix.channel_name'] = _channelName.text;
     env['$prefix.encrypt'] = '$prefix.token';
     widget.bloc.mrBloc
-        .addSnackbar(const Text("Slack settings have been updated"));
+        .addSnackbar(Text(AppLocalizations.of(context)!.slackSettingsUpdated));
     await widget.bloc.updateEnvironmentWithWebhookData(
         widget.env.environment!, env, "$prefix.");
   }

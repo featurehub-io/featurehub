@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
@@ -55,11 +56,11 @@ class ServiceAccountPermissionState
                     child: Column(
                       children: <Widget>[
                         SelectableText(
-                            'There are no service accounts in the "${bloc.portfolio!.name}" portfolio.'),
+                            AppLocalizations.of(context)!.noServiceAccountsInPortfolio(bloc.portfolio!.name)),
                         Container(
                           padding: const EdgeInsets.only(top: 20, bottom: 20),
                           child: FHUnderlineButton(
-                            title: 'Go to service accounts settings',
+                            title: AppLocalizations.of(context)!.goToServiceAccountSettings,
                             onPressed: () => {
                               ManagementRepositoryClientBloc.router.navigateTo(
                                 context,
@@ -85,31 +86,26 @@ class ServiceAccountPermissionState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Service account',
+                          AppLocalizations.of(context)!.serviceAccount,
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                         serviceAccountDropdown(snapshot.data!, bloc),
                       ],
                     ),
-                    const Padding(
-                      padding: EdgeInsets.only(left: 16.0),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16.0),
                       child: FHInfoCardWidget(
-                          message:
-                              "We strongly recommend setting production environments "
-                              "with only 'Read' permission for service accounts. "
-                              "The 'Lock/Unlock' and 'Change value' permissions "
-                              "typically given to service accounts for testing purposes, "
-                              "e.g. changing feature values states through the SDK when running tests."),
+                          message: AppLocalizations.of(context)!.serviceAccountInfoMessage),
                     ),
                     const SizedBox(
                       width: 32,
                     ),
-                    const FHExternalLinkWidget(
-                      tooltipMessage: "View documentation",
+                    FHExternalLinkWidget(
+                      tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
                       link:
                           "https://docs.featurehub.io/featurehub/latest/service-accounts.html#_service_account_permissions",
-                      icon: Icon(Icons.arrow_outward_outlined),
-                      label: 'Service Accounts Documentation',
+                      icon: const Icon(Icons.arrow_outward_outlined),
+                      label: AppLocalizations.of(context)!.serviceAccountsDocumentation,
                     ),
                   ],
                 ),
@@ -146,8 +142,8 @@ class ServiceAccountPermissionState
                         overflow: TextOverflow.ellipsis,
                       ));
                 }).toList(),
-                hint: const Text(
-                  'Select service account',
+                hint: Text(
+                  AppLocalizations.of(context)!.selectServiceAccount,
                   textAlign: TextAlign.end,
                 ),
                 onChanged: (String? value) {
@@ -206,8 +202,8 @@ class _ServiceAccountPermissionDetailState
                     children: <Widget>[
                       Container(
                           padding: const EdgeInsets.all(20),
-                          child: const SelectableText(
-                              "You need to first create some 'Environments' for this application.")),
+                          child: SelectableText(
+                              AppLocalizations.of(context)!.needToCreateEnvironmentsFirst)),
                     ],
                   );
                 }
@@ -261,7 +257,7 @@ class _ServiceAccountPermissionDetailState
                         padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
                         child: Center(
                           child: SelectableText(
-                              'Set the service account access to features for each environment',
+                              AppLocalizations.of(context)!.setServiceAccountPermissions,
                               style: Theme.of(context).textTheme.bodySmall),
                         )),
                     Card(
@@ -281,7 +277,7 @@ class _ServiceAccountPermissionDetailState
                           currentServiceAccount = null;
                           widget.bloc.selectServiceAccount(saSnapshot.data!.id);
                         },
-                        title: 'Cancel',
+                        title: AppLocalizations.of(context)!.cancel,
                         keepCase: true,
                       ),
                       FHFlatButton(
@@ -301,12 +297,12 @@ class _ServiceAccountPermissionDetailState
                                         : null)
                                 .then((serviceAccount) => widget.bloc.mrClient
                                     .addSnackbar(Text(
-                                        "Service account '${serviceAccount?.name ?? '<unknown>'}' updated!")))
+                                        AppLocalizations.of(context)!.serviceAccountUpdated(serviceAccount?.name ?? '<unknown>'))))
                                 .catchError((e, s) {
                               widget.bloc.mrClient.dialogError(e, s);
                             });
                           },
-                          title: 'Update'),
+                          title: AppLocalizations.of(context)!.update),
                     ]),
                   ],
                 );
@@ -315,56 +311,19 @@ class _ServiceAccountPermissionDetailState
   }
 
   TableRow getHeader() {
+    final l10n = AppLocalizations.of(context)!;
     var headerStyle = Theme.of(context)
         .textTheme
         .titleSmall!
         .copyWith(fontWeight: FontWeight.bold);
     return TableRow(children: [
-      const Text(
-        '',
-      ),
-      Center(
-          child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Text(
-          'Read',
-          style: headerStyle,
-        ),
-      )),
-      Center(
-          child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Text(
-          'Lock',
-          style: headerStyle,
-        ),
-      )),
-      Center(
-          child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Text(
-          'Unlock',
-          style: headerStyle,
-        ),
-      )),
-      Center(
-          child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Text(
-          'Change value / Retire',
-          style: headerStyle,
-        ),
-      )),
-      if (widget
-          .bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
-        Center(
-            child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Text(
-            'Read\nExtended\nFeature Data',
-            style: headerStyle,
-          ),
-        )),
+      const Text(''),
+      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permRead, style: headerStyle))),
+      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permLock, style: headerStyle))),
+      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permUnlock, style: headerStyle))),
+      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permChangeValue, style: headerStyle))),
+      if (widget.bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
+        Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permReadExtendedData, style: headerStyle))),
     ]);
   }
 

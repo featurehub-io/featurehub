@@ -9,6 +9,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/common/fh_info_card.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class EnvListWidget extends StatefulWidget {
@@ -39,7 +40,8 @@ class EnvListState extends State<EnvListWidget> {
             height: 500.0,
             child: ReorderableListView(
                 onReorder: (int oldIndex, int newIndex) {
-                  _reorderEnvironments(oldIndex, newIndex, bloc);
+                  _reorderEnvironments(oldIndex, newIndex, bloc,
+              AppLocalizations.of(context)!);
                 },
                 buildDefaultDragHandles: false,
                 children: <Widget>[
@@ -72,7 +74,7 @@ class EnvListState extends State<EnvListWidget> {
   }
 
   void _reorderEnvironments(
-      int oldIndex, int newIndex, ManageAppBloc bloc) async {
+      int oldIndex, int newIndex, ManageAppBloc bloc, AppLocalizations l10n) async {
     final environments = _environments!;
 
     setState(() {
@@ -104,7 +106,7 @@ class EnvListState extends State<EnvListWidget> {
     environments[0].priorEnvironmentId =
         null; // first environment should never have a parent
     await bloc.updateEnvs(bloc.applicationId!, environments);
-    bloc.mrClient.addSnackbar(const Text('Environment order updated!'));
+    bloc.mrClient.addSnackbar(Text(l10n.envOrderUpdated));
   }
 
   List<Environment> swapPreviousIds(oldPid, newPid) {
@@ -197,7 +199,7 @@ class _ProductionEnvironmentIndicatorWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     const bs = BorderSide(color: Colors.red);
     return Tooltip(
-      message: 'Production environment',
+      message: AppLocalizations.of(context)!.productionEnvironment,
       child: Container(
         width: 24.0,
         height: 24.0,
@@ -225,21 +227,22 @@ class EnvDeleteDialogWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // is there only one environment or are we the last one in the chain (no other has us as a prior environment)
     return FHDeleteThingWarningWidget(
       bloc: bloc.mrClient,
       extraWarning: env.production == true,
       wholeWarning: env.production == true
-          ? 'The environment `${env.name}` is your production environment, are you sure you wish to remove it?'
+          ? l10n.deleteProductionEnvWarning(env.name)
           : null,
       thing: env.production == true ? null : "environment '${env.name}'",
       deleteSelected: () async {
         final success = await bloc.deleteEnv(env.id);
         if (success) {
-          bloc.mrClient.addSnackbar(Text("Environment '${env.name}' deleted!"));
+          bloc.mrClient.addSnackbar(Text(l10n.envDeleted(env.name)));
         } else {
           bloc.mrClient.customError(
-              messageTitle: "Couldn't delete environment ${env.name}");
+              messageTitle: l10n.envDeleteError(env.name));
         }
         return success;
       },
@@ -281,11 +284,12 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Form(
       key: _formKey,
       child: FHAlertDialog(
         title: Text(
-            widget.env == null ? 'Create new environment' : 'Edit environment'),
+            widget.env == null ? l10n.createNewEnvironment : l10n.editEnvironment),
         content: SizedBox(
           width: 500,
           child: Column(
@@ -295,18 +299,18 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                   controller: _envName,
                   autofocus: true,
                   decoration:
-                      const InputDecoration(labelText: 'Environment name'),
+                      InputDecoration(labelText: l10n.environmentName),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
-                      return 'Please enter an environment name';
+                      return l10n.envNameRequired;
                     }
                     if (v.length < 2) {
-                      return 'Environment name needs to be at least 2 characters long';
+                      return l10n.envNameTooShort;
                     }
                     return null;
                   })),
               CheckboxListTile(
-                title: Text('Mark as production environment',
+                title: Text(l10n.markAsProductionEnvironment,
                     style: Theme.of(context).textTheme.bodySmall),
                 value: _isProduction,
                 onChanged: (bool? val) {
@@ -320,14 +324,14 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
         ),
         actions: <Widget>[
           FHFlatButtonTransparent(
-            title: 'Cancel',
+            title: l10n.cancel,
             keepCase: true,
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-              title: isUpdate ? 'Update' : 'Create',
+              title: isUpdate ? l10n.update : l10n.create,
               onPressed: (() async {
                 if (_formKey.currentState!.validate()) {
                   try {
@@ -336,18 +340,17 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                           name: _envName.text, production: _isProduction);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.addSnackbar(
-                          Text('Environment ${_envName.text} updated!'));
+                          Text(l10n.envUpdated(_envName.text)));
                     } else {
                       await widget.bloc.createEnv(_envName.text, _isProduction);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.addSnackbar(
-                          Text('Environment ${_envName.text} created!'));
+                          Text(l10n.envCreated(_envName.text)));
                     }
                   } catch (e, s) {
                     if (e is ApiException && e.code == 409) {
                       widget.bloc.mrClient.customError(
-                          messageTitle:
-                              'Environment with name ${_envName.text} already exists');
+                          messageTitle: l10n.envAlreadyExists(_envName.text));
                     } else {
                       await widget.bloc.mrClient.dialogError(e, s);
                     }
@@ -361,6 +364,7 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
 }
 
 Widget addEnvWidget(BuildContext context, ManageAppBloc bloc) {
+  final l10n = AppLocalizations.of(context)!;
   return Column(children: <Widget>[
     Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -370,7 +374,7 @@ Widget addEnvWidget(BuildContext context, ManageAppBloc bloc) {
             padding: const EdgeInsets.all(8.0),
             child: FilledButton.icon(
               icon: const Icon(Icons.add),
-              label: const Text('Create new environment'),
+              label: Text(l10n.createNewEnvironment),
               onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
                 return EnvUpdateDialogWidget(
                   bloc: bloc,
@@ -378,21 +382,18 @@ Widget addEnvWidget(BuildContext context, ManageAppBloc bloc) {
               }),
             ),
           ),
-        const FHInfoCardWidget(
-          message: "Environments can be ordered by dragging the cards below,"
-              " showing the deployment promotion order to production (top to bottom). "
-              "This order will be reflected on the 'Features' dashboard. It helps your teams see"
-              " their feature status per environment in the correct order.",
+        FHInfoCardWidget(
+          message: l10n.environmentsInfoMessage,
         ),
         const SizedBox(
           width: 32,
         ),
-        const FHExternalLinkWidget(
-          tooltipMessage: "View documentation",
+        FHExternalLinkWidget(
+          tooltipMessage: l10n.viewDocumentation,
           link:
               "https://docs.featurehub.io/featurehub/latest/environments.html",
-          icon: Icon(Icons.arrow_outward_outlined),
-          label: 'Environments Documentation',
+          icon: const Icon(Icons.arrow_outward_outlined),
+          label: l10n.environmentsDocumentation,
         ),
       ],
     )

@@ -1119,4 +1119,283 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addValue => 'Add value';
+
+  @override
+  String get envOrderUpdated => 'Environment order updated!';
+
+  @override
+  String get productionEnvironment => 'Production environment';
+
+  @override
+  String deleteProductionEnvWarning(String name) {
+    return 'The environment \'$name\' is your production environment, are you sure you wish to remove it?';
+  }
+
+  @override
+  String envDeleted(String name) {
+    return 'Environment \'$name\' deleted!';
+  }
+
+  @override
+  String envDeleteError(String name) {
+    return 'Couldn\'t delete environment $name';
+  }
+
+  @override
+  String get createNewEnvironment => 'Create new environment';
+
+  @override
+  String get editEnvironment => 'Edit environment';
+
+  @override
+  String get environmentName => 'Environment name';
+
+  @override
+  String get envNameRequired => 'Please enter an environment name';
+
+  @override
+  String get envNameTooShort =>
+      'Environment name needs to be at least 2 characters long';
+
+  @override
+  String get markAsProductionEnvironment => 'Mark as production environment';
+
+  @override
+  String envUpdated(String name) {
+    return 'Environment $name updated!';
+  }
+
+  @override
+  String envCreated(String name) {
+    return 'Environment $name created!';
+  }
+
+  @override
+  String envAlreadyExists(String name) {
+    return 'Environment with name $name already exists';
+  }
+
+  @override
+  String get environmentsInfoMessage =>
+      'Environments can be ordered by dragging the cards below, showing the deployment promotion order to production (top to bottom). This order will be reflected on the \'Features\' dashboard. It helps your teams see their feature status per environment in the correct order.';
+
+  @override
+  String get environmentsDocumentation => 'Environments Documentation';
+
+  @override
+  String get group => 'Group';
+
+  @override
+  String get goToManageGroupMembers => 'Go to manage group members';
+
+  @override
+  String get groupPermissionsDocumentation => 'Group Permissions Documentation';
+
+  @override
+  String get selectGroupToEditPermissions =>
+      'You need to select a group to edit the permissions for.';
+
+  @override
+  String get needToCreateEnvironmentsFirst =>
+      'You need to first create some \'Environments\' for this application.';
+
+  @override
+  String get setFeatureLevelPermissions => 'Set feature level permissions';
+
+  @override
+  String get setAppStrategyPermissions =>
+      'Set application strategy permissions';
+
+  @override
+  String get setFeatureValuePermissions =>
+      'Set feature value level permissions per environment';
+
+  @override
+  String get permRead => 'Read';
+
+  @override
+  String get permLock => 'Lock';
+
+  @override
+  String get permUnlock => 'Unlock';
+
+  @override
+  String get permChangeValue => 'Change value / Retire';
+
+  @override
+  String get permReadExtendedData => 'Read Extended Feature Data';
+
+  @override
+  String noServiceAccountsInPortfolio(String name) {
+    return 'There are no service accounts in the \"$name\" portfolio.';
+  }
+
+  @override
+  String get goToServiceAccountSettings => 'Go to service accounts settings';
+
+  @override
+  String get serviceAccount => 'Service account';
+
+  @override
+  String get serviceAccountInfoMessage =>
+      'We strongly recommend setting production environments with only \'Read\' permission for service accounts. The \'Lock/Unlock\' and \'Change value\' permissions typically given to service accounts for testing purposes, e.g. changing feature values states through the SDK when running tests.';
+
+  @override
+  String get selectServiceAccount => 'Select service account';
+
+  @override
+  String get setServiceAccountPermissions =>
+      'Set the service account access to features for each environment';
+
+  @override
+  String serviceAccountUpdated(String name) {
+    return 'Service account \'$name\' updated!';
+  }
+
+  @override
+  String get environmentLabel => 'Environment';
+
+  @override
+  String get noEnvironments => 'no environments';
+
+  @override
+  String get integrationTypeLabel => 'Integration Type';
+
+  @override
+  String get selectWebhookType => 'Select webhook type';
+
+  @override
+  String get selectEnvironment => 'Select environment';
+
+  @override
+  String get slackChannelSettings => 'Slack Channel Settings (per environment)';
+
+  @override
+  String get slackIntegrationDocumentation => 'Slack Integration Documentation';
+
+  @override
+  String get enabled => 'Enabled';
+
+  @override
+  String get slackChannelId => 'Slack channel ID (leave empty to use default)';
+
+  @override
+  String get slackChannelIdExample => 'e.g. C0150T7AF25';
+
+  @override
+  String get slackSettingsUpdated => 'Slack settings have been updated';
+
+  @override
+  String get messageDeliveryStatus => 'Message delivery status';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get noActivity => 'There is no activity as yet.';
+
+  @override
+  String unacknowledgedRequest(String time) {
+    return 'Unacknowledged request sent at $time';
+  }
+
+  @override
+  String deliveryStatusReceived(String status, String time) {
+    return 'Status: $status, received at $time';
+  }
+
+  @override
+  String deliveryStatusError(String status, String time) {
+    return '$status received at $time';
+  }
+
+  @override
+  String get responseHeaders => 'Response headers:';
+
+  @override
+  String get content => 'Content';
+
+  @override
+  String get moreRecords => 'More records';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get deliveredSuccessfully => 'Successfully delivered';
+
+  @override
+  String get undeliverableInfo => 'Undeliverable, some information missing';
+
+  @override
+  String get unableToCreateData =>
+      'Unable to create the necessary data to send to remote system';
+
+  @override
+  String get systemConfigMissing =>
+      'Some system configuration is missing to be able to complete';
+
+  @override
+  String get remoteSystemError =>
+      'Some system error talking to remote system (e.g. system was down)';
+
+  @override
+  String get unexpectedResult => 'Unexpected result from remote system';
+
+  @override
+  String get networkError => 'Network error, host unknown';
+
+  @override
+  String get webhookHistory => 'Webhook History';
+
+  @override
+  String get webhookConfiguration => 'Webhook Configuration';
+
+  @override
+  String get webhooksDocumentation => 'Webhooks Documentation';
+
+  @override
+  String get colType => 'Type';
+
+  @override
+  String get colMethod => 'Method';
+
+  @override
+  String get colHttpCode => 'HTTP Code';
+
+  @override
+  String get colWhenSent => 'When Sent';
+
+  @override
+  String get colActions => 'Actions';
+
+  @override
+  String get webhookWhenSent => 'When sent';
+
+  @override
+  String get webhookCloudEventType => 'Webhook Cloud Event type';
+
+  @override
+  String get webhookUrl => 'URL';
+
+  @override
+  String get webhookDetailMethod => 'Method';
+
+  @override
+  String get webhookHttpStatus => 'HTTP status';
+
+  @override
+  String get cloudEventType => 'Cloud Event type';
+
+  @override
+  String get incomingHeaders => 'Incoming headers';
+
+  @override
+  String get outgoingHeaders => 'Outgoing headers';
+
+  @override
+  String get webhookContent => 'Webhook Content';
+
+  @override
+  String get copyContent => 'Copy Content';
 }

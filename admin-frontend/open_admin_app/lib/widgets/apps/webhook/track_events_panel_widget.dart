@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
@@ -92,13 +93,13 @@ class TrackingEventListViewState
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
-                  const Expanded(child: Text('Message delivery status')),
+                  Expanded(child: Text(AppLocalizations.of(context)!.messageDeliveryStatus)),
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: TextButton.icon(
                       onPressed: () => _reload(),
                       icon: const Icon(Icons.refresh_outlined),
-                      label: const Text('Refresh'),
+                      label: Text(AppLocalizations.of(context)!.refresh),
                     ),
                   )
                 ],
@@ -107,13 +108,13 @@ class TrackingEventListViewState
             if (_error == null && _items.isEmpty && !_isLastPage && _isLoading)
               const FHLoadingIndicator(),
             if (_error == null && _items.isEmpty && _isLastPage && !_isLoading)
-              const Text("There is no activity as yet."),
+              Text(AppLocalizations.of(context)!.noActivity),
             for (final item in _items) TrackEventItemWidget(event: item),
             if (_error != null) const FHLoadingError(),
             if (_error == null && !_isLastPage && !_isLoading)
-              _buttonRefresh('More records'),
+              _buttonRefresh(AppLocalizations.of(context)!.moreRecords),
             if (_error != null && !_isLastPage && !_isLoading)
-              _buttonRefresh('Retry'),
+              _buttonRefresh(AppLocalizations.of(context)!.retry),
             if ((_error != null || _items.isNotEmpty || _isLastPage) &&
                 _isLoading)
               const FHLoadingIndicator(),
@@ -148,6 +149,7 @@ class TrackEventItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (event.eventResponses == null) {
       return Card(
           elevation: 4.0,
@@ -159,8 +161,7 @@ class TrackEventItemWidget extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      SelectableText(
-                          'Unacknowledged request sent at ${event.whenSent.toLocal()}')
+                      SelectableText(l10n.unacknowledgedRequest(event.whenSent.toLocal().toString()))
                     ],
                   ),
                 ],
@@ -179,8 +180,9 @@ class TrackEventItemWidget extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      SelectableText(
-                          'Status: ${_decodeStatus(response.status)}, received at ${response.whenReceived.toLocal()}')
+                      SelectableText(l10n.deliveryStatusReceived(
+                          _decodeStatus(response.status, l10n),
+                          response.whenReceived.toLocal().toString()))
                     ],
                   ),
                 ],
@@ -198,14 +200,15 @@ class TrackEventItemWidget extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    SelectableText(
-                        '${_decodeStatus(response.status)} received at ${response.whenReceived.toLocal()}'),
+                    SelectableText(l10n.deliveryStatusError(
+                        _decodeStatus(response.status, l10n),
+                        response.whenReceived.toLocal().toString())),
                   ],
                 ),
                 if (headers != null)
                   Row(
                     children: [
-                      const Text('Response headers:'),
+                      Text(l10n.responseHeaders),
                       Column(
                         children: [
                           for (var header in headers.keys)
@@ -217,7 +220,7 @@ class TrackEventItemWidget extends StatelessWidget {
                 if (response.message != null)
                   Row(
                     children: [
-                      const Text('Content'),
+                      Text(l10n.content),
                       SelectableText("${response.message}")
                     ],
                   )
@@ -230,30 +233,16 @@ bool _isSuccess(TrackEventResponse event) {
   return (event.status >= 200 && event.status < 300);
 }
 
-String _decodeStatus(int? status) {
+String _decodeStatus(int? status, AppLocalizations l10n) {
   if (status == null) return '';
 
-  if (status >= 200 && status < 300) {
-    return 'Successfully delivered';
-  }
-  if (status == 400) {
-    return 'Undeliverable, some information missing';
-  }
-  if (status == 418) {
-    return 'Unable to create the necessary data to send to remote system';
-  }
-  if (status == 422) {
-    return 'Some system configuration is missing to be able to complete';
-  }
-  if (status == 424) {
-    return 'Some system error talking to remote system (e.g. system was down)';
-  }
-  if (status == 500) {
-    return 'Unexpected result from remote system';
-  }
-  if (status == 503) {
-    return 'Network error, host unknown';
-  }
+  if (status >= 200 && status < 300) return l10n.deliveredSuccessfully;
+  if (status == 400) return l10n.undeliverableInfo;
+  if (status == 418) return l10n.unableToCreateData;
+  if (status == 422) return l10n.systemConfigMissing;
+  if (status == 424) return l10n.remoteSystemError;
+  if (status == 500) return l10n.unexpectedResult;
+  if (status == 503) return l10n.networkError;
 
-  return 'unknown';
+  return '';
 }

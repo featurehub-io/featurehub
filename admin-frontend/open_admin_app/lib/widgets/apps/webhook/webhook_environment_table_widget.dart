@@ -1,5 +1,6 @@
 import 'package:advanced_datatable/datatable.dart';
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_configuration_widget.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_environment_page_tablesource.dart';
@@ -32,6 +33,7 @@ class _WebhookEnvironmentTableState extends State<WebhookEnvironmentTable> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // we want a tab-bar, but its a tab-bar in a tab-bar and on a web page that doesn't layout properly,
     return Column(children: [
       const SizedBox(
@@ -42,23 +44,23 @@ class _WebhookEnvironmentTableState extends State<WebhookEnvironmentTable> {
         children: [
           FHIconButton(
               icon: const Icon(Icons.window),
-              tooltip: "Webhook History",
+              tooltip: l10n.webhookHistory,
               onPressed: () => setState(() {
                     tab = 0;
                   })),
           FHIconButton(
               icon: const Icon(Icons.build),
-              tooltip: "Webhook Configuration",
+              tooltip: l10n.webhookConfiguration,
               onPressed: () => setState(() {
                     tab = 1;
                   }))
         ],
       ),
-      const FHExternalLinkWidget(
-        tooltipMessage: "View documentation",
+      FHExternalLinkWidget(
+        tooltipMessage: l10n.viewDocumentation,
         link: "https://docs.featurehub.io/featurehub/latest/webhooks.html",
-        icon: Icon(Icons.arrow_outward_outlined),
-        label: 'Webhooks Documentation',
+        icon: const Icon(Icons.arrow_outward_outlined),
+        label: l10n.webhooksDocumentation,
       ),
       if (tab == 0)
         Column(
@@ -70,7 +72,7 @@ class _WebhookEnvironmentTableState extends State<WebhookEnvironmentTable> {
                   padding: const EdgeInsets.all(8.0),
                   child: FilledButton(
                     onPressed: () => tableSource.refresh(),
-                    child: const Text('Refresh'),
+                    child: Text(l10n.refresh),
                   ),
                 )
               ],
@@ -92,12 +94,12 @@ class _WebhookEnvironmentTableState extends State<WebhookEnvironmentTable> {
                     });
                   }
                 },
-                columns: const [
-                  DataColumn(label: Text('Type')),
-                  DataColumn(label: Text('Method')),
-                  DataColumn(label: Text('HTTP Code')),
-                  DataColumn(label: Text('When Sent')),
-                  DataColumn(label: Text('Actions'))
+                columns: [
+                  DataColumn(label: Text(l10n.colType)),
+                  DataColumn(label: Text(l10n.colMethod)),
+                  DataColumn(label: Text(l10n.colHttpCode)),
+                  DataColumn(label: Text(l10n.colWhenSent)),
+                  DataColumn(label: Text(l10n.colActions)),
                 ],
                 source: tableSource,
               ),

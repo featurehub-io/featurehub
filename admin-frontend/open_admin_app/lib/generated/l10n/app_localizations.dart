@@ -638,7 +638,7 @@ abstract class AppLocalizations {
   /// **'Portfolio groups'**
   String get portfolioGroups;
 
-  /// Hint text in the group dropdown
+  /// Hint text for the group selector dropdown
   ///
   /// In en, this message translates to:
   /// **'Select group'**
@@ -674,7 +674,7 @@ abstract class AppLocalizations {
   /// **'Manage service accounts'**
   String get manageServiceAccounts;
 
-  /// Label for service accounts docs link
+  /// External link label for service accounts documentation
   ///
   /// In en, this message translates to:
   /// **'Service Accounts Documentation'**
@@ -2059,6 +2059,498 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add value'**
   String get addValue;
+
+  /// Snackbar after drag-reorder of environments
+  ///
+  /// In en, this message translates to:
+  /// **'Environment order updated!'**
+  String get envOrderUpdated;
+
+  /// Tooltip on the production environment badge
+  ///
+  /// In en, this message translates to:
+  /// **'Production environment'**
+  String get productionEnvironment;
+
+  /// Warning when deleting a production environment
+  ///
+  /// In en, this message translates to:
+  /// **'The environment \'{name}\' is your production environment, are you sure you wish to remove it?'**
+  String deleteProductionEnvWarning(String name);
+
+  /// Snackbar after deleting an environment
+  ///
+  /// In en, this message translates to:
+  /// **'Environment \'{name}\' deleted!'**
+  String envDeleted(String name);
+
+  /// Error when environment deletion fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete environment {name}'**
+  String envDeleteError(String name);
+
+  /// Button label and dialog title for creating a new environment
+  ///
+  /// In en, this message translates to:
+  /// **'Create new environment'**
+  String get createNewEnvironment;
+
+  /// Dialog title for editing an environment
+  ///
+  /// In en, this message translates to:
+  /// **'Edit environment'**
+  String get editEnvironment;
+
+  /// Label for the environment name field
+  ///
+  /// In en, this message translates to:
+  /// **'Environment name'**
+  String get environmentName;
+
+  /// Validation message when environment name is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an environment name'**
+  String get envNameRequired;
+
+  /// Validation message when environment name is too short
+  ///
+  /// In en, this message translates to:
+  /// **'Environment name needs to be at least 2 characters long'**
+  String get envNameTooShort;
+
+  /// Checkbox label for flagging an environment as production
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as production environment'**
+  String get markAsProductionEnvironment;
+
+  /// Snackbar after updating an environment
+  ///
+  /// In en, this message translates to:
+  /// **'Environment {name} updated!'**
+  String envUpdated(String name);
+
+  /// Snackbar after creating an environment
+  ///
+  /// In en, this message translates to:
+  /// **'Environment {name} created!'**
+  String envCreated(String name);
+
+  /// Error when environment name is already taken
+  ///
+  /// In en, this message translates to:
+  /// **'Environment with name {name} already exists'**
+  String envAlreadyExists(String name);
+
+  /// Info card on the Environments tab
+  ///
+  /// In en, this message translates to:
+  /// **'Environments can be ordered by dragging the cards below, showing the deployment promotion order to production (top to bottom). This order will be reflected on the \'Features\' dashboard. It helps your teams see their feature status per environment in the correct order.'**
+  String get environmentsInfoMessage;
+
+  /// External link label for environments documentation
+  ///
+  /// In en, this message translates to:
+  /// **'Environments Documentation'**
+  String get environmentsDocumentation;
+
+  /// Label above the group selector dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Group'**
+  String get group;
+
+  /// Link button to navigate to group members management
+  ///
+  /// In en, this message translates to:
+  /// **'Go to manage group members'**
+  String get goToManageGroupMembers;
+
+  /// External link label for group permissions documentation
+  ///
+  /// In en, this message translates to:
+  /// **'Group Permissions Documentation'**
+  String get groupPermissionsDocumentation;
+
+  /// Placeholder text when no group is selected
+  ///
+  /// In en, this message translates to:
+  /// **'You need to select a group to edit the permissions for.'**
+  String get selectGroupToEditPermissions;
+
+  /// Message when no environments exist yet
+  ///
+  /// In en, this message translates to:
+  /// **'You need to first create some \'Environments\' for this application.'**
+  String get needToCreateEnvironmentsFirst;
+
+  /// Label above the feature-level permissions dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Set feature level permissions'**
+  String get setFeatureLevelPermissions;
+
+  /// Label above the app strategy permissions dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Set application strategy permissions'**
+  String get setAppStrategyPermissions;
+
+  /// Label above the per-environment permissions table
+  ///
+  /// In en, this message translates to:
+  /// **'Set feature value level permissions per environment'**
+  String get setFeatureValuePermissions;
+
+  /// Table column header for Read permission
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get permRead;
+
+  /// Table column header for Lock permission
+  ///
+  /// In en, this message translates to:
+  /// **'Lock'**
+  String get permLock;
+
+  /// Table column header for Unlock permission
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get permUnlock;
+
+  /// Table column header for Change value / Retire permission
+  ///
+  /// In en, this message translates to:
+  /// **'Change value / Retire'**
+  String get permChangeValue;
+
+  /// Table column header for extended data read permission
+  ///
+  /// In en, this message translates to:
+  /// **'Read Extended Feature Data'**
+  String get permReadExtendedData;
+
+  /// Message when a portfolio has no service accounts
+  ///
+  /// In en, this message translates to:
+  /// **'There are no service accounts in the \"{name}\" portfolio.'**
+  String noServiceAccountsInPortfolio(String name);
+
+  /// Link button to navigate to service accounts page
+  ///
+  /// In en, this message translates to:
+  /// **'Go to service accounts settings'**
+  String get goToServiceAccountSettings;
+
+  /// Label above the service account selector dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Service account'**
+  String get serviceAccount;
+
+  /// Info card on the Service Account Permissions tab
+  ///
+  /// In en, this message translates to:
+  /// **'We strongly recommend setting production environments with only \'Read\' permission for service accounts. The \'Lock/Unlock\' and \'Change value\' permissions typically given to service accounts for testing purposes, e.g. changing feature values states through the SDK when running tests.'**
+  String get serviceAccountInfoMessage;
+
+  /// Hint text for the service account selector dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Select service account'**
+  String get selectServiceAccount;
+
+  /// Label above the service account permissions table
+  ///
+  /// In en, this message translates to:
+  /// **'Set the service account access to features for each environment'**
+  String get setServiceAccountPermissions;
+
+  /// Snackbar after updating service account permissions
+  ///
+  /// In en, this message translates to:
+  /// **'Service account \'{name}\' updated!'**
+  String serviceAccountUpdated(String name);
+
+  /// Label above the environment selector on the Integrations tab
+  ///
+  /// In en, this message translates to:
+  /// **'Environment'**
+  String get environmentLabel;
+
+  /// Shown when no environments are available on the Integrations tab
+  ///
+  /// In en, this message translates to:
+  /// **'no environments'**
+  String get noEnvironments;
+
+  /// Label above the integration type selector on the Integrations tab
+  ///
+  /// In en, this message translates to:
+  /// **'Integration Type'**
+  String get integrationTypeLabel;
+
+  /// Hint text for the webhook type dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Select webhook type'**
+  String get selectWebhookType;
+
+  /// Hint text for the environment dropdown on the Integrations tab
+  ///
+  /// In en, this message translates to:
+  /// **'Select environment'**
+  String get selectEnvironment;
+
+  /// Title for the Slack channel settings panel
+  ///
+  /// In en, this message translates to:
+  /// **'Slack Channel Settings (per environment)'**
+  String get slackChannelSettings;
+
+  /// External link label for Slack integration documentation
+  ///
+  /// In en, this message translates to:
+  /// **'Slack Integration Documentation'**
+  String get slackIntegrationDocumentation;
+
+  /// Checkbox label for enabling an integration
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get enabled;
+
+  /// Label for the Slack channel ID field
+  ///
+  /// In en, this message translates to:
+  /// **'Slack channel ID (leave empty to use default)'**
+  String get slackChannelId;
+
+  /// Hint text for the Slack channel ID field
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. C0150T7AF25'**
+  String get slackChannelIdExample;
+
+  /// Snackbar after saving Slack settings
+  ///
+  /// In en, this message translates to:
+  /// **'Slack settings have been updated'**
+  String get slackSettingsUpdated;
+
+  /// Header for the message delivery status panel
+  ///
+  /// In en, this message translates to:
+  /// **'Message delivery status'**
+  String get messageDeliveryStatus;
+
+  /// Button label for refreshing data
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// Empty state for the delivery status list
+  ///
+  /// In en, this message translates to:
+  /// **'There is no activity as yet.'**
+  String get noActivity;
+
+  /// Status for a sent but unacknowledged webhook request
+  ///
+  /// In en, this message translates to:
+  /// **'Unacknowledged request sent at {time}'**
+  String unacknowledgedRequest(String time);
+
+  /// Status line for a successfully received webhook
+  ///
+  /// In en, this message translates to:
+  /// **'Status: {status}, received at {time}'**
+  String deliveryStatusReceived(String status, String time);
+
+  /// Status line for a failed webhook delivery
+  ///
+  /// In en, this message translates to:
+  /// **'{status} received at {time}'**
+  String deliveryStatusError(String status, String time);
+
+  /// Label for response headers section in delivery status
+  ///
+  /// In en, this message translates to:
+  /// **'Response headers:'**
+  String get responseHeaders;
+
+  /// Label for the content section in delivery status
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get content;
+
+  /// Button to load more records in the delivery status list
+  ///
+  /// In en, this message translates to:
+  /// **'More records'**
+  String get moreRecords;
+
+  /// Button to retry loading records after an error
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// Delivery status: HTTP 2xx
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully delivered'**
+  String get deliveredSuccessfully;
+
+  /// Delivery status: HTTP 400
+  ///
+  /// In en, this message translates to:
+  /// **'Undeliverable, some information missing'**
+  String get undeliverableInfo;
+
+  /// Delivery status: HTTP 418
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to create the necessary data to send to remote system'**
+  String get unableToCreateData;
+
+  /// Delivery status: HTTP 422
+  ///
+  /// In en, this message translates to:
+  /// **'Some system configuration is missing to be able to complete'**
+  String get systemConfigMissing;
+
+  /// Delivery status: HTTP 424
+  ///
+  /// In en, this message translates to:
+  /// **'Some system error talking to remote system (e.g. system was down)'**
+  String get remoteSystemError;
+
+  /// Delivery status: HTTP 500
+  ///
+  /// In en, this message translates to:
+  /// **'Unexpected result from remote system'**
+  String get unexpectedResult;
+
+  /// Delivery status: HTTP 503
+  ///
+  /// In en, this message translates to:
+  /// **'Network error, host unknown'**
+  String get networkError;
+
+  /// Tooltip for the webhook history tab button
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook History'**
+  String get webhookHistory;
+
+  /// Tooltip for the webhook configuration tab button
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook Configuration'**
+  String get webhookConfiguration;
+
+  /// External link label for webhooks documentation
+  ///
+  /// In en, this message translates to:
+  /// **'Webhooks Documentation'**
+  String get webhooksDocumentation;
+
+  /// Table column header: event type
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get colType;
+
+  /// Table column header: HTTP method
+  ///
+  /// In en, this message translates to:
+  /// **'Method'**
+  String get colMethod;
+
+  /// Table column header: HTTP status code
+  ///
+  /// In en, this message translates to:
+  /// **'HTTP Code'**
+  String get colHttpCode;
+
+  /// Table column header: send timestamp
+  ///
+  /// In en, this message translates to:
+  /// **'When Sent'**
+  String get colWhenSent;
+
+  /// Table column header: row actions
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get colActions;
+
+  /// Row label in the webhook detail view
+  ///
+  /// In en, this message translates to:
+  /// **'When sent'**
+  String get webhookWhenSent;
+
+  /// Row label in the webhook detail view
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook Cloud Event type'**
+  String get webhookCloudEventType;
+
+  /// Row label in the webhook detail view
+  ///
+  /// In en, this message translates to:
+  /// **'URL'**
+  String get webhookUrl;
+
+  /// Row label in the webhook detail view
+  ///
+  /// In en, this message translates to:
+  /// **'Method'**
+  String get webhookDetailMethod;
+
+  /// Row label in the webhook detail view
+  ///
+  /// In en, this message translates to:
+  /// **'HTTP status'**
+  String get webhookHttpStatus;
+
+  /// Row label in the webhook detail view
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud Event type'**
+  String get cloudEventType;
+
+  /// Row label in the webhook detail view
+  ///
+  /// In en, this message translates to:
+  /// **'Incoming headers'**
+  String get incomingHeaders;
+
+  /// Row label in the webhook detail view
+  ///
+  /// In en, this message translates to:
+  /// **'Outgoing headers'**
+  String get outgoingHeaders;
+
+  /// Row label in the webhook detail view
+  ///
+  /// In en, this message translates to:
+  /// **'Webhook Content'**
+  String get webhookContent;
+
+  /// Tooltip on the copy button in the webhook detail view
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Content'**
+  String get copyContent;
 }
 
 class _AppLocalizationsDelegate

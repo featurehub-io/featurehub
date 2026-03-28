@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 
 class AdminAccessKeyDisplayWidget extends StatelessWidget {
@@ -17,7 +18,7 @@ class AdminAccessKeyDisplayWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text('Access token',
+                Text(AppLocalizations.of(context)!.accessToken,
                     style: Theme.of(context).textTheme.titleSmall),
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
@@ -31,11 +32,11 @@ class AdminAccessKeyDisplayWidget extends StatelessWidget {
           ),
           FHCopyToClipboardFlatButton(
             text: token,
-            caption: ' Copy access token to clipboard',
+            caption: ' ${AppLocalizations.of(context)!.copyAccessToken}',
           ),
           const SizedBox(height: 8.0),
           Text(
-            'For security, you will not be able to view the access token once you close this window.',
+            AppLocalizations.of(context)!.accessTokenSecurityNote,
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ]);

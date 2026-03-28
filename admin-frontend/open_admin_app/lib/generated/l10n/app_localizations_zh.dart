@@ -1072,4 +1072,274 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get addValue => '添加值';
+
+  @override
+  String get envOrderUpdated => '环境顺序已更新！';
+
+  @override
+  String get productionEnvironment => '生产环境';
+
+  @override
+  String deleteProductionEnvWarning(String name) {
+    return '环境「$name」是您的生产环境，确定要删除吗？';
+  }
+
+  @override
+  String envDeleted(String name) {
+    return '环境「$name」已删除！';
+  }
+
+  @override
+  String envDeleteError(String name) {
+    return '无法删除环境 $name';
+  }
+
+  @override
+  String get createNewEnvironment => '创建新环境';
+
+  @override
+  String get editEnvironment => '编辑环境';
+
+  @override
+  String get environmentName => '环境名称';
+
+  @override
+  String get envNameRequired => '请输入环境名称';
+
+  @override
+  String get envNameTooShort => '环境名称至少需要 2 个字符';
+
+  @override
+  String get markAsProductionEnvironment => '标记为生产环境';
+
+  @override
+  String envUpdated(String name) {
+    return '环境 $name 已更新！';
+  }
+
+  @override
+  String envCreated(String name) {
+    return '环境 $name 已创建！';
+  }
+
+  @override
+  String envAlreadyExists(String name) {
+    return '名为 $name 的环境已存在';
+  }
+
+  @override
+  String get environmentsInfoMessage =>
+      '可通过拖动下方卡片对环境排序，顺序代表从上到下的部署推广流程（直至生产）。此顺序将在「功能标志」仪表板中体现，帮助团队按正确顺序查看各环境的功能状态。';
+
+  @override
+  String get environmentsDocumentation => '环境文档';
+
+  @override
+  String get group => '用户组';
+
+  @override
+  String get goToManageGroupMembers => '前往管理组成员';
+
+  @override
+  String get groupPermissionsDocumentation => '用户组权限文档';
+
+  @override
+  String get selectGroupToEditPermissions => '请选择要编辑权限的用户组。';
+
+  @override
+  String get needToCreateEnvironmentsFirst => '请先为此应用创建「环境」。';
+
+  @override
+  String get setFeatureLevelPermissions => '设置功能级别权限';
+
+  @override
+  String get setAppStrategyPermissions => '设置应用策略权限';
+
+  @override
+  String get setFeatureValuePermissions => '设置每个环境的功能值级别权限';
+
+  @override
+  String get permRead => '读取';
+
+  @override
+  String get permLock => '锁定';
+
+  @override
+  String get permUnlock => '解锁';
+
+  @override
+  String get permChangeValue => '修改值 / 停用';
+
+  @override
+  String get permReadExtendedData => '读取扩展功能数据';
+
+  @override
+  String noServiceAccountsInPortfolio(String name) {
+    return '「$name」组合中没有服务账号。';
+  }
+
+  @override
+  String get goToServiceAccountSettings => '前往服务账号设置';
+
+  @override
+  String get serviceAccount => '服务账号';
+
+  @override
+  String get serviceAccountInfoMessage =>
+      '我们强烈建议将生产环境的服务账号权限设置为仅「读取」。「锁定/解锁」和「修改值」权限通常用于测试目的，例如通过 SDK 在运行测试时更改功能值状态。';
+
+  @override
+  String get selectServiceAccount => '选择服务账号';
+
+  @override
+  String get setServiceAccountPermissions => '为每个环境设置服务账号的功能访问权限';
+
+  @override
+  String serviceAccountUpdated(String name) {
+    return '服务账号「$name」已更新！';
+  }
+
+  @override
+  String get environmentLabel => '环境';
+
+  @override
+  String get noEnvironments => '暂无环境';
+
+  @override
+  String get integrationTypeLabel => '集成类型';
+
+  @override
+  String get selectWebhookType => '选择 Webhook 类型';
+
+  @override
+  String get selectEnvironment => '选择环境';
+
+  @override
+  String get slackChannelSettings => 'Slack 频道设置（按环境）';
+
+  @override
+  String get slackIntegrationDocumentation => 'Slack 集成文档';
+
+  @override
+  String get enabled => '已启用';
+
+  @override
+  String get slackChannelId => 'Slack 频道 ID（留空则使用默认值）';
+
+  @override
+  String get slackChannelIdExample => '例如：C0150T7AF25';
+
+  @override
+  String get slackSettingsUpdated => 'Slack 设置已更新';
+
+  @override
+  String get messageDeliveryStatus => '消息投递状态';
+
+  @override
+  String get refresh => '刷新';
+
+  @override
+  String get noActivity => '暂无活动记录。';
+
+  @override
+  String unacknowledgedRequest(String time) {
+    return '未确认的请求，发送时间：$time';
+  }
+
+  @override
+  String deliveryStatusReceived(String status, String time) {
+    return '状态：$status，接收时间：$time';
+  }
+
+  @override
+  String deliveryStatusError(String status, String time) {
+    return '$status，接收时间：$time';
+  }
+
+  @override
+  String get responseHeaders => '响应头：';
+
+  @override
+  String get content => '内容';
+
+  @override
+  String get moreRecords => '更多记录';
+
+  @override
+  String get retry => '重试';
+
+  @override
+  String get deliveredSuccessfully => '投递成功';
+
+  @override
+  String get undeliverableInfo => '无法投递，缺少部分信息';
+
+  @override
+  String get unableToCreateData => '无法创建向远程系统发送所需的数据';
+
+  @override
+  String get systemConfigMissing => '缺少完成操作所需的系统配置';
+
+  @override
+  String get remoteSystemError => '与远程系统通信时发生错误（例如系统宕机）';
+
+  @override
+  String get unexpectedResult => '远程系统返回意外结果';
+
+  @override
+  String get networkError => '网络错误，主机未知';
+
+  @override
+  String get webhookHistory => 'Webhook 历史记录';
+
+  @override
+  String get webhookConfiguration => 'Webhook 配置';
+
+  @override
+  String get webhooksDocumentation => 'Webhooks 文档';
+
+  @override
+  String get colType => '类型';
+
+  @override
+  String get colMethod => '方法';
+
+  @override
+  String get colHttpCode => 'HTTP 状态码';
+
+  @override
+  String get colWhenSent => '发送时间';
+
+  @override
+  String get colActions => '操作';
+
+  @override
+  String get webhookWhenSent => '发送时间';
+
+  @override
+  String get webhookCloudEventType => 'Webhook 云事件类型';
+
+  @override
+  String get webhookUrl => 'URL';
+
+  @override
+  String get webhookDetailMethod => '方法';
+
+  @override
+  String get webhookHttpStatus => 'HTTP 状态';
+
+  @override
+  String get cloudEventType => '云事件类型';
+
+  @override
+  String get incomingHeaders => '传入请求头';
+
+  @override
+  String get outgoingHeaders => '传出请求头';
+
+  @override
+  String get webhookContent => 'Webhook 内容';
+
+  @override
+  String get copyContent => '复制内容';
 }

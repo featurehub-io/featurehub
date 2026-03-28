@@ -1105,5 +1105,329 @@
   "@ipAddressExample": { "description": "Helper text example for IP address values" },
 
   "addValue": "Add value",
-  "@addValue": { "description": "Tooltip and label on the add-value button in the strategy rule editor" }
+  "@addValue": { "description": "Tooltip and label on the add-value button in the strategy rule editor" },
+
+  "envOrderUpdated": "Environment order updated!",
+  "@envOrderUpdated": { "description": "Snackbar after drag-reorder of environments" },
+
+  "productionEnvironment": "Production environment",
+  "@productionEnvironment": { "description": "Tooltip on the production environment badge" },
+
+  "deleteProductionEnvWarning": "The environment '{name}' is your production environment, are you sure you wish to remove it?",
+  "@deleteProductionEnvWarning": {
+    "description": "Warning when deleting a production environment",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "envDeleted": "Environment '{name}' deleted!",
+  "@envDeleted": {
+    "description": "Snackbar after deleting an environment",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "envDeleteError": "Couldn't delete environment {name}",
+  "@envDeleteError": {
+    "description": "Error when environment deletion fails",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "createNewEnvironment": "Create new environment",
+  "@createNewEnvironment": { "description": "Button label and dialog title for creating a new environment" },
+
+  "editEnvironment": "Edit environment",
+  "@editEnvironment": { "description": "Dialog title for editing an environment" },
+
+  "environmentName": "Environment name",
+  "@environmentName": { "description": "Label for the environment name field" },
+
+  "envNameRequired": "Please enter an environment name",
+  "@envNameRequired": { "description": "Validation message when environment name is empty" },
+
+  "envNameTooShort": "Environment name needs to be at least 2 characters long",
+  "@envNameTooShort": { "description": "Validation message when environment name is too short" },
+
+  "markAsProductionEnvironment": "Mark as production environment",
+  "@markAsProductionEnvironment": { "description": "Checkbox label for flagging an environment as production" },
+
+  "envUpdated": "Environment {name} updated!",
+  "@envUpdated": {
+    "description": "Snackbar after updating an environment",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "envCreated": "Environment {name} created!",
+  "@envCreated": {
+    "description": "Snackbar after creating an environment",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "envAlreadyExists": "Environment with name {name} already exists",
+  "@envAlreadyExists": {
+    "description": "Error when environment name is already taken",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "environmentsInfoMessage": "Environments can be ordered by dragging the cards below, showing the deployment promotion order to production (top to bottom). This order will be reflected on the 'Features' dashboard. It helps your teams see their feature status per environment in the correct order.",
+  "@environmentsInfoMessage": { "description": "Info card on the Environments tab" },
+
+  "environmentsDocumentation": "Environments Documentation",
+  "@environmentsDocumentation": { "description": "External link label for environments documentation" },
+
+  "group": "Group",
+  "@group": { "description": "Label above the group selector dropdown" },
+
+  "goToManageGroupMembers": "Go to manage group members",
+  "@goToManageGroupMembers": { "description": "Link button to navigate to group members management" },
+
+  "groupPermissionsDocumentation": "Group Permissions Documentation",
+  "@groupPermissionsDocumentation": { "description": "External link label for group permissions documentation" },
+
+  "selectGroup": "Select group",
+  "@selectGroup": { "description": "Hint text for the group selector dropdown" },
+
+  "selectGroupToEditPermissions": "You need to select a group to edit the permissions for.",
+  "@selectGroupToEditPermissions": { "description": "Placeholder text when no group is selected" },
+
+  "needToCreateEnvironmentsFirst": "You need to first create some 'Environments' for this application.",
+  "@needToCreateEnvironmentsFirst": { "description": "Message when no environments exist yet" },
+
+  "setFeatureLevelPermissions": "Set feature level permissions",
+  "@setFeatureLevelPermissions": { "description": "Label above the feature-level permissions dropdown" },
+
+  "setAppStrategyPermissions": "Set application strategy permissions",
+  "@setAppStrategyPermissions": { "description": "Label above the app strategy permissions dropdown" },
+
+  "setFeatureValuePermissions": "Set feature value level permissions per environment",
+  "@setFeatureValuePermissions": { "description": "Label above the per-environment permissions table" },
+
+  "permRead": "Read",
+  "@permRead": { "description": "Table column header for Read permission" },
+
+  "permLock": "Lock",
+  "@permLock": { "description": "Table column header for Lock permission" },
+
+  "permUnlock": "Unlock",
+  "@permUnlock": { "description": "Table column header for Unlock permission" },
+
+  "permChangeValue": "Change value / Retire",
+  "@permChangeValue": { "description": "Table column header for Change value / Retire permission" },
+
+  "permReadExtendedData": "Read Extended Feature Data",
+  "@permReadExtendedData": { "description": "Table column header for extended data read permission" },
+
+  "noServiceAccountsInPortfolio": "There are no service accounts in the \"{name}\" portfolio.",
+  "@noServiceAccountsInPortfolio": {
+    "description": "Message when a portfolio has no service accounts",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "goToServiceAccountSettings": "Go to service accounts settings",
+  "@goToServiceAccountSettings": { "description": "Link button to navigate to service accounts page" },
+
+  "serviceAccount": "Service account",
+  "@serviceAccount": { "description": "Label above the service account selector dropdown" },
+
+  "serviceAccountInfoMessage": "We strongly recommend setting production environments with only 'Read' permission for service accounts. The 'Lock/Unlock' and 'Change value' permissions typically given to service accounts for testing purposes, e.g. changing feature values states through the SDK when running tests.",
+  "@serviceAccountInfoMessage": { "description": "Info card on the Service Account Permissions tab" },
+
+  "serviceAccountsDocumentation": "Service Accounts Documentation",
+  "@serviceAccountsDocumentation": { "description": "External link label for service accounts documentation" },
+
+  "selectServiceAccount": "Select service account",
+  "@selectServiceAccount": { "description": "Hint text for the service account selector dropdown" },
+
+  "setServiceAccountPermissions": "Set the service account access to features for each environment",
+  "@setServiceAccountPermissions": { "description": "Label above the service account permissions table" },
+
+  "serviceAccountUpdated": "Service account '{name}' updated!",
+  "@serviceAccountUpdated": {
+    "description": "Snackbar after updating service account permissions",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "environmentLabel": "Environment",
+  "@environmentLabel": { "description": "Label above the environment selector on the Integrations tab" },
+
+  "noEnvironments": "no environments",
+  "@noEnvironments": { "description": "Shown when no environments are available on the Integrations tab" },
+
+  "integrationTypeLabel": "Integration Type",
+  "@integrationTypeLabel": { "description": "Label above the integration type selector on the Integrations tab" },
+
+  "selectWebhookType": "Select webhook type",
+  "@selectWebhookType": { "description": "Hint text for the webhook type dropdown" },
+
+  "selectEnvironment": "Select environment",
+  "@selectEnvironment": { "description": "Hint text for the environment dropdown on the Integrations tab" },
+
+  "slackChannelSettings": "Slack Channel Settings (per environment)",
+  "@slackChannelSettings": { "description": "Title for the Slack channel settings panel" },
+
+  "slackIntegrationDocumentation": "Slack Integration Documentation",
+  "@slackIntegrationDocumentation": { "description": "External link label for Slack integration documentation" },
+
+  "enabled": "Enabled",
+  "@enabled": { "description": "Checkbox label for enabling an integration" },
+
+  "slackChannelId": "Slack channel ID (leave empty to use default)",
+  "@slackChannelId": { "description": "Label for the Slack channel ID field" },
+
+  "slackChannelIdExample": "e.g. C0150T7AF25",
+  "@slackChannelIdExample": { "description": "Hint text for the Slack channel ID field" },
+
+  "slackSettingsUpdated": "Slack settings have been updated",
+  "@slackSettingsUpdated": { "description": "Snackbar after saving Slack settings" },
+
+  "messageDeliveryStatus": "Message delivery status",
+  "@messageDeliveryStatus": { "description": "Header for the message delivery status panel" },
+
+  "refresh": "Refresh",
+  "@refresh": { "description": "Button label for refreshing data" },
+
+  "noActivity": "There is no activity as yet.",
+  "@noActivity": { "description": "Empty state for the delivery status list" },
+
+  "unacknowledgedRequest": "Unacknowledged request sent at {time}",
+  "@unacknowledgedRequest": {
+    "description": "Status for a sent but unacknowledged webhook request",
+    "placeholders": { "time": { "type": "String" } }
+  },
+
+  "deliveryStatusReceived": "Status: {status}, received at {time}",
+  "@deliveryStatusReceived": {
+    "description": "Status line for a successfully received webhook",
+    "placeholders": {
+      "status": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
+
+  "deliveryStatusError": "{status} received at {time}",
+  "@deliveryStatusError": {
+    "description": "Status line for a failed webhook delivery",
+    "placeholders": {
+      "status": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
+
+  "responseHeaders": "Response headers:",
+  "@responseHeaders": { "description": "Label for response headers section in delivery status" },
+
+  "content": "Content",
+  "@content": { "description": "Label for the content section in delivery status" },
+
+  "moreRecords": "More records",
+  "@moreRecords": { "description": "Button to load more records in the delivery status list" },
+
+  "retry": "Retry",
+  "@retry": { "description": "Button to retry loading records after an error" },
+
+  "deliveredSuccessfully": "Successfully delivered",
+  "@deliveredSuccessfully": { "description": "Delivery status: HTTP 2xx" },
+
+  "undeliverableInfo": "Undeliverable, some information missing",
+  "@undeliverableInfo": { "description": "Delivery status: HTTP 400" },
+
+  "unableToCreateData": "Unable to create the necessary data to send to remote system",
+  "@unableToCreateData": { "description": "Delivery status: HTTP 418" },
+
+  "systemConfigMissing": "Some system configuration is missing to be able to complete",
+  "@systemConfigMissing": { "description": "Delivery status: HTTP 422" },
+
+  "remoteSystemError": "Some system error talking to remote system (e.g. system was down)",
+  "@remoteSystemError": { "description": "Delivery status: HTTP 424" },
+
+  "unexpectedResult": "Unexpected result from remote system",
+  "@unexpectedResult": { "description": "Delivery status: HTTP 500" },
+
+  "networkError": "Network error, host unknown",
+  "@networkError": { "description": "Delivery status: HTTP 503" },
+
+  "webhookHistory": "Webhook History",
+  "@webhookHistory": { "description": "Tooltip for the webhook history tab button" },
+
+  "webhookConfiguration": "Webhook Configuration",
+  "@webhookConfiguration": { "description": "Tooltip for the webhook configuration tab button" },
+
+  "webhooksDocumentation": "Webhooks Documentation",
+  "@webhooksDocumentation": { "description": "External link label for webhooks documentation" },
+
+  "colType": "Type",
+  "@colType": { "description": "Table column header: event type" },
+
+  "colMethod": "Method",
+  "@colMethod": { "description": "Table column header: HTTP method" },
+
+  "colHttpCode": "HTTP Code",
+  "@colHttpCode": { "description": "Table column header: HTTP status code" },
+
+  "colWhenSent": "When Sent",
+  "@colWhenSent": { "description": "Table column header: send timestamp" },
+
+  "colActions": "Actions",
+  "@colActions": { "description": "Table column header: row actions" },
+
+  "webhookWhenSent": "When sent",
+  "@webhookWhenSent": { "description": "Row label in the webhook detail view" },
+
+  "webhookCloudEventType": "Webhook Cloud Event type",
+  "@webhookCloudEventType": { "description": "Row label in the webhook detail view" },
+
+  "webhookUrl": "URL",
+  "@webhookUrl": { "description": "Row label in the webhook detail view" },
+
+  "webhookDetailMethod": "Method",
+  "@webhookDetailMethod": { "description": "Row label in the webhook detail view" },
+
+  "webhookHttpStatus": "HTTP status",
+  "@webhookHttpStatus": { "description": "Row label in the webhook detail view" },
+
+  "cloudEventType": "Cloud Event type",
+  "@cloudEventType": { "description": "Row label in the webhook detail view" },
+
+  "incomingHeaders": "Incoming headers",
+  "@incomingHeaders": { "description": "Row label in the webhook detail view" },
+
+  "outgoingHeaders": "Outgoing headers",
+  "@outgoingHeaders": { "description": "Row label in the webhook detail view" },
+
+  "webhookContent": "Webhook Content",
+  "@webhookContent": { "description": "Row label in the webhook detail view" },
+
+  "copyContent": "Copy Content",
+  "@copyContent": { "description": "Tooltip on the copy button in the webhook detail view" },
+
+  "searchServiceAccounts": "Search Service Accounts",
+  "@searchServiceAccounts": { "description": "Hint text for the service accounts search field" },
+
+  "colName": "Name",
+  "@colName": { "description": "Table column header and info-row label for name" },
+
+  "colGroups": "Groups",
+  "@colGroups": { "description": "Table column header and info-row label for groups" },
+
+  "resetAdminSdkToken": "Reset Admin SDK access token",
+  "@resetAdminSdkToken": { "description": "Tooltip on the reset-token icon button in the admin service accounts table" },
+
+  "adminSADeleteContent": "This service account will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!",
+  "@adminSADeleteContent": { "description": "Body text of the delete-service-account confirmation dialog" },
+
+  "adminSADeleted": "Service account '{name}' deleted!",
+  "@adminSADeleted": {
+    "description": "Snackbar after deleting an admin service account",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "adminSADetailsTitle": "Admin Service Account details",
+  "@adminSADetailsTitle": { "description": "Title of the admin service account info dialog" },
+
+  "accessToken": "Access token",
+  "@accessToken": { "description": "Label above the access token value" },
+
+  "copyAccessToken": "Copy access token to clipboard",
+  "@copyAccessToken": { "description": "Caption on the copy-to-clipboard button for access tokens" },
+
+  "accessTokenSecurityNote": "For security, you will not be able to view the access token once you close this window.",
+  "@accessTokenSecurityNote": { "description": "Security notice shown when displaying an access token" }
 }
