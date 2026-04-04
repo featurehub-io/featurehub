@@ -8,6 +8,7 @@ import io.featurehub.events.CloudEventSubscriberConfig
 import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.lifecycle.LifecycleShutdown
 import io.featurehub.lifecycle.LifecycleStarted
+import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -20,6 +21,7 @@ class KafkaConfiguredSource @Inject constructor(
 ) : LifecycleStarted, LifecycleShutdown, CloudEventConfigDiscoveryProcessor {
   private val log: Logger = LoggerFactory.getLogger(KafkaConfiguredSource::class.java)
   private val listeners = mutableListOf<KafkaListener>()
+  private final val publishCompressed = FallbackPropertyConfig.getConfig("cloudevents.kafka.compress-events", "true") == "true"
 
   override fun started() {
     ceConfigDiscovery.discover("kafka", this)
@@ -33,7 +35,7 @@ class KafkaConfiguredSource @Inject constructor(
 
     publisher.channelNames.forEach { topic ->
       val pub = kafkaFactory.makePublisher(topic)
-      config.registerPublisher(publisher, topic, true) { msg -> pub.publish(msg) }
+      config.registerPublisher(publisher, topic, publishCompressed) { msg -> pub.publish(msg) }
     }
   }
 

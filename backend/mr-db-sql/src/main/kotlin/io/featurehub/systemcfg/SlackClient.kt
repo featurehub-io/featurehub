@@ -3,7 +3,6 @@ package io.featurehub.systemcfg
 import io.cloudevents.core.v1.CloudEventBuilder
 import io.featurehub.db.services.InternalSystemConfigApi
 import io.featurehub.db.services.SystemConfigChange
-import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.events.CloudEventDynamicDeliveryDetails
 import io.featurehub.events.CloudEventDynamicPublisherRegistry
 import io.featurehub.events.DynamicCloudEventDestination

@@ -45,6 +45,7 @@ class KafkaFactoryImpl : KafkaFactory, HealthSource {
   private val saslJaasConfig: String? = FallbackPropertyConfig.getConfig("cloudevents.kafka.sasl.jaas.config")
   private val producerAcks: String = FallbackPropertyConfig.getConfig("cloudevents.kafka.producer.acks", "1")
   private val producerLingerMs: String = FallbackPropertyConfig.getConfig("cloudevents.kafka.producer.linger.ms", "5")
+  private val autotopicCreationForConsumer = FallbackPropertyConfig.getConfig("cloudevents.kafka.consumer.auto-topic-creation", "false")
   private val pollTimeoutMs: Long =
     FallbackPropertyConfig.getConfig("cloudevents.kafka.consumer.poll.timeout.ms", "1000").toLong()
 
@@ -77,6 +78,7 @@ class KafkaFactoryImpl : KafkaFactory, HealthSource {
     props[ConsumerConfig.GROUP_ID_CONFIG] = groupId
     props[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
     props[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = "true"
+    props[ConsumerConfig.ALLOW_AUTO_CREATE_TOPICS_CONFIG] = autotopicCreationForConsumer
     return props
   }
 
@@ -148,7 +150,7 @@ class KafkaFactoryImpl : KafkaFactory, HealthSource {
       override fun publish(msg: CloudEvent) {
         try {
           log.trace("kafka: publishing {}/{} to topic {}", msg.type, msg.subject, topic)
-          val record = ProducerRecord<String, CloudEvent>(topic, msg.type, msg)
+          val record = ProducerRecord<String, CloudEvent>(topic, msg.id, msg)
           sharedProducer.send(record) { metadata, ex ->
             if (ex != null) {
               log.error("kafka: failed to publish to topic {}", topic, ex)
