@@ -40,6 +40,7 @@
       <groupId>io.featurehub.edge</groupId>
       <artifactId>edge-stats-api</artifactId>
       <version>1.1-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
