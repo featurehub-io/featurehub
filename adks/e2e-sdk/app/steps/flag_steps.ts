@@ -94,7 +94,7 @@ Then('the feature flag has an application strategy {string} which has a value of
 
   await waitForExpect(() => {
     // const f = this.featureState(this.feature.key) as FeatureStateHolder;
-    const f = this.featureState(world.feature.key) as FeatureStateBaseHolder<boolean>;
+    const f = this.featureState(world.feature.key) as FeatureStateBaseHolder;
     const featureState = f.getFeatureState();
     const strategyFound = featureState.strategies.find(s => s.id === strategy.uniqueCode);
     expect(strategyFound, `strategy ${strategy.strategy.name} with id ${strategy.uniqueCode} was not found in ${JSON.stringify(featureState.strategies, null, 2)}`).to.not.be.undefined;
