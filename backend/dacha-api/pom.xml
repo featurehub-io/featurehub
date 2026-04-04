@@ -35,6 +35,16 @@
     </license>
   </licenses>
 
+  <dependencies>
+    <!-- this is required for ordering, mr-api is required BEFORE dacha-api -->
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
