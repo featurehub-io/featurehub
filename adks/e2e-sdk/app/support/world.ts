@@ -1,6 +1,7 @@
-import { setDefaultTimeout, setWorldConstructor, World } from '@cucumber/cucumber';
+import {setDefaultTimeout, setWorldConstructor, World} from '@cucumber/cucumber';
 import {
   Application,
+  ApplicationRolloutStrategyServiceApi,
   ApplicationServiceApi,
   AuthServiceApi,
   Configuration,
@@ -10,41 +11,90 @@ import {
   EnvironmentServiceApi,
   Feature,
   FeatureGroup,
-  FeatureGroupListGroup,
   FeatureGroupServiceApi,
+  FeatureHistoryList,
   FeatureHistoryServiceApi,
+  FeatureHistoryValue,
   FeatureServiceApi,
-  FeatureValue,
+  FeatureValue, Group,
+  GroupServiceApi,
+  ListApplicationRolloutStrategyItem,
   Person,
   PersonServiceApi,
-  SystemConfigServiceApi,
   Portfolio,
   PortfolioServiceApi,
   ServiceAccount,
   ServiceAccountPermission,
   ServiceAccountServiceApi,
+  SystemConfigServiceApi,
   TokenizedPerson,
-  WebhookServiceApi,
-  ApplicationRolloutStrategyServiceApi,
-  ApplicationRolloutStrategy,
-  FeatureHistoryList,
-  ListApplicationRolloutStrategyItem, FeatureHistoryValue
+  WebhookServiceApi
 } from '../apis/mr-service';
-import { axiosLoggingAttachment, logger } from './logging';
-import globalAxios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import { Configuration as EdgeConfig, FeatureServiceApi as EdgeService } from '../apis/edge';
+import {axiosLoggingAttachment, logger} from './logging';
+import globalAxios, {AxiosInstance, InternalAxiosRequestConfig} from 'axios';
+import {Configuration as EdgeConfig, FeatureServiceApi as EdgeService} from '../apis/edge';
 import {
   ClientContext,
   EdgeFeatureHubConfig,
   FeatureHubRepository,
   FeatureStateHolder
 } from 'featurehub-javascript-node-sdk';
-import { expect } from 'chai';
-import { edgeHost, mrHost } from './discovery';
+import {expect} from 'chai';
+import {edgeHost, mrHost} from './discovery';
 
 let apiKey: string;
 
-// axiosLoggingAttachment([ globalAxios ]);
+export class ApiUser {
+  public readonly adminApiConfig: Configuration;
+  public readonly portfolioApi: PortfolioServiceApi;
+  public readonly applicationApi: ApplicationServiceApi;
+  public readonly environmentApi: EnvironmentServiceApi;
+  public readonly environment2Api: Environment2ServiceApi;
+  public readonly featureGroupApi: FeatureGroupServiceApi;
+  public readonly featureApi: FeatureServiceApi;
+  public readonly groupApi: GroupServiceApi;
+  public readonly loginApi: AuthServiceApi;
+  public readonly personApi: PersonServiceApi;
+  public readonly serviceAccountApi: ServiceAccountServiceApi;
+  public readonly featureValueApi: EnvironmentFeatureServiceApi;
+  public readonly edgeApi: EdgeService;
+  public readonly historyApi: FeatureHistoryServiceApi;
+  public readonly systemConfigApi: SystemConfigServiceApi;
+  public readonly adminUrl: string;
+  public readonly webhookApi: WebhookServiceApi;
+  public readonly featureUrl: string;
+  public readonly authorisationApi: AuthServiceApi;
+  public readonly anonAuthorizationAPi: AuthServiceApi;
+  public readonly featureHistoryApi: FeatureHistoryServiceApi;
+  public readonly applicationStrategyApi: ApplicationRolloutStrategyServiceApi;
+
+  public serviceAccounts: Array<ServiceAccount> = [];
+
+  constructor(adminUrl: string, featureUrl: string, axiosInstance: AxiosInstance, apiKey: string) {
+    this.adminUrl = adminUrl;
+    this.featureUrl = featureUrl;
+    this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey, axiosInstance: axiosInstance, accessToken: apiKey });
+
+    this.portfolioApi = new PortfolioServiceApi(this.adminApiConfig);
+    this.personApi = new PersonServiceApi(this.adminApiConfig);
+    this.applicationApi = new ApplicationServiceApi(this.adminApiConfig);
+    this.environmentApi = new EnvironmentServiceApi(this.adminApiConfig);
+    this.environment2Api = new Environment2ServiceApi(this.adminApiConfig);
+    this.featureGroupApi = new FeatureGroupServiceApi(this.adminApiConfig);
+    this.featureApi = new FeatureServiceApi(this.adminApiConfig);
+    this.loginApi = new AuthServiceApi(this.adminApiConfig); // too noisy in logs
+    this.serviceAccountApi = new ServiceAccountServiceApi(this.adminApiConfig);
+    this.featureValueApi = new EnvironmentFeatureServiceApi(this.adminApiConfig);
+    this.historyApi = new FeatureHistoryServiceApi(this.adminApiConfig);
+    this.systemConfigApi = new SystemConfigServiceApi(this.adminApiConfig);
+    this.authorisationApi = new AuthServiceApi(this.adminApiConfig);
+    this.anonAuthorizationAPi = new AuthServiceApi(new Configuration({ basePath: this.adminUrl, axiosInstance: axiosInstance }));
+    this.groupApi = new GroupServiceApi(this.adminApiConfig);
+    this.webhookApi = new WebhookServiceApi(this.adminApiConfig);
+    this.applicationStrategyApi = new ApplicationRolloutStrategyServiceApi(this.adminApiConfig);
+    this.featureHistoryApi = new FeatureHistoryServiceApi(this.adminApiConfig);
+  }
+}
 
 export class SdkWorld extends World {
   private _portfolio: Portfolio;
@@ -56,24 +106,7 @@ export class SdkWorld extends World {
   private _repository: FeatureHubRepository;
   public readonly adminUrl: string;
   public readonly featureUrl: string;
-  public readonly adminApiConfig: Configuration;
-  public readonly portfolioApi: PortfolioServiceApi;
-  public readonly applicationApi: ApplicationServiceApi;
-  public readonly environmentApi: EnvironmentServiceApi;
-  public readonly environment2Api: Environment2ServiceApi;
-  public readonly featureGroupApi: FeatureGroupServiceApi;
-  public readonly featureApi: FeatureServiceApi;
-  public readonly loginApi: AuthServiceApi;
-  public readonly featureHistoryApi: FeatureHistoryServiceApi;
-  public readonly personApi: PersonServiceApi;
-  public readonly serviceAccountApi: ServiceAccountServiceApi;
-  public readonly featureValueApi: EnvironmentFeatureServiceApi;
-  public readonly edgeApi: EdgeService;
-  public readonly historyApi: FeatureHistoryServiceApi;
-  public readonly systemConfigApi: SystemConfigServiceApi;
-  public readonly applicationStrategyApi: ApplicationRolloutStrategyServiceApi;
 
-  public readonly webhookApi: WebhookServiceApi;
   private _clientContext: ClientContext;
   public sdkUrlClientEval: string;
   public sdkUrlServerEval: string;
@@ -84,6 +117,12 @@ export class SdkWorld extends World {
   public applicationStrategies: Record<string,ListApplicationRolloutStrategyItem> = {};
   public featureHistory: FeatureHistoryList;
   public featureHistorySave: Record<string, FeatureHistoryValue> = {};
+  public readonly _edgeApi: EdgeService;
+  public group: Group;
+
+  public readonly axiosInstance: AxiosInstance;
+  public readonly superuser: ApiUser;
+  public user: ApiUser | undefined;
 
   constructor(props: any) {
     super(props);
@@ -96,25 +135,11 @@ export class SdkWorld extends World {
     this.adminUrl = mrHost();
     this.featureUrl = edgeHost();
 
-    this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey, axiosInstance: globalAxios.create(), accessToken: apiKey });
-    this.portfolioApi = new PortfolioServiceApi(this.adminApiConfig);
-    this.personApi = new PersonServiceApi(this.adminApiConfig);
-    this.applicationApi = new ApplicationServiceApi(this.adminApiConfig);
-    this.environmentApi = new EnvironmentServiceApi(this.adminApiConfig);
-    this.environment2Api = new Environment2ServiceApi(this.adminApiConfig);
-    this.featureGroupApi = new FeatureGroupServiceApi(this.adminApiConfig);
-    this.featureApi = new FeatureServiceApi(this.adminApiConfig);
-    this.loginApi = new AuthServiceApi(this.adminApiConfig); // too noisy in logs
-    this.serviceAccountApi = new ServiceAccountServiceApi(this.adminApiConfig);
-    this.featureValueApi = new EnvironmentFeatureServiceApi(this.adminApiConfig);
-    this.webhookApi = new WebhookServiceApi(this.adminApiConfig);
-    this.historyApi = new FeatureHistoryServiceApi(this.adminApiConfig);
-    this.systemConfigApi = new SystemConfigServiceApi(this.adminApiConfig);
-    this.applicationStrategyApi = new ApplicationRolloutStrategyServiceApi(this.adminApiConfig);
-    this.featureHistoryApi = new FeatureHistoryServiceApi(this.adminApiConfig);
+    this.axiosInstance = globalAxios.create();
+    this.superuser = new ApiUser(this.adminUrl, this.featureUrl, this.axiosInstance, apiKey);
 
     const edgeConfig = new EdgeConfig({ basePath: this.featureUrl, axiosInstance: this.adminApiConfig.axiosInstance});
-    this.edgeApi = new EdgeService(edgeConfig);
+    this._edgeApi = new EdgeService(edgeConfig);
 
     axiosLoggingAttachment([this.adminApiConfig.axiosInstance]);
     const self = this;
@@ -122,6 +147,25 @@ export class SdkWorld extends World {
       return self.baggageHeader();
     }, [this.adminApiConfig.axiosInstance])
   }
+
+  public get adminApiConfig() { return this.superuser.adminApiConfig; }
+  public get portfolioApi() { return this.superuser.portfolioApi; }
+
+  public get applicationApi() { return this.superuser.applicationApi; }
+  public get environmentApi() { return this.superuser.environmentApi; }
+  public get environment2Api() { return this.superuser.environment2Api; }
+  public get featureGroupApi() { return this.superuser.featureGroupApi; }
+  public get featureApi() { return this.superuser.featureApi; }
+  public get loginApi() { return this.superuser.loginApi; }
+  public get personApi() { return this.superuser.personApi; }
+  public get serviceAccountApi() { return this.superuser.serviceAccountApi; }
+  public get featureValueApi() { return this.superuser.featureValueApi; }
+  public get edgeApi() { return this._edgeApi; }
+  public get historyApi() { return this.superuser.historyApi; }
+  public get systemConfigApi() { return this.superuser.systemConfigApi; }
+  public get webhookApi() { return this.superuser.webhookApi; }
+  public get featureHistoryApi() { return this.superuser.featureHistoryApi; }
+  public get applicationStrategyApi() { return this.superuser.applicationStrategyApi; }
 
   private attachBaggageInterceptors(baggageHeader: () => string | undefined, axiosInstances: Array<AxiosInstance>): void {
     axiosInstances.forEach((axios) => {
@@ -145,6 +189,11 @@ export class SdkWorld extends World {
     }
 
     return headers.length == 0 ? undefined : headers.join(',');
+  }
+
+  public setUser(apiKey: string): ApiUser {
+    this.user = new ApiUser(this.adminUrl, this.featureUrl, this.axiosInstance, apiKey);
+    return this.user;
   }
 
   public setScenarioId(id: string) {
