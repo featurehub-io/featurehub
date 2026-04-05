@@ -133,9 +133,6 @@ open class CloudEventPublisherRegistryProcessor @Inject constructor(
   }
 
   override fun registerForPublishing(type: String, metric: CloudEventChannelMetric, compress: Boolean, handler: (msg: CloudEvent) -> Unit) {
-    if (type == "publish-features-v1") {
-      print("s")
-    }
     val handlers = eventHandlers.computeIfAbsent(type) { mutableListOf() }
     handlers.add(CallbackHolder(type, metric, compress, handler))
   }

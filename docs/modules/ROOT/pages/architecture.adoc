@@ -26,12 +26,11 @@ and backend server and is configured to talk to some external database.
 If MR server goes down, it won't affect the operation of end-user clients, all their data is in the cache (or in
 the database if you use _party-server-ish_ or _edge-rest_).
 
-
 === https://nats.io/[NATS]
 
 NATS is the Cloud Native Open Source messaging platform that is very fast
 and is very adept at scaling to huge volume in a hugely distributed fashion. We use it for FeatureHub
-to transfer messages about environments, features and service accounts to feed Dacha and Edge.
+to transfer messages about environments, features and service accounts to feed Dacha and Edge. Kafka and Google Pub/Sub are alternatives.
 
 === Dacha
 
@@ -53,7 +52,7 @@ healthy, depending on how fast it can fill its cache, which can lead to operatio
 
 Dacha2 supports multiple async layers. It is a lazy cache:
 
-- it supports multiple async layers (NATS, Google Pub/Sub, AWS Kinesis (beta))
+- it supports multiple async layers (NATS, Google Pub/Sub, Kafka)
 - it is based on Cloud Events
 - it caches misses as well as hits to ensure consistent misses do not make it to MR
 - it automatically updates itself as new environments, features, and service account changes are broadcast from MR, so
