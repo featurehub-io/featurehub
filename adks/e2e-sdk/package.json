@@ -24,7 +24,7 @@
     "cloudevents": "^8.0.0",
     "express": "^5.1.0",
     "featurehub-cloud-event-tools": "^1.0.0",
-    "featurehub-javascript-node-sdk": "^2.0.0",
+    "featurehub-javascript-node-sdk": "^2.0.1",
     "nats": "^2.11.0",
     "safe-stable-stringify": "^2.5.0",
     "wait-for-expect": "^3.0.2",
