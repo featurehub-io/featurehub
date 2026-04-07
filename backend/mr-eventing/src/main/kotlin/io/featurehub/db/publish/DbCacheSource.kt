@@ -150,11 +150,17 @@ open class DbCacheSource @Inject constructor(
           .environment.whenUnpublished.isNull
           .environment.whenArchived.isNull
           .environment.fetch(QDbEnvironment.Alias.id)
-          .findStream().map { sap: DbServiceAccountEnvironment ->
+          .findList().map { sap: DbServiceAccountEnvironment ->
             CacheServiceAccountPermission()
               .permissions(convertUtils.splitServiceAccountPermissions(sap.permissions) ?: listOf())
               .environmentId(sap.environment.id)
-          }.collect(Collectors.toList())
+          }
+      )
+      .filters(
+        QDbFeatureFilter()
+          .select(QDbFeatureFilter.Alias.id)
+          .serviceAccounts.id.eq(sa.id)
+          .findList().map { it.id }.ifEmpty { null }
       )
 
     log.trace("service account publishing: {}", serviceAccount)
@@ -313,6 +319,13 @@ open class DbCacheSource @Inject constructor(
       .key(feature.key)
       .version(feature.version)
       .valueType(feature.valueType)
+      .filters(
+        QDbFeatureFilter()
+          .select(QDbFeatureFilter.Alias.id)
+          .applicationFeatures.id.eq(feature.id)
+          .findStream().map { it.id }.collect(Collectors.toList())
+          .ifEmpty { null }
+      )
   }
 
   private fun toCacheFeatureValue(dfv: DbFeatureValue?, feature: DbApplicationFeature, featureGroupRolloutStrategies: List<RolloutStrategy>?): CacheFeatureValue? {

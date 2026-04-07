@@ -10,6 +10,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.model.*
 //import io.featurehub.db.model.RoleType
 import io.featurehub.db.model.query.*
+import io.featurehub.db.model.query.QDbFeatureFilter
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
@@ -237,6 +238,11 @@ class ApplicationSqlApi @Inject constructor(
         .description(feature.description)
         .build()
 
+      val resolvedFilters = resolveFilters(feature.filter, app.portfolio.id)
+      if (resolvedFilters.isNotEmpty()) {
+        appFeature.filters = resolvedFilters
+      }
+
       saveApplicationFeature(appFeature)
 
       bumpVersionOfAllEnvironmentsWithFeatureChanged(applicationId)
@@ -343,6 +349,10 @@ class ApplicationSqlApi @Inject constructor(
       if (feature.description != null) {
         appFeature.description = feature.description
       }
+      // update filter associations — replace entirely with whatever is specified (empty list clears them)
+      if (feature.filter != null) {
+        appFeature.filters = resolveFilters(feature.filter, app.portfolio.id)
+      }
       updateApplicationFeature(appFeature)
       if (appFeature.whenArchived == null && changed) {
         cacheSource.publishFeatureChange(appFeature, PublishAction.UPDATE)
@@ -364,6 +374,11 @@ class ApplicationSqlApi @Inject constructor(
   @Transactional
   private fun saveApplicationFeature(f: DbApplicationFeature) {
     f.save()
+  }
+
+  private fun resolveFilters(filterIds: List<java.util.UUID>?, portfolioId: java.util.UUID): List<DbFeatureFilter> {
+    if (filterIds.isNullOrEmpty()) return emptyList()
+    return QDbFeatureFilter().id.`in`(filterIds).portfolio.id.eq(portfolioId).findList()
   }
 
   override fun getApplicationFeatures(appId: UUID, opts: Opts): List<Feature> {
@@ -480,6 +495,39 @@ class ApplicationSqlApi @Inject constructor(
     return ApplicationPermissions().applicationRoles(appPerms.toList()).environments(environments)
   }
 
+  // they are a creator if they have any of the creator roles
+  override fun personIsFeatureCreatorInPortfolio(
+    portfolioId: UUID,
+    personId: UUID
+  ): Boolean {
+    return personHoldsOneOfApplicationRolesInPortfolio(portfolioId, personId, creatorRoles)
+  }
+
+  // they are a reader if they have any application level role at all
+  override fun personIsFeatureReaderInPortfolio(portfolioId: UUID, personId: UUID): Boolean {
+    return personHoldsOneOfApplicationRolesInPortfolio(portfolioId, personId, emptySet())
+  }
+
+  private fun personHoldsOneOfApplicationRolesInPortfolio(
+    portfolioId: UUID,
+    personId: UUID, roles: Set<ApplicationRoleType>
+  ): Boolean {
+    val query = QDbAcl()
+      .select(QDbAcl.Alias.roles)
+      .application.portfolio.id.eq(portfolioId)
+      .group.whenArchived.isNull
+      .group.groupMembers.person.id.eq(personId)
+
+    if (roles.isNotEmpty()) {
+      return query
+        .findList().any { acl ->
+          convertUtils.splitApplicationRoles(acl.roles).any { o -> roles.contains(o) }
+        }
+    }
+
+    return query.findCount() > 0;
+  }
+
   override fun personIsFeatureCreator(appId: UUID, personId: UUID): Boolean {
     return personHoldsOneOfApplicationRoles(appId, personId, creatorRoles)
   }
@@ -563,7 +611,6 @@ class ApplicationSqlApi @Inject constructor(
       .group.whenArchived.isNull()
       .group.groupMembers.person.id.eq(personId)
   }
-
 
   override fun personIsFeatureReader(appId: UUID, personId: UUID): Boolean {
     val person = convertUtils.byPerson(personId)

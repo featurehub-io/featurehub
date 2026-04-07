@@ -11,6 +11,7 @@ import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.QDbAcl
 import io.featurehub.db.model.query.QDbEnvironment
+import io.featurehub.db.model.query.QDbFeatureFilter
 import io.featurehub.db.model.query.QDbServiceAccount
 import io.featurehub.db.model.query.QDbServiceAccountEnvironment
 import io.featurehub.mr.events.common.CacheSource
@@ -160,7 +161,18 @@ class ServiceAccountSqlApi @Inject constructor(
       updateAssociatedUser = true
     }
 
-    if (descUpdated || updateAssociatedUser || deletePerms.isNotEmpty() || updatePerms.isNotEmpty() || createPerms.isNotEmpty()) {
+    // Update filter associations from the featureFilters list (null means "don't change", empty list clears)
+    val filterUpdated = serviceAccount.featureFilters != null
+    if (filterUpdated) {
+      val filterIds = serviceAccount.featureFilters!!.mapNotNull { it.id }
+      sa.featureFilters = if (filterIds.isEmpty()) {
+        mutableListOf()
+      } else {
+        QDbFeatureFilter().id.`in`(filterIds).portfolio.id.eq(sa.portfolio.id).findList()
+      }
+    }
+
+    if (descUpdated || updateAssociatedUser || filterUpdated || deletePerms.isNotEmpty() || updatePerms.isNotEmpty() || createPerms.isNotEmpty()) {
       sa.whoChanged = whoUpdated
     }
 
@@ -334,6 +346,10 @@ class ServiceAccountSqlApi @Inject constructor(
           serviceAccount.name, serviceAccount.description ?: "",
           newServerEvalKey(), newClientEvalKey(), portfolio).let {
       it.serviceAccountEnvironments = perms
+      val filterIds = serviceAccount.filter
+      if (!filterIds.isNullOrEmpty()) {
+        it.featureFilters = QDbFeatureFilter().id.`in`(filterIds).portfolio.id.eq(portfolioId).findList()
+      }
       it
     }
 

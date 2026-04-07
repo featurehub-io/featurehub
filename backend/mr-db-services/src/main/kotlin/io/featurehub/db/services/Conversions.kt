@@ -82,6 +82,7 @@ interface Conversions {
   fun toServiceAccount(
     sa: DbServiceAccount?, opts: Opts?, environmentsUserHasAccessTo: List<DbAcl?>?
   ): ServiceAccount?
+  fun toFeatureFilter(db: io.featurehub.db.model.DbFeatureFilter): io.featurehub.mr.model.FeatureFilter
 
   fun splitServiceAccountPermissions(permissions: String?): List<RoleType>? {
     // same now, were different historically

@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: ManagementResourceApi
   description: This describes the API clients use for accessing features. This reflects the API from 1.6.1 onwards.
-  version: "1.2.5"
+  version: "1.2.6"
 #  CRUD for portfolios, environments, features, service account, people, and groups (edited)
 #  roles are fixed
 #  then people<->group association
@@ -2333,10 +2333,14 @@ paths:
         - bearerAuth: [ ]
       operationId: createFeatureFilter
       requestBody:
-        $ref: "#/components/schemas/CreateFeatureFilter"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFeatureFilter"
       responses:
         201:
-          description: "List of feature filters found"
+          description: "Created feature filter"
           content:
             application/json:
               schema:
@@ -2354,10 +2358,14 @@ paths:
         - bearerAuth: [ ]
       operationId: updateFeatureFilter
       requestBody:
-        $ref: "#/components/schemas/FeatureFilter"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeatureFilter"
       responses:
-        201:
-          description: "List of feature filters found"
+        200:
+          description: "Updated feature filter"
           content:
             application/json:
               schema:
@@ -2368,6 +2376,8 @@ paths:
           description: "no permission"
         404:
           description: "No such filter or portfolio"
+        409:
+          description: "Optimistic locking failure"
     delete:
       tags:
         - FeatureFilterService
@@ -2376,10 +2386,14 @@ paths:
       operationId: deleteFeatureFilter
       description: "Delete the filter, it must have the same ID and version as the existing one to be successfully deleted."
       requestBody:
-        $ref: "#/components/schemas/FeatureFilter"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeatureFilter"
       responses:
-        201:
-          description: "List of feature filters found"
+        200:
+          description: "Deleted feature filter"
           content:
             application/json:
               schema:
@@ -2390,6 +2404,8 @@ paths:
           description: "no permission"
         404:
           description: "No such filter or portfolio"
+        409:
+          description: "Optimistic locking failure"
     get:
       description: "Gets all of the feature filters listed in this portfolio with appropriate filtering"
       tags:

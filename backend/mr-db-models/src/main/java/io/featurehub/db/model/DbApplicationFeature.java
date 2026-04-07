@@ -9,12 +9,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -71,6 +75,13 @@ public class DbApplicationFeature extends DbVersionedBase {
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "fk_feature_id")
   private Set<DbFeatureValue> environmentFeatures;
+
+  @ManyToMany
+  @JoinTable(
+      name = "fh_app_feature_filter",
+      joinColumns = @JoinColumn(name = "fk_feature_id"),
+      inverseJoinColumns = @JoinColumn(name = "fk_filter_id"))
+  private List<DbFeatureFilter> filters = new ArrayList<>();
 
   @NotNull
   public DbApplication getParentApplication() {
@@ -166,6 +177,14 @@ public class DbApplicationFeature extends DbVersionedBase {
 
   public void setMetaData(String metaData) {
     this.metaData = metaData;
+  }
+
+  public List<DbFeatureFilter> getFilters() {
+    return filters;
+  }
+
+  public void setFilters(List<DbFeatureFilter> filters) {
+    this.filters = filters;
   }
 
   public static final class Builder {
