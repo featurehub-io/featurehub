@@ -2317,6 +2317,127 @@ paths:
           description: "forbidden"
         404:
           description: "not found"
+  /mr-api/portfolio/{id}/feature-filter:
+    parameters:
+      - name: id
+        description: "the portfolio this feature filter belongs to"
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - FeatureFilterService
+      security:
+        - bearerAuth: [ ]
+      operationId: createFeatureFilter
+      requestBody:
+        $ref: "#/components/schemas/CreateFeatureFilter"
+      responses:
+        201:
+          description: "List of feature filters found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureFilter"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "No such filter or portfolio"
+    put:
+      tags:
+        - FeatureFilterService
+      security:
+        - bearerAuth: [ ]
+      operationId: updateFeatureFilter
+      requestBody:
+        $ref: "#/components/schemas/FeatureFilter"
+      responses:
+        201:
+          description: "List of feature filters found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureFilter"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "No such filter or portfolio"
+    delete:
+      tags:
+        - FeatureFilterService
+      security:
+        - bearerAuth: [ ]
+      operationId: deleteFeatureFilter
+      description: "Delete the filter, it must have the same ID and version as the existing one to be successfully deleted."
+      requestBody:
+        $ref: "#/components/schemas/FeatureFilter"
+      responses:
+        201:
+          description: "List of feature filters found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureFilter"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "No such filter or portfolio"
+    get:
+      description: "Gets all of the feature filters listed in this portfolio with appropriate filtering"
+      tags:
+        - FeatureFilterService
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: filter
+          description: "include environments for each account"
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: max
+          description: "The maximum number of features to get for this page"
+          in: query
+          schema:
+            type: integer
+          required: false
+        - name: page
+          description: "The page number of the results. 0 indexed."
+          in: query
+          schema:
+            type: integer
+          required: false
+        - name: sortOrder
+          in: query
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+          required: false
+        - name: includeDetails
+          in: query
+          required: false
+          description: "Should we include all of the details of the search result or just the id and name"
+          schema:
+            type: boolean
+      operationId: findFeatureFilters
+      responses:
+        200:
+          description: "List of feature filters found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchFeatureFilterResult"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
   /mr-api/portfolio/{id}/service-account:
     parameters:
       - name: id
@@ -3056,6 +3177,78 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RoleType"
+    SearchFeatureFilterResult:
+      description: "The result of a search for feature filters"
+      required:
+        - max
+      properties:
+        max:
+          type: integer
+        filters:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchFeatureFilterItem"
+    CreateFeatureFilter:
+      description: "A filter used by an API key to determine what kind of features it should send to the client"
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: "Unique within this portfolio"
+        description:
+          nullable: true
+          type: string
+          maxLength: 300
+    FeatureFilter:
+      description: "A filter used by an API key to determine what kind of features it should send to the client"
+      required:
+        - id
+        - name
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: "Unique within this portfolio"
+          maxLength: 60
+        description:
+          nullable: true
+          type: string
+          maxLength: 300
+        version:
+          nullable: false
+          type: integer
+        whoCreated:
+          $ref: "#/components/schemas/OptionalAnemicPerson"
+    SearchFeatureFilterDetail:
+      description: "Details the feature key and which application it is that is using this feature filter."
+      required:
+        - id
+        - key
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        applicationId:
+          type: string
+        applicationName:
+          type: string
+    SearchFeatureFilterItem:
+      allOf:
+        - $ref: "#/components/schemas/FeatureFilter"
+        - type: object
+          properties:
+            features:
+              nullable: true
+              type: array
+              items:
+                $ref: "#/components/schemas/SearchFeatureFilterDetail"
+
     CreateFeature:
       description: "Only used when creating a new feature"
       required:
@@ -3090,6 +3283,13 @@ components:
           nullable: true
           type: string
           description: "Metadata that may need to be stored. Intended for ADK use. No data limit on FHOS. 10k on SaaS. (stored as CLOB)"
+        filter:
+          nullable: true
+          type: array
+          description: "The ID's of Filters associated with this feature"
+          items:
+            type: string
+            format: uuid
     Feature:
       description: "exists simply to hold the name of the feature as it exists across all environments"
       required:
@@ -3134,6 +3334,13 @@ components:
           nullable: true
           type: string
           description: "Metadata that may need to be stored. Intended for ADK use. No data limit on FHOS. 10k on SaaS. (stored as CLOB)"
+        filter:
+          nullable: true
+          type: array
+          description: "The ID's of Filters associated with this feature"
+          items:
+            type: string
+            format: uuid
     FeatureValue:
       required:
         - key
@@ -3739,6 +3946,13 @@ components:
           nullable: true
           type: string
           maxLength: 400
+        filter:
+          nullable: true
+          type: array
+          description: "The ID's of Filters associated with this service account"
+          items:
+            type: string
+            format: uuid
         permissions:
           type: array
           default: []
@@ -3778,6 +3992,10 @@ components:
           type: string
           description: "this is a read only field, it denotes an api key where the eval is done server side"
           maxLength: 400
+        featureFilters:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureFilter"
         permissions:
           type: array
           default: []
@@ -4058,3 +4276,7 @@ components:
           nullable: true
         type:
           $ref: "#/components/schemas/PersonType"
+    OptionalAnemicPerson:
+      nullable: true
+      allOf:
+        - $ref: "#/components/schemas/AnemicPerson"
