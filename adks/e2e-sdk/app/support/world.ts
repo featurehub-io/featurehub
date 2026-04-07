@@ -9,7 +9,7 @@ import {
   Environment2ServiceApi,
   EnvironmentFeatureServiceApi,
   EnvironmentServiceApi,
-  Feature,
+  Feature, FeatureFilterServiceApi,
   FeatureGroup,
   FeatureGroupServiceApi,
   FeatureHistoryList,
@@ -67,6 +67,7 @@ export class ApiUser {
   public readonly anonAuthorizationAPi: AuthServiceApi;
   public readonly featureHistoryApi: FeatureHistoryServiceApi;
   public readonly applicationStrategyApi: ApplicationRolloutStrategyServiceApi;
+  public readonly featureFilterApi: FeatureFilterServiceApi;
 
   public serviceAccounts: Array<ServiceAccount> = [];
 
@@ -93,6 +94,7 @@ export class ApiUser {
     this.webhookApi = new WebhookServiceApi(this.adminApiConfig);
     this.applicationStrategyApi = new ApplicationRolloutStrategyServiceApi(this.adminApiConfig);
     this.featureHistoryApi = new FeatureHistoryServiceApi(this.adminApiConfig);
+    this.featureFilterApi = new FeatureFilterServiceApi(this.adminApiConfig);
   }
 }
 

@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {Given, Then, When} from '@cucumber/cucumber';
 import {
-  Application,
+  Application, CreateApplication,
   CreatePortfolio,
   Environment,
   PortfolioServiceApi,
@@ -33,16 +33,24 @@ Given(/^I create a new portfolio$/, async function () {
 });
 
 Given(/^I create an application$/, async function () {
+  await createApplication(this.portfolio.name, this as SdkWorld);
+});
+
+async function createApplication(name: string, world: SdkWorld) {
   // now create the app & environment
-  const aCreate = await this.applicationApi.createApplication(this.portfolio.id, new Application({
-    name: this.portfolio.name,
-    description: this.portfolio.name
+  const aCreate = await world.applicationApi.createApplication(world.portfolio.id, new CreateApplication({
+    name: name,
+    description: world.portfolio.name
   }), true, false);
   expect(aCreate.status).to.eq(200);
   // 1 environment, production
   expect(aCreate.data.environments.length).to.eq(1);
-  this.application = aCreate.data;
-  this.environment = aCreate.data.environments[0];
+  world.application = aCreate.data;
+  world.environment = aCreate.data.environments[0];
+}
+
+Given("I create an application {string}", async function(appName: string) {
+  await createApplication(appName, this as SdkWorld);
 });
 
 Given(/^I update the environment for feature webhooks$/, async function() {
