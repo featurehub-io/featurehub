@@ -10,6 +10,7 @@ import {
   ServiceAccountServiceApi
 } from "../apis/mr-service";
 import {logger} from "../support/logging";
+import {findFilters} from "./feature_filters";
 
 
 When('I assign the service account named permissions {string} to the current environment', async function(roleTypes: string) {
@@ -117,16 +118,22 @@ Given(/^I create a service account and (full|read) permissions for environment (
 When("I create a new service account called {string} with feature filters {string}", async function(saName: string, filters: string) {
   const world = this as SdkWorld;
 
-  // find the actual filters
-  const allFilters = await world.currentUser.featureFilterApi.findFeatureFilters(world.portfolio.id);
-  const requiredFilters = filters.split(",").map(f => f.trim()).filter(f => f.length > 0);
-  const foundFilters = allFilters.data.filters.filter(f => requiredFilters.includes(f.name));
-  expect(foundFilters.length).to.be.gt(0);
-  expect(foundFilters.length, `found filters ${JSON.stringify(foundFilters)} is not ${requiredFilters}`).to.eq(requiredFilters.length);
+  const requiredFilters = await findFilters(filters, world);
 
   const serviceAccountCreate = await world.currentUser.serviceAccountApi
     .createServiceAccountInPortfolio(world.portfolio.id, new CreateServiceAccount(
-      {name: saName, description: saName, filter: foundFilters.map(f => f.id)}));
+      {name: saName, description: saName, featureFilter: requiredFilters.map(f => f.id)}));
 
   const sa = await world.currentUser.serviceAccountApi.getServiceAccount(serviceAccountCreate.data.id);
+});
+
+When('I update the service account called {string} with feature filters {string}', async function(saName: string, filterNames: string) {
+  const world = this as SdkWorld;
+  const filters = (await findFilters(filterNames, world)).map(f => f.id);
+
+  const sa = (await world.currentUser.serviceAccountApi.searchServiceAccountsInPortfolio(world.portfolio.id, false, saName)).data;
+  expect(sa.length).to.eq(1);
+  const account = sa[0];
+  account.featureFilters = filters;
+  await world.currentUser.serviceAccountApi.updateServiceAccountOnPortfolio(world.portfolio.id, account, false);
 });

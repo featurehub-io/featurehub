@@ -22,7 +22,7 @@ Given("I create a new feature filter called {string}", async function(featureFil
 });
 
 
-async function filterFeatures(filterNames: string, world: SdkWorld, filter?: string): Promise<Array<SearchFeatureFilterItem>> {
+export async function filterFeatures(filterNames: string, world: SdkWorld, filter?: string): Promise<Array<SearchFeatureFilterItem>> {
   const result = await world.currentUser.featureFilterApi.findFeatureFilters(world.portfolio.id, filter);
   const expectedNames = filterNames.trim().split(",");
   expect(result.data.filters).to.not.be.undefined;
@@ -41,7 +41,7 @@ When("I ask for feature filters {string} I get {string}", async function(filter:
   await filterFeatures(filterNames, this as SdkWorld, filter.trim());
 });
 
-async function findFilters(filterNames: string, world: SdkWorld): Promise<Array<SearchFeatureFilterItem>> {
+export async function findFilters(filterNames: string, world: SdkWorld): Promise<Array<SearchFeatureFilterItem>> {
   const expectedNames = filterNames.trim().split(",").map(f => f.trim()).filter(f => f.length > 0);
   return (await world.currentUser.featureFilterApi.findFeatureFilters(world.portfolio.id))
     .data.filters.filter(f => expectedNames.includes(f.name));
@@ -52,11 +52,11 @@ When("I create a feature flag {string} with the filters {string}", async functio
 
   const filters = await findFilters(filterNames, world);
 
-  const fCreate = await this.featureApi.createFeaturesForApplication(this.application.id, new CreateFeature({
+  const fCreate = await world.featureApi.createFeaturesForApplication(world.application.id, new CreateFeature({
     name: flagName,
     key: flagName,
     valueType: FeatureValueType.Boolean,
-    filter: filters.map(f => f.id)
+    featureFilter: filters.map(f => f.id)
   }));
 
   const feat = fCreate.data.find((f: Feature) => f.key == flagName);
@@ -64,7 +64,19 @@ When("I create a feature flag {string} with the filters {string}", async functio
   this.feature = feat;
 });
 
-async function findSingleFilter(filter: string, world: SdkWorld) {
+When("I update the feature flag {string} with the filters {string}", async function(featureKey: string, filterNames: string) {
+  const world = this as SdkWorld;
+
+  const filters = await findFilters(filterNames, world);
+  const feature = (await world.featureApi.getFeatureByKey(world.application.id, featureKey)).data;
+  feature.featureFilter = filters.map(f => f.id);
+  const result = await world.featureApi.updateFeatureForApplication(world.application.id, featureKey, feature, false, false);
+  expect(result.status).to.eq(200);
+  const updatedFeature = (await world.featureApi.getFeatureByKey(world.application.id, featureKey)).data;
+  expect(updatedFeature.featureFilter).to.have.members(filters.map(f => f.id));
+});
+
+export async function findSingleFilter(filter: string, world: SdkWorld) {
   const filters = (await world.currentUser.featureFilterApi.findFeatureFilters(world.portfolio.id, filter.trim(), 100, 0, SortOrder.Desc, true))
     .data.filters;
   expect(filters.length).to.eq(1);
@@ -73,7 +85,6 @@ async function findSingleFilter(filter: string, world: SdkWorld) {
 
 Then("the feature filters {string} have features attached {string}", async function(filter: string, flagKeys: string) {
   const world = this as SdkWorld;
-
 
   const flags = flagKeys.split(",").map(k => k.toString().trim());
   const filt = await findSingleFilter(filter, world);
@@ -98,6 +109,8 @@ Then('the feature flag {string} contains the filters {string} when I get it by k
 
   const feature = (await world.featureApi.getFeatureByKey(world.application.id, featureKey, false)).data;
 
-  const matchingFilters = feature.filter.filter(id => filters.includes(id));
+  const matchingFilters = feature.featureFilter.filter(id => filters.includes(id));
   expect(matchingFilters.length, `Feature ${JSON.stringify(feature)} does not contain filters ${filters}`).to.eq(filters.length);
 });
+
+

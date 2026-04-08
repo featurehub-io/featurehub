@@ -3097,7 +3097,7 @@ components:
           nullable: true
           type: string
           description: "Metadata that may need to be stored. Intended for ADK use. No data limit on FHOS. 10k on SaaS. (stored as CLOB)"
-        filter:
+        featureFilter:
           nullable: true
           type: array
           description: "The ID's of Filters associated with this feature"
@@ -3148,7 +3148,7 @@ components:
           nullable: true
           type: string
           description: "Metadata that may need to be stored. Intended for ADK use. No data limit on FHOS. 10k on SaaS. (stored as CLOB)"
-        filter:
+        featureFilter:
           nullable: true
           type: array
           description: "The ID's of Filters associated with this feature"
@@ -3760,7 +3760,7 @@ components:
           nullable: true
           type: string
           maxLength: 400
-        filter:
+        featureFilter:
           nullable: true
           type: array
           description: "The ID's of Filters associated with this service account"
@@ -3807,9 +3807,11 @@ components:
           description: "this is a read only field, it denotes an api key where the eval is done server side"
           maxLength: 400
         featureFilters:
+          nullable: true
           type: array
           items:
-            $ref: "#/components/schemas/FeatureFilter"
+            type: string
+            format: uuid
         permissions:
           type: array
           default: []

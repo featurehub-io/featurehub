@@ -54,6 +54,12 @@ Given("I create an application {string}", async function(appName: string) {
   await createApplication(appName, this as SdkWorld);
 });
 
+Given("I restore the previous application", function() {
+  const world = this as SdkWorld;
+  expect(world.previousApplication).to.not.be.undefined;
+  world.application = world.previousApplication;
+});
+
 Given(/^I update the environment for feature webhooks$/, async function() {
   const world = this as SdkWorld;
 

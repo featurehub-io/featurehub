@@ -17,6 +17,24 @@ interface FeatureValues {
   fun getEtag(): String
 }
 
+class FilteredEnvironmentFeatures(private val envFeatures: EnvironmentFeatures, private val filters: List<UUID>): FeatureValues {
+  val filteredFeatures = envFeatures.getFeatures().filter { feature ->
+    feature.feature.filters!!.isEmpty() || feature.feature.filters!!.intersect(filters).isNotEmpty()
+  }
+  val calculatedEtag: String = EnvironmentFeatures.etagCalculator(filteredFeatures)
+
+  override fun getFeatures(): Collection<CacheEnvironmentFeature> {
+    return filteredFeatures
+  }
+
+  override val environment: PublishEnvironment
+    get() = envFeatures.environment
+
+  override fun getEtag(): String {
+    return calculatedEtag
+  }
+}
+
 class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
   private val log: Logger = LoggerFactory.getLogger(EnvironmentFeatures::class.java)
 
@@ -30,30 +48,11 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
     features = ConcurrentHashMap(env.featureValues.associate { f -> f.feature.id to f }.toMutableMap())
     featureValues.addAll(env.featureValues)
 
-    etag = etagCalculator()
+    etag = etagCalculator(featureValues)
   }
 
   fun calculateEtag() {
-    etag = etagCalculator()
-  }
-
-
-  fun etagCalculator(): String {
-    // we convert to list to protect against changes while we are evaluating it
-    val calcTag = featureValues.toList()
-      .map { fvci ->
-        fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version?.toString() ?: "0000")
-      }
-      .joinToString("-")
-
-    val messageDigest = MessageDigest.getInstance("MD5")!!
-    val hashBytes = messageDigest.digest(calcTag.toByteArray(StandardCharsets.UTF_8))
-
-    val newEtag = HexFormat.of().formatHex(hashBytes)
-
-    log.trace("etag is now {} (from '{}')", newEtag, calcTag)
-
-    return newEtag
+    etag = etagCalculator(featureValues)
   }
 
   // the UUID is the FEATURE's UUID NOT the feature value's one
@@ -135,6 +134,28 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
     return String.format(
       "etag: %s, features %s", etag.ifEmpty { "000" }, collect.joinToString(", ")
     )
+  }
+
+  companion object {
+    private val log: Logger = LoggerFactory.getLogger(EnvironmentFeatures::class.java)
+
+    fun etagCalculator(featureValues: Collection<CacheEnvironmentFeature>): String {
+      // we convert to list to protect against changes while we are evaluating it
+      val calcTag = featureValues.toList()
+        .map { fvci ->
+          fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version?.toString() ?: "0000")
+        }
+        .joinToString("-")
+
+      val messageDigest = MessageDigest.getInstance("MD5")!!
+      val hashBytes = messageDigest.digest(calcTag.toByteArray(StandardCharsets.UTF_8))
+
+      val newEtag = HexFormat.of().formatHex(hashBytes)
+
+      log.trace("etag is now {} (from '{}')", newEtag, calcTag)
+
+      return newEtag
+    }
   }
 }
 

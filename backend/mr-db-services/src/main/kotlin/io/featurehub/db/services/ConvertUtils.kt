@@ -515,7 +515,7 @@ open class ConvertUtils @Inject constructor(
       .valueType(af.valueType)
       .description(af.description)
       .id(af.id)
-      .filter(af.filters?.map { it.id }?.ifEmpty { null })
+      .featureFilter(af.filters?.map { it.id }?.ifEmpty { null })
     if (opts!!.contains(FillOpts.MetaData)) {
       feat.metaData(af.metaData)
     }
@@ -798,7 +798,7 @@ open class ConvertUtils @Inject constructor(
     if (opts != null) {
       if (opts.contains(FillOpts.ServiceAccountFilters)) {
         sa.featureFilters.takeIf { it.isNotEmpty() }?.let { filters ->
-          account.featureFilters(filters.map { toFeatureFilter(it) })
+          account.featureFilters(filters.map { it.id })
         }
       }
       if (!opts.contains(FillOpts.ServiceAccountPermissionFilter)) {

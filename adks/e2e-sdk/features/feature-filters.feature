@@ -20,6 +20,12 @@ Feature: I am able to use feature filters
     Given I create an application "kwong-kee-roast"
     When I create a feature flag "kwong" with the filters "server"
     Then the feature filters "server" have features attached "orm,kwong"
+    Given I restore the previous application
+    When I update the feature flag "ling" with the filters "client,server"
+    Then the feature filters "server" have features attached "orm,kwong,ling"
+    And I create a new feature filter called "egg-roll"
+    When I update the feature flag "ling" with the filters "egg-roll"
+    Then the feature filters "server" have features attached "orm,kwong"
 
   @filters_user @filters
   Scenario: A person with feature creation roles in the application can manipulate feature filters
@@ -48,5 +54,6 @@ Feature: I am able to use feature filters
     Given I create a new feature filter called "always wonder"
     When I create a new service account called "Keep Silent" with feature filters "always wonder"
     Then I can see the feature filter "always wonder" contains the service accounts "Keep Silent"
-
-
+    Given I create a new feature filter called "omuandco"
+    When I update the service account called "Keep Silent" with feature filters "always wonder,omuandco"
+    Then I can see the feature filter "omuandco" contains the service accounts "Keep Silent"

@@ -127,9 +127,9 @@ class ApplicationSqlApi @Inject constructor(
     }
     queryApplicationList = fetchApplicationOpts(opts, queryApplicationList)
     if (SortOrder.ASC == order) {
-      queryApplicationList = queryApplicationList.order().name.asc()
+      queryApplicationList = queryApplicationList.orderBy().name.asc()
     } else if (SortOrder.DESC == order) {
-      queryApplicationList = queryApplicationList.order().name.desc()
+      queryApplicationList = queryApplicationList.orderBy().name.desc()
     }
     if (!loadAll) {
       Conversions.nonNullPerson(current)
@@ -238,7 +238,7 @@ class ApplicationSqlApi @Inject constructor(
         .description(feature.description)
         .build()
 
-      val resolvedFilters = resolveFilters(feature.filter, app.portfolio.id)
+      val resolvedFilters = resolveFilters(feature.featureFilter, app.portfolio.id)
       if (resolvedFilters.isNotEmpty()) {
         appFeature.filters = resolvedFilters
       }
@@ -350,10 +350,22 @@ class ApplicationSqlApi @Inject constructor(
         appFeature.description = feature.description
       }
       // update filter associations — replace entirely with whatever is specified (empty list clears them)
-      if (feature.filter != null) {
-        appFeature.filters = resolveFilters(feature.filter, app.portfolio.id)
+      var forceUpdateFeature = false
+      feature.featureFilter?.let { updatedFilters ->
+        // remove any filters that should no longer be there
+        forceUpdateFeature = appFeature.filters.removeIf { f -> !updatedFilters.contains(f.id) }
+
+        val remainingIds = appFeature.filters.map { it.id }
+
+        updatedFilters.removeAll(remainingIds)
+
+        if (updatedFilters.isNotEmpty()) {
+          forceUpdateFeature = true
+          appFeature.filters.addAll(QDbFeatureFilter().id.`in`(updatedFilters).findList())
+        }
       }
-      updateApplicationFeature(appFeature)
+
+      updateApplicationFeature(appFeature, forceUpdateFeature)
       if (appFeature.whenArchived == null && changed) {
         cacheSource.publishFeatureChange(appFeature, PublishAction.UPDATE)
       }
@@ -363,8 +375,11 @@ class ApplicationSqlApi @Inject constructor(
   }
 
   @Transactional
-  private fun updateApplicationFeature(appFeature: DbApplicationFeature) {
+  private fun updateApplicationFeature(appFeature: DbApplicationFeature, forceUpdate: Boolean) {
     val changedVersion = appFeature.version
+    if (forceUpdate) {
+      appFeature.markAsDirty() // force a version update
+    }
     appFeature.update()
     if (appFeature.version != changedVersion) {
       cacheSource.publishFeatureChange(appFeature, PublishAction.UPDATE)

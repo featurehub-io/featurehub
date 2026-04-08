@@ -101,6 +101,7 @@ export class ApiUser {
 export class SdkWorld extends World {
   private _portfolio: Portfolio;
   private _application: Application;
+  public previousApplication: Application;
   public feature: Feature;
   public environment: Environment;
   public serviceAccountPermission: ServiceAccountPermission;
@@ -252,6 +253,7 @@ export class SdkWorld extends World {
   }
 
   public set application(a: Application) {
+    this.previousApplication = this._application;
     this._application = a;
   }
 

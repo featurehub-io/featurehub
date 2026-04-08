@@ -63,7 +63,7 @@ class ServiceAccountSqlApi @Inject constructor(
     }
 
     val whoUpdated = convertUtils.byPerson(personId) ?: return null
-    return update(sa, whoUpdated, serviceAccount, appId, opts)
+    return update(sa, whoUpdated, serviceAccount, appId, opts, portfolioId)
   }
 
   @Throws(OptimisticLockingException::class)
@@ -72,7 +72,8 @@ class ServiceAccountSqlApi @Inject constructor(
     updater: Person,
     serviceAccount: ServiceAccount,
     appId: UUID?,
-    opts: Opts
+    opts: Opts,
+    portfolioId: UUID
   ): ServiceAccount? {
     val sa = QDbServiceAccount().id.eq(serviceAccountId).whenArchived.isNull.findOne() ?: return null
 
@@ -80,10 +81,17 @@ class ServiceAccountSqlApi @Inject constructor(
       throw OptimisticLockingException()
     }
     val whoUpdated = convertUtils.byPerson(updater) ?: return null
-    return update(sa, whoUpdated, serviceAccount, appId, opts)
+    return update(sa, whoUpdated, serviceAccount, appId, opts, portfolioId)
   }
 
-  private fun update(sa: DbServiceAccount, whoUpdated: DbPerson, serviceAccount: ServiceAccount, appId: UUID?, opts: Opts): ServiceAccount {
+  private fun update(
+    sa: DbServiceAccount,
+    whoUpdated: DbPerson,
+    serviceAccount: ServiceAccount,
+    appId: UUID?,
+    opts: Opts,
+    portfolioId: UUID
+  ): ServiceAccount {
     val updatedEnvironments: MutableMap<UUID, ServiceAccountPermission> = HashMap()
     val newEnvironments: MutableList<UUID> = ArrayList()
     serviceAccount
@@ -169,15 +177,22 @@ class ServiceAccountSqlApi @Inject constructor(
     }
 
     // Update filter associations from the featureFilters list (null means "don't change", empty list clears)
-    val filterUpdated = serviceAccount.featureFilters != null
-    if (filterUpdated) {
-      val filterIds = serviceAccount.featureFilters!!.mapNotNull { it.id }
-      sa.featureFilters = if (filterIds.isEmpty()) {
-        mutableListOf()
-      } else {
-        QDbFeatureFilter().id.`in`(filterIds).portfolio.id.eq(sa.portfolio.id).findList()
-      }
-    }
+    var filterUpdated = false
+    val ffs = serviceAccount.featureFilters
+
+    serviceAccount.featureFilters?.let { updatedFilters ->
+      // remove the records that we won't use any longer
+      filterUpdated = sa.featureFilters.removeIf { !updatedFilters.contains(it.id) }
+
+      val remainingIds = sa.featureFilters.map { it.id }
+
+      updatedFilters.removeAll(remainingIds)
+
+      if (updatedFilters.isNotEmpty()) {
+        filterUpdated = true
+        val toAdd = QDbFeatureFilter().id.`in`(updatedFilters).portfolio.id.eq(portfolioId).findList()
+        sa.featureFilters.addAll(toAdd)
+    }}
 
     if (descUpdated || updateAssociatedUser || filterUpdated || deletePerms.isNotEmpty() || updatePerms.isNotEmpty() || createPerms.isNotEmpty()) {
       sa.whoChanged = whoUpdated
@@ -353,7 +368,7 @@ class ServiceAccountSqlApi @Inject constructor(
           serviceAccount.name, serviceAccount.description ?: "",
           newServerEvalKey(), newClientEvalKey(), portfolio).let {
       it.serviceAccountEnvironments = perms
-      val filterIds = serviceAccount.filter
+      val filterIds = serviceAccount.featureFilter
       if (!filterIds.isNullOrEmpty()) {
         it.featureFilters = QDbFeatureFilter().id.`in`(filterIds).portfolio.id.eq(portfolioId).findList()
       }

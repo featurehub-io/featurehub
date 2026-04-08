@@ -161,6 +161,10 @@ class ServiceAccountResource @Inject constructor(
       throw BadRequestException("Duplicate environment ids were passed.")
     }
 
+    if (serviceAccount.portfolioId == null) {
+      throw BadRequestException("No portfolio id found.")
+    }
+
     if (authManager.isPortfolioAdmin(serviceAccount.portfolioId, person) || authManager.isOrgAdmin(person)) {
       return try {
         serviceAccountApi.update(
@@ -168,7 +172,8 @@ class ServiceAccountResource @Inject constructor(
           person,
           serviceAccount,
           null,
-          Opts().add(FillOpts.Permissions, holder.includePermissions)
+          Opts().add(FillOpts.Permissions, holder.includePermissions),
+          serviceAccount.portfolioId!!
         ) ?: throw NotFoundException()
       } catch (e: OptimisticLockingException) {
         throw WebApplicationException(422)
