@@ -71,7 +71,10 @@ class ServiceAccountResource @Inject constructor(
       Conversions.checkUuid(id) ?: throw NotFoundException("Not a valid UUID")
     }
 
-    val info = serviceAccountApi[serviceAccountId, Opts().add(FillOpts.Permissions, holder.includePermissions)
+    val info = serviceAccountApi[serviceAccountId,
+      Opts()
+      .add(FillOpts.Permissions, holder.includePermissions)
+      .add(FillOpts.ServiceAccountFilters, holder.includeFilters)
       .add(FilterOptType.Application, holder.byApplicationId)]
       ?: throw NotFoundException()
     val person = authManager.from(securityContext)

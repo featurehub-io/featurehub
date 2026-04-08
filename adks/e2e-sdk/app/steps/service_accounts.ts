@@ -2,7 +2,13 @@ import {Given, When} from "@cucumber/cucumber";
 import {SdkWorld} from "../support/world";
 import {decodeAndValidateRoles} from "../support/utils";
 import {expect} from "chai";
-import {RoleType, ServiceAccount, ServiceAccountPermission, ServiceAccountServiceApi} from "../apis/mr-service";
+import {
+  CreateServiceAccount,
+  RoleType,
+  ServiceAccount,
+  ServiceAccountPermission,
+  ServiceAccountServiceApi
+} from "../apis/mr-service";
 import {logger} from "../support/logging";
 
 
@@ -106,4 +112,21 @@ Given(/^I create a service account and (full|read) permissions for environment (
   expect(env, `Unable to find environment ${environment} in application`).to.not.be.undefined;
 
   await serviceAccountPermission(env.id, roleTypes, world);
+});
+
+When("I create a new service account called {string} with feature filters {string}", async function(saName: string, filters: string) {
+  const world = this as SdkWorld;
+
+  // find the actual filters
+  const allFilters = await world.currentUser.featureFilterApi.findFeatureFilters(world.portfolio.id);
+  const requiredFilters = filters.split(",").map(f => f.trim()).filter(f => f.length > 0);
+  const foundFilters = allFilters.data.filters.filter(f => requiredFilters.includes(f.name));
+  expect(foundFilters.length).to.be.gt(0);
+  expect(foundFilters.length, `found filters ${JSON.stringify(foundFilters)} is not ${requiredFilters}`).to.eq(requiredFilters.length);
+
+  const serviceAccountCreate = await world.currentUser.serviceAccountApi
+    .createServiceAccountInPortfolio(world.portfolio.id, new CreateServiceAccount(
+      {name: saName, description: saName, filter: foundFilters.map(f => f.id)}));
+
+  const sa = await world.currentUser.serviceAccountApi.getServiceAccount(serviceAccountCreate.data.id);
 });

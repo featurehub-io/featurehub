@@ -32,6 +32,7 @@ Given(/^I create a new portfolio$/, async function () {
   this.portfolio = pCreate.data;
 });
 
+
 Given(/^I create an application$/, async function () {
   await createApplication(this.portfolio.name, this as SdkWorld);
 });

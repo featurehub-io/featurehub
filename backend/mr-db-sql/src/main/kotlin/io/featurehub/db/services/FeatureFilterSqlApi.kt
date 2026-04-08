@@ -8,14 +8,16 @@ import io.featurehub.db.model.DbFeatureFilter
 import io.featurehub.db.model.query.QDbApplicationFeature
 import io.featurehub.db.model.query.QDbFeatureFilter
 import io.featurehub.db.model.query.QDbPortfolio
+import io.featurehub.db.model.query.QDbServiceAccount
 import io.featurehub.mr.model.CreateFeatureFilter
 import io.featurehub.mr.model.FeatureFilter
 import io.featurehub.mr.model.OptionalAnemicPerson
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonType
-import io.featurehub.mr.model.SearchFeatureFilterDetail
+import io.featurehub.mr.model.SearchFeatureFilterFeature
 import io.featurehub.mr.model.SearchFeatureFilterItem
 import io.featurehub.mr.model.SearchFeatureFilterResult
+import io.featurehub.mr.model.SearchFeatureFilterServiceAccount
 import io.featurehub.mr.model.SortOrder
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -147,23 +149,42 @@ class FeatureFilterSqlApi @Inject constructor(
 
     // Build features-per-filter map via one query per filter using the inverse association
     val filterIds = dbFilters.map { it.id }
-    val featuresByFilter = mutableMapOf<UUID, MutableList<SearchFeatureFilterDetail>>()
+    val featuresByFilter = mutableMapOf<UUID, MutableList<SearchFeatureFilterFeature>>()
+    val saByFilter = mutableMapOf<UUID, MutableList<SearchFeatureFilterServiceAccount>>()
 
-    filterIds.forEach { filterId ->
-      QDbApplicationFeature()
-        .filters.id.eq(filterId)
-        .findList()
-        .forEach { af: DbApplicationFeature ->
-          featuresByFilter.getOrPut(filterId) { mutableListOf() }
+    // we don't need to filter by portfolio ID as we control the unique IDs of the portfolios.
+
+    // we should be able to pick up all the service accounts in a single query
+    QDbServiceAccount()
+      .select(QDbServiceAccount.Alias.id, QDbServiceAccount.Alias.name, QDbServiceAccount.Alias.featureFilters.id)
+      .featureFilters.id.`in`(filterIds)
+      .findList()
+      .forEach({ sa ->
+        sa.featureFilters.forEach { filter ->
+          saByFilter.getOrPut(filter.id) { mutableListOf() }.add(
+            SearchFeatureFilterServiceAccount()
+              .id(sa.id)
+              .name(sa.name)
+          )
+        }
+    })
+
+    QDbApplicationFeature()
+      .select(QDbApplicationFeature.Alias.id, QDbApplicationFeature.Alias.key, QDbApplicationFeature.Alias.parentApplication.id,
+        QDbApplicationFeature.Alias.parentApplication.name, QDbApplicationFeature.Alias.filters.id)
+      .filters.id.`in`(filterIds)
+      .findList().forEach { af ->
+        af.filters.forEach { filter ->
+          featuresByFilter.getOrPut(filter.id) { mutableListOf() }
             .add(
-              SearchFeatureFilterDetail()
+              SearchFeatureFilterFeature()
                 .id(af.id)
                 .key(af.key)
                 .applicationId(af.parentApplication.id.toString())
                 .applicationName(af.parentApplication.name)
             )
         }
-    }
+      }
 
     val items = dbFilters.map { db ->
       SearchFeatureFilterItem()
@@ -178,7 +199,8 @@ class FeatureFilterSqlApi @Inject constructor(
             .email(p.email)
             .type(PersonType.PERSON)
         })
-        .features(featuresByFilter[db.id] ?: emptyList())
+        .features(featuresByFilter[db.id])
+        .serviceAccounts(saByFilter[db.id])
     }
 
     return SearchFeatureFilterResult().max(total).filters(items)

@@ -125,6 +125,7 @@ export class SdkWorld extends World {
   public readonly axiosInstance: AxiosInstance;
   public readonly superuser: ApiUser;
   public user: ApiUser | undefined;
+  public currentUser: ApiUser;
 
   constructor(props: any) {
     super(props);
@@ -139,6 +140,7 @@ export class SdkWorld extends World {
 
     this.axiosInstance = globalAxios.create();
     this.superuser = new ApiUser(this.adminUrl, this.featureUrl, this.axiosInstance, apiKey);
+    this.currentUser = this.superuser;
 
     const edgeConfig = new EdgeConfig({ basePath: this.featureUrl, axiosInstance: this.adminApiConfig.axiosInstance});
     this._edgeApi = new EdgeService(edgeConfig);

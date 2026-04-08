@@ -391,15 +391,20 @@ class ApplicationSqlApi @Inject constructor(
       get() = app != null && appFeature != null
   }
 
-  private fun findAppFeature(appId: UUID, applicationFeatureKeyName: String): AppFeature? {
+  private fun findAppFeature(appId: UUID, applicationFeatureKeyName: String, opts: Opts): AppFeature? {
     val app = convertUtils.byApplication(appId)
     if (app != null) {
-      val appFeature = QDbApplicationFeature()
+      var qAppFeature = QDbApplicationFeature()
         .and().key
         .eq(applicationFeatureKeyName).parentApplication
         .eq(app)
         .endAnd()
-        .findOne()
+
+      if (opts.contains(FillOpts.ServiceAccountFilters)) {
+        qAppFeature = qAppFeature.filters.fetch()
+      }
+
+      val appFeature = qAppFeature.findOne()
       if (appFeature == null) {
         val id = Conversions.checkUuid(applicationFeatureKeyName)
         if (id != null) {
@@ -415,7 +420,7 @@ class ApplicationSqlApi @Inject constructor(
   }
 
   override fun deleteApplicationFeature(appId: UUID, key: String): List<Feature>? {
-    val appFeature = findAppFeature(appId, key) ?: return null
+    val appFeature = findAppFeature(appId, key, Opts.empty()) ?: return null
     if (!appFeature.isValid) {
       return null
     }
@@ -431,7 +436,7 @@ class ApplicationSqlApi @Inject constructor(
   }
 
   override fun getApplicationFeatureByKey(appId: UUID, key: String, opts: Opts): Feature? {
-    val af = findAppFeature(appId, key) ?: return null
+    val af = findAppFeature(appId, key, opts) ?: return null
     return if (af.isValid) convertUtils.toApplicationFeature(af.appFeature, opts)!! else null
   }
 

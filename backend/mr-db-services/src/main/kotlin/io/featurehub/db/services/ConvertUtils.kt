@@ -794,10 +794,13 @@ open class ConvertUtils @Inject constructor(
       .portfolioId(sa.portfolio.id)
       .name(sa.name)
       .description(sa.description)
-    sa.featureFilters?.takeIf { it.isNotEmpty() }?.let { filters ->
-      account.featureFilters(filters.map { toFeatureFilter(it) })
-    }
+
     if (opts != null) {
+      if (opts.contains(FillOpts.ServiceAccountFilters)) {
+        sa.featureFilters.takeIf { it.isNotEmpty() }?.let { filters ->
+          account.featureFilters(filters.map { toFeatureFilter(it) })
+        }
+      }
       if (!opts.contains(FillOpts.ServiceAccountPermissionFilter)) {
         account.apiKeyServerSide(sa.apiKeyServerEval)
         account.apiKeyClientSide(sa.apiKeyClientEval)

@@ -1,5 +1,5 @@
-import {When} from "@cucumber/cucumber";
-import {ApiUser, SdkWorld} from "../support/world";
+import {Given, When} from "@cucumber/cucumber";
+import {SdkWorld} from "../support/world";
 import {makeid} from "../support/random";
 import {
   CreatePersonDetails,
@@ -41,4 +41,20 @@ When("I create a new user", async function() {
 
   expect(loginResponse.status).to.eq(200);
   world.setUser(loginResponse.data.accessToken);
-})
+});
+
+When('I am the created user', function () {
+  const world = this as SdkWorld;
+  world.currentUser = world.user;
+});
+
+When('I am the superuser', function () {
+  const world = this as SdkWorld;
+  world.currentUser = world.superuser;
+});
+
+Given("I am a superuser", function() {
+  const world = this as SdkWorld;
+  world.currentUser = world.superuser;
+});
+

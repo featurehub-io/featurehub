@@ -38,11 +38,18 @@ class ServiceAccountSqlApi @Inject constructor(
 
   private fun opts(finder: QDbServiceAccount, opts: Opts?): QDbServiceAccount {
     var qFinder = finder
-    if (opts!!.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL)) {
-      qFinder = qFinder.serviceAccountEnvironments.fetch()
-    }
-    if (!opts.contains(FillOpts.Archived)) {
-      qFinder = qFinder.whenArchived.isNull
+    opts?.let { opt ->
+      if (opt.contains(FillOpts.Permissions) || opt.contains(FillOpts.SdkURL)) {
+        qFinder = qFinder.serviceAccountEnvironments.fetch()
+      }
+
+      if (opt.contains(FillOpts.ServiceAccountFilters)) {
+        qFinder = qFinder.featureFilters.fetch()
+      }
+
+      if (!opt.contains(FillOpts.Archived)) {
+        qFinder = qFinder.whenArchived.isNull
+      }
     }
     return qFinder
   }

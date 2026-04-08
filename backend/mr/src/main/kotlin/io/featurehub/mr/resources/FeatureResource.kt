@@ -78,11 +78,14 @@ class FeatureResource @Inject constructor(
     holder: FeatureServiceDelegate.GetFeatureByKeyHolder,
     securityContext: SecurityContext
   ): Feature {
+    applicationUtils.featureReadCheck(securityContext, id)
     // TODO: permission to read the features
     return applicationApi.getApplicationFeatureByKey(
       id,
       key,
-      Opts.empty().add(FillOpts.MetaData, holder.includeMetaData)
+      Opts.empty()
+        .add(FillOpts.MetaData, holder.includeMetaData)
+        .add(FillOpts.ServiceAccountFilters)
     )
       ?: throw NotFoundException()
   }
