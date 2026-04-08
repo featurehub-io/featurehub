@@ -303,7 +303,7 @@ class ServiceAccount2Spec extends Base2Spec {
           ]
         )
 
-      def secondUpdate = sapi.update(createdServiceAccount.id, superPerson, updated, app1.id, Opts.opts(FillOpts.Permissions))
+      def secondUpdate = sapi.update(createdServiceAccount.id, superPerson, updated, app1.id, Opts.opts(FillOpts.Permissions), portfolio1Id)
     and: "search for the result"
       def updatedResult = sapi.search(portfolio1Id, "sa-1", application1.id, superPerson, Opts.opts(FillOpts.Permissions)).find({it.id == createdServiceAccount.id})
 
@@ -340,7 +340,7 @@ class ServiceAccount2Spec extends Base2Spec {
 
   def "I cannot request or update an unknown service account"() {
     when:
-      def x = sapi.update(UUID.randomUUID(), superPerson, new ServiceAccount(), null, Opts.empty())
+      def x = sapi.update(UUID.randomUUID(), superPerson, new ServiceAccount(), null, Opts.empty(), portfolio1Id)
       def y = sapi.get(UUID.randomUUID(), Opts.empty())
     then:
       x == null

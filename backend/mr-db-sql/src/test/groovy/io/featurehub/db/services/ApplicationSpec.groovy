@@ -11,12 +11,14 @@ import io.featurehub.db.model.DbPortfolio
 import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
+import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Shared
 
 class ApplicationSpec extends BaseSpec {
   @Shared PersonSqlApi personSqlApi
   @Shared DbPortfolio portfolio1
   @Shared DbPortfolio portfolio2
+  @Shared DbPortfolio portfolio
   @Shared ApplicationSqlApi appApi
   @Shared EnvironmentSqlApi environmentSqlApi
   @Shared Person portfolioPerson
@@ -42,9 +44,9 @@ class ApplicationSpec extends BaseSpec {
 
     portfolio1 = Finder.findPortfolioById(p1.id);
     portfolio2 = Finder.findPortfolioById(p2.id);
+    portfolio = portfolio1
 
     p1AdminGroup = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("envtest-appX").admin(true), superPerson)
-
   }
 
   def "i should be able to create, update, and delete an application"() {
@@ -317,5 +319,72 @@ class ApplicationSpec extends BaseSpec {
      and: "Golodryga and Plaska are not"
        !appApi.findFeatureReaders(newApp.id).contains(golodrygaPortfolioMemberButNoApplicationAccess.id.id)
        !appApi.findFeatureReaders(newApp.id).contains(plaskaNoAccess.id.id)
+  }
+
+  // =========================================================================
+  // ApplicationSqlApi — personIsFeatureCreatorInPortfolio / personIsFeatureReaderInPortfolio
+  // =========================================================================
+
+  def "personIsFeatureCreatorInPortfolio returns true for a person with feature creator role"() {
+    given: "a regular user"
+      def person = personSqlApi.createPerson(
+        RandomStringUtils.randomAlphabetic(8) + "@test.com", "Test User",
+        "pass", superPerson.id.id, Opts.empty())
+      def app1 = appApi.createApplication(portfolio1.id, new CreateApplication().description("x").name(RandomStringUtils.randomAlphabetic(10)), superPerson)
+    and: "a group with feature creator role in app1"
+      def group = groupSqlApi.createGroup(portfolio.id,
+        new CreateGroup().name("creators-" + RandomStringUtils.randomAlphabetic(6)).admin(false),
+        superPerson)
+      groupSqlApi.addPersonToGroup(group.id, person.id.id, Opts.empty())
+      groupSqlApi.updateGroup(group.id,
+        group.applicationRoles([
+          new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])
+        ]), app1.id, false, true, false, Opts.opts(FillOpts.Acls))
+    when:
+      def result = appApi.personIsFeatureCreatorInPortfolio(portfolio.id, person.id.id)
+    then:
+      result == true
+  }
+
+  def "personIsFeatureCreatorInPortfolio returns false for a person with no roles"() {
+    given:
+      def person = personSqlApi.createPerson(
+        RandomStringUtils.randomAlphabetic(8) + "@noaccess.com", "No Access",
+        "pass", superPerson.id.id, Opts.empty())
+    when:
+      def result = appApi.personIsFeatureCreatorInPortfolio(portfolio.id, person.id.id)
+    then:
+      result == false
+  }
+
+  def "personIsFeatureReaderInPortfolio returns true for a person with any application role"() {
+    given: "a user with a read-level role"
+      def app1 = appApi.createApplication(portfolio1.id, new CreateApplication().description("x").name(RandomStringUtils.randomAlphabetic(10)), superPerson)
+      def person = personSqlApi.createPerson(
+        RandomStringUtils.randomAlphabetic(8) + "@reader.com", "Reader",
+        "pass", superPerson.id.id, Opts.empty())
+      def group = groupSqlApi.createGroup(portfolio.id,
+        new CreateGroup().name("readers-" + RandomStringUtils.randomAlphabetic(6)).admin(false),
+        superPerson)
+      groupSqlApi.addPersonToGroup(group.id, person.id.id, Opts.empty())
+      groupSqlApi.updateGroup(group.id,
+        group.applicationRoles([
+          new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])
+        ]), app1.id, false, true, false, Opts.opts(FillOpts.Acls))
+    when:
+      def result = appApi.personIsFeatureReaderInPortfolio(portfolio.id, person.id.id)
+    then:
+      result == true
+  }
+
+  def "personIsFeatureReaderInPortfolio returns false for a person with no roles"() {
+    given:
+      def person = personSqlApi.createPerson(
+        RandomStringUtils.randomAlphabetic(8) + "@none.com", "None",
+        "pass", superPerson.id.id, Opts.empty())
+    when:
+      def result = appApi.personIsFeatureReaderInPortfolio(portfolio.id, person.id.id)
+    then:
+      result == false
   }
 }
