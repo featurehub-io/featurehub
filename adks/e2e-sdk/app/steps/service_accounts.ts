@@ -46,7 +46,7 @@ export async function serviceAccountPermission(envId: string, roleTypes: string,
   await serviceAccountPermissionRoles(envId, roles, world);
 }
 
-export async function serviceAccountPermissionRoles(envId: string, roles: Array<RoleType>, world: SdkWorld) {
+export async function serviceAccountPermissionRoles(envId: string, roles: Array<RoleType>, world: SdkWorld, saName?: string) {
   const permissions: ServiceAccountPermission[] = [
     new ServiceAccountPermission({
       environmentId: envId,
@@ -56,7 +56,7 @@ export async function serviceAccountPermissionRoles(envId: string, roles: Array<
 
   const serviceAccountApi: ServiceAccountServiceApi = world.serviceAccountApi;
   const serviceAccountCreate = await serviceAccountApi.createServiceAccountInPortfolio(world.portfolio.id, new ServiceAccount({
-    name: world.portfolio.name, description: world.portfolio.name, permissions: permissions
+    name: saName || world.portfolio.name, description: saName || world.portfolio.name, permissions: permissions
   }), true);
   expect(serviceAccountCreate.status).to.eq(200);
   expect(serviceAccountCreate.data.permissions.length).to.eq(permissions.length);
@@ -130,10 +130,13 @@ When("I create a new service account called {string} with feature filters {strin
 When('I update the service account called {string} with feature filters {string}', async function(saName: string, filterNames: string) {
   const world = this as SdkWorld;
   const filters = (await findFilters(filterNames, world)).map(f => f.id);
+  expect(filters).to.not.be.empty;
 
   const sa = (await world.currentUser.serviceAccountApi.searchServiceAccountsInPortfolio(world.portfolio.id, false, saName)).data;
   expect(sa.length).to.eq(1);
   const account = sa[0];
+  account.permissions = undefined;
+  account.permsInvalid = true;
   account.featureFilters = filters;
   await world.currentUser.serviceAccountApi.updateServiceAccountOnPortfolio(world.portfolio.id, account, false);
 });

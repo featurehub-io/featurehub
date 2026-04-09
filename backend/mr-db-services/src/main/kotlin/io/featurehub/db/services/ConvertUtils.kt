@@ -794,6 +794,7 @@ open class ConvertUtils @Inject constructor(
       .portfolioId(sa.portfolio.id)
       .name(sa.name)
       .description(sa.description)
+      .permsInvalid(true)
 
     if (opts != null) {
       if (opts.contains(FillOpts.ServiceAccountFilters)) {
@@ -806,6 +807,8 @@ open class ConvertUtils @Inject constructor(
         account.apiKeyClientSide(sa.apiKeyClientEval)
       }
       if (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL)) {
+        account.permsInvalid(null)
+
         // envId, acl
         val envs = mutableMapOf<UUID, MutableSet<RoleType?>>()
 

@@ -3812,6 +3812,13 @@ components:
           items:
             type: string
             format: uuid
+        permsInvalid:
+          description: "If this is true, then the permissions does not hold the actual permissions of the service account
+              and should be ignored on update. It is set by the server and can be set on the client when calling update methods for service accounts.
+              This is because the permissions field is always an array, it is not nullable. NULL or FALSE means the permissions field is valid and is the default behaviour. TRUE
+              is new and is recognized by the server to not try and update permissions."
+          type: boolean
+          nullable: true
         permissions:
           type: array
           default: []

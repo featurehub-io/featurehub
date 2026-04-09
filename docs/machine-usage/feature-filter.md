@@ -1,5 +1,20 @@
 Create a plan for the FeatureFilter API which has been added to mr-api.yaml and dacha-component.yaml.
 
+The purpose of this change is to allow customers who want to put all their features related to a single "application"
+in one application, but where the features are targeted at specific client types (e.g. browser, mobiler, server),
+only those clients actually get those features. Feature clients can end up with a lot of unnecessary state leaked into
+them, particularly browsers having backend only features, which is time consuming and expensive on bandwith and
+processing, as well as potentially leaking sensitive information simply by named features. 
+
+This change is effected by allowing feature editors, portfolio admins or superusers be able to create named "feature filters" at the portfolio level. A feature (not a value) is able to be tagged with zero or more of these filters. A service
+account is able to be tagged with zero or more of these filters.
+
+If a service account requests features and has no filters, it will get all features. If it has filters it will get 
+all features with matching filters or where those features have no filters. 
+
+The UI needs to be modified so that it allows people to create filters, attach them to features and service accounts, and 
+filter features in the dashboard by feature filters (e.g. show me only the mobile features).
+
 The purpose of this change is to allow features (not feature values) which are created in applications to have associated filters (e.g. client,mobile) and have them match with filters in service accounts. This allows features making their way to clients via API keys to client SDKs have a limited subset but all be managed in a single application. Declaring them at the Portfolio level allows them to be standardised across all applications in a Portfolio and managed by Portfolio managers and Feature Managers.
 
 It should include a REST Resource following the existing patterns that implements all

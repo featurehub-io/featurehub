@@ -113,6 +113,14 @@ Given(/^I create a service account and (full|read) permissions based on the appl
   await serviceAccountPermission(world.application.environments[0].id, roleTypes, world);
 });
 
+Given("I create a service account called {string} with named permissions {string} with current environment", async function (saName: string, roles: string) {
+  const world = this as SdkWorld;
+  expect(world.application).to.not.be.undefined;
+  expect(world.application.environments.length).to.not.eq(0);
+
+  await serviceAccountPermissionRoles(world.application.environments[0].id, decodeAndValidateRoles(roles), world, saName);
+});
+
 
 Given("I create a service account with named permissions {string} with current environment", async function (roles: string) {
   const world = this as SdkWorld;

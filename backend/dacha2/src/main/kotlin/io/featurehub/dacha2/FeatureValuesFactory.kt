@@ -19,7 +19,7 @@ interface FeatureValues {
 
 class FilteredEnvironmentFeatures(private val envFeatures: EnvironmentFeatures, private val filters: List<UUID>): FeatureValues {
   val filteredFeatures = envFeatures.getFeatures().filter { feature ->
-    feature.feature.filters!!.isEmpty() || feature.feature.filters!!.intersect(filters).isNotEmpty()
+    feature.feature.filters?.firstOrNull { it in filters } != null
   }
   val calculatedEtag: String = EnvironmentFeatures.etagCalculator(filteredFeatures)
 
