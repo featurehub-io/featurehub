@@ -77,6 +77,9 @@ Feature: I am able to use feature filters
     When I update the service account called "always wonder" with feature filters "always wonder"
     And I bounce the feature server connection
     Then I can only see feature flags with keys "ling"
+    When I update the service account called "always wonder" with feature filters "always wonder,keep silent"
+    And I bounce the feature server connection
+    Then I can only see feature flags with keys "ling,orm"
     # no filters means you can see everything
     And I create a service account called "mae-koy" with named permissions "read" with current environment
     And I bounce the feature server connection

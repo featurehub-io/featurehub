@@ -10,7 +10,7 @@ This change is effected by allowing feature editors, portfolio admins or superus
 account is able to be tagged with zero or more of these filters.
 
 If a service account requests features and has no filters, it will get all features. If it has filters it will get 
-all features with matching filters or where those features have no filters. 
+all features with matching filters ONLY. 
 
 The UI needs to be modified so that it allows people to create filters, attach them to features and service accounts, and 
 filter features in the dashboard by feature filters (e.g. show me only the mobile features).
