@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
@@ -94,7 +95,7 @@ class _MenuContainer extends StatelessWidget {
                                         padding: const EdgeInsets.only(
                                             left: 16.0, top: 32.0, bottom: 8.0),
                                         child: Text(
-                                          'Application Settings',
+                                          AppLocalizations.of(context)!.applicationSettings,
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodySmall,
@@ -111,7 +112,7 @@ class _MenuContainer extends StatelessWidget {
                                                 top: 32.0,
                                                 bottom: 8.0),
                                             child: Text(
-                                              'Portfolio Settings',
+                                              AppLocalizations.of(context)!.portfolioSettings,
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .bodySmall,
@@ -133,7 +134,7 @@ class _MenuContainer extends StatelessWidget {
                                     padding: const EdgeInsets.only(
                                         left: 16.0, top: 32.0, bottom: 8.0),
                                     child: Text(
-                                      'Organization Settings',
+                                      AppLocalizations.of(context)!.organizationSettings,
                                       style:
                                           Theme.of(context).textTheme.bodySmall,
                                     ),
@@ -160,28 +161,29 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
     return StreamBuilder<String?>(
         stream: client.streamValley.currentPortfolioIdStream,
         builder: (context, snapshot) {
+          final l10n = AppLocalizations.of(context)!;
           List<Widget> menus = [
-            const FHMenuItem(
-                name: 'Portfolios',
+            FHMenuItem(
+                name: l10n.portfolios,
                 iconData: Icons.cases_sharp,
                 path: '/portfolios',
                 permissionType: PermissionType.portfolioadmin,
                 params: {}),
-            const FHMenuItem(
-                name: 'Users',
+            FHMenuItem(
+                name: l10n.users,
                 permissionType: PermissionType.portfolioadmin,
                 iconData: Icons.group_add,
                 path: '/users',
                 params: {}),
-            const FHMenuItem(
-                name: 'Admin Service Accounts',
+            FHMenuItem(
+                name: l10n.adminServiceAccounts,
                 permissionType: PermissionType.portfolioadmin,
                 iconData: Icons.api_outlined,
                 path: '/admin-service-accounts',
                 params: {}),
             if (client.identityProviders.systemConfigEnabled)
-              const FHMenuItem(
-                  name: 'System Config',
+              FHMenuItem(
+                  name: l10n.systemConfig,
                   permissionType: PermissionType.superadmin,
                   iconData: Icons.settings_applications_outlined,
                   path: '/system-config',
@@ -203,15 +205,16 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return const Column(children: <Widget>[
+            final l10n = AppLocalizations.of(context)!;
+            return Column(children: <Widget>[
               FHMenuItem(
-                  name: 'Groups',
+                  name: l10n.groups,
                   iconData: Icons.people_outline,
                   path: '/groups',
                   permissionType: PermissionType.portfolioadmin,
                   params: {}),
               FHMenuItem(
-                  name: 'Service Accounts',
+                  name: l10n.serviceAccounts,
                   iconData: Icons.build_outlined,
                   permissionType: PermissionType.portfolioadmin,
                   path: '/service-accounts',
@@ -232,25 +235,26 @@ class _ApplicationSettings extends StatelessWidget {
         stream: mrClient.streamValley.currentPortfolioIdStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            final l10n = AppLocalizations.of(context)!;
             return Column(children: <Widget>[
-              const FHMenuItem(
-                  name: 'Environments',
+              FHMenuItem(
+                  name: l10n.environments,
                   iconData: Icons.list,
                   path: '/app-settings',
                   permissionType: PermissionType.portfolioadmin,
                   params: {
                     'tab': ['environments']
                   }),
-              const FHMenuItem(
-                  name: 'Group permissions',
+              FHMenuItem(
+                  name: l10n.groupPermissions,
                   iconData: Icons.groups_2_outlined,
                   path: '/app-settings',
                   permissionType: PermissionType.portfolioadmin,
                   params: {
                     'tab': ['group-permissions']
                   }),
-              const FHMenuItem(
-                  name: 'Service account permissions',
+              FHMenuItem(
+                  name: l10n.serviceAccountPermissions,
                   iconData: Icons.checklist_outlined,
                   path: '/app-settings',
                   permissionType: PermissionType.portfolioadmin,
@@ -258,8 +262,8 @@ class _ApplicationSettings extends StatelessWidget {
                     'tab': ['service-accounts']
                   }),
               if (mrClient.identityProviders.capabilityWebhooks)
-                const FHMenuItem(
-                    name: 'Integrations',
+                FHMenuItem(
+                    name: l10n.integrations,
                     iconData: Icons.webhook_outlined,
                     path: '/app-settings',
                     permissionType: PermissionType.portfolioadmin,
@@ -281,35 +285,36 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
       children: [
         FHMenuItem(
-          name: 'Applications',
+          name: l10n.applications,
           iconData: Icons.apps_outlined,
           path: '/applications',
           params: {},
         ),
         FHMenuItem(
-          name: 'Features',
+          name: l10n.features,
           iconData: Icons.flag_outlined,
           path: routeNameFeatureDashboard,
           params: {},
         ),
         FHMenuItem(
-          name: 'Feature Groups',
+          name: l10n.featureGroups,
           iconData: Icons.auto_awesome_motion_outlined,
           path: 'feature-groups',
           params: {},
         ),
         FHMenuItem(
-          name: 'Application Strategies',
+          name: l10n.applicationStrategies,
           iconData: Icons.call_split_outlined,
           path: 'application-strategies',
           displayNewLabel: true,
           params: {},
         ),
         FHMenuItem(
-          name: 'API Keys',
+          name: l10n.apiKeys,
           iconData: Icons.key_outlined,
           path: '/api-keys',
           params: {},

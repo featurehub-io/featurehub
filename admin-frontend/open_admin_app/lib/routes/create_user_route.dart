@@ -15,6 +15,7 @@ import 'package:open_admin_app/widgets/user/common/admin_checkbox.dart';
 import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widget.dart';
 import 'package:open_admin_app/widgets/user/create/create_user_bloc.dart';
 import 'package:openapi_dart_common/openapi.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class CreateUserRoute extends StatelessWidget {
   final String title;
@@ -91,17 +92,18 @@ class TopWidgetDefaultState extends State<TopWidgetDefault> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Form(
         key: bloc.formKey,
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const FHHeader(title: 'Create new user'),
+              FHHeader(title: l10n.createNewUser),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                 child: Text(
-                  'To create a new user please first provide their email address',
+                  l10n.createUserInstructions,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -116,14 +118,14 @@ class TopWidgetDefaultState extends State<TopWidgetDefault> {
                           FocusScope.of(context).nextFocus(),
                       controller: _email,
                       decoration: fhFilledInputDecoration(
-                        labelText: 'Email',
+                        labelText: l10n.emailLabel,
                       ),
                       validator: (v) {
                         if (v?.isEmpty == true) {
-                          return 'Please enter email address';
+                          return l10n.emailRequired;
                         }
                         if (!validateEmail(v)) {
-                          return 'Please enter a valid email address';
+                          return l10n.invalidEmailAddress;
                         }
                         return null;
                       },
@@ -135,7 +137,7 @@ class TopWidgetDefaultState extends State<TopWidgetDefault> {
               Padding(
                 padding: const EdgeInsets.only(top: 30.0),
                 child: Text(
-                  'Add user to some portfolio groups or leave it blank to add them later',
+                  l10n.addUserToGroupsHint,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -151,6 +153,7 @@ class TopWidgetSuccess extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
     final hasLocal =
         bloc.client.identityProviders.hasLocal && bloc.registrationUrl != null;
 
@@ -160,7 +163,7 @@ class TopWidgetSuccess extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('User created! \n',
+              Text(l10n.userCreated,
                   style: Theme.of(context).textTheme.titleLarge),
               Text(bloc.email ?? '',
                   style: Theme.of(context).textTheme.bodyLarge),
@@ -172,7 +175,7 @@ class TopWidgetSuccess extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text('Registration URL',
+                  Text(l10n.registrationUrl,
                       style: Theme.of(context).textTheme.titleSmall),
                   Text(
                     bloc.client.registrationUrl(bloc.registrationUrl!.token),
@@ -187,18 +190,18 @@ class TopWidgetSuccess extends StatelessWidget {
                 FHCopyToClipboardFlatButton(
                   text:
                       bloc.client.registrationUrl(bloc.registrationUrl!.token),
-                  caption: ' Copy URL to clipboard',
+                  caption: l10n.copyUrlToClipboard,
                 ),
               ],
             ),
           if (hasLocal)
             Text(
-              'You will need to email this URL to the new user, so they can complete their registration and set their password.',
+              l10n.sendRegistrationUrlInstructions,
               style: Theme.of(context).textTheme.bodySmall,
             ),
           if (!hasLocal)
             Text(
-              'The user can now sign in and they will be able to access the system.',
+              l10n.userCanSignIn,
               style: Theme.of(context).textTheme.bodySmall,
             ),
           FHButtonBar(children: [
@@ -208,13 +211,13 @@ class TopWidgetSuccess extends StatelessWidget {
                   ManagementRepositoryClientBloc.router
                       .navigateTo(context, '/users');
                 },
-                title: 'Close',
+                title: l10n.close,
                 keepCase: true),
             FHFlatButton(
                 onPressed: () {
                   bloc.backToDefault();
                 },
-                title: 'Create another user',
+                title: l10n.createAnotherUser,
                 keepCase: true),
           ])
         ]);
@@ -247,6 +250,7 @@ class CreateUserFormButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
 
+    final l10n = AppLocalizations.of(context)!;
     return FHButtonBar(children: <Widget>[
       FHFlatButtonTransparent(
         onPressed: () {
@@ -255,7 +259,7 @@ class CreateUserFormButtons extends StatelessWidget {
           }
           ManagementRepositoryClientBloc.router.navigateTo(context, '/users');
         },
-        title: 'Cancel',
+        title: l10n.cancel,
         keepCase: true,
       ),
       Padding(
@@ -271,7 +275,7 @@ class CreateUserFormButtons extends StatelessWidget {
                     if (e is ApiException && e.code == 409) {
                       await bloc.client.dialogError(e, s,
                           messageTitle:
-                              "User with email '${bloc.email}' already exists",
+                              l10n.userEmailAlreadyExists(bloc.email!),
                           showDetails: false);
                     } else {
                       await bloc.client.dialogError(e, s);
@@ -279,7 +283,7 @@ class CreateUserFormButtons extends StatelessWidget {
                   }
                 }
               },
-              title: 'Create'))
+              title: l10n.create))
     ]);
   }
 }

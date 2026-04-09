@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
 import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/strategyeditor/matchers.dart';
@@ -76,24 +77,24 @@ class EditAttributeStrategyWidgetState
     _didChange();
   }
 
-  final Map<StrategyAttributeWellKnownNames, String> _nameFieldMap = {
-    StrategyAttributeWellKnownNames.country: 'Country',
-    StrategyAttributeWellKnownNames.device: 'Device',
-    StrategyAttributeWellKnownNames.platform: 'Platform',
-    StrategyAttributeWellKnownNames.version: 'Version',
-    StrategyAttributeWellKnownNames.userkey: 'User Key',
-  };
-
   Widget _nameField() {
+    final l10n = AppLocalizations.of(context)!;
     if (_wellKnown != null) {
-      return Text(_nameFieldMap[_wellKnown!]!,
+      final nameFieldMap = {
+        StrategyAttributeWellKnownNames.country: l10n.wellKnownCountry,
+        StrategyAttributeWellKnownNames.device: l10n.wellKnownDevice,
+        StrategyAttributeWellKnownNames.platform: l10n.wellKnownPlatform,
+        StrategyAttributeWellKnownNames.version: l10n.wellKnownVersion,
+        StrategyAttributeWellKnownNames.userkey: l10n.wellKnownUserKey,
+      };
+      return Text(nameFieldMap[_wellKnown!]!,
           style: Theme.of(context).textTheme.titleSmall!.copyWith());
     } else {
       return TextFormField(
           controller: _fieldName,
           decoration: InputDecoration(
-              labelText: 'Custom key',
-              helperText: 'e.g. "warehouse-id"',
+              labelText: l10n.customKey,
+              helperText: l10n.customKeyExample,
               labelStyle: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   fontSize: 12.0,
                   color: Theme.of(context).buttonTheme.colorScheme?.primary)),
@@ -104,7 +105,7 @@ class EditAttributeStrategyWidgetState
           onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
           validator: ((v) {
             if (v == null || v.isEmpty) {
-              return 'Rule name required';
+              return l10n.ruleNameRequired;
             }
             return null;
           }));
@@ -129,7 +130,7 @@ class EditAttributeStrategyWidgetState
                       type: MaterialType.transparency,
                       shape: const CircleBorder(),
                       child: IconButton(
-                          tooltip: 'Delete rule',
+                          tooltip: AppLocalizations.of(context)!.deleteRule,
                           icon: const Icon(
                             Icons.delete_forever_sharp,
                             color: Colors.red,
@@ -181,7 +182,7 @@ class EditAttributeStrategyWidgetState
                                     dropDownStringItem, _wellKnown),
                                 style: Theme.of(context).textTheme.bodyMedium));
                       }).toList(),
-                      hint: Text('Select condition',
+                      hint: Text(AppLocalizations.of(context)!.selectCondition,
                           style: Theme.of(context).textTheme.titleSmall),
                       onChanged: (RolloutStrategyAttributeConditional? value) {
                         var readOnly = false; //TODO parametrise this if needed
@@ -213,7 +214,7 @@ class EditAttributeStrategyWidgetState
                     (e as StrategyAttributeCountryName).toJson(),
                 jsonToEnumMapper: (e) =>
                     StrategyAttributeCountryNameExtension.fromJson(e),
-                hint: 'Select Country'))
+                hint: AppLocalizations.of(context)!.selectCountry))
       else if (_wellKnown == StrategyAttributeWellKnownNames.device)
         Expanded(
             flex: 4,
@@ -221,7 +222,7 @@ class EditAttributeStrategyWidgetState
               values: widget.attribute.values,
               possibleValues: StrategyAttributeDeviceName.values,
               enumToDisplayNameMapper: _deviceNameMapper,
-              hint: 'Select Device',
+              hint: AppLocalizations.of(context)!.selectDevice,
               enumToJsonMapper: (e) =>
                   (e as StrategyAttributeDeviceName).toJson(),
               jsonToEnumMapper: (e) =>
@@ -234,7 +235,7 @@ class EditAttributeStrategyWidgetState
               values: widget.attribute.values,
               possibleValues: StrategyAttributePlatformName.values,
               enumToDisplayNameMapper: _platformNameMapper,
-              hint: 'Select Platform',
+              hint: AppLocalizations.of(context)!.selectPlatform,
               enumToJsonMapper: (e) =>
                   (e as StrategyAttributePlatformName).toJson(),
               jsonToEnumMapper: (e) =>
@@ -284,7 +285,7 @@ class EditAttributeStrategyWidgetState
                           dropDownStringItem),
                       style: Theme.of(context).textTheme.bodyMedium));
             }).toList(),
-            hint: Text('Select value type',
+            hint: Text(AppLocalizations.of(context)!.selectValueType,
                 style: Theme.of(context).textTheme.titleSmall),
             onChanged: (RolloutStrategyFieldType? value) {
               if (value != null) {
@@ -304,6 +305,7 @@ class EditAttributeStrategyWidgetState
   }
 
   Widget _fieldValueEditorByFieldType() {
+    final l10n = AppLocalizations.of(context)!;
     String labelText;
     String helperText;
     var inputFormatters = <TextInputFormatter>[];
@@ -311,34 +313,34 @@ class EditAttributeStrategyWidgetState
       case RolloutStrategyFieldType.STRING:
         switch (_wellKnown) {
           case StrategyAttributeWellKnownNames.userkey:
-            labelText = 'User key(s)';
-            helperText = 'e.g. bob@xyz.com';
+            labelText = l10n.userKeys;
+            helperText = l10n.userKeyExample;
             break;
           case StrategyAttributeWellKnownNames.version:
-            labelText = 'Version(s)';
-            helperText = 'e.g. 1.3.4, 7.8.1-SNAPSHOT';
+            labelText = l10n.versions;
+            helperText = l10n.versionExample;
             break;
           default:
-            labelText = 'Custom value(s)';
-            helperText = 'e.g. WarehouseA, WarehouseB';
+            labelText = l10n.customValues;
+            helperText = l10n.customValuesExample;
             break;
         }
         break;
       case RolloutStrategyFieldType.SEMANTIC_VERSION:
-        labelText = 'Version(s)';
-        helperText = 'e.g. 1.3.4, 7.8.1-SNAPSHOT';
+        labelText = l10n.versions;
+        helperText = l10n.versionExample;
         break;
       case RolloutStrategyFieldType.NUMBER:
-        labelText = 'Number(s)';
-        helperText = 'e.g. 6, 7.87543';
+        labelText = l10n.numbers;
+        helperText = l10n.numberExample;
         break;
       case RolloutStrategyFieldType.DATE:
-        labelText = 'Date(s) - YYYY-MM-DD';
-        helperText = 'e.g. 2017-04-16';
+        labelText = l10n.dates;
+        helperText = l10n.dateExample;
         break;
       case RolloutStrategyFieldType.DATETIME:
-        labelText = 'Date/Time(s) - UTC/ISO8601 format';
-        helperText = 'e.g. 2007-03-01T13:00:00Z';
+        labelText = l10n.dateTimes;
+        helperText = l10n.dateTimeExample;
         break;
       case RolloutStrategyFieldType.BOOLEAN:
         return Padding(
@@ -381,15 +383,15 @@ class EditAttributeStrategyWidgetState
                         widget.attribute.values = [value];
                       });
                     },
-                    hint: Text('Select value',
+                    hint: Text(l10n.selectValue,
                         style: Theme.of(context).textTheme.titleSmall),
                   ),
                 ),
               ),
             ));
       case RolloutStrategyFieldType.IP_ADDRESS:
-        labelText = 'IP Address(es) with or without CIDR';
-        helperText = 'e.g. 168.192.54.3 or 192.168.86.1/8';
+        labelText = l10n.ipAddresses;
+        helperText = l10n.ipAddressExample;
         break;
       default:
         return Container(); // nothing until they have chosen one
@@ -426,11 +428,11 @@ class EditAttributeStrategyWidgetState
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Tooltip(
-                  message: 'Add value',
+                  message: l10n.addValue,
                   child: TextButton.icon(
                     onPressed: () => _valueFieldChanged(_value.text),
                     icon: const Icon(Icons.add_outlined, size: 16.0),
-                    label: const Text("Add"),
+                    label: Text(l10n.add),
                   ),
                 ),
               )

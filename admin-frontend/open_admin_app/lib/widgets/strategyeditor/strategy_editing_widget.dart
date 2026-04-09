@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
@@ -60,6 +61,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final focusNode = FocusScope.of(context);
     final ScrollController controller = ScrollController();
 
@@ -80,16 +82,16 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                     padding: const EdgeInsets.all(8.0),
                     child: TextFormField(
                         controller: _strategyName,
-                        decoration: const InputDecoration(
-                            labelText: 'Split strategy name',
-                            helperText: 'E.g. 20% rollout'),
+                        decoration: InputDecoration(
+                            labelText: l10n.splitStrategyName,
+                            helperText: l10n.splitStrategyNameExample),
                         readOnly: !widget.editable,
                         textInputAction: TextInputAction.next,
                         autofocus: true,
                         onFieldSubmitted: (_) => focusNode.nextFocus(),
                         validator: ((v) {
                           if (v == null || v.isEmpty) {
-                            return 'Strategy name required';
+                            return l10n.strategyNameRequired;
                           }
                           return null;
                         })),
@@ -111,10 +113,9 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                             Flexible(
                               child: TextFormField(
                                 controller: _strategyPercentage,
-                                decoration: const InputDecoration(
-                                    labelText: 'Percentage value',
-                                    helperText:
-                                        'You can enter a value with up to 4 decimal points, e.g. 0.0005 %'),
+                                decoration: InputDecoration(
+                                    labelText: l10n.percentageValue,
+                                    helperText: l10n.percentageValueHelperText),
                                 readOnly: !widget.editable,
                                 autofocus: true,
                                 onFieldSubmitted: (_) {
@@ -129,7 +130,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                                 ],
                                 validator: ((v) {
                                   if (v == null || v.isEmpty) {
-                                    return 'Percentage value required';
+                                    return l10n.percentageValueRequired;
                                   }
                                   return null;
                                 }),
@@ -165,7 +166,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                 const SizedBox(height: 8.0),
                 Row(
                   children: [
-                    Text('Add percentage rollout rule',
+                    Text(l10n.addPercentageRolloutRule,
                         style: Theme.of(context).textTheme.bodySmall),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -175,13 +176,13 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                               showPercentageField = true;
                             });
                           },
-                          title: '+ Percentage'),
+                          title: l10n.addPercentage),
                     ),
                   ],
                 ),
                 if (isTotalPercentageError)
                   Text(
-                      'Your percentage total across all rollout values cannot be over 100%. Please enter different value.',
+                      l10n.percentageTotalOver100Error,
                       style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                           color: Theme.of(context).colorScheme.error)),
                 _NaughtyDataEntryWidget(bloc: widget.bloc),
@@ -191,7 +192,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                   child: OverflowBar(
                     children: [
                       FHFlatButtonTransparent(
-                        title: 'Cancel',
+                        title: l10n.cancel,
                         keepCase: true,
                         onPressed: () {
                           widget.returnToRoute != null
@@ -203,8 +204,8 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                       if (widget.editable)
                         FHFlatButton(
                             title: widget.bloc.rolloutStrategy.saved
-                                ? 'Update'
-                                : 'Add',
+                                ? l10n.update
+                                : l10n.add,
                             onPressed: () => _validationAction()),
                     ],
                   ),
@@ -298,9 +299,10 @@ class _NaughtyDataEntryWidget extends StatelessWidget {
             return const SizedBox.shrink();
           }
 
+          final l10n = AppLocalizations.of(context)!;
           final globalErrors = snapshot.data!
               .where((vio) => vio.id == null)
-              .map((e) => Text(e.violation.toDescription()))
+              .map((e) => Text(e.violation.toDescription(l10n)))
               .toList();
 
           return Column(children: globalErrors);

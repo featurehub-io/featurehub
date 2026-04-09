@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widget_creator.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
@@ -63,6 +64,7 @@ class EditUserFormState extends State<EditUserFormWidget> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<EditUserBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Form(
       key: _formKey,
@@ -75,14 +77,14 @@ class EditUserFormState extends State<EditUserFormWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               FHHeader(
-                title: 'Edit user',
+                title: l10n.editUser,
                 children: <Widget>[
                   if (bloc.mrClient.identityProviders.hasLocal)
                     FHFlatButtonTransparent(
                       onPressed: () => bloc.mrClient.addOverlay(
                           (BuildContext context) =>
                               UserPasswordUpdateDialogWidget(bloc: bloc)),
-                      title: 'Reset password',
+                      title: l10n.resetPassword,
                       keepCase: true,
                     ),
                 ],
@@ -99,13 +101,12 @@ class EditUserFormState extends State<EditUserFormWidget> {
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   controller: _email,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Email',
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: l10n.emailLabel,
                   ),
-                  //initialValue: bloc.person != null ? bloc.person.email : '',
                   validator: (v) =>
-                      (v?.isEmpty == true) ? 'Edit email address' : null,
+                      (v?.isEmpty == true) ? l10n.editEmailAddress : null,
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 30),
@@ -113,19 +114,18 @@ class EditUserFormState extends State<EditUserFormWidget> {
                     autofocus: true,
                     onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                     controller: _name,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Name',
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: l10n.nameLabel,
                     ),
-                    //  initialValue: bloc.person !=null ? bloc.person.name : '',
                     validator: (v) =>
-                        (v?.isEmpty == true) ? 'Edit names' : null,
+                        (v?.isEmpty == true) ? l10n.editNames : null,
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 30.0),
                   child: Text(
-                    'Remove user from a group or add a new one',
+                    l10n.removeOrAddUserToGroup,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
@@ -143,7 +143,7 @@ class EditUserFormState extends State<EditUserFormWidget> {
                   ManagementRepositoryClientBloc.router
                       .navigateTo(context, '/users');
                 },
-                title: 'Cancel',
+                title: l10n.cancel,
                 keepCase: true),
             Padding(
                 padding: const EdgeInsets.only(left: 8.0),
@@ -155,7 +155,7 @@ class EditUserFormState extends State<EditUserFormWidget> {
                           await bloc.updatePersonDetails(
                               _email.text, _name.text);
                           bloc.mrClient.addSnackbar(Text(
-                              'User ${bloc.person!.name!} has been updated'));
+                              l10n.userUpdated(bloc.person!.name!)));
                           ManagementRepositoryClientBloc.router
                               .navigateTo(context, '/users');
                         } catch (e, s) {
@@ -163,7 +163,7 @@ class EditUserFormState extends State<EditUserFormWidget> {
                         }
                       }
                     },
-                    title: 'Save and close',
+                    title: l10n.saveAndClose,
                     keepCase: true))
           ]),
         ],
@@ -193,43 +193,44 @@ class _UserPasswordUpdateDialogWidgetState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Form(
       key: _formKey,
       child: FHAlertDialog(
-        title: const Text('Reset password'),
+        title: Text(l10n.resetPassword),
         content: SizedBox(
           width: 500,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text(
-                'After you reset the password below, make sure you email the new password to the user.',
+                l10n.resetPasswordInstructions,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               TextFormField(
                   controller: _password,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'New password',
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: l10n.newPasswordLabel,
                   ),
                   validator: ((v) {
                     if (v?.isEmpty == true) {
-                      return 'Please enter new password';
+                      return l10n.newPasswordRequired;
                     }
                     return null;
                   })),
               TextFormField(
                   controller: _passwordConfirm,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Confirm new password',
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: l10n.confirmNewPasswordLabel,
                   ),
                   validator: ((v) {
                     if (v?.isEmpty == true) {
-                      return 'Please confirm new password';
+                      return l10n.confirmNewPasswordRequired;
                     }
                     if (v != _password.text) {
-                      return "Passwords don't match";
+                      return l10n.passwordsDoNotMatch;
                     }
                     return null;
                   })),
@@ -239,13 +240,13 @@ class _UserPasswordUpdateDialogWidgetState
         actions: <Widget>[
           FHFlatButtonTransparent(
             keepCase: true,
-            title: 'Cancel',
+            title: l10n.cancel,
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-              title: 'Save',
+              title: l10n.save,
               onPressed: (() async {
                 if (_formKey.currentState!.validate()) {
                   try {

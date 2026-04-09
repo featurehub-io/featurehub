@@ -1,9 +1,13 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:syncfusion_localizations/syncfusion_localizations.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:logging/logging.dart';
 import 'package:open_admin_app/routes/fh_navigator.dart';
 import 'package:open_admin_app/theme/theme_data.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
+import 'package:open_admin_app/widgets/dynamic-locale/fh_dynamic_locale.dart';
 import 'package:open_admin_app/widgets/dynamic-theme/fh_dynamic_theme.dart';
 
 import 'api/client_api.dart';
@@ -53,18 +57,34 @@ class FeatureHubApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final navBloc = BlocProvider.of<NavigationProviderBloc>(context);
 
-    return DynamicTheme(
-        defaultBrightness: Brightness.light,
-        data: (brightness) =>
-            brightness == Brightness.light ? myTheme : darkTheme,
-        themedWidgetBuilder: (context, theme) {
-          return MaterialApp.router(
-              debugShowCheckedModeBanner: false,
-              title: 'FeatureHub',
-              theme: theme,
-              scrollBehavior: CustomScrollBehavior(),
-              routeInformationParser: navBloc.routeInfoParser,
-              routerDelegate: navBloc.routeDelegate);
+    return DynamicLocale(
+        defaultLocale: const Locale('en'),
+        localeWidgetBuilder: (context, locale) {
+          return DynamicTheme(
+              defaultBrightness: Brightness.light,
+              data: (brightness) =>
+                  brightness == Brightness.light ? myTheme : darkTheme,
+              themedWidgetBuilder: (context, theme) {
+                return MaterialApp.router(
+                    debugShowCheckedModeBanner: false,
+                    title: 'FeatureHub',
+                    theme: theme,
+                    locale: locale,
+                    scrollBehavior: CustomScrollBehavior(),
+                    localizationsDelegates: const [
+                      AppLocalizations.delegate,
+                      SfGlobalLocalizations.delegate,
+                      GlobalMaterialLocalizations.delegate,
+                      GlobalWidgetsLocalizations.delegate,
+                      GlobalCupertinoLocalizations.delegate,
+                    ],
+                    supportedLocales: const [
+                      Locale('en'),
+                      Locale('zh'),
+                    ],
+                    routeInformationParser: navBloc.routeInfoParser,
+                    routerDelegate: navBloc.routeDelegate);
+              });
         });
   }
 }

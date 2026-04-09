@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
@@ -63,12 +64,13 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
           !widget.bloc.mrClient.userHasFeatureCreationRoleInCurrentApplication;
     }
 
+    final l10n = AppLocalizations.of(context)!;
     return Form(
       key: _formKey,
       child: FHAlertDialog(
         title: Text(widget.feature == null
-            ? 'Create new feature'
-            : (isReadOnly ? 'View feature' : 'Edit feature')),
+            ? l10n.createNewFeature
+            : (isReadOnly ? l10n.viewFeature : l10n.editFeature)),
         content: SizedBox(
           width: 500,
           child: Column(
@@ -77,16 +79,16 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
             children: <Widget>[
               TextFormField(
                   controller: _featureName,
-                  decoration: const InputDecoration(labelText: 'Feature name'),
+                  decoration: InputDecoration(labelText: l10n.featureNameLabel),
                   readOnly: isReadOnly,
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
-                      return 'Please enter feature name';
+                      return l10n.featureNameRequired;
                     }
                     if (v.length < 4) {
-                      return 'Feature name needs to be at least 4 characters long';
+                      return l10n.featureNameTooShort;
                     }
                     return null;
                   })),
@@ -94,16 +96,16 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                   controller: _featureKey,
                   readOnly: isReadOnly,
                   decoration: InputDecoration(
-                      labelText: 'Feature key',
-                      hintText: 'To be used in the code with FeatureHub SDK',
+                      labelText: l10n.featureKeyLabel,
+                      hintText: l10n.featureKeyHint,
                       hintStyle: Theme.of(context).textTheme.bodySmall),
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
-                      return 'Please enter feature key';
+                      return l10n.featureKeyRequired;
                     }
                     if (!validateFeatureKey(v)) {
-                      return ('Cannnot contain whitespace');
+                      return l10n.featureKeyNoWhitespace;
                     }
                     return null;
                   })),
@@ -128,8 +130,8 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                 controller: _featureDesc,
                 onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                 decoration: InputDecoration(
-                    labelText: 'Description (optional)',
-                    hintText: 'Some information about feature',
+                    labelText: l10n.featureDescriptionLabel,
+                    hintText: l10n.featureDescriptionHint,
                     hintStyle: Theme.of(context).textTheme.bodySmall),
               ),
               TextFormField(
@@ -137,9 +139,8 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                 controller: _featureLink,
                 onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                 decoration: InputDecoration(
-                    labelText: 'Reference link (optional)',
-                    hintText:
-                        'Optional link to external tracking system, e.g. Jira',
+                    labelText: l10n.featureLinkLabel,
+                    hintText: l10n.featureLinkHint,
                     hintStyle: Theme.of(context).textTheme.bodySmall),
               ),
               if (!isUpdate)
@@ -161,10 +162,10 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                         return DropdownMenuItem<FeatureValueType>(
                             value: dropDownStringItem,
                             child: Text(
-                                _transformValuesToString(dropDownStringItem),
+                                _transformValuesToString(dropDownStringItem, l10n),
                                 style: Theme.of(context).textTheme.bodyMedium));
                       }).toList(),
-                      hint: Text('Select feature type',
+                      hint: Text(l10n.selectFeatureType,
                           style: Theme.of(context).textTheme.titleSmall),
                       onChanged: (Object? value) {
                         if (!isReadOnly) {
@@ -180,7 +181,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                 ),
               if (isError)
                 Text(
-                  'Select feature type',
+                  l10n.selectFeatureType,
                   style: Theme.of(context)
                       .textTheme
                       .bodyMedium!
@@ -191,7 +192,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
         ),
         actions: <Widget>[
           FHFlatButtonTransparent(
-            title: 'Cancel',
+            title: l10n.cancel,
             keepCase: true,
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
@@ -199,7 +200,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
           ),
           if (!isReadOnly)
             FHFlatButton(
-                title: isUpdate ? 'Update' : 'Create',
+                title: isUpdate ? l10n.update : l10n.create,
                 keepCase: true,
                 onPressed: (() async {
                   if (_formKey.currentState!.validate()) {
@@ -216,7 +217,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                         await widget.bloc
                             .updateApplicationFeatureValuesStream();
                         widget.bloc.mrClient.addSnackbar(
-                            Text('Feature ${_featureName.text} updated!'));
+                            Text(l10n.featureUpdated(_featureName.text)));
                       } else {
                         if (_dropDownFeatureTypeValue != null) {
                           await widget.bloc.createFeature(
@@ -229,7 +230,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                           widget.bloc.mrClient.removeOverlay();
                           widget.bloc.updateApplicationFeatureValuesStream();
                           widget.bloc.mrClient.addSnackbar(
-                              Text('Feature ${_featureName.text} created!'));
+                              Text(l10n.featureCreated(_featureName.text)));
                         } else {
                           setState(() {
                             isError = true;
@@ -239,8 +240,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                     } catch (e, s) {
                       if (e is ApiException && e.code == 409) {
                         widget.bloc.mrClient.customError(
-                            messageTitle:
-                                "Feature with key '${_featureKey.text}' already exists");
+                            messageTitle: l10n.featureKeyAlreadyExists(_featureKey.text));
                       } else {
                         await widget.bloc.mrClient.dialogError(e, s);
                       }
@@ -252,16 +252,16 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
     );
   }
 
-  String _transformValuesToString(FeatureValueType featureValueType) {
+  String _transformValuesToString(FeatureValueType featureValueType, AppLocalizations l10n) {
     switch (featureValueType) {
       case FeatureValueType.STRING:
-        return 'String';
+        return l10n.featureTypeString;
       case FeatureValueType.NUMBER:
-        return 'Number';
+        return l10n.featureTypeNumber;
       case FeatureValueType.BOOLEAN:
-        return 'Standard flag (boolean)';
+        return l10n.featureTypeBoolean;
       case FeatureValueType.JSON:
-        return 'Remote configuration (JSON)';
+        return l10n.featureTypeJson;
     }
   }
 }

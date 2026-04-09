@@ -16,6 +16,7 @@ import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/link_to_applications_page.dart';
 import 'package:open_admin_app/widgets/environments/env_list_widget.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class ManageAppRoute extends StatefulWidget {
   final bool createEnvironment;
@@ -38,12 +39,13 @@ class ManageAppRouteState extends State<ManageAppRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManageAppBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
     FHAnalytics.sendScreenView("app-editing");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const FHHeader(
-          title: 'Application settings',
+        FHHeader(
+          title: l10n.appSettingsTitle,
         ),
         const SizedBox(height: 16.0),
         StreamBuilder<List<Application>>(
@@ -62,7 +64,7 @@ class ManageAppRouteState extends State<ManageAppRoute> {
                     child: Row(
                       children: [
                         SelectableText(
-                            'There are no applications in this portfolio',
+                            l10n.noApplicationsInPortfolio,
                             style: Theme.of(context).textTheme.bodySmall),
                         const Padding(
                           padding: EdgeInsets.only(left: 8.0),
@@ -200,25 +202,25 @@ class ManageAppWidgetState extends State<ManageAppWidget>
                   : const TextStyle(
                       fontSize: 12.0, fontWeight: FontWeight.bold),
               tabs: [
-                const Tab(
-                  child: Text("Environments"),
+                Tab(
+                  child: Text(AppLocalizations.of(context)!.tabEnvironments),
                 ),
-                const Tab(
-                  child: Text("Group Permissions"),
+                Tab(
+                  child: Text(AppLocalizations.of(context)!.tabGroupPermissions),
                 ),
                 Tab(
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(50),
                     ),
-                    child: const Align(
+                    child: Align(
                       alignment: Alignment.center,
-                      child: Text("Service Account Permissions"),
+                      child: Text(AppLocalizations.of(context)!.tabServiceAccountPermissions),
                     ),
                   ),
                 ),
                 if (bloc.mrClient.identityProviders.integrationsEnabled)
-                  const Tab(child: Text("Integrations"))
+                  Tab(child: Text(AppLocalizations.of(context)!.tabIntegrations))
               ],
             ),
           ),

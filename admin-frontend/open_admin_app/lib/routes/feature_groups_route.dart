@@ -14,6 +14,7 @@ import 'package:open_admin_app/widgets/feature-groups/environment_drop_down.dart
 import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_group_card_widget.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_group_update_dialog_widget.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class FeatureGroupsRoute extends StatefulWidget {
   final bool createApp;
@@ -37,6 +38,7 @@ class FeatureGroupsRouteState extends State<FeatureGroupsRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<FeatureGroupsBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
     FHAnalytics.sendScreenView("feature-groups");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,15 +46,15 @@ class FeatureGroupsRouteState extends State<FeatureGroupsRoute> {
         const SizedBox(height: 8.0),
         Wrap(
           children: [
-            const FHHeader(
-              title: 'Feature Groups',
+            FHHeader(
+              title: l10n.featureGroups,
               children: [
                 FHExternalLinkWidget(
-                  tooltipMessage: "View documentation",
+                  tooltipMessage: l10n.viewDocumentation,
                   link:
                       "https://docs.featurehub.io/featurehub/latest/feature-groups.html",
-                  icon: Icon(Icons.arrow_outward_outlined),
-                  label: 'Feature Groups Documentation',
+                  icon: const Icon(Icons.arrow_outward_outlined),
+                  label: l10n.featureGroupsDocumentation,
                 )
               ],
             ),
@@ -63,7 +65,7 @@ class FeatureGroupsRouteState extends State<FeatureGroupsRoute> {
                       (snapshot.data!.contains(RoleType.CHANGE_VALUE))) {
                     return FilledButton.icon(
                       icon: const Icon(Icons.add),
-                      label: const Text('Create feature group'),
+                      label: Text(l10n.createFeatureGroup),
                       onPressed: () => {
                         bloc.mrClient.addOverlay((BuildContext context) {
                           return FeatureGroupUpdateDialogWidget(
@@ -136,14 +138,13 @@ class _FeatureGroupsCardsList extends StatelessWidget {
                         return Row(
                           children: <Widget>[
                             SelectableText(
-                                'There are no applications in this portfolio',
+                                AppLocalizations.of(context)!.noApplicationsInPortfolio,
                                 style: Theme.of(context).textTheme.bodySmall),
                           ],
                         );
                       } else {
                         return SelectableText(
-                            "Either there are no applications in this portfolio or you don't have access to any of the applications.\n"
-                            'Please contact your administrator.',
+                            AppLocalizations.of(context)!.noApplicationsAccessMessage,
                             style: Theme.of(context).textTheme.bodySmall);
                       }
                     });

@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/systemconfig/systemconfig_bloc.dart';
 
 class SystemConfigEncryptableTextField extends StatefulWidget {
@@ -45,6 +46,7 @@ class SystemConfigEncryptableTextFieldState
   @override
   Widget build(BuildContext context) {
     final SystemConfigBloc configBloc = BlocProvider.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Row(
       children: [
@@ -76,7 +78,7 @@ class SystemConfigEncryptableTextFieldState
                   widget.field.value = null;
                 });
               },
-              child: const Text('Clear'),
+              child: Text(l10n.clearAction),
             ),
           ),
         if (configBloc.mrClient.identityProviders.capabilityWebhookEncryption &&
@@ -93,7 +95,7 @@ class SystemConfigEncryptableTextFieldState
                     });
                   }
                 },
-                child: const Text('Show value')),
+                child: Text(l10n.showValue)),
       ],
     );
   }

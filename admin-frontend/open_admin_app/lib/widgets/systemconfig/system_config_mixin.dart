@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/systemconfig/systemconfig_bloc.dart';
 
@@ -20,6 +21,7 @@ mixin SystemConfigMixin<T extends StatefulWidget> on State<T> {
   List<String> get filters => [];
 
   Future save() async {
+    final l10n = AppLocalizations.of(context)!;
     final changed = <SystemConfig>[];
     settings.forEach((key, value) {
       final original = unchangedSettings.firstWhere((e) => e.key == key);
@@ -40,14 +42,14 @@ mixin SystemConfigMixin<T extends StatefulWidget> on State<T> {
         await refresh(wrapState: true);
 
         configBloc.mrClient
-            .addSnackbar(Text("$namedSection was successfully updated"));
+            .addSnackbar(Text(l10n.systemConfigUpdated(namedSection)));
       } catch (e, s) {
-        configBloc.mrClient.addError(FHError('Unable to save Slack updates',
+        configBloc.mrClient.addError(FHError(l10n.unableToSaveUpdates,
             exception: e, stackTrace: s));
       }
     } else {
       configBloc.mrClient
-          .addSnackbar(Text("No updates for $namedSection found"));
+          .addSnackbar(Text(l10n.systemConfigNoUpdates(namedSection)));
     }
   }
 

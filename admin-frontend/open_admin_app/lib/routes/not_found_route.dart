@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class NotFoundRoute extends StatefulWidget {
   const NotFoundRoute({Key? key}) : super(key: key);
@@ -41,7 +42,7 @@ class NotFoundRouteState extends State<NotFoundRoute>
                   height: 200, width: 200, fit: BoxFit.scaleDown),
             ),
           ),
-          const Positioned(
+          Positioned(
             top: 150,
             bottom: 0,
             left: 24,
@@ -50,7 +51,7 @@ class NotFoundRouteState extends State<NotFoundRoute>
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   '404',
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -59,9 +60,9 @@ class NotFoundRouteState extends State<NotFoundRoute>
                       fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  "Sorry, we couldn't find the page!",
+                  AppLocalizations.of(context)!.notFoundMessage,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 30,
                   ),
                 ),

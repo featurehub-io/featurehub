@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/fhos_logger.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_outlined_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
@@ -36,25 +37,27 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
 
   @override
   Widget build(BuildContext context) {
-    const header = Padding(
-      padding: EdgeInsets.all(8.0),
+    final l10n = AppLocalizations.of(context)!;
+
+    final header = Padding(
+      padding: const EdgeInsets.all(8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           FHExternalLinkWidget(
-            tooltipMessage: "View documentation",
+            tooltipMessage: l10n.viewDocumentation,
             link:
                 "https://docs.featurehub.io/featurehub/latest/slack-integration.html",
-            icon: Icon(Icons.arrow_outward_outlined),
-            label: 'Slack Integration Documentation',
+            icon: const Icon(Icons.arrow_outward_outlined),
+            label: l10n.slackIntegrationDocumentation,
           )
         ],
       ),
     );
 
     if (settings.isEmpty || loading) {
-      return const Column(
-        children: [header, FHLoadingIndicator()],
+      return Column(
+        children: [header, const FHLoadingIndicator()],
       );
     }
 
@@ -76,7 +79,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const Text('Enable Slack'),
+                  Text(l10n.enableSlack),
                   Checkbox(
                       value: enabled.value,
                       onChanged: (val) {
@@ -96,15 +99,14 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                     if (knownSiteUrl == null &&
                         (bearer.value == null ||
                             bearer.value?.toString().isEmpty == true))
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                         child: FHExternalLinkOutlinedWidget(
-                            label: 'Connect FeatureHub to Slack',
-                            tooltipMessage:
-                                'Install FeatureHub Bot app to your Slack workspace',
+                            label: l10n.connectFeatureHubToSlack,
+                            tooltipMessage: l10n.installFeatureHubBot,
                             link:
                                 'https://api.slack.com/apps?new_app=1&manifest_yaml=display_information%3A%0A%20%20name%3A%20FeatureHub%0A%20%20description%3A%20FeatureHub%20Notifications%20Bot%0A%20%20background_color%3A%20%22%23536dfe%22%0A%20%20long_description%3A%20Receive%20notifications%20from%20the%20FeatureHub%20Bot.%20Notifications%20include%20features%20and%20feature%20values%20updates%2C%20strategy%20updates%20and%20other%20feature%20settings.%20For%20details%2C%20please%20view%20our%20documentation%20on%20https%3A%2F%2Fdocs.featurehub.io%0Afeatures%3A%0A%20%20bot_user%3A%0A%20%20%20%20display_name%3A%20featurehub%0A%20%20%20%20always_online%3A%20true%0Aoauth_config%3A%0A%20%20scopes%3A%0A%20%20%20%20bot%3A%0A%20%20%20%20%20%20-%20chat%3Awrite%0Asettings%3A%0A%20%20org_deploy_enabled%3A%20false%0A%20%20socket_mode_enabled%3A%20false%0A%20%20token_rotation_enabled%3A%20false%0A',
-                            icon: Icon(Icons.arrow_outward_outlined)),
+                            icon: const Icon(Icons.arrow_outward_outlined)),
                       ),
                     if (knownSiteUrl != null &&
                         (bearer.value == null ||
@@ -123,7 +125,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                                   window.location.href = url;
                                 }
                               },
-                              label: const Text('Connect to Slack'),
+                              label: Text(l10n.connectToSlack),
                             ),
                           ],
                         ),
@@ -134,16 +136,16 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                     if (knownSiteUrl == null)
                       SystemConfigEncryptableTextField(
                         field: bearer,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
                           hintText:
                               'e.g. xoxb-1182138673840-5153275439522-sYLjc5KVxFaLrr2wY9fh8jd',
-                          labelText: 'Slack Bot User OAuth Token',
+                          labelText: l10n.slackBotTokenLabel,
                         ),
                         validator: (val) {
                           if (enabled.value == true &&
                               (val == null || val.trim().isEmpty)) {
-                            return 'Please enter Slack Bot User OAuth token';
+                            return l10n.slackBotTokenRequired;
                           }
 
                           return null;
@@ -154,20 +156,20 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                     ),
                     SystemConfigTextField(
                       field: defaultChannel,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
                         hintText: 'e.g. C0150T7AF25',
-                        labelText: 'Default Slack channel ID',
+                        labelText: l10n.defaultSlackChannelIdLabel,
                       ),
                       validator: (v) {
                         if (v?.trim().isEmpty == true) {
-                          return 'Please enter Slack channel ID';
+                          return l10n.slackChannelIdRequired;
                         }
                         return null;
                       },
                     ),
                     if (settings['slack.delivery.url'] != null)
-                      externalDelivery(),
+                      externalDelivery(l10n),
                   ],
                 ),
               )),
@@ -183,7 +185,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
                         await save();
                       }
                     },
-                    child: const Text('Save')),
+                    child: Text(l10n.save)),
               ],
             ),
           )
@@ -195,7 +197,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
     }
   }
 
-  Widget externalDelivery() {
+  Widget externalDelivery(AppLocalizations l10n) {
     final deliveryUrlValidator = (settings['slack.delivery.prefixes'] == null)
         ? <String>[]
         : (settings['slack.delivery.prefixes']!.value as List<dynamic>)
@@ -206,8 +208,7 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
     return Column(
       children: [
         const SizedBox(height: 16.0),
-        const Text(
-            'If your Slack delivery is offloaded to an external application, please specify the details here.'),
+        Text(l10n.externalSlackDeliveryMessage),
         if (settings['slack.delivery.url'] != null)
           const SizedBox(height: 16.0),
         SystemConfigTextField(
@@ -215,14 +216,13 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
           decoration: InputDecoration(
             border: const OutlineInputBorder(),
             hintText: 'e.g. http://slack-service.cluster.local',
-            labelText:
-                'External Slack message delivery service (optional, valid prefixes $deliveryUrlHelp)',
+            labelText: l10n.externalSlackDeliveryUrlLabel(deliveryUrlHelp),
           ),
           validator: (String? val) {
             if (val == null || val.isEmpty) return null;
 
             if (deliveryUrlValidator.none((e) => val.startsWith(e) == true)) {
-              return 'You must choose a valid URL prefix';
+              return l10n.invalidUrlPrefix;
             }
 
             return null;
@@ -234,8 +234,8 @@ class SlackSystemConfigState extends State<SlackSystemConfigWidget>
             child: SystemConfigEncryptableMapWidget(
                 field: settings['slack.delivery.headers']!,
                 controller: _deliveryHeadersController,
-                keyHeaderName: 'Header',
-                valueHeaderName: 'Value',
+                keyHeaderName: l10n.headerColumnLabel,
+                valueHeaderName: l10n.valueColumnLabel,
                 defaultNewKeyName: 'X-Header',
                 defaultNewValueName: 'value'),
           )

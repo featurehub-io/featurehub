@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/user/register/register_url_bloc.dart';
@@ -37,7 +38,6 @@ class RegisterURLState extends State<RegisterURLRoute> {
       children: <Widget>[
         SizedBox(
             width: 500,
-            //  color: Colors.yellow,
             child: StreamBuilder(
                 stream: bloc.formState,
                 builder: (context, snapshot) {
@@ -56,25 +56,23 @@ class RegisterURLState extends State<RegisterURLRoute> {
                     }
                   }
                   if (snapshot.hasError) {
-                    String humanErrorMessage;
-                    humanErrorMessage = 'Unexpected error occured\n.'
-                        'Please contact your FeatureHub administrator.';
+                    final l10n = AppLocalizations.of(context)!;
+                    String humanErrorMessage = l10n.registerUrlUnexpectedError;
 
                     if (snapshot.error is ApiException &&
                         !snapshot.error.toString().contains('500')) {
-                      humanErrorMessage =
-                          'This Register URL is either expired or invalid.\n\n'
-                          'Check your URL is correct or contact your FeatureHub administrator.';
+                      humanErrorMessage = l10n.registerUrlExpiredOrInvalid;
                     }
                     return Text(humanErrorMessage);
                   }
-                  return const Text('Validating your invitation URL');
+                  return Text(AppLocalizations.of(context)!.validatingInvitationUrl);
                 })),
       ],
     ));
   }
 
   Widget initialState(BuildContext context, RegisterBloc bloc) {
+    final l10n = AppLocalizations.of(context)!;
     return Form(
       key: _formKey,
       child: Column(
@@ -83,44 +81,45 @@ class RegisterURLState extends State<RegisterURLRoute> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Text(
-            'Welcome to FeatureHub',
+            l10n.welcomeToFeatureHub,
             style: Theme.of(context).textTheme.titleLarge,
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-            child: Text('To register please complete the following details',
+            child: Text(l10n.registerCompleteDetails,
                 style: Theme.of(context).textTheme.titleSmall),
           ),
           TextFormField(
             enabled: false,
-            decoration: const InputDecoration(labelText: 'Email'),
+            decoration: InputDecoration(labelText: l10n.emailLabel),
             initialValue: bloc.person!.email,
           ),
           TextFormField(
             controller: _name,
             autofocus: true,
-            decoration: const InputDecoration(labelText: 'Name'),
+            decoration: InputDecoration(labelText: l10n.nameLabel),
             textInputAction: TextInputAction.next,
             validator: (v) =>
-                v?.isEmpty == false ? null : 'Please enter your name',
+                v?.isEmpty == false ? null : l10n.nameRequired,
           ),
           TextFormField(
               controller: _pw1,
               obscureText: true,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: InputDecoration(labelText: l10n.passwordLabel),
+              onChanged: (_) => setPasswordStrength(l10n),
               validator: (v) {
                 if (v == null) {
-                  return 'Please enter your password';
+                  return l10n.passwordRequired;
                 }
                 if (v.isEmpty) {
-                  return 'Please enter your password';
+                  return l10n.passwordRequired;
                 }
                 if (v.length < 7) {
-                  return 'Password must be at least 7 characters!';
+                  return l10n.passwordMustBe7Chars;
                 }
                 if (_pw2.text.isNotEmpty && v != _pw2.text) {
-                  return "Passwords don't match";
+                  return l10n.passwordsDoNotMatch;
                 }
                 return null;
               }),
@@ -133,13 +132,13 @@ class RegisterURLState extends State<RegisterURLRoute> {
               obscureText: true,
               autovalidateMode: AutovalidateMode.onUserInteraction,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Confirm Password'),
+              decoration: InputDecoration(labelText: l10n.confirmPasswordLabel),
               validator: (v) {
                 if (v == null || v.isEmpty) {
-                  return 'Please confirm your password';
+                  return l10n.confirmPasswordRequired;
                 }
                 if (v != _pw1.text) {
-                  return "Passwords don't match";
+                  return l10n.passwordsDoNotMatch;
                 }
                 return null;
               }),
@@ -161,7 +160,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
                             .navigateTo(context, '/');
                       }
                     },
-                    title: 'Register'),
+                    title: l10n.registerButton),
               )
             ],
           )
@@ -170,15 +169,15 @@ class RegisterURLState extends State<RegisterURLRoute> {
     );
   }
 
-  void setPasswordStrength() {
+  void setPasswordStrength(AppLocalizations l10n) {
     final result = Zxcvbn().evaluate(_pw1.text);
-    var state = 'Weak';
+    var state = l10n.passwordStrengthWeak;
     if (result.score == 1) {
-      state = 'Below average';
+      state = l10n.passwordStrengthBelowAverage;
     } else if (result.score == 2) {
-      state = 'Good';
+      state = l10n.passwordStrengthGood;
     } else if (result.score == 3) {
-      state = 'Strong';
+      state = l10n.passwordStrengthStrong;
     }
     Color stateColor =
         (result.score == null || result.score! < _passwordScoreThreshold)

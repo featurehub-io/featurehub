@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 
 class EnvironmentDropDown extends StatefulWidget {
@@ -65,6 +66,7 @@ class _EnvironmentDropDownState extends State<EnvironmentDropDown> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return OutlinedButton(
       onPressed: () => {},
       child: Container(
@@ -74,7 +76,7 @@ class _EnvironmentDropDownState extends State<EnvironmentDropDown> {
                 .currentApplicationEnvironmentsStream,
             builder: (context, snapshot) {
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Text('No environments available');
+                return Text(l10n.noEnvironmentsAvailable);
               }
 
               final environments = snapshot.data!;
@@ -94,8 +96,8 @@ class _EnvironmentDropDownState extends State<EnvironmentDropDown> {
                   mouseCursor: SystemMouseCursors.click,
                   child: DropdownButton<String>(
                     underline: const SizedBox.shrink(),
-                    hint: const Text(
-                      'Select environment',
+                    hint: Text(
+                      l10n.selectEnvironment,
                       textAlign: TextAlign.end,
                     ),
                     icon: const Padding(

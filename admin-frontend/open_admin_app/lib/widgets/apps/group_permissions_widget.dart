@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
@@ -43,7 +44,7 @@ class GroupPermissionsWidget extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Group',
+                              AppLocalizations.of(context)!.group,
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                             _GroupsDropdown(groups: snapshot.data!, bloc: bloc),
@@ -51,7 +52,7 @@ class GroupPermissionsWidget extends StatelessWidget {
                         ),
                         const SizedBox(width: 16.0),
                         FHUnderlineButton(
-                          title: 'Go to manage group members',
+                          title: AppLocalizations.of(context)!.goToManageGroupMembers,
                           onPressed: () {
                             ManagementRepositoryClientBloc.router
                                 .navigateTo(context, '/groups', params: {
@@ -59,12 +60,12 @@ class GroupPermissionsWidget extends StatelessWidget {
                             });
                           },
                         ),
-                        const FHExternalLinkWidget(
-                          tooltipMessage: "View documentation",
+                        FHExternalLinkWidget(
+                          tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
                           link:
                               "https://docs.featurehub.io/featurehub/latest/users.html#_group_permissions",
-                          icon: Icon(Icons.arrow_outward_outlined),
-                          label: 'Group Permissions Documentation',
+                          icon: const Icon(Icons.arrow_outward_outlined),
+                          label: AppLocalizations.of(context)!.groupPermissionsDocumentation,
                         ),
                       ],
                     ),
@@ -114,7 +115,7 @@ class __GroupsDropdownState extends State<_GroupsDropdown> {
                   overflow: TextOverflow.ellipsis,
                 ));
           }).toList(),
-          hint: const Text('Select group'),
+          hint: Text(AppLocalizations.of(context)!.selectGroup),
           onChanged: (String? value) {
             if (value != null) {
               setState(() {
@@ -255,8 +256,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
           if (!groupSnapshot.hasData) {
             return Container(
                 padding: const EdgeInsets.all(20),
-                child: const SelectableText(
-                    'You need to select a group to edit the permissions for.'));
+                child: SelectableText(
+                    AppLocalizations.of(context)!.selectGroupToEditPermissions));
           }
 
           return StreamBuilder<List<Environment>>(
@@ -268,8 +269,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                     children: <Widget>[
                       Container(
                           padding: const EdgeInsets.all(20),
-                          child: const SelectableText(
-                              "You need to first create some 'Environments' for this application.")),
+                          child: SelectableText(
+                              AppLocalizations.of(context)!.needToCreateEnvironmentsFirst)),
                     ],
                   );
                 }
@@ -334,7 +335,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SelectableText('Set feature level permissions',
+                            SelectableText(AppLocalizations.of(context)!.setFeatureLevelPermissions,
                                 style: Theme.of(context).textTheme.bodySmall),
                             // SizedBox(height: 4.0),
                             Row(
@@ -377,7 +378,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SelectableText(
-                                'Set application strategy permissions',
+                                AppLocalizations.of(context)!.setAppStrategyPermissions,
                                 style: Theme.of(context).textTheme.bodySmall),
                             // SizedBox(height: 4.0),
                             Row(
@@ -421,7 +422,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                       child: Container(
                           padding: const EdgeInsets.fromLTRB(0, 32, 0, 8),
                           child: SelectableText(
-                              'Set feature value level permissions per environment',
+                              AppLocalizations.of(context)!.setFeatureValuePermissions,
                               style: Theme.of(context).textTheme.bodySmall)),
                     ),
                     Card(
@@ -440,7 +441,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                           currentGroup = null;
                           widget.bloc.resetGroup(groupSnapshot.data!.group);
                         },
-                        title: 'Cancel',
+                        title: AppLocalizations.of(context)!.cancel,
                         keepCase: true,
                       ),
                       FHFlatButton(
@@ -475,13 +476,13 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                               originalAppFeatureRole = _discoverAdminRoleType(
                                   currentGroup!, widget.bloc.applicationId!);
                               widget.bloc.mrClient.addSnackbar(Text(
-                                  "Group '${group?.name ?? '<unknown>'}' updated!"));
+                                  AppLocalizations.of(context)!.groupUpdated(group?.name ?? '<unknown>')));
                             }).catchError((e, s) {
                               widget.bloc.mrClient.dialogError(e, s);
                             });
                             widget.bloc.mrClient.streamValley.triggerRocket();
                           },
-                          title: 'Update'),
+                          title: AppLocalizations.of(context)!.update),
                     ])
                   ],
                 );
@@ -490,56 +491,19 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
   }
 
   TableRow getHeader() {
+    final l10n = AppLocalizations.of(context)!;
     var headerStyle = Theme.of(context)
         .textTheme
         .titleSmall!
         .copyWith(fontWeight: FontWeight.bold);
     return TableRow(children: [
-      const Text(
-        '',
-      ),
-      Center(
-          child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Text(
-          'Read',
-          style: headerStyle,
-        ),
-      )),
-      Center(
-          child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Text(
-          'Lock',
-          style: headerStyle,
-        ),
-      )),
-      Center(
-          child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Text(
-          'Unlock',
-          style: headerStyle,
-        ),
-      )),
-      Center(
-          child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Text(
-          'Change value / Retire',
-          style: headerStyle,
-        ),
-      )),
-      if (widget
-          .bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
-        Center(
-            child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Text(
-            'Read Extended Feature Data',
-            style: headerStyle,
-          ),
-        )),
+      const Text(''),
+      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permRead, style: headerStyle))),
+      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permLock, style: headerStyle))),
+      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permUnlock, style: headerStyle))),
+      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permChangeValue, style: headerStyle))),
+      if (widget.bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
+        Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permReadExtendedData, style: headerStyle))),
     ]);
   }
 

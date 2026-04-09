@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 
 class AdminCheckboxWidget extends StatefulWidget {
@@ -37,7 +38,7 @@ class AdminCheckboxWidgetState extends State<AdminCheckboxWidget> {
             constraints: const BoxConstraints(maxWidth: 300),
             child: CheckboxListTile(
                 title: Text(
-                  'Set this user as organization super admin',
+                  AppLocalizations.of(context)!.setAsOrgSuperAdmin,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 value: isAdmin,

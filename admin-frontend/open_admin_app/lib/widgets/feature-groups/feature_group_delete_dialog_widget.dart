@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 import 'package:openapi_dart_common/openapi.dart';
@@ -14,30 +15,25 @@ class FeatureGroupDeleteDialogWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return FHDeleteThingWarningWidget(
       bloc: bloc.mrClient,
-      thing: "feature '${featureGroup.name}'",
-      content:
-          'This action will delete a feature group and a strategy associated with it.'
-          '\n\nThe features will not be deleted and remain present in your system.'
-          '\n\nThis cannot be undone!',
+      thing: l10n.featureThingLabel(featureGroup.name),
+      content: l10n.featureGroupDeleteContent,
       deleteSelected: () async {
         try {
           await bloc.deleteFeatureGroup(featureGroup.id);
-          // await bloc.updateApplicationFeatureValuesStream();
           bloc.mrClient.removeOverlay();
           bloc.mrClient.addSnackbar(
-              Text("Feature group '${featureGroup.name}' deleted!"));
+              Text(l10n.featureGroupDeleted(featureGroup.name)));
           return true;
         } catch (e) {
           if (e is ApiException && e.code == 401) {
             bloc.mrClient.customError(
-                messageTitle:
-                    "You don't have permissions to perform this operation");
+                messageTitle: l10n.noPermissionsForOperation);
           } else {
             bloc.mrClient.customError(
-                messageTitle:
-                    "Couldn't delete feature group ${featureGroup.name}");
+                messageTitle: l10n.featureGroupDeleteError(featureGroup.name));
           }
           return false;
         }

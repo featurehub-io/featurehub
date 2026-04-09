@@ -1,43 +1,44 @@
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 extension MapNamesForRolloutStrategyViolations on RolloutStrategyViolationType {
   // ignore: missing_return
-  String toDescription() {
+  String toDescription(AppLocalizations l10n) {
     switch (this) {
       case RolloutStrategyViolationType.noName:
-        return 'Strategy name is required';
+        return l10n.strategyNameRequired;
       case RolloutStrategyViolationType.nameTooLong:
-        return 'Strategy name is too long';
+        return l10n.strategyNameTooLong;
       case RolloutStrategyViolationType.emptyMatchCriteria:
-        return 'You have not provided any rules to match against, please add a rule';
+        return l10n.strategyEmptyMatchCriteria;
       case RolloutStrategyViolationType.negativePercentage:
-        return 'Percentage cannot be a negative number';
+        return l10n.strategyNegativePercentage;
       case RolloutStrategyViolationType.percentageOver100Percent:
-        return 'The total percentage value across all strategies is above 100%, please decrease the percentage rule';
+        return l10n.strategyPercentageOver100;
       case RolloutStrategyViolationType.arrayAttributeNoValues:
-        return 'Please provide at least one value for this rule';
+        return l10n.strategyArrayAttributeNoValues;
       case RolloutStrategyViolationType.attrInvalidWellKnownEnum:
-        return 'Please select a value for this rule';
+        return l10n.strategyAttrInvalidWellKnownEnum;
       case RolloutStrategyViolationType.attrMissingValue:
-        return 'Please provide a value for this rule';
+        return l10n.strategyAttrMissingValue;
       case RolloutStrategyViolationType.attrMissingConditional:
-        return 'Please select a matching condition for this rule';
+        return l10n.strategyAttrMissingConditional;
       case RolloutStrategyViolationType.attrMissingFieldName:
-        return 'Please enter the rule name';
+        return l10n.strategyAttrMissingFieldName;
       case RolloutStrategyViolationType.attrMissingFieldType:
-        return 'Please select a value type for this rule';
+        return l10n.strategyAttrMissingFieldType;
       case RolloutStrategyViolationType.attrValNotSemanticVersion:
-        return 'Please provide a valid semantic version';
+        return l10n.strategyAttrValNotSemanticVersion;
       case RolloutStrategyViolationType.attrValNotNumber:
-        return 'Please provide a valid number';
+        return l10n.strategyAttrValNotNumber;
       case RolloutStrategyViolationType.attrValNotDate:
-        return 'Please provide a valid date in YYYY-MM-DD format';
+        return l10n.strategyAttrValNotDate;
       case RolloutStrategyViolationType.attrValNotDateTime:
-        return 'Please provide a valid date and time in YYYY-MM-DDTHH:MM:SS format';
+        return l10n.strategyAttrValNotDateTime;
       case RolloutStrategyViolationType.attrValNotCidr:
-        return 'Please provide a valid IP or CIDR address';
+        return l10n.strategyAttrValNotCidr;
       case RolloutStrategyViolationType.attrUnknownFailure:
-        return 'There was an unknown strategy validation error';
+        return l10n.strategyAttrUnknownFailure;
     }
   }
 }

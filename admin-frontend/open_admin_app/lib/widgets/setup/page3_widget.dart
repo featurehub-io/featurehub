@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/setup/setup_bloc.dart';
@@ -52,15 +53,13 @@ class _FinalSetupPageOverlayWidget extends StatelessWidget {
                 child: SizedBox(
                   width: 600,
                   child: Text(
-                      'Next step is to create your first application and add some features.'
-                      ' Your first environment called "Production" will be created by default.'
-                      ' You can follow the "Quick Setup" helper by clicking the "rocket" icon on the right of the app bar to see your progress.',
+                      AppLocalizations.of(context)!.setupNextStepsMessage,
                       style: Theme.of(context).textTheme.bodyLarge),
                 ),
               ),
               actions: <Widget>[
                 FHFlatButton(
-                    title: 'Next',
+                    title: AppLocalizations.of(context)!.next,
                     onPressed: () {
                       bloc.mrClient.removeOverlay();
                       bloc.reinitialize();
@@ -90,7 +89,7 @@ class _FinalSetupPageOverlayWidget extends StatelessWidget {
             ],
           ),
         ),
-        Text('All set!', style: Theme.of(context).textTheme.titleLarge),
+        Text(AppLocalizations.of(context)!.setupAllSet, style: Theme.of(context).textTheme.titleLarge),
       ],
     );
   }

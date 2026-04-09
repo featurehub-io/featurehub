@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
@@ -15,26 +16,25 @@ class FeatureDeleteDialogWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return FHDeleteThingWarningWidget(
       bloc: bloc.mrClient,
-      thing: "feature '${feature.name}'",
-      content:
-          'You need to make sure all your code is cleaned up and can deal without this feature!\n\nThis cannot be undone!',
+      thing: l10n.featureThingLabel(feature.name),
+      content: l10n.featureDeleteContent,
       deleteSelected: () async {
         try {
           await bloc.deleteFeature(feature.key);
           await bloc.updateApplicationFeatureValuesStream();
           bloc.mrClient.removeOverlay();
-          bloc.mrClient.addSnackbar(Text("Feature '${feature.name}' deleted!"));
+          bloc.mrClient.addSnackbar(Text(l10n.featureDeleted(feature.name)));
           return true;
         } catch (e) {
           if (e is ApiException && e.code == 401) {
             bloc.mrClient.customError(
-                messageTitle:
-                    "You don't have permissions to perform this operation");
+                messageTitle: l10n.noPermissionsForOperation);
           } else {
             bloc.mrClient.customError(
-                messageTitle: "Couldn't delete feature ${feature.name}");
+                messageTitle: l10n.featureDeleteError(feature.name));
           }
           return false;
         }

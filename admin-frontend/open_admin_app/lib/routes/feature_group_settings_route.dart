@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_accent.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
@@ -35,6 +36,7 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<FeatureGroupBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(
@@ -56,8 +58,8 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
                             SelectableText.rich(TextSpan(
                                 style: DefaultTextStyle.of(context).style,
                                 children: [
-                                  const TextSpan(
-                                    text: 'Group: ',
+                                  TextSpan(
+                                    text: l10n.groupPrefix,
                                   ),
                                   TextSpan(
                                     text: snapshot.data!.name,
@@ -77,8 +79,8 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
                                         style:
                                             DefaultTextStyle.of(context).style,
                                         children: [
-                                          const TextSpan(
-                                            text: 'Application: ',
+                                          TextSpan(
+                                            text: AppLocalizations.of(context)!.applicationPrefix,
                                           ),
                                           TextSpan(
                                             text: snapshot.data
@@ -101,8 +103,8 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
                             SelectableText.rich(TextSpan(
                                 style: DefaultTextStyle.of(context).style,
                                 children: [
-                                  const TextSpan(
-                                    text: 'Environment: ',
+                                  TextSpan(
+                                    text: l10n.environmentPrefix,
                                   ),
                                   TextSpan(
                                     text: bloc.featureGroupStream.value
@@ -135,7 +137,7 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
                                           alignment: MainAxisAlignment.end,
                                           children: [
                                             FHFlatButtonTransparent(
-                                              title: 'Cancel',
+                                              title: l10n.cancel,
                                               keepCase: true,
                                               onPressed: () {
                                                 ManagementRepositoryClientBloc
@@ -145,14 +147,14 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
                                               },
                                             ),
                                             FHFlatButtonAccent(
-                                              title: 'Apply all changes',
+                                              title: l10n.applyAllChanges,
                                               keepCase: true,
                                               onPressed: () async {
                                                 await bloc
                                                     .saveFeatureGroupUpdates();
                                                 bloc.featureGroupsBloc.mrClient
                                                     .addSnackbar(Text(
-                                                        'Settings for group "${bloc.featureGroupStream.value.name}" have been updated'));
+                                                        l10n.featureGroupSettingsUpdated(bloc.featureGroupStream.value.name)));
                                               },
                                             )
                                           ],
@@ -162,7 +164,7 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
                                       }
                                     });
                               } else {
-                                return const Text("No permissions");
+                                return Text(l10n.noPermissions);
                               }
                             }),
                         const SizedBox(height: 32.0),
@@ -210,6 +212,7 @@ class _StrategySettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     bool editable = bloc.featureGroupsBloc.envRoleTypeStream.value
         .contains(RoleType.CHANGE_VALUE);
     return StreamBuilder<GroupRolloutStrategy?>(
@@ -227,8 +230,8 @@ class _StrategySettings extends StatelessWidget {
                         builder: (_) {
                           return AlertDialog(
                               title: Text(editable
-                                  ? 'Edit split targeting rules'
-                                  : 'View split targeting rules'),
+                                  ? l10n.editSplitTargetingRules
+                                  : l10n.viewSplitTargetingRules),
                               content: BlocProvider.builder(
                                 creator: (c, b) {
                                   var rs = snapshot.data!;
@@ -248,13 +251,13 @@ class _StrategySettings extends StatelessWidget {
                     icon: const Icon(
                       Icons.cancel,
                     ),
-                    label: const Text("Remove strategy"),
+                    label: Text(l10n.removeStrategy),
                   )
               ],
             );
           } else {
             return TextButton.icon(
-                label: const Text("Add rollout strategy"),
+                label: Text(l10n.addRolloutStrategy),
                 icon: const Icon(Icons.call_split_outlined),
                 onPressed: editable
                     ? () => showDialog(
@@ -262,8 +265,8 @@ class _StrategySettings extends StatelessWidget {
                         builder: (_) {
                           return AlertDialog(
                               title: Text(editable
-                                  ? 'Edit split targeting rules'
-                                  : 'View split targeting rules'),
+                                  ? l10n.editSplitTargetingRules
+                                  : l10n.viewSplitTargetingRules),
                               content: BlocProvider.builder(
                                 creator: (c, b) => StrategyEditorBloc(
                                     EditingRolloutStrategy.newStrategy(),
@@ -287,13 +290,14 @@ class _FeaturesSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     var editable = bloc.featureGroupsBloc.envRoleTypeStream.value
         .contains(RoleType.CHANGE_VALUE);
     return Column(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("Features List", style: Theme.of(context).textTheme.titleMedium),
+        Text(l10n.featuresList, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 16),
         if (editable)
           Row(
@@ -316,7 +320,7 @@ class _FeaturesSettings extends StatelessWidget {
               ),
               TextButton.icon(
                   icon: const Icon(Icons.add),
-                  label: const Text('Add Feature'),
+                  label: Text(l10n.addFeature),
                   onPressed: () => {_addFeatureToGroup(bloc)}),
             ],
           ),
@@ -355,8 +359,7 @@ class _FeaturesSettings extends StatelessWidget {
                                           bloc: bloc, feature: feature),
                                       if (feature.locked)
                                         Tooltip(
-                                            message:
-                                                "Feature value is locked. Unlock from the main Features dashboard to enable editing",
+                                            message: AppLocalizations.of(context)!.featureValueLocked,
                                             child: Icon(Icons.lock_outline,
                                                 size: 14.0,
                                                 color: Theme.of(context)

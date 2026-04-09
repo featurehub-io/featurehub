@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/features/feature-data-table/custom_column_sizer.dart';
 import 'package:open_admin_app/widgets/features/feature-data-table/features_data_source.dart';
@@ -115,7 +116,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                           constraints: const BoxConstraints(
                               maxWidth: 400, maxHeight: 40),
                           child: FHMultiSelect(
-                              hint: Text("Select environments to display",
+                              hint: Text(AppLocalizations.of(context)!.selectEnvironmentsToDisplay,
                                   style:
                                       Theme.of(context).textTheme.bodyMedium),
                               onChanged: (List<String> selectedValues) {
@@ -148,7 +149,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                               Icons.filter_alt,
                               size: 18,
                             ),
-                            hint: Text("Filter by feature type",
+                            hint: Text(AppLocalizations.of(context)!.filterByFeatureType,
                                 style: Theme.of(context).textTheme.bodyMedium),
                             onChanged: (List<String> selection) {
                               setState(() {
@@ -177,7 +178,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                               maxWidth: 300, minWidth: 150, maxHeight: 40),
                           child: TextField(
                             decoration: InputDecoration(
-                              hintText: 'Search features',
+                              hintText: AppLocalizations.of(context)!.searchFeatures,
                               hintStyle: Theme.of(context).textTheme.bodyMedium,
                               suffixIcon: const Icon(Icons.search, size: 18),
                               border: const OutlineInputBorder(),
@@ -201,7 +202,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                     ),
                     const SizedBox(height: 24.0),
                     if (featuresList.applicationFeatureValues.features.isEmpty)
-                      const Text("No features to display"),
+                      Text(AppLocalizations.of(context)!.noFeaturesToDisplay),
                     if (featuresList
                         .applicationFeatureValues.features.isNotEmpty)
                       SizedBox(
@@ -237,8 +238,8 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                                 label: Container(
                                     padding: const EdgeInsets.all(16.0),
                                     alignment: Alignment.center,
-                                    child: const Text("Features",
-                                        style: TextStyle(
+                                    child: Text(AppLocalizations.of(context)!.featuresColumnHeader,
+                                        style: const TextStyle(
                                             fontWeight: FontWeight.bold))),
                               ),
                               ...gridColumnsList,

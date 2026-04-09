@@ -13,6 +13,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 
 class AdminServiceAccountsListWidget extends StatefulWidget {
@@ -48,9 +49,9 @@ class AdminServiceAccountsListWidgetState
         Container(
             constraints: const BoxConstraints(maxWidth: 300),
             child: TextField(
-              decoration: const InputDecoration(
-                hintText: 'Search Service Accounts',
-                icon: Icon(Icons.search),
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.searchServiceAccounts,
+                icon: const Icon(Icons.search),
               ),
               onChanged: (val) {
                 debouncer.run(
@@ -79,14 +80,16 @@ class AdminServiceAccountsListWidgetState
               }
             },
             columns: [
-              DataColumn(label: const Text('Name'), onSort: setSort),
-              const DataColumn(
-                label: Text('Groups'),
+              DataColumn(
+                  label: Text(AppLocalizations.of(context)!.colName),
+                  onSort: setSort),
+              DataColumn(
+                label: Text(AppLocalizations.of(context)!.colGroups),
               ),
-              const DataColumn(
+              DataColumn(
                 label: Padding(
-                  padding: EdgeInsets.only(left: 12.0),
-                  child: Text('Actions'),
+                  padding: const EdgeInsets.only(left: 12.0),
+                  child: Text(AppLocalizations.of(context)!.colActions),
                 ),
               ),
             ],
@@ -175,7 +178,7 @@ class AdminServiceAccountDataTableSource
               icon: const Icon(
                 Icons.refresh,
               ),
-              tooltip: "Reset Admin SDK access token",
+              tooltip: AppLocalizations.of(context)!.resetAdminSdkToken,
               onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
                 return AdminSAKeyResetDialogWidget(
                   person: serviceAccount,
@@ -185,18 +188,18 @@ class AdminServiceAccountDataTableSource
             ),
             FHIconButton(
               icon: const Icon(Icons.delete),
-              onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
+              onPressed: () => bloc.mrClient.addOverlay((BuildContext overlayContext) {
+                final l10n = AppLocalizations.of(overlayContext)!;
                 return FHDeleteThingWarningWidget(
                   thing: "service account '${serviceAccount.name}'",
-                  content:
-                      'This service account will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!',
+                  content: l10n.adminSADeleteContent,
                   bloc: bloc.mrClient,
                   deleteSelected: () async {
                     try {
                       await bloc.deletePerson(serviceAccount.id, true);
                       setNextView(); // triggers reload from server with latest settings and rebuilds state
                       bloc.mrClient.addSnackbar(Text(
-                          "Service account '${serviceAccount.name}' deleted!"));
+                          l10n.adminSADeleted(serviceAccount.name)));
                       return true;
                     } catch (e, s) {
                       await bloc.mrClient.dialogError(e, s);
@@ -227,15 +230,14 @@ class ServiceAccountInfoDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FHAlertDialog(
-      title: const Text(
-        'Admin Service Account details',
-        style: TextStyle(fontSize: 22.0),
+      title: Text(
+        AppLocalizations.of(context)!.adminSADetailsTitle,
+        style: const TextStyle(fontSize: 22.0),
       ),
       content: _AdminServiceAccountInfo(bloc: bloc, foundPerson: entry),
       actions: <Widget>[
-        // usually buttons at the bottom of the dialog
         FHFlatButton(
-          title: 'OK',
+          title: AppLocalizations.of(context)!.ok,
           onPressed: () {
             bloc.mrClient.removeOverlay();
           },
@@ -275,7 +277,7 @@ class _AdminServiceAccountInfo extends StatelessWidget {
                 child: ListView(
                   children: [
                     _AdminServiceAccountRow(
-                      title: 'Name',
+                      title: AppLocalizations.of(context)!.colName,
                       child: Text(entry.name!,
                           style: Theme.of(context).textTheme.bodyLarge),
                     ),
@@ -290,7 +292,7 @@ class _AdminServiceAccountInfo extends StatelessWidget {
                           Expanded(
                             flex: 1,
                             child: Text(
-                              'Groups',
+                              AppLocalizations.of(context)!.colGroups,
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ),

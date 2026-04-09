@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/apps/webhook/slack_panel_widget.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_environment_table_widget.dart';
@@ -41,13 +42,13 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Environment',
+                  AppLocalizations.of(context)!.environmentLabel,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 if (bloc.environments.isNotEmpty == true)
                   selectEnvironment(bloc.environments),
                 if (bloc.environments.isNotEmpty != true)
-                  const Text("no environments")
+                  Text(AppLocalizations.of(context)!.noEnvironments)
               ],
             ),
             const SizedBox(
@@ -57,7 +58,7 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Integration Type',
+                  AppLocalizations.of(context)!.integrationTypeLabel,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 selectWebhookTypeDetail(),
@@ -119,8 +120,8 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
 
   Widget webhookDetail(List<WebhookTypeDetail> details) {
     return DropdownButton<WebhookTypeDetail>(
-      hint: const Text(
-        'Select webhook type',
+      hint: Text(
+        AppLocalizations.of(context)!.selectWebhookType,
         textAlign: TextAlign.end,
       ),
       icon: const Padding(
@@ -157,8 +158,8 @@ class _WebhookEnvironmentState extends State<WebhookEnvironment> {
       child: InkWell(
         mouseCursor: SystemMouseCursors.click,
         child: DropdownButton<String>(
-          hint: const Text(
-            'Select environment',
+          hint: Text(
+            AppLocalizations.of(context)!.selectEnvironment,
             textAlign: TextAlign.end,
           ),
           icon: const Padding(

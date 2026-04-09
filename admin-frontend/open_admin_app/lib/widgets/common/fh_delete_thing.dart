@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 
@@ -39,7 +40,7 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
           _WarningWidget(
             extra: extraWarning,
           ),
-          Text(wholeWarning ?? 'Are you sure you want to delete the $thing?',
+          Text(wholeWarning ?? AppLocalizations.of(context)!.deleteConfirmTitle(thing ?? ''),
               style: TextStyle(color: extraWarning ? Colors.red : null)),
         ],
       ),
@@ -47,21 +48,21 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(content ?? 'This cannot be undone!'),
+            child: Text(content ?? AppLocalizations.of(context)!.cannotBeUndone),
           ),
         ],
       ),
       actions: <Widget>[
         // usually buttons at the bottom of the dialog
         FHFlatButtonTransparent(
-          title: 'Cancel',
+          title: AppLocalizations.of(context)!.cancel,
           keepCase: true,
           onPressed: () {
             bloc.removeOverlay();
           },
         ),
         FHFlatButton(
-            title: isResetThing ? 'Reset' : 'Delete',
+            title: isResetThing ? AppLocalizations.of(context)!.reset : AppLocalizations.of(context)!.delete,
             onPressed: () async {
               if (await deleteSelected() && removeOverlay) {
                 bloc.removeOverlay();

@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/user/common/portfolio_group.dart';
 import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 
@@ -19,6 +20,7 @@ class PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<SelectPortfolioGroupBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,27 +31,27 @@ class PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
             builder: (context, constraints) {
               if (constraints.maxWidth < 600) {
                 return Column(children: <Widget>[
-                  buildPortfolioDropDown(bloc),
+                  buildPortfolioDropDown(bloc, l10n),
                   const SizedBox(height: 16.0),
-                  buildGroupDropDown(bloc)
+                  buildGroupDropDown(bloc, l10n)
                 ]);
               } else {
                 return Row(children: <Widget>[
-                  buildPortfolioDropDown(bloc),
+                  buildPortfolioDropDown(bloc, l10n),
                   Container(
                       padding: const EdgeInsets.only(left: 14.0),
-                      child: buildGroupDropDown(bloc))
+                      child: buildGroupDropDown(bloc, l10n))
                 ]);
               }
             },
           ),
         ),
-        buildPortfolioGroupChips(bloc),
+        buildPortfolioGroupChips(bloc, l10n),
       ],
     );
   }
 
-  Widget buildPortfolioGroupChips(SelectPortfolioGroupBloc bloc) {
+  Widget buildPortfolioGroupChips(SelectPortfolioGroupBloc bloc, AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: StreamBuilder<Set<PortfolioGroup>?>(
@@ -73,7 +75,7 @@ class PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                                     )),
                                 key: ObjectKey(item),
                                 label: item.portfolio == null
-                                    ? const Text('FeatureHub Administrators')
+                                    ? Text(l10n.featureHubAdministrators)
                                     : Text(
                                         '${item.portfolio?.name}: ${item.group.name}'),
                                 onDeleted: () =>
@@ -88,7 +90,7 @@ class PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
     );
   }
 
-  Widget buildGroupDropDown(SelectPortfolioGroupBloc bloc) {
+  Widget buildGroupDropDown(SelectPortfolioGroupBloc bloc, AppLocalizations l10n) {
     return StreamBuilder<List<Group>?>(
         stream: bloc.groups,
         builder: (context, AsyncSnapshot<List<Group>?> snapshot) {
@@ -97,9 +99,9 @@ class PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
             child: Container(
               constraints: const BoxConstraints(maxWidth: 300),
               child: InputDecorator(
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Group',
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  labelText: l10n.group,
                 ),
                 child: InkWell(
                   mouseCursor: SystemMouseCursors.click,
@@ -120,7 +122,7 @@ class PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                                 value: dropDownStringItem.id,
                                 child: Text(dropDownStringItem.name));
                           }).toList(),
-                    hint: Text('Select group',
+                    hint: Text(l10n.selectGroup,
                         style: Theme.of(context).textTheme.bodyLarge),
                     onChanged: (String? value) {
                       if (value != null) {
@@ -140,21 +142,20 @@ class PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
   }
 
   StreamBuilder<List<Portfolio>?> buildPortfolioDropDown(
-      SelectPortfolioGroupBloc bloc) {
+      SelectPortfolioGroupBloc bloc, AppLocalizations l10n) {
     return StreamBuilder<List<Portfolio>?>(
         stream: bloc.portfolios,
         builder: (context, AsyncSnapshot<List<Portfolio>?> snapshot) {
           if (snapshot.hasData) {
             return Theme(
               data: Theme.of(context).copyWith(
-//                canvasColor: Colors.blue,
                   brightness: Brightness.light),
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 300),
                 child: InputDecorator(
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Portfolio',
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: l10n.portfolioLabel,
                   ),
                   child: InkWell(
                     mouseCursor: SystemMouseCursors.click,
@@ -175,7 +176,7 @@ class PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                             value: dropDownStringItem.id,
                             child: Text(dropDownStringItem.name));
                       }).toList(),
-                      hint: Text('Select portfolio',
+                      hint: Text(l10n.selectPortfolio,
                           style: Theme.of(context).textTheme.bodyLarge),
                       onChanged: (String? value) {
                         if (value != null) {

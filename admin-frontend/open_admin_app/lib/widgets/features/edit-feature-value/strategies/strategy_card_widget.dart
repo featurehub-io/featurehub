@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/theme/custom_text_style.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/split_edit.dart';
 import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
@@ -26,6 +27,7 @@ class StrategyCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       height: 50,
       child: InkWell(
@@ -61,7 +63,7 @@ class StrategyCardWidget extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context).textTheme.labelLarge)
                               : (rolloutStrategy?.name == null
-                                  ? Text('default',
+                                  ? Text(l10n.strategyDefault,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall!
@@ -74,7 +76,7 @@ class StrategyCardWidget extends StatelessWidget {
                                           .labelLarge))),
                   Expanded(
                       flex: 1,
-                      child: Text("serve",
+                      child: Text(l10n.strategyServe,
                           style: CustomTextStyle.bodySmallLight(context))),
                   Expanded(flex: 4, child: editableHolderWidget),
                   if (rolloutStrategy != null && groupRolloutStrategy == null)
@@ -105,7 +107,7 @@ class StrategyCardWidget extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           IconButton(
-                            tooltip: 'Edit Strategy Settings',
+                            tooltip: l10n.editStrategySettings,
                             onPressed: () {
                               Navigator.pop(context);
                               ManagementRepositoryClientBloc.router.navigateTo(

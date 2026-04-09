@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/apps/webhook/webhook_env_bloc.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
@@ -11,6 +12,7 @@ class WebhookDetailTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 800),
       child: Card(
@@ -26,7 +28,7 @@ class WebhookDetailTable extends StatelessWidget {
                       if (count != 8)
                         SizedBox(
                           width: 120,
-                          child: Text(byRow(count),
+                          child: Text(byRow(count, l10n),
                               style: Theme.of(context).textTheme.bodySmall),
                         ),
                       Expanded(
@@ -39,7 +41,7 @@ class WebhookDetailTable extends StatelessWidget {
                       if (count == 8)
                         FHCopyToClipboard(
                             copyString: byRowContent(count),
-                            tooltipMessage: 'Copy Content')
+                            tooltipMessage: l10n.copyContent)
                     ],
                   ),
                 )
@@ -50,27 +52,18 @@ class WebhookDetailTable extends StatelessWidget {
     );
   }
 
-  String byRow(int index) {
+  String byRow(int index, AppLocalizations l10n) {
     switch (index) {
-      case 0:
-        return 'When sent';
-      case 1:
-        return 'Webhook Cloud Event type';
-      case 2:
-        return 'URL';
-      case 3:
-        return 'Method';
-      case 4:
-        return 'HTTP status';
-      case 5:
-        return 'Cloud Event type';
-      case 6:
-        return 'Incoming headers';
-      case 7:
-        return 'Outgoing headers';
+      case 0: return l10n.webhookWhenSent;
+      case 1: return l10n.webhookCloudEventType;
+      case 2: return l10n.webhookUrl;
+      case 3: return l10n.webhookDetailMethod;
+      case 4: return l10n.webhookHttpStatus;
+      case 5: return l10n.cloudEventType;
+      case 6: return l10n.incomingHeaders;
+      case 7: return l10n.outgoingHeaders;
     }
-
-    return 'Webhook Content';
+    return l10n.webhookContent;
   }
 
   String byRowContent(int index) {

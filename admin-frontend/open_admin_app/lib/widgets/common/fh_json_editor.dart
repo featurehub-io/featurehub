@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 
 class FHJsonEditorWidget extends StatefulWidget {
@@ -48,6 +49,7 @@ class FHJsonEditorState extends State<FHJsonEditorWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       height: 500,
       child: Column(
@@ -58,7 +60,7 @@ class FHJsonEditorState extends State<FHJsonEditorWidget> {
                 Expanded(
                   child: CheckboxListTile(
                     dense: true,
-                    title: const Text("Enable JSON validation"),
+                    title: Text(l10n.enableJsonValidation),
                     value: isJsonOn,
                     controlAffinity: ListTileControlAffinity.leading,
                     onChanged: (newValue) {
@@ -77,13 +79,13 @@ class FHJsonEditorState extends State<FHJsonEditorWidget> {
                       widget.controller.text = encoder.convert(jsonMap);
                     });
                   },
-                  title: 'Format json',
+                  title: l10n.formatJson,
                   keepCase: true,
                 ),
             ]),
             if (isJsonOn)
               Text(
-                'JSON Value',
+                l10n.jsonValue,
                 textAlign: TextAlign.left,
                 style: Theme.of(context).textTheme.bodySmall,
               ),

@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_tag.dart';
 import 'package:open_admin_app/widgets/features/cell-view/flag_colored_on_off_label.dart';
 import 'package:open_admin_app/widgets/features/cell-view/strategy_tooltip.dart';
@@ -184,6 +185,7 @@ class _ValueCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     var displayValue = _findDisplayValue();
     var lightTheme = Theme.of(context).brightness == Brightness.light;
     return Padding(
@@ -222,7 +224,7 @@ class _ValueCard extends StatelessWidget {
                         richMessage: TextSpan(children: [
                           TextSpan(text: rolloutStrategy!.name),
                           TextSpan(
-                              text: generateTooltipMessage(rolloutStrategy))
+                              text: generateTooltipMessage(rolloutStrategy, l10n))
                         ]),
                         child: Padding(
                           padding: const EdgeInsets.all(4.0),
@@ -242,7 +244,7 @@ class _ValueCard extends StatelessWidget {
                       )
                     : groupStrategy != null
                         ? Tooltip(
-                            message: "Group Strategy",
+                            message: l10n.groupStrategyTooltip,
                             child: Padding(
                               padding: const EdgeInsets.all(4.0),
                               child: Text(
@@ -261,7 +263,7 @@ class _ValueCard extends StatelessWidget {
                           )
                         : applicationStrategy != null
                             ? Tooltip(
-                                message: "Application Strategy",
+                                message: l10n.applicationStrategyTooltip,
                                 child: Padding(
                                   padding: const EdgeInsets.all(4.0),
                                   child: Text(

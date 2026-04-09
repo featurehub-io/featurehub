@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 
 class ApplicationStrategiesDropDown extends StatefulWidget {
@@ -52,7 +53,7 @@ class _ApplicationStrategiesDropDownState
                           ));
                     }).toList()
                   : null,
-              hint: Text('Select strategy to add',
+              hint: Text(AppLocalizations.of(context)!.selectStrategyToAdd,
                   style: Theme.of(context).textTheme.titleSmall),
               onChanged: (String? value) async {
                 setState(() {

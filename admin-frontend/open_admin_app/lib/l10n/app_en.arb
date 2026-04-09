@@ -1,0 +1,1991 @@
+{
+  "@@locale": "en",
+
+  "signInTitle": "Sign in to FeatureHub",
+  "@signInTitle": { "description": "Title on the sign-in screen" },
+
+  "signInWithCredentials": "or sign in with a username and password",
+  "@signInWithCredentials": { "description": "Divider text between SSO and local sign-in" },
+
+  "emailLabel": "Email address",
+  "@emailLabel": { "description": "Label for the email input field" },
+
+  "emailRequired": "Please enter your email",
+  "@emailRequired": { "description": "Validation message when email is empty" },
+
+  "passwordLabel": "Password",
+  "@passwordLabel": { "description": "Label for the password input field" },
+
+  "passwordRequired": "Please enter your password",
+  "@passwordRequired": { "description": "Validation message when password is empty" },
+
+  "incorrectCredentials": "Incorrect email address or password",
+  "@incorrectCredentials": { "description": "Error shown when credentials are wrong" },
+
+  "signInButton": "Sign in",
+  "@signInButton": { "description": "Sign-in submit button label" },
+
+  "darkMode": "Dark mode",
+  "@darkMode": { "description": "Tooltip for the dark mode toggle button" },
+
+  "lightMode": "Light mode",
+  "@lightMode": { "description": "Tooltip for the light mode toggle button" },
+
+  "signOut": "Sign out",
+  "@signOut": { "description": "Tooltip for the sign-out button" },
+
+  "applicationSettings": "Application Settings",
+  "@applicationSettings": { "description": "Drawer section heading for application settings" },
+
+  "portfolioSettings": "Portfolio Settings",
+  "@portfolioSettings": { "description": "Drawer section heading for portfolio settings" },
+
+  "organizationSettings": "Organization Settings",
+  "@organizationSettings": { "description": "Drawer section heading for organization settings" },
+
+  "portfolios": "Portfolios",
+  "@portfolios": { "description": "Navigation menu item for portfolios" },
+
+  "users": "Users",
+  "@users": { "description": "Navigation menu item for users" },
+
+  "adminServiceAccounts": "Admin Service Accounts",
+  "@adminServiceAccounts": { "description": "Navigation menu item for admin service accounts" },
+
+  "systemConfig": "System Config",
+  "@systemConfig": { "description": "Navigation menu item for system configuration" },
+
+  "groups": "Groups",
+  "@groups": { "description": "Navigation menu item for groups" },
+
+  "serviceAccounts": "Service Accounts",
+  "@serviceAccounts": { "description": "Navigation menu item for service accounts" },
+
+  "environments": "Environments",
+  "@environments": { "description": "Navigation menu item for environments" },
+
+  "groupPermissions": "Group permissions",
+  "@groupPermissions": { "description": "Navigation menu item for group permissions" },
+
+  "serviceAccountPermissions": "Service account permissions",
+  "@serviceAccountPermissions": { "description": "Navigation menu item for service account permissions" },
+
+  "integrations": "Integrations",
+  "@integrations": { "description": "Navigation menu item for integrations" },
+
+  "applications": "Applications",
+  "@applications": { "description": "Navigation menu item for applications" },
+
+  "features": "Features",
+  "@features": { "description": "Navigation menu item for features" },
+
+  "featureGroups": "Feature Groups",
+  "@featureGroups": { "description": "Navigation menu item for feature groups" },
+
+  "applicationStrategies": "Application Strategies",
+  "@applicationStrategies": { "description": "Navigation menu item for application strategies" },
+
+  "apiKeys": "API Keys",
+  "@apiKeys": { "description": "Navigation menu item for API keys" },
+
+  "deleteConfirmTitle": "Are you sure you want to delete the {thing}?",
+  "@deleteConfirmTitle": {
+    "description": "Confirmation dialog title when deleting something",
+    "placeholders": {
+      "thing": { "type": "String" }
+    }
+  },
+
+  "cannotBeUndone": "This cannot be undone!",
+  "@cannotBeUndone": { "description": "Warning content in delete confirmation dialog" },
+
+  "cancel": "Cancel",
+  "@cancel": { "description": "Cancel button label" },
+
+  "delete": "Delete",
+  "@delete": { "description": "Delete button label" },
+
+  "reset": "Reset",
+  "@reset": { "description": "Reset button label" },
+
+  "ok": "OK",
+  "@ok": { "description": "OK button label" },
+
+  "edit": "Edit",
+  "@edit": { "description": "Edit action label" },
+
+  "viewDocumentation": "View documentation",
+  "@viewDocumentation": { "description": "Tooltip for documentation links" },
+
+  "createNewApplication": "Create new application",
+  "@createNewApplication": { "description": "Button to create a new application" },
+
+  "applicationsDocumentation": "Applications Documentation",
+  "@applicationsDocumentation": { "description": "Label for applications docs link" },
+
+  "republishPortfolioCache": "Republish portfolio cache",
+  "@republishPortfolioCache": { "description": "Button to republish portfolio cache" },
+
+  "republishPortfolioCacheWarningTitle": "Warning: Intensive system operation",
+  "@republishPortfolioCacheWarningTitle": { "description": "Title of republish cache confirmation dialog" },
+
+  "republishPortfolioCacheWarningContent": "Are you sure you want to republish this entire portfolio's cache?",
+  "@republishPortfolioCacheWarningContent": { "description": "Body of republish cache confirmation dialog" },
+
+  "featureFlags": "Feature flags",
+  "@featureFlags": { "description": "Tooltip label for feature flags count" },
+
+  "showMore": "Show more",
+  "@showMore": { "description": "Tooltip for the app card popup menu" },
+
+  "republishCacheForApp": "Republish cache for this app",
+  "@republishCacheForApp": { "description": "Popup menu item to republish cache for a single app" },
+
+  "manageUsers": "Manage users",
+  "@manageUsers": { "description": "Page header for the manage users screen" },
+
+  "manageUsersDocumentation": "Manage Users Documentation",
+  "@manageUsersDocumentation": { "description": "Label for manage users docs link" },
+
+  "createNewUser": "Create new user",
+  "@createNewUser": { "description": "Button to create a new user" },
+
+  "searchUsers": "Search users",
+  "@searchUsers": { "description": "Hint text in the users search field" },
+
+  "columnName": "Name",
+  "@columnName": { "description": "Table column header: name" },
+
+  "columnStatus": "Status",
+  "@columnStatus": { "description": "Table column header: status" },
+
+  "columnEmail": "Email",
+  "@columnEmail": { "description": "Table column header: email" },
+
+  "columnLastSignIn": "Last sign in (UTC)",
+  "@columnLastSignIn": { "description": "Table column header: last sign-in time" },
+
+  "columnActions": "Actions",
+  "@columnActions": { "description": "Table column header: actions" },
+
+  "notYetRegistered": "Not yet registered",
+  "@notYetRegistered": { "description": "Shown in the name cell when a user hasn't completed registration" },
+
+  "statusActive": "active",
+  "@statusActive": { "description": "User status: active" },
+
+  "statusDeactivated": "deactivated",
+  "@statusDeactivated": { "description": "User status: deactivated" },
+
+  "activateUserTooltip": "Activate user",
+  "@activateUserTooltip": { "description": "Tooltip on the activate-user icon button" },
+
+  "activateUserTitle": "Activate user '{name}'",
+  "@activateUserTitle": {
+    "description": "Dialog title when activating a user",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "activateUserConfirm": "Are you sure you want to activate user with email address {email}?",
+  "@activateUserConfirm": {
+    "description": "Dialog body when activating a user",
+    "placeholders": { "email": { "type": "String" } }
+  },
+
+  "activate": "Activate",
+  "@activate": { "description": "Activate button label" },
+
+  "userActivated": "User '{name}' activated!",
+  "@userActivated": {
+    "description": "Snackbar message after activating a user",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "userDeactivated": "User '{name}' deactivated!",
+  "@userDeactivated": {
+    "description": "Snackbar message after deactivating a user",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "userInformation": "User information",
+  "@userInformation": { "description": "Title of the user info dialog" },
+
+  "registrationUrl": "Registration URL",
+  "@registrationUrl": { "description": "Label for the registration URL in user info dialog" },
+
+  "copyUrlToClipboard": "Copy URL to Clipboard",
+  "@copyUrlToClipboard": { "description": "Tooltip for the copy-registration-URL button" },
+
+  "registrationExpired": "Registration expired",
+  "@registrationExpired": { "description": "Label shown when a registration token has expired" },
+
+  "renewRegistrationUrl": "Renew registration URL and copy to clipboard",
+  "@renewRegistrationUrl": { "description": "Button to renew an expired registration token" },
+
+  "registrationUrlRenewed": "Registration URL renewed and copied to clipboard",
+  "@registrationUrlRenewed": { "description": "Snackbar after renewing registration URL" },
+
+  "cantDeleteYourself": "You can't delete yourself!",
+  "@cantDeleteYourself": { "description": "Dialog title when trying to delete own account" },
+
+  "cantDeleteYourselfContent": "To delete yourself from the organization, you'll need to contact a site administrator.",
+  "@cantDeleteYourselfContent": { "description": "Dialog body when trying to delete own account" },
+
+  "deleteUserContent": "This user will be removed from all groups and deactivated in this organization.",
+  "@deleteUserContent": { "description": "Body of the delete-user confirmation dialog" },
+
+  "managePortfolios": "Manage portfolios",
+  "@managePortfolios": { "description": "Page header for the portfolios screen" },
+
+  "managePortfoliosDocumentation": "Manage Portfolios Documentation",
+  "@managePortfoliosDocumentation": { "description": "Label for portfolios docs link" },
+
+  "createNewPortfolio": "Create new portfolio",
+  "@createNewPortfolio": { "description": "Button to create a new portfolio" },
+
+  "searchPortfolios": "Search portfolios",
+  "@searchPortfolios": { "description": "Hint text in the portfolio search field" },
+
+  "republishSystemCache": "Republish system cache",
+  "@republishSystemCache": { "description": "Button to republish the entire system cache" },
+
+  "republishEntireCacheWarningContent": "Are you sure you want to republish the entire cache?",
+  "@republishEntireCacheWarningContent": { "description": "Body of republish entire cache confirmation dialog" },
+
+  "manageGroupMembers": "Manage group members",
+  "@manageGroupMembers": { "description": "Page header for the group members screen" },
+
+  "userGroupsDocumentation": "User Groups Documentation",
+  "@userGroupsDocumentation": { "description": "Label for user groups docs link" },
+
+  "fetchingGroups": "Fetching Groups...",
+  "@fetchingGroups": { "description": "Loading text while groups are being fetched" },
+
+  "createNewGroup": "Create new group",
+  "@createNewGroup": { "description": "Button to create a new group" },
+
+  "addMembers": "Add members",
+  "@addMembers": { "description": "Button to open the add-members dialog" },
+
+  "columnMemberType": "Type (User or Admin Service Account)",
+  "@columnMemberType": { "description": "Table column header for member type" },
+
+  "memberTypeUser": "User",
+  "@memberTypeUser": { "description": "Member type label: regular user" },
+
+  "memberTypeServiceAccount": "Service Account",
+  "@memberTypeServiceAccount": { "description": "Member type label: service account" },
+
+  "removeFromGroup": "Remove from group",
+  "@removeFromGroup": { "description": "Tooltip on the remove-member icon button" },
+
+  "memberRemovedFromGroup": "'{name}' removed from group '{groupName}'",
+  "@memberRemovedFromGroup": {
+    "description": "Snackbar after removing a member from a group",
+    "placeholders": {
+      "name": { "type": "String" },
+      "groupName": { "type": "String" }
+    }
+  },
+
+  "noGroupsFound": "No groups found in the portfolio",
+  "@noGroupsFound": { "description": "Empty state when no groups exist in the portfolio" },
+
+  "portfolioGroups": "Portfolio groups",
+  "@portfolioGroups": { "description": "Label above the group dropdown" },
+
+  "selectGroup": "Select group",
+  "@selectGroup": { "description": "Hint text in the group dropdown" },
+
+  "addMembersToGroupTitle": "Add members to group {groupName}",
+  "@addMembersToGroupTitle": {
+    "description": "Title of the add-members dialog",
+    "placeholders": { "groupName": { "type": "String" } }
+  },
+
+  "enterMembersToAdd": "Enter members to add to group...",
+  "@enterMembersToAdd": { "description": "Label in the members chip input field" },
+
+  "addToGroup": "Add to group",
+  "@addToGroup": { "description": "Submit button in the add-members dialog" },
+
+  "groupUpdated": "Group '{name}' updated!",
+  "@groupUpdated": {
+    "description": "Snackbar after a group is updated",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "manageServiceAccounts": "Manage service accounts",
+  "@manageServiceAccounts": { "description": "Page header for the service accounts screen" },
+
+  "serviceAccountsDocumentation": "Service Accounts Documentation",
+  "@serviceAccountsDocumentation": { "description": "Label for service accounts docs link" },
+
+  "createNewServiceAccount": "Create new service account",
+  "@createNewServiceAccount": { "description": "Button to create a new service account" },
+
+  "saHasPermissions": "The service account has permissions to one or more environments in this application",
+  "@saHasPermissions": { "description": "Label on service account environment card when it has access" },
+
+  "saHasNoPermissions": "The service account has no permissions to any environments in this application",
+  "@saHasNoPermissions": { "description": "Label on service account environment card when it has no access" },
+
+  "changeAccess": "Change access",
+  "@changeAccess": { "description": "Button on service account environment card when access exists" },
+
+  "addAccess": "Add access",
+  "@addAccess": { "description": "Button on service account environment card when no access" },
+
+  "saDeleteContent": "All applications using this service account will no longer have access to features!\n\nThis cannot be undone!",
+  "@saDeleteContent": { "description": "Body of delete service account confirmation dialog" },
+
+  "saDeleted": "Service account '{name}' deleted!",
+  "@saDeleted": {
+    "description": "Snackbar after a service account is deleted",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "saDeleteError": "Couldn't delete service account {name}",
+  "@saDeleteError": {
+    "description": "Error title when deleting a service account fails",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "editServiceAccount": "Edit service account",
+  "@editServiceAccount": { "description": "Dialog title when editing a service account" },
+
+  "saNameLabel": "Service account name",
+  "@saNameLabel": { "description": "Label for the service account name field" },
+
+  "saNameRequired": "Please enter a service account name",
+  "@saNameRequired": { "description": "Validation: name field empty" },
+
+  "saNameTooShort": "Service account name needs to be at least 4 characters long",
+  "@saNameTooShort": { "description": "Validation: name too short" },
+
+  "saDescriptionLabel": "Service account description",
+  "@saDescriptionLabel": { "description": "Label for the service account description field" },
+
+  "saDescriptionRequired": "Please enter service account description",
+  "@saDescriptionRequired": { "description": "Validation: description field empty" },
+
+  "saDescriptionTooShort": "Service account description needs to be at least 4 characters long",
+  "@saDescriptionTooShort": { "description": "Validation: description too short" },
+
+  "update": "Update",
+  "@update": { "description": "Update button label" },
+
+  "create": "Create",
+  "@create": { "description": "Create button label" },
+
+  "saUpdated": "Service account '{name}' updated!",
+  "@saUpdated": {
+    "description": "Snackbar after a service account is updated",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "saCreated": "Service account '{name}' created!",
+  "@saCreated": {
+    "description": "Snackbar after a service account is created",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "saAlreadyExists": "Service account '{name}' already exists",
+  "@saAlreadyExists": {
+    "description": "Error when creating a service account that already exists",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "resetClientApiKeys": "Reset client eval API keys",
+  "@resetClientApiKeys": { "description": "Tooltip for the reset client API keys button" },
+
+  "resetServerApiKeys": "Reset server eval API keys",
+  "@resetServerApiKeys": { "description": "Tooltip for the reset server API keys button" },
+
+  "featuresConsole": "Features console",
+  "@featuresConsole": { "description": "Page header for the features dashboard" },
+
+  "featuresDocumentation": "Features Documentation",
+  "@featuresDocumentation": { "description": "Label for features docs link" },
+
+  "createNewFeature": "Create New Feature",
+  "@createNewFeature": { "description": "Button to create a new feature flag" },
+
+  "noApplicationsInPortfolio": "There are no applications in this portfolio",
+  "@noApplicationsInPortfolio": { "description": "Empty state when no applications exist in the portfolio" },
+
+  "noApplicationsAccessMessage": "Either there are no applications in this portfolio or you don't have access to any of the applications.\nPlease contact your administrator.",
+  "@noApplicationsAccessMessage": { "description": "Message shown when user has no access to any applications" },
+
+  "apiKeysDocumentation": "API Keys Documentation",
+  "@apiKeysDocumentation": { "description": "Label for API keys docs link" },
+
+  "goToServiceAccountsSettings": "Go to service accounts settings",
+  "@goToServiceAccountsSettings": { "description": "Link to navigate to service accounts settings" },
+
+  "noServiceAccountsAvailable": "No service accounts available",
+  "@noServiceAccountsAvailable": { "description": "Empty state when no service accounts exist" },
+
+  "permissions": "Permissions",
+  "@permissions": { "description": "Column header for permissions" },
+
+  "clientServerApiKeys": "Client & Server API Keys",
+  "@clientServerApiKeys": { "description": "Column header for client and server API keys" },
+
+  "clientEvalApiKey": "Client eval API Key",
+  "@clientEvalApiKey": { "description": "Label for the client evaluation API key" },
+
+  "serverEvalApiKey": "Server eval API Key",
+  "@serverEvalApiKey": { "description": "Label for the server evaluation API key" },
+
+  "noPermissionsDefined": "No permissions defined",
+  "@noPermissionsDefined": { "description": "Shown when a service account has no permissions for an environment" },
+
+  "apiKeyUnavailable": "API Key is unavailable because your current permissions for this environment are lower level",
+  "@apiKeyUnavailable": { "description": "Tooltip on the error icon when an API key is unavailable" },
+
+  "manageAdminSdkServiceAccounts": "Manage admin SDK service accounts",
+  "@manageAdminSdkServiceAccounts": { "description": "Page header for admin SDK service accounts" },
+
+  "adminServiceAccountsDocumentation": "Admin Service Accounts Documentation",
+  "@adminServiceAccountsDocumentation": { "description": "Label for admin service accounts docs link" },
+
+  "createAdminServiceAccount": "Create Admin Service Account",
+  "@createAdminServiceAccount": { "description": "Button to create an admin service account" },
+
+  "createUserInstructions": "To create a new user please first provide their email address",
+  "@createUserInstructions": { "description": "Instruction text on the create user form" },
+
+  "invalidEmailAddress": "Please enter a valid email address",
+  "@invalidEmailAddress": { "description": "Validation message for invalid email" },
+
+  "addUserToGroupsHint": "Add user to some portfolio groups or leave it blank to add them later",
+  "@addUserToGroupsHint": { "description": "Hint text for the portfolio group selector on create user form" },
+
+  "userCreated": "User created!",
+  "@userCreated": { "description": "Success heading after creating a user" },
+
+  "sendRegistrationUrlInstructions": "You will need to email this URL to the new user, so they can complete their registration and set their password.",
+  "@sendRegistrationUrlInstructions": { "description": "Instruction shown after user creation with local auth" },
+
+  "userCanSignIn": "The user can now sign in and they will be able to access the system.",
+  "@userCanSignIn": { "description": "Instruction shown after user creation with SSO auth" },
+
+  "close": "Close",
+  "@close": { "description": "Close button label" },
+
+  "createAnotherUser": "Create another user",
+  "@createAnotherUser": { "description": "Button to go back and create another user" },
+
+  "userEmailAlreadyExists": "User with email '{email}' already exists",
+  "@userEmailAlreadyExists": {
+    "description": "Error when creating a user whose email already exists",
+    "placeholders": { "email": { "type": "String" } }
+  },
+
+  "appSettingsTitle": "Application settings",
+  "@appSettingsTitle": { "description": "Page header for the application settings screen" },
+
+  "tabEnvironments": "Environments",
+  "@tabEnvironments": { "description": "Tab label for environments" },
+
+  "tabGroupPermissions": "Group Permissions",
+  "@tabGroupPermissions": { "description": "Tab label for group permissions" },
+
+  "tabServiceAccountPermissions": "Service Account Permissions",
+  "@tabServiceAccountPermissions": { "description": "Tab label for service account permissions" },
+
+  "tabIntegrations": "Integrations",
+  "@tabIntegrations": { "description": "Tab label for integrations" },
+
+  "oauth2NotAuthorized": "You are not authorised to access FeatureHub",
+  "@oauth2NotAuthorized": { "description": "OAuth2 failure screen: unauthorised heading" },
+
+  "oauth2ContactAdmin": "Please contact your administrator and ask them nicely to add your email to your organization's user list",
+  "@oauth2ContactAdmin": { "description": "OAuth2 failure screen: instructions" },
+
+  "registerUrlUnexpectedError": "Unexpected error occured\n.Please contact your FeatureHub administrator.",
+  "@registerUrlUnexpectedError": { "description": "Register URL screen: unexpected server error" },
+
+  "registerUrlExpiredOrInvalid": "This Register URL is either expired or invalid.\n\nCheck your URL is correct or contact your FeatureHub administrator.",
+  "@registerUrlExpiredOrInvalid": { "description": "Register URL screen: link is expired or invalid" },
+
+  "validatingInvitationUrl": "Validating your invitation URL",
+  "@validatingInvitationUrl": { "description": "Register URL screen: loading state while validating token" },
+
+  "welcomeToFeatureHub": "Welcome to FeatureHub",
+  "@welcomeToFeatureHub": { "description": "Register URL screen: welcome heading" },
+
+  "registerCompleteDetails": "To register please complete the following details",
+  "@registerCompleteDetails": { "description": "Register URL screen: sub-heading" },
+
+  "nameLabel": "Name",
+  "@nameLabel": { "description": "Label for the name input field" },
+
+  "nameRequired": "Please enter your name",
+  "@nameRequired": { "description": "Validation message when name field is empty" },
+
+  "passwordMustBe7Chars": "Password must be at least 7 characters!",
+  "@passwordMustBe7Chars": { "description": "Validation message when password is too short" },
+
+  "passwordsDoNotMatch": "Passwords don't match",
+  "@passwordsDoNotMatch": { "description": "Validation message when passwords don't match" },
+
+  "confirmPasswordLabel": "Confirm Password",
+  "@confirmPasswordLabel": { "description": "Label for the confirm password field" },
+
+  "confirmPasswordRequired": "Please confirm your password",
+  "@confirmPasswordRequired": { "description": "Validation message when confirm password is empty" },
+
+  "registerButton": "Register",
+  "@registerButton": { "description": "Register form submit button" },
+
+  "passwordStrengthWeak": "Weak",
+  "@passwordStrengthWeak": { "description": "Password strength indicator: weak" },
+
+  "passwordStrengthBelowAverage": "Below average",
+  "@passwordStrengthBelowAverage": { "description": "Password strength indicator: below average" },
+
+  "passwordStrengthGood": "Good",
+  "@passwordStrengthGood": { "description": "Password strength indicator: good" },
+
+  "passwordStrengthStrong": "Strong",
+  "@passwordStrengthStrong": { "description": "Password strength indicator: strong" },
+
+  "notFoundMessage": "Sorry, we couldn't find the page!",
+  "@notFoundMessage": { "description": "404 page message" },
+
+  "pageNotFoundMessage": "Looks like we couldn't find any relevant information to display!",
+  "@pageNotFoundMessage": { "description": "Page-not-found fallback header" },
+
+  "featureGroupsDocumentation": "Feature Groups Documentation",
+  "@featureGroupsDocumentation": { "description": "Label for feature groups docs link" },
+
+  "createFeatureGroup": "Create feature group",
+  "@createFeatureGroup": { "description": "Button to create a new feature group" },
+
+  "applicationStrategiesDocumentation": "Application Strategies Documentation",
+  "@applicationStrategiesDocumentation": { "description": "Label for application strategies docs link" },
+
+  "editUser": "Edit user",
+  "@editUser": { "description": "Page header for the edit user screen" },
+
+  "resetPassword": "Reset password",
+  "@resetPassword": { "description": "Button and dialog title for resetting a password" },
+
+  "editEmailAddress": "Edit email address",
+  "@editEmailAddress": { "description": "Validation message when email field is empty on edit user form" },
+
+  "editNames": "Edit names",
+  "@editNames": { "description": "Validation message when name field is empty on edit user form" },
+
+  "removeOrAddUserToGroup": "Remove user from a group or add a new one",
+  "@removeOrAddUserToGroup": { "description": "Hint text above the group selector on edit user form" },
+
+  "saveAndClose": "Save and close",
+  "@saveAndClose": { "description": "Save and close button label" },
+
+  "userUpdated": "User {name} has been updated",
+  "@userUpdated": {
+    "description": "Snackbar after updating a user",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "resetPasswordInstructions": "After you reset the password below, make sure you email the new password to the user.",
+  "@resetPasswordInstructions": { "description": "Instructions in the reset password dialog" },
+
+  "newPasswordLabel": "New password",
+  "@newPasswordLabel": { "description": "Label for the new password field" },
+
+  "newPasswordRequired": "Please enter new password",
+  "@newPasswordRequired": { "description": "Validation when new password is empty" },
+
+  "confirmNewPasswordLabel": "Confirm new password",
+  "@confirmNewPasswordLabel": { "description": "Label for the confirm new password field" },
+
+  "confirmNewPasswordRequired": "Please confirm new password",
+  "@confirmNewPasswordRequired": { "description": "Validation when confirm new password is empty" },
+
+  "save": "Save",
+  "@save": { "description": "Save button label" },
+
+  "groupPrefix": "Group: ",
+  "@groupPrefix": { "description": "Label prefix before a group name" },
+
+  "applicationPrefix": "Application: ",
+  "@applicationPrefix": { "description": "Label prefix before an application name" },
+
+  "environmentPrefix": "Environment: ",
+  "@environmentPrefix": { "description": "Label prefix before an environment name" },
+
+  "applyAllChanges": "Apply all changes",
+  "@applyAllChanges": { "description": "Button to save all pending changes in the feature group settings" },
+
+  "featureGroupSettingsUpdated": "Settings for group '{name}' have been updated",
+  "@featureGroupSettingsUpdated": {
+    "description": "Snackbar after saving feature group settings",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "noPermissions": "No permissions",
+  "@noPermissions": { "description": "Shown when user has no permissions for an environment in feature group settings" },
+
+  "editSplitTargetingRules": "Edit split targeting rules",
+  "@editSplitTargetingRules": { "description": "Dialog title when editing a rollout strategy" },
+
+  "viewSplitTargetingRules": "View split targeting rules",
+  "@viewSplitTargetingRules": { "description": "Dialog title when viewing (read-only) a rollout strategy" },
+
+  "removeStrategy": "Remove strategy",
+  "@removeStrategy": { "description": "Button to remove the current rollout strategy" },
+
+  "addRolloutStrategy": "Add rollout strategy",
+  "@addRolloutStrategy": { "description": "Button to add a new rollout strategy" },
+
+  "featuresList": "Features List",
+  "@featuresList": { "description": "Section heading for the features list in feature group settings" },
+
+  "addFeature": "Add Feature",
+  "@addFeature": { "description": "Button to add a feature to a feature group" },
+
+  "featureValueLocked": "Feature value is locked. Unlock from the main Features dashboard to enable editing",
+  "@featureValueLocked": { "description": "Tooltip on the lock icon when a feature value is locked" },
+
+  "adminSaNameRequired": "Please provide a name for the Admin Service Account",
+  "@adminSaNameRequired": { "description": "Validation when admin SA name field is empty" },
+
+  "adminSaGroupsHint": "Assign to some portfolio groups or leave it blank to add them later",
+  "@adminSaGroupsHint": { "description": "Hint text for the group selector on create admin SA form" },
+
+  "adminSaCreated": "Admin Service Account '{name}' created!",
+  "@adminSaCreated": {
+    "description": "Success heading after creating an admin service account",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "createAnotherServiceAccount": "Create another Service Account",
+  "@createAnotherServiceAccount": { "description": "Button to go back and create another admin SA" },
+
+  "adminSaAlreadyExists": "Service Account with name '{name}' already exists",
+  "@adminSaAlreadyExists": {
+    "description": "Error when creating an admin SA whose name already exists",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "editAdminSdkServiceAccount": "Edit admin SDK service account",
+  "@editAdminSdkServiceAccount": { "description": "Page header for the edit admin SDK SA screen" },
+
+  "editName": "Edit name",
+  "@editName": { "description": "Validation message when name field is empty on edit admin SA form" },
+
+  "removeOrAddAdminSaToGroup": "Remove Admin Service Account from a group or add a new one",
+  "@removeOrAddAdminSaToGroup": { "description": "Hint text above the group selector on edit admin SA form" },
+
+  "adminSaUpdated": "Admin Service Account {name} has been updated",
+  "@adminSaUpdated": {
+    "description": "Snackbar after updating an admin service account",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "createApplicationStrategyTitle": "Create Application Strategy for {name}",
+  "@createApplicationStrategyTitle": {
+    "description": "Page header when creating an application strategy",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "editApplicationStrategyTitle": "Edit Application Strategy for {name}",
+  "@editApplicationStrategyTitle": {
+    "description": "Page header when editing an application strategy",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "editApplication": "Edit application",
+  "@editApplication": { "description": "Dialog title when editing an application" },
+
+  "appNameLabel": "Application name",
+  "@appNameLabel": { "description": "Label for the application name field" },
+
+  "appNameRequired": "Please enter an application name",
+  "@appNameRequired": { "description": "Validation: app name empty" },
+
+  "appNameTooShort": "Application name needs to be at least 4 characters long",
+  "@appNameTooShort": { "description": "Validation: app name too short" },
+
+  "appDescriptionLabel": "Application description",
+  "@appDescriptionLabel": { "description": "Label for the application description field" },
+
+  "appDescriptionRequired": "Please enter app description",
+  "@appDescriptionRequired": { "description": "Validation: app description empty" },
+
+  "appDescriptionTooShort": "Application description needs to be at least 4 characters long",
+  "@appDescriptionTooShort": { "description": "Validation: app description too short" },
+
+  "appUpdated": "Application {name} updated!",
+  "@appUpdated": {
+    "description": "Snackbar after updating an application",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "appCreated": "Application {name} created!",
+  "@appCreated": {
+    "description": "Snackbar after creating an application",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "appAlreadyExists": "Application '{name}' already exists",
+  "@appAlreadyExists": {
+    "description": "Error when creating an application that already exists",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "createNewFeatureGroup": "Create new Feature Group",
+  "@createNewFeatureGroup": { "description": "Dialog title when creating a feature group" },
+
+  "editFeatureGroup": "Edit Feature Group",
+  "@editFeatureGroup": { "description": "Dialog title when editing a feature group" },
+
+  "featureGroupNameLabel": "Feature group name",
+  "@featureGroupNameLabel": { "description": "Label for the feature group name field" },
+
+  "featureGroupNameRequired": "Please enter feature group name",
+  "@featureGroupNameRequired": { "description": "Validation: feature group name empty" },
+
+  "featureGroupNameTooShort": "Group name needs to be at least 4 characters long",
+  "@featureGroupNameTooShort": { "description": "Validation: feature group name too short" },
+
+  "featureGroupDescriptionLabel": "Feature group description",
+  "@featureGroupDescriptionLabel": { "description": "Label for the feature group description field" },
+
+  "featureGroupDescriptionRequired": "Please enter feature group description",
+  "@featureGroupDescriptionRequired": { "description": "Validation: feature group description empty" },
+
+  "featureGroupDescriptionTooShort": "Description needs to be at least 4 characters long",
+  "@featureGroupDescriptionTooShort": { "description": "Validation: feature group description too short" },
+
+  "featureGroupUpdated": "Feature group {name} updated!",
+  "@featureGroupUpdated": {
+    "description": "Snackbar after updating a feature group",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "featureGroupCreated": "Feature group {name} created!",
+  "@featureGroupCreated": {
+    "description": "Snackbar after creating a feature group",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "featureGroupAlreadyExists": "Feature group '{name}' already exists",
+  "@featureGroupAlreadyExists": {
+    "description": "Error when creating a feature group that already exists",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "editGroup": "Edit group",
+  "@editGroup": { "description": "Dialog title when editing a group" },
+
+  "groupNameLabel": "Group name",
+  "@groupNameLabel": { "description": "Label for the group name field" },
+
+  "groupNameRequired": "Please enter a group name",
+  "@groupNameRequired": { "description": "Validation: group name empty" },
+
+  "groupNameTooShort": "Group name needs to be at least 4 characters long",
+  "@groupNameTooShort": { "description": "Validation: group name too short" },
+
+  "groupCreated": "Group '{name}' created!",
+  "@groupCreated": {
+    "description": "Snackbar after creating a group",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "groupAlreadyExists": "Group '{name}' already exists",
+  "@groupAlreadyExists": {
+    "description": "Error when creating a group that already exists",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "groupDeleteContent": "All permissions belonging to this group will be deleted \n\nThis cannot be undone!",
+  "@groupDeleteContent": { "description": "Body of delete group confirmation dialog" },
+
+  "groupDeleted": "Group '{name}' deleted!",
+  "@groupDeleted": {
+    "description": "Snackbar after deleting a group",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "couldNotDeleteGroup": "Could not delete group {name}",
+  "@couldNotDeleteGroup": {
+    "description": "Error when deleting a group fails",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "viewFeature": "View feature",
+  "@viewFeature": { "description": "Dialog title when viewing a feature (read-only)" },
+
+  "editFeature": "Edit feature",
+  "@editFeature": { "description": "Dialog title when editing a feature" },
+
+  "featureNameLabel": "Feature name",
+  "@featureNameLabel": { "description": "Label for the feature name field" },
+
+  "featureNameRequired": "Please enter feature name",
+  "@featureNameRequired": { "description": "Validation: feature name empty" },
+
+  "featureNameTooShort": "Feature name needs to be at least 4 characters long",
+  "@featureNameTooShort": { "description": "Validation: feature name too short" },
+
+  "featureKeyLabel": "Feature key",
+  "@featureKeyLabel": { "description": "Label for the feature key field" },
+
+  "featureKeyHint": "To be used in the code with FeatureHub SDK",
+  "@featureKeyHint": { "description": "Hint text for the feature key field" },
+
+  "featureKeyRequired": "Please enter feature key",
+  "@featureKeyRequired": { "description": "Validation: feature key empty" },
+
+  "featureKeyNoWhitespace": "Cannot contain whitespace",
+  "@featureKeyNoWhitespace": { "description": "Validation: feature key contains whitespace" },
+
+  "featureDescriptionLabel": "Description (optional)",
+  "@featureDescriptionLabel": { "description": "Label for the feature description field" },
+
+  "featureDescriptionHint": "Some information about feature",
+  "@featureDescriptionHint": { "description": "Hint text for the feature description field" },
+
+  "featureLinkLabel": "Reference link (optional)",
+  "@featureLinkLabel": { "description": "Label for the feature reference link field" },
+
+  "featureLinkHint": "Optional link to external tracking system, e.g. Jira",
+  "@featureLinkHint": { "description": "Hint text for the feature reference link field" },
+
+  "selectFeatureType": "Select feature type",
+  "@selectFeatureType": { "description": "Hint and error text for the feature type dropdown" },
+
+  "featureUpdated": "Feature {name} updated!",
+  "@featureUpdated": {
+    "description": "Snackbar after updating a feature",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "featureCreated": "Feature {name} created!",
+  "@featureCreated": {
+    "description": "Snackbar after creating a feature",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "featureKeyAlreadyExists": "Feature with key '{key}' already exists",
+  "@featureKeyAlreadyExists": {
+    "description": "Error when creating a feature whose key already exists",
+    "placeholders": { "key": { "type": "String" } }
+  },
+
+  "featureTypeString": "String",
+  "@featureTypeString": { "description": "Feature type dropdown option: string" },
+
+  "featureTypeNumber": "Number",
+  "@featureTypeNumber": { "description": "Feature type dropdown option: number" },
+
+  "featureTypeBoolean": "Standard flag (boolean)",
+  "@featureTypeBoolean": { "description": "Feature type dropdown option: boolean" },
+
+  "featureTypeJson": "Remote configuration (JSON)",
+  "@featureTypeJson": { "description": "Feature type dropdown option: JSON" },
+
+  "adminSaResetTokenWarning": "Are you sure you want to reset the access token for this service account?\nThis will invalidate the current token!",
+  "@adminSaResetTokenWarning": { "description": "Warning text in the admin SA token reset dialog" },
+
+  "adminSdkTokenReset": "Admin SDK access token has been reset",
+  "@adminSdkTokenReset": { "description": "Dialog title after resetting an admin SDK token" },
+
+  "adminSdkTokenResetSnackbar": "Admin SDK access token has been reset!",
+  "@adminSdkTokenResetSnackbar": { "description": "Snackbar after resetting an admin SDK token" },
+
+  "unableToResetToken": "Unable to reset access token",
+  "@unableToResetToken": { "description": "Error when resetting an admin SA token fails" },
+
+  "resetClientApiKeysWarning": "Are you sure you want to reset ALL client eval API keys for this service account?\nThis will affect the keys across all environments and all applications that this service account has access to!",
+  "@resetClientApiKeysWarning": { "description": "Warning text in the client API key reset dialog" },
+
+  "resetServerApiKeysWarning": "Are you sure you want to reset ALL server eval API keys for this service account?\nThis will affect the keys across all environments and all applications that this service account has access to!",
+  "@resetServerApiKeysWarning": { "description": "Warning text in the server API key reset dialog" },
+
+  "clientApiKeysReset": "'Client' eval API Keys have been reset!",
+  "@clientApiKeysReset": { "description": "Snackbar after resetting client API keys" },
+
+  "serverApiKeysReset": "'Server' eval API Keys have been reset!",
+  "@serverApiKeysReset": { "description": "Snackbar after resetting server API keys" },
+
+  "unableToResetApiKey": "Unable to reset API Key",
+  "@unableToResetApiKey": { "description": "Error when resetting an API key fails" },
+
+  "viewMetadataFor": "View metadata for '{name}'",
+  "@viewMetadataFor": {
+    "description": "Dialog title when viewing feature metadata (read-only)",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "editMetadataFor": "Edit metadata for '{name}'",
+  "@editMetadataFor": {
+    "description": "Dialog title when editing feature metadata",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "setValue": "Set value",
+  "@setValue": { "description": "Button to confirm setting a value in a dialog" },
+
+  "featureMetadataUpdated": "Feature {name} metadata has been updated!",
+  "@featureMetadataUpdated": {
+    "description": "Snackbar after updating feature metadata",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "setFeatureValue": "Set feature value",
+  "@setFeatureValue": { "description": "Dialog title for the JSON value editor" },
+
+  "addRolloutStrategyTargetingRules": "Add rollout strategy targeting rules",
+  "@addRolloutStrategyTargetingRules": { "description": "Dialog title when adding a new rollout strategy" },
+
+  "splitStrategyName": "Split strategy name",
+  "@splitStrategyName": { "description": "Label for the strategy name field in the strategy editor" },
+
+  "splitStrategyNameExample": "E.g. 20% rollout",
+  "@splitStrategyNameExample": { "description": "Helper text for the strategy name field" },
+
+  "strategyNameRequired": "Strategy name required",
+  "@strategyNameRequired": { "description": "Validation: strategy name is empty" },
+
+  "percentageValue": "Percentage value",
+  "@percentageValue": { "description": "Label for the percentage value field" },
+
+  "percentageValueHelperText": "You can enter a value with up to 4 decimal points, e.g. 0.0005 %",
+  "@percentageValueHelperText": { "description": "Helper text for the percentage value field" },
+
+  "percentageValueRequired": "Percentage value required",
+  "@percentageValueRequired": { "description": "Validation: percentage value is empty" },
+
+  "addPercentageRolloutRule": "Add percentage rollout rule",
+  "@addPercentageRolloutRule": { "description": "Label next to the add-percentage button" },
+
+  "addPercentage": "+ Percentage",
+  "@addPercentage": { "description": "Button to add a percentage rollout rule" },
+
+  "percentageTotalOver100Error": "Your percentage total across all rollout values cannot be over 100%. Please enter different value.",
+  "@percentageTotalOver100Error": { "description": "Error when percentage totals exceed 100%" },
+
+  "add": "Add",
+  "@add": { "description": "Button label to add/save a new strategy" },
+
+  "filterByFeatureType": "Filter by feature type",
+  "@filterByFeatureType": { "description": "Hint text on the feature type filter dropdown in the features dashboard" },
+
+  "searchFeatures": "Search features",
+  "@searchFeatures": { "description": "Hint text in the features search field in the features dashboard" },
+
+  "createNewStrategy": "Create new strategy",
+  "@createNewStrategy": { "description": "Button to create a new application strategy" },
+
+  "searchStrategy": "Search strategy",
+  "@searchStrategy": { "description": "Hint text in the application strategies search field" },
+
+  "columnStrategyName": "Name",
+  "@columnStrategyName": { "description": "Table column header: strategy name" },
+
+  "columnDateCreated": "Date created (UTC)",
+  "@columnDateCreated": { "description": "Table column header: creation date" },
+
+  "columnDateUpdated": "Date updated (UTC)",
+  "@columnDateUpdated": { "description": "Table column header: last updated date" },
+
+  "columnCreatedBy": "Created by",
+  "@columnCreatedBy": { "description": "Table column header: creator" },
+
+  "columnUsedIn": "Used in",
+  "@columnUsedIn": { "description": "Table column header: usage summary" },
+
+  "cannotCreateStrategyNoApps": "Cannot create application strategy as there are no applications in this portfolio",
+  "@cannotCreateStrategyNoApps": { "description": "Empty state when portfolio has no applications for strategy creation" },
+
+  "appStrategyDeleteContent": "This application strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!",
+  "@appStrategyDeleteContent": { "description": "Body of the delete application strategy confirmation dialog" },
+
+  "appStrategyDeleted": "Application strategy '{name}' deleted!",
+  "@appStrategyDeleted": {
+    "description": "Snackbar after deleting an application strategy",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "strategyUsage": "environments: {envCount}, feature values: {featureCount}",
+  "@strategyUsage": {
+    "description": "Strategy usage cell: how many environments and feature values use this strategy",
+    "placeholders": {
+      "envCount": { "type": "int" },
+      "featureCount": { "type": "int" }
+    }
+  },
+
+  "addRule": "Add rule",
+  "@addRule": { "description": "Label before the well-known rule type buttons in the strategy editor" },
+
+  "addCustomRule": "Add custom rule",
+  "@addCustomRule": { "description": "Label before the custom rule button in the strategy editor" },
+
+  "addCustomButton": "+ Custom",
+  "@addCustomButton": { "description": "Button to add a custom attribute rule in the strategy editor" },
+
+  "selectCondition": "Select condition",
+  "@selectCondition": { "description": "Hint on the condition/matcher dropdown in the strategy rule editor" },
+
+  "selectValueType": "Select value type",
+  "@selectValueType": { "description": "Hint on the value-type dropdown for custom attribute rules" },
+
+  "selectValue": "Select value",
+  "@selectValue": { "description": "Hint on the boolean value dropdown in the strategy rule editor" },
+
+  "selectCountry": "Select Country",
+  "@selectCountry": { "description": "Hint on the country multiselect dropdown" },
+
+  "selectDevice": "Select Device",
+  "@selectDevice": { "description": "Hint on the device multiselect dropdown" },
+
+  "selectPlatform": "Select Platform",
+  "@selectPlatform": { "description": "Hint on the platform multiselect dropdown" },
+
+  "customKey": "Custom key",
+  "@customKey": { "description": "Label for the custom attribute key field" },
+
+  "customKeyExample": "e.g. \"warehouse-id\"",
+  "@customKeyExample": { "description": "Helper text example for the custom attribute key field" },
+
+  "ruleNameRequired": "Rule name required",
+  "@ruleNameRequired": { "description": "Validation message when the custom rule key is empty" },
+
+  "deleteRule": "Delete rule",
+  "@deleteRule": { "description": "Tooltip on the delete-rule icon button" },
+
+  "userKeys": "User key(s)",
+  "@userKeys": { "description": "Label for the user-key value input field" },
+
+  "userKeyExample": "e.g. bob@xyz.com",
+  "@userKeyExample": { "description": "Helper text example for user key values" },
+
+  "versions": "Version(s)",
+  "@versions": { "description": "Label for the version value input field" },
+
+  "versionExample": "e.g. 1.3.4, 7.8.1-SNAPSHOT",
+  "@versionExample": { "description": "Helper text example for version values" },
+
+  "customValues": "Custom value(s)",
+  "@customValues": { "description": "Label for the custom attribute value input field" },
+
+  "customValuesExample": "e.g. WarehouseA, WarehouseB",
+  "@customValuesExample": { "description": "Helper text example for custom attribute values" },
+
+  "numbers": "Number(s)",
+  "@numbers": { "description": "Label for the number value input field" },
+
+  "numberExample": "e.g. 6, 7.87543",
+  "@numberExample": { "description": "Helper text example for number values" },
+
+  "dates": "Date(s) - YYYY-MM-DD",
+  "@dates": { "description": "Label for the date value input field" },
+
+  "dateExample": "e.g. 2017-04-16",
+  "@dateExample": { "description": "Helper text example for date values" },
+
+  "dateTimes": "Date/Time(s) - UTC/ISO8601 format",
+  "@dateTimes": { "description": "Label for the datetime value input field" },
+
+  "dateTimeExample": "e.g. 2007-03-01T13:00:00Z",
+  "@dateTimeExample": { "description": "Helper text example for datetime values" },
+
+  "ipAddresses": "IP Address(es) with or without CIDR",
+  "@ipAddresses": { "description": "Label for the IP address value input field" },
+
+  "ipAddressExample": "e.g. 168.192.54.3 or 192.168.86.1/8",
+  "@ipAddressExample": { "description": "Helper text example for IP address values" },
+
+  "addValue": "Add value",
+  "@addValue": { "description": "Tooltip and label on the add-value button in the strategy rule editor" },
+
+  "envOrderUpdated": "Environment order updated!",
+  "@envOrderUpdated": { "description": "Snackbar after drag-reorder of environments" },
+
+  "productionEnvironment": "Production environment",
+  "@productionEnvironment": { "description": "Tooltip on the production environment badge" },
+
+  "deleteProductionEnvWarning": "The environment '{name}' is your production environment, are you sure you wish to remove it?",
+  "@deleteProductionEnvWarning": {
+    "description": "Warning when deleting a production environment",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "envDeleted": "Environment '{name}' deleted!",
+  "@envDeleted": {
+    "description": "Snackbar after deleting an environment",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "envDeleteError": "Couldn't delete environment {name}",
+  "@envDeleteError": {
+    "description": "Error when environment deletion fails",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "createNewEnvironment": "Create new environment",
+  "@createNewEnvironment": { "description": "Button label and dialog title for creating a new environment" },
+
+  "editEnvironment": "Edit environment",
+  "@editEnvironment": { "description": "Dialog title for editing an environment" },
+
+  "environmentName": "Environment name",
+  "@environmentName": { "description": "Label for the environment name field" },
+
+  "envNameRequired": "Please enter an environment name",
+  "@envNameRequired": { "description": "Validation message when environment name is empty" },
+
+  "envNameTooShort": "Environment name needs to be at least 2 characters long",
+  "@envNameTooShort": { "description": "Validation message when environment name is too short" },
+
+  "markAsProductionEnvironment": "Mark as production environment",
+  "@markAsProductionEnvironment": { "description": "Checkbox label for flagging an environment as production" },
+
+  "envUpdated": "Environment {name} updated!",
+  "@envUpdated": {
+    "description": "Snackbar after updating an environment",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "envCreated": "Environment {name} created!",
+  "@envCreated": {
+    "description": "Snackbar after creating an environment",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "envAlreadyExists": "Environment with name {name} already exists",
+  "@envAlreadyExists": {
+    "description": "Error when environment name is already taken",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "environmentsInfoMessage": "Environments can be ordered by dragging the cards below, showing the deployment promotion order to production (top to bottom). This order will be reflected on the 'Features' dashboard. It helps your teams see their feature status per environment in the correct order.",
+  "@environmentsInfoMessage": { "description": "Info card on the Environments tab" },
+
+  "environmentsDocumentation": "Environments Documentation",
+  "@environmentsDocumentation": { "description": "External link label for environments documentation" },
+
+  "group": "Group",
+  "@group": { "description": "Label above the group selector dropdown" },
+
+  "goToManageGroupMembers": "Go to manage group members",
+  "@goToManageGroupMembers": { "description": "Link button to navigate to group members management" },
+
+  "groupPermissionsDocumentation": "Group Permissions Documentation",
+  "@groupPermissionsDocumentation": { "description": "External link label for group permissions documentation" },
+
+  "selectGroup": "Select group",
+  "@selectGroup": { "description": "Hint text for the group selector dropdown" },
+
+  "selectGroupToEditPermissions": "You need to select a group to edit the permissions for.",
+  "@selectGroupToEditPermissions": { "description": "Placeholder text when no group is selected" },
+
+  "needToCreateEnvironmentsFirst": "You need to first create some 'Environments' for this application.",
+  "@needToCreateEnvironmentsFirst": { "description": "Message when no environments exist yet" },
+
+  "setFeatureLevelPermissions": "Set feature level permissions",
+  "@setFeatureLevelPermissions": { "description": "Label above the feature-level permissions dropdown" },
+
+  "setAppStrategyPermissions": "Set application strategy permissions",
+  "@setAppStrategyPermissions": { "description": "Label above the app strategy permissions dropdown" },
+
+  "setFeatureValuePermissions": "Set feature value level permissions per environment",
+  "@setFeatureValuePermissions": { "description": "Label above the per-environment permissions table" },
+
+  "permRead": "Read",
+  "@permRead": { "description": "Table column header for Read permission" },
+
+  "permLock": "Lock",
+  "@permLock": { "description": "Table column header for Lock permission" },
+
+  "permUnlock": "Unlock",
+  "@permUnlock": { "description": "Table column header for Unlock permission" },
+
+  "permChangeValue": "Change value / Retire",
+  "@permChangeValue": { "description": "Table column header for Change value / Retire permission" },
+
+  "permReadExtendedData": "Read Extended Feature Data",
+  "@permReadExtendedData": { "description": "Table column header for extended data read permission" },
+
+  "noServiceAccountsInPortfolio": "There are no service accounts in the \"{name}\" portfolio.",
+  "@noServiceAccountsInPortfolio": {
+    "description": "Message when a portfolio has no service accounts",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "goToServiceAccountSettings": "Go to service accounts settings",
+  "@goToServiceAccountSettings": { "description": "Link button to navigate to service accounts page" },
+
+  "serviceAccount": "Service account",
+  "@serviceAccount": { "description": "Label above the service account selector dropdown" },
+
+  "serviceAccountInfoMessage": "We strongly recommend setting production environments with only 'Read' permission for service accounts. The 'Lock/Unlock' and 'Change value' permissions typically given to service accounts for testing purposes, e.g. changing feature values states through the SDK when running tests.",
+  "@serviceAccountInfoMessage": { "description": "Info card on the Service Account Permissions tab" },
+
+  "serviceAccountsDocumentation": "Service Accounts Documentation",
+  "@serviceAccountsDocumentation": { "description": "External link label for service accounts documentation" },
+
+  "selectServiceAccount": "Select service account",
+  "@selectServiceAccount": { "description": "Hint text for the service account selector dropdown" },
+
+  "setServiceAccountPermissions": "Set the service account access to features for each environment",
+  "@setServiceAccountPermissions": { "description": "Label above the service account permissions table" },
+
+  "serviceAccountUpdated": "Service account '{name}' updated!",
+  "@serviceAccountUpdated": {
+    "description": "Snackbar after updating service account permissions",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "environmentLabel": "Environment",
+  "@environmentLabel": { "description": "Label above the environment selector on the Integrations tab" },
+
+  "noEnvironments": "no environments",
+  "@noEnvironments": { "description": "Shown when no environments are available on the Integrations tab" },
+
+  "integrationTypeLabel": "Integration Type",
+  "@integrationTypeLabel": { "description": "Label above the integration type selector on the Integrations tab" },
+
+  "selectWebhookType": "Select webhook type",
+  "@selectWebhookType": { "description": "Hint text for the webhook type dropdown" },
+
+  "selectEnvironment": "Select environment",
+  "@selectEnvironment": { "description": "Hint text for the environment dropdown on the Integrations tab" },
+
+  "slackChannelSettings": "Slack Channel Settings (per environment)",
+  "@slackChannelSettings": { "description": "Title for the Slack channel settings panel" },
+
+  "slackIntegrationDocumentation": "Slack Integration Documentation",
+  "@slackIntegrationDocumentation": { "description": "External link label for Slack integration documentation" },
+
+  "enabled": "Enabled",
+  "@enabled": { "description": "Checkbox label for enabling an integration" },
+
+  "slackChannelId": "Slack channel ID (leave empty to use default)",
+  "@slackChannelId": { "description": "Label for the Slack channel ID field" },
+
+  "slackChannelIdExample": "e.g. C0150T7AF25",
+  "@slackChannelIdExample": { "description": "Hint text for the Slack channel ID field" },
+
+  "slackSettingsUpdated": "Slack settings have been updated",
+  "@slackSettingsUpdated": { "description": "Snackbar after saving Slack settings" },
+
+  "messageDeliveryStatus": "Message delivery status",
+  "@messageDeliveryStatus": { "description": "Header for the message delivery status panel" },
+
+  "refresh": "Refresh",
+  "@refresh": { "description": "Button label for refreshing data" },
+
+  "noActivity": "There is no activity as yet.",
+  "@noActivity": { "description": "Empty state for the delivery status list" },
+
+  "unacknowledgedRequest": "Unacknowledged request sent at {time}",
+  "@unacknowledgedRequest": {
+    "description": "Status for a sent but unacknowledged webhook request",
+    "placeholders": { "time": { "type": "String" } }
+  },
+
+  "deliveryStatusReceived": "Status: {status}, received at {time}",
+  "@deliveryStatusReceived": {
+    "description": "Status line for a successfully received webhook",
+    "placeholders": {
+      "status": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
+
+  "deliveryStatusError": "{status} received at {time}",
+  "@deliveryStatusError": {
+    "description": "Status line for a failed webhook delivery",
+    "placeholders": {
+      "status": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
+
+  "responseHeaders": "Response headers:",
+  "@responseHeaders": { "description": "Label for response headers section in delivery status" },
+
+  "content": "Content",
+  "@content": { "description": "Label for the content section in delivery status" },
+
+  "moreRecords": "More records",
+  "@moreRecords": { "description": "Button to load more records in the delivery status list" },
+
+  "retry": "Retry",
+  "@retry": { "description": "Button to retry loading records after an error" },
+
+  "deliveredSuccessfully": "Successfully delivered",
+  "@deliveredSuccessfully": { "description": "Delivery status: HTTP 2xx" },
+
+  "undeliverableInfo": "Undeliverable, some information missing",
+  "@undeliverableInfo": { "description": "Delivery status: HTTP 400" },
+
+  "unableToCreateData": "Unable to create the necessary data to send to remote system",
+  "@unableToCreateData": { "description": "Delivery status: HTTP 418" },
+
+  "systemConfigMissing": "Some system configuration is missing to be able to complete",
+  "@systemConfigMissing": { "description": "Delivery status: HTTP 422" },
+
+  "remoteSystemError": "Some system error talking to remote system (e.g. system was down)",
+  "@remoteSystemError": { "description": "Delivery status: HTTP 424" },
+
+  "unexpectedResult": "Unexpected result from remote system",
+  "@unexpectedResult": { "description": "Delivery status: HTTP 500" },
+
+  "networkError": "Network error, host unknown",
+  "@networkError": { "description": "Delivery status: HTTP 503" },
+
+  "webhookHistory": "Webhook History",
+  "@webhookHistory": { "description": "Tooltip for the webhook history tab button" },
+
+  "webhookConfiguration": "Webhook Configuration",
+  "@webhookConfiguration": { "description": "Tooltip for the webhook configuration tab button" },
+
+  "webhooksDocumentation": "Webhooks Documentation",
+  "@webhooksDocumentation": { "description": "External link label for webhooks documentation" },
+
+  "colType": "Type",
+  "@colType": { "description": "Table column header: event type" },
+
+  "colMethod": "Method",
+  "@colMethod": { "description": "Table column header: HTTP method" },
+
+  "colHttpCode": "HTTP Code",
+  "@colHttpCode": { "description": "Table column header: HTTP status code" },
+
+  "colWhenSent": "When Sent",
+  "@colWhenSent": { "description": "Table column header: send timestamp" },
+
+  "colActions": "Actions",
+  "@colActions": { "description": "Table column header: row actions" },
+
+  "webhookWhenSent": "When sent",
+  "@webhookWhenSent": { "description": "Row label in the webhook detail view" },
+
+  "webhookCloudEventType": "Webhook Cloud Event type",
+  "@webhookCloudEventType": { "description": "Row label in the webhook detail view" },
+
+  "webhookUrl": "URL",
+  "@webhookUrl": { "description": "Row label in the webhook detail view" },
+
+  "webhookDetailMethod": "Method",
+  "@webhookDetailMethod": { "description": "Row label in the webhook detail view" },
+
+  "webhookHttpStatus": "HTTP status",
+  "@webhookHttpStatus": { "description": "Row label in the webhook detail view" },
+
+  "cloudEventType": "Cloud Event type",
+  "@cloudEventType": { "description": "Row label in the webhook detail view" },
+
+  "incomingHeaders": "Incoming headers",
+  "@incomingHeaders": { "description": "Row label in the webhook detail view" },
+
+  "outgoingHeaders": "Outgoing headers",
+  "@outgoingHeaders": { "description": "Row label in the webhook detail view" },
+
+  "webhookContent": "Webhook Content",
+  "@webhookContent": { "description": "Row label in the webhook detail view" },
+
+  "copyContent": "Copy Content",
+  "@copyContent": { "description": "Tooltip on the copy button in the webhook detail view" },
+
+  "searchServiceAccounts": "Search Service Accounts",
+  "@searchServiceAccounts": { "description": "Hint text for the service accounts search field" },
+
+  "colName": "Name",
+  "@colName": { "description": "Table column header and info-row label for name" },
+
+  "colGroups": "Groups",
+  "@colGroups": { "description": "Table column header and info-row label for groups" },
+
+  "resetAdminSdkToken": "Reset Admin SDK access token",
+  "@resetAdminSdkToken": { "description": "Tooltip on the reset-token icon button in the admin service accounts table" },
+
+  "adminSADeleteContent": "This service account will be removed from all groups and deleted from the organization. \n\nThis cannot be undone!",
+  "@adminSADeleteContent": { "description": "Body text of the delete-service-account confirmation dialog" },
+
+  "adminSADeleted": "Service account '{name}' deleted!",
+  "@adminSADeleted": {
+    "description": "Snackbar after deleting an admin service account",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "adminSADetailsTitle": "Admin Service Account details",
+  "@adminSADetailsTitle": { "description": "Title of the admin service account info dialog" },
+
+  "accessToken": "Access token",
+  "@accessToken": { "description": "Label above the access token value" },
+
+  "copyAccessToken": "Copy access token to clipboard",
+  "@copyAccessToken": { "description": "Caption on the copy-to-clipboard button for access tokens" },
+
+  "accessTokenSecurityNote": "For security, you will not be able to view the access token once you close this window.",
+  "@accessTokenSecurityNote": { "description": "Security notice shown when displaying an access token" },
+
+  "systemConfigurationsTitle": "System Configurations",
+  "@systemConfigurationsTitle": { "description": "Page header for the system configurations screen" },
+
+  "siteConfigurationTitle": "Site Configuration",
+  "@siteConfigurationTitle": { "description": "Expansion tile title for site configuration section" },
+
+  "siteConfigurationSubtitle": "Configure your FeatureHub system",
+  "@siteConfigurationSubtitle": { "description": "Expansion tile subtitle for site configuration section" },
+
+  "slackConfigurationTitle": "Slack Configuration",
+  "@slackConfigurationTitle": { "description": "Expansion tile title for Slack configuration section" },
+
+  "slackConfigurationSubtitle": "Enable FeatureHub to send Slack messages",
+  "@slackConfigurationSubtitle": { "description": "Expansion tile subtitle for Slack configuration section" },
+
+  "encryptionRequiredForSlack": "You are required to configure encryption key/password in the FeatureHub system properties file to enable Slack integration",
+  "@encryptionRequiredForSlack": { "description": "Warning shown when encryption is not configured and Slack cannot be enabled" },
+
+  "encryptionDocumentation": "Encryption documentation",
+  "@encryptionDocumentation": { "description": "Label for the encryption documentation external link" },
+
+  "siteUrlLabel": "The URL of your organisation's FeatureHub app",
+  "@siteUrlLabel": { "description": "Label for the site URL input field" },
+
+  "siteUrlEmptyError": "You cannot specify an empty url",
+  "@siteUrlEmptyError": { "description": "Validation error when site URL is empty" },
+
+  "siteUrlInvalidError": "You must specify a valid url for your site",
+  "@siteUrlInvalidError": { "description": "Validation error when site URL does not start with http:// or https://" },
+
+  "allowSearchRobots": "Allow search robots to index",
+  "@allowSearchRobots": { "description": "Checkbox label for allowing search robots to index the site" },
+
+  "redirectBadHostsHeader": "Redirect traffic with bad Hosts header",
+  "@redirectBadHostsHeader": { "description": "Checkbox label for redirecting traffic with invalid Hosts header" },
+
+  "slackIntegrationDocumentation": "Slack Integration Documentation",
+  "@slackIntegrationDocumentation": { "description": "Label for the Slack integration documentation external link" },
+
+  "enableSlack": "Enable Slack",
+  "@enableSlack": { "description": "Checkbox label to enable Slack integration" },
+
+  "connectFeatureHubToSlack": "Connect FeatureHub to Slack",
+  "@connectFeatureHubToSlack": { "description": "Label on the outlined button to connect FeatureHub to Slack workspace" },
+
+  "installFeatureHubBot": "Install FeatureHub Bot app to your Slack workspace",
+  "@installFeatureHubBot": { "description": "Tooltip for the connect-to-Slack outlined button" },
+
+  "connectToSlack": "Connect to Slack",
+  "@connectToSlack": { "description": "Label on the filled button to initiate Slack OAuth connection" },
+
+  "slackBotTokenLabel": "Slack Bot User OAuth Token",
+  "@slackBotTokenLabel": { "description": "Label for the Slack bot token input field" },
+
+  "slackBotTokenRequired": "Please enter Slack Bot User OAuth token",
+  "@slackBotTokenRequired": { "description": "Validation error when Slack bot token is empty and Slack is enabled" },
+
+  "defaultSlackChannelIdLabel": "Default Slack channel ID",
+  "@defaultSlackChannelIdLabel": { "description": "Label for the default Slack channel ID input field" },
+
+  "slackChannelIdRequired": "Please enter Slack channel ID",
+  "@slackChannelIdRequired": { "description": "Validation error when Slack channel ID is empty" },
+
+  "externalSlackDeliveryMessage": "If your Slack delivery is offloaded to an external application, please specify the details here.",
+  "@externalSlackDeliveryMessage": { "description": "Explanatory text above the external Slack delivery URL field" },
+
+  "externalSlackDeliveryUrlLabel": "External Slack message delivery service (optional, valid prefixes {prefixes})",
+  "@externalSlackDeliveryUrlLabel": {
+    "description": "Label for the external Slack delivery URL field, showing valid URL prefixes",
+    "placeholders": { "prefixes": { "type": "String" } }
+  },
+
+  "invalidUrlPrefix": "You must choose a valid URL prefix",
+  "@invalidUrlPrefix": { "description": "Validation error when the external delivery URL does not match an allowed prefix" },
+
+  "clickToEdit": "Click to edit",
+  "@clickToEdit": { "description": "Tooltip on editable cells in the delivery headers table" },
+
+  "showAction": "Show",
+  "@showAction": { "description": "Action button to reveal an encrypted value in the table" },
+
+  "clearAction": "Clear",
+  "@clearAction": { "description": "Action button to clear a value in the table (removes encryption flag)" },
+
+  "decryptAction": "Decrypt",
+  "@decryptAction": { "description": "Action button to decrypt an encrypted value in the table" },
+
+  "encryptAction": "Encrypt",
+  "@encryptAction": { "description": "Action button to mark a value as encrypted in the table" },
+
+  "addRowButton": "Add {name}",
+  "@addRowButton": {
+    "description": "Button above the table to add a new row, where name is the key column header",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "headerColumnLabel": "Header",
+  "@headerColumnLabel": { "description": "Column header label for the key column in the delivery headers table" },
+
+  "valueColumnLabel": "Value",
+  "@valueColumnLabel": { "description": "Column header label for the value column in the delivery headers table" },
+
+  "selectEnvironmentsToDisplay": "Select environments to display",
+  "@selectEnvironmentsToDisplay": { "description": "Hint text for the environment multi-select dropdown on the features data table" },
+
+  "appThingLabel": "application '{name}'",
+  "@appThingLabel": { "description": "The 'thing' label for the delete dialog for an application", "placeholders": { "name": { "type": "String" } } },
+
+  "appDeleted": "Application '{name}' deleted!",
+  "@appDeleted": { "description": "Snackbar after deleting an application", "placeholders": { "name": { "type": "String" } } },
+
+  "appDeleteError": "Couldn't delete application {name}",
+  "@appDeleteError": { "description": "Error when deleting an application fails", "placeholders": { "name": { "type": "String" } } },
+
+  "undelivered": "undelivered",
+  "@undelivered": { "description": "Status text for an undelivered webhook" },
+
+  "webhookDetailsTitle": "Webhook details",
+  "@webhookDetailsTitle": { "description": "Title of the webhook detail dialog" },
+
+  "viewWebhookDetails": "View webhook details",
+  "@viewWebhookDetails": { "description": "Tooltip on the info icon in the webhook table" },
+
+  "enableJsonValidation": "Enable JSON validation",
+  "@enableJsonValidation": { "description": "Checkbox label to enable JSON validation in the JSON editor" },
+
+  "formatJson": "Format json",
+  "@formatJson": { "description": "Button to pretty-print JSON in the JSON editor" },
+
+  "jsonValue": "JSON Value",
+  "@jsonValue": { "description": "Label above the JSON text editor area" },
+
+  "errorNotFound": "The requested resource was not found",
+  "@errorNotFound": { "description": "Error message for HTTP 404" },
+
+  "errorForbidden": "You do not have permission to access this resource",
+  "@errorForbidden": { "description": "Error message for HTTP 403" },
+
+  "errorInternalServer": "An internal server error occurred",
+  "@errorInternalServer": { "description": "Error message for HTTP 500" },
+
+  "errorLoadingData": "An error occurred while loading the data",
+  "@errorLoadingData": { "description": "Generic error message when data fails to load" },
+
+  "yourCurrentPortfolio": "Your current portfolio",
+  "@yourCurrentPortfolio": { "description": "Label above the portfolio selector in the drawer" },
+
+  "selectPortfolio": "Select portfolio",
+  "@selectPortfolio": { "description": "Hint text for the portfolio selector dropdown" },
+
+  "selectApplication": "Select application",
+  "@selectApplication": { "description": "Hint text for the application selector dropdown" },
+
+  "featureOn": "ON",
+  "@featureOn": { "description": "Label when a boolean feature flag is enabled" },
+
+  "featureOff": "OFF",
+  "@featureOff": { "description": "Label when a boolean feature flag is disabled" },
+
+  "notSet": "not set",
+  "@notSet": { "description": "Placeholder when a feature value has not been set" },
+
+  "retired": "Retired",
+  "@retired": { "description": "Checkbox label for retiring a feature value" },
+
+  "featureThingLabel": "feature '{name}'",
+  "@featureThingLabel": { "description": "The 'thing' label for the delete dialog for a feature", "placeholders": { "name": { "type": "String" } } },
+
+  "featureDeleteContent": "You need to make sure all your code is cleaned up and can deal without this feature!\n\nThis cannot be undone!",
+  "@featureDeleteContent": { "description": "Body text of the delete-feature confirmation dialog" },
+
+  "featureDeleted": "Feature '{name}' deleted!",
+  "@featureDeleted": { "description": "Snackbar after deleting a feature", "placeholders": { "name": { "type": "String" } } },
+
+  "noPermissionsForOperation": "You don't have permissions to perform this operation",
+  "@noPermissionsForOperation": { "description": "Error when the user lacks permission for an operation" },
+
+  "featureDeleteError": "Couldn't delete feature {name}",
+  "@featureDeleteError": { "description": "Error when deleting a feature fails", "placeholders": { "name": { "type": "String" } } },
+
+  "featureGroupDeleteContent": "This action will delete a feature group and a strategy associated with it.\n\nThe features will not be deleted and remain present in your system.\n\nThis cannot be undone!",
+  "@featureGroupDeleteContent": { "description": "Body text of the delete-feature-group confirmation dialog" },
+
+  "featureGroupDeleted": "Feature group '{name}' deleted!",
+  "@featureGroupDeleted": { "description": "Snackbar after deleting a feature group", "placeholders": { "name": { "type": "String" } } },
+
+  "featureGroupDeleteError": "Couldn't delete feature group {name}",
+  "@featureGroupDeleteError": { "description": "Error when deleting a feature group fails", "placeholders": { "name": { "type": "String" } } },
+
+  "noEnvironmentsAvailable": "No environments available",
+  "@noEnvironmentsAvailable": { "description": "Message in the environment dropdown when none exist" },
+
+  "selectFeatureToAdd": "Select feature to add",
+  "@selectFeatureToAdd": { "description": "Hint text for the features dropdown in the feature groups editor" },
+
+  "setupWelcomeTitle": "Lets get this party started!",
+  "@setupWelcomeTitle": { "description": "Heading on setup page 1" },
+
+  "setupWelcomeMessage": "Well done, FeatureHub is up and running.  You'll be the first 'Organization super admin' of your FeatureHub account.",
+  "@setupWelcomeMessage": { "description": "Subtitle on setup page 1 explaining the super admin role" },
+
+  "setupOrRegisterBelow": "or register by providing the details below",
+  "@setupOrRegisterBelow": { "description": "Divider label between SSO and local registration on setup page 1" },
+
+  "next": "Next",
+  "@next": { "description": "Button label to advance to the next step" },
+
+  "setupAllSet": "All set!",
+  "@setupAllSet": { "description": "Title of the final setup confirmation dialog" },
+
+  "setupNextStepsMessage": "Next step is to create your first application and add some features. Your first environment called \"Production\" will be created by default. You can follow the \"Quick Setup\" helper by clicking the \"rocket\" icon on the right of the app bar to see your progress.",
+  "@setupNextStepsMessage": { "description": "Body of the final setup confirmation dialog" },
+
+  "stepperTitle": "Application setup progress",
+  "@stepperTitle": { "description": "Title of the quick-setup progress stepper panel" },
+
+  "stepCreateApplication": "Create application",
+  "@stepCreateApplication": { "description": "Step 1 title in the setup stepper" },
+
+  "stepSelectApplicationHint": "Select application or create a new one by following the link below",
+  "@stepSelectApplicationHint": { "description": "Helper text under the application dropdown in step 1" },
+
+  "goToApplications": "Go to Applications",
+  "@goToApplications": { "description": "Link button in stepper step 1" },
+
+  "stepCreateTeamGroup": "Create team group",
+  "@stepCreateTeamGroup": { "description": "Step 2 title in the setup stepper" },
+
+  "stepCreateTeamGroupHint": "Groups are portfolio-wide, we recommend creating application specific groups eg \"MyApp developers\"",
+  "@stepCreateTeamGroupHint": { "description": "Helper text in stepper step 2" },
+
+  "goToGroups": "Go to Groups",
+  "@goToGroups": { "description": "Link button in stepper step 2" },
+
+  "stepCreateServiceAccount": "Create service account",
+  "@stepCreateServiceAccount": { "description": "Step 3 title in the setup stepper" },
+
+  "stepCreateServiceAccountHint": "Service accounts are portfolio-wide, we recommend creating at least two service accounts specific to an application, e.g. \"SA-MyApp-Prod\" and \"SA-MyApp-Non-Prod\"",
+  "@stepCreateServiceAccountHint": { "description": "Helper text in stepper step 3" },
+
+  "goToServiceAccounts": "Go to Service Accounts",
+  "@goToServiceAccounts": { "description": "Link button in stepper step 3" },
+
+  "stepCreateEnvironment": "Create environment",
+  "@stepCreateEnvironment": { "description": "Step 4 title in the setup stepper" },
+
+  "stepCreateEnvironmentHint": "Create an environment for selected application, e.g. \"test\", \"dev\", \"prod\"",
+  "@stepCreateEnvironmentHint": { "description": "Helper text in stepper step 4" },
+
+  "goToEnvironments": "Go to Environments",
+  "@goToEnvironments": { "description": "Link button in stepper step 4" },
+
+  "stepGiveAccessToGroups": "Give access to groups",
+  "@stepGiveAccessToGroups": { "description": "Step 5 title in the setup stepper" },
+
+  "stepGiveAccessToGroupsHint": "Assign an application environment level permissions to a group of users",
+  "@stepGiveAccessToGroupsHint": { "description": "Helper text in stepper step 5" },
+
+  "goToGroupPermissions": "Go to Group Permissions",
+  "@goToGroupPermissions": { "description": "Link button in stepper step 5" },
+
+  "stepGiveAccessToServiceAccount": "Give access to service account",
+  "@stepGiveAccessToServiceAccount": { "description": "Step 6 title in the setup stepper" },
+
+  "stepGiveAccessToServiceAccountHint": "Assign an application environment level permissions to a service account",
+  "@stepGiveAccessToServiceAccountHint": { "description": "Helper text in stepper step 6" },
+
+  "goToSAPermissions": "Go to SA Permissions",
+  "@goToSAPermissions": { "description": "Link button in stepper step 6" },
+
+  "stepCreateFeature": "Create a feature",
+  "@stepCreateFeature": { "description": "Step 7 title in the setup stepper" },
+
+  "stepCreateFeatureHint": "Create a feature for an application",
+  "@stepCreateFeatureHint": { "description": "Helper text in stepper step 7" },
+
+  "goToFeatures": "Go to Features",
+  "@goToFeatures": { "description": "Link button in stepper step 7" },
+
+  "featureHubAdministrators": "FeatureHub Administrators",
+  "@featureHubAdministrators": { "description": "Chip label for the site-wide admin group in the portfolio group selector" },
+
+  "portfolioLabel": "Portfolio",
+  "@portfolioLabel": { "description": "Label on the portfolio dropdown in the portfolio group selector" },
+
+  "andOperator": "AND",
+  "@andOperator": { "description": "Badge between strategy attribute rules indicating logical AND" },
+
+  "systemConfigUpdated": "{section} was successfully updated",
+  "@systemConfigUpdated": { "description": "Snackbar after a system config section is saved", "placeholders": { "section": { "type": "String" } } },
+
+  "systemConfigNoUpdates": "No updates for {section} found",
+  "@systemConfigNoUpdates": { "description": "Snackbar when saving system config with no changes", "placeholders": { "section": { "type": "String" } } },
+
+  "unableToSaveUpdates": "Unable to save updates",
+  "@unableToSaveUpdates": { "description": "Error message when saving system config fails" },
+
+  "showValue": "Show value",
+  "@showValue": { "description": "Button to reveal an encrypted text field value" },
+
+  "strategyNameTooLong": "Strategy name is too long",
+  "@strategyNameTooLong": { "description": "Validation: strategy name exceeds max length" },
+
+  "strategyEmptyMatchCriteria": "You have not provided any rules to match against, please add a rule",
+  "@strategyEmptyMatchCriteria": { "description": "Validation: strategy has no attribute rules" },
+
+  "strategyNegativePercentage": "Percentage cannot be a negative number",
+  "@strategyNegativePercentage": { "description": "Validation: strategy percentage is negative" },
+
+  "strategyPercentageOver100": "The total percentage value across all strategies is above 100%, please decrease the percentage rule",
+  "@strategyPercentageOver100": { "description": "Validation: total strategy percentage exceeds 100%" },
+
+  "strategyArrayAttributeNoValues": "Please provide at least one value for this rule",
+  "@strategyArrayAttributeNoValues": { "description": "Validation: array attribute rule has no values" },
+
+  "strategyAttrInvalidWellKnownEnum": "Please select a value for this rule",
+  "@strategyAttrInvalidWellKnownEnum": { "description": "Validation: well-known enum attribute rule has invalid value" },
+
+  "strategyAttrMissingValue": "Please provide a value for this rule",
+  "@strategyAttrMissingValue": { "description": "Validation: attribute rule is missing a value" },
+
+  "strategyAttrMissingConditional": "Please select a matching condition for this rule",
+  "@strategyAttrMissingConditional": { "description": "Validation: attribute rule has no condition selected" },
+
+  "strategyAttrMissingFieldName": "Please enter the rule name",
+  "@strategyAttrMissingFieldName": { "description": "Validation: custom attribute rule has no field name" },
+
+  "strategyAttrMissingFieldType": "Please select a value type for this rule",
+  "@strategyAttrMissingFieldType": { "description": "Validation: attribute rule has no field type selected" },
+
+  "strategyAttrValNotSemanticVersion": "Please provide a valid semantic version",
+  "@strategyAttrValNotSemanticVersion": { "description": "Validation: attribute value is not a valid semantic version" },
+
+  "strategyAttrValNotNumber": "Please provide a valid number",
+  "@strategyAttrValNotNumber": { "description": "Validation: attribute value is not a valid number" },
+
+  "strategyAttrValNotDate": "Please provide a valid date in YYYY-MM-DD format",
+  "@strategyAttrValNotDate": { "description": "Validation: attribute value is not a valid date" },
+
+  "strategyAttrValNotDateTime": "Please provide a valid date and time in YYYY-MM-DDTHH:MM:SS format",
+  "@strategyAttrValNotDateTime": { "description": "Validation: attribute value is not a valid datetime" },
+
+  "strategyAttrValNotCidr": "Please provide a valid IP or CIDR address",
+  "@strategyAttrValNotCidr": { "description": "Validation: attribute value is not a valid IP/CIDR" },
+
+  "strategyAttrUnknownFailure": "There was an unknown strategy validation error",
+  "@strategyAttrUnknownFailure": { "description": "Validation: unknown strategy error" },
+
+  "strategyDefault": "default",
+  "@strategyDefault": { "description": "Label for the default (no-name) strategy card" },
+
+  "strategyServe": "serve",
+  "@strategyServe": { "description": "Label preceding the served value in a strategy card" },
+
+  "editStrategySettings": "Edit Strategy Settings",
+  "@editStrategySettings": { "description": "Tooltip on the navigate-to-strategy-settings button in a strategy card" },
+
+  "selectStrategyToAdd": "Select strategy to add",
+  "@selectStrategyToAdd": { "description": "Hint text for the application strategies dropdown" },
+
+  "wellKnownCountry": "Country",
+  "@wellKnownCountry": { "description": "Display label for the Country well-known attribute in strategy editor" },
+
+  "wellKnownDevice": "Device",
+  "@wellKnownDevice": { "description": "Display label for the Device well-known attribute in strategy editor" },
+
+  "wellKnownPlatform": "Platform",
+  "@wellKnownPlatform": { "description": "Display label for the Platform well-known attribute in strategy editor" },
+
+  "wellKnownVersion": "Version",
+  "@wellKnownVersion": { "description": "Display label for the Version well-known attribute in strategy editor" },
+
+  "wellKnownUserKey": "User Key",
+  "@wellKnownUserKey": { "description": "Display label for the User Key well-known attribute in strategy editor" },
+
+  "tooltipAppliedRules": "Applied rules",
+  "@tooltipAppliedRules": { "description": "Section header in the strategy tooltip listing which rules apply" },
+
+  "tooltipPercentage": "Percentage: {value}%",
+  "@tooltipPercentage": { "description": "Tooltip line showing the percentage rollout value", "placeholders": { "value": { "type": "String" } } },
+
+  "tooltipUserKey": "User key",
+  "@tooltipUserKey": { "description": "Tooltip line indicating a user-key rule is applied" },
+
+  "tooltipCountry": "Country",
+  "@tooltipCountry": { "description": "Tooltip line indicating a country rule is applied" },
+
+  "tooltipPlatform": "Platform",
+  "@tooltipPlatform": { "description": "Tooltip line indicating a platform rule is applied" },
+
+  "tooltipDevice": "Device",
+  "@tooltipDevice": { "description": "Tooltip line indicating a device rule is applied" },
+
+  "tooltipVersion": "Version",
+  "@tooltipVersion": { "description": "Tooltip line indicating a version rule is applied" },
+
+  "tooltipCustom": "Custom",
+  "@tooltipCustom": { "description": "Tooltip line indicating a custom attribute rule is applied" },
+
+  "unsavedChanges": "You have unsaved changes, save?",
+  "@unsavedChanges": { "description": "Banner shown in the feature value side sheet when there are unsaved changes" },
+
+  "featureValueUpdated": "Feature {feature} in the environment {environment} has been updated!",
+  "@featureValueUpdated": { "description": "Snackbar after saving a feature value", "placeholders": { "feature": { "type": "String" }, "environment": { "type": "String" } } },
+
+  "defaultValue": "Default value",
+  "@defaultValue": { "description": "Section label above the default strategy card in the feature value editor" },
+
+  "strategyVariations": "Strategy variations",
+  "@strategyVariations": { "description": "Section heading for custom rollout strategy variations in the feature value editor" },
+
+  "strategyVariationsInfo": "Add a strategy variation to serve a value other than default. You can change strategies evaluation order by dragging and dropping the cards below. Strategies are evaluated in order from top to bottom. Evaluation stops when it hits a matching strategy. 'Group Strategy' evaluation comes last. If no strategies match, then 'default' feature value is served.",
+  "@strategyVariationsInfo": { "description": "Info tooltip describing how strategy variations work" },
+
+  "noStrategiesSet": "No strategies set",
+  "@noStrategiesSet": { "description": "Placeholder when no rollout strategy variations have been added" },
+
+  "groupStrategyVariations": "Group strategy variations",
+  "@groupStrategyVariations": { "description": "Section heading for feature group strategy variations" },
+
+  "groupStrategyVariationsInfo": "Feature groups are recommended when you want to set the same strategy for multiple features in the same environment. Feature group strategy can be created and edited from the Feature Groups page.",
+  "@groupStrategyVariationsInfo": { "description": "Info tooltip describing group strategy variations" },
+
+  "noGroupStrategiesSet": "No group strategies set",
+  "@noGroupStrategiesSet": { "description": "Placeholder when no group strategies have been assigned" },
+
+  "applicationStrategyVariations": "Application strategy variations",
+  "@applicationStrategyVariations": { "description": "Section heading for application-level strategy variations" },
+
+  "applicationStrategyVariationsInfo": "Application strategies are created at application level and can be assigned to multiple features in any environment. Application strategy can be created and edited from the Application Strategies page.",
+  "@applicationStrategyVariationsInfo": { "description": "Info tooltip describing application strategy variations" },
+
+  "noApplicationStrategiesSet": "No application strategies set",
+  "@noApplicationStrategiesSet": { "description": "Placeholder when no application strategies have been assigned" },
+
+  "showAvailableAppStrategies": "Show available app strategies",
+  "@showAvailableAppStrategies": { "description": "Button to reveal the list of available application strategies to add" },
+
+  "addStrategy": "Add Strategy",
+  "@addStrategy": { "description": "Button label to add an application strategy to a feature value" },
+
+  "retiredStatus": "Retired status",
+  "@retiredStatus": { "description": "Section label for the retire feature value checkbox" },
+
+  "retiredStatusInfo": "When feature flag is not needed any longer in your application, and ready to be removed, you can first 'retire' this feature in a given environment to test how your application behaves. This means that the feature won't be visible by the SDKs, imitating the 'deleted' state. You can uncheck the box to 'un-retire' a feature if you change your mind as this operation is reversible. Once you retire feature values across all the environments and test that your application behaves as expected, you can delete your entire feature.",
+  "@retiredStatusInfo": { "description": "Info tooltip explaining the retired feature status" },
+
+  "hideHistory": "Hide history",
+  "@hideHistory": { "description": "Button to collapse the feature value change history" },
+
+  "showHistory": "Show history",
+  "@showHistory": { "description": "Button to expand the feature value change history" },
+
+  "showingLast20": "Showing last 20",
+  "@showingLast20": { "description": "Caption above the history table indicating only the last 20 entries are shown" },
+
+  "historyColumnTimestamp": "Timestamp (UTC)",
+  "@historyColumnTimestamp": { "description": "Column header for the timestamp column in the feature value history table" },
+
+  "historyColumnName": "Name",
+  "@historyColumnName": { "description": "Column header for the name column in the feature value history table" },
+
+  "historyColumnEmail": "Email",
+  "@historyColumnEmail": { "description": "Column header for the email column in the feature value history table" },
+
+  "historyColumnType": "Type",
+  "@historyColumnType": { "description": "Column header for the type column in the feature value history table" },
+
+  "historyColumnDefaultValue": "Default Value",
+  "@historyColumnDefaultValue": { "description": "Column header for the default value column in the feature value history table" },
+
+  "historyColumnLocked": "Locked",
+  "@historyColumnLocked": { "description": "Column header for the locked column in the feature value history table" },
+
+  "historyColumnRetired": "Retired",
+  "@historyColumnRetired": { "description": "Column header for the retired column in the feature value history table" },
+
+  "historyColumnRolloutStrategies": "Rollout Strategies",
+  "@historyColumnRolloutStrategies": { "description": "Column header for the rollout strategies column in the feature value history table" },
+
+  "historyTypeUser": "User",
+  "@historyTypeUser": { "description": "History entry type label for a human user" },
+
+  "historyTypeServiceAccount": "Service Account",
+  "@historyTypeServiceAccount": { "description": "History entry type label for a service account" },
+
+  "strategyRules": "Strategy Rules",
+  "@strategyRules": { "description": "Title of the dialog showing rollout strategy rules in the history view" },
+
+  "percentageRollout": "Percentage Rollout",
+  "@percentageRollout": { "description": "Label for the percentage rollout section in the strategy rules dialog" },
+
+  "moreDetails": "more",
+  "@moreDetails": { "description": "Button to show more details about a rollout strategy in the history table" },
+
+  "groupStrategyTooltip": "Group Strategy",
+  "@groupStrategyTooltip": { "description": "Tooltip label on group strategy cells in the feature value table" },
+
+  "applicationStrategyTooltip": "Application Strategy",
+  "@applicationStrategyTooltip": { "description": "Tooltip label on application strategy cells in the feature value table" },
+
+  "lockedStatus": "Locked status",
+  "@lockedStatus": { "description": "Section label for the lock/unlock switch in the feature value side sheet" },
+
+  "lockedStatusInfo": "Locking mechanism provides an additional safety for feature changes when deploying incomplete code to production. Locked status prevents any changes to default value, strategies, strategy values and 'retired' status. Typically, developers keep features locked to indicate they are not ready to be turned on for testers, product owners, customers and other stakeholders.",
+  "@lockedStatusInfo": { "description": "Info tooltip explaining the locked status feature" },
+
+  "clickToUnlock": "Click to unlock",
+  "@clickToUnlock": { "description": "Tooltip on the lock button when feature is currently locked" },
+
+  "clickToLock": "Click to lock",
+  "@clickToLock": { "description": "Tooltip on the lock button when feature is currently unlocked" },
+
+  "featureIsLocked": "Feature is locked and cannot be changed",
+  "@featureIsLocked": { "description": "Status label shown when a feature value is locked" },
+
+  "featureIsUnlocked": "Feature is unlocked and can be changed",
+  "@featureIsUnlocked": { "description": "Status label shown when a feature value is unlocked" },
+
+  "featuresColumnHeader": "Features",
+  "@featuresColumnHeader": { "description": "Column header for the features name column in the dashboard table" },
+
+  "noFeaturesToDisplay": "No features to display",
+  "@noFeaturesToDisplay": { "description": "Placeholder shown when no features match the current filter" },
+
+  "noEnvironmentsForApp": "Either there are no environments defined for this application or you don't have permissions to access any of them",
+  "@noEnvironmentsForApp": { "description": "Message shown when the feature table has no environment columns" },
+
+  "goToEnvironmentsSettings": "Go to environments settings",
+  "@goToEnvironmentsSettings": { "description": "Link button to navigate to the app environments settings tab" },
+
+  "noFeaturesForApp": "There are no features defined for this application",
+  "@noFeaturesForApp": { "description": "Message shown when the selected application has no features" },
+
+  "setAsOrgSuperAdmin": "Set this user as organization super admin",
+  "@setAsOrgSuperAdmin": { "description": "Checkbox label to grant a user organisation-wide super admin rights" },
+
+  "copyFeatureKeyToClipboard": "Copy feature key to clipboard",
+  "@copyFeatureKeyToClipboard": { "description": "Tooltip on the copy-to-clipboard icon in the feature name cell" },
+
+  "editDetails": "Edit details",
+  "@editDetails": { "description": "Popup menu item to edit a feature's details" },
+
+  "viewDetails": "View details",
+  "@viewDetails": { "description": "Popup menu item to view a feature's details (read-only)" },
+
+  "editMetadata": "Edit metadata",
+  "@editMetadata": { "description": "Popup menu item to edit a feature's metadata" },
+
+  "viewMetadata": "View metadata",
+  "@viewMetadata": { "description": "Popup menu item to view a feature's metadata (read-only)" },
+
+  "manageGroup": "Manage Group",
+  "@manageGroup": { "description": "Popup menu item to navigate to the feature group management page" },
+
+  "strategy": "Strategy",
+  "@strategy": { "description": "Label for the strategy status in the feature group card" }
+}

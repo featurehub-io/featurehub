@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 
@@ -20,7 +21,7 @@ class NoEnvironmentMessage extends StatelessWidget {
       child: Row(
         children: <Widget>[
           SelectableText(
-              'Either there are no environments defined for this application or you don\'t have permissions to access any of them',
+              AppLocalizations.of(context)!.noEnvironmentsForApp,
               style: Theme.of(context).textTheme.bodySmall),
           StreamBuilder<ReleasedPortfolio?>(
               stream: bloc.mrClient.streamValley.currentPortfolioStream,
@@ -30,7 +31,7 @@ class NoEnvironmentMessage extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: FHUnderlineButton(
-                        title: 'Go to environments settings',
+                        title: AppLocalizations.of(context)!.goToEnvironmentsSettings,
                         onPressed: () => ManagementRepositoryClientBloc.router
                                 .navigateTo(context, '/app-settings', params: {
                               'id': [bloc.applicationId!],
@@ -58,7 +59,7 @@ class NoFeaturesMessage extends StatelessWidget {
       padding: const EdgeInsets.only(top: 16.0),
       child: Column(
         children: <Widget>[
-          SelectableText('There are no features defined for this application',
+          SelectableText(AppLocalizations.of(context)!.noFeaturesForApp,
               style: Theme.of(context).textTheme.bodySmall),
         ],
       ),

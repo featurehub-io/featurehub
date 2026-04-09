@@ -1,6 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_outline_button.dart';
 import 'package:open_admin_app/widgets/strategyeditor/attribute_strategy_widget.dart';
 import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.dart';
@@ -42,7 +43,7 @@ class RolloutStrategiesWidget extends StatelessWidget {
 
             return Row(
               children: [
-                Text('Add rule', style: Theme.of(context).textTheme.bodySmall),
+                Text(AppLocalizations.of(context)!.addRule, style: Theme.of(context).textTheme.bodySmall),
                 for (var e in StrategyAttributeWellKnownNames.values)
                   if (e != StrategyAttributeWellKnownNames.session &&
                       !snapshot.data!.any((rsa) =>
@@ -63,11 +64,11 @@ class RolloutStrategiesWidget extends StatelessWidget {
       ),
       Row(
         children: [
-          Text('Add custom rule', style: Theme.of(context).textTheme.bodySmall),
+          Text(AppLocalizations.of(context)!.addCustomRule, style: Theme.of(context).textTheme.bodySmall),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: FHOutlineButton(
-                onPressed: () => bloc.createAttribute(), title: '+ Custom'),
+                onPressed: () => bloc.createAttribute(), title: AppLocalizations.of(context)!.addCustomButton),
           ),
         ],
       ),
