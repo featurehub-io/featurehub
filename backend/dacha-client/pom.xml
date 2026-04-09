@@ -54,7 +54,7 @@
     </dependency>
     <dependency>
       <groupId>io.featurehub.mr</groupId>
-      <artifactId>dacha-api</artifactId>
+      <artifactId>dacha-api-java-server</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
     <!-- we need this because these two generate the same code and it can clash if dacha-api isn't built -->

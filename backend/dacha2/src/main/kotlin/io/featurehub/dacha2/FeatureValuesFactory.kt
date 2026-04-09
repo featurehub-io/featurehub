@@ -4,9 +4,12 @@ import io.featurehub.dacha.model.CacheEnvironmentFeature
 import io.featurehub.dacha.model.PublishEnvironment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentSkipListSet
+
 
 interface FeatureValues {
   fun getFeatures(): Collection<CacheEnvironmentFeature>
@@ -31,7 +34,6 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
   }
 
   fun calculateEtag() {
-    log.trace("etag was ${etag}")
     etag = etagCalculator()
   }
 
@@ -44,7 +46,10 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
       }
       .joinToString("-")
 
-    val newEtag = Integer.toHexString(calcTag.hashCode())
+    val messageDigest = MessageDigest.getInstance("MD5")!!
+    val hashBytes = messageDigest.digest(calcTag.toByteArray(StandardCharsets.UTF_8))
+
+    val newEtag = HexFormat.of().formatHex(hashBytes)
 
     log.trace("etag is now {} (from '{}')", newEtag, calcTag)
 

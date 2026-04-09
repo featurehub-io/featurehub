@@ -1,5 +1,5 @@
 {
-  "latest": "1.9.3",
+  "latest": "1.9.4",
 
   "versions": [
     {
@@ -32,6 +32,7 @@
     { "version":  "1.9.0" },
     { "version":  "1.9.1" },
     { "version":  "1.9.2" },
-    { "version":  "1.9.3" }
+    { "version":  "1.9.3" },
+    { "version":  "1.9.4" }
   ]
 }

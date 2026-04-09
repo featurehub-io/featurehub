@@ -116,7 +116,6 @@ If Edge communicates with Dacha (1 or 2) over NATS, there is an extra channel:
 
 - `default/edge_v2` - this is a request/reply channel for requests from Edge to get data from  the Dacha cache.
 
-
 === Google's Pub/Sub
 
 For Google's PubSub, you will need to turn NATS *off*. We consider Google Pub/Sub to be production ready as of 1.5.9.
@@ -146,9 +145,54 @@ MR also needs an extra environment variable to tell it what subscription to list
 
 For testing locally there are extra fields if you are using the emulator - they are used in the `featurehub-installs` PubSub folder. To test in Google, we use https://www.pulumi.com/[Pulumi].
 
+=== Kafka
+
+Kafka does not support Dacha 1, but all other streaming versions are supported (Party Server and the Dacha2 oriented separate variants). You need to make sure FeatureHub is not using NATs, its default platform by default.
+
+- `nats.enabled=false`
+
+The following are the configuration settings for Kafka.
+
+==== Enabling Kafka
+
+Kafka is enabled automatically when `cloudevents.kafka.bootstrap.servers` is set. To explicitly disable it even when bootstrap servers are configured, set:
+
+- `cloudevents.kafka.enabled=false`
+
+==== Connection
+
+- `cloudevents.kafka.bootstrap.servers` *(required)* - comma-separated list of Kafka broker addresses, e.g. `broker1:9092,broker2:9092`
+
+==== Security (optional)
+
+- `cloudevents.kafka.security.protocol` - e.g. `SASL_SSL` or `SSL`. Omit for plaintext.
+- `cloudevents.kafka.sasl.mechanism` - e.g. `PLAIN` or `SCRAM-SHA-256`
+- `cloudevents.kafka.sasl.jaas.config` - the full JAAS config string, e.g. `org.apache.kafka.common.security.plain.PlainLoginModule required username="user" password="pass";`
+
+==== Producer Tuning
+
+- `cloudevents.kafka.producer.acks` (default `1`) - producer acknowledgement level. `0` = no ack, `1` = leader ack, `all` = full ISR ack.
+- `cloudevents.kafka.producer.linger.ms` (default `5`) - how long the producer will wait to batch messages before sending.
+- `cloudevents.kafka.compress-events` (default `true`) - whether CloudEvents are compressed before publishing. If it is true, the body is a json+gzip format, making it unreadable to casual browsing, but usually a lot smaller. 
+
+==== Consumer Tuning
+
+- `cloudevents.kafka.consumer.poll.timeout.ms` (default `1000`) - how long each consumer poll will wait for records before returning.
+- `cloudevents.kafka.consumer.auto-topic-creation` (default `false`) - whether consumers are allowed to auto-create topics. It is recommended to create topics in advance, set their number of partitions and replication factors.
+
+==== Topics
+
+You need to create the following topics in Kafka (or enable auto-creation). The topic names are configurable:
+
+- `cloudevents.inbound.kafka.mr-features-name` (default `featurehub-mr-dacha2`) - MR publishes feature, environment and service-account updates; Dacha2 subscribes.
+- `cloudevents.mr-edge.kafka.topic-name` (default `featurehub-mr-edge`) - MR/Dacha2 publishes enriched feature updates; Edge subscribes.
+- `cloudevents.edge-mr.kafka.topic-name` (default `featurehub-edge-updates`) - Edge publishes SDK test updates and webhook results back to MR.
+- `cloudevents.edge-mr.kafka.group-id` (default `featurehub-mr-update`) - consumer group ID used by MR when reading from the above topic.
+- `cloudevents.stats.kafka.topic-name` (default `featurehub-stats`) - Edge publishes usage stats here. Only needed if stats publishing is enabled.
+
 === AWS Kinesis
 
-We are supporting AWS Kinesis from v1.5.9 of FeatureHub. We discontinued support in 1.8.0 due to lack of interest.
+We were supporting AWS Kinesis from v1.5.9 of FeatureHub. We discontinued support in 1.8.0 due to lack of interest. If you are interested and want to work with us to ensure compatibility, please let us know.
 
 === Management Repository
 

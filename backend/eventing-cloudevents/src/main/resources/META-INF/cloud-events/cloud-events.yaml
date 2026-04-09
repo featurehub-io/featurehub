@@ -251,3 +251,32 @@ nats:
     channelName:
       property: "cloudevents.stats.nats.channel-name"
       default: "featurehub/edge-stats"
+
+kafka:
+  "cache-channel":
+    channelName:
+      property: "cloudevents.inbound.kafka.mr-features-name"
+      default: "featurehub-mr-dacha2"
+
+  "feature-only-channel":
+    channelName:
+      property: "cloudevents.mr-edge.kafka.topic-name"
+      default: "featurehub-mr-edge"
+    subscribers:
+      dacha2-enricher:
+        name: "enricher"
+
+  "mr-notifications-channel":
+    channelName:
+      property: "cloudevents.edge-mr.kafka.topic-name"
+      default: "featurehub-edge-updates"
+    subscribers:
+      notifications:
+        prefixConfig:
+          property: "cloudevents.edge-mr.kafka.group-id"
+          default: "featurehub-mr-update"
+
+  "edge-stats-emitter":
+    channelName:
+      property: "cloudevents.stats.kafka.topic-name"
+      default: "featurehub-stats"

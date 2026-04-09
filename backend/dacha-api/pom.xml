@@ -36,28 +36,7 @@
   </licenses>
 
   <dependencies>
-    <dependency>
-      <groupId>io.featurehub.common</groupId>
-      <artifactId>common-web</artifactId>
-      <version>1.1-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-prometheus</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-logging</artifactId>
-      <version>[1.3-SNAPSHOT, 2)</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-jersey</artifactId>
-      <version>[1.1, 2)</version>
-    </dependency>
-    <!-- we need this because these two generate the same code and it can clash if dacha-api isn't built -->
+    <!-- this is required for ordering, mr-api is required BEFORE dacha-api -->
     <dependency>
       <groupId>io.featurehub.mr</groupId>
       <artifactId>mr-api</artifactId>
@@ -118,65 +97,25 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.openapitools</groupId>
-        <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>7.18.0</version>
-        <dependencies>
-          <dependency>
-            <groupId>cd.connect.openapi</groupId>
-            <artifactId>connect-openapi-jersey3</artifactId>
-            <version>9.5</version>
-          </dependency>
-        </dependencies>
-        <executions>
-          <execution>
-            <id>featurehub-api</id>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-            <phase>generate-sources</phase>
-            <configuration>
-              <output>${project.basedir}/target/generated-sources/api</output>
-              <apiPackage>io.featurehub.dacha.api</apiPackage>
-              <!-- we overlap the models -->
-              <modelPackage>io.featurehub.mr.model</modelPackage>
-              <inputSpec>${project.basedir}/target/final.yaml</inputSpec>
-              <generatorName>jersey3-api</generatorName>
-              <generateApis>true</generateApis>
-
-              <additionalProperties>
-                <additionalProperty>server</additionalProperty>
-                <additionalProperty>client</additionalProperty>
-                <additionalProperty>openApiNullable=false</additionalProperty>
-                <additionalProperty>prometheus=true</additionalProperty>
-              </additionalProperties>
-
-              <configOptions>
-                <configOption>
-                  <name>useBeanValidation</name>
-                  <value>true</value>
-                </configOption>
-              </configOptions>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
 
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>add-generated-source</id>
-            <phase>initialize</phase>
+            <id>attach-full-yaml</id>
+            <phase>package</phase>
             <goals>
-              <goal>add-source</goal>
+              <goal>attach-artifact</goal>
             </goals>
             <configuration>
-              <sources>
-                <source>${project.build.directory}/generated-sources/api/src/gen/java</source>
-              </sources>
+              <artifacts>
+                <artifact>
+                  <file>target/final.yaml</file>
+                  <type>yaml</type>
+                  <classifier>dacha-openapi</classifier>
+                </artifact>
+              </artifacts>
             </configuration>
           </execution>
           <execution>

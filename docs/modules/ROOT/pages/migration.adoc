@@ -7,12 +7,9 @@ Dacha2 supports:
 
 - NATS
 - Google Pub/Sub
-- AWS Kinesis
-
-Coming are:
-
 - Kafka
-- Azure* - we aren't sure what is the right choice on Azure for best support here yet.
+
+The requirements for supporting an eventing system are well defined and Cloud Events are used everywhere, so adding new functionality is not difficult. Discuss with us if you use an eventing platform ideally capable of streaming - ensuring compliance with e2e-testing is of importance to us.
 
 == Discussion
 NATS is an excellent technology and we continue to use and support it internally as our first choice for FHOS, but

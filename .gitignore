@@ -78,4 +78,6 @@ metric*.log
 released-pom.xml
 node-js
 front-end-changed.projects
-
+/.claude
+/adks/e2e-sdk/test-example.env
+/adks/e2e-sdk/client.env

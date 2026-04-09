@@ -4,15 +4,17 @@ import { logger } from './logging';
 export abstract class BackendDiscovery {
   private static _mrPort = 8903;
   private static _featuresPort = 8604;
+  private static _mrUrl = "";
+  private static _edgeUrl = "";
   private static _isRESTEdge = false;
   private static _discovered = false;
 
-  public static get mrPort() {
-    return BackendDiscovery._mrPort;
+  public static get mrUrl() {
+    return BackendDiscovery._mrUrl || `http://localhost:${BackendDiscovery._mrPort}`;
   }
 
-  public static get featuresPort() {
-    return BackendDiscovery._featuresPort;
+  public static get edgeUrl() {
+    return BackendDiscovery._edgeUrl || `http://localhost:${BackendDiscovery._featuresPort}`;
   }
 
   public static get supportsSSE() {
@@ -120,7 +122,15 @@ export abstract class BackendDiscovery {
   }
 
   static async discover(): Promise<void> {
-    if (process.env.REMOTE_BACKEND || process.env.FEATUREHUB_BASE_URL) {
+    if (process.env.SAAS_MR && process.env.SAAS_EDGE) {
+      BackendDiscovery._mrUrl = process.env.SAAS_MR;
+      BackendDiscovery._edgeUrl = process.env.SAAS_EDGE;
+      BackendDiscovery._isRESTEdge = false;
+      BackendDiscovery._discovered = true;
+      return;
+    }
+
+    if (process.env.FEATUREHUB_BASE_URL) {
       await this.discoverRestEdge(process.env.REMOTE_BACKEND || process.env.FEATUREHUB_BASE_URL || '');
       if (process.env.FEATUREHUB_EDGE_URL) {
         await BackendDiscovery.edgeUrlCheck(process.env.FEATUREHUB_EDGE_URL);
@@ -145,24 +155,11 @@ export async function discover() {
 }
 
 export function mrHost() {
-  return  process.env.FEATUREHUB_BASE_URL || process.env.REMOTE_BACKEND || `http://localhost:${BackendDiscovery.mrPort}`;
+  return  process.env.FEATUREHUB_BASE_URL || BackendDiscovery.mrUrl;
 }
 
 export function edgeHost() {
-  if (process.env.FEATUREHUB_EDGE_URL) {
-    return process.env.FEATUREHUB_EDGE_URL;
-  }
-
-  if (process.env.REMOTE_BACKEND) {
-    const backend = process.env.REMOTE_BACKEND;
-
-    if (backend.includes('/pistachio/')) {
-      return backend.substring(0, backend.lastIndexOf('/'));
-    }
-
-    return backend;
-  }
-  return `http://localhost:${BackendDiscovery.featuresPort}`;
+  return process.env.FEATUREHUB_EDGE_URL || BackendDiscovery.edgeUrl;
 }
 
 export function supportsSSE() {
