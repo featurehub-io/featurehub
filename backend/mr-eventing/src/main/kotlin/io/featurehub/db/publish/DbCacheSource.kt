@@ -228,7 +228,7 @@ open class DbCacheSource @Inject constructor(
           QDbApplicationFeature.Alias.key,
           QDbApplicationFeature.Alias.valueType,
           QDbApplicationFeature.Alias.version
-        ).findList().associate { it.id!! to it!! }.toMutableMap()
+        ).findList().associateBy { it.id!! }.toMutableMap()
 
       val featureGroupRolloutStrategy = if (featureGroupsEnabled) internalFeatureGroupApi.collectStrategiesFromGroupsForEnvironment(env.id) else mapOf()
 
@@ -241,6 +241,7 @@ open class DbCacheSource @Inject constructor(
         .organizationId(env.parentApplication.portfolio.organization.id)
         .portfolioId(env.parentApplication.portfolio.id)
         .applicationId(env.parentApplication.id)
+          // toCacheEnvironmentFeature MUTATES the `features` map and removes any feature values it finds
         .featureValues(fvFinder.findList().map { fv: DbFeatureValue -> toCacheEnvironmentFeature(fv, features, featureGroupRolloutStrategy[fv.feature.id]) })
         .serviceAccounts(
           QDbServiceAccount().select(QDbServiceAccount.Alias.id).serviceAccountEnvironments.environment.id.eq(env.id)
@@ -248,13 +249,17 @@ open class DbCacheSource @Inject constructor(
         )
         .count(count)
 
-      // now add in the remaining features with empty values
+      // now add in the remaining features with empty values, this is a mutated map
       features.values.forEach { feature: DbApplicationFeature ->
         val toCacheFeature = toCacheFeature(feature)
-        eci.addFeatureValuesItem(
-          CacheEnvironmentFeature().feature(toCacheFeature)
-            .featureProperties(featureModelWalker.walk(feature, null, toCacheFeature, null, null))
-        )
+        if (eci.featureValues.any { it.feature.id == feature.id }) {
+          log.error("ERROR: adding duplicate feature {}", feature)
+        } else {
+          eci.addFeatureValuesItem(
+            CacheEnvironmentFeature().feature(toCacheFeature)
+              .featureProperties(featureModelWalker.walk(feature, null, toCacheFeature, null, null))
+          )
+        }
       }
 
       log.trace("publishing env: {} / {} - full body {}", env.name, env.id, eci)

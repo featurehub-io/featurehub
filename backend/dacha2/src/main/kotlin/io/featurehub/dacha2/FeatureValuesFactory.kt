@@ -45,6 +45,12 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
     ConcurrentSkipListSet<CacheEnvironmentFeature> { t1, t2 -> t1.feature.id.compareTo(t2.feature.id) }
 
   init {
+//    if (log.isTraceEnabled) {
+      val uniqueUuid = env.featureValues.map { it.feature.id }.distinct()
+      if (uniqueUuid.size != env.featureValues.size) {
+        log.error("We have duplicates in {} - this should NEVER happen", env)
+      }
+//    }
     features = ConcurrentHashMap(env.featureValues.associate { f -> f.feature.id to f }.toMutableMap())
     featureValues.addAll(env.featureValues)
 

@@ -91,7 +91,7 @@ Then("I can only see feature flags with keys {string}", async function (flagKeys
   }, 2000, 500);
 
   await waitForExpect(() => {
-    expect(world.repository.featureKeys, `The keys should be only ${keys} and they are ${world.repository.featureKeys}`).to.members(keys);
+    expect(keys, `The keys should be only ${keys} and they are ${world.repository.featureKeys}`).to.members(world.repository.featureKeys);
   }, 4000, 500);
 
 });
