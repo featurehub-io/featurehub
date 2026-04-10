@@ -252,14 +252,10 @@ open class DbCacheSource @Inject constructor(
       // now add in the remaining features with empty values, this is a mutated map
       features.values.forEach { feature: DbApplicationFeature ->
         val toCacheFeature = toCacheFeature(feature)
-        if (eci.featureValues.any { it.feature.id == feature.id }) {
-          log.error("ERROR: adding duplicate feature {}", feature)
-        } else {
-          eci.addFeatureValuesItem(
-            CacheEnvironmentFeature().feature(toCacheFeature)
-              .featureProperties(featureModelWalker.walk(feature, null, toCacheFeature, null, null))
-          )
-        }
+        eci.addFeatureValuesItem(
+          CacheEnvironmentFeature().feature(toCacheFeature)
+            .featureProperties(featureModelWalker.walk(feature, null, toCacheFeature, null, null))
+        )
       }
 
       log.trace("publishing env: {} / {} - full body {}", env.name, env.id, eci)

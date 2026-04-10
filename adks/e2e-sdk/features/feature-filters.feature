@@ -69,19 +69,19 @@ Feature: I am able to use feature filters
     And I create a service account called "keep silent" with named permissions "read" with current environment
     # the service account will now not be able to pull features not assigned to this filter
     When I update the service account called "keep silent" with feature filters "keep silent"
-    And I connect to the feature server
+    And I connect to the feature server with poll 200
     Then I can only see feature flags with keys "orm"
     # the other service account in the same environment with the filters can see only their ones
     And I create a service account called "always wonder" with named permissions "read" with current environment
     # the service account will now not be able to pull features not assigned to this filter
     When I update the service account called "always wonder" with feature filters "always wonder"
-    And I bounce the feature server connection
+    And I connect to the feature server with poll 200
     Then I can only see feature flags with keys "ling"
     When I update the service account called "always wonder" with feature filters "always wonder,keep silent"
-    And I bounce the feature server connection
+    And I connect to the feature server with poll 200
     Then I can only see feature flags with keys "ling,orm"
     # no filters means you can see everything
     And I create a service account called "mae-koy" with named permissions "read" with current environment
-    And I bounce the feature server connection
+    And I connect to the feature server with poll 200
     Then I can only see feature flags with keys "ling,orm,tofu"
 

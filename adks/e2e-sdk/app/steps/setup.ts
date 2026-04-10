@@ -152,7 +152,7 @@ Given('the edge connection is no longer available', async function () {
 
 When('I bounce the feature server connection', async function() {
   const world = this as SdkWorld;
-  world.edgeServer.close();
+  world.edgeServer?.close();
   await connectToFeatureServer(world);
 })
 
@@ -161,7 +161,13 @@ Given(/^I connect to the feature server$/, async function () {
   await connectToFeatureServer(world);
 });
 
-async function connectToFeatureServer(world: SdkWorld) {
+Given('I connect to the feature server with poll {int}', async function (pollRate: number) {
+  const world = this as SdkWorld;
+  world.edgeServer?.close();
+  await connectToFeatureServer(world, pollRate);
+});
+
+async function connectToFeatureServer(world: SdkWorld, forcePollRate = -1) {
 
   const serviceAccountPerm: ServiceAccountPermission = world.serviceAccountPermission;
 
@@ -182,22 +188,25 @@ async function connectToFeatureServer(world: SdkWorld) {
 
     expect(found, `${serviceAccountPerm.sdkUrlClientEval} failed to connect`).to.be.true;
     logger.info('Successfully completed poll');
-    const edge = new EdgeFeatureHubConfig(world.featureUrl, serviceAccountPerm.sdkUrlClientEval);
+    const fhConfig = new EdgeFeatureHubConfig(world.featureUrl, serviceAccountPerm.sdkUrlClientEval);
+    if (forcePollRate !== -1) {
+      fhConfig.restActive(forcePollRate);
+    }
 
     world.sdkUrlClientEval = serviceAccountPerm.sdkUrlClientEval;
     world.sdkUrlServerEval = serviceAccountPerm.sdkUrlServerEval;
 
     // the node SDK is streaming by default, but env vars will automatically change it
-    if (!BackendDiscovery.supportsSSE && edge.edgeType === EdgeType.STREAMING) {
+    if (forcePollRate !== -1 && !BackendDiscovery.supportsSSE && fhConfig.edgeType === EdgeType.STREAMING) {
       logger.info('Backend does not support SSE, using polling');
-      edge.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, 200));
+      fhConfig.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, 200));
     }
 
-    edge.init();
-    world.edgeServer = edge;
+    fhConfig.init();
+    world.edgeServer = fhConfig;
     // give it time to connect
     await sleep(200);
-    world.repository = edge.repository();
+    world.repository = fhConfig.repository();
     // its important we wait for it to become ready before stuffing data into it otherwise we can create features at the same
     // time we are waiting for a result back and miss the 1st feature
     await waitForExpect(() => {
