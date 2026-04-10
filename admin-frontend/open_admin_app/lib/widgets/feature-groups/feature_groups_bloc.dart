@@ -62,7 +62,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     _currentApplicationsStream.add(appList);
   }
 
-  getCurrentFeatureGroups(String? envId, String? appId) async {
+  Future<void> getCurrentFeatureGroups(String? envId, String? appId) async {
     if (appId != null) {
       var featureGroupsList = await featureGroupServiceApi
           .listFeatureGroups(appId, environmentId: envId, max: 1000);
@@ -70,11 +70,11 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  _updateEnvId(String? envId) {
+  void _updateEnvId(String? envId) {
     currentEnvId = envId;
   }
 
-  _refreshInitialData(String? appId) async {
+  Future<void> _refreshInitialData(String? appId) async {
     _featureGroupsStream
         .add([]); // because appId changed, clear the groups list
     this.appId = appId;
@@ -90,7 +90,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  getPermissions(String? appId, {String? envId}) async {
+  Future<void> getPermissions(String? appId, {String? envId}) async {
     if (appId != null) {
       userRoles = await applicationServiceApi.applicationPermissions(appId);
       if (userRoles != null) {
@@ -106,7 +106,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  createFeatureGroup(String name, String? description) async {
+  Future<void> createFeatureGroup(String name, String? description) async {
     if (currentEnvId != null) {
       FeatureGroupCreate fgc = FeatureGroupCreate(
           name: name,
@@ -138,7 +138,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
   @override
   ManagementRepositoryClientBloc get mrClient => _mrClient;
 
-  updateFeatureGroup(FeatureGroupListGroup featureGroupListGroup,
+  Future<void> updateFeatureGroup(FeatureGroupListGroup featureGroupListGroup,
       {String? name,
       String? description,
       List<FeatureGroupUpdateFeature>? features,
@@ -157,7 +157,7 @@ class FeatureGroupsBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  deleteFeatureGroup(String id) async {
+  Future<void> deleteFeatureGroup(String id) async {
     if (appId != null) {
       await featureGroupServiceApi.deleteFeatureGroup(appId!, id);
       List<FeatureGroupListGroup> featureGroupList = _featureGroupsStream.value;

@@ -12,7 +12,7 @@ import 'package:open_admin_app/widgets/dynamic-theme/fh_dynamic_theme.dart';
 import 'package:open_admin_app/widgets/stepper/stepper_container.dart';
 
 class FHappBar extends StatelessWidget {
-  const FHappBar({Key? key}) : super(key: key);
+  const FHappBar({super.key});
 
   @override
   Widget build(BuildContext context) {

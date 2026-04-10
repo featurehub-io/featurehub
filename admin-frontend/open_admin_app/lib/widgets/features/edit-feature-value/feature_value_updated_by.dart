@@ -5,8 +5,7 @@ import 'package:timeago/timeago.dart' as timeago;
 class FeatureValueUpdatedByCell extends StatelessWidget {
   final EditingFeatureValueBloc strBloc;
 
-  const FeatureValueUpdatedByCell({Key? key, required this.strBloc})
-      : super(key: key);
+  const FeatureValueUpdatedByCell({super.key, required this.strBloc});
 
   @override
   Widget build(BuildContext context) {

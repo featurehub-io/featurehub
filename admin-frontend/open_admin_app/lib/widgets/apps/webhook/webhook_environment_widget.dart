@@ -10,7 +10,7 @@ import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 
 class WebhookEnvironment extends StatefulWidget {
-  const WebhookEnvironment({Key? key}) : super(key: key);
+  const WebhookEnvironment({super.key});
 
   @override
   State<WebhookEnvironment> createState() => _WebhookEnvironmentState();

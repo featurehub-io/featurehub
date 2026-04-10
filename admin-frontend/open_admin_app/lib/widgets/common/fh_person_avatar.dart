@@ -4,7 +4,7 @@ import 'package:mrapi/api.dart';
 class PersonAvatar extends StatelessWidget {
   final Person person;
 
-  const PersonAvatar({Key? key, required this.person}) : super(key: key);
+  const PersonAvatar({super.key, required this.person});
 
   @override
   Widget build(BuildContext context) {

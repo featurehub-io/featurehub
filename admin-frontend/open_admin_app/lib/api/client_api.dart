@@ -92,7 +92,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   BehaviorSubject<bool> get stepperOpened => _stepperOpened;
 
-  set stepperOpened(value) {
+  set stepperOpened(dynamic value) {
     bool oldVal = _stepperOpened.value == true;
 
     if (!oldVal && value) {
@@ -103,11 +103,11 @@ class ManagementRepositoryClientBloc implements Bloc {
     _stepperOpened.add(value);
   }
 
-  get rocketOpened => stepperOpened.value;
+  bool get rocketOpened => stepperOpened.value;
 
   BehaviorSubject<bool> get menuOpened => _menuOpened;
 
-  set menuOpened(value) {
+  set menuOpened(dynamic value) {
     if (personState.isLoggedIn && value || !value) {
       _menuOpened.add(value);
     }
@@ -501,7 +501,7 @@ class ManagementRepositoryClientBloc implements Bloc {
         exception: null, showDetails: false, errorMessage: messageBody));
   }
 
-  Future<void> dialogError(e, StackTrace? s,
+  Future<void> dialogError(Object? e, StackTrace? s,
       {String? messageTitle,
       bool showDetails = true,
       String messageBody = ''}) async {
@@ -517,7 +517,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     }
   }
 
-  void consoleError(e, s) {
+  void consoleError(Object? e, StackTrace? s) {
     _log.severe('Failed', e, s);
   }
 

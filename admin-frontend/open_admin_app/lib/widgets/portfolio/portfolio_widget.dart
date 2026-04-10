@@ -14,7 +14,7 @@ import 'package:openapi_dart_common/openapi.dart';
 import '../common/fh_loading_indicator.dart';
 
 class PortfolioListWidget extends StatelessWidget {
-  const PortfolioListWidget({Key? key}) : super(key: key);
+  const PortfolioListWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -55,8 +55,7 @@ class _PortfolioWidget extends StatelessWidget {
   final PortfolioBloc bloc;
 
   const _PortfolioWidget(
-      {Key? key, required this.portfolio, required this.mr, required this.bloc})
-      : super(key: key);
+      {required this.portfolio, required this.mr, required this.bloc});
 
   @override
   Widget build(BuildContext context) {
@@ -111,8 +110,7 @@ class PortfolioDeleteDialogWidget extends StatelessWidget {
   final PortfolioBloc bloc;
 
   const PortfolioDeleteDialogWidget(
-      {Key? key, required this.portfolio, required this.bloc})
-      : super(key: key);
+      {super.key, required this.portfolio, required this.bloc});
 
   @override
   Widget build(BuildContext context) {
@@ -142,8 +140,7 @@ class PortfolioUpdateDialogWidget extends StatefulWidget {
   final PortfolioBloc bloc;
 
   const PortfolioUpdateDialogWidget(
-      {Key? key, required this.bloc, this.portfolio})
-      : super(key: key);
+      {super.key, required this.bloc, this.portfolio});
 
   @override
   State<StatefulWidget> createState() {

@@ -10,7 +10,7 @@ import 'package:open_admin_app/widget_creator.dart';
 class FHErrorWidget extends StatelessWidget {
   final FHError error;
 
-  const FHErrorWidget({Key? key, required this.error}) : super(key: key);
+  const FHErrorWidget({super.key, required this.error});
 
   @override
   Widget build(BuildContext context) {

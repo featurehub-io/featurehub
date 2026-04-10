@@ -4,14 +4,14 @@ import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart
 
 class EditBooleanValueDropDownWidget extends StatefulWidget {
   const EditBooleanValueDropDownWidget({
-    Key? key,
+    super.key,
     required this.unlocked,
     required this.editable,
     this.rolloutStrategy,
     required this.strBloc,
     this.groupRolloutStrategy,
     this.applicationRolloutStrategy,
-  }) : super(key: key);
+  });
 
   final bool unlocked;
   final bool editable;
@@ -21,11 +21,11 @@ class EditBooleanValueDropDownWidget extends StatefulWidget {
   final EditingFeatureValueBloc strBloc;
 
   @override
-  _EditBooleanValueDropDownWidgetState createState() =>
-      _EditBooleanValueDropDownWidgetState();
+  EditBooleanValueDropDownWidgetState createState() =>
+      EditBooleanValueDropDownWidgetState();
 }
 
-class _EditBooleanValueDropDownWidgetState
+class EditBooleanValueDropDownWidgetState
     extends State<EditBooleanValueDropDownWidget> {
   String boolFeatureValue = 'Off';
 

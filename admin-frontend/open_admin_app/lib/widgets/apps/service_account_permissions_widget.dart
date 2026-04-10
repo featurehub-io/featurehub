@@ -16,7 +16,7 @@ import 'manage_app_bloc.dart';
 final _log = Logger('ServiceAccountPermissionsWidget');
 
 class ServiceAccountPermissionsWidget extends StatefulWidget {
-  const ServiceAccountPermissionsWidget({Key? key}) : super(key: key);
+  const ServiceAccountPermissionsWidget({super.key});
 
   @override
   ServiceAccountPermissionState createState() =>
@@ -55,12 +55,14 @@ class ServiceAccountPermissionState
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: <Widget>[
-                        SelectableText(
-                            AppLocalizations.of(context)!.noServiceAccountsInPortfolio(bloc.portfolio!.name)),
+                        SelectableText(AppLocalizations.of(context)!
+                            .noServiceAccountsInPortfolio(
+                                bloc.portfolio!.name)),
                         Container(
                           padding: const EdgeInsets.only(top: 20, bottom: 20),
                           child: FHUnderlineButton(
-                            title: AppLocalizations.of(context)!.goToServiceAccountSettings,
+                            title: AppLocalizations.of(context)!
+                                .goToServiceAccountSettings,
                             onPressed: () => {
                               ManagementRepositoryClientBloc.router.navigateTo(
                                 context,
@@ -95,17 +97,20 @@ class ServiceAccountPermissionState
                     Padding(
                       padding: const EdgeInsets.only(left: 16.0),
                       child: FHInfoCardWidget(
-                          message: AppLocalizations.of(context)!.serviceAccountInfoMessage),
+                          message: AppLocalizations.of(context)!
+                              .serviceAccountInfoMessage),
                     ),
                     const SizedBox(
                       width: 32,
                     ),
                     FHExternalLinkWidget(
-                      tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
+                      tooltipMessage:
+                          AppLocalizations.of(context)!.viewDocumentation,
                       link:
                           "https://docs.featurehub.io/featurehub/latest/service-accounts.html#_service_account_permissions",
                       icon: const Icon(Icons.arrow_outward_outlined),
-                      label: AppLocalizations.of(context)!.serviceAccountsDocumentation,
+                      label: AppLocalizations.of(context)!
+                          .serviceAccountsDocumentation,
                     ),
                   ],
                 ),
@@ -166,10 +171,9 @@ class _ServiceAccountPermissionDetailWidget extends StatefulWidget {
   final ManageAppBloc bloc;
 
   const _ServiceAccountPermissionDetailWidget({
-    Key? key,
     required this.mr,
     required this.bloc,
-  }) : super(key: key);
+  });
 
   @override
   _ServiceAccountPermissionDetailState createState() =>
@@ -202,8 +206,8 @@ class _ServiceAccountPermissionDetailState
                     children: <Widget>[
                       Container(
                           padding: const EdgeInsets.all(20),
-                          child: SelectableText(
-                              AppLocalizations.of(context)!.needToCreateEnvironmentsFirst)),
+                          child: SelectableText(AppLocalizations.of(context)!
+                              .needToCreateEnvironmentsFirst)),
                     ],
                   );
                 }
@@ -257,7 +261,8 @@ class _ServiceAccountPermissionDetailState
                         padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
                         child: Center(
                           child: SelectableText(
-                              AppLocalizations.of(context)!.setServiceAccountPermissions,
+                              AppLocalizations.of(context)!
+                                  .setServiceAccountPermissions,
                               style: Theme.of(context).textTheme.bodySmall),
                         )),
                     Card(
@@ -295,10 +300,15 @@ class _ServiceAccountPermissionDetailState
                                     (envSnapshot.data?.isNotEmpty == true)
                                         ? envSnapshot.data?.first.applicationId
                                         : null)
-                                .then((serviceAccount) => widget.bloc.mrClient
-                                    .addSnackbar(Text(
-                                        AppLocalizations.of(context)!.serviceAccountUpdated(serviceAccount?.name ?? '<unknown>'))))
-                                .catchError((e, s) {
+                                .then((serviceAccount) {
+                              if (context.mounted) {
+                                widget.bloc.mrClient.addSnackbar(Text(
+                                    AppLocalizations.of(context)!
+                                        .serviceAccountUpdated(
+                                            serviceAccount?.name ??
+                                                '<unknown>')));
+                              }
+                            }).catchError((e, s) {
                               widget.bloc.mrClient.dialogError(e, s);
                             });
                           },
@@ -318,12 +328,28 @@ class _ServiceAccountPermissionDetailState
         .copyWith(fontWeight: FontWeight.bold);
     return TableRow(children: [
       const Text(''),
-      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permRead, style: headerStyle))),
-      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permLock, style: headerStyle))),
-      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permUnlock, style: headerStyle))),
-      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permChangeValue, style: headerStyle))),
-      if (widget.bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
-        Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permReadExtendedData, style: headerStyle))),
+      Center(
+          child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(l10n.permRead, style: headerStyle))),
+      Center(
+          child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(l10n.permLock, style: headerStyle))),
+      Center(
+          child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(l10n.permUnlock, style: headerStyle))),
+      Center(
+          child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(l10n.permChangeValue, style: headerStyle))),
+      if (widget
+          .bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
+        Center(
+            child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(l10n.permReadExtendedData, style: headerStyle))),
     ]);
   }
 
@@ -351,11 +377,10 @@ class PermissionsCheckbox extends StatefulWidget {
   final String envId;
   final RoleType permissionType;
   const PermissionsCheckbox(
-      {Key? key,
+      {super.key,
       required this.newServiceAccountPermission,
       required this.envId,
-      required this.permissionType})
-      : super(key: key);
+      required this.permissionType});
 
   @override
   State<PermissionsCheckbox> createState() => _PermissionsCheckboxState();

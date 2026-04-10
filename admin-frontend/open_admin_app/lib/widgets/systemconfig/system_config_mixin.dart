@@ -79,9 +79,9 @@ mixin SystemConfigMixin<T extends StatefulWidget> on State<T> {
 
   void reset(List<SystemConfig> configs) {
     settings.clear();
-    configs.forEach((cfg) {
+    for (var cfg in configs) {
       settings[cfg.key] = cfg;
-    });
+    }
     stateReset();
     unchangedSettings.clear();
     unchangedSettings

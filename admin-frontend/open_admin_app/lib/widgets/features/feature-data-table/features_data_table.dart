@@ -14,16 +14,15 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:open_admin_app/widgets/common/fh_multiselect.dart';
 
 class FeaturesDataTable extends StatefulWidget {
-  const FeaturesDataTable({Key? key, this.title, required this.bloc})
-      : super(key: key);
+  const FeaturesDataTable({super.key, this.title, required this.bloc});
   final String? title;
   final PerApplicationFeaturesBloc bloc;
 
   @override
-  _FeaturesDataTableState createState() => _FeaturesDataTableState();
+  FeaturesDataTableState createState() => FeaturesDataTableState();
 }
 
-class _FeaturesDataTableState extends State<FeaturesDataTable> {
+class FeaturesDataTableState extends State<FeaturesDataTable> {
   late FeaturesDataSource _featuresDataSource;
   List<FeatureStatusFeatures> featuresList = [];
 
@@ -209,7 +208,7 @@ class _FeaturesDataTableState extends State<FeaturesDataTable> {
                         height: tableHeight,
                         child: SfDataGridTheme(
                           data: SfDataGridThemeData(
-                            selectionColor: Colors.blue.withOpacity(0.3),
+                            selectionColor: Colors.blue.withValues(alpha: 0.3),
                             headerColor:
                                 Theme.of(context).colorScheme.primaryContainer,
                           ),

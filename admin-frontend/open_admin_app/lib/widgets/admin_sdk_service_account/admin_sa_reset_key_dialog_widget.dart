@@ -13,8 +13,7 @@ class AdminSAKeyResetDialogWidget extends StatelessWidget {
   final ListUsersBloc bloc;
 
   const AdminSAKeyResetDialogWidget(
-      {Key? key, required this.bloc, required this.person})
-      : super(key: key);
+      {super.key, required this.bloc, required this.person});
 
   @override
   Widget build(BuildContext context) {
@@ -56,8 +55,7 @@ class AdminSAKeyResetDialogWidget extends StatelessWidget {
 }
 
 class AdminSAKeyShowDialogWidget extends StatelessWidget {
-  const AdminSAKeyShowDialogWidget({Key? key, required this.token})
-      : super(key: key);
+  const AdminSAKeyShowDialogWidget({super.key, required this.token});
   final String token;
 
   @override

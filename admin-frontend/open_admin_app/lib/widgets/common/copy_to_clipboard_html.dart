@@ -12,15 +12,14 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
   final CopyToClipboardTextProvider? textProvider;
 
   const FHCopyToClipboardFlatButton(
-      {Key? key,
+      {super.key,
       this.text,
       this.textProvider,
       this.caption,
       this.captionText,
       this.tooltip})
       : assert(caption != null || captionText != null),
-        assert(text != null || textProvider != null),
-        super(key: key);
+        assert(text != null || textProvider != null);
 
   @override
   Widget build(BuildContext context) {
@@ -63,10 +62,10 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
 
 class FHCopyToClipboard extends StatelessWidget {
   const FHCopyToClipboard({
-    Key? key,
+    super.key,
     required this.tooltipMessage,
     required this.copyString,
-  }) : super(key: key);
+  });
 
   final String tooltipMessage;
   final String copyString;

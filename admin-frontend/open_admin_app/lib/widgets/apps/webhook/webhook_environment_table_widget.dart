@@ -11,8 +11,7 @@ class WebhookEnvironmentTable extends StatefulWidget {
   final WebhookEnvironmentBloc bloc;
   final EnvironmentAndWebhookType filters;
 
-  const WebhookEnvironmentTable(this.filters, this.bloc, {Key? key})
-      : super(key: key);
+  const WebhookEnvironmentTable(this.filters, this.bloc, {super.key});
 
   @override
   State<WebhookEnvironmentTable> createState() =>

@@ -35,7 +35,7 @@ class FHRoutePath {
 
 class RouteWrapperWidget extends StatelessWidget {
   final Widget child;
-  const RouteWrapperWidget({Key? key, required this.child}) : super(key: key);
+  const RouteWrapperWidget({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {

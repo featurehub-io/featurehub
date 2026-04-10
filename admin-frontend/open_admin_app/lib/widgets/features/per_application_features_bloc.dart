@@ -356,7 +356,7 @@ class PerApplicationFeaturesBloc
         "finished: getApplicationFeatureValuesData with $appId search $searchTerm");
   }
 
-  updateApplicationFeatureValuesStream() async {
+  Future<void> updateApplicationFeatureValuesStream() async {
     await getApplicationFeatureValuesData(applicationId!, searchFieldTerm,
         selectedFeatureTypesByUser, currentRowsPerPage, currentPageIndex);
   }

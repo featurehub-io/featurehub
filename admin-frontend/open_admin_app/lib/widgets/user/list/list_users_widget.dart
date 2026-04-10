@@ -20,13 +20,13 @@ import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 
 class PersonListWidget extends StatefulWidget {
-  const PersonListWidget({Key? key}) : super(key: key);
+  const PersonListWidget({super.key});
 
   @override
-  _PersonListWidgetState createState() => _PersonListWidgetState();
+  PersonListWidgetState createState() => PersonListWidgetState();
 }
 
-class _PersonListWidgetState extends State<PersonListWidget> {
+class PersonListWidgetState extends State<PersonListWidget> {
   var sortIndex = 0;
   var sortAsc = true;
   var rowsPerPage = AdvancedPaginatedDataTable.defaultRowsPerPage;
@@ -80,11 +80,17 @@ class _PersonListWidgetState extends State<PersonListWidget> {
               }
             },
             columns: [
-              DataColumn(label: Text(AppLocalizations.of(context)!.columnName), onSort: setSort),
-              DataColumn(label: Text(AppLocalizations.of(context)!.columnStatus), onSort: setSort),
-              DataColumn(label: Text(AppLocalizations.of(context)!.columnEmail)),
+              DataColumn(
+                  label: Text(AppLocalizations.of(context)!.columnName),
+                  onSort: setSort),
+              DataColumn(
+                  label: Text(AppLocalizations.of(context)!.columnStatus),
+                  onSort: setSort),
+              DataColumn(
+                  label: Text(AppLocalizations.of(context)!.columnEmail)),
               DataColumn(label: Text(AppLocalizations.of(context)!.groups)),
-              DataColumn(label: Text(AppLocalizations.of(context)!.columnLastSignIn)),
+              DataColumn(
+                  label: Text(AppLocalizations.of(context)!.columnLastSignIn)),
               DataColumn(
                 label: Padding(
                   padding: const EdgeInsets.only(left: 12.0),
@@ -181,8 +187,10 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                     bloc.mrClient.addOverlay((BuildContext context) {
                   final l10n = AppLocalizations.of(context)!;
                   return FHAlertDialog(
-                      title: Text(l10n.activateUserTitle(personEntry.person.name)),
-                      content: Text(l10n.activateUserConfirm(personEntry.person.email)),
+                      title:
+                          Text(l10n.activateUserTitle(personEntry.person.name)),
+                      content: Text(
+                          l10n.activateUserConfirm(personEntry.person.email)),
                       actions: [
                         TextButton(
                           onPressed: () {
@@ -212,7 +220,8 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
           if (personEntry.person.whenDeactivated == null)
             DataCell(Row(children: <Widget>[
               Tooltip(
-                message: _infoTooltip(personEntry, allowedLocalIdentity, AppLocalizations.of(context)!),
+                message: _infoTooltip(personEntry, allowedLocalIdentity,
+                    AppLocalizations.of(context)!),
                 child: FHIconButton(
                   icon: Icon(Icons.info,
                       color: _infoColour(personEntry, allowedLocalIdentity)),
@@ -249,8 +258,12 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                               await bloc.deletePerson(
                                   personEntry.person.id, true);
                               setNextView(); // triggers reload from server with latest settings and rebuilds state
-                              bloc.mrClient.addSnackbar(Text(
-                                  AppLocalizations.of(context)!.userDeactivated(personEntry.person.name)));
+                              if (context.mounted) {
+                                bloc.mrClient.addSnackbar(Text(
+                                    AppLocalizations.of(context)!
+                                        .userDeactivated(
+                                            personEntry.person.name)));
+                              }
                               return true;
                             } catch (e, s) {
                               await bloc.mrClient.dialogError(e, s);
@@ -295,7 +308,7 @@ class ListUserInfoDialog extends StatelessWidget {
   final ListUsersBloc bloc;
   final SearchPersonEntry entry;
 
-  const ListUserInfoDialog(this.bloc, this.entry, {Key? key}) : super(key: key);
+  const ListUserInfoDialog(this.bloc, this.entry, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -321,8 +334,7 @@ class _ListUserInfo extends StatelessWidget {
   final ListUsersBloc bloc;
   final SearchPersonEntry foundPerson;
 
-  const _ListUserInfo({Key? key, required this.bloc, required this.foundPerson})
-      : super(key: key);
+  const _ListUserInfo({required this.bloc, required this.foundPerson});
 
   @override
   Widget build(BuildContext context) {
@@ -387,7 +399,8 @@ class _ListUserInfo extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(fontSize: 11.0))),
                           FHCopyToClipboard(
-                            tooltipMessage: AppLocalizations.of(context)!.copyUrlToClipboard,
+                            tooltipMessage: AppLocalizations.of(context)!
+                                .copyUrlToClipboard,
                             copyString: bloc.mrClient.registrationUrl(
                                 foundPerson.registration.token),
                           )
@@ -405,13 +418,15 @@ class _ListUserInfo extends StatelessWidget {
                     if (allowedLocalIdentity &&
                         foundPerson.registration.expired)
                       FHCopyToClipboardFlatButton(
-                        caption: AppLocalizations.of(context)!.renewRegistrationUrl,
+                        caption:
+                            AppLocalizations.of(context)!.renewRegistrationUrl,
                         textProvider: () async {
                           try {
                             final token = await bloc.mrClient.authServiceApi
                                 .resetExpiredToken(foundPerson.person.email);
                             bloc.mrClient.addSnackbar(Text(
-                                AppLocalizations.of(context)!.registrationUrlRenewed));
+                                AppLocalizations.of(context)!
+                                    .registrationUrlRenewed));
                             return bloc.mrClient.registrationUrl(token.token);
                           } catch (e, s) {
                             bloc.mrClient.addError(FHError.createError(e, s));
@@ -441,14 +456,12 @@ class _ListUserInfo extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     if (person.groups.isNotEmpty)
-                                      ...person.groups
-                                          .map((e) => Text(
-                                                e.name,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyMedium,
-                                              ))
-                                          .toList(),
+                                      ...person.groups.map((e) => Text(
+                                            e.name,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium,
+                                          )),
                                   ]))
                         ],
                       ),
@@ -466,8 +479,7 @@ class _ListUserRow extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const _ListUserRow({Key? key, required this.title, required this.child})
-      : super(key: key);
+  const _ListUserRow({required this.title, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -486,7 +498,8 @@ class _ListUserRow extends StatelessWidget {
   }
 }
 
-String _infoTooltip(SearchPersonEntry entry, bool allowedLocalLogin, AppLocalizations l10n) {
+String _infoTooltip(
+    SearchPersonEntry entry, bool allowedLocalLogin, AppLocalizations l10n) {
   if (entry.registration.expired) {
     return l10n.registrationExpired;
   }

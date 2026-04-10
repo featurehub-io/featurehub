@@ -9,8 +9,8 @@ import 'package:open_admin_app/widgets/features/per_application_features_bloc.da
 
 class NoEnvironmentMessage extends StatelessWidget {
   const NoEnvironmentMessage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +50,8 @@ class NoEnvironmentMessage extends StatelessWidget {
 
 class NoFeaturesMessage extends StatelessWidget {
   const NoFeaturesMessage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

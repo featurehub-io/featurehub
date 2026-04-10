@@ -9,5 +9,6 @@ linter:
  rules:
    - avoid_print: true
    - library_private_types_in_public_api: false
+   - strict_top_level_inference: true
 analyzer:
   exclude: [build/**]

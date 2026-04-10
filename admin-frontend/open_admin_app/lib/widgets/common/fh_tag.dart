@@ -8,8 +8,7 @@ class FHTagWidget extends StatelessWidget {
   final TextStyle? style;
 
   const FHTagWidget(
-      {Key? key, required this.text, required this.state, this.style})
-      : super(key: key);
+      {super.key, required this.text, required this.state, this.style});
 
   @override
   Widget build(BuildContext context) {

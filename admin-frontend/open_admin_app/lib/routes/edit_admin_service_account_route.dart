@@ -14,7 +14,7 @@ import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widg
 import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
 
 class EditAdminServiceAccountRoute extends StatelessWidget {
-  const EditAdminServiceAccountRoute({Key? key}) : super(key: key);
+  const EditAdminServiceAccountRoute({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -36,8 +36,7 @@ class EditAdminServiceAccountRoute extends StatelessWidget {
 class EditAdminServiceAccountFormWidget extends StatefulWidget {
   final Person person;
 
-  const EditAdminServiceAccountFormWidget({Key? key, required this.person})
-      : super(key: key);
+  const EditAdminServiceAccountFormWidget({super.key, required this.person});
 
   @override
   EditUserFormState createState() => EditUserFormState();

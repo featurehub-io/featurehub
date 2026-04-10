@@ -9,11 +9,11 @@ var _log = Logger('g4');
 class FHAnalytics {
   static AnalyticsService? ga;
 
-  static sendScreenView(String viewName, {Map<String, String>? parameters}) {
+  static void sendScreenView(String viewName, {Map<String, String>? parameters}) {
     ga?.send(AnalyticsPageView(title: viewName, additionalParams: parameters ?? const {}));
   }
 
-  static setGA(String? id) {
+  static void setGA(String? id) {
     if (id?.trim().isNotEmpty == true && ga == null) {
       _log.fine('received g4 tracking is as $id - initializing');
       ga = G4AnalyticsService(measurementId: id!);

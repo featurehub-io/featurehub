@@ -16,8 +16,7 @@ import 'package:open_admin_app/widgets/features/per_application_features_bloc.da
 class FeatureStatusRoute extends StatefulWidget {
   final bool createFeature;
 
-  const FeatureStatusRoute({Key? key, required this.createFeature})
-      : super(key: key);
+  const FeatureStatusRoute({super.key, required this.createFeature});
 
   @override
   State<StatefulWidget> createState() => _FeatureStatusState();
@@ -114,9 +113,9 @@ class CreateFeatureButton extends StatelessWidget {
   final PerApplicationFeaturesBloc bloc;
 
   const CreateFeatureButton({
-    Key? key,
+    super.key,
     required this.bloc,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

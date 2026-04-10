@@ -20,11 +20,11 @@ class StrategyEditingWidget extends StatefulWidget {
   final String? returnToRoute;
 
   const StrategyEditingWidget({
-    Key? key,
+    super.key,
     required this.editable,
     required this.bloc,
     this.returnToRoute,
-  }) : super(key: key);
+  });
 
   @override
   State<StatefulWidget> createState() {
@@ -181,8 +181,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                   ],
                 ),
                 if (isTotalPercentageError)
-                  Text(
-                      l10n.percentageTotalOver100Error,
+                  Text(l10n.percentageTotalOver100Error,
                       style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                           color: Theme.of(context).colorScheme.error)),
                 _NaughtyDataEntryWidget(bloc: widget.bloc),
@@ -250,10 +249,16 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
       if (validationCheck != null) {
         if (isValidationOk(validationCheck)) {
           await onSuccess();
-          widget.returnToRoute != null
-              ? ManagementRepositoryClientBloc.router
-                  .navigateTo(context, widget.returnToRoute!)
-              : Navigator.pop(context);
+          if (widget.returnToRoute != null) {
+            if (context.mounted) {
+              ManagementRepositoryClientBloc.router
+                  .navigateTo(context, widget.returnToRoute!);
+            }
+          } else {
+            if (context.mounted) {
+              Navigator.pop(context);
+            }
+          }
         } else {
           layoutValidationFailures(validationCheck, updatedStrategy);
         }
@@ -285,8 +290,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
 class _NaughtyDataEntryWidget extends StatelessWidget {
   final StrategyEditorBloc bloc;
 
-  const _NaughtyDataEntryWidget({Key? key, required this.bloc})
-      : super(key: key);
+  const _NaughtyDataEntryWidget({required this.bloc});
 
   @override
   Widget build(BuildContext context) {

@@ -7,7 +7,7 @@ import 'package:open_admin_app/widgets/setup/setup_bloc.dart';
 import 'package:open_admin_app/widgets/setup/setup_widget.dart';
 
 class SetupWrapperWidget extends StatelessWidget {
-  const SetupWrapperWidget({Key? key}) : super(key: key);
+  const SetupWrapperWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -10,19 +10,18 @@ class RetireFeatureValueCheckboxWidget extends StatefulWidget {
   final bool retired;
 
   const RetireFeatureValueCheckboxWidget(
-      {Key? key,
+      {super.key,
       required this.environmentFeatureValue,
       required this.fvBloc,
       required this.editable,
-      required this.retired})
-      : super(key: key);
+      required this.retired});
 
   @override
-  _RetireFeatureValueCheckboxWidgetState createState() =>
-      _RetireFeatureValueCheckboxWidgetState();
+  RetireFeatureValueCheckboxWidgetState createState() =>
+      RetireFeatureValueCheckboxWidgetState();
 }
 
-class _RetireFeatureValueCheckboxWidgetState
+class RetireFeatureValueCheckboxWidgetState
     extends State<RetireFeatureValueCheckboxWidget> {
   bool retired = false;
 

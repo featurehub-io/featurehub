@@ -8,8 +8,7 @@ import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 class EnvironmentDropDown extends StatefulWidget {
   final FeatureGroupsBloc bloc;
   final String? envId;
-  const EnvironmentDropDown({Key? key, required this.bloc, this.envId})
-      : super(key: key);
+  const EnvironmentDropDown({super.key, required this.bloc, this.envId});
 
   @override
   State<EnvironmentDropDown> createState() => _EnvironmentDropDownState();

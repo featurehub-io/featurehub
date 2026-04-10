@@ -16,7 +16,7 @@ import 'package:open_admin_app/widgets/features/per_application_features_bloc.da
 class FeatureCellHolder extends StatelessWidget {
   final Feature feature;
 
-  const FeatureCellHolder({Key? key, required this.feature}) : super(key: key);
+  const FeatureCellHolder({super.key, required this.feature});
 
   @override
   Widget build(BuildContext context) {

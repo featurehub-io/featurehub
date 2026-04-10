@@ -18,7 +18,7 @@ import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
 
 class ApiKeysRoute extends StatelessWidget {
-  const ApiKeysRoute({Key? key}) : super(key: key);
+  const ApiKeysRoute({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -127,8 +127,7 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
   final ServiceAccountEnvBloc bloc;
 
   const _ApiKeysDisplayWidget(
-      {Key? key, required this.serviceAccountEnvs, required this.bloc})
-      : super(key: key);
+      {required this.serviceAccountEnvs, required this.bloc});
 
   @override
   Widget build(BuildContext context) {
@@ -251,8 +250,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
   final ServiceAccount sa;
 
   const _ServiceAccountPermissionWidget(
-      {Key? key, required this.env, required this.sa})
-      : super(key: key);
+      {required this.env, required this.sa});
 
   @override
   Widget build(BuildContext context) {
@@ -286,8 +284,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
   final ServiceAccountEnvBloc bloc;
 
   const _ServiceAccountCopyWidget(
-      {Key? key, required this.sa, required this.env, required this.bloc})
-      : super(key: key);
+      {required this.sa, required this.env, required this.bloc});
 
   @override
   Widget build(BuildContext context) {

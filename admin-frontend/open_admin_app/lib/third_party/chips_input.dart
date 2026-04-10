@@ -10,7 +10,7 @@ typedef ChipsBuilder<T> = Widget Function(
 
 class ChipsInput<T> extends StatefulWidget {
   const ChipsInput({
-    Key? key,
+    super.key,
     this.initialValue = const [],
     this.decoration = const InputDecoration(),
     this.enabled = true,
@@ -21,8 +21,7 @@ class ChipsInput<T> extends StatefulWidget {
     this.onChipTapped,
     this.maxChips,
     this.textStyle,
-  })  : assert(maxChips == null || initialValue.length <= maxChips),
-        super(key: key);
+  }) : assert(maxChips == null || initialValue.length <= maxChips);
 
   final InputDecoration decoration;
   final TextStyle? textStyle;
@@ -361,7 +360,8 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   }
 
   @override
-  void didChangeInputControl(TextInputControl? oldControl, TextInputControl? newControl) {
+  void didChangeInputControl(
+      TextInputControl? oldControl, TextInputControl? newControl) {
     // TODO: implement didChangeInputControl
   }
 
@@ -383,12 +383,11 @@ class AlwaysDisabledFocusNode extends FocusNode {
 
 class _TextCaret extends StatefulWidget {
   const _TextCaret({
-    Key? key,
     this.resumed = false,
-  }) : super(key: key);
+  });
 
   final Duration duration = const Duration(milliseconds: 500);
-  final bool resumed ;
+  final bool resumed;
 
   @override
   _TextCursorState createState() => _TextCursorState();

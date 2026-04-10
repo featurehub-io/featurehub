@@ -181,7 +181,7 @@ class StreamValley {
     });
   }
 
-  get userIsCurrentPortfolioAdmin =>
+  bool get userIsCurrentPortfolioAdmin =>
       personState.userIsPortfolioAdmin(currentPortfolioId);
 
   bool get hasCurrentPortfolio => currentPortfolio != nullPortfolio;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class HomeRoute extends StatelessWidget {
-  const HomeRoute({Key? key, required this.title}) : super(key: key);
+  const HomeRoute({super.key, required this.title});
   final String title;
 
   @override

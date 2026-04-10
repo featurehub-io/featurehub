@@ -14,7 +14,7 @@ import 'package:open_admin_app/widgets/portfolio/portfolio_widget.dart';
 /// and their access will be limited based on whether they are a super admin.
 
 class PortfolioRoute extends StatelessWidget {
-  const PortfolioRoute({Key? key}) : super(key: key);
+  const PortfolioRoute({super.key});
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PortfolioBloc>(context);
@@ -85,7 +85,7 @@ class PortfolioRoute extends StatelessWidget {
     );
   }
 
-  _refreshWholeCacheConfirm(PortfolioBloc bloc) {
+  void _refreshWholeCacheConfirm(PortfolioBloc bloc) {
     bloc.mrClient.addOverlay((BuildContext context) {
       final l10n = AppLocalizations.of(context)!;
       return FHAlertDialog(

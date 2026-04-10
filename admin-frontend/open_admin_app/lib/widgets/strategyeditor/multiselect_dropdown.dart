@@ -21,8 +21,7 @@ class MultiSelectDropdown extends StatefulWidget {
       required this.hint,
       required this.enumToJsonMapper,
       required this.jsonToEnumMapper,
-      Key? key})
-      : super(key: key);
+      super.key});
 
   @override
   State<StatefulWidget> createState() {

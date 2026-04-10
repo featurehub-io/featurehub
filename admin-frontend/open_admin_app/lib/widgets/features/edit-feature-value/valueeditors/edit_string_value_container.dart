@@ -5,14 +5,14 @@ import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart
 
 class EditStringValueContainer extends StatefulWidget {
   const EditStringValueContainer({
-    Key? key,
+    super.key,
     required this.unlocked,
     required this.canEdit,
     this.rolloutStrategy,
     this.groupRolloutStrategy,
     required this.strBloc,
     this.applicationRolloutStrategy,
-  }) : super(key: key);
+  });
 
   final bool unlocked;
   final bool canEdit;
@@ -22,11 +22,11 @@ class EditStringValueContainer extends StatefulWidget {
   final EditingFeatureValueBloc strBloc;
 
   @override
-  _EditStringValueContainerState createState() =>
-      _EditStringValueContainerState();
+  EditStringValueContainerState createState() =>
+      EditStringValueContainerState();
 }
 
-class _EditStringValueContainerState extends State<EditStringValueContainer> {
+class EditStringValueContainerState extends State<EditStringValueContainer> {
   TextEditingController tec = TextEditingController();
 
   @override

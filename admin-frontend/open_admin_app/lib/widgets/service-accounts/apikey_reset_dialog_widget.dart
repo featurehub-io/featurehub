@@ -11,8 +11,7 @@ class ApiKeyResetDialogWidget extends StatelessWidget {
   final bool isClientKey;
 
   const ApiKeyResetDialogWidget(
-      {Key? key, required this.bloc, required this.isClientKey, required this.sa})
-      : super(key: key);
+      {super.key, required this.bloc, required this.isClientKey, required this.sa});
 
   @override
   Widget build(BuildContext context) {

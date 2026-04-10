@@ -19,11 +19,11 @@ class EditAttributeStrategyWidget extends StatefulWidget {
 
   // ignore: prefer_const_constructors, prefer_const_constructors_in_immutables
   EditAttributeStrategyWidget({
-    Key? key,
+    super.key,
     required this.attribute,
     required this.attributeIsFirst,
     required this.bloc,
-  }) : super(key: key);
+  });
 
   @override
   EditAttributeStrategyWidgetState createState() =>

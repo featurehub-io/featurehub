@@ -46,10 +46,10 @@ class EditingFeatureValueBloc implements Bloc {
       _isFeatureValueUpdatedSource;
 
   final _currentFv = BehaviorSubject<FeatureValue>();
-  get currentFv => _currentFv.stream;
+  ValueStream<FeatureValue> get currentFv => _currentFv.stream;
 
   final _featureHistoryListSource = BehaviorSubject<FeatureHistoryItem?>();
-  get featureHistoryListSource => _featureHistoryListSource.stream;
+  ValueStream<FeatureHistoryItem?> get featureHistoryListSource => _featureHistoryListSource.stream;
 
   EditingFeatureValueBloc(
       this.applicationId,
@@ -149,7 +149,7 @@ class EditingFeatureValueBloc implements Bloc {
     updateApplicationStrategyValue();
   }
 
-  updateFeatureValueLockedStatus(bool locked) {
+  void updateFeatureValueLockedStatus(bool locked) {
     currentFeatureValue.locked = locked;
     addFeatureValueToStream(currentFeatureValue);
   }
@@ -159,7 +159,7 @@ class EditingFeatureValueBloc implements Bloc {
     addFeatureValueToStream(currentFeatureValue);
   }
 
-  void updateFeatureValueDefault(replacementValue) {
+  void updateFeatureValueDefault(dynamic replacementValue) {
     switch (feature.valueType) {
       case FeatureValueType.BOOLEAN:
         currentFeatureValue.valueBoolean = replacementValue;
@@ -180,7 +180,7 @@ class EditingFeatureValueBloc implements Bloc {
   PerApplicationFeaturesBloc get perApplicationFeaturesBloc =>
       _featureStatusBloc;
 
-  addFeatureValueToStream(FeatureValue fv) {
+  void addFeatureValueToStream(FeatureValue fv) {
     _currentFv.add(fv);
   }
 
@@ -193,13 +193,13 @@ class EditingFeatureValueBloc implements Bloc {
     _featureHistoryListSource.close();
   }
 
-  saveFeatureValueUpdates() async {
+  Future<void> saveFeatureValueUpdates() async {
     await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(
         applicationId, feature.key, [currentFeatureValue]);
     await _featureStatusBloc.updateApplicationFeatureValuesStream();
   }
 
-  getHistory() async {
+  Future<void> getHistory() async {
     var featureHistory = await _featureHistoryServiceApi.listFeatureHistory(
         applicationId,
         order: FeatureHistoryOrder.desc,
@@ -209,7 +209,7 @@ class EditingFeatureValueBloc implements Bloc {
     _featureHistoryListSource.add(featureHistory.items.first);
   }
 
-  getApplicationStrategies() async {
+  Future<void> getApplicationStrategies() async {
     var appStrategiesList = await _applicationStrategyServiceApi
         .listApplicationStrategies(applicationId);
     _availableApplicationStrategiesSource.add(appStrategiesList.items);
@@ -219,7 +219,7 @@ class EditingFeatureValueBloc implements Bloc {
     _featureHistoryListSource.add(null);
   }
 
-  addApplicationStrategy() {
+  void addApplicationStrategy() {
     if (_selectedStrategyIdToAdd != null) {
       final strategyList = _availableApplicationStrategiesSource.value;
 

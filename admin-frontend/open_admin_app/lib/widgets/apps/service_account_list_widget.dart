@@ -17,7 +17,7 @@ import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'manage_service_accounts_bloc.dart';
 
 class ServiceAccountsListWidget extends StatelessWidget {
-  const ServiceAccountsListWidget({Key? key}) : super(key: key);
+  const ServiceAccountsListWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -58,11 +58,7 @@ class _ServiceAccountWidget extends StatelessWidget {
   final ManageServiceAccountsBloc bloc;
 
   const _ServiceAccountWidget(
-      {Key? key,
-      required this.serviceAccount,
-      required this.mr,
-      required this.bloc})
-      : super(key: key);
+      {required this.serviceAccount, required this.mr, required this.bloc});
 
   @override
   Widget build(BuildContext context) {
@@ -135,10 +131,9 @@ class ServiceAccountEnvironments extends StatelessWidget {
   final ManageServiceAccountsBloc serviceAccountBloc;
 
   const ServiceAccountEnvironments(
-      {Key? key,
+      {super.key,
       required this.serviceAccount,
-      required this.serviceAccountBloc})
-      : super(key: key);
+      required this.serviceAccountBloc});
 
   @override
   Widget build(BuildContext context) {
@@ -168,8 +163,7 @@ class _ServiceAccountEnvironment extends StatelessWidget {
   final Application application;
 
   const _ServiceAccountEnvironment(
-      {Key? key, required this.serviceAccount, required this.application})
-      : super(key: key);
+      {required this.serviceAccount, required this.application});
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +195,9 @@ class _ServiceAccountEnvironment extends StatelessWidget {
                 children: [
                   FHFlatButtonTransparent(
                     keepCase: true,
-                    title: found ? AppLocalizations.of(context)!.changeAccess : AppLocalizations.of(context)!.addAccess,
+                    title: found
+                        ? AppLocalizations.of(context)!.changeAccess
+                        : AppLocalizations.of(context)!.addAccess,
                     onPressed: () {
                       BlocProvider.of<ManagementRepositoryClientBloc>(context)
                           .currentAid = application.id;
@@ -225,9 +221,8 @@ class _ServiceAccountEnvironment extends StatelessWidget {
 
 class _ServiceAccountDescription extends StatelessWidget {
   const _ServiceAccountDescription({
-    Key? key,
     required this.serviceAccount,
-  }) : super(key: key);
+  });
 
   final ServiceAccount serviceAccount;
 
@@ -258,8 +253,7 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
   final ManageServiceAccountsBloc bloc;
 
   const ServiceAccountDeleteDialogWidget(
-      {Key? key, required this.bloc, required this.serviceAccount})
-      : super(key: key);
+      {super.key, required this.bloc, required this.serviceAccount});
 
   @override
   Widget build(BuildContext context) {
@@ -275,8 +269,8 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
 
           if (success) {
             bloc.mrClient.removeOverlay();
-            bloc.mrClient.addSnackbar(
-                Text(l10n.saDeleted(serviceAccount.name)));
+            bloc.mrClient
+                .addSnackbar(Text(l10n.saDeleted(serviceAccount.name)));
           }
         } catch (e, s) {
           bloc.mrClient.dialogError(e, s,
@@ -294,10 +288,10 @@ class ServiceAccountUpdateDialogWidget extends StatefulWidget {
   final ManageServiceAccountsBloc bloc;
 
   const ServiceAccountUpdateDialogWidget({
-    Key? key,
+    super.key,
     required this.bloc,
     this.serviceAccount,
-  }) : super(key: key);
+  });
 
   @override
   State<StatefulWidget> createState() {
@@ -338,7 +332,8 @@ class _ServiceAccountUpdateDialogWidgetState
               TextFormField(
                   controller: _name,
                   autofocus: true,
-                  decoration: InputDecoration(labelText: AppLocalizations.of(context)!.saNameLabel),
+                  decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.saNameLabel),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
                       return AppLocalizations.of(context)!.saNameRequired;
@@ -350,13 +345,17 @@ class _ServiceAccountUpdateDialogWidgetState
                   })),
               TextFormField(
                   controller: _description,
-                  decoration: InputDecoration(labelText: AppLocalizations.of(context)!.saDescriptionLabel),
+                  decoration: InputDecoration(
+                      labelText:
+                          AppLocalizations.of(context)!.saDescriptionLabel),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
-                      return AppLocalizations.of(context)!.saDescriptionRequired;
+                      return AppLocalizations.of(context)!
+                          .saDescriptionRequired;
                     }
                     if (v.length < 4) {
-                      return AppLocalizations.of(context)!.saDescriptionTooShort;
+                      return AppLocalizations.of(context)!
+                          .saDescriptionTooShort;
                     }
                     return null;
                   })),
@@ -372,7 +371,9 @@ class _ServiceAccountUpdateDialogWidgetState
             },
           ),
           FHFlatButton(
-              title: isUpdate ? AppLocalizations.of(context)!.update : AppLocalizations.of(context)!.create,
+              title: isUpdate
+                  ? AppLocalizations.of(context)!.update
+                  : AppLocalizations.of(context)!.create,
               onPressed: (() async {
                 if (_formKey.currentState!.validate()) {
                   try {
@@ -383,19 +384,20 @@ class _ServiceAccountUpdateDialogWidgetState
                           _name.text,
                           _description.text);
                       widget.bloc.mrClient.removeOverlay();
-                      widget.bloc.mrClient.addSnackbar(
-                          Text(l10n.saUpdated(_name.text)));
+                      widget.bloc.mrClient
+                          .addSnackbar(Text(l10n.saUpdated(_name.text)));
                     } else {
                       await widget.bloc
                           .createServiceAccount(_name.text, _description.text);
                       widget.bloc.mrClient.removeOverlay();
-                      widget.bloc.mrClient.addSnackbar(
-                          Text(l10n.saCreated(_name.text)));
+                      widget.bloc.mrClient
+                          .addSnackbar(Text(l10n.saCreated(_name.text)));
                     }
                   } catch (e, s) {
-                    if (e is ApiException && e.code == 409) {
+                    if (e is ApiException && e.code == 409 && context.mounted) {
                       widget.bloc.mrClient.customError(
-                          messageTitle: AppLocalizations.of(context)!.saAlreadyExists(_name.text));
+                          messageTitle: AppLocalizations.of(context)!
+                              .saAlreadyExists(_name.text));
                     } else {
                       await widget.bloc.mrClient.dialogError(e, s);
                     }
@@ -414,11 +416,10 @@ class _ResetApiKeyWidget extends StatelessWidget {
   final bool isClientKey;
 
   const _ResetApiKeyWidget({
-    Key? key,
     required this.sa,
     required this.bloc,
     required this.isClientKey,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

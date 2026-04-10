@@ -8,11 +8,11 @@ class FHLoadingError extends StatelessWidget {
   final dynamic error;
 
   const FHLoadingError({
-    Key? key,
+    super.key,
     this.onRetry,
     this.errorMessage,
     this.error,
-  }) : super(key: key);
+  });
 
   String _getErrorMessage(AppLocalizations l10n) {
     if (errorMessage != null) {

@@ -19,8 +19,7 @@ import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 class FeatureGroupsRoute extends StatefulWidget {
   final bool createApp;
 
-  const FeatureGroupsRoute({Key? key, required this.createApp})
-      : super(key: key);
+  const FeatureGroupsRoute({super.key, required this.createApp});
 
   @override
   FeatureGroupsRouteState createState() => FeatureGroupsRouteState();
@@ -93,8 +92,7 @@ class FeatureGroupsRouteState extends State<FeatureGroupsRoute> {
 
 class _FeatureGroupsCardsList extends StatelessWidget {
   final FeatureGroupsBloc bloc;
-  const _FeatureGroupsCardsList({Key? key, required this.bloc})
-      : super(key: key);
+  const _FeatureGroupsCardsList({required this.bloc});
 
   @override
   Widget build(BuildContext context) {

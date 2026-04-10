@@ -13,10 +13,10 @@ class FeatureGroupUpdateDialogWidget extends StatefulWidget {
   final FeatureGroupsBloc bloc;
 
   const FeatureGroupUpdateDialogWidget({
-    Key? key,
+    super.key,
     required this.bloc,
     this.featureGroup,
-  }) : super(key: key);
+  });
 
   @override
   State<StatefulWidget> createState() {

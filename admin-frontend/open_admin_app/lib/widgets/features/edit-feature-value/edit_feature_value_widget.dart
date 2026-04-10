@@ -17,8 +17,7 @@ import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart
 class EditFeatureValueWidget extends StatefulWidget {
   final EditingFeatureValueBloc bloc;
 
-  const EditFeatureValueWidget({Key? key, required this.bloc})
-      : super(key: key);
+  const EditFeatureValueWidget({super.key, required this.bloc});
 
   @override
   State<EditFeatureValueWidget> createState() => _EditFeatureValueWidgetState();

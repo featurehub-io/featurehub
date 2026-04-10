@@ -7,7 +7,7 @@ import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.d
 
 
 class PortfolioGroupSelector extends StatefulWidget {
-  const PortfolioGroupSelector({Key? key}) : super(key: key);
+  const PortfolioGroupSelector({super.key});
 
   @override
   PortfolioGroupSelectorState createState() => PortfolioGroupSelectorState();

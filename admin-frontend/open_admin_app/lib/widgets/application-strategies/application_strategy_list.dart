@@ -16,7 +16,7 @@ import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 
 class ApplicationStrategyList extends StatefulWidget {
-  const ApplicationStrategyList({Key? key}) : super(key: key);
+  const ApplicationStrategyList({super.key});
 
   @override
   ApplicationStrategyListState createState() => ApplicationStrategyListState();

@@ -9,7 +9,7 @@ import 'package:open_admin_app/widgets/user/update/password_reset_widget.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class SigninWidget extends StatefulWidget {
-  const SigninWidget(this.bloc, {Key? key}) : super(key: key);
+  const SigninWidget(this.bloc, {super.key});
 
   final ManagementRepositoryClientBloc bloc;
 
@@ -204,10 +204,8 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
   final _SelectedExternalFunction selectedExternalProviderFunc;
 
   const _SetupPage1ThirdPartyProviders(
-      {Key? key,
-      required this.bloc,
-      required this.selectedExternalProviderFunc})
-      : super(key: key);
+      {required this.bloc,
+      required this.selectedExternalProviderFunc});
 
   @override
   Widget build(BuildContext context) {

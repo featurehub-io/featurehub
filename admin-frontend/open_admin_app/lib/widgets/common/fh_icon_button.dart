@@ -6,11 +6,11 @@ class FHIconButton extends StatelessWidget {
   final String? tooltip;
 
   const FHIconButton({
-    Key? key,
+    super.key,
     required this.icon,
     this.tooltip,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

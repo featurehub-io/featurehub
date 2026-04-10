@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class FHLoadingIndicator extends StatelessWidget {
-  const FHLoadingIndicator({Key? key}) : super(key: key);
+  const FHLoadingIndicator({super.key});
 
   @override
   Widget build(BuildContext context) {

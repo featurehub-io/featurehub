@@ -15,8 +15,7 @@ class ManageServiceAccountsRoute extends StatefulWidget {
   final bool createServiceAccount;
 
   const ManageServiceAccountsRoute(
-      {Key? key, required this.createServiceAccount})
-      : super(key: key);
+      {super.key, required this.createServiceAccount});
 
   @override
   ServiceAccountSearchState createState() => ServiceAccountSearchState();
@@ -101,7 +100,7 @@ class ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
     _createServiceAccountCheck();
   }
 
-  _createServiceAccount(ManageServiceAccountsBloc bloc) {
+  void _createServiceAccount(ManageServiceAccountsBloc bloc) {
     bloc.mrClient.addOverlay((BuildContext context) {
       return ServiceAccountUpdateDialogWidget(
         bloc: bloc,

@@ -6,11 +6,10 @@ class FHFlatButtonGreen extends StatelessWidget {
 
 
   const FHFlatButtonGreen(
-      {Key? key,
+      {super.key,
         required this.onPressed,
         required this.title,
-      })
-      : super(key: key);
+      });
 
   @override
   Widget build(BuildContext context) {

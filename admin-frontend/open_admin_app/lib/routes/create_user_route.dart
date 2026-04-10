@@ -20,7 +20,7 @@ import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 class CreateUserRoute extends StatelessWidget {
   final String title;
 
-  const CreateUserRoute({Key? key, required this.title}) : super(key: key);
+  const CreateUserRoute({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class CreateUserRoute extends StatelessWidget {
 }
 
 class AddUserFormWidget extends StatelessWidget {
-  const AddUserFormWidget({Key? key}) : super(key: key);
+  const AddUserFormWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class AddUserFormWidget extends StatelessWidget {
 }
 
 class TopWidget extends StatelessWidget {
-  const TopWidget({Key? key}) : super(key: key);
+  const TopWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +72,7 @@ class TopWidget extends StatelessWidget {
 }
 
 class TopWidgetDefault extends StatefulWidget {
-  const TopWidgetDefault({Key? key}) : super(key: key);
+  const TopWidgetDefault({super.key});
 
   @override
   TopWidgetDefaultState createState() => TopWidgetDefaultState();
@@ -148,7 +148,7 @@ class TopWidgetDefaultState extends State<TopWidgetDefault> {
 }
 
 class TopWidgetSuccess extends StatelessWidget {
-  const TopWidgetSuccess({Key? key}) : super(key: key);
+  const TopWidgetSuccess({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -225,7 +225,7 @@ class TopWidgetSuccess extends StatelessWidget {
 }
 
 class BottomWidget extends StatelessWidget {
-  const BottomWidget({Key? key}) : super(key: key);
+  const BottomWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -244,7 +244,7 @@ class BottomWidget extends StatelessWidget {
 }
 
 class CreateUserFormButtons extends StatelessWidget {
-  const CreateUserFormButtons({Key? key}) : super(key: key);
+  const CreateUserFormButtons({super.key});
 
   @override
   Widget build(BuildContext context) {

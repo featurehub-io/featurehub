@@ -14,10 +14,10 @@ class AppUpdateDialogWidget extends StatefulWidget {
   final AppsBloc bloc;
 
   const AppUpdateDialogWidget({
-    Key? key,
+    super.key,
     required this.bloc,
     this.application,
-  }) : super(key: key);
+  });
 
   @override
   State<StatefulWidget> createState() {

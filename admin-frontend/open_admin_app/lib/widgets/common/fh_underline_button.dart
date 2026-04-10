@@ -5,11 +5,10 @@ class FHUnderlineButton extends StatelessWidget {
   final String title;
 
   const FHUnderlineButton(
-      {Key? key,
+      {super.key,
       required this.onPressed,
       required this.title,
-      })
-      : super(key: key);
+      });
 
   @override
   Widget build(BuildContext context) {

@@ -122,7 +122,7 @@ class CustomStepper extends StatefulWidget {
   ///
   /// The [steps], [type], and [currentStep] arguments must not be null.
   const CustomStepper({
-    Key? key,
+    super.key,
     required this.steps,
     this.physics,
     this.type = StepperType.vertical,
@@ -131,8 +131,7 @@ class CustomStepper extends StatefulWidget {
     this.onStepContinue,
     this.onStepCancel,
     this.controlsBuilder,
-  })  : assert(0 <= currentStep && currentStep < steps.length),
-        super(key: key);
+  })  : assert(0 <= currentStep && currentStep < steps.length);
 
   /// The steps of the stepper whose titles, subtitle2s, icons always get shown.
   ///
@@ -222,10 +221,10 @@ class CustomStepper extends StatefulWidget {
   final ControlsWidgetBuilder? controlsBuilder;
 
   @override
-  _CustomStepperState createState() => _CustomStepperState();
+  CustomStepperState createState() => CustomStepperState();
 }
 
-class _CustomStepperState extends State<CustomStepper>
+class CustomStepperState extends State<CustomStepper>
     with TickerProviderStateMixin {
   List<GlobalKey>? _keys;
   final Map<int, CustomStepState> _oldStates = <int, CustomStepState>{};

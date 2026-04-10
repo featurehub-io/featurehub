@@ -16,11 +16,11 @@ class SystemConfigEncryptionController {
   Function? submitCallback;
   SystemUpdateConfigCallback? updateConfigCallback;
 
-  updateField(SystemConfig config) {
+  void updateField(SystemConfig config) {
     updateConfigCallback?.call(config);
   }
 
-  submit() {
+  void submit() {
     submitCallback?.call();
   }
 }
@@ -33,7 +33,7 @@ class SystemConfigEncryptableMapWidget extends StatefulWidget {
   final String defaultNewValueName;
   final SystemConfigEncryptionController controller;
 
-  SystemConfigEncryptableMapWidget(
+  const SystemConfigEncryptableMapWidget(
       {super.key,
       required this.field,
       required this.keyHeaderName,
@@ -71,7 +71,7 @@ class _SystemConfigDataSource extends DataGridSource {
     _reset(fieldValue);
   }
 
-  _reset(dynamic fieldValue) {
+  void _reset(dynamic fieldValue) {
     sourceData = Map<String, String>.from(fieldValue.map(
         (key, value) => MapEntry(key.toString(), value?.toString() ?? '')));
 
@@ -98,7 +98,7 @@ class _SystemConfigDataSource extends DataGridSource {
     deletedRows.clear();
   }
 
-  submit() {
+  void submit() {
     fhosLogger.info(
         "sourceData is $sourceData, e-rows $encryptedRows, d-rows $deletedRows");
     var rows = deletedRows
@@ -312,7 +312,7 @@ class _SystemConfigDataSource extends DataGridSource {
     );
   }
 
-  _addEncryptedKey(String key) {
+  void _addEncryptedKey(String key) {
     if (key.isNotEmpty) {
       encryptedRows.add(key);
     }
@@ -320,25 +320,25 @@ class _SystemConfigDataSource extends DataGridSource {
   }
 
   // we have to do it this way, getting the key at the last second as it may change
-  _key(int rowIndex) {
+  dynamic _key(int rowIndex) {
     return rows[rowIndex].getCells()[0].value;
   }
 
-  _removeEncryptedKey(String key) {
+  void _removeEncryptedKey(String key) {
     encryptedRows.remove(key);
   }
 
-  _reveal(int rowIndex) async {
+  Future<void> _reveal(int rowIndex) async {
     _removeEncryptedKey(_key(rowIndex));
     notifyListeners();
   }
 
-  _encrypt(int rowIndex) async {
+  Future<void> _encrypt(int rowIndex) async {
     _addEncryptedKey(_key(rowIndex));
     notifyListeners();
   }
 
-  _decrypt(int rowIndex) async {
+  Future<void> _decrypt(int rowIndex) async {
     String key = _key(rowIndex);
     try {
       final decrypted = await configBloc.systemConfigServiceApi
@@ -352,14 +352,14 @@ class _SystemConfigDataSource extends DataGridSource {
     } catch (e) {}
   }
 
-  _clear(int rowIndex) {
+  void _clear(int rowIndex) {
     _removeEncryptedKey(_key(rowIndex));
     _rows[rowIndex].getCells()[1] =
         DataGridCell(columnName: valueRowName, value: '');
     notifyListeners();
   }
 
-  _delete(int rowIndex) {
+  void _delete(int rowIndex) {
     String key = _key(rowIndex);
     sourceData.remove(key);
     _removeEncryptedKey(key);
@@ -368,7 +368,7 @@ class _SystemConfigDataSource extends DataGridSource {
     notifyListeners();
   }
 
-  addRow(String key, String value) {
+  void addRow(String key, String value) {
     if (sourceData[key] != null) return;
 
     fhosLogger.info("adding $key with value $value");
@@ -399,7 +399,7 @@ class SystemConfigEncryptableMapWidgetState
     super.initState();
   }
 
-  submit() {
+  void submit() {
     _dataSource.submit();
   }
 
@@ -415,7 +415,7 @@ class SystemConfigEncryptableMapWidgetState
     _setup();
   }
 
-  _setup() {
+  void _setup() {
     configBloc = BlocProvider.of(context);
     final l10n = AppLocalizations.of(context)!;
 

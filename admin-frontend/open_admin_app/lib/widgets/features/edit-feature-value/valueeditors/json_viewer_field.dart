@@ -6,11 +6,11 @@ class JsonViewerField extends StatelessWidget {
   final bool unlocked;
 
   const JsonViewerField({
-    Key? key,
+    super.key,
     required this.text,
     required this.canEdit,
     required this.unlocked,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

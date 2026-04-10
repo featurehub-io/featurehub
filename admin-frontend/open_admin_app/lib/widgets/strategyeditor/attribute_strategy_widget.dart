@@ -14,8 +14,7 @@ class AttributeStrategyWidget extends StatelessWidget {
   final bool attributeIsFirst;
 
   const AttributeStrategyWidget(
-      {Key? key, required this.attribute, required this.attributeIsFirst})
-      : super(key: key);
+      {super.key, required this.attribute, required this.attributeIsFirst});
 
   @override
   Widget build(BuildContext context) {

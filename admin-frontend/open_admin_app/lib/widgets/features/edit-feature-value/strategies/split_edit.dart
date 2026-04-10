@@ -10,11 +10,11 @@ import 'package:open_admin_app/widgets/strategyeditor/strategy_editing_widget.da
 
 class EditValueStrategyLinkButton extends StatelessWidget {
   const EditValueStrategyLinkButton({
-    Key? key,
+    super.key,
     required this.editable,
     required this.fvBloc,
     required this.rolloutStrategy,
-  }) : super(key: key);
+  });
 
   final bool editable;
   final EditingFeatureValueBloc fvBloc;

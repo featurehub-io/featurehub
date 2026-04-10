@@ -103,7 +103,7 @@ class WebhookTableSource extends AdvancedDataTableSource<WebhookSummaryItem> {
   @override
   int get selectedRowCount => 0;
 
-  refresh() {
+  void refresh() {
     setNextView();
   }
 }

@@ -7,22 +7,22 @@ import 'feature_group_bloc.dart';
 
 class EditFeatureGroupNumberValueContainer extends StatefulWidget {
   const EditFeatureGroupNumberValueContainer({
-    Key? key,
+    super.key,
     required this.editable,
     required this.feature,
     required this.bloc,
-  }) : super(key: key);
+  });
 
   final FeatureGroupFeature feature;
   final bool editable;
   final FeatureGroupBloc bloc;
 
   @override
-  _EditNumberValueContainerState createState() =>
-      _EditNumberValueContainerState();
+  EditNumberValueContainerState createState() =>
+      EditNumberValueContainerState();
 }
 
-class _EditNumberValueContainerState
+class EditNumberValueContainerState
     extends State<EditFeatureGroupNumberValueContainer> {
   TextEditingController tec = TextEditingController();
 

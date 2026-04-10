@@ -8,7 +8,7 @@ import 'package:open_admin_app/widgets/strategyeditor/editing_rollout_strategy.d
 import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.dart';
 
 class RolloutStrategiesWidget extends StatelessWidget {
-  const RolloutStrategiesWidget({Key? key}) : super(key: key);
+  const RolloutStrategiesWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

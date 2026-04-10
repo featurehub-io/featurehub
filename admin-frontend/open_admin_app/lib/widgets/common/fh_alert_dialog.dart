@@ -10,12 +10,11 @@ class FHAlertDialog extends StatefulWidget {
   final Function? escKey;
 
   const FHAlertDialog(
-      {Key? key,
+      {super.key,
       required this.title,
       required this.content,
       required this.actions,
-      this.escKey})
-      : super(key: key);
+      this.escKey});
 
   @override
   State<StatefulWidget> createState() {

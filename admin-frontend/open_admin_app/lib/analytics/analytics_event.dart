@@ -40,9 +40,9 @@ class AnalyticsEventWithContext extends AnalyticsEvent {
   final Map<String, dynamic> additionalParams;
 
   AnalyticsEventWithContext({
-    required String name,
+    required super.name,
     this.additionalParams = const {},
-  }) : super(name: name);
+  });
 
   @override
   Map<String, dynamic> toJson() {

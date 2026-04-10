@@ -17,7 +17,7 @@ import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 
 class AdminServiceAccountsListWidget extends StatefulWidget {
-  const AdminServiceAccountsListWidget({Key? key}) : super(key: key);
+  const AdminServiceAccountsListWidget({super.key});
 
   @override
   AdminServiceAccountsListWidgetState createState() =>
@@ -224,8 +224,7 @@ class ServiceAccountInfoDialog extends StatelessWidget {
   final ListUsersBloc bloc;
   final SearchPerson entry;
 
-  const ServiceAccountInfoDialog(this.bloc, this.entry, {Key? key})
-      : super(key: key);
+  const ServiceAccountInfoDialog(this.bloc, this.entry, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -252,8 +251,7 @@ class _AdminServiceAccountInfo extends StatelessWidget {
   final SearchPerson foundPerson;
 
   const _AdminServiceAccountInfo(
-      {Key? key, required this.bloc, required this.foundPerson})
-      : super(key: key);
+      {required this.bloc, required this.foundPerson});
 
   @override
   Widget build(BuildContext context) {
@@ -309,7 +307,7 @@ class _AdminServiceAccountInfo extends StatelessWidget {
                                                     .textTheme
                                                     .bodyMedium,
                                               ))
-                                          .toList(),
+                                          ,
                                   ]))
                         ],
                       ),
@@ -328,8 +326,7 @@ class _AdminServiceAccountRow extends StatelessWidget {
   final Widget child;
 
   const _AdminServiceAccountRow(
-      {Key? key, required this.title, required this.child})
-      : super(key: key);
+      {required this.title, required this.child});
 
   @override
   Widget build(BuildContext context) {

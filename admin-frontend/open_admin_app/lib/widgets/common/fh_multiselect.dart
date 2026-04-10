@@ -8,19 +8,19 @@ class FHMultiSelect<T> extends StatefulWidget {
   final Widget? hint;
 
   const FHMultiSelect({
-    Key? key,
+    super.key,
     required this.availableValues,
     required this.selectedValues,
     required this.onChanged,
     this.icon,
     this.hint,
-  }) : super(key: key);
+  });
 
   @override
-  _FHMultiSelectState<T> createState() => _FHMultiSelectState<T>();
+  FHMultiSelectState<T> createState() => FHMultiSelectState<T>();
 }
 
-class _FHMultiSelectState<T> extends State<FHMultiSelect<T>> {
+class FHMultiSelectState<T> extends State<FHMultiSelect<T>> {
   late List<T> _selectedValues;
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;

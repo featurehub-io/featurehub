@@ -36,7 +36,7 @@ class SlackPanelWidgetState extends State<SlackPanelWidget> {
     _setup();
   }
 
-  _setup() {
+  void _setup() {
     final env = widget.env.environment?.webhookEnvironmentInfo ?? {};
     final prefix = widget.env.type!.envPrefix;
     _enabled = env['$prefix.enabled'] == 'true';

@@ -6,7 +6,7 @@ import 'fh_circle_icon_button.dart';
 class NavRail extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
 
-  const NavRail({Key? key, required this.mrBloc}) : super(key: key);
+  const NavRail({super.key, required this.mrBloc});
   @override
   Widget build(BuildContext context) {
     return Padding(

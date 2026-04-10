@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 class SimpleWidget extends StatelessWidget {
   final String message;
 
-  const SimpleWidget({Key? key, this.message = 'Hello Feature Hubbians'})
-      : super(key: key);
+  const SimpleWidget({super.key, this.message = 'Hello Feature Hubbians'});
 
   @override
   Widget build(BuildContext context) {

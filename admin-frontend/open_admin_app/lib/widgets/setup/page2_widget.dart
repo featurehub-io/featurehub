@@ -7,7 +7,7 @@ import 'package:open_admin_app/widgets/setup/setup_bloc.dart';
 class SetupPage2Widget extends StatefulWidget {
   final SetupBloc bloc;
 
-  const SetupPage2Widget({Key? key, required this.bloc}) : super(key: key);
+  const SetupPage2Widget({super.key, required this.bloc});
 
   @override
   State<StatefulWidget> createState() {

@@ -11,7 +11,7 @@ import 'package:open_admin_app/widgets/strategyeditor/strategy_editing_widget.da
 class AddStrategyButton extends StatelessWidget {
   final EditingFeatureValueBloc bloc;
 
-  const AddStrategyButton({Key? key, required this.bloc}) : super(key: key);
+  const AddStrategyButton({super.key, required this.bloc});
 
   @override
   Widget build(BuildContext context) {

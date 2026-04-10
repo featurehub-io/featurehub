@@ -80,12 +80,9 @@ class EditApplicationStrategyBloc implements Bloc {
     }
   }
 
-  Future<RolloutStrategyValidationResponse> validationCheck(strategy) async {
-    var rs = RolloutStrategy(
-        id: strategy.id,
-        name: strategy.name,
-        percentage: strategy.percentage,
-        attributes: strategy.attributes);
+  Future<RolloutStrategyValidationResponse> validationCheck(
+      EditingRolloutStrategy strategy) async {
+    var rs = strategy.toRolloutStrategy(null)!;
 
     List<RolloutStrategy> strategies = [];
     strategies.add(rs);

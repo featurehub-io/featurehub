@@ -10,8 +10,7 @@ class FeatureGroupDeleteDialogWidget extends StatelessWidget {
   final FeatureGroupListGroup featureGroup;
 
   const FeatureGroupDeleteDialogWidget(
-      {Key? key, required this.bloc, required this.featureGroup})
-      : super(key: key);
+      {super.key, required this.bloc, required this.featureGroup});
 
   @override
   Widget build(BuildContext context) {

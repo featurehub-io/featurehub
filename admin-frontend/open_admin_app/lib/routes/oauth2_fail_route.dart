@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class Oauth2FailRoute extends StatelessWidget {
-  const Oauth2FailRoute({Key? key}) : super(key: key);
+  const Oauth2FailRoute({super.key});
 
   @override
   Widget build(BuildContext context) {

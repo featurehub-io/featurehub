@@ -274,7 +274,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  Future<Group?> updateGroupWithEnvironmentRoles(gid, Group group) async {
+  Future<Group?> updateGroupWithEnvironmentRoles(String? gid, Group group) async {
     // make sure members are null or they all get removed
     group.members = [];
 

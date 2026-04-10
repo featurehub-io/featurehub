@@ -50,7 +50,7 @@ Future<void> mainApp() async {
 }
 
 class FeatureHubApp extends StatelessWidget {
-  const FeatureHubApp({Key? key}) : super(key: key);
+  const FeatureHubApp({super.key});
 
   // This widget is the root of the application.
   @override

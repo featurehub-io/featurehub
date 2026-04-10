@@ -221,7 +221,7 @@ class _FHSharedPrefs extends FHSharedPrefsContract {
     return app;
   }
 
-  saveCurrentRoute(String json) {
+  void saveCurrentRoute(String json) {
     _prefs.setString(_keyCurrentRoute, json);
   }
 
