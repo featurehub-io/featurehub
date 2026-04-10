@@ -5,6 +5,7 @@ import io.featurehub.db.api.ApplicationRolloutStrategyApi
 import io.featurehub.db.api.AuthenticationApi
 import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FeatureApi
+import io.featurehub.db.api.FeatureFilterApi
 import io.featurehub.db.api.FeatureGroupApi
 import io.featurehub.db.api.FeatureHistoryApi
 import io.featurehub.db.api.GroupApi
@@ -29,6 +30,7 @@ import io.featurehub.db.services.Conversions
 import io.featurehub.db.services.ConvertUtils
 import io.featurehub.db.services.DbArchiveStrategy
 import io.featurehub.db.services.EnvironmentSqlApi
+import io.featurehub.db.services.FeatureFilterSqlApi
 import io.featurehub.db.services.FeatureGroupSqlApi
 import io.featurehub.db.services.FeatureHistorySqlApi
 import io.featurehub.db.services.FeatureSqlApi
@@ -100,6 +102,7 @@ class ApiToSqlApiBinder : Feature {
         bind(WebhookSqlApi::class.java).to(WebhookApi::class.java).`in`(Singleton::class.java)
         bind(FeatureHistorySqlApi::class.java).to(FeatureHistoryApi::class.java).`in`(Singleton::class.java)
         bind(FeatureGroupSqlApi::class.java).to(FeatureGroupApi::class.java).`in`(Singleton::class.java)
+        bind(FeatureFilterSqlApi::class.java).to(FeatureFilterApi::class.java).`in`(Singleton::class.java)
         bind(CacheSourceFeatureGroupSqlApi::class.java).to(CacheSourceFeatureGroupApi::class.java).`in`(
           Singleton::class.java
         )

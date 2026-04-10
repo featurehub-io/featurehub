@@ -1,14 +1,6 @@
 import {Then, When} from "@cucumber/cucumber";
 import {SdkWorld} from "../support/world";
-import {
-  CreateGroup,
-  EnvironmentGroupRole,
-  Group,
-  Person,
-  PersonId,
-  ServiceAccountPermission,
-  UpdateEnvironment
-} from "../apis/mr-service";
+import {ApplicationGroupRole, ApplicationRoleType, CreateGroup, EnvironmentGroupRole, Person} from "../apis/mr-service";
 import {makeid} from "../support/random";
 import {expect} from "chai";
 import {decodeAndValidateRoles} from "../support/utils";
@@ -18,6 +10,31 @@ When('I create a new normal group', async function() {
   const world = this as SdkWorld;
   const response = await world.superuser.groupApi.createGroup(world.portfolio.id, new CreateGroup({
     name: makeid(10),
+  }));
+
+  expect(response.status).to.eq(200);
+  world.group = response.data;
+});
+
+When('I get the portfolio admin group', async function() {
+  const world = this as SdkWorld;
+
+  const groups = await world.superuser.groupApi.findGroups(world.portfolio.id);
+  const adminGroup = groups.data.find(g => g.admin);
+  expect(adminGroup, `${JSON.stringify(groups.data)} - could not find admin group!`).to.not.be.undefined;
+  world.group = adminGroup;
+});
+
+When('I create a new group with application roles {string}', async function(roles: string) {
+  const world = this as SdkWorld;
+
+  const response = await world.superuser.groupApi.createGroup(world.portfolio.id, new CreateGroup({
+    name: makeid(10),
+    applicationRoles: [new ApplicationGroupRole({
+      applicationId: world.application.id,
+      groupId: world.application.id, // this is not actually used
+      roles: roles.split(",").map(r => r.trim() as ApplicationRoleType)
+    })]
   }));
 
   expect(response.status).to.eq(200);

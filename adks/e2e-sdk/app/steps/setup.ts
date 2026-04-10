@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {Given, Then, When} from '@cucumber/cucumber';
 import {
-  Application,
+  Application, CreateApplication,
   CreatePortfolio,
   Environment,
   PortfolioServiceApi,
@@ -32,17 +32,32 @@ Given(/^I create a new portfolio$/, async function () {
   this.portfolio = pCreate.data;
 });
 
+
 Given(/^I create an application$/, async function () {
+  await createApplication(this.portfolio.name, this as SdkWorld);
+});
+
+async function createApplication(name: string, world: SdkWorld) {
   // now create the app & environment
-  const aCreate = await this.applicationApi.createApplication(this.portfolio.id, new Application({
-    name: this.portfolio.name,
-    description: this.portfolio.name
+  const aCreate = await world.applicationApi.createApplication(world.portfolio.id, new CreateApplication({
+    name: name,
+    description: world.portfolio.name
   }), true, false);
   expect(aCreate.status).to.eq(200);
   // 1 environment, production
   expect(aCreate.data.environments.length).to.eq(1);
-  this.application = aCreate.data;
-  this.environment = aCreate.data.environments[0];
+  world.application = aCreate.data;
+  world.environment = aCreate.data.environments[0];
+}
+
+Given("I create an application {string}", async function(appName: string) {
+  await createApplication(appName, this as SdkWorld);
+});
+
+Given("I restore the previous application", function() {
+  const world = this as SdkWorld;
+  expect(world.previousApplication).to.not.be.undefined;
+  world.application = world.previousApplication;
 });
 
 Given(/^I update the environment for feature webhooks$/, async function() {
@@ -98,6 +113,14 @@ Given(/^I create a service account and (full|read) permissions based on the appl
   await serviceAccountPermission(world.application.environments[0].id, roleTypes, world);
 });
 
+Given("I create a service account called {string} with named permissions {string} with current environment", async function (saName: string, roles: string) {
+  const world = this as SdkWorld;
+  expect(world.application).to.not.be.undefined;
+  expect(world.application.environments.length).to.not.eq(0);
+
+  await serviceAccountPermissionRoles(world.application.environments[0].id, decodeAndValidateRoles(roles), world, saName);
+});
+
 
 Given("I create a service account with named permissions {string} with current environment", async function (roles: string) {
   const world = this as SdkWorld;
@@ -129,7 +152,7 @@ Given('the edge connection is no longer available', async function () {
 
 When('I bounce the feature server connection', async function() {
   const world = this as SdkWorld;
-  world.edgeServer.close();
+  world.edgeServer?.close();
   await connectToFeatureServer(world);
 })
 
@@ -138,7 +161,13 @@ Given(/^I connect to the feature server$/, async function () {
   await connectToFeatureServer(world);
 });
 
-async function connectToFeatureServer(world: SdkWorld) {
+Given('I connect to the feature server with poll {int}', async function (pollRate: number) {
+  const world = this as SdkWorld;
+  world.edgeServer?.close();
+  await connectToFeatureServer(world, pollRate);
+});
+
+async function connectToFeatureServer(world: SdkWorld, forcePollRate = -1) {
 
   const serviceAccountPerm: ServiceAccountPermission = world.serviceAccountPermission;
 
@@ -159,22 +188,25 @@ async function connectToFeatureServer(world: SdkWorld) {
 
     expect(found, `${serviceAccountPerm.sdkUrlClientEval} failed to connect`).to.be.true;
     logger.info('Successfully completed poll');
-    const edge = new EdgeFeatureHubConfig(world.featureUrl, serviceAccountPerm.sdkUrlClientEval);
+    const fhConfig = new EdgeFeatureHubConfig(world.featureUrl, serviceAccountPerm.sdkUrlClientEval);
+    if (forcePollRate !== -1) {
+      fhConfig.restActive(forcePollRate);
+    }
 
     world.sdkUrlClientEval = serviceAccountPerm.sdkUrlClientEval;
     world.sdkUrlServerEval = serviceAccountPerm.sdkUrlServerEval;
 
     // the node SDK is streaming by default, but env vars will automatically change it
-    if (!BackendDiscovery.supportsSSE && edge.edgeType === EdgeType.STREAMING) {
+    if (forcePollRate !== -1 && !BackendDiscovery.supportsSSE && fhConfig.edgeType === EdgeType.STREAMING) {
       logger.info('Backend does not support SSE, using polling');
-      edge.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, 200));
+      fhConfig.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, 200));
     }
 
-    edge.init();
-    world.edgeServer = edge;
+    fhConfig.init();
+    world.edgeServer = fhConfig;
     // give it time to connect
     await sleep(200);
-    world.repository = edge.repository();
+    world.repository = fhConfig.repository();
     // its important we wait for it to become ready before stuffing data into it otherwise we can create features at the same
     // time we are waiting for a result back and miss the 1st feature
     await waitForExpect(() => {

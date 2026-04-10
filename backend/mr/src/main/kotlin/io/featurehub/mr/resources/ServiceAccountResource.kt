@@ -71,7 +71,10 @@ class ServiceAccountResource @Inject constructor(
       Conversions.checkUuid(id) ?: throw NotFoundException("Not a valid UUID")
     }
 
-    val info = serviceAccountApi[serviceAccountId, Opts().add(FillOpts.Permissions, holder.includePermissions)
+    val info = serviceAccountApi[serviceAccountId,
+      Opts()
+      .add(FillOpts.Permissions, holder.includePermissions)
+      .add(FillOpts.ServiceAccountFilters, holder.includeFilters)
       .add(FilterOptType.Application, holder.byApplicationId)]
       ?: throw NotFoundException()
     val person = authManager.from(securityContext)
@@ -158,6 +161,10 @@ class ServiceAccountResource @Inject constructor(
       throw BadRequestException("Duplicate environment ids were passed.")
     }
 
+    if (serviceAccount.portfolioId == null) {
+      throw BadRequestException("No portfolio id found.")
+    }
+
     if (authManager.isPortfolioAdmin(serviceAccount.portfolioId, person) || authManager.isOrgAdmin(person)) {
       return try {
         serviceAccountApi.update(
@@ -165,7 +172,8 @@ class ServiceAccountResource @Inject constructor(
           person,
           serviceAccount,
           null,
-          Opts().add(FillOpts.Permissions, holder.includePermissions)
+          Opts().add(FillOpts.Permissions, holder.includePermissions),
+          serviceAccount.portfolioId!!
         ) ?: throw NotFoundException()
       } catch (e: OptimisticLockingException) {
         throw WebApplicationException(422)

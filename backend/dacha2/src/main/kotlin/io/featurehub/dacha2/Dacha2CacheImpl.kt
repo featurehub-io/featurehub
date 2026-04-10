@@ -126,7 +126,12 @@ class Dacha2PassthroughImpl(private val mrDacha2Api: Dacha2ServiceClient, privat
 
     sa.permissions.find { it.environmentId == eId }?.let { perms ->
       if (perms.permissions.isNotEmpty()) {
-        collection = FeatureCollection(getEnvironment(eId), perms, getServiceAccount(apiKey).id)
+        val features = getEnvironment(eId)
+        collection = if (sa.filters != null && sa.filters!!.isNotEmpty()) {
+          FeatureCollection(FilteredEnvironmentFeatures(features, sa.filters!!), perms, sa.id)
+        } else {
+          FeatureCollection(features, perms, sa.id)
+        }
       }
     }
 
@@ -284,9 +289,15 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
       }
 
       // accessing the environment-cache can cause an exception
-      return FeatureCollection(environmentCache[eId], perms, serviceAccountApiKeyCache.get(apiKey).id)
+      val serviceAccount = serviceAccountApiKeyCache.get(apiKey)
+
+      if (serviceAccount.filters != null && serviceAccount.filters!!.isNotEmpty()) {
+        return FeatureCollection(FilteredEnvironmentFeatures(environmentCache[eId], serviceAccount.filters!!), perms, serviceAccount.id)
+      }
+
+      return FeatureCollection(environmentCache[eId], perms, serviceAccount.id)
     } catch (e: Exception) {
-      log.trace("could not find in perms cache {}", comboKey)
+      log.trace("could not find in perms cache {}", comboKey, e)
       return null
     }
   }

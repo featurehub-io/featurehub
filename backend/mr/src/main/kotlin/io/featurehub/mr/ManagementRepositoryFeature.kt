@@ -7,6 +7,7 @@ import io.featurehub.encryption.WebhookEncryptionFeature
 import io.featurehub.lifecycle.WebBaggageSource
 import io.featurehub.messaging.InternalDeliveryFeature
 import io.featurehub.mr.api.*
+import io.featurehub.mr.resources.FeatureFilterResource
 import io.featurehub.mr.auth.*
 import io.featurehub.mr.dacha2.Dacha2Feature
 import io.featurehub.mr.events.EventingFeature
@@ -14,6 +15,7 @@ import io.featurehub.mr.resources.*
 import io.featurehub.mr.resources.oauth2.OAuth2MRAdapter
 import io.featurehub.mr.utils.ApplicationUtils
 import io.featurehub.mr.utils.ConfigurationUtils
+import io.featurehub.mr.utils.PortfolioFeaturePermissionUtils
 import io.featurehub.mr.utils.PortfolioUtils
 import io.featurehub.mr.webhook.ManagementRepositoryWebhookFeature
 import io.featurehub.rest.CacheControlFilter
@@ -48,6 +50,7 @@ class ManagementRepositoryFeature : Feature {
       UserStateServiceDelegator::class.java,
       ApplicationRolloutStrategyServiceDelegator::class.java,
       FeatureGroupServiceDelegator::class.java,
+      FeatureFilterServiceDelegator::class.java,
       CorsFilter::class.java,
       CacheControlFilter::class.java,  //      ConstraintExceptionHandler.class,
       AuthApplicationEventListener::class.java,
@@ -94,6 +97,12 @@ class ManagementRepositoryFeature : Feature {
           Singleton::class.java
         )
         bind(FeatureGroupResource::class.java).to(FeatureGroupServiceDelegate::class.java).`in`(
+          Singleton::class.java
+        )
+        bind(FeatureFilterResource::class.java).to(FeatureFilterServiceDelegate::class.java).`in`(
+          Singleton::class.java
+        )
+        bind(PortfolioFeaturePermissionUtils::class.java).to(PortfolioFeaturePermissionUtils::class.java).`in`(
           Singleton::class.java
         )
         if (ConfigurationUtils.dacha1Enabled) {

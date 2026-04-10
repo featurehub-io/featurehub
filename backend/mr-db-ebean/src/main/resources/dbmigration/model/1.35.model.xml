@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="fh_app_feature_filter" pkName="pk_fh_app_feature_filter">
+            <column name="fk_feature_id" type="uuid" notnull="true" primaryKey="true"/>
+            <column name="fk_filter_id" type="uuid" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_fh_app_feature_filter_fh_app_feature" columnNames="fk_feature_id" refColumnNames="id" refTableName="fh_app_feature" indexName="ix_fh_app_feature_filter_fh_app_feature"/>
+            <foreignKey name="fk_fh_app_feature_filter_fh_feature_filter" columnNames="fk_filter_id" refColumnNames="id" refTableName="fh_feature_filter" indexName="ix_fh_app_feature_filter_fh_feature_filter"/>
+        </createTable>
+        <createTable name="fh_feature_filter" identityType="external" pkName="pk_fh_feature_filter">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="fk_portfolio_id" type="uuid" notnull="true" references="fh_portfolio.id" foreignKeyName="fk_fh_feature_filter_fk_portfolio_id" foreignKeyIndex="ix_fh_feature_filter_fk_portfolio_id"/>
+            <column name="fk_person_who_created" type="uuid" references="fh_person.id" foreignKeyName="fk_fh_feature_filter_fk_person_who_created" foreignKeyIndex="ix_fh_feature_filter_fk_person_who_created"/>
+            <column name="name" type="varchar(60)" notnull="true"/>
+            <column name="description" type="varchar(300)"/>
+            <column name="when_updated" type="localdatetime" notnull="true"/>
+            <column name="when_created" type="localdatetime" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <uniqueConstraint name="idx_feature_filter_name" columnNames="fk_portfolio_id,name" oneToOne="false" nullableColumns=""/>
+        </createTable>
+        <createTable name="fh_service_account_filter" pkName="pk_fh_service_account_filter">
+            <column name="fk_service_account_id" type="uuid" notnull="true" primaryKey="true"/>
+            <column name="fk_filter_id" type="uuid" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_fh_service_account_filter_fh_service_account" columnNames="fk_service_account_id" refColumnNames="id" refTableName="fh_service_account" indexName="ix_fh_service_account_filter_fh_service_account"/>
+            <foreignKey name="fk_fh_service_account_filter_fh_feature_filter" columnNames="fk_filter_id" refColumnNames="id" refTableName="fh_feature_filter" indexName="ix_fh_service_account_filter_fh_feature_filter"/>
+        </createTable>
+    </changeSet>
+</migration>

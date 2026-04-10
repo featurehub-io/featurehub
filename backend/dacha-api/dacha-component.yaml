@@ -147,6 +147,13 @@ components:
           description: "Unique within this application"
         valueType:
           $ref: "#/components/schemas/FeatureValueType"
+        filters:
+          description: "if it exists, it is a list of filters that are applicable. A feature will get sent to the client if the service account has no filters or one of the ones in this list"
+          nullable: true
+          type: array
+          items:
+            type: string
+            format: uuid
         version:
           description: "used for optimistic locking when renaming a feature"
           type: integer
@@ -224,6 +231,13 @@ components:
           type: string
           description: "this is a read only field, it denotes an api key where the eval is done server side"
           maxLength: 400
+        filters:
+          nullable: true
+          description: "indicates if the service account should filter the features it sends to the client. If none, all go."
+          type: array
+          items:
+            type: string
+            format: uuid
         permissions:
           type: array
           items:

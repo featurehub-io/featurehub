@@ -9,7 +9,7 @@ import {
   Environment2ServiceApi,
   EnvironmentFeatureServiceApi,
   EnvironmentServiceApi,
-  Feature,
+  Feature, FeatureFilterServiceApi,
   FeatureGroup,
   FeatureGroupServiceApi,
   FeatureHistoryList,
@@ -67,6 +67,7 @@ export class ApiUser {
   public readonly anonAuthorizationAPi: AuthServiceApi;
   public readonly featureHistoryApi: FeatureHistoryServiceApi;
   public readonly applicationStrategyApi: ApplicationRolloutStrategyServiceApi;
+  public readonly featureFilterApi: FeatureFilterServiceApi;
 
   public serviceAccounts: Array<ServiceAccount> = [];
 
@@ -93,12 +94,14 @@ export class ApiUser {
     this.webhookApi = new WebhookServiceApi(this.adminApiConfig);
     this.applicationStrategyApi = new ApplicationRolloutStrategyServiceApi(this.adminApiConfig);
     this.featureHistoryApi = new FeatureHistoryServiceApi(this.adminApiConfig);
+    this.featureFilterApi = new FeatureFilterServiceApi(this.adminApiConfig);
   }
 }
 
 export class SdkWorld extends World {
   private _portfolio: Portfolio;
   private _application: Application;
+  public previousApplication: Application;
   public feature: Feature;
   public environment: Environment;
   public serviceAccountPermission: ServiceAccountPermission;
@@ -123,6 +126,7 @@ export class SdkWorld extends World {
   public readonly axiosInstance: AxiosInstance;
   public readonly superuser: ApiUser;
   public user: ApiUser | undefined;
+  public currentUser: ApiUser;
 
   constructor(props: any) {
     super(props);
@@ -137,6 +141,7 @@ export class SdkWorld extends World {
 
     this.axiosInstance = globalAxios.create();
     this.superuser = new ApiUser(this.adminUrl, this.featureUrl, this.axiosInstance, apiKey);
+    this.currentUser = this.superuser;
 
     const edgeConfig = new EdgeConfig({ basePath: this.featureUrl, axiosInstance: this.adminApiConfig.axiosInstance});
     this._edgeApi = new EdgeService(edgeConfig);
@@ -248,6 +253,7 @@ export class SdkWorld extends World {
   }
 
   public set application(a: Application) {
+    this.previousApplication = this._application;
     this._application = a;
   }
 

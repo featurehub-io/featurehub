@@ -26,6 +26,8 @@ import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyAttribute
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.util.*
 
 class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroupApi,
@@ -43,47 +45,77 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
     val saEnv = findMatch(
       eId,
       serviceAccountKey
-    )
-      .environment.parentApplication.features.fetch(
-      QDbApplicationFeature.Alias.key,
-      QDbApplicationFeature.Alias.id,
-      QDbApplicationFeature.Alias.version,
-      QDbApplicationFeature.Alias.valueType,
-    )
-      .environment.environmentFeatures.fetch(
-        QDbFeatureValue.Alias.locked,
+    ).findOne()
+
+    if (saEnv == null) {
+      log.debug("could not find serviceAccountKey {}", serviceAccountKey)
+      return null
+    }
+
+    val allowedFeatureProperties = conversions.splitEnvironmentRoles(saEnv.permissions).contains(RoleType.EXTENDED_DATA)
+
+    // the features may not have values, so we have to get them separate from finding the
+    // values. We may not get all the values because the features have been filtered
+    var featureFetch = QDbApplicationFeature()
+      .parentApplication.id.eq(saEnv.environment.parentApplication.id)
+      .whenArchived.isNull
+
+    if (allowedFeatureProperties) {
+      // also pull metadata
+      featureFetch = featureFetch.select(
+        QDbApplicationFeature.Alias.key,
+        QDbApplicationFeature.Alias.id,
+        QDbApplicationFeature.Alias.version,
+        QDbApplicationFeature.Alias.valueType,
+        QDbApplicationFeature.Alias.metaData,
+      )
+    } else {
+      featureFetch = featureFetch.select(
+        QDbApplicationFeature.Alias.key,
+        QDbApplicationFeature.Alias.id,
+        QDbApplicationFeature.Alias.version,
+        QDbApplicationFeature.Alias.valueType
+      )
+    }
+
+    // we filter out unwanted features in the
+    if (saEnv.serviceAccount.featureFilters.isNotEmpty()) {
+      featureFetch = featureFetch.filters.id.`in`(saEnv.serviceAccount.featureFilters.map { it.id })
+    }
+
+    val features = featureFetch.findList()
+
+    val foundFeatureValues = QDbFeatureValue()
+      .select(QDbFeatureValue.Alias.locked,
+        QDbFeatureValue.Alias.feature.key,
         QDbFeatureValue.Alias.version,
         QDbFeatureValue.Alias.retired,
         QDbFeatureValue.Alias.rolloutStrategies,
-        QDbFeatureValue.Alias.defaultValue,
-      )
-      .findOne()
+        QDbFeatureValue.Alias.defaultValue)
+      .feature.id.`in`(features.map { it.id })
+      .environment.id.eq(eId)
+      .findList()
 
-    return if (saEnv != null) {
-      val fgStrategies = cacheSourceFeatureGroup.collectStrategiesFromGroupsForEnvironment(saEnv.environment.id)
-      // we have to filter here otherwise the SQL query can "not return"
-      val featureValues = saEnv.environment.environmentFeatures.filter { it.feature.whenArchived == null }.map { it.feature.key to it }.toMap()
-      val features = saEnv.environment.parentApplication.features.filter { it.whenArchived == null }
-      val allowedFeatureProperties = conversions.splitEnvironmentRoles(saEnv.permissions).contains(RoleType.EXTENDED_DATA)
-      try {
-        val response = DachaKeyDetailsResponse()
-          .serviceKeyId(saEnv.serviceAccount.id)
-          .applicationId(fakeApplicationId)
-          .portfolioId(fakePortfolioId)
-          .organizationId(fakeOrganisationId)
-          .extendedDataAllowed(allowedFeatureProperties)
-          .features(features.filter { featureValues[it.key]?.retired != true }
-            .map { toFeatureValueCacheItem(it, featureValues[it.key], fgStrategies[it.id], allowedFeatureProperties) }.filterNotNull())
+    val fgStrategies = cacheSourceFeatureGroup.collectStrategiesFromGroupsForEnvironment(eId)
+    // we have to filter here otherwise the SQL query can "not return"
+    val featureValues = foundFeatureValues.map { it.feature.key to it }.toMap()
 
-        response.etag = calculateEtag(response) + (if (allowedFeatureProperties) "1" else "0")
-        log.trace("etag is {}", response.etag)
 
-        response
-      } catch (e: Exception) {
-        log.error("failed", e)
-        null
-      }
-    } else {
+    return try {
+      val response = DachaKeyDetailsResponse()
+        .serviceKeyId(saEnv.serviceAccount.id)
+        .applicationId(fakeApplicationId)
+        .portfolioId(fakePortfolioId)
+        .organizationId(fakeOrganisationId)
+        .extendedDataAllowed(allowedFeatureProperties)
+        .features(features.filter { featureValues[it.key]?.retired != true }
+          .map { toFeatureValueCacheItem(it, featureValues[it.key], fgStrategies[it.id], allowedFeatureProperties) }.filterNotNull())
+
+      response.etag = etagCalculator(response) + (if (allowedFeatureProperties) "1" else "0")
+
+      response
+    } catch (e: Exception) {
+      log.error("failed", e)
       null
     }
   }
@@ -93,7 +125,8 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
     serviceAccountKey: String
   ): QDbServiceAccountEnvironment {
     val q = QDbServiceAccountEnvironment()
-      .select(QDbServiceAccountEnvironment.Alias.serviceAccount.id)
+      .select(QDbServiceAccountEnvironment.Alias.serviceAccount.id, QDbServiceAccountEnvironment.Alias.environment.parentApplication.id)
+      .serviceAccount.featureFilters.fetch()
       .environment.whenUnpublished.isNull
       .environment.whenArchived.isNull
       .environment.id.eq(eId)
@@ -208,14 +241,6 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
       .type(rsa.type)
   }
 
-  private fun calculateEtag(details: DachaKeyDetailsResponse): String {
-    val det =
-      details
-        .features.map { fvci -> fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version ?: "0000") }
-        .joinToString("-")
-    return Integer.toHexString(det.hashCode())
-  }
-
   @Transactional(readOnly = true)
   override fun getApiKeyPermissions(
     eId: UUID,
@@ -277,5 +302,27 @@ class DbDachaSqlApi(private val cacheSourceFeatureGroup: CacheSourceFeatureGroup
       .applicationId(feature.parentApplication.id)
       .portfolioId(fakePortfolioId)
       .organizationId(fakeOrganisationId)
+  }
+
+  companion object {
+    private val log: Logger = LoggerFactory.getLogger(DbDachaSqlApi::class.java)
+
+    fun etagCalculator(featureValues: DachaKeyDetailsResponse): String {
+      // we convert to list to protect against changes while we are evaluating it
+      val calcTag = featureValues.features.toList()
+        .map { fvci ->
+          fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version?.toString() ?: "0000")
+        }
+        .joinToString("-")
+
+      val messageDigest = MessageDigest.getInstance("MD5")!!
+      val hashBytes = messageDigest.digest(calcTag.toByteArray(StandardCharsets.UTF_8))
+
+      val newEtag = HexFormat.of().formatHex(hashBytes)
+
+      log.trace("etag is now {} (from '{}')", newEtag, calcTag)
+
+      return newEtag
+    }
   }
 }

@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: ManagementResourceApi
   description: This describes the API clients use for accessing features. This reflects the API from 1.6.1 onwards.
-  version: "1.2.5"
+  version: "1.2.6"
 #  CRUD for portfolios, environments, features, service account, people, and groups (edited)
 #  roles are fixed
 #  then people<->group association
@@ -2317,6 +2317,7 @@ paths:
           description: "forbidden"
         404:
           description: "not found"
+
   /mr-api/portfolio/{id}/service-account:
     parameters:
       - name: id
@@ -2450,6 +2451,11 @@ paths:
             type: string
         - name: includePermissions
           description: "include permissions in return"
+          in: query
+          schema:
+            type: boolean
+        - name: includeFilters
+          description: "include filters in return"
           in: query
           schema:
             type: boolean
@@ -3056,6 +3062,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RoleType"
+
     CreateFeature:
       description: "Only used when creating a new feature"
       required:
@@ -3090,6 +3097,13 @@ components:
           nullable: true
           type: string
           description: "Metadata that may need to be stored. Intended for ADK use. No data limit on FHOS. 10k on SaaS. (stored as CLOB)"
+        featureFilter:
+          nullable: true
+          type: array
+          description: "The ID's of Filters associated with this feature"
+          items:
+            type: string
+            format: uuid
     Feature:
       description: "exists simply to hold the name of the feature as it exists across all environments"
       required:
@@ -3134,6 +3148,13 @@ components:
           nullable: true
           type: string
           description: "Metadata that may need to be stored. Intended for ADK use. No data limit on FHOS. 10k on SaaS. (stored as CLOB)"
+        featureFilter:
+          nullable: true
+          type: array
+          description: "The ID's of Filters associated with this feature"
+          items:
+            type: string
+            format: uuid
     FeatureValue:
       required:
         - key
@@ -3739,6 +3760,13 @@ components:
           nullable: true
           type: string
           maxLength: 400
+        featureFilter:
+          nullable: true
+          type: array
+          description: "The ID's of Filters associated with this service account"
+          items:
+            type: string
+            format: uuid
         permissions:
           type: array
           default: []
@@ -3778,6 +3806,19 @@ components:
           type: string
           description: "this is a read only field, it denotes an api key where the eval is done server side"
           maxLength: 400
+        featureFilters:
+          nullable: true
+          type: array
+          items:
+            type: string
+            format: uuid
+        permsInvalid:
+          description: "If this is true, then the permissions does not hold the actual permissions of the service account
+              and should be ignored on update. It is set by the server and can be set on the client when calling update methods for service accounts.
+              This is because the permissions field is always an array, it is not nullable. NULL or FALSE means the permissions field is valid and is the default behaviour. TRUE
+              is new and is recognized by the server to not try and update permissions."
+          type: boolean
+          nullable: true
         permissions:
           type: array
           default: []
@@ -4058,3 +4099,7 @@ components:
           nullable: true
         type:
           $ref: "#/components/schemas/PersonType"
+    OptionalAnemicPerson:
+      nullable: true
+      allOf:
+        - $ref: "#/components/schemas/AnemicPerson"
