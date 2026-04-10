@@ -9,8 +9,7 @@ class ApplicationDropDown extends StatefulWidget {
   final ManagementRepositoryAwareBloc bloc;
 
   const ApplicationDropDown(
-      {Key? key, required this.applications, required this.bloc})
-      : super(key: key);
+      {super.key, required this.applications, required this.bloc});
 
   @override
   ApplicationDropDownState createState() => ApplicationDropDownState();

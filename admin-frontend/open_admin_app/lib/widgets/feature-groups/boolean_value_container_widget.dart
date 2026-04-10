@@ -4,22 +4,22 @@ import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
 
 class EditFeatureGroupBooleanValueWidget extends StatefulWidget {
   const EditFeatureGroupBooleanValueWidget({
-    Key? key,
+    super.key,
     required this.editable,
     required this.bloc,
     required this.feature,
-  }) : super(key: key);
+  });
 
   final bool editable;
   final FeatureGroupFeature feature;
   final FeatureGroupBloc bloc;
 
   @override
-  _EditFeatureGroupBooleanValueWidgetState createState() =>
-      _EditFeatureGroupBooleanValueWidgetState();
+  EditFeatureGroupBooleanValueWidgetState createState() =>
+      EditFeatureGroupBooleanValueWidgetState();
 }
 
-class _EditFeatureGroupBooleanValueWidgetState
+class EditFeatureGroupBooleanValueWidgetState
     extends State<EditFeatureGroupBooleanValueWidget> {
   String boolFeatureValue = 'Off';
 

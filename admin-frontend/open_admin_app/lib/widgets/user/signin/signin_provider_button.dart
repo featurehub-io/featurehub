@@ -5,11 +5,10 @@ import 'package:mrapi/api.dart';
 
 class SignInProviderButton extends StatelessWidget {
   const SignInProviderButton(
-      {Key? key,
+      {super.key,
       required this.func,
       required this.provider,
-      required this.providedIcon})
-      : super(key: key);
+      required this.providedIcon});
   final Function func;
   final String provider;
   final IdentityProviderInfo? providedIcon;

@@ -168,7 +168,7 @@ class FeatureGroupBloc implements Bloc {
     _isGroupUpdatedSource.add(true);
   }
 
-  void removeStrategy(strategy) {
+  void removeStrategy(GroupRolloutStrategy strategy) {
     final strategies = _trackingUpdatesGroupStrategiesStream.value;
     strategies.removeWhere((e) =>
         e.name ==
@@ -179,12 +179,9 @@ class FeatureGroupBloc implements Bloc {
     _isGroupUpdatedSource.add(true);
   }
 
-  Future<RolloutStrategyValidationResponse> validationCheck(strategy) async {
-    var rs = RolloutStrategy(
-        id: strategy.id,
-        name: strategy.name,
-        percentage: strategy.percentage,
-        attributes: strategy.attributes);
+  Future<RolloutStrategyValidationResponse> validationCheck(
+      EditingRolloutStrategy strategy) async {
+    var rs = strategy.toRolloutStrategy(null)!;
 
     List<RolloutStrategy> strategies = [];
     strategies.add(rs);

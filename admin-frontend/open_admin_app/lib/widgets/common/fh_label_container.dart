@@ -6,8 +6,7 @@ class FHLabelContainer extends StatelessWidget {
   final EdgeInsets? margin;
 
   const FHLabelContainer(
-      {Key? key, required this.text, this.color, this.margin})
-      : super(key: key);
+      {super.key, required this.text, this.color, this.margin});
 
   @override
   Widget build(BuildContext context) {

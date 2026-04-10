@@ -13,8 +13,7 @@ import 'package:open_admin_app/widgets/features/per_application_features_bloc.da
 class SetFeatureMetadataWidget extends StatefulWidget {
   final PerApplicationFeaturesBloc bloc;
 
-  const SetFeatureMetadataWidget({Key? key, required this.bloc})
-      : super(key: key);
+  const SetFeatureMetadataWidget({super.key, required this.bloc});
 
   @override
   State<SetFeatureMetadataWidget> createState() =>

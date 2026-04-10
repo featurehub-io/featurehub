@@ -15,13 +15,12 @@ class StrategyCard extends StatelessWidget {
   final FeatureValueType featureValueType;
 
   const StrategyCard(
-      {Key? key,
+      {super.key,
       this.rolloutStrategy,
       required this.strBloc,
       required this.featureValueType,
       this.groupRolloutStrategy,
-      this.applicationRolloutStrategy})
-      : super(key: key);
+      this.applicationRolloutStrategy});
 
   @override
   Widget build(BuildContext context) {
@@ -67,15 +66,14 @@ class EditValueContainer extends StatelessWidget {
   final EditingFeatureValueBloc strBloc;
 
   const EditValueContainer(
-      {Key? key,
+      {super.key,
       required this.featureValueType,
       required this.editable,
       required this.unlocked,
       this.rolloutStrategy,
       required this.strBloc,
       this.groupRolloutStrategy,
-      this.applicationRolloutStrategy})
-      : super(key: key);
+      this.applicationRolloutStrategy});
 
   @override
   Widget build(BuildContext context) {
@@ -116,8 +114,6 @@ class EditValueContainer extends StatelessWidget {
           applicationRolloutStrategy: applicationRolloutStrategy,
           strBloc: strBloc,
         );
-      default:
-        return const SizedBox.shrink();
     }
   }
 }

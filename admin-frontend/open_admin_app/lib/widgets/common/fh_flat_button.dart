@@ -6,11 +6,10 @@ class FHFlatButton extends StatelessWidget {
   final bool keepCase;
 
   const FHFlatButton(
-      {Key? key,
+      {super.key,
       required this.onPressed,
       required this.title,
-      this.keepCase = false})
-      : super(key: key);
+      this.keepCase = false});
 
   @override
   Widget build(BuildContext context) {

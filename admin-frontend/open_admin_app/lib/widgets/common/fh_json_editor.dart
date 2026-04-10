@@ -10,11 +10,10 @@ class FHJsonEditorWidget extends StatefulWidget {
   final bool onlyJsonValidation;
 
   const FHJsonEditorWidget(
-      {Key? key,
+      {super.key,
       required this.controller,
       required this.formKey,
-      required this.onlyJsonValidation})
-      : super(key: key);
+      required this.onlyJsonValidation});
 
   @override
   FHJsonEditorState createState() => FHJsonEditorState();

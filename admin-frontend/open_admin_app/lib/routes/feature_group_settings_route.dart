@@ -20,7 +20,7 @@ import 'package:open_admin_app/widgets/strategyeditor/individual_strategy_bloc.d
 import 'package:open_admin_app/widgets/strategyeditor/strategy_editing_widget.dart';
 
 class FeatureGroupSettingsRoute extends StatefulWidget {
-  const FeatureGroupSettingsRoute({Key? key}) : super(key: key);
+  const FeatureGroupSettingsRoute({super.key});
 
   @override
   State<FeatureGroupSettingsRoute> createState() =>
@@ -80,7 +80,8 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
                                             DefaultTextStyle.of(context).style,
                                         children: [
                                           TextSpan(
-                                            text: AppLocalizations.of(context)!.applicationPrefix,
+                                            text: AppLocalizations.of(context)!
+                                                .applicationPrefix,
                                           ),
                                           TextSpan(
                                             text: snapshot.data
@@ -153,8 +154,10 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
                                                 await bloc
                                                     .saveFeatureGroupUpdates();
                                                 bloc.featureGroupsBloc.mrClient
-                                                    .addSnackbar(Text(
-                                                        l10n.featureGroupSettingsUpdated(bloc.featureGroupStream.value.name)));
+                                                    .addSnackbar(Text(l10n
+                                                        .featureGroupSettingsUpdated(
+                                                            bloc.featureGroupStream
+                                                                .value.name)));
                                               },
                                             )
                                           ],
@@ -206,9 +209,7 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
 class _StrategySettings extends StatelessWidget {
   final FeatureGroup featureGroup;
   final FeatureGroupBloc bloc;
-  const _StrategySettings(
-      {Key? key, required this.featureGroup, required this.bloc})
-      : super(key: key);
+  const _StrategySettings({required this.featureGroup, required this.bloc});
 
   @override
   Widget build(BuildContext context) {
@@ -284,9 +285,7 @@ class _StrategySettings extends StatelessWidget {
 class _FeaturesSettings extends StatelessWidget {
   final FeatureGroup featureGroup;
   final FeatureGroupBloc bloc;
-  const _FeaturesSettings(
-      {Key? key, required this.featureGroup, required this.bloc})
-      : super(key: key);
+  const _FeaturesSettings({required this.featureGroup, required this.bloc});
 
   @override
   Widget build(BuildContext context) {
@@ -359,7 +358,9 @@ class _FeaturesSettings extends StatelessWidget {
                                           bloc: bloc, feature: feature),
                                       if (feature.locked)
                                         Tooltip(
-                                            message: AppLocalizations.of(context)!.featureValueLocked,
+                                            message:
+                                                AppLocalizations.of(context)!
+                                                    .featureValueLocked,
                                             child: Icon(Icons.lock_outline,
                                                 size: 14.0,
                                                 color: Theme.of(context)
@@ -394,7 +395,7 @@ class _FeaturesSettings extends StatelessWidget {
     );
   }
 
-  _addFeatureToGroup(FeatureGroupBloc bloc) {
+  void _addFeatureToGroup(FeatureGroupBloc bloc) {
     bloc.addFeatureToGroup();
   }
 }
@@ -404,8 +405,7 @@ class FeatureValueContainer extends StatelessWidget {
   final FeatureGroupBloc bloc;
 
   const FeatureValueContainer(
-      {Key? key, required this.bloc, required this.feature})
-      : super(key: key);
+      {super.key, required this.bloc, required this.feature});
 
   @override
   Widget build(BuildContext context) {
@@ -436,9 +436,6 @@ class FeatureValueContainer extends StatelessWidget {
           feature: feature,
           bloc: bloc,
         );
-      default:
-        "foo";
     }
-    return const SizedBox.shrink();
   }
 }

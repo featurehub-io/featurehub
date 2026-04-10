@@ -5,10 +5,10 @@ typedef LocaleWidgetBuilder = Widget Function(BuildContext context, Locale local
 
 class DynamicLocale extends StatefulWidget {
   const DynamicLocale({
-    Key? key,
+    super.key,
     required this.defaultLocale,
     required this.localeWidgetBuilder,
-  }) : super(key: key);
+  });
 
   final Locale defaultLocale;
   final LocaleWidgetBuilder localeWidgetBuilder;

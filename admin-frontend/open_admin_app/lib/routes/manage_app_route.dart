@@ -20,7 +20,7 @@ import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class ManageAppRoute extends StatefulWidget {
   final bool createEnvironment;
-  const ManageAppRoute(this.createEnvironment, {Key? key}) : super(key: key);
+  const ManageAppRoute(this.createEnvironment, {super.key});
 
   @override
   ManageAppRouteState createState() => ManageAppRouteState();
@@ -116,7 +116,7 @@ class ManageAppRouteState extends State<ManageAppRoute> {
     _createEnvironmentCheck();
   }
 
-  _createEnvironment(ManageAppBloc bloc) {
+  void _createEnvironment(ManageAppBloc bloc) {
     bloc.mrClient.addOverlay((BuildContext context) {
       return EnvUpdateDialogWidget(
         bloc: bloc,
@@ -126,7 +126,7 @@ class ManageAppRouteState extends State<ManageAppRoute> {
 }
 
 class ManageAppWidget extends StatefulWidget {
-  const ManageAppWidget({Key? key}) : super(key: key);
+  const ManageAppWidget({super.key});
 
   @override
   ManageAppWidgetState createState() => ManageAppWidgetState();

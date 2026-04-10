@@ -86,7 +86,7 @@ extension RoleTypeExtensions on RoleType {
   }
 }
 
-String parsePermissions(json) {
+String parsePermissions(dynamic json) {
   if (json == 'TOGGLE_ENABLED') {
     return 'Change value';
   } else if (json == 'TOGGLE_LOCK') {
@@ -112,14 +112,14 @@ class FHError {
       this.stackTrace,
       this.showDetails = true});
 
-  static bool _is5XX(e) {
+  static bool _is5XX(Object e) {
     if (e is ApiException && e.code > 499 && e.code < 600) {
       return true;
     }
     return false;
   }
 
-  static bool _noAuth(e) {
+  static bool _noAuth(Object e) {
     if (e is ApiException && (e.code == 401 || e.code == 403)) {
       return true;
     }

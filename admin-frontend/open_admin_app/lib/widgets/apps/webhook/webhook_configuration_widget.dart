@@ -9,7 +9,7 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 mixin WebhookEncryption {
   List<String> _encryptFields = [];
 
-  bool isEncryptEnabled(key) {
+  bool isEncryptEnabled(String key) {
     return _encryptFields.contains(key);
   }
 
@@ -195,7 +195,7 @@ class _WebhookHeadersDataSource extends DataGridSource with WebhookEncryption {
     ]);
   }
 
-  addRow() {
+  void addRow() {
     var wh = WebhookHeader('X-NewHeader', 'value');
     _headers.add(wh);
     _rows.add(DataGridRow(cells: [
@@ -234,8 +234,7 @@ class WebhookConfiguration extends StatefulWidget {
   final WebhookTypeDetail type;
   final WebhookEnvironmentBloc bloc;
 
-  const WebhookConfiguration(this.environment, this.type, this.bloc, {Key? key})
-      : super(key: key);
+  const WebhookConfiguration(this.environment, this.type, this.bloc, {super.key});
 
   @override
   State<WebhookConfiguration> createState() => _WebhookConfigurationState(

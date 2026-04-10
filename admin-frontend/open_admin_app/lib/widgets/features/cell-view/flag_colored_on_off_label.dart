@@ -4,8 +4,7 @@ import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 class FlagOnOffColoredIndicator extends StatelessWidget {
   final bool on;
 
-  const FlagOnOffColoredIndicator({Key? key, this.on = false})
-      : super(key: key);
+  const FlagOnOffColoredIndicator({super.key, this.on = false});
 
   @override
   Widget build(BuildContext context) {

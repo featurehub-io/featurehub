@@ -10,8 +10,7 @@ class ApplicationStrategiesDropDown extends StatefulWidget {
   final EditingFeatureValueBloc bloc;
 
   const ApplicationStrategiesDropDown(
-      {Key? key, required this.strategies, required this.bloc})
-      : super(key: key);
+      {super.key, required this.strategies, required this.bloc});
 
   @override
   _ApplicationStrategiesDropDownState createState() =>

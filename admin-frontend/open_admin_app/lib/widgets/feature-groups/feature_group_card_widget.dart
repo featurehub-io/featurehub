@@ -11,10 +11,10 @@ class FeatureGroupCard extends StatelessWidget {
   final FeatureGroupsBloc bloc;
 
   const FeatureGroupCard({
-    Key? key,
+    super.key,
     required this.featureGroup,
     required this.bloc,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -113,8 +113,7 @@ class _PopUpGroupAdminMenu extends StatelessWidget {
   final FeatureGroupsBloc bloc;
   final FeatureGroupListGroup featureGroup;
   const _PopUpGroupAdminMenu(
-      {Key? key, required this.bloc, required this.featureGroup})
-      : super(key: key);
+      {required this.bloc, required this.featureGroup});
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +166,7 @@ class _PopUpGroupAdminMenu extends StatelessWidget {
   }
 }
 
-navigateToEditFeatureGroupSettingsPage(FeatureGroupsBloc bloc,
+void navigateToEditFeatureGroupSettingsPage(FeatureGroupsBloc bloc,
     FeatureGroupListGroup featureGroup, BuildContext context) {
   ManagementRepositoryClientBloc.router
       .navigateTo(context, '/edit-feature-group-strategy-values', params: {
@@ -181,8 +180,7 @@ class FeaturesCounter extends StatelessWidget {
   final int counter;
   final FeatureGroupListGroup featureGroup;
   const FeaturesCounter(
-      {Key? key, required this.counter, required this.featureGroup})
-      : super(key: key);
+      {super.key, required this.counter, required this.featureGroup});
 
   @override
   Widget build(BuildContext context) {

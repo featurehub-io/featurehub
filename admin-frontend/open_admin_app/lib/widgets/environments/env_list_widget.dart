@@ -13,7 +13,7 @@ import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class EnvListWidget extends StatefulWidget {
-  const EnvListWidget({Key? key}) : super(key: key);
+  const EnvListWidget({super.key});
 
   @override
   EnvListState createState() => EnvListState();
@@ -109,7 +109,7 @@ class EnvListState extends State<EnvListWidget> {
     bloc.mrClient.addSnackbar(Text(l10n.envOrderUpdated));
   }
 
-  List<Environment> swapPreviousIds(oldPid, newPid) {
+  List<Environment> swapPreviousIds(String? oldPid, String? newPid) {
     final updatedEnvs = <Environment>[];
     for (var env in _environments!) {
       if (env.priorEnvironmentId == oldPid) {
@@ -127,11 +127,11 @@ class _EnvWidget extends StatelessWidget {
   final int index;
 
   const _EnvWidget({
-    Key? key,
+    super.key,
     required this.env,
     required this.bloc,
     required this.index,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -222,8 +222,7 @@ class EnvDeleteDialogWidget extends StatelessWidget {
   final Environment env;
   final ManageAppBloc bloc;
 
-  const EnvDeleteDialogWidget({Key? key, required this.bloc, required this.env})
-      : super(key: key);
+  const EnvDeleteDialogWidget({super.key, required this.bloc, required this.env});
 
   @override
   Widget build(BuildContext context) {
@@ -255,10 +254,10 @@ class EnvUpdateDialogWidget extends StatefulWidget {
   final ManageAppBloc bloc;
 
   const EnvUpdateDialogWidget({
-    Key? key,
+    super.key,
     required this.bloc,
     this.env,
-  }) : super(key: key);
+  });
 
   @override
   State<StatefulWidget> createState() {

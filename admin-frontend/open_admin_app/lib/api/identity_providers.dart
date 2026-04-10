@@ -48,7 +48,7 @@ class ServerCapabilities {
   bool get capabilityWebhookDecryption =>
       _capabilities['webhook.decryption'] == 'true';
   bool get dacha1Enabled => _capabilities['dacha1Enabled'] == 'true';
-  bool get integrationsEnabled => true || capabilityWebhooks;
+  bool get integrationsEnabled => true;
   bool get featurePropertyExtendedDataEnabled => true;
   bool get systemConfigEnabled => _capabilities['system.config'] == 'true';
 }

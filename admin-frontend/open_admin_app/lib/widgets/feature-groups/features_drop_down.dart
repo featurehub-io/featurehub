@@ -9,8 +9,7 @@ class FeaturesDropDown extends StatefulWidget {
   final List<FeatureGroupFeature> features;
   final FeatureGroupBloc bloc;
 
-  const FeaturesDropDown({Key? key, required this.features, required this.bloc})
-      : super(key: key);
+  const FeaturesDropDown({super.key, required this.features, required this.bloc});
 
   @override
   _FeaturesDropDownState createState() => _FeaturesDropDownState();

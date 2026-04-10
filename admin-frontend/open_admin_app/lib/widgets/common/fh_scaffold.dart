@@ -19,11 +19,10 @@ class FHScaffoldWidget extends StatefulWidget {
   final MainAxisAlignment bodyMainAxisAlignment;
 
   const FHScaffoldWidget(
-      {Key? key,
+      {super.key,
       required this.body,
       this.scrollAtWidth = 320,
-      required this.bodyMainAxisAlignment})
-      : super(key: key);
+      required this.bodyMainAxisAlignment});
 
   @override
   State<StatefulWidget> createState() {
@@ -51,11 +50,9 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
   final MainAxisAlignment bodyMainAxisAlignment;
 
   const _InternalFHScaffoldWidgetWidgetState(
-      {Key? key,
-      required this.child,
+      {required this.child,
       required this.scrollAtWidth,
-      required this.bodyMainAxisAlignment})
-      : super(key: key);
+      required this.bodyMainAxisAlignment});
 
   @override
   Widget build(BuildContext context) {

@@ -20,12 +20,11 @@ class ValueCellHolder extends StatelessWidget {
   final ApplicationFeatureValues afv;
 
   const ValueCellHolder(
-      {Key? key,
+      {super.key,
       this.fv,
       required this.efv,
       required this.feature,
-      required this.afv})
-      : super(key: key);
+      required this.afv});
 
   @override
   Widget build(BuildContext context) {
@@ -134,8 +133,8 @@ class _ValueContainer extends StatelessWidget {
 
 class LockedIndicator extends StatelessWidget {
   const LockedIndicator({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +147,7 @@ class LockedIndicator extends StatelessWidget {
 }
 
 class RetiredIndicator extends StatelessWidget {
-  const RetiredIndicator({Key? key}) : super(key: key);
+  const RetiredIndicator({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -175,13 +174,12 @@ class _ValueCard extends StatelessWidget {
   final RolloutStrategyInstance? applicationStrategy;
 
   const _ValueCard({
-    Key? key,
     required this.fv,
     required this.feature,
     this.rolloutStrategy,
     this.groupStrategy,
     this.applicationStrategy,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

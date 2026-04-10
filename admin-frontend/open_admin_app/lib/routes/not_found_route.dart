@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class NotFoundRoute extends StatefulWidget {
-  const NotFoundRoute({Key? key}) : super(key: key);
+  const NotFoundRoute({super.key});
 
   @override
   NotFoundRouteState createState() => NotFoundRouteState();

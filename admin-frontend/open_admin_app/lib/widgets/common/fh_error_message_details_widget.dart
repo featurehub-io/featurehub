@@ -6,8 +6,7 @@ import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 class FHErrorMessageDetailsWidget extends StatefulWidget {
   final FHError fhError;
 
-  const FHErrorMessageDetailsWidget({Key? key, required this.fhError})
-      : super(key: key);
+  const FHErrorMessageDetailsWidget({super.key, required this.fhError});
 
   @override
   State<FHErrorMessageDetailsWidget> createState() =>
@@ -52,7 +51,7 @@ class _FHErrorMessageDetailsWidgetState
 class FHErrorDetailsWidget extends StatelessWidget {
   final FHError error;
 
-  const FHErrorDetailsWidget({Key? key, required this.error}) : super(key: key);
+  const FHErrorDetailsWidget({super.key, required this.error});
 
   @override
   Widget build(BuildContext context) {

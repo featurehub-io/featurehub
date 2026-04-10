@@ -15,7 +15,7 @@ import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widg
 import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
 
 class EditUserRoute extends StatelessWidget {
-  const EditUserRoute({Key? key}) : super(key: key);
+  const EditUserRoute({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,7 @@ class EditUserRoute extends StatelessWidget {
 class EditUserFormWidget extends StatefulWidget {
   final Person person;
 
-  const EditUserFormWidget({Key? key, required this.person}) : super(key: key);
+  const EditUserFormWidget({super.key, required this.person});
 
   @override
   EditUserFormState createState() => EditUserFormState();
@@ -154,10 +154,14 @@ class EditUserFormState extends State<EditUserFormWidget> {
                         try {
                           await bloc.updatePersonDetails(
                               _email.text, _name.text);
-                          bloc.mrClient.addSnackbar(Text(
-                              l10n.userUpdated(bloc.person!.name!)));
-                          ManagementRepositoryClientBloc.router
-                              .navigateTo(context, '/users');
+
+                          if (context.mounted) {
+                            bloc.mrClient.addSnackbar(
+                                Text(l10n.userUpdated(bloc.person!.name!)));
+
+                            ManagementRepositoryClientBloc.router
+                                .navigateTo(context, '/users');
+                          }
                         } catch (e, s) {
                           bloc.mrClient.dialogError(e, s);
                         }
@@ -174,8 +178,7 @@ class EditUserFormState extends State<EditUserFormWidget> {
 
 class UserPasswordUpdateDialogWidget extends StatefulWidget {
   final EditUserBloc bloc;
-  const UserPasswordUpdateDialogWidget({Key? key, required this.bloc})
-      : super(key: key);
+  const UserPasswordUpdateDialogWidget({super.key, required this.bloc});
 
   @override
   State<StatefulWidget> createState() {

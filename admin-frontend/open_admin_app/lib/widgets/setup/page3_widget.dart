@@ -7,7 +7,7 @@ import 'package:open_admin_app/widgets/setup/setup_bloc.dart';
 class SetupPage3Widget extends StatefulWidget {
   final SetupBloc bloc;
 
-  const SetupPage3Widget({Key? key, required this.bloc}) : super(key: key);
+  const SetupPage3Widget({super.key, required this.bloc});
 
   @override
   State createState() {
@@ -35,8 +35,7 @@ class _SetupPage3WidgetState extends State<SetupPage3Widget> {
 class _FinalSetupPageOverlayWidget extends StatelessWidget {
   final SetupBloc bloc;
 
-  const _FinalSetupPageOverlayWidget({Key? key, required this.bloc})
-      : super(key: key);
+  const _FinalSetupPageOverlayWidget({required this.bloc});
 
   @override
   Widget build(BuildContext context) {

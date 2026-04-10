@@ -44,7 +44,7 @@ class TrackingEventListViewState
     super.initState();
   }
 
-  _reload() {
+  void _reload() {
     _items.clear();
     _pageKey = 0;
     _fetchPage(_pageKey);

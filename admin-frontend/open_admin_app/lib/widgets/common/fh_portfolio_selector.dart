@@ -6,7 +6,7 @@ import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class PortfolioSelectorWidget extends StatefulWidget {
-  const PortfolioSelectorWidget({Key? key}) : super(key: key);
+  const PortfolioSelectorWidget({super.key});
 
   @override
   PortfolioSelectorWidgetState createState() => PortfolioSelectorWidgetState();

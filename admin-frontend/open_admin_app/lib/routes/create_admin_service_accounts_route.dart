@@ -17,8 +17,7 @@ import 'package:openapi_dart_common/openapi.dart';
 class CreateAdminServiceAccountsRoute extends StatelessWidget {
   final String title;
 
-  const CreateAdminServiceAccountsRoute({Key? key, required this.title})
-      : super(key: key);
+  const CreateAdminServiceAccountsRoute({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +27,7 @@ class CreateAdminServiceAccountsRoute extends StatelessWidget {
 }
 
 class AddAdminServiceAccountFormWidget extends StatelessWidget {
-  const AddAdminServiceAccountFormWidget({Key? key}) : super(key: key);
+  const AddAdminServiceAccountFormWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +40,7 @@ class AddAdminServiceAccountFormWidget extends StatelessWidget {
 }
 
 class TopAdminSAWidget extends StatelessWidget {
-  const TopAdminSAWidget({Key? key}) : super(key: key);
+  const TopAdminSAWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +60,7 @@ class TopAdminSAWidget extends StatelessWidget {
 }
 
 class TopAdminSAWidgetDefault extends StatefulWidget {
-  const TopAdminSAWidgetDefault({Key? key}) : super(key: key);
+  const TopAdminSAWidgetDefault({super.key});
 
   @override
   TopAdminSAWidgetDefaultState createState() => TopAdminSAWidgetDefaultState();
@@ -125,7 +124,7 @@ class TopAdminSAWidgetDefaultState extends State<TopAdminSAWidgetDefault> {
 }
 
 class TopAdminSAWidgetSuccess extends StatelessWidget {
-  const TopAdminSAWidgetSuccess({Key? key}) : super(key: key);
+  const TopAdminSAWidgetSuccess({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +157,7 @@ class TopAdminSAWidgetSuccess extends StatelessWidget {
 }
 
 class BottomAdminSAWidget extends StatelessWidget {
-  const BottomAdminSAWidget({Key? key}) : super(key: key);
+  const BottomAdminSAWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +176,7 @@ class BottomAdminSAWidget extends StatelessWidget {
 }
 
 class CreateAdminSAFormButtons extends StatelessWidget {
-  const CreateAdminSAFormButtons({Key? key}) : super(key: key);
+  const CreateAdminSAFormButtons({super.key});
 
   @override
   Widget build(BuildContext context) {

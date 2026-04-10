@@ -8,7 +8,7 @@ class WebhookDetailTable extends StatelessWidget {
   final WebhookEnvironmentBloc bloc;
   final WebhookDetail data;
 
-  const WebhookDetailTable(this.data, this.bloc, {Key? key}) : super(key: key);
+  const WebhookDetailTable(this.data, this.bloc, {super.key});
 
   @override
   Widget build(BuildContext context) {

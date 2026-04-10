@@ -10,9 +10,9 @@ class StepperContainer extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
 
   const StepperContainer({
-    Key? key,
+    super.key,
     required this.mrBloc,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +35,9 @@ class StepperRocketButton extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
 
   const StepperRocketButton({
-    Key? key,
+    super.key,
     required this.mrBloc,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

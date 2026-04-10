@@ -7,7 +7,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 class ResetPasswordWidget extends StatefulWidget {
   final String personId;
 
-  const ResetPasswordWidget(this.personId, {Key? key}) : super(key: key);
+  const ResetPasswordWidget(this.personId, {super.key});
 
   @override
   State<StatefulWidget> createState() {

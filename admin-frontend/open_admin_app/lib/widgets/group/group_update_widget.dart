@@ -13,8 +13,7 @@ class GroupUpdateDialogWidget extends StatefulWidget {
   final Group? group;
   final GroupBloc bloc;
 
-  const GroupUpdateDialogWidget({Key? key, required this.bloc, this.group})
-      : super(key: key);
+  const GroupUpdateDialogWidget({super.key, required this.bloc, this.group});
 
   @override
   State<StatefulWidget> createState() {
@@ -110,8 +109,7 @@ class GroupDeleteDialogWidget extends StatelessWidget {
   final GroupBloc bloc;
 
   const GroupDeleteDialogWidget(
-      {Key? key, required this.group, required this.bloc})
-      : super(key: key);
+      {super.key, required this.group, required this.bloc});
 
   @override
   Widget build(BuildContext context) {

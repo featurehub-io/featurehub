@@ -13,7 +13,7 @@ import 'package:open_admin_app/widgets/common/fh_label_container.dart';
 import 'package:open_admin_app/widgets/common/fh_portfolio_selector.dart';
 
 class DrawerViewWidget extends StatefulWidget {
-  const DrawerViewWidget({Key? key}) : super(key: key);
+  const DrawerViewWidget({super.key});
 
   @override
   DrawerViewWidgetState createState() => DrawerViewWidgetState();
@@ -48,7 +48,7 @@ class _MenuContainer extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
   final ScrollController controller = ScrollController();
 
-  _MenuContainer({Key? key, required this.mrBloc}) : super(key: key);
+  _MenuContainer({required this.mrBloc});
 
   @override
   Widget build(BuildContext context) {
@@ -281,7 +281,7 @@ class _ApplicationSettings extends StatelessWidget {
 class _MenuFeaturesOptionsWidget extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
 
-  const _MenuFeaturesOptionsWidget(this.mrBloc, {Key? key}) : super(key: key);
+  const _MenuFeaturesOptionsWidget(this.mrBloc);
 
   @override
   Widget build(BuildContext context) {
@@ -334,15 +334,14 @@ class FHMenuItem extends StatelessWidget {
   final bool displayNewLabel;
 
   const FHMenuItem(
-      {Key? key,
+      {super.key,
       required this.name,
       required this.iconData,
       required this.path,
       required this.params,
       this.permissionType = PermissionType.regular,
       this.iconSize,
-      this.displayNewLabel = false})
-      : super(key: key);
+      this.displayNewLabel = false});
 
   bool equalsParams(Map<String, List<String>> snapParams) {
     final p1 = snapParams;

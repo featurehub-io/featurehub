@@ -13,13 +13,13 @@ import 'package:open_admin_app/widgets/stepper/progress_stepper_bloc.dart';
 
 
 class FHSetupProgressStepper extends StatefulWidget {
-  const FHSetupProgressStepper({Key? key}) : super(key: key);
+  const FHSetupProgressStepper({super.key});
 
   @override
-  _StepperState createState() => _StepperState();
+  StepperState createState() => StepperState();
 }
 
-class _StepperState extends State<FHSetupProgressStepper> {
+class StepperState extends State<FHSetupProgressStepper> {
   var _index = 0;
 
   @override

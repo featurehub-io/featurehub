@@ -11,7 +11,7 @@ import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class ManageAdminServiceAccountsRoute extends StatelessWidget {
-  const ManageAdminServiceAccountsRoute({Key? key}) : super(key: key);
+  const ManageAdminServiceAccountsRoute({super.key});
 
   @override
   Widget build(BuildContext context) {

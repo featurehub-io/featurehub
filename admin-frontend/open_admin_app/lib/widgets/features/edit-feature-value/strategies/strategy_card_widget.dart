@@ -16,14 +16,13 @@ class StrategyCardWidget extends StatelessWidget {
   final EditingFeatureValueBloc strBloc;
 
   const StrategyCardWidget(
-      {Key? key,
+      {super.key,
       required this.editable,
       required this.editableHolderWidget,
       this.rolloutStrategy,
       required this.strBloc,
       this.groupRolloutStrategy,
-      this.applicationRolloutStrategy})
-      : super(key: key);
+      this.applicationRolloutStrategy});
 
   @override
   Widget build(BuildContext context) {

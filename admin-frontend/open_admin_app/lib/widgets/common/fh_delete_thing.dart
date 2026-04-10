@@ -21,7 +21,7 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
   final bool removeOverlay;
 
   const FHDeleteThingWarningWidget(
-      {Key? key,
+      {super.key,
       required this.deleteSelected,
       this.thing,
       this.wholeWarning,
@@ -29,8 +29,7 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
       required this.bloc,
       this.content, this.isResetThing = false,
         this.removeOverlay = true})
-      : assert(thing != null || wholeWarning != null),
-        super(key: key);
+      : assert(thing != null || wholeWarning != null);
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +75,7 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
 class _WarningWidget extends StatelessWidget {
   final bool extra;
 
-  const _WarningWidget({Key? key, this.extra = false}) : super(key: key);
+  const _WarningWidget({this.extra = false});
 
   @override
   Widget build(BuildContext context) {

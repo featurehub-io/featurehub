@@ -8,14 +8,13 @@ class LockUnlockSwitch extends StatefulWidget {
   final EditingFeatureValueBloc fvBloc;
 
   const LockUnlockSwitch(
-      {Key? key, required this.environmentFeatureValue, required this.fvBloc})
-      : super(key: key);
+      {super.key, required this.environmentFeatureValue, required this.fvBloc});
 
   @override
-  _LockUnlockSwitchState createState() => _LockUnlockSwitchState();
+  LockUnlockSwitchState createState() => LockUnlockSwitchState();
 }
 
-class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
+class LockUnlockSwitchState extends State<LockUnlockSwitch> {
   bool _locked = false;
   bool _initiallyLocked = false;
 

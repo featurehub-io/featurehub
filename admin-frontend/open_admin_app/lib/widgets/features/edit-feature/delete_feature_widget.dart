@@ -11,8 +11,7 @@ class FeatureDeleteDialogWidget extends StatelessWidget {
   final PerApplicationFeaturesBloc bloc;
 
   const FeatureDeleteDialogWidget(
-      {Key? key, required this.bloc, required this.feature})
-      : super(key: key);
+      {super.key, required this.bloc, required this.feature});
 
   @override
   Widget build(BuildContext context) {

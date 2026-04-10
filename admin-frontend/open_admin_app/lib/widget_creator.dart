@@ -38,12 +38,12 @@ class WidgetCreator {
   Widget edgeUrlCopyWidget(ManagementRepositoryClientBloc mrClient) =>
       const SizedBox.shrink();
 
-  EditUserBloc createEditUserBloc(mrBloc, String? personId,
+  EditUserBloc createEditUserBloc(ManagementRepositoryClientBloc mrBloc, String? personId,
       {required SelectPortfolioGroupBloc selectGroupBloc}) {
     return EditUserBloc(mrBloc, personId, selectGroupBloc: selectGroupBloc);
   }
 
-  adminSdkBaseUrlWidget(ManagementRepositoryClientBloc mrClient) {
+  SizedBox adminSdkBaseUrlWidget(ManagementRepositoryClientBloc mrClient) {
     return const SizedBox.shrink();
   }
 

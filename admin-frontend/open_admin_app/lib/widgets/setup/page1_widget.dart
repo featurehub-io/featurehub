@@ -11,7 +11,7 @@ import 'package:zxcvbn/zxcvbn.dart';
 class SetupPage1Widget extends StatefulWidget {
   final SetupBloc bloc;
 
-  const SetupPage1Widget({Key? key, required this.bloc}) : super(key: key);
+  const SetupPage1Widget({super.key, required this.bloc});
 
   @override
   State<StatefulWidget> createState() {
@@ -265,10 +265,8 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
   final _SelectedExternalFunction selectedExternalProviderFunc;
 
   const _SetupPage1ThirdPartyProviders(
-      {Key? key,
-      required this.bloc,
-      required this.selectedExternalProviderFunc})
-      : super(key: key);
+      {required this.bloc,
+      required this.selectedExternalProviderFunc});
   @override
   Widget build(BuildContext context) {
     return Column(

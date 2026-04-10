@@ -11,21 +11,21 @@ import 'package:open_admin_app/widgets/features/edit-feature-value/valueeditors/
 
 class EditFeatureGroupJsonValueContainer extends StatefulWidget {
   const EditFeatureGroupJsonValueContainer({
-    Key? key,
+    super.key,
     required this.feature,
     required this.editable,
     required this.bloc,
-  }) : super(key: key);
+  });
 
   final FeatureGroupFeature feature;
   final bool editable;
   final FeatureGroupBloc bloc;
 
   @override
-  _EditJsonValueContainerState createState() => _EditJsonValueContainerState();
+  EditJsonValueContainerState createState() => EditJsonValueContainerState();
 }
 
-class _EditJsonValueContainerState
+class EditJsonValueContainerState
     extends State<EditFeatureGroupJsonValueContainer> {
   TextEditingController tec = TextEditingController();
   final _formKey = GlobalKey<FormState>();

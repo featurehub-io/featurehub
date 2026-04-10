@@ -40,7 +40,7 @@ class ApplicationStrategyBloc implements Bloc, ManagementRepositoryAwareBloc {
     _currentApplicationStream.close();
   }
 
-  _setAppId(String? id) {
+  void _setAppId(String? id) {
     appId = id;
     currentApplicationStream.add(id);
   }

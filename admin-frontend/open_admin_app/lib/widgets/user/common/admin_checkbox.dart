@@ -6,7 +6,7 @@ import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.d
 
 class AdminCheckboxWidget extends StatefulWidget {
   final Person? person;
-  const AdminCheckboxWidget({Key? key, this.person}) : super(key: key);
+  const AdminCheckboxWidget({super.key, this.person});
 
   @override
   AdminCheckboxWidgetState createState() {

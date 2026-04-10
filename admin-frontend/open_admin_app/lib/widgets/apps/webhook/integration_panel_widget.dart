@@ -9,7 +9,7 @@ import 'package:open_admin_app/widgets/common/fh_loading_error.dart';
 import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
 
 class IntegrationPanelWidget extends StatelessWidget {
-  const IntegrationPanelWidget({Key? key}) : super(key: key);
+  const IntegrationPanelWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

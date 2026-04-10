@@ -6,7 +6,7 @@ import 'package:open_admin_app/widget_creator.dart';
 import 'package:open_admin_app/widgets/common/fh_scaffold.dart';
 
 class SigninWrapperWidget extends StatelessWidget {
-  const SigninWrapperWidget({Key? key}) : super(key: key);
+  const SigninWrapperWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -49,55 +49,67 @@ import 'package:open_admin_app/widgets/user/register/register_url_bloc.dart';
 
 import '../widget_creator.dart';
 
-Handler handleRouteChangeRequest(builder) {
+Handler handleRouteChangeRequest(
+    Widget Function(ManagementRepositoryClientBloc,
+            {Map<String, List<String>> params})
+        builder) {
   return Handler(
-      handlerFunc: (BuildContext context, Map<String, List<String?>> params) {
+      handlerFunc: (BuildContext context, Map<String, List<String>> params) {
     final mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     return builder(mrBloc, params: params);
   });
 }
 
 class RouteCreator {
-  Widget loading(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget loading(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return const LoadingRoute();
   }
 
-  Widget notFound(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget notFound(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return const NotFoundRoute();
   }
 
-  Widget root(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget root(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return const HomeRoute(title: 'FeatureHub');
   }
 
-  Widget login(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget login(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return const SigninWrapperWidget();
   }
 
-  Widget setup(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget setup(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return const SetupWrapperWidget();
     // return LandingRoute(title: 'FeatureHub');
   }
 
-  Widget oauth2Fail(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget oauth2Fail(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return const Oauth2FailRoute();
   }
 
-  Widget portfolios(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget portfolios(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return BlocProvider<PortfolioBloc>(
         creator: (context, bag) =>
             PortfolioBloc(params['search']?.elementAt(0), mrBloc),
         child: const PortfolioRoute());
   }
 
-  Widget users(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget users(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return BlocProvider<ListUsersBloc>(
         creator: (context, bag) =>
             ListUsersBloc(params['search']?.elementAt(0), mrBloc),
         child: const ManageUsersRoute());
   }
 
-  Widget group(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget group(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return BlocProvider<GroupBloc>(
         creator: (context, bag) =>
             GroupBloc(params['id']?.elementAt(0), mrBloc),
@@ -106,49 +118,51 @@ class RouteCreator {
         ));
   }
 
-  Widget forgotPassword(mrBloc,
-      {Map<String, List<String?>> params = const {}}) {
+  Widget forgotPassword(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return const SimpleWidget(
       message: 'forgot-password, contact you system administrator.',
     );
   }
 
-  Widget registerUrl(mrBloc, {Map<String, List<String?>> params = const {}}) {
-    if (params['token'] == null || params['token']![0] == null) {
+  Widget registerUrl(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
+    if (params['token'] == null) {
       return notFound(mrBloc);
     }
 
     return BlocProvider<RegisterBloc>(
         creator: (context, bag) =>
-            RegisterBloc(mrBloc)..getDetails(params['token']![0]!),
-        child: RegisterURLRoute(params['token']![0]!));
+            RegisterBloc(mrBloc)..getDetails(params['token']![0]),
+        child: RegisterURLRoute(params['token']![0]));
   }
 
-  Widget createUser(mrBloc, {Map<String, List<String?>> params = const {}}) {
-    // TODO: fix this construction, bloc should not be created outside of provider
-    final select = SelectPortfolioGroupBloc(mrBloc);
-    return BlocProvider<SelectPortfolioGroupBloc>(
-        creator: (context, bag) => select,
-        child: BlocProvider<CreateUserBloc>(
-            creator: (context, bag) =>
-                CreateUserBloc(mrBloc, selectGroupBloc: select),
-            child: const CreateUserRoute(title: 'Create User')));
+  Widget createUser(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
+    return BlocProvider<SelectPortfolioGroupBloc>.builder(
+        creator: (context, bag) => SelectPortfolioGroupBloc(mrBloc),
+        builder: (context, select) {
+          return BlocProvider<CreateUserBloc>.builder(
+              creator: (context, bag) =>
+                  CreateUserBloc(mrBloc, selectGroupBloc: select),
+              builder: (context, bloc) =>
+                  const CreateUserRoute(title: 'Create User'));
+        });
   }
 
-  Widget createAdminApiKey(mrBloc,
-      {Map<String, List<String?>> params = const {}}) {
-    // TODO: fix this construction, bloc should not be created outside of provider
-    final select = SelectPortfolioGroupBloc(mrBloc);
-    return BlocProvider<SelectPortfolioGroupBloc>(
-        creator: (context, bag) => select,
-        child: BlocProvider<CreateUserBloc>(
+  Widget createAdminApiKey(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
+    return BlocProvider<SelectPortfolioGroupBloc>.builder(
+        creator: (context, bag) => SelectPortfolioGroupBloc(mrBloc),
+        builder: (context, select) => BlocProvider<CreateUserBloc>.builder(
             creator: (context, bag) =>
                 CreateUserBloc(mrBloc, selectGroupBloc: select),
-            child: const CreateAdminServiceAccountsRoute(
+            builder: (context, bloc) => const CreateAdminServiceAccountsRoute(
                 title: 'Create Admin Service Account')));
   }
 
-  Widget manageUser(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget manageUser(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     final select = SelectPortfolioGroupBloc(mrBloc);
     return BlocProvider<SelectPortfolioGroupBloc>(
         creator: (context, bag) => select,
@@ -159,8 +173,8 @@ class RouteCreator {
             child: const EditUserRoute()));
   }
 
-  Widget editAdminApiKey(mrBloc,
-      {Map<String, List<String?>> params = const {}}) {
+  Widget editAdminApiKey(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     final select = SelectPortfolioGroupBloc(mrBloc);
     return BlocProvider<SelectPortfolioGroupBloc>(
         creator: (context, bag) => select,
@@ -171,22 +185,23 @@ class RouteCreator {
             child: const EditAdminServiceAccountRoute()));
   }
 
-  Widget adminServiceAccount(mrBloc,
-      {Map<String, List<String?>> params = const {}}) {
+  Widget adminServiceAccount(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return BlocProvider<ListUsersBloc>(
         creator: (context, bag) =>
             ListUsersBloc(params['search']?.elementAt(0), mrBloc),
         child: const ManageAdminServiceAccountsRoute());
   }
 
-  Widget systemConfig(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget systemConfig(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return BlocProvider<SystemConfigBloc>(
         creator: (context, bag) => SystemConfigBloc(mrBloc),
         child: const SystemConfigPanel());
   }
 
-  Widget serviceAccount(mrBloc,
-      {Map<String, List<String?>> params = const {}}) {
+  Widget serviceAccount(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return BlocProvider<ManageServiceAccountsBloc>(
         creator: (context, bag) =>
             ManageServiceAccountsBloc(params['pid']?.elementAt(0), mrBloc),
@@ -195,7 +210,7 @@ class RouteCreator {
   }
 
   Widget featureStatus(ManagementRepositoryClientBloc mrBloc,
-      {Map<String, List<String?>> params = const {}}) {
+      {Map<String, List<String>> params = const {}}) {
     return BlocProvider<PerApplicationFeaturesBloc>(
         creator: (c, b) => PerApplicationFeaturesBloc(mrBloc),
         child: Builder(
@@ -219,28 +234,30 @@ class RouteCreator {
     return false;
   }
 
-  Widget apps(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget apps(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return BlocProvider<AppsBloc>(
         creator: (context, bag) => AppsBloc(mrBloc),
         child: AppsRoute(createApp: _actionCreate(params)));
   }
 
-  Widget featureGroups(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget featureGroups(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return BlocProvider<FeatureGroupsBloc>(
         creator: (context, bag) => FeatureGroupsBloc(mrBloc),
         child: FeatureGroupsRoute(createApp: _actionCreate(params)));
   }
 
-  Widget applicationStrategies(mrBloc,
-      {Map<String, List<String?>> params = const {}}) {
+  Widget applicationStrategies(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     return BlocProvider<ApplicationStrategyBloc>(
         creator: (context, bag) => ApplicationStrategyBloc(mrBloc),
         child: ApplicationStrategyRoute(createApp: _actionCreate(params)));
   }
 
-  Widget createApplicationStrategy(mrBloc,
-      {Map<String, List<String?>> params = const {}}) {
-    if (params['appid'] == null || params['appid']!.elementAt(0) == null) {
+  Widget createApplicationStrategy(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
+    if (params['appid'] == null) {
       return SizedBox(
         height: 600,
         child: notFound(mrBloc),
@@ -253,12 +270,9 @@ class RouteCreator {
     }
   }
 
-  Widget editApplicationStrategy(mrBloc,
-      {Map<String, List<String?>> params = const {}}) {
-    if (params['appid'] == null ||
-        params['appid']!.elementAt(0) == null ||
-        params['id'] == null ||
-        params['id']!.elementAt(0) == null) {
+  Widget editApplicationStrategy(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
+    if (params['appid'] == null || params['id'] == null) {
       return SizedBox(
         height: 600,
         child: notFound(mrBloc),
@@ -272,15 +286,12 @@ class RouteCreator {
     }
   }
 
-  Widget editFeatureGroupStrategyValues(mrBloc,
-      {Map<String, List<String?>> params = const {}}) {
+  Widget editFeatureGroupStrategyValues(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
     final fgBloc = FeatureGroupsBloc(mrBloc);
     if (params['appid'] == null ||
-        params['appid']!.elementAt(0) == null ||
         params['groupid'] == null ||
-        params['groupid']!.elementAt(0) == null ||
-        params['envid'] == null ||
-        params['envid']!.elementAt(0) == null) {
+        params['envid'] == null) {
       return SizedBox(
         height: 600,
         child: notFound(mrBloc),
@@ -291,9 +302,9 @@ class RouteCreator {
           child: BlocProvider<FeatureGroupBloc>(
             creator: (context, bag) => FeatureGroupBloc(
                 fgBloc,
-                params['groupid']!.elementAt(0) ?? "",
-                params['envid']!.elementAt(0) ?? "",
-                params['appid']!.elementAt(0) ?? ""),
+                params['groupid']![0],
+                params['envid']![0],
+                params['appid']![0]),
             child: const FeatureGroupSettingsRoute(),
           ));
     }
@@ -307,14 +318,16 @@ class RouteCreator {
     );
   }
 
-  Widget manageApp(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget manageApp(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<ManageAppBloc>(
         creator: (context, bag) => ManageAppBloc(mrBloc),
         child: ManageAppRoute(_actionCreate(params) &&
             _paramEquals(params, 'tab', 'environments')));
   }
 
-  Widget featureValues(mrBloc, {Map<String, List<String?>> params = const {}}) {
+  Widget featureValues(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String?>> params = const {}}) {
     return Container();
   }
 }

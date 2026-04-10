@@ -21,7 +21,7 @@ import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 class AppsRoute extends StatefulWidget {
   final bool createApp;
 
-  const AppsRoute({Key? key, required this.createApp}) : super(key: key);
+  const AppsRoute({super.key, required this.createApp});
 
   @override
   AppsRouteState createState() => AppsRouteState();
@@ -150,7 +150,7 @@ class AppsRouteState extends State<AppsRoute> {
     _createAppCheck();
   }
 
-  _createApp(AppsBloc bloc) {
+  void _createApp(AppsBloc bloc) {
     bloc.mrClient.addOverlay((BuildContext context) {
       return AppUpdateDialogWidget(
         bloc: bloc,
@@ -162,8 +162,7 @@ class AppsRouteState extends State<AppsRoute> {
 class _ApplicationsCardsList extends StatelessWidget {
   final AppsBloc bloc;
 
-  const _ApplicationsCardsList({Key? key, required this.bloc})
-      : super(key: key);
+  const _ApplicationsCardsList({required this.bloc});
 
   @override
   Widget build(BuildContext context) {
@@ -201,11 +200,9 @@ class _ApplicationCard extends StatelessWidget {
   final Widget cardContents;
 
   const _ApplicationCard(
-      {Key? key,
-      required this.application,
+      {required this.application,
       required this.bloc,
-      required this.cardContents})
-      : super(key: key);
+      required this.cardContents});
 
   @override
   Widget build(BuildContext context) {
@@ -291,9 +288,8 @@ class _ApplicationCard extends StatelessWidget {
 
 class _AppTotals extends StatelessWidget {
   const _AppTotals({
-    Key? key,
     required this.application,
-  }) : super(key: key);
+  });
 
   final Application application;
 
@@ -329,11 +325,10 @@ class _NumberAndIcon extends StatelessWidget {
   final Icon icon;
 
   const _NumberAndIcon({
-    Key? key,
     required this.text,
     required this.tooltipText,
     required this.icon,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -355,7 +350,7 @@ class _NumberAndIcon extends StatelessWidget {
 class _NumberContainer extends StatelessWidget {
   final Widget child;
 
-  const _NumberContainer({Key? key, required this.child}) : super(key: key);
+  const _NumberContainer({required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -374,8 +369,7 @@ class _PopUpAdminMenu extends StatelessWidget {
   final Application application;
 
   const _PopUpAdminMenu(
-      {Key? key, required this.bloc, required this.application})
-      : super(key: key);
+      {required this.bloc, required this.application});
 
   @override
   Widget build(BuildContext context) {

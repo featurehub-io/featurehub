@@ -15,7 +15,7 @@ import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'manage_app_bloc.dart';
 
 class GroupPermissionsWidget extends StatelessWidget {
-  const GroupPermissionsWidget({Key? key}) : super(key: key);
+  const GroupPermissionsWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +52,8 @@ class GroupPermissionsWidget extends StatelessWidget {
                         ),
                         const SizedBox(width: 16.0),
                         FHUnderlineButton(
-                          title: AppLocalizations.of(context)!.goToManageGroupMembers,
+                          title: AppLocalizations.of(context)!
+                              .goToManageGroupMembers,
                           onPressed: () {
                             ManagementRepositoryClientBloc.router
                                 .navigateTo(context, '/groups', params: {
@@ -61,11 +62,13 @@ class GroupPermissionsWidget extends StatelessWidget {
                           },
                         ),
                         FHExternalLinkWidget(
-                          tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
+                          tooltipMessage:
+                              AppLocalizations.of(context)!.viewDocumentation,
                           link:
                               "https://docs.featurehub.io/featurehub/latest/users.html#_group_permissions",
                           icon: const Icon(Icons.arrow_outward_outlined),
-                          label: AppLocalizations.of(context)!.groupPermissionsDocumentation,
+                          label: AppLocalizations.of(context)!
+                              .groupPermissionsDocumentation,
                         ),
                       ],
                     ),
@@ -82,8 +85,7 @@ class _GroupsDropdown extends StatefulWidget {
   final List<Group> groups;
   final ManageAppBloc bloc;
 
-  const _GroupsDropdown({Key? key, required this.groups, required this.bloc})
-      : super(key: key);
+  const _GroupsDropdown({required this.groups, required this.bloc});
 
   @override
   __GroupsDropdownState createState() => __GroupsDropdownState();
@@ -135,10 +137,9 @@ class _GroupPermissionDetailWidget extends StatefulWidget {
   final ManageAppBloc bloc;
 
   const _GroupPermissionDetailWidget({
-    Key? key,
     required this.mr,
     required this.bloc,
-  }) : super(key: key);
+  });
 
   @override
   _GroupPermissionDetailState createState() => _GroupPermissionDetailState();
@@ -256,8 +257,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
           if (!groupSnapshot.hasData) {
             return Container(
                 padding: const EdgeInsets.all(20),
-                child: SelectableText(
-                    AppLocalizations.of(context)!.selectGroupToEditPermissions));
+                child: SelectableText(AppLocalizations.of(context)!
+                    .selectGroupToEditPermissions));
           }
 
           return StreamBuilder<List<Environment>>(
@@ -269,8 +270,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                     children: <Widget>[
                       Container(
                           padding: const EdgeInsets.all(20),
-                          child: SelectableText(
-                              AppLocalizations.of(context)!.needToCreateEnvironmentsFirst)),
+                          child: SelectableText(AppLocalizations.of(context)!
+                              .needToCreateEnvironmentsFirst)),
                     ],
                   );
                 }
@@ -335,7 +336,9 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SelectableText(AppLocalizations.of(context)!.setFeatureLevelPermissions,
+                            SelectableText(
+                                AppLocalizations.of(context)!
+                                    .setFeatureLevelPermissions,
                                 style: Theme.of(context).textTheme.bodySmall),
                             // SizedBox(height: 4.0),
                             Row(
@@ -378,7 +381,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SelectableText(
-                                AppLocalizations.of(context)!.setAppStrategyPermissions,
+                                AppLocalizations.of(context)!
+                                    .setAppStrategyPermissions,
                                 style: Theme.of(context).textTheme.bodySmall),
                             // SizedBox(height: 4.0),
                             Row(
@@ -422,7 +426,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                       child: Container(
                           padding: const EdgeInsets.fromLTRB(0, 32, 0, 8),
                           child: SelectableText(
-                              AppLocalizations.of(context)!.setFeatureValuePermissions,
+                              AppLocalizations.of(context)!
+                                  .setFeatureValuePermissions,
                               style: Theme.of(context).textTheme.bodySmall)),
                     ),
                     Card(
@@ -475,8 +480,11 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                               currentGroup = group;
                               originalAppFeatureRole = _discoverAdminRoleType(
                                   currentGroup!, widget.bloc.applicationId!);
-                              widget.bloc.mrClient.addSnackbar(Text(
-                                  AppLocalizations.of(context)!.groupUpdated(group?.name ?? '<unknown>')));
+                              if (context.mounted) {
+                                widget.bloc.mrClient.addSnackbar(Text(
+                                    AppLocalizations.of(context)!.groupUpdated(
+                                        group?.name ?? '<unknown>')));
+                              }
                             }).catchError((e, s) {
                               widget.bloc.mrClient.dialogError(e, s);
                             });
@@ -498,12 +506,28 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
         .copyWith(fontWeight: FontWeight.bold);
     return TableRow(children: [
       const Text(''),
-      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permRead, style: headerStyle))),
-      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permLock, style: headerStyle))),
-      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permUnlock, style: headerStyle))),
-      Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permChangeValue, style: headerStyle))),
-      if (widget.bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
-        Center(child: Padding(padding: const EdgeInsets.all(12.0), child: Text(l10n.permReadExtendedData, style: headerStyle))),
+      Center(
+          child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(l10n.permRead, style: headerStyle))),
+      Center(
+          child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(l10n.permLock, style: headerStyle))),
+      Center(
+          child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(l10n.permUnlock, style: headerStyle))),
+      Center(
+          child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Text(l10n.permChangeValue, style: headerStyle))),
+      if (widget
+          .bloc.mrClient.identityProviders.featurePropertyExtendedDataEnabled)
+        Center(
+            child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(l10n.permReadExtendedData, style: headerStyle))),
     ]);
   }
 
@@ -594,11 +618,10 @@ class PermissionsCheckbox extends StatefulWidget {
   final String envId;
   final RoleType roleType;
   const PermissionsCheckbox(
-      {Key? key,
+      {super.key,
       required this.envId,
       required this.newEnvironmentRoles,
-      required this.roleType})
-      : super(key: key);
+      required this.roleType});
 
   @override
   State<PermissionsCheckbox> createState() => _PermissionsCheckboxState();

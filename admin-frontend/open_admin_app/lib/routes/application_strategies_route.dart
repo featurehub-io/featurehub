@@ -8,8 +8,7 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 
 class ApplicationStrategyRoute extends StatelessWidget {
   final bool createApp;
-  const ApplicationStrategyRoute({Key? key, required this.createApp})
-      : super(key: key);
+  const ApplicationStrategyRoute({super.key, required this.createApp});
 
   @override
   Widget build(BuildContext context) {

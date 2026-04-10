@@ -4,9 +4,9 @@ class FHButtonBar extends StatelessWidget {
   final List<Widget> children;
 
   const FHButtonBar({
-    Key? key,
+    super.key,
     required this.children,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

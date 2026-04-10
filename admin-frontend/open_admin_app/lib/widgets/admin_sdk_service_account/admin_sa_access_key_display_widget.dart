@@ -3,8 +3,7 @@ import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 
 class AdminAccessKeyDisplayWidget extends StatelessWidget {
-  const AdminAccessKeyDisplayWidget({Key? key, required this.token})
-      : super(key: key);
+  const AdminAccessKeyDisplayWidget({super.key, required this.token});
 
   final String token;
 

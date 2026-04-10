@@ -5,10 +5,10 @@ class FHHeader extends StatelessWidget {
   final List<Widget> children;
 
   const FHHeader({
-    Key? key,
+    super.key,
     required this.title,
     this.children = const [],
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 
 class ExternalDocsLinksWidget extends StatelessWidget {
-  const ExternalDocsLinksWidget({Key? key}) : super(key: key);
+  const ExternalDocsLinksWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

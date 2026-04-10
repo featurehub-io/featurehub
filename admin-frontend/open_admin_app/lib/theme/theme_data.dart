@@ -91,7 +91,7 @@ final ThemeData darkTheme = ThemeData(
         0xff181D26), // Darker blue-grey for cards than menu (#1D222C)
     elevation: 2,
     surfaceTintColor: Colors.transparent, // No tinting
-    shadowColor: Colors.black.withOpacity(0.5), // Black shadows
+    shadowColor: Colors.black.withValues(alpha: 0.5), // Black shadows
   ),
 
   // List Tiles - for menu items with blue-grey selected state
@@ -276,7 +276,7 @@ const ColorScheme flexSchemeDark = ColorScheme(
   // Surface colors - black and off-black palette
   surface: Color(0xff1A1A1A), // Very dark grey/off-black for main background
   onSurface: Color(0xffE0E0E0), // Light text on dark surface
-  surfaceVariant: Color(0xff252525), // Slightly lighter for cards
+  surfaceContainerHighest: Color(0xff252525), // Slightly lighter for cards
   onSurfaceVariant: Color(0xffB0B0B0), // Muted text
   outline: Color(0xff404040), // Medium grey for borders/outlines
   outlineVariant: Color(0xff2C2C2C), // Darker outline variant

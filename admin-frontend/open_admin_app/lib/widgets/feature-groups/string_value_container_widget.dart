@@ -4,22 +4,22 @@ import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
 
 class EditFeatureGroupStringValueContainer extends StatefulWidget {
   const EditFeatureGroupStringValueContainer({
-    Key? key,
+    super.key,
     required this.editable,
     required this.bloc,
     required this.feature,
-  }) : super(key: key);
+  });
 
   final bool editable;
   final FeatureGroupFeature feature;
   final FeatureGroupBloc bloc;
 
   @override
-  _EditFeatureGroupStringValueContainerState createState() =>
-      _EditFeatureGroupStringValueContainerState();
+  EditFeatureGroupStringValueContainerState createState() =>
+      EditFeatureGroupStringValueContainerState();
 }
 
-class _EditFeatureGroupStringValueContainerState
+class EditFeatureGroupStringValueContainerState
     extends State<EditFeatureGroupStringValueContainer> {
   TextEditingController tec = TextEditingController();
 

@@ -10,7 +10,7 @@ import 'package:open_admin_app/widgets/user/list/list_users_widget.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 
 class ManageUsersRoute extends StatelessWidget {
-  const ManageUsersRoute({Key? key}) : super(key: key);
+  const ManageUsersRoute({super.key});
 
   @override
   Widget build(BuildContext context) {

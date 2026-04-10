@@ -11,14 +11,14 @@ import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart
 
 class EditJsonValueContainer extends StatefulWidget {
   const EditJsonValueContainer({
-    Key? key,
+    super.key,
     required this.unlocked,
     required this.canEdit,
     this.rolloutStrategy,
     required this.strBloc,
     this.groupRolloutStrategy,
     this.applicationRolloutStrategy,
-  }) : super(key: key);
+  });
 
   final bool unlocked;
   final bool canEdit;
@@ -28,10 +28,10 @@ class EditJsonValueContainer extends StatefulWidget {
   final EditingFeatureValueBloc strBloc;
 
   @override
-  _EditJsonValueContainerState createState() => _EditJsonValueContainerState();
+  EditJsonValueContainerState createState() => EditJsonValueContainerState();
 }
 
-class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
+class EditJsonValueContainerState extends State<EditJsonValueContainer> {
   TextEditingController tec = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 

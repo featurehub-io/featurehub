@@ -9,12 +9,11 @@ class FHExternalLinkWidget extends StatelessWidget {
   final Icon icon;
 
   const FHExternalLinkWidget(
-      {Key? key,
+      {super.key,
       required this.tooltipMessage,
       required this.label,
       required this.link,
-      required this.icon})
-      : super(key: key);
+      required this.icon});
 
   @override
   Widget build(BuildContext context) {
