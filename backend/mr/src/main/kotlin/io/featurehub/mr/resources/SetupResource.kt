@@ -7,6 +7,7 @@ import io.featurehub.encryption.WebhookEncryptionFeature
 import io.featurehub.mr.api.SetupServiceDelegate
 import io.featurehub.mr.auth.AuthenticationRepository
 import io.featurehub.mr.model.*
+import io.featurehub.systemcfg.MaintenanceConfig
 import io.featurehub.mr.utils.ConfigurationUtils
 import io.featurehub.mr.utils.PortfolioUtils
 import io.featurehub.web.security.oauth.AuthProviderCollection
@@ -26,7 +27,8 @@ class SetupResource @Inject constructor(
   private val authRepository: AuthenticationRepository,
   private val personApi: PersonApi,
   private val portfolioUtils: PortfolioUtils,
-  private val authProviderCollection: AuthProviderCollection
+  private val authProviderCollection: AuthProviderCollection,
+  private val systemConfigApi: SystemConfigApi,
 ) : SetupServiceDelegate {
   @ConfigKey("auth.disable-login")
   protected var loginDisabled: Boolean? = false
@@ -53,6 +55,7 @@ class SetupResource @Inject constructor(
       }
 
       sr.capabilityInfo(capabilityInfo())
+      maintenanceInfo()?.let { sr.maintenanceInfo(it) }
 
       return sr
     }
@@ -61,6 +64,17 @@ class SetupResource @Inject constructor(
       .providers(providerCodes)
       .providerInfo(fillProviderInfo())
     throw WebApplicationException(Response.status(Response.Status.NOT_FOUND).entity(setupMissingResponse).build())
+  }
+
+  private fun maintenanceInfo(): MaintenanceInfo? {
+    if (!SystemConfigApi.systemConfigEnabled) return null
+
+    val configs = systemConfigApi.findConfigs(listOf("maintenance"))
+    val active = configs.find { it.key == MaintenanceConfig.cfg_active }?.value as? Boolean ?: false
+    if (!active) return null
+
+    val message = configs.find { it.key == MaintenanceConfig.cfg_message }?.value as? String
+    return MaintenanceInfo().active(true).message(message)
   }
 
   private fun capabilityInfo(): Map<String, String> {

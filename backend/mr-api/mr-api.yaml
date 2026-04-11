@@ -2725,6 +2725,17 @@ components:
           description: "If the site is using external providers, this is the key of the provider chosen. If there is only one, it can be blank."
           type: string
       type: object
+    MaintenanceInfo:
+      type: object
+      required:
+        - active
+      properties:
+        active:
+          type: boolean
+          nullable: false
+        message:
+          type: string
+          nullable: true
     SetupResponse:
       type: object
       required:
@@ -2750,6 +2761,11 @@ components:
           description: "Set if there is only one external provider and no local. Allows immediate redirect to provider. It assumes it will be used immediate (e.g. state in oauth2 url)"
           type: string
           nullable: true
+        maintenanceInfo:
+          description: "If present, the system is in or near a maintenance window"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/MaintenanceInfo"
     IdentityProviderInfo:
       type: object
       required:
