@@ -45,6 +45,7 @@ class ManagementRepositoryFeature : Feature {
       PortfolioServiceDelegator::class.java,
       ServiceAccountServiceDelegator::class.java,
       SetupServiceDelegator::class.java,
+      MaintenanceBannerServiceDelegator::class.java,
       UserStateServiceDelegator::class.java,
       ApplicationRolloutStrategyServiceDelegator::class.java,
       FeatureGroupServiceDelegator::class.java,
@@ -129,6 +130,7 @@ class ManagementRepositoryFeature : Feature {
           Singleton::class.java
         )
         bind(SetupResource::class.java).to(SetupServiceDelegate::class.java).`in`(Singleton::class.java)
+        bind(MaintenanceBannerResource::class.java).to(MaintenanceBannerServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(ApplicationUtils::class.java).to(ApplicationUtils::class.java).`in`(Singleton::class.java)
         bind(BlankProviderCollection::class.java).to(SSOProviderCollection::class.java).`in`(
           Singleton::class.java
