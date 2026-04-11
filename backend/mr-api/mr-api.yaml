@@ -2787,7 +2787,8 @@ components:
         maintenanceInfo:
           description: "If present, the system is in or near a maintenance window"
           nullable: true
-          $ref: "#/components/schemas/MaintenanceInfo"
+          allOf:
+            - $ref: "#/components/schemas/MaintenanceInfo"
     IdentityProviderInfo:
       type: object
       required:

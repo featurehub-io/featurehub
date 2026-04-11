@@ -68,7 +68,12 @@ class ManagementRepositoryClientBloc implements Bloc {
   late WebhookServiceApi webhookServiceApi;
   late TrackEventsServiceApi trackEventsServiceApi;
   late FeatureFilterServiceApi featureFilterServiceApi;
+  late MaintenanceBannerServiceApi _maintenanceBannerApi;
   static late FHRouter router;
+
+  final _maintenanceSource = BehaviorSubject<MaintenanceInfo?>.seeded(null);
+
+  Stream<MaintenanceInfo?> get maintenanceStream => _maintenanceSource.stream;
 
   // this reflects actual requests to change the route driven externally, so a user clicks on
   // something that should cause the page to change to this route.
@@ -153,6 +158,33 @@ class ManagementRepositoryClientBloc implements Bloc {
     // this is for fine grained route changes, like tab changes
     _routerSource.add(route);
     prefs.saveCurrentRoute(route.toJson());
+
+    // poll maintenance banner on every navigation for already-logged-in users
+    if (personState.isLoggedIn) {
+      _checkMaintenanceBanner();
+    }
+  }
+
+  /// Temporarily hides the maintenance banner for the current session until
+  /// the next navigation event re-polls the backend.
+  void dismissMaintenanceBanner() {
+    _maintenanceSource.add(null);
+  }
+
+  Future<void> _checkMaintenanceBanner() async {
+    try {
+      final response =
+          await _maintenanceBannerApi.apiDelegate.getMaintenanceBanner();
+      if (response.statusCode == 204) {
+        _maintenanceSource.add(null);
+      } else if (response.statusCode == 200) {
+        final info = await _maintenanceBannerApi.apiDelegate
+            .getMaintenanceBanner_decode(response.body!);
+        _maintenanceSource.add(info.active ? info : null);
+      }
+    } catch (_) {
+      // silently ignore — maintenance check should never break navigation
+    }
   }
 
   void _initializeRouteStreams() {
@@ -292,6 +324,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     webhookServiceApi = WebhookServiceApi(client);
     trackEventsServiceApi = TrackEventsServiceApi(client);
     featureFilterServiceApi = FeatureFilterServiceApi(client);
+    _maintenanceBannerApi = MaintenanceBannerServiceApi(client);
     _errorSource.add(null);
     streamValley.apiClient = this;
 
@@ -343,6 +376,11 @@ class ManagementRepositoryClientBloc implements Bloc {
       FHAnalytics.setGA(setupResponse.capabilityInfo['trackingId']);
 
       identityProviders.identityInfo = setupResponse.providerInfo;
+
+      // Seed maintenance banner from initial load
+      _maintenanceSource.add(setupResponse.maintenanceInfo?.active == true
+          ? setupResponse.maintenanceInfo
+          : null);
 
       // yes its initialised, we may not have logged in yet
       if (bearerToken != null) {
@@ -578,6 +616,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     _errorSource.close();
     _overlaySource.close();
     _snackbarSource.close();
+    _maintenanceSource.close();
     personState.dispose();
   }
 
