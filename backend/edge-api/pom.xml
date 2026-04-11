@@ -166,6 +166,11 @@
                   <type>yaml</type>
                   <classifier>api</classifier>
                 </artifact>
+                <artifact>
+                  <file>${project.basedir}/edge2-api.yaml</file>
+                  <type>yaml</type>
+                  <classifier>edge2-api</classifier>
+                </artifact>
               </artifacts>
             </configuration>
           </execution>
