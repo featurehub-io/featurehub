@@ -55,7 +55,7 @@ class SetupResource @Inject constructor(
       }
 
       sr.capabilityInfo(capabilityInfo())
-      sr.maintenanceInfo(maintenanceInfo())
+      maintenanceInfo()?.let { sr.maintenanceInfo(it) }
 
       return sr
     }
