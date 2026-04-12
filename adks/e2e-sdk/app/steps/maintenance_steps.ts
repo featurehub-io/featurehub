@@ -100,33 +100,18 @@ Then('the initialize response has no maintenanceInfo', function () {
  */
 When('I navigate to another page', async function () {
   const world = this as SdkWorld;
-  (this as any).lastMaintenanceBanner = await fetchMaintenanceBanner(world);
-});
-
-Given('the maintenance banner endpoint reports no active maintenance', async function () {
-  const world = this as SdkWorld;
-  const banner = await fetchMaintenanceBanner(world);
-  expect(banner, 'Expected no active maintenance banner').to.be.null;
-});
-
-Given('the maintenance banner endpoint reports active maintenance with message {string}', async function (message: string) {
-  const world = this as SdkWorld;
-  const banner = await fetchMaintenanceBanner(world);
-  expect(banner, 'Expected an active maintenance banner').to.not.be.null;
-  expect(banner.active, 'banner.active').to.eq(true);
-  expect(banner.message, 'banner.message').to.eq(message);
+  world.lastMaintenanceBanner = await fetchMaintenanceBanner(world);
 });
 
 Then('the maintenance banner endpoint reports no active maintenance', async function () {
   const world = this as SdkWorld;
-  // Re-poll so this Then-step is self-contained (doesn't rely on When storing state)
   const banner = await fetchMaintenanceBanner(world);
   expect(banner, 'Expected no active maintenance banner').to.be.null;
 });
 
 Then('the maintenance banner endpoint reports active maintenance with message {string}', async function (message: string) {
   const world = this as SdkWorld;
-  const banner = (this as any).lastMaintenanceBanner ?? await fetchMaintenanceBanner(world);
+  const banner = world.lastMaintenanceBanner ?? await fetchMaintenanceBanner(world);
   expect(banner, 'Expected an active maintenance banner').to.not.be.null;
   expect(banner.active, 'banner.active').to.eq(true);
   expect(banner.message, 'banner.message').to.eq(message);
@@ -134,7 +119,7 @@ Then('the maintenance banner endpoint reports active maintenance with message {s
 
 Then('the maintenance banner endpoint reports active maintenance with no message', async function () {
   const world = this as SdkWorld;
-  const banner = (this as any).lastMaintenanceBanner ?? await fetchMaintenanceBanner(world);
+  const banner = world.lastMaintenanceBanner ?? await fetchMaintenanceBanner(world);
   expect(banner, 'Expected an active maintenance banner').to.not.be.null;
   expect(banner.active, 'banner.active').to.eq(true);
   expect(banner.message ?? null, 'banner.message should be absent').to.be.null;
