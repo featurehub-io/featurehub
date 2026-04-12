@@ -197,9 +197,9 @@ async function connectToFeatureServer(world: SdkWorld, forcePollRate = -1) {
     world.sdkUrlServerEval = serviceAccountPerm.sdkUrlServerEval;
 
     // the node SDK is streaming by default, but env vars will automatically change it
-    if (forcePollRate !== -1 && !BackendDiscovery.supportsSSE && fhConfig.edgeType === EdgeType.STREAMING) {
+    if (forcePollRate === -1 && !BackendDiscovery.supportsSSE && fhConfig.edgeType === EdgeType.STREAMING) {
       logger.info('Backend does not support SSE, using polling');
-      fhConfig.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, 200));
+      fhConfig.restActive(200);
     }
 
     fhConfig.init();
