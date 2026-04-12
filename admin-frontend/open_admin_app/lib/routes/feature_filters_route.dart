@@ -72,6 +72,8 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
                 return const Center(child: CircularProgressIndicator());
               }
 
+              final l10n = AppLocalizations.of(context)!;
+
               final filters = snapshot.data!.filters;
               if (filters.isEmpty) {
                 return Center(child: Text(l10n.noFeatureFiltersFound)); // Reuse string or add new one
@@ -93,7 +95,7 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
                         cells: [
                           DataCell(Text(filter.name)),
                           DataCell(Text(filter.description ?? '')),
-                          DataCell(_buildAppsUsage(filter)),
+                          DataCell(_buildAppsUsage(filter, l10n)),
                           DataCell(_buildSAUsage(filter)),
                           DataCell(Row(
                             children: [
@@ -120,7 +122,7 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
     );
   }
 
-  Widget _buildAppsUsage(SearchFeatureFilterItem filter) {
+  Widget _buildAppsUsage(SearchFeatureFilterItem filter, AppLocalizations l10n) {
     if (filter.applications == null || filter.applications!.isEmpty) {
       return const Text('-');
     }
@@ -128,10 +130,11 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: filter.applications!.map((app) {
-        final featureKeys = (app.features?.map((f) => f.key) ?? []).join(", ");
+        final featureCount = app.features?.length ?? 0;
+
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 2.0),
-          child: Text('${app.name}: $featureKeys'),
+          child: Text(featureCount == 1 ? l10n.appPlusFeatureCountSingular(app.name, featureCount) : l10n.appPlusFeatureCountPlural(app.name, featureCount)),
         );
       }).toList(),
     );

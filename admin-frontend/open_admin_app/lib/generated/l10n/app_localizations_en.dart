@@ -303,6 +303,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String appPlusFeatureCountSingular(String appName, int count) {
+    return '$appName ($count feature)';
+  }
+
+  @override
+  String appPlusFeatureCountPlural(String appName, int count) {
+    return '$appName ($count features)';
+  }
+
+  @override
   String get filterDeleteContent =>
       'Deleting this filter will remove it from all features and service accounts.\n\nThis cannot be undone!';
 

@@ -297,6 +297,18 @@
     "placeholders": { "name": { "type": "String" } }
   },
 
+  "appPlusFeatureCountSingular": "{appName} ({count} feature)",
+  "@appPlusFeatureCountSingular": {
+    "description": "showing applications using feature filters and how many features they have using those filters. this is singular",
+    "placeholders": { "appName": {"type": "String"}, "count": {"type": "int"} }
+  },
+
+  "appPlusFeatureCountPlural": "{appName} ({count} features)",
+  "@appPlusFeatureCountPlural": {
+    "description": "showing applications using feature filters and how many features they have using those filters. this is plural",
+    "placeholders": { "appName": {"type": "String"}, "count": {"type": "int"} }
+  },
+
   "filterDeleteContent": "Deleting this filter will remove it from all features and service accounts.\n\nThis cannot be undone!",
   "@filterDeleteContent": { "description": "Body of delete feature filter confirmation dialog" },
 

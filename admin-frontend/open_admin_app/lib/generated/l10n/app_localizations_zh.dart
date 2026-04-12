@@ -295,6 +295,16 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String appPlusFeatureCountSingular(String appName, int count) {
+    return '$appName ($count feature)';
+  }
+
+  @override
+  String appPlusFeatureCountPlural(String appName, int count) {
+    return '$appName ($count features)';
+  }
+
+  @override
   String get filterDeleteContent => '删除此过滤器会将其从所有功能和服务账号中移除。\n\n此操作无法撤销！';
 
   @override

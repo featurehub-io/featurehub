@@ -638,6 +638,18 @@ abstract class AppLocalizations {
   /// **'Feature filter \'{name}\' deleted!'**
   String filterDeleted(String name);
 
+  /// showing applications using feature filters and how many features they have using those filters. this is singular
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} ({count} feature)'**
+  String appPlusFeatureCountSingular(String appName, int count);
+
+  /// showing applications using feature filters and how many features they have using those filters. this is plural
+  ///
+  /// In en, this message translates to:
+  /// **'{appName} ({count} features)'**
+  String appPlusFeatureCountPlural(String appName, int count);
+
   /// Body of delete feature filter confirmation dialog
   ///
   /// In en, this message translates to:
