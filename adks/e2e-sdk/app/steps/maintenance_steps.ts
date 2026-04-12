@@ -1,5 +1,5 @@
 import { Given, Then, When } from '@cucumber/cucumber';
-import { SetupServiceApi, UpdatedSystemConfig, UpdatedSystemConfigs } from '../apis/mr-service';
+import { UpdatedSystemConfig, UpdatedSystemConfigs } from '../apis/mr-service';
 import { SdkWorld } from '../support/world';
 import { expect } from 'chai';
 
@@ -41,7 +41,7 @@ async function setMaintenanceConfig(world: SdkWorld, active: boolean, message?: 
  * Any other status causes the test to fail.
  */
 async function fetchMaintenanceBanner(world: SdkWorld): Promise<any | null> {
-  const response = await fetch(`${world.adminUrl}/mr-api/maintenance-banner`);
+  const response = await fetch(`${world.adminUrl}/mr-api/system-config/maintenance-banner`);
   if (response.status === 204) return null;
   expect(response.status, `Unexpected status from maintenance-banner: ${response.status}`).to.eq(200);
   return response.json();
@@ -65,28 +65,30 @@ When('I disable the maintenance window', async function () {
 
 When('I call the initialize endpoint', async function () {
   const world = this as SdkWorld;
-  const setupApi = new SetupServiceApi(world.adminApiConfig);
-  const result = await setupApi.isInstalled();
+  const result = await world.setupApi.isInstalled();
   expect(result.status).to.eq(200);
-  (this as any).lastInitializeResponse = result.data;
+  world.lastInitializeResponse = result.data;
 });
 
 Then('the initialize response has maintenanceInfo active with message {string}', function (message: string) {
-  const maintenanceInfo = (this as any).lastInitializeResponse?.maintenanceInfo;
+  const world = this as SdkWorld;
+  const maintenanceInfo = world.lastInitializeResponse?.maintenanceInfo;
   expect(maintenanceInfo, 'maintenanceInfo should be present in initialize response').to.not.be.undefined;
   expect(maintenanceInfo.active, 'maintenanceInfo.active').to.eq(true);
   expect(maintenanceInfo.message, 'maintenanceInfo.message').to.eq(message);
 });
 
 Then('the initialize response has maintenanceInfo active with no message', function () {
-  const maintenanceInfo = (this as any).lastInitializeResponse?.maintenanceInfo;
+  const world = this as SdkWorld;
+  const maintenanceInfo = world.lastInitializeResponse?.maintenanceInfo;
   expect(maintenanceInfo, 'maintenanceInfo should be present in initialize response').to.not.be.undefined;
   expect(maintenanceInfo.active, 'maintenanceInfo.active').to.eq(true);
   expect(maintenanceInfo.message ?? null, 'maintenanceInfo.message should be absent').to.be.null;
 });
 
 Then('the initialize response has no maintenanceInfo', function () {
-  const maintenanceInfo = (this as any).lastInitializeResponse?.maintenanceInfo;
+  const world = this as SdkWorld;
+  const maintenanceInfo = world.lastInitializeResponse?.maintenanceInfo;
   expect(maintenanceInfo ?? null, 'maintenanceInfo should be absent when maintenance is inactive').to.be.null;
 });
 

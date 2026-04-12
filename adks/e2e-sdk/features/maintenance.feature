@@ -1,3 +1,4 @@
+@allvariants
 Feature: Maintenance banner config is stored in sysconfig and exposed via API
 
   # ── Scenario 1: initial page load (unauthenticated initialize endpoint) ──────

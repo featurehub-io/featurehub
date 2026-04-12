@@ -91,7 +91,7 @@ paths:
           description: "Identified but no permission"
         500:
           description: "Unknown error"
-  /mr-api/maintenance-banner:
+  /mr-api/system-config/maintenance-banner:
     get:
       operationId: getMaintenanceBanner
       description: "Returns the current maintenance banner if one is active. No authentication required. Intended for already-logged-in users navigating between pages."
