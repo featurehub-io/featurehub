@@ -6,6 +6,8 @@ class FHMultiSelect<T> extends StatefulWidget {
   final ValueChanged<List<T>> onChanged;
   final Widget? icon;
   final Widget? hint;
+  final Widget? selectedDisplay;
+  final String Function(T)? itemLabel;
 
   const FHMultiSelect({
     super.key,
@@ -14,6 +16,8 @@ class FHMultiSelect<T> extends StatefulWidget {
     required this.onChanged,
     this.icon,
     this.hint,
+    this.itemLabel,
+    this.selectedDisplay // what to display when items are selected
   });
 
   @override
@@ -140,7 +144,9 @@ class FHMultiSelectState<T> extends State<FHMultiSelect<T>> {
                                     ),
                                     Expanded(
                                       child: Text(
-                                        item.toString(),
+                                        widget.itemLabel != null
+                                            ? widget.itemLabel!(item)
+                                            : item.toString(),
                                       ),
                                     ),
                                   ],
@@ -191,10 +197,10 @@ class FHMultiSelectState<T> extends State<FHMultiSelect<T>> {
                 Expanded(
                   child: _selectedValues.isEmpty
                       ? (widget.hint ?? const SizedBox())
-                      : Text(
+                      : (widget.selectedDisplay ?? Text(
                           _selectedValues.join(', '),
                           overflow: TextOverflow.ellipsis,
-                        ),
+                        )),
                 ),
                 Icon(
                   _overlayEntry == null

@@ -26,6 +26,9 @@ Feature: I am able to use feature filters
     And I create a new feature filter called "egg-roll"
     When I update the feature flag "ling" with the filters "egg-roll"
     Then the feature filters "server" have features attached "orm,kwong"
+    And the feature flag "orm" contains the filters "client,server" when I get it by key
+#    When I delete the feature filter "server"
+#    Then the feature flag "orm" contains the filters "client" when I get it by key
 
   @filters_user @filters
   Scenario: A person with feature creation roles in the application can manipulate feature filters

@@ -542,6 +542,144 @@ abstract class AppLocalizations {
   /// **'Manage Portfolios Documentation'**
   String get managePortfoliosDocumentation;
 
+  /// Navigation menu item for feature filters
+  ///
+  /// In en, this message translates to:
+  /// **'Feature Filters'**
+  String get featureFilters;
+
+  /// Page header for the manage feature filters screen
+  ///
+  /// In en, this message translates to:
+  /// **'Manage feature filters'**
+  String get manageFeatureFilters;
+
+  /// Label for feature filters docs link
+  ///
+  /// In en, this message translates to:
+  /// **'Feature Filters Documentation'**
+  String get featureFiltersDocumentation;
+
+  /// Button to create a new feature filter
+  ///
+  /// In en, this message translates to:
+  /// **'Create new feature filter'**
+  String get createNewFeatureFilter;
+
+  /// Dialog title when editing a feature filter
+  ///
+  /// In en, this message translates to:
+  /// **'Edit feature filter'**
+  String get editFeatureFilter;
+
+  /// Used to show a message when there are not any feature filters
+  ///
+  /// In en, this message translates to:
+  /// **'No filters were found in the portfolio.'**
+  String get noFeatureFiltersFound;
+
+  /// Label for the filter name field
+  ///
+  /// In en, this message translates to:
+  /// **'Filter name'**
+  String get filterNameLabel;
+
+  /// Label for the filter description field
+  ///
+  /// In en, this message translates to:
+  /// **'Filter description'**
+  String get filterDescriptionLabel;
+
+  /// Label for the filter description field
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get filterTableDescriptionLabel;
+
+  /// Validation: filter name empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a filter name'**
+  String get filterNameRequired;
+
+  /// Validation: filter name too short
+  ///
+  /// In en, this message translates to:
+  /// **'Filter name needs to be at least 4 characters long'**
+  String get filterNameTooShort;
+
+  /// Validation: filter description empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a filter description'**
+  String get filterDescriptionRequired;
+
+  /// Validation: filter description too short
+  ///
+  /// In en, this message translates to:
+  /// **'Filter description needs to be at least 4 characters long'**
+  String get filterDescriptionTooShort;
+
+  /// Snackbar after creating a feature filter
+  ///
+  /// In en, this message translates to:
+  /// **'Feature filter \'{name}\' created!'**
+  String filterCreated(String name);
+
+  /// Snackbar after updating a feature filter
+  ///
+  /// In en, this message translates to:
+  /// **'Feature filter \'{name}\' updated!'**
+  String filterUpdated(String name);
+
+  /// Snackbar after deleting a feature filter
+  ///
+  /// In en, this message translates to:
+  /// **'Feature filter \'{name}\' deleted!'**
+  String filterDeleted(String name);
+
+  /// Body of delete feature filter confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting this filter will remove it from all features and service accounts.\n\nThis cannot be undone!'**
+  String get filterDeleteContent;
+
+  /// Label for applications and their filters
+  ///
+  /// In en, this message translates to:
+  /// **'Applications/Features'**
+  String get appsUsingFilter;
+
+  /// Label for service accounts using the feature
+  ///
+  /// In en, this message translates to:
+  /// **'Service Accounts'**
+  String get saUsingFilter;
+
+  /// Label for filter selection dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Select filters to apply'**
+  String get selectFiltersToApply;
+
+  /// Label for matching service accounts list
+  ///
+  /// In en, this message translates to:
+  /// **'Service Accounts using filter'**
+  String get matchingServiceAccounts;
+
+  /// Label for matching applications list
+  ///
+  /// In en, this message translates to:
+  /// **'Applications using filter'**
+  String get matchingFeatures;
+
+  /// Hint text for the dashboard filters filter
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by feature filters'**
+  String get filterByFeatureFilters;
+
   /// Button to create a new portfolio
   ///
   /// In en, this message translates to:

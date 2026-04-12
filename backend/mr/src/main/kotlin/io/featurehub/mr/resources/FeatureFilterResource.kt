@@ -5,6 +5,8 @@ import io.featurehub.mr.api.FeatureFilterServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.CreateFeatureFilter
 import io.featurehub.mr.model.FeatureFilter
+import io.featurehub.mr.model.MatchTypeEnum
+import io.featurehub.mr.model.MatchingFilterResults
 import io.featurehub.mr.model.SearchFeatureFilterResult
 import io.featurehub.mr.utils.PortfolioFeaturePermissionUtils
 import jakarta.inject.Inject
@@ -54,19 +56,31 @@ class FeatureFilterResource @Inject constructor(
 
   override fun deleteFeatureFilter(
     id: UUID,
-    featureFilter: FeatureFilter,
-    securityContext: SecurityContext
+    filterId: UUID,
+    version: Int,
+    securityContext: SecurityContext?
   ): FeatureFilter {
     val person = authManager.from(securityContext)
     portfolioFeaturePermissionUtils.requireFeatureWriteAccessInPortfolio(id, person)
     return try {
-      featureFilterApi.delete(id, person, featureFilter)
+      featureFilterApi.delete(id, person, filterId, version)
     } catch (e: FeatureFilterApi.OptimisticLockingException) {
       throw WebApplicationException(Response.Status.CONFLICT)
     } catch (e: FeatureFilterApi.FilterNotFoundException) {
       throw NotFoundException()
     }
   }
+
+  override fun getFeatureFilter(
+    id: UUID,
+    filterId: UUID,
+    securityContext: SecurityContext?
+  ): FeatureFilter {
+    val person = authManager.from(securityContext)
+    portfolioFeaturePermissionUtils.requireFeatureReadAccessInPortfolio(id, person)
+    return featureFilterApi.getFeatureFilter(id, filterId) ?: throw NotFoundException()
+  }
+
 
   override fun findFeatureFilters(
     id: UUID,
@@ -76,8 +90,26 @@ class FeatureFilterResource @Inject constructor(
     val person = authManager.from(securityContext)
     portfolioFeaturePermissionUtils.requireFeatureReadAccessInPortfolio(id, person)
     return featureFilterApi.find(
-      id, holder.filter, holder.max, holder.page, holder.sortOrder, holder.includeDetails ?: false
+      id, holder.filter, holder.max, holder.page, holder.sortOrder, holder.includeDetails ?: false, person.id!!.id
     )
+  }
+
+  override fun getMatchingFilters(
+    id: UUID,
+    filters: List<UUID>,
+    matchType: MatchTypeEnum,
+    securityContext: SecurityContext?
+  ): MatchingFilterResults {
+    val person = authManager.from(securityContext)
+    if (matchType == MatchTypeEnum.APPLICATIONS) {
+      portfolioFeaturePermissionUtils.requireFeatureReadAccessInPortfolio(id, person)
+
+      return featureFilterApi.findApplicationsWithFeatureWithFilters(id, filters)
+    } else {
+      portfolioFeaturePermissionUtils.requirePortfolioAdminInPortfolio(id, person);
+
+      return featureFilterApi.findServiceAccountsWithFilters(id, filters)
+    }
   }
 
   companion object {

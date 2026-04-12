@@ -91,7 +91,7 @@ class _SystemConfigDataSource extends DataGridSource {
             .toList() ??
         [];
 
-    fhosLogger.info("reset to $sourceData, e-rows $encryptedRows");
+    fhosLogger.fine("reset to $sourceData, e-rows $encryptedRows");
 
     // prefill
     _deletedKey = '$systemConfigKey.deleted';
@@ -99,8 +99,6 @@ class _SystemConfigDataSource extends DataGridSource {
   }
 
   void submit() {
-    fhosLogger.info(
-        "sourceData is $sourceData, e-rows $encryptedRows, d-rows $deletedRows");
     var rows = deletedRows
         .where((k) => sourceData[k] == null)
         .where((k) => k.isNotEmpty);
@@ -199,8 +197,6 @@ class _SystemConfigDataSource extends DataGridSource {
       sourceData[rows[rowColumnIndex.rowIndex].getCells()[0].value] =
           newCellValue;
     }
-
-    fhosLogger.info("sourceMap is now $sourceData, e-rows $encryptedRows");
 
     // To reset the new cell value after successfully updated to DataGridRow
     //and underlying mode.
@@ -316,7 +312,6 @@ class _SystemConfigDataSource extends DataGridSource {
     if (key.isNotEmpty) {
       encryptedRows.add(key);
     }
-    fhosLogger.info(", e-rows $encryptedRows");
   }
 
   // we have to do it this way, getting the key at the last second as it may change
@@ -371,7 +366,6 @@ class _SystemConfigDataSource extends DataGridSource {
   void addRow(String key, String value) {
     if (sourceData[key] != null) return;
 
-    fhosLogger.info("adding $key with value $value");
     sourceData[key] = value;
     _rows.add(DataGridRow(cells: [
       DataGridCell(columnName: keyRowName, value: key),

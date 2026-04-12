@@ -415,7 +415,8 @@ class FeatureSqlApi @Inject constructor(
     startingPage: Int?,
     featureValueTypes: List<FeatureValueType>?,
     sortOrder: SortOrder?,
-    environmentIds: List<UUID>?
+    environmentIds: List<UUID>?,
+    featureFilter: List<UUID>?
   ): ApplicationFeatureValues? {
     val dbPerson = convertUtils.byPerson(current)
     val app = convertUtils.byApplication(appId)
@@ -434,14 +435,20 @@ class FeatureSqlApi @Inject constructor(
         .whenArchived.isNull
         .parentApplication.eq(app)
 
+      if (!featureFilter.isNullOrEmpty()) {
+        appFeatureQuery = appFeatureQuery.filters.id.`in`(featureFilter)
+      }
+
       appFeatureQuery = if (sort == SortOrder.ASC) {
         appFeatureQuery.orderBy().key.asc()
       } else {
         appFeatureQuery.orderBy().key.desc()
       }
 
-      if (filter != null) {
-        appFeatureQuery = appFeatureQuery.or().name.icontains(filter).key.icontains(filter).endOr()
+      filter?.trim()?.let { trimmedFilter ->
+        if (!trimmedFilter.isBlank()) {
+          appFeatureQuery = appFeatureQuery.or().name.icontains(trimmedFilter).key.icontains(trimmedFilter).endOr()
+        }
       }
 
       if (featureValueTypes?.isNotEmpty() == true) {

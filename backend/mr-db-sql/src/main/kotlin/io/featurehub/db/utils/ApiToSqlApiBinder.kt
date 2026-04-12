@@ -35,6 +35,8 @@ import io.featurehub.db.services.FeatureGroupSqlApi
 import io.featurehub.db.services.FeatureHistorySqlApi
 import io.featurehub.db.services.FeatureSqlApi
 import io.featurehub.db.services.GroupSqlApi
+import io.featurehub.db.services.InternalApplicationApi
+import io.featurehub.db.services.InternalApplicationSqlApi
 import io.featurehub.db.services.InternalFeatureApi
 import io.featurehub.db.services.InternalFeatureSqlApi
 import io.featurehub.db.services.InternalGroupSqlApi
@@ -84,6 +86,7 @@ class ApiToSqlApiBinder : Feature {
           ServiceAccountApi::class.java
         ).`in`(Singleton::class.java)
         bind(ApplicationSqlApi::class.java).to(ApplicationApi::class.java).`in`(Singleton::class.java)
+        bind(InternalApplicationSqlApi::class.java).to(InternalApplicationApi::class.java).`in`(Singleton::class.java)
         bind(EnvironmentSqlApi::class.java).to(EnvironmentApi::class.java).`in`(Singleton::class.java)
         bind(UpdateFeatureApiImpl::class.java).to(UpdateFeatureApi::class.java).`in`(Singleton::class.java)
         bind(TestSDKFeatureUpdateServiceImpl::class.java).to(FeatureUpdateBySDKApi::class.java).`in`(Singleton::class.java)

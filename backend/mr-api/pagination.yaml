@@ -1,0 +1,40 @@
+openapi: 3.0.1
+info:
+  title: ManagementResourceApi
+  description: This describes the API clients use for accessing features. This reflects the API from 1.5.7 onwards.
+components:
+  schemas:
+    PaginationResult:
+      required:
+        - total
+        - page
+        - pageSize
+      properties:
+        total:
+          description: "What is the total number of records"
+          type: integer
+        page:
+          description: "What page are we on"
+          type: integer
+        pageSize:
+          description: "What was the page size chosen (if not passed)"
+          type: integer
+    PaginationRequest:
+      type: object
+      description: "Use in query as style: form, explode: true"
+      properties:
+        page:
+          nullable: true
+          type: integer
+        pageSize:
+          nullable: true
+          type: integer
+        filter:
+          nullable: true
+          type: string
+        sortOrder:
+          $ref: "#/components/schemas/SortOrder"
+        sortBy:
+          nullable: true
+          type: string
+

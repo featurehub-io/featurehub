@@ -19,6 +19,25 @@ import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
 import java.util.*
 
+interface InternalApplicationApi {
+  fun findApplicationsUserCanAccess(portfolioId: UUID, personId: UUID): QDbApplication
+}
+
+class InternalApplicationSqlApi : InternalApplicationApi {
+  override fun findApplicationsUserCanAccess(
+    portfolioId: UUID,
+    personId: UUID
+  ): QDbApplication {
+    var queryApplicationList = QDbApplication().portfolio.id.eq(portfolioId)
+
+    // we need to ascertain which apps they can actually see based on environments
+    return queryApplicationList
+      .or()
+        .environments.groupRolesAcl.group.groupMembers.person.id.eq(personId)
+        .groupRolesAcl.group.groupMembers.person.id.eq(personId).endOr()
+  }
+}
+
 @Singleton
 class ApplicationSqlApi @Inject constructor(
   private val convertUtils: Conversions,
@@ -117,7 +136,6 @@ class ApplicationSqlApi @Inject constructor(
     current: Person,
     loadAll: Boolean
   ): List<Application> {
-    Conversions.nonNullPortfolioId(portfolioId)
     var queryApplicationList = QDbApplication().portfolio.id.eq(portfolioId)
     if (filter != null) {
       queryApplicationList = queryApplicationList.name.ilike("%$filter%")
@@ -415,7 +433,7 @@ class ApplicationSqlApi @Inject constructor(
         .eq(app)
         .endAnd()
 
-      if (opts.contains(FillOpts.ServiceAccountFilters)) {
+      if (opts.contains(FillOpts.ServiceAccountFilters) || opts.contains(FillOpts.FeatureFilters)) {
         qAppFeature = qAppFeature.filters.fetch()
       }
 

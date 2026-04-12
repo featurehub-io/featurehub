@@ -153,6 +153,10 @@ class Routes {
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.serviceAccount),
         permissionType: PermissionType.portfolioadmin);
+    router.define('/feature-filters',
+        routeSlots: [RouteSlot.portfolio],
+        handler: handleRouteChangeRequest(routeCreator.featureFilters),
+        permissionType: PermissionType.portfolioadmin);
     router.define('/manage-user',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.manageUser),

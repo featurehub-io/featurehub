@@ -60,7 +60,8 @@ class FeatureResource @Inject constructor(
     val current = authManager.from(securityContext)
     return featureApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
       id, current, holder.filter,
-      holder.max, holder.page, holder.featureTypes, holder.sortOrder, holder.environmentIds
+      holder.max, holder.page, holder.featureTypes, holder.sortOrder, holder.environmentIds,
+      holder.featureFilter
     ) ?: throw NotFoundException()
   }
 
@@ -85,7 +86,7 @@ class FeatureResource @Inject constructor(
       key,
       Opts.empty()
         .add(FillOpts.MetaData, holder.includeMetaData)
-        .add(FillOpts.ServiceAccountFilters)
+        .add(FillOpts.FeatureFilters, holder.includeFilters)
     )
       ?: throw NotFoundException()
   }

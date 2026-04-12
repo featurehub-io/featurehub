@@ -66,7 +66,7 @@ interface Conversions {
 
   fun toGroup(dbg: DbGroup?, opts: Opts?): Group?
   fun toApplication(app: DbApplication?, opts: Opts?): Application?
-  fun toApplicationFeature(af: DbApplicationFeature?, opts: Opts?): Feature?
+  fun toApplicationFeature(af: DbApplicationFeature?, opts: Opts): Feature?
   fun toFeature(fs: DbFeatureValue?): Feature?
   fun toFeatureValue(fs: DbFeatureValue?): FeatureValue?
   fun toFeatureValue(fs: DbFeatureValue?, opts: Opts?): FeatureValue?

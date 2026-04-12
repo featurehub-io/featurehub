@@ -14,6 +14,7 @@ import 'package:open_admin_app/routes/edit_application_strategy_route.dart';
 import 'package:open_admin_app/routes/edit_user_route.dart';
 import 'package:open_admin_app/routes/feature_group_settings_route.dart';
 import 'package:open_admin_app/routes/feature_groups_route.dart';
+import 'package:open_admin_app/routes/feature_filters_route.dart';
 import 'package:open_admin_app/routes/features_overview_route.dart';
 import 'package:open_admin_app/routes/home_route.dart';
 import 'package:open_admin_app/routes/loading_route.dart';
@@ -36,6 +37,7 @@ import 'package:open_admin_app/widgets/feature-groups/feature_group_bloc.dart';
 import 'package:open_admin_app/widgets/feature-groups/feature_groups_bloc.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 import 'package:open_admin_app/widgets/group/group_bloc.dart';
+import 'package:open_admin_app/widgets/portfolio/feature_filter_bloc.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';
 import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
 import 'package:open_admin_app/widgets/simple_widget.dart';
@@ -98,6 +100,13 @@ class RouteCreator {
         creator: (context, bag) =>
             PortfolioBloc(params['search']?.elementAt(0), mrBloc),
         child: const PortfolioRoute());
+  }
+
+  Widget featureFilters(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
+    return BlocProvider<FeatureFilterBloc>(
+        creator: (context, bag) => FeatureFilterBloc(mrBloc),
+        child: const FeatureFiltersRoute());
   }
 
   Widget users(ManagementRepositoryClientBloc mrBloc,
@@ -202,21 +211,27 @@ class RouteCreator {
 
   Widget serviceAccount(ManagementRepositoryClientBloc mrBloc,
       {Map<String, List<String>> params = const {}}) {
-    return BlocProvider<ManageServiceAccountsBloc>(
-        creator: (context, bag) =>
-            ManageServiceAccountsBloc(params['pid']?.elementAt(0), mrBloc),
-        child: ManageServiceAccountsRoute(
-            createServiceAccount: _actionCreate(params)));
+    return BlocProvider<FeatureFilterBloc>(
+      creator: (c, b) => FeatureFilterBloc(mrBloc),
+      child: BlocProvider<ManageServiceAccountsBloc>(
+          creator: (context, bag) =>
+              ManageServiceAccountsBloc(params['pid']?.elementAt(0), mrBloc),
+          child: ManageServiceAccountsRoute(
+              createServiceAccount: _actionCreate(params))),
+    );
   }
 
   Widget featureStatus(ManagementRepositoryClientBloc mrBloc,
       {Map<String, List<String>> params = const {}}) {
-    return BlocProvider<PerApplicationFeaturesBloc>(
-        creator: (c, b) => PerApplicationFeaturesBloc(mrBloc),
-        child: Builder(
-            builder: (context) => FeatureStatusRoute(
-                  createFeature: _actionCreate(params),
-                )));
+    return BlocProvider<FeatureFilterBloc>(
+      creator: (c, b) => FeatureFilterBloc(mrBloc),
+      child: BlocProvider<PerApplicationFeaturesBloc>(
+          creator: (c, b) => PerApplicationFeaturesBloc(mrBloc),
+          child: Builder(
+              builder: (context) => FeatureStatusRoute(
+                    createFeature: _actionCreate(params),
+                  ))),
+    );
   }
 
   bool _actionCreate(Map<String, List<String?>> params) {

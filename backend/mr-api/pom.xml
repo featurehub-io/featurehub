@@ -137,6 +137,7 @@
                 <file>${project.basedir}/application-strategies.yaml</file>
                 <file>${project.basedir}/system-api.yaml</file>
                 <file>${project.basedir}/feature-filters.yaml</file>
+                <file>${project.basedir}/pagination.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
             </configuration>

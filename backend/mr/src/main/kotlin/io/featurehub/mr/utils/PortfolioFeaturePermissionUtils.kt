@@ -24,6 +24,11 @@ class PortfolioFeaturePermissionUtils @Inject constructor(
     throw ForbiddenException()
   }
 
+  fun requirePortfolioAdminInPortfolio(portfolioId: UUID, current: Person) {
+    if (authManager.isOrgAdmin(current) || authManager.isPortfolioAdmin(portfolioId, current)) return
+    throw ForbiddenException()
+  }
+
   /** Throws ForbiddenException unless user has at least read access to any app in the portfolio. */
   fun requireFeatureReadAccessInPortfolio(portfolioId: UUID, current: Person) {
     if (authManager.isOrgAdmin(current) || authManager.isPortfolioAdmin(portfolioId, current)) return

@@ -9,6 +9,7 @@ import {
   SearchFeatureFilterItem,
   SortOrder
 } from "../apis/mr-service";
+import {AxiosError} from "axios";
 
 Given("I create a new feature filter called {string}", async function(featureFilter: string) {
   const world = this as SdkWorld;
@@ -72,7 +73,7 @@ When("I update the feature flag {string} with the filters {string}", async funct
   feature.featureFilter = filters.map(f => f.id);
   const result = await world.featureApi.updateFeatureForApplication(world.application.id, featureKey, feature, false, false);
   expect(result.status).to.eq(200);
-  const updatedFeature = (await world.featureApi.getFeatureByKey(world.application.id, featureKey)).data;
+  const updatedFeature = (await world.featureApi.getFeatureByKey(world.application.id, featureKey, false, true)).data;
   expect(updatedFeature.featureFilter).to.have.members(filters.map(f => f.id));
 });
 
@@ -88,7 +89,7 @@ Then("the feature filters {string} have features attached {string}", async funct
 
   const flags = flagKeys.split(",").map(k => k.toString().trim());
   const filt = await findSingleFilter(filter, world);
-  const found = filt.features.map(f => f.key).sort();
+  const found = filt.applications.map(f => (f.features || []).map(ff => ff.key)).flat().sort();
   expect(flags.sort(),
     `flags ${flags} is not ${found} ${JSON.stringify(filt)}`).to.deep.eq(found);
 });
@@ -107,10 +108,25 @@ Then('the feature flag {string} contains the filters {string} when I get it by k
   const world = this as SdkWorld;
   const filters = (await findFilters(filterNames, world)).map(f => f.id);
 
-  const feature = (await world.featureApi.getFeatureByKey(world.application.id, featureKey, false)).data;
+  const feature = (await world.featureApi.getFeatureByKey(world.application.id, featureKey, false, true)).data;
 
   const matchingFilters = feature.featureFilter.filter(id => filters.includes(id));
   expect(matchingFilters.length, `Feature ${JSON.stringify(feature)} does not contain filters ${filters}`).to.eq(filters.length);
+});
+
+Then('I delete the feature filter {string}', async function(filterName: string) {
+  const world = this as SdkWorld;
+  const filters = await findSingleFilter(filterName, world);
+  const viaGet = (await world.currentUser.featureFilterApi.getFeatureFilter(world.portfolio.id, filters.id)).data;
+  expect(filters.version).to.eq(viaGet.version);
+  await world.currentUser.featureFilterApi.deleteFeatureFilter(world.portfolio.id, viaGet.id, viaGet.version);
+  try {
+    const result = await world.currentUser.featureFilterApi.getFeatureFilter(world.portfolio.id, filters.id);
+    expect(true, `this should never get hit if it returns an error, which it should`).to.be.false;
+  } catch (e) {
+    const err = e as unknown as AxiosError;
+    expect(err.status).to.eq(404);
+  }
 });
 
 

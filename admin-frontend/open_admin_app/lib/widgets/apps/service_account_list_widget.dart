@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
+import 'package:open_admin_app/widgets/common/fh_error.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
@@ -14,6 +16,8 @@ import 'package:open_admin_app/widgets/service-accounts/apikey_reset_dialog_widg
 import 'package:openapi_dart_common/openapi.dart';
 
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
+import 'package:open_admin_app/third_party/chips_input.dart';
+import 'package:open_admin_app/widgets/portfolio/feature_filter_bloc.dart';
 import 'manage_service_accounts_bloc.dart';
 
 class ServiceAccountsListWidget extends StatelessWidget {
@@ -102,8 +106,8 @@ class _ServiceAccountWidget extends StatelessWidget {
       FHIconButton(
           icon: const Icon(Icons.edit),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) =>
-              ServiceAccountUpdateDialogWidget(
-                  bloc: bloc, serviceAccount: serviceAccount))),
+              updateServiceAccountDialog(
+                  bloc, serviceAccount))),
       FHIconButton(
           icon: const Icon(Icons.delete),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
@@ -283,6 +287,33 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
   }
 }
 
+Widget updateServiceAccountDialog(ManageServiceAccountsBloc bloc, ServiceAccount? serviceAccount) {
+  return BlocProvider<FeatureFilterBloc>.builder(creator: (c,b) => FeatureFilterBloc(bloc.mrClient),
+      builder: (c,b) {
+        if (serviceAccount == null) {
+          return ServiceAccountUpdateDialogWidget(bloc: bloc);
+        }
+
+        return FutureBuilder<ServiceAccount>(
+            future: bloc.loadFreshServiceAccount(serviceAccount.id),
+            builder: (context, asyncSnapshot) {
+              if (asyncSnapshot.hasError) {
+                return FHErrorWidget(error: FHError(
+                    AppLocalizations.of(context)!.errorNotFound));
+              }
+
+              if (asyncSnapshot.hasData) {
+                return ServiceAccountUpdateDialogWidget(
+                    bloc: bloc, serviceAccount: asyncSnapshot.data);
+              }
+
+              return FHLoadingIndicator();
+            }
+        );
+      }
+  );
+}
+
 class ServiceAccountUpdateDialogWidget extends StatefulWidget {
   final ServiceAccount? serviceAccount;
   final ManageServiceAccountsBloc bloc;
@@ -305,66 +336,99 @@ class _ServiceAccountUpdateDialogWidgetState
   final TextEditingController _name = TextEditingController();
   final TextEditingController _description = TextEditingController();
   bool isUpdate = false;
+  final List<SearchFeatureFilterItem> _selectedFilters = [];
+  late FeatureFilterBloc _filterBloc;
 
   @override
   void initState() {
     super.initState();
+    _filterBloc = BlocProvider.of<FeatureFilterBloc>(context);
     if (widget.serviceAccount != null) {
       _name.text = widget.serviceAccount!.name;
-      _description.text = widget.serviceAccount!.description!;
+      _description.text = widget.serviceAccount!.description ?? '';
       isUpdate = true;
+
+      // Initialize filters
+      if (widget.serviceAccount!.featureFilters != null && widget.serviceAccount!.featureFilters!.isNotEmpty) {
+        _filterBloc.filterResultStream.take(1).listen((result) {
+          if (result != null) {
+            setState(() {
+              _selectedFilters.addAll(result.filters.where((f) => widget.serviceAccount!.featureFilters!.contains(f.id)));
+              _updateMatching();
+            });
+          }
+        });
+      }
     }
+  }
+
+  void _updateMatching() {
+    _filterBloc.findMatchingResults(
+      _selectedFilters.map((f) => f.id).toList(),
+      MatchTypeEnum.applications,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Form(
       key: _formKey,
       child: FHAlertDialog(
         title: Text(widget.serviceAccount == null
-            ? AppLocalizations.of(context)!.createNewServiceAccount
-            : AppLocalizations.of(context)!.editServiceAccount),
+            ? l10n.createNewServiceAccount
+            : l10n.editServiceAccount),
         content: SizedBox(
           width: 500,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextFormField(
-                  controller: _name,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.saNameLabel),
-                  validator: ((v) {
-                    if (v == null || v.isEmpty) {
-                      return AppLocalizations.of(context)!.saNameRequired;
-                    }
-                    if (v.length < 4) {
-                      return AppLocalizations.of(context)!.saNameTooShort;
-                    }
-                    return null;
-                  })),
-              TextFormField(
-                  controller: _description,
-                  decoration: InputDecoration(
-                      labelText:
-                          AppLocalizations.of(context)!.saDescriptionLabel),
-                  validator: ((v) {
-                    if (v == null || v.isEmpty) {
-                      return AppLocalizations.of(context)!
-                          .saDescriptionRequired;
-                    }
-                    if (v.length < 4) {
-                      return AppLocalizations.of(context)!
-                          .saDescriptionTooShort;
-                    }
-                    return null;
-                  })),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextFormField(
+                    controller: _name,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                        labelText: l10n.saNameLabel),
+                    validator: ((v) {
+                      if (v == null || v.isEmpty) {
+                        return l10n.saNameRequired;
+                      }
+                      if (v.length < 4) {
+                        return l10n.saNameTooShort;
+                      }
+                      return null;
+                    })),
+                TextFormField(
+                    controller: _description,
+                    decoration: InputDecoration(
+                        labelText:
+                            l10n.saDescriptionLabel),
+                    validator: ((v) {
+                      if (v == null || v.isEmpty) {
+                        return l10n
+                            .saDescriptionRequired;
+                      }
+                      if (v.length < 4) {
+                        return l10n
+                            .saDescriptionTooShort;
+                      }
+                      return null;
+                    })),
+                const SizedBox(height: 24),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(l10n.selectFiltersToApply, style: Theme.of(context).textTheme.titleSmall),
+                ),
+                _filtersChips(l10n),
+                const SizedBox(height: 16),
+                _buildMatchingPreview(l10n),
+              ],
+            ),
           ),
         ),
         actions: <Widget>[
           FHFlatButtonTransparent(
-            title: AppLocalizations.of(context)!.cancel,
+            title: l10n.cancel,
             keepCase: true,
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
@@ -372,23 +436,24 @@ class _ServiceAccountUpdateDialogWidgetState
           ),
           FHFlatButton(
               title: isUpdate
-                  ? AppLocalizations.of(context)!.update
-                  : AppLocalizations.of(context)!.create,
+                  ? l10n.update
+                  : l10n.create,
               onPressed: (() async {
                 if (_formKey.currentState!.validate()) {
                   try {
-                    final l10n = AppLocalizations.of(context)!;
+                    final filterIds = _selectedFilters.map((f) => f.id).toList();
                     if (isUpdate) {
                       await widget.bloc.updateServiceAccount(
                           widget.serviceAccount!,
                           _name.text,
-                          _description.text);
+                          _description.text,
+                          featureFilterIds: filterIds);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient
                           .addSnackbar(Text(l10n.saUpdated(_name.text)));
                     } else {
                       await widget.bloc
-                          .createServiceAccount(_name.text, _description.text);
+                          .createServiceAccount(_name.text, _description.text, featureFilterIds: filterIds);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient
                           .addSnackbar(Text(l10n.saCreated(_name.text)));
@@ -396,7 +461,7 @@ class _ServiceAccountUpdateDialogWidgetState
                   } catch (e, s) {
                     if (e is ApiException && e.code == 409 && context.mounted) {
                       widget.bloc.mrClient.customError(
-                          messageTitle: AppLocalizations.of(context)!
+                          messageTitle: l10n
                               .saAlreadyExists(_name.text));
                     } else {
                       await widget.bloc.mrClient.dialogError(e, s);
@@ -406,6 +471,66 @@ class _ServiceAccountUpdateDialogWidgetState
               }))
         ],
       ),
+    );
+  }
+
+  Widget _filtersChips(AppLocalizations l10n) {
+    return ChipsInput<SearchFeatureFilterItem>(
+      initialValue: _selectedFilters,
+      decoration: InputDecoration(hintText: l10n.selectFiltersToApply),
+      findSuggestions: (query) async {
+        final result = await _filterBloc.mrClient.featureFilterServiceApi.findFeatureFilters(
+          _filterBloc.mrClient.currentPid!,
+          filter: query,
+        );
+        return result.filters;
+      },
+      onChanged: (data) {
+        setState(() {
+          _selectedFilters.clear();
+          _selectedFilters.addAll(data);
+          _updateMatching();
+        });
+      },
+      chipBuilder: (context, state, filter) {
+        return InputChip(
+          key: ObjectKey(filter),
+          label: Text(filter.name),
+          onDeleted: () => state.deleteChip(filter),
+        );
+      },
+      suggestionBuilder: (context, state, filter) {
+        return ListTile(
+          key: ObjectKey(filter),
+          title: Text(filter.name),
+          subtitle: Text(filter.description ?? ''),
+          onTap: () => state.selectSuggestion(filter),
+        );
+      },
+    );
+  }
+
+  Widget _buildMatchingPreview(AppLocalizations l10n) {
+    return StreamBuilder<MatchingFilterResults?>(
+      stream: _filterBloc.matchingResultsStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.matchingResults.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final res = snapshot.data!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.matchingFeatures, style: Theme.of(context).textTheme.bodySmall),
+            Wrap(
+              spacing: 8,
+              children: res.matchingResults.map((m) => Chip(label: Text(m.name))).toList(),
+            ),
+            const SizedBox(height: 8),
+          ],
+        );
+      },
     );
   }
 }

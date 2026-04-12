@@ -67,6 +67,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   late GroupServiceApi groupServiceApi;
   late WebhookServiceApi webhookServiceApi;
   late TrackEventsServiceApi trackEventsServiceApi;
+  late FeatureFilterServiceApi featureFilterServiceApi;
   static late FHRouter router;
 
   // this reflects actual requests to change the route driven externally, so a user clicks on
@@ -290,6 +291,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     groupServiceApi = GroupServiceApi(client);
     webhookServiceApi = WebhookServiceApi(client);
     trackEventsServiceApi = TrackEventsServiceApi(client);
+    featureFilterServiceApi = FeatureFilterServiceApi(client);
     _errorSource.add(null);
     streamValley.apiClient = this;
 

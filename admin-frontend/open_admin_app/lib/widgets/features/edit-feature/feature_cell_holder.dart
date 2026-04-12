@@ -1,3 +1,4 @@
+import 'package:open_admin_app/widgets/portfolio/feature_filter_bloc.dart';
 import 'package:universal_html/html.dart';
 
 import 'package:bloc_provider/bloc_provider.dart';
@@ -85,8 +86,7 @@ class FeatureCellHolder extends StatelessWidget {
                   onSelected: (value) {
                     if (value == 'edit') {
                       bloc.mrClient.addOverlay((BuildContext context) =>
-                          CreateFeatureDialogWidget(
-                              bloc: bloc, feature: feature));
+                        createFeatureDialog(bloc, feature));
                     }
                     if (value == 'delete') {
                       bloc.mrClient.addOverlay((BuildContext context) =>

@@ -3,11 +3,8 @@ package io.featurehub.db.services
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.FeatureFilterApi
 import io.featurehub.db.api.Opts
-import io.featurehub.mr.model.ApplicationGroupRole
-import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.CreateFeatureFilter
-import io.featurehub.mr.model.CreateGroup
 import io.featurehub.mr.model.CreatePortfolio
 import io.featurehub.mr.model.CreateServiceAccount
 import io.featurehub.mr.model.Feature
@@ -146,7 +143,7 @@ class FeatureFilterSpec extends Base3Spec {
       def ff = createFilter(RandomStringUtils.randomAlphabetic(10))
     when:
       def deleted = featureFilterApi.delete(portfolio.id, superPerson,
-        new FeatureFilter().id(ff.id).name(ff.name).version(ff.version))
+              new FeatureFilter().id(ff.id).name(ff.name).version(ff.version), version)
     then:
       deleted.id == ff.id
     and: "the filter is gone from the database"
@@ -158,7 +155,7 @@ class FeatureFilterSpec extends Base3Spec {
       def ff = createFilter(RandomStringUtils.randomAlphabetic(10))
     when:
       featureFilterApi.delete(portfolio.id, superPerson,
-        new FeatureFilter().id(ff.id).name(ff.name).version(ff.version + 1))
+              new FeatureFilter().id(ff.id).name(ff.name).version(ff.version + 1), version)
     then:
       thrown(FeatureFilterApi.OptimisticLockingException)
   }
@@ -166,7 +163,7 @@ class FeatureFilterSpec extends Base3Spec {
   def "deleting a non-existent filter throws FilterNotFoundException"() {
     when:
       featureFilterApi.delete(portfolio.id, superPerson,
-        new FeatureFilter().id(UUID.randomUUID()).name("x").version(1))
+              new FeatureFilter().id(UUID.randomUUID()).name("x").version(1), version)
     then:
       thrown(FeatureFilterApi.FilterNotFoundException)
   }

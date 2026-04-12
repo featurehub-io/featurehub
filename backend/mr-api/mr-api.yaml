@@ -1305,6 +1305,12 @@ paths:
         schema:
           type: boolean
         required: false
+      - name: includeFilters
+        description: "Include the filters associated with the flag"
+        in: query
+        required: false
+        schema:
+          type: boolean
     get:
       security:
         - bearerAuth: [ ]
@@ -1509,6 +1515,15 @@ paths:
         schema:
           $ref: "#/components/schemas/SortOrder"
         required: false
+      - name: featureFilter
+        in: query
+        description: "If specified, limit the feature list by those that have these filters associated"
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
     get:
       security:
         - bearerAuth: [ ]
@@ -3294,6 +3309,7 @@ components:
         - DESC
         - PRIORITY
     SortOrder:
+      nullable: true
       type: string
       enum:
         - ASC

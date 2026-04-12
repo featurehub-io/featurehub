@@ -503,7 +503,7 @@ open class ConvertUtils @Inject constructor(
     return application
   }
 
-  override fun toApplicationFeature(af: DbApplicationFeature?, opts: Opts?): Feature? {
+  override fun toApplicationFeature(af: DbApplicationFeature?, opts: Opts): Feature? {
     val feat = Feature()
       .key(stripArchived(af!!.key, af.whenArchived))
       .name(af.name)
@@ -515,8 +515,12 @@ open class ConvertUtils @Inject constructor(
       .valueType(af.valueType)
       .description(af.description)
       .id(af.id)
-      .featureFilter(af.filters?.map { it.id }?.ifEmpty { null })
-    if (opts!!.contains(FillOpts.MetaData)) {
+
+    if (opts.contains(FillOpts.ServiceAccountFilters) || opts.contains(FillOpts.FeatureFilters)) {
+      feat.featureFilter(af.filters?.map { it.id }?.ifEmpty { null })
+    }
+
+    if (opts.contains(FillOpts.MetaData)) {
       feat.metaData(af.metaData)
     }
     return feat
