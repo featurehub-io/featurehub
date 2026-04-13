@@ -18,9 +18,11 @@ class FeatureFilterSpec extends Base3Spec {
   FeatureFilterSqlApi featureFilterApi
   ServiceAccountSqlApi serviceAccountApi
   PersonSqlApi personSqlApi
+  InternalApplicationApi internalApplicationApi
 
   def setup() {
-    featureFilterApi = new FeatureFilterSqlApi(convertUtils)
+    internalApplicationApi = new InternalApplicationSqlApi(convertUtils)
+    featureFilterApi = new FeatureFilterSqlApi(convertUtils, internalApplicationApi)
     personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, groupSqlApi)
     serviceAccountApi = new ServiceAccountSqlApi(convertUtils, cacheSource, archiveStrategy, personSqlApi)
   }
@@ -62,7 +64,6 @@ class FeatureFilterSpec extends Base3Spec {
       ff.description == "some description"
       ff.version > 0
       ff.whoCreated != null
-      ff.whoCreated.email == superPerson.email
   }
 
   def "creating a filter with a duplicate name in the same portfolio throws DuplicateNameException"() {
@@ -143,7 +144,7 @@ class FeatureFilterSpec extends Base3Spec {
       def ff = createFilter(RandomStringUtils.randomAlphabetic(10))
     when:
       def deleted = featureFilterApi.delete(portfolio.id, superPerson,
-              new FeatureFilter().id(ff.id).name(ff.name).version(ff.version), version)
+              ff.id, ff.version)
     then:
       deleted.id == ff.id
     and: "the filter is gone from the database"
@@ -155,7 +156,7 @@ class FeatureFilterSpec extends Base3Spec {
       def ff = createFilter(RandomStringUtils.randomAlphabetic(10))
     when:
       featureFilterApi.delete(portfolio.id, superPerson,
-              new FeatureFilter().id(ff.id).name(ff.name).version(ff.version + 1), version)
+        ff.id, ff.version + 1)
     then:
       thrown(FeatureFilterApi.OptimisticLockingException)
   }
@@ -163,7 +164,7 @@ class FeatureFilterSpec extends Base3Spec {
   def "deleting a non-existent filter throws FilterNotFoundException"() {
     when:
       featureFilterApi.delete(portfolio.id, superPerson,
-              new FeatureFilter().id(UUID.randomUUID()).name("x").version(1), version)
+        UUID.randomUUID(), 1)
     then:
       thrown(FeatureFilterApi.FilterNotFoundException)
   }
@@ -177,9 +178,9 @@ class FeatureFilterSpec extends Base3Spec {
       def name = "find-light-" + RandomStringUtils.randomAlphabetic(6)
       createFilter(name, "some desc")
     when:
-      def result = featureFilterApi.find(portfolio.id, name, null, null, null, false)
+      def result = featureFilterApi.find(portfolio.id, name, null, null, null, false, superPerson.id.id)
     then:
-      result.max >= 1
+      result.pagination.total >= 1
       result.filters.any { it.name == name && it.id != null && it.version > 0 }
   }
 
@@ -191,9 +192,9 @@ class FeatureFilterSpec extends Base3Spec {
       createFilter(prefix + "-ccc")
       createFilter("unrelated-" + RandomStringUtils.randomAlphabetic(8))
     when:
-      def result = featureFilterApi.find(portfolio.id, prefix.toLowerCase(), null, null, null, false)
+      def result = featureFilterApi.find(portfolio.id, prefix.toLowerCase(), null, null, null, false, superPerson.id.id)
     then:
-      result.max == 3
+      result.pagination.total == 3
       result.filters.size() == 3
       result.filters.every { it.name.toLowerCase().contains(prefix.toLowerCase()) }
   }
@@ -205,7 +206,7 @@ class FeatureFilterSpec extends Base3Spec {
       createFilter(prefix + "aaa")
       createFilter(prefix + "mmm")
     when:
-      def result = featureFilterApi.find(portfolio.id, prefix, null, null, SortOrder.ASC, false)
+      def result = featureFilterApi.find(portfolio.id, prefix, null, null, SortOrder.ASC, false, superPerson.id.id)
     then:
       result.filters.size() == 3
       result.filters[0].name.endsWith("aaa")
@@ -220,7 +221,7 @@ class FeatureFilterSpec extends Base3Spec {
       createFilter(prefix + "aaa")
       createFilter(prefix + "mmm")
     when:
-      def result = featureFilterApi.find(portfolio.id, prefix, null, null, SortOrder.DESC, false)
+      def result = featureFilterApi.find(portfolio.id, prefix, null, null, SortOrder.DESC, false, superPerson.id.id)
     then:
       result.filters.size() == 3
       result.filters[0].name.endsWith("zzz")
@@ -235,16 +236,16 @@ class FeatureFilterSpec extends Base3Spec {
       createFilter(prefix + "bbb")
       createFilter(prefix + "ccc")
     when: "page 0 with page size 2"
-      def page0 = featureFilterApi.find(portfolio.id, prefix, 2, 0, SortOrder.ASC, false)
+      def page0 = featureFilterApi.find(portfolio.id, prefix, 2, 0, SortOrder.ASC, false, superPerson.id.id)
     and: "page 1 with page size 2"
-      def page1 = featureFilterApi.find(portfolio.id, prefix, 2, 1, SortOrder.ASC, false)
+      def page1 = featureFilterApi.find(portfolio.id, prefix, 2, 1, SortOrder.ASC, false, superPerson.id.id)
     then:
-      page0.max == 3
+      page0.pagination.total == 3
       page0.filters.size() == 2
       page0.filters[0].name.endsWith("aaa")
       page0.filters[1].name.endsWith("bbb")
     and:
-      page1.max == 3
+      page1.pagination.total == 3
       page1.filters.size() == 1
       page1.filters[0].name.endsWith("ccc")
   }
@@ -258,14 +259,13 @@ class FeatureFilterSpec extends Base3Spec {
       def name = "DETAIL-" + RandomStringUtils.randomAlphabetic(8)
       createFilter(name, "detailed desc")
     when:
-      def result = featureFilterApi.find(portfolio.id, name, null, null, null, true)
+      def result = featureFilterApi.find(portfolio.id, name, null, null, null, true, superPerson.id.id)
     then:
       result.filters.size() == 1
       def item = result.filters[0]
       item.name == name
       item.description == "detailed desc"
       item.whoCreated != null
-      item.whoCreated.email == superPerson.email
   }
 
   def "find with details shows which features use the filter"() {
@@ -274,13 +274,13 @@ class FeatureFilterSpec extends Base3Spec {
     and: "a feature is associated with it"
       createFeature(app1.id, [ff.id])
     when:
-      def result = featureFilterApi.find(portfolio.id, ff.name, null, null, null, true)
+      def result = featureFilterApi.find(portfolio.id, ff.name, null, null, null, true, superPerson.id.id)
     then:
       result.filters.size() == 1
       def item = result.filters[0]
-      item.features != null
-      item.features.size() == 1
-      item.features[0].applicationName == app1.name
+      item.applications != null
+      item.applications.size() == 1
+      item.applications[0].name == app1.name
   }
 
   def "find with details shows which service accounts use the filter"() {
@@ -289,7 +289,7 @@ class FeatureFilterSpec extends Base3Spec {
     and: "a service account is associated with it"
       def sa = createServiceAccount([ff.id])
     when:
-      def result = featureFilterApi.find(portfolio.id, ff.name, null, null, null, true)
+      def result = featureFilterApi.find(portfolio.id, ff.name, null, null, null, true, superPerson.id.id)
     then:
       result.filters.size() == 1
       def item = result.filters[0]
@@ -303,11 +303,11 @@ class FeatureFilterSpec extends Base3Spec {
     given:
       def ff = createFilter("LONELY-" + RandomStringUtils.randomAlphabetic(8))
     when:
-      def result = featureFilterApi.find(portfolio.id, ff.name, null, null, null, true)
+      def result = featureFilterApi.find(portfolio.id, ff.name, null, null, null, true, superPerson.id.id)
     then:
       result.filters.size() == 1
       def item = result.filters[0]
-      (item.features == null || item.features.isEmpty())
+      (item.applications == null || item.applications.isEmpty())
       (item.serviceAccounts == null || item.serviceAccounts.isEmpty())
   }
 

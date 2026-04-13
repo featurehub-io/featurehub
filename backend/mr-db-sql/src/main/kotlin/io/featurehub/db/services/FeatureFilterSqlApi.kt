@@ -106,7 +106,7 @@ class FeatureFilterSqlApi @Inject constructor(
     includeDetails: Boolean,
     personId: UUID,
   ): SearchFeatureFilterResult {
-    val pageSize = (max ?: 20).coerceIn(5, 100) // if it is < 5, make it 5, if it is > 100, make it 100
+    val pageSize = (max ?: 20).coerceIn(1, 100)
     val pageNum = (page ?: 0).coerceAtLeast(0)
 
     var query = QDbFeatureFilter().portfolio.id.eq(portfolioId)
@@ -131,27 +131,32 @@ class FeatureFilterSqlApi @Inject constructor(
 
     // we actually have to find applications they are allowed to access first
     // Lightweight path: select only id and name
-    val filters = query
+    val dbFilters = query
       .select(QDbFeatureFilter.Alias.id, QDbFeatureFilter.Alias.name, QDbFeatureFilter.Alias.description)
       .setMaxRows(pageSize)
       .setFirstRow(pageNum * pageSize)
       .findList()
-      .map { db ->
-        SearchFeatureFilterItem()
-          .id(db.id)
-          .name(db.name)
-          .description(db.description)
-          .version(db.version.toInt())
-      }.associateBy { it.id }
 
     // if they want a simple list, return that and be done with it
-    if (!includeDetails || filters.isEmpty()) {
+    if (!includeDetails || dbFilters.isEmpty()) {
       return SearchFeatureFilterResult().pagination(PaginationResult().page(pageNum).pageSize(pageSize).total(simpleQuery.findCount()))
-        .filters(filters.values.toMutableList())
+        .filters(dbFilters.map { db ->
+          SearchFeatureFilterItem()
+            .id(db.id)
+            .name(db.name)
+            .description(db.description)
+            .version(db.version.toInt())
+        })
     }
 
+    val filters = dbFilters.associateBy { it.id }
+
     // now lets find what apps they are allowed to access, which will inform which feature details we return back
-    val allowedApps = internalApplicationSqlApi.findApplicationsUserCanAccess(portfolioId, personId)
+    // superadmins can see all apps in the portfolio
+    val appQuery =
+      internalApplicationSqlApi.findApplicationsUserCanAccess(portfolioId, personId)
+
+    val allowedApps = appQuery
       .select(QDbApplication.Alias.id, QDbApplication.Alias.name)
       .findList().map { app ->
         SearchFeatureFilterApplication().id(app.id).name(app.name)
@@ -207,17 +212,16 @@ class FeatureFilterSqlApi @Inject constructor(
         }
       }
 
-    val items = filters.values.map { db ->
+    val items = dbFilters.map { db ->
       SearchFeatureFilterItem()
         .id(db.id)
         .name(db.name)
         .description(db.description)
-        .version(db.version)
+        .version(db.version.toInt())
         .whoCreated(db.whoCreated?.let { p ->
           OptionalAnemicPerson()
             .id(p.id)
             .name(if (p.name.isNullOrEmpty()) "No name" else p.name)
-            .email(p.email)
             .type(PersonType.PERSON)
         })
         .applications(applicationsByFilter[db.id])
@@ -237,7 +241,6 @@ class FeatureFilterSqlApi @Inject constructor(
         OptionalAnemicPerson()
           .id(p.id)
           .name(if (p.name.isNullOrEmpty()) "No name" else p.name)
-          .email(p.email)
           .type(PersonType.PERSON)
       })
   }

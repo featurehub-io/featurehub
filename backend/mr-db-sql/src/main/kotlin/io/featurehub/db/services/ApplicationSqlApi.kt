@@ -23,14 +23,18 @@ interface InternalApplicationApi {
   fun findApplicationsUserCanAccess(portfolioId: UUID, personId: UUID): QDbApplication
 }
 
-class InternalApplicationSqlApi : InternalApplicationApi {
+class InternalApplicationSqlApi @Inject constructor(private val conversions: Conversions) : InternalApplicationApi {
   override fun findApplicationsUserCanAccess(
     portfolioId: UUID,
     personId: UUID
   ): QDbApplication {
-    var queryApplicationList = QDbApplication().portfolio.id.eq(portfolioId)
+    val queryApplicationList = QDbApplication().portfolio.id.eq(portfolioId)
 
-    // we need to ascertain which apps they can actually see based on environments
+    if (conversions.personIsSuperAdmin(personId)) {
+      return queryApplicationList
+    }
+
+      // we need to ascertain which apps they can actually see based on environments
     return queryApplicationList
       .or()
         .environments.groupRolesAcl.group.groupMembers.person.id.eq(personId)
