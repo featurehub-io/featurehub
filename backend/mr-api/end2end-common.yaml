@@ -19,6 +19,7 @@ components:
         - EXTENDED_DATA
     BaseStrategy:
       x-package: io.featurehub.mr.model
+      type: object
       description: "if the feature in an environment is different from its default, this will be the reason for it.
                     a rollout strategy is defined at the Application level and then applied to a specific feature value.
                     When they are copied to the cache layer they are cloned and the feature value for that strategy
@@ -73,6 +74,7 @@ components:
               description: "when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge."
     RolloutStrategyAttribute:
       x-package: io.featurehub.mr.model
+      type: object
       # although they are required,  they aren't here because we need to validate against them
       required:
         - conditional

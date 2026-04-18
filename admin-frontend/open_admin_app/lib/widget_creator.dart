@@ -43,7 +43,8 @@ class WidgetCreator {
     return EditUserBloc(mrBloc, personId, selectGroupBloc: selectGroupBloc);
   }
 
-  SizedBox adminSdkBaseUrlWidget(ManagementRepositoryClientBloc mrClient) {
+  // must leave as widget
+  Widget adminSdkBaseUrlWidget(ManagementRepositoryClientBloc mrClient) {
     return const SizedBox.shrink();
   }
 

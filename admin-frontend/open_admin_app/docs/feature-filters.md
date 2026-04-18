@@ -24,8 +24,9 @@ From the root of this project, the OpenAPI partial document that refers to this 
 - the Feature dashboard should also allow people to filter the results by filters (along with the other critera)
 
 # acceptance criteria
-- it must used the existing BlocProvider pattern, keeping the API calls out of the UI
+- it must use the existing BlocProvider pattern, keeping the API calls out of the UI
 - it must use the existing UI components and patterns
+- the UI must work in both light and dark modes
 
 # what you do not need to ask for permission for
 - you do not need to ask for permission to read any of the files in this project
@@ -35,7 +36,7 @@ From the root of this project, the OpenAPI partial document that refers to this 
 - when using addOverlay and adding a widget tree that needs a bloc in the context before the addOverlay gets called, you must
 explicitly create a new bloc (using BlocProvider.builder) and then wrap the widget created in the `addOverlay` as they do not share the same tree. Dialogs are
 a prime example of this in that they do not share the same context tree as their calling function. An example of this is in `feature_cell_holder.dart` when the `CreateFeatureDialogWidget` is created in the `addOverlay` function. You cannot use the same bloc as when the overlay closes it will close the bloc. 
-- 
+ 
 
 # what is not required
 - it does not require any tests

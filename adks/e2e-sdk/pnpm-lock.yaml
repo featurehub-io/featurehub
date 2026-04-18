@@ -49,6 +49,9 @@ importers:
       featurehub-cloud-event-tools:
         specifier: ^1.0.0
         version: 1.0.0
+      featurehub-javascript-core-sdk:
+        specifier: ^2.0.2
+        version: 2.0.2
       featurehub-javascript-node-sdk:
         specifier: ^2.0.1
         version: 2.0.1
@@ -510,8 +513,8 @@ packages:
   featurehub-cloud-event-tools@1.0.0:
     resolution: {integrity: sha512-5Vxtd0MmnXGyFgb67t7WQVME3ANlfLKcuHDqXET3XUqqAI9QMwvoKt2A8C7kzb57P7PWCesB4fJk26148Aw8lw==}
 
-  featurehub-javascript-core-sdk@2.0.1:
-    resolution: {integrity: sha512-pYfdDyenEU3+RMXw/06V0HvilWSbD5qt44xZcRvAB7ddlr5Ps+ZiKTdf4qS46yUa50iDezT9Q8gGCLLI+Jxcrw==}
+  featurehub-javascript-core-sdk@2.0.2:
+    resolution: {integrity: sha512-Dn3AuVEU/yFx9w1O9XyWOeaGhXh4UQuTQs7PeGTN1CafJmjJaYTmljgN1P7qcQbMQg0ccsFBWb2WTuceBwDy0A==}
     engines: {node: '>=20.0.0'}
 
   featurehub-javascript-node-sdk@2.0.1:
@@ -1699,7 +1702,7 @@ snapshots:
     dependencies:
       cloudevents: 8.0.3
 
-  featurehub-javascript-core-sdk@2.0.1:
+  featurehub-javascript-core-sdk@2.0.2:
     dependencies:
       murmurhash: 2.0.1
       netmask: 2.0.2
@@ -1708,7 +1711,7 @@ snapshots:
   featurehub-javascript-node-sdk@2.0.1:
     dependencies:
       eventsource: 4.1.0
-      featurehub-javascript-core-sdk: 2.0.1
+      featurehub-javascript-core-sdk: 2.0.2
 
   fecha@4.2.3: {}
 

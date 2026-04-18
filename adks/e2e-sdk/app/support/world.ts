@@ -68,12 +68,14 @@ export class ApiUser {
   public readonly featureHistoryApi: FeatureHistoryServiceApi;
   public readonly applicationStrategyApi: ApplicationRolloutStrategyServiceApi;
   public readonly featureFilterApi: FeatureFilterServiceApi;
+  public readonly apiKey: string;
 
   public serviceAccounts: Array<ServiceAccount> = [];
 
   constructor(adminUrl: string, featureUrl: string, axiosInstance: AxiosInstance, apiKey: string) {
     this.adminUrl = adminUrl;
     this.featureUrl = featureUrl;
+    this.apiKey = apiKey;
     this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey, axiosInstance: axiosInstance, accessToken: apiKey });
 
     this.portfolioApi = new PortfolioServiceApi(this.adminApiConfig);

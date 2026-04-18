@@ -5,6 +5,7 @@ info:
 components:
   schemas:
     PaginationResult:
+      type: object
       required:
         - total
         - page

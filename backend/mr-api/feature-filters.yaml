@@ -223,6 +223,7 @@ paths:
 components:
   schemas:
     SearchFeatureFilterResult:
+      type: object
       description: "The result of a search for feature filters"
       required:
         - max
@@ -234,6 +235,7 @@ components:
           items:
             $ref: "#/components/schemas/SearchFeatureFilterItem"
     CreateFeatureFilter:
+      type: object
       description: "A filter used by an API key to determine what kind of features it should send to the client"
       required:
         - name
@@ -246,6 +248,7 @@ components:
           type: string
           maxLength: 300
     FeatureFilter:
+      type: object
       description: "A filter used by an API key to determine what kind of features it should send to the client"
       required:
         - id
@@ -269,6 +272,7 @@ components:
         whoCreated:
           $ref: "#/components/schemas/OptionalAnemicPerson"
     SearchFeatureFilterServiceAccount:
+      type: object
       description: "Details the service accounts that use this filter"
       required:
         - id
@@ -280,6 +284,7 @@ components:
         name:
           type: string
     SearchFeatureFilterFeature:
+      type: object
       description: "Details the feature key and which application it is that is using this feature filter."
       required:
         - id
@@ -291,6 +296,7 @@ components:
         key:
           type: string
     SearchFeatureFilterApplication:
+      type: object
       description: "An application which contains features. Features can be null or empty if the user has no permission."
       required:
         - id
@@ -324,6 +330,7 @@ components:
               items:
                 $ref: "#/components/schemas/SearchFeatureFilterApplication"
     MatchingFilter:
+      type: object
       properties:
         id:
           type: string
@@ -331,6 +338,7 @@ components:
         name:
           type: string
     MatchingFilterResult:
+      type: object
       description: "Describes the service account or application and its matching filters, depending on what was requested"
       properties:
         name:
