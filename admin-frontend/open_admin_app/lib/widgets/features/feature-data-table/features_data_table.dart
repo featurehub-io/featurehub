@@ -8,6 +8,7 @@ import 'package:open_admin_app/widgets/features/feature-data-table/features_data
 import 'package:open_admin_app/widgets/features/feature-data-table/handle_validation_messages.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
+import 'package:open_admin_app/widgets/portfolio/feature_filter_bloc.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
@@ -31,12 +32,15 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
   int _pageIndex = 0;
   List<FeatureValueType> _selectedFeatureTypes = [];
   List<String> _selectedEnvironmentList = [];
+  List<String> _selectedFeatureFilterIds = [];
   final CustomColumnSizer _customColumnSizer = CustomColumnSizer();
+  late FeatureFilterBloc _filterBloc;
 
   @override
   void initState() {
     super.initState();
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
+    _filterBloc = BlocProvider.of<FeatureFilterBloc>(context);
 
     bloc.appFeatureValuesStream.listen((features) {
       if (mounted && features != null) {
@@ -45,6 +49,7 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
           var featuresList =
               FeatureStatusFeatures(features.applicationFeatureValues);
           _selectedFeatureTypes = bloc.selectedFeatureTypesByUser;
+          _selectedFeatureFilterIds = bloc.selectedFeatureFilterIdsByUser;
           _featuresDataSource = FeaturesDataSource(featuresList, bloc,
               _searchTerm, _selectedFeatureTypes, bloc.currentRowsPerPage);
           _maxFeatures = features.applicationFeatureValues.maxFeatures;
@@ -56,6 +61,7 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final debouncer = Debouncer(milliseconds: 500);
     List<GridColumn> gridColumnsList = [];
 
@@ -161,7 +167,8 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                                   _searchTerm,
                                   _selectedFeatureTypes,
                                   widget.bloc.currentRowsPerPage,
-                                  _pageIndex);
+                                  _pageIndex,
+                                  featureFilterIds: _selectedFeatureFilterIds);
                             },
                             availableValues: FeatureValueType.values
                                 .map((e) => e.name!)
@@ -171,6 +178,50 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                                 .toList(),
                             // whenEmpty: 'Select Something',
                           ),
+                        ),
+                        StreamBuilder<SearchFeatureFilterResult?>(
+                          stream: _filterBloc.filterResultStream,
+                          builder: (context, filterSnapshot) {
+                            if (!filterSnapshot.hasData) {
+                              return const SizedBox.shrink();
+                            }
+                            final filters = filterSnapshot.data!.filters;
+                            return Container(
+                              constraints: const BoxConstraints(
+                                maxWidth: 300,
+                                maxHeight: 40,
+                                minWidth: 30,
+                              ),
+                              child: FHMultiSelect<SearchFeatureFilterItem>(
+                                icon: const Icon(
+                                  Icons.filter_list,
+                                  size: 18,
+                                ),
+                                selectedDisplay: Text(l10n.filterByFeatureFilters + " - " + filters.where((f) => _selectedFeatureFilterIds.contains(f.id)).map((f) => f.name).join(", ")),
+                                hint: Text(
+                                  l10n.filterByFeatureFilters,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                availableValues: filters,
+                                selectedValues: filters
+                                    .where((f) => _selectedFeatureFilterIds.contains(f.id))
+                                    .toList(),
+                                itemLabel: (f) => f.name,
+                                onChanged: (selection) {
+                                  setState(() {
+                                    _selectedFeatureFilterIds = selection.map((f) => f.id).toList();
+                                  });
+                                  widget.bloc.getApplicationFeatureValuesData(
+                                      widget.bloc.applicationId!,
+                                      _searchTerm,
+                                      _selectedFeatureTypes,
+                                      widget.bloc.currentRowsPerPage,
+                                      _pageIndex,
+                                      featureFilterIds: _selectedFeatureFilterIds);
+                                },
+                              ),
+                            );
+                          },
                         ),
                         Container(
                           constraints: const BoxConstraints(
@@ -191,7 +242,8 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                                       _searchTerm,
                                       _selectedFeatureTypes,
                                       widget.bloc.currentRowsPerPage,
-                                      _pageIndex);
+                                      _pageIndex,
+                                      featureFilterIds: _selectedFeatureFilterIds);
                                 });
                               });
                             },

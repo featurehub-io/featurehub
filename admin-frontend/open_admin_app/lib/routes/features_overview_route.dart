@@ -12,6 +12,7 @@ import 'package:open_admin_app/widgets/features/edit-feature/create_update_featu
 import 'package:open_admin_app/widgets/features/feature-data-table/features_data_table.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
+import 'package:open_admin_app/widgets/portfolio/feature_filter_bloc.dart';
 
 class FeatureStatusRoute extends StatefulWidget {
   final bool createFeature;
@@ -129,11 +130,8 @@ class CreateFeatureButton extends StatelessWidget {
               : FilledButton.icon(
                   // keepCase: true,
                   onPressed: () {
-                    bloc.mrClient.addOverlay((BuildContext context) {
-                      return CreateFeatureDialogWidget(
-                        bloc: bloc,
-                      );
-                    });
+                    bloc.mrClient.addOverlay((BuildContext context) => createFeatureDialog(bloc, null)
+                    );
                   },
                   icon: const Icon(Icons.add),
                   label: Text(AppLocalizations.of(context)!.createNewFeature));

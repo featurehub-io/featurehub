@@ -29,6 +29,7 @@ import io.featurehub.db.model.query.QDbPerson
 import io.featurehub.db.model.query.QDbPortfolio
 import io.featurehub.db.model.query.QDbServiceAccountEnvironment
 import io.featurehub.encryption.WebhookEncryptionService
+import io.featurehub.db.model.DbFeatureFilter
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
@@ -37,12 +38,15 @@ import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureEnvironment
+import io.featurehub.mr.model.FeatureFilter
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Group
+import io.featurehub.mr.model.OptionalAnemicPerson
 import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
+import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.RolloutStrategyInstance
@@ -499,7 +503,7 @@ open class ConvertUtils @Inject constructor(
     return application
   }
 
-  override fun toApplicationFeature(af: DbApplicationFeature?, opts: Opts?): Feature? {
+  override fun toApplicationFeature(af: DbApplicationFeature?, opts: Opts): Feature? {
     val feat = Feature()
       .key(stripArchived(af!!.key, af.whenArchived))
       .name(af.name)
@@ -511,10 +515,30 @@ open class ConvertUtils @Inject constructor(
       .valueType(af.valueType)
       .description(af.description)
       .id(af.id)
-    if (opts!!.contains(FillOpts.MetaData)) {
+
+    if (opts.contains(FillOpts.ServiceAccountFilters) || opts.contains(FillOpts.FeatureFilters)) {
+      feat.featureFilter(af.filters?.map { it.id }?.ifEmpty { null })
+    }
+
+    if (opts.contains(FillOpts.MetaData)) {
       feat.metaData(af.metaData)
     }
     return feat
+  }
+
+  override fun toFeatureFilter(db: DbFeatureFilter): FeatureFilter {
+    return FeatureFilter()
+      .id(db.id)
+      .name(db.name)
+      .description(db.description)
+      .version(db.version.toInt())
+      .whoCreated(db.whoCreated?.let { p ->
+        OptionalAnemicPerson()
+          .id(p.id)
+          .name(if (p.name.isNullOrEmpty()) "No name" else p.name)
+          .email(p.email)
+          .type(PersonType.PERSON)
+      })
   }
 
   override fun toFeature(fs: DbFeatureValue?): Feature? {
@@ -774,12 +798,21 @@ open class ConvertUtils @Inject constructor(
       .portfolioId(sa.portfolio.id)
       .name(sa.name)
       .description(sa.description)
+      .permsInvalid(true)
+
     if (opts != null) {
+      if (opts.contains(FillOpts.ServiceAccountFilters)) {
+        sa.featureFilters.takeIf { it.isNotEmpty() }?.let { filters ->
+          account.featureFilters(filters.map { it.id })
+        }
+      }
       if (!opts.contains(FillOpts.ServiceAccountPermissionFilter)) {
         account.apiKeyServerSide(sa.apiKeyServerEval)
         account.apiKeyClientSide(sa.apiKeyClientEval)
       }
       if (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL)) {
+        account.permsInvalid(null)
+
         // envId, acl
         val envs = mutableMapOf<UUID, MutableSet<RoleType?>>()
 

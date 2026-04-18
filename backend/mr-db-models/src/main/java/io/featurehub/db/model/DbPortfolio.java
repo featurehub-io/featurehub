@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Index(unique = true, name = "idx_portfolio_name", columnNames = {"name", "fk_org_id"})
@@ -53,6 +54,10 @@ public class DbPortfolio extends DbVersionedBase {
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "fk_portfolio_id")
   private Set<DbServiceAccount> serviceAccounts;
+
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "fk_portfolio_id")
+  private List<DbFeatureFilter> featureFilters;
 
   @Column
   private String name;
@@ -125,6 +130,14 @@ public class DbPortfolio extends DbVersionedBase {
 
   public void setWhenArchived(@Nullable LocalDateTime whenArchived) {
     this.whenArchived = whenArchived;
+  }
+
+  public List<DbFeatureFilter> getFeatureFilters() {
+    return featureFilters;
+  }
+
+  public void setFeatureFilters(List<DbFeatureFilter> featureFilters) {
+    this.featureFilters = featureFilters;
   }
 
   public static final class Builder {

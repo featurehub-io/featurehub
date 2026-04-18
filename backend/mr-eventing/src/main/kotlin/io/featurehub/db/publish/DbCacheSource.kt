@@ -150,11 +150,17 @@ open class DbCacheSource @Inject constructor(
           .environment.whenUnpublished.isNull
           .environment.whenArchived.isNull
           .environment.fetch(QDbEnvironment.Alias.id)
-          .findStream().map { sap: DbServiceAccountEnvironment ->
+          .findList().map { sap: DbServiceAccountEnvironment ->
             CacheServiceAccountPermission()
               .permissions(convertUtils.splitServiceAccountPermissions(sap.permissions) ?: listOf())
               .environmentId(sap.environment.id)
-          }.collect(Collectors.toList())
+          }
+      )
+      .filters(
+        QDbFeatureFilter()
+          .select(QDbFeatureFilter.Alias.id)
+          .serviceAccounts.id.eq(sa.id)
+          .findList().map { it.id }.ifEmpty { null }
       )
 
     log.trace("service account publishing: {}", serviceAccount)
@@ -222,7 +228,7 @@ open class DbCacheSource @Inject constructor(
           QDbApplicationFeature.Alias.key,
           QDbApplicationFeature.Alias.valueType,
           QDbApplicationFeature.Alias.version
-        ).findList().associate { it.id!! to it!! }.toMutableMap()
+        ).findList().associateBy { it.id!! }.toMutableMap()
 
       val featureGroupRolloutStrategy = if (featureGroupsEnabled) internalFeatureGroupApi.collectStrategiesFromGroupsForEnvironment(env.id) else mapOf()
 
@@ -235,6 +241,7 @@ open class DbCacheSource @Inject constructor(
         .organizationId(env.parentApplication.portfolio.organization.id)
         .portfolioId(env.parentApplication.portfolio.id)
         .applicationId(env.parentApplication.id)
+          // toCacheEnvironmentFeature MUTATES the `features` map and removes any feature values it finds
         .featureValues(fvFinder.findList().map { fv: DbFeatureValue -> toCacheEnvironmentFeature(fv, features, featureGroupRolloutStrategy[fv.feature.id]) })
         .serviceAccounts(
           QDbServiceAccount().select(QDbServiceAccount.Alias.id).serviceAccountEnvironments.environment.id.eq(env.id)
@@ -242,7 +249,7 @@ open class DbCacheSource @Inject constructor(
         )
         .count(count)
 
-      // now add in the remaining features with empty values
+      // now add in the remaining features with empty values, this is a mutated map
       features.values.forEach { feature: DbApplicationFeature ->
         val toCacheFeature = toCacheFeature(feature)
         eci.addFeatureValuesItem(
@@ -313,6 +320,13 @@ open class DbCacheSource @Inject constructor(
       .key(feature.key)
       .version(feature.version)
       .valueType(feature.valueType)
+      .filters(
+        QDbFeatureFilter()
+          .select(QDbFeatureFilter.Alias.id)
+          .applicationFeatures.id.eq(feature.id)
+          .findStream().map { it.id }.collect(Collectors.toList())
+          .ifEmpty { null }
+      )
   }
 
   private fun toCacheFeatureValue(dfv: DbFeatureValue?, feature: DbApplicationFeature, featureGroupRolloutStrategies: List<RolloutStrategy>?): CacheFeatureValue? {

@@ -219,6 +219,12 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
                   permissionType: PermissionType.portfolioadmin,
                   path: '/service-accounts',
                   params: {}),
+              FHMenuItem(
+                  name: l10n.featureFilters,
+                  iconData: Icons.filter_alt_outlined,
+                  permissionType: PermissionType.portfolioadmin,
+                  path: '/feature-filters',
+                  params: {}),
             ]);
           } else {
             return const SizedBox.shrink();

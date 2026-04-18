@@ -293,7 +293,7 @@ public class InMemoryCache implements InternalCache, FeatureEnrichmentCache {
 
   @Override
   public FeatureCollection getFeaturesByEnvironmentAndServiceAccount(UUID environmentId, String apiKey) {
-    log.debug("got request for environment `{}` and apiKey `{}`", environmentId, apiKey);
+    log.trace("got request for environment `{}` and apiKey `{}`", environmentId, apiKey);
 
     UUID serviceAccountId = apiKeyToServiceAccountKeyMap.get(apiKey);
 
@@ -305,11 +305,18 @@ public class InMemoryCache implements InternalCache, FeatureEnrichmentCache {
     CacheServiceAccountPermission perm = serviceAccountPlusEnvIdToEnvIdMap.get(serviceAccountIdPlusEnvId(serviceAccountId, environmentId));
 
     if (perm != null && !perm.getPermissions().isEmpty()) {  // any permission is good enough to read
-      final EnvironmentFeatures features = environmentFeatures.get(environmentId);
+      EnvironmentFeatures features = environmentFeatures.get(environmentId);
+
+
+      PublishServiceAccount sa = serviceAccounts.get(serviceAccountId);
+      InternalCache.FeatureValues values = features;
+      if (sa != null && sa.getServiceAccount().getFilters() != null && !sa.getServiceAccount().getFilters().isEmpty()) {
+        values = new FilteredEnvironmentFeatures(features, sa.getServiceAccount().getFilters());
+      }
 
       if (features != null) {
         return new FeatureCollection(
-          features,
+          values,
             perm, serviceAccountId);
       }
     }

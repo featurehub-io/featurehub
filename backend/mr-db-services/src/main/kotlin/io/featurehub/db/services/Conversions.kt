@@ -66,7 +66,7 @@ interface Conversions {
 
   fun toGroup(dbg: DbGroup?, opts: Opts?): Group?
   fun toApplication(app: DbApplication?, opts: Opts?): Application?
-  fun toApplicationFeature(af: DbApplicationFeature?, opts: Opts?): Feature?
+  fun toApplicationFeature(af: DbApplicationFeature?, opts: Opts): Feature?
   fun toFeature(fs: DbFeatureValue?): Feature?
   fun toFeatureValue(fs: DbFeatureValue?): FeatureValue?
   fun toFeatureValue(fs: DbFeatureValue?, opts: Opts?): FeatureValue?
@@ -82,6 +82,7 @@ interface Conversions {
   fun toServiceAccount(
     sa: DbServiceAccount?, opts: Opts?, environmentsUserHasAccessTo: List<DbAcl?>?
   ): ServiceAccount?
+  fun toFeatureFilter(db: io.featurehub.db.model.DbFeatureFilter): io.featurehub.mr.model.FeatureFilter
 
   fun splitServiceAccountPermissions(permissions: String?): List<RoleType>? {
     // same now, were different historically

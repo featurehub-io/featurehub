@@ -82,6 +82,15 @@ Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (loc
   }, 4000, 500);
 });
 
+Then("I can only see feature flags with keys {string}", async function (flagKeys: string) {
+  const keys = flagKeys.split(",").map(s => s.trim()).filter(s => s.length > 0);
+  const world = this as SdkWorld;
+
+  await waitForExpect(() => {
+    expect(keys, `The keys should be only ${keys} and they are ${world.repository.featureKeys}`).to.members(world.repository.featureKeys);
+  }, 4000, 500);
+});
+
 Then('the feature flag has an application strategy {string} which has a value of {string}', async function (key: string, value: string)  {
   const world = this as SdkWorld;
   await waitForExpect(() => {

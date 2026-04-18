@@ -123,7 +123,7 @@ class SiteSystemConfigState extends State<SiteSystemConfigWidget>
                         _formKey.currentState!.save();
                         await save();
                       } else {
-                        fhosLogger.info("not valid");
+                        fhosLogger.fine("not valid");
                       }
                     },
                     child: Text(l10n.save)),

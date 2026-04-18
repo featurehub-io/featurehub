@@ -74,9 +74,10 @@ class ManageServiceAccountsBloc implements Bloc {
   }
 
   Future<void> updateServiceAccount(ServiceAccount serviceAccount,
-      String updatedServiceAccountName, String updatedDescription) async {
+      String updatedServiceAccountName, String updatedDescription, {List<String>? featureFilterIds}) async {
     serviceAccount.name = updatedServiceAccountName;
     serviceAccount.description = updatedDescription;
+    serviceAccount.featureFilters = featureFilterIds;
     return _serviceAccountServiceApi
         .updateServiceAccountOnPortfolio(portfolioId!, serviceAccount)
         .then((onSuccess) {
@@ -87,10 +88,10 @@ class ManageServiceAccountsBloc implements Bloc {
   }
 
   Future<void> createServiceAccount(
-      String serviceAccountName, String description) async {
+      String serviceAccountName, String description, {List<String>? featureFilterIds}) async {
     if (portfolioId != null) {
       final serviceAccount =
-          CreateServiceAccount(name: serviceAccountName, description: description);
+          CreateServiceAccount(name: serviceAccountName, description: description, featureFilter: featureFilterIds);
       await _serviceAccountServiceApi
           .createServiceAccountInPortfolio(portfolioId!, serviceAccount)
           .then((onSuccess) {
@@ -116,5 +117,9 @@ class ManageServiceAccountsBloc implements Bloc {
   void dispose() {
     _serviceAccountSearchResultSource.close();
     _currentPidSubscription.cancel();
+  }
+
+  Future<ServiceAccount>? loadFreshServiceAccount(String id) async {
+    return _serviceAccountServiceApi.getServiceAccount(id, includeFilters: true);
   }
 }

@@ -449,7 +449,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
   }
 
   Widget membersChips(GroupBloc bloc) {
-    return ChipsInput(
+    return ChipsInput<Person>(
       initialValue: const [],
       // none, but we could
       decoration: InputDecoration(
@@ -464,14 +464,13 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
       },
       onChanged: (data) {
         for (var person in data) {
-          person = person as Person;
           membersToAdd.add(person);
         }
       },
       // when we need to build a chip because it has been selected, this is what is used
       // it can include an image, so we should perhaps consider this?
       chipBuilder: (context, state, p) {
-        final person = p as Person;
+        final person = p;
         return Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: InputChip(
@@ -487,7 +486,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
       },
       // this is what is used to show the suggestions.
       suggestionBuilder: (context, state, p) {
-        final person = p as Person;
+        final person = p;
         return ListTile(
           key: ObjectKey(p),
           title: Text(person.name ?? ''),

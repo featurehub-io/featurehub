@@ -42,9 +42,11 @@
     <module>mr-api</module>
     <module>mr-api-java-server</module>
     <module>dacha-api</module>
+    <module>dacha-api-java-server</module>
     <module>enricher-api</module>
     <module>webhook-api</module>
     <module>messaging-api</module>
     <module>edge-api</module>
+    <module>edge-api-java-server</module>
   </modules>
 </project>

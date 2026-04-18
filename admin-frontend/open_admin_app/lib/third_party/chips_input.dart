@@ -67,9 +67,18 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     _chips.addAll(widget.initialValue);
     _updateTextInputState();
 
+    // this is the overlay that pops up and shows new chips
     _suggestionsBoxController = _SuggestionsBoxController(context);
 
     _initFocusNode();
+  }
+
+
+  @override
+  void didUpdateWidget(ChipsInput<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _chips.clear();
+    _chips.addAll(widget.initialValue);
   }
 
   void _initFocusNode() {
@@ -133,7 +142,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     final size = renderBox.size;
 
     if (_suggestionsBoxController != null) {
-      _suggestionsBoxController!._overlayEntry = OverlayEntry(
+      _suggestionsBoxController!.overlayEntry = OverlayEntry(
         builder: (context) {
           return StreamBuilder(
             stream: _suggestionsStreamController.stream,
@@ -308,7 +317,9 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
 
     // if _connection is null, assign it something
     _connection ??= TextInput.attach(this, const TextInputConfiguration());
-    _connection!.setEditingState(_value);
+    if (_connection!.attached) {
+      _connection!.setEditingState(_value);
+    }
   }
 
   void _onSearchChanged(String value) async {
@@ -447,6 +458,14 @@ class _SuggestionsBoxController {
     }
   }
 
+  void set overlayEntry(OverlayEntry entry) {
+    if (_overlayEntry != null) {
+      close();
+    }
+
+    _overlayEntry = entry;
+  }
+
   void close() {
     if (!_isOpened) return;
     if (_overlayEntry != null) {
@@ -457,11 +476,7 @@ class _SuggestionsBoxController {
   }
 
   void dispose() {
-    if (_overlayEntry != null) {
-      _overlayEntry?.remove();
-      _overlayEntry = null;
-    }
-    _isOpened = false;
+    close();
   }
 
   void toggle() {

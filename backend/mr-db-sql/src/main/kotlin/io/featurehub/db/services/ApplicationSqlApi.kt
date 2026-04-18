@@ -10,6 +10,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.model.*
 //import io.featurehub.db.model.RoleType
 import io.featurehub.db.model.query.*
+import io.featurehub.db.model.query.QDbFeatureFilter
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
@@ -17,6 +18,29 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
 import java.util.*
+
+interface InternalApplicationApi {
+  fun findApplicationsUserCanAccess(portfolioId: UUID, personId: UUID): QDbApplication
+}
+
+class InternalApplicationSqlApi @Inject constructor(private val conversions: Conversions) : InternalApplicationApi {
+  override fun findApplicationsUserCanAccess(
+    portfolioId: UUID,
+    personId: UUID
+  ): QDbApplication {
+    val queryApplicationList = QDbApplication().portfolio.id.eq(portfolioId)
+
+    if (conversions.personIsSuperAdmin(personId)) {
+      return queryApplicationList
+    }
+
+      // we need to ascertain which apps they can actually see based on environments
+    return queryApplicationList
+      .or()
+        .environments.groupRolesAcl.group.groupMembers.person.id.eq(personId)
+        .groupRolesAcl.group.groupMembers.person.id.eq(personId).endOr()
+  }
+}
 
 @Singleton
 class ApplicationSqlApi @Inject constructor(
@@ -116,7 +140,6 @@ class ApplicationSqlApi @Inject constructor(
     current: Person,
     loadAll: Boolean
   ): List<Application> {
-    Conversions.nonNullPortfolioId(portfolioId)
     var queryApplicationList = QDbApplication().portfolio.id.eq(portfolioId)
     if (filter != null) {
       queryApplicationList = queryApplicationList.name.ilike("%$filter%")
@@ -126,9 +149,9 @@ class ApplicationSqlApi @Inject constructor(
     }
     queryApplicationList = fetchApplicationOpts(opts, queryApplicationList)
     if (SortOrder.ASC == order) {
-      queryApplicationList = queryApplicationList.order().name.asc()
+      queryApplicationList = queryApplicationList.orderBy().name.asc()
     } else if (SortOrder.DESC == order) {
-      queryApplicationList = queryApplicationList.order().name.desc()
+      queryApplicationList = queryApplicationList.orderBy().name.desc()
     }
     if (!loadAll) {
       Conversions.nonNullPerson(current)
@@ -237,6 +260,11 @@ class ApplicationSqlApi @Inject constructor(
         .description(feature.description)
         .build()
 
+      val resolvedFilters = resolveFilters(feature.featureFilter, app.portfolio.id)
+      if (resolvedFilters.isNotEmpty()) {
+        appFeature.filters = resolvedFilters
+      }
+
       saveApplicationFeature(appFeature)
 
       bumpVersionOfAllEnvironmentsWithFeatureChanged(applicationId)
@@ -343,7 +371,23 @@ class ApplicationSqlApi @Inject constructor(
       if (feature.description != null) {
         appFeature.description = feature.description
       }
-      updateApplicationFeature(appFeature)
+      // update filter associations — replace entirely with whatever is specified (empty list clears them)
+      var forceUpdateFeature = false
+      feature.featureFilter?.let { updatedFilters ->
+        // remove any filters that should no longer be there
+        forceUpdateFeature = appFeature.filters.removeIf { f -> !updatedFilters.contains(f.id) }
+
+        val remainingIds = appFeature.filters.map { it.id }
+
+        updatedFilters.removeAll(remainingIds)
+
+        if (updatedFilters.isNotEmpty()) {
+          forceUpdateFeature = true
+          appFeature.filters.addAll(QDbFeatureFilter().id.`in`(updatedFilters).findList())
+        }
+      }
+
+      updateApplicationFeature(appFeature, forceUpdateFeature)
       if (appFeature.whenArchived == null && changed) {
         cacheSource.publishFeatureChange(appFeature, PublishAction.UPDATE)
       }
@@ -353,8 +397,11 @@ class ApplicationSqlApi @Inject constructor(
   }
 
   @Transactional
-  private fun updateApplicationFeature(appFeature: DbApplicationFeature) {
+  private fun updateApplicationFeature(appFeature: DbApplicationFeature, forceUpdate: Boolean) {
     val changedVersion = appFeature.version
+    if (forceUpdate) {
+      appFeature.markAsDirty() // force a version update
+    }
     appFeature.update()
     if (appFeature.version != changedVersion) {
       cacheSource.publishFeatureChange(appFeature, PublishAction.UPDATE)
@@ -364,6 +411,11 @@ class ApplicationSqlApi @Inject constructor(
   @Transactional
   private fun saveApplicationFeature(f: DbApplicationFeature) {
     f.save()
+  }
+
+  private fun resolveFilters(filterIds: List<java.util.UUID>?, portfolioId: java.util.UUID): List<DbFeatureFilter> {
+    if (filterIds.isNullOrEmpty()) return emptyList()
+    return QDbFeatureFilter().id.`in`(filterIds).portfolio.id.eq(portfolioId).findList()
   }
 
   override fun getApplicationFeatures(appId: UUID, opts: Opts): List<Feature> {
@@ -376,15 +428,20 @@ class ApplicationSqlApi @Inject constructor(
       get() = app != null && appFeature != null
   }
 
-  private fun findAppFeature(appId: UUID, applicationFeatureKeyName: String): AppFeature? {
+  private fun findAppFeature(appId: UUID, applicationFeatureKeyName: String, opts: Opts): AppFeature? {
     val app = convertUtils.byApplication(appId)
     if (app != null) {
-      val appFeature = QDbApplicationFeature()
+      var qAppFeature = QDbApplicationFeature()
         .and().key
         .eq(applicationFeatureKeyName).parentApplication
         .eq(app)
         .endAnd()
-        .findOne()
+
+      if (opts.contains(FillOpts.ServiceAccountFilters) || opts.contains(FillOpts.FeatureFilters)) {
+        qAppFeature = qAppFeature.filters.fetch()
+      }
+
+      val appFeature = qAppFeature.findOne()
       if (appFeature == null) {
         val id = Conversions.checkUuid(applicationFeatureKeyName)
         if (id != null) {
@@ -400,7 +457,7 @@ class ApplicationSqlApi @Inject constructor(
   }
 
   override fun deleteApplicationFeature(appId: UUID, key: String): List<Feature>? {
-    val appFeature = findAppFeature(appId, key) ?: return null
+    val appFeature = findAppFeature(appId, key, Opts.empty()) ?: return null
     if (!appFeature.isValid) {
       return null
     }
@@ -416,7 +473,7 @@ class ApplicationSqlApi @Inject constructor(
   }
 
   override fun getApplicationFeatureByKey(appId: UUID, key: String, opts: Opts): Feature? {
-    val af = findAppFeature(appId, key) ?: return null
+    val af = findAppFeature(appId, key, opts) ?: return null
     return if (af.isValid) convertUtils.toApplicationFeature(af.appFeature, opts)!! else null
   }
 
@@ -478,6 +535,39 @@ class ApplicationSqlApi @Inject constructor(
     }
 
     return ApplicationPermissions().applicationRoles(appPerms.toList()).environments(environments)
+  }
+
+  // they are a creator if they have any of the creator roles
+  override fun personIsFeatureCreatorInPortfolio(
+    portfolioId: UUID,
+    personId: UUID
+  ): Boolean {
+    return personHoldsOneOfApplicationRolesInPortfolio(portfolioId, personId, creatorRoles)
+  }
+
+  // they are a reader if they have any application level role at all
+  override fun personIsFeatureReaderInPortfolio(portfolioId: UUID, personId: UUID): Boolean {
+    return personHoldsOneOfApplicationRolesInPortfolio(portfolioId, personId, emptySet())
+  }
+
+  private fun personHoldsOneOfApplicationRolesInPortfolio(
+    portfolioId: UUID,
+    personId: UUID, roles: Set<ApplicationRoleType>
+  ): Boolean {
+    val query = QDbAcl()
+      .select(QDbAcl.Alias.roles)
+      .application.portfolio.id.eq(portfolioId)
+      .group.whenArchived.isNull
+      .group.groupMembers.person.id.eq(personId)
+
+    if (roles.isNotEmpty()) {
+      return query
+        .findList().any { acl ->
+          convertUtils.splitApplicationRoles(acl.roles).any { o -> roles.contains(o) }
+        }
+    }
+
+    return query.findCount() > 0;
   }
 
   override fun personIsFeatureCreator(appId: UUID, personId: UUID): Boolean {
@@ -563,7 +653,6 @@ class ApplicationSqlApi @Inject constructor(
       .group.whenArchived.isNull()
       .group.groupMembers.person.id.eq(personId)
   }
-
 
   override fun personIsFeatureReader(appId: UUID, personId: UUID): Boolean {
     val person = convertUtils.byPerson(personId)

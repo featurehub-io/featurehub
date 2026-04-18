@@ -11,6 +11,7 @@ import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.QDbAcl
 import io.featurehub.db.model.query.QDbEnvironment
+import io.featurehub.db.model.query.QDbFeatureFilter
 import io.featurehub.db.model.query.QDbServiceAccount
 import io.featurehub.db.model.query.QDbServiceAccountEnvironment
 import io.featurehub.mr.events.common.CacheSource
@@ -37,11 +38,18 @@ class ServiceAccountSqlApi @Inject constructor(
 
   private fun opts(finder: QDbServiceAccount, opts: Opts?): QDbServiceAccount {
     var qFinder = finder
-    if (opts!!.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL)) {
-      qFinder = qFinder.serviceAccountEnvironments.fetch()
-    }
-    if (!opts.contains(FillOpts.Archived)) {
-      qFinder = qFinder.whenArchived.isNull
+    opts?.let { opt ->
+      if (opt.contains(FillOpts.Permissions) || opt.contains(FillOpts.SdkURL)) {
+        qFinder = qFinder.serviceAccountEnvironments.fetch()
+      }
+
+      if (opt.contains(FillOpts.ServiceAccountFilters)) {
+        qFinder = qFinder.featureFilters.fetch()
+      }
+
+      if (!opt.contains(FillOpts.Archived)) {
+        qFinder = qFinder.whenArchived.isNull
+      }
     }
     return qFinder
   }
@@ -55,7 +63,7 @@ class ServiceAccountSqlApi @Inject constructor(
     }
 
     val whoUpdated = convertUtils.byPerson(personId) ?: return null
-    return update(sa, whoUpdated, serviceAccount, appId, opts)
+    return update(sa, whoUpdated, serviceAccount, appId, opts, portfolioId)
   }
 
   @Throws(OptimisticLockingException::class)
@@ -64,7 +72,8 @@ class ServiceAccountSqlApi @Inject constructor(
     updater: Person,
     serviceAccount: ServiceAccount,
     appId: UUID?,
-    opts: Opts
+    opts: Opts,
+    portfolioId: UUID
   ): ServiceAccount? {
     val sa = QDbServiceAccount().id.eq(serviceAccountId).whenArchived.isNull.findOne() ?: return null
 
@@ -72,79 +81,21 @@ class ServiceAccountSqlApi @Inject constructor(
       throw OptimisticLockingException()
     }
     val whoUpdated = convertUtils.byPerson(updater) ?: return null
-    return update(sa, whoUpdated, serviceAccount, appId, opts)
+    return update(sa, whoUpdated, serviceAccount, appId, opts, portfolioId)
   }
 
-  private fun update(sa: DbServiceAccount, whoUpdated: DbPerson, serviceAccount: ServiceAccount, appId: UUID?, opts: Opts): ServiceAccount {
-    val updatedEnvironments: MutableMap<UUID, ServiceAccountPermission> = HashMap()
-    val newEnvironments: MutableList<UUID> = ArrayList()
-    serviceAccount
-      .permissions.forEach { perm: ServiceAccountPermission ->
-        updatedEnvironments[perm.environmentId] = perm
-        newEnvironments.add(perm.environmentId)
-      }
-    val deletePerms = mutableListOf<DbServiceAccountEnvironment>()
-    val updatePerms = mutableListOf<DbServiceAccountEnvironment>()
-    val createPerms = mutableListOf<DbServiceAccountEnvironment>()
+  private fun update(
+    sa: DbServiceAccount,
+    whoUpdated: DbPerson,
+    serviceAccount: ServiceAccount,
+    appId: UUID?,
+    opts: Opts,
+    portfolioId: UUID
+  ): ServiceAccount {
+    val permChanges = ServiceAccountPermsUpdated()
 
-    // we drop out of this knowing which perms to delete and update
-    var finder = QDbServiceAccountEnvironment().environment.id
-      .`in`(updatedEnvironments.keys).serviceAccount
-      .eq(sa)
-
-    // limit our area of interest
-    if (appId != null) {
-      finder = finder.environment.parentApplication.id.eq(appId)
-    }
-
-    finder
-      .findEach { upd: DbServiceAccountEnvironment ->
-        val envId = upd.environment.id
-        val perm = updatedEnvironments[envId]
-        newEnvironments.remove(envId)
-        if (perm == null || perm.permissions.isEmpty()) {
-          deletePerms.add(upd)
-        } else {
-          val newPerms = convertPermissionsToString(perm.permissions)
-          if (newPerms != upd.permissions) {
-            upd.permissions = newPerms
-            updatePerms.add(upd)
-          }
-        }
-      }
-
-    var deleteFinder = QDbServiceAccountEnvironment().environment.id.notIn(updatedEnvironments.keys).serviceAccount.eq(sa)
-
-    if (appId != null) {
-      deleteFinder = deleteFinder.environment.parentApplication.id.eq(appId)
-    }
-
-    deleteFinder.findEach { toDelete ->
-      deletePerms.add(toDelete)
-    }
-
-    // now we need to know which perms to add
-    newEnvironments.forEach { envId: UUID ->
-      val perm = updatedEnvironments[envId]
-      if (perm?.permissions?.isEmpty() == false) {
-        val env = convertUtils.byEnvironment(
-          envId, Opts.opts(FillOpts.ApplicationIds, FillOpts.PortfolioIds)
-        )
-        if (env != null
-          && (env.parentApplication
-            .portfolio
-            .id
-            == sa.portfolio.id)
-        ) {
-          createPerms.add(
-            DbServiceAccountEnvironment.Builder()
-              .environment(env)
-              .serviceAccount(sa)
-              .permissions(convertPermissionsToString(perm.permissions))
-              .build()
-          )
-        }
-      }
+    if (serviceAccount.permsInvalid == null || serviceAccount.permsInvalid == false) {
+      permChanges.update(serviceAccount, appId, sa, convertUtils)
     }
 
     var descUpdated = false
@@ -160,17 +111,134 @@ class ServiceAccountSqlApi @Inject constructor(
       updateAssociatedUser = true
     }
 
-    if (descUpdated || updateAssociatedUser || deletePerms.isNotEmpty() || updatePerms.isNotEmpty() || createPerms.isNotEmpty()) {
+    val filterUpdated = updateFilterOnServiceAccount(serviceAccount, sa, portfolioId)
+
+    if (descUpdated || updateAssociatedUser || filterUpdated || permChanges.hasChanges()) {
       sa.whoChanged = whoUpdated
     }
 
-    asyncUpdateCache(sa, updateServiceAccount(sa, deletePerms, updatePerms, createPerms).values)
+    asyncUpdateCache(sa, updateServiceAccount(sa, permChanges).values)
 
     if (updateAssociatedUser) {
       internalPersonApi.updateSdkServiceAccountUser(sa.sdkPerson.id, whoUpdated, serviceAccount.name)
     }
 
     return convertUtils.toServiceAccount(sa, opts)!!
+  }
+
+  internal class ServiceAccountPermsUpdated {
+    val deletePerms = mutableListOf<DbServiceAccountEnvironment>()
+    val updatePerms = mutableListOf<DbServiceAccountEnvironment>()
+    val createPerms = mutableListOf<DbServiceAccountEnvironment>()
+
+    fun hasChanges() : Boolean {
+      return deletePerms.isNotEmpty() || updatePerms.isNotEmpty() || createPerms.isNotEmpty()
+    }
+
+    val updated : List<DbServiceAccountEnvironment>
+      get() = this.updatePerms
+    val deleted : List<DbServiceAccountEnvironment>
+      get() = this.deletePerms
+    val created : List<DbServiceAccountEnvironment>
+      get() = this.createPerms
+
+
+    fun update(serviceAccount: ServiceAccount, appId: UUID?, sa: DbServiceAccount, convertUtils: Conversions) {
+      val updatedEnvironments: MutableMap<UUID, ServiceAccountPermission> = HashMap()
+      val newEnvironments: MutableList<UUID> = ArrayList()
+      serviceAccount
+        .permissions.forEach { perm: ServiceAccountPermission ->
+          updatedEnvironments[perm.environmentId] = perm
+          newEnvironments.add(perm.environmentId)
+        }
+
+      // we drop out of this knowing which perms to delete and update
+      var finder = QDbServiceAccountEnvironment().environment.id
+        .`in`(updatedEnvironments.keys).serviceAccount
+        .eq(sa)
+
+      // limit our area of interest
+      if (appId != null) {
+        finder = finder.environment.parentApplication.id.eq(appId)
+      }
+
+      finder
+        .findEach { upd: DbServiceAccountEnvironment ->
+          val envId = upd.environment.id
+          val perm = updatedEnvironments[envId]
+          newEnvironments.remove(envId)
+          if (perm == null || perm.permissions.isEmpty()) {
+            deletePerms.add(upd)
+          } else {
+            val newPerms = convertPermissionsToString(perm.permissions)
+            if (newPerms != upd.permissions) {
+              upd.permissions = newPerms
+              updatePerms.add(upd)
+            }
+          }
+        }
+
+      var deleteFinder = QDbServiceAccountEnvironment().environment.id.notIn(updatedEnvironments.keys).serviceAccount.eq(sa)
+
+      if (appId != null) {
+        deleteFinder = deleteFinder.environment.parentApplication.id.eq(appId)
+      }
+
+      deleteFinder.findEach { toDelete ->
+        deletePerms.add(toDelete)
+      }
+
+      // now we need to know which perms to add
+      newEnvironments.forEach { envId: UUID ->
+        val perm = updatedEnvironments[envId]
+        if (perm?.permissions?.isEmpty() == false) {
+          val env = convertUtils.byEnvironment(
+            envId, Opts.opts(FillOpts.ApplicationIds, FillOpts.PortfolioIds)
+          )
+          if (env != null
+            && (env.parentApplication
+              .portfolio
+              .id
+              == sa.portfolio.id)
+          ) {
+            createPerms.add(
+              DbServiceAccountEnvironment.Builder()
+                .environment(env)
+                .serviceAccount(sa)
+                .permissions(convertPermissionsToString(perm.permissions))
+                .build()
+            )
+          }
+        }
+      }
+    }
+
+    private fun convertPermissionsToString(permissions: List<RoleType>): String {
+      return permissions.toSet().joinToString(",") { rt ->
+        rt.value
+      }
+    }
+  }
+
+  private fun updateFilterOnServiceAccount(serviceAccount: ServiceAccount, sa: DbServiceAccount, portfolioId: UUID): Boolean {
+    // Update filter associations from the featureFilters list (null means "don't change", empty list clears)
+    var filterUpdated = false
+
+    serviceAccount.featureFilters?.let { updatedFilters ->
+      // remove the records that we won't use any longer
+      filterUpdated = sa.featureFilters.removeIf { !updatedFilters.contains(it.id) }
+
+      val remainingIds = sa.featureFilters.map { it.id }
+
+      updatedFilters.removeAll(remainingIds)
+
+      if (updatedFilters.isNotEmpty()) {
+        filterUpdated = true
+        val toAdd = QDbFeatureFilter().id.`in`(updatedFilters).portfolio.id.eq(portfolioId).findList()
+        sa.featureFilters.addAll(toAdd)
+      }}
+
+    return filterUpdated
   }
 
   private fun convertPermissionsToString(permissions: List<RoleType>): String {
@@ -334,6 +402,10 @@ class ServiceAccountSqlApi @Inject constructor(
           serviceAccount.name, serviceAccount.description ?: "",
           newServerEvalKey(), newClientEvalKey(), portfolio).let {
       it.serviceAccountEnvironments = perms
+      val filterIds = serviceAccount.featureFilter
+      if (!filterIds.isNullOrEmpty()) {
+        it.featureFilters = QDbFeatureFilter().id.`in`(filterIds).portfolio.id.eq(portfolioId).findList()
+      }
       it
     }
 
@@ -371,19 +443,17 @@ class ServiceAccountSqlApi @Inject constructor(
   @Transactional(type = TxType.REQUIRES_NEW)
   private fun updateServiceAccount(
     sa: DbServiceAccount,
-    deleted: List<DbServiceAccountEnvironment>,
-    updated: List<DbServiceAccountEnvironment>,
-    created: List<DbServiceAccountEnvironment>
+    permChanges: ServiceAccountPermsUpdated
   ) : MutableMap<UUID, DbEnvironment> {
     sa.markAsDirty() // ensure version is changed
     sa.update()
-    updated.forEach { it.update() }
-    deleted.forEach { it.delete() }
-    created.forEach { it.save() }
+    permChanges.updated.forEach { it.update() }
+    permChanges.deleted.forEach { it.delete() }
+    permChanges.created.forEach { it.save() }
     val changed = mutableMapOf<UUID, DbEnvironment>()
-    deleted.forEach { e: DbServiceAccountEnvironment -> changed[e.environment.id] = e.environment }
-    updated.forEach { e: DbServiceAccountEnvironment -> changed[e.environment.id] = e.environment }
-    created.forEach { e: DbServiceAccountEnvironment -> changed[e.environment.id] = e.environment }
+    permChanges.deleted.forEach { e: DbServiceAccountEnvironment -> changed[e.environment.id] = e.environment }
+    permChanges.updated.forEach { e: DbServiceAccountEnvironment -> changed[e.environment.id] = e.environment }
+    permChanges.created.forEach { e: DbServiceAccountEnvironment -> changed[e.environment.id] = e.environment }
     changed.values.forEach { e ->
       e.markAsDirty()
       e.update()

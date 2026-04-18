@@ -31,12 +31,18 @@ interface ApplicationApi {
   @Throws(DuplicateFeatureException::class, OptimisticLockingException::class)
   fun updateApplicationFeature(appId: UUID, feature: Feature, opts: Opts): List<Feature>?
 
-    fun getApplicationFeatures(appId: UUID, opts: Opts): List<Feature>
+  fun getApplicationFeatures(appId: UUID, opts: Opts): List<Feature>
   fun deleteApplicationFeature(appId: UUID, key: String): List<Feature>?
   fun getApplicationFeatureByKey(appId: UUID, key: String, opts: Opts): Feature?
   fun findFeatureEditors(appId: UUID): Set<UUID>
   fun personIsFeatureEditor(appId: UUID, personId: UUID): Boolean
   fun findApplicationPermissions(appId: UUID, personId: UUID): ApplicationPermissions
+
+  /**
+   * All applications under a portfolio. The reasoning them being here is that its all in application logic.
+   */
+  fun personIsFeatureCreatorInPortfolio(portfolioId: UUID, personId: UUID): Boolean
+  fun personIsFeatureReaderInPortfolio(portfolioId: UUID, personId: UUID): Boolean
 
   /**
    * Those who can create features

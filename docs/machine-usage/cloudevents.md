@@ -17,6 +17,7 @@ The central project is `eventing-cloudevents` and then there are event platform 
 - NATS - `eventing-nats` - NATS is represented by https://nats.io/
 - Google PubSub - `eventing-google-pubsub` 
 - Amazon Kinesis - `eventing-kinesis`. 
+- Apache Kafka - `eventing-kafka`.
 
 Google PubSub is different from NATS and Kinesis because in NATs and Kinesis, the channel and its subscribers are a single stream and their naming is part of the subscription process to a stream. In Google Pubsub, subscribers are a distinct entity - so that subscribers need to be dynamically created when a process starts and destroyed when the process is complete. For example, in the `feature-only-channel`, Google PubSub has two different subscribers because it needs to receive the message in two different applications (edge and dacha2). Each instance of these applications will create their own new subscribers (and destroy them on completion). 
 

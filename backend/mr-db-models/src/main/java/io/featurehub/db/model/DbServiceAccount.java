@@ -6,12 +6,16 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -62,6 +66,13 @@ public class DbServiceAccount extends DbVersionedBase {
   @Column(name = "when_archived")
   @Nullable
   private LocalDateTime whenArchived;
+
+  @ManyToMany
+  @JoinTable(
+      name = "fh_service_account_filter",
+      joinColumns = @JoinColumn(name = "fk_service_account_id"),
+      inverseJoinColumns = @JoinColumn(name = "fk_filter_id"))
+  private List<DbFeatureFilter> featureFilters = new ArrayList<>();
 
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_portfolio_id")
@@ -175,5 +186,13 @@ public class DbServiceAccount extends DbVersionedBase {
 
   public void setApiKeyClientEval(@NotNull String apiKeyClientEval) {
     this.apiKeyClientEval = apiKeyClientEval;
+  }
+
+  public @NotNull List<DbFeatureFilter> getFeatureFilters() {
+    return featureFilters;
+  }
+
+  public void setFeatureFilters(@NotNull List<DbFeatureFilter> featureFilters) {
+    this.featureFilters = featureFilters;
   }
 }

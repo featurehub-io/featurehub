@@ -102,9 +102,7 @@ class ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
 
   void _createServiceAccount(ManageServiceAccountsBloc bloc) {
     bloc.mrClient.addOverlay((BuildContext context) {
-      return ServiceAccountUpdateDialogWidget(
-        bloc: bloc,
-      );
+      return updateServiceAccountDialog(bloc, null);
     });
   }
 }

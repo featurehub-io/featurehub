@@ -62,6 +62,7 @@ class PerApplicationFeaturesBloc
   int currentRowsPerPage = 5;
   List<FeatureValueType> selectedFeatureTypesByUser = [];
   List<String> selectedEnvironmentNamesByUser = [];
+  List<String> selectedFeatureFilterIdsByUser = [];
 
   final _hiddenEnvironmentSource = BehaviorSubject<HiddenEnvironments?>();
   Stream<List<Application>?> get applications => _appSearchResultSource.stream;
@@ -250,14 +251,16 @@ class PerApplicationFeaturesBloc
       FeatureValueType featureValueType,
       String featureAlias,
       String featureLink,
-      String featureDescription) async {
+      String featureDescription,
+      {List<String>? featureFilterIds}) async {
     final feature = CreateFeature(
         name: name,
         valueType: featureValueType,
         key: key,
         alias: featureAlias,
         link: featureLink,
-        description: featureDescription);
+        description: featureDescription,
+        featureFilter: featureFilterIds);
     List<Feature> allFeatures = await _featureServiceApi
         .createFeaturesForApplication(applicationId!, feature);
 
@@ -275,7 +278,8 @@ class PerApplicationFeaturesBloc
       String newKey,
       String newFeatureAlias,
       String newFeatureLink,
-      String newFeatureDescription) async {
+      String newFeatureDescription,
+      {List<String>? featureFilterIds}) async {
     final currentFeature =
         await _featureServiceApi.getFeatureByKey(applicationId!, feature.key);
     final newFeature = currentFeature
@@ -283,6 +287,7 @@ class PerApplicationFeaturesBloc
       ..alias = newFeatureAlias
       ..link = newFeatureLink
       ..description = newFeatureDescription
+      ..featureFilter = featureFilterIds
       ..key = newKey;
     await _featureServiceApi.updateFeatureForApplication(
         applicationId!, feature.key, newFeature);
@@ -325,7 +330,8 @@ class PerApplicationFeaturesBloc
       String searchTerm,
       List<FeatureValueType> featureTypes,
       int rowsPerPage,
-      int pageOffset) async {
+      int pageOffset,
+      {List<String>? featureFilterIds}) async {
     fhosLogger.fine(
         "started: getApplicationFeatureValuesData with $appId search $searchTerm");
     if (!_hiddenEnvironmentSource.hasValue) {
@@ -339,6 +345,7 @@ class PerApplicationFeaturesBloc
             page: pageOffset,
             filter: searchTerm,
             featureTypes: featureTypes,
+            featureFilter: featureFilterIds,
             environmentIds: (hiddenEnvs.environmentIds.isEmpty &&
                     (hiddenEnvs.noneSelected != true))
                 ? null
@@ -351,6 +358,7 @@ class PerApplicationFeaturesBloc
     totalFeatures = allFeatureValues.maxFeatures;
     currentPageIndex = pageOffset;
     selectedFeatureTypesByUser = featureTypes;
+    selectedFeatureFilterIdsByUser = featureFilterIds ?? [];
     currentRowsPerPage = rowsPerPage;
     fhosLogger.fine(
         "finished: getApplicationFeatureValuesData with $appId search $searchTerm");
@@ -358,7 +366,8 @@ class PerApplicationFeaturesBloc
 
   Future<void> updateApplicationFeatureValuesStream() async {
     await getApplicationFeatureValuesData(applicationId!, searchFieldTerm,
-        selectedFeatureTypesByUser, currentRowsPerPage, currentPageIndex);
+        selectedFeatureTypesByUser, currentRowsPerPage, currentPageIndex,
+        featureFilterIds: selectedFeatureFilterIdsByUser);
   }
 
   EditingFeatureValueBloc perFeatureStateTrackingBloc(
@@ -372,5 +381,9 @@ class PerApplicationFeaturesBloc
         environmentFeatureValue,
         this,
         _appFeatureValues.value!.applicationFeatureValues);
+  }
+
+  Future<Feature>? loadFreshFeature(String featureKey) async {
+    return _featureServiceApi.getFeatureByKey(applicationId!, featureKey, includeFilters: true);
   }
 }

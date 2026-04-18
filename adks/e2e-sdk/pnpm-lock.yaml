@@ -35,8 +35,8 @@ importers:
         specifier: ^1.3.2
         version: 1.3.5
       axios:
-        specifier: 1.13.5
-        version: 1.13.5
+        specifier: 1.15.0
+        version: 1.15.0
       chai:
         specifier: ^4.3.7
         version: 4.5.0
@@ -49,6 +49,9 @@ importers:
       featurehub-cloud-event-tools:
         specifier: ^1.0.0
         version: 1.0.0
+      featurehub-javascript-core-sdk:
+        specifier: ^2.0.2
+        version: 2.0.2
       featurehub-javascript-node-sdk:
         specifier: ^2.0.1
         version: 2.0.1
@@ -297,8 +300,8 @@ packages:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
 
-  axios@1.13.5:
-    resolution: {integrity: sha512-cz4ur7Vb0xS4/KUN0tPWe44eqxrIu31me+fbang3ijiNscE129POzipJJA6zniq2C/Z6sJCjMimjS8Lc/GAs8Q==}
+  axios@1.15.0:
+    resolution: {integrity: sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==}
 
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
@@ -510,8 +513,8 @@ packages:
   featurehub-cloud-event-tools@1.0.0:
     resolution: {integrity: sha512-5Vxtd0MmnXGyFgb67t7WQVME3ANlfLKcuHDqXET3XUqqAI9QMwvoKt2A8C7kzb57P7PWCesB4fJk26148Aw8lw==}
 
-  featurehub-javascript-core-sdk@2.0.1:
-    resolution: {integrity: sha512-pYfdDyenEU3+RMXw/06V0HvilWSbD5qt44xZcRvAB7ddlr5Ps+ZiKTdf4qS46yUa50iDezT9Q8gGCLLI+Jxcrw==}
+  featurehub-javascript-core-sdk@2.0.2:
+    resolution: {integrity: sha512-Dn3AuVEU/yFx9w1O9XyWOeaGhXh4UQuTQs7PeGTN1CafJmjJaYTmljgN1P7qcQbMQg0ccsFBWb2WTuceBwDy0A==}
     engines: {node: '>=20.0.0'}
 
   featurehub-javascript-node-sdk@2.0.1:
@@ -873,8 +876,9 @@ packages:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
 
-  proxy-from-env@1.1.0:
-    resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
+  proxy-from-env@2.1.0:
+    resolution: {integrity: sha512-cJ+oHTW1VAEa8cJslgmUZrc+sjRKgAKl3Zyse6+PV38hZe/V6Z14TbCuXcan9F9ghlz4QrFr2c92TNF82UkYHA==}
+    engines: {node: '>=10'}
 
   qs@6.15.0:
     resolution: {integrity: sha512-mAZTtNCeetKMH+pSjrb76NAM8V9a05I9aBZOHztWy/UqcJdQYNsf59vrRKWnojAT9Y+GbIvoTBC++CPHqpDBhQ==}
@@ -1459,11 +1463,11 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.1.0
 
-  axios@1.13.5:
+  axios@1.15.0:
     dependencies:
       follow-redirects: 1.15.11
       form-data: 4.0.5
-      proxy-from-env: 1.1.0
+      proxy-from-env: 2.1.0
     transitivePeerDependencies:
       - debug
 
@@ -1699,7 +1703,7 @@ snapshots:
     dependencies:
       cloudevents: 8.0.3
 
-  featurehub-javascript-core-sdk@2.0.1:
+  featurehub-javascript-core-sdk@2.0.2:
     dependencies:
       murmurhash: 2.0.1
       netmask: 2.0.2
@@ -1708,7 +1712,7 @@ snapshots:
   featurehub-javascript-node-sdk@2.0.1:
     dependencies:
       eventsource: 4.1.0
-      featurehub-javascript-core-sdk: 2.0.1
+      featurehub-javascript-core-sdk: 2.0.2
 
   fecha@4.2.3: {}
 
@@ -2034,7 +2038,7 @@ snapshots:
       forwarded: 0.2.0
       ipaddr.js: 1.9.1
 
-  proxy-from-env@1.1.0: {}
+  proxy-from-env@2.1.0: {}
 
   qs@6.15.0:
     dependencies:

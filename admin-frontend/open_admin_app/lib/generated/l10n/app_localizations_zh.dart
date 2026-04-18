@@ -241,6 +241,91 @@ class AppLocalizationsZh extends AppLocalizations {
   String get managePortfoliosDocumentation => '项目组合管理文档';
 
   @override
+  String get featureFilters => '功能过滤器';
+
+  @override
+  String get manageFeatureFilters => '管理功能过滤器';
+
+  @override
+  String get featureFiltersDocumentation => '功能过滤器文档';
+
+  @override
+  String get createNewFeatureFilter => '创建新功能过滤器';
+
+  @override
+  String get editFeatureFilter => '编辑功能过滤器';
+
+  @override
+  String get noFeatureFiltersFound => '项目组合中未找到过滤器。';
+
+  @override
+  String get filterNameLabel => '过滤器名称';
+
+  @override
+  String get filterDescriptionLabel => '过滤器描述';
+
+  @override
+  String get filterTableDescriptionLabel => '描述';
+
+  @override
+  String get filterNameRequired => '请输入过滤器名称';
+
+  @override
+  String get filterNameTooShort => '过滤器名称至少需要 4 个字符';
+
+  @override
+  String get filterDescriptionRequired => '请输入过滤器描述';
+
+  @override
+  String get filterDescriptionTooShort => '过滤器描述至少需要 4 个字符';
+
+  @override
+  String filterCreated(String name) {
+    return '功能过滤器「$name」已创建！';
+  }
+
+  @override
+  String filterUpdated(String name) {
+    return '功能过滤器「$name」已更新！';
+  }
+
+  @override
+  String filterDeleted(String name) {
+    return '功能过滤器「$name」已删除！';
+  }
+
+  @override
+  String appPlusFeatureCountSingular(String appName, int count) {
+    return '$appName ($count feature)';
+  }
+
+  @override
+  String appPlusFeatureCountPlural(String appName, int count) {
+    return '$appName ($count features)';
+  }
+
+  @override
+  String get filterDeleteContent => '删除此过滤器会将其从所有功能和服务账号中移除。\n\n此操作无法撤销！';
+
+  @override
+  String get appsUsingFilter => '应用程序/功能';
+
+  @override
+  String get saUsingFilter => '服务账号';
+
+  @override
+  String get selectFiltersToApply => '选择要应用的过滤器';
+
+  @override
+  String get matchingServiceAccounts => '使用过滤器的服务账号';
+
+  @override
+  String get matchingFeatures => '使用过滤器的应用程序';
+
+  @override
+  String get filterByFeatureFilters => '按功能过滤器筛选';
+
+  @override
   String get createNewPortfolio => '创建新项目组合';
 
   @override

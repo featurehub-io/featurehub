@@ -50,7 +50,7 @@
   </scm>
 
   <properties>
-    <log4j.version>2.25.3</log4j.version>
+    <log4j.version>2.25.4</log4j.version>
     <lmax.disruptor>4.0.0</lmax.disruptor>
   </properties>
 

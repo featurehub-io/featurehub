@@ -18,6 +18,8 @@ public enum FillOpts {
   SdkURL,
   IgnoreEmptyPermissions,
   ServiceAccountPermissionFilter,
+  ServiceAccountFilters,
+  FeatureFilters,
   RolloutStrategies,
   MetaData, // include meta-data for features and feature values
   Archived, // include archived records

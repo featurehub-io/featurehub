@@ -1,0 +1,371 @@
+openapi: 3.0.1
+info:
+  title: ManagementResourceApi
+  description: This describes the API clients use for accessing features. This reflects the API from 1.5.7 onwards.
+paths:
+  /mr-api/portfolio/{id}/feature-filter/matching/{matchType}:
+    parameters:
+      - name: id
+        description: "the portfolio this feature filter belongs to"
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: filters
+        description: "The list of filters to find service accounts/applications for"
+        in: query
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+      - name: matchType
+        in: path
+        required: true
+        description: "Application (with features) or Service Account as desired"
+        schema:
+          $ref: "#/components/schemas/MatchTypeEnum"
+    get:
+      tags:
+        - FeatureFilterService
+      security:
+        - bearerAuth: [ ]
+      operationId: getMatchingFilters
+      responses:
+        200:
+          description: "Service Account Details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchingFilterResults"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+  /mr-api/portfolio/{id}/feature-filter/{filterId}:
+    parameters:
+      - name: id
+        description: "the portfolio this feature filter belongs to"
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: filterId
+        description: "the feature filter id"
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags:
+        - FeatureFilterService
+      security:
+        - bearerAuth: [ ]
+      operationId: getFeatureFilter
+      responses:
+        200:
+          description: "The feature filter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureFilter"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "No such filter or portfolio"
+        409:
+          description: "Optimistic locking failure"
+    delete:
+      parameters:
+        - name: version
+          description: "The version of the feature you are trying to delete, must be passed, must be current"
+          in: query
+          required: true
+          schema:
+            type: integer
+      tags:
+        - FeatureFilterService
+      security:
+        - bearerAuth: [ ]
+      operationId: deleteFeatureFilter
+      description: "Delete the filter, it must have the same ID and version as the existing one to be successfully deleted."
+      responses:
+        200:
+          description: "Deleted feature filter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureFilter"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "No such filter or portfolio"
+        409:
+          description: "Optimistic locking failure"
+  /mr-api/portfolio/{id}/feature-filter:
+    parameters:
+      - name: id
+        description: "the portfolio this feature filter belongs to"
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags:
+        - FeatureFilterService
+      security:
+        - bearerAuth: [ ]
+      operationId: createFeatureFilter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFeatureFilter"
+      responses:
+        201:
+          description: "Created feature filter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureFilter"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "No such filter or portfolio"
+    put:
+      tags:
+        - FeatureFilterService
+      security:
+        - bearerAuth: [ ]
+      operationId: updateFeatureFilter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeatureFilter"
+      responses:
+        200:
+          description: "Updated feature filter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureFilter"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "No such filter or portfolio"
+        409:
+          description: "Optimistic locking failure"
+
+    get:
+      description: "Gets all of the feature filters listed in this portfolio with appropriate filtering"
+      tags:
+        - FeatureFilterService
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: filter
+          description: "include environments for each account"
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: max
+          description: "The maximum number of features to get for this page"
+          in: query
+          schema:
+            type: integer
+          required: false
+        - name: page
+          description: "The page number of the results. 0 indexed."
+          in: query
+          schema:
+            type: integer
+          required: false
+        - name: sortOrder
+          in: query
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+          required: false
+        - name: includeDetails
+          in: query
+          required: false
+          description: "Should we include all of the details of the search result or just the id and name"
+          schema:
+            type: boolean
+      operationId: findFeatureFilters
+      responses:
+        200:
+          description: "List of feature filters found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchFeatureFilterResult"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+components:
+  schemas:
+    SearchFeatureFilterResult:
+      type: object
+      description: "The result of a search for feature filters"
+      required:
+        - max
+      properties:
+        pagination:
+          $ref: "#/components/schemas/PaginationResult"
+        filters:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchFeatureFilterItem"
+    CreateFeatureFilter:
+      type: object
+      description: "A filter used by an API key to determine what kind of features it should send to the client"
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: "Unique within this portfolio"
+        description:
+          nullable: true
+          type: string
+          maxLength: 300
+    FeatureFilter:
+      type: object
+      description: "A filter used by an API key to determine what kind of features it should send to the client"
+      required:
+        - id
+        - name
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: "Unique within this portfolio"
+          maxLength: 60
+        description:
+          nullable: true
+          type: string
+          maxLength: 300
+        version:
+          nullable: false
+          type: integer
+        whoCreated:
+          $ref: "#/components/schemas/OptionalAnemicPerson"
+    SearchFeatureFilterServiceAccount:
+      type: object
+      description: "Details the service accounts that use this filter"
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    SearchFeatureFilterFeature:
+      type: object
+      description: "Details the feature key and which application it is that is using this feature filter."
+      required:
+        - id
+        - key
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+    SearchFeatureFilterApplication:
+      type: object
+      description: "An application which contains features. Features can be null or empty if the user has no permission."
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        features:
+          description: "If the user has permission to this application, the features that match."
+          nullable: true
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchFeatureFilterFeature"
+    SearchFeatureFilterItem:
+      allOf:
+        - $ref: "#/components/schemas/FeatureFilter"
+        - type: object
+          properties:
+            serviceAccounts:
+              nullable: true
+              type: array
+              items:
+                $ref: "#/components/schemas/SearchFeatureFilterServiceAccount"
+            applications:
+              description: "The applications, if any that have features that used this filter."
+              nullable: true
+              type: array
+              items:
+                $ref: "#/components/schemas/SearchFeatureFilterApplication"
+    MatchingFilter:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    MatchingFilterResult:
+      type: object
+      description: "Describes the service account or application and its matching filters, depending on what was requested"
+      properties:
+        name:
+          type: string
+        id:
+          type: string
+          format: uuid
+        description:
+          type: string
+          nullable: true
+        matchingFilters:
+          type: array
+          description: "The filters that matched those requested. May not be all."
+          items:
+            $ref: "#/components/schemas/MatchingFilter"
+    MatchingFilterResults:
+      description: "When a user requests what service accounts or applications (with features) are available for a list of filters, this is the primary object returned.
+                    It is the same return data for service accounts and applications."
+      type: object
+      properties:
+        matchingResults:
+          type: array
+          items:
+            $ref: "#/components/schemas/MatchingFilterResult"
+    MatchTypeEnum:
+      type: string
+      enum:
+        - applications
+        - serviceaccounts
+

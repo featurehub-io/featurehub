@@ -1,13 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/fhos_logger.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
+import 'package:open_admin_app/third_party/chips_input.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
+import 'package:open_admin_app/widgets/common/fh_error.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
+import 'package:open_admin_app/widgets/common/fh_loading_indicator.dart';
+import 'package:open_admin_app/widgets/portfolio/feature_filter_bloc.dart';
 import 'package:openapi_dart_common/openapi.dart';
+import 'package:bloc_provider/bloc_provider.dart';
 
 import '../per_application_features_bloc.dart';
+
+Widget createFeatureDialog(PerApplicationFeaturesBloc bloc, Feature? feature) {
+  return BlocProvider<FeatureFilterBloc>.builder(creator: (c,b) => FeatureFilterBloc(bloc.mrClient),
+      builder: (c,b) {
+        if (feature == null) {
+          return CreateFeatureDialogWidget(bloc: bloc);
+        }
+
+        return FutureBuilder(
+            future: bloc.loadFreshFeature(feature.key),
+            builder: (context, asyncSnapshot) {
+              if (asyncSnapshot.hasError) {
+                return FHErrorWidget(error: FHError(
+                    AppLocalizations.of(context)!.errorNotFound));
+              }
+
+              if (asyncSnapshot.hasData) {
+                return CreateFeatureDialogWidget(
+                    bloc: bloc, feature: asyncSnapshot.data);
+              }
+
+              return FHLoadingIndicator();
+            }
+        );
+      }
+  );
+}
 
 class CreateFeatureDialogWidget extends StatefulWidget {
   final Feature? feature;
@@ -36,10 +69,13 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
   bool isUpdate = false;
   bool isError = false;
   FeatureValueType? _dropDownFeatureTypeValue;
+  final List<SearchFeatureFilterItem> _selectedFilters = [];
+  late FeatureFilterBloc _filterBloc;
 
   @override
   void initState() {
     super.initState();
+    _filterBloc = BlocProvider.of<FeatureFilterBloc>(context);
     if (widget.feature != null) {
       _featureName.text = widget.feature!.name;
       _featureKey.text = widget.feature!.key;
@@ -48,7 +84,30 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
       _featureDesc.text = widget.feature!.description ?? '';
       _dropDownFeatureTypeValue = widget.feature!.valueType;
       isUpdate = true;
+
+      // Initialize filters
+      fhosLogger.fine("features are ${widget.feature}");
+      if (widget.feature!.featureFilter != null && widget.feature!.featureFilter!.isNotEmpty) {
+        fhosLogger.fine("checking for filter stream");
+        _filterBloc.filterResultStream.take(1).listen((result) {
+          fhosLogger.fine("filter stream is ${result}");
+          if (result != null) {
+            setState(() {
+              _selectedFilters.addAll(result.filters.where((f) => widget.feature!.featureFilter!.contains(f.id)));
+              fhosLogger.fine("found matching ${_selectedFilters}");
+              _updateMatching();
+            });
+          }
+        });
+      }
     }
+  }
+
+  void _updateMatching() {
+    _filterBloc.findMatchingResults(
+      _selectedFilters.map((f) => f.id).toList(),
+      MatchTypeEnum.serviceaccounts,
+    );
   }
 
   @override
@@ -73,121 +132,112 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
             : (isReadOnly ? l10n.viewFeature : l10n.editFeature)),
         content: SizedBox(
           width: 500,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TextFormField(
-                  controller: _featureName,
-                  decoration: InputDecoration(labelText: l10n.featureNameLabel),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                TextFormField(
+                    controller: _featureName,
+                    decoration: InputDecoration(labelText: l10n.featureNameLabel),
+                    readOnly: isReadOnly,
+                    autofocus: true,
+                    onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                    validator: ((v) {
+                      if (v == null || v.isEmpty) {
+                        return l10n.featureNameRequired;
+                      }
+                      if (v.length < 4) {
+                        return l10n.featureNameTooShort;
+                      }
+                      return null;
+                    })),
+                TextFormField(
+                    controller: _featureKey,
+                    readOnly: isReadOnly,
+                    decoration: InputDecoration(
+                        labelText: l10n.featureKeyLabel,
+                        hintText: l10n.featureKeyHint,
+                        hintStyle: Theme.of(context).textTheme.bodySmall),
+                    onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                    validator: ((v) {
+                      if (v == null || v.isEmpty) {
+                        return l10n.featureKeyRequired;
+                      }
+                      if (!validateFeatureKey(v)) {
+                        return l10n.featureKeyNoWhitespace;
+                      }
+                      return null;
+                    })),
+                TextFormField(
                   readOnly: isReadOnly,
-                  autofocus: true,
+                  controller: _featureDesc,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                  validator: ((v) {
-                    if (v == null || v.isEmpty) {
-                      return l10n.featureNameRequired;
-                    }
-                    if (v.length < 4) {
-                      return l10n.featureNameTooShort;
-                    }
-                    return null;
-                  })),
-              TextFormField(
-                  controller: _featureKey,
-                  readOnly: isReadOnly,
                   decoration: InputDecoration(
-                      labelText: l10n.featureKeyLabel,
-                      hintText: l10n.featureKeyHint,
+                      labelText: l10n.featureDescriptionLabel,
+                      hintText: l10n.featureDescriptionHint,
                       hintStyle: Theme.of(context).textTheme.bodySmall),
+                ),
+                TextFormField(
+                  readOnly: isReadOnly,
+                  controller: _featureLink,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                  validator: ((v) {
-                    if (v == null || v.isEmpty) {
-                      return l10n.featureKeyRequired;
-                    }
-                    if (!validateFeatureKey(v)) {
-                      return l10n.featureKeyNoWhitespace;
-                    }
-                    return null;
-                  })),
-//Comment out Alias key until we implement proper analytics
-//              TextFormField(
-//                  controller: _featureAlias,
-//              readOnly: isReadOnly,
-//                  // initialValue: _featureName.toString(),
-//                  decoration: InputDecoration(
-//                      labelText: 'Alias key (optional)',
-//                      hintText:
-//                          "Use alias key as a 'secret' alternative to the feature key",
-//                      hintStyle: Theme.of(context).textTheme.bodySmall),
-//                  validator: ((v) {
-//                    if (v.isNotEmpty && !validateFeatureKey(v)) {
-//                      return ('Can only include letters, numbers and underscores');
-//                    }
-//                    return null;
-//                  })),
-              TextFormField(
-                readOnly: isReadOnly,
-                controller: _featureDesc,
-                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                decoration: InputDecoration(
-                    labelText: l10n.featureDescriptionLabel,
-                    hintText: l10n.featureDescriptionHint,
-                    hintStyle: Theme.of(context).textTheme.bodySmall),
-              ),
-              TextFormField(
-                readOnly: isReadOnly,
-                controller: _featureLink,
-                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                decoration: InputDecoration(
-                    labelText: l10n.featureLinkLabel,
-                    hintText: l10n.featureLinkHint,
-                    hintStyle: Theme.of(context).textTheme.bodySmall),
-              ),
-              if (!isUpdate)
-                Padding(
-                  padding: const EdgeInsets.only(top: 14.0),
-                  child: InkWell(
-                    mouseCursor: SystemMouseCursors.click,
-                    child: DropdownButton(
-                      icon: const Padding(
-                        padding: EdgeInsets.only(left: 8.0),
-                        child: Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 18,
+                  decoration: InputDecoration(
+                      labelText: l10n.featureLinkLabel,
+                      hintText: l10n.featureLinkHint,
+                      hintStyle: Theme.of(context).textTheme.bodySmall),
+                ),
+                if (!isUpdate)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 14.0),
+                    child: InkWell(
+                      mouseCursor: SystemMouseCursors.click,
+                      child: DropdownButton(
+                        icon: const Padding(
+                          padding: EdgeInsets.only(left: 8.0),
+                          child: Icon(
+                            Icons.keyboard_arrow_down,
+                            size: 18,
+                          ),
                         ),
+                        isExpanded: false,
+                        items: FeatureValueType.values
+                            .map((FeatureValueType dropDownStringItem) {
+                          return DropdownMenuItem<FeatureValueType>(
+                              value: dropDownStringItem,
+                              child: Text(
+                                  _transformValuesToString(dropDownStringItem, l10n),
+                                  style: Theme.of(context).textTheme.bodyMedium));
+                        }).toList(),
+                        hint: Text(l10n.selectFeatureType,
+                            style: Theme.of(context).textTheme.titleSmall),
+                        onChanged: (Object? value) {
+                          if (!isReadOnly) {
+                            setState(() {
+                              _dropDownFeatureTypeValue =
+                                  value as FeatureValueType?;
+                            });
+                          }
+                        },
+                        value: _dropDownFeatureTypeValue,
                       ),
-                      isExpanded: false,
-                      items: FeatureValueType.values
-                          .map((FeatureValueType dropDownStringItem) {
-                        return DropdownMenuItem<FeatureValueType>(
-                            value: dropDownStringItem,
-                            child: Text(
-                                _transformValuesToString(dropDownStringItem, l10n),
-                                style: Theme.of(context).textTheme.bodyMedium));
-                      }).toList(),
-                      hint: Text(l10n.selectFeatureType,
-                          style: Theme.of(context).textTheme.titleSmall),
-                      onChanged: (Object? value) {
-                        if (!isReadOnly) {
-                          setState(() {
-                            _dropDownFeatureTypeValue =
-                                value as FeatureValueType?;
-                          });
-                        }
-                      },
-                      value: _dropDownFeatureTypeValue,
                     ),
                   ),
-                ),
-              if (isError)
-                Text(
-                  l10n.selectFeatureType,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium!
-                      .copyWith(color: Theme.of(context).colorScheme.error),
-                ),
-            ],
+                if (isError)
+                  Text(
+                    l10n.selectFeatureType,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium!
+                        .copyWith(color: Theme.of(context).colorScheme.error),
+                  ),
+                const SizedBox(height: 24),
+                Text(l10n.selectFiltersToApply, style: Theme.of(context).textTheme.titleSmall),
+                _filtersChips(l10n, isReadOnly),
+                const SizedBox(height: 16),
+                _buildMatchingPreview(l10n),
+              ],
+            ),
           ),
         ),
         actions: <Widget>[
@@ -205,6 +255,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                 onPressed: (() async {
                   if (_formKey.currentState!.validate()) {
                     try {
+                      final filterIds = _selectedFilters.map((f) => f.id).toList();
                       if (isUpdate) {
                         await widget.bloc.updateFeature(
                             widget.feature!,
@@ -212,7 +263,8 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                             _featureKey.text,
                             _featureAlias.text,
                             _featureLink.text,
-                            _featureDesc.text);
+                            _featureDesc.text,
+                            featureFilterIds: filterIds);
                         widget.bloc.mrClient.removeOverlay();
                         await widget.bloc
                             .updateApplicationFeatureValuesStream();
@@ -226,7 +278,8 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                               _dropDownFeatureTypeValue!,
                               _featureAlias.text,
                               _featureLink.text,
-                              _featureDesc.text);
+                              _featureDesc.text,
+                              featureFilterIds: filterIds);
                           widget.bloc.mrClient.removeOverlay();
                           widget.bloc.updateApplicationFeatureValuesStream();
                           widget.bloc.mrClient.addSnackbar(
@@ -249,6 +302,71 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                 }))
         ],
       ),
+    );
+  }
+
+  Widget _filtersChips(AppLocalizations l10n, bool isReadOnly) {
+    fhosLogger.fine("filters are ${_selectedFilters}");
+    return ChipsInput<SearchFeatureFilterItem>(
+      initialValue: _selectedFilters,
+      enabled: !isReadOnly,
+      decoration: InputDecoration(hintText: l10n.selectFiltersToApply),
+      findSuggestions: (query) async {
+        final existingIds = _selectedFilters.map((sf) => sf.id);
+        final result = (await _filterBloc.findFeatureFilters(
+          filter: query,
+        )).filters.where((f) => !existingIds.contains(f.id)).toList();
+
+        fhosLogger.fine("All filters are ${result}");
+        return result;
+      },
+      onChanged: (data) {
+        setState(() {
+          fhosLogger.fine("replacing selected filters ${data}");
+          _selectedFilters.clear();
+          _selectedFilters.addAll(data);
+          _updateMatching();
+        });
+      },
+      chipBuilder: (context, state, filter) {
+        return InputChip(
+          key: ObjectKey(filter),
+          label: Text(filter.name),
+          onDeleted: isReadOnly ? null : () => state.deleteChip(filter),
+        );
+      },
+      suggestionBuilder: (context, state, filter) {
+        return ListTile(
+          key: ObjectKey(filter),
+          title: Text(filter.name),
+          subtitle: Text(filter.description ?? ''),
+          onTap: () => state.selectSuggestion(filter),
+        );
+      },
+    );
+  }
+
+  Widget _buildMatchingPreview(AppLocalizations l10n) {
+    return StreamBuilder<MatchingFilterResults?>(
+      stream: _filterBloc.matchingResultsStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.matchingResults.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final res = snapshot.data!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.matchingServiceAccounts, style: Theme.of(context).textTheme.bodySmall),
+            Wrap(
+              spacing: 8,
+              children: res.matchingResults.map((m) => Chip(label: Text(m.name))).toList(),
+            ),
+            const SizedBox(height: 8),
+          ],
+        );
+      },
     );
   }
 

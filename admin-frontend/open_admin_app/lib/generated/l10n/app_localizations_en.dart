@@ -247,6 +247,94 @@ class AppLocalizationsEn extends AppLocalizations {
   String get managePortfoliosDocumentation => 'Manage Portfolios Documentation';
 
   @override
+  String get featureFilters => 'Feature Filters';
+
+  @override
+  String get manageFeatureFilters => 'Manage feature filters';
+
+  @override
+  String get featureFiltersDocumentation => 'Feature Filters Documentation';
+
+  @override
+  String get createNewFeatureFilter => 'Create new feature filter';
+
+  @override
+  String get editFeatureFilter => 'Edit feature filter';
+
+  @override
+  String get noFeatureFiltersFound => 'No filters were found in the portfolio.';
+
+  @override
+  String get filterNameLabel => 'Filter name';
+
+  @override
+  String get filterDescriptionLabel => 'Filter description';
+
+  @override
+  String get filterTableDescriptionLabel => 'Description';
+
+  @override
+  String get filterNameRequired => 'Please enter a filter name';
+
+  @override
+  String get filterNameTooShort =>
+      'Filter name needs to be at least 4 characters long';
+
+  @override
+  String get filterDescriptionRequired => 'Please enter a filter description';
+
+  @override
+  String get filterDescriptionTooShort =>
+      'Filter description needs to be at least 4 characters long';
+
+  @override
+  String filterCreated(String name) {
+    return 'Feature filter \'$name\' created!';
+  }
+
+  @override
+  String filterUpdated(String name) {
+    return 'Feature filter \'$name\' updated!';
+  }
+
+  @override
+  String filterDeleted(String name) {
+    return 'Feature filter \'$name\' deleted!';
+  }
+
+  @override
+  String appPlusFeatureCountSingular(String appName, int count) {
+    return '$appName ($count feature)';
+  }
+
+  @override
+  String appPlusFeatureCountPlural(String appName, int count) {
+    return '$appName ($count features)';
+  }
+
+  @override
+  String get filterDeleteContent =>
+      'Deleting this filter will remove it from all features and service accounts.\n\nThis cannot be undone!';
+
+  @override
+  String get appsUsingFilter => 'Applications/Features';
+
+  @override
+  String get saUsingFilter => 'Service Accounts';
+
+  @override
+  String get selectFiltersToApply => 'Select filters to apply';
+
+  @override
+  String get matchingServiceAccounts => 'Service Accounts using filter';
+
+  @override
+  String get matchingFeatures => 'Applications using filter';
+
+  @override
+  String get filterByFeatureFilters => 'Filter by feature filters';
+
+  @override
   String get createNewPortfolio => 'Create new portfolio';
 
   @override

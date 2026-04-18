@@ -240,6 +240,96 @@
   "managePortfoliosDocumentation": "Manage Portfolios Documentation",
   "@managePortfoliosDocumentation": { "description": "Label for portfolios docs link" },
 
+  "featureFilters": "Feature Filters",
+  "@featureFilters": { "description": "Navigation menu item for feature filters" },
+
+  "manageFeatureFilters": "Manage feature filters",
+  "@manageFeatureFilters": { "description": "Page header for the manage feature filters screen" },
+
+  "featureFiltersDocumentation": "Feature Filters Documentation",
+  "@featureFiltersDocumentation": { "description": "Label for feature filters docs link" },
+
+  "createNewFeatureFilter": "Create new feature filter",
+  "@createNewFeatureFilter": { "description": "Button to create a new feature filter" },
+
+  "editFeatureFilter": "Edit feature filter",
+  "@editFeatureFilter": { "description": "Dialog title when editing a feature filter" },
+
+  "noFeatureFiltersFound": "No filters were found in the portfolio.",
+  "@noFeatureFiltersFound": { "description": "Used to show a message when there are not any feature filters" },
+
+  "filterNameLabel": "Filter name",
+  "@filterNameLabel": { "description": "Label for the filter name field" },
+
+  "filterDescriptionLabel": "Filter description",
+  "@filterDescriptionLabel": { "description": "Label for the filter description field" },
+
+  "filterTableDescriptionLabel": "Description",
+  "@filterTableDescriptionLabel": { "description": "Label for the filter description field" },
+
+  "filterNameRequired": "Please enter a filter name",
+  "@filterNameRequired": { "description": "Validation: filter name empty" },
+
+  "filterNameTooShort": "Filter name needs to be at least 4 characters long",
+  "@filterNameTooShort": { "description": "Validation: filter name too short" },
+
+  "filterDescriptionRequired": "Please enter a filter description",
+  "@filterDescriptionRequired": { "description": "Validation: filter description empty" },
+
+  "filterDescriptionTooShort": "Filter description needs to be at least 4 characters long",
+  "@filterDescriptionTooShort": { "description": "Validation: filter description too short" },
+
+  "filterCreated": "Feature filter '{name}' created!",
+  "@filterCreated": {
+    "description": "Snackbar after creating a feature filter",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "filterUpdated": "Feature filter '{name}' updated!",
+  "@filterUpdated": {
+    "description": "Snackbar after updating a feature filter",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "filterDeleted": "Feature filter '{name}' deleted!",
+  "@filterDeleted": {
+    "description": "Snackbar after deleting a feature filter",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "appPlusFeatureCountSingular": "{appName} ({count} feature)",
+  "@appPlusFeatureCountSingular": {
+    "description": "showing applications using feature filters and how many features they have using those filters. this is singular",
+    "placeholders": { "appName": {"type": "String"}, "count": {"type": "int"} }
+  },
+
+  "appPlusFeatureCountPlural": "{appName} ({count} features)",
+  "@appPlusFeatureCountPlural": {
+    "description": "showing applications using feature filters and how many features they have using those filters. this is plural",
+    "placeholders": { "appName": {"type": "String"}, "count": {"type": "int"} }
+  },
+
+  "filterDeleteContent": "Deleting this filter will remove it from all features and service accounts.\n\nThis cannot be undone!",
+  "@filterDeleteContent": { "description": "Body of delete feature filter confirmation dialog" },
+
+  "appsUsingFilter": "Applications/Features",
+  "@appsUsingFilter": { "description": "Label for applications and their filters" },
+
+  "saUsingFilter": "Service Accounts",
+  "@saUsingFilter": { "description": "Label for service accounts using the feature" },
+
+  "selectFiltersToApply": "Select filters to apply",
+  "@selectFiltersToApply": { "description": "Label for filter selection dropdown" },
+
+  "matchingServiceAccounts": "Service Accounts using filter",
+  "@matchingServiceAccounts": { "description": "Label for matching service accounts list" },
+
+  "matchingFeatures": "Applications using filter",
+  "@matchingFeatures": { "description": "Label for matching applications list" },
+
+  "filterByFeatureFilters": "Filter by feature filters",
+  "@filterByFeatureFilters": { "description": "Hint text for the dashboard filters filter" },
+
   "createNewPortfolio": "Create new portfolio",
   "@createNewPortfolio": { "description": "Button to create a new portfolio" },
 

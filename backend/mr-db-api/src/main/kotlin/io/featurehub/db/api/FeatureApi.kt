@@ -29,7 +29,8 @@ interface FeatureApi {
     startingPage: Int?,
     featureValueTypes: List<FeatureValueType>?,
     sortOrder: SortOrder?,
-    environmentIds: List<UUID>?
+    environmentIds: List<UUID>?,
+    featureFilter: List<UUID>?
   ): ApplicationFeatureValues?
 
   class NoAppropriateRole : Exception()
