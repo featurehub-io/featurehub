@@ -233,6 +233,7 @@ components:
       - NUMBER
       - JSON
     BaseStrategy:
+      type: object
       properties:
         percentage:
           type: integer
@@ -271,6 +272,7 @@ components:
       - conditional
       - fieldName
       - type
+      type: object
       properties:
         id:
           type: string
