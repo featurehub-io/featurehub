@@ -4,6 +4,7 @@
 ** xref:applications.adoc[Applications]
 ** xref:environments.adoc[Environments]
 ** xref:features.adoc[Features]
+** xref:feature-filters.adoc[Feature Filters/Labels]
 ** xref:strategies.adoc[Rollout Strategy and User Targeting]
 ** xref:feature-groups.adoc[Feature Groups]
 ** xref:application-strategies.adoc[Application Strategies]

@@ -11,6 +11,8 @@ import 'package:rxdart/rxdart.dart';
 class ReleasedPortfolio {
   final Portfolio portfolio;
   final bool currentPortfolioOrSuperAdmin;
+  // if they have permissions to edit, create or delete features
+  final bool currentPortfolioFeatureCreator;
 
   @override
   String toString() {
@@ -22,7 +24,7 @@ class ReleasedPortfolio {
   }
 
   ReleasedPortfolio(
-      {required this.portfolio, required this.currentPortfolioOrSuperAdmin});
+      {required this.portfolio, required this.currentPortfolioOrSuperAdmin, required this.currentPortfolioFeatureCreator});
 }
 
 class ReleasedApplication {
@@ -48,7 +50,7 @@ final _log = Logger('stream-valley');
 final ReleasedPortfolio nullPortfolio = ReleasedPortfolio(
     portfolio:
         Portfolio(name: 'null-portfolio', id: '', description: '', version: -1),
-    currentPortfolioOrSuperAdmin: false);
+    currentPortfolioOrSuperAdmin: false, currentPortfolioFeatureCreator: false);
 
 final ReleasedApplication nullApplication = ReleasedApplication(
     application:
@@ -275,7 +277,10 @@ class StreamValley {
     _currentPortfolioSource.add(ReleasedPortfolio(
         portfolio: found,
         currentPortfolioOrSuperAdmin:
-            personState.isPersonSuperUserOrPortfolioAdmin(found.id)));
+            personState.isPersonSuperUserOrPortfolioAdmin(found.id),
+        currentPortfolioFeatureCreator:
+            personState.isPersonPortfolioFeatureCreator(found.id)
+    ));
 
     _routeCheckPortfolioSource.add(found);
 
