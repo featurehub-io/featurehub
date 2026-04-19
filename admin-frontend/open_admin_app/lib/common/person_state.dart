@@ -60,6 +60,8 @@ class PersonState {
     ApplicationRoleType.APP_STRATEGY_EDIT_AND_DELETE
   ];
 
+  // there are also portfolio level roles for this
+
   bool personCanEditFeaturesForApplication(String? appId) {
     return _personHasApplicationRoleInApp(appId, _featureEditDeleteRoles);
   }
@@ -158,5 +160,12 @@ class PersonState {
 
   bool isPersonSuperUserOrPortfolioAdmin(String? portfolioId) {
     return _isUserIsSuperAdmin || userIsPortfolioAdmin(portfolioId);
+  }
+
+  // the app level roles are above, this is done once because it is a very involved request
+  // and can be determined when a user swaps portfolios.
+  bool isPersonPortfolioFeatureCreator(String id) {
+    if (person == _unauthenticatedPerson) return false;
+    return groupList.firstWhereOrNull((group) => group.applicationRoles.firstWhereOrNull((role) => role.roles.firstWhereOrNull((r) => _featureCreateRoles.contains(r)) != null) != null) != null;
   }
 }

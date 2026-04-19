@@ -2,8 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
+import 'package:logging/logging.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/config/route_names.dart';
+
+final _log = Logger('router');
 
 typedef HandlerFunc = Widget Function(
     BuildContext context, Map<String, List<String>> params);
@@ -46,6 +49,7 @@ enum TransitionType { fadeIn, material }
 enum PermissionType {
   superadmin,
   portfolioadmin,
+  portfolioadmin_featurecreator,
   regular,
   personal,
   any, // RouteSlot.loading
@@ -197,6 +201,10 @@ class FHRouter {
 
       if (perm == PermissionType.portfolioadmin && portfolioAdmin == true) {
         return true;
+      }
+
+      if (perm == PermissionType.portfolioadmin_featurecreator) {
+        return portfolioAdmin == true || bloc.streamValley.currentPortfolio.currentPortfolioFeatureCreator;
       }
 
       return perm == PermissionType.regular || perm == PermissionType.personal;

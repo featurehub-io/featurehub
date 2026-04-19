@@ -82,48 +82,17 @@ class _MenuContainer extends StatelessWidget {
                                     mrBloc.streamValley.currentPortfolioStream,
                                 builder: (context, snapshot) {
                                   // print("new released portfolio ${snapshot.data}");
-                                  if (!snapshot.hasData ||
-                                      !snapshot
-                                          .data!.currentPortfolioOrSuperAdmin) {
-                                    return const SizedBox.shrink();
+                                  if (snapshot.hasData) {
+                                    var rel = snapshot.data!;
+                                    if (rel.currentPortfolioOrSuperAdmin) {
+                                      return menuForPortfolioAdmin(context, rel);
+                                    }
+                                    if (rel.currentPortfolioFeatureCreator) {
+                                      return menuForFeatureCreator(context, rel);
+                                    }
                                   }
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 16.0, top: 32.0, bottom: 8.0),
-                                        child: Text(
-                                          AppLocalizations.of(context)!.applicationSettings,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall,
-                                        ),
-                                      ),
-                                      _ApplicationSettings(),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 16.0,
-                                                top: 32.0,
-                                                bottom: 8.0),
-                                            child: Text(
-                                              AppLocalizations.of(context)!.portfolioSettings,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall,
-                                            ),
-                                          ),
-                                          _MenuPortfolioAdminOptionsWidget(),
-                                          _MenuDivider(),
-                                        ],
-                                      ),
-                                    ],
-                                  );
+
+                                  return SizedBox.shrink();
                                 }),
                             if (widgetCreator
                                 .canSeeOrganisationMenuDrawer(mrBloc))
@@ -150,6 +119,61 @@ class _MenuContainer extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget menuForFeatureCreator(BuildContext context, ReleasedPortfolio rel) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Column(
+        crossAxisAlignment:
+        CrossAxisAlignment.start,
+        children: [
+          portfolioSubmenu(context),
+          FHMenuItem(
+              name: l10n.featureFilters,
+              iconData: Icons.filter_alt_outlined,
+              permissionType: PermissionType.any,
+              path: '/feature-filters',
+              params: {}),
+        ]);
+    }
+
+  Widget portfolioSubmenu(BuildContext context) {
+    return         Padding(
+      padding: const EdgeInsets.only(
+          left: 16.0,
+          top: 32.0,
+          bottom: 8.0),
+      child: Text(
+        AppLocalizations.of(context)!.portfolioSettings,
+        style: Theme.of(context)
+            .textTheme
+            .bodySmall,
+      ),
+    );
+  }
+
+  Widget menuForPortfolioAdmin(BuildContext context, ReleasedPortfolio rel) {
+    return Column(
+      crossAxisAlignment:
+      CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(
+              left: 16.0, top: 32.0, bottom: 8.0),
+          child: Text(
+            AppLocalizations.of(context)!.applicationSettings,
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall,
+          ),
+        ),
+        _ApplicationSettings(),
+        portfolioSubmenu(context),
+        _MenuPortfolioAdminOptionsWidget(),
+        _MenuDivider(),
+      ],
     );
   }
 }
@@ -199,37 +223,27 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
 class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<String?>(
-        stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
-            .streamValley
-            .currentPortfolioIdStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final l10n = AppLocalizations.of(context)!;
-            return Column(children: <Widget>[
-              FHMenuItem(
-                  name: l10n.groups,
-                  iconData: Icons.people_outline,
-                  path: '/groups',
-                  permissionType: PermissionType.portfolioadmin,
-                  params: {}),
-              FHMenuItem(
-                  name: l10n.serviceAccounts,
-                  iconData: Icons.build_outlined,
-                  permissionType: PermissionType.portfolioadmin,
-                  path: '/service-accounts',
-                  params: {}),
-              FHMenuItem(
-                  name: l10n.featureFilters,
-                  iconData: Icons.filter_alt_outlined,
-                  permissionType: PermissionType.portfolioadmin,
-                  path: '/feature-filters',
-                  params: {}),
-            ]);
-          } else {
-            return const SizedBox.shrink();
-          }
-        });
+    final l10n = AppLocalizations.of(context)!;
+    return Column(children: <Widget>[
+      FHMenuItem(
+          name: l10n.groups,
+          iconData: Icons.people_outline,
+          path: '/groups',
+          permissionType: PermissionType.portfolioadmin,
+          params: {}),
+      FHMenuItem(
+          name: l10n.serviceAccounts,
+          iconData: Icons.build_outlined,
+          permissionType: PermissionType.portfolioadmin,
+          path: '/service-accounts',
+          params: {}),
+      FHMenuItem(
+          name: l10n.featureFilters,
+          iconData: Icons.filter_alt_outlined,
+          permissionType: PermissionType.portfolioadmin,
+          path: '/feature-filters',
+          params: {}),
+    ]);
   }
 }
 
