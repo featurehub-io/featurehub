@@ -256,10 +256,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get featureFiltersDocumentation => 'Feature Filters Documentation';
 
   @override
-  String get createNewFeatureFilter => 'Create new feature filter';
+  String get createNewFeatureFilter => 'Create New Feature Filter';
 
   @override
-  String get editFeatureFilter => 'Edit feature filter';
+  String get editFeatureFilter => 'Edit Feature Filter';
 
   @override
   String get noFeatureFiltersFound => 'No filters were found in the portfolio.';
