@@ -16,7 +16,6 @@ import 'package:open_admin_app/widgets/service-accounts/apikey_reset_dialog_widg
 import 'package:openapi_dart_common/openapi.dart';
 
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
-import 'package:open_admin_app/third_party/chips_input.dart';
 import 'package:open_admin_app/widgets/portfolio/feature_filter_bloc.dart';
 import 'manage_service_accounts_bloc.dart';
 
@@ -383,6 +382,7 @@ class _ServiceAccountUpdateDialogWidgetState
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 TextFormField(
                     controller: _name,
@@ -415,10 +415,6 @@ class _ServiceAccountUpdateDialogWidgetState
                       return null;
                     })),
                 const SizedBox(height: 24),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(l10n.selectFiltersToApply, style: Theme.of(context).textTheme.titleSmall),
-                ),
                 _filtersChips(l10n),
                 const SizedBox(height: 16),
                 _buildMatchingPreview(l10n),
@@ -475,36 +471,60 @@ class _ServiceAccountUpdateDialogWidgetState
   }
 
   Widget _filtersChips(AppLocalizations l10n) {
-    return ChipsInput<SearchFeatureFilterItem>(
-      initialValue: _selectedFilters,
-      decoration: InputDecoration(hintText: l10n.selectFiltersToApply),
-      findSuggestions: (query) async {
-        final result = await _filterBloc.mrClient.featureFilterServiceApi.findFeatureFilters(
-          _filterBloc.mrClient.currentPid!,
-          filter: query,
-        );
-        return result.filters;
-      },
-      onChanged: (data) {
-        setState(() {
-          _selectedFilters.clear();
-          _selectedFilters.addAll(data);
-          _updateMatching();
-        });
-      },
-      chipBuilder: (context, state, filter) {
-        return InputChip(
-          key: ObjectKey(filter),
-          label: Text(filter.name),
-          onDeleted: () => state.deleteChip(filter),
-        );
-      },
-      suggestionBuilder: (context, state, filter) {
-        return ListTile(
-          key: ObjectKey(filter),
-          title: Text(filter.name),
-          subtitle: Text(filter.description ?? ''),
-          onTap: () => state.selectSuggestion(filter),
+    return StreamBuilder<SearchFeatureFilterResult?>(
+      stream: _filterBloc.filterResultStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+
+        final allFilters = snapshot.data!.filters;
+
+        if (allFilters.isEmpty) {
+          return Text(
+            l10n.noFeatureFiltersFound,
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall!
+                .copyWith(color: Theme.of(context).disabledColor),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.selectFiltersToApply,
+                style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: allFilters.map((filter) {
+                final isSelected =
+                    _selectedFilters.any((s) => s.id == filter.id);
+                return FilterChip(
+                  label: Text(filter.name),
+                  selected: isSelected,
+                  selectedColor: Theme.of(context).colorScheme.primaryContainer,
+                  checkmarkColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                  labelStyle: TextStyle(
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.onPrimaryContainer
+                        : Theme.of(context).colorScheme.onSurface,
+                  ),
+                  onSelected: (selected) {
+                    setState(() {
+                      if (selected) {
+                        _selectedFilters.add(filter);
+                      } else {
+                        _selectedFilters.removeWhere((s) => s.id == filter.id);
+                      }
+                      _updateMatching();
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+          ],
         );
       },
     );

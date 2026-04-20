@@ -671,7 +671,7 @@ abstract class AppLocalizations {
   /// Label for filter selection dropdown
   ///
   /// In en, this message translates to:
-  /// **'Select filters to apply'**
+  /// **'Select feature filters to apply'**
   String get selectFiltersToApply;
 
   /// Label for matching service accounts list

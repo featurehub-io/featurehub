@@ -318,7 +318,7 @@
   "saUsingFilter": "Service Accounts",
   "@saUsingFilter": { "description": "Label for service accounts using the feature" },
 
-  "selectFiltersToApply": "Select filters to apply",
+  "selectFiltersToApply": "Select feature filters to apply",
   "@selectFiltersToApply": { "description": "Label for filter selection dropdown" },
 
   "matchingServiceAccounts": "Service Accounts using filter",

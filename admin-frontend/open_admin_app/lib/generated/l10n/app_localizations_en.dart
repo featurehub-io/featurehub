@@ -323,7 +323,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saUsingFilter => 'Service Accounts';
 
   @override
-  String get selectFiltersToApply => 'Select filters to apply';
+  String get selectFiltersToApply => 'Select feature filters to apply';
 
   @override
   String get matchingServiceAccounts => 'Service Accounts using filter';
