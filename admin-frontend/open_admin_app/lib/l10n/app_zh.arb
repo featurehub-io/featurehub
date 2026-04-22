@@ -693,6 +693,8 @@
   "filterCreated": "功能过滤器「{name}」已创建！",
   "filterUpdated": "功能过滤器「{name}」已更新！",
   "filterDeleted": "功能过滤器「{name}」已删除！",
+  "appPlusFeatureCountSingular": "{appName} ({count} 个功能标志)",
+  "appPlusFeatureCountPlural": "{appName} ({count} 个功能标志)",
   "filterDeleteContent": "删除此过滤器会将其从所有功能和服务账号中移除。\n\n此操作无法撤销！",
   "appsUsingFilter": "应用程序/功能",
   "saUsingFilter": "服务账号",

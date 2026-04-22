@@ -178,7 +178,7 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
     bloc.mrClient.addOverlay((context) => FHDeleteThingWarningWidget(
           bloc: bloc.mrClient,
           thing: filter.name,
-          content: l10n.filterDeleteContent,
+          content: AppLocalizations.of(context)!.filterDeleteContent,
           deleteSelected: () async {
             final success = await bloc.deleteFilter(filter);
             if (success) {
