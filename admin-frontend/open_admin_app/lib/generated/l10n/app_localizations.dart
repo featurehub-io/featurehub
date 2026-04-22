@@ -563,13 +563,13 @@ abstract class AppLocalizations {
   /// Button to create a new feature filter
   ///
   /// In en, this message translates to:
-  /// **'Create new feature filter'**
+  /// **'Create New Feature Filter'**
   String get createNewFeatureFilter;
 
   /// Dialog title when editing a feature filter
   ///
   /// In en, this message translates to:
-  /// **'Edit feature filter'**
+  /// **'Edit Feature Filter'**
   String get editFeatureFilter;
 
   /// Used to show a message when there are not any feature filters
@@ -671,7 +671,7 @@ abstract class AppLocalizations {
   /// Label for filter selection dropdown
   ///
   /// In en, this message translates to:
-  /// **'Select filters to apply'**
+  /// **'Select feature filters to apply'**
   String get selectFiltersToApply;
 
   /// Label for matching service accounts list

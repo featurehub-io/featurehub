@@ -21,6 +21,9 @@ class ChipsInput<T> extends StatefulWidget {
     this.onChipTapped,
     this.maxChips,
     this.textStyle,
+    this.suggestionBoxWidth,
+    this.showCursor = true,
+    this.dropdownAbove = false,
   }) : assert(maxChips == null || initialValue.length <= maxChips);
 
   final InputDecoration decoration;
@@ -33,6 +36,9 @@ class ChipsInput<T> extends StatefulWidget {
   final ChipsBuilder<T> suggestionBuilder;
   final List<T> initialValue;
   final int? maxChips;
+  final double? suggestionBoxWidth;
+  final bool showCursor;
+  final bool dropdownAbove;
 
   @override
   ChipsInputState<T> createState() => ChipsInputState<T>();
@@ -107,8 +113,8 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     if (_suggestionsBoxController != null && mounted) {
       if (_focusNode?.hasFocus == true) {
         _openInputConnection();
-        // if()
         _suggestionsBoxController?.open();
+        _onSearchChanged(text);
       } else {
         _closeInputConnectionIfNeeded();
         _suggestionsBoxController?.close();
@@ -150,11 +156,12 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
                 (BuildContext context, AsyncSnapshot<List<dynamic>?> snapshot) {
               if (snapshot.data != null && snapshot.data!.isNotEmpty) {
                 return Positioned(
-                  width: size.width,
+                  width: widget.suggestionBoxWidth ?? size.width,
                   child: CompositedTransformFollower(
                     link: _layerLink,
                     showWhenUnlinked: false,
-                    offset: Offset(0.0, size.height / 2),
+                    targetAnchor: widget.dropdownAbove ? Alignment.topLeft : Alignment.bottomLeft,
+                    followerAnchor: widget.dropdownAbove ? Alignment.bottomLeft : Alignment.topLeft,
                     child: Material(
                       elevation: 4.0,
                       child: ListView.builder(
@@ -216,6 +223,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
       });
       if (widget.maxChips != null) _initFocusNode();
       widget.onChanged(_chips.toList(growable: false));
+      _onSearchChanged(text);
     }
   }
 
@@ -254,9 +262,10 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
               style: widget.textStyle ??
                   theme.textTheme.titleMedium!.copyWith(height: 1.5),
             ),
-            _TextCaret(
-              resumed: _focusNode?.hasFocus == true,
-            ),
+            if (widget.showCursor)
+              _TextCaret(
+                resumed: _focusNode?.hasFocus == true,
+              ),
           ],
         ),
       ),

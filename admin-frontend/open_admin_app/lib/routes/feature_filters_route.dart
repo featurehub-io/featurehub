@@ -5,6 +5,7 @@ import 'package:open_admin_app/common/ga_id.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
+import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_external_link_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
@@ -55,7 +56,7 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              FloatingActionButton.extended(
+              FilledButton.icon(
                 onPressed: () => _showEditDialog(context),
                 icon: const Icon(Icons.add),
                 label: Text(l10n.createNewFeatureFilter),
@@ -174,25 +175,17 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
       version: filterItem.version,
     );
 
-    bloc.mrClient.addOverlay((context) => FHAlertDialog(
-          title: Text(l10n.deleteConfirmTitle(filter.name)),
-          content: Text(l10n.filterDeleteContent),
-          actions: [
-            FHFlatButtonTransparent(
-              title: l10n.cancel,
-              onPressed: () => bloc.mrClient.removeOverlay(),
-            ),
-            FHFlatButton(
-              title: l10n.delete,
-              onPressed: () async {
-                final success = await bloc.deleteFilter(filter);
-                if (success) {
-                  bloc.mrClient.removeOverlay();
-                  bloc.mrClient.addSnackbar(Text(l10n.filterDeleted(filter.name)));
-                }
-              },
-            ),
-          ],
+    bloc.mrClient.addOverlay((context) => FHDeleteThingWarningWidget(
+          bloc: bloc.mrClient,
+          thing: filter.name,
+          content: l10n.filterDeleteContent,
+          deleteSelected: () async {
+            final success = await bloc.deleteFilter(filter);
+            if (success) {
+              bloc.mrClient.addSnackbar(Text(l10n.filterDeleted(filter.name)));
+            }
+            return success;
+          },
         ));
   }
 }
@@ -235,38 +228,46 @@ class _FeatureFilterEditDialogState extends State<FeatureFilterEditDialog> {
       key: _formKey,
       child: FHAlertDialog(
         title: Text(isEditing ? l10n.editFeatureFilter : l10n.createNewFeatureFilter),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: l10n.filterNameLabel),
-              validator: (value) {
-                if (value == null || value.isEmpty) return l10n.filterNameRequired;
-                if (value.length < 4) return l10n.filterNameTooShort;
-                return null;
-              },
+        content: SizedBox(
+          width: 500,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(labelText: l10n.filterNameLabel),
+                  autofocus: true,
+                  onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return l10n.filterNameRequired;
+                    if (value.length < 4) return l10n.filterNameTooShort;
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _descController,
+                  decoration: InputDecoration(labelText: l10n.filterDescriptionLabel),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return l10n.filterDescriptionRequired;
+                    if (value.length < 4) return l10n.filterDescriptionTooShort;
+                    return null;
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _descController,
-              decoration: InputDecoration(labelText: l10n.filterDescriptionLabel),
-              maxLines: 3,
-              validator: (value) {
-                if (value == null || value.isEmpty) return l10n.filterDescriptionRequired;
-                if (value.length < 4) return l10n.filterDescriptionTooShort;
-                return null;
-              },
-            ),
-          ],
+          ),
         ),
         actions: [
           FHFlatButtonTransparent(
             title: l10n.cancel,
+            keepCase: true,
             onPressed: () => widget.bloc.mrClient.removeOverlay(),
           ),
           FHFlatButton(
             title: isEditing ? l10n.update : l10n.create,
+            keepCase: true,
             onPressed: () async {
               if (_formKey.currentState!.validate()) {
                 FeatureFilter? result;

@@ -249,10 +249,10 @@
   "featureFiltersDocumentation": "Feature Filters Documentation",
   "@featureFiltersDocumentation": { "description": "Label for feature filters docs link" },
 
-  "createNewFeatureFilter": "Create new feature filter",
+  "createNewFeatureFilter": "Create New Feature Filter",
   "@createNewFeatureFilter": { "description": "Button to create a new feature filter" },
 
-  "editFeatureFilter": "Edit feature filter",
+  "editFeatureFilter": "Edit Feature Filter",
   "@editFeatureFilter": { "description": "Dialog title when editing a feature filter" },
 
   "noFeatureFiltersFound": "No filters were found in the portfolio.",
@@ -318,7 +318,7 @@
   "saUsingFilter": "Service Accounts",
   "@saUsingFilter": { "description": "Label for service accounts using the feature" },
 
-  "selectFiltersToApply": "Select filters to apply",
+  "selectFiltersToApply": "Select feature filters to apply",
   "@selectFiltersToApply": { "description": "Label for filter selection dropdown" },
 
   "matchingServiceAccounts": "Service Accounts using filter",

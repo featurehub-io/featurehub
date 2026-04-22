@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/fhos_logger.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
-import 'package:open_admin_app/third_party/chips_input.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_error.dart';
@@ -306,41 +305,52 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
   }
 
   Widget _filtersChips(AppLocalizations l10n, bool isReadOnly) {
-    fhosLogger.fine("filters are ${_selectedFilters}");
-    return ChipsInput<SearchFeatureFilterItem>(
-      initialValue: _selectedFilters,
-      enabled: !isReadOnly,
-      decoration: InputDecoration(hintText: l10n.selectFiltersToApply),
-      findSuggestions: (query) async {
-        final existingIds = _selectedFilters.map((sf) => sf.id);
-        final result = (await _filterBloc.findFeatureFilters(
-          filter: query,
-        )).filters.where((f) => !existingIds.contains(f.id)).toList();
+    return StreamBuilder<SearchFeatureFilterResult?>(
+      stream: _filterBloc.filterResultStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
 
-        fhosLogger.fine("All filters are ${result}");
-        return result;
-      },
-      onChanged: (data) {
-        setState(() {
-          fhosLogger.fine("replacing selected filters ${data}");
-          _selectedFilters.clear();
-          _selectedFilters.addAll(data);
-          _updateMatching();
-        });
-      },
-      chipBuilder: (context, state, filter) {
-        return InputChip(
-          key: ObjectKey(filter),
-          label: Text(filter.name),
-          onDeleted: isReadOnly ? null : () => state.deleteChip(filter),
-        );
-      },
-      suggestionBuilder: (context, state, filter) {
-        return ListTile(
-          key: ObjectKey(filter),
-          title: Text(filter.name),
-          subtitle: Text(filter.description ?? ''),
-          onTap: () => state.selectSuggestion(filter),
+        final allFilters = snapshot.data!.filters;
+
+        if (allFilters.isEmpty) {
+          return Text(
+            l10n.noFeatureFiltersFound,
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall!
+                .copyWith(color: Theme.of(context).disabledColor),
+          );
+        }
+
+        return Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: allFilters.map((filter) {
+            final isSelected = _selectedFilters.any((s) => s.id == filter.id);
+            return FilterChip(
+              label: Text(filter.name),
+              selected: isSelected,
+              selectedColor: Theme.of(context).colorScheme.primaryContainer,
+              checkmarkColor: Theme.of(context).colorScheme.onPrimaryContainer,
+              labelStyle: TextStyle(
+                color: isSelected
+                    ? Theme.of(context).colorScheme.onPrimaryContainer
+                    : Theme.of(context).colorScheme.onSurface,
+              ),
+              onSelected: isReadOnly
+                  ? null
+                  : (selected) {
+                      setState(() {
+                        if (selected) {
+                          _selectedFilters.add(filter);
+                        } else {
+                          _selectedFilters.removeWhere((s) => s.id == filter.id);
+                        }
+                        _updateMatching();
+                      });
+                    },
+            );
+          }).toList(),
         );
       },
     );
