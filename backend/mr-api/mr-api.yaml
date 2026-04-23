@@ -37,35 +37,6 @@ paths:
           description: "forbidden"
         404:
           description: "Dacha1 is not being used and API does not exist"
-  /mr-api/organization/{id}/group:
-    parameters:
-      - name: id
-        required: true
-        in: path
-        description: "the id of the organisation"
-        schema:
-          type: string
-          format: uuid
-    get:
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - GroupService
-      description: "Gets the superuser group for this organisation. There is no other way to ascertain which org you are dealing with"
-      operationId: getSuperuserGroup
-      responses:
-        200:
-          description: "The superuser group presuming the organization exists"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Group"
-        400:
-          description: "Bad Request"
-        401:
-          description: "no permission"
-        404:
-          description: "not found"
   /mr-api/portfolio:
     parameters:
       - name: includeGroups

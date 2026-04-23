@@ -186,13 +186,6 @@ class GroupResource @Inject constructor(
       ?: throw NotFoundException("No such group")
   }
 
-  override fun getSuperuserGroup(
-    id: UUID,
-    securityContext: SecurityContext
-  ): Group {
-    return groupApi.getSuperuserGroup(id) ?: throw NotFoundException()
-  }
-
   override fun updateGroupOnPortfolio(
     id: UUID,
     group: Group,
