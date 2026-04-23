@@ -15,6 +15,7 @@ import io.featurehub.mr.model.WebhookSummary
 import io.featurehub.mr.model.WebhookTypeDetail
 import io.featurehub.mr.model.WebhookTypeDetails
 import io.featurehub.webhook.events.WebhookEnvironmentResult
+import jakarta.annotation.security.PermitAll
 import jakarta.inject.Inject
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
@@ -39,6 +40,7 @@ class WebhookResource @Inject constructor(
     throw ForbiddenException()
   }
 
+  @PermitAll
   override fun getWebhookTypes(): WebhookTypeDetails {
     val types = WebhookTypeDetails()
       .types(

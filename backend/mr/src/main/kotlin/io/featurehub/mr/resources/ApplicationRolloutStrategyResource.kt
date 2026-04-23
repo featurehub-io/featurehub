@@ -7,6 +7,7 @@ import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.mr.api.ApplicationRolloutStrategyServiceDelegate
 import io.featurehub.mr.model.*
 import io.featurehub.mr.utils.ApplicationUtils
+import jakarta.annotation.security.PermitAll
 import jakarta.inject.Inject
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
@@ -103,6 +104,7 @@ class ApplicationRolloutStrategyResource @Inject constructor(
     }
   }
 
+  @PermitAll
   override fun validate(
     appId: UUID, req: RolloutStrategyValidationRequest,
     securityContext: SecurityContext

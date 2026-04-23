@@ -11,6 +11,7 @@ import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.auth.AuthenticationRepository
 import io.featurehub.mr.model.*
 import io.featurehub.web.security.oauth.AuthProviderCollection
+import jakarta.annotation.security.PermitAll
 import jakarta.inject.Inject
 import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.ForbiddenException
@@ -78,6 +79,7 @@ class AuthResource @Inject constructor(
     return TokenizedPerson().accessToken(authRepository.put(login)).person(login)
   }
 
+  @PermitAll
   override fun logout(securityContext: SecurityContext?) {
     authRepository.invalidate(securityContext)
   }
