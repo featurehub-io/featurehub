@@ -296,12 +296,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String appPlusFeatureCountSingular(String appName, int count) {
-    return '$appName ($count feature)';
+    return '$appName ($count 个功能标志)';
   }
 
   @override
   String appPlusFeatureCountPlural(String appName, int count) {
-    return '$appName ($count features)';
+    return '$appName ($count 个功能标志)';
   }
 
   @override
