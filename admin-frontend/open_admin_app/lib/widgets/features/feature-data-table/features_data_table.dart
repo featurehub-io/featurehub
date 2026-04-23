@@ -27,13 +27,13 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
   late FeaturesDataSource _featuresDataSource;
   List<FeatureStatusFeatures> featuresList = [];
 
-  String _searchTerm = '';
   int _maxFeatures = 0;
   int _pageIndex = 0;
   List<FeatureValueType> _selectedFeatureTypes = [];
   List<String> _selectedEnvironmentList = [];
   List<String> _selectedFeatureFilterIds = [];
   final CustomColumnSizer _customColumnSizer = CustomColumnSizer();
+  final TextEditingController _searchTermController = TextEditingController(text: '');
   late FeatureFilterBloc _filterBloc;
 
   @override
@@ -51,7 +51,7 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
           _selectedFeatureTypes = bloc.selectedFeatureTypesByUser;
           _selectedFeatureFilterIds = bloc.selectedFeatureFilterIdsByUser;
           _featuresDataSource = FeaturesDataSource(featuresList, bloc,
-              _searchTerm, _selectedFeatureTypes, bloc.currentRowsPerPage);
+              _searchTermController.text, _selectedFeatureTypes, bloc.currentRowsPerPage);
           _maxFeatures = features.applicationFeatureValues.maxFeatures;
           _pageIndex = bloc.currentPageIndex - 1;
         });
@@ -99,7 +99,7 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
             _featuresDataSource = FeaturesDataSource(
                 featuresList,
                 widget.bloc,
-                _searchTerm,
+                _searchTermController.text,
                 _selectedFeatureTypes,
                 widget.bloc.currentRowsPerPage);
             _maxFeatures = snapshot.data!.applicationFeatureValues.maxFeatures;
@@ -119,7 +119,7 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                       children: [
                         Container(
                           constraints: const BoxConstraints(
-                              maxWidth: 400, maxHeight: 40),
+                              maxWidth: 400, maxHeight: 45),
                           child: FHMultiSelect(
                               hint: Text(AppLocalizations.of(context)!.selectEnvironmentsToDisplay,
                                   style:
@@ -146,7 +146,7 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                         Container(
                           constraints: const BoxConstraints(
                             maxWidth: 300,
-                            maxHeight: 40,
+                            maxHeight: 45,
                             minWidth: 30,
                           ),
                           child: FHMultiSelect(
@@ -164,7 +164,7 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                               });
                               widget.bloc.getApplicationFeatureValuesData(
                                   widget.bloc.applicationId!,
-                                  _searchTerm,
+                                  _searchTermController.text,
                                   _selectedFeatureTypes,
                                   widget.bloc.currentRowsPerPage,
                                   _pageIndex,
@@ -189,7 +189,7 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                             return Container(
                               constraints: const BoxConstraints(
                                 maxWidth: 300,
-                                maxHeight: 40,
+                                maxHeight: 45,
                                 minWidth: 30,
                               ),
                               child: FHMultiSelect<SearchFeatureFilterItem>(
@@ -213,7 +213,7 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                                   });
                                   widget.bloc.getApplicationFeatureValuesData(
                                       widget.bloc.applicationId!,
-                                      _searchTerm,
+                                      _searchTermController.text,
                                       _selectedFeatureTypes,
                                       widget.bloc.currentRowsPerPage,
                                       _pageIndex,
@@ -225,26 +225,29 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                         ),
                         Container(
                           constraints: const BoxConstraints(
-                              maxWidth: 300, minWidth: 150, maxHeight: 40),
+                              maxWidth: 300, minWidth: 150),
                           child: TextField(
+                            minLines: 1,
+                            maxLines: 1,
+                            controller: _searchTermController,
                             decoration: InputDecoration(
+                              isDense: true,
                               hintText: AppLocalizations.of(context)!.searchFeatures,
                               hintStyle: Theme.of(context).textTheme.bodyMedium,
-                              suffixIcon: const Icon(Icons.search, size: 18),
+                                suffixIcon: _searchTermController.text.isEmpty
+                                    ? const Icon(Icons.search, size: 18) // show search if empty
+                                    : IconButton(
+                                  icon: Icon(Icons.clear),
+                                  onPressed: () {
+                                    _searchTermController.clear();
+                                    _bounceSearchTerm();
+                                  },
+                                ),
                               border: const OutlineInputBorder(),
                             ),
                             onChanged: (val) {
                               debouncer.run(() {
-                                setState(() {
-                                  _searchTerm = val;
-                                  widget.bloc.getApplicationFeatureValuesData(
-                                      widget.bloc.applicationId!,
-                                      _searchTerm,
-                                      _selectedFeatureTypes,
-                                      widget.bloc.currentRowsPerPage,
-                                      _pageIndex,
-                                      featureFilterIds: _selectedFeatureFilterIds);
-                                });
+                                _bounceSearchTerm();
                               });
                             },
                           ),
@@ -310,7 +313,7 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                           widget.bloc.currentRowsPerPage = rpp!;
                           widget.bloc.getApplicationFeatureValuesData(
                               widget.bloc.applicationId!,
-                              _searchTerm,
+                              _searchTermController.text,
                               _selectedFeatureTypes,
                               widget.bloc.currentRowsPerPage,
                               _pageIndex);
@@ -329,6 +332,24 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
             );
           }
         });
+  }
+
+  void _bounceSearchTerm() {
+    setState(() {
+      widget.bloc.getApplicationFeatureValuesData(
+          widget.bloc.applicationId!,
+          _searchTermController.text,
+          _selectedFeatureTypes,
+          widget.bloc.currentRowsPerPage,
+          _pageIndex,
+          featureFilterIds: _selectedFeatureFilterIds);
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchTermController.dispose();
+    super.dispose();
   }
 }
 
