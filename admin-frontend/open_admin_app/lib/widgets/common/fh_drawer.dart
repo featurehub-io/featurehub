@@ -135,6 +135,7 @@ class _MenuContainer extends StatelessWidget {
               iconData: Icons.filter_alt_outlined,
               permissionType: PermissionType.any,
               path: '/feature-filters',
+              displayNewLabel: true,
               params: {}),
         ]);
     }
@@ -211,7 +212,6 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
                   permissionType: PermissionType.superadmin,
                   iconData: Icons.settings_applications_outlined,
                   path: '/system-config',
-                  displayNewLabel: true,
                   params: {}),
           ];
           menus.addAll(widgetCreator.extraGlobalMenuItems(client));
@@ -242,6 +242,7 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
           iconData: Icons.filter_alt_outlined,
           permissionType: PermissionType.portfolioadmin,
           path: '/feature-filters',
+          displayNewLabel: true,
           params: {}),
     ]);
   }
@@ -330,7 +331,6 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
           name: l10n.applicationStrategies,
           iconData: Icons.call_split_outlined,
           path: 'application-strategies',
-          displayNewLabel: true,
           params: {},
         ),
         FHMenuItem(

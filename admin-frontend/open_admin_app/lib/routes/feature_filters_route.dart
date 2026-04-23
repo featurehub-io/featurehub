@@ -45,7 +45,8 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
           children: [
             FHExternalLinkWidget(
               tooltipMessage: l10n.viewDocumentation,
-              link: "https://docs.featurehub.io/featurehub/latest/feature-filters.html",
+              link:
+                  "https://docs.featurehub.io/featurehub/latest/feature-filters.html",
               icon: const Icon(Icons.arrow_outward_outlined),
               label: l10n.featureFiltersDocumentation,
             ),
@@ -77,7 +78,9 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
 
               final filters = snapshot.data!.filters;
               if (filters.isEmpty) {
-                return Center(child: Text(l10n.noFeatureFiltersFound)); // Reuse string or add new one
+                return Center(
+                    child: Text(l10n
+                        .noFeatureFiltersFound)); // Reuse string or add new one
               }
 
               return SingleChildScrollView(
@@ -102,11 +105,13 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
                             children: [
                               FHIconButton(
                                 icon: const Icon(Icons.edit),
-                                onPressed: () => _showEditDialog(context, filter: filter),
+                                onPressed: () =>
+                                    _showEditDialog(context, filter: filter),
                               ),
                               FHIconButton(
                                 icon: const Icon(Icons.delete),
-                                onPressed: () => _showDeleteDialog(context, filter),
+                                onPressed: () =>
+                                    _showDeleteDialog(context, filter),
                               ),
                             ],
                           )),
@@ -123,7 +128,8 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
     );
   }
 
-  Widget _buildAppsUsage(SearchFeatureFilterItem filter, AppLocalizations l10n) {
+  Widget _buildAppsUsage(
+      SearchFeatureFilterItem filter, AppLocalizations l10n) {
     if (filter.applications == null || filter.applications!.isEmpty) {
       return const Text('-');
     }
@@ -135,7 +141,9 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 2.0),
-          child: Text(featureCount == 1 ? l10n.appPlusFeatureCountSingular(app.name, featureCount) : l10n.appPlusFeatureCountPlural(app.name, featureCount)),
+          child: Text(featureCount == 1
+              ? l10n.appPlusFeatureCountSingular(app.name, featureCount)
+              : l10n.appPlusFeatureCountPlural(app.name, featureCount)),
         );
       }).toList(),
     );
@@ -157,14 +165,16 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
     );
   }
 
-  void _showEditDialog(BuildContext context, {SearchFeatureFilterItem? filter}) {
+  void _showEditDialog(BuildContext context,
+      {SearchFeatureFilterItem? filter}) {
     bloc.mrClient.addOverlay((context) => FeatureFilterEditDialog(
           bloc: bloc,
           filter: filter,
         ));
   }
 
-  void _showDeleteDialog(BuildContext context, SearchFeatureFilterItem filterItem) {
+  void _showDeleteDialog(
+      BuildContext context, SearchFeatureFilterItem filterItem) {
     final l10n = AppLocalizations.of(context)!;
 
     // We need a FeatureFilter object for the delete method
@@ -178,7 +188,7 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
     bloc.mrClient.addOverlay((context) => FHDeleteThingWarningWidget(
           bloc: bloc.mrClient,
           thing: filter.name,
-          content: l10n.filterDeleteContent,
+          content: AppLocalizations.of(context)!.filterDeleteContent,
           deleteSelected: () async {
             final success = await bloc.deleteFilter(filter);
             if (success) {
@@ -197,7 +207,8 @@ class FeatureFilterEditDialog extends StatefulWidget {
   const FeatureFilterEditDialog({super.key, required this.bloc, this.filter});
 
   @override
-  State<FeatureFilterEditDialog> createState() => _FeatureFilterEditDialogState();
+  State<FeatureFilterEditDialog> createState() =>
+      _FeatureFilterEditDialogState();
 }
 
 class _FeatureFilterEditDialogState extends State<FeatureFilterEditDialog> {
@@ -209,7 +220,8 @@ class _FeatureFilterEditDialogState extends State<FeatureFilterEditDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.filter?.name ?? '');
-    _descController = TextEditingController(text: widget.filter?.description ?? '');
+    _descController =
+        TextEditingController(text: widget.filter?.description ?? '');
   }
 
   @override
@@ -227,7 +239,8 @@ class _FeatureFilterEditDialogState extends State<FeatureFilterEditDialog> {
     return Form(
       key: _formKey,
       child: FHAlertDialog(
-        title: Text(isEditing ? l10n.editFeatureFilter : l10n.createNewFeatureFilter),
+        title: Text(
+            isEditing ? l10n.editFeatureFilter : l10n.createNewFeatureFilter),
         content: SizedBox(
           width: 500,
           child: SingleChildScrollView(
@@ -241,16 +254,19 @@ class _FeatureFilterEditDialogState extends State<FeatureFilterEditDialog> {
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return l10n.filterNameRequired;
+                    if (value == null || value.isEmpty)
+                      return l10n.filterNameRequired;
                     if (value.length < 4) return l10n.filterNameTooShort;
                     return null;
                   },
                 ),
                 TextFormField(
                   controller: _descController,
-                  decoration: InputDecoration(labelText: l10n.filterDescriptionLabel),
+                  decoration:
+                      InputDecoration(labelText: l10n.filterDescriptionLabel),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return l10n.filterDescriptionRequired;
+                    if (value == null || value.isEmpty)
+                      return l10n.filterDescriptionRequired;
                     if (value.length < 4) return l10n.filterDescriptionTooShort;
                     return null;
                   },
@@ -293,7 +309,9 @@ class _FeatureFilterEditDialogState extends State<FeatureFilterEditDialog> {
                 if (result != null) {
                   widget.bloc.mrClient.removeOverlay();
                   widget.bloc.mrClient.addSnackbar(Text(
-                    isEditing ? l10n.filterUpdated(result.name) : l10n.filterCreated(result.name),
+                    isEditing
+                        ? l10n.filterUpdated(result.name)
+                        : l10n.filterCreated(result.name),
                   ));
                 }
               }
