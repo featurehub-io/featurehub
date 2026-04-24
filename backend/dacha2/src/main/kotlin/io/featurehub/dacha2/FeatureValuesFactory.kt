@@ -2,6 +2,7 @@ package io.featurehub.dacha2
 
 import io.featurehub.dacha.model.CacheEnvironmentFeature
 import io.featurehub.dacha.model.PublishEnvironment
+import io.featurehub.utils.FallbackPropertyConfig
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
@@ -54,7 +55,7 @@ class EnvironmentFeatures(val env: PublishEnvironment) : FeatureValues {
     features = ConcurrentHashMap(env.featureValues.associate { f -> f.feature.id to f }.toMutableMap())
     featureValues.addAll(env.featureValues)
 
-    etag = etagCalculator(featureValues)
+    etag = etagCalculator(featureValues, "<new>")
   }
 
   fun calculateEtag() {
@@ -149,7 +150,7 @@ class EnvironmentFeatures(val env: PublishEnvironment) : FeatureValues {
     private val log: Logger = LoggerFactory.getLogger(EnvironmentFeatures::class.java)
     private val HEX_FORMAT = HexFormat.of()
 
-    fun etagCalculator(featureValues: Collection<CacheEnvironmentFeature>): String {
+    fun etagCalculator(featureValues: Collection<CacheEnvironmentFeature>, priorEtag: String): String {
       // we convert to list to protect against changes while we are evaluating it
       val calcTag = featureValues.toList()
         .map { fvci ->
@@ -162,10 +163,16 @@ class EnvironmentFeatures(val env: PublishEnvironment) : FeatureValues {
 
       val newEtag = HEX_FORMAT.formatHex(hashBytes)
 
-      log.trace("etag is now {} (from '{}')", newEtag, calcTag)
+      if (logUnchangingEtags && priorEtag == newEtag) {
+        log.warn("etag {} is the same for {}", newEtag, calcTag)
+      }
+
+      log.trace("etag was `{}`, is now {} (from '{}')", priorEtag, newEtag, calcTag)
 
       return newEtag
     }
+
+    val logUnchangingEtags = FallbackPropertyConfig.getConfig("dacha2.log-unchanging-etags", "false") == "true"
   }
 }
 
