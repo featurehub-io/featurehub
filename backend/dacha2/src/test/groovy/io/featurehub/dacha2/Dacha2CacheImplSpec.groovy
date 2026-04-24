@@ -40,7 +40,7 @@ class Dacha2CacheImplSpec extends Specification {
     apiKeyServerSide = "1234"
   }
 
-  def tearDown() {
+  def cleanup() {
     ThreadLocalConfigurationSource.clearContext()
   }
 

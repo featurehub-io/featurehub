@@ -147,6 +147,7 @@ class EnvironmentFeatures(val env: PublishEnvironment) : FeatureValues {
 
   companion object {
     private val log: Logger = LoggerFactory.getLogger(EnvironmentFeatures::class.java)
+    private val HEX_FORMAT = HexFormat.of()
 
     fun etagCalculator(featureValues: Collection<CacheEnvironmentFeature>): String {
       // we convert to list to protect against changes while we are evaluating it
@@ -159,7 +160,7 @@ class EnvironmentFeatures(val env: PublishEnvironment) : FeatureValues {
       val messageDigest = MessageDigest.getInstance("MD5")!!
       val hashBytes = messageDigest.digest(calcTag.toByteArray(StandardCharsets.UTF_8))
 
-      val newEtag = HexFormat.of().formatHex(hashBytes)
+      val newEtag = HEX_FORMAT.formatHex(hashBytes)
 
       log.trace("etag is now {} (from '{}')", newEtag, calcTag)
 

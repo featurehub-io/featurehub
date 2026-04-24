@@ -42,9 +42,11 @@ interface Dacha2Cache {
    */
   fun findEnvironment(eId: UUID): FeatureValues
   fun enableCache(cacheEnable: Boolean)
+  // used by delegator to ensure timer and anything else is reset
+  fun closeCache()
 }
 
-abstract class Dacha2BaseCache : Dacha2Cache, FeatureEnrichmentCache {}
+abstract class Dacha2BaseCache : Dacha2Cache, FeatureEnrichmentCache
 
 class Dacha2DelegatingCache @Inject constructor(private val mrDacha2Api: Dacha2ServiceClient,
                                                 private val featureValueFactory: FeatureValuesFactory) : Dacha2BaseCache() {
@@ -80,6 +82,7 @@ class Dacha2DelegatingCache @Inject constructor(private val mrDacha2Api: Dacha2S
   override fun enableCache(cacheEnable: Boolean) {
     if (cacheEnabled && !cacheEnable) {
       log.info("lost connectivity, swapping dacha2 in uncached passthrough mode")
+      cache.closeCache()
       cache = Dacha2PassthroughImpl(mrDacha2Api, featureValueFactory)
     } else if (!cacheEnabled && cacheEnable) {
       log.info("connectivity to streaming established, swapping dacha2 to cached mode (empty cache)")
@@ -87,6 +90,10 @@ class Dacha2DelegatingCache @Inject constructor(private val mrDacha2Api: Dacha2S
     }
 
     cacheEnabled = cacheEnable
+  }
+
+  override fun closeCache() {
+
   }
 
   override fun getEnrichableEnvironment(eId: UUID): EnrichmentEnvironment {
@@ -145,6 +152,10 @@ class Dacha2PassthroughImpl(private val mrDacha2Api: Dacha2ServiceClient, privat
 
   override fun enableCache(cacheEnable: Boolean) {
   }
+
+  override fun closeCache() {
+
+  }
 }
 
 private const val DACHA_2_ENVIRONMENT_MISS_CACHE = "dacha2-environment-miss-cache-size"
@@ -158,7 +169,6 @@ private const val DACHA_2_SERVICE_ACCOUNTS_FILTERING = "dacha2-filter-use"
 
 open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2ServiceClient,
                                                private val featureValueFactory: FeatureValuesFactory) : Dacha2BaseCache() {
-  private val log: Logger = LoggerFactory.getLogger(Dacha2CacheImpl::class.java)
   protected val serviceAccountApiKeyCache: LoadingCache<String, CacheServiceAccount>
   protected val serviceAccountCache: Cache<UUID, CacheServiceAccount>
   protected val serviceAccountMissCache: Cache<String, Boolean>
@@ -169,18 +179,6 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
 
   // environment id, environment-features
   protected val permsCache: Cache<String, CacheServiceAccountPermission>
-
-  val gaugeServiceAccountMissCache = MetricsCollector.gauge(DACHA_2_SERVICE_ACCOUNT_MISS_CACHE, "Requests for service accounts that don't exist")
-  val gaugeServiceAccountCache = MetricsCollector.gauge(DACHA_2_SERVICE_ACCOUNT_CACHE, "The size of cache for service accounts")
-  val gaugeServiceAccountKeyCache = MetricsCollector.gauge(DACHA_2_SERVICE_ACCOUNT_KEY_CACHE, "The size of cache for service account keys (2x service accounts)")
-
-  val gaugePermsCache = MetricsCollector.gauge(DACHA_2_PERMS_CACHE, "The size of cache for permissions for a service account")
-
-  val gaugeEnvironmentMissCache = MetricsCollector.gauge(DACHA_2_ENVIRONMENT_MISS_CACHE, "Requests for environments that don't exist")
-  val gaugeEnvironmentCache = MetricsCollector.gauge(DACHA_2_ENVIRONMENT_CACHE, "The size of cache for environments")
-
-  val gaugeFeaturesInCache = MetricsCollector.gauge(DACHA_2_FEATURES_IN_CACHE, "How many features are in this cache")
-  val counterFilterUse = MetricsCollector.counter(DACHA_2_SERVICE_ACCOUNTS_FILTERING, "How many times filtering has been used")
 
   private var maximumServiceAccountMisses = FallbackPropertyConfig.getConfig("dacha2.cache.service-account.miss-size", "10000").toLong()
 
@@ -196,6 +194,7 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
 
   var apiKey: String? = FallbackPropertyConfig.getConfig("dacha2.cache.api-key")
   var resettingCache: Boolean = false
+  private val metricTimer = Timer()
 
   init {
     environmentMissCache = CacheBuilder.newBuilder()
@@ -272,14 +271,17 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
       })
 
     // there is no real other way to keep them up to date that isn't very complex and very inaccurate
-    val metricTimer = Timer()
+    log.info("[dacha2] starting metric timer for cache size")
     metricTimer.schedule(object : TimerTask() {
       override fun run() {
         resetMetricCounters()
       }
     }, 5000, 5000)
+  }
 
-
+  override fun closeCache() {
+    log.info("[dacha2] shutting down metric timer for cache size")
+    metricTimer.cancel()
   }
 
   fun resetMetricCounters() {
@@ -331,7 +333,7 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
             log.trace("Unable to find environment id {} in serviceAccount", serviceAccount)
           }
           result
-        } catch (e: Exception) {
+        } catch (_: Exception) {
           if (log.isTraceEnabled) {
             log.trace("failed to get service account permission {}/{}", eId, apiKey)
           }
@@ -480,9 +482,12 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
 
         // take while the envId in the existing list doesn't exist in the new one, map it to a list of
         // perm cache keys we have to remove, flatten, invalidate
-        permsCache.invalidateAll(existing.permissions.takeWhile { envs[it.environmentId] == null }.map {
-          listOf(permCacheKey(it.environmentId, sa.apiKeyServerSide), permCacheKey(it.environmentId, sa.apiKeyClientSide)) }
-           .flatten())
+        permsCache.invalidateAll(existing.permissions.takeWhile { envs[it.environmentId] == null }.flatMap {
+          listOf(
+            permCacheKey(it.environmentId, sa.apiKeyServerSide),
+            permCacheKey(it.environmentId, sa.apiKeyClientSide)
+          )
+        })
       } else {
         log.trace("attempted to update {} with older service account {}", existing, sa)
       }
@@ -568,6 +573,22 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
         }
       }
     } ?: log.debug("received update for unknown feature {}: {}", feature.environmentId, feature.feature.feature.key)
+  }
+
+  companion object {
+    val log: Logger = LoggerFactory.getLogger(Dacha2CacheImpl::class.java)
+
+    val gaugeServiceAccountMissCache = MetricsCollector.gauge(DACHA_2_SERVICE_ACCOUNT_MISS_CACHE, "Requests for service accounts that don't exist")
+    val gaugeServiceAccountCache = MetricsCollector.gauge(DACHA_2_SERVICE_ACCOUNT_CACHE, "The size of cache for service accounts")
+    val gaugeServiceAccountKeyCache = MetricsCollector.gauge(DACHA_2_SERVICE_ACCOUNT_KEY_CACHE, "The size of cache for service account keys (2x service accounts)")
+
+    val gaugePermsCache = MetricsCollector.gauge(DACHA_2_PERMS_CACHE, "The size of cache for permissions for a service account")
+
+    val gaugeEnvironmentMissCache = MetricsCollector.gauge(DACHA_2_ENVIRONMENT_MISS_CACHE, "Requests for environments that don't exist")
+    val gaugeEnvironmentCache = MetricsCollector.gauge(DACHA_2_ENVIRONMENT_CACHE, "The size of cache for environments")
+
+    val gaugeFeaturesInCache = MetricsCollector.gauge(DACHA_2_FEATURES_IN_CACHE, "How many features are in this cache")
+    val counterFilterUse = MetricsCollector.counter(DACHA_2_SERVICE_ACCOUNTS_FILTERING, "How many times filtering has been used")
   }
 }
 
