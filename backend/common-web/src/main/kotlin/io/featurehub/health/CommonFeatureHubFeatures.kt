@@ -7,6 +7,7 @@ import io.featurehub.info.ApplicationVersionFeatures
 import io.featurehub.jersey.ManagedAsyncThreadPoolExecutorProvider
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.jersey.config.EndpointLoggingListener
+import io.featurehub.rest.ResponseTrackingResponseFilter
 import io.featurehub.utils.*
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -32,7 +33,11 @@ class CommonFeatureHubFeatures @Inject constructor(private val locator: ServiceL
     context.register(LoggingConfiguration::class.java)
     context.register(ReturnStatusContainerResponseFilter::class.java)
     context.register(EndpointLoggingListener::class.java)
-    context.register(PrometheusDynamicFeature::class.java)
+    if (FallbackPropertyConfig.getConfig("prometheus.dynamic-jersey", "true") == "true") {
+      context.register(PrometheusDynamicFeature::class.java)
+    } else {
+      context.register(ResponseTrackingResponseFilter::class.java)
+    }
     context.register(ApplicationVersionFeatures::class.java)
 
     context.register(object : AbstractBinder() {
