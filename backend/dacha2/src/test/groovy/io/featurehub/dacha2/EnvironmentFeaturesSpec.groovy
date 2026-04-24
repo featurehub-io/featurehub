@@ -38,12 +38,12 @@ class EnvironmentFeaturesSpec extends Specification {
 
           ]
     when: "i calculate the etag"
-      def etag = EnvironmentFeatures.@Companion.etagCalculator(env)
+      def etag = EnvironmentFeatures.@Companion.etagCalculator(env, 'none')
     then:
       etag == "5e3eafc18a57bba2080e6ce87b059b78"
     when: "i change the version of the first item to 17 the MD5 changes"
       env[0].value.version(17)
-      etag = EnvironmentFeatures.@Companion.etagCalculator(env)
+      etag = EnvironmentFeatures.@Companion.etagCalculator(env, 'none')
     then:
       etag != "5e3eafc18a57bba2080e6ce87b059b78"
   }

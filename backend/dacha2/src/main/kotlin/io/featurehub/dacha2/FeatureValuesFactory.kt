@@ -22,7 +22,7 @@ class FilteredEnvironmentFeatures(private val envFeatures: EnvironmentFeatures, 
   val filteredFeatures = envFeatures.getFeatures().filter { feature ->
     feature.feature.filters?.firstOrNull { it in filters } != null
   }
-  val calculatedEtag: String = EnvironmentFeatures.etagCalculator(filteredFeatures)
+  val calculatedEtag: String = EnvironmentFeatures.etagCalculator(filteredFeatures, envFeatures.getEtag())
 
   override fun getFeatures(): Collection<CacheEnvironmentFeature> {
     return filteredFeatures
@@ -52,14 +52,14 @@ class EnvironmentFeatures(val env: PublishEnvironment) : FeatureValues {
         log.error("We have duplicates in {} - this should NEVER happen", env)
       }
 //    }
-    features = ConcurrentHashMap(env.featureValues.associate { f -> f.feature.id to f }.toMutableMap())
+    features = ConcurrentHashMap(env.featureValues.associateBy { f -> f.feature.id }.toMutableMap())
     featureValues.addAll(env.featureValues)
 
     etag = etagCalculator(featureValues, "<new>")
   }
 
   fun calculateEtag() {
-    etag = etagCalculator(featureValues)
+    etag = etagCalculator(featureValues, etag)
   }
 
   val featureCount: Int
@@ -79,7 +79,7 @@ class EnvironmentFeatures(val env: PublishEnvironment) : FeatureValues {
       features[id] = feature
       try {
         featureValues.add(feature)
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         log.warn("another version of the feature {} just got added to the set", feature)
       }
     } else {
@@ -118,7 +118,7 @@ class EnvironmentFeatures(val env: PublishEnvironment) : FeatureValues {
     features.remove(id)?.let {
       if (!featureValues.remove(it)) {
         // fallback to the slower remove as the value may have changed
-        environment.featureValues.removeIf { it.feature.id == id }
+        environment.featureValues.removeIf { fv -> fv.feature.id == id }
       }
 
       env.featureValues = featureValues.toList()
@@ -152,11 +152,9 @@ class EnvironmentFeatures(val env: PublishEnvironment) : FeatureValues {
 
     fun etagCalculator(featureValues: Collection<CacheEnvironmentFeature>, priorEtag: String): String {
       // we convert to list to protect against changes while we are evaluating it
-      val calcTag = featureValues.toList()
-        .map { fvci ->
-          fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version?.toString() ?: "0000")
-        }
-        .joinToString("-")
+      val calcTag = featureValues.toList().joinToString("-") { fvci ->
+        fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version?.toString() ?: "0000")
+      }
 
       val messageDigest = MessageDigest.getInstance("MD5")!!
       val hashBytes = messageDigest.digest(calcTag.toByteArray(StandardCharsets.UTF_8))
