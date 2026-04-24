@@ -85,10 +85,12 @@ class _MenuContainer extends StatelessWidget {
                                   if (snapshot.hasData) {
                                     var rel = snapshot.data!;
                                     if (rel.currentPortfolioOrSuperAdmin) {
-                                      return menuForPortfolioAdmin(context, rel);
+                                      return menuForPortfolioAdmin(
+                                          context, rel);
                                     }
                                     if (rel.currentPortfolioFeatureCreator) {
-                                      return menuForFeatureCreator(context, rel);
+                                      return menuForFeatureCreator(
+                                          context, rel);
                                     }
                                   }
 
@@ -103,7 +105,8 @@ class _MenuContainer extends StatelessWidget {
                                     padding: const EdgeInsets.only(
                                         left: 16.0, top: 32.0, bottom: 8.0),
                                     child: Text(
-                                      AppLocalizations.of(context)!.organizationSettings,
+                                      AppLocalizations.of(context)!
+                                          .organizationSettings,
                                       style:
                                           Theme.of(context).textTheme.bodySmall,
                                     ),
@@ -125,48 +128,37 @@ class _MenuContainer extends StatelessWidget {
   Widget menuForFeatureCreator(BuildContext context, ReleasedPortfolio rel) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Column(
-        crossAxisAlignment:
-        CrossAxisAlignment.start,
-        children: [
-          portfolioSubmenu(context),
-          FHMenuItem(
-              name: l10n.featureFilters,
-              iconData: Icons.filter_alt_outlined,
-              permissionType: PermissionType.any,
-              path: '/feature-filters',
-              params: {}),
-        ]);
-    }
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      portfolioSubmenu(context),
+      FHMenuItem(
+          name: l10n.featureFilters,
+          iconData: Icons.filter_alt_outlined,
+          permissionType: PermissionType.any,
+          path: '/feature-filters',
+          displayNewLabel: true,
+          params: {}),
+    ]);
+  }
 
   Widget portfolioSubmenu(BuildContext context) {
-    return         Padding(
-      padding: const EdgeInsets.only(
-          left: 16.0,
-          top: 32.0,
-          bottom: 8.0),
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0, top: 32.0, bottom: 8.0),
       child: Text(
         AppLocalizations.of(context)!.portfolioSettings,
-        style: Theme.of(context)
-            .textTheme
-            .bodySmall,
+        style: Theme.of(context).textTheme.bodySmall,
       ),
     );
   }
 
   Widget menuForPortfolioAdmin(BuildContext context, ReleasedPortfolio rel) {
     return Column(
-      crossAxisAlignment:
-      CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(
-              left: 16.0, top: 32.0, bottom: 8.0),
+          padding: const EdgeInsets.only(left: 16.0, top: 32.0, bottom: 8.0),
           child: Text(
             AppLocalizations.of(context)!.applicationSettings,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
         _ApplicationSettings(),
@@ -211,7 +203,6 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
                   permissionType: PermissionType.superadmin,
                   iconData: Icons.settings_applications_outlined,
                   path: '/system-config',
-                  displayNewLabel: true,
                   params: {}),
           ];
           menus.addAll(widgetCreator.extraGlobalMenuItems(client));
@@ -242,6 +233,7 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
           iconData: Icons.filter_alt_outlined,
           permissionType: PermissionType.portfolioadmin,
           path: '/feature-filters',
+          displayNewLabel: true,
           params: {}),
     ]);
   }
@@ -330,7 +322,6 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
           name: l10n.applicationStrategies,
           iconData: Icons.call_split_outlined,
           path: 'application-strategies',
-          displayNewLabel: true,
           params: {},
         ),
         FHMenuItem(
