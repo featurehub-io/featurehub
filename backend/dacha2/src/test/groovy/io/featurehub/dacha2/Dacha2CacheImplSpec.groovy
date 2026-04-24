@@ -40,6 +40,10 @@ class Dacha2CacheImplSpec extends Specification {
     apiKeyServerSide = "1234"
   }
 
+  def tearDown() {
+    ThreadLocalConfigurationSource.clearContext()
+  }
+
   CacheServiceAccount basicServiceAccount() {
     return new CacheServiceAccount().id(serviceAccountId)
       .apiKeyClientSide(apiKeyClientSide).apiKeyServerSide(apiKeyServerSide)
@@ -62,15 +66,34 @@ class Dacha2CacheImplSpec extends Specification {
     ])
   }
 
+  PublishServiceAccount publishedServiceAccount() {
+    return new PublishServiceAccount()
+      .action(PublishAction.CREATE)
+      .serviceAccount(saWithPermission())
+  }
+
+  PublishEnvironment publishedEnvironment() {
+    new PublishEnvironment()
+      .action(PublishAction.CREATE)
+      .environment(new CacheEnvironment().version(1).id(envId))
+      .featureValues([])
+  }
+
+  Dacha2Environment apiEnvironment() {
+    return new Dacha2Environment().env(publishedEnvironment())
+  }
+
+  Dacha2ServiceAccount apiServiceAccount() {
+    return new Dacha2ServiceAccount().serviceAccount(saWithPermission())
+  }
+
   def "basic successful get test with key"() {
     given:
       def key = 'interpol'
       cache.apiKey = key
     and: "we have mocked the apikey and env id"
-      def pubEnv = new Dacha2Environment().env(new PublishEnvironment()
-        .environment(new CacheEnvironment().id(envId))
-        .featureValues([]))
-      def serviceAccount = new Dacha2ServiceAccount().serviceAccount(saWithPermission())
+      def pubEnv = apiEnvironment()
+      def serviceAccount = apiServiceAccount()
     when:
       def result = cache.getFeatureCollection(envId, apiKeyClientSide)
     then:
@@ -108,12 +131,45 @@ class Dacha2CacheImplSpec extends Specification {
       1 * api.getServiceAccount(apiKeyClientSide, null) >> { throw new NotFoundException() }
   }
 
+  def "if the cache all streamed data is off, when we send an update it won't get stored"() {
+    given: "caching is off"
+      ThreadLocalConfigurationSource.createContext([
+        "dacha2.cache.all-updates": "false"
+      ])
+    and: "we have the dacha2 cache"
+      cache = new Dacha2CacheImpl(api, fvFactory)
+    and: "we have a new environment"
+      def env = publishedEnvironment()
+    when: "we publish an environment"
+      cache.updateEnvironment(env)
+      cache.resetMetricCounters()
+    then:
+      cache.gaugeEnvironmentCache.get() == 0
+    when: "we publish a service account"
+      cache.updateServiceAccount(publishedServiceAccount())
+      cache.resetMetricCounters()
+    then:
+      cache.gaugeServiceAccountKeyCache.get() == 0
+      cache.gaugeServiceAccountCache.get() == 0
+    when:
+      def result = cache.getFeatureCollection(envId, apiKeyClientSide)
+      cache.resetMetricCounters()
+    then:
+      cache.gaugeEnvironmentCache.get() == 1
+      cache.gaugeServiceAccountCache.get() == 1
+      cache.gaugeServiceAccountKeyCache.get() == 2
+      1 * api.getEnvironment(envId, null) >> apiEnvironment()
+      1 * api.getServiceAccount(apiKeyClientSide, null) >> apiServiceAccount()
+
+  }
+
   def "we ask for a valid environment service-account and then receive a valid feature update and the update flows through"() {
     given: "we have mocked the apikey and env id"
       def featureId = UUID.randomUUID()
       def pubEnv = new Dacha2Environment().env(new PublishEnvironment()
         .environment(new CacheEnvironment().id(envId))
-        .featureValues([new CacheEnvironmentFeature().feature(new CacheFeature().id(featureId).key("fred").version(1))]))
+        .featureValues([new CacheEnvironmentFeature().feature(
+          new CacheFeature().id(featureId).key("fred").version(1))]))
       def serviceAccount = new Dacha2ServiceAccount().serviceAccount(saWithPermission())
     when: "we ask using the client side key"
       def result = cache.getFeatureCollection(envId, apiKeyClientSide)

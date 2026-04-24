@@ -35,7 +35,7 @@ class FilteredEnvironmentFeatures(private val envFeatures: EnvironmentFeatures, 
   }
 }
 
-class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
+class EnvironmentFeatures(val env: PublishEnvironment) : FeatureValues {
   private val log: Logger = LoggerFactory.getLogger(EnvironmentFeatures::class.java)
 
   // Feature::id, CacheFeatureValue
@@ -60,6 +60,9 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
   fun calculateEtag() {
     etag = etagCalculator(featureValues)
   }
+
+  val featureCount: Int
+    get() = features.size
 
   // the UUID is the FEATURE's UUID NOT the feature value's one
   operator fun get(id: UUID): CacheEnvironmentFeature? {
