@@ -249,3 +249,31 @@ Edge exposes a number of metrics specific to SSE,
 
 Grafana dashboard template and recommended alerts are not available yet, but will be considered in the future releases.
 
+== Dacha2 Metrics
+
+Dacha2 is the in-memory cache layer that sits between the Management Repository and Edge. It exposes gauges reflecting the current size of each internal cache, updated every 5 seconds, plus a counter for filtered service account requests.
+
+=== Cache Size Gauges
+
+These gauges allow you to track how full each cache is relative to its configured maximum size. The maximum sizes are controlled by the properties listed under each metric.
+
+[cols="1,1,1"]
+|===
+|*Metric*|*Type*|*Description*
+|dacha2_environment_cache_size|Gauge|Number of environments currently held in cache. Controlled by `dacha2.cache.environment.size` (default 10000).
+|dacha2_environment_miss_cache_size|Gauge|Number of environment IDs known not to exist, held to avoid repeated upstream lookups. Controlled by `dacha2.cache.environment.miss-size` (default 10000).
+|dacha2_service_account_cache_size|Gauge|Number of service accounts currently held in cache (indexed by UUID). Controlled by `dacha2.cache.service-account.size` (default 10000).
+|dacha2_service_account_key_cache_size|Gauge|Number of service account API key entries in cache. Each service account occupies two entries (client-side and server-side key), so this will typically be 2× `dacha2_service_account_cache_size`. Controlled by `dacha2.cache.service-account.size`.
+|dacha2_service_account_miss_cache_size|Gauge|Number of API keys known not to exist, held to avoid repeated upstream lookups. Controlled by `dacha2.cache.service-account.miss-size` (default 10000).
+|dacha2_perms_cache_size|Gauge|Number of cached permission lookups (environment + API key combinations). Controlled by `dacha2.cache.service-account.perms-size` (default 10000).
+|dacha2_features_in_cache_size|Gauge|Total number of individual feature values held across all cached environments.
+|===
+
+=== Filter Usage Counter
+
+[cols="1,1,1"]
+|===
+|*Metric*|*Type*|*Description*
+|dacha2_filter_use|Counter|Number of requests served using feature filtering (i.e. where the service account has filters configured). A sustained high value relative to total requests indicates significant use of the feature filtering capability.
+|===
+

@@ -158,14 +158,14 @@ class Dacha2PassthroughImpl(private val mrDacha2Api: Dacha2ServiceClient, privat
   }
 }
 
-private const val DACHA_2_ENVIRONMENT_MISS_CACHE = "dacha2-environment-miss-cache-size"
-private const val DACHA_2_SERVICE_ACCOUNT_MISS_CACHE = "dacha2-service-account-miss-cache-size"
-private const val DACHA_2_PERMS_CACHE = "dacha2-perms-cache-size"
-private const val DACHA_2_ENVIRONMENT_CACHE = "dacha2-environment-cache-size"
-private const val DACHA_2_SERVICE_ACCOUNT_CACHE = "dacha2-service-account-cache-size"
-private const val DACHA_2_SERVICE_ACCOUNT_KEY_CACHE = "dacha2-service-account-key-cache-size"
-private const val DACHA_2_FEATURES_IN_CACHE = "dacha2-features-in-cache-size"
-private const val DACHA_2_SERVICE_ACCOUNTS_FILTERING = "dacha2-filter-use"
+private const val DACHA_2_ENVIRONMENT_MISS_CACHE = "dacha2_environment_miss_cache_size"
+private const val DACHA_2_SERVICE_ACCOUNT_MISS_CACHE = "dacha2_service_account_miss_cache_size"
+private const val DACHA_2_PERMS_CACHE = "dacha2_perms_cache_size"
+private const val DACHA_2_ENVIRONMENT_CACHE = "dacha2_environment_cache_size"
+private const val DACHA_2_SERVICE_ACCOUNT_CACHE = "dacha2_service_account_cache_size"
+private const val DACHA_2_SERVICE_ACCOUNT_KEY_CACHE = "dacha2_service_account_key_cache_size"
+private const val DACHA_2_FEATURES_IN_CACHE = "dacha2_features_in_cache_size"
+private const val DACHA_2_SERVICE_ACCOUNTS_FILTERING = "dacha2_filter_use"
 
 open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2ServiceClient,
                                                private val featureValueFactory: FeatureValuesFactory) : Dacha2BaseCache() {
@@ -216,7 +216,6 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
         val envId = notification.key!!
 
         if (!resettingCache) {
-          gaugeFeaturesInCache.dec(eFeatures.featureCount.toDouble())
           permsCache.invalidateAll(eFeatures.env.serviceAccounts.map { "$envId/$it" })
         }
       })
@@ -387,7 +386,11 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
     val envId = env.environment.id
 
     if (env.action == PublishAction.DELETE) {
-      environmentCache.invalidate(envId)
+      val found = environmentCache.getIfPresent(envId)
+      if (found != null) {
+        environmentCache.invalidate(envId)
+        gaugeFeaturesInCache.dec(found.featureCount.toDouble())
+      }
 
       environmentMissCache.put(envId, true)
       return
@@ -411,7 +414,10 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
     if (!created) {
       if (env.environment.version >= oldEnv.environment.environment.version) {
         log.trace("environment {} is same version or newer (incoming {}, old {}), storing", envId, env.environment.version, oldEnv.environment.environment.version)
-        environmentCache.put(envId, EnvironmentFeatures(env))
+        gaugeFeaturesInCache.dec(oldEnv.featureCount.toDouble())
+        val newEnv = EnvironmentFeatures(env)
+        gaugeFeaturesInCache.inc(newEnv.featureCount.toDouble())
+        environmentCache.put(envId, newEnv)
       } else if (log.isTraceEnabled) {
         log.trace(
           "received old update to environment {} (current {} vs incoming {}) - ignoring",
