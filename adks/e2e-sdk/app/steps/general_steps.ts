@@ -74,10 +74,10 @@ Given(/^I connect to the Edge server using (sse-client-eval|poll-client-eval|pol
 
 Then('I write out a feature-examples config file', function () {
   const world = this as SdkWorld;
-  let buf = `FEATUREHUB_SERVER_API_KEY=${world.sdkUrlServerEval}\nFEATUREHUB_CLIENT_API_KEY=${world.sdkUrlClientEval}\nFEATUREHUB_EDGE_URL=${world.featureUrl}\nFEATUREHUB_BASE_URL=${this.adminUrl}\n`;
+  let buf = `FEATUREHUB_SERVER_API_KEY=${world.serviceAccountPermission.sdkUrlServerEval}\nFEATUREHUB_CLIENT_API_KEY=${world.serviceAccountPermission.sdkUrlClientEval}\nFEATUREHUB_EDGE_URL=${world.featureUrl}\nFEATUREHUB_BASE_URL=${this.adminUrl}\n`;
   fs.writeFileSync(process.env.WRITE_ENV_FOR_E2E || './test-example.env', buf);
 
-  buf = `#!/bin/sh\nexport FEATUREHUB_SERVER_API_KEY=${world.sdkUrlServerEval}\nexport FEATUREHUB_CLIENT_API_KEY="${world.sdkUrlClientEval}"\nexport FEATUREHUB_EDGE_URL=${world.featureUrl}\nexport FEATUREHUB_BASE_URL=${this.adminUrl}\n`;
+  buf = `#!/bin/sh\nexport FEATUREHUB_SERVER_API_KEY=${world.serviceAccountPermission.sdkUrlServerEval}\nexport FEATUREHUB_CLIENT_API_KEY="${world.serviceAccountPermission.sdkUrlClientEval}"\nexport FEATUREHUB_EDGE_URL=${world.featureUrl}\nexport FEATUREHUB_BASE_URL=${this.adminUrl}\n`;
 
   // we allow the config to be written in a specific location to share it in the docker overrides
   // for automated testing

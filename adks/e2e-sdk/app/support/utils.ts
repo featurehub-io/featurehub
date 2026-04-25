@@ -8,6 +8,10 @@ export function decodeAndValidateRoles(roles: string): Array<RoleType> {
   // for (let [key, value] of Object.entries(EnumName)) {
   //     console.log(`${key}: ${value}`);
   // }
+  if (roleTypes.length === 1 && roleTypes[0].toLowerCase() === "all") {
+    return [RoleType.Lock, RoleType.Unlock, RoleType.ChangeValue, RoleType.Read, RoleType.ExtendedData];
+  }
+
   const foundRoles: Array<RoleType> = [];
   for (let [key,value] of Object.entries(RoleType)) {
     const compareWith = value.toString().toLowerCase();
