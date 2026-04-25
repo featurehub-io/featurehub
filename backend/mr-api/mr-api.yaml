@@ -2784,8 +2784,7 @@ components:
           description: "Set if there is only one external provider and no local. Allows immediate redirect to provider. It assumes it will be used immediate (e.g. state in oauth2 url)"
           type: string
           nullable: true
-        maintenanceInfo:
-          description: "If present, the system is in or near a maintenance window"
+        maintenanceInfo: # if present, the system is in or near a maintenance window
           nullable: true
           allOf:
             - $ref: "#/components/schemas/MaintenanceInfo"
