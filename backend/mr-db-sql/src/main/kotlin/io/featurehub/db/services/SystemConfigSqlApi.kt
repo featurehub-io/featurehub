@@ -220,6 +220,14 @@ class SystemConfigSqlApi @Inject constructor(
       }
     }.flatten()
 
+    if (log.isTraceEnabled) {
+      configProvider.forEach { cp ->
+        cp.readOnlyConfg.filter { cfg -> filters.any({f ->  cfg.key.startsWith(f)} ) }.forEach { cpFilter ->
+          log.trace("provider {} has config key: {}, values {}", cp.name, cpFilter.key, cpFilter.defaultValue)
+        }
+      }
+    }
+
     // now yoink in any read only fields
     val readOnlys = filters.map { filter ->
       configProvider.map { it.readOnlyConfg }.flatten().filter { it.key.startsWith(filter) }.map { SystemConfig().value(it.defaultValue).version(-1).key(it.key).encrypted(false) }

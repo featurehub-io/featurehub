@@ -86,6 +86,7 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(
     prefixes: List<String>,
     callback: (config: CloudEventDynamicDeliveryDetails, ce: CloudEvent, destination: String, destSuffix: String, metric: CloudEventChannelMetric) -> Unit
   ) {
+    log.trace("registering dynamic publishers for {}", prefixes)
     // somehow a null prefix is getting into here
     for (prefix in prefixes) {
       // this apparently can't happen but it does
