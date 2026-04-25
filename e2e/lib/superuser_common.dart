@@ -87,4 +87,6 @@ class SuperuserCommon {
     _apiClient.setAuthentication(
         'bearerAuth', OAuth(accessToken: _superuserToken));
   }
+
+  String get superuserId => _superuser!.id!.id;
 }

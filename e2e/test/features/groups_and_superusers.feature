@@ -2,6 +2,7 @@ Feature: This set of scenarios focuses on supers being added to portfolios and n
    or being removed automatically when they are no longer supers.
 
 
+  @remove_superuser
   Scenario: When a superuser is added to a group directly they should become a member of a portfolio's admin group automatically and reversed
     Given the first superuser is used for authentication
     And I have a randomly named portfolio with the prefix "superuser_admin_1"

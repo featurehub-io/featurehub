@@ -30,10 +30,10 @@ open class GroupSqlApi @Inject constructor(
 
   override fun getSuperuserGroup(orgId: UUID): Group? {
     val g = QDbGroup().owningOrganization.id
-      .eq(orgId).adminGroup
-      .isTrue.owningPortfolio
-      .isNull.groupMembers.person
-      .fetch()
+      .eq(orgId)
+      .adminGroup.isTrue
+      .owningPortfolio.isNull
+      .groupMembers.person.fetch()
       .findOne()
     return if (g != null) { // make sure you are a user in at least one group otherwise you can't see this
       // group
@@ -689,9 +689,9 @@ open class GroupSqlApi @Inject constructor(
 
     if (ordering != null) {
       if (ordering == SortOrder.ASC) {
-        gFinder = gFinder.order().name.asc()
+        gFinder = gFinder.orderBy().name.asc()
       } else if (ordering == SortOrder.DESC) {
-        gFinder = gFinder.order().name.desc()
+        gFinder = gFinder.orderBy().name.desc()
       }
     }
 
