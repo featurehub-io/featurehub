@@ -12,6 +12,7 @@ import io.featurehub.metrics.MetricsCollector
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.concurrent.ConcurrentHashMap
 
 data class CloudEventDynamicDeliveryDetails(
   var url: String?,
@@ -75,7 +76,7 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(
     config: CloudEventDynamicDeliveryDetails, ce: CloudEvent,
     destination: String, destSuffix: String, metric: CloudEventChannelMetric
   ) -> Unit> =
-    mutableMapOf()
+    ConcurrentHashMap()
   private var defaultPublisher: String? = null
   private var counter = 1
   private val mapper = ObjectMapper().apply { registerModule(KotlinModule.Builder().build()).registerModule(

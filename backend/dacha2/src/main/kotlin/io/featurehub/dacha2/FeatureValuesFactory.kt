@@ -2,6 +2,7 @@ package io.featurehub.dacha2
 
 import io.featurehub.dacha.model.CacheEnvironmentFeature
 import io.featurehub.dacha.model.PublishEnvironment
+import io.featurehub.utils.FallbackPropertyConfig
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
@@ -21,7 +22,7 @@ class FilteredEnvironmentFeatures(private val envFeatures: EnvironmentFeatures, 
   val filteredFeatures = envFeatures.getFeatures().filter { feature ->
     feature.feature.filters?.firstOrNull { it in filters } != null
   }
-  val calculatedEtag: String = EnvironmentFeatures.etagCalculator(filteredFeatures)
+  val calculatedEtag: String = EnvironmentFeatures.etagCalculator(filteredFeatures, envFeatures.getEtag())
 
   override fun getFeatures(): Collection<CacheEnvironmentFeature> {
     return filteredFeatures
@@ -35,7 +36,7 @@ class FilteredEnvironmentFeatures(private val envFeatures: EnvironmentFeatures, 
   }
 }
 
-class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
+class EnvironmentFeatures(val env: PublishEnvironment) : FeatureValues {
   private val log: Logger = LoggerFactory.getLogger(EnvironmentFeatures::class.java)
 
   // Feature::id, CacheFeatureValue
@@ -51,15 +52,18 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
         log.error("We have duplicates in {} - this should NEVER happen", env)
       }
 //    }
-    features = ConcurrentHashMap(env.featureValues.associate { f -> f.feature.id to f }.toMutableMap())
+    features = ConcurrentHashMap(env.featureValues.associateBy { f -> f.feature.id }.toMutableMap())
     featureValues.addAll(env.featureValues)
 
-    etag = etagCalculator(featureValues)
+    etag = etagCalculator(featureValues, "<new>")
   }
 
   fun calculateEtag() {
-    etag = etagCalculator(featureValues)
+    etag = etagCalculator(featureValues, etag)
   }
+
+  val featureCount: Int
+    get() = features.size
 
   // the UUID is the FEATURE's UUID NOT the feature value's one
   operator fun get(id: UUID): CacheEnvironmentFeature? {
@@ -75,7 +79,7 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
       features[id] = feature
       try {
         featureValues.add(feature)
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         log.warn("another version of the feature {} just got added to the set", feature)
       }
     } else {
@@ -114,7 +118,7 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
     features.remove(id)?.let {
       if (!featureValues.remove(it)) {
         // fallback to the slower remove as the value may have changed
-        environment.featureValues.removeIf { it.feature.id == id }
+        environment.featureValues.removeIf { fv -> fv.feature.id == id }
       }
 
       env.featureValues = featureValues.toList()
@@ -144,24 +148,29 @@ class EnvironmentFeatures(private val env: PublishEnvironment) : FeatureValues {
 
   companion object {
     private val log: Logger = LoggerFactory.getLogger(EnvironmentFeatures::class.java)
+    private val HEX_FORMAT = HexFormat.of()
 
-    fun etagCalculator(featureValues: Collection<CacheEnvironmentFeature>): String {
+    fun etagCalculator(featureValues: Collection<CacheEnvironmentFeature>, priorEtag: String): String {
       // we convert to list to protect against changes while we are evaluating it
-      val calcTag = featureValues.toList()
-        .map { fvci ->
-          fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version?.toString() ?: "0000")
-        }
-        .joinToString("-")
+      val calcTag = featureValues.toList().joinToString("-") { fvci ->
+        fvci.feature.id.toString() + fvci.feature.version + "-" + (fvci.value?.version?.toString() ?: "0000")
+      }
 
       val messageDigest = MessageDigest.getInstance("MD5")!!
       val hashBytes = messageDigest.digest(calcTag.toByteArray(StandardCharsets.UTF_8))
 
-      val newEtag = HexFormat.of().formatHex(hashBytes)
+      val newEtag = HEX_FORMAT.formatHex(hashBytes)
 
-      log.trace("etag is now {} (from '{}')", newEtag, calcTag)
+      if (logUnchangingEtags && priorEtag == newEtag) {
+        log.warn("etag {} is the same for {}", newEtag, calcTag)
+      }
+
+      log.trace("etag was `{}`, is now {} (from '{}')", priorEtag, newEtag, calcTag)
 
       return newEtag
     }
+
+    val logUnchangingEtags = FallbackPropertyConfig.getConfig("dacha2.log-unchanging-etags", "false") == "true"
   }
 }
 

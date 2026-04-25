@@ -9,7 +9,7 @@ Feature: I setup the example features to be able to run the examples
     And I create a new feature filter called "marketing"
     And I create a new feature filter called "billing"
 #    And I update the environment for feature webhooks
-    And I create a service account called "AW Client" with named permissions "read" with current environment
+    And I create a service account called "AW Client" with named permissions "all" with current environment
     When I update the service account called "AW Client" with feature filters "billing,client"
     And I connect to the feature server
 
@@ -24,5 +24,7 @@ Feature: I setup the example features to be able to run the examples
     And There is a string feature named SUBMIT_COLOR_BUTTON
     And There is a number feature named FEATURE_NUMBER
     And There is a json feature named FEATURE_JSON
+    # we need a service account with unfettered access to all features
+    And I create a service account called "KS Client" with named permissions "all" with current environment
     Then I write out a feature-examples config file
 
