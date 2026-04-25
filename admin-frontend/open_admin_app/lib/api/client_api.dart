@@ -68,7 +68,12 @@ class ManagementRepositoryClientBloc implements Bloc {
   late WebhookServiceApi webhookServiceApi;
   late TrackEventsServiceApi trackEventsServiceApi;
   late FeatureFilterServiceApi featureFilterServiceApi;
+  late MaintenanceBannerServiceApi _maintenanceBannerApi;
   static late FHRouter router;
+
+  final _maintenanceSource = BehaviorSubject<MaintenanceInfo?>.seeded(null);
+
+  Stream<MaintenanceInfo?> get maintenanceStream => _maintenanceSource.stream;
 
   // this reflects actual requests to change the route driven externally, so a user clicks on
   // something that should cause the page to change to this route.
@@ -90,6 +95,8 @@ class ManagementRepositoryClientBloc implements Bloc {
   late ServerCapabilities identityProviders;
 
   StreamSubscription<Person>? personStreamListener;
+  StreamSubscription<MaintenanceInfo?>? _maintenanceSubscription;
+  Timer? _maintenanceTimer;
 
   BehaviorSubject<bool> get stepperOpened => _stepperOpened;
 
@@ -153,6 +160,57 @@ class ManagementRepositoryClientBloc implements Bloc {
     // this is for fine grained route changes, like tab changes
     _routerSource.add(route);
     prefs.saveCurrentRoute(route.toJson());
+
+    // poll maintenance banner on every navigation for already-logged-in users
+    if (personState.isLoggedIn) {
+      _checkMaintenanceBanner();
+    }
+  }
+
+  /// Temporarily hides the maintenance banner for the current session until
+  /// the next navigation event re-polls the backend.
+  void dismissMaintenanceBanner() {
+    _maintenanceSource.add(null);
+  }
+
+  Future<void> _checkMaintenanceBanner() async {
+    _log.fine('maintenance: checking banner (loggedIn=${personState.isLoggedIn})');
+    try {
+      final response =
+          await _maintenanceBannerApi.apiDelegate.getMaintenanceBanner();
+      _log.fine('maintenance: status=${response.statusCode}');
+      if (response.statusCode == 204) {
+        _maintenanceSource.add(null);
+      } else if (response.statusCode == 200) {
+        final info = await _maintenanceBannerApi.apiDelegate
+            .getMaintenanceBanner_decode(response.body!);
+        _log.fine('maintenance: active=${info.active} message=${info.message}');
+        // Adding to the source triggers the _maintenanceSubscription listener,
+        // which calls _enforceMaintenanceLogout() if the user is logged in.
+        _maintenanceSource.add(info.active ? info : null);
+      }
+    } catch (e, s) {
+      _log.warning('maintenance: check failed', e, s);
+    }
+  }
+
+  /// Clears local session state and routes to login. Does not call the backend
+  /// logout endpoint — that call can fail and block the redirect. The server
+  /// session will expire naturally.
+  void _enforceMaintenanceLogout() {
+    _log.fine('maintenance: enforcing logout (loggedIn=${personState.isLoggedIn})');
+    if (!personState.isLoggedIn) return; // already logged out, avoid re-entry
+    setBearerToken(null);
+    personState.logout();
+    _menuOpened.add(false);
+    // Route to login BEFORE clearing portfolio/app IDs. Setting those IDs to
+    // null triggers stream updates that cause active widgets to re-fire API
+    // calls with null parameters (→ 404 errors). Routing first tears down
+    // those widgets so they have no listeners left when the IDs are cleared.
+    routeSlot(RouteSlot.login);
+    _errorSource.add(null);
+    currentPid = null;
+    currentAid = null;
   }
 
   void _initializeRouteStreams() {
@@ -292,6 +350,25 @@ class ManagementRepositoryClientBloc implements Bloc {
     webhookServiceApi = WebhookServiceApi(client);
     trackEventsServiceApi = TrackEventsServiceApi(client);
     featureFilterServiceApi = FeatureFilterServiceApi(client);
+    _maintenanceBannerApi = MaintenanceBannerServiceApi(client);
+
+    // Redirect to login whenever maintenance becomes active while logged in.
+    // Using a stream listener means the redirect fires immediately when
+    // _maintenanceSource is updated from any source (initial load, nav poll,
+    // or the periodic timer below).
+    _maintenanceSubscription = _maintenanceSource.listen((info) {
+      if (info != null && info.active && personState.isLoggedIn) {
+        _enforceMaintenanceLogout();
+      }
+    });
+
+    // Poll every 30 seconds so users get kicked out even without navigating.
+    _maintenanceTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (personState.isLoggedIn) {
+        _checkMaintenanceBanner();
+      }
+    });
+
     _errorSource.add(null);
     streamValley.apiClient = this;
 
@@ -344,10 +421,19 @@ class ManagementRepositoryClientBloc implements Bloc {
 
       identityProviders.identityInfo = setupResponse.providerInfo;
 
+      // Seed maintenance banner from initial load
+      final maintenanceActive =
+          setupResponse.maintenanceInfo?.active == true;
+      _maintenanceSource.add(
+          maintenanceActive ? setupResponse.maintenanceInfo : null);
+
       // yes its initialised, we may not have logged in yet
-      if (bearerToken != null) {
+      if (bearerToken != null && !maintenanceActive) {
         setBearerToken(bearerToken);
         requestOwnDetails();
+      } else if (bearerToken != null && maintenanceActive) {
+        // maintenance is active — don't restore the session, show login
+        routeSlot(RouteSlot.login);
       } else if (setupResponse.redirectUrl != null) {
         // they can only authenticate via one provider, so lets use them
         webInterface.authenticateViaProvider(setupResponse.redirectUrl!);
@@ -575,9 +661,12 @@ class ManagementRepositoryClientBloc implements Bloc {
     _personPermissionInPortfolioChanged.cancel();
     streamValley.currentPortfolioAdminOrSuperAdminSubscription.cancel();
     personStreamListener?.cancel();
+    _maintenanceSubscription?.cancel();
+    _maintenanceTimer?.cancel();
     _errorSource.close();
     _overlaySource.close();
     _snackbarSource.close();
+    _maintenanceSource.close();
     personState.dispose();
   }
 
