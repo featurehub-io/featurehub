@@ -12,6 +12,7 @@ import io.featurehub.metrics.MetricsCollector
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.concurrent.ConcurrentHashMap
 
 data class CloudEventDynamicDeliveryDetails(
   var url: String?,
@@ -75,7 +76,7 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(
     config: CloudEventDynamicDeliveryDetails, ce: CloudEvent,
     destination: String, destSuffix: String, metric: CloudEventChannelMetric
   ) -> Unit> =
-    mutableMapOf()
+    ConcurrentHashMap()
   private var defaultPublisher: String? = null
   private var counter = 1
   private val mapper = ObjectMapper().apply { registerModule(KotlinModule.Builder().build()).registerModule(
@@ -86,15 +87,7 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(
     prefixes: List<String>,
     callback: (config: CloudEventDynamicDeliveryDetails, ce: CloudEvent, destination: String, destSuffix: String, metric: CloudEventChannelMetric) -> Unit
   ) {
-    log.trace("registering dynamic publishers for {}", prefixes)
-    // somehow a null prefix is getting into here
-    for (prefix in prefixes) {
-      // this apparently can't happen but it does
-      if (prefix == null) {
-        log.error("warn we have been presented with a null dynamic routing prefix")
-      }
-    }
-    prefixes.filterNotNull().forEach {
+    prefixes.forEach {
       dynamicDelivery[it] = callback
     }
   }
