@@ -574,17 +574,21 @@ open class ConvertUtils @Inject constructor(
       featureValue.valueBoolean(
         if (fs.defaultValue == null) java.lang.Boolean.FALSE else java.lang.Boolean.parseBoolean(fs.defaultValue)
       )
+      featureValue.value = featureValue.valueBoolean;
     }
     if (appFeature.valueType == FeatureValueType.JSON) {
       featureValue.valueJson(fs.defaultValue)
+      featureValue.value = featureValue.valueJson;
     }
     if (appFeature.valueType == FeatureValueType.STRING) {
       featureValue.valueString(fs.defaultValue)
+      featureValue.value = featureValue.valueString;
     }
     if (appFeature.valueType == FeatureValueType.NUMBER) {
       featureValue.valueNumber(
         if (fs.defaultValue == null) null else BigDecimal(fs.defaultValue)
       )
+      featureValue.value = featureValue.valueNumber;
     }
     featureValue.environmentId = fs.environment.id
     if (opts.contains(FillOpts.RolloutStrategies)) {
