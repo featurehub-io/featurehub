@@ -86,7 +86,14 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(
     prefixes: List<String>,
     callback: (config: CloudEventDynamicDeliveryDetails, ce: CloudEvent, destination: String, destSuffix: String, metric: CloudEventChannelMetric) -> Unit
   ) {
-    prefixes.forEach {
+    // somehow a null prefix is getting into here
+    for (prefix in prefixes) {
+      // this apparently can't happen but it does
+      if (prefix == null) {
+        log.error("warn we have been presented with a null dynamic routing prefix")
+      }
+    }
+    prefixes.filterNotNull().forEach {
       dynamicDelivery[it] = callback
     }
   }

@@ -156,7 +156,7 @@ class SlackConfig @Inject constructor(
   override fun registerForReadOnlyConfig() {
     if (slackDeliveryUrl == null && !slackDeliveryInternalOnly) {
       readOnlyConfig.add(ReadOnlySystemConfig("slack.delivery.prefixes", "Allowable prefixes for delivery urls",
-        publisherRegistry.supportedPrefixes))
+        publisherRegistry.supportedPrefixes.filterNotNull()))
     }
   }
 
