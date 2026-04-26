@@ -1,4 +1,4 @@
-FROM nats:2.12.3-alpine AS builder
+FROM nats:2.12.7-alpine AS builder
 
 WORKDIR /workdir
 RUN cp /usr/local/bin/nats-server /workdir && cp /etc/nats/nats-server.conf /workdir
