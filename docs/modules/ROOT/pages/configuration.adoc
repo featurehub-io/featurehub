@@ -289,6 +289,8 @@ If you are using Dacha2 (the "lazy" cache), then the following properties/enviro
   * `standard` - this will operate under the assumption that the streaming layer will
 never disconnect or will retain the traffic for this particular client (such as when
 using Google PubSub or NATs with JetStream).
+- `dacha2.use-old-cache` - As of 1.10 of FeatureHub, we have swapped from using the Google Guava cache to the much faster, memory efficient Caffeine cache. If you set this value to `true` it will use the Guava cache used in previous versions. We only intend to keep this code around for a single version and then remove it, so if you find yourself
+using it, please let us know with an open issue on Github.
 
 image::REST_communication_dacha2.svg[REST Traffic between API Servers for Caches]
 

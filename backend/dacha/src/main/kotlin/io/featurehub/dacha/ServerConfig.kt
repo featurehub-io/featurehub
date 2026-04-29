@@ -216,6 +216,8 @@ class ServerConfig @Inject constructor(
   }
 
   fun publish(subject: String?, o: Any, errorMessage: String?) {
+    if (subject == null) return
+
     try {
       //      log.debug("publishing: {} => {} ", subject, o);
       natsServer.connection.publish(subject, encode(o))

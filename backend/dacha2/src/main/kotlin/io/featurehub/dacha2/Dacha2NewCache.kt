@@ -1,10 +1,10 @@
 package io.featurehub.dacha2
 
-import com.google.common.cache.Cache
-import com.google.common.cache.CacheBuilder
-import com.google.common.cache.CacheLoader
-import com.google.common.cache.LoadingCache
-import com.google.common.cache.RemovalListener
+import com.github.benmanes.caffeine.cache.Cache
+import com.github.benmanes.caffeine.cache.CacheLoader
+import com.github.benmanes.caffeine.cache.Caffeine
+import com.github.benmanes.caffeine.cache.LoadingCache
+import com.github.benmanes.caffeine.cache.RemovalListener
 import io.featurehub.dacha.model.CacheServiceAccount
 import io.featurehub.dacha.model.CacheServiceAccountPermission
 import io.featurehub.dacha.model.PublishAction
@@ -13,6 +13,7 @@ import io.featurehub.dacha.model.PublishFeatureValue
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.dacha2.api.Dacha2ServiceClient
 import io.featurehub.enricher.EnrichmentEnvironment
+import io.featurehub.enricher.FeatureEnrichmentCache
 import io.featurehub.metrics.MetricsCollector
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
@@ -21,7 +22,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 
-open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2ServiceClient,
+class InvalidKeyException : RuntimeException()
+
+open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha2ServiceClient,
                                                private val featureValueFactory: FeatureValuesFactory) : Dacha2BaseCache() {
   protected val serviceAccountApiKeyCache: LoadingCache<String, CacheServiceAccount>
   protected val serviceAccountCache: Cache<UUID, CacheServiceAccount>
@@ -51,75 +54,57 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
   private val metricTimer = Timer()
 
   init {
-    environmentMissCache = CacheBuilder.newBuilder()
+    environmentMissCache = Caffeine.newBuilder()
       .maximumSize(maximumEnvironmentMisses)
       .build()
 
-    serviceAccountMissCache = CacheBuilder.newBuilder()
+    serviceAccountMissCache = Caffeine.newBuilder()
       .maximumSize(maximumServiceAccountMisses)
       .build()
 
-    permsCache = CacheBuilder.newBuilder()
+    permsCache = Caffeine.newBuilder()
       .maximumSize(maximumServiceAccountPermissionsSize)
       .build()
 
-    environmentCache = CacheBuilder.newBuilder()
+    environmentCache = Caffeine.newBuilder()
       .maximumSize(maximumEnvironments)
-      .removalListener(RemovalListener<UUID, EnvironmentFeatures> { notification ->
-        val eFeatures = notification.value!!
-        val envId = notification.key!!
-
-        if (!resettingCache) {
-          permsCache.invalidateAll(eFeatures.env.serviceAccounts.map { "$envId/$it" })
-        }
+      .removalListener(RemovalListener<UUID, EnvironmentFeatures> { envId, eFeatures, _ ->
+        if (envId == null || eFeatures == null || resettingCache) return@RemovalListener
+        permsCache.invalidateAll(eFeatures.env.serviceAccounts.map { "$envId/$it" })
       })
-      .build(object : CacheLoader<UUID, EnvironmentFeatures>() {
-        override fun load(id: UUID): EnvironmentFeatures {
-          try {
-            val env = mrDacha2Api.getEnvironment(id, apiKey).env
-            gaugeFeaturesInCache.inc(env.featureValues.size.toDouble())
-
-            return featureValueFactory.create(env)
-          } catch (nfe: NotFoundException) {
-            log.trace("environment id {} does not exist", id)
-            environmentMissCache.put(id, true)
-            throw nfe
-          } catch (e: Exception) {
-            log.error("failed", e)
-            throw e
-          }
+      .build(CacheLoader { id: UUID ->
+        try {
+          val env = mrDacha2Api.getEnvironment(id, apiKey).env
+          gaugeFeaturesInCache.inc(env.featureValues.size.toDouble())
+          featureValueFactory.create(env)
+        } catch (nfe: NotFoundException) {
+          log.trace("environment id {} does not exist", id)
+          environmentMissCache.put(id, true)
+          throw nfe
+        } catch (e: Exception) {
+          log.error("failed", e)
+          throw e
         }
       })
 
-    serviceAccountCache = CacheBuilder.newBuilder().maximumSize(maximumServiceAccounts / 2).build()
+    serviceAccountCache = Caffeine.newBuilder().maximumSize(maximumServiceAccounts / 2).build()
 
-    serviceAccountApiKeyCache = CacheBuilder.newBuilder()
+    serviceAccountApiKeyCache = Caffeine.newBuilder()
       .maximumSize(maximumServiceAccounts)
-      .removalListener(RemovalListener<String, CacheServiceAccount> { notification ->
-        val value = notification.value!!
-
-
-        if (!resettingCache) {
-          // this is cached per service account api key, it has its own removal listener
-          permsCache.invalidateAll(value.permissions.map {
-            permCacheKey(it.environmentId, notification.key!!)
-          })
-        }
+      .removalListener(RemovalListener<String, CacheServiceAccount> { key, value, _ ->
+        if (key == null || value == null || resettingCache) return@RemovalListener
+        permsCache.invalidateAll(value.permissions.map { permCacheKey(it.environmentId, key) })
       })
-      .build(object : CacheLoader<String, CacheServiceAccount>() {
-        override fun load(key: String): CacheServiceAccount {
-          try {
-            val serviceAccount = mrDacha2Api.getServiceAccount(key, apiKey).serviceAccount
-            // every SA is actually two entries
-            fillServiceAccountCache(key, serviceAccount)
-
-            serviceAccountCache.put(serviceAccount.id, serviceAccount)
-            return serviceAccount
-          } catch (nfe: NotFoundException) {
-            log.trace("service account {} does not exist", key)
-            serviceAccountMissCache.put(key, true)
-            throw nfe
-          }
+      .build(CacheLoader { key: String ->
+        try {
+          val serviceAccount = mrDacha2Api.getServiceAccount(key, apiKey).serviceAccount
+          fillServiceAccountCache(key, serviceAccount)
+          serviceAccountCache.put(serviceAccount.id, serviceAccount)
+          serviceAccount
+        } catch (nfe: NotFoundException) {
+          log.trace("service account {} does not exist", key)
+          serviceAccountMissCache.put(key, true)
+          throw nfe
         }
       })
 
@@ -138,14 +123,14 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
   }
 
   fun resetMetricCounters() {
-    gaugePermsCache.set(permsCache.size().toDouble())
-    gaugeEnvironmentCache.set(environmentCache.size().toDouble())
+    gaugePermsCache.set(permsCache.estimatedSize().toDouble())
+    gaugeEnvironmentCache.set(environmentCache.estimatedSize().toDouble())
 
-    gaugeServiceAccountCache.set(serviceAccountCache.size().toDouble())
-    gaugeServiceAccountKeyCache.set(serviceAccountApiKeyCache.size().toDouble())
+    gaugeServiceAccountCache.set(serviceAccountCache.estimatedSize().toDouble())
+    gaugeServiceAccountKeyCache.set(serviceAccountApiKeyCache.estimatedSize().toDouble())
 
-    gaugeEnvironmentMissCache.set(environmentMissCache.size().toDouble())
-    gaugeServiceAccountMissCache.set(serviceAccountMissCache.size().toDouble())
+    gaugeEnvironmentMissCache.set(environmentMissCache.estimatedSize().toDouble())
+    gaugeServiceAccountMissCache.set(serviceAccountMissCache.estimatedSize().toDouble())
   }
 
   fun resetCache() {
@@ -164,6 +149,7 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
       }
     }
   }
+
 
   /**
    * this causes us to double-load the api keys in, which is what we want
@@ -195,20 +181,18 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
     try {
       val perms = permsCache.get(comboKey) {
         try {
-          // this can cause an exception
           val serviceAccount = serviceAccountApiKeyCache.get(apiKey)
-
           val result = serviceAccount.permissions.find { it.environmentId == eId }
           if (result == null) {
             log.trace("Unable to find environment id {} in serviceAccount", serviceAccount)
+            throw InvalidKeyException()
           }
           result
         } catch (_: Exception) {
           if (log.isTraceEnabled) {
             log.trace("failed to get service account permission {}/{}", eId, apiKey)
           }
-          // this will cause an exception
-          null
+          throw InvalidKeyException()
         }
       }
 
@@ -310,7 +294,7 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
         // if we have it, update respective caches   and just return
         serviceAccountCache.getIfPresent(sId)?.let {
 
-          serviceAccountApiKeyCache.invalidate(listOf(it.apiKeyServerSide, it.apiKeyClientSide))
+          serviceAccountApiKeyCache.invalidateAll(listOf(it.apiKeyServerSide, it.apiKeyClientSide))
           serviceAccountMissCache.put(it.apiKeyClientSide, true)
           serviceAccountMissCache.put(it.apiKeyServerSide, true)
 

@@ -2,6 +2,7 @@ package io.featurehub.dacha2
 
 import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.caching.FastlyPublisher
+import io.featurehub.dacha2.Dacha2Utility.Companion.usingGuavaCache
 import io.featurehub.dacha2.resource.DachaApiKeyResource
 import io.featurehub.dacha2.resource.DachaEnvironmentResource
 import io.featurehub.enricher.EnrichmentProcessingFeature
@@ -27,16 +28,26 @@ class Dacha2Feature : Feature {
 
         if (streamingDisconnectBehaviour == "on-reconnect") {
 
-          bind(Dacha2DumpOnReconnectCache::class.java).to(Dacha2Cache::class.java).to(
-            FeatureEnrichmentCache::class.java).`in`(Singleton::class.java)
+          if (usingGuavaCache) {
+            bind(Dacha2DumpOnReconnectCache::class.java).to(Dacha2Cache::class.java).to(
+              FeatureEnrichmentCache::class.java).`in`(Singleton::class.java)
+          } else {
+            bind(Dacha2NewDumpOnReconnectCache::class.java).to(Dacha2Cache::class.java).to(
+              FeatureEnrichmentCache::class.java).`in`(Singleton::class.java)
+          }
         } else if (streamingDisconnectBehaviour == "use-passthrough") {
           bind(Dacha2DelegatingCache::class.java).to(Dacha2Cache::class.java).to(
             FeatureEnrichmentCache::class.java).`in`(Singleton::class.java)
         } else {
           // if this is turned off, we assume straight cache usage and that the environment is tolerant of NATs pod
           // movement
-          bind(Dacha2CacheImpl::class.java).to(Dacha2Cache::class.java).to(
-            FeatureEnrichmentCache::class.java).`in`(Singleton::class.java)
+          if (usingGuavaCache) {
+            bind(Dacha2CacheImpl::class.java).to(Dacha2Cache::class.java).to(
+              FeatureEnrichmentCache::class.java).`in`(Singleton::class.java)
+          } else {
+            bind(Dacha2NewCacheImpl::class.java).to(Dacha2Cache::class.java).to(
+              FeatureEnrichmentCache::class.java).`in`(Singleton::class.java)
+          }
         }
 
         if (FastlyPublisher.fastlyEnabled()) {

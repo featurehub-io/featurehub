@@ -19,9 +19,9 @@ import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.ServerErrorException
 import spock.lang.Specification
 
-class Dacha2CacheImplSpec extends Specification {
+class Dacha2NewCacheImplSpec extends Specification {
   Dacha2ServiceClient api
-  Dacha2CacheImpl cache
+  Dacha2NewCacheImpl cache
   FeatureValuesFactory fvFactory
   UUID envId
   UUID serviceAccountId
@@ -32,7 +32,7 @@ class Dacha2CacheImplSpec extends Specification {
   def setup() {
     api = Mock()
     fvFactory = new FeatureValuesFactoryImpl()
-    cache = new Dacha2CacheImpl(api, fvFactory)
+    cache = new Dacha2NewCacheImpl(api, fvFactory)
 
     envId = UUID.randomUUID()
     serviceAccountId = UUID.randomUUID()
@@ -138,7 +138,7 @@ class Dacha2CacheImplSpec extends Specification {
         "dacha2.cache.all-updates": "false"
       ])
     and: "we have the dacha2 cache"
-      cache = new Dacha2CacheImpl(api, fvFactory)
+      cache = new Dacha2NewCacheImpl(api, fvFactory)
     and: "we have a new environment"
       def env = publishedEnvironment()
     when: "we publish an environment"

@@ -64,7 +64,7 @@ class NATSDachaApiKeyService constructor(private val nats: NATSSource, val cache
           )
         ),
         Duration.of(connectionTimeout, ChronoUnit.MILLIS)
-      )
+      ) ?: throw InternalServerErrorException()
 
       val response = CacheJsonMapper.readFromZipBytes(msg.data, DachaNATSResponse::class.java)
 
