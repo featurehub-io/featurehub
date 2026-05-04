@@ -2,6 +2,7 @@ package io.featurehub.jersey.config;
 
 import cd.connect.openapi.support.OpenApiEnumProvider;
 import io.featurehub.jersey.OffsetDateTimeQueryProvider;
+import io.featurehub.jersey.SSEAwareEncodingFilter;
 import io.featurehub.lifecycle.LifecycleListenerFeature;
 import io.featurehub.rest.WebHeaderAuditLogger;
 import io.featurehub.utils.FallbackPropertyConfig;
@@ -15,6 +16,8 @@ import org.glassfish.jersey.message.GZipEncoder;
 /**
  * This class is used in clients and servers, so only classes that are relevant to
  * both should be registered here.
+ *
+ * It is registered in CommonFeatureHubFeatures, which is in turn registered in FeatureHubJerseyHost.
  */
 public class CommonConfiguration implements Feature {
 
@@ -26,7 +29,12 @@ public class CommonConfiguration implements Feature {
 
     config.register(JacksonFeature.class);
     config.register(MultiPartFeature.class);
-    config.register(GZipEncoder.class);
+
+    if (!"true".equals(FallbackPropertyConfig.Companion.getConfig("http-compression-disable", "false"))) {
+      config.register(SSEAwareEncodingFilter.class);
+      config.register(GZipEncoder.class);
+    }
+
     config.register(JacksonContextProvider.class);
     config.register(LocalExceptionMapper.class);
     config.register(OffsetDateTimeQueryProvider.class);

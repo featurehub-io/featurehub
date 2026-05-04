@@ -340,12 +340,7 @@ class UseTelemetryFeature(private val injector: ServiceLocator) : Feature {
 class TelemetryFeature : Feature {
   private val log: Logger = LoggerFactory.getLogger(TelemetryFeature::class.java)
 
-  @ConfigKey("telemetry.logging-enabled")
-  var logTelemetry: Boolean? = false
-
-  init {
-    DeclaredConfigResolver.resolve(this)
-  }
+  var logTelemetry = FallbackPropertyConfig.getConfig("telemetry.logging-enabled", "false") == "true"
 
   override fun configure(context: FeatureContext): Boolean {
     context.register(TelemetryApplicationEventListener::class.java)
