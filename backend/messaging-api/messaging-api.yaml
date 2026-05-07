@@ -15,6 +15,75 @@ paths:
           description: "yay"
 components:
   schemas:
+    FeatureMessagingLifecycle:
+      x-cloudevent-type: messaging-lifecycle-feature-v1
+      x-cloudevent-subject: io.featurehub.events.messaging
+      x-publish-include: messaging
+      x-package: io.featurehub.messaging.model
+      x-implements: io.featurehub.events.messaging.AdditionalInfoMessage
+      description: "Changes made to a specific feature and optionally value and who changed it. This will currently only occur when a feature value changes, not on feature creation or deletion."
+      type: object
+      properties:
+        portfolioName:
+          x-basename: pName
+          type: string
+        portfolioId:
+          x-basename: pId
+          type: string
+          format: uuid
+        orgName:
+          x-basename: oName
+          type: string
+        organizationId:
+          x-basename: oId
+          type: string
+          format: uuid
+        appName:
+          x-basename: aName
+          type: string
+        applicationId:
+          x-basename: aId
+          type: string
+          format: uuid
+        whenUpdated:
+          type: string
+          format: date-time
+        whoUpdatedId:
+          type: string
+          format: uuid
+          description: "The ID of the person who updated the feature"
+        whoUpdated:
+          type: string
+          description: Name of the user who made the change to the feature
+        featureName:
+          description: "The name of the feature"
+          x-basename: fName
+          type: string
+        featureKey:
+          x-basename: fKey
+          description: "Feature key that got updated"
+          type: string
+        featureId:
+          x-basename: fId
+          description: "Id of the Feature that got updated"
+          type: string
+          format: uuid
+        operation:
+          description: "The basic operation performed, create a feature, update a feature in an environment, delete a feature"
+          type: string
+        version:
+          description: "Current version, version we are changing to"
+          type: integer
+          format: int64
+        desc:
+          description: "Feature description"
+          nullable: true
+          type: string
+        link:
+          description: "Link associated with feature (if any)"
+          nullable: true
+          type: string
+
     FeatureMessagingUpdate:
       x-cloudevent-type: messaging-feature-v1
       x-cloudevent-subject: io.featurehub.events.messaging

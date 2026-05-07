@@ -5,6 +5,7 @@ import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.api.SingleNullableFeatureValueUpdate
+import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.mr.model.RolloutStrategy
 import java.util.UUID
@@ -19,6 +20,11 @@ data class FeatureMessagingParameter(
   val versionUpdate: SingleNullableFeatureValueUpdate<Long>
 )
 
+data class FeatureMessagingLifecycle(
+  val feature: DbApplicationFeature,
+  val created: Boolean
+)
+
 interface FeatureMessagingPublisher {
   /**
    * Sets off the chain in motion of publishing a cloud event. This sets it all up, creates all the
@@ -26,4 +32,5 @@ interface FeatureMessagingPublisher {
    * send it to downstream systems.
    */
   fun publish(featureMessagingParameter: FeatureMessagingParameter, orgId: UUID)
+  fun publish(featureLifecycle: FeatureMessagingLifecycle, orgId: UUID)
 }
