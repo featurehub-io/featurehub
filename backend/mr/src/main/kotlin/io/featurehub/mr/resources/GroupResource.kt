@@ -83,7 +83,10 @@ class GroupResource @Inject constructor(
           "No permission to add user to group."
         ) {
           groupHolder.group =
-            groupApi.addPersonToGroup(gid, personId, Opts().add(FillOpts.Members, holder.includeMembers))
+            groupApi.addPersonToGroup(gid, personId, Opts()
+              .add(FillOpts.Members, holder.includeMembers)
+              .add(FillOpts.MembersV2, holder.includeMembersV2)
+            )
         }
       }
     }
@@ -143,7 +146,9 @@ class GroupResource @Inject constructor(
           groupHolder.group = groupApi.deletePersonFromGroup(
             gid,
             personId,
-            Opts().add(FillOpts.Members, holder.includeMembers)
+            Opts()
+              .add(FillOpts.Members, holder.includeMembers)
+              .add(FillOpts.MembersV2, holder.includeMembersV2)
           )
         }
       }
@@ -178,10 +183,12 @@ class GroupResource @Inject constructor(
   ): Group {
     val opts =
       Opts().add(FillOpts.Acls, holder.includeGroupRoles).add(FilterOptType.Application, holder.byApplicationId)
+        .add(FillOpts.MembersV2, holder.includeMembersV2)
     if (java.lang.Boolean.TRUE == holder.includeMembers) {
       opts.add(FillOpts.People)
       opts.add(FillOpts.Members)
     }
+
     return groupApi.getGroup(gid, opts, authManager.from(securityContext))
       ?: throw NotFoundException("No such group")
   }
@@ -203,7 +210,10 @@ class GroupResource @Inject constructor(
             true == holder.updateMembers,
             true == holder.updateApplicationGroupRoles,
             true == holder.updateEnvironmentGroupRoles,
-            Opts().add(FillOpts.Members, holder.includeMembers).add(FillOpts.Acls, holder.includeGroupRoles)
+            Opts()
+              .add(FillOpts.Members, holder.includeMembers)
+              .add(FillOpts.MembersV2, holder.includeMembersV2)
+              .add(FillOpts.Acls, holder.includeGroupRoles)
           )
         } catch (e: OptimisticLockingException) {
           throw WebApplicationException(422)

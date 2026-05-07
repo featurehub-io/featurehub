@@ -22,7 +22,8 @@ When('I get the portfolio admin group', async function() {
   const groups = await world.superuser.groupApi.findGroups(world.portfolio.id);
   const adminGroup = groups.data.find(g => g.admin);
   expect(adminGroup, `${JSON.stringify(groups.data)} - could not find admin group!`).to.not.be.undefined;
-  world.group = adminGroup;
+  const fullGroup = await world.superuser.groupApi.getGroup(adminGroup.id, false, true);
+  world.group = fullGroup.data;
 });
 
 When('I create a new group with application roles {string}', async function(roles: string) {
@@ -39,6 +40,34 @@ When('I create a new group with application roles {string}', async function(role
 
   expect(response.status).to.eq(200);
   world.group = response.data;
+});
+
+When('I assign the superuser to the group', async function() {
+  const world = this as SdkWorld;
+  const userResponse = await world.superuser.personApi.getPerson("self");
+  const userId = (userResponse.data as Person).id.id;
+  const response = await world.superuser.groupApi.addPersonToGroup(world.group.id,
+    userId, true);
+  expect(response.status).to.eq(200);
+  expect(response.data.members.find( p => p.id.id === userId)).to.not.be.undefined;
+});
+
+Then('I can delete the supergroup from the group', async function() {
+  const world = this as SdkWorld;
+  const userResponse = await world.superuser.personApi.getPerson("self");
+  const userId = (userResponse.data as Person).id.id;
+  const response = await world.superuser.groupApi.deletePersonFromGroup(world.group.id, userId, true);
+  expect(response.status).to.eq(200);
+  expect(response.data.members.find( p => p.id.id === userId)).to.be.undefined;
+});
+
+Then(/^the (superuser|user) is marked in the group as a (superuser|user)$/, async function(userSource: string, userType: string) {
+  const world = this as SdkWorld;
+  const user = (userSource === 'superuser') ? world.superuser : world.user;
+  expect(user.me).to.not.be.undefined;
+  expect(world.group).to.not.be.undefined;
+  const suserValue = userType === 'superuser';
+  expect(world.group.sMembers.find(p => p.superuser === suserValue && p.person.id === user.personId))
 });
 
 Then('I assign the new user to the new group', async function() {

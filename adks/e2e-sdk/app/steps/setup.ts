@@ -1,14 +1,11 @@
 import {expect} from 'chai';
 import {Given, Then, When} from '@cucumber/cucumber';
 import {
-  Application, CreateApplication,
+  CreateApplication,
   CreatePortfolio,
   Environment,
   PortfolioServiceApi,
-  RoleType,
-  ServiceAccount,
   ServiceAccountPermission,
-  ServiceAccountServiceApi,
   UpdateEnvironment
 } from '../apis/mr-service';
 import {makeid, sleep} from '../support/random';

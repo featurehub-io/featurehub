@@ -453,11 +453,19 @@ paths:
         - name: includeMembers
           description: "include people in each group"
           in: query
+          required: false
+          schema:
+            type: boolean
+        - name: includeMembersV2
+          description: "include anemic people in each group with superuser"
+          in: query
+          required: false
           schema:
             type: boolean
         - name: includeGroupRoles
           description: "include environment and application roles in each group"
           in: query
+          required: false
           schema:
             type: boolean
         - name: updateMembers
@@ -2120,15 +2128,23 @@ paths:
           format: uuid
         required: true
       - name: includeMembers
-        description: "include people in each group"
+        description: "include people in each group (v1) - uses Members"
         in: query
         schema:
           type: boolean
+        required: false
+      - name: includeMembersV2
+        description: "include people in each group (v2) - uses GroupMember instead of Members"
+        in: query
+        schema:
+          type: boolean
+        required: false
       - name: includeGroupRoles
         description: "include environment and application roles in each group"
         in: query
         schema:
           type: boolean
+        required: false
     get:
       security:
         - bearerAuth: [ ]
@@ -2238,6 +2254,59 @@ paths:
           description: "forbidden"
         404:
           description: "not found"
+  /mr-api/group/{gid}/person:
+    parameters:
+      - name: gid
+        description: "The id of the group that we are processing"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: includeMembersV2
+        description: "include anemic people in each group with superuser info"
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: personId
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+      - name: email
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+    post:
+      tags:
+        - GroupService
+      security:
+        - bearerAuth: [ ]
+      description: "Add a persons to a group"
+      operationId: addPersonsToGroup
+      responses:
+        200:
+          description: "Resulting group"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "group or person not found"
+
   /mr-api/group/{gid}/person/{pId}:
     parameters:
       - name: gid
@@ -2257,6 +2326,13 @@ paths:
       - name: includeMembers
         description: "include people in each group"
         in: query
+        required: false
+        schema:
+          type: boolean
+      - name: includeMembersV2
+        description: "include anemic people in each group with superuser info"
+        in: query
+        required: false
         schema:
           type: boolean
     post:
@@ -3952,6 +4028,11 @@ components:
               type: string
               minLength: 1
               maxLength: 255
+            sMembers:
+              type: array
+              default: []
+              items:
+                $ref: "#/components/schemas/GroupPerson"
             members:
               type: array
               default: []
@@ -3971,6 +4052,13 @@ components:
               nullable: true
               type: string
               format: date-time
+    GroupPerson:
+      type: object
+      properties:
+        person:
+          $ref: "#/components/schemas/AnemicPerson"
+        superuser:
+          type: boolean
     ApplicationGroupRole:
       type: object
       required:

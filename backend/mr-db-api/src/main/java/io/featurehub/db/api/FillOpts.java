@@ -10,6 +10,7 @@ public enum FillOpts {
   Portfolios,
   PortfolioIds,
   Members,
+  MembersV2, // also whether a person is a superuser
   Groups,
   Acls,
   Features,

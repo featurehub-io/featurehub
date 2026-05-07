@@ -110,11 +110,13 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
               stream: bloc.groupLoaded,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
+
+                  var group = snapshot.data!;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       if (bloc.mrClient
-                          .isPortfolioOrSuperAdmin(snapshot.data!.portfolioId))
+                          .isPortfolioOrSuperAdmin(group.portfolioId))
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: FilledButton.icon(
@@ -125,7 +127,7 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                                 .addOverlay((BuildContext context) {
                               return AddMembersDialogWidget(
                                 bloc: bloc,
-                                group: snapshot.data!,
+                                group: group,
                               );
                             }),
                           ),
@@ -143,14 +145,14 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                                   label: Text(
                                       AppLocalizations.of(context)!.columnName),
                                   onSort: (columnIndex, ascending) {
-                                    onSortColumn(snapshot.data!.members,
+                                    onSortColumn(group.sMembers,
                                         columnIndex, ascending);
                                   }),
                               DataColumn(
                                 label: Text(
                                     AppLocalizations.of(context)!.columnEmail),
                                 onSort: (columnIndex, ascending) {
-                                  onSortColumn(snapshot.data!.members,
+                                  onSortColumn(group.sMembers,
                                       columnIndex, ascending);
                                 },
                               ),
@@ -158,7 +160,7 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                                 label: Text(AppLocalizations.of(context)!
                                     .columnMemberType),
                                 onSort: (columnIndex, ascending) {
-                                  onSortColumn(snapshot.data!.members,
+                                  onSortColumn(group.sMembers,
                                       columnIndex, ascending);
                                 },
                               ),
@@ -171,24 +173,22 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                                   onSort: (i, a) => {}),
                             ],
                             rows: [
-                              for (Person member in snapshot.data!.members)
+                              for (GroupPerson member in group.sMembers)
                                 DataRow(cells: [
                                   DataCell(
-                                    Text(member.name ?? ''),
+                                    Text(member.person.name ?? ''),
                                   ),
                                   DataCell(Text(
-                                      member.personType == PersonType.person
-                                          ? member.email!
+                                      member.person.type == PersonType.person
+                                          ? member.person.email!
                                           : "")),
                                   DataCell(Text(
-                                      member.personType == PersonType.person
+                                      member.person.type == PersonType.person
                                           ? AppLocalizations.of(context)!
                                               .memberTypeUser
                                           : AppLocalizations.of(context)!
                                               .memberTypeServiceAccount)),
-                                  DataCell(bloc.mrClient
-                                          .isPortfolioOrSuperAdmin(
-                                              snapshot.data!.portfolioId)
+                                  DataCell(!member.superuser
                                       ? Tooltip(
                                           message: AppLocalizations.of(context)!
                                               .removeFromGroup,
@@ -197,14 +197,14 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                                             onPressed: () async {
                                               try {
                                                 await bloc.removeFromGroup(
-                                                    snapshot.data!, member);
+                                                    group, member.person.id);
                                                 if (context.mounted) {
                                                   bloc.mrClient.addSnackbar(
                                                       Text(AppLocalizations.of(
                                                               context)!
                                                           .memberRemovedFromGroup(
-                                                              member.name ?? '',
-                                                              snapshot.data!
+                                                              member.person.name,
+                                                              group
                                                                   .name)));
                                                 }
                                               } catch (e, s) {
@@ -230,39 +230,39 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
     );
   }
 
-  void onSortColumn(List<Person> people, int columnIndex, bool ascending) {
+  void onSortColumn(List<GroupPerson> people, int columnIndex, bool ascending) {
     setState(() {
       if (columnIndex == 0) {
         if (ascending) {
           people.sort((a, b) {
-            return a.name!.toLowerCase().compareTo(b.name!.toLowerCase());
+            return a.person.name.toLowerCase().compareTo(b.person.name!.toLowerCase());
           });
         } else {
           people.sort((a, b) {
-            return b.name!.toLowerCase().compareTo(a.name!.toLowerCase());
+            return b.person.name.toLowerCase().compareTo(a.person.name.toLowerCase());
           });
         }
       }
       if (columnIndex == 1) {
         if (ascending) {
           people.sort((a, b) =>
-              a.email!.toLowerCase().compareTo(b.email!.toLowerCase()));
+              a.person.email!.toLowerCase().compareTo(b.person.email!.toLowerCase()));
         } else {
           people.sort((a, b) =>
-              b.email!.toLowerCase().compareTo(a.email!.toLowerCase()));
+              b.person.email!.toLowerCase().compareTo(a.person.email!.toLowerCase()));
         }
       }
       if (columnIndex == 2) {
         if (ascending) {
-          people.sort((a, b) => a.personType
+          people.sort((a, b) => a.person.type
               .toString()
               .toLowerCase()
-              .compareTo(b.personType.toString().toLowerCase()));
+              .compareTo(b.person.type.toString().toLowerCase()));
         } else {
-          people.sort((a, b) => b.personType
+          people.sort((a, b) => b.person.type
               .toString()
               .toLowerCase()
-              .compareTo(a.personType.toString().toLowerCase()));
+              .compareTo(a.person.type.toString().toLowerCase()));
         }
       }
       if (sortColumnIndex == columnIndex) {
@@ -430,10 +430,8 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
               keepCase: true,
               onPressed: () async {
                 final group = widget.group;
-                group.members = List.from(group.members)..addAll(membersToAdd);
-                // remove duplicates
-                group.members = group.members.toSet().toList();
-                final success = await widget.bloc.updateGroup(group);
+
+                final success = await widget.bloc.addUsersToGroup(group, membersToAdd);
                 if (success) {
                   widget.bloc.mrClient.removeOverlay();
                   if (context.mounted) {

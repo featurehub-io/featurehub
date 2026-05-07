@@ -44,9 +44,9 @@ class PortfolioSqlApi @Inject constructor(
 
     if (ordering != null) {
       if (ordering == SortOrder.ASC) {
-        pFinder = pFinder.order().name.asc()
+        pFinder = pFinder.orderBy().name.asc()
       } else if (ordering == SortOrder.DESC) {
-        pFinder = pFinder.order().name.desc()
+        pFinder = pFinder.orderBy().name.desc()
       }
     }
     val personIsNotSuperAdmin = convertUtils.personIsNotSuperAdmin(personDoingFind)
