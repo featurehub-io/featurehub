@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 
-/// Shows a dismissible warning banner at the top of every page when the
-/// system is in a maintenance window.  Listens to [ManagementRepositoryClientBloc.maintenanceStream]
+/// Shows a warning banner at the top of every page when the system is in a
+/// maintenance window. Cannot be dismissed — it clears automatically when
+/// maintenance ends. Listens to [ManagementRepositoryClientBloc.maintenanceStream]
 /// and rebuilds automatically when the state changes.
 class MaintenanceBannerWidget extends StatelessWidget {
   const MaintenanceBannerWidget({super.key});
@@ -46,17 +47,6 @@ class MaintenanceBannerWidget extends StatelessWidget {
                               Theme.of(context).colorScheme.onErrorContainer,
                         ),
                   ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.close,
-                    size: 18,
-                    color: Theme.of(context).colorScheme.onErrorContainer,
-                  ),
-                  tooltip: 'Dismiss',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  onPressed: () => mrBloc.dismissMaintenanceBanner(),
                 ),
               ],
             ),

@@ -167,13 +167,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     }
   }
 
-  /// Temporarily hides the maintenance banner for the current session until
-  /// the next navigation event re-polls the backend.
-  void dismissMaintenanceBanner() {
-    _maintenanceSource.add(null);
-  }
-
-  Future<void> _checkMaintenanceBanner() async {
+Future<void> _checkMaintenanceBanner() async {
     _log.fine('maintenance: checking banner (loggedIn=${personState.isLoggedIn})');
     try {
       final response =
