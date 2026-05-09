@@ -81,19 +81,20 @@ class AdminGroupStepdefs {
         await userCommon.findExactEnvironment(envName, shared.application.id);
     assert(env != null, 'env must exist and doesnt $envName');
 
-    var er = group!.environmentRoles
+    var updatedGroup = UpdateGroup(id: group!.id, version: group.version, environmentRoles: group.environmentRoles);
+    var er = updatedGroup.environmentRoles
         .firstWhereOrNull((er) => er.environmentId == env!.id);
     if (er == null) {
       er = EnvironmentGroupRole(
           environmentId: env!.id, groupId: group.id, roles: []);
 
-      group.environmentRoles.add(er);
+      updatedGroup.environmentRoles.add(er);
     }
     final roleType = RoleTypeExtension.fromJson(perm);
     if (!er.roles.contains(roleType)) {
       er.roles.add(roleType!);
     }
-    await userCommon.groupService.updateGroupOnPortfolio(shared.portfolio.id, group);
+    await userCommon.groupService.updateGroupOnPortfolio(shared.portfolio.id, updatedGroup);
   }
 
   @And(r'I add the shared person to the shared group')

@@ -41,11 +41,3 @@ Feature: This set of scenarios focuses on supers being added to portfolios and n
     When I remove the shared person to the superuser group via the group membership
     Then the portfolio admin group does not contain the current user
 
-  Scenario: When a portfolio is created all superusers get added to that portfolio group and cannot be removed via the group members api
-    Given the first superuser is used for authentication
-    And I have a randomly named portfolio with the prefix "superuser_admin_5"
-    And I have a randomly generated superuser with the start of name "Wotcha"
-    And the first superuser is used for authentication
-    And I attempt to remove the superuser from the shared portfolio group via the group membership
-    And The portfolio admin group contains the current user
-

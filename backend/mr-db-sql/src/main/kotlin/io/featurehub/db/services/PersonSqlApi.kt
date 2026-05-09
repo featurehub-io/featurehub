@@ -274,6 +274,19 @@ open class PersonSqlApi @Inject constructor(
         it.personId to it.counter
       }
 
+  override fun findPeople(
+    ids: List<UUID>,
+    emailAddresses: List<String>
+  ): Set<UUID> {
+    return QDbPerson()
+      .select(QDbPerson.Alias.id)
+      .or()
+      .email.`in`(emailAddresses.map { it.lowercase() })
+      .id.`in`(ids)
+      .endOr()
+      .findList().map { it.id }.toSet()
+  }
+
   override fun get(email: String, opts: Opts): Person? {
     if (email.contains("@")) {
       var search = QDbPerson().email.eq(email.lowercase(Locale.getDefault()))

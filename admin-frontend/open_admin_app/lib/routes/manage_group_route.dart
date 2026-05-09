@@ -1,4 +1,5 @@
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/common/ga_id.dart';
@@ -145,14 +146,14 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                                   label: Text(
                                       AppLocalizations.of(context)!.columnName),
                                   onSort: (columnIndex, ascending) {
-                                    onSortColumn(group.sMembers,
+                                    onSortColumn(group.simpleMembers,
                                         columnIndex, ascending);
                                   }),
                               DataColumn(
                                 label: Text(
                                     AppLocalizations.of(context)!.columnEmail),
                                 onSort: (columnIndex, ascending) {
-                                  onSortColumn(group.sMembers,
+                                  onSortColumn(group.simpleMembers,
                                       columnIndex, ascending);
                                 },
                               ),
@@ -160,7 +161,7 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                                 label: Text(AppLocalizations.of(context)!
                                     .columnMemberType),
                                 onSort: (columnIndex, ascending) {
-                                  onSortColumn(group.sMembers,
+                                  onSortColumn(group.simpleMembers,
                                       columnIndex, ascending);
                                 },
                               ),
@@ -173,22 +174,22 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                                   onSort: (i, a) => {}),
                             ],
                             rows: [
-                              for (GroupPerson member in group.sMembers)
+                              for (AnemicPerson member in group.simpleMembers)
                                 DataRow(cells: [
                                   DataCell(
-                                    Text(member.person.name ?? ''),
+                                    Text(member.name),
                                   ),
                                   DataCell(Text(
-                                      member.person.type == PersonType.person
-                                          ? member.person.email!
+                                      member.type == PersonType.person
+                                          ? member.email!
                                           : "")),
                                   DataCell(Text(
-                                      member.person.type == PersonType.person
+                                      member.type == PersonType.person
                                           ? AppLocalizations.of(context)!
                                               .memberTypeUser
                                           : AppLocalizations.of(context)!
                                               .memberTypeServiceAccount)),
-                                  DataCell(!member.superuser
+                                  DataCell((group.admin != true) || group.superMembers.firstWhereOrNull((s) => s == member.id) == null
                                       ? Tooltip(
                                           message: AppLocalizations.of(context)!
                                               .removeFromGroup,
@@ -197,13 +198,13 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
                                             onPressed: () async {
                                               try {
                                                 await bloc.removeFromGroup(
-                                                    group, member.person.id);
+                                                    group, member.id);
                                                 if (context.mounted) {
                                                   bloc.mrClient.addSnackbar(
                                                       Text(AppLocalizations.of(
                                                               context)!
                                                           .memberRemovedFromGroup(
-                                                              member.person.name,
+                                                              member.name,
                                                               group
                                                                   .name)));
                                                 }
@@ -230,39 +231,39 @@ class ManageGroupRouteState extends State<ManageGroupRoute> {
     );
   }
 
-  void onSortColumn(List<GroupPerson> people, int columnIndex, bool ascending) {
+  void onSortColumn(List<AnemicPerson> people, int columnIndex, bool ascending) {
     setState(() {
       if (columnIndex == 0) {
         if (ascending) {
           people.sort((a, b) {
-            return a.person.name.toLowerCase().compareTo(b.person.name!.toLowerCase());
+            return a.name.toLowerCase().compareTo(b.name.toLowerCase());
           });
         } else {
           people.sort((a, b) {
-            return b.person.name.toLowerCase().compareTo(a.person.name.toLowerCase());
+            return b.name.toLowerCase().compareTo(a.name.toLowerCase());
           });
         }
       }
       if (columnIndex == 1) {
         if (ascending) {
           people.sort((a, b) =>
-              a.person.email!.toLowerCase().compareTo(b.person.email!.toLowerCase()));
+              a.email!.toLowerCase().compareTo(b.email!.toLowerCase()));
         } else {
           people.sort((a, b) =>
-              b.person.email!.toLowerCase().compareTo(a.person.email!.toLowerCase()));
+              b.email!.toLowerCase().compareTo(a.email!.toLowerCase()));
         }
       }
       if (columnIndex == 2) {
         if (ascending) {
-          people.sort((a, b) => a.person.type
+          people.sort((a, b) => a.type
               .toString()
               .toLowerCase()
-              .compareTo(b.person.type.toString().toLowerCase()));
+              .compareTo(b.type.toString().toLowerCase()));
         } else {
-          people.sort((a, b) => b.person.type
+          people.sort((a, b) => b.type
               .toString()
               .toLowerCase()
-              .compareTo(a.person.type.toString().toLowerCase()));
+              .compareTo(a.type.toString().toLowerCase()));
         }
       }
       if (sortColumnIndex == columnIndex) {

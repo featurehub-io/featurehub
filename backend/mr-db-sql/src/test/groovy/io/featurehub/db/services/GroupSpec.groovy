@@ -26,6 +26,7 @@ import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.SortOrder
+import io.featurehub.mr.model.UpdateGroup
 import spock.lang.Shared
 
 class GroupSpec extends BaseSpec {
@@ -71,11 +72,11 @@ class GroupSpec extends BaseSpec {
     and: "create a new group"
       def group = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name("acl-test-filter-group"), superPerson)
     and: "i create permissions in the group for both environments"
-      def groupUpdated = groupSqlApi.updateGroup(group.id, group.environmentRoles([
+      def groupUpdated = groupSqlApi.updateGroup(group.id, new UpdateGroup().version(group.version).environmentRoles([
         new EnvironmentGroupRole().environmentId(env1App1.id).roles([RoleType.UNLOCK]),
         new EnvironmentGroupRole().environmentId(env2.id).roles([RoleType.CHANGE_VALUE])
       ]), null,
-        false, false, true, Opts.opts(FillOpts.Acls))
+        false, true, Opts.opts(FillOpts.Acls))
     when: "i ask for the permissions only for application 2"
       def groupApp2 = groupSqlApi.getGroup(group.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app2.id), superPerson)
     then:
@@ -94,10 +95,10 @@ class GroupSpec extends BaseSpec {
     and: "i create a new group in the common portfolio"
       Group g = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name("plain-bob-group"), superPerson)
     and: "i update it with the basic user"
-      groupSqlApi.updateGroup(g.id, g.members([bob]), null, true, false, false, Opts.empty())
+      groupSqlApi.addPersonsToGroup(g.id, [bob.id.id], Opts.empty())
     when: "i add jane as a portfolio admin"
       def latestGroup = groupSqlApi.getGroup(portfolioAdminGroup.id, Opts.opts(FillOpts.Members), superPerson)
-      groupSqlApi.updateGroup(portfolioAdminGroup.id, portfolioAdminGroup.addMembersItem(jane), null, true, false, false, Opts.empty())
+      groupSqlApi.addPersonsToGroup(g.id, [jane.id.id], Opts.empty())
     then: "bob can get the group"
       groupSqlApi.getGroup(g.id, Opts.opts(FillOpts.Members), bob)
     and: "jane can get the group"
@@ -166,7 +167,7 @@ class GroupSpec extends BaseSpec {
 
   def "i can only add users to a group that exists"() {
     when:
-      Group g = groupSqlApi.addPersonToGroup(UUID.randomUUID(), superuser, Opts.empty())
+      Group g = groupSqlApi.addPersonsToGroup(UUID.randomUUID(), [superuser], Opts.empty())
     then:
       g == null
   }
@@ -183,10 +184,11 @@ class GroupSpec extends BaseSpec {
   def "i can't add non existent people to a group"() {
     given: "i have a group"
       Group g = nonAdminGroup()
+      def randomUser = UUID.randomUUID()
     when: "i add a non existent person"
-      Group ng = groupSqlApi.addPersonToGroup(g.id, UUID.randomUUID(), Opts.empty())
+      Group ng = groupSqlApi.addPersonsToGroup(g.id, [randomUser], Opts.opts(FillOpts.Members))
     then:
-      ng == null
+      ng.members.find(p -> p.id.id == randomUser) == null
   }
 
   def "i can't create the same portfolio group name twice"() {
@@ -203,7 +205,7 @@ class GroupSpec extends BaseSpec {
       groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name("update-ecks"), superPerson)
     when: "i try and create another group with the same name"
       def g = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name("update-ecks1"), superPerson)
-      groupSqlApi.updateGroup(g.id, g.name("update-ecks"), null, true, true, true, Opts.empty())
+      groupSqlApi.updateGroup(g.id, new UpdateGroup().version(g.version).name("update-ecks"), null, false, false, Opts.empty())
     then: "it throws a DuplicateGroupException"
       thrown(GroupApi.DuplicateGroupException)
   }
@@ -217,9 +219,9 @@ class GroupSpec extends BaseSpec {
       database.save(person)
       def personId = person.id
     when: "i add a person to the group"
-      Group ng = groupSqlApi.addPersonToGroup(g.id, personId, Opts.empty())
+      Group ng = groupSqlApi.addPersonsToGroup(g.id, [personId], Opts.empty())
     and: "i add the person to the group again"
-      Group sng = groupSqlApi.addPersonToGroup(g.id, personId, Opts.opts(FillOpts.Members))
+      Group sng = groupSqlApi.addPersonsToGroup(g.id, [personId], Opts.opts(FillOpts.Members))
     and: "i check the org admin groups this generic person is part of"
       def adminGroups = groupSqlApi.groupsPersonOrgAdminOf(personId)
     then:
@@ -241,7 +243,7 @@ class GroupSpec extends BaseSpec {
     when: "i add all people to the group"
       Group group
       people.each { DbPerson p ->
-        group = groupSqlApi.addPersonToGroup(g.id, p.id, Opts.opts(FillOpts.Members))
+        group = groupSqlApi.addPersonsToGroup(g.id, [p.id], Opts.opts(FillOpts.Members))
       }
     then:
       group != null
@@ -278,7 +280,7 @@ class GroupSpec extends BaseSpec {
     and: "i am not a member of the portfolio"
       boolean amNotMember = !groupSqlApi.isPersonMemberOfPortfolioGroup(g.portfolioId, person.id)
     when: "i add a person to the group"
-      Group addedToGroup = groupSqlApi.addPersonToGroup(g.id, person.id, Opts.opts(FillOpts.Members))
+      Group addedToGroup = groupSqlApi.addPersonsToGroup(g.id, [person.id], Opts.opts(FillOpts.Members))
     and: "i am confirmed to be a portfolio member"
       boolean amMember = groupSqlApi.isPersonMemberOfPortfolioGroup(g.portfolioId, person.id)
     and: "i delete the person from the group"
@@ -321,9 +323,9 @@ class GroupSpec extends BaseSpec {
 
   def "i rename a group"() {
     given: "i have a group"
-      Group g = nonAdminGroup().name("new name")
+      Group g = nonAdminGroup()
     when: "i rename it"
-      groupSqlApi.updateGroup(g.id, g, null, true, true, true, Opts.empty())
+      groupSqlApi.updateGroup(g.id, new UpdateGroup().version(g.version).name("new name"), null, false, false, Opts.empty())
     and: "find it again"
       Group ng = groupSqlApi.getGroup(g.id, Opts.empty(), superPerson)
     then:
@@ -341,19 +343,10 @@ class GroupSpec extends BaseSpec {
       database.save(p2)
       database.save(p3)
     when: "i update the group to add Sasha and Alena"
-      g.members = [
-        new Person().id(new PersonId().id(p1.id)),
-        new Person().id(new PersonId().id(p2.id)),
-      ]
-      def g2 = groupSqlApi.updateGroup(g.id, g, null, true, true, true, new Opts().add(FillOpts.Members))
+      def g2 = groupSqlApi.addPersonsToGroup(g.id, [p1.id, p2.id], Opts.opts(FillOpts.Members))
     and: "I updated the group to remove Alena and add Toya"
-      def g2_copy = g2.copy()
-      g2_copy.members = [
-        new Person().id(new PersonId().id(p1.id)),
-        new Person().id(new PersonId().id(p3.id)),
-      ]
-      groupSqlApi.updateGroup(g.id, g2_copy, null, true, true, true, new Opts().add(FillOpts.Members))
-      def g3 = groupSqlApi.getGroup(g.id, new Opts().add(FillOpts.Members), superPerson)
+      groupSqlApi.deletePersonFromGroup(g.id, p2.id, Opts.empty())
+      def g3 = groupSqlApi.addPersonsToGroup(g.id, [p3.id], Opts.opts(FillOpts.Members))
     then:
       g2.members.size() == 2
       g2.members*.name.contains('Alena')
@@ -365,8 +358,8 @@ class GroupSpec extends BaseSpec {
 
   def "i cannot rename a non-existent group"() {
     when: "i rename it"
-      Group g = groupSqlApi.updateGroup(UUID.randomUUID(), new Group().name("new name"), null,
-        true, true, true, Opts.empty())
+      Group g = groupSqlApi.updateGroup(UUID.randomUUID(), new UpdateGroup().version(1).name("new name"), null,
+        true, true, Opts.empty())
     then:
       g == null
   }
@@ -413,8 +406,8 @@ class GroupSpec extends BaseSpec {
     and: "i add a person to this group"
       DbPerson user = new DbPerson.Builder().email("bob-test@featurehub.io").name("Rob test").build();
       database.save(user);
-      groupSqlApi.addPersonToGroup(g1.id, user.id, Opts.empty())
-      groupSqlApi.addPersonToGroup(g3.id, user.id, Opts.empty())
+      groupSqlApi.addPersonsToGroup(g1.id, [user.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(g3.id, [user.id], Opts.empty())
     when: "i get their admin groups"
       List<Group> groups = groupSqlApi.groupsWherePersonIsAnAdminMember(user.id)
     then:
@@ -441,23 +434,27 @@ class GroupSpec extends BaseSpec {
       DbEnvironment env3 = new DbEnvironment.Builder().name("gp-acl-3").parentApplication(app).whoCreated(user).build()
       database.save(env3)
     when: "I update the group to include acls"
-      g1.environmentRoles = [new EnvironmentGroupRole().environmentId(env.id).roles([RoleType.CHANGE_VALUE, RoleType.LOCK])]
-      def updGroup = groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, new Opts().add(FillOpts.Acls))
+      def updGroup = groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(g1.version).environmentRoles(
+        [new EnvironmentGroupRole().environmentId(env.id).roles([RoleType.CHANGE_VALUE, RoleType.LOCK])]
+      ), null, false, true, new Opts().add(FillOpts.Acls))
     and: "i get the group with acls requested"
       def getUpd = groupSqlApi.getGroup(g1.id, new Opts().add(FillOpts.Acls), superPerson)
     and: "the i update the roles"
-      g1.environmentRoles = [
-                new EnvironmentGroupRole().environmentId(env.id).roles([RoleType.LOCK, RoleType.READ]),
-                new EnvironmentGroupRole().environmentId(env3.id)]
-      def updGroup1 = groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, new Opts().add(FillOpts.Acls))
+      def updGroup1 = groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(getUpd.version).environmentRoles(
+      [
+        new EnvironmentGroupRole().environmentId(env.id).roles([RoleType.LOCK, RoleType.READ]),
+        new EnvironmentGroupRole().environmentId(env3.id)]
+      ), null, false, true, new Opts().add(FillOpts.Acls))
     and: "then i add another environment role and remove the first"
-      g1.environmentRoles = [new EnvironmentGroupRole().environmentId(env2.id).roles([RoleType.UNLOCK]), // READ implicit
-                             new EnvironmentGroupRole().environmentId(env.id),
-                             new EnvironmentGroupRole().environmentId(env3.id) ]
-      def updGroup2 = groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, new Opts().add(FillOpts.Acls))
+      def updGroup2 = groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(updGroup1.version).environmentRoles(
+        [new EnvironmentGroupRole().environmentId(env2.id).roles([RoleType.UNLOCK]), // READ implicit
+         new EnvironmentGroupRole().environmentId(env.id),
+         new EnvironmentGroupRole().environmentId(env3.id) ]
+      ), null, false, true, new Opts().add(FillOpts.Acls))
     and: "then i add back in just environment 1 but it should preserve environment 2"
-      g1.environmentRoles = [new EnvironmentGroupRole().environmentId(env.id).roles([RoleType.LOCK])] // READ implicit
-      def updGroup3 = groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, new Opts().add(FillOpts.Acls))
+      def updGroup3 = groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(updGroup2.version).environmentRoles(
+        [new EnvironmentGroupRole().environmentId(env.id).roles([RoleType.LOCK])] // READ implicit
+      ), null, false, true, new Opts().add(FillOpts.Acls))
     and: "i get the env2 with its group roles"
       def fullEnv2 = environmentSqlApi.get(env2.id, Opts.opts(FillOpts.Acls), superPerson)
     then:
@@ -487,12 +484,15 @@ class GroupSpec extends BaseSpec {
     and: "i find the group including the acls"
       def found = groupSqlApi.getGroup(g1.id, Opts.opts(FillOpts.Acls), superPerson)
     and: "i update the group to include environment acls"
-      def updating = found.copy()
-      updating.environmentRoles = [
-        new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE]).environmentId(env1App1.id).groupId(g1.id)
-      ]
-      updating.applicationRoles.add(new ApplicationGroupRole().roles([ApplicationRoleType.FEATURE_EDIT]).applicationId(commonApplication2.id))
-      def up1 = groupSqlApi.updateGroup(g1.id, updating, null, true, true, true, Opts.opts(FillOpts.Acls))
+      def upd = new UpdateGroup().version(g1.version)
+        .environmentRoles([
+          new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE]).environmentId(env1App1.id).groupId(g1.id)
+        ]).applicationRoles([
+        new ApplicationGroupRole().roles([ApplicationRoleType.FEATURE_EDIT]).applicationId(commonApplication2.id),
+      ])
+      upd.applicationRoles.addAll(found.applicationRoles)
+      def up1 = groupSqlApi.updateGroup(g1.id, upd,
+         null, true, true, Opts.opts(FillOpts.Acls))
     when: "i find the group"
       def found1 = groupSqlApi.getGroup(g1.id, Opts.opts(FillOpts.Acls), superPerson)
     then:
@@ -506,7 +506,7 @@ class GroupSpec extends BaseSpec {
       def iSuperPerson = new DbPerson.Builder().email("irushka@featurehub.io").name("Irina").build()
       database.save(iSuperPerson)
       def adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
-      groupSqlApi.addPersonToGroup(adminGroup.id, iSuperPerson.id, Opts.empty())
+      groupSqlApi.addPersonsToGroup(adminGroup.id, [iSuperPerson.id], Opts.empty())
     and: "i get the person"
       def person = personApi.get(iSuperPerson.id, Opts.opts(FillOpts.Groups))
     when: "i update the person to remove the superuser group"

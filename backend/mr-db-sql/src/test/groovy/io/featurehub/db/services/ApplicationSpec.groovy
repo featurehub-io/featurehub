@@ -104,11 +104,11 @@ class ApplicationSpec extends BaseSpec {
       def notInAnyGroupsAccess = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
     and: "then we give them access to a portfolio group that still has no access"
       Group group = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("envtest-appX1"), superPerson)
-      group = groupSqlApi.addPersonToGroup(group.id, person.id.id, Opts.opts(FillOpts.Members))
+      group = groupSqlApi.addPersonsToGroup(group.id, [person.id.id], Opts.opts(FillOpts.Members))
       def portfoliosNoPerms = portfolioApi.findPortfolios(null, SortOrder.ASC, Opts.opts(FillOpts.Applications), person.id.id)
     and: "the superuser adds to a group as well"
       Group superuserGroup = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("envtest-appSuperuser"), superPerson)
-      superuserGroup = groupSqlApi.addPersonToGroup(superuserGroup.id, superPerson.id.id, Opts.opts(FillOpts.Members))
+      superuserGroup = groupSqlApi.addPersonsToGroup(superuserGroup.id, [superPerson.id.id], Opts.opts(FillOpts.Members))
     and: "with no environment access the two groups have no visibility to applications"
       def stillNotInAnyGroupsPerson = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
       def stillNotInAnyGroupsSuperuser = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), superPerson, false)
@@ -116,13 +116,13 @@ class ApplicationSpec extends BaseSpec {
     and: "i add an environment to each application and add group permissions"
       def app1Env1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("dev"), app1.id, superPerson)
       def app2Env1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("dev"), app2.id, superPerson)
-      group = groupSqlApi.updateGroup(group.id, group.environmentRoles([
+      group = groupSqlApi.updateGroup(group.id, new UpdateGroup().version(group.version).environmentRoles([
 	      new EnvironmentGroupRole().environmentId(app1Env1.id).roles([RoleType.READ]),
 	      new EnvironmentGroupRole().environmentId(app2Env1.id).roles([RoleType.READ])
-      ]), null, true, true, true, Opts.opts(FillOpts.Members))
-      superuserGroup = groupSqlApi.updateGroup(superuserGroup.id, superuserGroup.environmentRoles([
+      ]), null, true, true, Opts.opts(FillOpts.Members))
+      superuserGroup = groupSqlApi.updateGroup(superuserGroup.id, new UpdateGroup().version(superuserGroup.version).environmentRoles([
 	      new EnvironmentGroupRole().environmentId(app1Env1.id).roles([RoleType.READ])
-      ]), null, true, true, true, Opts.opts(FillOpts.Members))
+      ]), null, true, true, Opts.opts(FillOpts.Members))
       def summaryApp1Perms = appApi.getApplicationSummary(app1.id)
       def portfoliosPerms = portfolioApi.findPortfolios(null, SortOrder.ASC, Opts.opts(FillOpts.Applications), person.id.id)
     and: "person should now be able to see two groups"
@@ -178,17 +178,17 @@ class ApplicationSpec extends BaseSpec {
       def group = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("loicoudot"), superPerson)
     when:
       def group1 = groupSqlApi.updateGroup(group.id,
-        group.applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])]),
+        new UpdateGroup().version(group.version).applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])]),
         app1.id,
-        false, true, false, Opts.opts(FillOpts.Acls))
+        true, false, Opts.opts(FillOpts.Acls))
     and:
       def group2 = groupSqlApi.getGroup(group1.id, Opts.empty(), superPerson)
       group2.applicationRoles.add(new ApplicationGroupRole().applicationId(app2.id).roles([ApplicationRoleType.FEATURE_EDIT]))
-      def group3 = groupSqlApi.updateGroup(group.id, group2, app2.id, false, true, false,
+      def group3 = groupSqlApi.updateGroup(group.id, new UpdateGroup().version(group2.version).applicationRoles(group2.applicationRoles), app2.id, true, false,
         Opts.opts(FillOpts.Acls))
     and: "i delete the role but just from application 2"
       def group4 = groupSqlApi.getGroup(group1.id, Opts.empty(), superPerson)
-      def group5 = groupSqlApi.updateGroup(group.id, group4, app2.id, false, true, false,
+      def group5 = groupSqlApi.updateGroup(group.id, new UpdateGroup().version(group4.version), app2.id, true, false,
         Opts.opts(FillOpts.Acls))
     then:
       group3.applicationRoles.size() == 2
@@ -219,13 +219,13 @@ class ApplicationSpec extends BaseSpec {
       database.save(deepme)
       def personIsCreator0 = appApi.personIsFeatureCreator(app1.id, deepme.id)
       def personIsEditor0 = appApi.personIsFeatureEditor(app1.id, deepme.id)
-      createdGroup.addMembersItem(new Person().id(new PersonId().id(deepme.id)))
-      def group = groupSqlApi.updateGroup(createdGroup.id, createdGroup, null, true, false, false, Opts.opts(FillOpts.Acls))
+      groupSqlApi.addPersonsToGroup(createdGroup.id, [deepme.id], Opts.empty())
+      def group = createdGroup.addMembersItem(new Person().id(new PersonId().id(deepme.id)))
     when: "i add create permissions for the app to the group"
       def groupWithCreatePerms = groupSqlApi.updateGroup(group.id,
-        group.applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_CREATE])]),
+        new UpdateGroup().version(group.version).applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_CREATE])]),
         app1.id,
-        false, true, false, Opts.opts(FillOpts.Acls))
+        true, false, Opts.opts(FillOpts.Acls))
       def creators1 = appApi.findFeatureCreators(app1.id)
       def editors1 = appApi.findFeatureEditors(app1.id)
       def personIsCreator1 = appApi.personIsFeatureCreator(app1.id, deepme.id)
@@ -233,7 +233,7 @@ class ApplicationSpec extends BaseSpec {
     and: "i add edit permissions"
       def group2 = groupSqlApi.getGroup(group.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app1.id), superPerson)
       group2.applicationRoles[0].roles.add(ApplicationRoleType.FEATURE_EDIT_AND_DELETE)
-      def groupWithEditAndCreatePerms = groupSqlApi.updateGroup(group.id, group2, app1.id, false,
+      def groupWithEditAndCreatePerms = groupSqlApi.updateGroup(group.id, new UpdateGroup().version(group2.version).applicationRoles(group2.applicationRoles), app1.id,
         true, false, Opts.opts(FillOpts.Acls))
       def creators2 = appApi.findFeatureCreators(app1.id)
       def editors2 = appApi.findFeatureEditors(app1.id)
@@ -242,7 +242,8 @@ class ApplicationSpec extends BaseSpec {
     and: "i remove the create role"
       def group3 = groupSqlApi.getGroup(group.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app1.id), superPerson)
       group3.applicationRoles[0].roles.removeIf { it == ApplicationRoleType.FEATURE_EDIT_AND_DELETE }
-      def groupWithEditPerms = groupSqlApi.updateGroup(group.id, group3, app1.id, false, true, false, Opts.opts(FillOpts.Acls))
+      def groupWithEditPerms = groupSqlApi.updateGroup(group.id,
+        new UpdateGroup().version(group3.version).applicationRoles(group3.applicationRoles), app1.id, true, false, Opts.opts(FillOpts.Acls))
       def creators3 = appApi.findFeatureCreators(app1.id)
       def editors3 = appApi.findFeatureEditors(app1.id)
       def personIsCreator3 = appApi.personIsFeatureCreator(app1.id, deepme.id)
@@ -282,8 +283,7 @@ class ApplicationSpec extends BaseSpec {
       database.save(prilipko)
       def prilipkoPortfolioAdmin = convertUtils.toPerson(prilipko)
       def g = groupSqlApi.getGroup(p1AdminGroup.id, Opts.opts(FillOpts.Members), superPerson)
-      g.members.add(prilipkoPortfolioAdmin)
-      groupSqlApi.updateGroup(p1AdminGroup.id, g, null, true, false, false, Opts.empty())
+      groupSqlApi.addPersonsToGroup(g.id, [prilipkoPortfolioAdmin.id.id], Opts.empty())
     and: "I create a new portfolio group and add in Golodryga by he has no permission to an application"
       def golodryga = new DbPerson.Builder().email("Golodryga@m.com").name("Golodryga").build()
       database.save(golodryga)
@@ -296,14 +296,14 @@ class ApplicationSpec extends BaseSpec {
       database.save(sverbylo)
       def sverbyloHasReadAccess = convertUtils.toPerson(sverbylo)
       def iGroup = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("Itchy Group"), superPerson)
-      iGroup = groupSqlApi.updateGroup(iGroup.id, iGroup.members([sverbyloHasReadAccess]), null, true, false, false, Opts.empty())
+      iGroup = groupSqlApi.addPersonsToGroup(iGroup.id, [sverbyloHasReadAccess.id.id], Opts.empty())
     when: "i create a new application"
       def newApp = appApi.createApplication(portfolio1.id, new CreateApplication().description("x").name("app-perm-check-appl1"), superPerson)
     and: "a new environment"
       def env = environmentSqlApi.create(new CreateEnvironment().description("x").name("production").production(true), newApp.id, superPerson)
     and: "i grant the iGroup access to it"
-      groupSqlApi.updateGroup(iGroup.id, iGroup.environmentRoles(
-        [new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env.id)]), null, false, false, true, Opts.empty())
+      groupSqlApi.updateGroup(iGroup.id, new UpdateGroup().version(iGroup.version).environmentRoles(
+        [new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env.id)]), null, false, true, Opts.empty())
     then: "Prilipko is a portfolio admin and can see read the application even with no app direct access"
       appApi.personIsFeatureReader(newApp.id, prilipkoPortfolioAdmin.id.id)
      and: "Golodryga cannot see the application's features"
@@ -335,11 +335,11 @@ class ApplicationSpec extends BaseSpec {
       def group = groupSqlApi.createGroup(portfolio.id,
         new CreateGroup().name("creators-" + RandomStringUtils.randomAlphabetic(6)).admin(false),
         superPerson)
-      groupSqlApi.addPersonToGroup(group.id, person.id.id, Opts.empty())
+      groupSqlApi.addPersonsToGroup(group.id, [person.id.id], Opts.empty())
       groupSqlApi.updateGroup(group.id,
-        group.applicationRoles([
+        new UpdateGroup().version(group.version).applicationRoles([
           new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])
-        ]), app1.id, false, true, false, Opts.opts(FillOpts.Acls))
+        ]), app1.id, true, false, Opts.opts(FillOpts.Acls))
     when:
       def result = appApi.personIsFeatureCreatorInPortfolio(portfolio.id, person.id.id)
     then:
@@ -366,11 +366,11 @@ class ApplicationSpec extends BaseSpec {
       def group = groupSqlApi.createGroup(portfolio.id,
         new CreateGroup().name("readers-" + RandomStringUtils.randomAlphabetic(6)).admin(false),
         superPerson)
-      groupSqlApi.addPersonToGroup(group.id, person.id.id, Opts.empty())
+      group = groupSqlApi.addPersonsToGroup(group.id, [person.id.id], Opts.empty())
       groupSqlApi.updateGroup(group.id,
-        group.applicationRoles([
+        new UpdateGroup().version(group.version).applicationRoles([
           new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])
-        ]), app1.id, false, true, false, Opts.opts(FillOpts.Acls))
+        ]), app1.id, true, false, Opts.opts(FillOpts.Acls))
     when:
       def result = appApi.personIsFeatureReaderInPortfolio(portfolio.id, person.id.id)
     then:

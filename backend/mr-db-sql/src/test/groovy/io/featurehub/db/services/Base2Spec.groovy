@@ -69,7 +69,7 @@ class Base2Spec extends DbSpecification {
       adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
     }
 
-    groupSqlApi.addPersonToGroup(adminGroup.id, superuser, Opts.empty())
+    groupSqlApi.addPersonsToGroup(adminGroup.id, [superuser], Opts.empty())
   }
 
   @CompileStatic

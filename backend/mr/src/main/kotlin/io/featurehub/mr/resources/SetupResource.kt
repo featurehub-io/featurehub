@@ -156,7 +156,7 @@ class SetupResource @Inject constructor(
 
     //create the group and add admin to the group - any preference on group name here?
     val group = groupApi.createOrgAdminGroup(organization.id!!, "org_admin", person!!)
-    groupApi.addPersonToGroup(group!!.id, person.id!!.id, Opts.empty())
+    groupApi.addPersonsToGroup(group!!.id, listOf(person.id!!.id), Opts.empty())
     person = personApi[person.id!!.id, Opts.opts(FillOpts.Groups, FillOpts.Acls)]
 
     // the capability needing to be returned is a unique problem of using username/password and

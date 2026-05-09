@@ -107,8 +107,8 @@ class GroupBloc implements Bloc {
       groupToUpdate.name = name;
 
       final newGroup = await _groupServiceApi.updateGroupOnPortfolio(
-          mrClient.currentPortfolio!.id, groupToUpdate,
-          includeMembersV2: true, updateMembers: false);
+          mrClient.currentPortfolio!.id, UpdateGroup(id: groupToUpdate.id, version: groupToUpdate.version, name: name),
+          includeMembersV2: true);
 
       // tell the portfolio groups to update as the name has changed.
       await getGroups(focusGroup: groupToUpdate);
@@ -121,7 +121,7 @@ class GroupBloc implements Bloc {
       await mrClient.dialogError(e, s,
           messageTitle: 'Failed to update group',
           messageBody:
-              'Failed to update group because of a duplicate or other conflict.');
+              'Failed to update group because of a duplicate or other update conflict.');
       return false;
     }
   }

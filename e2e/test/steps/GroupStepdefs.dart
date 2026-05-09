@@ -107,15 +107,6 @@ class GroupStepdefs {
     await userCommon.groupService.deletePersonFromGroup(superuserGroup.id, shared.person.id!.id);
   }
 
-  @And(
-      r'I attempt to remove the superuser from the shared portfolio group via the group membership')
-  void
-      iAttemptToRemoveTheSuperuserFromTheSharedPortfolioGroupViaTheGroupMembership() async {
-    final group = await findCurrentPortfolioGroup();
-    group.members.retainWhere((m) => m.id!.id != shared.person.id!.id);
-    await userCommon.groupService.updateGroupOnPortfolio(group.portfolioId!, group, updateMembers: true);
-  }
-
   @And(r'I add the shared user to the current portfolio admin group')
   void iAddTheSharedUserToTheCurrentPortfolioAdminGroup() async {
     final group = await findCurrentPortfolioGroup();

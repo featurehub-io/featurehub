@@ -433,18 +433,18 @@ open class ConvertUtils @Inject constructor(
     }
 
     if (opts.contains(FillOpts.MembersV2)) {
-      val admins = QDbGroupMember()
+      group.superMembers(QDbGroupMember()
         .select(QDbGroupMember.Alias.person.id)
         .group.owningOrganization.id.eq(group.organizationId)
         .group.owningPortfolio.isNull
-        .group.adminGroup.isTrue.findList().associateBy { it.person.id }
+        .group.adminGroup.isTrue.findList().map { it.person.id })
 
-      group.sMembers(QDbPerson()
+      group.simpleMembers(QDbPerson()
         .select(QDbPerson.Alias.id)
         .orderBy().name.asc()
         .whenArchived.isNull
         .groupMembers.group.eq(dbg).findList().map { p ->
-          GroupPerson().person(AnemicPerson().id(p.id).name(p.name).email(p.email).type(p.personType)).superuser(admins.contains(p.id))
+          AnemicPerson().id(p.id).name(p.name).email(p.email).type(p.personType)
         })
     }
 

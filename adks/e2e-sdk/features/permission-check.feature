@@ -8,12 +8,13 @@ Feature: Certain permission combinations should work as expected
     And I create a new user
     And I assign the new user to the new group
     And I get the portfolio admin group
-    And the superuser is marked in the group as a superuser
-    And the user is marked in the group as a user
+    And the superuser is in the group as a superuser
+    And the superuser is in the group as a user
+    And the user is in the group as a user
+    And the user is not in the group as a superuser
 
   @delete-superuser-from-group
   Scenario: I add the superuser to the portfolio admin group and then remove them
     Given I create a new portfolio
     And I get the portfolio admin group
-    When I assign the superuser to the group
-    Then I can delete the supergroup from the group
+    Then I cannot delete the superuser from the group

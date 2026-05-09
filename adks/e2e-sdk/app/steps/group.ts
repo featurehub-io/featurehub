@@ -52,22 +52,40 @@ When('I assign the superuser to the group', async function() {
   expect(response.data.members.find( p => p.id.id === userId)).to.not.be.undefined;
 });
 
-Then('I can delete the supergroup from the group', async function() {
+Then('I cannot delete the superuser from the group', async function() {
   const world = this as SdkWorld;
   const userResponse = await world.superuser.personApi.getPerson("self");
   const userId = (userResponse.data as Person).id.id;
-  const response = await world.superuser.groupApi.deletePersonFromGroup(world.group.id, userId, true);
-  expect(response.status).to.eq(200);
-  expect(response.data.members.find( p => p.id.id === userId)).to.be.undefined;
+  try {
+    await world.superuser.groupApi.deletePersonFromGroup(world.group.id, userId, false);
+    expect(true, `call succeeded to delete supergroup from portfolio group but should not have`).to.be.false;
+  } catch (e) {
+    expect(e.response.status).to.eq(404);
+  }
 });
 
-Then(/^the (superuser|user) is marked in the group as a (superuser|user)$/, async function(userSource: string, userType: string) {
+Then(/^the (superuser|user) (is|is not) in the group as a (superuser|user)$/, async function(userSource: string, isRule: string, userType: string) {
   const world = this as SdkWorld;
   const user = (userSource === 'superuser') ? world.superuser : world.user;
   expect(user.me).to.not.be.undefined;
   expect(world.group).to.not.be.undefined;
-  const suserValue = userType === 'superuser';
-  expect(world.group.sMembers.find(p => p.superuser === suserValue && p.person.id === user.personId))
+
+  const foundSuperuser = world.group.superMembers.find(p => p === user.personId);
+  const found = world.group.simpleMembers.find(p => p.id === user.personId);
+
+  if (userType === 'superuser') {
+    if (isRule === 'is') {
+      expect(foundSuperuser, `${userSource} not superuser in group ${world.group.name}`).to.not.be.undefined;
+    } else { // is not
+      expect(foundSuperuser, `${userSource} not superuser in in group ${world.group.name}`).to.be.undefined;
+    }
+  } else {
+    if (isRule === 'is') {
+      expect(found, `${userSource} in group ${world.group.name} and is not`).to.not.be.undefined;
+    } else { // is not
+      expect(found, `${userSource} in group ${world.group.name} and should not be`).to.be.undefined;
+    }
+  }
 });
 
 Then('I assign the new user to the new group', async function() {

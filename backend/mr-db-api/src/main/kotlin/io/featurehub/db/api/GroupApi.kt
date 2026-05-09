@@ -1,6 +1,11 @@
 package io.featurehub.db.api
 
-import io.featurehub.mr.model.*
+import io.featurehub.mr.model.CreateGroup
+import io.featurehub.mr.model.Group
+import io.featurehub.mr.model.Organization
+import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.SortOrder
+import io.featurehub.mr.model.UpdateGroup
 import java.util.*
 
 interface GroupApi {
@@ -33,7 +38,7 @@ interface GroupApi {
    * @param opts
    * @return Group with the group id - default. Or plus opts if provided
    */
-  fun addPersonToGroup(groupId: UUID, personId: UUID, opts: Opts): Group?
+  fun addPersonsToGroup(groupId: UUID, personIds: List<UUID>, opts: Opts): Group?
   fun getGroup(gid: UUID, opts: Opts, person: Person): Group?
   fun findPortfolioAdminGroup(portfolioId: UUID, opts: Opts): Group?
   fun findOrganizationAdminGroup(orgId: UUID, opts: Opts): Group?
@@ -44,9 +49,8 @@ interface GroupApi {
   @Throws(OptimisticLockingException::class, DuplicateGroupException::class, DuplicateUsersException::class)
   fun updateGroup(
     gid: UUID,
-    group: Group,
+    group: UpdateGroup,
     appId: UUID?,
-    updateMembers: Boolean,
     updateApplicationGroupRoles: Boolean,
     updateEnvironmentGroupRoles: Boolean,
     opts: Opts

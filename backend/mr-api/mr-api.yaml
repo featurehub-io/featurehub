@@ -468,12 +468,6 @@ paths:
           required: false
           schema:
             type: boolean
-        - name: updateMembers
-          description: "update members, deleting those that are not passed"
-          in: query
-          schema:
-            type: boolean
-          required: false
         - name: updateEnvironmentGroupRoles
           description: "update environment group roles, deleting any not passed"
           in: query
@@ -498,7 +492,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Group"
+              $ref: "#/components/schemas/UpdateGroup"
       responses:
         200:
           description: "Resulting group"
@@ -2173,65 +2167,6 @@ paths:
           description: "forbidden"
         404:
           description: "not found"
-    put:
-      deprecated: true
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - GroupService
-      description: "Update a group"
-      operationId: updateGroup
-      parameters:
-        - name: updateMembers
-          description: "update members, deleting those that are not passed"
-          in: query
-          schema:
-            type: boolean
-          required: false
-        - name: updateEnvironmentGroupRoles
-          description: "update environment group roles, deleting any not passed"
-          in: query
-          schema:
-            type: boolean
-          required: false
-        - name: updateApplicationGroupRoles
-          description: "update application group roles, deleting any not passed"
-          in: query
-          schema:
-            type: boolean
-          required: false
-        - name: applicationId
-          description: "if updating the application group roles, and the application id is passed, then the changes are limited to that application"
-          in: query
-          schema:
-            type: string
-            format: uuid
-          required: false
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Group"
-      responses:
-        200:
-          description: "Resulting group"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Group"
-        400:
-          description: "Bad Request"
-        401:
-          description: "no permission"
-        403:
-          description: "forbidden"
-        404:
-          description: "not found"
-        409:
-          description: "duplicate user or duplicate group"
-        422:
-          description: "version conflict"
     delete:
       security:
         - bearerAuth: [ ]
@@ -3996,6 +3931,34 @@ components:
           default: []
           items:
             $ref: "#/components/schemas/ApplicationGroupRole"
+    UpdateGroup:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: false
+        name:
+          type: string
+          maxLength: 255
+          nullable: true
+        version:
+          type: integer
+          format: int64
+          nullable: false
+        applicationRoles:
+          nullable: true
+          type: array
+          default: []
+          items:
+            $ref: "#/components/schemas/ApplicationGroupRole"
+        environmentRoles:
+          type: array
+          default: []
+          items:
+            $ref: "#/components/schemas/EnvironmentGroupRole"
     Group:
       allOf:
         - $ref: "#/components/schemas/Audit"
@@ -4028,11 +3991,18 @@ components:
               type: string
               minLength: 1
               maxLength: 255
-            sMembers:
+            superMembers:
+              description: "This indicates which ids in the simpleMembers are superusers. It is a read only field and is ignored if it is passed back."
               type: array
               default: []
               items:
-                $ref: "#/components/schemas/GroupPerson"
+                type: string
+                format: uuid
+            simpleMembers:
+              type: array
+              default: []
+              items:
+                $ref: "#/components/schemas/AnemicPerson"
             members:
               type: array
               default: []

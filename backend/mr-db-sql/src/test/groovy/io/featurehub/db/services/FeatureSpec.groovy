@@ -36,6 +36,7 @@ import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
 import io.featurehub.mr.model.ServiceAccountPermission
 import io.featurehub.mr.model.SortOrder
+import io.featurehub.mr.model.UpdateGroup
 import org.apache.commons.lang3.RandomStringUtils
 
 class FeatureSpec extends Base2Spec {
@@ -100,7 +101,7 @@ class FeatureSpec extends Base2Spec {
     db.save(averageJoe)
     averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("fsspec-1-p1"), superPerson)
-    groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
+    groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
 
     def averageIrina = new DbPerson.Builder().email(ranName() +"averageirina@featurehub.io").name("Average Irina").build()
     db.save(averageIrina)
@@ -111,7 +112,7 @@ class FeatureSpec extends Base2Spec {
     portfolioAdminOfPortfolio1 = convertUtils.toPerson(portfolioAdmin)
 
     adminGroupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().admin(true).name(ranName()), superPerson)
-    groupSqlApi.addPersonToGroup(adminGroupInPortfolio1.id, portfolioAdminOfPortfolio1.id.id, Opts.empty())
+    groupSqlApi.addPersonsToGroup(adminGroupInPortfolio1.id, [portfolioAdminOfPortfolio1.id.id], Opts.empty())
 
     if (db.currentTransaction() != null && db.currentTransaction().active) {
       db.currentTransaction().commit()
@@ -459,13 +460,13 @@ class FeatureSpec extends Base2Spec {
       def env1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("production"), app2Id, superPerson)
     and: "i allow average joe access to access the environment"
       Group g1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("app2-f1-test"), superPerson)
-      g1.environmentRoles([
-        new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
-      ])
-      g1.members = [averageJoeMemberOfPortfolio1]
-      groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, Opts.empty());
+      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+      groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(g1.version)
+        .environmentRoles([new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id)]),
+        null, false, true, Opts.empty());
     when: 'application features with null filter'
-      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, null, null, null, null, null, null, [])
+      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1,
+        null, null, null, null, null, null, [])
     then:
       1 * mockCacheSourceFeatureGroupApi.collectStrategiesFromEnvironmentsWithFeatures([env1.id], _) >> []
       withNull.environments.size() == 1
@@ -486,11 +487,10 @@ class FeatureSpec extends Base2Spec {
       appApi.createApplicationFeature(app2Id, new CreateFeature().description("x").name('not').key('FEATURE_ALEX').description('not').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     and: "i allow average joe access to access the environment"
       Group g1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("app2-f1-test"), superPerson)
-      g1.environmentRoles([
+      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+      groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(g1.version).environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
-      ])
-      g1.members = [averageJoeMemberOfPortfolio1]
-      groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, Opts.empty());
+      ]), null, false, true, Opts.empty());
     when: "i request application features for 'desc'"
       ApplicationFeatureValues withDesc = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'desc', null, null, null, null, null, [])
     and: 'application features with null'
@@ -529,13 +529,12 @@ class FeatureSpec extends Base2Spec {
         Opts.empty())
     and: "i allow average joe access to two of the three environments"
       Group g1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("app2-f1-test"), superPerson)
-      g1.environmentRoles([
+      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+      groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(g1.version).environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK]).environmentId(env3.id),
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env2.id)
-      ])
-      g1.members = [averageJoeMemberOfPortfolio1]
-      groupSqlApi.updateGroup(g1.id, g1, null, true, true, true, Opts.empty());
+      ]), null, false, true, Opts.empty());
     and: "i create a feature value called FEATURE_BUNCH and unlock the feature in all branches"
       String k = 'FEATURE_BUNCH'
       appApi.createApplicationFeature(app2Id, new CreateFeature().description("x").name(k).key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
@@ -670,9 +669,10 @@ class FeatureSpec extends Base2Spec {
     and: "a group in the current portfolio"
       def group = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("lockunlock group"), superPerson)
     and: "i add permissions and members to the group"
-      group.environmentRoles([new EnvironmentGroupRole().environmentId(env1.id).roles([RoleType.LOCK, RoleType.UNLOCK, RoleType.READ])])
-      group.members([person])
-      group = groupSqlApi.updateGroup(group.id, group, null, true, false, true, Opts.empty())
+      groupSqlApi.addPersonsToGroup(group.id, [person.id.id], Opts.empty())
+      groupSqlApi.updateGroup(group.id, new UpdateGroup().version(group.version).environmentRoles([
+        new EnvironmentGroupRole().roles([RoleType.READ, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
+      ]), null, false, true, Opts.empty());
     when: "i try and unlock the feature with the person, it will let me"
       def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
       if (fv == null) {

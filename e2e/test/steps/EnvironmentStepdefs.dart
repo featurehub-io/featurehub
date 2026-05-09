@@ -84,6 +84,7 @@ class EnvironmentStepdefs {
       String portfolioName) async {
     Application application = await _findApplication(portfolioName, appName);
     Group group = await _findGroup(portfolioName, groupName, true);
+
     var environment =
         await common.findExactEnvironment(environmentName, application.id);
     EnvironmentGroupRole egr = EnvironmentGroupRole(
@@ -95,10 +96,10 @@ class EnvironmentStepdefs {
 
     group.environmentRoles.add(egr);
 
-    await common.groupService.updateGroupOnPortfolio(application.portfolioId!, group,
+    await common.groupService.updateGroupOnPortfolio(application.portfolioId!,
+        UpdateGroup(id: group.id, version: group.version, environmentRoles: group.environmentRoles),
         includeGroupRoles: true,
-        updateEnvironmentGroupRoles: true,
-        updateApplicationGroupRoles: true);
+        updateEnvironmentGroupRoles: true);
 
     shared.application = application;
   }
@@ -147,7 +148,8 @@ class EnvironmentStepdefs {
         roles: [RoleType.READ, RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]);
 
     group.environmentRoles.add(egr);
-    await common.groupService.updateGroupOnPortfolio(application.portfolioId!, group,
+    await common.groupService.updateGroupOnPortfolio(application.portfolioId!,
+        UpdateGroup(id: group.id, version: group.version, environmentRoles: group.environmentRoles),
         includeGroupRoles: true, updateEnvironmentGroupRoles: true);
   }
 
@@ -178,7 +180,8 @@ class EnvironmentStepdefs {
     });
 
     group.environmentRoles.add(egr);
-    await common.groupService.updateGroupOnPortfolio(group.id, group,
+    await common.groupService.updateGroupOnPortfolio(group.id,
+        UpdateGroup(id: group.id, version: group.version, environmentRoles: group.environmentRoles),
         includeGroupRoles: true, updateEnvironmentGroupRoles: true);
   }
 
@@ -214,7 +217,8 @@ class EnvironmentStepdefs {
       eRoles.roles.add(roleType!);
     }
 
-    await common.groupService.updateGroupOnPortfolio(shared.portfolio.id, updatedGroup,
+    await common.groupService.updateGroupOnPortfolio(shared.portfolio.id,
+        UpdateGroup(id: updatedGroup.id, version: updatedGroup.version, environmentRoles: updatedGroup.environmentRoles),
         updateEnvironmentGroupRoles: true);
   }
 
@@ -343,7 +347,8 @@ class EnvironmentStepdefs {
     egr.roles.add(RoleType.UNLOCK);
 
     group.environmentRoles.add(egr);
-    await common.groupService.updateGroupOnPortfolio(group.portfolioId!, group,
+    await common.groupService.updateGroupOnPortfolio(group.portfolioId!,
+        UpdateGroup(id: group.id, version: group.version, environmentRoles: group.environmentRoles),
         includeGroupRoles: true, updateEnvironmentGroupRoles: true);
   }
 }

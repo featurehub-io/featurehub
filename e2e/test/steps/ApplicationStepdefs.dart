@@ -219,12 +219,17 @@ class ApplicationStepdefs {
     final group =
         await userCommon.findExactGroup(groupName, shared.portfolio.id);
     assert(group != null, 'Unable to find group');
-    var agr = group!.applicationRoles
+
+    final appRoles = group!.applicationRoles.toList();
+    var updatedGroup = UpdateGroup(id: group.id, version: group.version,
+        applicationRoles: appRoles);
+
+    var agr = appRoles
         .firstWhereOrNull((agr) => agr.applicationId == shared.application.id);
     if (agr == null) {
       agr = api.ApplicationGroupRole(
           applicationId: shared.application.id, groupId: group.id, roles: []);
-      group.applicationRoles.add(agr);
+      appRoles.add(agr);
     }
 
     api.ApplicationRoleType? desiredRole =
@@ -235,7 +240,7 @@ class ApplicationStepdefs {
     }
 
     await userCommon.groupService
-        .updateGroupOnPortfolio(shared.portfolio.id, group, updateApplicationGroupRoles: true);
+        .updateGroupOnPortfolio(shared.portfolio.id, updatedGroup, updateApplicationGroupRoles: true);
   }
 
   @And(

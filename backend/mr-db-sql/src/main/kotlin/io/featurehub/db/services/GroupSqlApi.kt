@@ -6,6 +6,7 @@ import io.ebean.annotation.Transactional
 import io.featurehub.db.api.*
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.*
+import io.featurehub.db.model.query.QGroupMemberAgg.Alias.personId
 import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
 import jakarta.inject.Inject
@@ -194,44 +195,48 @@ open class GroupSqlApi @Inject constructor(
       }
   }
 
-  override fun addPersonToGroup(groupId: UUID, personId: UUID, opts: Opts): Group? {
-    val dbGroup = QDbGroup().id
-      .eq(groupId).whenArchived
-      .isNull
-      .findOne() // no adding people to archived groups
+  // the GroupResource has pre-checked these personIds belong to this organisation
+  override fun addPersonsToGroup(groupId: UUID, personIds: List<UUID>, opts: Opts): Group? {
+    val dbGroup = QDbGroup()
+      .select(QDbGroup.Alias.id, QDbGroup.Alias.owningPortfolio.id,
+        QDbGroup.Alias.adminGroup, QDbGroup.Alias.owningPortfolio)
+      .id.eq(groupId)
+      .whenArchived.isNull
+      .findOne() ?: return null
+    // no adding people to archived groups
 
-    if (dbGroup != null) {
-      val person = QDbPerson().id.eq(personId).whenArchived.isNull.findOne()
-      if (person != null) {
-        val groupFinder = QDbGroup().id.eq(groupId).groupMembers.person.id.eq(personId)
-        if (opts.contains(FillOpts.Members)) {
-          groupFinder.groupMembers.person.fetch() // ensure we prefetch the users in the group
-        }
-        val one = groupFinder.findOne()
-        return if (one == null) {
-          // ebean ensures this is never null
-          updateGroupMembership(dbGroup, person)
-          convertUtils.toGroup(dbGroup, opts)!!
-        } else { // they are already in the group
-          convertUtils.toGroup(one, opts)!!
-        }
-      }
+    val uniqueIds = personIds.toSet().toMutableSet()
+    // remove folks who are already in this group
+    QDbGroupMember()
+      .select(QDbGroupMember.Alias.person.id)
+      .person.id.`in`(personIds)
+      .group.id.eq(groupId)
+      .findList().forEach { personId -> uniqueIds.remove(personId.person.id) }
+
+    val realIds = QDbPerson().select(QDbPerson.Alias.id).id.`in`(uniqueIds).findList().map { it.id }
+
+    if (realIds.isNotEmpty()) {
+      updateGroupMembership(dbGroup, realIds)
     }
 
-    return null
+    // we don't optimize for children or parents
+    return convertUtils.toGroup(QDbGroup()
+      .owningPortfolio.fetch(QDbPortfolio.Alias.id)
+      .owningOrganization.fetch(QDbOrganization.Alias.id)
+      .id.eq(groupId).findOne()!!, opts)
   }
 
   @Transactional
-  private fun updateGroupMembership(dbGroup: DbGroup, person: DbPerson) {
-    if (!QDbGroupMember().person.id.eq(person.id).group.id.eq(dbGroup.id).exists()) {
-      DbGroupMember(DbGroupMemberKey(person.id, dbGroup.id)).save()
+  private fun updateGroupMembership(dbGroup: DbGroup, uniqueIds: Iterable<UUID>) {
+    uniqueIds.forEach { personId ->
+     DbGroupMember(DbGroupMemberKey(personId, dbGroup.id)).save()
     }
 
     // they actually got added from the superusers group, so
     // lets update the portfolios
     if (dbGroup.isAdminGroup && dbGroup.owningPortfolio == null) {
       val sc = SuperuserChanges(dbGroup.owningOrganization)
-      sc.addedSuperusers.add(person)
+      sc.addedSuperuserPersonIds.addAll(uniqueIds)
       sc.ignoredGroups.add(dbGroup.id)
       updateSuperusersFromPortfolioGroups(sc)
     }
@@ -349,9 +354,8 @@ open class GroupSqlApi @Inject constructor(
   @Throws(OptimisticLockingException::class, GroupApi.DuplicateGroupException::class, DuplicateUsersException::class)
   override fun updateGroup(
     gid: UUID,
-    group: Group,
+    group: UpdateGroup,
     appId: UUID?,
-    updateMembers: Boolean,
     updateApplicationGroupRoles: Boolean,
     updateEnvironmentGroupRoles: Boolean,
     opts: Opts
@@ -359,17 +363,21 @@ open class GroupSqlApi @Inject constructor(
     val dbGroup = convertUtils.byGroup(gid, opts)
 
     if (dbGroup != null && dbGroup.whenArchived == null) {
-      if (group.version == null || dbGroup.version != group.version) {
+      if (dbGroup.version != group.version) {
         throw OptimisticLockingException()
       }
 
-      group.name.let {
-        dbGroup.name = it
+      group.name.let { groupName ->
+        if (groupName != null) {
+          val trimmed = groupName.trim()
+          if (!trimmed.isEmpty()) {
+            dbGroup.name = trimmed
+          }
+        }
       }
 
       transactionalGroupUpdate(
         group,
-        updateMembers,
         updateApplicationGroupRoles,
         updateEnvironmentGroupRoles,
         dbGroup,
@@ -384,17 +392,12 @@ open class GroupSqlApi @Inject constructor(
   @Transactional
   @Throws(DuplicateUsersException::class, GroupApi.DuplicateGroupException::class)
   private fun transactionalGroupUpdate(
-    gp: Group,
-    updateMembers: Boolean,
+    gp: UpdateGroup,
     updateApplicationGroupRoles: Boolean,
     updateEnvironmentGroupRoles: Boolean,
     group: DbGroup,
     appId: UUID?
   ) {
-    var superuserChanges: SuperuserChanges? = null
-    if (gp.members != null && updateMembers) {
-      superuserChanges = updateMembersOfGroup(gp, group)
-    }
     var aclUpdates: AclUpdates? = null
     gp.environmentRoles.let {
       if (updateEnvironmentGroupRoles) {
@@ -402,10 +405,8 @@ open class GroupSqlApi @Inject constructor(
       }
     }
 
-    gp.applicationRoles.let { appRoles ->
-      if (updateApplicationGroupRoles) {
-        updateApplicationMembersOfGroup(appRoles, group, appId)
-      }
+    if (updateApplicationGroupRoles) {
+      updateApplicationMembersOfGroup(gp.applicationRoles ?: listOf(), group, appId)
     }
 
     try {
@@ -413,7 +414,6 @@ open class GroupSqlApi @Inject constructor(
     } catch (dke: DuplicateKeyException) {
       throw GroupApi.DuplicateGroupException()
     }
-    superuserChanges?.let { updateSuperusersFromPortfolioGroups(it) }
   }
 
   // now we have to walk all the way down and remove these people from all admin portfolio groups
@@ -471,11 +471,11 @@ open class GroupSqlApi @Inject constructor(
   }
 
   private fun updateApplicationMembersOfGroup(
-    updatedApplicationRoles: List<ApplicationGroupRole>?, group: DbGroup, appId: UUID?
+    updatedApplicationRoles: List<ApplicationGroupRole>, group: DbGroup, appId: UUID?
   ) {
     val desiredApplications: MutableMap<UUID, ApplicationGroupRole> = HashMap()
     val addedApplications: MutableSet<UUID> = HashSet()
-    updatedApplicationRoles!!
+    updatedApplicationRoles
       .forEach { role: ApplicationGroupRole ->
         if (appId == null || role.applicationId == appId) {
           desiredApplications[role.applicationId] = role

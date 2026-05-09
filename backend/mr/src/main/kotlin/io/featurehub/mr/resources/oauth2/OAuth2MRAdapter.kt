@@ -99,7 +99,7 @@ class OAuth2MRAdapter @Inject constructor(
       val organization = organizationApi.get()
       // create the superuser group and add admin to the group -
       val group = groupApi.createOrgAdminGroup(organization.id, "org_admin", person)
-      groupApi.addPersonToGroup(group!!.id, person.id!!.id, Opts.empty())
+      groupApi.addPersonsToGroup(group!!.id, listOf(person.id!!.id), Opts.empty())
 
       // find the only portfolio and update its members to include this one
       val portfolio = portfolioApi.findPortfolios(

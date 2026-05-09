@@ -38,4 +38,5 @@ interface PersonApi {
   fun delete(email: String, deleteGroups: Boolean): Boolean
 
   fun updateV2(personId: UUID, updatePerson: UpdatePerson, updatedBy: UUID): UUID?
+  fun findPeople(ids: List<UUID>, emailAddresses: List<String>): Set<UUID>
 }
