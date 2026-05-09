@@ -93,7 +93,9 @@ class TrackingEventListViewState
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
-                  Expanded(child: Text(AppLocalizations.of(context)!.messageDeliveryStatus)),
+                  Expanded(
+                      child: Text(
+                          AppLocalizations.of(context)!.messageDeliveryStatus)),
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: TextButton.icon(
@@ -161,7 +163,8 @@ class TrackEventItemWidget extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      SelectableText(l10n.unacknowledgedRequest(event.whenSent.toLocal().toString()))
+                      SelectableText(l10n.unacknowledgedRequest(
+                          event.whenSent.toLocal().toString()))
                     ],
                   ),
                 ],
@@ -192,7 +195,7 @@ class TrackEventItemWidget extends StatelessWidget {
     final headers = response.headers;
     return Card(
         elevation: 4.0,
-        color: Colors.orangeAccent,
+        color: Theme.of(context).snackBarTheme.backgroundColor,
         shadowColor: Colors.transparent,
         child: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -200,9 +203,12 @@ class TrackEventItemWidget extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    SelectableText(l10n.deliveryStatusError(
-                        _decodeStatus(response.status, l10n),
-                        response.whenReceived.toLocal().toString())),
+                    SelectableText(
+                        l10n.deliveryStatusError(
+                            _decodeStatus(response.status, l10n),
+                            response.whenReceived.toLocal().toString()),
+                        style:
+                            Theme.of(context).snackBarTheme.contentTextStyle),
                   ],
                 ),
                 if (headers != null)

@@ -179,12 +179,27 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     if (app == null) {
       environmentsList = [];
     } else {
-      environmentsList = app.environments;
+      environmentsList = _sortEnvironments(app.environments);
     }
 
     if (!_environmentBS.isClosed) {
       _environmentBS.add(environmentsList);
     }
+  }
+
+  List<Environment> _sortEnvironments(List<Environment> environments,
+      {String parentId = '', List<Environment>? result}) {
+    final out = result ?? <Environment>[];
+    for (final env in environments) {
+      if (env.priorEnvironmentId == null && parentId == '') {
+        out.insert(0, env);
+        _sortEnvironments(environments, parentId: env.id, result: out);
+      } else if (env.priorEnvironmentId == parentId) {
+        out.add(env);
+        _sortEnvironments(environments, parentId: env.id, result: out);
+      }
+    }
+    return out;
   }
 
   String? get selectedGroup => _selectedGroupId;
@@ -204,8 +219,12 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         if (!_serviceAccountsBS.isClosed) {
           if (serviceAccounts.isNotEmpty) {
             _currentServiceAccountIdSource.add(null);
+            final routeSaId =
+                _mrClient.currentRoute?.params['service-account']?.first;
+            final target =
+                serviceAccounts.firstWhereOrNull((sa) => sa.id == routeSaId);
             // ignore: unawaited_futures
-            selectServiceAccount(serviceAccounts[0].id);
+            selectServiceAccount((target ?? serviceAccounts[0]).id);
           }
           _serviceAccountsBS.add(serviceAccounts);
         }
@@ -352,8 +371,8 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   Future<void> updateEnvs(String appId, List<Environment> envs) async {
     try {
-      environmentsList =
-          await _environmentServiceApi.environmentOrdering(appId, envs);
+      environmentsList = _sortEnvironments(
+          await _environmentServiceApi.environmentOrdering(appId, envs));
       _environmentBS.add(environmentsList);
     } catch (e, s) {
       _mrClient.dialogError(e, s);
