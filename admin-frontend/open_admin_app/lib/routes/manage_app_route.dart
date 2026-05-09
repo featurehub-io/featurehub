@@ -166,7 +166,7 @@ class ManageAppWidgetState extends State<ManageAppWidget>
         'tab': ['integrations']
       };
     }
-    bloc?.notifyExternalRouteChange(rc);
+    bloc?.swapRoutes(rc);
   }
 
   @override
@@ -309,23 +309,21 @@ class ManageAppWidgetState extends State<ManageAppWidget>
       if (routeChange?.route == '/app-settings') {
         switch (routeChange!.params['tab']![0]) {
           case 'environments':
-            _controller!.animateTo(0);
+            if (_controller?.index != 0) _controller!.animateTo(0);
             break;
           case 'group-permissions':
-            _controller!.animateTo(1);
+            if (_controller?.index != 1) _controller!.animateTo(1);
             break;
           case 'service-accounts':
-            _controller!.animateTo(2);
+            if (_controller?.index != 2) _controller!.animateTo(2);
             break;
           case 'integrations':
-            if (mrClient.identityProviders.capabilityWebhooks) {
-              _controller!.animateTo(3);
-            } else {
-              _controller!.animateTo(0);
-            }
+            final target =
+                mrClient.identityProviders.capabilityWebhooks ? 3 : 0;
+            if (_controller?.index != target) _controller!.animateTo(target);
             break;
           default:
-            _controller!.animateTo(0);
+            if (_controller?.index != 0) _controller!.animateTo(0);
             break;
         }
       }
