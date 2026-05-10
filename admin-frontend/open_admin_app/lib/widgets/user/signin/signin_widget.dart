@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/api/client_api.dart';
@@ -102,7 +103,7 @@ class _SigninState extends State<SigninWidget> {
       builder: (context, snapshot) {
         final maintenance = snapshot.data;
         if (maintenance != null && maintenance.active) {
-          return _MaintenanceSigninBlock(message: maintenance.message);
+          return _MaintenanceSigninBlock(info: maintenance);
         }
         return _buildForm(context);
       },
@@ -212,15 +213,23 @@ class _SigninState extends State<SigninWidget> {
 }
 
 class _MaintenanceSigninBlock extends StatelessWidget {
-  final String? message;
+  final MaintenanceInfo info;
 
-  const _MaintenanceSigninBlock({this.message});
+  const _MaintenanceSigninBlock({required this.info});
+
+  static final _dateFmt = DateFormat('dd MMM yyyy HH:mm');
+  static String _formatUtc(DateTime dt) =>
+      '${_dateFmt.format(dt.toUtc())} UTC';
 
   @override
   Widget build(BuildContext context) {
-    final displayMessage = (message != null && message!.isNotEmpty)
-        ? message!
+    final baseMsg = (info.message != null && info.message!.isNotEmpty)
+        ? info.message!
         : 'The system is currently undergoing maintenance. Login is temporarily unavailable.';
+    final endPart = info.endTime != null
+        ? ' Expected to end at ${_formatUtc(info.endTime!)}.'
+        : '';
+    final displayMessage = '$baseMsg$endPart';
 
     return FHCardWidget(
       child: Column(

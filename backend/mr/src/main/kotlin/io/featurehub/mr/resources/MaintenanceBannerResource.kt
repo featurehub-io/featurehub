@@ -18,13 +18,9 @@ class MaintenanceBannerResource @Inject constructor(
     }
 
     val configs = systemConfigApi.findConfigs(listOf("maintenance"))
-    val active = configs.find { it.key == MaintenanceConfig.cfg_active }?.value as? Boolean ?: false
+    val info = MaintenanceConfig.computeMaintenanceInfo(configs)
+      ?: throw WebApplicationException(Response.noContent().build())
 
-    if (!active) {
-      throw WebApplicationException(Response.noContent().build())
-    }
-
-    val message = configs.find { it.key == MaintenanceConfig.cfg_message }?.value as? String
-    return MaintenanceInfo().active(true).message(message)
+    return info
   }
 }

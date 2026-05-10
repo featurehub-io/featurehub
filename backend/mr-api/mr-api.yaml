@@ -2759,6 +2759,16 @@ components:
         message:
           type: string
           nullable: true
+        startTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: UTC time when maintenance window begins (locks out users)
+        endTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: UTC time when maintenance window ends (allows login again)
     SetupResponse:
       type: object
       required:

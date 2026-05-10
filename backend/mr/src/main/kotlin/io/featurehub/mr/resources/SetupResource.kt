@@ -70,11 +70,7 @@ class SetupResource @Inject constructor(
     if (!SystemConfigApi.systemConfigEnabled) return null
 
     val configs = systemConfigApi.findConfigs(listOf("maintenance"))
-    val active = configs.find { it.key == MaintenanceConfig.cfg_active }?.value as? Boolean ?: false
-    if (!active) return null
-
-    val message = configs.find { it.key == MaintenanceConfig.cfg_message }?.value as? String
-    return MaintenanceInfo().active(true).message(message)
+    return MaintenanceConfig.computeMaintenanceInfo(configs)
   }
 
   private fun capabilityInfo(): Map<String, String> {

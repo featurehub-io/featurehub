@@ -178,10 +178,12 @@ Future<void> _checkMaintenanceBanner() async {
       } else if (response.statusCode == 200) {
         final info = await _maintenanceBannerApi.apiDelegate
             .getMaintenanceBanner_decode(response.body!);
-        _log.fine('maintenance: active=${info.active} message=${info.message}');
-        // Adding to the source triggers the _maintenanceSubscription listener,
-        // which calls _enforceMaintenanceLogout() if the user is logged in.
-        _maintenanceSource.add(info.active ? info : null);
+        _log.fine('maintenance: active=${info.active} message=${info.message} startTime=${info.startTime}');
+        // Pass the full info to the stream — the banner widget renders both
+        // the pre-maintenance warning (active=false) and the lockout state
+        // (active=true). The _maintenanceSubscription listener already guards
+        // logout with info.active, so pre-maintenance won't log the user out.
+        _maintenanceSource.add(info);
       }
     } catch (e, s) {
       _log.warning('maintenance: check failed', e, s);
@@ -357,10 +359,9 @@ Future<void> _checkMaintenanceBanner() async {
     });
 
     // Poll every 30 seconds so users get kicked out even without navigating.
+    // Always poll — pre-maintenance banners need to appear on the login page too.
     _maintenanceTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      if (personState.isLoggedIn) {
-        _checkMaintenanceBanner();
-      }
+      _checkMaintenanceBanner();
     });
 
     _errorSource.add(null);
@@ -393,6 +394,9 @@ Future<void> _checkMaintenanceBanner() async {
 
   Future<void> init() async {
     await isInitialized();
+    // Explicitly poll the dedicated maintenance endpoint after initialization so
+    // the banner is always up-to-date regardless of what the setup response contains.
+    await _checkMaintenanceBanner();
   }
 
   Future isInitialized() async {
@@ -415,11 +419,11 @@ Future<void> _checkMaintenanceBanner() async {
 
       identityProviders.identityInfo = setupResponse.providerInfo;
 
-      // Seed maintenance banner from initial load
+      // Seed maintenance banner from initial load — pass full info so the
+      // pre-maintenance warning (active=false) banner is also shown.
       final maintenanceActive =
           setupResponse.maintenanceInfo?.active == true;
-      _maintenanceSource.add(
-          maintenanceActive ? setupResponse.maintenanceInfo : null);
+      _maintenanceSource.add(setupResponse.maintenanceInfo);
 
       // yes its initialised, we may not have logged in yet
       if (bearerToken != null && !maintenanceActive) {
