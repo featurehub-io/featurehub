@@ -92,7 +92,8 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   final _environmentBS = BehaviorSubject<List<Environment>>();
 
-  Stream<List<Environment>> get environmentsStream => _environmentBS.stream;
+  Stream<List<Environment>> get environmentsStream =>
+      _environmentBS.stream.map((envs) => _sortEnvironments(envs));
 
   final _currentServiceAccountIdSource = BehaviorSubject<String?>();
 
@@ -176,12 +177,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   }
 
   void _publishEnvironmentListUpdate(Application? app) async {
-    if (app == null) {
-      environmentsList = [];
-    } else {
-      environmentsList = _sortEnvironments(app.environments);
-    }
-
+    environmentsList = app == null ? [] : app.environments;
     if (!_environmentBS.isClosed) {
       _environmentBS.add(environmentsList);
     }
@@ -371,8 +367,8 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   Future<void> updateEnvs(String appId, List<Environment> envs) async {
     try {
-      environmentsList = _sortEnvironments(
-          await _environmentServiceApi.environmentOrdering(appId, envs));
+      environmentsList =
+          await _environmentServiceApi.environmentOrdering(appId, envs);
       _environmentBS.add(environmentsList);
     } catch (e, s) {
       _mrClient.dialogError(e, s);
