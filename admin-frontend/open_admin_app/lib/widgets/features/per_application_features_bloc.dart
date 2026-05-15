@@ -5,6 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/mr_client_aware.dart';
+import 'package:open_admin_app/common/fh_shared_prefs.dart';
 import 'package:open_admin_app/fhos_logger.dart';
 import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 import 'package:collection/collection.dart';
@@ -146,6 +147,9 @@ class PerApplicationFeaturesBloc
     _environments.addAll(envs);
   }
 
+  String _rppKey(String appId) => 'features_rpp_$appId';
+  String _pageKey(String appId) => 'features_page_$appId';
+
   Future<void> setAppId(String? appId) async {
     _currentAppId
         .pause(); // as we are async, we tell the subscription to not let any other requests thru
@@ -154,6 +158,10 @@ class PerApplicationFeaturesBloc
       applicationId = appId;
 
       if (applicationId != null) {
+        currentRowsPerPage =
+            (await prefs.getInt(_rppKey(applicationId!))) ?? 5;
+        currentPageIndex =
+            (await prefs.getInt(_pageKey(applicationId!))) ?? 0;
         await fetchEnvironmentsAvailableToApp();
         await updateHiddenEnvironments();
       }
@@ -360,6 +368,8 @@ class PerApplicationFeaturesBloc
     selectedFeatureTypesByUser = featureTypes;
     selectedFeatureFilterIdsByUser = featureFilterIds ?? [];
     currentRowsPerPage = rowsPerPage;
+    prefs.saveInt(_rppKey(appId), rowsPerPage);
+    prefs.saveInt(_pageKey(appId), pageOffset);
     fhosLogger.fine(
         "finished: getApplicationFeatureValuesData with $appId search $searchTerm");
   }

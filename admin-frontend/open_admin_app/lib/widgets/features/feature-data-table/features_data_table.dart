@@ -272,7 +272,7 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                             gridLinesVisibility: GridLinesVisibility.both,
                             headerGridLinesVisibility: GridLinesVisibility.both,
                             isScrollbarAlwaysShown: true,
-                            rowsPerPage: rowsPerPage,
+                            rowsPerPage: widget.bloc.currentRowsPerPage,
                             defaultColumnWidth: featureValueCellWidth,
                             columnSizer: _customColumnSizer,
                             frozenColumnsCount: 1,
@@ -308,6 +308,7 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                             (_maxFeatures / widget.bloc.currentRowsPerPage)
                                 .ceil()
                                 .ceilToDouble(),
+                        initialPageIndex: widget.bloc.currentPageIndex,
                         direction: Axis.horizontal,
                         onRowsPerPageChanged: (rpp) {
                           widget.bloc.currentRowsPerPage = rpp!;
