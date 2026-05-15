@@ -147,26 +147,18 @@ class ManageAppWidgetState extends State<ManageAppWidget>
   }
 
   void tabChangeListener() {
-    // tab has changed, notify external route
-    final rc = RouteChange('/app-settings');
-    if (_controller?.index == 0) {
-      rc.params = {
-        'tab': ['environments']
-      };
-    } else if (_controller?.index == 1) {
-      rc.params = {
-        'tab': ['group-permissions']
-      };
-    } else if (_controller?.index == 2) {
-      rc.params = {
-        'tab': ['service-accounts']
-      };
-    } else if (_controller?.index == 3) {
-      rc.params = {
-        'tab': ['integrations']
-      };
-    }
-    bloc?.swapRoutes(rc);
+    final tabName = switch (_controller?.index) {
+      0 => 'environments',
+      1 => 'group-permissions',
+      2 => 'service-accounts',
+      3 => 'integrations',
+      _ => 'environments',
+    };
+    // Preserve all existing params (e.g. service-account) and only update tab.
+    final params = Map<String, List<String>>.from(
+        bloc?.currentRoute?.params ?? {});
+    params['tab'] = [tabName];
+    bloc?.swapRoutes(RouteChange('/app-settings', params: params));
   }
 
   @override
