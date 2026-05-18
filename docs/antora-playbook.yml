@@ -34,6 +34,7 @@ content:
         - v1.9.2
         - v1.9.3
         - v1.9.4
+        - v1.10.0
       start_path: docs
     - url: https://github.com/featurehub-io/featurehub-saas-docs
       branches:
