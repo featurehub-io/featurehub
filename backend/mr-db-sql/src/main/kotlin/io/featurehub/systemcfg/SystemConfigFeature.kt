@@ -20,6 +20,7 @@ class SystemConfigFeature : Feature {
         }
 
         bind(SiteConfig::class.java).to(KnownSystemConfigSource::class.java).`in`(Singleton::class.java)
+        bind(MaintenanceConfig::class.java).to(KnownSystemConfigSource::class.java).`in`(Singleton::class.java)
 
         bind(SystemConfigSqlApi::class.java).to(SystemConfigApi::class.java).`in`(Singleton::class.java)
         bind(InternalSystemConfigSqlApi::class.java).to(InternalSystemConfigApi::class.java).`in`(Singleton::class.java)

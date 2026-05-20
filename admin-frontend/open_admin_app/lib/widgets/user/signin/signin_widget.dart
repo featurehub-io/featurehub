@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/fh_shared_prefs.dart';
@@ -96,6 +98,19 @@ class _SigninState extends State<SigninWidget> {
       return ResetPasswordWidget(personIdForResetWidget!);
     }
 
+    return StreamBuilder<MaintenanceInfo?>(
+      stream: widget.bloc.maintenanceStream,
+      builder: (context, snapshot) {
+        final maintenance = snapshot.data;
+        if (maintenance != null && maintenance.active) {
+          return _MaintenanceSigninBlock(info: maintenance);
+        }
+        return _buildForm(context);
+      },
+    );
+  }
+
+  Widget _buildForm(BuildContext context) {
     return Form(
       key: _formKey,
       child: FHCardWidget(
@@ -192,6 +207,61 @@ class _SigninState extends State<SigninWidget> {
               )
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MaintenanceSigninBlock extends StatelessWidget {
+  final MaintenanceInfo info;
+
+  const _MaintenanceSigninBlock({required this.info});
+
+  static final _dateFmt = DateFormat('dd MMM yyyy HH:mm');
+  static String _formatUtc(DateTime dt) =>
+      '${_dateFmt.format(dt.toUtc())} UTC';
+
+  @override
+  Widget build(BuildContext context) {
+    final baseMsg = (info.message != null && info.message!.isNotEmpty)
+        ? info.message!
+        : 'The system is currently undergoing maintenance. Login is temporarily unavailable.';
+    final endPart = info.endTime != null
+        ? ' Expected to end at ${_formatUtc(info.endTime!)}.'
+        : '';
+    final displayMessage = '$baseMsg$endPart';
+
+    return FHCardWidget(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 26.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/logo/FeatureHub-icon.png',
+                    width: 40, height: 40)
+              ],
+            ),
+          ),
+          Icon(
+            Icons.construction_rounded,
+            size: 48,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Maintenance',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            displayMessage,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
       ),
     );
   }

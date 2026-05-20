@@ -12,6 +12,7 @@ import 'package:open_admin_app/widgets/stepper/stepper_container.dart';
 
 import 'fh_drawer.dart';
 import 'fh_error.dart';
+import 'maintenance_banner_widget.dart';
 
 class FHScaffoldWidget extends StatefulWidget {
   final Widget body;
@@ -115,6 +116,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const MaintenanceBannerWidget(),
                   _mainContent(context),
                 ]),
           );

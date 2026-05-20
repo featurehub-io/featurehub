@@ -19,6 +19,7 @@ import {
   FeatureValue, Group,
   GroupServiceApi,
   ListApplicationRolloutStrategyItem,
+  MaintenanceInfo,
   Person,
   PersonServiceApi,
   Portfolio,
@@ -26,6 +27,8 @@ import {
   ServiceAccount,
   ServiceAccountPermission,
   ServiceAccountServiceApi,
+  SetupResponse,
+  SetupServiceApi,
   SystemConfigServiceApi,
   TokenizedPerson,
   WebhookServiceApi
@@ -60,6 +63,7 @@ export class ApiUser {
   public readonly edgeApi: EdgeService;
   public readonly historyApi: FeatureHistoryServiceApi;
   public readonly systemConfigApi: SystemConfigServiceApi;
+  public readonly setupApi: SetupServiceApi;
   public readonly adminUrl: string;
   public readonly webhookApi: WebhookServiceApi;
   public readonly featureUrl: string;
@@ -90,6 +94,7 @@ export class ApiUser {
     this.featureValueApi = new EnvironmentFeatureServiceApi(this.adminApiConfig);
     this.historyApi = new FeatureHistoryServiceApi(this.adminApiConfig);
     this.systemConfigApi = new SystemConfigServiceApi(this.adminApiConfig);
+    this.setupApi = new SetupServiceApi(this.adminApiConfig);
     this.authorisationApi = new AuthServiceApi(this.adminApiConfig);
     this.anonAuthorizationAPi = new AuthServiceApi(new Configuration({ basePath: this.adminUrl, axiosInstance: axiosInstance }));
     this.groupApi = new GroupServiceApi(this.adminApiConfig);
@@ -129,6 +134,8 @@ export class SdkWorld extends World {
   public readonly superuser: ApiUser;
   public user: ApiUser | undefined;
   public currentUser: ApiUser;
+  public lastInitializeResponse: SetupResponse | undefined;
+  public lastMaintenanceBanner: MaintenanceInfo | null | undefined;
 
   constructor(props: any) {
     super(props);
@@ -170,6 +177,7 @@ export class SdkWorld extends World {
   public get edgeApi() { return this._edgeApi; }
   public get historyApi() { return this.superuser.historyApi; }
   public get systemConfigApi() { return this.superuser.systemConfigApi; }
+  public get setupApi() { return this.superuser.setupApi; }
   public get webhookApi() { return this.superuser.webhookApi; }
   public get featureHistoryApi() { return this.superuser.featureHistoryApi; }
   public get applicationStrategyApi() { return this.superuser.applicationStrategyApi; }
