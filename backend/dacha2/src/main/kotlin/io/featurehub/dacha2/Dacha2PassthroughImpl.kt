@@ -35,7 +35,7 @@ class Dacha2PassthroughImpl(private val mrDacha2Api: Dacha2ServiceClient, privat
     return mrDacha2Api.getServiceAccount(key, apiKey).serviceAccount
   }
 
-  override fun getFeatureCollection(eId: UUID, apiKey: String): FeatureCollection? {
+  override fun getFeatureCollection(eId: UUID, apiKey: String, allowFiltering: Boolean): FeatureCollection? {
     val sa = getServiceAccount(apiKey)
 
     var collection: FeatureCollection? = null

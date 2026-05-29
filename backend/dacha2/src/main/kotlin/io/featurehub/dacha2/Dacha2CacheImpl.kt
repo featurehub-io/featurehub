@@ -178,7 +178,7 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
 
   private fun permCacheKey(eId: UUID, apiKey: String) = "${eId}/${apiKey}"
 
-  override fun getFeatureCollection(eId: UUID, apiKey: String): FeatureCollection? {
+  override fun getFeatureCollection(eId: UUID, apiKey: String, allowFiltering: Boolean): FeatureCollection? {
     // if the environment is already in the sin-bin, return not found
     environmentMissCache.getIfPresent(eId)?.let {
       log.trace("environmentMissCache: {}", eId)
@@ -220,7 +220,7 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
       // accessing the environment-cache can cause an exception
       val serviceAccount = serviceAccountApiKeyCache.get(apiKey)
 
-      if (serviceAccount.filters != null && serviceAccount.filters!!.isNotEmpty()) {
+      if (allowFiltering && serviceAccount.filters != null && serviceAccount.filters!!.isNotEmpty()) {
         counterFilterUse.inc()
         return FeatureCollection(FilteredEnvironmentFeatures(environmentCache[eId], serviceAccount.filters!!), perms, serviceAccount.id)
       }

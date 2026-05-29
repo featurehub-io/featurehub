@@ -118,7 +118,7 @@ class EnvironmentFeatures(val env: PublishEnvironment) : FeatureValues {
     features.remove(id)?.let {
       if (!featureValues.remove(it)) {
         // fallback to the slower remove as the value may have changed
-        environment.featureValues.removeIf { fv -> fv.feature.id == id }
+        featureValues.removeIf { fv -> fv.feature.id == id }
       }
 
       env.featureValues = featureValues.toList()

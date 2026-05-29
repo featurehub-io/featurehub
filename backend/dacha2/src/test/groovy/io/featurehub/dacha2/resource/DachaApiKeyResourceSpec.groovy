@@ -41,7 +41,7 @@ class DachaApiKeyResourceSpec extends Specification {
     when:
       resource.getApiKeyDetails(envId, apiKey, true)
     then:
-      1 * cache.getFeatureCollection(envId, apiKey) >> null
+      1 * cache.getFeatureCollection(envId, apiKey, true) >> null
       thrown(NotFoundException)
   }
 
@@ -73,7 +73,7 @@ class DachaApiKeyResourceSpec extends Specification {
     and: "i ask for retired false"
       def result2 = resource.getApiKeyDetails(envId, apiKey, false)
     then:
-      2 * cache.getFeatureCollection(envId, apiKey) >> fc
+      2 * cache.getFeatureCollection(envId, apiKey, true) >> fc
       result1.organizationId == orgId
       result1.applicationId == appId
       result1.portfolioId == portId
@@ -89,7 +89,7 @@ class DachaApiKeyResourceSpec extends Specification {
       resource.getApiKeyPermissions(envId, apiKey, "x")
     then:
       thrown(NotFoundException)
-      1 * cache.getFeatureCollection(envId, apiKey) >> null
+      1 * cache.getFeatureCollection(envId, apiKey, true) >> null
   }
 
   def "getApiKeyPermissions: no feature matched = 404"() {
@@ -97,7 +97,7 @@ class DachaApiKeyResourceSpec extends Specification {
       resource.getApiKeyPermissions(envId, apiKey, "z")
     then:
       thrown(NotFoundException)
-      1 * cache.getFeatureCollection(envId, apiKey) >> featureCollection()
+      1 * cache.getFeatureCollection(envId, apiKey, true) >> featureCollection()
   }
 
   def "getApiKeyPermissions: feature matched"() {
@@ -110,7 +110,7 @@ class DachaApiKeyResourceSpec extends Specification {
       result1.serviceKeyId == serviceAccountId
       result1.environmentInfo == envInfo
       result1.feature != null
-      1 * cache.getFeatureCollection(envId, apiKey) >> featureCollection()
+      1 * cache.getFeatureCollection(envId, apiKey, true) >> featureCollection()
   }
 
   def "dachaEnvironmentResource: no environment, not found exception"() {

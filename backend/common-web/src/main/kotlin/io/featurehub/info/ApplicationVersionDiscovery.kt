@@ -47,7 +47,7 @@ class ApplicationVersionDiscovery : ApplicationVersion {
         try {
           val nextManifest = resources.nextElement()
           log.trace("processing manifest {}", nextManifest)
-          val manifest = Manifest(nextManifest.openStream())
+          val manifest = nextManifest.openStream().use { Manifest(it) }
           val attr = manifest.mainAttributes.getValue(key)
           log.trace("attr  is {} - main is {}", attr, manifest.mainAttributes)
           if (attr != null) {

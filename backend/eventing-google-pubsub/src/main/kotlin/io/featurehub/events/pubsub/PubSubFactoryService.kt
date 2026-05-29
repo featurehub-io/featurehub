@@ -27,6 +27,7 @@ import io.featurehub.lifecycle.ApplicationLifecycleManager
 import io.featurehub.lifecycle.ApplicationStarted
 import io.featurehub.lifecycle.LifecycleStatus
 import io.featurehub.utils.FallbackPropertyConfig
+import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import jakarta.inject.Inject
 import org.apache.commons.lang3.RandomStringUtils
@@ -96,6 +97,7 @@ class PubSubFactoryService @Inject constructor(private val applicationStarted: A
   private val topicAdminClient: TopicAdminClient
   private val subscriptionAdminClient: SubscriptionAdminClient
   private val channelProvider: FixedTransportChannelProvider?
+  private var grpcChannel: ManagedChannel? = null
   private var credsProvider: CredentialsProvider? = null
   private val knownSubscribers = mutableListOf<PubSubSubscriber>()
   private var unknownSubscribers = mutableListOf<PubSubSubscriber>()
@@ -113,9 +115,9 @@ class PubSubFactoryService @Inject constructor(private val applicationStarted: A
     if (pubsubHost.isNotEmpty()) {
       log.info("Google Pub/Sub is hosted locally, attempting to connect to {}", pubsubHost)
 
-      val channel = ManagedChannelBuilder.forTarget(pubsubHost).usePlaintext().build()
+      grpcChannel = ManagedChannelBuilder.forTarget(pubsubHost).usePlaintext().build()
 
-      channelProvider = FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel))
+      channelProvider = FixedTransportChannelProvider.create(GrpcTransportChannel.create(grpcChannel!!))
       credsProvider = NoCredentialsProvider.create()
 
       topicAdminClient = TopicAdminClient.create(
@@ -329,6 +331,12 @@ class PubSubFactoryService @Inject constructor(private val applicationStarted: A
 
   override fun shutdown() {
     stopSubscribers()
+    publisherCache.values.forEach { pub ->
+      try { pub.shutdown() } catch (e: Exception) { log.warn("pubsub: error shutting down publisher", e) }
+    }
+    try { topicAdminClient.close() } catch (e: Exception) { log.warn("pubsub: error closing topic admin client", e) }
+    try { subscriptionAdminClient.close() } catch (e: Exception) { log.warn("pubsub: error closing subscription admin client", e) }
+    grpcChannel?.shutdownNow()
   }
 
   override fun enrichPublisherClient(publisherBuilder: Publisher.Builder) {

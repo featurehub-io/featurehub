@@ -33,7 +33,7 @@ class Dacha2DelegatingCache @Inject constructor(private val mrDacha2Api: Dacha2S
     cache.updateFeature(feature)
   }
 
-  override fun getFeatureCollection(eId: UUID, apiKey: String): FeatureCollection? {
+  override fun getFeatureCollection(eId: UUID, apiKey: String, allowFiltering: Boolean): FeatureCollection? {
     return cache.getFeatureCollection(eId, apiKey)
   }
 

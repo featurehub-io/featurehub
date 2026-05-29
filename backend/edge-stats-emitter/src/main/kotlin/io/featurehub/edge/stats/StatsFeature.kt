@@ -37,10 +37,6 @@ class StatsFeature : Feature {
 
         bind(StatPublisherImpl::class.java).to(StatPublisher::class.java).`in`(Singleton::class.java)
 
-        bind(StatsCollectionOrchestrator::class.java).to(StatsOrchestrator::class.java).`in`(
-          Singleton::class.java
-        )
-
         bind(StatEventHandler::class.java).to(StatCollector::class.java).to(eventHandlerType).`in`(
           Singleton::class.java
         )
