@@ -2,11 +2,16 @@ package cd.connect.logging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import io.featurehub.utils.FallbackPropertyConfig;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
@@ -20,16 +25,15 @@ import org.apache.logging.log4j.core.layout.AbstractLayout;
 )
 public class ConnectJsonLayout extends AbstractLayout<LogEvent> {
   protected List<JsonLogEnhancer> loggingProcessors = EnhancerServiceLoader.findJsonLogEnhancers();
-  protected boolean prettyPrint;
-  protected String prettyPrintSuffix;
+  protected boolean prettyPrint = System.getProperty("connect.layout.pretty") != null;
+  protected String prettyPrintSuffix = System.getProperty("connect.layout.pretty", "");
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private static final DateTimeFormatter sdf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+  private static final boolean useGoogleStyle = FallbackPropertyConfig.Companion.getConfig("featurehub.logging.format", "standard").equalsIgnoreCase("google");
 
   public ConnectJsonLayout() {
     super(null, null, null);
-    prettyPrint = System.getProperty("connect.layout.pretty") != null;
-    prettyPrintSuffix = System.getProperty("connect.layout.pretty", "");
   }
 
   @Override
@@ -41,10 +45,15 @@ public class ConnectJsonLayout extends AbstractLayout<LogEvent> {
     processContext.putAll(logEvent.getContextData().toMap());
 
     try {
-      jsonContext.put("@timestamp", sdf.format(Instant.ofEpochMilli(logEvent.getTimeMillis())));
 
       jsonContext.put("message", logEvent.getMessage().getFormattedMessage());
-      jsonContext.put("priority", logEvent.getLevel().toString());
+      if (useGoogleStyle) {
+        jsonContext.put("timestamp", sdf.format(Instant.ofEpochMilli(logEvent.getTimeMillis()).atOffset(ZoneOffset.UTC)));
+        jsonContext.put("severity", logEvent.getLevel().toString());
+      } else {
+        jsonContext.put("@timestamp", sdf.format(Instant.ofEpochMilli(logEvent.getTimeMillis()).atOffset(ZoneOffset.UTC)));
+        jsonContext.put("priority", logEvent.getLevel().toString());
+      }
       jsonContext.put("path", logEvent.getLoggerName());
       jsonContext.put("thread", logEvent.getThreadName());
 
