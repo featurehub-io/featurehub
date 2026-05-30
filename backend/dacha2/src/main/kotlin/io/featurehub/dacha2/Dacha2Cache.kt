@@ -29,7 +29,7 @@ interface Dacha2Cache {
   fun updateEnvironment(env: PublishEnvironment)
   fun updateFeature(feature: PublishFeatureValue)
 
-  fun getFeatureCollection(eId: UUID, apiKey: String): FeatureCollection?
+  fun getFeatureCollection(eId: UUID, apiKey: String, allowFiltering: Boolean = true): FeatureCollection?
 
   /**
    * This will throw an exception if it can't be found

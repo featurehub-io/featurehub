@@ -13,9 +13,9 @@ import io.featurehub.dacha.model.PublishFeatureValue
 import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.dacha2.api.Dacha2ServiceClient
 import io.featurehub.enricher.EnrichmentEnvironment
-import io.featurehub.enricher.FeatureEnrichmentCache
 import io.featurehub.metrics.MetricsCollector
 import io.featurehub.utils.FallbackPropertyConfig
+import jakarta.annotation.PreDestroy
 import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
 import org.slf4j.Logger
@@ -117,6 +117,7 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
     }, 5000, 5000)
   }
 
+  @PreDestroy
   override fun closeCache() {
     log.info("[dacha2] shutting down metric timer for cache size")
     metricTimer.cancel()
@@ -164,7 +165,7 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
 
   private fun permCacheKey(eId: UUID, apiKey: String) = "${eId}/${apiKey}"
 
-  override fun getFeatureCollection(eId: UUID, apiKey: String): FeatureCollection? {
+  override fun getFeatureCollection(eId: UUID, apiKey: String, allowFiltering: Boolean): FeatureCollection? {
     // if the environment is already in the sin-bin, return not found
     environmentMissCache.getIfPresent(eId)?.let {
       log.trace("environmentMissCache: {}", eId)

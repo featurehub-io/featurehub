@@ -169,7 +169,9 @@ open class DbCacheSource @Inject constructor(
   }
 
   private fun allServiceAccounts(): QDbServiceAccount {
-    return QDbServiceAccount().whenArchived.isNull
+    return QDbServiceAccount()
+      .whenArchived.isNull
+      .portfolio.organization.whenArchived.isNull
   }
 
   private fun publishCacheEnvironments(cacheBroadcast: CacheBroadcast) {
@@ -359,11 +361,13 @@ open class DbCacheSource @Inject constructor(
 
   private fun allEnvironments(wantCount: Boolean): QDbEnvironment {
     val envQuery = QDbEnvironment()
-      .whenArchived.isNull.whenUnpublished.isNull.environmentFeatures.feature.fetch().parentApplication.fetch(
+      .whenArchived.isNull.whenUnpublished.isNull
+      .environmentFeatures.feature.fetch().parentApplication.fetch(
         QDbApplication.Alias.id
-      ).parentApplication.portfolio.fetch(QDbPortfolio.Alias.id).parentApplication.portfolio.organization.fetch(
+      ).parentApplication.portfolio.fetch(QDbPortfolio.Alias.id)
+      .parentApplication.portfolio.organization.fetch(
         QDbOrganization.Alias.id
-      )
+      ).parentApplication.portfolio.organization.whenArchived.isNull
 
     return if (wantCount) {
       envQuery.select(

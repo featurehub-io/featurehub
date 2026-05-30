@@ -1,10 +1,9 @@
 package io.featurehub.edge.stats
 
-import cd.connect.app.config.ConfigKey
-import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.lifecycle.LifecyclePriority
 import io.featurehub.lifecycle.LifecycleShutdown
 import io.featurehub.lifecycle.LifecycleStarted
+import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -16,17 +15,12 @@ class StatTimeTrigger @Inject constructor(private val statCollector: StatCollect
   private val log: Logger = LoggerFactory.getLogger(StatTimeTrigger::class.java)
 
   // how often will we clear the data out?
-  @ConfigKey("edge.stats.publish-interval-ms")
-  var publishBundleInterval: Long? = 0
+  var publishBundleInterval: Long = FallbackPropertyConfig.getConfig("edge.stats.publish-interval-ms", "0").toLong()
 
   private var timer: Timer? = null
 
-  init {
-    DeclaredConfigResolver.resolve(this)
-  }
-
   override fun started() {
-    if (publishBundleInterval!! > 0) {
+    if (publishBundleInterval > 0) {
       log.info("stats: publishing every {}ms", publishBundleInterval)
 
       timer = Timer("countdown-to-publish-stats")

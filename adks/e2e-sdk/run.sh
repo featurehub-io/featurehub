@@ -1,4 +1,5 @@
 #!/bin/sh
+source /Users/richard/projects/fh/saas/e2e/simple-config.sh
 mkdir -p logs
 rm -rf logs/*
 if [ $# -eq 0 ]

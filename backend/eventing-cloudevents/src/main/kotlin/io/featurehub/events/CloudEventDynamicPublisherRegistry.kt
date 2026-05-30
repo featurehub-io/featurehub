@@ -79,6 +79,7 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(
     ConcurrentHashMap()
   private var defaultPublisher: String? = null
   private var counter = 1
+  private val metricCache = ConcurrentHashMap<String, CloudEventChannelMetric>()
   private val mapper = ObjectMapper().apply { registerModule(KotlinModule.Builder().build()).registerModule(
     JavaTimeModule()
   ) }
@@ -106,18 +107,19 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(
   }
 
   private fun makeMetric(config: CloudEventDynamicDeliveryDetails, destination: String): CloudEventChannelMetric {
-    val dynamicSuffix = (counter++)
-
-    return CloudEventChannelMetric(
-      MetricsCollector.counter(
-        config.param("metric.fail.name", "dynamic_counter${dynamicSuffix}"),
-        config.param("metric.fail.desc", "Failures when trying to publish to ${destination}")
-      ),
-      MetricsCollector.histogram(
-        config.param("metric.histogram.name", "dynamic_histogram${dynamicSuffix}"),
-        config.param("metric.histogram.desc", "Updates to ${destination}")
+    return metricCache.computeIfAbsent(destination) {
+      val dynamicSuffix = counter++
+      CloudEventChannelMetric(
+        MetricsCollector.counter(
+          config.param("metric.fail.name", "dynamic_counter$dynamicSuffix"),
+          config.param("metric.fail.desc", "Failures when trying to publish to $destination")
+        ),
+        MetricsCollector.histogram(
+          config.param("metric.histogram.name", "dynamic_histogram$dynamicSuffix"),
+          config.param("metric.histogram.desc", "Updates to $destination")
+        )
       )
-    )
+    }
   }
 
   override fun setDefaultPublisherProvider(prefix: String) {

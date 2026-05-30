@@ -8,7 +8,7 @@ import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
 import io.prometheus.client.Counter
 import jakarta.inject.Inject
-import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -22,7 +22,8 @@ import java.util.concurrent.Executors
  */
 
 open class StatEventHandler @Inject constructor(private val orchestrator: StatsOrchestrator) : EventHandler<Stat>, StatCollector {
-  private var stats: MutableMap<KeyParts, StatKeyEventCollection> = Collections.synchronizedMap(WeakHashMap())
+  @Volatile
+  private var stats: MutableMap<KeyParts, StatKeyEventCollection> = ConcurrentHashMap()
 
   // we default to zero and just let it push data every x period of time
   @ConfigKey("edge.stats.panic-threshold")
@@ -46,13 +47,13 @@ open class StatEventHandler @Inject constructor(private val orchestrator: StatsO
 
   companion object Prometheus {
     val apiKeyCounter: Counter = Counter.build("edge_stat_api_key_counter", "Keeps track of how many api keys we have waiting in memory").register()
-    val resultTypeCounters = EdgeHitResultType.values().associateWith { v ->
+    val resultTypeCounters = EdgeHitResultType.entries.associateWith { v ->
       Counter.build(
         String.format("edge_stat_result_%s", v.name.lowercase()),
         String.format("How many results of type %s there are hitting this Edge", v.name)
       ).register()
     }
-    val hitTypeCounters = EdgeHitSourceType.values().associateWith { v ->
+    val hitTypeCounters = EdgeHitSourceType.entries.associateWith { v ->
       Counter.build(
         String.format("edge_stat_hitsource_%s", v.name.lowercase()),
         String.format("Where did this traffic come from: %s", v.name)
@@ -81,7 +82,7 @@ open class StatEventHandler @Inject constructor(private val orchestrator: StatsO
   override fun ejectData(): Map<KeyParts, StatKeyEventCollection> {
     val oldStats = stats
     apiKeyCounter.clear()
-    stats = Collections.synchronizedMap(WeakHashMap())
+    stats = ConcurrentHashMap()
     return oldStats
   }
 }

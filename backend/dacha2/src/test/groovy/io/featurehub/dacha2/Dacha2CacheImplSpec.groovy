@@ -96,7 +96,7 @@ class Dacha2CacheImplSpec extends Specification {
       def pubEnv = apiEnvironment()
       def serviceAccount = apiServiceAccount()
     when:
-      def result = cache.getFeatureCollection(envId, apiKeyClientSide)
+      def result = cache.getFeatureCollection(envId, apiKeyClientSide, true)
     then:
       result.features.environment.environment.id == envId
       1 * api.getEnvironment(envId, key) >> pubEnv
@@ -110,7 +110,7 @@ class Dacha2CacheImplSpec extends Specification {
         .featureValues([]))
       def serviceAccount = new Dacha2ServiceAccount().serviceAccount(saWithPermission())
     when:
-      def result = cache.getFeatureCollection(envId, apiKeyClientSide)
+      def result = cache.getFeatureCollection(envId, apiKeyClientSide, true)
     then:
       result.features.environment.environment.id == envId
       1 * api.getEnvironment(envId, null) >> pubEnv
@@ -119,13 +119,13 @@ class Dacha2CacheImplSpec extends Specification {
 
   def "when we ask for a feature and then receive an update for a feature it still is not available"() {
     when: "we ask for a feature"
-      def result = cache.getFeatureCollection(envId, apiKeyClientSide)
+      def result = cache.getFeatureCollection(envId, apiKeyClientSide, true)
     and: "then we publish an update"
       cache.updateFeature(new PublishFeatureValue()
         .action(PublishAction.CREATE)
         .environmentId(envId).feature(new CacheEnvironmentFeature().feature(new CacheFeature().version(1).id(UUID.randomUUID()).key("fred"))))
     and: "get the update again"
-      def result2 = cache.getFeatureCollection(envId, apiKeyClientSide)
+      def result2 = cache.getFeatureCollection(envId, apiKeyClientSide, true)
     then:
       result == null
       result2 == null
@@ -153,7 +153,7 @@ class Dacha2CacheImplSpec extends Specification {
       cache.gaugeServiceAccountKeyCache.get() == 0
       cache.gaugeServiceAccountCache.get() == 0
     when:
-      def result = cache.getFeatureCollection(envId, apiKeyClientSide)
+      def result = cache.getFeatureCollection(envId, apiKeyClientSide, true)
       cache.resetMetricCounters()
     then:
       cache.gaugeEnvironmentCache.get() == 1
@@ -173,7 +173,7 @@ class Dacha2CacheImplSpec extends Specification {
           new CacheFeature().id(featureId).key("fred").version(1))]))
       def serviceAccount = new Dacha2ServiceAccount().serviceAccount(saWithPermission())
     when: "we ask using the client side key"
-      def result = cache.getFeatureCollection(envId, apiKeyClientSide)
+      def result = cache.getFeatureCollection(envId, apiKeyClientSide, true)
       def features1 = result.features.features[0].copy()    // internals will change, so we ask for a copy
     and: "we then send an update to the data"
       cache.updateFeature(new PublishFeatureValue()
@@ -182,7 +182,7 @@ class Dacha2CacheImplSpec extends Specification {
         .feature(new CacheFeature().key("fred").id(featureId).version(1))
         .value(new CacheFeatureValue().value("hello").version(1))))
     and: "we ask for the results using the server side key"
-      def result2 = cache.getFeatureCollection(envId, apiKeyServerSide)
+      def result2 = cache.getFeatureCollection(envId, apiKeyServerSide, true)
       def features2 = result2.features.features[0]
     then:
       result.features.toString() != null // just test this works
@@ -208,7 +208,7 @@ class Dacha2CacheImplSpec extends Specification {
                           ).value(new CacheFeatureValue().value("hello").version(1))]))
       def serviceAccount = new Dacha2ServiceAccount().serviceAccount(saWithPermission())
     when: "we ask using the client side key"
-      cache.getFeatureCollection(envId, apiKeyClientSide)
+      cache.getFeatureCollection(envId, apiKeyClientSide, true)
     and: "we then send an older feature but newer feature values"
       cache.updateFeature(new PublishFeatureValue()
         .action(PublishAction.UPDATE)
@@ -216,7 +216,7 @@ class Dacha2CacheImplSpec extends Specification {
         .feature(new CacheFeature().id(featureId).key("fred").version(featureVersion2))
         .value(new CacheFeatureValue().value("hello").version(1))))
     and: "we ask for the results using the server side key"
-      def result = cache.getFeatureCollection(envId, apiKeyServerSide)
+      def result = cache.getFeatureCollection(envId, apiKeyServerSide, true)
     then:
       result.features.features[0].feature.version == featureVersion
       result.features.features[0].value.version == 1
@@ -240,7 +240,7 @@ class Dacha2CacheImplSpec extends Specification {
 
       def serviceAccount = new Dacha2ServiceAccount().serviceAccount(saWithPermission())
     when: "we ask using the client side key"
-      def originalEtag = cache.getFeatureCollection(envId, apiKeyClientSide).features.etag
+      def originalEtag = cache.getFeatureCollection(envId, apiKeyClientSide, true).features.etag
     and: "we then send an older feature but newer feature values"
       cache.updateFeature(new PublishFeatureValue()
         .action(PublishAction.UPDATE)
@@ -248,7 +248,7 @@ class Dacha2CacheImplSpec extends Specification {
         .feature(new CacheFeature().id(featureId).key("fred").version(1))
         .value(new CacheFeatureValue().value("hello").version(version2))))
     and: "we ask for the results using the server side key"
-      def result = cache.getFeatureCollection(envId, apiKeyServerSide)
+      def result = cache.getFeatureCollection(envId, apiKeyServerSide, true)
     then:
       result.features.features[0].feature.version == 1
       result.features.features[0].value.version == version
@@ -273,12 +273,12 @@ class Dacha2CacheImplSpec extends Specification {
         .featureValues([envFeature]))
       def serviceAccount = new Dacha2ServiceAccount().serviceAccount(saWithPermission())
     when: "we test if the feature is there"
-      def originalFeatures = cache.getFeatureCollection(envId, apiKeyServerSide)
+      def originalFeatures = cache.getFeatureCollection(envId, apiKeyServerSide, true)
       def originaletag = originalFeatures.features.etag
       def foundOnCreation = originalFeatures?.features?.features?.find({it.feature.id == featureId}) != null
     and: "we send an update to delete it"
       cache.updateFeature(new PublishFeatureValue().action(PublishAction.DELETE).environmentId(envId).feature(envFeature))
-      def featureCache = cache.getFeatureCollection(envId, apiKeyServerSide)
+      def featureCache = cache.getFeatureCollection(envId, apiKeyServerSide, true)
       def newetag = featureCache.features.etag
     then:
       foundOnCreation
@@ -307,7 +307,7 @@ class Dacha2CacheImplSpec extends Specification {
     and: "send a bad update"
       cache.updateEnvironment(pub)
     then: "we are still on version 2"
-      cache.getFeatureCollection(envId, apiKeyServerSide).features.environment.environment.version == result
+      cache.getFeatureCollection(envId, apiKeyServerSide, true).features.environment.environment.version == result
     where:
       version1 | version2 | result
       2        | 1        | 2
@@ -324,7 +324,7 @@ class Dacha2CacheImplSpec extends Specification {
         .featureValues([envFeature]))
       def serviceAccount = new Dacha2ServiceAccount().serviceAccount(saWithPermission())
     when: "we get the collection, causing the cache to fill"
-      cache.getFeatureCollection(envId, apiKeyServerSide)
+      cache.getFeatureCollection(envId, apiKeyServerSide, true)
     and: "we send a delete for the environment"
       cache.updateEnvironment(new PublishEnvironment().action(PublishAction.DELETE)
           .environment(new CacheEnvironment().id(envId)))
@@ -334,7 +334,7 @@ class Dacha2CacheImplSpec extends Specification {
           .environment(new CacheEnvironment().id(envId).version(2))
           .featureValues([envFeature])
       )
-      def resultWith = cache.getFeatureCollection(envId, apiKeyServerSide)
+      def resultWith = cache.getFeatureCollection(envId, apiKeyServerSide, true)
     then:
       !result
       resultWith != null
@@ -355,14 +355,14 @@ class Dacha2CacheImplSpec extends Specification {
     when: "we update the cache"
       cache.updateEnvironment(pubEnv)
       cache.updateServiceAccount(new PublishServiceAccount().action(PublishAction.CREATE).serviceAccount(sa))
-      def result = cache.getFeatureCollection(envId, sa.apiKeyServerSide)
+      def result = cache.getFeatureCollection(envId, sa.apiKeyServerSide, true)
     and: "then send the update removing access"
       cache.updateServiceAccount(new PublishServiceAccount().action(PublishAction.UPDATE).serviceAccount(saNoPerm))
-      def result2 = cache.getFeatureCollection(envId, sa.apiKeyClientSide)
-      def result3 = cache.getFeatureCollection(envId, sa.apiKeyServerSide)
+      def result2 = cache.getFeatureCollection(envId, sa.apiKeyClientSide, true)
+      def result3 = cache.getFeatureCollection(envId, sa.apiKeyServerSide, true)
     and: "then send another update adding it back"
       cache.updateServiceAccount(new PublishServiceAccount().action(PublishAction.UPDATE).serviceAccount(saWithPermission().version(2)))
-      def result4 = cache.getFeatureCollection(envId, sa.apiKeyServerSide)
+      def result4 = cache.getFeatureCollection(envId, sa.apiKeyServerSide, true)
     then:
       result != null
       result2 == null
@@ -382,11 +382,11 @@ class Dacha2CacheImplSpec extends Specification {
     when: "we update the cache"
       cache.updateEnvironment(pubEnv)
       cache.updateServiceAccount(new PublishServiceAccount().action(PublishAction.CREATE).serviceAccount(sa))
-      def result = cache.getFeatureCollection(envId, sa.apiKeyServerSide)
+      def result = cache.getFeatureCollection(envId, sa.apiKeyServerSide, true)
     and: "then delete the service account"
       cache.updateServiceAccount(new PublishServiceAccount().action(PublishAction.DELETE).serviceAccount(sa))
-      def result2 = cache.getFeatureCollection(envId, sa.apiKeyClientSide)
-      def result3 = cache.getFeatureCollection(envId, sa.apiKeyServerSide)
+      def result2 = cache.getFeatureCollection(envId, sa.apiKeyClientSide, true)
+      def result3 = cache.getFeatureCollection(envId, sa.apiKeyServerSide, true)
     then:
       result != null
       result2 == null
@@ -406,10 +406,10 @@ class Dacha2CacheImplSpec extends Specification {
     when: "we update the cache"
       cache.updateEnvironment(pubEnv)
       cache.updateServiceAccount(new PublishServiceAccount().action(PublishAction.CREATE).serviceAccount(sa))
-      def result1 = cache.getFeatureCollection(envId, apiKeyServerSide)
+      def result1 = cache.getFeatureCollection(envId, apiKeyServerSide, true)
     and: "then we send a permission variant"
       cache.updateServiceAccount(new PublishServiceAccount().action(PublishAction.CREATE).serviceAccount(saWithPermission()))
-      def result2 = cache.getFeatureCollection(envId, apiKeyServerSide)
+      def result2 = cache.getFeatureCollection(envId, apiKeyServerSide, true)
     then:
       result1 == null
       result2 != null
@@ -431,7 +431,7 @@ class Dacha2CacheImplSpec extends Specification {
         .action(PublishAction.CREATE)
         .environmentId(envId).feature(new CacheEnvironmentFeature().feature(new CacheFeature().version(1).id(UUID.randomUUID()).key("fred"))))
     then:
-      cache.getFeatureCollection(envId, apiKeyServerSide).features.features.find({it.feature.key == 'fred'})
+      cache.getFeatureCollection(envId, apiKeyServerSide, true).features.features.find({it.feature.key == 'fred'})
       cache.findEnvironment(envId) != null
   }
 
@@ -440,8 +440,8 @@ class Dacha2CacheImplSpec extends Specification {
       def sa = saWithPermission()
     when: "we update the cache"
       cache.updateServiceAccount(new PublishServiceAccount().action(PublishAction.CREATE).serviceAccount(sa))
-      def result1 = cache.getFeatureCollection(envId, apiKeyServerSide)
-      def result2 = cache.getFeatureCollection(envId, apiKeyServerSide)  // do it twice to confirm we are in the  miss cache
+      def result1 = cache.getFeatureCollection(envId, apiKeyServerSide, true)
+      def result2 = cache.getFeatureCollection(envId, apiKeyServerSide, true)  // do it twice to confirm we are in the  miss cache
     then:
       result1 == null
       result2 == null
@@ -454,8 +454,8 @@ class Dacha2CacheImplSpec extends Specification {
       def sa = saWithPermission()
     when: "we update the cache"
       cache.updateServiceAccount(new PublishServiceAccount().action(PublishAction.CREATE).serviceAccount(sa))
-      def result1 = cache.getFeatureCollection(envId, apiKeyServerSide)
-      def result2 = cache.getFeatureCollection(envId, apiKeyServerSide)  // do it twice to confirm we are not in the  miss cache
+      def result1 = cache.getFeatureCollection(envId, apiKeyServerSide, true)
+      def result2 = cache.getFeatureCollection(envId, apiKeyServerSide, true)  // do it twice to confirm we are not in the  miss cache
     then:
       result1 == null
       result2 == null
@@ -471,7 +471,7 @@ class Dacha2CacheImplSpec extends Specification {
       def sa =  saWithPermission()
       def serviceAccount = new Dacha2ServiceAccount().serviceAccount(sa)
     when:
-      def result = cache.getFeatureCollection(envId, apiKeyClientSide)
+      def result = cache.getFeatureCollection(envId, apiKeyClientSide, true)
     then:
       result != null
       1 * api.getEnvironment(envId, null) >> pubEnv
@@ -480,15 +480,15 @@ class Dacha2CacheImplSpec extends Specification {
       def saReset = sa.copy().apiKeyClientSide("1").version(2)
       cache.updateServiceAccount(new PublishServiceAccount().action(PublishAction.UPDATE).serviceAccount(saReset))
     then:
-      cache.getFeatureCollection(envId, apiKeyClientSide) == null
-      cache.getFeatureCollection(envId, "1") != null
-      cache.getFeatureCollection(envId, apiKeyServerSide) != null
+      cache.getFeatureCollection(envId, apiKeyClientSide, true) == null
+      cache.getFeatureCollection(envId, "1", true) != null
+      cache.getFeatureCollection(envId, apiKeyServerSide, true) != null
     when:
       def saServerReset = saReset.copy().apiKeyServerSide("2").version(3)
       cache.updateServiceAccount(new PublishServiceAccount().action(PublishAction.UPDATE).serviceAccount(saServerReset))
     then:
-      cache.getFeatureCollection(envId, "2") != null
-      cache.getFeatureCollection(envId, apiKeyServerSide) == null
+      cache.getFeatureCollection(envId, "2", true) != null
+      cache.getFeatureCollection(envId, apiKeyServerSide, true) == null
 
   }
 }
