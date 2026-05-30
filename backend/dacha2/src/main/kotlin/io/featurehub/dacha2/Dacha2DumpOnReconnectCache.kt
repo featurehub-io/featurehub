@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory
 
 
 class Dacha2DumpOnReconnectCache @Inject constructor(mrDacha2Api: Dacha2ServiceClient,
-                                                     featureValueFactory: FeatureValuesFactory) : Dacha2CacheImpl(mrDacha2Api, featureValueFactory) {
+                                                     featureValueFactory: FeatureValuesFactory) : Dacha2NewCacheImpl(mrDacha2Api, featureValueFactory) {
   private var cacheEnabled = true
   private val log: Logger = LoggerFactory.getLogger(Dacha2DumpOnReconnectCache::class.java)
 

@@ -203,9 +203,9 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
             log.trace("Unable to find environment id {} in serviceAccount", serviceAccount)
           }
           result
-        } catch (_: Exception) {
+        } catch (e: Exception) {
           if (log.isTraceEnabled) {
-            log.trace("failed to get service account permission {}/{}", eId, apiKey)
+            log.trace("failed to get service account permission {}/{}", eId, apiKey, e)
           }
           // this will cause an exception
           null
@@ -328,14 +328,14 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
         }
       } else serviceAccountCache.getIfPresent(sId)
 
+      // in case these keys are in the miss cache
+      serviceAccountMissCache.invalidateAll(listOf(sa.apiKeyServerSide, sa.apiKeyClientSide))
+
       if (existing == null) {
         return // we throw it away as we are not caching streamed updates
       }
 
       if (created) { // it was new so it is a new update and we are caching
-        // just in case we had these keys in the miss cache
-        serviceAccountMissCache.invalidateAll(listOf(sa.apiKeyServerSide, sa.apiKeyClientSide))
-
         // its already in serviceAccountCache, so we just have to put it in the ApiKey cache
         serviceAccountApiKeyCache.put(sa.apiKeyServerSide, sa)
         serviceAccountApiKeyCache.put(sa.apiKeyClientSide, sa)
@@ -352,7 +352,6 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
           serviceAccountApiKeyCache.invalidate(existing.apiKeyClientSide)
         }
 
-        serviceAccountMissCache.invalidateAll(listOf(sa.apiKeyServerSide, sa.apiKeyClientSide))
         stashServiceAccount(sa, sId)
 
         val envs = sa.permissions.associateBy { it.environmentId }
