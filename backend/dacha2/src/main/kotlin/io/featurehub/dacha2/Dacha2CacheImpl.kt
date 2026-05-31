@@ -110,8 +110,6 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
         override fun load(key: String): CacheServiceAccount {
           try {
             val serviceAccount = mrDacha2Api.getServiceAccount(key, apiKey).serviceAccount
-            // every SA is actually two entries
-            fillServiceAccountCache(key, serviceAccount)
 
             serviceAccountCache.put(serviceAccount.id, serviceAccount)
             return serviceAccount
@@ -197,7 +195,7 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
         try {
           // this can cause an exception
           val serviceAccount = serviceAccountApiKeyCache.get(apiKey)
-
+          fillServiceAccountCache(apiKey, serviceAccount)
           val result = serviceAccount.permissions.find { it.environmentId == eId }
           if (result == null) {
             log.trace("Unable to find environment id {} in serviceAccount", serviceAccount)
@@ -219,6 +217,7 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
 
       // accessing the environment-cache can cause an exception
       val serviceAccount = serviceAccountApiKeyCache.get(apiKey)
+      fillServiceAccountCache(apiKey, serviceAccount)
 
       if (allowFiltering && serviceAccount.filters != null && serviceAccount.filters!!.isNotEmpty()) {
         counterFilterUse.inc()

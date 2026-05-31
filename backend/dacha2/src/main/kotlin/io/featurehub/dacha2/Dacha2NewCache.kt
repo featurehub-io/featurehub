@@ -98,7 +98,6 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
       .build(CacheLoader { key: String ->
         try {
           val serviceAccount = mrDacha2Api.getServiceAccount(key, apiKey).serviceAccount
-          fillServiceAccountCache(key, serviceAccount)
           serviceAccountCache.put(serviceAccount.id, serviceAccount)
           serviceAccount
         } catch (nfe: NotFoundException) {
@@ -183,6 +182,7 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
       val perms = permsCache.get(comboKey) {
         try {
           val serviceAccount = serviceAccountApiKeyCache.get(apiKey)
+          fillServiceAccountCache(apiKey, serviceAccount)
           val result = serviceAccount.permissions.find { it.environmentId == eId }
           if (result == null) {
             log.trace("Unable to find environment id {} in serviceAccount", serviceAccount)
@@ -204,6 +204,7 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
 
       // accessing the environment-cache can cause an exception
       val serviceAccount = serviceAccountApiKeyCache.get(apiKey)
+      fillServiceAccountCache(apiKey, serviceAccount)
 
       if (serviceAccount.filters != null && serviceAccount.filters!!.isNotEmpty()) {
         counterFilterUse.inc()
