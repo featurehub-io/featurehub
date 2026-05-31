@@ -235,8 +235,7 @@ class AuthenticationSpec extends BaseSpec {
         new CreateGroup().name("admin-group").admin(true)
           .applicationRoles([new ApplicationGroupRole().applicationId(app1.id)
                                .roles([ApplicationRoleType.FEATURE_EDIT])]), superPerson)
-      groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.members([p2]), null,
-        true, false, false, Opts.empty())
+      groupSqlApi.addPersonsToGroup(portfolioGroup.id, [p2.id.id], Opts.empty())
     when: "i login"
       def user = auth.login(p2.email, "hooray")
     then: "i have the application role permission to the portfolio"

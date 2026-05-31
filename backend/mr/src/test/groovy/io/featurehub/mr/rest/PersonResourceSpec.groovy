@@ -88,8 +88,8 @@ class PersonResourceSpec extends Specification {
       RegistrationUrl url = resource.createPerson(cpd, new PersonServiceDelegate.CreatePersonHolder(), ctx)
     then:
       url.registrationUrl == "fred"
-      1 * groupApi.addPersonToGroup(cpd.groupIds.get(0), token.id, (Opts)_)
-      1 * groupApi.addPersonToGroup(cpd.groupIds.get(1), token.id, (Opts)_)
+      1 * groupApi.addPersonsToGroup(cpd.groupIds.get(0), [token.id], (Opts)_)
+      1 * groupApi.addPersonsToGroup(cpd.groupIds.get(1), [token.id], (Opts)_)
   }
 
   def "a person who is not an admin cannot search"() {

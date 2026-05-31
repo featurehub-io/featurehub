@@ -56,7 +56,7 @@ class GroupBloc implements Bloc {
     if (groupId != null && groupId.length > 1) {
       try {
         final fetchedGroup =
-            await _groupServiceApi.getGroup(groupId, includeMembers: true);
+            await _groupServiceApi.getGroup(groupId, includeMembersV2: true);
         // publish it out...
         group = fetchedGroup;
         _groupSource.add(fetchedGroup);
@@ -69,7 +69,7 @@ class GroupBloc implements Bloc {
   Future<void> deleteGroup(String groupId, bool includeMembers) async {
     try {
       await _groupServiceApi.deleteGroup(groupId,
-          includeMembers: includeMembers);
+          includeMembersV2: includeMembers);
       group = null;
       this.groupId = null;
       _groupSource.add(null);
@@ -79,31 +79,49 @@ class GroupBloc implements Bloc {
     }
   }
 
-  Future<void> removeFromGroup(Group group, Person person) async {
+  Future<void> removeFromGroup(Group group, String personId) async {
     var data = await _groupServiceApi
-        .deletePersonFromGroup(group.id, person.id!.id, includeMembers: true);
+        .deletePersonFromGroup(group.id, personId, includeMembersV2: true);
     if (!_groupSource.isClosed) {
       _groupSource.add(data);
     }
   }
 
-  Future<bool> updateGroup(Group groupToUpdate, {String? name}) async {
+  Future<bool> addUsersToGroup(Group group, List<Person> persons) async {
     try {
-      if (name != null) {
-        groupToUpdate.name = name;
-      }
+      final fetchedGroup = await _groupServiceApi.addPersonsToGroup(group.id, personId: persons.map((p) => p.id!.id).toList(), includeMembersV2: true);
+      group = fetchedGroup;
+      _groupSource.add(fetchedGroup);
+      return true;
+    } catch (e, s) {
+      await mrClient.dialogError(e, s,
+          messageTitle: 'Failed to add users to group',
+          messageBody:
+          'Failed to update group because of a duplicate or other conflict.');
+      return false;
+    }
+  }
+
+  Future<bool> updateGroupName(Group groupToUpdate, String name) async {
+    try {
+      groupToUpdate.name = name;
+
       final newGroup = await _groupServiceApi.updateGroupOnPortfolio(
-          mrClient.currentPortfolio!.id, groupToUpdate,
-          includeMembers: true, updateMembers: true);
+          mrClient.currentPortfolio!.id, UpdateGroup(id: groupToUpdate.id, version: groupToUpdate.version, name: name),
+          includeMembersV2: true);
+
+      // tell the portfolio groups to update as the name has changed.
       await getGroups(focusGroup: groupToUpdate);
+
       group = newGroup;
+      _groupSource.add(newGroup);
       groupId = groupToUpdate.id;
       return true;
     } catch (e, s) {
       await mrClient.dialogError(e, s,
           messageTitle: 'Failed to update group',
           messageBody:
-              'Failed to update group because of a duplicate or other conflict.');
+              'Failed to update group because of a duplicate or other update conflict.');
       return false;
     }
   }

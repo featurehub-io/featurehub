@@ -1,6 +1,6 @@
 import {setDefaultTimeout, setWorldConstructor, World} from '@cucumber/cucumber';
 import {
-  Application,
+  Application, ApplicationFeatureValues,
   ApplicationRolloutStrategyServiceApi,
   ApplicationServiceApi,
   AuthServiceApi,
@@ -69,6 +69,7 @@ export class ApiUser {
   public readonly applicationStrategyApi: ApplicationRolloutStrategyServiceApi;
   public readonly featureFilterApi: FeatureFilterServiceApi;
   public readonly apiKey: string;
+  public me: Person;
 
   public serviceAccounts: Array<ServiceAccount> = [];
 
@@ -80,6 +81,7 @@ export class ApiUser {
 
     this.portfolioApi = new PortfolioServiceApi(this.adminApiConfig);
     this.personApi = new PersonServiceApi(this.adminApiConfig);
+
     this.applicationApi = new ApplicationServiceApi(this.adminApiConfig);
     this.environmentApi = new EnvironmentServiceApi(this.adminApiConfig);
     this.environment2Api = new Environment2ServiceApi(this.adminApiConfig);
@@ -97,7 +99,21 @@ export class ApiUser {
     this.applicationStrategyApi = new ApplicationRolloutStrategyServiceApi(this.adminApiConfig);
     this.featureHistoryApi = new FeatureHistoryServiceApi(this.adminApiConfig);
     this.featureFilterApi = new FeatureFilterServiceApi(this.adminApiConfig);
+
+    if (apiKey) {
+      this.refreshPerson();
+    }
   }
+
+  public refreshPerson() {
+    this.personApi.getPerson('self').then((person) => {
+      this.me = person.data;
+    }).catch((_) => {
+
+    });
+  }
+
+  public get personId() { return this.me.id.id; }
 }
 
 export class SdkWorld extends World {
@@ -129,6 +145,7 @@ export class SdkWorld extends World {
   public readonly superuser: ApiUser;
   public user: ApiUser | undefined;
   public currentUser: ApiUser;
+  public dashboard: ApplicationFeatureValues | undefined;
 
   constructor(props: any) {
     super(props);
@@ -269,6 +286,8 @@ export class SdkWorld extends World {
 
   public set apiKey(val: TokenizedPerson) {
     this.adminApiConfig.accessToken = val.accessToken;
+    this.superuser.refreshPerson();
+    this.superuser.me = val.person;
     this.person = val.person;
     apiKey = val.accessToken;
     logger.info('Successfully logged in');

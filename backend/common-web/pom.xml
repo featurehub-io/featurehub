@@ -38,7 +38,7 @@
 
   <properties>
     <cloudevents.version>4.0.1</cloudevents.version>
-    <otel.version>1.57.0</otel.version>
+    <otel.version>1.62.0</otel.version>
     <otel.jaeger.version>1.34.1</otel.jaeger.version>
   </properties>
 
@@ -58,6 +58,13 @@
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-sdk</artifactId>
+      <version>${otel.version}</version>
+    </dependency>
+
+    <!-- we include this one because pubsub has its own version and we need to force ours -->
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-common</artifactId>
       <version>${otel.version}</version>
     </dependency>
 

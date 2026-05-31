@@ -31,7 +31,7 @@ Feature: This tests a persons interaction with groups
       | portfolio | group         | appName | appDesc   | envName | envDesc    | email                |
       | Italians  | made in italy | Cars    | cool cars | prod    | production | romeo@mailinator.com |
 
-    @superuser
+    @superuser-group
   Scenario Outline: Ensure that a person in an application role in one group and a read in another group has expected access
     And the first superuser is used for authentication
     Given I ensure a portfolio named "<portfolio>" with description "Alpha users" exists

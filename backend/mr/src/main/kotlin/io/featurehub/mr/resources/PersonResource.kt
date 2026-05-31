@@ -61,7 +61,7 @@ class PersonResource @Inject constructor(
       }
 
       createPersonDetails.groupIds?.forEach { id ->
-        groupApi.addPersonToGroup(id, person.id, Opts.empty())
+        groupApi.addPersonsToGroup(id, listOf(person.id), Opts.empty())
       }
 
       //return registration url
@@ -74,7 +74,7 @@ class PersonResource @Inject constructor(
           )
         ) // hard code the return value, it will be ignored by the client from now on
         .token(person.token)
-    } catch (e: PersonApi.DuplicatePersonException) {
+    } catch (_: PersonApi.DuplicatePersonException) {
       throw WebApplicationException(Response.status(Response.Status.CONFLICT).build())
     }
   }
@@ -94,7 +94,7 @@ class PersonResource @Inject constructor(
     val servicePersonId = person.id!!.id
 
     createPersonDetails.groupIds?.forEach { id ->
-      groupApi.addPersonToGroup(id, servicePersonId, Opts.empty())
+      groupApi.addPersonsToGroup(id, listOf(servicePersonId), Opts.empty())
     }
 
     // return registration url
@@ -227,9 +227,9 @@ class PersonResource @Inject constructor(
           peopleOpts(holder.includeAcls, holder.includeGroups),
           from.id!!.id
         )
-      } catch (e: OptimisticLockingException) {
+      } catch (_: OptimisticLockingException) {
         throw WebApplicationException(422)
-      } catch (iae: IllegalArgumentException) {
+      } catch (_: IllegalArgumentException) {
         throw BadRequestException()
       } ?: throw NotFoundException()
     }

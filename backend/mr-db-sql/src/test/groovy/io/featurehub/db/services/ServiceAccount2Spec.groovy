@@ -24,6 +24,7 @@ import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
+import io.featurehub.mr.model.UpdateGroup
 import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -69,13 +70,13 @@ class ServiceAccount2Spec extends Base2Spec {
 
     environmentApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy, internalFeatureApi, Mock(WebhookEncryptionService))
 
-    groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.environmentRoles(
+    groupSqlApi.updateGroup(portfolioGroup.id, new UpdateGroup().version(portfolioGroup.version).environmentRoles(
       [
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment1.id),
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment2.id),
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment3.id),
       ]
-    ), null, false, false, true, Opts.empty())
+    ), null, false, true, Opts.empty())
 
     if (db.currentTransaction() != null && db.currentTransaction().active) {
       db.currentTransaction().commitAndContinue()

@@ -30,6 +30,8 @@ import io.featurehub.db.model.query.QDbPortfolio
 import io.featurehub.db.model.query.QDbServiceAccountEnvironment
 import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.db.model.DbFeatureFilter
+import io.featurehub.db.model.query.QDbGroupMember
+import io.featurehub.mr.model.AnemicPerson
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
@@ -42,6 +44,7 @@ import io.featurehub.mr.model.FeatureFilter
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Group
+import io.featurehub.mr.model.GroupPerson
 import io.featurehub.mr.model.OptionalAnemicPerson
 import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
@@ -428,6 +431,23 @@ open class ConvertUtils @Inject constructor(
           )
         }
     }
+
+    if (opts.contains(FillOpts.MembersV2)) {
+      group.superMembers(QDbGroupMember()
+        .select(QDbGroupMember.Alias.person.id)
+        .group.owningOrganization.id.eq(group.organizationId)
+        .group.owningPortfolio.isNull
+        .group.adminGroup.isTrue.findList().map { it.person.id })
+
+      group.simpleMembers(QDbPerson()
+        .select(QDbPerson.Alias.id)
+        .orderBy().name.asc()
+        .whenArchived.isNull
+        .groupMembers.group.eq(dbg).findList().map { p ->
+          AnemicPerson().id(p.id).name(p.name).email(p.email).type(p.personType)
+        })
+    }
+
     if (opts.contains(FillOpts.Acls)) {
       val appIdFilter = opts.id(FilterOptType.Application)
       var aclQuery = QDbAcl().group.eq(dbg)

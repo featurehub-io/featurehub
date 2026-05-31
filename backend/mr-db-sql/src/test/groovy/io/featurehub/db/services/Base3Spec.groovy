@@ -89,7 +89,7 @@ class Base3Spec extends Specification {
       adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
     }
 
-    groupSqlApi.addPersonToGroup(adminGroup.id, superuser, Opts.empty())
+    groupSqlApi.addPersonsToGroup(adminGroup.id, [superuser], Opts.empty())
 
     rsValidator = Mock()
     rsValidator.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()

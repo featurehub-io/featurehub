@@ -1,7 +1,5 @@
 package io.features.webhooks.features
 
-import cd.connect.app.config.ConfigKey
-import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.jersey.common.LoggingConfiguration
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.v1.CloudEventBuilder
@@ -36,10 +34,6 @@ import java.time.OffsetDateTime
 class WebhookFeature : Feature {
   private val log: Logger = LoggerFactory.getLogger(WebhookFeature::class.java)
 
-  init {
-    DeclaredConfigResolver.resolve(this)
-  }
-
   override fun configure(context: FeatureContext): Boolean {
     if (enabled) {
       log.info("webhooks: registering for outbound feature webhook processing")
@@ -53,7 +47,6 @@ class WebhookFeature : Feature {
 
   companion object {
     val enabled: Boolean = FallbackPropertyConfig.getConfig("webhooks.features.enabled")?.lowercase() != "false"
-
   }
 }
 
@@ -66,22 +59,17 @@ class WebhookEnricherListener @Inject constructor(
   ) : LifecycleListener {
   private val client: Client
 
-  @ConfigKey("webhooks.features.timeout.connect")
-  var connectTimeout: Int? = 4000
+  var connectTimeout = FallbackPropertyConfig.getConfig("webhooks.features.timeout.connect", "4000").toInt()
 
-  @ConfigKey("webhooks.features.timeout.read")
-  var readTimeout: Int? = 4000
+  var readTimeout = FallbackPropertyConfig.getConfig("webhooks.features.timeout.read", "4000").toInt()
 
-  @ConfigKey("webhooks.features.cloudevent-source")
-  var cloudEventSource: String? = "https://featurehub.io"
+  var cloudEventSource = FallbackPropertyConfig.getConfig("webhooks.features.cloudevent-source", "https://featurehub.io");
 
   private val replySource = URI.create(SOURCE_SYSTEM)
 
   private val log: Logger = LoggerFactory.getLogger(WebhookEnricherListener::class.java)
 
   init {
-    DeclaredConfigResolver.resolve(this)
-
     log.debug("listening for webhooks on enriched feature channel")
     cloudEventReceiverRegistry.listen(EnrichedFeatures::class.java, this::process)
 

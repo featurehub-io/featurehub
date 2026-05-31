@@ -55,7 +55,7 @@ class PortfolioSpec extends BaseSpec {
     when: "superuser creates a group"
       Portfolio created = portfolioApi.createPortfolio(new CreatePortfolio().name("normal-port-check1"), Opts.empty(), superuser)
       Group group = groupSqlApi.createGroup(created.id, new CreateGroup().name(created.name), superPerson)
-      groupSqlApi.addPersonToGroup(group.id, normalPerson.id.id, Opts.empty())
+      groupSqlApi.addPersonsToGroup(group.id, [normalPerson.id.id], Opts.empty())
     then:
       created != null
       portfolioApi.getPortfolio(created.id, Opts.empty(), normalPerson.id.id).name == created.name

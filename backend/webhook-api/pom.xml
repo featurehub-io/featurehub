@@ -76,6 +76,9 @@
               <generateApis>false</generateApis>
               <generatorName>jersey3-api</generatorName>
               <enablePostProcessFile>true</enablePostProcessFile>
+              <additionalProperties>
+                <additionalProperty>openApiNullable=false</additionalProperty>
+              </additionalProperties>
             </configuration>
           </execution>
         </executions>
@@ -93,7 +96,7 @@
             </goals>
             <configuration>
               <sources>
-                <source>${project.build.directory}/generated-sources/api/src/gen</source>
+                <source>${project.build.directory}/generated-sources/api/src/gen/java</source>
               </sources>
             </configuration>
           </execution>

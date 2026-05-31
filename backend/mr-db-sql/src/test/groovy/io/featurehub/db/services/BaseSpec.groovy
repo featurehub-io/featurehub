@@ -73,6 +73,6 @@ class BaseSpec extends Specification {
       adminGroup = groupSqlApi.createOrgAdminGroup(org.id, 'admin group', superPerson)
     }
 
-    groupSqlApi.addPersonToGroup(adminGroup.id, superuser, Opts.empty())
+    groupSqlApi.addPersonsToGroup(adminGroup.id, [superuser], Opts.empty())
   }
 }

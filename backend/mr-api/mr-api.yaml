@@ -453,19 +453,21 @@ paths:
         - name: includeMembers
           description: "include people in each group"
           in: query
+          required: false
+          schema:
+            type: boolean
+        - name: includeMembersV2
+          description: "include anemic people in each group with superuser"
+          in: query
+          required: false
           schema:
             type: boolean
         - name: includeGroupRoles
           description: "include environment and application roles in each group"
           in: query
-          schema:
-            type: boolean
-        - name: updateMembers
-          description: "update members, deleting those that are not passed"
-          in: query
-          schema:
-            type: boolean
           required: false
+          schema:
+            type: boolean
         - name: updateEnvironmentGroupRoles
           description: "update environment group roles, deleting any not passed"
           in: query
@@ -490,7 +492,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Group"
+              $ref: "#/components/schemas/UpdateGroup"
       responses:
         200:
           description: "Resulting group"
@@ -2120,15 +2122,23 @@ paths:
           format: uuid
         required: true
       - name: includeMembers
-        description: "include people in each group"
+        description: "include people in each group (v1) - uses Members"
         in: query
         schema:
           type: boolean
+        required: false
+      - name: includeMembersV2
+        description: "include people in each group (v2) - uses GroupMember instead of Members"
+        in: query
+        schema:
+          type: boolean
+        required: false
       - name: includeGroupRoles
         description: "include environment and application roles in each group"
         in: query
         schema:
           type: boolean
+        required: false
     get:
       security:
         - bearerAuth: [ ]
@@ -2157,65 +2167,6 @@ paths:
           description: "forbidden"
         404:
           description: "not found"
-    put:
-      deprecated: true
-      security:
-        - bearerAuth: [ ]
-      tags:
-        - GroupService
-      description: "Update a group"
-      operationId: updateGroup
-      parameters:
-        - name: updateMembers
-          description: "update members, deleting those that are not passed"
-          in: query
-          schema:
-            type: boolean
-          required: false
-        - name: updateEnvironmentGroupRoles
-          description: "update environment group roles, deleting any not passed"
-          in: query
-          schema:
-            type: boolean
-          required: false
-        - name: updateApplicationGroupRoles
-          description: "update application group roles, deleting any not passed"
-          in: query
-          schema:
-            type: boolean
-          required: false
-        - name: applicationId
-          description: "if updating the application group roles, and the application id is passed, then the changes are limited to that application"
-          in: query
-          schema:
-            type: string
-            format: uuid
-          required: false
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Group"
-      responses:
-        200:
-          description: "Resulting group"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Group"
-        400:
-          description: "Bad Request"
-        401:
-          description: "no permission"
-        403:
-          description: "forbidden"
-        404:
-          description: "not found"
-        409:
-          description: "duplicate user or duplicate group"
-        422:
-          description: "version conflict"
     delete:
       security:
         - bearerAuth: [ ]
@@ -2238,6 +2189,59 @@ paths:
           description: "forbidden"
         404:
           description: "not found"
+  /mr-api/group/{gid}/person:
+    parameters:
+      - name: gid
+        description: "The id of the group that we are processing"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: includeMembersV2
+        description: "include anemic people in each group with superuser info"
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: personId
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+      - name: email
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+    post:
+      tags:
+        - GroupService
+      security:
+        - bearerAuth: [ ]
+      description: "Add a persons to a group"
+      operationId: addPersonsToGroup
+      responses:
+        200:
+          description: "Resulting group"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "group or person not found"
+
   /mr-api/group/{gid}/person/{pId}:
     parameters:
       - name: gid
@@ -2257,6 +2261,13 @@ paths:
       - name: includeMembers
         description: "include people in each group"
         in: query
+        required: false
+        schema:
+          type: boolean
+      - name: includeMembersV2
+        description: "include anemic people in each group with superuser info"
+        in: query
+        required: false
         schema:
           type: boolean
     post:
@@ -3920,6 +3931,34 @@ components:
           default: []
           items:
             $ref: "#/components/schemas/ApplicationGroupRole"
+    UpdateGroup:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: false
+        name:
+          type: string
+          maxLength: 255
+          nullable: true
+        version:
+          type: integer
+          format: int64
+          nullable: false
+        applicationRoles:
+          nullable: true
+          type: array
+          default: []
+          items:
+            $ref: "#/components/schemas/ApplicationGroupRole"
+        environmentRoles:
+          type: array
+          default: []
+          items:
+            $ref: "#/components/schemas/EnvironmentGroupRole"
     Group:
       allOf:
         - $ref: "#/components/schemas/Audit"
@@ -3952,6 +3991,18 @@ components:
               type: string
               minLength: 1
               maxLength: 255
+            superMembers:
+              description: "This indicates which ids in the simpleMembers are superusers. It is a read only field and is ignored if it is passed back."
+              type: array
+              default: []
+              items:
+                type: string
+                format: uuid
+            simpleMembers:
+              type: array
+              default: []
+              items:
+                $ref: "#/components/schemas/AnemicPerson"
             members:
               type: array
               default: []
@@ -3971,6 +4022,13 @@ components:
               nullable: true
               type: string
               format: date-time
+    GroupPerson:
+      type: object
+      properties:
+        person:
+          $ref: "#/components/schemas/AnemicPerson"
+        superuser:
+          type: boolean
     ApplicationGroupRole:
       type: object
       required:

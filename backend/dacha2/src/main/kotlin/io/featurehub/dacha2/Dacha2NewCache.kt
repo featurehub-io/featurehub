@@ -98,7 +98,6 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
       .build(CacheLoader { key: String ->
         try {
           val serviceAccount = mrDacha2Api.getServiceAccount(key, apiKey).serviceAccount
-          fillServiceAccountCache(key, serviceAccount)
           serviceAccountCache.put(serviceAccount.id, serviceAccount)
           serviceAccount
         } catch (nfe: NotFoundException) {
@@ -183,15 +182,16 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
       val perms = permsCache.get(comboKey) {
         try {
           val serviceAccount = serviceAccountApiKeyCache.get(apiKey)
+          fillServiceAccountCache(apiKey, serviceAccount)
           val result = serviceAccount.permissions.find { it.environmentId == eId }
           if (result == null) {
             log.trace("Unable to find environment id {} in serviceAccount", serviceAccount)
             throw InvalidKeyException()
           }
           result
-        } catch (_: Exception) {
+        } catch (e: Exception) {
           if (log.isTraceEnabled) {
-            log.trace("failed to get service account permission {}/{}", eId, apiKey)
+            log.trace("failed to get service account permission {}/{}", eId, apiKey, e)
           }
           throw InvalidKeyException()
         }
@@ -204,6 +204,7 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
 
       // accessing the environment-cache can cause an exception
       val serviceAccount = serviceAccountApiKeyCache.get(apiKey)
+      fillServiceAccountCache(apiKey, serviceAccount)
 
       if (serviceAccount.filters != null && serviceAccount.filters!!.isNotEmpty()) {
         counterFilterUse.inc()
@@ -313,14 +314,13 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
         }
       } else serviceAccountCache.getIfPresent(sId)
 
+      // just in case we had these keys in the miss cache
+      serviceAccountMissCache.invalidateAll(listOf(sa.apiKeyServerSide, sa.apiKeyClientSide))
       if (existing == null) {
         return // we throw it away as we are not caching streamed updates
       }
 
       if (created) { // it was new so it is a new update and we are caching
-        // just in case we had these keys in the miss cache
-        serviceAccountMissCache.invalidateAll(listOf(sa.apiKeyServerSide, sa.apiKeyClientSide))
-
         // its already in serviceAccountCache, so we just have to put it in the ApiKey cache
         serviceAccountApiKeyCache.put(sa.apiKeyServerSide, sa)
         serviceAccountApiKeyCache.put(sa.apiKeyClientSide, sa)
@@ -337,7 +337,6 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
           serviceAccountApiKeyCache.invalidate(existing.apiKeyClientSide)
         }
 
-        serviceAccountMissCache.invalidateAll(listOf(sa.apiKeyServerSide, sa.apiKeyClientSide))
         stashServiceAccount(sa, sId)
 
         val envs = sa.permissions.associateBy { it.environmentId }
@@ -438,7 +437,7 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
   }
 
   companion object {
-    val log: Logger = LoggerFactory.getLogger(Dacha2CacheImpl::class.java)
+    val log: Logger = LoggerFactory.getLogger(Dacha2NewCacheImpl::class.java)
 
     val gaugeServiceAccountMissCache = MetricsCollector.gauge(DACHA_2_SERVICE_ACCOUNT_MISS_CACHE, "Requests for service accounts that don't exist")
     val gaugeServiceAccountCache = MetricsCollector.gauge(DACHA_2_SERVICE_ACCOUNT_CACHE, "The size of cache for service accounts")

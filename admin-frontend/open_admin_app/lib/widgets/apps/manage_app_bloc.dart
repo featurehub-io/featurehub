@@ -290,15 +290,11 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   }
 
   Future<Group?> updateGroupWithEnvironmentRoles(String? gid, Group group) async {
-    // make sure members are null or they all get removed
-    group.members = [];
-
     try {
       final updatedGroup = await _groupServiceApi
-          .updateGroupOnPortfolio(portfolio!.id, group,
+          .updateGroupOnPortfolio(portfolio!.id, UpdateGroup(id: group.id, version: group.version,
+          applicationRoles: group.applicationRoles, environmentRoles: group.environmentRoles),
           includeGroupRoles: true,
-          includeMembers: false,
-          updateMembers: false,
           applicationId: applicationId,
           updateApplicationGroupRoles: true,
           updateEnvironmentGroupRoles: true);
