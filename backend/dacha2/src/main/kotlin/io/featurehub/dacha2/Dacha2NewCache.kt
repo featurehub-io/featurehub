@@ -50,7 +50,7 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
   private var cacheStreamedUpdates: Boolean = FallbackPropertyConfig.getConfig("dacha2.cache.all-updates") != "false"
 
   var apiKey: String? = FallbackPropertyConfig.getConfig("dacha2.cache.api-key")
-  var resettingCache: Boolean = false
+  @Volatile var resettingCache: Boolean = false
   private val metricTimer = Timer()
 
   init {

@@ -326,8 +326,7 @@ open class DbCacheSource @Inject constructor(
         QDbFeatureFilter()
           .select(QDbFeatureFilter.Alias.id)
           .applicationFeatures.id.eq(feature.id)
-          .findStream().map { it.id }.collect(Collectors.toList())
-          .ifEmpty { null }
+          .findList().map { it.id }.ifEmpty { null }
       )
   }
 
