@@ -213,7 +213,11 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
 
       return FeatureCollection(environmentCache[eId], perms, serviceAccount.id)
     } catch (e: Exception) {
-      log.trace("could not find in perms cache {}", comboKey, e)
+      if (e is InvalidKeyException) {
+        log.trace("key not found in cache {}", comboKey)
+      } else {
+        log.trace("could not find in perms cache {}", comboKey, e)
+      }
       return null
     }
   }
