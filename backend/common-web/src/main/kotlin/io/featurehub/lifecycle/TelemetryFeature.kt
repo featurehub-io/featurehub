@@ -144,7 +144,7 @@ class TelemetryApplicationEventListener @Inject constructor(
   override fun onEvent(event: ApplicationEvent?) {
   }
 
-  override fun onRequest(requestEvent: RequestEvent): RequestEventListener? {
+  override fun onRequest(requestEvent: RequestEvent): RequestEventListener {
     return TelemetryRequestEventListener(openTelemetry, tracer, extractor)
   }
 
@@ -163,9 +163,7 @@ class TelemetryApplicationEventListener @Inject constructor(
         processRequest(event.containerRequest)
       } else if (event.type == RequestEvent.Type.ON_EXCEPTION) {
         log.warn("Exception URI {}", event.containerRequest.requestUri)
-        MDC.clear()
         span?.setStatus(StatusCode.ERROR)
-        event.containerRequest.requestUri
       } else if (event.type == RequestEvent.Type.FINISHED) {
         MDC.clear()
         span?.end()

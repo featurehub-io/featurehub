@@ -15,6 +15,7 @@ import io.featurehub.dacha2.api.Dacha2ServiceClient
 import io.featurehub.enricher.EnrichmentEnvironment
 import io.featurehub.metrics.MetricsCollector
 import io.featurehub.utils.FallbackPropertyConfig
+import jakarta.annotation.PreDestroy
 import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
 import org.slf4j.Logger
@@ -47,7 +48,7 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
   private var cacheStreamedUpdates: Boolean = FallbackPropertyConfig.getConfig("dacha2.cache.all-updates") != "false"
 
   var apiKey: String? = FallbackPropertyConfig.getConfig("dacha2.cache.api-key")
-  var resettingCache: Boolean = false
+  @Volatile var resettingCache: Boolean = false
   private val metricTimer = Timer()
 
   init {
@@ -130,6 +131,7 @@ open class Dacha2CacheImpl @Inject constructor(private val mrDacha2Api: Dacha2Se
     }, 5000, 5000)
   }
 
+  @PreDestroy
   override fun closeCache() {
     log.info("[dacha2] shutting down metric timer for cache size")
     metricTimer.cancel()

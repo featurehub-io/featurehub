@@ -1,10 +1,20 @@
 package io.featurehub.utils
 
 import io.opentelemetry.context.Context
+import org.apache.logging.log4j.ThreadContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
-import java.util.concurrent.*
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.CancellationException
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Future
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.RejectedExecutionHandler
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 interface ExecutorSupplier {
   fun executorService(nThreads: Int): ExecutorService
@@ -18,19 +28,11 @@ interface ExecutorSupplier {
 }
 
 internal class MDCRunnable (private var runnable: Runnable) : Runnable {
-  private val copy: Map<String,String> = MDC.getCopyOfContextMap()
+  private val copy: Map<String,String> = MDC.getCopyOfContextMap() ?: emptyMap()
 
   override fun run() {
     MDC.setContextMap(copy)
     runnable.run()
-  }
-}
-
-internal class MDCCallable<T>(private val callable: Callable<T>): Callable<T> {
-  private val copy: Map<String,String> = MDC.getCopyOfContextMap()
-  override fun call(): T {
-    MDC.setContextMap(copy)
-    return callable.call()
   }
 }
 
@@ -53,42 +55,8 @@ class ExecutorUtil : ExecutorSupplier {
       nThreads, maximumPoolSize,
       keepAliveTime, unit, workQueue ?: LinkedBlockingQueue()
     ) {
-      override fun <T> submit(task: Callable<T>): Future<T> {
-        return super.submit(MDCCallable(task))
-      }
-
-      override fun <T> submit(task: Runnable, result: T): Future<T> {
-        return super.submit(MDCRunnable(task), result)
-      }
-
-      override fun submit(task: Runnable): Future<*> {
-        return super.submit(MDCRunnable(task))
-      }
-
-      @Throws(InterruptedException::class)
-      override fun <T> invokeAll(tasks: Collection<Callable<T>>): List<Future<T>?> {
-        return super.invokeAll(tasks.map { MDCCallable(it) })
-      }
-
-      @Throws(InterruptedException::class)
-      override fun <T : Any?> invokeAll(
-        tasks: MutableCollection<out Callable<T>>,
-        timeout: Long,
-        unit: TimeUnit
-      ): MutableList<Future<T>> {
-        return super.invokeAll(tasks.map { MDCCallable(it) }, timeout, unit)
-      }
-
-      @Throws(InterruptedException::class, ExecutionException::class)
-      override fun <T : Any?> invokeAny(tasks: MutableCollection<out Callable<T>>): T {
-        return super.invokeAny(tasks.map { MDCCallable(it) })
-      }
-
-      @Throws(InterruptedException::class, ExecutionException::class, TimeoutException::class)
-      override fun <T : Any?> invokeAny(tasks: MutableCollection<out Callable<T>>, timeout: Long, unit: TimeUnit): T {
-        return super.invokeAny(tasks.map { MDCCallable(it) }, timeout, unit)
-      }
-
+      // All submission paths (submit, invokeAll, invokeAny) flow through execute(),
+      // so overriding only execute() is sufficient to propagate MDC without double-wrapping.
       override fun execute(command: Runnable) {
         super.execute(MDCRunnable(command))
       }
@@ -116,6 +84,8 @@ class ExecutorUtil : ExecutorSupplier {
           t?.let { log.error("Thread execution failed", t) }
         } finally {
           MDC.clear()
+          // MDC clear only clears the map, not the stack
+          ThreadContext.clearAll()
         }
       }
     }

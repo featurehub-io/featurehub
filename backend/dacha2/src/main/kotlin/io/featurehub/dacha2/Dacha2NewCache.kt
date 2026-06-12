@@ -50,7 +50,7 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
   private var cacheStreamedUpdates: Boolean = FallbackPropertyConfig.getConfig("dacha2.cache.all-updates") != "false"
 
   var apiKey: String? = FallbackPropertyConfig.getConfig("dacha2.cache.api-key")
-  var resettingCache: Boolean = false
+  @Volatile var resettingCache: Boolean = false
   private val metricTimer = Timer()
 
   init {
@@ -213,7 +213,11 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
 
       return FeatureCollection(environmentCache[eId], perms, serviceAccount.id)
     } catch (e: Exception) {
-      log.trace("could not find in perms cache {}", comboKey, e)
+      if (e is InvalidKeyException) {
+        log.trace("key not found in cache {}", comboKey)
+      } else {
+        log.trace("could not find in perms cache {}", comboKey, e)
+      }
       return null
     }
   }

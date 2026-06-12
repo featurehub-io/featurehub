@@ -40,12 +40,10 @@ public class ConnectJsonLayout extends AbstractLayout<LogEvent> {
   public byte[] toByteArray(LogEvent logEvent) {
     Map<String, Object> jsonContext = new HashMap<>();
     List<String> alreadyEncodedJsonObjects = new ArrayList<>();
-    Map<String, String> processContext = new HashMap<>();
 
-    processContext.putAll(logEvent.getContextData().toMap());
+    Map<String, String> processContext = new HashMap<>(logEvent.getContextData().toMap());
 
     try {
-
       jsonContext.put("message", logEvent.getMessage().getFormattedMessage());
       if (useGoogleStyle) {
         jsonContext.put("timestamp", sdf.format(Instant.ofEpochMilli(logEvent.getTimeMillis()).atOffset(ZoneOffset.UTC)));
@@ -54,12 +52,19 @@ public class ConnectJsonLayout extends AbstractLayout<LogEvent> {
         jsonContext.put("@timestamp", sdf.format(Instant.ofEpochMilli(logEvent.getTimeMillis()).atOffset(ZoneOffset.UTC)));
         jsonContext.put("priority", logEvent.getLevel().toString());
       }
-      jsonContext.put("path", logEvent.getLoggerName());
-      jsonContext.put("thread", logEvent.getThreadName());
+      if (logEvent.getLoggerName() != null) {
+        jsonContext.put("path", logEvent.getLoggerName());
+      }
+
+      if (logEvent.getThreadName() != null) {
+        jsonContext.put("thread", logEvent.getThreadName());
+      }
 
       if (logEvent.getSource() != null) {
         jsonContext.put("class", logEvent.getSource().getClassName());
-        jsonContext.put("file", logEvent.getSource().getFileName() + ":" + logEvent.getSource().getLineNumber());
+        if (logEvent.getSource().getFileName() != null) {
+          jsonContext.put("file", logEvent.getSource().getFileName() + ":" + logEvent.getSource().getLineNumber());
+        }
         jsonContext.put("method", logEvent.getSource().getMethodName());
       }
 
