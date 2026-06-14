@@ -47,7 +47,7 @@ class Base3Spec extends Specification {
   @Shared InternalFeatureApi internalFeatureApi
 
   String ranName() {
-    return RandomStringUtils.randomAlphabetic(10)
+    return RandomStringUtils.secure().nextAlphabetic(10)
   }
 
   def setupSpec() {

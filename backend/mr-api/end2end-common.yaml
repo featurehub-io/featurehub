@@ -29,6 +29,7 @@ components:
           nullable: true
           description: "value between 0 and 1000000 - for four decimal places"
           type: integer
+          format: int32
         percentageAttributes:
           nullable: true
           default: []

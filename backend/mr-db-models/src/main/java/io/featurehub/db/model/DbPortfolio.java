@@ -1,6 +1,8 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.ChangeLog;
+import io.ebean.annotation.ConstraintMode;
+import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.Index;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -58,6 +60,11 @@ public class DbPortfolio extends DbVersionedBase {
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "fk_portfolio_id")
   private List<DbFeatureFilter> featureFilters;
+
+  @DbForeignKey(onDelete = ConstraintMode.CASCADE)
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "fk_portfolio_id")
+  private List<DbPortfolioRolloutStrategy> sharedRolloutStrategies;
 
   @Column
   private String name;
@@ -138,6 +145,14 @@ public class DbPortfolio extends DbVersionedBase {
 
   public void setFeatureFilters(List<DbFeatureFilter> featureFilters) {
     this.featureFilters = featureFilters;
+  }
+
+  public List<DbPortfolioRolloutStrategy> getSharedRolloutStrategies() {
+    return sharedRolloutStrategies;
+  }
+
+  public void setSharedRolloutStrategies(List<DbPortfolioRolloutStrategy> sharedRolloutStrategies) {
+    this.sharedRolloutStrategies = sharedRolloutStrategies;
   }
 
   public static final class Builder {

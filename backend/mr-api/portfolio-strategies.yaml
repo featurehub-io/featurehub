@@ -1,0 +1,366 @@
+openapi: 3.0.1
+info:
+  title: ManagementResourceApi
+  description: This describes the API clients use for accessing features. This reflects the API from 1.5.7 onwards.
+paths:
+  /mr-api/portfolio/{portfolioId}/strategy:
+    parameters:
+      - name: portfolioId
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: includeWhoChanged
+        description: "include who changed"
+        in: query
+        schema:
+          type: boolean
+        required: false
+      - name: includeUsage
+        in: query
+        description: "include usage information - which environments and feature counts"
+        schema:
+          type: boolean
+        required: false
+    get:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - PortfolioRolloutStrategyService
+      operationId: listPortfolioStrategies
+      parameters:
+        - name: includeArchived
+          in: query
+          description: "Include archived strategies"
+          schema:
+            type: boolean
+          required: false
+        - name: filter
+          description: "A filter to apply to the portfolio strategies - partial match of name"
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: sortOrder
+          in: query
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+          required: false
+        - name: max
+          description: "The maximum number of portfolio strategies to get for this page"
+          in: query
+          schema:
+            type: integer
+          required: false
+        - name: page
+          description: "The page number of the results. 0 indexed."
+          in: query
+          schema:
+            type: integer
+          required: false
+      responses:
+        200:
+          description: "Get all strategies for this portfolio, regardless if they are in use"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioRolloutStrategyList"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - PortfolioRolloutStrategyService
+      operationId: createPortfolioStrategy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePortfolioRolloutStrategy"
+      responses:
+        "201":
+          description: "The created rollout strategy for this application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioRolloutStrategy"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden to create"
+        409:
+          description: "duplicate name"
+
+  /mr-api/portfolio/{portfolioId}/rollout-strategy-validation:
+    parameters:
+      - name: portfolioId
+        description: "The id of the portfolio to find"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+    post:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - PortfolioRolloutStrategyService
+      description: "Provide server validation responses for this group of rollout strategies"
+      operationId: portfolioStrategyValidate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RolloutStrategyValidationRequest"
+      responses:
+        200:
+          description: "validation results"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolloutStrategyValidationResponse"
+        400:
+          description: "invalid body"
+        401:
+          description: "no permission"
+
+  /mr-api/portfolio/{portfolioId}/rollout-strategy/{portfolioStrategyId}:
+    parameters:
+      - name: portfolioId
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: portfolioStrategyId
+        description: "The id of the strategy or the unique name of it"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: includeWhoChanged
+        description: "include who changed"
+        in: query
+        schema:
+          type: boolean
+        required: false
+    get:
+      parameters:
+        - name: includeUsage
+          in: query
+          description: "include usage information - which environments and feature counts"
+          schema:
+            type: boolean
+          required: false
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - PortfolioRolloutStrategyService
+      operationId: getPortfolioStrategy
+      responses:
+        200:
+          description: "The rollout strategy for this application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioRolloutStrategy"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "If there is no rollout strategy by that id or name"
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - PortfolioRolloutStrategyService
+      operationId: updatePortfolioStrategy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePortfolioRolloutStrategy"
+      responses:
+        200:
+          description: "The created rollout strategy for this application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioRolloutStrategy"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
+        409:
+          description: "duplicate strategy name"
+    delete:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - PortfolioRolloutStrategyService
+      operationId: deletePortfolioStrategy
+      responses:
+        204:
+          description: "This strategy was deleted"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "strategy not found, could not delete"
+components:
+  schemas:
+    PortfolioRolloutStrategyList:
+      type: object
+      required:
+        - max
+        - page
+        - items
+      properties:
+        max:
+          description: "how many there are"
+          type: integer
+        page:
+          description: "this page number"
+          type: integer
+        items:
+          description: "the application rollout strategies on this page"
+          type: array
+          items:
+            $ref: "#/components/schemas/ListPortfolioRolloutStrategyItem"
+    CreatePortfolioRolloutStrategy:
+      allOf:
+        - $ref: "#/components/schemas/BaseUIStrategy"
+        - $ref: "#/components/schemas/BaseStrategy"
+    UpdatePortfolioRolloutStrategy:
+      type: object
+      properties:
+        percentage:
+          nullable: true
+          description: "value between 0 and 1000000 - for four decimal places"
+          type: integer
+        percentageAttributes:
+          nullable: true
+          default: []
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
+          items:
+            type: string
+        name:
+          nullable: true
+          description: "names are unique in a case insensitive fashion"
+          type: string
+          maxLength: 150
+        colouring:
+          nullable: true
+          description: "the colour used to display the strategy in the UI. indexed table of background/foreground combos."
+          type: integer
+        avatar:
+          nullable: true
+          type: string
+          description: "url to avatar (if any). Not sent to SDK. Preferably a unicorn."
+          maxLength: 200
+        disabled:
+          nullable: true
+          default: false
+          type: boolean
+        attributes:
+          nullable: true
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyAttribute"
+        whenCreated:
+          type: string
+          format: date-time
+          nullable: true
+        whenUpdated:
+          type: string
+          format: date-time
+          nullable: true
+    PortfolioRolloutStrategy:
+      allOf:
+        - $ref: "#/components/schemas/BaseStrategy"
+        - $ref: "#/components/schemas/BaseUIStrategy"
+        - type: object
+          properties:
+            id:
+              description: "unique id of the strategy"
+              type: string
+              format: uuid
+    ListPortfolioRolloutStrategyItemUser:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+          description: "They may not have set their name yet"
+          nullable: true
+    ListPortfolioRolloutStrategyItem:
+      type: object
+      properties:
+        strategy:
+          $ref: "#/components/schemas/PortfolioRolloutStrategy"
+        whenUpdated:
+          type: string
+          format: date-time
+        whenCreated:
+          type: string
+          format: date-time
+        updatedBy:
+          $ref: "#/components/schemas/ListPortfolioRolloutStrategyItemUser"
+        uniqueCode:
+          description: "The code for this portfolio strategy, usually the ID for strategies"
+          type: string
+          nullable: true
+        usage:
+          description: "usage of the strategy"
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/PortfolioRolloutStrategyEnvironment"
+    PortfolioRolloutStrategyEnvironment:
+      type: object
+      properties:
+        appId:
+          description: "The id of the app using this strategy"
+          type: string
+          format: uuid
+        appName:
+          description: "The name of the app using this strategy"
+          type: string
+        id:
+          description: "The id of the environment using this strategy"
+          type: string
+          format: uuid
+        name:
+          description: "The name of the environment in the app using this strategy"
+          type: string
+        featuresCount:
+          description: "How many features"
+          type: integer

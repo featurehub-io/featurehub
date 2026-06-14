@@ -208,7 +208,7 @@ class UpdateFeatureApiImpl@Inject constructor(
 
     val historical = historicalFeatureValueVersion.sharedRolloutStrategies.toList()
     val existing = existingDbFeatureValue.sharedRolloutStrategies.map { srs ->
-      SharedRolloutStrategyVersion(srs.rolloutStrategy.id, srs.rolloutStrategy.version, true, srs.value)
+      SharedRolloutStrategyVersion(srs.rolloutStrategy.id, srs.rolloutStrategy.version, true, srs.value, srs.percentageOverride)
     }.toMutableList()
     val originalSharedStategyList = existingDbFeatureValue.sharedRolloutStrategies
 
@@ -376,7 +376,7 @@ class UpdateFeatureApiImpl@Inject constructor(
     appStrategy: DbApplicationRolloutStrategy,
     incomingStrategyUpdate: RolloutStrategyInstance
   ): SharedRolloutStrategyVersion {
-    return SharedRolloutStrategyVersion(appStrategy.id, appStrategy.version, true, incomingStrategyUpdate.value)
+    return SharedRolloutStrategyVersion(appStrategy.id, appStrategy.version, true, incomingStrategyUpdate.value, incomingStrategyUpdate.percentageOverride)
   }
 
   /**
@@ -457,10 +457,10 @@ class UpdateFeatureApiImpl@Inject constructor(
             // ok - its all good to replace this one
             changed = true
             existingStrategies[existingStrategies.indexOfFirst { it.id == strategy.id }] = strategy
-            if (strategy.id!!.length > strategyIdLength) {
-              var newId = RandomStringUtils.randomAlphanumeric(strategyIdLength)
+            if (strategy.id!!.length > Conversions.strategyIdLength) {
+              var newId = Conversions.strategyCodeGenerator()
               while (existingStrategies.any { it.id == newId } || historicalStrategies.any { it.id == newId }) {
-                newId = RandomStringUtils.randomAlphanumeric(strategyIdLength)
+                newId = Conversions.strategyCodeGenerator()
               }
               strategy.id = newId
             }
@@ -812,22 +812,22 @@ class UpdateFeatureApiImpl@Inject constructor(
     var changes = false
 
     strategies.forEach { strategy ->
-      if (strategy.id == null || strategy.id!!.length > strategyIdLength) {
-        var id = RandomStringUtils.randomAlphanumeric(strategyIdLength)
+      if (strategy.id == null || strategy.id!!.length > Conversions.strategyIdLength) {
+        var id = Conversions.strategyCodeGenerator()
         // make sure it is unique
         while (strategies.any { id == strategy.id }) {
-          id = RandomStringUtils.randomAlphanumeric(strategyIdLength)
+          id = Conversions.strategyCodeGenerator()
         }
         changes = true
         strategy.id = id
       }
 
       strategy.attributes?.forEach { attribute ->
-        if (attribute.id == null || attribute.id!!.length > strategyIdLength) {
-          var id = RandomStringUtils.randomAlphanumeric(strategyIdLength)
+        if (attribute.id == null || attribute.id!!.length > Conversions.strategyIdLength) {
+          var id = Conversions.strategyCodeGenerator()
           // make sure it is unique
           while (strategy.attributes!!.any { id == attribute.id }) {
-            id = RandomStringUtils.randomAlphanumeric(strategyIdLength)
+            id = Conversions.strategyCodeGenerator()
           }
 
           changes = true
@@ -930,7 +930,5 @@ class UpdateFeatureApiImpl@Inject constructor(
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(UpdateFeatureApiImpl::class.java)
-
-    const val strategyIdLength = 4
   }
 }
