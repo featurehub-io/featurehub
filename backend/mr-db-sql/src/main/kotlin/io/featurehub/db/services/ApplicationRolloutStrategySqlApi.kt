@@ -1,17 +1,24 @@
 package io.featurehub.db.services
 
 import io.ebean.annotation.Transactional
+import io.featurehub.db.api.ApplicationRolloutStrategyApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
-import io.featurehub.db.api.ApplicationRolloutStrategyApi
 import io.featurehub.db.model.DbApplicationRolloutStrategy
 import io.featurehub.db.model.query.QDbApplicationRolloutStrategy
 import io.featurehub.db.model.query.QDbEnvironment
 import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.services.ArchiveStrategy.Companion.isoDate
-import io.featurehub.mr.model.*
+import io.featurehub.mr.model.ApplicationRolloutStrategy
+import io.featurehub.mr.model.ApplicationRolloutStrategyEnvironment
+import io.featurehub.mr.model.ApplicationRolloutStrategyList
+import io.featurehub.mr.model.CreateApplicationRolloutStrategy
+import io.featurehub.mr.model.ListApplicationRolloutStrategyItem
+import io.featurehub.mr.model.ListApplicationRolloutStrategyItemUser
+import io.featurehub.mr.model.RolloutStrategyAttribute
+import io.featurehub.mr.model.SortOrder
+import io.featurehub.mr.model.UpdateApplicationRolloutStrategy
 import jakarta.inject.Inject
-import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -42,9 +49,9 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
 
     // make a random code and keep flipping until we find a new unique one. Standard rollout strategies are all alphanumeric,
     // feature group strategies start with a !
-    var code = randomId()
+    var code = Conversions.strategyCodeGenerator(applicationStrategyCodePrefix)
     while (QDbApplicationRolloutStrategy().application.id.eq(appId).shortUniqueCode.eq(code).exists()) {
-      code = randomId()
+      code = Conversions.strategyCodeGenerator(applicationStrategyCodePrefix)
     }
 
     rolloutStrategy.attributes?.let { rationaliseAttributeIds(it) }
@@ -73,20 +80,16 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
     }
   }
 
-  private fun randomId(): String {
-    return "@${RandomStringUtils.randomAlphanumeric(FeatureSqlApi.strategyIdLength - 1)}"
-  }
-
 
   private fun rationaliseAttributeIds(attributes: List<RolloutStrategyAttribute>): Boolean {
     var changes = false
 
     attributes.forEach { attribute ->
-      if (attribute.id == null || attribute.id!!.length > FeatureSqlApi.strategyIdLength) {
-        var id = randomId()
+      if (attribute.id == null || attribute.id!!.length > Conversions.strategyIdLength) {
+        var id = Conversions.strategyCodeGenerator(applicationStrategyCodePrefix)
         // make sure it is unique
         while (attributes.any { id == attribute.id }) {
-          id = randomId()
+          id = Conversions.strategyCodeGenerator(applicationStrategyCodePrefix)
         }
 
         changes = true
@@ -165,10 +168,14 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
         save(strategy)
 
         if (notifyAttachedFeatures) {
+          val originalStrategiesAssociatedWithFeatureValues = strategy.sharedRolloutStrategies?.associate { it.featureValue.id to internalFeatureApi.collectFeatureValueStrategies(it.featureValue.id)  } ?: mapOf()
+
           // now we have to update all of the tagged features, add an additional history element, force republishing of everything associated
           strategy.sharedRolloutStrategies?.let { strategies ->
             strategies.forEach { strategyForFeatureValue ->
-              internalFeatureApi.updatedApplicationStrategy(strategyForFeatureValue, originalRolloutStrategy, p)
+              internalFeatureApi.updatedApplicationStrategy(strategyForFeatureValue, originalRolloutStrategy, p,
+                originalStrategiesAssociatedWithFeatureValues[strategyForFeatureValue.featureValue.id] ?: emptyList()
+                )
             }
           }
         }
@@ -271,6 +278,7 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
     // because its not a simple publish. That class normally orchestrates it, but its simply too complex.
     if (strategy.whenArchived == null) {
       val originalRolloutStrategy = InternalFeatureApi.toRolloutStrategy(strategy)
+      val originalStrategiesAssociatedWithFeatureValues = strategy.sharedRolloutStrategies?.associate { it.featureValue.id to internalFeatureApi.collectFeatureValueStrategies(it.featureValue.id)  } ?: mapOf()
 
       strategy.whenArchived = LocalDateTime.now()
       strategy.name = (strategy.name + Conversions.archivePrefix + isoDate.format(strategy.whenArchived)).take(150)
@@ -283,7 +291,8 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
 
         copy.forEach { strategyForFeatureValue ->
           // this needs to remove the connection, create an audit trail, and publish a new record to Edge, and trigger webhooks
-          internalFeatureApi.detachApplicationStrategy(strategyForFeatureValue, originalRolloutStrategy, p)
+          internalFeatureApi.detachApplicationStrategy(strategyForFeatureValue, originalRolloutStrategy, p,
+            originalStrategiesAssociatedWithFeatureValues[strategyForFeatureValue.featureValue.id] ?: emptyList())
         }
       }
     }
@@ -294,5 +303,6 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
 
   companion object {
     private val log = LoggerFactory.getLogger(ApplicationRolloutStrategySqlApi::class.java)
+    const val applicationStrategyCodePrefix = "@"
   }
 }

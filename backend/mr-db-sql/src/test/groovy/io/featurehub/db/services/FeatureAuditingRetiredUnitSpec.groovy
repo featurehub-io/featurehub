@@ -29,7 +29,7 @@ class FeatureAuditingRetiredUnitSpec extends FeatureAuditingBaseUnitSpec {
     return updateFeatureApi.updateSelectivelyRetired(
       new PersonFeaturePermission(person, roles),
       new FeatureValue().retired(changingRetired),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", featureLocked, historicalRetired, [], [], feature, 0),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", featureLocked, historicalRetired, [], [], [], feature, 0),
       featureValue("y", feature).with {
         it.locked = featureLocked
         it.retired = currentRetired

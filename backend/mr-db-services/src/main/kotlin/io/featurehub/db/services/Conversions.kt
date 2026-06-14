@@ -6,6 +6,7 @@ import io.featurehub.db.model.*
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
+import org.apache.commons.lang3.RandomStringUtils
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.*
@@ -101,6 +102,7 @@ interface Conversions {
 
   companion object {
     const val archivePrefix = ":\\:\\:"
+    const val strategyIdLength = 4
 
     // in case a field can be a name or a uuid (i.e. feature key)
     @JvmStatic
@@ -172,6 +174,14 @@ interface Conversions {
 
     fun nonNullStrategyId(strategyId: UUID?) {
       requireNotNull(strategyId) { "Strategy ID is required" }
+    }
+
+    fun strategyCodeGenerator(prefix: String? = null) : String {
+      if (prefix == null) {
+        return "${RandomStringUtils.secure().nextAlphanumeric(strategyIdLength)}"
+      } else {
+        return "${prefix}${RandomStringUtils.secure().nextAlphanumeric(strategyIdLength - 1)}"
+      }
     }
   }
 }
