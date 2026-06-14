@@ -1,6 +1,8 @@
 package io.featurehub.edge
 
 import io.featurehub.db.listener.FeatureUpdateBySDKApi
+import io.featurehub.db.publish.CommonCacheGenerator
+import io.featurehub.db.publish.DefaultCommonCacheGenerator
 import io.featurehub.db.services.Conversions
 import io.featurehub.db.services.ConvertUtils
 import io.featurehub.db.services.TestSDKFeatureUpdateServiceImpl
@@ -27,7 +29,7 @@ class EdgeRestFeature : Feature {
         )
         bind(UpdateFeatureApiImpl::class.java).to(UpdateFeatureApi::class.java).`in`(Singleton::class.java)
         bind(TestSDKFeatureUpdateServiceImpl::class.java).to(FeatureUpdateBySDKApi::class.java).`in`(Singleton::class.java)
-
+        bind(DefaultCommonCacheGenerator::class.java).to(CommonCacheGenerator::class.java).`in`(Singleton::class.java)
         bind(EdgeRestWebhookEncryptionService::class.java)
           .to(WebhookEncryptionService::class.java).`in`(Singleton::class.java)
       }
