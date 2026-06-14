@@ -1,7 +1,9 @@
 package io.featurehub.mr.events
 
 import io.featurehub.db.api.CacheRefresherApi
+import io.featurehub.db.publish.CommonCacheGenerator
 import io.featurehub.db.publish.DbCacheSource
+import io.featurehub.db.publish.DefaultCommonCacheGenerator
 import io.featurehub.mr.events.common.DummyPublisher
 import io.featurehub.db.publish.FeatureModelWalker
 import io.featurehub.db.publish.FeatureModelWalkerService
@@ -38,6 +40,7 @@ class EventingFeature : Feature {
         if (amPublishing) {
           // the broadcaster will determine if dacha2 is enabled and not publish to that channel if not
           bind(CloudEventCacheBroadcaster::class.java).to(CacheBroadcast::class.java).`in`(Singleton::class.java)
+          bind(DefaultCommonCacheGenerator::class.java).to(CommonCacheGenerator::class.java).`in`(Singleton::class.java)
           bind(DbCacheSource::class.java).to(CacheSource::class.java).to(CacheApi::class.java)
             .to(CacheRefresherApi::class.java)
             .`in`(

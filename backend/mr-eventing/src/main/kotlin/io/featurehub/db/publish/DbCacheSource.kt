@@ -58,6 +58,7 @@ open class DbCacheSource @Inject constructor(
   private val cacheBroadcasters: IterableProvider<CacheBroadcast>,
   private val internalFeatureGroupApi: CacheSourceFeatureGroupApi,
   private val featureModelWalker: FeatureModelWalker,
+  private val commonCacheGenerator: CommonCacheGenerator,
   executorSupplier: ExecutorSupplier
 ) : CacheSource, CacheApi, CacheRefresherApi {
   private val executor: ExecutorService
@@ -338,7 +339,7 @@ open class DbCacheSource @Inject constructor(
       .version(dfv.version!!)
       .value(featureValueAsObject(dfv.defaultValue, feature.valueType))
       .locked(dfv.isLocked)
-      .rolloutStrategies(collectCombinedRolloutStrategies(dfv, featureGroupRolloutStrategies))
+      .rolloutStrategies(commonCacheGenerator.collectCombinedRolloutStrategies(dfv, featureGroupRolloutStrategies))
       .key(feature.key)
       .retired(dfv.retired)
       .personIdWhoChanged(dfv.whoUpdated.id)
@@ -418,93 +419,8 @@ open class DbCacheSource @Inject constructor(
     )
   }
 
-  private fun fromRolloutStrategyAttribute(rsa: RolloutStrategyAttribute): CacheRolloutStrategyAttribute {
-    return CacheRolloutStrategyAttribute()
-      .conditional(rsa.conditional)
-      .values(rsa.values)
-      .fieldName(rsa.fieldName)
-      .type(rsa.type)
-  }
 
 
-
-  private fun fromRolloutStrategy(rs: RolloutStrategy): CacheRolloutStrategy {
-    return CacheRolloutStrategy()
-      .id(rs.id ?: "rs-id")
-      .percentage(rs.percentage)
-      .percentageAttributes(rs.percentageAttributes)
-      .value(rs.value)
-      .attributes(if (rs.attributes == null) mutableListOf() else rs.attributes!!
-        .map { rsa: RolloutStrategyAttribute -> fromRolloutStrategyAttribute(rsa) }
-        )
-  }
-
-  private fun fromApplicationRolloutStrategy(rs: DbStrategyForFeatureValue): CacheRolloutStrategy {
-    val value = if (rs.featureValue.feature.valueType == FeatureValueType.BOOLEAN) "true".equals(rs.value) else rs.value
-    return CacheRolloutStrategy()
-      .id(rs.rolloutStrategy.shortUniqueCode)
-      .percentage(rs.rolloutStrategy.strategy.percentage)
-      .percentageAttributes(rs.rolloutStrategy.strategy.percentageAttributes)
-      .value(value)
-      .attributes(if (rs.rolloutStrategy.strategy.attributes == null) mutableListOf() else rs.rolloutStrategy.strategy.attributes!!
-        .map { rsa: RolloutStrategyAttribute -> fromRolloutStrategyAttribute(rsa) }
-        )
-  }
-
-  private fun fromPortfolioRolloutStrategy(rs: DbPortfolioStrategyForFeatureValue): CacheRolloutStrategy {
-    val value = if (rs.featureValue.feature.valueType == FeatureValueType.BOOLEAN) "true".equals(rs.value) else rs.value
-    return CacheRolloutStrategy()
-      .id(rs.rolloutStrategy.shortUniqueCode)
-      .percentage(rs.rolloutStrategy.strategy.percentage)
-      .percentageAttributes(rs.rolloutStrategy.strategy.percentageAttributes)
-      .value(value)
-      .attributes(if (rs.rolloutStrategy.strategy.attributes == null) mutableListOf() else rs.rolloutStrategy.strategy.attributes!!
-        .map { rsa: RolloutStrategyAttribute -> fromRolloutStrategyAttribute(rsa) }
-        )
-  }
-
-  // combines the custom and shared rollout strategies
-  private fun collectCombinedRolloutStrategies(
-    featureValue: DbFeatureValue,
-    featureGroupRolloutStrategies: List<RolloutStrategy>?
-  ): List<CacheRolloutStrategy> {
-    log.trace("cache combine strategies")
-
-    val allStrategies = mutableListOf<CacheRolloutStrategy>()
-    allStrategies.addAll(featureValue.rolloutStrategies.map { rs -> fromRolloutStrategy(rs) })
-
-    val activeSharedStrategies = QDbStrategyForFeatureValue()
-      .select(QDbStrategyForFeatureValue.Alias.value)
-      .featureValue.id.eq(featureValue.id)
-      .enabled.isTrue
-      .rolloutStrategy.fetch(QDbApplicationRolloutStrategy.Alias.strategy, QDbApplicationRolloutStrategy.Alias.shortUniqueCode)
-      .findList()
-
-    allStrategies.addAll(activeSharedStrategies.filter { !it.rolloutStrategy.strategy.disabled }.map { shared ->
-        val rs = fromApplicationRolloutStrategy(shared)
-        rs.value = if (featureValue.feature.valueType == FeatureValueType.BOOLEAN) "true" == shared.value else shared.value // the value associated with the shared strategy is set here not in the strategy itself
-        rs
-      })
-
-    val activePortfolioStrategies = QDbPortfolioStrategyForFeatureValue()
-      .select(QDbPortfolioStrategyForFeatureValue.Alias.value)
-      .featureValue.id.eq(featureValue.id)
-      .enabled.isTrue
-      .rolloutStrategy.fetch(QDbPortfolioRolloutStrategy.Alias.strategy, QDbPortfolioRolloutStrategy.Alias.shortUniqueCode)
-      .findList()
-
-    allStrategies.addAll(activePortfolioStrategies.filter { !it.rolloutStrategy.strategy.disabled }.map { shared ->
-        val rs = fromPortfolioRolloutStrategy(shared)
-        rs.value = if (featureValue.feature.valueType == FeatureValueType.BOOLEAN) "true" == shared.value else shared.value // the value associated with the shared strategy is set here not in the strategy itself
-        rs
-      })
-
-    featureGroupRolloutStrategies?.let { fgStrategies ->
-      allStrategies.addAll(fgStrategies.map { fromRolloutStrategy(it) })
-    }
-
-    return allStrategies
-  }
 
   override fun deleteFeatureChange(feature: DbApplicationFeature, environmentId: UUID) {
     executor.submit {
