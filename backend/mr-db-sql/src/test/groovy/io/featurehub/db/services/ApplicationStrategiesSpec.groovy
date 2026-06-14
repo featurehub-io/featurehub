@@ -19,6 +19,7 @@ import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.RolloutStrategyInstance
 import io.featurehub.mr.model.UpdateApplicationRolloutStrategy
+import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Rollup
 import spock.lang.Unroll
 
@@ -53,6 +54,22 @@ class ApplicationStrategiesSpec extends Base3Spec {
     return applicationRolloutStrategySqlApi.createStrategy(app1.id,
       new CreateApplicationRolloutStrategy().name(ranName()), superPerson.id.id, Opts.empty()
     )
+  }
+
+  FeatureValue associateSpecificFeatureValueStrategy(String key, Object val) {
+    def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+
+    if (fv == null) {
+      fv = new FeatureValue().key(key).rolloutStrategyInstances([])
+    }
+
+    fv.value(val)
+    fv.locked(false)
+    fv.addRolloutStrategiesItem(new RolloutStrategy().id(UUID.randomUUID().toString()).value(val).name(ranName()).attributes([]) )
+
+    def updatedValue = featureSqlApi.updateFeatureValueForEnvironment(env1.id, key, fv, allPermissions())
+
+    return updatedValue
   }
 
   FeatureValue associateStrategyWithFeatureValue(String key, ApplicationRolloutStrategy strategy, Object val) {
@@ -92,7 +109,6 @@ class ApplicationStrategiesSpec extends Base3Spec {
       applicationRolloutStrategySqlApi.updateStrategy(app1.id, strategy.id,
         new UpdateApplicationRolloutStrategy().percentage(20).name(updateName), superPerson.id.id, Opts.empty())
     then:
-      1 *
       1 * internalFeatureApi.updatedApplicationStrategy({ DbStrategyForFeatureValue fvStrategy ->
         fvStrategy.rolloutStrategy.strategy.name == updateName
         fvStrategy.rolloutStrategy.strategy.percentage == 20
@@ -100,7 +116,7 @@ class ApplicationStrategiesSpec extends Base3Spec {
         original != null
         original.percentage == null
         original.name == strategy.name
-      }, _)
+      }, _, _)
     where:
       featureType | val
       FeatureValueType.BOOLEAN | false
@@ -111,6 +127,40 @@ class ApplicationStrategiesSpec extends Base3Spec {
       FeatureValueType.STRING | "x"
       FeatureValueType.JSON | null
       FeatureValueType.JSON | "x"
+  }
+
+  def "when we update or detach the feature strategy it passes the existing rollout strategies so the auditing can be notified"() {
+    given: "we create two features"
+      def keys = [createFeature(), createFeature()]
+    and: "we add specific rollout strategies to each"
+      def fv1 = associateSpecificFeatureValueStrategy(keys[0], false)
+      def fv2 = associateSpecificFeatureValueStrategy(keys[1], true)
+    and: "we create one application strategy"
+      def strategy = createStrategy()
+    and: "we associate the strategy with both features"
+      keys.each { associateStrategyWithFeatureValue(it, strategy, false) }
+    and: "we reset the internalFeatureApi mock because we want to track what strategies are sent on change"
+      internalFeatureApi = Mock(InternalFeatureApi)
+      applicationRolloutStrategySqlApi = new ApplicationRolloutStrategySqlApi(convertUtils, internalFeatureApi)
+    and: "we get the results of the strategy collection from internalFeatureApi"
+      def ifApi = new InternalFeatureSqlApi(Mock(Conversions), Mock(CacheSource), Mock(FeatureMessagingPublisher))
+      def fv1Strategies = ifApi.collectFeatureValueStrategies(fv1.id)
+      def fv2Strategies = ifApi.collectFeatureValueStrategies(fv2.id)
+    when: "we update the strategy percentage"
+      applicationRolloutStrategySqlApi.updateStrategy(app1.id, strategy.id,
+        new UpdateApplicationRolloutStrategy().percentage(1000), superuser, Opts.empty())
+    then:
+      1 * internalFeatureApi.collectFeatureValueStrategies(fv1.id) >> fv1Strategies
+      1 * internalFeatureApi.collectFeatureValueStrategies(fv2.id) >> fv2Strategies
+      1 * internalFeatureApi.updatedApplicationStrategy(_, _, _, { List<RolloutStrategy> existingStrategies ->
+        // the names are unique because they have been randomised
+        existingStrategies.find({ it.name == strategy.name})
+        existingStrategies.find({ it.name == fv1.rolloutStrategies[0].name})
+      })
+      1 * internalFeatureApi.updatedApplicationStrategy(_, _, _, { List<RolloutStrategy> existingStrategies ->
+        existingStrategies.find({ it.name == strategy.name})
+        existingStrategies.find({ it.name == fv2.rolloutStrategies[0].name})
+      })
   }
 
   def "when we update or delete the feature strategy it will update the feature values"() {
@@ -126,24 +176,24 @@ class ApplicationStrategiesSpec extends Base3Spec {
     when: "we update the strategy name"
       applicationRolloutStrategySqlApi.updateStrategy(app1.id, strategy.id, new UpdateApplicationRolloutStrategy().name(ranName()), superuser, Opts.empty())
     then: "there is no interaction with the features as nothing changed that was important"
-      0 * internalFeatureApi.updatedApplicationStrategy(_, _)
+      0 * internalFeatureApi.updatedApplicationStrategy(_, _, _, _)
     when: "we update the strategy percentage"
       applicationRolloutStrategySqlApi.updateStrategy(app1.id, strategy.id,
         new UpdateApplicationRolloutStrategy().percentage(1000), superuser, Opts.empty())
     then:
       2 * internalFeatureApi.updatedApplicationStrategy({ DbStrategyForFeatureValue fvStrategy ->
         keys.contains(fvStrategy.featureValue.feature.key)
-      }, { RolloutStrategy rs -> rs.percentage == null }, _)
+      }, { RolloutStrategy rs -> rs.percentage == null }, _, _)
     when:
       applicationRolloutStrategySqlApi.archiveStrategy(app1.id, strategy.id, superuser)
     then: // if we do this in separate then:'s then we can recognize the different calls the same method
       1 * internalFeatureApi.detachApplicationStrategy({ DbStrategyForFeatureValue fv ->
         fv.featureValue.feature.key == keys.first()
-      }, { RolloutStrategy rs -> rs.percentage == 1000 },  _)
+      }, { RolloutStrategy rs -> rs.percentage == 1000 },  _, _)
     then:
       1 * internalFeatureApi.detachApplicationStrategy({ DbStrategyForFeatureValue fv ->
         fv.featureValue.feature.key == keys.last()
-      }, _, _)
+      }, _, _, _)
   }
 
   def "when we use the real internal feature service and update and delete strategies"() {

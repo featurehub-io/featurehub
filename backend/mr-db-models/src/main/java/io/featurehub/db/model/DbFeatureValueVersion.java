@@ -30,6 +30,7 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
                                boolean locked, boolean retired,
                                @NotNull List<RolloutStrategy> rolloutStrategies,
                                @NotNull List<SharedRolloutStrategyVersion> sharedRolloutStrategies,
+                               @NotNull List<SharedRolloutStrategyVersion> sharedPortfolioRolloutStrategies,
                                DbApplicationFeature feature,
                                @Nullable Long versionFrom) {
     super(whoCreated, locked);
@@ -39,6 +40,7 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
 
     this.retired = retired;
     this.sharedRolloutStrategies = sharedRolloutStrategies;
+    this.sharedPortfolioRolloutStrategies = sharedPortfolioRolloutStrategies;
     this.feature = feature;
     this.versionFrom = versionFrom;
 
@@ -73,12 +75,25 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
   @Column(name = "shared_strat")
   protected List<SharedRolloutStrategyVersion> sharedRolloutStrategies;
 
+  @DbJson
+  @Column(name = "shared_pstrat")
+  protected List<SharedRolloutStrategyVersion> sharedPortfolioRolloutStrategies;
+
   public @NotNull List<SharedRolloutStrategyVersion> getSharedRolloutStrategies() {
     if (sharedRolloutStrategies == null) {
       sharedRolloutStrategies = new LinkedList<>();
     }
 
     return sharedRolloutStrategies;
+  }
+
+  @NotNull
+  public List<SharedRolloutStrategyVersion> getSharedPortfolioRolloutStrategies() {
+    if (sharedPortfolioRolloutStrategies == null) {
+      sharedPortfolioRolloutStrategies = new LinkedList<>();
+    }
+
+    return sharedPortfolioRolloutStrategies;
   }
 
   public boolean isRetired() {
@@ -103,16 +118,24 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
       from.getRetired() == Boolean.TRUE,
       from.getRolloutStrategies(),
       transformSharedStrategies(from.getSharedRolloutStrategies()),
+      transformPortfolioStrategies(from.getSharedPortfolioRolloutStrategies()),
       from.getFeature(),
       versionFrom
     );
+
     return newVersion;
   }
 
   private static List<SharedRolloutStrategyVersion> transformSharedStrategies(@NotNull List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
     return sharedRolloutStrategies.stream().map(shared -> new SharedRolloutStrategyVersion(shared.getRolloutStrategy().getId(),
       shared.getRolloutStrategy().getVersion(),
-      shared.isEnabled(), shared.getValue())).collect(Collectors.toList());
+      shared.isEnabled(), shared.getValue(), shared.getPercentageOverride())).collect(Collectors.toList());
+  }
+
+  private static List<SharedRolloutStrategyVersion> transformPortfolioStrategies(@NotNull List<DbPortfolioStrategyForFeatureValue> sharedRolloutStrategies) {
+    return sharedRolloutStrategies.stream().map(shared -> new SharedRolloutStrategyVersion(shared.getRolloutStrategy().getId(),
+      shared.getRolloutStrategy().getVersion(),
+      shared.isEnabled(), shared.getValue(), shared.getPercentageOverride())).collect(Collectors.toList());
   }
 
   public @Nullable Long getVersionFrom() {

@@ -46,7 +46,7 @@ class FeatureAuditingStrategiesUnitSpec extends FeatureAuditingBaseUnitSpec {
     return updateFeatureApi.updateSelectivelyRolloutStrategies(
       person,
       new FeatureValue().rolloutStrategies(updated),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", false, false, historical, [], feature, 0),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", false, false, historical, [], [], feature, 0),
       currentFeature, lockChanged
     )
   }

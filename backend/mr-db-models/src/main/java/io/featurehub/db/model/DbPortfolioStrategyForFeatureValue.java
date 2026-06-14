@@ -3,35 +3,26 @@ package io.featurehub.db.model;
 import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.Index;
-import io.featurehub.mr.model.ApplicationRolloutStrategy;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import io.featurehub.mr.model.PortfolioRolloutStrategy;
+import jakarta.persistence.*;
+import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
-
-@Index(unique = true, columnNames = {"fk_fv_id", "fk_rs_id"}, name = "idx_feature_strat")
+@Index(unique = true, columnNames = {"fk_fv_id", "fk_prs_id"}, name = "idx_pfeature_strat")
 @Entity
-@Table(name = "fh_strat_for_feature")
+@Table(name = "fh_pstrat_for_feature")
 @ChangeLog
-public class DbStrategyForFeatureValue {
+public class DbPortfolioStrategyForFeatureValue {
   @Id
   private UUID id;
 
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_fv_id")
-  @Column(nullable = false, name = "fk_fv_id")
   private DbFeatureValue featureValue;
 
   @ManyToOne(optional = false)
-  @JoinColumn(name = "fk_rs_id")
-  @Column(nullable = false, name = "fk_rs_id")
-  private DbApplicationRolloutStrategy rolloutStrategy;
+  @JoinColumn(name = "fk_prs_id")
+  private DbPortfolioRolloutStrategy rolloutStrategy;
 
   @Column(nullable = false, name = "fv_enabled")
   private boolean enabled;
@@ -40,13 +31,13 @@ public class DbStrategyForFeatureValue {
   @Column(name = "fv_value")
   private String value;
 
-  // this allows the user to override the percentage when applying it to this feature value
+  // this allows the user to override the strategy (merge) when applying it to this feature value
   @DbJson
   @Column(name = "percent_oride", nullable = true)
   @Nullable
   private Integer percentageOverride;
 
-  private DbStrategyForFeatureValue(Builder builder) {
+  private DbPortfolioStrategyForFeatureValue(DbPortfolioStrategyForFeatureValue.Builder builder) {
     setFeatureValue(builder.featureValue);
     setRolloutStrategy(builder.rolloutStrategy);
     setEnabled(builder.enabled);
@@ -66,11 +57,11 @@ public class DbStrategyForFeatureValue {
     this.featureValue = featureValue;
   }
 
-  public DbApplicationRolloutStrategy getRolloutStrategy() {
+  public DbPortfolioRolloutStrategy getRolloutStrategy() {
     return rolloutStrategy;
   }
 
-  public void setRolloutStrategy(DbApplicationRolloutStrategy rolloutStrategy) {
+  public void setRolloutStrategy(DbPortfolioRolloutStrategy rolloutStrategy) {
     this.rolloutStrategy = rolloutStrategy;
   }
 
@@ -100,9 +91,8 @@ public class DbStrategyForFeatureValue {
 
   public static final class Builder {
     private DbFeatureValue featureValue;
-    private DbApplicationRolloutStrategy rolloutStrategy;
+    private DbPortfolioRolloutStrategy rolloutStrategy;
     private boolean enabled;
-    @Nullable
     private String value;
     @Nullable
     private Integer percentageOverride;
@@ -115,28 +105,28 @@ public class DbStrategyForFeatureValue {
       return this;
     }
 
-    public Builder featureValue(DbFeatureValue val) {
+    public DbPortfolioStrategyForFeatureValue.Builder featureValue(DbFeatureValue val) {
       featureValue = val;
       return this;
     }
 
-    public Builder rolloutStrategy(DbApplicationRolloutStrategy val) {
+    public DbPortfolioStrategyForFeatureValue.Builder rolloutStrategy(DbPortfolioRolloutStrategy val) {
       rolloutStrategy = val;
       return this;
     }
 
-    public Builder enabled(boolean val) {
+    public DbPortfolioStrategyForFeatureValue.Builder enabled(boolean val) {
       enabled = val;
       return this;
     }
 
-    public Builder value(String val) {
+    public DbPortfolioStrategyForFeatureValue.Builder value(String val) {
       value = val;
       return this;
     }
 
-    public DbStrategyForFeatureValue build() {
-      return new DbStrategyForFeatureValue(this);
+    public DbPortfolioStrategyForFeatureValue build() {
+      return new DbPortfolioStrategyForFeatureValue(this);
     }
   }
 }
