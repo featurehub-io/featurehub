@@ -40,6 +40,7 @@ interface InternalFeatureApi {
     personWhoUpdated: DbPerson,
     priorStrategiesToUpdate: List<RolloutStrategy>
   )
+
   // deletes the attachment to an application strategy and publishes the feature value change (history created)
   fun detachApplicationStrategy(
     strategyForFeatureValue: DbStrategyForFeatureValue,
@@ -64,7 +65,7 @@ interface InternalFeatureApi {
     priorStrategiesToUpdate: List<RolloutStrategy>
   )
 
-  companion object  {
+  companion object {
     fun toRolloutStrategy(appStrategy: DbApplicationRolloutStrategy): RolloutStrategy {
       return RolloutStrategy().id(appStrategy.shortUniqueCode)
         .percentage(appStrategy.strategy.percentage)
@@ -95,9 +96,11 @@ interface InternalFeatureApi {
   }
 }
 
-class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conversions,
-                                                private val cacheSource: CacheSource,
-                                                private val featureMessagePublisher: FeatureMessagingPublisher,)  : InternalFeatureApi {
+class InternalFeatureSqlApi @Inject constructor(
+  private val convertUtils: Conversions,
+  private val cacheSource: CacheSource,
+  private val featureMessagePublisher: FeatureMessagingPublisher,
+) : InternalFeatureApi {
   private val log: Logger = LoggerFactory.getLogger(InternalFeatureSqlApi::class.java)
 
   override fun saveFeatureValue(featureValue: DbFeatureValue, forceUpdate: Boolean) {
@@ -129,7 +132,10 @@ class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conver
     val fvDirectStrategies = fv.rolloutStrategies
 
     val portfolioStrategies = QDbPortfolioStrategyForFeatureValue()
-      .select(QDbPortfolioStrategyForFeatureValue.Alias.rolloutStrategy, QDbPortfolioStrategyForFeatureValue.Alias.value)
+      .select(
+        QDbPortfolioStrategyForFeatureValue.Alias.rolloutStrategy,
+        QDbPortfolioStrategyForFeatureValue.Alias.value
+      )
       .featureValue.id.eq(fv.id).findList().map { InternalFeatureApi.toRolloutStrategy(it) }
 
     val appStrategies = QDbStrategyForFeatureValue()
@@ -142,7 +148,8 @@ class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conver
   }
 
   override fun collectFeatureValueStrategies(featureValueId: UUID): List<RolloutStrategy> {
-    return QDbFeatureValue().id.eq(featureValueId).select(QDbFeatureValue.Alias.rolloutStrategies).findOne()?.let { fv -> collectFeatureValueStrategies(fv) } ?: emptyList()
+    return QDbFeatureValue().id.eq(featureValueId).select(QDbFeatureValue.Alias.rolloutStrategies).findOne()
+      ?.let { fv -> collectFeatureValueStrategies(fv) } ?: emptyList()
   }
 
   override fun updatedApplicationStrategy(
@@ -159,8 +166,10 @@ class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conver
       // this will cause an audit webhook automatically
       cacheSource.publishFeatureChange(fv)
 
-      publishFeatureMessage(fv, "updated", priorStrategiesToUpdate, applicationStrategyBeingUpdated,
+      publishFeatureMessageApplicationStrategyChange(
+        fv, toRolloutStrategyUpdate("updated", priorStrategiesToUpdate, applicationStrategyBeingUpdated,
         InternalFeatureApi.toRolloutStrategy(strategyForFeatureValue))
+      )
     }
   }
 
@@ -174,8 +183,12 @@ class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conver
       fv.whoUpdated = personWhoUpdated
       saveFeatureValue(fv, true)
       cacheSource.publishFeatureChange(fv)
-      publishFeatureMessage(fv, "updated", priorStrategiesToUpdate, portfolioStrategyBeingUpdated,
-        InternalFeatureApi.toRolloutStrategy(portfolioStrategy))
+      publishFeatureMessagePortfolioStrategyChange(
+        fv, toRolloutStrategyUpdate(
+          "updated", priorStrategiesToUpdate, portfolioStrategyBeingUpdated,
+          InternalFeatureApi.toRolloutStrategy(portfolioStrategy)
+        )
+      )
     }
   }
 
@@ -196,18 +209,51 @@ class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conver
 
         // this will cause an audit webhook automatically
         cacheSource.publishFeatureChange(fv)
-        publishFeatureMessage(fv, "deleted",
-          priorStrategiesToUpdate,
-          portfolioStrategyBeingDetached.value(originalValue), null)
+        publishFeatureMessagePortfolioStrategyChange(
+          fv, toRolloutStrategyUpdate(
+            "deleted",
+            priorStrategiesToUpdate,
+            portfolioStrategyBeingDetached.value(originalValue), null
+          )
+        )
       }
     }
   }
 
-  private fun publishFeatureMessage(fv: DbFeatureValue,
-                                    action: String,
-                                    priorStrategies: List<RolloutStrategy>,
-                                    originalStrategy: RolloutStrategy,
-                                    newStrategy: RolloutStrategy?) {
+  private fun publishFeatureMessagePortfolioStrategyChange(
+    fv: DbFeatureValue,
+    portfolioStrategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>
+  ) {
+    publishFeatureMessage(fv, null, portfolioStrategyUpdates)
+  }
+
+  private fun toRolloutStrategyUpdate(
+    action: String,
+    priorStrategies: List<RolloutStrategy>,
+    originalStrategy: RolloutStrategy,
+    newStrategy: RolloutStrategy?
+  ): MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy> {
+    return MultiFeatureValueUpdate(
+      true,
+      mutableListOf(RolloutStrategyUpdate(type = action, old = originalStrategy, new = newStrategy)),
+      mutableListOf(),
+      priorStrategies
+    )
+  }
+
+  private fun publishFeatureMessageApplicationStrategyChange(
+    fv: DbFeatureValue,
+    appStrategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>
+  ) {
+    publishFeatureMessage(fv, appStrategyUpdates, null)
+  }
+
+
+  private fun publishFeatureMessage(
+    fv: DbFeatureValue,
+    appStrategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>?,
+    portfolioStrategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>?,
+  ) {
     val singleNotUpdated = SingleFeatureValueUpdate(hasChanged = false, updated = false, previous = false)
 
     try {
@@ -217,18 +263,15 @@ class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conver
           fv, singleNotUpdated,
           SingleNullableFeatureValueUpdate(false, null, null), singleNotUpdated,
           MultiFeatureValueUpdate(),
-          MultiFeatureValueUpdate(
-            true,
-            mutableListOf(RolloutStrategyUpdate(type = action, old = originalStrategy, new = newStrategy)),
-            mutableListOf(),
-            priorStrategies
-          ),
+          appStrategyUpdates ?: MultiFeatureValueUpdate(), portfolioStrategyUpdates ?: MultiFeatureValueUpdate(),
           SingleNullableFeatureValueUpdate(true, fv.version - 1, fv.version)
         ), convertUtils.organizationId()
       )
     } catch (e: Exception) {
-      log.error("failed to process publish request for feature {} (id {} in app {})",
-        fv.feature.key, fv.feature.id, fv.feature.parentApplication.id, e)
+      log.error(
+        "failed to process publish request for feature {} (id {} in app {})",
+        fv.feature.key, fv.feature.id, fv.feature.parentApplication.id, e
+      )
     }
   }
 
@@ -250,9 +293,11 @@ class InternalFeatureSqlApi @Inject constructor(private val convertUtils: Conver
 
         // this will cause an audit webhook automatically
         cacheSource.publishFeatureChange(fv)
-        publishFeatureMessage(fv, "deleted",
+        publishFeatureMessageApplicationStrategyChange(
+          fv,  toRolloutStrategyUpdate("deleted",
           priorStrategiesToUpdate,
           applicationStrategyBeingDetached.value(originalValue), null)
+        )
       }
     }
   }

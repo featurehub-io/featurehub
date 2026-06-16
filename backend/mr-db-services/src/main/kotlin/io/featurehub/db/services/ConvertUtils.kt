@@ -591,24 +591,18 @@ open class ConvertUtils @Inject constructor(
       .retired(true == fs.retired)
       .version(fs.version)
     if (appFeature.valueType == FeatureValueType.BOOLEAN) {
-      featureValue.valueBoolean(
-        if (fs.defaultValue == null) java.lang.Boolean.FALSE else java.lang.Boolean.parseBoolean(fs.defaultValue)
-      )
-      featureValue.value = featureValue.valueBoolean;
+      featureValue.value = if (fs.defaultValue == null) java.lang.Boolean.FALSE else java.lang.Boolean.parseBoolean(fs.defaultValue)
     }
     if (appFeature.valueType == FeatureValueType.JSON) {
-      featureValue.valueJson(fs.defaultValue)
-      featureValue.value = featureValue.valueJson;
+      featureValue.value = fs.defaultValue;
     }
     if (appFeature.valueType == FeatureValueType.STRING) {
-      featureValue.valueString(fs.defaultValue)
-      featureValue.value = featureValue.valueString;
+      featureValue.value = fs.defaultValue;
     }
     if (appFeature.valueType == FeatureValueType.NUMBER) {
-      featureValue.valueNumber(
+      featureValue.value(
         if (fs.defaultValue == null) null else BigDecimal(fs.defaultValue)
       )
-      featureValue.value = featureValue.valueNumber;
     }
     featureValue.environmentId = fs.environment.id
     if (opts.contains(FillOpts.RolloutStrategies)) {
