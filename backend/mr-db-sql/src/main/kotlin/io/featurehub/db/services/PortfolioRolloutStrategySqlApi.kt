@@ -262,21 +262,16 @@ class PortfolioRolloutStrategySqlApi @Inject constructor(
       val originalRolloutStrategy = InternalFeatureApi.toRolloutStrategy(strategy)
       val originalStrategiesAssociatedWithFeatureValues = strategy.sharedRolloutStrategies?.associate { it.featureValue.id to internalFeatureApi.collectFeatureValueStrategies(it.featureValue)  } ?: mapOf()
 
+      val attachedStrategies = strategy.sharedRolloutStrategies?.toList() ?: emptyList()
+
       strategy.whenArchived = LocalDateTime.now()
       strategy.name = (strategy.name + Conversions.archivePrefix + isoDate.format(strategy.whenArchived)).take(150)
       strategy.whoChanged = p
-      strategy.sharedRolloutStrategies = mutableListOf()
       strategy.save()
 
-      strategy.sharedRolloutStrategies?.let { attachedStrategies ->
-        // we are going go and detach all of these, which will require us to create new audit records for this
-        val copy = attachedStrategies.toList()
-
-        copy.forEach { strategyForFeatureValue ->
-          // this needs to remove the connection, create an audit trail, and publish a new record to Edge, and trigger webhooks
-          internalFeatureApi.detachPortfolioStrategy(strategyForFeatureValue, originalRolloutStrategy, p,
-            originalStrategiesAssociatedWithFeatureValues[strategyForFeatureValue.featureValue.id] ?: emptyList())
-        }
+      attachedStrategies.forEach { strategyForFeatureValue ->
+        internalFeatureApi.detachPortfolioStrategy(strategyForFeatureValue, originalRolloutStrategy, p,
+          originalStrategiesAssociatedWithFeatureValues[strategyForFeatureValue.featureValue.id] ?: emptyList())
       }
     }
 

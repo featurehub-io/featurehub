@@ -3266,28 +3266,17 @@ components:
           type: boolean
         value:
           description: "Preferred now, please don't use valueX fields"
-        valueString:
-          deprecated: true
-          nullable: true
-          description: "default value if no strategy matches. interpreted by type in parent"
-          type: string
-        valueNumber:
-          deprecated: true
-          nullable: true
-          type: number
-        valueBoolean:
-          deprecated: true
-          nullable: true
-          type: boolean
-        valueJson:
-          deprecated: true
-          nullable: true
-          type: string
         retired:
           nullable: false
           default: false
           type: boolean
           description: "if false or null, this feature will visible on edge. if true, it will not be passed to the client"
+        portfolioStrategyInstances:
+          type: array
+          nullable: true
+          default: []
+          items:
+            $ref: "#/components/schemas/RolloutStrategyInstance"
         rolloutStrategyInstances:
           type: array
           nullable: true
