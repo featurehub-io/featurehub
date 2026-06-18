@@ -1,10 +1,8 @@
 package io.featurehub.events
 
 import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.cloudevents.CloudEvent
+import io.featurehub.jersey.config.JacksonObjectProvider
 import io.featurehub.metrics.MetricsCollector
 import io.featurehub.rest.Info
 import io.featurehub.utils.FallbackPropertyConfig
@@ -178,9 +176,7 @@ constructor(
 ) : CloudEventConfigDiscovery {
   private val log: Logger = LoggerFactory.getLogger(CloudEventConfigDiscovery::class.java)
   private val yaml = Yaml()
-  private val mapper = ObjectMapper().apply { registerModule(KotlinModule.Builder().build()).registerModule(
-    JavaTimeModule()
-  ) }
+  private val mapper = JacksonObjectProvider.mapper
 
   companion object {
     private val tags = mutableSetOf<String>()

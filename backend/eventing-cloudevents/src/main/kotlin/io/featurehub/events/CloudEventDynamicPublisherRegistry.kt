@@ -80,9 +80,6 @@ class CloudEventDynamicPublisherRegistryImpl @Inject constructor(
   private var defaultPublisher: String? = null
   private var counter = 1
   private val metricCache = ConcurrentHashMap<String, CloudEventChannelMetric>()
-  private val mapper = ObjectMapper().apply { registerModule(KotlinModule.Builder().build()).registerModule(
-    JavaTimeModule()
-  ) }
 
   override fun registerDynamicPublisherProvider(
     prefixes: List<String>,

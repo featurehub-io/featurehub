@@ -8,7 +8,7 @@ import io.featurehub.utils.FallbackPropertyConfig;
 import jakarta.ws.rs.core.Feature;
 import jakarta.ws.rs.core.FeatureContext;
 import org.glassfish.jersey.CommonProperties;
-import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
 
@@ -24,10 +24,12 @@ public class CommonConfiguration implements Feature {
     config.property(CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE, true);
     config.property(CommonProperties.MOXY_JSON_FEATURE_DISABLE, true);
 
-    config.register(JacksonFeature.class);
+    // this is the objectmapper we want to use
+    config.register(JacksonContextProvider.class);
+    // this forces all requests to use an objectmapper to use our application wide singleton
+    config.register(new JacksonJaxbJsonProvider(JacksonObjectProvider.mapper, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS));
     config.register(MultiPartFeature.class);
     config.register(GZipEncoder.class);
-    config.register(JacksonContextProvider.class);
     config.register(LocalExceptionMapper.class);
     config.register(OffsetDateTimeQueryProvider.class);
     config.register(OpenApiEnumProvider.class);
