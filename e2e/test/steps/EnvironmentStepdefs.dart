@@ -96,7 +96,7 @@ class EnvironmentStepdefs {
 
     group.environmentRoles.add(egr);
 
-    await common.groupService.updateGroupOnPortfolio(application.portfolioId!,
+    await common.groupService.updateGroupOnPortfolioV2(application.portfolioId!,
         UpdateGroup(id: group.id, version: group.version, environmentRoles: group.environmentRoles),
         includeGroupRoles: true,
         updateEnvironmentGroupRoles: true);
@@ -148,7 +148,7 @@ class EnvironmentStepdefs {
         roles: [RoleType.READ, RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]);
 
     group.environmentRoles.add(egr);
-    await common.groupService.updateGroupOnPortfolio(application.portfolioId!,
+    await common.groupService.updateGroupOnPortfolioV2(application.portfolioId!,
         UpdateGroup(id: group.id, version: group.version, environmentRoles: group.environmentRoles),
         includeGroupRoles: true, updateEnvironmentGroupRoles: true);
   }
@@ -180,7 +180,7 @@ class EnvironmentStepdefs {
     });
 
     group.environmentRoles.add(egr);
-    await common.groupService.updateGroupOnPortfolio(group.id,
+    await common.groupService.updateGroupOnPortfolioV2(group.id,
         UpdateGroup(id: group.id, version: group.version, environmentRoles: group.environmentRoles),
         includeGroupRoles: true, updateEnvironmentGroupRoles: true);
   }
@@ -217,7 +217,7 @@ class EnvironmentStepdefs {
       eRoles.roles.add(roleType!);
     }
 
-    await common.groupService.updateGroupOnPortfolio(shared.portfolio.id,
+    await common.groupService.updateGroupOnPortfolioV2(shared.portfolio.id,
         UpdateGroup(id: updatedGroup.id, version: updatedGroup.version, environmentRoles: updatedGroup.environmentRoles),
         updateEnvironmentGroupRoles: true);
   }
@@ -347,7 +347,7 @@ class EnvironmentStepdefs {
     egr.roles.add(RoleType.UNLOCK);
 
     group.environmentRoles.add(egr);
-    await common.groupService.updateGroupOnPortfolio(group.portfolioId!,
+    await common.groupService.updateGroupOnPortfolioV2(group.portfolioId!,
         UpdateGroup(id: group.id, version: group.version, environmentRoles: group.environmentRoles),
         includeGroupRoles: true, updateEnvironmentGroupRoles: true);
   }

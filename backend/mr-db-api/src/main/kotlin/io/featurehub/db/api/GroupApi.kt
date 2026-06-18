@@ -58,4 +58,15 @@ interface GroupApi {
 
   fun findGroups(portfolioId: UUID, filter: String?, ordering: SortOrder?, opts: Opts): List<Group>
   fun updateAdminGroupForPortfolio(portfolioId: UUID, name: String)
+
+  @Throws(OptimisticLockingException::class, DuplicateGroupException::class, DuplicateUsersException::class)
+  fun updateGroupV1(
+    gid: UUID,
+    group: Group,
+    appId: UUID?,
+    updateMembers: Boolean,
+    updateApplicationGroupRoles: Boolean,
+    updateEnvironmentGroupRoles: Boolean,
+    opts: Opts
+  ): Group?
 }

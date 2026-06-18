@@ -288,7 +288,7 @@ class GroupResourceSpec extends Specification {
       def pidOwner = UUID.randomUUID()
       SecurityContext sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), pidOwner, pidOwner)
     when:
-      Group g = gr.updateGroupOnPortfolio(portfolioId, new UpdateGroup().id(groupId).name("sausage"), new GroupServiceDelegate.UpdateGroupOnPortfolioHolder(), sc)
+      Group g = gr.updateGroupOnPortfolioV2(portfolioId, new UpdateGroup().id(groupId).name("sausage"), new GroupServiceDelegate.UpdateGroupOnPortfolioV2Holder(), sc)
     then:
       1 * groupApi.updateGroup(groupId, { UpdateGroup g1 -> g1.name == "sausage" }, null, false, false, (Opts)_) >> new Group().name("sausage")
       g.getName() == "sausage"
@@ -299,7 +299,7 @@ class GroupResourceSpec extends Specification {
       def pidOwner = UUID.randomUUID()
       SecurityContext sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), pidOwner, adminUser)
     when:
-      Group g = gr.updateGroupOnPortfolio(portfolioId, new UpdateGroup().id(groupId).name("sausage"), new GroupServiceDelegate.UpdateGroupOnPortfolioHolder(applicationId: pidOwner), sc)
+      Group g = gr.updateGroupOnPortfolioV2(portfolioId, new UpdateGroup().id(groupId).name("sausage"), new GroupServiceDelegate.UpdateGroupOnPortfolioV2Holder(applicationId: pidOwner), sc)
     then:
       1 * groupApi.updateGroup(groupId, { UpdateGroup g1 -> g1.name == "sausage" }, pidOwner, false, false, (Opts)_) >> new Group().name("sausage")
       g.getName() == "sausage"

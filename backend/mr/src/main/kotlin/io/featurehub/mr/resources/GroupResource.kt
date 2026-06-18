@@ -231,10 +231,46 @@ class GroupResource @Inject constructor(
       ?: throw NotFoundException("No such group")
   }
 
+  @Deprecated("Deprecated in Java")
   override fun updateGroupOnPortfolio(
     id: UUID,
-    group: UpdateGroup,
+    group: Group,
     holder: GroupServiceDelegate.UpdateGroupOnPortfolioHolder,
+    securityContext: SecurityContext?
+  ): Group {
+    val groupHolder = GroupHolder()
+    groupCheck(group.id, authManager.from(securityContext)) { groupCheck: Group ->
+      isAdminOfGroup(groupCheck, securityContext!!, "No permission to rename group.") {
+        try {
+          groupHolder.group = groupApi.updateGroupV1(
+            group.id,
+            group,
+            holder.applicationId,
+            true == holder.updateMembers,
+            true == holder.updateApplicationGroupRoles,
+            true == holder.updateEnvironmentGroupRoles,
+            Opts().add(FillOpts.Members, holder.includeMembers).add(FillOpts.Acls, holder.includeGroupRoles)
+          )
+        } catch (e: OptimisticLockingException) {
+          throw WebApplicationException(422)
+        } catch (e: GroupApi.DuplicateGroupException) {
+          throw WebApplicationException(Response.Status.CONFLICT)
+        } catch (e: DuplicateUsersException) {
+          throw WebApplicationException(Response.Status.CONFLICT)
+        }
+      }
+    }
+    if (groupHolder.group == null) {
+      throw NotFoundException()
+    }
+
+    return groupHolder.group!!
+  }
+
+  override fun updateGroupOnPortfolioV2(
+    id: UUID,
+    group: UpdateGroup,
+    holder: GroupServiceDelegate.UpdateGroupOnPortfolioV2Holder,
     securityContext: SecurityContext?
   ): Group {
     val groupHolder = GroupHolder()

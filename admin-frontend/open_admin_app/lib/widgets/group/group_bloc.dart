@@ -106,7 +106,7 @@ class GroupBloc implements Bloc {
     try {
       groupToUpdate.name = name;
 
-      final newGroup = await _groupServiceApi.updateGroupOnPortfolio(
+      final newGroup = await _groupServiceApi.updateGroupOnPortfolioV2(
           mrClient.currentPortfolio!.id, UpdateGroup(id: groupToUpdate.id, version: groupToUpdate.version, name: name),
           includeMembersV2: true);
 

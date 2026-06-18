@@ -365,6 +365,90 @@ paths:
         422:
           description: "Trying to save old record"
 
+  /mr-api/portfolio/{id}/v2/group:
+    parameters:
+      - name: id
+        description: "The id of the portfolio to find"
+        in: path
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: includePeople
+        description: "include people in each group"
+        in: query
+        schema:
+          type: boolean
+    put:
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - GroupService
+      description: "Update a group"
+      operationId: updateGroupOnPortfolioV2
+      parameters:
+        - name: includeMembers
+          description: "include people in each group"
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: includeMembersV2
+          description: "include anemic people in each group with superuser"
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: includeGroupRoles
+          description: "include environment and application roles in each group"
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: updateEnvironmentGroupRoles
+          description: "update environment group roles, deleting any not passed"
+          in: query
+          schema:
+            type: boolean
+          required: false
+        - name: updateApplicationGroupRoles
+          description: "update application group roles, deleting any not passed"
+          in: query
+          schema:
+            type: boolean
+          required: false
+        - name: applicationId
+          description: "if updating the application group roles, and the application id is passed, then the changes are limited to that application"
+          in: query
+          schema:
+            type: string
+            format: uuid
+          required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGroup"
+      responses:
+        200:
+          description: "Resulting group"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
+        409:
+          description: "duplicate user or duplicate group"
+        422:
+          description: "version conflict"
   /mr-api/portfolio/{id}/group:
     parameters:
       - name: id
@@ -447,27 +531,26 @@ paths:
         - bearerAuth: [ ]
       tags:
         - GroupService
-      description: "Update a group"
+      description: "Update a group. Please use updateGroupOnPortfolioV2"
+      deprecated: true
       operationId: updateGroupOnPortfolio
       parameters:
         - name: includeMembers
           description: "include people in each group"
           in: query
-          required: false
-          schema:
-            type: boolean
-        - name: includeMembersV2
-          description: "include anemic people in each group with superuser"
-          in: query
-          required: false
           schema:
             type: boolean
         - name: includeGroupRoles
           description: "include environment and application roles in each group"
           in: query
-          required: false
           schema:
             type: boolean
+        - name: updateMembers
+          description: "update members, deleting those that are not passed"
+          in: query
+          schema:
+            type: boolean
+          required: false
         - name: updateEnvironmentGroupRoles
           description: "update environment group roles, deleting any not passed"
           in: query
@@ -492,7 +575,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateGroup"
+              $ref: "#/components/schemas/Group"
       responses:
         200:
           description: "Resulting group"

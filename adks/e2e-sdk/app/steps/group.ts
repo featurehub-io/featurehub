@@ -111,7 +111,7 @@ When('I assign roles {string} to the group for the current environment', async f
     groupId: group.id,
     roles: roles
   }));
-  const groupResponse = await world.superuser.groupApi.updateGroupOnPortfolio(world.portfolio.id, group,
+  const groupResponse = await world.superuser.groupApi.updateGroupOnPortfolioV2(world.portfolio.id, group,
  false, false, true, false, true);
 
   expect(groupResponse.status).to.eq(200);

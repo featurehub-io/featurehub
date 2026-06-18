@@ -332,7 +332,7 @@ class GroupSpec extends BaseSpec {
       ng.name == "new name"
   }
 
-  def "i add a couple of people, then remove one and then add a new one to the group"() {
+  def "using the v1 API i add a couple of people, then remove one and then add a new one to the group"() {
     given: "i have a group"
       Group g = nonAdminGroup()
     and: "some people"
@@ -342,11 +342,20 @@ class GroupSpec extends BaseSpec {
       database.save(p1)
       database.save(p2)
       database.save(p3)
-    when: "i update the group to add Sasha and Alena"
-      def g2 = groupSqlApi.addPersonsToGroup(g.id, [p1.id, p2.id], Opts.opts(FillOpts.Members))
+      when: "i update the group to add Sasha and Alena"
+      g.members = [
+        new Person().id(new PersonId().id(p1.id)),
+        new Person().id(new PersonId().id(p2.id)),
+      ]
+      def g2 = groupSqlApi.updateGroupV1(g.id, g, null, true, true, true, new Opts().add(FillOpts.Members))
     and: "I updated the group to remove Alena and add Toya"
-      groupSqlApi.deletePersonFromGroup(g.id, p2.id, Opts.empty())
-      def g3 = groupSqlApi.addPersonsToGroup(g.id, [p3.id], Opts.opts(FillOpts.Members))
+      def g2_copy = g2.copy()
+      g2_copy.members = [
+        new Person().id(new PersonId().id(p1.id)),
+        new Person().id(new PersonId().id(p3.id)),
+      ]
+      groupSqlApi.updateGroupV1(g.id, g2_copy, null, true, true, true, new Opts().add(FillOpts.Members))
+      def g3 = groupSqlApi.getGroup(g.id, new Opts().add(FillOpts.Members), superPerson)
     then:
       g2.members.size() == 2
       g2.members*.name.contains('Alena')
@@ -354,6 +363,30 @@ class GroupSpec extends BaseSpec {
       g3.members.size() == 2
       g3.members*.name.contains('Sasha')
       g3.members*.name.contains('Toya')
+  }
+
+  def "i add a couple of people, then remove one and then add a new one to the group"() {
+    given: "i have a group"
+      Group g = nonAdminGroup()
+    and: "some people"
+      DbPerson p1 = new DbPerson.Builder().name("Jan").email("jan@").build()
+      DbPerson p2 = new DbPerson.Builder().name("Jingjing").email("jingjing@").build()
+      DbPerson p3 = new DbPerson.Builder().name("Nine").email("nine@").build()
+      database.save(p1)
+      database.save(p2)
+      database.save(p3)
+    when: "i update the group to add Jan and Jingjing"
+      def g2 = groupSqlApi.addPersonsToGroup(g.id, [p1.id, p2.id], Opts.opts(FillOpts.Members))
+    and: "I updated the group to remove Jingjing and add Nine"
+      groupSqlApi.deletePersonFromGroup(g.id, p2.id, Opts.empty())
+      def g3 = groupSqlApi.addPersonsToGroup(g.id, [p3.id], Opts.opts(FillOpts.Members))
+    then:
+      g2.members.size() == 2
+      g2.members*.name.contains('Jan')
+      g2.members*.name.contains('Jingjing')
+      g3.members.size() == 2
+      g3.members*.name.contains('Jan')
+      g3.members*.name.contains('Nine')
   }
 
   def "i cannot rename a non-existent group"() {
