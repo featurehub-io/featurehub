@@ -1,5 +1,6 @@
 package io.featurehub.events
 
+
 import spock.lang.Specification
 
 class CloudEventConfigDiscoverySpec extends Specification {

@@ -16,9 +16,13 @@ Given('A file of endpoints I hit them all', { timeout: 60000 * 20 }, async funct
       // from:
       // select sa.api_key_client_eval,e.id from fh_service_account_env se join fh_environment e on se.fk_environment_id = e.id join fh_service_account sa on se.fk_service_account_id = sa.id;
       const keys = fs.readFileSync(process.env['ENV_SOURCE'], 'utf-8').split("\n");
-      // for (let count = 0; count <= 20; count++) {
-      for (let count = 0; count <= 1; count++) {
-        console.log(count);
+      let realCount = 0;
+      // for (let count = 0; count <= 200000; count++) {
+      for (let count = 0; count <= 200000; realCount++) {
+      // for (let count = 0; count <= 1; count++) {
+        if (realCount % 1000 === 0) {
+          console.log(realCount);
+        }
         for (const key of keys) {
           const vals = key.split("|");
           if (vals.length === 2) {
