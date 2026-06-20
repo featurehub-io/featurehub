@@ -240,7 +240,7 @@ class ApplicationStepdefs {
     }
 
     await userCommon.groupService
-        .updateGroupOnPortfolio(shared.portfolio.id, updatedGroup, updateApplicationGroupRoles: true);
+        .updateGroupOnPortfolioV2(shared.portfolio.id, updatedGroup, updateApplicationGroupRoles: true);
   }
 
   @And(

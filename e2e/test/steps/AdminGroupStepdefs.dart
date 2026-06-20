@@ -94,7 +94,7 @@ class AdminGroupStepdefs {
     if (!er.roles.contains(roleType)) {
       er.roles.add(roleType!);
     }
-    await userCommon.groupService.updateGroupOnPortfolio(shared.portfolio.id, updatedGroup);
+    await userCommon.groupService.updateGroupOnPortfolioV2(shared.portfolio.id, updatedGroup);
   }
 
   @And(r'I add the shared person to the shared group')

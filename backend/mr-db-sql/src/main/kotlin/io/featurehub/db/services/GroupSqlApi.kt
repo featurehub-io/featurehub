@@ -6,7 +6,6 @@ import io.ebean.annotation.Transactional
 import io.featurehub.db.api.*
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.*
-import io.featurehub.db.model.query.QGroupMemberAgg.Alias.personId
 import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
 import jakarta.inject.Inject
@@ -349,6 +348,76 @@ open class GroupSqlApi @Inject constructor(
   @Transactional
   private fun saveGroup(group: DbGroup) {
     database.save(group)
+  }
+
+  @Throws(OptimisticLockingException::class, GroupApi.DuplicateGroupException::class, DuplicateUsersException::class)
+  override fun updateGroupV1(
+    gid: UUID,
+    group: Group,
+    appId: UUID?,
+    updateMembers: Boolean,
+    updateApplicationGroupRoles: Boolean,
+    updateEnvironmentGroupRoles: Boolean,
+    opts: Opts
+  ): Group? {
+    val dbGroup = convertUtils.byGroup(gid, opts)
+
+    if (dbGroup != null && dbGroup.whenArchived == null) {
+      if (group.version == null || dbGroup.version != group.version) {
+        throw OptimisticLockingException()
+      }
+
+      group.name.let {
+        dbGroup.name = it
+      }
+
+      transactionalGroupUpdateV1(
+        group,
+        updateMembers,
+        updateApplicationGroupRoles,
+        updateEnvironmentGroupRoles,
+        dbGroup,
+        appId
+      )
+      return convertUtils.toGroup(dbGroup, opts)!!
+    }
+    return null
+  }
+
+  // there are too many updates
+  @Transactional
+  @Throws(DuplicateUsersException::class, GroupApi.DuplicateGroupException::class)
+  private fun transactionalGroupUpdateV1(
+    gp: Group,
+    updateMembers: Boolean,
+    updateApplicationGroupRoles: Boolean,
+    updateEnvironmentGroupRoles: Boolean,
+    group: DbGroup,
+    appId: UUID?
+  ) {
+    var superuserChanges: SuperuserChanges? = null
+    if (gp.members != null && updateMembers) {
+      superuserChanges = updateMembersOfGroup(gp, group)
+    }
+    var aclUpdates: AclUpdates? = null
+    gp.environmentRoles.let {
+      if (updateEnvironmentGroupRoles) {
+        aclUpdates = updateEnvironmentMembersOfGroup(it, group)
+      }
+    }
+
+    gp.applicationRoles.let { appRoles ->
+      if (updateApplicationGroupRoles) {
+        updateApplicationMembersOfGroup(appRoles, group, appId)
+      }
+    }
+
+    try {
+      updateGroup(group, aclUpdates)
+    } catch (dke: DuplicateKeyException) {
+      throw GroupApi.DuplicateGroupException()
+    }
+    superuserChanges?.let { updateSuperusersFromPortfolioGroups(it) }
   }
 
   @Throws(OptimisticLockingException::class, GroupApi.DuplicateGroupException::class, DuplicateUsersException::class)
