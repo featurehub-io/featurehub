@@ -31,7 +31,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
     when:
       def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
-        new FeatureValue().valueBoolean(true),
+        new FeatureValue().value(true),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "false", false, false, [], [], [], feat, 0),
         featureValue("true", feat),
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
@@ -46,7 +46,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
     when:
       def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
-        new FeatureValue().valueBoolean(false),
+        new FeatureValue().value(false),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "false", false, false, [], [], [], feat, 0),
         featureValue("true", feat),
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
@@ -61,7 +61,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
     when:
       def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
-        new FeatureValue().valueString("x"),
+        new FeatureValue().value("x"),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "x", false, false, [], [], [], feat, 0),
         featureValue("y", feat),
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
@@ -80,7 +80,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
     when:
       def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
-        new FeatureValue().valueString(newFeatureValue),
+        new FeatureValue().value(newFeatureValue),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, historicalValue, false, false, [], [], [], feat, 0),
         existing,
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
@@ -98,7 +98,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
     when:
       def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
-        new FeatureValue().valueString("x"),
+        new FeatureValue().value("x"),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "z", false, false, [], [], [], feat, 0),
         featureValue("y", feat),
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
@@ -113,7 +113,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
     when:
       def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
-        new FeatureValue().valueString("x"),
+        new FeatureValue().value("x"),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", false, false, [], [], [], feat, 0),
         featureValue("y", feat).with { it.locked = true; it },
         new PersonFeaturePermission(new Person(), rolesChangeValue), false
@@ -128,7 +128,7 @@ class FeatureAuditingValueUnitSpec extends FeatureAuditingBaseUnitSpec {
     when:
       def result = updateFeatureApi.updateSelectivelyDefaultValue(
         feat,
-        new FeatureValue().valueString("x"),
+        new FeatureValue().value("x"),
         new DbFeatureValueVersion(histId, LocalDateTime.now(), dbPerson, "y", false, false, [], [], [], feat, 0),
         featureValue("y", feat).with { it.locked = true; it },
         new PersonFeaturePermission(new Person(), rolesRead), true

@@ -37,7 +37,7 @@ class FeatureHistorySpec extends Base3Spec {
       result.items.collect { it.featureId }.unique() == features.findAll({it.valueType == FeatureValueType.BOOLEAN}).collect { it.id}
     when: "i update the second boolean it will return two versions"
       def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, features[1].key)
-      featureSqlApi.updateFeatureValueForEnvironment(env1.id, features[1].key, fv.valueBoolean(true).locked(false), new PersonFeaturePermission(superPerson,
+      featureSqlApi.updateFeatureValueForEnvironment(env1.id, features[1].key, fv.value(true).locked(false), new PersonFeaturePermission(superPerson,
               [RoleType.CHANGE_VALUE, RoleType.UNLOCK] as Set<RoleType>))
       def result2 = historyApi.listHistory(app1.id, [env1.id], [], [], [features[1].id], null, null, false)
     then:
@@ -58,7 +58,7 @@ class FeatureHistorySpec extends Base3Spec {
       result2Rev.max == 2
     when: "i update the first number and I see a single number version"
       def num = featureSqlApi.getFeatureValueForEnvironment(env2.id, features[3].key)
-      featureSqlApi.updateFeatureValueForEnvironment(env2.id, features[3].key, fv.valueNumber(45.32).locked(false), new PersonFeaturePermission(superPerson,
+      featureSqlApi.updateFeatureValueForEnvironment(env2.id, features[3].key, fv.value(45.32).locked(false), new PersonFeaturePermission(superPerson,
         [RoleType.CHANGE_VALUE, RoleType.UNLOCK] as Set<RoleType>))
       def result3 = historyApi.listHistory(app1.id, [env2.id], [], [features[3].key], [], null, null, false)
     then:
