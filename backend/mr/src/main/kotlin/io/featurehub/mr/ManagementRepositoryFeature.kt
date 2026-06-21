@@ -17,6 +17,7 @@ import io.featurehub.mr.utils.ApplicationUtils
 import io.featurehub.mr.utils.ConfigurationUtils
 import io.featurehub.mr.utils.PortfolioFeaturePermissionUtils
 import io.featurehub.mr.utils.PortfolioUtils
+import io.featurehub.mr.utils.PortfolioUtilsImpl
 import io.featurehub.mr.webhook.ManagementRepositoryWebhookFeature
 import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
@@ -91,7 +92,7 @@ class ManagementRepositoryFeature : Feature {
         bind(DatabaseAuthRepository::class.java).to(AuthenticationRepository::class.java).`in`(
           Singleton::class.java
         )
-        bind(PortfolioUtils::class.java).to(PortfolioUtils::class.java).`in`(Singleton::class.java)
+        bind(PortfolioUtilsImpl::class.java).to(PortfolioUtils::class.java).`in`(Singleton::class.java)
         bind(AuthManager::class.java).to(AuthManagerService::class.java).`in`(Singleton::class.java)
         bind(ApplicationResource::class.java).to(ApplicationServiceDelegate::class.java).`in`(
           Singleton::class.java
@@ -132,6 +133,9 @@ class ManagementRepositoryFeature : Feature {
           Singleton::class.java
         )
         bind(ApplicationRolloutStrategyResource::class.java).to(ApplicationRolloutStrategyServiceDelegate::class.java).`in`(
+          Singleton::class.java
+        )
+        bind(PortfolioRolloutStrategyResource::class.java).to(PortfolioRolloutStrategyServiceDelegate::class.java).`in`(
           Singleton::class.java
         )
         bind(ServiceAccountResource::class.java).to(ServiceAccountServiceDelegate::class.java).`in`(

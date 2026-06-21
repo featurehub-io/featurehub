@@ -3,15 +3,13 @@ package io.featurehub.db.model;
 import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.Index;
-import io.featurehub.mr.model.ApplicationRolloutStrategy;
 import io.featurehub.mr.model.PortfolioRolloutStrategy;
 import jakarta.persistence.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Index(unique = true, name = "idx_pf_strategies", columnNames = {"fk_portfolio_id", "strategy_name"})
 @Index(unique = true, name = "idx_pf_strat_code", columnNames = {"fk_portfolio_id", "code"})

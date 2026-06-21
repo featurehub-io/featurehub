@@ -10,11 +10,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import org.jetbrains.annotations.NotNull;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
 
 @Entity
 @Table(name = "fh_application")

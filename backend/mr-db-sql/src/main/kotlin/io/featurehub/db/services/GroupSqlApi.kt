@@ -20,6 +20,28 @@ open class GroupSqlApi @Inject constructor(
   private val archiveStrategy: ArchiveStrategy
 ) : GroupApi, InternalGroupSqlApi {
 
+  override fun isPersonMemberOfAnyPortfolioGroup(
+    portfolioId: UUID,
+    personId: UUID
+  ): Boolean {
+    return QDbGroup()
+      .owningPortfolio.id.eq(portfolioId)
+      .groupMembers
+      .person.id.eq(personId).exists()
+  }
+
+  override fun portfolioRoles(personId: UUID, portfolio: UUID): Set<PortfolioGroupRoleType> {
+    val result: MutableSet<PortfolioGroupRoleType> = mutableSetOf()
+
+    QDbGroup()
+      .select(QDbGroup.Alias.portfolioRoles)
+      .owningPortfolio.id.eq(portfolio)
+      .portfolioRoles.isNotNull
+      .groupMembers.person.id.eq(personId).findList().forEach { group -> result.addAll(group.portfolioRoles) }
+
+    return result
+  }
+
   override fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean {
     return convertUtils.isPersonMemberOfPortfolioGroup(portfolioId, personId)
   }
