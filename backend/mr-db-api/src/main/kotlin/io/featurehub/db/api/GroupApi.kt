@@ -4,15 +4,20 @@ import io.featurehub.mr.model.CreateGroup
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.PortfolioGroupRoleType
 import io.featurehub.mr.model.SortOrder
 import io.featurehub.mr.model.UpdateGroup
 import java.util.*
 
 interface GroupApi {
+  // checks if a person is a portfolio admin for this portfolio
   fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean
+  // checks if any group in this portfolio has this user as a member
+  fun isPersonMemberOfAnyPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean
   fun getSuperuserGroup(orgId: UUID): Group?
   fun groupsPersonOrgAdminOf(personId: UUID): List<Group>
   fun orgsUserIn(personId: UUID): List<Organization>?
+  fun portfolioRoles(personId: UUID, portfolio: UUID): Set<PortfolioGroupRoleType>
 
   class DuplicateGroupException : Exception()
 
