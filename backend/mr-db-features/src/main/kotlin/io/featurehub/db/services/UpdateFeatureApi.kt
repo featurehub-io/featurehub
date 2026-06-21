@@ -756,24 +756,7 @@ class UpdateFeatureApiImpl@Inject constructor(
     lockChanged: Boolean
   ): SingleNullableFeatureValueUpdate<String?> {
     val defaultValueUpdate = SingleNullableFeatureValueUpdate<String?>()
-    val defaultValueChanged: String? =
-      when (feature.valueType) {
-        FeatureValueType.NUMBER -> {
-          featureValue.value?.toString()
-        }
-
-        FeatureValueType.STRING -> {
-          featureValue.value?.toString()
-        }
-
-        FeatureValueType.JSON -> {
-          featureValue.value?.toString()
-        }
-
-        FeatureValueType.BOOLEAN -> {
-          featureValue.value?.toString() ?: "false"
-        }
-      }
+    val defaultValueChanged: String? = convertFeatureValueToDefaultValue(featureValue, feature.valueType)
 
     // they aren't changing this value, so skip out
     if (defaultValueChanged == existing.defaultValue) {
@@ -957,9 +940,15 @@ class UpdateFeatureApiImpl@Inject constructor(
 
     dbFeatureValue.let { dfv ->
       dfv.rolloutStrategies = convertStrategiesToDbFeatureValueStrategies(featureValue)
+
       featureValue.rolloutStrategyInstances?.let {
         dfv.sharedRolloutStrategies = convertApplicationStrategiesToSharedStrategies(dfv, it, appFeature.parentApplication.id)
       }
+
+      featureValue.portfolioStrategyInstances?.let {
+        dfv.sharedPortfolioRolloutStrategies = convertPortfolioStrategiesToSharedStrategies(dfv, it, appFeature.parentApplication.portfolio.id)
+      }
+
       dfv.retired = convertUtils.safeConvert(featureValue.retired)
     }
 
@@ -968,6 +957,25 @@ class UpdateFeatureApiImpl@Inject constructor(
     publishFirstRecord(dbFeatureValue, featureValue)
 
     return convertUtils.toFeatureValue(dbFeatureValue)
+  }
+
+  private fun convertPortfolioStrategiesToSharedStrategies(dfv: DbFeatureValue, portfolioStrategies: List<RolloutStrategyInstance>,
+                                                           portfolioId: UUID): MutableList<DbPortfolioStrategyForFeatureValue> {
+    val strategies = QDbPortfolioRolloutStrategy()
+      .id.`in`(portfolioStrategies.map {it.strategyId}.toSet() )
+      .portfolio.id.eq(portfolioId)
+      .findList().associateBy { it.id }
+
+    return portfolioStrategies
+      .filter { strat -> strategies[strat.strategyId] != null }
+      .map { DbPortfolioStrategyForFeatureValue.Builder()
+        .featureValue(dfv)
+        .value(it.value?.toString())
+        .percentageOverride(it.percentageOverride)
+        .rolloutStrategy(strategies[it.strategyId])
+        .enabled(true)
+        .build()
+      }.toMutableList()
   }
 
   private fun convertApplicationStrategiesToSharedStrategies(
@@ -983,6 +991,7 @@ class UpdateFeatureApiImpl@Inject constructor(
         .featureValue(dfv)
         .value(it.value?.toString())
         .enabled(true)
+        .percentageOverride(it.percentageOverride)
         .rolloutStrategy(strategies[it.strategyId])
         .build() }
       .toMutableList()
@@ -1040,19 +1049,20 @@ class UpdateFeatureApiImpl@Inject constructor(
   private fun convertFeatureValueToDefaultValue(featureValue: FeatureValue, valueType: FeatureValueType): String? {
     when (valueType) {
       FeatureValueType.NUMBER -> {
-        return featureValue.value?.toString()
+        return featureValue.value?.toString() ?: featureValue.valueNumber?.toString()
       }
 
       FeatureValueType.STRING -> {
-        return featureValue.value?.toString()
+        return featureValue.value?.toString() ?: featureValue.valueString
       }
 
       FeatureValueType.JSON -> {
-        return featureValue.value?.toString()
+        return featureValue.value?.toString()  ?: featureValue.valueJson
       }
 
       FeatureValueType.BOOLEAN -> {
-        return featureValue.value?.toString() ?: java.lang.Boolean.FALSE.toString()
+        val converted = featureValue.value?.toString() ?: (featureValue.valueBoolean?.toString() ?: "false")
+        return if (BOOLEANY.contains(converted)) converted else "false"
       }
     }
   }
@@ -1134,5 +1144,6 @@ class UpdateFeatureApiImpl@Inject constructor(
 
   companion object {
     val log: Logger = LoggerFactory.getLogger(UpdateFeatureApiImpl::class.java)
+    val BOOLEANY = listOf("true","false")
   }
 }

@@ -1,13 +1,12 @@
 package io.featurehub.db.services
 
+import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.messaging.FeatureMessagingParameter
 import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.DbPortfolioStrategyForFeatureValue
-import io.featurehub.db.model.query.QDbFeatureValue
-import io.featurehub.db.model.query.QDbPortfolioRolloutStrategy
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.ApplicationRoleType
@@ -17,6 +16,7 @@ import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.PortfolioRolloutStrategy
 import io.featurehub.mr.model.RolloutStrategy
+import io.featurehub.mr.model.RolloutStrategyInstance
 import io.featurehub.mr.model.UpdatePortfolioRolloutStrategy
 import spock.lang.Unroll
 
@@ -51,23 +51,48 @@ class PortfolioStrategiesSpec extends Base3Spec {
     )
   }
 
-  void associateStrategyWithFeatureValue(String key, PortfolioRolloutStrategy strategy) {
+  void associateStrategyWithFeatureValue(String key, PortfolioRolloutStrategy strategy, FeatureValueType valueType = FeatureValueType.BOOLEAN, Integer percentOverride = null) {
     def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+
     if (fv == null) {
       fv = new FeatureValue().key(key).locked(false)
+      switch (valueType) {
+        case FeatureValueType.BOOLEAN:
+          fv.value = false
+          break
+        case FeatureValueType.JSON:
+          fv.value = '{"ilf": true}'
+          break
+        case FeatureValueType.NUMBER:
+          fv.value = new BigDecimal(11)
+          break
+        case FeatureValueType.STRING:
+          fv.value = "lingling"
+          break;
+      }
+    } else {
+      fv.locked(false)
     }
+
+    def rsi = new RolloutStrategyInstance().name(ranName()).strategyId(strategy.id).percentageOverride(percentOverride)
+    switch (valueType) {
+      case FeatureValueType.BOOLEAN:
+        rsi.value = true
+        break
+      case FeatureValueType.JSON:
+        rsi.value = '{"ilf": false}'
+        break
+      case FeatureValueType.NUMBER:
+        rsi.value = new BigDecimal(27)
+        break
+      case FeatureValueType.STRING:
+        rsi.value = "orm"
+        break;
+    }
+
+    fv.addPortfolioStrategyInstancesItem(rsi)
+
     featureSqlApi.updateFeatureValueForEnvironment(env1.id, key, fv, allPermissions())
-
-    def dbFV = new QDbFeatureValue().environment.id.eq(env1.id).feature.key.eq(key).findOne()
-    def dbRS = new QDbPortfolioRolloutStrategy().id.eq(strategy.id).findOne()
-
-    def link = new DbPortfolioStrategyForFeatureValue.Builder()
-      .featureValue(dbFV)
-      .rolloutStrategy(dbRS)
-      .enabled(true)
-      .build()
-    dbRS.addSharedRolloutStrategy(link)
-    dbRS.save()
   }
 
   @Unroll
@@ -78,7 +103,8 @@ class PortfolioStrategiesSpec extends Base3Spec {
       def strategy = createStrategy()
       def updateName = ranName()
     when: "i associate the strategy with the feature value in the default environment"
-      associateStrategyWithFeatureValue(key, strategy)
+      def overridePercent = 40
+      associateStrategyWithFeatureValue(key, strategy, featureType, overridePercent)
     then:
       1 * cacheSource.publishFeatureChange(_)
       0 * _
@@ -94,6 +120,17 @@ class PortfolioStrategiesSpec extends Base3Spec {
         original.percentage == null
         original.name == strategy.name
       }, _, _)
+      1 * internalFeatureApi.collectFeatureValueStrategies({ DbFeatureValue fv -> fv.feature.key == key }) >> []
+      0 * _
+    when: "we get the latest feature value"
+      def fv = Finder.findFeatureValue(env1.id, key)
+      def mewFeatureValue = convertUtils.featureValue(fv.feature, fv, Opts.opts(FillOpts.RolloutStrategies))
+    then: "the portfolio strategy is found"
+      mewFeatureValue.portfolioStrategyInstances.find({
+        it.percentageOverride == overridePercent &&
+        it.name == updateName &&
+        it.strategyId == strategy.id
+      })
     where:
       featureType                | _
       FeatureValueType.BOOLEAN   | _
@@ -114,8 +151,8 @@ class PortfolioStrategiesSpec extends Base3Spec {
       portfolioRolloutStrategySqlApi = new PortfolioRolloutStrategySqlApi(convertUtils, internalFeatureApi)
     and: "we get the results of the strategy collection from internalFeatureApi"
       def ifApi = new InternalFeatureSqlApi(Mock(Conversions), Mock(CacheSource), Mock(FeatureMessagingPublisher))
-      def dbFV1 = new QDbFeatureValue().environment.id.eq(env1.id).feature.key.eq(keys[0]).findOne()
-      def dbFV2 = new QDbFeatureValue().environment.id.eq(env1.id).feature.key.eq(keys[1]).findOne()
+      def dbFV1 = Finder.findFeatureValue(env1.id, keys[0])
+      def dbFV2 = Finder.findFeatureValue(env1.id, keys[1])
       def fv1Strategies = ifApi.collectFeatureValueStrategies(dbFV1)
       def fv2Strategies = ifApi.collectFeatureValueStrategies(dbFV2)
     when: "we update the strategy percentage"
@@ -130,6 +167,14 @@ class PortfolioStrategiesSpec extends Base3Spec {
       1 * internalFeatureApi.updatedPortfolioStrategy(_, _, _, { List<RolloutStrategy> existingStrategies ->
         existingStrategies.find({ it.name == strategy.name })
       })
+    when: "we get the full client feature value objects for the features they will include the percentages"
+      dbFV1.refresh()
+      dbFV2.refresh()
+      def fv1 = convertUtils.toFeatureValue(dbFV1, Opts.opts(FillOpts.RolloutStrategies))
+      def fv2 = convertUtils.toFeatureValue(dbFV2, Opts.opts(FillOpts.RolloutStrategies))
+    then: "the portfolio strategies include the portfolio"
+      fv1.portfolioStrategyInstances.find({ it.strategyId == strategy.id})
+      fv2.portfolioStrategyInstances.find({ it.strategyId == strategy.id})
   }
 
   def "when we update or delete the feature strategy it will update the feature values"() {
@@ -184,9 +229,9 @@ class PortfolioStrategiesSpec extends Base3Spec {
         fv.feature.key == keys.first()
       })
       1 * fmp.publish({ FeatureMessagingParameter p ->
-        p.applicationStrategyUpdates.hasChanged
-        p.applicationStrategyUpdates.updated[0].new.percentage == 1000
-        p.applicationStrategyUpdates.updated[0].old.percentage == null
+        p.portfolioStrategyUpdates.hasChanged
+        p.portfolioStrategyUpdates.updated[0].new.percentage == 1000
+        p.portfolioStrategyUpdates.updated[0].old.percentage == null
       }, _)
     when: "we delete the portfolio strategy"
       portfolioRolloutStrategySqlApi.archiveStrategy(portfolio.id, strategy.id, superuser)
@@ -195,9 +240,9 @@ class PortfolioStrategiesSpec extends Base3Spec {
         fv.feature.key == keys.first()
       })
       1 * fmp.publish({ FeatureMessagingParameter p ->
-        p.applicationStrategyUpdates.hasChanged
-        p.applicationStrategyUpdates.updated[0].new == null
-        p.applicationStrategyUpdates.updated[0].old.percentage == 1000
+        p.portfolioStrategyUpdates.hasChanged
+        p.portfolioStrategyUpdates.updated[0].new == null
+        p.portfolioStrategyUpdates.updated[0].old.percentage == 1000
       }, _)
   }
 }

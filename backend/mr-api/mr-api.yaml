@@ -534,6 +534,7 @@ paths:
       description: "Update a group. Please use updateGroupOnPortfolioV2"
       deprecated: true
       operationId: updateGroupOnPortfolio
+      x-removed-version: "1.12"
       parameters:
         - name: includeMembers
           description: "include people in each group"
@@ -3265,7 +3266,28 @@ components:
         locked:
           type: boolean
         value:
-          description: "Preferred now, please don't use valueX fields"
+          description: "Preferred now, please don't use valueX fields. valueX fields will be removed in 1.12"
+        valueString:
+          deprecated: true
+          nullable: true
+          description: "default value if no strategy matches. interpreted by type in parent."
+          x-removed-version: "1.12"
+          type: string
+        valueNumber:
+          deprecated: true
+          nullable: true
+          type: number
+          x-removed-version: "1.12"
+        valueBoolean:
+          deprecated: true
+          nullable: true
+          type: boolean
+          x-removed-version: "1.12"
+        valueJson:
+          deprecated: true
+          nullable: true
+          type: string
+          x-removed-version: "1.12"
         retired:
           nullable: false
           default: false
