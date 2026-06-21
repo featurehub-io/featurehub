@@ -4,7 +4,6 @@ import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.Index;
 import io.featurehub.mr.model.ApplicationRolloutStrategy;
-import io.featurehub.mr.model.RolloutStrategyAttribute;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +14,6 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

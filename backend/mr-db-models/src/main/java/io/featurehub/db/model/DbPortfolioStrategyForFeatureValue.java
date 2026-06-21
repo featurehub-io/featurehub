@@ -1,9 +1,7 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.ChangeLog;
-import io.ebean.annotation.DbJson;
 import io.ebean.annotation.Index;
-import io.featurehub.mr.model.PortfolioRolloutStrategy;
 import jakarta.persistence.*;
 import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +30,6 @@ public class DbPortfolioStrategyForFeatureValue {
   private String value;
 
   // this allows the user to override the strategy (merge) when applying it to this feature value
-  @DbJson
   @Column(name = "percent_oride", nullable = true)
   @Nullable
   private Integer percentageOverride;

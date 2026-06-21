@@ -10,7 +10,7 @@ import java.util.*
 interface PortfolioRolloutStrategyApi {
     @Throws(DuplicateNameException::class)
     fun createStrategy(
-        appId: UUID,
+        portfolioId: UUID,
         rolloutStrategy: CreatePortfolioRolloutStrategy,
         person: UUID,
         opts: Opts
@@ -18,7 +18,7 @@ interface PortfolioRolloutStrategyApi {
 
     @Throws(DuplicateNameException::class)
     fun updateStrategy(
-        appId: UUID,
+      portfolioId: UUID,
         strategyId: UUID,
         update: UpdatePortfolioRolloutStrategy,
         person: UUID,
@@ -26,7 +26,7 @@ interface PortfolioRolloutStrategyApi {
     ): PortfolioRolloutStrategy?
 
     fun listStrategies(
-      appId: UUID,
+      portfolioId: UUID,
       page: Int,
       max: Int,
       filter: String?,
@@ -34,8 +34,8 @@ interface PortfolioRolloutStrategyApi {
       sortOrder: SortOrder?,
       opts: Opts
     ): PortfolioRolloutStrategyList
-    fun getStrategy(appId: UUID, strategyId: UUID, opts: Opts): PortfolioRolloutStrategy?
-    fun archiveStrategy(appId: UUID, strategyId: UUID, person: UUID): Boolean
+    fun getStrategy(portfolioId: UUID, strategyId: UUID, opts: Opts): PortfolioRolloutStrategy?
+    fun archiveStrategy(portfolioId: UUID, strategyId: UUID, person: UUID): Boolean
 
     class DuplicateNameException : Exception()
 }

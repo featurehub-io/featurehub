@@ -1,7 +1,6 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.DbJson;
-import io.featurehub.db.model.query.QDbStrategyForFeatureValue;
 import io.featurehub.mr.model.RolloutStrategy;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
