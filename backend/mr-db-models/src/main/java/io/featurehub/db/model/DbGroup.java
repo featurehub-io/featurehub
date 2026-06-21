@@ -60,7 +60,7 @@ public class DbGroup extends DbVersionedBase {
   private List<DbGroupMember> groupMembers;
 
   @DbJson
-  @Column(name = "p_roles")
+  @Column(name = "p_roles", length = 100)
   @Nullable
   private Set<PortfolioGroupRoleType> portfolioRoles;
 

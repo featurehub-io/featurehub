@@ -39,7 +39,7 @@ public class DbPortfolioRolloutStrategy  extends DbVersionedBase {
   private PortfolioRolloutStrategy strategy;
 
   @NotNull
-  @Column(nullable = false, name = "code")
+  @Column(nullable = false, name = "code", length = 10)
   private final String shortUniqueCode;
 
   @ManyToOne(optional = false)
