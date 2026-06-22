@@ -450,6 +450,8 @@ open class ConvertUtils @Inject constructor(
     }
 
     if (opts.contains(FillOpts.Acls)) {
+      group.portfolioRoles = dbg.portfolioRoles
+
       val appIdFilter = opts.id(FilterOptType.Application)
       var aclQuery = QDbAcl().group.eq(dbg)
       if (appIdFilter != null) {

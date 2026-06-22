@@ -248,6 +248,13 @@ components:
           nullable: true
           description: "is this an admin group?"
           type: boolean
+        portfolioRoles:
+          nullable: true
+          uniqueItems: true
+          type: array
+          default: []
+          items:
+            $ref: "#/components/schemas/PortfolioGroupRoleType"
         applicationRoles:
           nullable: true
           type: array
@@ -271,6 +278,13 @@ components:
           type: integer
           format: int64
           nullable: false
+        portfolioRoles:
+          nullable: true
+          type: array
+          uniqueItems: true
+          default: []
+          items:
+            $ref: "#/components/schemas/PortfolioGroupRoleType"
         applicationRoles:
           nullable: true
           type: array
@@ -331,6 +345,13 @@ components:
               default: [ ]
               items:
                 $ref: "#/components/schemas/Person"
+            portfolioRoles:
+              nullable: true
+              type: array
+              uniqueItems: true
+              default: []
+              items:
+                $ref: "#/components/schemas/PortfolioGroupRoleType"
             applicationRoles:
               type: array
               default: [ ]
