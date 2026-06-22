@@ -99,6 +99,16 @@ Then('I assign the new user to the new group', async function() {
   expect(response.data.members.find( p => p.id.id === userId)).to.not.be.undefined;
 });
 
+When('I assign portfolio strategy {string} roles to the group', async function (roles: string) {
+  const world = this as SdkWorld;
+  roles.trim().split(",").map(role => role.trim().toUpperCase() ).forEach(r => {
+    if (r === 'EDIT') {
+
+    }
+  })
+
+});
+
 When('I assign roles {string} to the group for the current environment', async function (roleTypes: string) {
   const world = this as SdkWorld;
 
