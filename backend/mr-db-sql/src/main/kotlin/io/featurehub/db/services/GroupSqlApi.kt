@@ -162,6 +162,7 @@ open class GroupSqlApi @Inject constructor(
       .adminGroup(isAdmin)
       .name(group.name)
       .whoCreated(personCreatedId)
+      .portfolioRoles(group.portfolioRoles)
       .groupRolesAcl(acls)
       .build()
 
@@ -264,6 +265,8 @@ open class GroupSqlApi @Inject constructor(
   }
 
   override fun getGroup(gid: UUID, opts: Opts, person: Person): Group? {
+    val personId = person.id!!.id
+
     var eq = QDbGroup().id.eq(gid).groupMembers.person.fetch()
 
     if (!opts.contains(FillOpts.Archived)) {
@@ -274,12 +277,12 @@ open class GroupSqlApi @Inject constructor(
 
     return if (one != null
       && (QDbGroup().id.eq(gid).groupMembers.person.whenArchived.isNull.groupMembers.person.id.eq(
-        person.id!!.id
+        personId
       ).exists()
         || isSuperuser(one.findOwningOrganisation(), convertUtils.byPerson(person))
-        || isPersonMemberOfPortfolioAdminGroup(
-        one.owningPortfolio, person.id!!.id
-      ))
+        || isPersonMemberOfPortfolioAdminGroup(one.owningPortfolio, personId)
+        || portfolioRoles(personId, one.owningPortfolio.id).isNotEmpty()
+        )
     ) {
       convertUtils.toGroup(one, opts)!!
     } else null
@@ -498,6 +501,11 @@ open class GroupSqlApi @Inject constructor(
 
     if (updateApplicationGroupRoles) {
       updateApplicationMembersOfGroup(gp.applicationRoles ?: listOf(), group, appId)
+    }
+
+    // we can update them to empty but null won't replace them.
+    if (gp.portfolioRoles != null) {
+      group.portfolioRoles = gp.portfolioRoles
     }
 
     try {

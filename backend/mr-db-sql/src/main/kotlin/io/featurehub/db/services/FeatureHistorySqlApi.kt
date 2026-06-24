@@ -42,6 +42,7 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
         QDbFeatureValueVersion.Alias.retired,
         QDbFeatureValueVersion.Alias.rolloutStrategies,
         QDbFeatureValueVersion.Alias.sharedRolloutStrategies,
+        QDbFeatureValueVersion.Alias.sharedPortfolioRolloutStrategies,
         QDbFeatureValueVersion.Alias.whenCreated,
       )
       .whoUpdated.fetch(QDbPerson.Alias.id, QDbPerson.Alias.name, QDbPerson.Alias.personType, QDbPerson.Alias.email)
@@ -119,7 +120,7 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
         // this returns them in a random order, so we need to stuff them into the rollout strategies in the order they
         // appear in the sharedRolloutStrategies map
         val foundSharedStrategies = QDbPortfolioRolloutStrategy()
-          .id.`in`(it.sharedRolloutStrategies.map { s -> s.strategyId })
+          .id.`in`(it.sharedPortfolioRolloutStrategies.map { s -> s.strategyId })
           .findList()
 
         it.sharedPortfolioRolloutStrategies.forEach { strategy ->
