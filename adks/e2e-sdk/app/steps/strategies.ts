@@ -10,6 +10,7 @@ import {
 import waitForExpect from 'wait-for-expect';
 import { expect } from 'chai';
 import {makeid} from "../support/random";
+import {convertValue} from "../support/utils";
 
 Then(/^I (cannot|can) create custom flag rollout strategies$/, async function(can: string, table: DataTable) {
   const world = this as SdkWorld;
@@ -96,7 +97,7 @@ When('I delete the application strategy called {string} from the current environ
     rsi.strategyId === strategy.strategy.id)).to.be.undefined;
 });
 
-When('I attach application strategy {string} to the current environment feature value', async function (strategyKey: string) {
+When('I attach application strategy {string} to the current environment feature value with the value {string}', async function (strategyKey: string, value: string) {
   const world = this as SdkWorld;
 
   const strategy = world.applicationStrategies[strategyKey];
@@ -105,14 +106,14 @@ When('I attach application strategy {string} to the current environment feature 
   const featureValue = await world.getFeatureValue();
 
   featureValue.rolloutStrategyInstances.push(new RolloutStrategyInstance({ strategyId: strategy.strategy.id,
-    value: true }));
+    value: convertValue(value, world.feature.valueType) }));
 
   const updatedValue = await world.updateFeature(featureValue);
   expect(updatedValue.rolloutStrategyInstances.find(rsi =>
     rsi.strategyId === strategy.strategy.id && rsi.value)).to.not.be.undefined;
 });
 
-When('I swap the order of {string} and {string} they remain swapped', async function (key1: string, key2: string) {
+When('I swap the order of application strategies {string} and {string} they remain swapped', async function (key1: string, key2: string) {
   const world = this as SdkWorld;
 
   const strategy1 = world.applicationStrategies[key1];

@@ -15,5 +15,24 @@ If you are running postgres outside of docker, you can install it (use `brew` on
 in using the root user (`postgres` normally) and password. And then you can just use the same commands
 as in the initdb.sh to create the user + database + grants as you like.
 
+You can also use:
+
+`docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=password --name postgres postgres:18-alpine` 
+
+then:
+
+`docker exec -it postgres psql -Upostgres`docker exec -it postgres psql -Upostgres`
+
+
+[sql]
+----
+          CREATE USER featurehub PASSWORD 'featurehub' LOGIN;
+          CREATE DATABASE featurehub;
+          GRANT ALL PRIVILEGES ON DATABASE featurehub TO featurehub;
+          \connect featurehub
+          GRANT ALL ON SCHEMA public TO featurehub;
+----
+
+
 Ebean has the capability to have a separate DDL user to a database user
 but we do not expose that functionality.

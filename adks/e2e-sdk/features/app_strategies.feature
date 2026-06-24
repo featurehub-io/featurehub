@@ -13,17 +13,17 @@ Feature: We can save, change and retrieve application strategies on feature valu
     And There is a new feature flag
     And I set the feature flag to on and unlocked
     And I get the feature history
-    When I attach application strategy "first" to the current environment feature value
-    And I expect the application strategy "first" to be attached to the feature history
+    When I attach application strategy "first" to the current environment feature value with the value "true"
+    And I expect the application strategy "first" to be attached to the feature history with the value "true"
     And the application strategy "first" should be used in 1 environment with 1 feature
     Then the feature flag has an application strategy "first" which has a value of "true"
     Then I create an application strategy tagged "second"
     And I get the feature history
-    When I attach application strategy "second" to the current environment feature value
-    And I expect the application strategy "second" to be attached to the feature history
-    And I save this spot in feature history as "phred" for application strategy "second"
+    When I attach application strategy "second" to the current environment feature value with the value "true"
+    And I expect the application strategy "second" to be attached to the feature history with the value "true"
+    And I save the current feature value's history using the key "phred"
     And there is an application strategy called "first" in the current environment feature value
-    And I swap the order of "first" and "second" they remain swapped
+    And I swap the order of application strategies "first" and "second" they remain swapped
     And I get the feature history
     And I delete the application strategy called "second" from the current environment feature value
     And I expect the application strategy "second" to be removed from the feature history

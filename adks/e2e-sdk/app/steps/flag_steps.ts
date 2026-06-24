@@ -1,14 +1,15 @@
-import { Given, Then, When } from '@cucumber/cucumber';
+import {Given, Then, When} from '@cucumber/cucumber';
 import {CreateFeature, Feature, FeatureValue, FeatureValueType, RolloutStrategy} from '../apis/mr-service';
-import { makeid } from '../support/random';
-import { expect } from 'chai';
+import {makeid} from '../support/random';
+import {expect} from 'chai';
 import waitForExpect from 'wait-for-expect';
-import { FeatureStateHolder, Readyness } from 'featurehub-javascript-node-sdk';
-import { logger } from '../support/logging';
-import { SdkWorld } from '../support/world';
+import {FeatureStateBaseHolder, FeatureStateHolder, Readyness} from 'featurehub-javascript-node-sdk';
+import {logger} from '../support/logging';
+import {SdkWorld} from '../support/world';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
 import {validateWorldForApplicationStrategies} from "./strategies";
-import { FeatureStateBaseHolder } from "featurehub-javascript-node-sdk";
+import {convertValue} from "../support/utils";
+import {FeatureState} from "../apis/edge";
 
 Given(/^There is a new feature flag$/, async function () {
   const name = makeid(5).toUpperCase();
@@ -23,6 +24,7 @@ Given(/^There is a new feature flag$/, async function () {
   this.feature = feat;
 });
 
+
 When(/^I set the feature value to (.*)$/, async function(value: string) {
   const world = this as SdkWorld;
 
@@ -30,14 +32,15 @@ When(/^I set the feature value to (.*)$/, async function(value: string) {
   expect(world.environment.id).to.not.be.undefined;
   expect(world.feature.id).to.not.be.undefined;
 
-  const result = await world.featureValueApi.createFeatureForEnvironment(world.environment.id, world.feature.key, new FeatureValue({
-    key: world.feature.key,
-    locked: false,
-    valueNumber: world.feature.valueType === FeatureValueType.Number ? parseFloat(value) : null,
-    valueBoolean: world.feature.valueType === FeatureValueType.Boolean ? ('true' === value) : null,
-    valueJson: world.feature.valueType === FeatureValueType.Json ? value : null,
-    valueString: world.feature.valueType === FeatureValueType.String ? value : null,
-  }));
+  const existingValue = await world.getFeatureValue();
+  existingValue.locked = false;
+  existingValue.whoUpdated = undefined;
+  existingValue.whenUpdated = undefined;
+  existingValue.whatUpdated = undefined;
+  existingValue.value = convertValue(value, world.feature.valueType);
+
+  const result = await world.featureValueApi.createFeatureForEnvironment(world.environment.id, world.feature.key, existingValue);
+
   expect(result.status).to.eq(200);
 });
 
@@ -65,12 +68,47 @@ Given(/^There is a feature (flag|string|number|json) with the key (.*)$/, async 
   this.feature = feature;
 });
 
-Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (lockedStatus, value) {
-  const world = this as SdkWorld;
+export async function waitForRepository(world: SdkWorld) {
   await waitForExpect(() => {
     expect(world.repository).to.not.be.undefined;
     expect(world.repository.readyness).to.eq(Readyness.Ready);
   }, 2000, 500);
+
+}
+
+Then('The feature from the repository has the default value {string}', async function(value: string) {
+  const world = this as SdkWorld;
+  await waitForRepository(world);
+
+  const val = convertValue(value, world.feature.valueType);
+
+  await waitForExpect(() => {
+    const f = this.featureState(world.feature.key) as any;
+    const state = f.internalFeatureState as FeatureState | undefined;
+    expect(state).to.not.be.undefined;
+    expect(state.value, `Expecting the feature value to be ${val} but it is ${JSON.stringify(state)}`).to.eq(val);
+  }, 4000, 500);
+});
+
+Then('The feature from the repository has a strategy with the value {string} in position {int}', async function(value: string, position: number) {
+  const world = this as SdkWorld;
+  await waitForRepository(world);
+
+  const val = convertValue(value, world.feature.valueType);
+
+  await waitForExpect(() => {
+    const f = this.featureState(world.feature.key) as any; // FeatureStateBaseHolder
+    const state = f.internalFeatureState as FeatureState | undefined;
+    expect(state).to.not.be.undefined;
+    expect(state.strategies.length >= (position-1), `not enough strategies yet - ${state.strategies.length} needed ${position-1}`);
+    const foundStrategyValue = state.strategies[position-1].value;
+    expect(foundStrategyValue, `found strategy value ${foundStrategyValue} is not ${val}`).to.eq(val);
+  }, 4000, 500);
+});
+
+Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (lockedStatus, value) {
+  const world = this as SdkWorld;
+  await waitForRepository(world);
 
   await waitForExpect(() => {
     // const f = this.featureState(this.feature.key) as FeatureStateHolder;
@@ -123,7 +161,7 @@ When(/^I (unlock|lock) the feature$/, async function (lockUnlock) {
 Then(/^I set the feature flag to (on|off|locked|unlocked)$/, async function (flagChange) {
   const fValue = await (this as SdkWorld).getFeatureValue();
   if (flagChange === 'on' || flagChange === 'off') {
-    fValue.valueBoolean = (flagChange === 'on');
+    fValue.value = (flagChange === 'on');
   } else {
     fValue.locked = (flagChange === 'locked');
   }
@@ -136,12 +174,12 @@ Then(/^I set the feature flag to (on|off|locked|unlocked)$/, async function (fla
 Then(/^I set the feature flag to (on|off|locked|unlocked) and (on|off|locked|unlocked)$/, async function (flagChange1, flagChange2) {
   const fValue = await (this as SdkWorld).getFeatureValue();
   if (flagChange1 === 'on' || flagChange1 === 'off') {
-    fValue.valueBoolean = (flagChange1 === 'on');
+    fValue.value = (flagChange1 === 'on');
   } else {
     fValue.locked = (flagChange1 === 'locked');
   }
   if (flagChange2 === 'on' || flagChange2 === 'off') {
-    fValue.valueBoolean = (flagChange2 === 'on');
+    fValue.value = (flagChange2 === 'on');
   } else {
     fValue.locked = (flagChange2 === 'locked');
   }

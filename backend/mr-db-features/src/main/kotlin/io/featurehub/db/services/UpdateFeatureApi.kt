@@ -136,7 +136,7 @@ class UpdateFeatureApiImpl@Inject constructor(
       throw OptimisticLockingException()
     }
 
-    if (lockChanged || defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged || applicationStrategyUpdates.hasChanged) {
+    if (lockChanged || defaultValueUpdate.hasChanged || strategyUpdates.hasChanged || retiredUpdate.hasChanged || applicationStrategyUpdates.hasChanged || portfolioStrategyUpdates.hasChanged) {
       existing.whoUpdated = dbPerson
       save(existing, true)
       publish(existing)

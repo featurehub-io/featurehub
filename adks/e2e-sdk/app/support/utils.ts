@@ -1,6 +1,8 @@
-import {RoleType} from "../apis/mr-service";
+import {FeatureValueType, RoleType} from "../apis/mr-service";
 import {expect} from "chai";
 import {logger} from "./logging";
+import {When} from "@cucumber/cucumber";
+import {SdkWorld} from "./world";
 
 
 export function decodeAndValidateRoles(roles: string): Array<RoleType> {
@@ -24,3 +26,16 @@ export function decodeAndValidateRoles(roles: string): Array<RoleType> {
   expect(foundRoles.length, `Found unknown role type in ${roleTypes} vs ${foundRoles}`).to.eq(roleTypes.length);
   return foundRoles;
 }
+
+export function convertValue(value: string, featureType: FeatureValueType) {
+  switch (featureType) {
+    case FeatureValueType.Boolean:
+      return ('true' === value);
+    case FeatureValueType.Number:
+      return value == null ? null : parseFloat(value);
+    case FeatureValueType.String:
+    case FeatureValueType.Json:
+      return value;
+  }
+}
+

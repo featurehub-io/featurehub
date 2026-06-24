@@ -21,7 +21,7 @@ import {
   ListApplicationRolloutStrategyItem,
   Person,
   PersonServiceApi,
-  Portfolio,
+  Portfolio, PortfolioRolloutStrategyServiceApi,
   PortfolioServiceApi,
   ServiceAccount,
   ServiceAccountPermission,
@@ -68,6 +68,7 @@ export class ApiUser {
   public readonly featureHistoryApi: FeatureHistoryServiceApi;
   public readonly applicationStrategyApi: ApplicationRolloutStrategyServiceApi;
   public readonly featureFilterApi: FeatureFilterServiceApi;
+  public readonly portfolioStrategyApi: PortfolioRolloutStrategyServiceApi;
   public readonly apiKey: string;
   public me: Person;
 
@@ -99,6 +100,7 @@ export class ApiUser {
     this.applicationStrategyApi = new ApplicationRolloutStrategyServiceApi(this.adminApiConfig);
     this.featureHistoryApi = new FeatureHistoryServiceApi(this.adminApiConfig);
     this.featureFilterApi = new FeatureFilterServiceApi(this.adminApiConfig);
+    this.portfolioStrategyApi = new PortfolioRolloutStrategyServiceApi(this.adminApiConfig);
 
     if (apiKey) {
       this.refreshPerson();

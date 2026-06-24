@@ -3,6 +3,7 @@ package io.featurehub.mr.utils
 import io.featurehub.db.api.GroupApi
 import io.featurehub.db.services.Conversions
 import io.featurehub.mr.auth.AuthManager
+import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.PortfolioGroupRoleType
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
@@ -13,14 +14,16 @@ import java.util.*
 interface PortfolioUtils {
   fun formatPortfolioAdminGroupName(pfName: String?): String
   // return: personId or forbidden
-  fun portfolioUserManager(user: SecurityContext, portfolioId: UUID): UUID
+  fun portfolioUserManager(user: SecurityContext, portfolioId: UUID?): UUID
   fun portfolioStrategyCreateOrEdit(user: SecurityContext, portfolioId: UUID): UUID
   fun portfolioStrategyDelete(user: SecurityContext, portfolioId: UUID): UUID
   // do they have any role in any group in this portfolio, if so they can at least read the portfolio strategies
   fun portfolioStrategyRead(user: SecurityContext, portfolioId: UUID): UUID
 }
 
-class PortfolioUtilsImpl @Inject constructor(private val authManager: AuthManager, private val conversions: Conversions, private val groupApi: GroupApi): PortfolioUtils {
+class PortfolioUtilsImpl @Inject constructor(private val authManager: AuthManagerService,
+                                             private val conversions: Conversions,
+                                             private val groupApi: GroupApi): PortfolioUtils {
   private val portfolioAdminGroupSuffix = FallbackPropertyConfig.getConfig("portfolio.admin.group.suffix", "Administrators")
 
   companion object {
@@ -36,8 +39,18 @@ class PortfolioUtilsImpl @Inject constructor(private val authManager: AuthManage
 
   override fun portfolioUserManager(
     user: SecurityContext,
-    portfolioId: UUID
+    portfolioId: UUID?
   ): UUID {
+    if (portfolioId == null) {
+      val personId = authManager.from(user).id!!.id
+
+      if (!conversions.personIsSuperAdmin(personId)) {
+        throw ForbiddenException()
+      }
+
+      return personId
+    }
+
     return portfolioGroupRole(user, portfolioId, portfolioGroupMemberManager)
   }
 

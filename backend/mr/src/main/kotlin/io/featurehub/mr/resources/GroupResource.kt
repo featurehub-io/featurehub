@@ -9,6 +9,7 @@ import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.UpdateGroup
+import io.featurehub.mr.utils.PortfolioUtils
 import jakarta.inject.Inject
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
@@ -21,7 +22,8 @@ import java.util.function.Consumer
 class GroupResource @Inject constructor(
   private val personApi: PersonApi,
   private val groupApi: GroupApi,
-  private val authManager: AuthManagerService
+  private val authManager: AuthManagerService,
+  private val portfolioUtils: PortfolioUtils
 ) : GroupServiceDelegate {
   internal class GroupHolder {
     var group: Group? = null
@@ -47,35 +49,6 @@ class GroupResource @Inject constructor(
     return matchedPersons
   }
 
-  private fun isAdminOfGroup(
-    groupToCheck: Group,
-    securityContext: SecurityContext,
-    error: String,
-    action: Consumer<Group?>
-  ) {
-    val currentUser = authManager.from(securityContext)
-    var adminGroup: Group? = null
-    var member = false
-    groupToCheck.portfolioId?.let { pId ->
-      adminGroup = groupApi.findPortfolioAdminGroup(pId, Opts.opts(FillOpts.Members))
-      member = isGroupMember(currentUser, adminGroup)
-    }
-    if (!member) {
-      adminGroup = groupApi.findOrganizationAdminGroup(groupToCheck.organizationId!!, Opts.opts(FillOpts.Members))
-      member = isGroupMember(currentUser, adminGroup)
-    }
-    if (member) {
-      action.accept(adminGroup)
-    } else {
-      throw ForbiddenException(error)
-    }
-  }
-
-  private fun isGroupMember(user: Person, group: Group?): Boolean {
-    return group!!.members
-      .stream().map { obj: Person -> obj.id }.anyMatch { uid: PersonId? -> uid == user.id }
-  }
-
   override fun addPersonToGroup(
     gid: UUID, personId: UUID, holder: GroupServiceDelegate.AddPersonToGroupHolder,
     securityContext: SecurityContext
@@ -86,17 +59,14 @@ class GroupResource @Inject constructor(
       authManager.from(securityContext)
     ) { group: Group ->
       personCheck(personId) {
-        isAdminOfGroup(
-          group,
-          securityContext,
-          "No permission to add user to group."
-        ) {
-          groupHolder.group =
-            groupApi.addPersonsToGroup(gid, listOf(personId), Opts()
+        portfolioUtils.portfolioUserManager(securityContext, group.portfolioId)
+
+        groupHolder.group =
+          groupApi.addPersonsToGroup(
+            gid, listOf(personId), Opts()
               .add(FillOpts.Members, holder.includeMembers)
               .add(FillOpts.MembersV2, holder.includeMembersV2)
-            )
-        }
+          )
       }
     }
     if (groupHolder.group == null) {
@@ -116,16 +86,14 @@ class GroupResource @Inject constructor(
       authManager.from(securityContext)
     ) { group: Group ->
       personCheck(holder.personId ?: emptyList(), holder.email ?: emptyList()) { personIds ->
-        isAdminOfGroup(
-          group,
-          securityContext,
-          "No permission to add user to group."
-        ) {
-          groupHolder.group =
-            groupApi.addPersonsToGroup(gid, personIds.toList(), Opts()
+
+        portfolioUtils.portfolioUserManager(securityContext, group.portfolioId)
+
+        groupHolder.group =
+          groupApi.addPersonsToGroup(
+            gid, personIds.toList(), Opts()
               .add(FillOpts.MembersV2, holder.includeMembersV2)
-            )
-        }
+          )
       }
     }
     if (groupHolder.group == null) {
@@ -138,17 +106,16 @@ class GroupResource @Inject constructor(
     id: UUID,
     createGroup: CreateGroup,
     holder: GroupServiceDelegate.CreateGroupHolder,
-    securityContext: SecurityContext?
+    securityContext: SecurityContext
   ): Group {
     val current = authManager.from(securityContext)
-    if (authManager.isPortfolioAdmin(id, current, null)) {
-      return try {
-        groupApi.createGroup(id, createGroup, current) ?: throw NotFoundException()
-      } catch (_: GroupApi.DuplicateGroupException) {
-        throw WebApplicationException(Response.Status.CONFLICT)
-      }
+    portfolioUtils.portfolioUserManager(securityContext, id)
+
+    return try {
+      groupApi.createGroup(id, createGroup, current) ?: throw NotFoundException()
+    } catch (_: GroupApi.DuplicateGroupException) {
+      throw WebApplicationException(Response.Status.CONFLICT)
     }
-    throw ForbiddenException("No permission to add application")
   }
 
   override fun deleteGroup(
@@ -158,13 +125,18 @@ class GroupResource @Inject constructor(
   ): Boolean {
     val groupHolder = GroupHolder()
     groupCheck(gid, authManager.from(securityContext)) { group: Group ->
+      if (group.portfolioId == null) {
+        throw ForbiddenException("cannot delete superuser group")
+      }
+
+      portfolioUtils.portfolioUserManager(securityContext, group.portfolioId!!)
+
       if (group.admin!!) {
         throw ForbiddenException("Cannot delete admin group from deleteGroup method.")
       }
-      isAdminOfGroup(group, securityContext, "Not owner of group, cannot delete") {
-        groupApi.deleteGroup(gid)
-        groupHolder.delete = true
-      }
+
+      groupApi.deleteGroup(gid)
+      groupHolder.delete = true
     }
 
     // revisit what we return
@@ -178,19 +150,18 @@ class GroupResource @Inject constructor(
     val groupHolder = GroupHolder()
     groupCheck(gid, authManager.from(securityContext)) { group: Group ->
       personCheck(personId) {
-        isAdminOfGroup(
-          group, securityContext, "No permission to delete user to group."
-        ) {
-          groupHolder.group = groupApi.deletePersonFromGroup(
-            gid,
-            personId,
-            Opts()
-              .add(FillOpts.Members, holder.includeMembers)
-              .add(FillOpts.MembersV2, holder.includeMembersV2)
-          )
-        }
+        portfolioUtils.portfolioUserManager(securityContext, group.portfolioId)
+
+        groupHolder.group = groupApi.deletePersonFromGroup(
+          gid,
+          personId,
+          Opts()
+            .add(FillOpts.Members, holder.includeMembers)
+            .add(FillOpts.MembersV2, holder.includeMembersV2)
+        )
       }
     }
+
     if (groupHolder.group == null) {
       throw NotFoundException()
     }
@@ -203,15 +174,16 @@ class GroupResource @Inject constructor(
     securityContext: SecurityContext
   ): List<Group> {
     val from = authManager.from(securityContext)
-    if (authManager.isOrgAdmin(from) || authManager.isPortfolioGroupMember(id, from)) {
-      return groupApi.findGroups(
-        id, holder.filter, holder.order, Opts().add(
-          FillOpts.People,
-          holder.includePeople
-        )
+
+    // superuser, portfolio admin or group manager admin
+    portfolioUtils.portfolioUserManager(securityContext, id)
+
+    return groupApi.findGroups(
+      id, holder.filter, holder.order, Opts().add(
+        FillOpts.People,
+        holder.includePeople
       )
-    }
-    throw ForbiddenException()
+    )
   }
 
   override fun getGroup(
@@ -219,6 +191,7 @@ class GroupResource @Inject constructor(
     holder: GroupServiceDelegate.GetGroupHolder,
     securityContext: SecurityContext
   ): Group {
+    // the getGroup API in SQL enforces that only members of the group in some way can read the groups
     val opts =
       Opts().add(FillOpts.Acls, holder.includeGroupRoles).add(FilterOptType.Application, holder.byApplicationId)
         .add(FillOpts.MembersV2, holder.includeMembersV2)
@@ -236,30 +209,33 @@ class GroupResource @Inject constructor(
     id: UUID,
     group: Group,
     holder: GroupServiceDelegate.UpdateGroupOnPortfolioHolder,
-    securityContext: SecurityContext?
+    securityContext: SecurityContext
   ): Group {
     val groupHolder = GroupHolder()
     groupCheck(group.id, authManager.from(securityContext)) { groupCheck: Group ->
-      isAdminOfGroup(groupCheck, securityContext!!, "No permission to rename group.") {
-        try {
-          groupHolder.group = groupApi.updateGroupV1(
-            group.id,
-            group,
-            holder.applicationId,
-            true == holder.updateMembers,
-            true == holder.updateApplicationGroupRoles,
-            true == holder.updateEnvironmentGroupRoles,
-            Opts().add(FillOpts.Members, holder.includeMembers).add(FillOpts.Acls, holder.includeGroupRoles)
-          )
-        } catch (e: OptimisticLockingException) {
-          throw WebApplicationException(422)
-        } catch (e: GroupApi.DuplicateGroupException) {
-          throw WebApplicationException(Response.Status.CONFLICT)
-        } catch (e: DuplicateUsersException) {
-          throw WebApplicationException(Response.Status.CONFLICT)
-        }
+
+      // superuser, portfolio admin or group manager admin
+      portfolioUtils.portfolioUserManager(securityContext, id)
+
+      try {
+        groupHolder.group = groupApi.updateGroupV1(
+          group.id,
+          group,
+          holder.applicationId,
+          true == holder.updateMembers,
+          true == holder.updateApplicationGroupRoles,
+          true == holder.updateEnvironmentGroupRoles,
+          Opts().add(FillOpts.Members, holder.includeMembers).add(FillOpts.Acls, holder.includeGroupRoles)
+        )
+      } catch (e: OptimisticLockingException) {
+        throw WebApplicationException(422)
+      } catch (e: GroupApi.DuplicateGroupException) {
+        throw WebApplicationException(Response.Status.CONFLICT)
+      } catch (e: DuplicateUsersException) {
+        throw WebApplicationException(Response.Status.CONFLICT)
       }
     }
+
     if (groupHolder.group == null) {
       throw NotFoundException()
     }
@@ -271,32 +247,34 @@ class GroupResource @Inject constructor(
     id: UUID,
     group: UpdateGroup,
     holder: GroupServiceDelegate.UpdateGroupOnPortfolioV2Holder,
-    securityContext: SecurityContext?
+    securityContext: SecurityContext
   ): Group {
     val groupHolder = GroupHolder()
     groupCheck(group.id, authManager.from(securityContext)) { groupCheck: Group ->
-      isAdminOfGroup(groupCheck, securityContext!!, "No permission to rename group.") {
-        try {
-          groupHolder.group = groupApi.updateGroup(
-            group.id,
-            group,
-            holder.applicationId,
-            true == holder.updateApplicationGroupRoles,
-            true == holder.updateEnvironmentGroupRoles,
-            Opts()
-              .add(FillOpts.Members, holder.includeMembers)
-              .add(FillOpts.MembersV2, holder.includeMembersV2)
-              .add(FillOpts.Acls, holder.includeGroupRoles)
-          )
-        } catch (_: OptimisticLockingException) {
-          throw WebApplicationException(422)
-        } catch (_: GroupApi.DuplicateGroupException) {
-          throw WebApplicationException(Response.Status.CONFLICT)
-        } catch (_: DuplicateUsersException) {
-          throw WebApplicationException(Response.Status.CONFLICT)
-        }
+      // superuser, portfolio admin or group manager admin
+      portfolioUtils.portfolioUserManager(securityContext, id)
+
+      try {
+        groupHolder.group = groupApi.updateGroup(
+          group.id,
+          group,
+          holder.applicationId,
+          true == holder.updateApplicationGroupRoles,
+          true == holder.updateEnvironmentGroupRoles,
+          Opts()
+            .add(FillOpts.Members, holder.includeMembers)
+            .add(FillOpts.MembersV2, holder.includeMembersV2)
+            .add(FillOpts.Acls, holder.includeGroupRoles)
+        )
+      } catch (_: OptimisticLockingException) {
+        throw WebApplicationException(422)
+      } catch (_: GroupApi.DuplicateGroupException) {
+        throw WebApplicationException(Response.Status.CONFLICT)
+      } catch (_: DuplicateUsersException) {
+        throw WebApplicationException(Response.Status.CONFLICT)
       }
     }
+
     if (groupHolder.group == null) {
       throw NotFoundException()
     }

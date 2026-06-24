@@ -13,6 +13,7 @@ import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.SortOrder
 import io.featurehub.mr.model.UpdateGroup
 import io.featurehub.mr.resources.GroupResource
+import io.featurehub.mr.utils.PortfolioUtils
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.core.SecurityContext
@@ -29,12 +30,15 @@ class GroupResourceSpec extends Specification {
   UUID personId
   Person person
   UUID adminUser
+  PortfolioUtils portfolioUtils
 
   def setup() {
     groupApi = Mock(GroupApi)
     personApi = Mock(PersonApi)
     authManager = Mock(AuthManagerService)
-    gr = new GroupResource(personApi, groupApi, authManager)
+    portfolioUtils = Mock()
+
+    gr = new GroupResource(personApi, groupApi, authManager, portfolioUtils)
     groupId = UUID.randomUUID()
     portfolioId = UUID.randomUUID()
     adminUser = UUID.randomUUID()
@@ -80,11 +84,11 @@ class GroupResourceSpec extends Specification {
 
   def "if you are not a portfolio admin, you cannot create a group"() {
     given: "i am not a portfolio admin"
-      authManager.isPortfolioAdmin(portfolioId, person, null) >> false
+      portfolioUtils.portfolioUserManager(sc, portfolioId) >> { throw new ForbiddenException() }
     and: "i have a group"
       def group = new CreateGroup()
     when: "i attempt to create a group"
-      gr.createGroup(groupId, group, new GroupServiceDelegate.CreateGroupHolder(includePeople: true), sc)
+      gr.createGroup(portfolioId, group, new GroupServiceDelegate.CreateGroupHolder(includePeople: true), sc)
     then:
       thrown(ForbiddenException)
   }
@@ -104,7 +108,8 @@ class GroupResourceSpec extends Specification {
 
   def "a person not in a portfolio admin group cannot change portfolio group"() {
     given: "the group is set up and the portfolio admin is setup"
-      def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), UUID.randomUUID(), personId)
+      def sc = setupGroupAndPortfoioAdmin(portfolioId, UUID.randomUUID(), personId)
+      portfolioUtils.portfolioUserManager(sc, portfolioId) >> { throw new ForbiddenException() }
     and: "the person to be added exists"
       personApi.get(personId, (Opts)_) >> new Person()
     when:
@@ -192,7 +197,8 @@ class GroupResourceSpec extends Specification {
     given:
       def pidOwner = UUID.randomUUID()
       def piddle = UUID.randomUUID()
-      def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), pidOwner, piddle)
+      def sc = setupGroupAndPortfoioAdmin(portfolioId, pidOwner, piddle)
+      portfolioUtils.portfolioUserManager(sc, portfolioId) >> { throw new ForbiddenException() }
     when:
       gr.deleteGroup(groupId, new GroupServiceDelegate.DeleteGroupHolder(), sc)
     then:
@@ -215,7 +221,8 @@ class GroupResourceSpec extends Specification {
     given:
       def pidOwner = UUID.randomUUID()
       def piddle = UUID.randomUUID()
-      def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), pidOwner, piddle)
+      def sc = setupGroupAndPortfoioAdmin(portfolioId, pidOwner, piddle)
+      portfolioUtils.portfolioUserManager(sc, portfolioId) >> { throw new ForbiddenException() }
     and: "the person to be deleted exists"
       personApi.get(piddle, (Opts)_) >> new Person()
     when:
