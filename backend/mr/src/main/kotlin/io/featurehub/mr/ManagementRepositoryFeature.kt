@@ -50,6 +50,7 @@ class ManagementRepositoryFeature : Feature {
       SetupServiceDelegator::class.java,
       UserStateServiceDelegator::class.java,
       ApplicationRolloutStrategyServiceDelegator::class.java,
+      PortfolioRolloutStrategyServiceDelegator::class.java,
       FeatureGroupServiceDelegator::class.java,
       FeatureFilterServiceDelegator::class.java,
       CorsFilter::class.java,
