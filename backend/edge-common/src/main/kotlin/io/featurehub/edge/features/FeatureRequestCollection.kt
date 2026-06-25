@@ -81,9 +81,12 @@ class FeatureRequestCollection(
       return FeatureRequestResponse(env, FeatureRequestSuccess.NO_CHANGE, key, "", details.environmentInfo, false)
     }
 
+    val features = details.features.filterNotNull() ?: listOf()
     return FeatureRequestResponse(
       env
-        .features(featureTransformer.transform(details.features, clientContext, details.extendedDataAllowed ?: false)),
+        .features(featureTransformer.transform(
+          features,
+          clientContext, details.extendedDataAllowed ?: false)),
       FeatureRequestSuccess.SUCCESS,
       key,
       details.etag,
