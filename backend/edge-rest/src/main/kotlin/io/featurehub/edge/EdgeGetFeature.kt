@@ -5,6 +5,8 @@ import io.featurehub.db.api.CacheRefresherApi
 import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.db.publish.CacheSourceFeatureGroupSqlApi
+import io.featurehub.db.publish.CommonCacheGenerator
+import io.featurehub.db.publish.DefaultCommonCacheGenerator
 import io.featurehub.db.publish.FeatureModelWalker
 import io.featurehub.db.publish.FeatureModelWalkerService
 import io.featurehub.db.services.Conversions
@@ -33,6 +35,7 @@ class EdgeGetFeature : Feature {
         bind(ConvertUtils::class.java).to(Conversions::class.java).`in`(
           Singleton::class.java
         )
+        bind(DefaultCommonCacheGenerator::class.java).to(CommonCacheGenerator::class.java).`in`(Singleton::class.java)
         bind(DbDachaCacheSqlApi::class.java).to(DachaClientServiceRegistry::class.java).`in`(Singleton::class.java)
         bind(FeatureModelWalkerService::class.java).to(FeatureModelWalker::class.java).`in`(Singleton::class.java)
         bind(CacheSourceFeatureGroupSqlApi::class.java).to(CacheSourceFeatureGroupApi::class.java).`in`(Singleton::class.java)
