@@ -2,28 +2,43 @@ import {Given, Then, When} from "@cucumber/cucumber";
 import {CreatePortfolioRolloutStrategy, FeatureHistoryOrder, RolloutStrategyInstance} from "../apis/mr-service";
 import {SdkWorld} from "../support/world";
 import {expect} from "chai";
-import {validateWorldForApplicationStrategies} from "./strategies";
-import {convertValue} from "../support/utils";
+import {compareStrategies, convertValue, extractRolloutStrategyFromDataTable} from "../support/utils";
 import waitForExpect from "wait-for-expect";
 import {FeatureStateBaseHolder, Readyness} from "featurehub-javascript-node-sdk";
 import {findHistory} from "./feature-history";
+import DataTable from "@cucumber/cucumber/lib/models/data_table";
 
 
-Given("I create an portfolio strategy with the name {string}", async function (tag: string) {
-  const strategy = new CreatePortfolioRolloutStrategy({
-    name: tag
-  });
-
+Given("I create portfolio strategies", async function (table: DataTable) {
   const world = this as SdkWorld;
 
-  const result = await world.currentUser.portfolioStrategyApi.createPortfolioStrategy(world.portfolio.id, strategy);
+  expect(world.portfolio, 'You must have a portfolio to create an portfolio strategy').to.not.be.undefined;
 
-  expect(result.status).to.eq(201);
+  const rs = extractRolloutStrategyFromDataTable(table);
+  expect(rs.length, 'No strategies defined').to.be.gt(0);
 
+  for(const strat of rs) {
+    const strategy = new CreatePortfolioRolloutStrategy({
+      name: strat.name,
+      percentage: strat.percentage,
+      percentageAttributes: strat.percentageAttributes,
+      attributes: strat.attributes
+    });
+
+    const result = await world.currentUser.portfolioStrategyApi.createPortfolioStrategy(world.portfolio.id, strategy);
+
+    expect(result.status).to.eq(201);
+  }
   const data = await world.currentUser.portfolioStrategyApi.listPortfolioStrategies(world.portfolio.id);
   expect(data.status).to.eq(200);
   expect(data.data.max).to.be.gt(0);
-  expect(data.data.items.find(s => s.strategy.name === tag)).to.not.be.undefined;
+  for(const strat of rs) {
+    const strategy = data.data.items.find(s => s.strategy.name == strat.name);
+    expect(strategy).to.not.be.undefined;
+    const details = await world.currentUser.portfolioStrategyApi.getPortfolioStrategy(world.portfolio.id, strategy.strategy.id);
+    expect(details.status).to.eq(200);
+    compareStrategies(details.data, strat);
+  }
 });
 
 async function findStrategy(world: SdkWorld, name: string, includeUsage = false) {

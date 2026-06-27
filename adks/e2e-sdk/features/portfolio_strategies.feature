@@ -13,7 +13,10 @@ Feature: We can save, change and retrieve portfolio strategies on feature values
     And I assign portfolio strategy "edit,delete" roles to the group
     And I create a new user
     And I assign the new user to the new group
-    Given I create an portfolio strategy with the name "first"
+    Given I create portfolio strategies
+      | name   | percentage | percentageAttributes | fieldName | conditional | values  | type   |
+      | first   | _          | _                   | customer  | equals      | brand  | string  |
+      | second   | _          | _                   | customer  | equals      | brand  | string  |
     And There is a new feature flag
     And I set the feature flag to on and unlocked
     And I get the feature history
@@ -21,7 +24,6 @@ Feature: We can save, change and retrieve portfolio strategies on feature values
     And I expect the portfolio strategy "first" to be attached to the feature history with the value set to "true"
     And the portfolio strategy "first" should be used in 1 environment with 1 feature
     Then the feature flag has an portfolio strategy "first" which has a value of "true"
-    Then I create an portfolio strategy with the name "second"
     And I get the feature history
     When I attach portfolio strategy "second" to the current environment feature value with the value "true"
     And I expect the portfolio strategy "second" to be attached to the feature history with the value set to "true"
