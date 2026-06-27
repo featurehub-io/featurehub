@@ -7,7 +7,7 @@ Feature: All flag based functionality works as expected
     And I create a service account and full permissions based on the application environments
     And I connect to the feature server
 
-    @retired @history
+  @flags @retired @history
   Scenario: A new portfolio with a boolean feature is retired and no longer exists
     Given There is a new feature flag
     Then the feature flag is locked and off
@@ -25,38 +25,38 @@ Feature: All flag based functionality works as expected
       | false  | true    | on    |
       | false  | false   | on    |
 
-  @flag-lock
+  @flags @flag-lock
   Scenario: A locked flag cannot have the strategy changed
     Given There is a new feature flag
     Then the feature flag is locked and off
-    And I cannot create custom flag rollout strategies
-      | percentage | name          | value  |
-      | 15         | orange-roughy | true |
+    And I cannot create custom feature rollout strategies
+      | name   | percentage | value |
+      | taling | 15         | true  |
 
 
-  @history2
-   Scenario: A new portfolio with complex history
-     Given There is a new feature flag
-     And I set the feature flag to on and unlocked
-     And I create custom rollout strategies
-       | percentage | name          | value  |
-       | 15         | orange-roughy | on |
-       | 12         | green-diamon  | off  |
-     And I create custom rollout strategies
-       | percentage | name          | value  |
-       | 25         | orange-roughy | on |
-       | 16         | green-diamon  | on  |
-       | 50         | blue-peter    | off   |
-     When I check the feature history I see
-       | locked | retired | value | strategies                                               |
-       | true   | false   | off   |                                                          |
-       | false  | false   | on    | 15/orange-roughy/on,12/green-diamon/off                  |
-       | false  | false   | on    | 25/orange-roughy/on,16/green-diamon/on,50/blue-peter/off |
+  @flags @history2
+  Scenario: A new portfolio with complex history
+    Given There is a new feature flag
+    And I set the feature flag to on and unlocked
+    And I can create custom feature rollout strategies
+      | percentage | name          | value |
+      | 15         | orange-roughy | on    |
+      | 12         | green-diamon  | off   |
+    And I can create custom feature rollout strategies
+      | percentage | name          | value |
+      | 25         | orange-roughy | on    |
+      | 16         | green-diamon  | on    |
+      | 50         | blue-peter    | off   |
+    When I check the feature history I see
+      | locked | retired | value | strategies                                               |
+      | true   | false   | off   |                                                          |
+      | false  | false   | on    | 15/orange-roughy/on,12/green-diamon/off                  |
+      | false  | false   | on    | 25/orange-roughy/on,16/green-diamon/on,50/blue-peter/off |
 
 
     # assumes server is configured with
     # sdk.feature.properties=appName={{{feature.parentApplication.name}}},portfolio={{{feature.parentApplication.portfolio.name}}},category={{{metadata.category}}}
-  @extended-data  @notsaas
+  @flags @extended-data  @notsaas
   Scenario: When an API key is allowed extended data access, we will get enriched feature properties
     Given There is a new feature flag
     Then there is no enriched data
@@ -72,12 +72,12 @@ Feature: All flag based functionality works as expected
       | category  | shoes            |
     When we update the metadata to include '{"kebabFlavour":"lamb"}'
     Then there is enriched data
-      | field | value |
-      | portfolio | portfolio.name |
+      | field     | value            |
+      | portfolio | portfolio.name   |
       | appName   | application.name |
 
 
-  @flags
+  @flags @flag-strategy-check
   Scenario: A new portfolio with a boolean feature
 #    Given I connect to the Edge server using <ConnectionType>
     Given There is a new feature flag
@@ -90,9 +90,9 @@ Feature: All flag based functionality works as expected
     And I lock the feature
     Then the feature flag is locked and off
     And I unlock the feature
-    Then I add a strategy X with no percentage and value on
-      | Field   | Type   | Conditional | Values               |
-      | userkey | STRING | EQUALS      | user1@mailinator.com |
+    And I can create custom feature rollout strategies
+      | name | value | fieldName | conditional | type   | values               |
+      | X    | true  | userkey   | equals      | string | user1@mailinator.com |
     Then the feature flag is unlocked and off
     Then I set the context to
       | Field   | Value                |

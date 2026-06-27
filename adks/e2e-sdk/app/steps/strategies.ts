@@ -10,24 +10,16 @@ import {
 import waitForExpect from 'wait-for-expect';
 import { expect } from 'chai';
 import {makeid} from "../support/random";
-import {convertValue} from "../support/utils";
+import {compareStrategies, convertValue, extractRolloutStrategyFromDataTable} from "../support/utils";
+import {RolloutStrategyAttribute} from "../apis/edge";
 
-Then(/^I (cannot|can) create custom flag rollout strategies$/, async function(can: string, table: DataTable) {
+Then(/^I (cannot|can) create custom feature rollout strategies$/, async function(can: string, table: DataTable) {
   const world = this as SdkWorld;
 
   const fv = await world.getFeatureValue();
-  const s: Array<RolloutStrategy> = [];
-  for(const row of table.hashes()) {
-    const rs = new RolloutStrategy({
-      percentage: parseFloat(row['percentage']),
-      name: row['name'],
-      value: row['value'] === 'true'
-    });
 
-    s.push(rs);
-  }
+  fv.rolloutStrategies = extractRolloutStrategyFromDataTable(table, world.feature.valueType);
 
-  fv.rolloutStrategies = s;
   try {
     await world.updateFeature(fv, can === 'cannot' ? 422 : 200);
   } catch (e) {
@@ -35,23 +27,39 @@ Then(/^I (cannot|can) create custom flag rollout strategies$/, async function(ca
   }
 });
 
-Given('I create an application strategy tagged {string}', async function(strategyKey: string) {
+Given('I create application strategies', async function(table: DataTable) {
   const world = this as SdkWorld;
 
   expect(world.application, 'You must have an application to create an application strategy').to.not.be.undefined;
 
-  const data = await world.applicationStrategyApi.createApplicationStrategy(world.application.id, new CreateApplicationRolloutStrategy({
-    name: strategyKey, disabled: false, attributes: []
-  }));
-  expect(data.status).to.eq(201);
+  const rs = extractRolloutStrategyFromDataTable(table);
+  expect(rs.length, 'No strategies defined').to.be.gt(0);
 
-  const all = await world.applicationStrategyApi.listApplicationStrategies(world.application.id);
+  for (const strategy of rs) {
+    const data = await world.currentUser.applicationStrategyApi.createApplicationStrategy(world.application.id, new CreateApplicationRolloutStrategy({
+      name: strategy.name, percentage: strategy.percentage, percentageAttributes: strategy.percentageAttributes, disabled: false, attributes: strategy.attributes
+    }));
+
+    expect(data.status).to.eq(201);
+  }
+
+  const all = await world.currentUser.applicationStrategyApi.listApplicationStrategies(world.application.id);
   expect(all.status).to.eq(200);
+
+  for (const strategy of rs) {
+    const found = all.data.items.find(s => s.strategy.name === strategy.name);
+    expect(found, `Unable to find application strategy ${strategy.name}`).to.not.be.undefined;
+    const details = await world.currentUser.applicationStrategyApi.getApplicationStrategy(world.application.id, found.strategy.id, true);
+    expect(details.status).to.eq(200);
+    compareStrategies(details.data, strategy);
+  }
+
 
   world.applicationStrategies = {};
 
   all.data.items.forEach(s => world.applicationStrategies[s.strategy.name] = s);
 });
+
 
 export function validateWorldForApplicationStrategies(world: SdkWorld, strategy: ListApplicationRolloutStrategyItem, strategyKey: string) {
   expect(strategy, `The strategy referenced by key ${strategyKey} does not exist`).to.not.be.undefined;

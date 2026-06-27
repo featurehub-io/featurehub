@@ -138,13 +138,20 @@ When('I assign roles {string} to the group for the current environment', async f
   const roles = decodeAndValidateRoles(roleTypes);
   const curGroupResponse = await world.superuser.groupApi.getGroup(world.group.id);
   expect(curGroupResponse.status).to.eq(200);
+
   const group = curGroupResponse.data;
-  group.environmentRoles.push(new EnvironmentGroupRole({
-    environmentId: world.environment.id,
-    groupId: group.id,
-    roles: roles
-  }));
-  const groupResponse = await world.superuser.groupApi.updateGroupOnPortfolioV2(world.portfolio.id, group,
+
+  const updateGroup = new UpdateGroup({
+    version: group.version,
+    id: group.id,
+    environmentRoles: [...group.environmentRoles, new EnvironmentGroupRole({
+      environmentId: world.environment.id,
+      groupId: group.id,
+      roles: roles
+    })]
+  });
+
+  const groupResponse = await world.superuser.groupApi.updateGroupOnPortfolioV2(world.portfolio.id, updateGroup,
  false, false, true, false, true);
 
   expect(groupResponse.status).to.eq(200);

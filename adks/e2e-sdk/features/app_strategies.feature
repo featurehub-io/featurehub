@@ -9,7 +9,10 @@ Feature: We can save, change and retrieve application strategies on feature valu
 
   @appstrat
   Scenario: I can create a feature value with an application strategy attached
-    Given I create an application strategy tagged "first"
+    Given I create application strategies
+      | name   | percentage | percentageAttributes | fieldName | conditional | values | type   |
+      | first  | _          | _                    | customer  | equals      | brand  | string |
+      | second | _          | _                    | customer  | equals      | market | string |
     And There is a new feature flag
     And I set the feature flag to on and unlocked
     And I get the feature history
@@ -17,7 +20,6 @@ Feature: We can save, change and retrieve application strategies on feature valu
     And I expect the application strategy "first" to be attached to the feature history with the value "true"
     And the application strategy "first" should be used in 1 environment with 1 feature
     Then the feature flag has an application strategy "first" which has a value of "true"
-    Then I create an application strategy tagged "second"
     And I get the feature history
     When I attach application strategy "second" to the current environment feature value with the value "true"
     And I expect the application strategy "second" to be attached to the feature history with the value "true"

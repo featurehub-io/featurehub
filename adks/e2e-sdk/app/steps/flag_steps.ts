@@ -8,7 +8,7 @@ import {logger} from '../support/logging';
 import {SdkWorld} from '../support/world';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
 import {validateWorldForApplicationStrategies} from "./strategies";
-import {convertValue} from "../support/utils";
+import {convertValue, strategyComparison} from "../support/utils";
 import {FeatureState} from "../apis/edge";
 
 Given(/^There is a new feature flag$/, async function () {
@@ -103,6 +103,17 @@ Then('The feature from the repository has a strategy with the value {string} in 
     expect(state.strategies.length >= (position-1), `not enough strategies yet - ${state.strategies.length} needed ${position-1}`);
     const foundStrategyValue = state.strategies[position-1].value;
     expect(foundStrategyValue, `found strategy value ${foundStrategyValue} is not ${val}`).to.eq(val);
+  }, 4000, 500);
+});
+
+Then('The flag in the sdk has a value {string}', async function (val: string) {
+  const world = this as SdkWorld;
+  await waitForRepository(world);
+
+  const compare = convertValue(val, world.feature.valueType);
+  await waitForExpect(() => {
+    const f = this.featureState(world.feature.key) as FeatureStateHolder;
+    expect(f.value, `value in repository is ${f.value} (strategies applied) but that is not ${compare}`).to.eq(compare);
   }, 4000, 500);
 });
 
@@ -213,43 +224,6 @@ When(/^I setup (\d+) random feature (flags|strings|numbers|json)$/, async functi
   }
 
 });
-
-When(/^I create custom rollout strategies$/, async function (table: DataTable) {
-  const world = this as SdkWorld;
-  const fv = (await world.featureValueApi.getFeatureForEnvironment(world.environment.id, world.feature.key)).data;
-
-  fv.rolloutStrategies = [];
-
-  for(const row of table.hashes()) {
-    console.log('strategy row', row);
-    const percentage = parseInt(row['percentage']);
-    const name = row['name'];
-    const value = row['value'];
-    const rs = new RolloutStrategy({
-      name: name,
-      percentage: percentage,
-      value: value === 'on'
-    });
-    fv.rolloutStrategies.push(rs);
-  }
-
-  const updated = await world.updateFeature(fv);
-  updated.rolloutStrategies.forEach(rs => rs.id = undefined);
-  expect(strategyComparison(updated.rolloutStrategies, fv.rolloutStrategies)).to.be.true;
-});
-
-function strategyComparison(one: Array<RolloutStrategy>, two: Array<RolloutStrategy>): boolean {
-  if (one.length != two.length) return false;
-  for(let count = 0; count < one.length; count ++) {
-    if ((one[count].percentage !== two[count].percentage) ||
-       (one[count].value !== two[count].value) ||
-      (one[count].name !== two[count].name)) {
-      console.log('one: ', JSON.stringify(one[count]), 'not equal  to two: ', JSON.stringify(two[count]));
-      return false;
-    }
-  }
-  return true;
-}
 
 function decodeStrategies(s: string | undefined): Array<RolloutStrategy> {
   if (!s || s.trim().length == 0) return [];
