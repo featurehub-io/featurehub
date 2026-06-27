@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: ManagementResourceApi
-  description: This describes the API clients use for accessing features. This reflects the API from 1.5.7 onwards.
+  description: "This describes the API clients use for accessing features. This reflects the API from 1.11.0 onwards."
 paths:
   /mr-api/portfolio/{id}/v2/group:
     parameters:
