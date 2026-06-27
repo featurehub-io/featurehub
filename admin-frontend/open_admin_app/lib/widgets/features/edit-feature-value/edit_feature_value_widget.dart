@@ -518,7 +518,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                                 DataRow(cells: [
                                                   DataCell(Text(DateFormat(
                                                           'yyyy-MM-dd HH:mm:ss')
-                                                      .format(value.when))),
+                                                      .format(value.when_))),
                                                   DataCell(
                                                     Text(value.who.name),
                                                   ),
@@ -681,11 +681,11 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
       if (columnIndex == 0) {
         if (ascending) {
           featureHistoryValue.sort((a, b) {
-            return a.when.compareTo(b.when);
+            return a.when_.compareTo(b.when_);
           });
         } else {
           featureHistoryValue.sort((a, b) {
-            return b.when.compareTo(a.when);
+            return b.when_.compareTo(a.when_);
           });
         }
       }
