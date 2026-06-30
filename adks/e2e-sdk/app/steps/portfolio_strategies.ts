@@ -54,12 +54,13 @@ When("I attach portfolio strategy {string} to the current environment feature va
 
   const featureValue = await world.getFeatureValue();
 
+  const v = convertValue(value, world.feature.valueType);
   featureValue.portfolioStrategyInstances.push(new RolloutStrategyInstance({ strategyId: strategy.strategy.id,
-    value: convertValue(value, world.feature.valueType) }));
+    value:  v}));
 
   const updatedValue = await world.updateFeature(featureValue);
   expect(updatedValue.portfolioStrategyInstances.find(rsi =>
-    rsi.strategyId === strategy.strategy.id && rsi.value)).to.not.be.undefined;
+    rsi.strategyId === strategy.strategy.id && rsi.value === v )).to.not.be.undefined;
 });
 
 export async function validateFeatureHistory(world: SdkWorld, uniqueCode: string, strategyName: string, value: string) {
