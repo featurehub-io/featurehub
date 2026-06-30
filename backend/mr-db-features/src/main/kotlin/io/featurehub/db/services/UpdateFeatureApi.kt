@@ -265,7 +265,7 @@ class UpdateFeatureApiImpl@Inject constructor(
 
         addToStrategyUpdates(
           type = "added",
-          newStrategy = sharedStrategyToRolloutStrategyForReporting(incomingSharedStrategy, foundApplicationStrategies),
+          newStrategy = appStrategyToRolloutStrategyForReporting(incomingSharedStrategy, foundApplicationStrategies),
           strategyUpdates = strategyUpdates
         )
       } else {
@@ -303,8 +303,8 @@ class UpdateFeatureApiImpl@Inject constructor(
 
           addToStrategyUpdates(
             type = "changed",
-            newStrategy = sharedStrategyToRolloutStrategyForReporting(incomingSharedStrategy, foundApplicationStrategies),
-            oldStrategy = sharedStrategyToRolloutStrategyForReporting(historicalStrategy, foundApplicationStrategies),
+            newStrategy = appStrategyToRolloutStrategyForReporting(incomingSharedStrategy, foundApplicationStrategies),
+            oldStrategy = appStrategyToRolloutStrategyForReporting(historicalStrategy, foundApplicationStrategies),
             strategyUpdates = strategyUpdates
           )
         } else {
@@ -354,7 +354,7 @@ class UpdateFeatureApiImpl@Inject constructor(
         throw FeatureApi.NoAppropriateRole()
       }
       addToStrategyReorders(strategyUpdates, desiredList.map { InternalFeatureApi.toRolloutStrategy(it) }.toMutableList(),
-        historical.map { sharedStrategyToRolloutStrategyForReporting(it, foundApplicationStrategies) })
+        historical.map { appStrategyToRolloutStrategyForReporting(it, foundApplicationStrategies) })
 
       changed = true
     }
@@ -400,7 +400,7 @@ class UpdateFeatureApiImpl@Inject constructor(
     val strategiesToDelete = historical.map { it.strategyId }.associateBy { it }.toMutableMap()
 
     // allows us to keep track of them
-    val foundApplicationStrategies = mutableMapOf<UUID, DbPortfolioRolloutStrategy>()
+    val foundPortfolioStrategies = mutableMapOf<UUID, DbPortfolioRolloutStrategy>()
 
     for ((index, unresolvedIncomingStrategy) in incomingStrategyUpdates.withIndex()) {
       if (unresolvedIncomingStrategy == null) continue
@@ -409,7 +409,7 @@ class UpdateFeatureApiImpl@Inject constructor(
         QDbPortfolioRolloutStrategy().portfolio.id.eq(portfolioId).id.eq(unresolvedIncomingStrategy.strategyId).findOne()
           ?: continue
 
-      foundApplicationStrategies[portfolioStrategy.id] = portfolioStrategy
+      foundPortfolioStrategies[portfolioStrategy.id] = portfolioStrategy
 
       val incomingSharedStrategy =  toSharedPortfolioRolloutStrategyVersion(portfolioStrategy, unresolvedIncomingStrategy)
 
@@ -443,7 +443,7 @@ class UpdateFeatureApiImpl@Inject constructor(
 
         addToStrategyUpdates(
           type = "added",
-          newStrategy = portfolioStrategyToRolloutStrategyForReporting(incomingSharedStrategy, foundApplicationStrategies),
+          newStrategy = portfolioStrategyToRolloutStrategyForReporting(incomingSharedStrategy, foundPortfolioStrategies),
           strategyUpdates = strategyUpdates
         )
       } else {
@@ -481,8 +481,8 @@ class UpdateFeatureApiImpl@Inject constructor(
 
           addToStrategyUpdates(
             type = "changed",
-            newStrategy = portfolioStrategyToRolloutStrategyForReporting(incomingSharedStrategy, foundApplicationStrategies),
-            oldStrategy = portfolioStrategyToRolloutStrategyForReporting(historicalStrategy, foundApplicationStrategies),
+            newStrategy = portfolioStrategyToRolloutStrategyForReporting(incomingSharedStrategy, foundPortfolioStrategies),
+            oldStrategy = portfolioStrategyToRolloutStrategyForReporting(historicalStrategy, foundPortfolioStrategies),
             strategyUpdates = strategyUpdates
           )
         } else {
@@ -501,7 +501,7 @@ class UpdateFeatureApiImpl@Inject constructor(
       // remove all strategies where the strategy-id is in  the "to-delete" column
       originalSharedStategyList.removeIf { strategy ->
         // cache this as we need it for the historical mapping
-        foundApplicationStrategies[strategy.rolloutStrategy.id] = strategy.rolloutStrategy
+        foundPortfolioStrategies[strategy.rolloutStrategy.id] = strategy.rolloutStrategy
 
         val todel = strategiesToDelete.containsKey(strategy.rolloutStrategy.id)
         changed = true
@@ -532,7 +532,7 @@ class UpdateFeatureApiImpl@Inject constructor(
         throw FeatureApi.NoAppropriateRole()
       }
       addToStrategyReorders(strategyUpdates, desiredList.map { InternalFeatureApi.toRolloutStrategy(it) }.toMutableList(),
-        historical.map { portfolioStrategyToRolloutStrategyForReporting(it, foundApplicationStrategies) })
+        historical.map { portfolioStrategyToRolloutStrategyForReporting(it, foundPortfolioStrategies) })
 
       changed = true
     }
@@ -551,16 +551,23 @@ class UpdateFeatureApiImpl@Inject constructor(
     return strategyUpdates
   }
 
-  private fun sharedStrategyToRolloutStrategyForReporting(sharedRolloutStrategyVersion: SharedRolloutStrategyVersion,
-                                                          appStrategies: Map<UUID,DbApplicationRolloutStrategy>): RolloutStrategy {
+  private fun appStrategyToRolloutStrategyForReporting(sharedRolloutStrategyVersion: SharedRolloutStrategyVersion,
+                                                       appStrategies: Map<UUID,DbApplicationRolloutStrategy>): RolloutStrategy {
     val appStrategy = appStrategies[sharedRolloutStrategyVersion.strategyId] ?: QDbApplicationRolloutStrategy().id.eq(sharedRolloutStrategyVersion.strategyId).findOne()!!
     return RolloutStrategy().id(appStrategy.shortUniqueCode).name(appStrategy.name).value(sharedRolloutStrategyVersion.value).disabled(false)
+      .attributes(appStrategy.strategy.attributes)
+      .percentage(sharedRolloutStrategyVersion.getpOride() ?: appStrategy.strategy.percentage)
+      .percentageAttributes(appStrategy.strategy.percentageAttributes)
   }
 
   private fun portfolioStrategyToRolloutStrategyForReporting(sharedRolloutStrategyVersion: SharedRolloutStrategyVersion,
                                                           appStrategies: Map<UUID, DbPortfolioRolloutStrategy>): RolloutStrategy {
     val appStrategy = appStrategies[sharedRolloutStrategyVersion.strategyId] ?: QDbPortfolioRolloutStrategy().id.eq(sharedRolloutStrategyVersion.strategyId).findOne()!!
-    return RolloutStrategy().id(appStrategy.shortUniqueCode).name(appStrategy.name).value(sharedRolloutStrategyVersion.value).disabled(false)
+    return RolloutStrategy().id(appStrategy.shortUniqueCode)
+      .name(appStrategy.name).value(sharedRolloutStrategyVersion.value).disabled(false)
+      .attributes(appStrategy.strategy.attributes)
+      .percentage(sharedRolloutStrategyVersion.getpOride() ?: appStrategy.strategy.percentage)
+      .percentageAttributes(appStrategy.strategy.percentageAttributes)
   }
 
   private fun toSharedApplicationRolloutStrategyVersion(

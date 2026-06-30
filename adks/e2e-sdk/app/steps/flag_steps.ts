@@ -45,6 +45,8 @@ When(/^I set the feature value to (.*)$/, async function(value: string) {
 });
 
 Given(/^There is a feature (flag|string|number|json) with the key (.*)$/, async function (type: string, key: string) {
+  const world = this as SdkWorld;
+
   let fType: FeatureValueType | undefined;
   if (type === "flag" || type === "boolean") {
     fType = FeatureValueType.Boolean;
@@ -65,7 +67,7 @@ Given(/^There is a feature (flag|string|number|json) with the key (.*)$/, async 
   const feature = fCreate.data.find((f: Feature) => f.key == key);
   expect(feature).to.not.be.undefined;
 
-  this.feature = feature;
+  world.feature = feature;
 });
 
 export async function waitForRepository(world: SdkWorld) {
@@ -183,7 +185,8 @@ Then(/^I set the feature flag to (on|off|locked|unlocked)$/, async function (fla
 });
 
 Then(/^I set the feature flag to (on|off|locked|unlocked) and (on|off|locked|unlocked)$/, async function (flagChange1, flagChange2) {
-  const fValue = await (this as SdkWorld).getFeatureValue();
+  const world = this as SdkWorld;
+  const fValue = await world.getFeatureValue();
   if (flagChange1 === 'on' || flagChange1 === 'off') {
     fValue.value = (flagChange1 === 'on');
   } else {
@@ -194,7 +197,7 @@ Then(/^I set the feature flag to (on|off|locked|unlocked) and (on|off|locked|unl
   } else {
     fValue.locked = (flagChange2 === 'locked');
   }
-  await this.updateFeature(fValue);
+  await world.updateFeature(fValue);
 });
 
 
