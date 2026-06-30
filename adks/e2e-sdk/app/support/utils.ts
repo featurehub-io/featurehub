@@ -39,6 +39,7 @@ export function convertValue(value: string, featureType: FeatureValueType) : str
   }
 }
 
+
 /**
  * it picks up the name, percentage and percentage attributes the first time it encounters a strategy name,
  * and then the attributes from every duplicate name are added in order.
