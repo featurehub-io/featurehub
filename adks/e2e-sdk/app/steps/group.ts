@@ -1,9 +1,13 @@
 import {Then, When} from "@cucumber/cucumber";
 import {SdkWorld} from "../support/world";
-import {ApplicationGroupRole, ApplicationRoleType, CreateGroup, EnvironmentGroupRole, Person} from "../apis/mr-service";
+import {
+  ApplicationGroupRole, ApplicationRoleType, CreateGroup, EnvironmentGroupRole, Person, PortfolioGroupRoleType,
+  UpdateGroup
+} from "../apis/mr-service";
 import {makeid} from "../support/random";
 import {expect} from "chai";
 import {decodeAndValidateRoles} from "../support/utils";
+import {logger} from "../support/logging";
 
 
 When('I create a new normal group', async function() {
@@ -99,19 +103,55 @@ Then('I assign the new user to the new group', async function() {
   expect(response.data.members.find( p => p.id.id === userId)).to.not.be.undefined;
 });
 
+When('I assign portfolio strategy {string} roles to the group', async function (roles: string) {
+  const world = this as SdkWorld;
+
+  expect(world.group).is.not.undefined;
+
+  const group = new UpdateGroup();
+
+  group.portfolioRoles =  new Set<PortfolioGroupRoleType>(world.group.portfolioRoles instanceof Array ? world.group.portfolioRoles : []);
+  logger.info(`Portfolio roles is ${typeof group.portfolioRoles} ${group.portfolioRoles instanceof Set}`);
+  group.id = world.group.id;
+  group.version = world.group.version;
+
+  roles.trim().split(",").map(role => role.trim().toUpperCase() ).forEach(r => {
+    if (r === 'EDIT') {
+      group.portfolioRoles.add(PortfolioGroupRoleType.PortfolioStrategyEdit);
+    }
+    if (r === 'DELETE') {
+      group.portfolioRoles.add(PortfolioGroupRoleType.PortfolioStrategyEditAndDelete);
+    }
+    if (r === 'MANAGE') {
+      group.portfolioRoles.add(PortfolioGroupRoleType.GroupMemberManager);
+    }
+  });
+
+  const updatedData = await world.superuser.groupApi.updateGroupOnPortfolioV2(world.portfolio.id, group);
+  expect(updatedData.status).to.eq(200);
+  world.group = updatedData.data;
+});
+
 When('I assign roles {string} to the group for the current environment', async function (roleTypes: string) {
   const world = this as SdkWorld;
 
   const roles = decodeAndValidateRoles(roleTypes);
   const curGroupResponse = await world.superuser.groupApi.getGroup(world.group.id);
   expect(curGroupResponse.status).to.eq(200);
+
   const group = curGroupResponse.data;
-  group.environmentRoles.push(new EnvironmentGroupRole({
-    environmentId: world.environment.id,
-    groupId: group.id,
-    roles: roles
-  }));
-  const groupResponse = await world.superuser.groupApi.updateGroupOnPortfolioV2(world.portfolio.id, group,
+
+  const updateGroup = new UpdateGroup({
+    version: group.version,
+    id: group.id,
+    environmentRoles: [...group.environmentRoles, new EnvironmentGroupRole({
+      environmentId: world.environment.id,
+      groupId: group.id,
+      roles: roles
+    })]
+  });
+
+  const groupResponse = await world.superuser.groupApi.updateGroupOnPortfolioV2(world.portfolio.id, updateGroup,
  false, false, true, false, true);
 
   expect(groupResponse.status).to.eq(200);

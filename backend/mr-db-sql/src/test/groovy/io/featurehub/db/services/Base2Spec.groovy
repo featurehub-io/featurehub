@@ -28,7 +28,7 @@ class Base2Spec extends DbSpecification {
   FeatureMessagingPublisher featureMessagingPublisher
 
   String ranName() {
-    return RandomStringUtils.randomAlphabetic(10)
+    return RandomStringUtils.secure().nextAlphabetic(10)
   }
 
   def setup() {

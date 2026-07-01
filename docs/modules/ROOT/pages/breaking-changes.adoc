@@ -1,0 +1,17 @@
+== Breaking Changes
+
+In 1.11, we have made some important API changes
+that have been sitting in the API for some releases,
+but have not been bought forward.
+
+=== Feature Values
+
+While feature values still return and honour
+their `valueX`(e.g. `valueBoolean`) fields, they
+honour the `value`field by preference now. This
+means that when data is returned for say a flag,
+it has a value in both the `valueBoolean`and `value` fields. If you are grabbing this object and
+updating it and sending it back, you need to
+change to the `value`field instead, otherwise it
+will not recognize any change.
+

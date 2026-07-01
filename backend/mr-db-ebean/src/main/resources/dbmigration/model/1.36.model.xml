@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <alterColumn columnName="fk_who_updated" tableName="fh_env_feature_strategy" references="fh_person.id" foreignKeyName="fk_fh_env_feature_strategy_fk_who_updated" foreignKeyIndex="ix_fh_env_feature_strategy_fk_who_updated" dropForeignKey="fk_fh_env_feature_strategy_fk_who_updated" dropForeignKeyIndex="ix_fh_env_feature_strategy_fk_who_updated"/>
+        <alterColumn columnName="fk_who_updated" tableName="fh_fv_version" references="fh_person.id" foreignKeyName="fk_fh_fv_version_fk_who_updated" foreignKeyIndex="ix_fh_fv_version_fk_who_updated" dropForeignKey="fk_fh_fv_version_fk_who_updated" dropForeignKeyIndex="ix_fh_fv_version_fk_who_updated"/>
+        <addColumn tableName="fh_fv_version">
+            <column name="shared_pstrat" type="json"/>
+        </addColumn>
+        <addColumn tableName="fh_group">
+            <column name="p_roles" type="json(100)"/>
+        </addColumn>
+        <alterColumn columnName="password" tableName="fh_person" type="varchar(255)" currentType="varchar" currentNotnull="false"/>
+        <createTable name="fh_port_strategy" identityType="external" pkName="pk_fh_port_strategy">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="fk_portfolio_id" type="uuid" notnull="true" references="fh_portfolio.id" foreignKeyName="fk_fh_port_strategy_fk_portfolio_id" foreignKeyIndex="ix_fh_port_strategy_fk_portfolio_id"/>
+            <column name="when_archived" type="localdatetime"/>
+            <column name="strategy_name" type="varchar(150)" notnull="true"/>
+            <column name="strategy" type="json" notnull="true"/>
+            <column name="code" type="varchar(10)" notnull="true"/>
+            <column name="fk_person_who_changed" type="uuid" notnull="true" references="fh_person.id" foreignKeyName="fk_fh_port_strategy_fk_person_who_changed" foreignKeyIndex="ix_fh_port_strategy_fk_person_who_changed"/>
+            <column name="when_updated" type="localdatetime" notnull="true"/>
+            <column name="when_created" type="localdatetime" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <uniqueConstraint name="idx_pf_strategies" columnNames="fk_portfolio_id,strategy_name" oneToOne="false" nullableColumns=""/>
+            <uniqueConstraint name="idx_pf_strat_code" columnNames="fk_portfolio_id,code" oneToOne="false" nullableColumns=""/>
+        </createTable>
+        <createTable name="fh_pstrat_for_feature" identityType="external" pkName="pk_fh_pstrat_for_feature">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="fk_fv_id" type="uuid" notnull="true" references="fh_env_feature_strategy.id" foreignKeyName="fk_fh_pstrat_for_feature_fk_fv_id" foreignKeyIndex="ix_fh_pstrat_for_feature_fk_fv_id"/>
+            <column name="fk_prs_id" type="uuid" notnull="true" references="fh_port_strategy.id" foreignKeyName="fk_fh_pstrat_for_feature_fk_prs_id" foreignKeyIndex="ix_fh_pstrat_for_feature_fk_prs_id"/>
+            <column name="fv_enabled" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="fv_value" type="clob"/>
+            <column name="percent_oride" type="integer"/>
+            <uniqueConstraint name="idx_pfeature_strat" columnNames="fk_fv_id,fk_prs_id" oneToOne="false" nullableColumns=""/>
+        </createTable>
+        <addColumn tableName="fh_strat_for_feature">
+            <column name="percent_oride" type="json"/>
+        </addColumn>
+    </changeSet>
+</migration>

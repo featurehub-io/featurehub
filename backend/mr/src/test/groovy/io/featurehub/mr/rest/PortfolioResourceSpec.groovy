@@ -28,25 +28,26 @@ class PortfolioResourceSpec extends Specification {
   ApplicationApi applicationApi;
   GroupApi groupApi;
   PortfolioApi portfolioApi;
-  OrganizationApi organizationApi;
   PortfolioResource pr
   ServiceAccountApi serviceAccountApi
   EnvironmentApi environmentApi
   SecurityContext mockCtx
+  PortfolioUtils portfolioUtils
 
   def setup() {
     authManager = Mock(AuthManagerService)
     applicationApi = Mock(ApplicationApi)
     groupApi = Mock(GroupApi)
     portfolioApi = Mock(PortfolioApi)
-    organizationApi = Mock(OrganizationApi)
     serviceAccountApi = Mock(ServiceAccountApi)
     environmentApi = Mock(EnvironmentApi)
+    portfolioApi = Mock()
+    portfolioUtils = Mock()
 
     System.setProperty('portfolio.admin.group.suffix', 'Administrators')
 
     mockCtx = Mock()
-    pr = new PortfolioResource(groupApi, authManager, portfolioApi, organizationApi, new PortfolioUtils())
+    pr = new PortfolioResource(groupApi, authManager, portfolioApi, portfolioUtils)
   }
 
 
@@ -75,6 +76,7 @@ class PortfolioResourceSpec extends Specification {
     when: "i try and create a portfolio"
       pr.createPortfolio(p, new PortfolioServiceDelegate.CreatePortfolioHolder(), sc)
     then:
+      1 * portfolioUtils.formatPortfolioAdminGroupName("art") >> "Portfolio Art Admins"
       1 * portfolioApi.createPortfolio(p, (Opts)_, personId) >> new Portfolio().id(personId)
       1 * groupApi.createGroup(_,  _, _) >> new Group()
   }

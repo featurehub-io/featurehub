@@ -70,6 +70,7 @@
                 <file>${project.basedir}/../../backend/mr-api/system-api.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/feature-filters.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/pagination.yaml</file>
+                <file>${project.basedir}/../../backend/mr-api/groups.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
             </configuration>
@@ -112,12 +113,12 @@
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>7.0.1</version>
+        <version>7.23.0</version>
         <dependencies>
           <dependency>
             <groupId>com.bluetrainsoftware.maven</groupId>
             <artifactId>openapi-dart-generator</artifactId>
-            <version>8.1</version>
+            <version>9.1</version>
           </dependency>
         </dependencies>
         <executions>
@@ -138,7 +139,7 @@
                 </additionalProperty>
                 <additionalProperty>filter-deprecated-apis</additionalProperty>
                 <additionalProperty>filter-deprecated-models</additionalProperty>
-<!--                <additionalProperty>localDev=/Users/richard/projects/dart/openapi_dart_common</additionalProperty>-->
+<!--                <additionalProperty>localDev=/Users/richard/projects/fh/openapi_dart_common</additionalProperty>-->
               </additionalProperties>
             </configuration>
           </execution>

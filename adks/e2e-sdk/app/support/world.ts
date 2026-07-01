@@ -21,7 +21,7 @@ import {
   ListApplicationRolloutStrategyItem,
   Person,
   PersonServiceApi,
-  Portfolio,
+  Portfolio, PortfolioRolloutStrategyServiceApi,
   PortfolioServiceApi,
   ServiceAccount,
   ServiceAccountPermission,
@@ -68,6 +68,7 @@ export class ApiUser {
   public readonly featureHistoryApi: FeatureHistoryServiceApi;
   public readonly applicationStrategyApi: ApplicationRolloutStrategyServiceApi;
   public readonly featureFilterApi: FeatureFilterServiceApi;
+  public readonly portfolioStrategyApi: PortfolioRolloutStrategyServiceApi;
   public readonly apiKey: string;
   public me: Person;
 
@@ -99,6 +100,7 @@ export class ApiUser {
     this.applicationStrategyApi = new ApplicationRolloutStrategyServiceApi(this.adminApiConfig);
     this.featureHistoryApi = new FeatureHistoryServiceApi(this.adminApiConfig);
     this.featureFilterApi = new FeatureFilterServiceApi(this.adminApiConfig);
+    this.portfolioStrategyApi = new PortfolioRolloutStrategyServiceApi(this.adminApiConfig);
 
     if (apiKey) {
       this.refreshPerson();
@@ -295,7 +297,7 @@ export class SdkWorld extends World {
 
   async getFeatureValue(): Promise<FeatureValue> {
     try {
-      const fValueResult = await this.featureValueApi.getFeatureForEnvironment(this.environment.id, this.feature.key);
+      const fValueResult = await this.currentUser.featureValueApi.getFeatureForEnvironment(this.environment.id, this.feature.key);
       return fValueResult.data;
     } catch (e: any) {
       expect(e.response.status).to.eq(404); // null value
@@ -309,7 +311,7 @@ export class SdkWorld extends World {
   async updateFeature(fValue: FeatureValue, status: number = 200) : Promise<FeatureValue> {
     fValue.whenUpdated = undefined;
     fValue.whoUpdated = undefined;
-    const uResult = await this.featureValueApi.updateFeatureForEnvironment(this.environment.id, this.feature.key, fValue);
+    const uResult = await this.currentUser.featureValueApi.updateFeatureForEnvironment(this.environment.id, this.feature.key, fValue);
     expect(uResult.status).to.eq(status);
     return uResult.data;
   }

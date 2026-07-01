@@ -62,6 +62,11 @@ public class DbFeatureValue extends DbBaseFeatureValue {
   @Nullable
   protected List<DbStrategyForFeatureValue> sharedRolloutStrategies;
 
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "fk_fv_id")
+  @Nullable
+  protected List<DbPortfolioStrategyForFeatureValue> sharedPortfolioRolloutStrategies;
+
   public DbFeatureValue(@NotNull DbPerson whoUpdated, boolean locked, @NotNull DbApplicationFeature feature,
                         @NotNull DbEnvironment environment,
                         @Nullable String defaultValue) {
@@ -109,6 +114,18 @@ public class DbFeatureValue extends DbBaseFeatureValue {
 
   public void setSharedRolloutStrategies(@NotNull List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
     this.sharedRolloutStrategies = sharedRolloutStrategies;
+  }
+
+  public @NotNull List<DbPortfolioStrategyForFeatureValue> getSharedPortfolioRolloutStrategies() {
+    if (sharedPortfolioRolloutStrategies == null) {
+      sharedPortfolioRolloutStrategies = new LinkedList<>();
+    }
+
+    return sharedPortfolioRolloutStrategies;
+  }
+
+  public void setSharedPortfolioRolloutStrategies(@NotNull List<DbPortfolioStrategyForFeatureValue> sharedPortfolioRolloutStrategies) {
+    this.sharedPortfolioRolloutStrategies = sharedPortfolioRolloutStrategies;
   }
 
   public @NotNull DbEnvironment getEnvironment() {

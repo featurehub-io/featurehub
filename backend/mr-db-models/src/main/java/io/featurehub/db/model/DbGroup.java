@@ -1,9 +1,7 @@
 package io.featurehub.db.model;
 
-import io.ebean.annotation.ChangeLog;
-import io.ebean.annotation.ConstraintMode;
-import io.ebean.annotation.DbForeignKey;
-import io.ebean.annotation.Index;
+import io.ebean.annotation.*;
+import io.featurehub.mr.model.PortfolioGroupRoleType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,8 +10,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
 @Index(unique = true, name = "idx_group_names", columnNames = {"fk_portfolio_id", "group_name"})
 @Entity
@@ -25,7 +26,6 @@ public class DbGroup extends DbVersionedBase {
 
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_person_who_created")
-  @Column(name = "fk_person_who_created", nullable = false)
   private DbPerson whoCreated;
 
   public DbPerson getWhoCreated() {
@@ -38,7 +38,6 @@ public class DbGroup extends DbVersionedBase {
 
   @ManyToOne(optional = true) // could be in superadmin, which is no portfolio
   @JoinColumn(name = "fk_portfolio_id")
-  @Column(name = "fk_portfolio_id")
   private DbPortfolio owningPortfolio;
 
   // is this an admin group
@@ -47,7 +46,6 @@ public class DbGroup extends DbVersionedBase {
 
   @ManyToOne(optional = true)
   @JoinColumn(name = "fk_organization_id")
-  @Column(name = "fk_organization_id")
   private DbOrganization owningOrganization;
 
   @Column(name = "group_name")
@@ -61,6 +59,10 @@ public class DbGroup extends DbVersionedBase {
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   private List<DbGroupMember> groupMembers;
 
+  @DbJson
+  @Column(name = "p_roles", length = 100)
+  @Nullable
+  private Set<PortfolioGroupRoleType> portfolioRoles;
 
   public DbGroup() {}
 
@@ -71,8 +73,20 @@ public class DbGroup extends DbVersionedBase {
     setOwningOrganization(builder.owningOrganization);
     setName(builder.name);
     setGroupRolesAcl(builder.groupRolesAcl);
+    setPortfolioRoles(builder.portfolioRoles);
   }
 
+  public Set<PortfolioGroupRoleType> getPortfolioRoles() {
+    if (portfolioRoles == null) {
+      portfolioRoles = new LinkedHashSet<>();
+    }
+
+    return portfolioRoles;
+  }
+
+  public void setPortfolioRoles(@Nullable Set<PortfolioGroupRoleType> portfolioRoles) {
+    this.portfolioRoles = portfolioRoles;
+  }
 
   public DbPortfolio getOwningPortfolio() {
     return owningPortfolio;
@@ -148,8 +162,15 @@ public class DbGroup extends DbVersionedBase {
     private String name;
     private Set<DbAcl> groupRolesAcl;
     private Set<DbPerson> peopleInGroup;
+    @Nullable
+    private Set<PortfolioGroupRoleType> portfolioRoles;
 
     public Builder() {
+    }
+
+    public Builder portfolioRoles(@Nullable Set<PortfolioGroupRoleType> portfolioRoles) {
+      this.portfolioRoles = portfolioRoles;
+      return this;
     }
 
     public Builder whoCreated(DbPerson val) {
