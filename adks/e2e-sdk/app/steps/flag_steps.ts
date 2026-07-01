@@ -1,5 +1,5 @@
 import {Given, Then, When} from '@cucumber/cucumber';
-import {CreateFeature, Feature, FeatureValue, FeatureValueType, RolloutStrategy} from '../apis/mr-service';
+import {CreateFeature, Feature, FeatureValueType, RolloutStrategy} from '../apis/mr-service';
 import {makeid} from '../support/random';
 import {expect} from 'chai';
 import waitForExpect from 'wait-for-expect';
@@ -92,21 +92,6 @@ Then('The feature from the repository has the default value {string}', async fun
   }, 4000, 500);
 });
 
-Then('The feature from the repository has a strategy with the value {string} in position {int}', async function(value: string, position: number) {
-  const world = this as SdkWorld;
-  await waitForRepository(world);
-
-  const val = convertValue(value, world.feature.valueType);
-
-  await waitForExpect(() => {
-    const f = this.featureState(world.feature.key) as any; // FeatureStateBaseHolder
-    const state = f.internalFeatureState as FeatureState | undefined;
-    expect(state).to.not.be.undefined;
-    expect(state.strategies.length >= (position-1), `not enough strategies yet - ${state.strategies.length} needed ${position-1}`);
-    const foundStrategyValue = state.strategies[position-1].value;
-    expect(foundStrategyValue, `found strategy value ${foundStrategyValue} is not ${val}`).to.eq(val);
-  }, 4000, 500);
-});
 
 Then('The flag in the sdk has a value {string}', async function (val: string) {
   const world = this as SdkWorld;
