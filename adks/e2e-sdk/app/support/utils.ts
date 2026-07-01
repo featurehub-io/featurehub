@@ -106,3 +106,25 @@ export function compareStrategies(strategy1: any, strategy2: any) {
 
   expect(s1, `expected ${JSON.stringify(s1)} to deep equal ${JSON.stringify(s2)}`).to.deep.eq(s2);
 }
+
+export function trimField(v : string|undefined): string|undefined {
+  if (v === undefined) return undefined;
+  const val = v.trim();
+  if (val.length === 0 || val === '_') return undefined;
+  return val;
+}
+
+export function extractFloat(v : string|undefined): number|undefined {
+  const val = trimField(v);
+  return val !== undefined ? parseFloat(val) : undefined;
+}
+
+export function extractInt(v : string|undefined): number|undefined {
+  const val = trimField(v);
+  return val !== undefined ? parseInt(val) : undefined;
+}
+
+export function extractArray(v: string|undefined): Array<string>|undefined {
+  const val = trimField(v);
+  return val !== undefined ? val.split(',').map(s => s.trim()).filter(s => s.length > 0) : undefined;
+}

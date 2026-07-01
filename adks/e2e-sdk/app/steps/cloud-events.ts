@@ -17,7 +17,7 @@ import {logger} from "../support/logging";
 import {CloudEvent} from "cloudevents";
 import {FeatureMessagingUpdate, FeatureMessagingUpdateTypeTransformer, StrategyUpdateType} from "../apis/messaging";
 import DataTable from "@cucumber/cucumber/lib/models/data_table";
-import {compareStrategies, convertValue} from "../support/utils";
+import {compareStrategies, convertValue, extractArray, extractFloat, trimField} from "../support/utils";
 
 When('I clear cloud events', function() {
   resetCloudEvents();
@@ -30,22 +30,6 @@ function messageDecoder(ce: CloudEvent<any>) {
   }
 }
 
-function trimField(v : string|undefined): string|undefined {
-  if (v === undefined) return undefined;
-  const val = v.trim();
-  if (val.length === 0 || val === '_') return undefined;
-  return val;
-}
-
-function extractFloat(v : string|undefined): number|undefined {
-  const val = trimField(v);
-  return val !== undefined ? parseFloat(val) : undefined;
-}
-
-function extractArray(v: string|undefined): Array<string>|undefined {
-  const val = trimField(v);
-  return val !== undefined ? val.split(',').map(s => s.trim()).filter(s => s.length > 0) : undefined;
-}
 
 function extractRolloutStrategyParentFromRow(prefix: string, row: Record<string,string>, featureValueType: FeatureValueType ): RolloutStrategy {
   const assignedValue = trimField(row[`${prefix}-value`]);
