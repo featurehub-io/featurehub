@@ -48,19 +48,33 @@ async function findStrategy(world: SdkWorld, name: string, includeUsage = false)
   return data.data.items[0];
 }
 
-When("I attach portfolio strategy {string} to the current environment feature value with the value {string}", async function(strategyName: string, value: string) {
-  const world = this as SdkWorld;
+async function attachPortfolioStrategyToFeatureValue(strategyName: string, value: string|undefined, world: SdkWorld, percentage?: number) {
   const strategy = await findStrategy(world, strategyName);
 
   const featureValue = await world.getFeatureValue();
 
   const v = convertValue(value, world.feature.valueType);
   featureValue.portfolioStrategyInstances.push(new RolloutStrategyInstance({ strategyId: strategy.strategy.id,
-    value:  v}));
+    value:  v, percentageOverride: percentage}));
 
   const updatedValue = await world.updateFeature(featureValue);
-  expect(updatedValue.portfolioStrategyInstances.find(rsi =>
-    rsi.strategyId === strategy.strategy.id && rsi.value === v )).to.not.be.undefined;
+  const found = updatedValue.portfolioStrategyInstances.find(rsi => rsi.strategyId === strategy.strategy.id  );
+
+  expect(found).to.not.be.undefined;
+
+  expect(found.value).to.eq(v);
+
+  expect(found.percentageOverride).to.eq(percentage);
+}
+
+When("I attach portfolio strategy {string} to the current environment feature value with the value {string}", async function(strategyName: string, value: string) {
+  const world = this as SdkWorld;
+  await attachPortfolioStrategyToFeatureValue(strategyName, value, world);
+});
+
+When("I attach portfolio strategy {string} to the current environment feature value with the value {string} with percentage {int}", async function(strategyName: string, value: string, percentage: number) {
+  const world = this as SdkWorld;
+  await attachPortfolioStrategyToFeatureValue(strategyName, value, world, percentage);
 });
 
 export async function validateFeatureHistory(world: SdkWorld, uniqueCode: string, strategyName: string, value: string) {
