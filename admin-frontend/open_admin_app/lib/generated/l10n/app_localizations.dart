@@ -266,6 +266,12 @@ abstract class AppLocalizations {
   /// **'Application Strategies'**
   String get applicationStrategies;
 
+  /// Navigation menu item for portfolio strategies
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategies'**
+  String get portfolioStrategies;
+
   /// Navigation menu item for API keys
   ///
   /// In en, this message translates to:

@@ -71,6 +71,7 @@
                 <file>${project.basedir}/../../backend/mr-api/feature-filters.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/pagination.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/groups.yaml</file>
+                <file>${project.basedir}/../../backend/mr-api/portfolio-strategies.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
             </configuration>

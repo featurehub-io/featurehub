@@ -13,6 +13,9 @@ class ReleasedPortfolio {
   final bool currentPortfolioOrSuperAdmin;
   // if they have permissions to edit, create or delete features
   final bool currentPortfolioFeatureCreator;
+  final bool currentPortfolioGroupManager;
+  final bool currentPortfolioStrategyEditor;
+  final bool currentPortfolioStrategyEditCreate;
 
   @override
   String toString() {
@@ -24,7 +27,7 @@ class ReleasedPortfolio {
   }
 
   ReleasedPortfolio(
-      {required this.portfolio, required this.currentPortfolioOrSuperAdmin, required this.currentPortfolioFeatureCreator});
+      {required this.portfolio, required this.currentPortfolioOrSuperAdmin, required this.currentPortfolioFeatureCreator, required this.currentPortfolioGroupManager, required this.currentPortfolioStrategyEditor, required this.currentPortfolioStrategyEditCreate});
 }
 
 class ReleasedApplication {
@@ -50,7 +53,9 @@ final _log = Logger('stream-valley');
 final ReleasedPortfolio nullPortfolio = ReleasedPortfolio(
     portfolio:
         Portfolio(name: 'null-portfolio', id: '', description: '', version: -1),
-    currentPortfolioOrSuperAdmin: false, currentPortfolioFeatureCreator: false);
+    currentPortfolioOrSuperAdmin: false, currentPortfolioFeatureCreator: false,
+    currentPortfolioStrategyEditor: false, currentPortfolioStrategyEditCreate: false,
+    currentPortfolioGroupManager: false);
 
 final ReleasedApplication nullApplication = ReleasedApplication(
     application:
@@ -279,7 +284,10 @@ class StreamValley {
         currentPortfolioOrSuperAdmin:
             personState.isPersonSuperUserOrPortfolioAdmin(found.id),
         currentPortfolioFeatureCreator:
-            personState.isPersonPortfolioFeatureCreator(found.id)
+            personState.isPersonPortfolioFeatureCreator(found.id),
+      currentPortfolioGroupManager: personState.isPersonGroupManagerRole(),
+      currentPortfolioStrategyEditCreate: personState.isPortfolioStrategyEditDelete(),
+      currentPortfolioStrategyEditor: personState.isPortfolioStrategyEditor()
     ));
 
     _routeCheckPortfolioSource.add(found);
