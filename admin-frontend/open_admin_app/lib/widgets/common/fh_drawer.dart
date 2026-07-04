@@ -140,11 +140,10 @@ class _MenuContainer extends StatelessWidget {
             params: {}),
       if (rel.currentPortfolioStrategyEditor || rel.currentPortfolioStrategyEditCreate)
         FHMenuItem(
-            name: "Portfolio Strategies",
-            iconData: Icons.filter_alt_outlined,
+            name: l10n.portfolioStrategies,
+            iconData: Icons.call_split_outlined,
             permissionType: PermissionType.any,
             path: '/portfolio-strategies',
-            displayNewLabel: true,
             params: {}),
       if (rel.currentPortfolioGroupManager)
         FHMenuItem(
@@ -245,11 +244,10 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
           path: '/service-accounts',
           params: {}),
       FHMenuItem(
-          name: "Portfolio Strategies",
-          iconData: Icons.filter_alt_outlined,
+          name: l10n.portfolioStrategies,
+          iconData: Icons.call_split_outlined,
           permissionType: PermissionType.any,
           path: '/portfolio-strategies',
-          displayNewLabel: true,
           params: {}),
       FHMenuItem(
           name: l10n.featureFilters,

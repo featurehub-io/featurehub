@@ -6,6 +6,9 @@ import 'package:open_admin_app/routes/admin_service_accounts_route.dart';
 import 'package:open_admin_app/routes/api_keys_route.dart';
 import 'package:open_admin_app/routes/application_strategies_route.dart';
 import 'package:open_admin_app/routes/apps_route.dart';
+import 'package:open_admin_app/routes/create_portfolio_strategy_route.dart';
+import 'package:open_admin_app/routes/edit_portfolio_strategy_route.dart';
+import 'package:open_admin_app/routes/portfolio_strategies_route.dart';
 import 'package:open_admin_app/routes/create_admin_service_accounts_route.dart';
 import 'package:open_admin_app/routes/create_application_strategy_route.dart';
 import 'package:open_admin_app/routes/create_user_route.dart';
@@ -30,6 +33,8 @@ import 'package:open_admin_app/routes/setup_route.dart';
 import 'package:open_admin_app/routes/signin_route.dart';
 import 'package:open_admin_app/widgets/application-strategies/application_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/application-strategies/edit_application_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/portfolio_strategies/edit_portfolio_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/portfolio_strategies/portfolio_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_app_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
@@ -298,6 +303,44 @@ class RouteCreator {
               strategyId: params['id']!.elementAt(0),
               applicationId: params['appid']!.elementAt(0)),
           child: const EditApplicationStrategyRoute());
+    }
+  }
+
+  Widget portfolioStrategies(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
+    return BlocProvider<PortfolioStrategyBloc>(
+        creator: (context, bag) => PortfolioStrategyBloc(mrBloc),
+        child: const PortfolioStrategyRoute());
+  }
+
+  Widget createPortfolioStrategy(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
+    if (params['pid'] == null) {
+      return SizedBox(
+        height: 600,
+        child: notFound(mrBloc),
+      );
+    } else {
+      return BlocProvider<EditPortfolioStrategyBloc>(
+          creator: (context, bag) => EditPortfolioStrategyBloc(mrBloc,
+              portfolioId: params['pid']!.elementAt(0)),
+          child: const CreatePortfolioStrategyRoute());
+    }
+  }
+
+  Widget editPortfolioStrategy(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
+    if (params['pid'] == null || params['id'] == null) {
+      return SizedBox(
+        height: 600,
+        child: notFound(mrBloc),
+      );
+    } else {
+      return BlocProvider<EditPortfolioStrategyBloc>(
+          creator: (context, bag) => EditPortfolioStrategyBloc(mrBloc,
+              strategyId: params['id']!.elementAt(0),
+              portfolioId: params['pid']!.elementAt(0)),
+          child: const EditPortfolioStrategyRoute());
     }
   }
 

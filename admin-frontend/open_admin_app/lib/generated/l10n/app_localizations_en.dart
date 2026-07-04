@@ -2137,4 +2137,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get portfolioStrategies => 'Portfolio Strategies';
+
+  @override
+  String get portfolioStrategiesDocumentation =>
+      'Portfolio Strategies Documentation';
+
+  @override
+  String createPortfolioStrategyTitle(String name) {
+    return 'Create Portfolio Strategy for $name';
+  }
+
+  @override
+  String editPortfolioStrategyTitle(String name) {
+    return 'Edit Portfolio Strategy for $name';
+  }
+
+  @override
+  String get portfolioStrategyDeleteContent =>
+      'This portfolio strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!';
+
+  @override
+  String portfolioStrategyDeleted(String name) {
+    return 'Portfolio strategy \'$name\' deleted!';
+  }
 }

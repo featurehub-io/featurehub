@@ -2049,4 +2049,29 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get strategy => '策略';
+
+  @override
+  String get portfolioStrategies => '项目组合策略';
+
+  @override
+  String get portfolioStrategiesDocumentation => '项目组合策略文档';
+
+  @override
+  String createPortfolioStrategyTitle(String name) {
+    return '为「$name」创建项目组合策略';
+  }
+
+  @override
+  String editPortfolioStrategyTitle(String name) {
+    return '编辑「$name」的项目组合策略';
+  }
+
+  @override
+  String get portfolioStrategyDeleteContent =>
+      '该项目组合策略将被删除并从所有功能标志中取消分配。\n\n此操作无法撤销！';
+
+  @override
+  String portfolioStrategyDeleted(String name) {
+    return '项目组合策略「$name」已删除！';
+  }
 }

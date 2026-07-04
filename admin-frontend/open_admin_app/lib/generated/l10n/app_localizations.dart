@@ -1292,6 +1292,12 @@ abstract class AppLocalizations {
   /// **'Application Strategies Documentation'**
   String get applicationStrategiesDocumentation;
 
+  /// Label for portfolio strategies docs link
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategies Documentation'**
+  String get portfolioStrategiesDocumentation;
+
   /// Page header for the edit user screen
   ///
   /// In en, this message translates to:
@@ -1513,6 +1519,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit Application Strategy for {name}'**
   String editApplicationStrategyTitle(String name);
+
+  /// Page header when creating a portfolio strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Create Portfolio Strategy for {name}'**
+  String createPortfolioStrategyTitle(String name);
+
+  /// Page header when editing a portfolio strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Portfolio Strategy for {name}'**
+  String editPortfolioStrategyTitle(String name);
 
   /// Dialog title when editing an application
   ///
@@ -2041,6 +2059,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Application strategy \'{name}\' deleted!'**
   String appStrategyDeleted(String name);
+
+  /// Body of the delete portfolio strategy confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This portfolio strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!'**
+  String get portfolioStrategyDeleteContent;
+
+  /// Snackbar after deleting a portfolio strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio strategy \'{name}\' deleted!'**
+  String portfolioStrategyDeleted(String name);
 
   /// Strategy usage cell: how many environments and feature values use this strategy
   ///
