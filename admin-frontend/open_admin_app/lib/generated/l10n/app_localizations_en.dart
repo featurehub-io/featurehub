@@ -2186,4 +2186,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get strategy => 'Strategy';
+
+  @override
+  String get portfolioStrategies => 'Portfolio Strategies';
 }
