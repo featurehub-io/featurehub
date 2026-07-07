@@ -10,10 +10,12 @@ import 'package:rxdart/rxdart.dart';
 class EditingFeatureValueBloc implements Bloc {
   final Feature feature;
   final String applicationId;
+  final String portfolioId;
 
   late FeatureServiceApi _featureServiceApi;
   late FeatureHistoryServiceApi _featureHistoryServiceApi;
   late ApplicationRolloutStrategyServiceApi _applicationStrategyServiceApi;
+  late PortfolioRolloutStrategyServiceApi _portfolioRolloutStrategyServiceApi;
 
   final ApplicationFeatureValues applicationFeatureValues;
   final EnvironmentFeatureValues environmentFeatureValue;
@@ -34,12 +36,23 @@ class EditingFeatureValueBloc implements Bloc {
   Stream<List<RolloutStrategyInstance>> get applicationStrategies =>
       _applicationStrategySource
           .stream; // should it be ApplicationRolloutStrategy type?
+  late final BehaviorSubject<List<RolloutStrategyInstance>>
+    _portfolioStrategySource;
+
+  Stream<List<RolloutStrategyInstance>> get portfolioStrategies =>
+    _portfolioStrategySource.stream;
 
   late final BehaviorSubject<List<ListApplicationRolloutStrategyItem>>
       _availableApplicationStrategiesSource;
   Stream<List<ListApplicationRolloutStrategyItem>>
       get availableApplicationStrategies =>
           _availableApplicationStrategiesSource.stream;
+
+  late final BehaviorSubject<List<ListPortfolioRolloutStrategyItem>>
+    _availablePortfolioStrategiesSource;
+  Stream<List<ListPortfolioRolloutStrategyItem>>
+  get availablePortfolioStrategies =>
+      _availablePortfolioStrategiesSource.stream;
 
   final _isFeatureValueUpdatedSource = BehaviorSubject<bool>.seeded(false);
   BehaviorSubject<bool> get isFeatureValueUpdatedStream =>
@@ -53,6 +66,7 @@ class EditingFeatureValueBloc implements Bloc {
 
   EditingFeatureValueBloc(
       this.applicationId,
+      this.portfolioId,
       this.feature,
       this.featureValue,
       this.environmentFeatureValue,
@@ -65,6 +79,7 @@ class EditingFeatureValueBloc implements Bloc {
         FeatureHistoryServiceApi(featureStatusBloc.mrClient.apiClient);
     _applicationStrategyServiceApi = ApplicationRolloutStrategyServiceApi(
         featureStatusBloc.mrClient.apiClient);
+    _portfolioRolloutStrategyServiceApi = PortfolioRolloutStrategyServiceApi(featureStatusBloc.mrClient.apiClient);
     currentFeatureValue = FeatureValue.fromJson(featureValue
         .toJson()); // keeping original featureValue cached for resets
     _strategySource = BehaviorSubject<List<RolloutStrategy>>.seeded(
@@ -74,6 +89,12 @@ class EditingFeatureValueBloc implements Bloc {
             [...currentFeatureValue.rolloutStrategyInstances ?? []]);
     _availableApplicationStrategiesSource =
         BehaviorSubject<List<ListApplicationRolloutStrategyItem>>.seeded([]);
+    _portfolioStrategySource =
+      BehaviorSubject<List<RolloutStrategyInstance>>.seeded(
+        [...currentFeatureValue.portfolioStrategyInstances ?? []]);
+    _availablePortfolioStrategiesSource =
+      BehaviorSubject<List<ListPortfolioRolloutStrategyItem>>.seeded([]);
+
     environmentId = environmentFeatureValue.environmentId;
     addFeatureValueToStream(featureValue);
     _featureValueStreamSubscription = _currentFv.listen(featureValueHasChanged);
@@ -123,6 +144,13 @@ class EditingFeatureValueBloc implements Bloc {
     addFeatureValueToStream(currentFeatureValue);
   }
 
+  void updatePortfolioStrategyValue() {
+    final strategies = _portfolioStrategySource.value;
+    _portfolioStrategySource.add(strategies);
+    currentFeatureValue.portfolioStrategyInstances = strategies;
+    addFeatureValueToStream(currentFeatureValue);
+  }
+
   void featureValueHasChanged(FeatureValue updatedFeatureValue) {
     if (featureValue != updatedFeatureValue) {
       _isFeatureValueUpdatedSource.add(true);
@@ -143,10 +171,18 @@ class EditingFeatureValueBloc implements Bloc {
   void removeApplicationStrategy(RolloutStrategyInstance rs) {
     final strategies = _applicationStrategySource.value;
     fhosLogger.fine(
-        "removing strategy ${rs.strategyId} from list ${strategies.map((e) => e.strategyId)}");
+        "removing application strategy ${rs.strategyId} from list ${strategies.map((e) => e.strategyId)}");
     _applicationStrategySource.value
         .removeWhere((e) => e.strategyId == rs.strategyId);
     updateApplicationStrategyValue();
+  }
+
+  void removePortfolioStrategy(RolloutStrategyInstance rs) {
+    final strategies = _portfolioStrategySource.value;
+    fhosLogger.fine("removing portfolio strategy ${rs.strategyId} from list ${strategies.map((e) => e.strategyId)}");
+    _portfolioStrategySource.value
+        .removeWhere((e) => e.strategyId == rs.strategyId);
+    updatePortfolioStrategyValue();
   }
 
   void updateFeatureValueLockedStatus(bool locked) {
@@ -235,6 +271,28 @@ class EditingFeatureValueBloc implements Bloc {
         currentApplicationStrategies.add(rolloutStrategy);
         _applicationStrategySource.add(currentApplicationStrategies);
         updateApplicationStrategyValue();
+      }
+    }
+  }
+
+  Future<void> getPortfolioStrategies() async {
+    final pStrategiesList = await _portfolioRolloutStrategyServiceApi.listPortfolioStrategies(portfolioId);
+    _availablePortfolioStrategiesSource.add(pStrategiesList.items);
+  }
+
+  void addPortfolioStrategy() {
+    if (_selectedStrategyIdToAdd != null) {
+      final currentPortfolioStrategies = _portfolioStrategySource.value;
+      if (!currentPortfolioStrategies.any((strategy) => strategy.strategyId == _selectedStrategyIdToAdd)) {
+        final strategyList = _availablePortfolioStrategiesSource.value;
+        final ars = strategyList.firstWhere((strategy) => strategy.strategy.id == _selectedStrategyIdToAdd);
+        final rs = RolloutStrategyInstance(
+            strategyId: ars.strategy.id,
+            value: feature.valueType == FeatureValueType.BOOLEAN ? false : null,
+            name: ars.strategy.name);
+        currentPortfolioStrategies.add(rs);
+        _portfolioStrategySource.add(currentPortfolioStrategies);
+        updatePortfolioStrategyValue();
       }
     }
   }

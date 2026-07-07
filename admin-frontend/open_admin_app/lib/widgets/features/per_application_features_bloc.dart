@@ -386,6 +386,7 @@ class PerApplicationFeaturesBloc
       EnvironmentFeatureValues environmentFeatureValue) {
     return EditingFeatureValueBloc(
         applicationId!,
+        portfolioId!,
         feature,
         featureValue,
         environmentFeatureValue,

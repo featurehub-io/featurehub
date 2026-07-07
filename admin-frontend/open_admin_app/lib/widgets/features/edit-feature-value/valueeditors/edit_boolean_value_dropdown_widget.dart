@@ -10,7 +10,7 @@ class EditBooleanValueDropDownWidget extends StatefulWidget {
     this.rolloutStrategy,
     required this.strBloc,
     this.groupRolloutStrategy,
-    this.applicationRolloutStrategy,
+    this.applicationRolloutStrategy, this.portfolioRolloutStrategy,
   });
 
   final bool unlocked;
@@ -18,6 +18,7 @@ class EditBooleanValueDropDownWidget extends StatefulWidget {
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupRolloutStrategy;
   final RolloutStrategyInstance? applicationRolloutStrategy;
+  final RolloutStrategyInstance? portfolioRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   @override
@@ -38,7 +39,10 @@ class EditBooleanValueDropDownWidgetState
       boolFeatureValue = widget.groupRolloutStrategy!.value ? 'On' : 'Off';
     } else if (widget.applicationRolloutStrategy != null) {
       boolFeatureValue =
-          widget.applicationRolloutStrategy!.value ? 'On' : 'Off';
+      widget.applicationRolloutStrategy!.value ? 'On' : 'Off';
+    } else if (widget.portfolioRolloutStrategy != null) {
+      boolFeatureValue =
+      widget.portfolioRolloutStrategy!.value ? 'On' : 'Off';
     } else {
       boolFeatureValue =
           (widget.strBloc.featureValue.valueBoolean ?? false) ? 'On' : 'Off';
@@ -92,6 +96,9 @@ class EditBooleanValueDropDownWidgetState
     } else if (widget.applicationRolloutStrategy != null) {
       widget.applicationRolloutStrategy!.value = replacementBoolean;
       widget.strBloc.updateApplicationStrategyValue();
+    } else if (widget.portfolioRolloutStrategy != null) {
+      widget.portfolioRolloutStrategy!.value = replacementBoolean;
+      widget.strBloc.updatePortfolioStrategyValue();
     } else {
       widget.strBloc.updateFeatureValueDefault(replacementBoolean);
     }

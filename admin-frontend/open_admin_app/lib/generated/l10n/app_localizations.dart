@@ -3660,7 +3660,37 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Add Strategy'**
-  String get addStrategy;
+  String get addApplicationStrategy;
+
+  /// Section heading for portfolio-level strategy variations
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio strategy variations'**
+  String get portfolioStrategyVariations;
+
+  /// Info tooltip describing portfolio strategy variations
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio strategies are created at portfolio level and can be assigned to multiple features in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.'**
+  String get portfolioStrategyVariationsInfo;
+
+  /// Placeholder when no portfolio strategies have been assigned
+  ///
+  /// In en, this message translates to:
+  /// **'No portfolio strategies set'**
+  String get noPortfolioStrategiesSet;
+
+  /// Button to reveal the list of available portfolio strategies to add
+  ///
+  /// In en, this message translates to:
+  /// **'Show available portfolio strategies'**
+  String get showAvailablePortfolioStrategies;
+
+  /// Button label to add an portfolio strategy to a feature value
+  ///
+  /// In en, this message translates to:
+  /// **'Add Strategy'**
+  String get addPortfolioStrategy;
 
   /// Section label for the retire feature value checkbox
   ///
@@ -3781,6 +3811,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Application Strategy'**
   String get applicationStrategyTooltip;
+
+  /// Tooltip label on portfolio strategy cells in the feature value table
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategy'**
+  String get portfolioStrategyTooltip;
 
   /// Section label for the lock/unlock switch in the feature value side sheet
   ///

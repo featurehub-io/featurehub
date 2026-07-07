@@ -110,15 +110,17 @@ class _ValueContainer extends StatelessWidget {
                         fv: fv!,
                         feature: feature,
                       ),
-                  if (fv!.rolloutStrategyInstances != null &&
-                      fv!.rolloutStrategyInstances!.isNotEmpty)
+                  if (fv?.rolloutStrategyInstances?.isNotEmpty == true)
                     for (RolloutStrategyInstance rsi
                         in fv!.rolloutStrategyInstances!)
                       _ValueCard(
                         applicationStrategy: rsi,
                         fv: fv!,
                         feature: feature,
-                      )
+                      ),
+                  if (fv?.portfolioStrategyInstances?.isNotEmpty == true)
+                    for(RolloutStrategyInstance rsi in fv!.portfolioStrategyInstances!)
+                      _ValueCard(fv: fv!, feature: feature, portfolioStrategy: rsi,)
                 ],
               )
             ],
@@ -172,6 +174,7 @@ class _ValueCard extends StatelessWidget {
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupStrategy;
   final RolloutStrategyInstance? applicationStrategy;
+  final RolloutStrategyInstance? portfolioStrategy;
 
   const _ValueCard({
     required this.fv,
@@ -179,6 +182,7 @@ class _ValueCard extends StatelessWidget {
     this.rolloutStrategy,
     this.groupStrategy,
     this.applicationStrategy,
+    this.portfolioStrategy
   });
 
   @override
@@ -212,7 +216,7 @@ class _ValueCard extends StatelessWidget {
                           ? groupStrategyTextColor.withAlpha(38)
                           : applicationStrategy != null
                               ? applicationStrategyTextColor.withAlpha(38)
-                              : defaultTextColor.withAlpha(38),
+                              : portfolioStrategy != null ? portfolioStrategyTextColor.withAlpha(38) : defaultTextColor.withAlpha(38),
                   borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(4.0),
                       bottomLeft: Radius.circular(4.0)),
@@ -278,6 +282,25 @@ class _ValueCard extends StatelessWidget {
                                   ),
                                 ),
                               )
+                        : portfolioStrategy != null
+                          ? Tooltip(
+                                message: l10n.portfolioStrategyTooltip,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Text(
+                                    portfolioStrategy!.name!,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(
+                                        color: portfolioStrategyTextColor,
+                                        // fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.9),
+                                  ),
+                                ),
+                              )
                             : Padding(
                                 padding: const EdgeInsets.all(4.0),
                                 child: Text('default',
@@ -299,7 +322,7 @@ class _ValueCard extends StatelessWidget {
                                 ? groupStrategy!.value
                                 : applicationStrategy != null
                                     ? applicationStrategy!.value
-                                    : fv.valueBoolean),
+                                    : portfolioStrategy != null ? portfolioStrategy!.value : fv.valueBoolean),
                   )
                 : Flexible(
                     fit: FlexFit.tight,
