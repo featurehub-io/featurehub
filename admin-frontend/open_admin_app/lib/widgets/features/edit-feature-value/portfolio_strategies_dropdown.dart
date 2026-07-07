@@ -1,0 +1,68 @@
+// ignore_for_file: library_private_types_in_public_api
+
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
+import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
+
+class PortfolioStrategiesDropDown extends StatefulWidget {
+  final List<ListPortfolioRolloutStrategyItem> strategies;
+  final EditingFeatureValueBloc bloc;
+
+  const PortfolioStrategiesDropDown(
+      {super.key, required this.strategies, required this.bloc});
+
+  @override
+  _PortfolioStrategiesDropDownState createState() =>
+      _PortfolioStrategiesDropDownState();
+}
+
+class _PortfolioStrategiesDropDownState
+    extends State<PortfolioStrategiesDropDown> {
+  String? currentValue;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 250,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+        child: OutlinedButton(
+            onPressed: () => {},
+            child: DropdownButton(
+              underline: const SizedBox.shrink(),
+              icon: const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 18,
+                ),
+              ),
+              isExpanded: true,
+              isDense: true,
+              items: widget.strategies.isNotEmpty
+                  ? widget.strategies
+                      .map((ListPortfolioRolloutStrategyItem strategy) {
+                      return DropdownMenuItem<String>(
+                          value: strategy.strategy.id,
+                          child: Text(
+                            strategy.strategy.name,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            overflow: TextOverflow.ellipsis,
+                          ));
+                    }).toList()
+                  : null,
+              hint: Text(AppLocalizations.of(context)!.selectStrategyToAdd,
+                  style: Theme.of(context).textTheme.titleSmall),
+              onChanged: (String? value) async {
+                setState(() {
+                  currentValue = value;
+                  widget.bloc.selectedStrategyToAdd = value;
+                });
+              },
+              value: currentValue,
+            )),
+      ),
+    );
+  }
+}

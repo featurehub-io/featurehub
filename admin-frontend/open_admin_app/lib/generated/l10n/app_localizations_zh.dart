@@ -105,6 +105,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get applicationStrategies => '应用程序策略';
 
   @override
+  String get portfolioStrategies => '项目组合策略';
+
+  @override
   String get apiKeys => 'API 密钥';
 
   @override
@@ -656,6 +659,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get applicationStrategiesDocumentation => '应用程序策略文档';
 
   @override
+  String get portfolioStrategiesDocumentation => '项目组合策略文档';
+
+  @override
   String get editUser => '编辑用户';
 
   @override
@@ -778,6 +784,16 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String editApplicationStrategyTitle(String name) {
     return '编辑「$name」的应用程序策略';
+  }
+
+  @override
+  String createPortfolioStrategyTitle(String name) {
+    return '为「$name」创建项目组合策略';
+  }
+
+  @override
+  String editPortfolioStrategyTitle(String name) {
+    return '编辑「$name」的项目组合策略';
   }
 
   @override
@@ -1079,6 +1095,15 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String appStrategyDeleted(String name) {
     return '应用程序策略「$name」已删除！';
+  }
+
+  @override
+  String get portfolioStrategyDeleteContent =>
+      '该项目组合策略将被删除并从所有功能标志中取消分配。\n\n此操作无法撤销！';
+
+  @override
+  String portfolioStrategyDeleted(String name) {
+    return '项目组合策略「$name」已删除！';
   }
 
   @override
@@ -1978,7 +2003,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get showAvailableAppStrategies => '显示可用的应用程序策略';
 
   @override
-  String get addStrategy => '添加策略';
+  String get addApplicationStrategy => '添加策略';
+
+  @override
+  String get portfolioStrategyVariations => 'Portfolio strategy variations';
+
+  @override
+  String get portfolioStrategyVariationsInfo =>
+      'Portfolio strategies are created at portfolio level and can be assigned to multiple features in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.';
+
+  @override
+  String get noPortfolioStrategiesSet => 'No portfolio strategies set';
+
+  @override
+  String get showAvailablePortfolioStrategies =>
+      'Show available portfolio strategies';
+
+  @override
+  String get addPortfolioStrategy => 'Add Strategy';
 
   @override
   String get retiredStatus => '退役状态';
@@ -2042,6 +2084,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get applicationStrategyTooltip => '应用程序策略';
 
   @override
+  String get portfolioStrategyTooltip => 'Portfolio Strategy';
+
+  @override
   String get lockedStatus => '锁定状态';
 
   @override
@@ -2098,29 +2143,4 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get strategy => '策略';
-
-  @override
-  String get portfolioStrategies => '项目组合策略';
-
-  @override
-  String get portfolioStrategiesDocumentation => '项目组合策略文档';
-
-  @override
-  String createPortfolioStrategyTitle(String name) {
-    return '为「$name」创建项目组合策略';
-  }
-
-  @override
-  String editPortfolioStrategyTitle(String name) {
-    return '编辑「$name」的项目组合策略';
-  }
-
-  @override
-  String get portfolioStrategyDeleteContent =>
-      '该项目组合策略将被删除并从所有功能标志中取消分配。\n\n此操作无法撤销！';
-
-  @override
-  String portfolioStrategyDeleted(String name) {
-    return '项目组合策略「$name」已删除！';
-  }
 }

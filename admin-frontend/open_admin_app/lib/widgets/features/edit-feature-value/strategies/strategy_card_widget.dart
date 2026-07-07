@@ -7,22 +7,21 @@ import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/sp
 import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 
-class StrategyCardWidget extends StatelessWidget {
+abstract class BaseRolloutStrategyCardWidget extends StatelessWidget {
   final bool editable;
+  final EditingFeatureValueBloc? strBloc;
   final Widget editableHolderWidget;
-  final RolloutStrategy? rolloutStrategy;
-  final ThinGroupRolloutStrategy? groupRolloutStrategy;
-  final RolloutStrategyInstance? applicationRolloutStrategy;
-  final EditingFeatureValueBloc strBloc;
 
-  const StrategyCardWidget(
-      {super.key,
-      required this.editable,
-      required this.editableHolderWidget,
-      this.rolloutStrategy,
-      required this.strBloc,
-      this.groupRolloutStrategy,
-      this.applicationRolloutStrategy});
+  const BaseRolloutStrategyCardWidget({
+    super.key, required this.editable,
+    required this.strBloc, required this.editableHolderWidget, Object? cardColour,
+  });
+
+  Color cardColor();
+
+  String? strategyName();
+
+  Widget expandedSection(BuildContext context);
 
   @override
   Widget build(BuildContext context) {
@@ -30,19 +29,10 @@ class StrategyCardWidget extends StatelessWidget {
     return SizedBox(
       height: 50,
       child: InkWell(
-        mouseCursor:
-            rolloutStrategy != null || applicationRolloutStrategy != null
-                ? SystemMouseCursors.grab
-                : null,
+        mouseCursor: strategyName() == null ? SystemMouseCursors.grab : null,
         child: Card(
           elevation: 0.0, // if this is not set, then colors are screwed up
-          color: rolloutStrategy != null
-              ? strategyTextColor.withAlpha(38)
-              : groupRolloutStrategy != null
-                  ? groupStrategyTextColor.withAlpha(38)
-                  : applicationRolloutStrategy != null
-                      ? applicationStrategyTextColor.withAlpha(38)
-                      : defaultTextColor.withAlpha(38),
+          color: cardColor(),
           child: Padding(
             padding: const EdgeInsets.only(left: 8.0, right: 2.0),
             child: Row(
@@ -51,119 +41,235 @@ class StrategyCardWidget extends StatelessWidget {
                 children: <Widget>[
                   Expanded(
                       flex: 4,
-                      child: groupRolloutStrategy != null
-                          ? Text(groupRolloutStrategy!.name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.labelLarge)
-                          : applicationRolloutStrategy != null
-                              ? Text(applicationRolloutStrategy!.name!,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.labelLarge)
-                              : (rolloutStrategy?.name == null
-                                  ? Text(l10n.strategyDefault,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall!
-                                          .copyWith(color: defaultTextColor))
-                                  : Text(rolloutStrategy!.name,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelLarge))),
+                      child: strategyName() == null ?
+                      Text(l10n.strategyDefault,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall!
+                              .copyWith(color: defaultTextColor))
+                          : Text(strategyName()!,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge)),
                   Expanded(
                       flex: 1,
                       child: Text(l10n.strategyServe,
                           style: CustomTextStyle.bodySmallLight(context))),
                   Expanded(flex: 4, child: editableHolderWidget),
-                  if (rolloutStrategy != null && groupRolloutStrategy == null)
-                    Expanded(
-                      flex: 3,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          EditValueStrategyLinkButton(
-                            editable: editable,
-                            rolloutStrategy: rolloutStrategy!,
-                            fvBloc: strBloc,
-                          ),
-                          if (editable)
-                            IconButton(
-                              mouseCursor: SystemMouseCursors.click,
-                              icon: const Icon(Icons.delete, size: 16),
-                              onPressed: () =>
-                                  strBloc.removeStrategy(rolloutStrategy!),
-                            ),
-                        ],
-                      ),
-                    ),
-                  if (groupRolloutStrategy != null)
-                    Expanded(
-                      flex: 3,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          IconButton(
-                            tooltip: l10n.editStrategySettings,
-                            onPressed: () {
-                              Navigator.pop(context);
-                              ManagementRepositoryClientBloc.router.navigateTo(
-                                  context,
-                                  '/edit-feature-group-strategy-values',
-                                  params: {
-                                    'appid': [strBloc.applicationId],
-                                    'envid': [strBloc.environmentId],
-                                    'groupid': [
-                                      groupRolloutStrategy!.featureGroupId!
-                                    ]
-                                  });
-                              strBloc.perApplicationFeaturesBloc.mrClient
-                                  .setCurrentEnvId(strBloc.environmentId);
-                            },
-                            icon: const Icon(Icons.arrow_forward, size: 18),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (applicationRolloutStrategy != null)
-                    Expanded(
-                      flex: 3,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          if (editable)
-                            IconButton(
-                                mouseCursor: SystemMouseCursors.click,
-                                icon: const Icon(Icons.edit, size: 16),
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  ManagementRepositoryClientBloc.router
-                                      .navigateTo(
-                                          context, '/edit-application-strategy',
-                                          params: {
-                                        'id': [
-                                          applicationRolloutStrategy!.strategyId
-                                        ],
-                                        'appid': [strBloc.applicationId]
-                                      });
-                                }),
-                          if (editable)
-                            IconButton(
-                              mouseCursor: SystemMouseCursors.click,
-                              icon: const Icon(Icons.delete, size: 16),
-                              onPressed: () =>
-                                  strBloc.removeApplicationStrategy(
-                                      applicationRolloutStrategy!),
-                            ),
-                        ],
-                      ),
-                    ),
+                  Expanded(flex: 3, child: expandedSection(context))
                 ]),
           ),
         ),
       ),
     );
+  }
+}
+
+class NullRolloutStrategyCardWidget extends BaseRolloutStrategyCardWidget {
+  const NullRolloutStrategyCardWidget({super.key, required super.strBloc, required super.editableHolderWidget}) : super(editable: false);
+
+  @override
+  Color cardColor() {
+    return defaultTextColor.withAlpha(38);
+  }
+
+  @override
+  String? strategyName() {
+    return null;
+  }
+
+  @override
+  Widget expandedSection(BuildContext context) {
+    return SizedBox.shrink();
+  }
+}
+
+
+class RolloutStrategyCardWidget extends BaseRolloutStrategyCardWidget {
+  final RolloutStrategy strategy;
+
+  const RolloutStrategyCardWidget({super.key, required super.editable, required super.strBloc, required this.strategy, required super.editableHolderWidget});
+
+  @override
+  Color cardColor() {
+    return strategyTextColor.withAlpha(38);
+  }
+
+  @override
+  Widget expandedSection(BuildContext context) {
+    final bloc = strBloc!;
+
+    return Expanded(
+      flex: 3,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          EditValueStrategyLinkButton(
+            editable: editable,
+            rolloutStrategy: strategy,
+            fvBloc: bloc,
+          ),
+          if (editable)
+            IconButton(
+              mouseCursor: SystemMouseCursors.click,
+              icon: const Icon(Icons.delete, size: 16),
+              onPressed: () =>
+                  bloc.removeStrategy(strategy!),
+            ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  String? strategyName() {
+    return strategy.name;
+  }
+}
+
+class GroupRolloutStrategyCardWidget extends BaseRolloutStrategyCardWidget {
+  final ThinGroupRolloutStrategy strategy;
+
+  const GroupRolloutStrategyCardWidget({super.key, required super.editable, required super.strBloc, required this.strategy, required super.editableHolderWidget});
+
+  @override
+  Color cardColor() {
+    return groupStrategyTextColor.withAlpha(38);
+  }
+
+  @override
+  Widget expandedSection(BuildContext context) {
+    final bloc = strBloc!;
+    final l10n = AppLocalizations.of(context)!;
+
+    return  Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          IconButton(
+            tooltip: l10n.editStrategySettings,
+            onPressed: () {
+              Navigator.pop(context);
+              ManagementRepositoryClientBloc.router.navigateTo(
+                  context,
+                  '/edit-feature-group-strategy-values',
+                  params: {
+                    'appid': [bloc.applicationId],
+                    'envid': [bloc.environmentId],
+                    'groupid': [
+                      strategy.featureGroupId!
+                    ]
+                  });
+              bloc.perApplicationFeaturesBloc.mrClient
+                  .setCurrentEnvId(bloc.environmentId);
+            },
+            icon: const Icon(Icons.arrow_forward, size: 18),
+          ),
+        ],
+      );
+  }
+
+  @override
+  String? strategyName() {
+    return strategy.name;
+  }
+}
+
+class ApplicationRolloutStrategyCardWidget extends BaseRolloutStrategyCardWidget {
+  final RolloutStrategyInstance strategyInstance;
+
+  const ApplicationRolloutStrategyCardWidget({super.key, required super.editable, required super.strBloc, required this.strategyInstance, required super.editableHolderWidget});
+
+  @override
+  Color cardColor() {
+    return applicationStrategyTextColor.withAlpha(38);
+  }
+
+  @override
+  Widget expandedSection(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        if (editable)
+          IconButton(
+              mouseCursor: SystemMouseCursors.click,
+              icon: const Icon(Icons.edit, size: 16),
+              onPressed: () {
+                Navigator.pop(context);
+                ManagementRepositoryClientBloc.router
+                    .navigateTo(
+                    context, '/edit-application-strategy',
+                    params: {
+                      'id': [
+                        strategyInstance.strategyId
+                      ],
+                      'appid': [strBloc!.applicationId]
+                    });
+              }),
+        if (editable)
+          IconButton(
+            mouseCursor: SystemMouseCursors.click,
+            icon: const Icon(Icons.delete, size: 16),
+            onPressed: () =>
+                strBloc!.removeApplicationStrategy(
+                    strategyInstance),
+          ),
+      ],
+    );
+  }
+
+  @override
+  String? strategyName() {
+   return strategyInstance.name;
+  }
+}
+
+class PortfolioRolloutStrategyCardWidget extends BaseRolloutStrategyCardWidget {
+  final RolloutStrategyInstance strategyInstance;
+
+  const PortfolioRolloutStrategyCardWidget({super.key, required super.editable, required super.strBloc, required this.strategyInstance, required super.editableHolderWidget});
+
+  @override
+  Color cardColor() {
+    return portfolioStrategyTextColor.withAlpha(38);
+  }
+
+  @override
+  Widget expandedSection(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        if (editable)
+          IconButton(
+              mouseCursor: SystemMouseCursors.click,
+              icon: const Icon(Icons.edit, size: 16),
+              onPressed: () {
+                Navigator.pop(context);
+                ManagementRepositoryClientBloc.router
+                    .navigateTo(
+                    context, '/edit-portfolio-strategy',
+                    params: {
+                      'id': [
+                        strategyInstance.strategyId
+                      ],
+                      'portfolioId': [strBloc!.portfolioId]
+                    });
+              }),
+        if (editable)
+          IconButton(
+            mouseCursor: SystemMouseCursors.click,
+            icon: const Icon(Icons.delete, size: 16),
+            onPressed: () =>
+                strBloc!.removePortfolioStrategy(
+                    strategyInstance),
+          ),
+      ],
+    );
+  }
+
+  @override
+  String? strategyName() {
+    return strategyInstance.name;
   }
 }
