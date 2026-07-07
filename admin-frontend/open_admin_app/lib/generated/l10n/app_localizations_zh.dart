@@ -1957,21 +1957,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addApplicationStrategy => '添加策略';
 
   @override
-  String get portfolioStrategyVariations => 'Portfolio strategy variations';
+  String get portfolioStrategyVariations => '项目组合策略变体';
 
   @override
   String get portfolioStrategyVariationsInfo =>
-      'Portfolio strategies are created at portfolio level and can be assigned to multiple features in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.';
+      '项目组合策略在项目组合层面创建，可分配给任意环境中的多个功能。项目组合策略可在「项目组合策略」页面中创建和编辑。';
 
   @override
-  String get noPortfolioStrategiesSet => 'No portfolio strategies set';
+  String get noPortfolioStrategiesSet => '未设置项目组合策略';
 
   @override
-  String get showAvailablePortfolioStrategies =>
-      'Show available portfolio strategies';
+  String get showAvailablePortfolioStrategies => '显示可用的项目组合策略';
 
   @override
-  String get addPortfolioStrategy => 'Add Strategy';
+  String get addPortfolioStrategy => '添加策略';
 
   @override
   String get retiredStatus => '退役状态';
@@ -2035,7 +2034,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get applicationStrategyTooltip => '应用程序策略';
 
   @override
-  String get portfolioStrategyTooltip => 'Portfolio Strategy';
+  String get portfolioStrategyTooltip => '项目组合策略';
 
   @override
   String get lockedStatus => '锁定状态';
