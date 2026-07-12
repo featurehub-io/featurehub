@@ -1,47 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/utils.dart';
-import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/valueeditors/edit_feature_value_widget.dart';
 
-class EditStringValueContainer extends StatefulWidget {
+class EditStringValueContainer extends EditFeatureValueWidget {
   const EditStringValueContainer({
     super.key,
-    required this.unlocked,
-    required this.canEdit,
-    this.rolloutStrategy,
-    this.groupRolloutStrategy,
-    required this.strBloc,
-    this.applicationRolloutStrategy, this.portfolioRolloutStrategy,
+    required super.unlocked,
+    required super.canEdit,
+    super.rolloutStrategy,
+    super.groupRolloutStrategy,
+    super.applicationRolloutStrategy,
+    super.portfolioRolloutStrategy,
+    required super.strBloc,
   });
-
-  final bool unlocked;
-  final bool canEdit;
-  final RolloutStrategy? rolloutStrategy;
-  final ThinGroupRolloutStrategy? groupRolloutStrategy;
-  final RolloutStrategyInstance? applicationRolloutStrategy;
-  final RolloutStrategyInstance? portfolioRolloutStrategy;
-  final EditingFeatureValueBloc strBloc;
 
   @override
   EditStringValueContainerState createState() =>
       EditStringValueContainerState();
 }
 
-class EditStringValueContainerState extends State<EditStringValueContainer> {
+class EditStringValueContainerState
+    extends EditFeatureValueState<EditStringValueContainer> {
   TextEditingController tec = TextEditingController();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    final valueSource = widget.rolloutStrategy != null
-        ? widget.rolloutStrategy!.value
-        : widget.groupRolloutStrategy != null
-            ? widget.groupRolloutStrategy!.value
-            : widget.applicationRolloutStrategy != null
-                ? widget.applicationRolloutStrategy!.value
-                : widget.portfolioRolloutStrategy != null ? widget.portfolioRolloutStrategy!.value : widget.strBloc.featureValue.valueString;
-    tec.text = (valueSource ?? '').toString();
+    final v = resolveStrategyValue() ?? widget.strBloc.featureValue.valueString;
+    tec.text = (v ?? '').toString();
   }
 
   @override
@@ -68,30 +54,14 @@ class EditStringValueContainerState extends State<EditStringValueContainer> {
               )),
               hintText: widget.groupRolloutStrategy == null
                   ? (widget.canEdit
-                      ? (widget.unlocked
-                          ? 'Enter string value'
-                          : 'Unlock to edit')
+                      ? (widget.unlocked ? 'Enter string value' : 'Unlock to edit')
                       : 'No editing rights')
                   : 'not set',
               hintStyle: Theme.of(context).textTheme.bodySmall),
           onChanged: (value) {
-            debouncer.run(
-              () {
-                final replacementValue = value.isEmpty ? null : tec.text.trim();
-                if (widget.rolloutStrategy != null) {
-                  widget.rolloutStrategy!.value = replacementValue;
-                  widget.strBloc.updateStrategyValue();
-                } else if (widget.applicationRolloutStrategy != null) {
-                  widget.applicationRolloutStrategy!.value = replacementValue;
-                  widget.strBloc.updateApplicationStrategyValue();
-                } else if (widget.portfolioRolloutStrategy != null) {
-                  widget.portfolioRolloutStrategy!.value = replacementValue;
-                  widget.strBloc.updatePortfolioStrategyValue();
-                } else {
-                  widget.strBloc.updateFeatureValueDefault(replacementValue);
-                }
-              },
-            );
+            debouncer.run(() {
+              updateValue(value.isEmpty ? null : tec.text.trim());
+            });
           },
         ));
   }
