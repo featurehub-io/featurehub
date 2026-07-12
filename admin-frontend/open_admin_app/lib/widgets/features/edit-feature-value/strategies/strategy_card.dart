@@ -109,7 +109,7 @@ class EditValueContainer extends StatelessWidget {
           applicationRolloutStrategy: applicationRolloutStrategy,
           portfolioRolloutStrategy: portfolioRolloutStrategy,
           strBloc: strBloc,
-          editable: editable,
+          canEdit: editable,
         );
       case FeatureValueType.NUMBER:
         return EditNumberValueContainer(
