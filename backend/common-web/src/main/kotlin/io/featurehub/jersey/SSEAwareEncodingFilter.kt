@@ -7,6 +7,7 @@ import jakarta.ws.rs.container.ContainerRequestContext
 import jakarta.ws.rs.container.ContainerResponseContext
 import jakarta.ws.rs.container.ContainerResponseFilter
 import org.glassfish.jersey.internal.inject.InjectionManager
+import org.glassfish.jersey.media.sse.EventOutput
 import org.glassfish.jersey.message.internal.HttpHeaderReader
 import org.glassfish.jersey.server.filter.EncodingFilter
 import org.glassfish.jersey.spi.ContentEncoder
@@ -22,7 +23,7 @@ class SSEAwareEncodingFilter @Inject constructor(private val injectionManager: I
 
   init {
     for (encoder in this.injectionManager.getAllInstances<ContentEncoder>(ContentEncoder::class.java)) {
-      supportedEncodings.addAll(encoder.getSupportedEncodings())
+      supportedEncodings.addAll(encoder.supportedEncodings)
     }
 
     supportedEncodings.add("identity")
@@ -31,15 +32,16 @@ class SSEAwareEncodingFilter @Inject constructor(private val injectionManager: I
   @Throws(IOException::class)
   override fun filter(request: ContainerRequestContext, response: ContainerResponseContext) {
     if (response.hasEntity()) {
-      val varyHeader = response.stringHeaders.get("Vary")
+      val varyHeader = response.stringHeaders["Vary"]
       if (varyHeader == null || !varyHeader.contains("Accept-Encoding")) {
         response.headers.add("Vary", "Accept-Encoding")
       }
 
+
       // ensure the content-encoding isn't already set
       // also ensure that this isn't an SSE response (this is our main change)
-      if (response.headers.getFirst("Content-Encoding") == null && response.headers.getFirst("Content-Type") != "text/event-stream") {
-        val acceptEncoding = request.headers.get("Accept-Encoding")
+      if (response.entityType != EventOutput::class.java && response.headers.getFirst("Content-Encoding") == null && response.headers.getFirst("Content-Type") != "text/event-stream") {
+        val acceptEncoding = request.headers["Accept-Encoding"]
         if (!acceptEncoding.isNullOrEmpty()) {
           val encodings = mutableListOf<ContentEncoding>()
 
@@ -54,13 +56,13 @@ class SSEAwareEncodingFilter @Inject constructor(private val injectionManager: I
                     encodings.add(encoding)
                   }
                 } catch (e: ParseException) {
-                  Logger.getLogger(EncodingFilter::class.java.getName()).log(Level.WARNING, e.getLocalizedMessage(), e)
+                  Logger.getLogger(EncodingFilter::class.java.getName()).log(Level.WARNING, e.localizedMessage, e)
                 }
               }
             }
           }
 
-          Collections.sort<ContentEncoding>(encodings)
+          encodings.sort<ContentEncoding>()
           encodings.add(ContentEncoding("identity", -1))
 
           val acceptedEncodings = TreeSet(this.supportedEncodings)
@@ -92,7 +94,7 @@ class SSEAwareEncodingFilter @Inject constructor(private val injectionManager: I
           }
 
           if ("identity" != contentEncoding) {
-            response.getHeaders().putSingle("Content-Encoding", contentEncoding)
+            response.headers.putSingle("Content-Encoding", contentEncoding)
           }
         }
       }
@@ -108,8 +110,8 @@ class SSEAwareEncodingFilter @Inject constructor(private val injectionManager: I
       return other === this || other != null && other is ContentEncoding && this.name == other.name && this.q == other.q
     }
 
-    override fun compareTo(o: ContentEncoding): Int {
-      return Integer.compare(o.q, this.q)
+    override fun compareTo(other: ContentEncoding): Int {
+      return other.q.compareTo(this.q)
     }
 
     companion object {
@@ -120,9 +122,5 @@ class SSEAwareEncodingFilter @Inject constructor(private val injectionManager: I
         return ContentEncoding(reader.nextToken().toString(), HttpHeaderReader.readQualityFactorParameter(reader))
       }
     }
-  }
-
-  companion object {
-    private const val IDENTITY_ENCODING = "identity"
   }
 }

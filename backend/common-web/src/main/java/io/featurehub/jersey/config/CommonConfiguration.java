@@ -27,7 +27,8 @@ public class CommonConfiguration implements Feature {
     config.property(CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE, true);
     config.property(CommonProperties.MOXY_JSON_FEATURE_DISABLE, true);
 
-    if (!"true".equals(FallbackPropertyConfig.Companion.getConfig("http-compression-disable", "false"))) {
+    if ("true".equals(FallbackPropertyConfig.Companion.getConfig("http-compression-enable", "false"))) {
+      // SSE-aware version of the encoding filter, prevents encoding SSE messages
       config.register(SSEAwareEncodingFilter.class);
       config.register(GZipEncoder.class);
     }
@@ -37,7 +38,6 @@ public class CommonConfiguration implements Feature {
     // this forces all requests to use an objectmapper to use our application wide singleton
     config.register(new JacksonJaxbJsonProvider(JacksonObjectProvider.mapper, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS));
     config.register(MultiPartFeature.class);
-    config.register(GZipEncoder.class);
     config.register(LocalExceptionMapper.class);
     config.register(OffsetDateTimeQueryProvider.class);
     config.register(OpenApiEnumProvider.class);
