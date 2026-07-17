@@ -32,15 +32,14 @@ class SSEAwareEncodingFilter @Inject constructor(private val injectionManager: I
   @Throws(IOException::class)
   override fun filter(request: ContainerRequestContext, response: ContainerResponseContext) {
     if (response.hasEntity()) {
-      val varyHeader = response.stringHeaders["Vary"]
-      if (varyHeader == null || !varyHeader.contains("Accept-Encoding")) {
-        response.headers.add("Vary", "Accept-Encoding")
-      }
-
-
       // ensure the content-encoding isn't already set
       // also ensure that this isn't an SSE response (this is our main change)
       if (response.entityType != EventOutput::class.java && response.headers.getFirst("Content-Encoding") == null && response.headers.getFirst("Content-Type") != "text/event-stream") {
+        val varyHeader = response.stringHeaders["Vary"]
+        if (varyHeader == null || !varyHeader.contains("Accept-Encoding")) {
+          response.headers.add("Vary", "Accept-Encoding")
+        }
+
         val acceptEncoding = request.headers["Accept-Encoding"]
         if (!acceptEncoding.isNullOrEmpty()) {
           val encodings = mutableListOf<ContentEncoding>()
