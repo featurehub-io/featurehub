@@ -444,7 +444,7 @@ open class ConvertUtils @Inject constructor(
         .orderBy().name.asc()
         .whenArchived.isNull
         .groupMembers.group.eq(dbg).findList().map { p ->
-          AnemicPerson().id(p.id).name(p.name).email(p.email).type(p.personType)
+          AnemicPerson().id(p.id).name(p.name ?: "none").email(p.email).type(p.personType)
         })
     }
 
