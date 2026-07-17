@@ -66,12 +66,12 @@
                 <user>999:999</user>
                 <mainClass>bathe.BatheBooter</mainClass>
                 <jvmFlags>
-                  <jvmFlag>--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED</jvmFlag>
-<!--                  <jvmFlag>-Dio.netty.tryReflectionSetAccessible=true</jvmFlag>-->
+                  <jvmFlag>-Dlog4j2.asyncLoggerRingBufferSize=4096</jvmFlag>
                   <jvmFlag>-Dlog4j.configurationFile=/etc/common-config/log4j2.xml</jvmFlag>
                   <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
                   <jvmFlag>-XX:+UseContainerSupport</jvmFlag>
-                  <jvmFlag>-XX:MaxRAMPercentage=80</jvmFlag>
+                  <jvmFlag>-XX:MaxRAMPercentage=75.0</jvmFlag>
+                  <jvmFlag>-XX:InitialRAMPercentage=75.0</jvmFlag>
                 </jvmFlags>
                 <args>
                   <arg>-R${app.entrypoint}</arg>
@@ -156,12 +156,12 @@
                 <user>999:999</user>
                 <mainClass>bathe.BatheBooter</mainClass>
                 <jvmFlags>
-                  <jvmFlag>--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED</jvmFlag>
-                  <!--                  <jvmFlag>-Dio.netty.tryReflectionSetAccessible=true</jvmFlag>-->
+                  <jvmFlag>-Dlog4j2.asyncLoggerRingBufferSize=4096</jvmFlag>
                   <jvmFlag>-Dlog4j.configurationFile=/etc/common-config/log4j2.xml</jvmFlag>
                   <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
                   <jvmFlag>-XX:+UseContainerSupport</jvmFlag>
-                  <jvmFlag>-XX:MaxRAMPercentage=80</jvmFlag>
+                   <jvmFlag>-XX:MaxRAMPercentage=75.0</jvmFlag>
+                  <jvmFlag>-XX:InitialRAMPercentage=75.0</jvmFlag>
                 </jvmFlags>
                 <args>
                   <arg>-R${app.entrypoint}</arg>
