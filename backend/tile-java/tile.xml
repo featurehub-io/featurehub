@@ -98,7 +98,7 @@
       <plugin>
         <groupId>org.codehaus.gmavenplus</groupId>
         <artifactId>gmavenplus-plugin</artifactId>
-        <version>4.3.1</version>
+        <version>5.1.0</version>
         <executions>
           <execution>
             <goals>
@@ -110,6 +110,8 @@
           </execution>
         </executions>
         <configuration>
+          <!-- Highlights the path so IntelliJ automatically flags it as a test source -->
+          <testStubsOutputDirectory>${project.build.directory}/generated-test-sources/groovy-stubs/test</testStubsOutputDirectory>
           <invokeDynamic>true</invokeDynamic>
         </configuration>
       </plugin>
