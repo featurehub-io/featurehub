@@ -259,15 +259,13 @@ class ManagementRepositoryClientBloc implements Bloc {
     return webInterface.homeUrl(overrideOrigin);
   }
 
-  ManagementRepositoryClientBloc({String? basePathUrl})
-      : _client = ApiClient(basePath: basePathUrl ?? homeUrl()) {
-
-    // attach a request id from this client to every outgoing request
-    (_client.apiClientDelegate as DioClientDelegate).client.interceptors.add(
+  void addInterceptorToDio(Dio client) {
+    client.interceptors.add(
         InterceptorsWrapper(
             onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
+              // attach a request id from this client to every outgoing request
               options.headers.putIfAbsent("baggage",
-                    () => "x-fh-reqid=${requestIdCounter++}");
+                      () => "x-fh-reqid=${requestIdCounter++}");
               return handler.next(options);
             },
             onError: (DioException err, ErrorInterceptorHandler handler) {
@@ -316,7 +314,13 @@ class ManagementRepositoryClientBloc implements Bloc {
               }
               handler.next(response);
             }
-            ));
+        ));
+  }
+
+  ManagementRepositoryClientBloc({String? basePathUrl})
+      : _client = ApiClient(basePath: basePathUrl ?? homeUrl()) {
+
+    addInterceptorToDio((_client.apiClientDelegate as DioClientDelegate).client);
 
     streamValley = StreamValley(personState);
     webInterface.setOrigin();
