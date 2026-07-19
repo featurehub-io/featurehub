@@ -12,9 +12,13 @@ class MaintenanceNotificationFilter : ContainerResponseFilter {
   override fun filter(requestContext: ContainerRequestContext, responseContext: ContainerResponseContext) {
     if (start == null || end == null || maintenanceMessage == null) return
 
-    responseContext.headers.putSingle("X-Maintenance-Start", start.toString())
-    responseContext.headers.putSingle("X-Maintenance-End", end.toString())
-    responseContext.headers.putSingle("X-Maintenance-Message", maintenanceMessage)
+    // if the ending time is after now, we should tell the client. regardless of when the start time is because we want
+    // them to know one is coming up.
+    if (end!!.isAfter(Instant.now())) {
+      responseContext.headers.putSingle("X-Maintenance-Start", start.toString())
+      responseContext.headers.putSingle("X-Maintenance-End", end.toString())
+      responseContext.headers.putSingle("X-Maintenance-Message", maintenanceMessage)
+    }
   }
 
   companion object {

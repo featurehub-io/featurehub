@@ -311,6 +311,8 @@ class ManagementRepositoryClientBloc implements Bloc {
                     _pendingMaintenanceSource.add(maintenanceInfo);
                   }
                 }
+              } else if (_pendingMaintenanceSource.hasValue) {
+                _pendingMaintenanceSource.add(null);
               }
               handler.next(response);
             }

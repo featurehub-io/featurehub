@@ -68,29 +68,6 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
             preferredSize: Size(double.infinity, kToolbarHeight),
             child: FHappBar()),
         body: Stack(children: [
-          StreamBuilder(stream: mrBloc.pendingMaintenanceStream,
-              builder: (BuildContext context, AsyncSnapshot<MaintenanceInfo?> snapshot) {
-            if (snapshot.hasData) {
-              final message = snapshot.data!.message!;
-              _log.fine("maintenance message is ${message}");
-              return Container(
-                  color: Colors.yellow,
-                  padding: const EdgeInsets.symmetric(vertical: 20.0),
-                  child:
-                     Center(
-                      child: Text(
-                        message,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  );
-            }
-            return SizedBox.shrink();
-          }),
           _excludeFocusOnMainContent(mrBloc),
           StreamBuilder<Widget?>(
               stream: mrBloc.snackbarStream,
@@ -157,6 +134,33 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
         });
   }
 
+
+  Widget maintenanceWidget(ManagementRepositoryClientBloc mrBloc) {
+    return StreamBuilder(stream: mrBloc.pendingMaintenanceStream,
+        builder: (BuildContext context, AsyncSnapshot<MaintenanceInfo?> snapshot) {
+          if (snapshot.hasData) {
+            final message = snapshot.data!.message!;
+            return Container(
+              color: Colors.yellow,
+              padding: const EdgeInsets.symmetric(vertical: 2.0),
+              child:
+              Center(
+                child: Text(
+                  message,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            );
+          }
+          return SizedBox.shrink();
+        });
+  }
+
+
   Widget _mainContent(BuildContext context) {
     final ScrollController controller = ScrollController();
     var mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
@@ -188,7 +192,8 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                             physics: const ClampingScrollPhysics(),
                             controller: controller,
                             child: Column(
-                              children: <Widget>[child],
+                              children: <Widget>[maintenanceWidget(mrBloc), child],
+                              // children: <Widget>[child],
                             )),
                       )),
                     ]));
@@ -205,7 +210,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                         width: scrollAtWidth.toDouble(),
                         child: ListView(
                           shrinkWrap: true,
-                          children: <Widget>[child],
+                          children: <Widget>[maintenanceWidget(mrBloc), child],
                         ))),
               );
             }),
