@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/maintenance/maintenance_info.dart';
+import 'package:open_admin_app/maintenance/maintenance_mode_widget.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/fh_appbar.dart';
@@ -29,6 +32,8 @@ class FHScaffoldWidget extends StatefulWidget {
     return _FHScaffoldWidgetState();
   }
 }
+
+final _log = Logger("fh_scaffold");
 
 class _FHScaffoldWidgetState extends State<FHScaffoldWidget> {
   final GlobalKey<_FHScaffoldWidgetState> scaffold =
@@ -63,6 +68,29 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
             preferredSize: Size(double.infinity, kToolbarHeight),
             child: FHappBar()),
         body: Stack(children: [
+          StreamBuilder(stream: mrBloc.pendingMaintenanceStream,
+              builder: (BuildContext context, AsyncSnapshot<MaintenanceInfo?> snapshot) {
+            if (snapshot.hasData) {
+              final message = snapshot.data!.message!;
+              _log.fine("maintenance message is ${message}");
+              return Container(
+                  color: Colors.yellow,
+                  padding: const EdgeInsets.symmetric(vertical: 20.0),
+                  child:
+                     Center(
+                      child: Text(
+                        message,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  );
+            }
+            return SizedBox.shrink();
+          }),
           _excludeFocusOnMainContent(mrBloc),
           StreamBuilder<Widget?>(
               stream: mrBloc.snackbarStream,
@@ -100,6 +128,14 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                 }
                 return Container();
               }),
+          StreamBuilder<MaintenanceInfo?>(
+              stream: mrBloc.activeMaintenanceStream,
+              builder: (BuildContext context,
+                  AsyncSnapshot<MaintenanceInfo?> snapshot) {
+                if (!snapshot.hasData) return const SizedBox.shrink();
+                final info = snapshot.data!;
+                return MaintenanceModeWidget(mrBloc: mrBloc,);
+              })
         ]));
   }
 

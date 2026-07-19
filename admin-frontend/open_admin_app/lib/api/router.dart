@@ -63,7 +63,7 @@ enum PermissionType {
 
 // we need to track what states we can be in, what permission types routes have to have, and what the initial route you should have when you are in i
 
-enum RouteSlot { loading, setup, login, personal, portfolio, nowhere }
+enum RouteSlot { loading, setup, login, personal, portfolio, nowhere, maintenance }
 
 class RouteSlotMapping {
   final RouteSlot routePermission;
