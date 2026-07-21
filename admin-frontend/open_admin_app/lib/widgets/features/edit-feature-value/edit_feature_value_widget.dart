@@ -760,7 +760,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
               index: widgets.indexOf(wid),
               child: wid)
       ],
-      onReorderItem: (int oldIndex, int newIndex) {
+      onReorder: (int oldIndex, int newIndex) {
         if (newIndex > oldIndex) {
           newIndex -= 1;
         }
