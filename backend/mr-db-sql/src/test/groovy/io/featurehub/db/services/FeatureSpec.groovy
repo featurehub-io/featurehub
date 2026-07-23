@@ -1,6 +1,9 @@
 package io.featurehub.db.services
 
+import io.ebean.DB
 import cd.connect.app.config.ThreadLocalConfigurationSource
+import groovy.transform.NamedParam
+import groovy.transform.NamedVariant
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.FillOpts
@@ -123,6 +126,20 @@ class FeatureSpec extends Base2Spec {
     ThreadLocalConfigurationSource.clearContext()
   }
 
+  @NamedVariant
+  ApplicationFeatureValues findAllFeatureAndFeatureValuesForEnvironmentsByApplication(UUID appId, Person current,
+                                                                 @NamedParam Opts opts = Opts.empty(),
+  @NamedParam String filter = null,
+  @NamedParam Integer maxFeatures = 1000,
+  @NamedParam Integer startingPage = 0,
+  @NamedParam List<FeatureValueType> featureValueTypes = null,
+  @NamedParam SortOrder sortOrder = SortOrder.ASC,
+  @NamedParam List<UUID> environmentIds = null,
+  @NamedParam List<UUID> featureFilter = null) {
+    return featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(appId, current, filter, maxFeatures, startingPage,
+      featureValueTypes, sortOrder, environmentIds, featureFilter, opts)
+  }
+
   def "when i save a new feature in an application i receive it back as part of the list"() {
     given: "i create a new feature"
       Map<UUID, Long> envBeforeFeatures = appApi.getApplication(appId, Opts.opts(FillOpts.Environments)).environments.collectEntries({ [it.id, it.version]})
@@ -171,7 +188,7 @@ class FeatureSpec extends Base2Spec {
       def app1Features = appApi.createApplicationFeature(appId, new CreateFeature().description("x").name("x").key("FEATURE_UPD1").valueType(FeatureValueType.NUMBER), superPerson, Opts.empty())
       def feature = app1Features.find({it -> it.key == 'FEATURE_UPD1'}).copy()
       def updatedFeatures = appApi.updateApplicationFeature(appId, "FEATURE_UPD1",
-        feature.name("Drunks trying to be Quiet").alias("ssssshhhh"), Opts.empty())
+        feature.name("Drunks trying to be Quiet").alias("ssssshhhh"), false,Opts.empty())
     then:
       app1Features.find({it -> it.key == 'FEATURE_UPD1'}).alias == null
       updatedFeatures.find({it -> it.key == 'FEATURE_UPD1'}).alias == 'ssssshhhh'
@@ -188,19 +205,60 @@ class FeatureSpec extends Base2Spec {
 
   def "i can delete an existing feature"() {
     given: "i have a feature"
-      def features = appApi.createApplicationFeature(appId, new CreateFeature().description("x").name("x").key("FEATURE_DELUROLO").valueType(FeatureValueType.NUMBER), superPerson, Opts.empty())
+      def key = 'LING_GE'
+      def features = appApi.createApplicationFeature(appId, new CreateFeature()
+        .description("x")
+        .name("x")
+        .key(key).valueType(FeatureValueType.NUMBER), superPerson, Opts.empty())
     and: "i get the env version numbers before the delete"
-      Map<UUID, Long> envBeforeDelete = appApi.getApplication(appId, Opts.opts(FillOpts.Environments)).environments.collectEntries({ [it.id, it.version]})
-    when: "i delete it"
-      def deletedList = appApi.deleteApplicationFeature(appId, 'FEATURE_DELUROLO')
+      def environments = appApi.getApplication(appId, Opts.opts(FillOpts.Environments)).environments
+      Map<UUID, Long> envBeforeDelete = environments.collectEntries({ [it.id, it.version]})
+    when: "i set the value of the feature value in each environment"
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
+      def counter = 1
+      def featureValuesSaved = []
+      DB.beginTransaction()
+      environments.each { env ->
+        featureValuesSaved.add(featureSqlApi.createFeatureValueForEnvironment(env.id, key, new FeatureValue().value(counter).version(-1).locked(false), pers))
+        counter ++
+      }
+      DB.currentTransaction()?.commit()
+    then:
+      featureValuesSaved.findAll({it != null}).size() == environments.size()
+    when: "then i delete it"
+      def deletedList = appApi.deleteApplicationFeature(appId, key)
       def getList = appApi.getApplicationFeatures(appId, Opts.empty())
+      def fullList = appApi.getApplicationFeatures(appId, Opts.opts(FillOpts.Archived))
     and: "get the env version numbers after the delete"
       Map<UUID, Long> envAfterDelete = appApi.getApplication(appId, Opts.opts(FillOpts.Environments)).environments.collectEntries({ [it.id, it.version]})
-    then:
+    then: "env versions should have bumped to force republishing envs"
       envBeforeDelete.each { envAfterDelete[it.key] == envBeforeDelete[it.key] + 1 }
-      features.find({it.key  == 'FEATURE_DELUROLO'}) != null
+    and: "the feature should be deleted"
+      features.find({it.key  == key}) != null
       deletedList == getList
-      getList.find({it.key  == 'FEATURE_DELUROLO'}) == null
+      getList.find({it.key  == key}) == null
+    and: "but should still be in the full list which includes archived items"
+      fullList.find( { it.key == key }).whenArchived != null
+    when: "i ask for feature values for the delete key without asking for archived versions"
+      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false, Opts.empty()).featureValues.findAll({ fv -> fv.key == key})
+    then: "i should get nothing"
+      found.size() == 0
+    when: "i ask again but including archived"
+      def envDetails = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, true, Opts.opts(FillOpts.Archived))
+    then: "i should get a feature value"
+      envDetails.featureValues.findAll({ fv -> fv.key == key}).size() == 1
+      envDetails.features.find({ it.key == key }).whenArchived != null
+    when: "i ask for all features for an application including archived ones I will get the deleted feature and its values"
+      mockCacheSourceFeatureGroupApi.collectStrategiesFromEnvironmentsWithFeatures(_, _) >> []
+      def fullDetails = findAllFeatureAndFeatureValuesForEnvironmentsByApplication(appId, superPerson, opts: Opts.opts(FillOpts.Archived))
+      def newCounter = 1
+    then:
+      fullDetails.features.find({it.key == key}) != null
+      environments.each {e ->
+        fullDetails.environments.find({env -> env.environmentId == e.id})
+          .features.find({ f -> f.key == key }).value == newCounter
+        newCounter ++
+      }
   }
 
   def "i can set and retrieve meta-data on a feature"() {
@@ -228,7 +286,7 @@ class FeatureSpec extends Base2Spec {
         .valueType(FeatureValueType.NUMBER)
         .name("m-people").key("m-people"), superPerson, Opts.empty())
     then:
-      appApi.updateApplicationFeature(appId, features[0].key, features[0].description("new desc"), Opts.empty())[0].description == 'new desc'
+      appApi.updateApplicationFeature(appId, features[0].key, features[0].description("new desc"), false,Opts.empty())[0].description == 'new desc'
   }
 
   def "if a metadata on a feature is null, i can update it"() {
@@ -237,7 +295,7 @@ class FeatureSpec extends Base2Spec {
         .valueType(FeatureValueType.NUMBER)
         .key("m-people"), superPerson, Opts.empty())
     then:
-      appApi.updateApplicationFeature(appId, features[0].key, features[0].metaData("new data"), Opts.opts(FillOpts.MetaData))[0].metaData == 'new data'
+      appApi.updateApplicationFeature(appId, features[0].key, features[0].metaData("new data"), false,Opts.opts(FillOpts.MetaData))[0].metaData == 'new data'
   }
 
   def "i can use basic crud for feature values for an application"() {
@@ -246,14 +304,14 @@ class FeatureSpec extends Base2Spec {
       def features = appApi.createApplicationFeature(appId, new CreateFeature().description("x").name("x").key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set the feature value"
-      def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
+      def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty())
       // it already exists, so we have  to unlock it
       f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.locked(false), pers)
       assert(!f.locked && !f.valueBoolean);
       def f2 = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
       assert(f2.valueBoolean && f2.locked);
     and: "i get the FV"
-      def env1Features = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, true)
+      def env1Features = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, true, Opts.empty())
       def fvEnv1 = env1Features.featureValues
     then:
       fvEnv1.find({it.key == "FEATURE_FV1"})
@@ -262,12 +320,12 @@ class FeatureSpec extends Base2Spec {
       env1Features.features.size() == 1
       env1Features.features[0].key == 'FEATURE_FV1'
     when: "i update the feature value"
-      def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
+      def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty())
       fv.valueBoolean(false)
       fv.valueString("string val")
       fv.locked(false)
       featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, fv, pers)
-      def fv2 = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
+      def fv2 = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty())
     then:
       !fv2.locked
       !fv2.valueBoolean
@@ -280,15 +338,15 @@ class FeatureSpec extends Base2Spec {
       def features = appApi.createApplicationFeature(appId, new CreateFeature().description("x").name("x").key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set the feature value"
-      def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k);
+      def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty());
     // unlock it so we can change it in  the next step
       f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.locked(false), pers)
       featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
     and: "i update the feature value as unlock permission only"
-      def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
+      def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty())
       fv.locked(false)
       featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, fv, new PersonFeaturePermission(superPerson, [RoleType.UNLOCK] as Set<RoleType>))
-      def fv2 = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
+      def fv2 = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty())
     then:
       !fv2.locked
       fv2.valueBoolean // my permission was unlock only, so i can't change its value
@@ -300,10 +358,10 @@ class FeatureSpec extends Base2Spec {
       def features = appApi.createApplicationFeature(appId, new CreateFeature().description("x").name("x").key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set the feature value"
-      def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k);
+      def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty());
       featureSqlApi.createFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(false).locked(false), pers)
     and: "i update the feature value as unlock permission only"
-      def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
+      def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty())
       fv.valueBoolean(false)
       fv.locked(true)
       featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, fv, new PersonFeaturePermission(superPerson, [RoleType.UNLOCK] as Set<RoleType>))
@@ -317,9 +375,9 @@ class FeatureSpec extends Base2Spec {
       names.each { k -> appApi.createApplicationFeature(appId, new CreateFeature().description("x").name(k).key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty()) }
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i get all the features"
-      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')})
+      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false, Opts.empty()).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')})
     and: "remove update none"
-      List<FeatureValue> remaining = featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, [], pers)
+      List<FeatureValue> remaining = featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, [], pers, Opts.empty())
     then:
       found.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')}).size() == 5
       remaining.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')}).size() == 5
@@ -333,17 +391,17 @@ class FeatureSpec extends Base2Spec {
     when: "i set two of those values"
       def updatesForCreate = [new FeatureValue().key('FEATURE_FVU_1').retired(false).valueString('h').locked(true),
                               new FeatureValue().key( 'FEATURE_FVU_2').valueString('h').retired(false).locked(true)]
-      featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updatesForCreate, pers)
+      featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updatesForCreate, pers, Opts.empty())
     and:
-      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
+      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false, Opts.empty()).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
     and:
       def updating = new ArrayList<>(found.findAll({k -> k.key == 'FEATURE_FVU_1'}).collect({it.copy().locked(false).valueString('z')}))
 //      updating.add(found.find({it.key == 'FEATURE_FVU_3'}).valueBoolean(true).locked(true))
 //      updating.add(found.find({it.key == 'FEATURE_FVU_4'}).valueBoolean(true).locked(true))
       updating.addAll([new FeatureValue().key('FEATURE_FVU_3').valueString('h').locked(true),
                        new FeatureValue().key('FEATURE_FVU_4').valueString('h').locked(true)])
-      featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updating, pers)
-      def foundUpdating = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
+      featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updating, pers, Opts.empty())
+      def foundUpdating = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false, Opts.empty()).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
     then:
       found.size() == 2
       foundUpdating.size() == 4
@@ -366,27 +424,27 @@ class FeatureSpec extends Base2Spec {
       appApi.createApplicationFeature(app2Id, new CreateFeature().description("x").name('not desc').key('FEATURE_VIDYA').description('not desc').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
       appApi.createApplicationFeature(app2Id, new CreateFeature().description("x").name('not').key('FEATURE_ALEX').description('not').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     when: "i request application features for 'desc'"
-      ApplicationFeatureValues withDesc = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, 'desc', null, null, null, null, [], [])
+      ApplicationFeatureValues withDesc = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, 'desc', null, null, null, null, [], [], Opts.empty())
     then:
       withDesc.features.size() == 3
       withDesc.environments[0].features.size() == 3
     when: 'application features with null'
-      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null, null, null, null, null, [], [])
+      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null, null, null, null, null, [], [], Opts.empty())
     then:
       withNull.features.size() == 4
       withNull.environments[0].features.size() == 4
     when: 'with not'
-      ApplicationFeatureValues withNot = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, 'not', null, null, null, null, [], [])
+      ApplicationFeatureValues withNot = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, 'not', null, null, null, null, [], [], Opts.empty())
     then:
       withNot.features.size() == 2
       withNot.environments[0].features.size() == 2
     when: 'with description'
-      ApplicationFeatureValues withDescription = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, 'description', null, null, null, null, [], [])
+      ApplicationFeatureValues withDescription = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, 'description', null, null, null, null, [], [], Opts.empty())
     then:
       withDescription.features.size() == 2
       withDescription.environments[0].features.size() == 2
     when: 'with IRINA'
-      ApplicationFeatureValues withIrina = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, 'IRINA', null, null, null, null, [], [])
+      ApplicationFeatureValues withIrina = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, 'IRINA', null, null, null, null, [], [], Opts.empty())
     then:
       withIrina.features.size() == 1
       withIrina.environments[0].features.size() == 1
@@ -404,17 +462,17 @@ class FeatureSpec extends Base2Spec {
       appApi.createApplicationFeature(app2Id, new CreateFeature().description("x").name('FEATURE_ALEX').key('FEATURE_ALEX').description('not').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     when: "i request pages of 2"
       def pageOne = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null,
-              1, 0, null, null, [], [])
+              1, 0, null, null, [], [], Opts.empty())
       def pageTwo = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null,
-              1, 1, null, null, [], [])
+              1, 1, null, null, [], [], Opts.empty())
       def pageOneReverse = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null,
-              1, 0, null, SortOrder.DESC, [], [])
+              1, 0, null, SortOrder.DESC, [], [], Opts.empty())
     and: "i request only number features"
       def onlyNumber = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null,
-              null, null, [FeatureValueType.NUMBER], null, [], [])
+              null, null, [FeatureValueType.NUMBER], null, [], [], Opts.empty())
     and: "i request number and boolean features"
       def numAndBool = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null,
-              null, null, [FeatureValueType.NUMBER, FeatureValueType.BOOLEAN], null, [], [])
+              null, null, [FeatureValueType.NUMBER, FeatureValueType.BOOLEAN], null, [], [], Opts.empty())
     then:
       pageOne.maxFeatures == 4
       pageOne.features.size() == 1
@@ -438,7 +496,7 @@ class FeatureSpec extends Base2Spec {
     and: "i create some features"
       appApi.createApplicationFeature(app2Id, new CreateFeature().description("x").name('FEATURE_IRINA').key('FEATURE_IRINA').description('Some description').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     when: 'application features with null'
-      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageIrinaNotPortfolioMember, null, null, null, null, null, null, [])
+      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageIrinaNotPortfolioMember, null, null, null, null, null, null, [], Opts.empty())
     then:
       withNull == null
   }
@@ -450,7 +508,7 @@ class FeatureSpec extends Base2Spec {
     and: "i create some features"
       appApi.createApplicationFeature(app2Id, new CreateFeature().description("x").name('FEATURE_IRINA').key('FEATURE_IRINA').description('Some description').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     when: 'application features with null filter'
-      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, null, null, null, null, null, null, [])
+      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, null, null, null, null, null, null, [], Opts.empty())
     then:
       withNull == null
   }
@@ -466,7 +524,7 @@ class FeatureSpec extends Base2Spec {
         null, false, true, Opts.empty());
     when: 'application features with null filter'
       ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1,
-        null, null, null, null, null, null, [])
+        null, null, null, null, null, null, [], Opts.empty())
     then:
       1 * mockCacheSourceFeatureGroupApi.collectStrategiesFromEnvironmentsWithFeatures([env1.id], _) >> []
       withNull.environments.size() == 1
@@ -492,15 +550,15 @@ class FeatureSpec extends Base2Spec {
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
       ]), null, false, true, Opts.empty());
     when: "i request application features for 'desc'"
-      ApplicationFeatureValues withDesc = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'desc', null, null, null, null, null, [])
+      ApplicationFeatureValues withDesc = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'desc', null, null, null, null, null, [], Opts.empty())
     and: 'application features with null'
-      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, null, null, null, null, null, null, [])
+      ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, null, null, null, null, null, null, [], Opts.empty())
     and: 'with not'
-      ApplicationFeatureValues withNot = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'not', null, null, null, null, null, [])
+      ApplicationFeatureValues withNot = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'not', null, null, null, null, null, [], Opts.empty())
     and: 'with description'
-      ApplicationFeatureValues withDescription = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'description', null, null, null, null, null, [])
+      ApplicationFeatureValues withDescription = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'description', null, null, null, null, null, [], Opts.empty())
     and: 'with IRINA'
-      ApplicationFeatureValues withIrina = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'IRINA', null, null, null, null, null, [])
+      ApplicationFeatureValues withIrina = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'IRINA', null, null, null, null, null, [], Opts.empty())
     then:
       withDesc.features.size() == 3
       withDesc.environments[0].features.size() == 3
@@ -541,26 +599,26 @@ class FeatureSpec extends Base2Spec {
       def perm = new PersonFeaturePermission.Builder().roles([RoleType.UNLOCK] as Set<RoleType>).person(superPerson).appRoles([] as Set<ApplicationRoleType>).build()
       [env1.id, env2.id, env3.id, env4.id].each { envId ->
         featureSqlApi.updateFeatureValueForEnvironment(envId, k,
-          featureSqlApi.getFeatureValueForEnvironment(envId, k).locked(false),
+          featureSqlApi.getFeatureValueForEnvironment(envId, k, Opts.empty()).locked(false),
           perm)
       }
     when: "i update the feature value in environments 1 and 3 using average joe and then relock them"
       featureSqlApi.updateAllFeatureValuesByApplicationForKey(app2Id, k, [
-        featureSqlApi.getFeatureValueForEnvironment(env1.id, k).valueBoolean(true).locked(true),
-        featureSqlApi.getFeatureValueForEnvironment(env3.id, k).valueBoolean(null).locked(true),
-      ], averageJoeMemberOfPortfolio1)
+        featureSqlApi.getFeatureValueForEnvironment(env1.id, k, Opts.empty()).valueBoolean(true).locked(true),
+        featureSqlApi.getFeatureValueForEnvironment(env3.id, k, Opts.empty()).valueBoolean(null).locked(true),
+      ], averageJoeMemberOfPortfolio1, Opts.empty())
 
     and: "i ask for irina's api"
-      ApplicationFeatureValues afv = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null, null, null, null, null, null, [])
-      ApplicationFeatureValues afvAverageJoe = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, null, null, null, null, null, null, [])
-      ApplicationFeatureValues afvPortfolioAdminOfPortfolio1 = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, portfolioAdminOfPortfolio1, null, null, null, null, null, null, [])
+      ApplicationFeatureValues afv = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson, null, null, null, null, null, null, [], Opts.empty())
+      ApplicationFeatureValues afvAverageJoe = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, null, null, null, null, null, null, [], Opts.empty())
+      ApplicationFeatureValues afvPortfolioAdminOfPortfolio1 = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, portfolioAdminOfPortfolio1, null, null, null, null, null, null, [], Opts.empty())
     and:
-      List<FeatureEnvironment> envs = featureSqlApi.getFeatureValuesForApplicationForKeyForPerson(app2Id, k, superPerson)
+      List<FeatureEnvironment> envs = featureSqlApi.getFeatureValuesForApplicationForKeyForPerson(app2Id, k, superPerson, Opts.empty())
     and:
-      featureSqlApi.updateAllFeatureValuesByApplicationForKey(app2Id, k, [envs.find({ e -> e.featureValue?.environmentId == env1.id }).featureValue.copy().locked(false)], superPerson)
+      featureSqlApi.updateAllFeatureValuesByApplicationForKey(app2Id, k, [envs.find({ e -> e.featureValue?.environmentId == env1.id }).featureValue.copy().locked(false)], superPerson, Opts.empty())
     and:
-      List<FeatureEnvironment> envs1 = featureSqlApi.getFeatureValuesForApplicationForKeyForPerson(app2Id, k, superPerson)
-      List<FeatureEnvironment> envsAverageJoe = featureSqlApi.getFeatureValuesForApplicationForKeyForPerson(app2Id, k, averageJoeMemberOfPortfolio1)
+      List<FeatureEnvironment> envs1 = featureSqlApi.getFeatureValuesForApplicationForKeyForPerson(app2Id, k, superPerson, Opts.empty())
+      List<FeatureEnvironment> envsAverageJoe = featureSqlApi.getFeatureValuesForApplicationForKeyForPerson(app2Id, k, averageJoeMemberOfPortfolio1, Opts.empty())
 
         //
     then:
@@ -606,7 +664,7 @@ class FeatureSpec extends Base2Spec {
       def env1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("rstrat-test-env1"), app2Id, superPerson)
       def key = 'FEATURE_MISINTERPRET'
       appApi.createApplicationFeature(app2Id, new CreateFeature().description("x").name(key).key(key).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
-      def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+      def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key, Opts.empty())
       def strat = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
         .value(Boolean.FALSE).attributes([
           new RolloutStrategyAttribute()
@@ -620,7 +678,7 @@ class FeatureSpec extends Base2Spec {
       def perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
       def updated = featureSqlApi.updateFeatureValueForEnvironment(env1.id, key, fv, perms)
     and:
-      def stored = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+      def stored = featureSqlApi.getFeatureValueForEnvironment(env1.id, key, Opts.empty())
     and:
       def deleted = appApi.deleteApplicationFeature(app2Id, key)
     then:
@@ -639,7 +697,7 @@ class FeatureSpec extends Base2Spec {
       def key = 'FEATURE_NOT_WHEN_LOCKED'
       appApi.createApplicationFeature(app2Id, new CreateFeature().description("x").name(key).key(key).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     when: "i update the fv with the custom strategy"
-      def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+      def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key, Opts.empty())
       def strat = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
         .value(Boolean.FALSE).attributes([
         new RolloutStrategyAttribute()
@@ -653,7 +711,7 @@ class FeatureSpec extends Base2Spec {
       def perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
       def updated = featureSqlApi.updateFeatureValueForEnvironment(env1.id, key, fv, perms)
     and:
-      def stored = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+      def stored = featureSqlApi.getFeatureValueForEnvironment(env1.id, key, Opts.empty())
     then:
       thrown(FeatureApi.LockedException)
   }
@@ -674,11 +732,11 @@ class FeatureSpec extends Base2Spec {
         new EnvironmentGroupRole().roles([RoleType.READ, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
       ]), null, false, true, Opts.empty());
     when: "i try and unlock the feature with the person, it will let me"
-      def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+      def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key, Opts.empty())
       if (fv == null) {
         fv = new FeatureValue().environmentId(env1.id).key(key)
       }
-      featureSqlApi.updateAllFeatureValuesByApplicationForKey(app2Id, key, [fv.locked(false).valueString("sausage")], person)
+      featureSqlApi.updateAllFeatureValuesByApplicationForKey(app2Id, key, [fv.locked(false).valueString("sausage")], person, Opts.empty())
     then:
       thrown(FeatureApi.NoAppropriateRole)
   }

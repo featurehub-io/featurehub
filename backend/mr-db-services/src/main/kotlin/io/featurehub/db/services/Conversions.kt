@@ -64,6 +64,12 @@ interface Conversions {
     } else name.substring(0, prefix)
   }
 
+  fun addArchiveIndicator(name: String?): String? {
+    if (name == null) return name;
+
+    return name + archivePrefix
+  }
+
   fun toGroup(dbg: DbGroup?, opts: Opts?): Group?
   fun toApplication(app: DbApplication?, opts: Opts?): Application?
   fun toApplicationFeature(af: DbApplicationFeature?, opts: Opts): Feature?
