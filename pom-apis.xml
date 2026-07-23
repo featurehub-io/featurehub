@@ -56,4 +56,8 @@
     <module>admin-frontend/app_mr_layer</module>
     <module>admin-frontend/releases_api</module>
   </modules>
+
+  <properties>
+    <gib.disable>true</gib.disable>
+  </properties>
 </project>
