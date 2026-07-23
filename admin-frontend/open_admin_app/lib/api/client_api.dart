@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:open_admin_app/maintenance/maintenance_info.dart';
 import 'package:universal_html/html.dart';
 import 'package:dio/dio.dart';
 import 'package:bloc_provider/bloc_provider.dart';
@@ -88,6 +89,11 @@ class ManagementRepositoryClientBloc implements Bloc {
   final _stepperOpened = BehaviorSubject<bool>.seeded(false);
   late StreamSubscription<Portfolio?> _personPermissionInPortfolioChanged;
   late ServerCapabilities identityProviders;
+
+  final _pendingMaintenanceSource = BehaviorSubject<MaintenanceInfo?>.seeded(null);
+  Stream<MaintenanceInfo?> get pendingMaintenanceStream => _pendingMaintenanceSource.stream;
+  final _activeMaintenanceSource = BehaviorSubject<MaintenanceInfo?>.seeded(null);
+  Stream<MaintenanceInfo?> get activeMaintenanceStream => _activeMaintenanceSource.stream;
 
   StreamSubscription<Person>? personStreamListener;
 
@@ -253,19 +259,71 @@ class ManagementRepositoryClientBloc implements Bloc {
     return webInterface.homeUrl(overrideOrigin);
   }
 
+  void addInterceptorToDio(Dio client) {
+    client.interceptors.add(
+        InterceptorsWrapper(
+            onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
+              // attach a request id from this client to every outgoing request
+              options.headers.putIfAbsent("baggage",
+                      () => "x-fh-reqid=${requestIdCounter++}");
+              return handler.next(options);
+            },
+            onError: (DioException err, ErrorInterceptorHandler handler) {
+              if (err.response != null) {
+                final response = err.response!;
+                final headers = response.headers;
+                final retryAfter = headers.value('retry-after');
+                _log.info("status is ${response.statusCode} - retry after is ${retryAfter}");
+                if (response.statusCode == 503 && retryAfter != null) {
+                  _activeMaintenanceSource.add(MaintenanceInfo(message: response.statusMessage, end: DateTime.tryParse(retryAfter)));
+                  handler.resolve(response);
+                  return;
+                }
+
+                handler.next(err);
+              }
+            },
+            onResponse: (Response response, ResponseInterceptorHandler handler) {
+              // clear it in case it is left over, it will be added again below if it is active
+              if (_activeMaintenanceSource.hasValue) {
+                _activeMaintenanceSource.add(null);
+              }
+              // if we get a 503 with a retry-after set, we are in active maintenance mode and should overlay the UI
+              final headers = response.headers;
+
+              // if we
+              final endStr = headers.value('x-maintenance-end');
+
+              if (endStr != null) {
+                final maintenanceInfo = MaintenanceInfo(
+                  message: headers.value('x-maintenance-message'),
+                  start: DateTime.tryParse(
+                      headers.value('x-maintenance-start') ?? ''),
+                  end: DateTime.tryParse(endStr),
+                );
+
+                if (maintenanceInfo.isValid()) {
+                  if (maintenanceInfo.isActive()) {
+                    _activeMaintenanceSource.add(maintenanceInfo);
+                  } else {
+                    _pendingMaintenanceSource.add(maintenanceInfo);
+                  }
+                }
+              } else if (_pendingMaintenanceSource.hasValue) {
+                _pendingMaintenanceSource.add(null);
+              }
+              handler.next(response);
+            }
+        ));
+  }
+
   ManagementRepositoryClientBloc({String? basePathUrl})
       : _client = ApiClient(basePath: basePathUrl ?? homeUrl()) {
+
+    addInterceptorToDio((_client.apiClientDelegate as DioClientDelegate).client);
+
     streamValley = StreamValley(personState);
     webInterface.setOrigin();
-
-    // attach a request id from this client to every outgoing request
-    (_client.apiClientDelegate as DioClientDelegate).client.interceptors.add(
-        InterceptorsWrapper(onRequest:
-            (RequestOptions options, RequestInterceptorHandler handler) {
-      options.headers
-          .putIfAbsent("baggage", () => "x-fh-reqid=${requestIdCounter++}");
-      return handler.next(options);
-    }));
 
     _client.passErrorsAsApiResponses = true;
 
@@ -359,8 +417,8 @@ class ManagementRepositoryClientBloc implements Bloc {
       if (e is ApiException) {
         if (e.code == 404) {
           final smr = LocalApiClient.deserialize(
-                  jsonDecode(e.message!), 'SetupMissingResponse')
-              as SetupMissingResponse;
+              jsonDecode(e.message!), 'SetupMissingResponse')
+          as SetupMissingResponse;
           identityProviders.identityProviders = smr.providers;
           identityProviders.identityInfo = smr.providerInfo;
           FHAnalytics.setGA(smr.capabilityInfo['trackingId']);
@@ -507,7 +565,12 @@ class ManagementRepositoryClientBloc implements Bloc {
       {String? messageTitle,
       bool showDetails = true,
       String messageBody = ''}) async {
-    _log.warning(messageBody, e, s);
+  if (e is ApiException && e.code == 500 && _activeMaintenanceSource.hasValue) {
+    routeSlot(RouteSlot.maintenance);
+    return;
+  }
+
+  _log.warning(messageBody, e, s);
     if (messageTitle != null) {
       addError(FHError(messageTitle,
           exception: e,

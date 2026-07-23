@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
+import 'package:open_admin_app/maintenance/maintenance_mode_widget.dart';
 import 'package:open_admin_app/routes/admin_service_accounts_route.dart';
 import 'package:open_admin_app/routes/api_keys_route.dart';
 import 'package:open_admin_app/routes/application_strategies_route.dart';
@@ -66,6 +67,11 @@ class RouteCreator {
   Widget loading(ManagementRepositoryClientBloc mrBloc,
       {Map<String, List<String>> params = const {}}) {
     return const LoadingRoute();
+  }
+
+  Widget maintenance(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>> params = const {}}) {
+    return MaintenanceModeWidget(mrBloc: mrBloc);
   }
 
   Widget notFound(ManagementRepositoryClientBloc mrBloc,
