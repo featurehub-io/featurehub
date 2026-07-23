@@ -1,24 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
-import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/valueeditors/edit_feature_value_widget.dart';
 
-class EditBooleanValueDropDownWidget extends StatefulWidget {
+class EditBooleanValueDropDownWidget extends EditFeatureValueWidget {
   const EditBooleanValueDropDownWidget({
     super.key,
-    required this.unlocked,
-    required this.editable,
-    this.rolloutStrategy,
-    required this.strBloc,
-    this.groupRolloutStrategy,
-    this.applicationRolloutStrategy,
+    required super.unlocked,
+    required super.canEdit,
+    super.rolloutStrategy,
+    super.groupRolloutStrategy,
+    super.applicationRolloutStrategy,
+    super.portfolioRolloutStrategy,
+    required super.strBloc,
   });
-
-  final bool unlocked;
-  final bool editable;
-  final RolloutStrategy? rolloutStrategy;
-  final ThinGroupRolloutStrategy? groupRolloutStrategy;
-  final RolloutStrategyInstance? applicationRolloutStrategy;
-  final EditingFeatureValueBloc strBloc;
 
   @override
   EditBooleanValueDropDownWidgetState createState() =>
@@ -26,23 +19,17 @@ class EditBooleanValueDropDownWidget extends StatefulWidget {
 }
 
 class EditBooleanValueDropDownWidgetState
-    extends State<EditBooleanValueDropDownWidget> {
+    extends EditFeatureValueState<EditBooleanValueDropDownWidget> {
   String boolFeatureValue = 'Off';
 
   @override
   void initState() {
     super.initState();
-    if (widget.rolloutStrategy != null) {
-      boolFeatureValue = widget.rolloutStrategy!.value ? 'On' : 'Off';
-    } else if (widget.groupRolloutStrategy != null) {
-      boolFeatureValue = widget.groupRolloutStrategy!.value ? 'On' : 'Off';
-    } else if (widget.applicationRolloutStrategy != null) {
-      boolFeatureValue =
-          widget.applicationRolloutStrategy!.value ? 'On' : 'Off';
-    } else {
-      boolFeatureValue =
-          (widget.strBloc.featureValue.valueBoolean ?? false) ? 'On' : 'Off';
-    }
+    final v = resolveStrategyValue();
+    final boolValue = v != null
+        ? v as bool
+        : (widget.strBloc.featureValue.valueBoolean ?? false);
+    boolFeatureValue = boolValue ? 'On' : 'Off';
   }
 
   @override
@@ -68,10 +55,10 @@ class EditBooleanValueDropDownWidgetState
               );
             }).toList(),
             value: boolFeatureValue,
-            onChanged: widget.editable && widget.unlocked
+            onChanged: widget.canEdit && widget.unlocked
                 ? (value) {
                     final replacementBoolean = (value == 'On');
-                    _updateFeatureValue(replacementBoolean);
+                    updateValue(replacementBoolean);
                     setState(() {
                       boolFeatureValue = replacementBoolean ? 'On' : 'Off';
                     });
@@ -83,17 +70,5 @@ class EditBooleanValueDropDownWidgetState
         ),
       ),
     );
-  }
-
-  void _updateFeatureValue(bool replacementBoolean) {
-    if (widget.rolloutStrategy != null) {
-      widget.rolloutStrategy!.value = replacementBoolean;
-      widget.strBloc.updateStrategyValue();
-    } else if (widget.applicationRolloutStrategy != null) {
-      widget.applicationRolloutStrategy!.value = replacementBoolean;
-      widget.strBloc.updateApplicationStrategyValue();
-    } else {
-      widget.strBloc.updateFeatureValueDefault(replacementBoolean);
-    }
   }
 }

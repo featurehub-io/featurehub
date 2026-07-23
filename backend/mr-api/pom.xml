@@ -138,6 +138,8 @@
                 <file>${project.basedir}/system-api.yaml</file>
                 <file>${project.basedir}/feature-filters.yaml</file>
                 <file>${project.basedir}/pagination.yaml</file>
+                <file>${project.basedir}/portfolio-strategies.yaml</file>
+                <file>${project.basedir}/groups.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
             </configuration>

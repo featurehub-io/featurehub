@@ -109,6 +109,9 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     });
   }
 
+  @override
+  bool onFocusReceived() => false;
+
   void _onFocusChanged() {
     if (_suggestionsBoxController != null && mounted) {
       if (_focusNode?.hasFocus == true) {

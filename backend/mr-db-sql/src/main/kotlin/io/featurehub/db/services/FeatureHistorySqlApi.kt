@@ -7,6 +7,7 @@ import io.featurehub.db.model.query.QDbApplicationRolloutStrategy
 import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.model.query.QDbFeatureValueVersion
 import io.featurehub.db.model.query.QDbPerson
+import io.featurehub.db.model.query.QDbPortfolioRolloutStrategy
 import io.featurehub.mr.model.*
 import java.math.BigDecimal
 import java.time.ZoneOffset
@@ -41,11 +42,16 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
         QDbFeatureValueVersion.Alias.retired,
         QDbFeatureValueVersion.Alias.rolloutStrategies,
         QDbFeatureValueVersion.Alias.sharedRolloutStrategies,
+        QDbFeatureValueVersion.Alias.sharedPortfolioRolloutStrategies,
         QDbFeatureValueVersion.Alias.whenCreated,
       )
       .whoUpdated.fetch(QDbPerson.Alias.id, QDbPerson.Alias.name, QDbPerson.Alias.personType, QDbPerson.Alias.email)
       .featureValue.fetch(QDbFeatureValue.Alias.id, QDbFeatureValue.Alias.environment.id)
-      .feature.fetch(QDbApplicationFeature.Alias.key, QDbApplicationFeature.Alias.id, QDbApplicationFeature.Alias.valueType)
+      .feature.fetch(
+        QDbApplicationFeature.Alias.key,
+        QDbApplicationFeature.Alias.id,
+        QDbApplicationFeature.Alias.valueType
+      )
       .feature.parentApplication.id.eq(appId)
 
     if (environmentIds.isNotEmpty()) {
@@ -63,7 +69,7 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
     }
 
     val count = finder.findFutureCount()
-    finder =  finder.setMaxRows(highest).setFirstRow(start)
+    finder = finder.setMaxRows(highest).setFirstRow(start)
 
     if (orderDescending) {
       finder = finder.orderBy().id.version.desc()
@@ -76,7 +82,8 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
     val items = mutableMapOf<FeatureHistoryItem, FeatureHistoryItem>()
 
     data.forEach { it ->
-      val key = FeatureHistoryItem().featureId(it.feature.id).featureValueId(it.id.id).envId(it.featureValue.environment.id)
+      val key =
+        FeatureHistoryItem().featureId(it.feature.id).featureValueId(it.id.id).envId(it.featureValue.environment.id)
       var item = items[key]
 
       if (item == null) {
@@ -85,27 +92,51 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
       }
 
 
-       if (it.sharedRolloutStrategies.isNotEmpty()) {
-         // this returns them in a random order, so we need to stuff them into the rollout strategies in the order they
-         // appear in the sharedRolloutStrategies map
+      if (it.sharedRolloutStrategies.isNotEmpty()) {
+        // this returns them in a random order, so we need to stuff them into the rollout strategies in the order they
+        // appear in the sharedRolloutStrategies map
         val foundSharedStrategies = QDbApplicationRolloutStrategy()
           .id.`in`(it.sharedRolloutStrategies.map { s -> s.strategyId })
           .application.id.eq(appId).findList()
 
-         it.sharedRolloutStrategies.forEach { strategy ->
-           foundSharedStrategies.find { it.id == strategy.strategyId }?.let { pairedStrategy ->
-             val rs = RolloutStrategy()
-               .id(pairedStrategy.shortUniqueCode)
-               .value(convert(strategy.value, it.feature.valueType))
-               .attributes(mutableListOf())
-               .name(pairedStrategy.name)
+        it.sharedRolloutStrategies.forEach { strategy ->
+          foundSharedStrategies.find { it.id == strategy.strategyId }?.let { pairedStrategy ->
+            val rs = RolloutStrategy()
+              .id(pairedStrategy.shortUniqueCode)
+              .value(convert(strategy.value, it.feature.valueType))
+              .attributes(mutableListOf())
+              .name(pairedStrategy.name)
 
-             if (pairedStrategy.whenArchived != null) {
-               rs.name(pairedStrategy.name.split(Conversions.archivePrefix)[0])
-             }
+            if (pairedStrategy.whenArchived != null) {
+              rs.name(pairedStrategy.name.split(Conversions.archivePrefix)[0])
+            }
 
-             it.rolloutStrategies.add(rs)
-           }
+            it.rolloutStrategies.add(rs)
+          }
+        }
+      }
+
+      if (it.sharedPortfolioRolloutStrategies.isNotEmpty()) {
+        // this returns them in a random order, so we need to stuff them into the rollout strategies in the order they
+        // appear in the sharedRolloutStrategies map
+        val foundSharedStrategies = QDbPortfolioRolloutStrategy()
+          .id.`in`(it.sharedPortfolioRolloutStrategies.map { s -> s.strategyId })
+          .findList()
+
+        it.sharedPortfolioRolloutStrategies.forEach { strategy ->
+          foundSharedStrategies.find { it.id == strategy.strategyId }?.let { pairedStrategy ->
+            val rs = RolloutStrategy()
+              .id(pairedStrategy.shortUniqueCode)
+              .value(convert(strategy.value, it.feature.valueType))
+              .attributes(mutableListOf())
+              .name(pairedStrategy.name)
+
+            if (pairedStrategy.whenArchived != null) {
+              rs.name(pairedStrategy.name.split(Conversions.archivePrefix)[0])
+            }
+
+            it.rolloutStrategies.add(rs)
+          }
         }
       }
 
@@ -114,7 +145,10 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
           .versionFrom(it.versionFrom)
           .value(convert(it.defaultValue, it.feature.valueType)).version(it.id.version).retired(it.isRetired)
           .locked(it.isLocked).rolloutStrategies(it.rolloutStrategies).`when`(it.whenCreated.atOffset(ZoneOffset.UTC))
-          .who(AnemicPerson().id(it.whoUpdated.id).name(it.whoUpdated.name).type(it.whoUpdated.personType).email(it.whoUpdated.email))
+          .who(
+            AnemicPerson().id(it.whoUpdated.id).name(it.whoUpdated.name).type(it.whoUpdated.personType)
+              .email(it.whoUpdated.email)
+          )
       )
     }
 
@@ -124,7 +158,7 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
   }
 
   private fun convert(defaultValue: Any?, valueType: FeatureValueType): Any? {
-    return when(valueType) {
+    return when (valueType) {
       FeatureValueType.BOOLEAN -> defaultValue?.toString() == "true"
       FeatureValueType.STRING -> defaultValue as String?
       FeatureValueType.NUMBER -> defaultValue?.let { BigDecimal(it.toString()) }
@@ -133,7 +167,7 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
   }
 
   private fun convert(defaultValue: String?, valueType: FeatureValueType): Any? {
-    return when(valueType) {
+    return when (valueType) {
       FeatureValueType.BOOLEAN -> defaultValue == "true"
       FeatureValueType.STRING -> defaultValue
       FeatureValueType.NUMBER -> defaultValue?.let { BigDecimal(it) }

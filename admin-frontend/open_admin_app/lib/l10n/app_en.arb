@@ -85,6 +85,9 @@
   "applicationStrategies": "Application Strategies",
   "@applicationStrategies": { "description": "Navigation menu item for application strategies" },
 
+  "portfolioStrategies": "Portfolio Strategies",
+  "@portfolioStrategies": { "description": "Navigation menu item for portfolio strategies" },
+
   "apiKeys": "API Keys",
   "@apiKeys": { "description": "Navigation menu item for API keys" },
 
@@ -657,6 +660,9 @@
   "applicationStrategiesDocumentation": "Application Strategies Documentation",
   "@applicationStrategiesDocumentation": { "description": "Label for application strategies docs link" },
 
+  "portfolioStrategiesDocumentation": "Portfolio Strategies Documentation",
+  "@portfolioStrategiesDocumentation": { "description": "Label for portfolio strategies docs link" },
+
   "editUser": "Edit user",
   "@editUser": { "description": "Page header for the edit user screen" },
 
@@ -786,6 +792,18 @@
   "editApplicationStrategyTitle": "Edit Application Strategy for {name}",
   "@editApplicationStrategyTitle": {
     "description": "Page header when editing an application strategy",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "createPortfolioStrategyTitle": "Create Portfolio Strategy for {name}",
+  "@createPortfolioStrategyTitle": {
+    "description": "Page header when creating a portfolio strategy",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "editPortfolioStrategyTitle": "Edit Portfolio Strategy for {name}",
+  "@editPortfolioStrategyTitle": {
+    "description": "Page header when editing a portfolio strategy",
     "placeholders": { "name": { "type": "String" } }
   },
 
@@ -1101,6 +1119,15 @@
   "appStrategyDeleted": "Application strategy '{name}' deleted!",
   "@appStrategyDeleted": {
     "description": "Snackbar after deleting an application strategy",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "portfolioStrategyDeleteContent": "This portfolio strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!",
+  "@portfolioStrategyDeleteContent": { "description": "Body of the delete portfolio strategy confirmation dialog" },
+
+  "portfolioStrategyDeleted": "Portfolio strategy '{name}' deleted!",
+  "@portfolioStrategyDeleted": {
+    "description": "Snackbar after deleting a portfolio strategy",
     "placeholders": { "name": { "type": "String" } }
   },
 
@@ -1959,8 +1986,24 @@
   "showAvailableAppStrategies": "Show available app strategies",
   "@showAvailableAppStrategies": { "description": "Button to reveal the list of available application strategies to add" },
 
-  "addStrategy": "Add Strategy",
-  "@addStrategy": { "description": "Button label to add an application strategy to a feature value" },
+  "addApplicationStrategy": "Add Strategy",
+  "@addApplicationStrategy": { "description": "Button label to add an application strategy to a feature value" },
+
+    "portfolioStrategyVariations": "Portfolio strategy variations",
+    "@portfolioStrategyVariations": { "description": "Section heading for portfolio-level strategy variations" },
+
+    "portfolioStrategyVariationsInfo": "Portfolio strategies are created at portfolio level and can be assigned to multiple features in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.",
+    "@portfolioStrategyVariationsInfo": { "description": "Info tooltip describing portfolio strategy variations" },
+
+    "noPortfolioStrategiesSet": "No portfolio strategies set",
+    "@noPortfolioStrategiesSet": { "description": "Placeholder when no portfolio strategies have been assigned" },
+
+    "showAvailablePortfolioStrategies": "Show available portfolio strategies",
+    "@showAvailablePortfolioStrategies": { "description": "Button to reveal the list of available portfolio strategies to add" },
+
+    "addPortfolioStrategy": "Add Strategy",
+    "@addPortfolioStrategy": { "description": "Button label to add an portfolio strategy to a feature value" },
+
 
   "retiredStatus": "Retired status",
   "@retiredStatus": { "description": "Section label for the retire feature value checkbox" },
@@ -2021,6 +2064,9 @@
 
   "applicationStrategyTooltip": "Application Strategy",
   "@applicationStrategyTooltip": { "description": "Tooltip label on application strategy cells in the feature value table" },
+
+  "portfolioStrategyTooltip": "Portfolio Strategy",
+  "@portfolioStrategyTooltip": { "description": "Tooltip label on portfolio strategy cells in the feature value table" },
 
   "lockedStatus": "Locked status",
   "@lockedStatus": { "description": "Section label for the lock/unlock switch in the feature value side sheet" },

@@ -32,6 +32,7 @@
   "features": "功能标志",
   "featureGroups": "功能标志组",
   "applicationStrategies": "应用程序策略",
+  "portfolioStrategies": "项目组合策略",
   "apiKeys": "API 密钥",
 
   "deleteConfirmTitle": "您确定要删除 {thing} 吗？",
@@ -201,6 +202,7 @@
   "featureGroupsDocumentation": "功能标志组文档",
   "createFeatureGroup": "创建功能标志组",
   "applicationStrategiesDocumentation": "应用程序策略文档",
+  "portfolioStrategiesDocumentation": "项目组合策略文档",
 
   "editUser": "编辑用户",
   "resetPassword": "重置密码",
@@ -243,6 +245,9 @@
 
   "createApplicationStrategyTitle": "为「{name}」创建应用程序策略",
   "editApplicationStrategyTitle": "编辑「{name}」的应用程序策略",
+
+  "createPortfolioStrategyTitle": "为「{name}」创建项目组合策略",
+  "editPortfolioStrategyTitle": "编辑「{name}」的项目组合策略",
 
   "editApplication": "编辑应用程序",
   "appNameLabel": "应用程序名称",
@@ -342,6 +347,10 @@
   "cannotCreateStrategyNoApps": "此项目组合中没有应用程序，无法创建应用程序策略",
   "appStrategyDeleteContent": "该应用程序策略将被删除并从所有功能标志中取消分配。\n\n此操作无法撤销！",
   "appStrategyDeleted": "应用程序策略「{name}」已删除！",
+
+  "portfolioStrategyDeleteContent": "该项目组合策略将被删除并从所有功能标志中取消分配。\n\n此操作无法撤销！",
+  "portfolioStrategyDeleted": "项目组合策略「{name}」已删除！",
+
   "strategyUsage": "环境：{envCount}，功能标志值：{featureCount}",
 
   "addRule": "添加规则",
@@ -632,7 +641,12 @@
   "applicationStrategyVariationsInfo": "应用程序策略在应用程序层面创建，可分配给任意环境中的多个功能。应用程序策略可在「应用程序策略」页面中创建和编辑。",
   "noApplicationStrategiesSet": "未设置应用程序策略",
   "showAvailableAppStrategies": "显示可用的应用程序策略",
-  "addStrategy": "添加策略",
+  "addApplicationStrategy": "添加策略",
+  "portfolioStrategyVariations": "项目组合策略变体",
+  "portfolioStrategyVariationsInfo": "项目组合策略在项目组合层面创建，可分配给任意环境中的多个功能。项目组合策略可在「项目组合策略」页面中创建和编辑。",
+  "noPortfolioStrategiesSet": "未设置项目组合策略",
+  "showAvailablePortfolioStrategies": "显示可用的项目组合策略",
+  "addPortfolioStrategy": "添加策略",
   "retiredStatus": "退役状态",
   "retiredStatusInfo": "当功能标志在您的应用程序中不再需要并准备删除时，您可以先在指定环境中将此功能「退役」，以测试应用程序的行为。这意味着 SDK 将看不到该功能，模拟「已删除」状态。如果改变主意，您可以取消勾选来「取消退役」，此操作是可逆的。在所有环境中退役功能值并确认应用程序行为符合预期后，即可删除整个功能。",
   "hideHistory": "隐藏历史记录",
@@ -653,6 +667,7 @@
   "moreDetails": "更多",
   "groupStrategyTooltip": "用户组策略",
   "applicationStrategyTooltip": "应用程序策略",
+  "portfolioStrategyTooltip": "项目组合策略",
 
   "lockedStatus": "锁定状态",
   "lockedStatusInfo": "锁定机制在将未完成代码部署到生产环境时，为功能更改提供了额外的保障。锁定状态会阻止对默认值、策略、策略值和「退役」状态的任何更改。通常，开发人员通过锁定功能来表示该功能尚未准备好向测试人员、产品负责人、客户及其他利益相关者开放。",

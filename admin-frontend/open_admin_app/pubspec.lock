@@ -126,11 +126,12 @@ packages:
   flutter_signin_button:
     dependency: "direct main"
     description:
-      name: flutter_signin_button
-      sha256: a063ecc5d5308377e103c9c3a89084abf15fca4440636233af6a13abacd5dcae
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
+      path: "."
+      ref: "feat/font_awesome_upgrade"
+      resolved-ref: "629a16a0dcbcd43289fe955a52ec249939a51683"
+      url: "https://github.com/abdulhaq-e/Flutter-Sign-in-Button/"
+    source: git
+    version: "2.1.1"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -142,13 +143,13 @@ packages:
     source: sdk
     version: "0.0.0"
   font_awesome_flutter:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: font_awesome_flutter
-      sha256: "1f93e5799f0e6c882819e8393a05c6ca5226010f289190f2242ec19f3f0fdba5"
+      sha256: "09dcde8ab90ffae1a7d65ff2ef96fc62a17ad9d0ce7c127b317ded676b0d5935"
       url: "https://pub.dev"
     source: hosted
-    version: "9.2.0"
+    version: "11.0.0"
   html:
     dependency: transitive
     description:
@@ -248,10 +249,10 @@ packages:
     dependency: "direct main"
     description:
       name: openapi_dart_common
-      sha256: cf0a92406bd367662d12fce3d3f2024339132a4524d897e14b564b46fa8b961a
+      sha256: "0810a49ed777ecf68de3d5b12630286403232019790db692d563db2c8040f2fa"
       url: "https://pub.dev"
     source: hosted
-    version: "5.1.1"
+    version: "5.1.2"
   path:
     dependency: transitive
     description:

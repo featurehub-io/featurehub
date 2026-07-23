@@ -9,6 +9,7 @@ import 'package:open_admin_app/widgets/common/fh_info_card.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/application_strategies_dropdown.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/feature_value_updated_by.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/lock_unlock_switch.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/portfolio_strategies_dropdown.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/retire_feature_value_checkbox_widget.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/split_add.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/strategies/strategy_card.dart';
@@ -268,96 +269,9 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                               featureValueType: widget
                                                   .bloc.feature.valueType),
                                       const SizedBox(height: 24.0),
-                                      Row(
-                                        children: [
-                                          Text(
-                                              l10n.applicationStrategyVariations,
-                                              style: CustomTextStyle
-                                                  .bodySmallLight(context)),
-                                          const SizedBox(
-                                            width: 4.0,
-                                          ),
-                                          FHInfoCardWidget(
-                                              message: l10n.applicationStrategyVariationsInfo)
-                                        ],
-                                      ),
-                                      StreamBuilder<
-                                              List<RolloutStrategyInstance>>(
-                                          stream:
-                                              widget.bloc.applicationStrategies,
-                                          builder: (context, snapshot) {
-                                            if (snapshot.hasData &&
-                                                snapshot.data != null &&
-                                                snapshot.data!.isNotEmpty) {
-                                              strategyWidgets = snapshot.data!
-                                                  .map((RolloutStrategyInstance
-                                                      strategy) {
-                                                return Column(
-                                                  children: [
-                                                    StrategyCard(
-                                                        key: ValueKey(strategy),
-                                                        strBloc: widget.bloc,
-                                                        applicationRolloutStrategy:
-                                                            strategy,
-                                                        featureValueType: widget
-                                                            .bloc
-                                                            .feature
-                                                            .valueType),
-                                                  ],
-                                                );
-                                              }).toList();
-                                              return buildReorderableListView(
-                                                  strategyWidgets,
-                                                  featureValueLatest,
-                                                  canChangeValue,
-                                                  widget.bloc,
-                                                  appStrategiesLatest:
-                                                      snapshot);
-                                            }
-                                            return Text(
-                                                l10n.noApplicationStrategiesSet);
-                                          }),
-                                      if (editable)
-                                        TextButton(
-                                            onPressed: () => widget.bloc
-                                                .getApplicationStrategies(),
-                                            child: Text(
-                                                l10n.showAvailableAppStrategies)),
-                                      StreamBuilder<
-                                              List<
-                                                  ListApplicationRolloutStrategyItem>>(
-                                          stream: widget.bloc
-                                              .availableApplicationStrategies,
-                                          builder: (context, snapshot) {
-                                            if (snapshot.hasData &&
-                                                snapshot.data != null &&
-                                                snapshot.data!.isNotEmpty) {
-                                              return Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  ApplicationStrategiesDropDown(
-                                                    strategies: snapshot.data!,
-                                                    bloc: widget.bloc,
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 8.0,
-                                                  ),
-                                                  TextButton.icon(
-                                                      icon:
-                                                          const Icon(Icons.add),
-                                                      label: Text(
-                                                          l10n.addStrategy),
-                                                      onPressed: () => {
-                                                            widget.bloc
-                                                                .addApplicationStrategy()
-                                                          }),
-                                                ],
-                                              );
-                                            } else {
-                                              return const SizedBox.shrink();
-                                            }
-                                          }),
+                                      ...applicationStrategies(l10n, canChangeValue, editable, featureValueLatest),
+                                      const SizedBox(height: 24.0),
+                                      ...portfolioStrategies(l10n, canChangeValue, editable, featureValueLatest),
                                       const SizedBox(height: 24.0),
                                       Row(
                                         children: [
@@ -414,215 +328,7 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                     });
                                   },
                                   child: Text(l10n.showHistory)),
-                          StreamBuilder<FeatureHistoryItem?>(
-                              stream: widget.bloc.featureHistoryListSource,
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData) {
-                                  FeatureHistoryItem item = snapshot.data!;
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(l10n.showingLast20,
-                                            style:
-                                                CustomTextStyle.bodySmallLight(
-                                                    context)),
-                                      ),
-                                      Card(
-                                          child: SingleChildScrollView(
-                                        scrollDirection: Axis.horizontal,
-                                        child: SelectionArea(
-                                          child: DataTable(
-                                            dataRowMinHeight: 36,
-                                            dataRowMaxHeight: double.infinity,
-                                            showCheckboxColumn: false,
-                                            sortAscending: sortToggle,
-                                            sortColumnIndex: sortColumnIndex,
-                                            columns: [
-                                              DataColumn(
-                                                  label: Text(l10n.historyColumnTimestamp),
-                                                  onSort:
-                                                      (columnIndex, ascending) {
-                                                    onSortColumn(
-                                                        snapshot.data!.history,
-                                                        columnIndex,
-                                                        ascending);
-                                                  }),
-                                              DataColumn(
-                                                  label: Text(l10n.historyColumnName),
-                                                  onSort:
-                                                      (columnIndex, ascending) {
-                                                    onSortColumn(
-                                                        snapshot.data!.history,
-                                                        columnIndex,
-                                                        ascending);
-                                                  }),
-                                              DataColumn(
-                                                  label: Text(l10n.historyColumnEmail),
-                                                  onSort:
-                                                      (columnIndex, ascending) {
-                                                    onSortColumn(
-                                                        snapshot.data!.history,
-                                                        columnIndex,
-                                                        ascending);
-                                                  }),
-                                              DataColumn(
-                                                label: Text(l10n.historyColumnType),
-                                                onSort:
-                                                    (columnIndex, ascending) {
-                                                  onSortColumn(
-                                                      snapshot.data!.history,
-                                                      columnIndex,
-                                                      ascending);
-                                                },
-                                              ),
-                                              DataColumn(
-                                                label: Text(l10n.historyColumnDefaultValue),
-                                                onSort:
-                                                    (columnIndex, ascending) {
-                                                  onSortColumn(
-                                                      snapshot.data!.history,
-                                                      columnIndex,
-                                                      ascending);
-                                                },
-                                              ),
-                                              DataColumn(
-                                                label: Text(l10n.historyColumnLocked),
-                                                onSort:
-                                                    (columnIndex, ascending) {
-                                                  onSortColumn(
-                                                      snapshot.data!.history,
-                                                      columnIndex,
-                                                      ascending);
-                                                },
-                                              ),
-                                              DataColumn(
-                                                label: Text(l10n.historyColumnRetired),
-                                                onSort:
-                                                    (columnIndex, ascending) {
-                                                  onSortColumn(
-                                                      snapshot.data!.history,
-                                                      columnIndex,
-                                                      ascending);
-                                                },
-                                              ),
-                                              DataColumn(
-                                                label: Text(l10n.historyColumnRolloutStrategies),
-                                              ),
-                                            ],
-                                            rows: [
-                                              for (FeatureHistoryValue value
-                                                  in item.history)
-                                                DataRow(cells: [
-                                                  DataCell(Text(DateFormat(
-                                                          'yyyy-MM-dd HH:mm:ss')
-                                                      .format(value.when))),
-                                                  DataCell(
-                                                    Text(value.who.name),
-                                                  ),
-                                                  DataCell(
-                                                    Text(value.who.type ==
-                                                            PersonType.person
-                                                        ? value.who.email ?? ''
-                                                        : ''),
-                                                  ),
-                                                  DataCell(Text(
-                                                      value.who.type ==
-                                                              PersonType.person
-                                                          ? l10n.historyTypeUser
-                                                          : l10n.historyTypeServiceAccount)),
-                                                  DataCell(ConstrainedBox(
-                                                    constraints:
-                                                        const BoxConstraints(
-                                                            maxWidth: 300),
-                                                    child: Text(
-                                                        value.value.toString()),
-                                                  )),
-                                                  DataCell(Text(value.locked
-                                                      ? "true"
-                                                      : 'false')),
-                                                  DataCell(Text(value.retired
-                                                      ? "true"
-                                                      : 'false')),
-                                                  DataCell(Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      for (var i in value
-                                                          .rolloutStrategies)
-                                                        ConstrainedBox(
-                                                          constraints:
-                                                              const BoxConstraints(
-                                                                  maxWidth:
-                                                                      500),
-                                                          child: Wrap(
-                                                            crossAxisAlignment:
-                                                                WrapCrossAlignment
-                                                                    .center,
-                                                            children: [
-                                                              Text(
-                                                                  '${i.name} = ${i.value}'),
-                                                              TextButton(
-                                                                  onPressed: () =>
-                                                                      showDialog(
-                                                                          context:
-                                                                              context,
-                                                                          builder:
-                                                                              (_) {
-                                                                            return AlertDialog(
-                                                                                content: Column(
-                                                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                                                  mainAxisSize: MainAxisSize.min,
-                                                                                  children: [
-                                                                                    Text(
-                                                                                      l10n.strategyRules,
-                                                                                      style: Theme.of(context).textTheme.titleLarge,
-                                                                                    ),
-                                                                                    if (i.attributes != null) SelectableText('${i.attributes?.join("\n")}'),
-                                                                                    const SizedBox(
-                                                                                      height: 16.0,
-                                                                                    ),
-                                                                                    if (i.percentage != null)
-                                                                                      Text(
-                                                                                        l10n.percentageRollout,
-                                                                                        style: Theme.of(context).textTheme.titleLarge,
-                                                                                      ),
-                                                                                    if (i.percentage != null) Text('${i.percentage! / 10000}'),
-                                                                                  ],
-                                                                                ),
-                                                                                actions: <Widget>[
-                                                                                  FHFlatButton(
-                                                                                    title: l10n.ok,
-                                                                                    onPressed: () {
-                                                                                      Navigator.pop(context);
-                                                                                    },
-                                                                                  )
-                                                                                ]);
-                                                                          }),
-                                                                  child:
-                                                                      Text(
-                                                                          l10n.moreDetails))
-                                                            ],
-                                                          ),
-                                                        )
-                                                    ],
-                                                  )),
-                                                ])
-                                            ],
-                                          ),
-                                        ),
-                                      ))
-                                    ],
-                                  );
-                                } else {
-                                  return const SizedBox.shrink();
-                                }
-                              }),
+                          history(l10n),
                         ],
                       )
                     ])),
@@ -632,13 +338,417 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
         });
   }
 
+  StreamBuilder<FeatureHistoryItem?> history(AppLocalizations l10n) {
+    return StreamBuilder<FeatureHistoryItem?>(
+        stream: widget.bloc.featureHistoryListSource,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            FeatureHistoryItem item = snapshot.data!;
+            return Column(
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(l10n.showingLast20,
+                      style:
+                      CustomTextStyle.bodySmallLight(
+                          context)),
+                ),
+                Card(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SelectionArea(
+                        child: DataTable(
+                          dataRowMinHeight: 36,
+                          dataRowMaxHeight: double.infinity,
+                          showCheckboxColumn: false,
+                          sortAscending: sortToggle,
+                          sortColumnIndex: sortColumnIndex,
+                          columns: [
+                            DataColumn(
+                                label: Text(l10n.historyColumnTimestamp),
+                                onSort:
+                                    (columnIndex, ascending) {
+                                  onSortColumn(
+                                      snapshot.data!.history,
+                                      columnIndex,
+                                      ascending);
+                                }),
+                            DataColumn(
+                                label: Text(l10n.historyColumnName),
+                                onSort:
+                                    (columnIndex, ascending) {
+                                  onSortColumn(
+                                      snapshot.data!.history,
+                                      columnIndex,
+                                      ascending);
+                                }),
+                            DataColumn(
+                                label: Text(l10n.historyColumnEmail),
+                                onSort:
+                                    (columnIndex, ascending) {
+                                  onSortColumn(
+                                      snapshot.data!.history,
+                                      columnIndex,
+                                      ascending);
+                                }),
+                            DataColumn(
+                              label: Text(l10n.historyColumnType),
+                              onSort:
+                                  (columnIndex, ascending) {
+                                onSortColumn(
+                                    snapshot.data!.history,
+                                    columnIndex,
+                                    ascending);
+                              },
+                            ),
+                            DataColumn(
+                              label: Text(l10n.historyColumnDefaultValue),
+                              onSort:
+                                  (columnIndex, ascending) {
+                                onSortColumn(
+                                    snapshot.data!.history,
+                                    columnIndex,
+                                    ascending);
+                              },
+                            ),
+                            DataColumn(
+                              label: Text(l10n.historyColumnLocked),
+                              onSort:
+                                  (columnIndex, ascending) {
+                                onSortColumn(
+                                    snapshot.data!.history,
+                                    columnIndex,
+                                    ascending);
+                              },
+                            ),
+                            DataColumn(
+                              label: Text(l10n.historyColumnRetired),
+                              onSort:
+                                  (columnIndex, ascending) {
+                                onSortColumn(
+                                    snapshot.data!.history,
+                                    columnIndex,
+                                    ascending);
+                              },
+                            ),
+                            DataColumn(
+                              label: Text(l10n.historyColumnRolloutStrategies),
+                            ),
+                          ],
+                          rows: [
+                            for (FeatureHistoryValue value
+                            in item.history)
+                              DataRow(cells: [
+                                DataCell(Text(DateFormat(
+                                    'yyyy-MM-dd HH:mm:ss')
+                                    .format(value.when_))),
+                                DataCell(
+                                  Text(value.who.name),
+                                ),
+                                DataCell(
+                                  Text(value.who.type ==
+                                      PersonType.person
+                                      ? value.who.email ?? ''
+                                      : ''),
+                                ),
+                                DataCell(Text(
+                                    value.who.type ==
+                                        PersonType.person
+                                        ? l10n.historyTypeUser
+                                        : l10n.historyTypeServiceAccount)),
+                                DataCell(ConstrainedBox(
+                                  constraints:
+                                  const BoxConstraints(
+                                      maxWidth: 300),
+                                  child: Text(
+                                      value.value.toString()),
+                                )),
+                                DataCell(Text(value.locked
+                                    ? "true"
+                                    : 'false')),
+                                DataCell(Text(value.retired
+                                    ? "true"
+                                    : 'false')),
+                                DataCell(Column(
+                                  mainAxisAlignment:
+                                  MainAxisAlignment.start,
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment
+                                      .start,
+                                  children: [
+                                    for (var i in value
+                                        .rolloutStrategies)
+                                      ConstrainedBox(
+                                        constraints:
+                                        const BoxConstraints(
+                                            maxWidth:
+                                            500),
+                                        child: Wrap(
+                                          crossAxisAlignment:
+                                          WrapCrossAlignment
+                                              .center,
+                                          children: [
+                                            Text(
+                                                '${i.name} = ${i.value}'),
+                                            TextButton(
+                                                onPressed: () =>
+                                                    showDialog(
+                                                        context:
+                                                        context,
+                                                        builder:
+                                                            (_) {
+                                                          return AlertDialog(
+                                                              content: Column(
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                mainAxisSize: MainAxisSize.min,
+                                                                children: [
+                                                                  Text(
+                                                                    l10n.strategyRules,
+                                                                    style: Theme.of(context).textTheme.titleLarge,
+                                                                  ),
+                                                                  if (i.attributes != null) SelectableText('${i.attributes?.join("\n")}'),
+                                                                  const SizedBox(
+                                                                    height: 16.0,
+                                                                  ),
+                                                                  if (i.percentage != null)
+                                                                    Text(
+                                                                      l10n.percentageRollout,
+                                                                      style: Theme.of(context).textTheme.titleLarge,
+                                                                    ),
+                                                                  if (i.percentage != null) Text('${i.percentage! / 10000}'),
+                                                                ],
+                                                              ),
+                                                              actions: <Widget>[
+                                                                FHFlatButton(
+                                                                  title: l10n.ok,
+                                                                  onPressed: () {
+                                                                    Navigator.pop(context);
+                                                                  },
+                                                                )
+                                                              ]);
+                                                        }),
+                                                child:
+                                                Text(
+                                                    l10n.moreDetails))
+                                          ],
+                                        ),
+                                      )
+                                  ],
+                                )),
+                              ])
+                          ],
+                        ),
+                      ),
+                    ))
+              ],
+            );
+          } else {
+            return const SizedBox.shrink();
+          }
+        });
+  }
+
+  List<Widget> applicationStrategies(AppLocalizations l10n, bool canChangeValue, bool editable, AsyncSnapshot<FeatureValue> featureValueLatest) {
+    return [
+      Row(
+        children: [
+          Text(
+              l10n.applicationStrategyVariations,
+              style: CustomTextStyle
+                  .bodySmallLight(context)),
+          const SizedBox(
+            width: 4.0,
+          ),
+          FHInfoCardWidget(
+              message: l10n.applicationStrategyVariationsInfo)
+        ],
+      ),
+      StreamBuilder<
+          List<RolloutStrategyInstance>>(
+          stream:
+          widget.bloc.applicationStrategies,
+          builder: (context, snapshot) {
+            if (snapshot.hasData &&
+                snapshot.data != null &&
+                snapshot.data!.isNotEmpty) {
+              final strategyWidgets = snapshot.data!
+                  .map((RolloutStrategyInstance
+              strategy) {
+                return Column(
+                  children: [
+                    StrategyCard(
+                        key: ValueKey(strategy),
+                        strBloc: widget.bloc,
+                        applicationRolloutStrategy:
+                        strategy,
+                        featureValueType: widget
+                            .bloc
+                            .feature
+                            .valueType),
+                  ],
+                );
+              }).toList();
+              return buildReorderableListView(
+                  strategyWidgets,
+                  featureValueLatest,
+                  canChangeValue,
+                  widget.bloc,
+                  appStrategiesLatest:
+                  snapshot);
+            }
+            return Text(
+                l10n.noApplicationStrategiesSet);
+          }),
+      if (editable)
+        TextButton(
+            onPressed: () => widget.bloc
+                .getApplicationStrategies(),
+            child: Text(
+                l10n.showAvailableAppStrategies)),
+      StreamBuilder<
+          List<
+              ListApplicationRolloutStrategyItem>>(
+          stream: widget.bloc
+              .availableApplicationStrategies,
+          builder: (context, snapshot) {
+            if (snapshot.hasData &&
+                snapshot.data != null &&
+                snapshot.data!.isNotEmpty) {
+              return Row(
+                mainAxisAlignment:
+                MainAxisAlignment.start,
+                children: [
+                  ApplicationStrategiesDropDown(
+                    strategies: snapshot.data!,
+                    bloc: widget.bloc,
+                  ),
+                  const SizedBox(
+                    width: 8.0,
+                  ),
+                  TextButton.icon(
+                      icon:
+                      const Icon(Icons.add),
+                      label: Text(
+                          l10n.addApplicationStrategy),
+                      onPressed: () => {
+                        widget.bloc
+                            .addApplicationStrategy()
+                      }),
+                ],
+              );
+            } else {
+              return const SizedBox.shrink();
+            }
+          })
+    ];
+  }
+
+  List<Widget> portfolioStrategies(AppLocalizations l10n, bool canChangeValue, bool editable, AsyncSnapshot<FeatureValue> featureValueLatest) {
+    return [
+      Row(
+        children: [
+          Text(
+              l10n.portfolioStrategyVariations,
+              style: CustomTextStyle
+                  .bodySmallLight(context)),
+          const SizedBox(
+            width: 4.0,
+          ),
+          FHInfoCardWidget(
+              message: l10n.portfolioStrategyVariationsInfo)
+        ],
+      ),
+      StreamBuilder<
+          List<RolloutStrategyInstance>>(
+          stream:
+          widget.bloc.portfolioStrategies,
+          builder: (context, snapshot) {
+            if (snapshot.hasData &&
+                snapshot.data != null &&
+                snapshot.data!.isNotEmpty) {
+              final strategyWidgets = snapshot.data!
+                  .map((RolloutStrategyInstance
+              strategy) {
+                return Column(
+                  children: [
+                    StrategyCard(
+                        key: ValueKey(strategy),
+                        strBloc: widget.bloc,
+                        portfolioRolloutStrategy:
+                        strategy,
+                        featureValueType: widget
+                            .bloc
+                            .feature
+                            .valueType),
+                  ],
+                );
+              }).toList();
+              return buildReorderableListView(
+                  strategyWidgets,
+                  featureValueLatest,
+                  canChangeValue,
+                  widget.bloc,
+                  portfolioStrategiesLatest:
+                  snapshot);
+            }
+            return Text(
+                l10n.noPortfolioStrategiesSet);
+          }),
+      if (editable)
+        TextButton(
+            onPressed: () => widget.bloc
+                .getPortfolioStrategies(),
+            child: Text(
+                l10n.showAvailablePortfolioStrategies)),
+      StreamBuilder<
+          List<
+              ListPortfolioRolloutStrategyItem>>(
+          stream: widget.bloc
+              .availablePortfolioStrategies,
+          builder: (context, snapshot) {
+            if (snapshot.hasData &&
+                snapshot.data != null &&
+                snapshot.data!.isNotEmpty) {
+              return Row(
+                mainAxisAlignment:
+                MainAxisAlignment.start,
+                children: [
+                  PortfolioStrategiesDropDown(
+                    strategies: snapshot.data!,
+                    bloc: widget.bloc,
+                  ),
+                  const SizedBox(
+                    width: 8.0,
+                  ),
+                  TextButton.icon(
+                      icon:
+                      const Icon(Icons.add),
+                      label: Text(
+                          l10n.addPortfolioStrategy),
+                      onPressed: () => {
+                        widget.bloc
+                            .addPortfolioStrategy()
+                      }),
+                ],
+              );
+            } else {
+              return const SizedBox.shrink();
+            }
+          })
+    ];
+  }
+
   ReorderableListView buildReorderableListView(
       List<Widget> widgets,
       AsyncSnapshot<FeatureValue> featureValueLatest,
       bool canChangeValue,
       EditingFeatureValueBloc bloc,
       {AsyncSnapshot<List<RolloutStrategy>>? strategiesLatest,
-      AsyncSnapshot<List<RolloutStrategyInstance>>? appStrategiesLatest}) {
+      AsyncSnapshot<List<RolloutStrategyInstance>>? appStrategiesLatest,
+      AsyncSnapshot<List<RolloutStrategyInstance>>? portfolioStrategiesLatest
+      }) {
     return ReorderableListView(
       shrinkWrap: true,
       buildDefaultDragHandles: false,
@@ -670,6 +780,12 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
             ..insert(newIndex, items);
 
           widget.bloc.updateApplicationStrategyValue();
+        } else if (portfolioStrategiesLatest != null) {
+          final items = portfolioStrategiesLatest.data![oldIndex];
+          portfolioStrategiesLatest.data!
+              ..removeWhere((el) => el.strategyId == items.strategyId)
+              ..insert(newIndex, items);
+          widget.bloc.updatePortfolioStrategyValue();
         }
       },
     );
@@ -681,11 +797,11 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
       if (columnIndex == 0) {
         if (ascending) {
           featureHistoryValue.sort((a, b) {
-            return a.when.compareTo(b.when);
+            return a.when_.compareTo(b.when_);
           });
         } else {
           featureHistoryValue.sort((a, b) {
-            return b.when.compareTo(a.when);
+            return b.when_.compareTo(a.when_);
           });
         }
       }

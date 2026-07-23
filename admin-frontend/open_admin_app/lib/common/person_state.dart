@@ -168,4 +168,22 @@ class PersonState {
     if (person == _unauthenticatedPerson) return false;
     return groupList.firstWhereOrNull((group) => group.applicationRoles.firstWhereOrNull((role) => role.roles.firstWhereOrNull((r) => _featureCreateRoles.contains(r)) != null) != null) != null;
   }
+
+  // any group in which they are a group manager indicates they have a group management role in the portfolio, so the groups menu should show
+  bool isPersonGroupManagerRole() {
+    if (person == _unauthenticatedPerson) return false;
+    return groupList.firstWhereOrNull((group) => group.portfolioRoles?.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER) == true ) != null;
+  }
+
+  final portfolioStrategyEditorRoles = {PortfolioGroupRoleType.PORTFOLIO_STRATEGY_EDIT, PortfolioGroupRoleType.PORTFOLIO_STRATEGY_EDIT_AND_DELETE};
+
+  bool isPortfolioStrategyEditor() {
+    if (person == _unauthenticatedPerson) return false;
+    return groupList.firstWhereOrNull((group) => true == group.portfolioRoles?.intersection(portfolioStrategyEditorRoles)  ) != null;
+  }
+
+  bool isPortfolioStrategyEditDelete() {
+    if (person == _unauthenticatedPerson) return false;
+    return groupList.firstWhereOrNull((group) => group.portfolioRoles?.contains(PortfolioGroupRoleType.PORTFOLIO_STRATEGY_EDIT_AND_DELETE) == true  ) != null;
+  }
 }

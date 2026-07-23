@@ -75,6 +75,15 @@
                   <outputDirectory>${project.basedir}/target</outputDirectory>
                   <destFileName>stats-api.yaml</destFileName>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>io.featurehub.api</groupId>
+                  <artifactId>messaging-api</artifactId>
+                  <version>1.1-SNAPSHOT</version>
+                  <classifier>api</classifier>
+                  <type>yaml</type>
+                  <outputDirectory>${project.basedir}/target</outputDirectory>
+                  <destFileName>messaging-api.yaml</destFileName>
+                </artifactItem>
               </artifactItems>
               <overWriteReleases>true</overWriteReleases>
               <overWriteSnapshots>true</overWriteSnapshots>
@@ -85,12 +94,12 @@
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>7.12.0</version>
+        <version>7.23.0</version>
         <dependencies>
           <dependency>
             <groupId>com.bluetrainsoftware.maven</groupId>
             <artifactId>openapi-tsaxios-generator</artifactId>
-            <version>2.3</version>
+            <version>2.4</version>
           </dependency>
         </dependencies>
         <executions>
@@ -136,11 +145,38 @@
               <generateApiTests>false</generateApiTests>
               <generateModelDocumentation>false</generateModelDocumentation>
               <generateSupportingFiles>true</generateSupportingFiles>
-              <inputSpec>../../infra/api-bucket/files/webhooks/1.2.0.yaml</inputSpec>
+              <inputSpec>../../infra/api-bucket/files/webhooks/1.2.2.yaml</inputSpec>
 <!--              <inputSpec>target/webhooks.yaml</inputSpec>-->
               <apiPackage>webhooks.api</apiPackage>
               <modelPackage>webhooks.models</modelPackage>
               <output>app/apis/webhooks</output>
+              <additionalProperties>
+                <additionalProperty>useEnhancedSerializer</additionalProperty>
+                <additionalProperty>useNonOptimalDeserialization</additionalProperty>
+                <additionalProperty>exposeTransformers</additionalProperty>
+                <additionalProperty>withSeparateModelsAndApi=true</additionalProperty>
+              </additionalProperties>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>messaging-api</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <generatorName>typescript-axios-enhanced</generatorName>
+              <generateApis>false</generateApis>
+              <generateModelTests>false</generateModelTests>
+              <generateApiDocumentation>false</generateApiDocumentation>
+              <generateApiTests>false</generateApiTests>
+              <generateModelDocumentation>false</generateModelDocumentation>
+              <generateSupportingFiles>true</generateSupportingFiles>
+              <inputSpec>target/messaging-api.yaml</inputSpec>
+              <apiPackage>v.api</apiPackage>
+              <modelPackage>messaging.models</modelPackage>
+              <output>app/apis/messaging</output>
               <additionalProperties>
                 <additionalProperty>useEnhancedSerializer</additionalProperty>
                 <additionalProperty>useNonOptimalDeserialization</additionalProperty>

@@ -266,6 +266,12 @@ abstract class AppLocalizations {
   /// **'Application Strategies'**
   String get applicationStrategies;
 
+  /// Navigation menu item for portfolio strategies
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategies'**
+  String get portfolioStrategies;
+
   /// Navigation menu item for API keys
   ///
   /// In en, this message translates to:
@@ -1286,6 +1292,12 @@ abstract class AppLocalizations {
   /// **'Application Strategies Documentation'**
   String get applicationStrategiesDocumentation;
 
+  /// Label for portfolio strategies docs link
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategies Documentation'**
+  String get portfolioStrategiesDocumentation;
+
   /// Page header for the edit user screen
   ///
   /// In en, this message translates to:
@@ -1507,6 +1519,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit Application Strategy for {name}'**
   String editApplicationStrategyTitle(String name);
+
+  /// Page header when creating a portfolio strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Create Portfolio Strategy for {name}'**
+  String createPortfolioStrategyTitle(String name);
+
+  /// Page header when editing a portfolio strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Portfolio Strategy for {name}'**
+  String editPortfolioStrategyTitle(String name);
 
   /// Dialog title when editing an application
   ///
@@ -2035,6 +2059,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Application strategy \'{name}\' deleted!'**
   String appStrategyDeleted(String name);
+
+  /// Body of the delete portfolio strategy confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This portfolio strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!'**
+  String get portfolioStrategyDeleteContent;
+
+  /// Snackbar after deleting a portfolio strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio strategy \'{name}\' deleted!'**
+  String portfolioStrategyDeleted(String name);
 
   /// Strategy usage cell: how many environments and feature values use this strategy
   ///
@@ -3624,7 +3660,37 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Add Strategy'**
-  String get addStrategy;
+  String get addApplicationStrategy;
+
+  /// Section heading for portfolio-level strategy variations
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio strategy variations'**
+  String get portfolioStrategyVariations;
+
+  /// Info tooltip describing portfolio strategy variations
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio strategies are created at portfolio level and can be assigned to multiple features in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.'**
+  String get portfolioStrategyVariationsInfo;
+
+  /// Placeholder when no portfolio strategies have been assigned
+  ///
+  /// In en, this message translates to:
+  /// **'No portfolio strategies set'**
+  String get noPortfolioStrategiesSet;
+
+  /// Button to reveal the list of available portfolio strategies to add
+  ///
+  /// In en, this message translates to:
+  /// **'Show available portfolio strategies'**
+  String get showAvailablePortfolioStrategies;
+
+  /// Button label to add an portfolio strategy to a feature value
+  ///
+  /// In en, this message translates to:
+  /// **'Add Strategy'**
+  String get addPortfolioStrategy;
 
   /// Section label for the retire feature value checkbox
   ///
@@ -3745,6 +3811,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Application Strategy'**
   String get applicationStrategyTooltip;
+
+  /// Tooltip label on portfolio strategy cells in the feature value table
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategy'**
+  String get portfolioStrategyTooltip;
 
   /// Section label for the lock/unlock switch in the feature value side sheet
   ///

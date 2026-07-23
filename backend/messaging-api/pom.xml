@@ -238,6 +238,22 @@
         <version>3.3.0</version>
         <executions>
           <execution>
+            <id>attach-final-yaml</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>target/final.yaml</file>
+                  <type>yaml</type>
+                  <classifier>api</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+          <execution>
             <id>add-generated-source</id>
             <phase>initialize</phase>
             <goals>

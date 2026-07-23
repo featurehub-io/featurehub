@@ -88,7 +88,7 @@ class _MenuContainer extends StatelessWidget {
                                       return menuForPortfolioAdmin(
                                           context, rel);
                                     }
-                                    if (rel.currentPortfolioFeatureCreator) {
+                                    if (rel.currentPortfolioFeatureCreator || rel.currentPortfolioGroupManager || rel.currentPortfolioStrategyEditCreate || rel.currentPortfolioStrategyEditor) {
                                       return menuForFeatureCreator(
                                           context, rel);
                                     }
@@ -130,13 +130,28 @@ class _MenuContainer extends StatelessWidget {
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       portfolioSubmenu(context),
-      FHMenuItem(
-          name: l10n.featureFilters,
-          iconData: Icons.filter_alt_outlined,
-          permissionType: PermissionType.any,
-          path: '/feature-filters',
-          displayNewLabel: true,
-          params: {}),
+      if (rel.currentPortfolioFeatureCreator)
+        FHMenuItem(
+            name: l10n.featureFilters,
+            iconData: Icons.filter_alt_outlined,
+            permissionType: PermissionType.any,
+            path: '/feature-filters',
+            displayNewLabel: true,
+            params: {}),
+      if (rel.currentPortfolioStrategyEditor || rel.currentPortfolioStrategyEditCreate)
+        FHMenuItem(
+            name: l10n.portfolioStrategies,
+            iconData: Icons.call_split_outlined,
+            permissionType: PermissionType.any,
+            path: '/portfolio-strategies',
+            params: {}),
+      if (rel.currentPortfolioGroupManager)
+        FHMenuItem(
+            name: l10n.groups,
+            iconData: Icons.people_outline,
+            path: '/groups',
+            permissionType: PermissionType.portfolioadmin,
+            params: {}),
     ]);
   }
 
@@ -227,6 +242,12 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
           iconData: Icons.build_outlined,
           permissionType: PermissionType.portfolioadmin,
           path: '/service-accounts',
+          params: {}),
+      FHMenuItem(
+          name: l10n.portfolioStrategies,
+          iconData: Icons.call_split_outlined,
+          permissionType: PermissionType.any,
+          path: '/portfolio-strategies',
           params: {}),
       FHMenuItem(
           name: l10n.featureFilters,

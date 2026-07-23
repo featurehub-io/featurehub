@@ -4,7 +4,6 @@ import io.ebean.annotation.Max;
 import io.ebean.annotation.View;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-
 import java.util.UUID;
 
 @Entity
