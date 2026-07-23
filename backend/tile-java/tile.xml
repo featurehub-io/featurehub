@@ -111,7 +111,7 @@
         </executions>
         <configuration>
           <!-- Highlights the path so IntelliJ automatically flags it as a test source -->
-          <testStubsOutputDirectory>${project.build.directory}/generated-test-sources/groovy-stubs/test</testStubsOutputDirectory>
+<!--          <testStubsOutputDirectory>${project.build.directory}/generated-test-sources/groovy-stubs/test</testStubsOutputDirectory>-->
           <invokeDynamic>true</invokeDynamic>
         </configuration>
       </plugin>
