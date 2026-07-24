@@ -322,17 +322,18 @@ class ApplicationSqlApi @Inject constructor(
   }
 
   private fun getAppFeatures(app: DbApplication, opts: Opts): List<Feature> {
+    val includeArchived = opts.contains(FillOpts.Archived)
     return app.features
-      .filter { af: DbApplicationFeature -> af.whenArchived == null }
+      .filter { af: DbApplicationFeature -> includeArchived || af.whenArchived == null }
       .map { af: DbApplicationFeature? -> convertUtils.toApplicationFeature(af, opts)!! }
   }
 
-  override fun updateApplicationFeature(appId: UUID, feature: Feature, opts: Opts): List<Feature>? {
-    return updateApplicationFeature(appId, feature.key, feature, opts)
+  override fun updateApplicationFeature(appId: UUID, feature: Feature, unarchiveFeature: Boolean, opts: Opts): List<Feature>? {
+    return updateApplicationFeature(appId, feature.key, feature, unarchiveFeature, opts)
   }
 
   @Throws(ApplicationApi.DuplicateFeatureException::class, OptimisticLockingException::class)
-  override fun updateApplicationFeature(appId: UUID, key: String, feature: Feature, opts: Opts): List<Feature>? {
+  override fun updateApplicationFeature(appId: UUID, key: String, feature: Feature, unarchiveFeature: Boolean, opts: Opts): List<Feature>? {
     Conversions.nonNullApplicationId(appId)
     val app = convertUtils.byApplication(appId)
     if (app != null) {
@@ -356,7 +357,11 @@ class ApplicationSqlApi @Inject constructor(
         }
         bumpVersionOfAllEnvironmentsWithFeatureChanged(appId)
       }
-      val changed = feature.key != appFeature.key || feature.valueType != appFeature.valueType
+
+      // we re-write the key when we archive a flag, so if they update it, they can end up setting the flag name
+      // back to what it originally was. If that is the case, they they can use the UI to rename the old
+      // key by themselves
+      val changed = feature.key != appFeature.key || feature.valueType != appFeature.valueType || (unarchiveFeature && feature.whenArchived != null)
       appFeature.name = feature.name
       appFeature.alias = feature.alias
       appFeature.key = feature.key
@@ -370,6 +375,9 @@ class ApplicationSqlApi @Inject constructor(
       }
       if (feature.description != null) {
         appFeature.description = feature.description
+      }
+      if (feature.whenArchived != null && unarchiveFeature) {
+        feature.whenArchived = null
       }
       // update filter associations — replace entirely with whatever is specified (empty list clears them)
       var forceUpdateFeature = false

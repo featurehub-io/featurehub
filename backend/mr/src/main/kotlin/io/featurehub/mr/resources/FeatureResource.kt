@@ -61,15 +61,18 @@ class FeatureResource @Inject constructor(
     return featureApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
       id, current, holder.filter,
       holder.max, holder.page, holder.featureTypes, holder.sortOrder, holder.environmentIds,
-      holder.featureFilter
+      holder.featureFilter, Opts.empty().add(FillOpts.Archived, holder.includeArchived)
     ) ?: throw NotFoundException()
   }
 
   override fun getAllFeatureValuesByApplicationForKey(
     id: UUID, key: String,
+    holder: FeatureServiceDelegate.GetAllFeatureValuesByApplicationForKeyHolder,
     securityContext: SecurityContext
   ): List<FeatureEnvironment> {
-    return featureApi.getFeatureValuesForApplicationForKeyForPerson(id, key, authManager.from(securityContext))
+    return featureApi.getFeatureValuesForApplicationForKeyForPerson(id, key,
+      authManager.from(securityContext),
+      Opts.empty().add(FillOpts.Archived, holder.includeArchived))
       ?: throw NotFoundException()
   }
 
@@ -96,7 +99,10 @@ class FeatureResource @Inject constructor(
     securityContext: SecurityContext
   ): List<Feature> {
     applicationUtils.featureReadCheck(securityContext, id)
-    return applicationApi.getApplicationFeatures(id, Opts.empty().add(FillOpts.MetaData, holder.includeMetaData))
+    return applicationApi.getApplicationFeatures(id,
+      Opts.empty()
+        .add(FillOpts.MetaData, holder.includeMetaData)
+        .add(FillOpts.Archived, holder.includeArchived))
   }
 
   override fun updateAllFeatureValuesByApplicationForKey(
@@ -147,7 +153,10 @@ class FeatureResource @Inject constructor(
       val features = applicationApi.updateApplicationFeature(
         id,
         feature,
-        Opts.empty().add(FillOpts.MetaData, holder.includeMetaData)
+        holder.unarchiveFeature == true,
+        Opts.empty()
+          .add(FillOpts.MetaData, holder.includeMetaData)
+          .add(FillOpts.Archived, holder.includeArchived)
       )
         ?: throw NotFoundException("no such feature name")
       features
@@ -172,7 +181,10 @@ class FeatureResource @Inject constructor(
         id,
         key,
         feature,
-        Opts.empty().add(FillOpts.MetaData, holder.includeMetaData)
+        false,
+        Opts.empty()
+          .add(FillOpts.MetaData, holder.includeMetaData)
+          .add(FillOpts.Archived, holder.includeArchived)
       )
         ?: throw NotFoundException("no such feature name")
       features
