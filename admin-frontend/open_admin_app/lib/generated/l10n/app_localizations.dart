@@ -3083,7 +3083,7 @@ abstract class AppLocalizations {
   /// Body text of the delete-feature confirmation dialog
   ///
   /// In en, this message translates to:
-  /// **'You need to make sure all your code is cleaned up and can deal without this feature!\n\nThis cannot be undone!'**
+  /// **'You need to make sure all your code is cleaned up and can deal without this feature!\n\nThe feature will be archived. You can restore it later by turning on \'Show archived\'.'**
   String get featureDeleteContent;
 
   /// Snackbar after deleting a feature
@@ -3091,6 +3091,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Feature \'{name}\' deleted!'**
   String featureDeleted(String name);
+
+  /// Toolbar toggle to include archived features in the features table
+  ///
+  /// In en, this message translates to:
+  /// **'Show archived'**
+  String get showArchivedFeatures;
+
+  /// Badge shown next to a feature that has been archived
+  ///
+  /// In en, this message translates to:
+  /// **'Archived'**
+  String get archivedFeatureBadge;
+
+  /// Tooltip on the archived badge showing when the feature was archived
+  ///
+  /// In en, this message translates to:
+  /// **'Archived on {date}'**
+  String archivedFeatureTooltip(String date);
+
+  /// Menu action to restore (unarchive) a feature
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// Snackbar after restoring an archived feature
+  ///
+  /// In en, this message translates to:
+  /// **'Feature \'{name}\' restored!'**
+  String featureRestored(String name);
+
+  /// Error when restoring a feature fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t restore feature {name}'**
+  String featureRestoreError(String name);
+
+  /// Error when restoring a feature fails because a live feature with the same name exists
+  ///
+  /// In en, this message translates to:
+  /// **'A feature named \'{name}\' already exists. Rename or archive it before restoring this one.'**
+  String featureRestoreNameCollision(String name);
+
+  /// Body text of the restore-feature confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This will restore the archived feature and make it active again across all environments.'**
+  String get featureRestoreContent;
+
+  /// Title of the restore-feature confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Restore feature \'{name}\'?'**
+  String featureRestoreTitle(String name);
 
   /// Error when the user lacks permission for an operation
   ///

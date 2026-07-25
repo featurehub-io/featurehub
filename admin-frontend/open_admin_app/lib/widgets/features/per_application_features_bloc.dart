@@ -64,6 +64,7 @@ class PerApplicationFeaturesBloc
   List<FeatureValueType> selectedFeatureTypesByUser = [];
   List<String> selectedEnvironmentNamesByUser = [];
   List<String> selectedFeatureFilterIdsByUser = [];
+  bool includeArchived = false;
 
   final _hiddenEnvironmentSource = BehaviorSubject<HiddenEnvironments?>();
   Stream<List<Application>?> get applications => _appSearchResultSource.stream;
@@ -323,6 +324,26 @@ class PerApplicationFeaturesBloc
     mrClient.streamValley.triggerRocket();
   }
 
+  /// Restores (unarchives) a previously archived feature.
+  ///
+  /// The backend locates the archived feature by its [Feature.id] (its key has
+  /// been rewritten with an archive marker, so it can't be found by key), then
+  /// renames it back to the supplied [Feature.key]. This requires:
+  ///   * the archived feature's `id` (carried on the row from the
+  ///     includeArchived listing),
+  ///   * `includeArchived: true` so the archived row is in scope, and
+  ///   * `unarchiveFeature: true` to clear the archive marker.
+  ///
+  /// Throws an [ApiException] with code 409 if a live feature with the same
+  /// name already exists.
+  Future<void> unarchiveFeature(Feature feature) async {
+    await _featureServiceApi.updateFeatureForApplicationOnFeature(
+        applicationId!, feature,
+        includeArchived: true,
+        unarchiveFeature: true);
+    mrClient.streamValley.triggerRocket();
+  }
+
   @override
   void dispose() {
     _currentPid.cancel();
@@ -354,6 +375,7 @@ class PerApplicationFeaturesBloc
             filter: searchTerm,
             featureTypes: featureTypes,
             featureFilter: featureFilterIds,
+            includeArchived: includeArchived,
             environmentIds: (hiddenEnvs.environmentIds.isEmpty &&
                     (hiddenEnvs.noneSelected != true))
                 ? null

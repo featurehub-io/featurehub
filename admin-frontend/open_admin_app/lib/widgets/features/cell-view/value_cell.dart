@@ -54,21 +54,25 @@ class _ValueContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
     if (fv != null) {
+      // Archived features are read-only; restore them before editing values.
+      final isArchived = feature.whenArchived != null;
       return InkWell(
-        onTap: () {
-          SideSheet.right(
-              sheetColor: Theme.of(context).canvasColor,
-              body: BlocProvider<EditingFeatureValueBloc>.builder(
-                  creator: (c, b) =>
-                      bloc.perFeatureStateTrackingBloc(feature, fv!, efv),
-                  builder: (ctx, efvBloc) => EditFeatureValueWidget(
-                        bloc: efvBloc,
-                      )),
-              width: MediaQuery.of(context).size.width > 800
-                  ? MediaQuery.of(context).size.width * 0.7
-                  : MediaQuery.of(context).size.width,
-              context: context);
-        },
+        onTap: isArchived
+            ? null
+            : () {
+                SideSheet.right(
+                    sheetColor: Theme.of(context).canvasColor,
+                    body: BlocProvider<EditingFeatureValueBloc>.builder(
+                        creator: (c, b) =>
+                            bloc.perFeatureStateTrackingBloc(feature, fv!, efv),
+                        builder: (ctx, efvBloc) => EditFeatureValueWidget(
+                              bloc: efvBloc,
+                            )),
+                    width: MediaQuery.of(context).size.width > 800
+                        ? MediaQuery.of(context).size.width * 0.7
+                        : MediaQuery.of(context).size.width,
+                    context: context);
+              },
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -185,6 +189,10 @@ class _ValueCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     var displayValue = _findDisplayValue();
+    // For boolean features this is null when no value has been set in this
+    // environment (e.g. an archived feature in an environment that was added
+    // after it was archived) — render it as "not set" rather than crashing.
+    final booleanValue = _findBooleanValue();
     var lightTheme = Theme.of(context).brightness == Brightness.light;
     return Padding(
       padding: const EdgeInsets.only(top: strategyCardPadding),
@@ -292,14 +300,12 @@ class _ValueCard extends StatelessWidget {
             feature.valueType == FeatureValueType.BOOLEAN
                 ? Flexible(
                     fit: FlexFit.tight,
-                    child: FlagOnOffColoredIndicator(
-                        on: rolloutStrategy != null
-                            ? rolloutStrategy!.value
-                            : groupStrategy != null
-                                ? groupStrategy!.value
-                                : applicationStrategy != null
-                                    ? applicationStrategy!.value
-                                    : fv.valueBoolean),
+                    child: booleanValue == null
+                        ? Text('not set',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: Theme.of(context).textTheme.bodyMedium)
+                        : FlagOnOffColoredIndicator(on: booleanValue),
                   )
                 : Flexible(
                     fit: FlexFit.tight,
@@ -317,6 +323,16 @@ class _ValueCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Resolves the boolean value for this cell, or null when no value has been
+  /// set (an unset feature value in this environment). Null must be handled by
+  /// the caller since [FlagOnOffColoredIndicator.on] is non-nullable.
+  bool? _findBooleanValue() {
+    if (rolloutStrategy != null) return rolloutStrategy!.value as bool?;
+    if (groupStrategy != null) return groupStrategy!.value as bool?;
+    if (applicationStrategy != null) return applicationStrategy!.value as bool?;
+    return fv.valueBoolean;
   }
 
   String _findDisplayValue() {

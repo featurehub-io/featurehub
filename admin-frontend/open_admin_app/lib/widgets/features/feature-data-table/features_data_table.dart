@@ -223,34 +223,63 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                             );
                           },
                         ),
-                        Container(
-                          constraints: const BoxConstraints(
-                              maxWidth: 300, minWidth: 150),
-                          child: TextField(
-                            minLines: 1,
-                            maxLines: 1,
-                            controller: _searchTermController,
-                            decoration: InputDecoration(
-                              isDense: true,
-                              hintText: AppLocalizations.of(context)!.searchFeatures,
-                              hintStyle: Theme.of(context).textTheme.bodyMedium,
-                                suffixIcon: _searchTermController.text.isEmpty
-                                    ? const Icon(Icons.search, size: 18) // show search if empty
-                                    : IconButton(
-                                  icon: Icon(Icons.clear),
-                                  onPressed: () {
-                                    _searchTermController.clear();
-                                    _bounceSearchTerm();
-                                  },
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              constraints: const BoxConstraints(
+                                  maxWidth: 300, minWidth: 150),
+                              child: TextField(
+                                minLines: 1,
+                                maxLines: 1,
+                                controller: _searchTermController,
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  hintText: AppLocalizations.of(context)!.searchFeatures,
+                                  hintStyle: Theme.of(context).textTheme.bodyMedium,
+                                    suffixIcon: _searchTermController.text.isEmpty
+                                        ? const Icon(Icons.search, size: 18) // show search if empty
+                                        : IconButton(
+                                      icon: Icon(Icons.clear),
+                                      onPressed: () {
+                                        _searchTermController.clear();
+                                        _bounceSearchTerm();
+                                      },
+                                    ),
+                                  border: const OutlineInputBorder(),
                                 ),
-                              border: const OutlineInputBorder(),
+                                onChanged: (val) {
+                                  debouncer.run(() {
+                                    _bounceSearchTerm();
+                                  });
+                                },
+                              ),
                             ),
-                            onChanged: (val) {
-                              debouncer.run(() {
-                                _bounceSearchTerm();
-                              });
-                            },
-                          ),
+                            const SizedBox(width: 8.0),
+                            InkWell(
+                              onTap: () => _setIncludeArchived(
+                                  !widget.bloc.includeArchived),
+                              borderRadius: BorderRadius.circular(4.0),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Checkbox(
+                                    value: widget.bloc.includeArchived,
+                                    visualDensity: VisualDensity.compact,
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    onChanged: (selected) =>
+                                        _setIncludeArchived(selected ?? false),
+                                  ),
+                                  const SizedBox(width: 4.0),
+                                  Text(l10n.showArchivedFeatures,
+                                      style:
+                                          Theme.of(context).textTheme.bodyMedium),
+                                  const SizedBox(width: 8.0),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -333,6 +362,19 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
             );
           }
         });
+  }
+
+  void _setIncludeArchived(bool selected) {
+    setState(() {
+      widget.bloc.includeArchived = selected;
+    });
+    widget.bloc.getApplicationFeatureValuesData(
+        widget.bloc.applicationId!,
+        _searchTermController.text,
+        _selectedFeatureTypes,
+        widget.bloc.currentRowsPerPage,
+        _pageIndex,
+        featureFilterIds: _selectedFeatureFilterIds);
   }
 
   void _bounceSearchTerm() {
