@@ -98,7 +98,9 @@ paths:
         - bearerAuth: [ ]
       tags:
         - FeatureService
-      description: "updates all named features in this application, returns all features by default otherwise just the feature updated"
+      description: "updates the features in this application - prefers using the ID of the passed feature and will fall back to the key. If you need to change the key, you must pass the ID.
+          If choosing to undelete a feature, you must specify the ID and the key, as deleted keys have had a suffix attached to them and it will allow them to be renamed back to what they originally
+          where as long as another feature has not come along with the same key."
       operationId: updateFeatureForApplicationOnFeature
       requestBody:
         required: true
@@ -183,7 +185,15 @@ paths:
         - bearerAuth: [ ]
       tags:
         - FeatureService
-      description: "updates all named features in this application, returns all features. Use this ONLY if you wish to change the key."
+      parameters:
+        - name: unarchiveFeature
+          in: query
+          description: "If this feature is archived and we want to update it, we have to pass this flag as true to restore it. This will fail if there is another feature of the same name already"
+          required: false
+          schema:
+            default: false
+            type: boolean
+      description: "updates all named features in this application, returns all features. Use this ONLY if you wish to change the key. Use updateFeatureForApplicationOnFeature and specify the feature's ID and the key as what you want it to be."
       operationId: updateFeatureForApplication
       requestBody:
         required: true

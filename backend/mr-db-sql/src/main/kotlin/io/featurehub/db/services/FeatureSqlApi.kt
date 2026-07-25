@@ -447,7 +447,7 @@ class FeatureSqlApi @Inject constructor(
       featureValueFinder = featureValueFinder.or().feature.key.`in`(featureKeys)
 
       featureKeys.map { convertUtils.addArchiveIndicator(it) }.forEach {
-        featureValueFinder = featureValueFinder.feature.key.startsWith(it)
+        featureValueFinder = featureValueFinder.and().feature.key.startsWith(it).feature.whenArchived.isNotNull.endAnd()
       }
 
       featureValueFinder = featureValueFinder.endOr()

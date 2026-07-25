@@ -43,6 +43,8 @@ Feature: We have a grouping of environmental behaviour around features
     Then there are 3 features
     And I delete the feature
     Then there are 2 features
+    When I undelete the feature
+    Then there are 3 features
     Examples: # run it 5 times
       | x |
       | 1 |

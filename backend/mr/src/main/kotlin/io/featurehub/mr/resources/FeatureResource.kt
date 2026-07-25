@@ -90,6 +90,7 @@ class FeatureResource @Inject constructor(
       Opts.empty()
         .add(FillOpts.MetaData, holder.includeMetaData)
         .add(FillOpts.FeatureFilters, holder.includeFilters)
+        .add(FillOpts.Archived, holder.includeArchived)
     )
       ?: throw NotFoundException()
   }
@@ -181,7 +182,7 @@ class FeatureResource @Inject constructor(
         id,
         key,
         feature,
-        false,
+        holder.unarchiveFeature == true,
         Opts.empty()
           .add(FillOpts.MetaData, holder.includeMetaData)
           .add(FillOpts.Archived, holder.includeArchived)

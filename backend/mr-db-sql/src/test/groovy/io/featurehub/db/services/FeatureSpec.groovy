@@ -259,6 +259,12 @@ class FeatureSpec extends Base2Spec {
           .features.find({ f -> f.key == key }).value == newCounter
         newCounter ++
       }
+    when: "i undelete the application feature, the feature values are restored"
+      def allFeatures = appApi.getApplicationFeatures(appId, Opts.opts(FillOpts.Archived))
+      def deletedFeature = allFeatures.find({ it.key == key })
+      def activeFeatures = appApi.updateApplicationFeature(appId, deletedFeature, true, Opts.empty())
+    then:
+      activeFeatures.find({ it.key == key }).whenArchived == null
   }
 
   def "i can set and retrieve meta-data on a feature"() {
