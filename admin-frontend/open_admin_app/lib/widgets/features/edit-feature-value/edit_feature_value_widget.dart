@@ -278,7 +278,8 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
                                             width: 4.0,
                                           ),
                                           FHInfoCardWidget(
-                                              message: l10n.applicationStrategyVariationsInfo)
+                                              message:
+                                                  '${l10n.applicationStrategyVariationsInfo}\n\nSetting this rollout value overrides the application strategy value configured globally')
                                         ],
                                       ),
                                       StreamBuilder<

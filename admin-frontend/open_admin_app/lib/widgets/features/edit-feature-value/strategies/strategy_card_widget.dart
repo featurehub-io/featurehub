@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
@@ -78,6 +79,8 @@ class StrategyCardWidget extends StatelessWidget {
                       child: Text(l10n.strategyServe,
                           style: CustomTextStyle.bodySmallLight(context))),
                   Expanded(flex: 4, child: editableHolderWidget),
+                  // UI mockup only: "set percentage <value> %"
+                  const Expanded(flex: 4, child: SetPercentageField()),
                   if (rolloutStrategy != null && groupRolloutStrategy == null)
                     Expanded(
                       flex: 3,
@@ -164,6 +167,66 @@ class StrategyCardWidget extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// UI mockup only — renders "set percentage [ value ] %" with an input that
+/// accepts a number between 0 and 100. No backend wiring yet.
+class SetPercentageField extends StatefulWidget {
+  const SetPercentageField({super.key});
+
+  @override
+  State<SetPercentageField> createState() => _SetPercentageFieldState();
+}
+
+class _SetPercentageFieldState extends State<SetPercentageField> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text('rollout at',
+            style: CustomTextStyle.bodySmallLight(context)),
+        const SizedBox(width: 6.0),
+        SizedBox(
+          width: 48.0,
+          child: TextField(
+            controller: _controller,
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            decoration: const InputDecoration(
+              isDense: true,
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 6.0, vertical: 8.0),
+              border: OutlineInputBorder(),
+            ),
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              // Clamp to 0-100
+              TextInputFormatter.withFunction((oldValue, newValue) {
+                if (newValue.text.isEmpty) return newValue;
+                final value = int.tryParse(newValue.text);
+                if (value == null || value < 0 || value > 100) {
+                  return oldValue;
+                }
+                return newValue;
+              }),
+            ],
+          ),
+        ),
+        const SizedBox(width: 4.0),
+        Text('%', style: CustomTextStyle.bodySmallLight(context)),
+      ],
     );
   }
 }
