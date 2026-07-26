@@ -109,6 +109,7 @@ Then('I undelete the feature', async function() {
   const feat = f.data;
   expect(feat.whenArchived).to.not.be.undefined;
 
+  // i have to specify the feature ID so it can find it and rename the feature to the key specified
   const result = await world.featureApi.updateFeatureForApplicationOnFeature(world.application.id, new Feature({
     id: feat.id,
     key: feat.key,
