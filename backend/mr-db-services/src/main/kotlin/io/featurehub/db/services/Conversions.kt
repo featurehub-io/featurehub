@@ -58,7 +58,7 @@ interface Conversions {
     if (whenArchived == null) {
       return name
     }
-    val prefix = name.indexOf(archivePrefix)
+    val prefix = name.indexOf(archiveSuffix)
     return if (prefix == -1) {
       name
     } else name.substring(0, prefix)
@@ -67,7 +67,7 @@ interface Conversions {
   fun addArchiveIndicator(name: String?): String? {
     if (name == null) return name;
 
-    return name + archivePrefix
+    return name + archiveSuffix
   }
 
   fun toGroup(dbg: DbGroup?, opts: Opts?): Group?
@@ -106,7 +106,7 @@ interface Conversions {
   fun isPersonEnvironmentAdmin(current: Person, environmentId: UUID): Boolean
 
   companion object {
-    const val archivePrefix = ":\\:\\:"
+    const val archiveSuffix = ":\\:\\:"
 
     // in case a field can be a name or a uuid (i.e. feature key)
     @JvmStatic

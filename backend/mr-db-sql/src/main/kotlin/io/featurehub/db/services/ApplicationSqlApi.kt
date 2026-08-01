@@ -340,7 +340,8 @@ class ApplicationSqlApi @Inject constructor(
         .parentApplication.eq(app)
         .findOne() ?: return null
 
-      return updateAppFeature(app, feature.key, feature, appFeature, unarchiveFeature, opts)
+      // we pass the existing appFeature.key as updateAppFeature checks for key change with the feature object
+      return updateAppFeature(app, appFeature.key, feature, appFeature, unarchiveFeature, opts)
     }
 
     return updateApplicationFeature(appId, feature.key, feature, unarchiveFeature, opts)
@@ -363,12 +364,10 @@ class ApplicationSqlApi @Inject constructor(
       throw OptimisticLockingException()
     }
     if (key != feature.key) { // we are changing the key?
-      if (QDbApplicationFeature().key
-          .eq(feature.key).parentApplication
-          .eq(app)
-          .endAnd()
-          .exists()
-      ) {
+      if (QDbApplicationFeature()
+        .key.eq(feature.key)
+        .parentApplication.eq(app)
+        .exists()) {
         throw ApplicationApi.DuplicateFeatureException()
       }
       bumpVersionOfAllEnvironmentsWithFeatureChanged(app.id)
@@ -463,7 +462,7 @@ class ApplicationSqlApi @Inject constructor(
         .parentApplication.eq(app)
 
       if (opts.contains(FillOpts.Archived)) {
-        qAppFeature = qAppFeature.or().key.eq(applicationFeatureKeyName).and().key.startsWith(applicationFeatureKeyName).whenArchived.isNotNull.endAnd().endOr()
+        qAppFeature = qAppFeature.or().key.eq(applicationFeatureKeyName).and().key.startsWith(applicationFeatureKeyName + Conversions.archiveSuffix).whenArchived.isNotNull.endAnd().endOr()
       } else {
         qAppFeature = qAppFeature.key.eq(applicationFeatureKeyName)
       }
@@ -587,7 +586,10 @@ class ApplicationSqlApi @Inject constructor(
   ): Boolean {
     val query = QDbAcl()
       .select(QDbAcl.Alias.roles)
+      .or()
       .application.portfolio.id.eq(portfolioId)
+      .environment.parentApplication.portfolio.id.eq(portfolioId)
+      .endOr()
       .group.whenArchived.isNull
       .group.groupMembers.person.id.eq(personId)
 

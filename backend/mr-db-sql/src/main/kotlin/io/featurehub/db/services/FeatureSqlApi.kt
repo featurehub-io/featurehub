@@ -127,7 +127,8 @@ class FeatureSqlApi @Inject constructor(
   override fun getFeatureValueForEnvironment(eid: UUID, key: String, opts: Opts): FeatureValue? {
     Conversions.nonNullEnvironmentId(eid)
     val featureValue =
-      QDbFeatureValue().environment.id.eq(eid).feature.key.eq(key).sharedRolloutStrategies.fetch().findOne()
+      featureKeyCanBeArchived(key, QDbFeatureValue().environment.id.eq(eid).sharedRolloutStrategies.fetch(), opts).findOne()
+
     return if (featureValue == null) null else convertUtils.toFeatureValue(
       featureValue,
       Opts.opts(FillOpts.RolloutStrategies)
@@ -239,22 +240,47 @@ class FeatureSqlApi @Inject constructor(
     var appRolesForThisPerson: Set<ApplicationRoleType>
   )
 
+  private fun featureKeyCanBeArchived(key: String, featureQ: QDbApplicationFeature, opts: Opts): QDbApplicationFeature {
+    if (opts.contains(FillOpts.Archived)) {
+      return featureQ
+        .or()
+        .and()
+        .key.startsWith(convertUtils.addArchiveIndicator(key))
+        .whenArchived.isNotNull
+        .endAnd()
+        .key.eq(key)
+        .endOr()
+    } else {
+      return featureQ.whenArchived.isNull.key.eq(key)
+    }
+  }
+
+  private fun featureKeyCanBeArchived(key: String, featureQ: QDbFeatureValue, opts: Opts): QDbFeatureValue {
+    if (opts.contains(FillOpts.Archived)) {
+      return featureQ
+        .or()
+        .and()
+        .feature.key.startsWith(convertUtils.addArchiveIndicator(key))
+        .feature.whenArchived.isNotNull
+        .endAnd()
+        .feature.key.eq(key)
+        .endOr()
+    } else {
+      return featureQ.feature.whenArchived.isNull.feature.key.eq(key)
+    }
+  }
+
   private fun featureValuesUserCanAccess(
     appId: UUID,
     key: String,
     person: Person,
     opts: Opts
   ): EnvironmentsAndFeatureValues {
-    var featureQ = QDbApplicationFeature()
-      .key.eq(key)
+    val featureQ = QDbApplicationFeature()
       .parentApplication.id.eq(appId)
       .parentApplication.whenArchived.isNull
 
-    if (!opts.contains(FillOpts.Archived)) {
-      featureQ = featureQ.whenArchived.isNull
-    }
-
-    val feature = featureQ.findOne()
+    val feature = featureKeyCanBeArchived(key, featureQ, opts).findOne()
 
     if (feature == null) {
       log.trace("User {} attempting to update feature that does not exist", person)
@@ -406,15 +432,11 @@ class FeatureSqlApi @Inject constructor(
 
   private fun environmentToFeatureValues(
     acl: DbAcl,
-    personIsAdmin: Boolean,
     featureKeys: List<String>,
     opts: Opts
   ): EnvironmentFeatureValues? {
-    val roles: List<RoleType> = if (personIsAdmin) {
-      RoleType.entries
-    } else {
+    val roles: List<RoleType> =
       convertUtils.splitEnvironmentRoles(acl.roles)
-    }
 
     // we are never called where the environment is archived
     return if (roles.isEmpty()) {
@@ -557,64 +579,48 @@ class FeatureSqlApi @Inject constructor(
         deduplicateEnvironmentFeatureValues(
           rawPermsQl.findList()
             .onEach { acl: DbAcl -> environmentOrderingMap[acl.environment.id] = acl.environment }
-            .mapNotNull { acl: DbAcl -> environmentToFeatureValues(acl, personAdmin, featureKeys, opts) }
-            .filter { efv: EnvironmentFeatureValues? ->
-              efv!!.roles.isNotEmpty()
+            .mapNotNull { acl: DbAcl -> environmentToFeatureValues(acl, featureKeys, opts) }
+            .filter { efv ->
+              efv.roles.isNotEmpty()
             }, envs)
       } else {
-        QDbEnvironment()
+        var qEnvs = QDbEnvironment()
           .whenArchived.isNull
           .parentApplication.eq(app)
-          .parentApplication.whenArchived.isNull.let({ qe ->
-            if (environmentIds.isNullOrEmpty()) qe else qe.id.`in`(environmentIds)
-          }).findList().onEach { env ->
-            environmentOrderingMap[env.id] = env
-          }.map { env -> EnvironmentFeatureValues()
+          .parentApplication.whenArchived.isNull
+
+        if (!environmentIds.isNullOrEmpty()) {
+          qEnvs = qEnvs.id.`in`(environmentIds)
+        }
+
+        qEnvs.findList().onEach { env ->
+          environmentOrderingMap[env.id] = env
+        }.map { env ->
+          val efv = EnvironmentFeatureValues()
             .environmentId(env.id)
             .environmentName(env.name)
-            .priorEnvironmentId(if (env.priorEnvironment == null) null else env.priorEnvironment.id)
+            .priorEnvironmentId(env.priorEnvironment?.id)
             .roles(RoleType.entries)
-            .features(featuresForEnvironment(env, featureKeys, opts)) }
+            .features(featuresForEnvironment(env, featureKeys, opts))
+          envs[env.id] = efv
+          efv
+        }
       }
 
       if (permEnvs.isEmpty() && !personAdmin) {
         return null
       }
 
-      // now we have a flat-map of individual environments  the user has actual access to, but they may be an admin, so
-      // if so, we need to fill those in. This gives us all the environments and sets the roles to empty
-      // if the user has no access to the environment
-      if (permEnvs.isNotEmpty() || personAdmin) {
-        // now go through all the environments for this app
-        var environmentsQl =
-          QDbEnvironment().whenArchived.isNull.orderBy().name.desc().parentApplication.eq(app)
-        environmentIds?.let { requestedEnvIdList ->
-          if (requestedEnvIdList.isNotEmpty()) {
-            environmentsQl = environmentsQl.id.`in`(requestedEnvIdList)
-          }
-        }
-        val environments = environmentsQl.findList()
-        // envId, DbEnvi
-        val roles = if (personAdmin) RoleType.entries else listOf()
-        environments.forEach { e: DbEnvironment ->
-          if (envs[e.id] == null) {
-            environmentOrderingMap[e.id] = e
-            val e1 = EnvironmentFeatureValues()
-              .environmentName(e.name)
-              .priorEnvironmentId(if (e.priorEnvironment == null) null else e.priorEnvironment.id)
-              .environmentId(e.id)
-              .roles(roles) // all access (as admin)
-              .features(if (!personAdmin) ArrayList() else featuresForEnvironment(e, featureKeys, opts))
-            envs[e1.environmentId] = e1
-          }
-        }
-      }
-
       // we have to get all of them and sort them into order because this person may not have access
       // to all of them, so we will lose the sort order if we try and order them
       // so we get them all, sort them, and then pick them out of the map one by one
       val sortingEnvironments: List<DbEnvironment> =
-        ArrayList(QDbEnvironment().select(QDbEnvironment.Alias.id).parentApplication.id.eq(appId).whenArchived.isNull.findList())
+        ArrayList(QDbEnvironment()
+          .select(QDbEnvironment.Alias.id, QDbEnvironment.Alias.priorEnvironment)
+          .whenArchived.isNull
+          .parentApplication.id.eq(appId)
+          .findList())
+
       EnvironmentUtils.sortEnvironments(sortingEnvironments)
 
       val finalValues = mutableListOf<EnvironmentFeatureValues>()
@@ -639,8 +645,8 @@ class FeatureSqlApi @Inject constructor(
     permEnvs: List<EnvironmentFeatureValues>,
     envs: MutableMap<UUID?, EnvironmentFeatureValues?>
   ): List<EnvironmentFeatureValues> {
-    permEnvs.forEach { e: EnvironmentFeatureValues? ->
-      val original = envs[e!!.environmentId]
+    permEnvs.forEach { e: EnvironmentFeatureValues ->
+      val original = envs[e.environmentId]
       if (original != null) { // merge them
         val originalFeatureValueIds =
           original.features.map { obj: FeatureValue -> obj.id }.toSet()

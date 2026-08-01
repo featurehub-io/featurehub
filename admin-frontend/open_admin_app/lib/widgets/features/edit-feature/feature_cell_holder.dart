@@ -88,7 +88,7 @@ class FeatureCellHolder extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (isArchived && isEditor)
+                if (isArchived && isEditor) // don't show anything for non-editor
                   TextButton.icon(
                     onPressed: () => bloc.mrClient.addOverlay(
                         (BuildContext context) => FeatureUnarchiveDialogWidget(

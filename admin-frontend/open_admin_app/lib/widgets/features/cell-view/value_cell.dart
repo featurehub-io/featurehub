@@ -189,13 +189,6 @@ class _ValueCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     var displayValue = _findDisplayValue();
-    // For boolean features this is null when no value has been set in this
-    // environment (e.g. an archived feature in an environment that was added
-    // after it was archived) — render it as "not set" rather than crashing.
-    // Only evaluate for boolean features; other value types are not bools.
-    final booleanValue = feature.valueType == FeatureValueType.BOOLEAN
-        ? _findBooleanValue()
-        : null;
     var lightTheme = Theme.of(context).brightness == Brightness.light;
     return Padding(
       padding: const EdgeInsets.only(top: strategyCardPadding),
@@ -303,16 +296,11 @@ class _ValueCard extends StatelessWidget {
             feature.valueType == FeatureValueType.BOOLEAN
                 ? Flexible(
                     fit: FlexFit.tight,
-                    child: booleanValue == null
-                        ? Text('not set',
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: Theme.of(context).textTheme.bodyMedium)
-                        : FlagOnOffColoredIndicator(on: booleanValue),
+                    child: FlagOnOffColoredIndicator(on: _findBooleanValue()),
                   )
                 : Flexible(
                     fit: FlexFit.tight,
-                    child: Text(displayValue.isEmpty ? 'not set' : displayValue,
+                    child: Text(displayValue.isEmpty ? l10n.notSet : displayValue,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: displayValue.isEmpty
@@ -328,14 +316,12 @@ class _ValueCard extends StatelessWidget {
     );
   }
 
-  /// Resolves the boolean value for this cell, or null when no value has been
-  /// set (an unset feature value in this environment). Null must be handled by
-  /// the caller since [FlagOnOffColoredIndicator.on] is non-nullable.
-  bool? _findBooleanValue() {
-    if (rolloutStrategy != null) return rolloutStrategy!.value as bool?;
-    if (groupStrategy != null) return groupStrategy!.value as bool?;
-    if (applicationStrategy != null) return applicationStrategy!.value as bool?;
-    return fv.valueBoolean;
+  /// boolean features are never null
+  bool _findBooleanValue() {
+    if (rolloutStrategy != null) return rolloutStrategy!.value as bool;
+    if (groupStrategy != null) return groupStrategy!.value as bool;
+    if (applicationStrategy != null) return applicationStrategy!.value as bool;
+    return fv.value;
   }
 
   String _findDisplayValue() {
