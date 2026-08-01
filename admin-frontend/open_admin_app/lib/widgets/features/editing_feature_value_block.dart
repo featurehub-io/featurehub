@@ -196,6 +196,11 @@ class EditingFeatureValueBloc implements Bloc {
   }
 
   void updateFeatureValueDefault(dynamic replacementValue) {
+    // The backend reads the preferred `value` field first, only falling back to
+    // the deprecated typed fields when it is null. If we don't update `value`
+    // the change is ignored on save. We also keep the typed field in sync for
+    // the table/display which still read them.
+    currentFeatureValue.value = replacementValue;
     switch (feature.valueType) {
       case FeatureValueType.BOOLEAN:
         currentFeatureValue.valueBoolean = replacementValue;

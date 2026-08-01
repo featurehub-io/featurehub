@@ -35,7 +35,14 @@ abstract class BaseRolloutStrategyCardWidget extends StatelessWidget {
     return [];
   }
 
+  /// The inline "rollout at [ n ] %" percentage-override field, shown on
+  /// shared-strategy cards (application- and portfolio-level) so the percentage
+  /// can be overridden for this individual feature value. Returns null for
+  /// cards that don't support an override.
+  Widget? percentageOverrideField(BuildContext context) => null;
+
   Widget serveRow(BuildContext context, AppLocalizations l10n) {
+    final percentageField = percentageOverrideField(context);
     return Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -57,6 +64,8 @@ abstract class BaseRolloutStrategyCardWidget extends StatelessWidget {
               child: Text(l10n.strategyServe,
                   style: CustomTextStyle.bodySmallLight(context))),
           Expanded(flex: 4, child: editableHolderWidget),
+          if (percentageField != null)
+            Expanded(flex: 4, child: percentageField),
           Expanded(flex: 3, child: expandedSection(context))
         ]);
   }
@@ -140,7 +149,7 @@ class RolloutStrategyCardWidget extends BaseRolloutStrategyCardWidget {
             IconButton(
               mouseCursor: SystemMouseCursors.click,
               icon: const Icon(Icons.delete, size: 16),
-              onPressed: () => bloc.removeStrategy(strategy!),
+              onPressed: () => bloc.removeStrategy(strategy),
             ),
         ],
       );
@@ -218,41 +227,12 @@ class ApplicationRolloutStrategyCardWidget
   }
 
   @override
-  int numberOfRows() {
-    return 2;
-  }
-
-  @override
-  List<Widget> extraColumns(BuildContext context, AppLocalizations l10n) {
-    return [
-      Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Expanded(
-                flex: 5,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text("percentage override",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall!
-                                .copyWith(color: defaultTextColor)),
-                  ),
-                )),
-            Expanded(
-                flex: 1,
-                child: SizedBox(
-                    height: 36,
-                    child: PercentageOverrideWidget(
-                        onPercentageOverrideChanged: (v) => strBloc!.updateApplicationStrategyValue(),
-                        strategyInstance: strategyInstance,
-                        editable: editable))),
-            Expanded(flex: 6, child: Text(" (optional)"))
-          ])
-    ];
+  Widget? percentageOverrideField(BuildContext context) {
+    return PercentageOverrideWidget(
+        onPercentageOverrideChanged: (v) =>
+            strBloc!.updateApplicationStrategyValue(),
+        strategyInstance: strategyInstance,
+        editable: editable);
   }
 
   @override
@@ -302,6 +282,15 @@ class PortfolioRolloutStrategyCardWidget extends BaseRolloutStrategyCardWidget {
   @override
   Color cardColor() {
     return portfolioStrategyTextColor.withAlpha(38);
+  }
+
+  @override
+  Widget? percentageOverrideField(BuildContext context) {
+    return PercentageOverrideWidget(
+        onPercentageOverrideChanged: (v) =>
+            strBloc!.updatePortfolioStrategyValue(),
+        strategyInstance: strategyInstance,
+        editable: editable);
   }
 
   @override

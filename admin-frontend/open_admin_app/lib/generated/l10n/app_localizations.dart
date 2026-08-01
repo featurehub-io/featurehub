@@ -3722,6 +3722,30 @@ abstract class AppLocalizations {
   /// **'Application strategies are created at application level and can be assigned to multiple features in any environment. Application strategy can be created and edited from the Application Strategies page.'**
   String get applicationStrategyVariationsInfo;
 
+  /// Info note explaining that the per-feature-value percentage overrides the shared application strategy's configured percentage
+  ///
+  /// In en, this message translates to:
+  /// **'Setting this rollout value overrides the application strategy value configured globally'**
+  String get applicationStrategyOverrideInfo;
+
+  /// Info note explaining that the per-feature-value percentage overrides the shared portfolio strategy's configured percentage
+  ///
+  /// In en, this message translates to:
+  /// **'Setting this rollout value overrides the portfolio strategy value configured globally'**
+  String get portfolioStrategyOverrideInfo;
+
+  /// Label preceding the inline percentage-override input field on a shared-strategy card, e.g. 'rollout at [ 50 ] %'
+  ///
+  /// In en, this message translates to:
+  /// **'rollout at'**
+  String get percentageOverrideRolloutAt;
+
+  /// Percent sign shown after the inline percentage-override input field on a shared-strategy card
+  ///
+  /// In en, this message translates to:
+  /// **'%'**
+  String get percentageOverridePercentSign;
+
   /// Placeholder when no application strategies have been assigned
   ///
   /// In en, this message translates to:

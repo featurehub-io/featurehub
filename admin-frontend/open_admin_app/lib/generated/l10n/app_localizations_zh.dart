@@ -1997,6 +1997,18 @@ class AppLocalizationsZh extends AppLocalizations {
       '应用程序策略在应用程序层面创建，可分配给任意环境中的多个功能。应用程序策略可在「应用程序策略」页面中创建和编辑。';
 
   @override
+  String get applicationStrategyOverrideInfo => '设置此发布值将覆盖全局配置的应用程序策略值';
+
+  @override
+  String get portfolioStrategyOverrideInfo => '设置此发布值将覆盖全局配置的项目组合策略值';
+
+  @override
+  String get percentageOverrideRolloutAt => '发布比例';
+
+  @override
+  String get percentageOverridePercentSign => '%';
+
+  @override
   String get noApplicationStrategiesSet => '未设置应用程序策略';
 
   @override

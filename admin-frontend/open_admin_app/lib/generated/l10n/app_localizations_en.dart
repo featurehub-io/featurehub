@@ -2084,6 +2084,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Application strategies are created at application level and can be assigned to multiple features in any environment. Application strategy can be created and edited from the Application Strategies page.';
 
   @override
+  String get applicationStrategyOverrideInfo =>
+      'Setting this rollout value overrides the application strategy value configured globally';
+
+  @override
+  String get portfolioStrategyOverrideInfo =>
+      'Setting this rollout value overrides the portfolio strategy value configured globally';
+
+  @override
+  String get percentageOverrideRolloutAt => 'rollout at';
+
+  @override
+  String get percentageOverridePercentSign => '%';
+
+  @override
   String get noApplicationStrategiesSet => 'No application strategies set';
 
   @override

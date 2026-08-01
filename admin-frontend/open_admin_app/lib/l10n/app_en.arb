@@ -2019,6 +2019,18 @@
   "applicationStrategyVariationsInfo": "Application strategies are created at application level and can be assigned to multiple features in any environment. Application strategy can be created and edited from the Application Strategies page.",
   "@applicationStrategyVariationsInfo": { "description": "Info tooltip describing application strategy variations" },
 
+  "applicationStrategyOverrideInfo": "Setting this rollout value overrides the application strategy value configured globally",
+  "@applicationStrategyOverrideInfo": { "description": "Info note explaining that the per-feature-value percentage overrides the shared application strategy's configured percentage" },
+
+  "portfolioStrategyOverrideInfo": "Setting this rollout value overrides the portfolio strategy value configured globally",
+  "@portfolioStrategyOverrideInfo": { "description": "Info note explaining that the per-feature-value percentage overrides the shared portfolio strategy's configured percentage" },
+
+  "percentageOverrideRolloutAt": "rollout at",
+  "@percentageOverrideRolloutAt": { "description": "Label preceding the inline percentage-override input field on a shared-strategy card, e.g. 'rollout at [ 50 ] %'" },
+
+  "percentageOverridePercentSign": "%",
+  "@percentageOverridePercentSign": { "description": "Percent sign shown after the inline percentage-override input field on a shared-strategy card" },
+
   "noApplicationStrategiesSet": "No application strategies set",
   "@noApplicationStrategiesSet": { "description": "Placeholder when no application strategies have been assigned" },
 

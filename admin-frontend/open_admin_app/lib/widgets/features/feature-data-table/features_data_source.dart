@@ -34,6 +34,7 @@ class FeaturesDataSource extends DataGridSource {
               fv: entry.value.features
                   .firstWhere((fv) => fv.key == feature.key, orElse: () {
                 return FeatureValue(
+                    value: feature.valueType == FeatureValueType.BOOLEAN ? false : null,
                     retired: false,
                     rolloutStrategies: [],
                     rolloutStrategyInstances: [],

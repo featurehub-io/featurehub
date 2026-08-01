@@ -562,7 +562,8 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
             width: 4.0,
           ),
           FHInfoCardWidget(
-              message: l10n.applicationStrategyVariationsInfo)
+              message:
+                  '${l10n.applicationStrategyVariationsInfo}\n\n${l10n.applicationStrategyOverrideInfo}')
         ],
       ),
       StreamBuilder<
@@ -657,7 +658,8 @@ class _EditFeatureValueWidgetState extends State<EditFeatureValueWidget> {
             width: 4.0,
           ),
           FHInfoCardWidget(
-              message: l10n.portfolioStrategyVariationsInfo)
+              message:
+                  '${l10n.portfolioStrategyVariationsInfo}\n\n${l10n.portfolioStrategyOverrideInfo}')
         ],
       ),
       StreamBuilder<
