@@ -192,7 +192,10 @@ class _ValueCard extends StatelessWidget {
     // For boolean features this is null when no value has been set in this
     // environment (e.g. an archived feature in an environment that was added
     // after it was archived) — render it as "not set" rather than crashing.
-    final booleanValue = _findBooleanValue();
+    // Only evaluate for boolean features; other value types are not bools.
+    final booleanValue = feature.valueType == FeatureValueType.BOOLEAN
+        ? _findBooleanValue()
+        : null;
     var lightTheme = Theme.of(context).brightness == Brightness.light;
     return Padding(
       padding: const EdgeInsets.only(top: strategyCardPadding),

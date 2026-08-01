@@ -2,6 +2,7 @@ import 'package:universal_html/html.dart';
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
@@ -92,7 +93,8 @@ class FeatureCellHolder extends StatelessWidget {
                     onPressed: () => bloc.mrClient.addOverlay(
                         (BuildContext context) => FeatureUnarchiveDialogWidget(
                             bloc: bloc, feature: feature)),
-                    icon: const Icon(Icons.unarchive_outlined, size: 18),
+                    icon: const Icon(Icons.unarchive_outlined,
+                        size: 18, color: Colors.green),
                     label: Text(l10n.restore),
                   ),
                 if (!isArchived)
@@ -154,14 +156,12 @@ class FeatureCellHolder extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(left: 8.0),
                       child: Tooltip(
-                        message: l10n.archivedFeatureTooltip(feature
-                            .whenArchived!
-                            .toLocal()
-                            .toString()
-                            .split('.')
-                            .first),
+                        message: l10n.archivedFeatureTooltip(
+                            DateFormat('yyyy-MM-dd HH:mm:ss')
+                                .format(feature.whenArchived!)),
                         child: Chip(
-                          avatar: const Icon(Icons.archive_outlined, size: 14),
+                          avatar: const Icon(Icons.archive_outlined,
+                              size: 14, color: Colors.red),
                           label: Text(l10n.archivedFeatureBadge),
                           labelStyle: Theme.of(context).textTheme.labelSmall,
                           visualDensity: VisualDensity.compact,
