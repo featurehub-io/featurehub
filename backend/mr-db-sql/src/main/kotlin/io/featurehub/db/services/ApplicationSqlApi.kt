@@ -492,10 +492,10 @@ class ApplicationSqlApi @Inject constructor(
       return null
     }
 
-    bumpVersionOfAllEnvironmentsWithFeatureChanged(appId)
-
     // make sure it isn't already deleted
     if (appFeature.appFeature!!.whenArchived == null) {
+      bumpVersionOfAllEnvironmentsWithFeatureChanged(appId)
+
       archiveStrategy.archiveApplicationFeature(appFeature.appFeature)
     }
 
