@@ -8,6 +8,28 @@ Feature: Feature groups should operate as per definition
     And I create a service account and read permissions based on the application environments
     And I connect to the feature server
 
+    @fgroups @fgrouparchived
+  Scenario: Feature group should be able to update without losing archived feature
+      Given there are 0 features
+      And There is a feature string with the key chago
+      And There is a feature number with the key kwongkee
+      And There is a feature json with the key omuandco
+      When I create a feature group "ch3group"
+        | key    | value |
+        | chago  | maria |
+        | kwongkee | 2     |
+      Then the feature group only has the keys "chago,kwongkee"
+      And I delete the feature with the key "chago"
+      Then the feature group only has the keys "kwongkee"
+      And I update the values of the feature group to
+        | key      | value |
+        | omuandco | {}    |
+        | kwongkee | 2     |
+      Then the feature group only has the keys "kwongkee,omuandco"
+      When I undelete the feature "chago"
+      Then the feature group only has the keys "kwongkee,omuandco,chago"
+
+
     @fgroups
   Scenario: New feature groups should expose new strategies
     Given there are 0 features
