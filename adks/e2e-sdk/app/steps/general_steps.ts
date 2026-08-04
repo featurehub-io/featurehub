@@ -101,10 +101,15 @@ Then(/^I delete the feature$/, async function () {
   expect(features).to.not.be.undefined;
 });
 
-Then('I undelete the feature', async function() {
+When('I delete the feature with the key {string}', async function(key: string) {
   const world = this as SdkWorld;
+  const result = await world.featureApi.deleteFeatureForApplication(world.application.id, key);
+  expect(result.status).to.eq(200);
+  expect(result.data.find(f => f.key === key)).to.be.undefined;
+});
 
-  const f = await world.featureApi.getFeatureByKey(world.application.id, world.feature.key, false, false, true);
+async function undeleteFeature(world: SdkWorld, key: string) {
+  const f = await world.featureApi.getFeatureByKey(world.application.id, key, false, false, true);
   expect(f.status).to.eq(200);
   const feat = f.data;
   expect(feat.whenArchived).to.not.be.undefined;
@@ -118,8 +123,21 @@ Then('I undelete the feature', async function() {
     valueType: feat.valueType
   }), false, true, false, true);
 
-  const features = result.data;
   const foundFeature = result.data.find(fe => fe.key == feat.key);
   expect(foundFeature.whenArchived).to.be.undefined;
   world.feature = foundFeature;
+}
+
+Then('I undelete the feature', async function() {
+  const world = this as SdkWorld;
+
+  await undeleteFeature(world, world.feature.key);
 });
+
+Then('I undelete the feature {string}', async function (key: string) {
+  const world = this as SdkWorld;
+
+  await undeleteFeature(world, key);
+});
+
+

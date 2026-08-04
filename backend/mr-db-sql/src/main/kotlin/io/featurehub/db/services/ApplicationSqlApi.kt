@@ -370,7 +370,6 @@ class ApplicationSqlApi @Inject constructor(
         .exists()) {
         throw ApplicationApi.DuplicateFeatureException()
       }
-      bumpVersionOfAllEnvironmentsWithFeatureChanged(app.id)
     }
 
     // we re-write the key when we archive a flag, so if they update it, they can end up setting the flag name
@@ -411,15 +410,16 @@ class ApplicationSqlApi @Inject constructor(
       }
     }
 
+    if (changed) {
+      bumpVersionOfAllEnvironmentsWithFeatureChanged(app.id)
+    }
+
     try {
       updateApplicationFeature(appFeature, forceUpdateFeature)
     } catch (e: DuplicateKeyException) {
       throw ApplicationApi.DuplicateFeatureException()
     }
 
-    if (appFeature.whenArchived == null && changed) {
-      cacheSource.publishFeatureChange(appFeature, PublishAction.UPDATE)
-    }
     return getAppFeatures(app, opts)
   }
 

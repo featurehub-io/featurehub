@@ -1,6 +1,7 @@
 package io.featurehub.db.services
 
 import groovy.transform.CompileStatic
+import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbEnvironment
@@ -54,7 +55,7 @@ class FeatureGroupSpec extends Base3Spec {
   }
 
   @NotNull Feature createFeature(FeatureValueType type = FeatureValueType.BOOLEAN) {
-    def key = RandomStringUtils.randomAlphabetic(10)
+    def key = RandomStringUtils.secure().nextAlphabetic(10)
 
     return applicationSqlApi.createApplicationFeature(app1.id,
       new CreateFeature().name(key).description(key).key(key).valueType(type),
@@ -158,7 +159,24 @@ class FeatureGroupSpec extends Base3Spec {
       f2.value == 123.67
       f2.key == feature2.key
       f2.name == feature2.name
-    when:
+    when: "i delete the first feature"
+      applicationSqlApi.deleteApplicationFeature(app1.id, feature.key)
+    and: "i get the updated feature group"
+      getit = fgApi.getGroup(app1.id, created.id)
+    then:
+      getit.features.size() == 1
+      getit.features.find({ it.key == feature.key }) == null
+      getit.features.find({ it.key == feature2.key }) != null
+    when: "i undelete the first feature"
+      def deletedFeature = applicationSqlApi.getApplicationFeatureByKey(app1.id, feature.key, Opts.opts(FillOpts.Archived))
+      applicationSqlApi.updateApplicationFeature(app1.id, deletedFeature, true, Opts.empty())
+    and: "i get the feature group again"
+      getit = fgApi.getGroup(app1.id, created.id)
+    then:
+      getit.features.size() == 2
+      getit.features.find({ it.key == feature.key }) != null
+      getit.features.find({ it.key == feature2.key }) != null
+    when: "i update the feature group excluding the first feature (to remove it permanently)"
       def updated = fgApi.updateGroup(app1.id, superPerson, new FeatureGroupUpdate()
         .id(created.id)
         .version(getit.version)
@@ -167,7 +185,7 @@ class FeatureGroupSpec extends Base3Spec {
           new FeatureGroupUpdateFeature().id(feature2.id).value(121.67)]))
     and:
       getit = fgApi.getGroup(app1.id, created.id)
-    then:
+    then: "only the second feature remains"
       getit.features.size() == 1
       getit.features[0].value == 121.67
       getit.features[0].key == feature2.key

@@ -31,15 +31,6 @@ class FeatureGroupSqlApi @Inject constructor(
     archiveStrategy.environmentArchiveListener {
       archiveEnvironment(it)
     }
-    archiveStrategy.featureListener {
-      archiveFeature(it)
-    }
-  }
-
-  // we are just removing this from any feature groups that may have it,
-  // the feature itself is dealing with downstream publication.
-  private fun archiveFeature(appFeature: DbApplicationFeature) {
-    QDbFeatureGroupFeature().key.feature.eq(appFeature.id).delete()
   }
 
   fun archiveEnvironment(env: DbEnvironment) {
@@ -148,6 +139,7 @@ class FeatureGroupSqlApi @Inject constructor(
 
   private fun toFeatureGroup(featureGroup: DbFeatureGroup): FeatureGroup {
     val featureIds = featureGroup.features.map { it.feature.id }
+    log.info("feature ids are {}", featureIds)
 
     val features = QDbApplicationFeature().id.`in`(featureIds).whenArchived.isNull.findList().map { feature ->
       FeatureGroupFeature().id(feature.id)
@@ -155,6 +147,8 @@ class FeatureGroupSqlApi @Inject constructor(
         .name(feature.name)
         .locked(false)
     }.sortedBy { it.key }
+
+    log.info("found actual features matching are {}", features.size)
 
     QDbFeatureValue()
       .environment.id.eq(featureGroup.environment.id)
@@ -218,11 +212,13 @@ class FeatureGroupSqlApi @Inject constructor(
   }
 
   override fun getGroup(appId: UUID, fgId: UUID): FeatureGroup? {
+    log.info("<<<<< GET FEATURE GROUP >>>>")
     return QDbFeatureGroup()
       .id.eq(fgId)
       .environment.fetch(QDbEnvironment.Alias.id)
       .environment.parentApplication.id.eq(appId)
       .whenArchived.isNull
+      .features.feature.whenArchived.isNull
       .features.feature.fetch(QDbApplicationFeature.Alias.id)
       .findOne()?.let { toFeatureGroup(it) }
   }
@@ -251,6 +247,7 @@ class FeatureGroupSqlApi @Inject constructor(
       .whenArchived.isNull
       .setMaxRows(max)
       .setFirstRow(max * pageNum)
+      .features.feature.whenArchived.isNull
       .features.fetch() // grab the features
       .features.feature.fetch() // grab the app-features
 
@@ -290,7 +287,12 @@ class FeatureGroupSqlApi @Inject constructor(
     current: Person,
     update: FeatureGroupUpdate
   ): FeatureGroup? {
-    val group = QDbFeatureGroup().id.eq(update.id).environment.parentApplication.id.eq(appId).findOne() ?: return null
+    val group = QDbFeatureGroup()
+      .id.eq(update.id)
+      .environment.parentApplication.id.eq(appId)
+      .features.fetch()
+      .features.feature.whenArchived.isNull
+      .findOne() ?: return null
 
     if (group.version != update.version) {
       log.trace("Group {} is version {} and update is version {}, lock error", update.id, group.version, update.version)
@@ -364,8 +366,8 @@ class FeatureGroupSqlApi @Inject constructor(
 
     update.features?.let { newFeatList ->
       val newFeatures = newFeatList.toMutableList()
-      // go through the existing list
-      group.features.forEach { feat ->
+      // go through the existing list (ignoring the archived ones)
+      group.features.filter { it.feature.whenArchived == null  }.forEach { feat ->
         val found = newFeatures.find { it.id == feat.feature.id }
         if (found == null) { // existing feature not in the list
           updates.deletedFeatures.add(feat)
@@ -385,7 +387,7 @@ class FeatureGroupSqlApi @Inject constructor(
       // we should now have just the new features
       if (newFeatures.isNotEmpty()) {
         val actualNewFeatures =
-          QDbApplicationFeature().id.`in`(newFeatures.map { it.id }).parentApplication.id.eq(appId).findList()
+          QDbApplicationFeature().id.`in`(newFeatures.map { it.id }).whenArchived.isNull.parentApplication.id.eq(appId).findList()
             .toMutableList()
         updates.addedFeatures.addAll(actualNewFeatures.map { feat ->
           val found = newFeatures.find { it.id == feat.id }
