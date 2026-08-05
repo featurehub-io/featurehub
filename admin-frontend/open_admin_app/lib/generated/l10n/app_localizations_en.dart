@@ -9,6 +9,20 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get refreshCacheDescription =>
+      'Publish the entire feature, environment and service account cache to Dacha';
+
+  @override
+  String get refreshCacheTitle => 'Publish all data to cache';
+
+  @override
+  String get refreshConfigurationSubtitle =>
+      'Publishes all feature and related data to the cache. Used for system updates.';
+
+  @override
+  String get refreshCacheAction => 'Start refresh now';
+
+  @override
   String get signInTitle => 'Sign in to FeatureHub';
 
   @override

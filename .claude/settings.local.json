@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(flutter gen-l10n:*)",
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(find / -iname \"api_client.dart\" -path \"*mrapi*\")",
+      "Bash(find / -iname \"*.dart\" -path \"*mrapi*\")"
     ]
   }
 }
