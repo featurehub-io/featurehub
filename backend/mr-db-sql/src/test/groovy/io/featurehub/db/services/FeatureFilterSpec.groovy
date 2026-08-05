@@ -357,7 +357,7 @@ class FeatureFilterSpec extends Base3Spec {
       applicationSqlApi.updateApplicationFeature(app1.id, feature.key,
         new Feature().key(feature.key).id(feature.id).name(feature.name)
           .valueType(feature.valueType).version(feature.version)
-          .featureFilter([ff.id]),
+          .featureFilter([ff.id]), false,
         Opts.empty())
     then: "the filter is now attached"
       def dbFeature = Finder.findApplicationFeatureWithFilters(feature.id)
@@ -376,7 +376,7 @@ class FeatureFilterSpec extends Base3Spec {
       applicationSqlApi.updateApplicationFeature(app1.id, feature.key,
         new Feature().key(current.key).id(current.id).name(current.name)
           .valueType(current.valueType).version(current.version)
-          .featureFilter([ff2.id]),
+          .featureFilter([ff2.id]),false,
         Opts.empty())
     then:
       def dbFeature = Finder.findApplicationFeatureWithFilters(feature.id)
@@ -393,7 +393,7 @@ class FeatureFilterSpec extends Base3Spec {
       applicationSqlApi.updateApplicationFeature(app1.id, feature.key,
         new Feature().key(current.key).id(current.id).name(current.name)
           .valueType(current.valueType).version(current.version)
-          .featureFilter([]),
+          .featureFilter([]),false,
         Opts.empty())
     then:
       def dbFeature = Finder.findApplicationFeatureWithFilters(feature.id)

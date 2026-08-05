@@ -1635,11 +1635,48 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get featureDeleteContent =>
-      '您需要确保所有相关代码已清理，且能够在没有此功能标志的情况下正常运行！\n\n此操作无法撤销！';
+      '您需要确保所有相关代码已清理，且能够在没有此功能标志的情况下正常运行！\n\n此功能标志将被归档。您之后可以通过开启「显示已归档」来恢复它。';
 
   @override
   String featureDeleted(String name) {
     return '功能标志「$name」已删除！';
+  }
+
+  @override
+  String get showArchivedFeatures => '显示已归档';
+
+  @override
+  String get archivedFeatureBadge => '已归档';
+
+  @override
+  String archivedFeatureTooltip(String date) {
+    return '归档于 $date';
+  }
+
+  @override
+  String get restore => '恢复';
+
+  @override
+  String featureRestored(String name) {
+    return '功能标志「$name」已恢复！';
+  }
+
+  @override
+  String featureRestoreError(String name) {
+    return '无法恢复功能标志 $name';
+  }
+
+  @override
+  String featureRestoreNameCollision(String name) {
+    return '已存在名为「$name」的功能标志。请先重命名或归档该功能标志，然后再恢复此功能标志。';
+  }
+
+  @override
+  String get featureRestoreContent => '此操作将恢复已归档的功能标志，并使其在所有环境中重新生效。';
+
+  @override
+  String featureRestoreTitle(String name) {
+    return '恢复功能标志「$name」？';
   }
 
   @override

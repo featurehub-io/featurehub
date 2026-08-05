@@ -41,9 +41,21 @@ image::fh-metadata-edit.png[Feature Metadata, 600]
 
 == Deleting and retiring a feature
 
-When feature flag is not needed any longer in your application, and you are ready to remove it, you can first "retire" this feature in a single environment to test how your application behaves. This means that the feature won't be visible by the SDKs, imitating the "deleted" state. You can always "un-retire" a feature if you change your mind as this operation is reversible. Once you retire feature values across all the environments and test that your application behaves as expected, you can delete your entire feature. Deleting a feature means it is completely deleted from the system for all environments. This operation is not reversible. To retire a feature you will need environment specific "CHANGE_VALUE" permission. To delete a feature, you require an application specific permission to create, edit and delete features.
+When feature flag is not needed any longer in your application, and you are ready to remove it, you can first "retire" this feature in a single environment to test how your application behaves. This means that the feature won't be visible by the SDKs, imitating the "deleted" state. You can always "un-retire" a feature if you change your mind as this operation is reversible. Once you retire feature values across all the environments and test that your application behaves as expected, you can delete your entire feature. Deleting a feature removes it from all environments so it is no longer delivered to the SDKs. Rather than being permanently erased, a deleted feature is _archived_, so you can restore it later if you change your mind (see <<Restoring an archived (deleted) feature>> below). To retire a feature you will need environment specific "CHANGE_VALUE" permission. To delete a feature, you require an application specific permission to create, edit and delete features.
 
 image::fh_retire_feature.png[Retire Feature, 1500]
+
+=== Restoring an archived (deleted) feature
+
+Deleting a feature does not erase it permanently — it _archives_ the feature. Archived features are hidden from the Features console by default and are not delivered to the SDKs, so from your application's point of view a deleted feature behaves as if it no longer exists.
+
+To view archived features, turn on the *Show archived* checkbox next to the search box on the Features console. Archived features are shown greyed out with a red *Archived* badge that indicates when they were archived. Their values are read-only while archived.
+
+To restore (un-delete) a feature, click the green *Restore* button on the archived feature's row and confirm. This clears the archived state and makes the feature active again across all environments, re-publishing it to the SDKs. Restoring a feature requires the same application specific permission to create, edit and delete features that deleting does.
+
+image::fh_restore_feature.png[Restore Feature, 1500]
+
+NOTE: You cannot restore a feature if another feature with the same key already exists in the application (for example, if the key was reused after the original was deleted). Rename or archive the conflicting feature first, then restore.
 
 
 == Locking a feature

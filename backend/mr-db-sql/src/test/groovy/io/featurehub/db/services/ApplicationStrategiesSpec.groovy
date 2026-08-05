@@ -56,7 +56,7 @@ class ApplicationStrategiesSpec extends Base3Spec {
   }
 
   FeatureValue associateStrategyWithFeatureValue(String key, ApplicationRolloutStrategy strategy, Object val) {
-    def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+    def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key, Opts.empty())
 
     if (fv == null) {
       fv = new FeatureValue().key(key).rolloutStrategyInstances([])

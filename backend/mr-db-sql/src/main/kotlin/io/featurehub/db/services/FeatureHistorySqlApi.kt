@@ -101,7 +101,7 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
                .name(pairedStrategy.name)
 
              if (pairedStrategy.whenArchived != null) {
-               rs.name(pairedStrategy.name.split(Conversions.archivePrefix)[0])
+               rs.name(pairedStrategy.name.split(Conversions.archiveSuffix)[0])
              }
 
              it.rolloutStrategies.add(rs)

@@ -1700,11 +1700,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get featureDeleteContent =>
-      'You need to make sure all your code is cleaned up and can deal without this feature!\n\nThis cannot be undone!';
+      'You need to make sure all your code is cleaned up and can deal without this feature!\n\nThe feature will be archived. You can restore it later by turning on \'Show archived\'.';
 
   @override
   String featureDeleted(String name) {
     return 'Feature \'$name\' deleted!';
+  }
+
+  @override
+  String get showArchivedFeatures => 'Show archived';
+
+  @override
+  String get archivedFeatureBadge => 'Archived';
+
+  @override
+  String archivedFeatureTooltip(String date) {
+    return 'Archived on $date';
+  }
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String featureRestored(String name) {
+    return 'Feature \'$name\' restored!';
+  }
+
+  @override
+  String featureRestoreError(String name) {
+    return 'Couldn\'t restore feature $name';
+  }
+
+  @override
+  String featureRestoreNameCollision(String name) {
+    return 'A feature named \'$name\' already exists. Rename or archive it before restoring this one.';
+  }
+
+  @override
+  String get featureRestoreContent =>
+      'This will restore the archived feature and make it active again across all environments.';
+
+  @override
+  String featureRestoreTitle(String name) {
+    return 'Restore feature \'$name\'?';
   }
 
   @override

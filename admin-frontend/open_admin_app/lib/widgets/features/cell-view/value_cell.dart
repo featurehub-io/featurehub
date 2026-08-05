@@ -54,21 +54,25 @@ class _ValueContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
     if (fv != null) {
+      // Archived features are read-only; restore them before editing values.
+      final isArchived = feature.whenArchived != null;
       return InkWell(
-        onTap: () {
-          SideSheet.right(
-              sheetColor: Theme.of(context).canvasColor,
-              body: BlocProvider<EditingFeatureValueBloc>.builder(
-                  creator: (c, b) =>
-                      bloc.perFeatureStateTrackingBloc(feature, fv!, efv),
-                  builder: (ctx, efvBloc) => EditFeatureValueWidget(
-                        bloc: efvBloc,
-                      )),
-              width: MediaQuery.of(context).size.width > 800
-                  ? MediaQuery.of(context).size.width * 0.7
-                  : MediaQuery.of(context).size.width,
-              context: context);
-        },
+        onTap: isArchived
+            ? null
+            : () {
+                SideSheet.right(
+                    sheetColor: Theme.of(context).canvasColor,
+                    body: BlocProvider<EditingFeatureValueBloc>.builder(
+                        creator: (c, b) =>
+                            bloc.perFeatureStateTrackingBloc(feature, fv!, efv),
+                        builder: (ctx, efvBloc) => EditFeatureValueWidget(
+                              bloc: efvBloc,
+                            )),
+                    width: MediaQuery.of(context).size.width > 800
+                        ? MediaQuery.of(context).size.width * 0.7
+                        : MediaQuery.of(context).size.width,
+                    context: context);
+              },
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -292,18 +296,11 @@ class _ValueCard extends StatelessWidget {
             feature.valueType == FeatureValueType.BOOLEAN
                 ? Flexible(
                     fit: FlexFit.tight,
-                    child: FlagOnOffColoredIndicator(
-                        on: rolloutStrategy != null
-                            ? rolloutStrategy!.value
-                            : groupStrategy != null
-                                ? groupStrategy!.value
-                                : applicationStrategy != null
-                                    ? applicationStrategy!.value
-                                    : fv.valueBoolean),
+                    child: FlagOnOffColoredIndicator(on: _findBooleanValue()),
                   )
                 : Flexible(
                     fit: FlexFit.tight,
-                    child: Text(displayValue.isEmpty ? 'not set' : displayValue,
+                    child: Text(displayValue.isEmpty ? l10n.notSet : displayValue,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: displayValue.isEmpty
@@ -317,6 +314,14 @@ class _ValueCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// boolean features are never null
+  bool _findBooleanValue() {
+    if (rolloutStrategy != null) return rolloutStrategy!.value as bool;
+    if (groupStrategy != null) return groupStrategy!.value as bool;
+    if (applicationStrategy != null) return applicationStrategy!.value as bool;
+    return fv.value;
   }
 
   String _findDisplayValue() {

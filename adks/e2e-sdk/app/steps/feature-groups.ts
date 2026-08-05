@@ -132,7 +132,7 @@ function extractStrategy(table: DataTable): GroupRolloutStrategy {
     if (!strategies.find(s => s.name === row['name'])) {
       strategies.push(new GroupRolloutStrategy({
         name: row["name"],
-        percentage: row['percentage'].trim() === '-' ? null : parseInt(row['percentage'].trim()),
+        percentage: row['percentage'].trim() === '_' ? undefined : parseInt(row['percentage'].trim()),
         attributes: [],
       }));
     }
@@ -162,6 +162,7 @@ When("I update the strategy in the feature group", async function (table: DataTa
   await getGroupFromServer(world);
 
   const update = new FeatureGroupUpdate({
+    id: world.featureGroup.id,
     version: world.featureGroup.version,
     strategies: [extractStrategy(table)]
   });
@@ -181,12 +182,25 @@ async function getGroupFromServer(world: SdkWorld) {
   world.featureGroup = getData.data;
 }
 
+When("the feature group only has the keys {string}", async function (keys: string) {
+  const featureKeys = keys.split(",").map(k => k.trim()).filter(k => k.length > 0);
+  const world = this as SdkWorld;
+
+  await getGroupFromServer(world);
+
+  expect(world.featureGroup.features.length).to.eq(featureKeys.length);
+  for(const key of featureKeys) {
+    expect(world.featureGroup.features.find(k => k.key === key)).to.not.be.undefined;
+  }
+});
+
 When('I update the values of the feature group to', async function (table: DataTable) {
   const world = this as SdkWorld;
 
   await getGroupFromServer(world);
 
   const update = new FeatureGroupUpdate({
+    id: world.featureGroup.id,
     version: world.featureGroup.version,
     features: (await translateFeatureValueTable(world, table))
   });

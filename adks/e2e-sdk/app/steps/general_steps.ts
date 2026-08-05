@@ -1,5 +1,5 @@
 import { Given, Then, When } from '@cucumber/cucumber';
-import { FeatureValueType, RolloutStrategy, RolloutStrategyAttribute } from '../apis/mr-service';
+import {Feature, FeatureValueType, RolloutStrategy, RolloutStrategyAttribute} from '../apis/mr-service';
 import { ClientContext } from 'featurehub-javascript-node-sdk';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
 import * as fs from 'fs';
@@ -100,3 +100,44 @@ Then(/^I delete the feature$/, async function () {
 
   expect(features).to.not.be.undefined;
 });
+
+When('I delete the feature with the key {string}', async function(key: string) {
+  const world = this as SdkWorld;
+  const result = await world.featureApi.deleteFeatureForApplication(world.application.id, key);
+  expect(result.status).to.eq(200);
+  expect(result.data.find(f => f.key === key)).to.be.undefined;
+});
+
+async function undeleteFeature(world: SdkWorld, key: string) {
+  const f = await world.featureApi.getFeatureByKey(world.application.id, key, false, false, true);
+  expect(f.status).to.eq(200);
+  const feat = f.data;
+  expect(feat.whenArchived).to.not.be.undefined;
+
+  // i have to specify the feature ID so it can find it and rename the feature to the key specified
+  const result = await world.featureApi.updateFeatureForApplicationOnFeature(world.application.id, new Feature({
+    id: feat.id,
+    key: feat.key,
+    version: feat.version,
+    name: feat.name,
+    valueType: feat.valueType
+  }), false, true, false, true);
+
+  const foundFeature = result.data.find(fe => fe.key == feat.key);
+  expect(foundFeature.whenArchived).to.be.undefined;
+  world.feature = foundFeature;
+}
+
+Then('I undelete the feature', async function() {
+  const world = this as SdkWorld;
+
+  await undeleteFeature(world, world.feature.key);
+});
+
+Then('I undelete the feature {string}', async function (key: string) {
+  const world = this as SdkWorld;
+
+  await undeleteFeature(world, key);
+});
+
+

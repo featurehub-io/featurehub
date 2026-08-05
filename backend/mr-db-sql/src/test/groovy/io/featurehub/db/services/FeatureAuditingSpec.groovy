@@ -98,7 +98,7 @@ class FeatureAuditingSpec extends Base2Spec {
     and: "i set the value of the feature"
       def fv1 = featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key,
         new FeatureValue().locked(false).valueString("fred").retired(false), perms)
-      def fv2 = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
+      def fv2 = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key, Opts.empty())
     when: "i update the value of the feature and update the rollout strategies"
       def fvUpdated = featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key,
         fv1.valueString("mary").retired(false).rolloutStrategies([
@@ -123,16 +123,16 @@ class FeatureAuditingSpec extends Base2Spec {
       def feature = applicationSqlApi.createApplicationLevelFeature(app.id,
         new CreateFeature().name("bool-feature").description("bool-feature").key("FBOOL").valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     and: "i get the feature value"
-      def fv = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
-      def fv2 = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
+      def fv = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key, Opts.empty())
+      def fv2 = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key, Opts.empty())
     when: "i update the  feature"
       fv.valueBoolean( false).locked(false)
       def firstUpdate = featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key, fv, perms)
     and: "i update the historical record but don't change anything, which should have it detect there are no changed and ignore it"
       featureSqlApi.updateFeatureValueForEnvironment(env.id, feature.key, fv2, perms)
     then:
-      !featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key).valueBoolean
-      featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key).version == firstUpdate.version
+      !featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key, Opts.empty()).valueBoolean
+      featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key, Opts.empty()).version == firstUpdate.version
   }
 
   def "when an update comes in from the test sdk, it will process and be stored in the historical database"() {
@@ -148,7 +148,7 @@ class FeatureAuditingSpec extends Base2Spec {
         return new FeatureValue().retired(false).locked(false).valueBoolean(true)
       })
     and:
-      def value = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key)
+      def value = featureSqlApi.getFeatureValueForEnvironment(env.id, feature.key, Opts.empty())
     then: "the feature has updated"
       value.valueBoolean
       new FeatureHistorySqlApi().history(env.id, feature.id, value.id).size() == 2

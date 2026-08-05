@@ -18,7 +18,7 @@ interface FeatureApi {
   )
   fun updateAllFeatureValuesByApplicationForKey(
     id: UUID, key: String, featureValue: List<FeatureValue>,
-    from: Person
+    from: Person, opts: Opts = Opts.empty()
   )
 
   fun findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
@@ -30,7 +30,8 @@ interface FeatureApi {
     featureValueTypes: List<FeatureValueType>?,
     sortOrder: SortOrder?,
     environmentIds: List<UUID>?,
-    featureFilter: List<UUID>?
+    featureFilter: List<UUID>?,
+    opts: Opts = Opts.empty()
   ): ApplicationFeatureValues?
 
   class NoAppropriateRole : Exception()
@@ -65,8 +66,10 @@ interface FeatureApi {
     person: PersonFeaturePermission
   ): FeatureValue?
 
-  fun getFeatureValueForEnvironment(eid: UUID, key: String): FeatureValue?
-  fun getAllFeatureValuesForEnvironment(eid: UUID, includeFeatures: Boolean): EnvironmentFeaturesResult?
+  fun getFeatureValueForEnvironment(eid: UUID, key: String,
+                                    opts: Opts = Opts.empty()): FeatureValue?
+  fun getAllFeatureValuesForEnvironment(eid: UUID, includeFeatures: Boolean,
+                                        opts: Opts = Opts.empty()): EnvironmentFeaturesResult?
 
   @Throws(
     OptimisticLockingException::class,
@@ -76,13 +79,15 @@ interface FeatureApi {
   )
   fun updateAllFeatureValuesForEnvironment(
     eid: UUID, featureValues: List<FeatureValue>,
-    requireRoleCheck: PersonFeaturePermission
+    requireRoleCheck: PersonFeaturePermission,
+    opts: Opts = Opts.empty()
   ): List<FeatureValue>
 
   fun getFeatureValuesForApplicationForKeyForPerson(
     appId: UUID,
     key: String,
-    person: Person
+    person: Person,
+    opts: Opts = Opts.empty()
   ): List<FeatureEnvironment>?
 
   /**

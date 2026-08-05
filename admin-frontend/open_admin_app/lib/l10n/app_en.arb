@@ -1689,11 +1689,38 @@
   "featureThingLabel": "feature '{name}'",
   "@featureThingLabel": { "description": "The 'thing' label for the delete dialog for a feature", "placeholders": { "name": { "type": "String" } } },
 
-  "featureDeleteContent": "You need to make sure all your code is cleaned up and can deal without this feature!\n\nThis cannot be undone!",
+  "featureDeleteContent": "You need to make sure all your code is cleaned up and can deal without this feature!\n\nThe feature will be archived. You can restore it later by turning on 'Show archived'.",
   "@featureDeleteContent": { "description": "Body text of the delete-feature confirmation dialog" },
 
   "featureDeleted": "Feature '{name}' deleted!",
   "@featureDeleted": { "description": "Snackbar after deleting a feature", "placeholders": { "name": { "type": "String" } } },
+
+  "showArchivedFeatures": "Show archived",
+  "@showArchivedFeatures": { "description": "Toolbar toggle to include archived features in the features table" },
+
+  "archivedFeatureBadge": "Archived",
+  "@archivedFeatureBadge": { "description": "Badge shown next to a feature that has been archived" },
+
+  "archivedFeatureTooltip": "Archived on {date}",
+  "@archivedFeatureTooltip": { "description": "Tooltip on the archived badge showing when the feature was archived", "placeholders": { "date": { "type": "String" } } },
+
+  "restore": "Restore",
+  "@restore": { "description": "Menu action to restore (unarchive) a feature" },
+
+  "featureRestored": "Feature '{name}' restored!",
+  "@featureRestored": { "description": "Snackbar after restoring an archived feature", "placeholders": { "name": { "type": "String" } } },
+
+  "featureRestoreError": "Couldn't restore feature {name}",
+  "@featureRestoreError": { "description": "Error when restoring a feature fails", "placeholders": { "name": { "type": "String" } } },
+
+  "featureRestoreNameCollision": "A feature named '{name}' already exists. Rename or archive it before restoring this one.",
+  "@featureRestoreNameCollision": { "description": "Error when restoring a feature fails because a live feature with the same name exists", "placeholders": { "name": { "type": "String" } } },
+
+  "featureRestoreContent": "This will restore the archived feature and make it active again across all environments.",
+  "@featureRestoreContent": { "description": "Body text of the restore-feature confirmation dialog" },
+
+  "featureRestoreTitle": "Restore feature '{name}'?",
+  "@featureRestoreTitle": { "description": "Title of the restore-feature confirmation dialog", "placeholders": { "name": { "type": "String" } } },
 
   "noPermissionsForOperation": "You don't have permissions to perform this operation",
   "@noPermissionsForOperation": { "description": "Error when the user lacks permission for an operation" },

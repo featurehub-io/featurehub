@@ -273,7 +273,7 @@ class ApplicationRolloutStrategySqlApi @Inject constructor(
       val originalRolloutStrategy = InternalFeatureApi.toRolloutStrategy(strategy)
 
       strategy.whenArchived = LocalDateTime.now()
-      strategy.name = (strategy.name + Conversions.archivePrefix + isoDate.format(strategy.whenArchived)).take(150)
+      strategy.name = (strategy.name + Conversions.archiveSuffix + isoDate.format(strategy.whenArchived)).take(150)
       strategy.whoChanged = p
       strategy.save()
 

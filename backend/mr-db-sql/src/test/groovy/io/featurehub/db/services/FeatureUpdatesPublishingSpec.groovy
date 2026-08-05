@@ -47,7 +47,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     rsValidator.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     rsValidator.validateStrategies(_, _, _, _) >> new RolloutStrategyValidator.ValidationFailure()
     ThreadLocalConfigurationSource.createContext(
-      ['auditing.enable': 'true','messaging.publisher.thread-pool': "1"])
+      ['auditing.enable': 'true', 'messaging.publisher.thread-pool': "1"])
 
     rsv = Mock()
     rsv.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()
@@ -78,7 +78,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
     env = environmentSqlApi.getEnvironment(app.id, "dev")
 
     if (env == null) {
-      env = environmentSqlApi.create(new  CreateEnvironment().name("dev").description("dev"), app.id, superPerson)
+      env = environmentSqlApi.create(new CreateEnvironment().name("dev").description("dev"), app.id, superPerson)
     }
     envIdApp1 = env.id
 
@@ -90,97 +90,97 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
 
   def "feature updates are published when i create the feature value"() {
     given: "i have a feature"
-    String featureKey = "FEATURE_FV1"
-    applicationSqlApi.createApplicationFeature(appId, new CreateFeature()
-      .name("x").description("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
-    def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
+      String featureKey = "FEATURE_FV1"
+      applicationSqlApi.createApplicationFeature(appId, new CreateFeature()
+        .name("x").description("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
 
     when: "i set the feature value"
-    def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey)
+      def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey, Opts.empty())
 
-    // it already exists, so we have  to unlock it
-    featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.valueBoolean(true).locked(false), pers)
+      // it already exists, so we have  to unlock it
+      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.valueBoolean(true).locked(false), pers)
 
     then: "feature update is published"
 
-    1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
-      with(param) {
-        !lockUpdate.updated
-        lockUpdate.previous
-        lockUpdate.hasChanged
-        defaultValueUpdate.previous == "false"
-        defaultValueUpdate.updated == "true"
-        defaultValueUpdate.hasChanged
-        !retiredUpdate.hasChanged
-        !strategyUpdates.hasChanged
-      }
-    }, org.id)
-    1 * cacheSource.publishFeatureChange(_)
+      1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
+        with(param) {
+          !lockUpdate.updated
+          lockUpdate.previous
+          lockUpdate.hasChanged
+          defaultValueUpdate.previous == "false"
+          defaultValueUpdate.updated == "true"
+          defaultValueUpdate.hasChanged
+          !retiredUpdate.hasChanged
+          !strategyUpdates.hasChanged
+        }
+      }, org.id)
+      1 * cacheSource.publishFeatureChange(_)
 
   }
 
 
   def "feature updates are published when i update the feature value"() {
     given: "i have a feature"
-    String featureKey = "FEATURE_FV2"
-    def features = applicationSqlApi.createApplicationFeature(appId,
-      new CreateFeature().name("x").description("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
-    def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
+      String featureKey = "FEATURE_FV2"
+      def features = applicationSqlApi.createApplicationFeature(appId,
+        new CreateFeature().name("x").description("x").key(featureKey).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
 
     when: "i unlock the feature"
-    def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey)
-    // it already exists, so we have  to unlock it
-    f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.locked(false), pers)
+      def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey, Opts.empty())
+      // it already exists, so we have  to unlock it
+      f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.locked(false), pers)
 
     then: "feature update is published"
-    1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
-      with(param) {
-        !lockUpdate.updated
-        lockUpdate.previous
-        lockUpdate.hasChanged
-        defaultValueUpdate.previous == null
-        defaultValueUpdate.updated == null
-        !defaultValueUpdate.hasChanged
-        !retiredUpdate.hasChanged
-        !strategyUpdates.hasChanged
-      }
-    }, org.id)
+      1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
+        with(param) {
+          !lockUpdate.updated
+          lockUpdate.previous
+          lockUpdate.hasChanged
+          defaultValueUpdate.previous == null
+          defaultValueUpdate.updated == null
+          !defaultValueUpdate.hasChanged
+          !retiredUpdate.hasChanged
+          !strategyUpdates.hasChanged
+        }
+      }, org.id)
 
     when: "i set the feature value "
-    featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.valueBoolean(true).locked(true), pers)
+      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.valueBoolean(true).locked(true), pers)
 
     then: "feature update is published"
-    1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
-      with(param) {
-        lockUpdate.updated
-        !lockUpdate.previous
-        lockUpdate.hasChanged
-        defaultValueUpdate.previous == "false"
-        defaultValueUpdate.updated
-        defaultValueUpdate.hasChanged
-        !retiredUpdate.hasChanged
-        !strategyUpdates.hasChanged
-      }
-    }, org.id)
+      1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
+        with(param) {
+          lockUpdate.updated
+          !lockUpdate.previous
+          lockUpdate.hasChanged
+          defaultValueUpdate.previous == "false"
+          defaultValueUpdate.updated
+          defaultValueUpdate.hasChanged
+          !retiredUpdate.hasChanged
+          !strategyUpdates.hasChanged
+        }
+      }, org.id)
     when: "i update the feature value"
-    def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey)
-    fv.valueBoolean(false)
-    fv.locked(false)
-    featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, fv, pers)
+      def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey, Opts.empty())
+      fv.valueBoolean(false)
+      fv.locked(false)
+      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, fv, pers)
 
     then: "feature update is published"
-    1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
-      with(param) {
-        !lockUpdate.updated
-        lockUpdate.previous
-        lockUpdate.hasChanged
-        defaultValueUpdate.previous
-        defaultValueUpdate.updated == "false"
-        defaultValueUpdate.hasChanged
-        !retiredUpdate.hasChanged
-        !strategyUpdates.hasChanged
-      }
-    }, org.id)
+      1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
+        with(param) {
+          !lockUpdate.updated
+          lockUpdate.previous
+          lockUpdate.hasChanged
+          defaultValueUpdate.previous
+          defaultValueUpdate.updated == "false"
+          defaultValueUpdate.hasChanged
+          !retiredUpdate.hasChanged
+          !strategyUpdates.hasChanged
+        }
+      }, org.id)
   }
 
   def "feature updates are published when i add rollout strategies"() {
@@ -201,43 +201,43 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
       ])
       def rolloutStrategyUpdate = new RolloutStrategyUpdate("added", null, rolloutStrategy)
     when: "i unlock the feature"
-      def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey)
+      def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey, Opts.empty())
       // it already exists, so we have  to unlock it
       f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.locked(false), pers)
 
     then: "feature update is published"
-    1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
-      with(param) {
-        !lockUpdate.updated
-        lockUpdate.previous
-        lockUpdate.hasChanged
-        defaultValueUpdate.previous == null
-        defaultValueUpdate.updated == null
-        !defaultValueUpdate.hasChanged
-        !retiredUpdate.hasChanged
-        !strategyUpdates.hasChanged
-      }
-    }, org.id)
+      1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
+        with(param) {
+          !lockUpdate.updated
+          lockUpdate.previous
+          lockUpdate.hasChanged
+          defaultValueUpdate.previous == null
+          defaultValueUpdate.updated == null
+          !defaultValueUpdate.hasChanged
+          !retiredUpdate.hasChanged
+          !strategyUpdates.hasChanged
+        }
+      }, org.id)
     when: "i add new rollout strategy"
-    def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey)
+      def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey, Opts.empty())
 
-    fv.locked(false)
-    fv.rolloutStrategies([rolloutStrategy])
-    featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, fv, perms)
+      fv.locked(false)
+      fv.rolloutStrategies([rolloutStrategy])
+      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, fv, perms)
 
     then: "feature update is published"
-    1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
-      with(param) {
-        !lockUpdate.updated
-        !lockUpdate.previous
-        !lockUpdate.hasChanged
-        defaultValueUpdate.previous == null
-        defaultValueUpdate.updated == null
-        !defaultValueUpdate.hasChanged
-        !retiredUpdate.hasChanged
-        strategyUpdates.hasChanged
-      }
-      param.strategyUpdates.updated[0]  == rolloutStrategyUpdate
-    }, org.id)
+      1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
+        with(param) {
+          !lockUpdate.updated
+          !lockUpdate.previous
+          !lockUpdate.hasChanged
+          defaultValueUpdate.previous == null
+          defaultValueUpdate.updated == null
+          !defaultValueUpdate.hasChanged
+          !retiredUpdate.hasChanged
+          strategyUpdates.hasChanged
+        }
+        param.strategyUpdates.updated[0] == rolloutStrategyUpdate
+      }, org.id)
   }
 }

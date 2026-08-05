@@ -26,10 +26,10 @@ interface ApplicationApi {
   fun createApplicationFeature(appId: UUID, createFeature: CreateFeature, person: Person, opts: Opts): List<Feature>
 
   @Throws(DuplicateFeatureException::class, OptimisticLockingException::class)
-  fun updateApplicationFeature(appId: UUID, key: String, feature: Feature, opts: Opts): List<Feature>?
+  fun updateApplicationFeature(appId: UUID, key: String, feature: Feature, unarchiveFeature: Boolean, opts: Opts): List<Feature>?
 
   @Throws(DuplicateFeatureException::class, OptimisticLockingException::class)
-  fun updateApplicationFeature(appId: UUID, feature: Feature, opts: Opts): List<Feature>?
+  fun updateApplicationFeature(appId: UUID, feature: Feature, unarchiveFeature: Boolean, opts: Opts): List<Feature>?
 
   fun getApplicationFeatures(appId: UUID, opts: Opts): List<Feature>
   fun deleteApplicationFeature(appId: UUID, key: String): List<Feature>?
