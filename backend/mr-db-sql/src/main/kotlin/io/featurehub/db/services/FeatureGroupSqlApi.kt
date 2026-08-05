@@ -139,16 +139,16 @@ class FeatureGroupSqlApi @Inject constructor(
 
   private fun toFeatureGroup(featureGroup: DbFeatureGroup): FeatureGroup {
     val featureIds = featureGroup.features.map { it.feature.id }
-    log.info("feature ids are {}", featureIds)
 
-    val features = QDbApplicationFeature().id.`in`(featureIds).whenArchived.isNull.findList().map { feature ->
+    val features = QDbApplicationFeature()
+      .id.`in`(featureIds)
+      .whenArchived.isNull
+      .findList().map { feature ->
       FeatureGroupFeature().id(feature.id)
         .key(feature.key).type(feature.valueType)
         .name(feature.name)
         .locked(false)
     }.sortedBy { it.key }
-
-    log.info("found actual features matching are {}", features.size)
 
     QDbFeatureValue()
       .environment.id.eq(featureGroup.environment.id)
@@ -212,13 +212,11 @@ class FeatureGroupSqlApi @Inject constructor(
   }
 
   override fun getGroup(appId: UUID, fgId: UUID): FeatureGroup? {
-    log.info("<<<<< GET FEATURE GROUP >>>>")
     return QDbFeatureGroup()
       .id.eq(fgId)
       .environment.fetch(QDbEnvironment.Alias.id)
       .environment.parentApplication.id.eq(appId)
       .whenArchived.isNull
-      .features.feature.whenArchived.isNull
       .features.feature.fetch(QDbApplicationFeature.Alias.id)
       .findOne()?.let { toFeatureGroup(it) }
   }
