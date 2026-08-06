@@ -268,14 +268,15 @@ class ManagementRepositoryClientBloc implements Bloc {
                       () => "x-fh-reqid=${requestIdCounter++}");
               return handler.next(options);
             },
-            onError: (DioException err, ErrorInterceptorHandler handler) {
+            onError: (DioException err, ErrorInterceptorHandler handler) async {
               if (err.response != null) {
                 final response = err.response!;
+                final message = (response.data is ResponseBody) ? (await decodeBodyBytes((response.data as ResponseBody).stream)) : null;
                 final headers = response.headers;
                 final retryAfter = headers.value('retry-after');
-                _log.info("status is ${response.statusCode} - retry after is ${retryAfter}");
+
                 if (response.statusCode == 503 && retryAfter != null) {
-                  _activeMaintenanceSource.add(MaintenanceInfo(message: response.statusMessage, end: DateTime.tryParse(retryAfter)));
+                  _activeMaintenanceSource.add(MaintenanceInfo(message: message, end: DateTime.tryParse(retryAfter)));
                   handler.resolve(response);
                   return;
                 }
@@ -284,8 +285,9 @@ class ManagementRepositoryClientBloc implements Bloc {
               }
             },
             onResponse: (Response response, ResponseInterceptorHandler handler) {
+              // it is seeded null, so we just need to know if it isn't already null -
               // clear it in case it is left over, it will be added again below if it is active
-              if (_activeMaintenanceSource.hasValue) {
+              if (_activeMaintenanceSource.valueOrNull != null) {
                 _activeMaintenanceSource.add(null);
               }
               // if we get a 503 with a retry-after set, we are in active maintenance mode and should overlay the UI
@@ -565,7 +567,7 @@ class ManagementRepositoryClientBloc implements Bloc {
       {String? messageTitle,
       bool showDetails = true,
       String messageBody = ''}) async {
-  if (e is ApiException && e.code == 500 && _activeMaintenanceSource.hasValue) {
+  if (e is ApiException && e.code == 500 && _activeMaintenanceSource.value != null) {
     routeSlot(RouteSlot.maintenance);
     return;
   }

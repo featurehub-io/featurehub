@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logging/logging.dart' show Logger;
 import 'package:open_admin_app/api/client_api.dart';
 
 import 'maintenance_info.dart';
+
+final _logger = Logger("MaintenanceModeWidget");
 
 class MaintenanceModeWidget extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
@@ -42,6 +45,7 @@ class MaintenanceModeWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   StreamBuilder(stream: mrBloc.activeMaintenanceStream, builder: (BuildContext context, AsyncSnapshot<MaintenanceInfo?> snapshot) {
+
                     if (!snapshot.hasData) return SizedBox.shrink();
                     final message =
                     (snapshot.data!.message != null && snapshot.data!.message!.isNotEmpty)

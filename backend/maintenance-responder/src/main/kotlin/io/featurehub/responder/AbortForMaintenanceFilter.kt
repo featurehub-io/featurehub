@@ -25,9 +25,11 @@ class AbortForMaintenanceFilter : ContainerRequestFilter {
 
   override fun filter(requestEvent: ContainerRequestContext) {
     if (requestEvent.uriInfo.path != null && interceptPrefixes.any({ requestEvent.uriInfo.path.startsWith(it) })) {
-      log.info("Intercepting request ${requestEvent.uriInfo.path}")
       requestEvent.abortWith(
-        Response.status(503, MaintenanceNotificationFilter.maintenanceMessage).header("retry-after",
+        Response.status(503)
+          .entity(MaintenanceNotificationFilter.maintenanceMessage)
+          .header("content-type", "text/plain")
+          .header("retry-after",
           MaintenanceNotificationFilter.end).build())
     }
   }

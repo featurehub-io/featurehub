@@ -9,7 +9,7 @@
 
   <description>
     The Maintenance Responder that replaces MR when the service is down and responds with maintenance UI. We bundle the UI for MR with
-    this application, but it only responds to API requests with
+    this application, but it only responds to API requests with a 503.
   </description>
 
   <url>https://featurehub.io</url>
