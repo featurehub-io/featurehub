@@ -16,8 +16,7 @@ import org.slf4j.LoggerFactory
 @Priority(2000)
 class AbortForMaintenanceFilter : ContainerRequestFilter {
   companion object {
-    val log: Logger = LoggerFactory.getLogger(AbortForMaintenanceFilter::class.java)
-    val interceptPrefixes = FallbackPropertyConfig.getConfig("interceptPrefixes", "mr-api")
+    val interceptPrefixes = FallbackPropertyConfig.getConfig("interceptPrefixes", "mr-api,saml,oauth")
       .split(",")
       .map { it.trim() }
       .filter { it.isNotBlank() }
@@ -30,7 +29,7 @@ class AbortForMaintenanceFilter : ContainerRequestFilter {
           .entity(MaintenanceNotificationFilter.maintenanceMessage)
           .header("content-type", "text/plain")
           .header("retry-after",
-          MaintenanceNotificationFilter.end).build())
+          MaintenanceNotificationFilter.endAsRfc1123).build())
     }
   }
 }
