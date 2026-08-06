@@ -2,6 +2,7 @@ package io.featurehub.rest
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
+import jakarta.annotation.Priority
 import jakarta.ws.rs.container.*
 import jakarta.ws.rs.core.Response
 import jakarta.ws.rs.ext.Provider
@@ -11,6 +12,7 @@ import kotlin.collections.HashSet
 
 @Provider
 @PreMatching
+@Priority(1000)
 class CorsFilter : ContainerRequestFilter, ContainerResponseFilter {
   @ConfigKey("jersey.cors.headers")
   var allowedHeaders: List<String> = listOf()
@@ -32,8 +34,11 @@ class CorsFilter : ContainerRequestFilter, ContainerResponseFilter {
 //    headers = java.lang.String.join(",", actualHeaders)
     headers = actualHeaders.joinToString(separator = ",")
 
+    // if maintenance mode is being shown, we need to tell folks we are feeding out these extra headers as well, so the UI is allowed
+    // to access them
+    val maintenanceHeaders = if (MaintenanceNotificationFilter.wireFilterCheck()) MaintenanceNotificationFilter.corsHeaders else emptyList()
     val actualExposeHeaders: Set<String> = HashSet(configExposeHeaders.map { it.lowercase() })
-      .plus("etag").plus("cache-control")
+      .plus("etag").plus("cache-control").plus(maintenanceHeaders).plus("retry-after")
 
     exposeHeaders = actualExposeHeaders.joinToString(separator = ",")
   }

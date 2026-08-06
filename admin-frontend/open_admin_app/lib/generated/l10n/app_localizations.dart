@@ -98,6 +98,30 @@ abstract class AppLocalizations {
     Locale('zh')
   ];
 
+  /// Description in the RefreshCacheSystemConfigWidget widget
+  ///
+  /// In en, this message translates to:
+  /// **'Publish the entire feature, environment and service account cache to Dacha'**
+  String get refreshCacheDescription;
+
+  /// Title used in SystemConfigPanel
+  ///
+  /// In en, this message translates to:
+  /// **'Publish all data to cache'**
+  String get refreshCacheTitle;
+
+  /// Subtitle used in SystemConfigPanel
+  ///
+  /// In en, this message translates to:
+  /// **'Publishes all feature and related data to the cache. Used for system updates.'**
+  String get refreshConfigurationSubtitle;
+
+  /// Button text shown when inviting the user to refresh the cache
+  ///
+  /// In en, this message translates to:
+  /// **'Start refresh now'**
+  String get refreshCacheAction;
+
   /// Title on the sign-in screen
   ///
   /// In en, this message translates to:

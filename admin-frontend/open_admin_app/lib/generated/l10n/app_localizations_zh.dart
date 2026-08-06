@@ -9,6 +9,18 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get refreshCacheDescription => '将所有功能、环境和服务账号缓存发布到 Dacha';
+
+  @override
+  String get refreshCacheTitle => '将所有数据发布到缓存';
+
+  @override
+  String get refreshConfigurationSubtitle => '将所有功能及相关数据发布到缓存，用于系统更新。';
+
+  @override
+  String get refreshCacheAction => '立即开始刷新';
+
+  @override
   String get signInTitle => '登录 FeatureHub';
 
   @override

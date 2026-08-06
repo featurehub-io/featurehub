@@ -1,6 +1,18 @@
 {
   "@@locale": "en",
 
+  "refreshCacheDescription": "Publish the entire feature, environment and service account cache to Dacha",
+  "@refreshCacheDescription": { "description": "Description in the RefreshCacheSystemConfigWidget widget" },
+
+  "refreshCacheTitle": "Publish all data to cache",
+  "@refreshCacheTitle": { "description": "Title used in SystemConfigPanel" },
+
+  "refreshConfigurationSubtitle": "Publishes all feature and related data to the cache. Used for system updates.",
+  "@refreshConfigurationSubtitle": {"description": "Subtitle used in SystemConfigPanel" },
+
+  "refreshCacheAction": "Start refresh now",
+  "@refreshCacheAction": { "description": "Button text shown when inviting the user to refresh the cache" },
+
   "signInTitle": "Sign in to FeatureHub",
   "@signInTitle": { "description": "Title on the sign-in screen" },
 

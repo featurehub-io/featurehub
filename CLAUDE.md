@@ -26,7 +26,6 @@ sh build_all_and_test.sh
 
 ### Backend Only
 ```sh
-cd backend
 mvn -DskipTests -T4C clean install         # skip tests
 mvn -f pom-apis.xml -DskipTests -T4C clean install  # regenerate OpenAPI artifacts only
 ```

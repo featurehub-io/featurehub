@@ -46,6 +46,7 @@
     <module>dacha2</module>
     <module>party-server</module>
     <module>party-server-ish</module>
+    <module>maintenance-responder</module>
   </modules>
 
   <profiles>

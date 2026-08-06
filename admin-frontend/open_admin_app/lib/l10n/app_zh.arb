@@ -1,6 +1,11 @@
 {
   "@@locale": "zh",
 
+  "refreshCacheDescription": "将所有功能、环境和服务账号缓存发布到 Dacha",
+  "refreshCacheTitle": "将所有数据发布到缓存",
+  "refreshConfigurationSubtitle": "将所有功能及相关数据发布到缓存，用于系统更新。",
+  "refreshCacheAction": "立即开始刷新",
+
   "signInTitle": "登录 FeatureHub",
   "signInWithCredentials": "或使用用户名和密码登录",
   "emailLabel": "电子邮件地址",

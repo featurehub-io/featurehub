@@ -1,0 +1,35 @@
+package io.featurehub.responder
+
+import io.featurehub.rest.MaintenanceNotificationFilter
+import io.featurehub.utils.FallbackPropertyConfig
+import jakarta.annotation.Priority
+import jakarta.ws.rs.container.ContainerRequestContext
+import jakarta.ws.rs.container.ContainerRequestFilter
+import jakarta.ws.rs.container.PreMatching
+import jakarta.ws.rs.core.Response
+import jakarta.ws.rs.ext.Provider
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+@Provider
+@PreMatching
+@Priority(2000)
+class AbortForMaintenanceFilter : ContainerRequestFilter {
+  companion object {
+    val interceptPrefixes = FallbackPropertyConfig.getConfig("interceptPrefixes", "mr-api,saml,oauth")
+      .split(",")
+      .map { it.trim() }
+      .filter { it.isNotBlank() }
+  }
+
+  override fun filter(requestEvent: ContainerRequestContext) {
+    if (requestEvent.uriInfo.path != null && interceptPrefixes.any({ requestEvent.uriInfo.path.startsWith(it) })) {
+      requestEvent.abortWith(
+        Response.status(503)
+          .entity(MaintenanceNotificationFilter.maintenanceMessage)
+          .header("content-type", "text/plain")
+          .header("retry-after",
+          MaintenanceNotificationFilter.endAsRfc1123).build())
+    }
+  }
+}
