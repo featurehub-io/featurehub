@@ -149,6 +149,10 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
 
     while (!box.hasSize) {
       await Future.delayed(const Duration(milliseconds: 10));
+
+      if (!mounted) { // if the widget unmounts the context will be invalid
+        return;
+      }
     }
 
     final size = renderBox.size;

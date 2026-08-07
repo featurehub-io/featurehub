@@ -395,7 +395,7 @@ class FeatureSpec extends Base2Spec {
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set two of those values"
       def updatesForCreate = [new FeatureValue().key('FEATURE_FVU_1').retired(false).value('z').locked(true),
-                              new FeatureValue().key( 'FEATURE_FVU_2').value('h').retired(false).locked(true)]
+                              new FeatureValue().key( 'FEATURE_FVU_2').value('h1').retired(false).locked(true)]
       featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updatesForCreate, pers, Opts.empty())
     and:
       List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false, Opts.empty()).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
@@ -403,8 +403,8 @@ class FeatureSpec extends Base2Spec {
       def updating = new ArrayList<>(found.findAll({k -> k.key == 'FEATURE_FVU_1'}).collect({it.copy().locked(false).valueString('z')}))
 //      updating.add(found.find({it.key == 'FEATURE_FVU_3'}).value(true).locked(true))
 //      updating.add(found.find({it.key == 'FEATURE_FVU_4'}).value(true).locked(true))
-      updating.addAll([new FeatureValue().key('FEATURE_FVU_3').value('h').locked(true),
-                       new FeatureValue().key('FEATURE_FVU_4').value('h').locked(true)])
+      updating.addAll([new FeatureValue().key('FEATURE_FVU_3').value('h2').locked(true),
+                       new FeatureValue().key('FEATURE_FVU_4').value('h3').locked(true)])
       featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updating, pers, Opts.empty())
       def foundUpdating = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false, Opts.empty()).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
     then:
@@ -412,9 +412,9 @@ class FeatureSpec extends Base2Spec {
       foundUpdating.size() == 4
       !foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).locked
       foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).value == 'z'
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).value == 'h'
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).value == 'h'
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_2'}).value == 'h'
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).value == 'h2'
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).value == 'h3'
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_2'}).value == 'h1'
       foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).locked
       foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).locked
   }
