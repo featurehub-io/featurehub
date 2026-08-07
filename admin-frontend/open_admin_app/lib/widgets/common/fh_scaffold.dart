@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
@@ -32,8 +31,6 @@ class FHScaffoldWidget extends StatefulWidget {
     return _FHScaffoldWidgetState();
   }
 }
-
-final _log = Logger("fh_scaffold");
 
 class _FHScaffoldWidgetState extends State<FHScaffoldWidget> {
   final GlobalKey<_FHScaffoldWidgetState> scaffold =
@@ -110,7 +107,6 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
               builder: (BuildContext context,
                   AsyncSnapshot<MaintenanceInfo?> snapshot) {
                 if (!snapshot.hasData) return const SizedBox.shrink();
-                final info = snapshot.data!;
                 return MaintenanceModeWidget(mrBloc: mrBloc,);
               })
         ]));

@@ -5,7 +5,6 @@ import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
 import io.featurehub.dacha.model.PublishAction
 import io.featurehub.db.api.ApplicationApi
-import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts

@@ -52,7 +52,7 @@ class PortfolioStrategiesSpec extends Base3Spec {
   }
 
   void associateStrategyWithFeatureValue(String key, PortfolioRolloutStrategy strategy, FeatureValueType valueType = FeatureValueType.BOOLEAN, Integer percentOverride = null) {
-    def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+    def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key, Opts.empty())
 
     if (fv == null) {
       fv = new FeatureValue().key(key).locked(false)

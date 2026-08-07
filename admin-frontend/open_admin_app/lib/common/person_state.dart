@@ -179,7 +179,7 @@ class PersonState {
 
   bool isPortfolioStrategyEditor() {
     if (person == _unauthenticatedPerson) return false;
-    return groupList.firstWhereOrNull((group) => true == group.portfolioRoles?.intersection(portfolioStrategyEditorRoles)  ) != null;
+    return groupList.firstWhereOrNull((group) => true == group.portfolioRoles?.intersection(portfolioStrategyEditorRoles).isNotEmpty  ) != null;
   }
 
   bool isPortfolioStrategyEditDelete() {

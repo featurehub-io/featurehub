@@ -394,7 +394,7 @@ class FeatureSpec extends Base2Spec {
       names.each { k -> appApi.createApplicationFeature(appId, new CreateFeature().description("x").name(k).key(k).valueType(FeatureValueType.STRING), superPerson, Opts.empty()) }
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set two of those values"
-      def updatesForCreate = [new FeatureValue().key('FEATURE_FVU_1').retired(false).value('h').locked(true),
+      def updatesForCreate = [new FeatureValue().key('FEATURE_FVU_1').retired(false).value('z').locked(true),
                               new FeatureValue().key( 'FEATURE_FVU_2').value('h').retired(false).locked(true)]
       featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updatesForCreate, pers, Opts.empty())
     and:

@@ -42,7 +42,7 @@ class Routes {
           PermissionType.personal,
           PermissionType.any,
           PermissionType.portfolioadmin,
-          PermissionType.portfolioadmin_featurecreator,
+          PermissionType.portfolioadminFeatureCreator,
           PermissionType.superadmin,
           PermissionType.regular,
           PermissionType.extra1,
@@ -178,7 +178,7 @@ class Routes {
     router.define('/feature-filters',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.featureFilters),
-        permissionType: PermissionType.portfolioadmin_featurecreator);
+        permissionType: PermissionType.portfolioadminFeatureCreator);
     router.define('/manage-user',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.manageUser),

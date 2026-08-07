@@ -140,8 +140,7 @@ class EditUserFormState extends State<EditUserFormWidget> {
             FHFlatButtonTransparent(
                 onPressed: () {
                   _formKey.currentState!.reset;
-                  ManagementRepositoryClientBloc.router
-                      .navigateTo(context, '/users');
+                  ManagementRepositoryClientBloc.router.navigateTo('/users');
                 },
                 title: l10n.cancel,
                 keepCase: true),
@@ -160,7 +159,7 @@ class EditUserFormState extends State<EditUserFormWidget> {
                                 Text(l10n.userUpdated(bloc.person!.name!)));
 
                             ManagementRepositoryClientBloc.router
-                                .navigateTo(context, '/users');
+                                .navigateTo('/users');
                           }
                         } catch (e, s) {
                           bloc.mrClient.dialogError(e, s);

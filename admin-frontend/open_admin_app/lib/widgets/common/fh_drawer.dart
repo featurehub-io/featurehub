@@ -88,7 +88,10 @@ class _MenuContainer extends StatelessWidget {
                                       return menuForPortfolioAdmin(
                                           context, rel);
                                     }
-                                    if (rel.currentPortfolioFeatureCreator || rel.currentPortfolioGroupManager || rel.currentPortfolioStrategyEditCreate || rel.currentPortfolioStrategyEditor) {
+                                    if (rel.currentPortfolioFeatureCreator ||
+                                        rel.currentPortfolioGroupManager ||
+                                        rel.currentPortfolioStrategyEditCreate ||
+                                        rel.currentPortfolioStrategyEditor) {
                                       return menuForFeatureCreator(
                                           context, rel);
                                     }
@@ -138,7 +141,8 @@ class _MenuContainer extends StatelessWidget {
             path: '/feature-filters',
             displayNewLabel: true,
             params: {}),
-      if (rel.currentPortfolioStrategyEditor || rel.currentPortfolioStrategyEditCreate)
+      if (rel.currentPortfolioStrategyEditor ||
+          rel.currentPortfolioStrategyEditCreate)
         FHMenuItem(
             name: l10n.portfolioStrategies,
             iconData: Icons.call_split_outlined,
@@ -399,7 +403,7 @@ class FHMenuItem extends StatelessWidget {
       onTap: () {
         if (menuOkForThisUser) {
           ManagementRepositoryClientBloc.router
-              .navigateTo(context, path, params: params);
+              .navigateTo(path, params: params);
         }
       },
       child: StreamBuilder<RouteChange?>(

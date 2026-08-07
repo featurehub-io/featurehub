@@ -259,8 +259,9 @@ class _FeatureFilterEditDialogState extends State<FeatureFilterEditDialog> {
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   validator: (value) {
-                    if (value == null || value.isEmpty)
+                    if (value == null || value.isEmpty) {
                       return l10n.filterNameRequired;
+                    }
                     if (value.length < 4) return l10n.filterNameTooShort;
                     return null;
                   },

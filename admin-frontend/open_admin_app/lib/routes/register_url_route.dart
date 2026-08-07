@@ -45,8 +45,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
                     if (snapshot.data == RegisterUrlForm.initialState) {
                       return initialState(context, bloc);
                     } else if (snapshot.data == RegisterUrlForm.successState) {
-                      ManagementRepositoryClientBloc.router
-                          .navigateTo(context, '/');
+                      ManagementRepositoryClientBloc.router.navigateTo('/');
                       return const SizedBox.shrink();
                     } else if (snapshot.data ==
                         RegisterUrlForm.alreadyLoggedIn) {
@@ -65,7 +64,8 @@ class RegisterURLState extends State<RegisterURLRoute> {
                     }
                     return Text(humanErrorMessage);
                   }
-                  return Text(AppLocalizations.of(context)!.validatingInvitationUrl);
+                  return Text(
+                      AppLocalizations.of(context)!.validatingInvitationUrl);
                 })),
       ],
     ));
@@ -99,8 +99,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
             autofocus: true,
             decoration: InputDecoration(labelText: l10n.nameLabel),
             textInputAction: TextInputAction.next,
-            validator: (v) =>
-                v?.isEmpty == false ? null : l10n.nameRequired,
+            validator: (v) => v?.isEmpty == false ? null : l10n.nameRequired,
           ),
           TextFormField(
               controller: _pw1,
@@ -156,8 +155,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
                             _name.text,
                             _pw1.text,
                             _pw2.text);
-                        ManagementRepositoryClientBloc.router
-                            .navigateTo(context, '/');
+                        ManagementRepositoryClientBloc.router.navigateTo('/');
                       }
                     },
                     title: l10n.registerButton),

@@ -55,12 +55,12 @@ class PortfolioStrategyListState extends State<PortfolioStrategyList> {
                       padding: const EdgeInsets.symmetric(
                           vertical: 16.0, horizontal: 8.0),
                       child: StreamBuilder<ReleasedPortfolio?>(
-                          stream: bloc.mrClient.streamValley
-                              .currentPortfolioStream,
+                          stream:
+                              bloc.mrClient.streamValley.currentPortfolioStream,
                           builder: (context, portfolioSnapshot) {
                             final canCreate = portfolioSnapshot.hasData &&
-                                (portfolioSnapshot
-                                        .data!.currentPortfolioStrategyEditCreate ||
+                                (portfolioSnapshot.data!
+                                        .currentPortfolioStrategyEditCreate ||
                                     portfolioSnapshot
                                         .data!.currentPortfolioOrSuperAdmin);
                             return Row(
@@ -71,7 +71,7 @@ class PortfolioStrategyListState extends State<PortfolioStrategyList> {
                                     label: Text(l10n.createNewStrategy),
                                     onPressed: () {
                                       ManagementRepositoryClientBloc.router
-                                          .navigateTo(context,
+                                          .navigateTo(
                                               '/create-portfolio-strategy',
                                               params: {
                                             'pid': [bloc.portfolioId ?? '']
@@ -139,8 +139,7 @@ class PortfolioStrategyListState extends State<PortfolioStrategyList> {
                   stream: bloc.mrClient.streamValley.currentPortfolioStream,
                   builder: (context, snapshot) {
                     if (snapshot.hasData && snapshot.data!.isNull()) {
-                      return SelectableText(
-                          l10n.noApplicationsAccessMessage,
+                      return SelectableText(l10n.noApplicationsAccessMessage,
                           style: Theme.of(context).textTheme.bodySmall);
                     }
                     return const SizedBox.shrink();
@@ -180,8 +179,8 @@ class PortfolioStrategyDataTableSource
   }
 
   @override
-  Future<RemoteDataSourceDetails<ListPortfolioRolloutStrategyItem>>
-      getNextPage(NextPageRequest pageRequest) async {
+  Future<RemoteDataSourceDetails<ListPortfolioRolloutStrategyItem>> getNextPage(
+      NextPageRequest pageRequest) async {
     final data = await bloc.getStrategiesData(
         lastSearchTerm.isNotEmpty ? lastSearchTerm : null,
         (pageRequest.sortAscending ?? true) == true
@@ -226,15 +225,14 @@ class PortfolioStrategyDataTableSource
                               .data!.currentPortfolioStrategyEditCreate ||
                           portfolioSnapshot
                               .data!.currentPortfolioStrategyEditor ||
-                          portfolioSnapshot
-                              .data!.currentPortfolioOrSuperAdmin);
+                          portfolioSnapshot.data!.currentPortfolioOrSuperAdmin);
                   if (!canEdit) return const SizedBox.shrink();
                   return Row(children: [
                     FHIconButton(
                         icon: const Icon(Icons.edit),
                         onPressed: () => {
                               ManagementRepositoryClientBloc.router.navigateTo(
-                                  context, '/edit-portfolio-strategy',
+                                  '/edit-portfolio-strategy',
                                   params: {
                                     'id': [strategy.strategy.id],
                                     'pid': [bloc.portfolioId ?? '']
@@ -276,7 +274,7 @@ class PortfolioStrategyDataTableSource
               rel.currentPortfolioOrSuperAdmin;
           if (canEdit) {
             ManagementRepositoryClientBloc.router
-                .navigateTo(context, '/edit-portfolio-strategy', params: {
+                .navigateTo('/edit-portfolio-strategy', params: {
               'id': [strategy.strategy.id],
               'pid': [bloc.portfolioId ?? '']
             });

@@ -58,6 +58,7 @@ class StrategyEditorBloc extends Bloc {
   }
 
   void addAttribute(EditingRolloutStrategyAttribute rs) {
+    // this actually can be null
     rs.id ??= makeStrategyId();
     rolloutStrategy.attributes = [...rolloutStrategy.attributes, rs];
     _rolloutStrategyAttributeSource.add(rolloutStrategy.attributes);

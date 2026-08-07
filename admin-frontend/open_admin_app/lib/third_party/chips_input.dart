@@ -109,7 +109,6 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     });
   }
 
-  @override
   bool onFocusReceived() => false;
 
   void _onFocusChanged() {
@@ -138,6 +137,10 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
 
     while (renderBox == null && renderBox is! RenderBox) {
       await Future.delayed(const Duration(milliseconds: 10));
+
+      if (!mounted) { // if the widget unmounts the context will be invalid
+        return;
+      }
 
       renderBox = context.findRenderObject();
     }
@@ -470,7 +473,7 @@ class _SuggestionsBoxController {
     }
   }
 
-  void set overlayEntry(OverlayEntry entry) {
+  set overlayEntry(OverlayEntry entry) {
     if (_overlayEntry != null) {
       close();
     }

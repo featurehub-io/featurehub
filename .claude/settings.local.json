@@ -3,7 +3,8 @@
     "allow": [
       "Bash(flutter gen-l10n:*)",
       "Bash(flutter analyze:*)",
-      "Bash(mvn -DskipTests compile -q)"
+      "Bash(mvn -DskipTests compile -q)",
+      "Bash(dart --version)"
     ]
   }
 }

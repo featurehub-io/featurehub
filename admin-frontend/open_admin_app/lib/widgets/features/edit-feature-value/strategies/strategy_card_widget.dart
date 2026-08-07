@@ -138,21 +138,21 @@ class RolloutStrategyCardWidget extends BaseRolloutStrategyCardWidget {
     final bloc = strBloc!;
 
     return Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          EditValueStrategyLinkButton(
-            editable: editable,
-            rolloutStrategy: strategy,
-            fvBloc: bloc,
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        EditValueStrategyLinkButton(
+          editable: editable,
+          rolloutStrategy: strategy,
+          fvBloc: bloc,
+        ),
+        if (editable)
+          IconButton(
+            mouseCursor: SystemMouseCursors.click,
+            icon: const Icon(Icons.delete, size: 16),
+            onPressed: () => bloc.removeStrategy(strategy),
           ),
-          if (editable)
-            IconButton(
-              mouseCursor: SystemMouseCursors.click,
-              icon: const Icon(Icons.delete, size: 16),
-              onPressed: () => bloc.removeStrategy(strategy),
-            ),
-        ],
-      );
+      ],
+    );
   }
 
   @override
@@ -188,13 +188,12 @@ class GroupRolloutStrategyCardWidget extends BaseRolloutStrategyCardWidget {
           tooltip: l10n.editStrategySettings,
           onPressed: () {
             Navigator.pop(context);
-            ManagementRepositoryClientBloc.router.navigateTo(
-                context, '/edit-feature-group-strategy-values',
-                params: {
-                  'appid': [bloc.applicationId],
-                  'envid': [bloc.environmentId],
-                  'groupid': [strategy.featureGroupId!]
-                });
+            ManagementRepositoryClientBloc.router
+                .navigateTo('/edit-feature-group-strategy-values', params: {
+              'appid': [bloc.applicationId],
+              'envid': [bloc.environmentId],
+              'groupid': [strategy.featureGroupId!]
+            });
             bloc.perApplicationFeaturesBloc.mrClient
                 .setCurrentEnvId(bloc.environmentId);
           },
@@ -247,7 +246,7 @@ class ApplicationRolloutStrategyCardWidget
               onPressed: () {
                 Navigator.pop(context);
                 ManagementRepositoryClientBloc.router
-                    .navigateTo(context, '/edit-application-strategy', params: {
+                    .navigateTo('/edit-application-strategy', params: {
                   'id': [strategyInstance.strategyId],
                   'appid': [strBloc!.applicationId]
                 });
@@ -305,7 +304,7 @@ class PortfolioRolloutStrategyCardWidget extends BaseRolloutStrategyCardWidget {
               onPressed: () {
                 Navigator.pop(context);
                 ManagementRepositoryClientBloc.router
-                    .navigateTo(context, '/edit-portfolio-strategy', params: {
+                    .navigateTo('/edit-portfolio-strategy', params: {
                   'id': [strategyInstance.strategyId],
                   'portfolioId': [strBloc!.portfolioId]
                 });

@@ -8,7 +8,7 @@ FeatureHub is a Cloud Native feature flag and A/B testing platform. It supports 
 
 ## Search / Review Scope
 
-Maven builds populate `backend/*/target/` with generated `.jar`, `.class`, and other build artifacts. Never search, list, or read inside `target/` directories (or any `.jar` files) — they are build output, not source, and scanning them wastes time and context. This applies to code review, exploration, and grep/find usage alike.
+Maven builds populate `backend/*/target/` with generated `.jar`, `.class`, and other build artifacts. Never search, list, or read inside `target/` directories (or any `.jar` files) — they are build output, not source, and scanning them wastes time and context. This applies to code review, exploration, and rg/grep/find usage alike. When doing a code review, use the gh tool to determine what changes have been made against main, and focus on correctness, completeness, security (authorisation and authentication). 
 
 ## Build Commands
 

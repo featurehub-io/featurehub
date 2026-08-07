@@ -10,7 +10,6 @@ import io.featurehub.db.model.query.QDbPortfolioStrategyForFeatureValue
 import io.featurehub.db.services.ArchiveStrategy.Companion.isoDate
 import io.featurehub.mr.model.*
 import jakarta.inject.Inject
-import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -265,7 +264,7 @@ class PortfolioRolloutStrategySqlApi @Inject constructor(
       val attachedStrategies = strategy.sharedRolloutStrategies?.toList() ?: emptyList()
 
       strategy.whenArchived = LocalDateTime.now()
-      strategy.name = (strategy.name + Conversions.archivePrefix + isoDate.format(strategy.whenArchived)).take(150)
+      strategy.name = (strategy.name + Conversions.archiveSuffix + isoDate.format(strategy.whenArchived)).take(150)
       strategy.whoChanged = p
       strategy.save()
 

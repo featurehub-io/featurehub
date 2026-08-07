@@ -89,11 +89,11 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
       if (widget.feature!.featureFilter != null && widget.feature!.featureFilter!.isNotEmpty) {
         fhosLogger.fine("checking for filter stream");
         _filterBloc.filterResultStream.take(1).listen((result) {
-          fhosLogger.fine("filter stream is ${result}");
+          fhosLogger.fine("filter stream is $result");
           if (result != null) {
             setState(() {
               _selectedFilters.addAll(result.filters.where((f) => widget.feature!.featureFilter!.contains(f.id)));
-              fhosLogger.fine("found matching ${_selectedFilters}");
+              fhosLogger.fine("found matching $_selectedFilters");
               _updateMatching();
             });
           }
