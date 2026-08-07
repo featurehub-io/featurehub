@@ -81,7 +81,7 @@ components:
             $ref: '#/components/schemas/MessagingStrategyUpdate'
         portfolioStrategiesUpdated:
           type: array
-          description: Application strategies changes
+          description: Portfolio strategies changes
           nullable: true
           items:
             $ref: '#/components/schemas/MessagingStrategyUpdate'

@@ -119,10 +119,10 @@ class ApplicationSpec extends BaseSpec {
       group = groupSqlApi.updateGroup(group.id, new UpdateGroup().version(group.version).environmentRoles([
 	      new EnvironmentGroupRole().environmentId(app1Env1.id).roles([RoleType.READ]),
 	      new EnvironmentGroupRole().environmentId(app2Env1.id).roles([RoleType.READ])
-      ]), null, true, true, Opts.opts(FillOpts.Members))
+      ]), null, true, true, superuser, Opts.opts(FillOpts.Members))
       superuserGroup = groupSqlApi.updateGroup(superuserGroup.id, new UpdateGroup().version(superuserGroup.version).environmentRoles([
 	      new EnvironmentGroupRole().environmentId(app1Env1.id).roles([RoleType.READ])
-      ]), null, true, true, Opts.opts(FillOpts.Members))
+      ]), null, true, true, superuser, Opts.opts(FillOpts.Members))
       def summaryApp1Perms = appApi.getApplicationSummary(app1.id)
       def portfoliosPerms = portfolioApi.findPortfolios(null, SortOrder.ASC, Opts.opts(FillOpts.Applications), person.id.id)
     and: "person should now be able to see two groups"
@@ -180,16 +180,16 @@ class ApplicationSpec extends BaseSpec {
       def group1 = groupSqlApi.updateGroup(group.id,
         new UpdateGroup().version(group.version).applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])]),
         app1.id,
-        true, false, Opts.opts(FillOpts.Acls))
+        true, false, superuser, Opts.opts(FillOpts.Acls))
     and:
       def group2 = groupSqlApi.getGroup(group1.id, Opts.empty(), superPerson)
       group2.applicationRoles.add(new ApplicationGroupRole().applicationId(app2.id).roles([ApplicationRoleType.FEATURE_EDIT]))
       def group3 = groupSqlApi.updateGroup(group.id, new UpdateGroup().version(group2.version).applicationRoles(group2.applicationRoles), app2.id, true, false,
-        Opts.opts(FillOpts.Acls))
+        superuser, Opts.opts(FillOpts.Acls))
     and: "i delete the role but just from application 2"
       def group4 = groupSqlApi.getGroup(group1.id, Opts.empty(), superPerson)
       def group5 = groupSqlApi.updateGroup(group.id, new UpdateGroup().version(group4.version), app2.id, true, false,
-        Opts.opts(FillOpts.Acls))
+        superuser, Opts.opts(FillOpts.Acls))
     then:
       group3.applicationRoles.size() == 2
       group3.applicationRoles.find({it.applicationId == app1.id}).roles.contains(ApplicationRoleType.FEATURE_EDIT)
@@ -225,7 +225,7 @@ class ApplicationSpec extends BaseSpec {
       def groupWithCreatePerms = groupSqlApi.updateGroup(group.id,
         new UpdateGroup().version(group.version).applicationRoles([new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_CREATE])]),
         app1.id,
-        true, false, Opts.opts(FillOpts.Acls))
+        true, false, superuser, Opts.opts(FillOpts.Acls))
       def creators1 = appApi.findFeatureCreators(app1.id)
       def editors1 = appApi.findFeatureEditors(app1.id)
       def personIsCreator1 = appApi.personIsFeatureCreator(app1.id, deepme.id)
@@ -234,7 +234,7 @@ class ApplicationSpec extends BaseSpec {
       def group2 = groupSqlApi.getGroup(group.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app1.id), superPerson)
       group2.applicationRoles[0].roles.add(ApplicationRoleType.FEATURE_EDIT_AND_DELETE)
       def groupWithEditAndCreatePerms = groupSqlApi.updateGroup(group.id, new UpdateGroup().version(group2.version).applicationRoles(group2.applicationRoles), app1.id,
-        true, false, Opts.opts(FillOpts.Acls))
+        true, false, superuser, Opts.opts(FillOpts.Acls))
       def creators2 = appApi.findFeatureCreators(app1.id)
       def editors2 = appApi.findFeatureEditors(app1.id)
       def personIsCreator2 = appApi.personIsFeatureCreator(app1.id, deepme.id)
@@ -243,7 +243,7 @@ class ApplicationSpec extends BaseSpec {
       def group3 = groupSqlApi.getGroup(group.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, app1.id), superPerson)
       group3.applicationRoles[0].roles.removeIf { it == ApplicationRoleType.FEATURE_EDIT_AND_DELETE }
       def groupWithEditPerms = groupSqlApi.updateGroup(group.id,
-        new UpdateGroup().version(group3.version).applicationRoles(group3.applicationRoles), app1.id, true, false, Opts.opts(FillOpts.Acls))
+        new UpdateGroup().version(group3.version).applicationRoles(group3.applicationRoles), app1.id, true, false, superuser, Opts.opts(FillOpts.Acls))
       def creators3 = appApi.findFeatureCreators(app1.id)
       def editors3 = appApi.findFeatureEditors(app1.id)
       def personIsCreator3 = appApi.personIsFeatureCreator(app1.id, deepme.id)
@@ -303,7 +303,7 @@ class ApplicationSpec extends BaseSpec {
       def env = environmentSqlApi.create(new CreateEnvironment().description("x").name("production").production(true), newApp.id, superPerson)
     and: "i grant the iGroup access to it"
       groupSqlApi.updateGroup(iGroup.id, new UpdateGroup().version(iGroup.version).environmentRoles(
-        [new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env.id)]), null, false, true, Opts.empty())
+        [new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env.id)]), null, false, true, superuser, Opts.empty())
     then: "Prilipko is a portfolio admin and can see read the application even with no app direct access"
       appApi.personIsFeatureReader(newApp.id, prilipkoPortfolioAdmin.id.id)
      and: "Golodryga cannot see the application's features"
@@ -339,7 +339,7 @@ class ApplicationSpec extends BaseSpec {
       groupSqlApi.updateGroup(group.id,
         new UpdateGroup().version(group.version).applicationRoles([
           new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])
-        ]), app1.id, true, false, Opts.opts(FillOpts.Acls))
+        ]), app1.id, true, false, superuser, Opts.opts(FillOpts.Acls))
     when:
       def result = appApi.personIsFeatureCreatorInPortfolio(portfolio.id, person.id.id)
     then:
@@ -370,7 +370,7 @@ class ApplicationSpec extends BaseSpec {
       groupSqlApi.updateGroup(group.id,
         new UpdateGroup().version(group.version).applicationRoles([
           new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])
-        ]), app1.id, true, false, Opts.opts(FillOpts.Acls))
+        ]), app1.id, true, false, superuser, Opts.opts(FillOpts.Acls))
     when:
       def result = appApi.personIsFeatureReaderInPortfolio(portfolio.id, person.id.id)
     then:

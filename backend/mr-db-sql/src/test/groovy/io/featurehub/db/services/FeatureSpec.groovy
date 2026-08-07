@@ -526,7 +526,7 @@ class FeatureSpec extends Base2Spec {
       g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
       groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(g1.version)
         .environmentRoles([new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id)]),
-        null, false, true, Opts.empty());
+        null, false, true, superuser, Opts.empty());
     when: 'application features with null filter'
       ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1,
         null, null, null, null, null, null, [], Opts.empty())
@@ -553,7 +553,7 @@ class FeatureSpec extends Base2Spec {
       g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
       groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(g1.version).environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
-      ]), null, false, true, Opts.empty());
+      ]), null, false, true, superuser, Opts.empty());
     when: "i request application features for 'desc'"
       ApplicationFeatureValues withDesc = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'desc', null, null, null, null, null, [], Opts.empty())
     and: 'application features with null'
@@ -597,7 +597,7 @@ class FeatureSpec extends Base2Spec {
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK]).environmentId(env3.id),
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env2.id)
-      ]), null, false, true, Opts.empty());
+      ]), null, false, true, superuser, Opts.empty());
     and: "i create a feature value called FEATURE_BUNCH and unlock the feature in all branches"
       String k = 'FEATURE_BUNCH'
       appApi.createApplicationFeature(app2Id, new CreateFeature().description("x").name(k).key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
@@ -736,7 +736,7 @@ class FeatureSpec extends Base2Spec {
       groupSqlApi.addPersonsToGroup(group.id, [person.id.id], Opts.empty())
       groupSqlApi.updateGroup(group.id, new UpdateGroup().version(group.version).environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.READ, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
-      ]), null, false, true, Opts.empty());
+      ]), null, false, true, superuser, Opts.empty());
     when: "i try and unlock the feature with the person, it will let me"
       def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key, Opts.empty())
       if (fv == null) {

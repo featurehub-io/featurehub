@@ -14,6 +14,7 @@ import java.util.*
 interface PortfolioUtils {
   fun formatPortfolioAdminGroupName(pfName: String?): String
   // return: personId or forbidden
+  fun portfolioAdmin(user: SecurityContext, portfolioId: UUID): UUID
   fun portfolioUserManager(user: SecurityContext, portfolioId: UUID?): UUID
   fun portfolioStrategyCreateOrEdit(user: SecurityContext, portfolioId: UUID): UUID
   fun portfolioStrategyDelete(user: SecurityContext, portfolioId: UUID): UUID
@@ -68,6 +69,14 @@ class PortfolioUtilsImpl @Inject constructor(private val authManager: AuthManage
     return portfolioGroupRole(user, portfolioId, portfolioStrategyDelete)
   }
 
+  override fun portfolioAdmin(user: SecurityContext, portfolioId: UUID): UUID {
+    val personId = authManager.from(user).id!!.id
+    if (conversions.personIsSuperAdmin(personId) ||
+      conversions.isPersonMemberOfPortfolioAdminGroup(portfolioId, personId)) return personId
+
+    throw ForbiddenException()
+  }
+
   private fun portfolioGroupRole(user: SecurityContext, portfolioId: UUID, roles: Set<PortfolioGroupRoleType>): UUID {
     val personId = authManager.from(user).id!!.id
 
@@ -76,6 +85,10 @@ class PortfolioUtilsImpl @Inject constructor(private val authManager: AuthManage
       groupApi.portfolioRoles(personId, portfolioId).intersect(roles).isNotEmpty()) return personId
 
     throw ForbiddenException()
+  }
+
+  private fun groupUserIsManagerOf(personId: UUID, portfolioId: UUID): UUID? {
+    return groupApi.groupUserIsManagerOf(personId, portfolioId)
   }
 
   override fun portfolioStrategyRead(

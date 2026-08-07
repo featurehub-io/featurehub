@@ -39,7 +39,6 @@ public class DbStrategyForFeatureValue {
   private String value;
 
   // this allows the user to override the percentage when applying it to this feature value
-  @DbJson
   @Column(name = "percent_oride", nullable = true)
   @Nullable
   private Integer percentageOverride;

@@ -93,7 +93,7 @@ function nullOutIds(strategy: RolloutStrategy) {
 
 export function strategyComparison(rs1: Array<any>, rs2: Array<any>): boolean {
   const strategies1 = rs1.map(r => nullOutIds(JSON.parse(JSON.stringify(r))));
-  const strategies2 = rs1.map(r => nullOutIds(JSON.parse(JSON.stringify(r))));
+  const strategies2 = rs2.map(r => nullOutIds(JSON.parse(JSON.stringify(r))));
 
   return JSON.stringify(strategies1) === JSON.stringify(strategies2);
 }

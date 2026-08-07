@@ -34,7 +34,7 @@
             <uniqueConstraint name="idx_pfeature_strat" columnNames="fk_fv_id,fk_prs_id" oneToOne="false" nullableColumns=""/>
         </createTable>
         <addColumn tableName="fh_strat_for_feature">
-            <column name="percent_oride" type="json"/>
+            <column name="percent_oride" type="integer"/>
         </addColumn>
     </changeSet>
 </migration>

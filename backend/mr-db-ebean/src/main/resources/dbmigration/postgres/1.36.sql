@@ -30,7 +30,7 @@ create table fh_pstrat_for_feature (
 alter table fh_fv_version add column if not exists shared_pstrat json;
 alter table fh_group add column if not exists p_roles json;
 alter table fh_person alter column password type varchar(255) using password::varchar(255);
-alter table fh_strat_for_feature add column if not exists percent_oride json;
+alter table fh_strat_for_feature add column if not exists percent_oride integer;
 -- foreign keys and indices
 create index ix_fh_port_strategy_fk_portfolio_id on fh_port_strategy (fk_portfolio_id);
 alter table fh_port_strategy add constraint fk_fh_port_strategy_fk_portfolio_id foreign key (fk_portfolio_id) references fh_portfolio (id) on delete restrict on update restrict;

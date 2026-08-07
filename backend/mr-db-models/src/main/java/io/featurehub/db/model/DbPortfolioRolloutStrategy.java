@@ -28,7 +28,7 @@ public class DbPortfolioRolloutStrategy  extends DbVersionedBase {
   private String name;
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "fk_rs_id")
+  @JoinColumn(name = "fk_prs_id")
   @Nullable
   private List<DbPortfolioStrategyForFeatureValue> sharedRolloutStrategies;
 

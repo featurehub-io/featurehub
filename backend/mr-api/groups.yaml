@@ -169,7 +169,7 @@ paths:
         - bearerAuth: [ ]
       tags:
         - GroupService
-      description: "Update a group. Please use updateGroupOnPortfolioV2"
+      description: "Update a group. Please use updateGroupOnPortfolioV2. This old API is not available to Group Member Managers in any form."
       deprecated: true
       operationId: updateGroupOnPortfolio
       x-removed-version: "1.12"

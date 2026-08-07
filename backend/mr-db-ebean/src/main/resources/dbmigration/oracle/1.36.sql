@@ -29,7 +29,7 @@ create table fh_pstrat_for_feature (
 -- apply alter tables
 alter table fh_fv_version add shared_pstrat clob;
 alter table fh_group add p_roles varchar2(100);
-alter table fh_strat_for_feature add percent_oride clob;
+alter table fh_strat_for_feature add percent_oride integer;
 -- foreign keys and indices
 create index ix_fh_prt_strtgy_fk_prtfl_d on fh_port_strategy (fk_portfolio_id);
 alter table fh_port_strategy add constraint fk_fh_prt_strtgy_fk_prtfl_d foreign key (fk_portfolio_id) references fh_portfolio (id);

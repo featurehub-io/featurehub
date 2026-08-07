@@ -21,12 +21,12 @@ class PortfolioRolloutStrategySqlApi @Inject constructor(
 ) : PortfolioRolloutStrategyApi {
 
   override fun createStrategy(
-    appId: UUID,
+    portfolioId: UUID,
     rolloutStrategy: CreatePortfolioRolloutStrategy,
     person: UUID,
     opts: Opts
   ): PortfolioRolloutStrategy? {
-    val portfolio = conversions.byPortfolio(appId) ?: return null
+    val portfolio = conversions.byPortfolio(portfolioId) ?: return null
     val p = conversions.byPerson(person) ?: return null
 
     val existing = QDbPortfolioRolloutStrategy().portfolio.eq(portfolio)
@@ -39,7 +39,7 @@ class PortfolioRolloutStrategySqlApi @Inject constructor(
     }
 
     var code = Conversions.strategyCodeGenerator(portfolioStrategyCodePrefix)
-    while (QDbPortfolioRolloutStrategy().portfolio.id.eq(appId).shortUniqueCode.eq(code).exists()) {
+    while (QDbPortfolioRolloutStrategy().portfolio.id.eq(portfolioId).shortUniqueCode.eq(code).exists()) {
       code = Conversions.strategyCodeGenerator(portfolioStrategyCodePrefix)
     }
 
@@ -93,16 +93,16 @@ class PortfolioRolloutStrategySqlApi @Inject constructor(
   }
 
   override fun updateStrategy(
-    appId: UUID,
+    portfolioId: UUID,
     strategyId: UUID,
     update: UpdatePortfolioRolloutStrategy,
     person: UUID,
     opts: Opts
   ): PortfolioRolloutStrategy? {
-    val portfolio = conversions.byPortfolio(appId) ?: return null
+    val portfolio = conversions.byPortfolio(portfolioId) ?: return null
     val p = conversions.byPerson(person) ?: return null
 
-    val strategy = byStrategy(appId, strategyId, Opts.empty()).findOne() ?: return null
+    val strategy = byStrategy(portfolioId, strategyId, Opts.empty()).findOne() ?: return null
     if (strategy.portfolio.id == portfolio.id) {
       var notifyAttachedFeatures = false
 
@@ -171,7 +171,7 @@ class PortfolioRolloutStrategySqlApi @Inject constructor(
 
   @Transactional(readOnly = true)
   override fun listStrategies(
-    appId: UUID,
+    portfolioId: UUID,
     page: Int,
     max: Int,
     filter: String?,
@@ -179,7 +179,7 @@ class PortfolioRolloutStrategySqlApi @Inject constructor(
     sortOrder: SortOrder?,
     opts: Opts
   ): PortfolioRolloutStrategyList {
-    var qRS = QDbPortfolioRolloutStrategy().portfolio.id.eq(appId)
+    var qRS = QDbPortfolioRolloutStrategy().portfolio.id.eq(portfolioId)
 
     filter?.let {
       qRS = qRS.name.ilike("%${it.lowercase()}%")
@@ -239,8 +239,8 @@ class PortfolioRolloutStrategySqlApi @Inject constructor(
   }
 
   @Transactional(readOnly = true)
-  override fun getStrategy(appId: UUID, strategyId: UUID, opts: Opts): PortfolioRolloutStrategy? {
-    return byStrategy(appId, strategyId, opts).findOne()?.strategy
+  override fun getStrategy(portfolioId: UUID, strategyId: UUID, opts: Opts): PortfolioRolloutStrategy? {
+    return byStrategy(portfolioId, strategyId, opts).findOne()?.strategy
   }
 
   private fun byStrategy(appId: UUID, strategyId: UUID, opts: Opts): QDbPortfolioRolloutStrategy {
@@ -253,9 +253,9 @@ class PortfolioRolloutStrategySqlApi @Inject constructor(
     return qRS
   }
 
-  override fun archiveStrategy(appId: UUID, strategyId: UUID, person: UUID): Boolean {
+  override fun archiveStrategy(portfolioId: UUID, strategyId: UUID, person: UUID): Boolean {
     val p = conversions.byPerson(person) ?: return false
-    val strategy = byStrategy(appId, strategyId, Opts.empty()).findOne() ?: return false
+    val strategy = byStrategy(portfolioId, strategyId, Opts.empty()).findOne() ?: return false
 
     if (strategy.whenArchived == null) {
       val originalRolloutStrategy = InternalFeatureApi.toRolloutStrategy(strategy)

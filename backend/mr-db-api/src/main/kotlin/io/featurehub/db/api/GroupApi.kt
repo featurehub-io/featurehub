@@ -44,6 +44,8 @@ interface GroupApi {
    * @return Group with the group id - default. Or plus opts if provided
    */
   fun addPersonsToGroup(groupId: UUID, personIds: List<UUID>, opts: Opts): Group?
+  fun addPersonsToGroup(groupId: UUID, personIds: List<UUID>, personAdding: UUID, opts: Opts): Group?
+  fun getGroup(gid: UUID, opts: Opts, personId: UUID): Group?
   fun getGroup(gid: UUID, opts: Opts, person: Person): Group?
   fun findPortfolioAdminGroup(portfolioId: UUID, opts: Opts): Group?
   fun findOrganizationAdminGroup(orgId: UUID, opts: Opts): Group?
@@ -58,12 +60,14 @@ interface GroupApi {
     appId: UUID?,
     updateApplicationGroupRoles: Boolean,
     updateEnvironmentGroupRoles: Boolean,
+    updatedByPersonId: UUID,
     opts: Opts
   ): Group?
 
   fun findGroups(portfolioId: UUID, filter: String?, ordering: SortOrder?, opts: Opts): List<Group>
   fun updateAdminGroupForPortfolio(portfolioId: UUID, name: String)
 
+  @Deprecated(replaceWith = ReplaceWith("updateGroup"), message = "Does not enforce group member management")
   @Throws(OptimisticLockingException::class, DuplicateGroupException::class, DuplicateUsersException::class)
   fun updateGroupV1(
     gid: UUID,
@@ -74,4 +78,18 @@ interface GroupApi {
     updateEnvironmentGroupRoles: Boolean,
     opts: Opts
   ): Group?
+
+  /**
+   * This returns the UUID the group that the specified user is a group_member_manager of. A person
+   * who is a group_member_manager can only update members of a group, they cannot create new groups
+   * and they cannot change the group roles. To allow them to do would be a privilege escalation.
+   */
+  fun groupUserIsManagerOf(personId: UUID, portfolioId: UUID): UUID?
+
+  /**
+   * Used by GroupResource to determine if it needs to check what the client is asking for and what permissions it needs to check
+   * across the portfolio. There are actually 3 states - the group doesn't exist or the owning portfolio is null
+   * (superadmin group) or the group exists and the portfolio id is returned. The method does not distinguish the first two.
+   */
+  fun findPortfolioOfGroup(groupId: UUID): UUID?
 }
