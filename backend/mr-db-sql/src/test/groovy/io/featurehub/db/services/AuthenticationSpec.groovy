@@ -2,6 +2,8 @@ package io.featurehub.db.services
 
 import io.featurehub.db.api.DBLoginSession
 import io.featurehub.db.api.Opts
+import io.featurehub.db.model.DbPerson
+import io.featurehub.db.password.PasswordSalter
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
@@ -306,6 +308,51 @@ class AuthenticationSpec extends BaseSpec {
       def reset = auth.resetExpiredRegistrationToken('fred@choppa-chip.com')
     then:
       reset == null
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // The password complexity policy is enforced at the MR resource layer, never here. These guard
+  // that: a stored password predating the policy must keep working, including through the
+  // algorithm upgrade that login performs as a side effect.
+  // ---------------------------------------------------------------------------------------------
+
+  def "a password longer than the policy maximum can still be registered, used to log in, and changed"() {
+    given: "a password longer than the 40 character policy maximum"
+      def email = 'longpassword@featurehub.io'
+      def longPassword = 'x' * 60
+      personApi.create(email, "Long", superuser)
+    when: "i register with it"
+      Person person = auth.register("long", email, longPassword, null)
+    then:
+      person.id
+    and: "i can log in with it"
+      auth.login(email, longPassword) != null
+    and: "i can use it as my old password to change to a shorter one"
+      auth.changePassword(person.id.id, longPassword, 'Passw0rdX') != null
+    and: "the new password now works"
+      auth.login(email, 'Passw0rdX') != null
+  }
+
+  def "a policy violating password stored under a superseded algorithm survives the login re-hash"() {
+    given: "a user whose password would fail the policy"
+      def email = 'oldalgorithm@featurehub.io'
+      def weakPassword = 'yacht'
+      personApi.create(email, "Old", superuser)
+      auth.register("old", email, weakPassword, null)
+    and: "their stored password uses an older hashing algorithm"
+      def oldAlgorithm = 'PBKDF2WithHmacSHA1'
+      def dbPerson = database.find(DbPerson).where().eq("email", email).findOne()
+      dbPerson.password = new PasswordSalter().saltAnyPassword(weakPassword, oldAlgorithm)
+      dbPerson.passwordAlgorithm = oldAlgorithm
+      database.save(dbPerson)
+    when: "they sign in, which re-hashes their password under the current algorithm"
+      def login = auth.login(email, weakPassword)
+    then: "they are let in - the re-hash is not policy checked"
+      login != null
+    and: "their password was upgraded"
+      database.find(DbPerson).where().eq("email", email).findOne().passwordAlgorithm == DbPerson.DEFAULT_PASSWORD_ALGORITHM
+    and: "and they can sign in again with the same password"
+      auth.login(email, weakPassword) != null
   }
 
 }

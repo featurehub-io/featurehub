@@ -8,7 +8,9 @@ import {logger} from "./logging";
 
 const superuserEmailAddress = 'irina@i.com';
 // const superuserEmailAddress = 'superuser@mailinator.com';
-const superuserPassword = 'password123';
+// Must satisfy the server's password complexity policy (see backend PasswordPolicy). 'password123'
+// had no uppercase letter and is rejected from 1.9.x onwards.
+const superuserPassword = 'Password123';
 
 async function ensureLoggedIn(world: SdkWorld) {
   const portfolioService: PortfolioServiceApi = world.portfolioApi;

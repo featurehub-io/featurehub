@@ -7,6 +7,18 @@ import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Note on password complexity: the methods here that <em>set</em> a password (register,
+ * resetPassword, replaceTemporaryPassword, changePassword) do NOT apply
+ * {@link io.featurehub.db.password.PasswordPolicy}. Enforcement lives in the MR resource layer
+ * (AuthResource, SetupResource) because that is where the HTTP 400 and its violation report are
+ * produced. Any new caller of these methods that accepts a password from a user is responsible for
+ * validating it first.
+ *
+ * <p>Deliberately not enforced here: {@link #login} re-hashes the stored password when the
+ * algorithm is out of date, and that write must never be policy checked or every legacy user with a
+ * non-compliant password would be locked out on their next sign in.
+ */
 public interface AuthenticationApi {
   Person login(@NotNull String email, @NotNull String password);
 

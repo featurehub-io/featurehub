@@ -4,6 +4,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/utils/password_policy_validator.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum RegisterUrlForm {
@@ -51,26 +52,38 @@ class RegisterBloc implements Bloc {
     }
   }
 
-  // complete the registration process
-  Future<void> completeRegistration(String token, String email, String name,
-      String password, String confirmPassword) async {
-    await mrClient.authServiceApi
-        .registerPerson(PersonRegistrationDetails(
-      email: email,
-      password: password,
-      confirmPassword: confirmPassword,
-      name: name,
-      registrationToken: token,
-    ))
-        .then((data) async {
+  /// Completes registration.
+  ///
+  /// Returns the rules the server rejected the password for, or null if it succeeded or failed for
+  /// some other reason. The server is the authority on the password policy, so a rejection here is
+  /// shown against the field rather than as a generic error dialog.
+  Future<List<PasswordPolicyRule>?> completeRegistration(String token,
+      String email, String name, String password, String confirmPassword) async {
+    try {
+      final data = await mrClient.authServiceApi.registerPerson(
+          PersonRegistrationDetails(
+        email: email,
+        password: password,
+        confirmPassword: confirmPassword,
+        name: name,
+        registrationToken: token,
+      ));
+
       if (!_formStateStream.isClosed) {
         _formStateStream.add(RegisterUrlForm.successState);
       }
 
       await mrClient.hasToken(data);
-    }).catchError((e, s) {
+      return null;
+    } catch (e, s) {
+      final rejected = passwordPolicyRejection(e);
+      if (rejected != null) {
+        return rejected;
+      }
+
       mrClient.dialogError(e, s);
-    });
+      return null;
+    }
   }
 
   @override

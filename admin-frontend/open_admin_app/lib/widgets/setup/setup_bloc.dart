@@ -4,6 +4,7 @@ import 'package:universal_html/html.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/utils/password_policy_validator.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
 
 enum SetupPage { page1, page2, page3 }
@@ -27,6 +28,10 @@ class SetupBloc implements Bloc {
   Stream<bool> get setupState => _setupSource.stream;
 
   late SetupPage current;
+
+  /// Rules the server rejected the password for. The password lives on page 1, so when this is set
+  /// we send the user back there to fix it rather than showing raw JSON on the final page.
+  List<PasswordPolicyRule>? serverRejectedPasswordRules;
 
   late bool _canGoToPage1;
 
@@ -81,6 +86,17 @@ class SetupBloc implements Bloc {
       }
       //    client.setGroup(data.person.groups);
     }).catchError((e, s) {
+      final rejected = passwordPolicyRejection(e);
+
+      if (rejected != null) {
+        // the password is entered on page 1, so take them back there with the rules shown
+        serverRejectedPasswordRules = rejected;
+        _setupSource.add(true); // no longer busy
+        current = SetupPage.page1;
+        _pageSource.add(current);
+        return;
+      }
+
       _setupSource.addError(e.toString());
     });
   }

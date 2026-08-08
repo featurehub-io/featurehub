@@ -605,6 +605,40 @@ class AppLocalizationsZh extends AppLocalizations {
   String get passwordMustBe7Chars => '密码长度至少需要 7 个字符！';
 
   @override
+  String passwordRuleMinLength(int count) {
+    return '至少 $count 个字符';
+  }
+
+  @override
+  String passwordRuleMaxLength(int count) {
+    return '不超过 $count 个字符';
+  }
+
+  @override
+  String get passwordRuleUppercase => '至少一个大写字母';
+
+  @override
+  String get passwordRuleLowercase => '至少一个小写字母';
+
+  @override
+  String get passwordRuleNumeric => '至少一个数字';
+
+  @override
+  String get passwordRuleSymbol => '至少一个符号（例如 ! ? #）';
+
+  @override
+  String get passwordRequirementsTitle => '您的密码必须包含：';
+
+  @override
+  String get passwordRejectedByServer => '此密码被拒绝：';
+
+  @override
+  String get resetTempPasswordTitle => '重置您的临时密码';
+
+  @override
+  String get resetTempPasswordMessage => '您似乎使用临时密码登录，请先在下方重置您的密码，然后再继续。';
+
+  @override
   String get passwordsDoNotMatch => '两次输入的密码不匹配';
 
   @override

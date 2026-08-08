@@ -37,6 +37,61 @@ auth.userMustBeCreatedFirst=false
 - `auth.disable-login` - by default, disable-login for local is turned off (false). If you only want people to sign in via your IDP, turn this true
 - `auth.userMustBeCreatedFirst` - the user must exist in the database before they are allowed to login using an external auth provider. The default is false.
 
+=== Password complexity
+
+FeatureHub enforces a password complexity policy on the server, on every operation that sets a local
+password: completing a registration, creating the initial site administrator, an administrator
+resetting someone's password, a user replacing a temporary password, and a user changing their own
+password.
+
+----
+auth.password.min-length=8
+auth.password.max-length=40
+auth.password.require-uppercase=true
+auth.password.require-lowercase=true
+auth.password.require-numeric=true
+auth.password.require-symbol=false
+----
+
+- `auth.password.min-length` - minimum number of characters. Default 8.
+- `auth.password.max-length` - maximum number of characters. Default 40, which is also the largest
+value the API accepts; setting it higher is logged as an error and clamped.
+- `auth.password.require-uppercase` - require at least one uppercase letter. Default true.
+- `auth.password.require-lowercase` - require at least one lowercase letter. Default true.
+- `auth.password.require-numeric` - require at least one digit. Default true.
+- `auth.password.require-symbol` - require at least one character that is neither a letter nor a
+digit. Default false, because requiring a symbol tends to push users toward predictable patterns
+like `Password1!`.
+
+A rejected password returns `400` with a list of the rules that were violated, so the admin console
+can show precise guidance. The policy is also published on the `/mr-api/initialize` response, which
+is how the console knows what rules to display before you submit.
+
+NOTE: This policy applies only when a password is being *set*. It is deliberately not applied when
+an existing password is presented for verification - signing in, or supplying your current password
+in order to change it. No earlier release validated password length, so passwords that violate the
+current policy may already be stored; their owners can still sign in and can still change to a
+compliant password themselves. Nobody is forced to rotate a password because you introduced or
+tightened this policy.
+
+WARNING: If you provision users by scripting the FeatureHub API, calls that set a weak password will
+start failing with a `400` once you upgrade. To restore the previous, entirely permissive behaviour,
+set:
+
+----
+auth.password.min-length=1
+auth.password.require-uppercase=false
+auth.password.require-lowercase=false
+auth.password.require-numeric=false
+auth.password.require-symbol=false
+----
+
+NOTE: The uppercase and lowercase rules are expressed in terms of letter case, which scripts such as
+Chinese, Japanese, Arabic and Hebrew do not have. If your users choose passwords written entirely in
+such a script, they cannot satisfy those two rules and would have to include Latin characters. If
+that applies to your organisation, turn `require-uppercase` and `require-lowercase` off and consider
+raising `min-length` instead.
+
 == Logging in via your own login page
 
 All of the following options allow you to specify a "code" which identifies the identity configuration. For both OAuth2

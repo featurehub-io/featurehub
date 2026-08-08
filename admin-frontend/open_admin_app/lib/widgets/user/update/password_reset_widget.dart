@@ -1,8 +1,12 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/generated/l10n/app_localizations.dart';
+import 'package:open_admin_app/utils/password_policy_validator.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
+import 'package:open_admin_app/widgets/common/password_requirements_widget.dart';
 
 class ResetPasswordWidget extends StatefulWidget {
   final String personId;
@@ -20,9 +24,13 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
   final _password = TextEditingController();
   final _formKey = GlobalKey<FormState>(debugLabel: 'reset_password_widget');
 
+  /// Populated when the server rejects a password this form accepted - the server is authoritative.
+  List<PasswordPolicyRule>? _serverRejectedRules;
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Form(
       key: _formKey,
@@ -45,31 +53,51 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
                 ),
               ),
               Text(
-                'Reset your temporary password\n\n',
+                '${l10n.resetTempPasswordTitle}\n\n',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  const Text(
-                      'It looks like you tried to sign in with a temporary password, please reset your password below before proceeding.'),
+                  Text(l10n.resetTempPasswordMessage),
                   TextFormField(
                       controller: _password,
                       obscureText: true,
                       autofocus: true,
                       textInputAction: TextInputAction.next,
-                      validator: (v) => v == null || v.isEmpty
-                          ? 'Please enter your new password'
-                          : null,
-                      decoration: const InputDecoration(labelText: 'Password')),
+                      onChanged: (_) => setState(() {}),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) {
+                          return l10n.newPasswordRequired;
+                        }
+                        return passwordValidationMessage(
+                            v, bloc.passwordPolicy, l10n);
+                      },
+                      decoration:
+                          InputDecoration(labelText: l10n.passwordLabel)),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 4),
+                    child: PasswordRequirementsWidget(
+                      policy: bloc.passwordPolicy,
+                      password: _password.text,
+                      serverRejectedRules: _serverRejectedRules,
+                    ),
+                  ),
                   TextFormField(
                       controller: _confirmPassword,
                       obscureText: true,
                       textInputAction: TextInputAction.next,
-                      validator: (v) => v == null || v.isEmpty
-                          ? 'Please confirm your password'
-                          : null,
-                      decoration:
-                          const InputDecoration(labelText: 'Confirm password')),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) {
+                          return l10n.confirmPasswordRequired;
+                        }
+                        if (v != _password.text) {
+                          return l10n.passwordsDoNotMatch;
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                          labelText: l10n.confirmPasswordLabel)),
                 ],
               ),
               const Row(
@@ -82,13 +110,20 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     FHFlatButton(
-                        title: 'Save',
+                        title: l10n.save,
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
                             try {
                               await bloc.replaceTempPassword(
                                   widget.personId, _password.text);
+                              setState(() => _serverRejectedRules = null);
                             } catch (e, s) {
+                              final rejected = passwordPolicyRejection(e);
+                              if (rejected != null) {
+                                // the server disagreed with us about the password - it wins
+                                setState(() => _serverRejectedRules = rejected);
+                                return;
+                              }
                               await bloc.dialogError(e, s);
                             }
                           }

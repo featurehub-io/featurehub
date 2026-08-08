@@ -1208,6 +1208,66 @@ abstract class AppLocalizations {
   /// **'Password must be at least 7 characters!'**
   String get passwordMustBe7Chars;
 
+  /// Password policy rule: minimum length
+  ///
+  /// In en, this message translates to:
+  /// **'At least {count} characters'**
+  String passwordRuleMinLength(int count);
+
+  /// Password policy rule: maximum length
+  ///
+  /// In en, this message translates to:
+  /// **'No more than {count} characters'**
+  String passwordRuleMaxLength(int count);
+
+  /// Password policy rule: an uppercase letter is required
+  ///
+  /// In en, this message translates to:
+  /// **'At least one uppercase letter'**
+  String get passwordRuleUppercase;
+
+  /// Password policy rule: a lowercase letter is required
+  ///
+  /// In en, this message translates to:
+  /// **'At least one lowercase letter'**
+  String get passwordRuleLowercase;
+
+  /// Password policy rule: a digit is required
+  ///
+  /// In en, this message translates to:
+  /// **'At least one number'**
+  String get passwordRuleNumeric;
+
+  /// Password policy rule: a non-alphanumeric character is required
+  ///
+  /// In en, this message translates to:
+  /// **'At least one symbol (e.g. ! ? #)'**
+  String get passwordRuleSymbol;
+
+  /// Heading above the list of password requirements
+  ///
+  /// In en, this message translates to:
+  /// **'Your password must have:'**
+  String get passwordRequirementsTitle;
+
+  /// Shown when the server rejects a password the form had accepted
+  ///
+  /// In en, this message translates to:
+  /// **'This password was rejected:'**
+  String get passwordRejectedByServer;
+
+  /// Title of the temporary password replacement screen
+  ///
+  /// In en, this message translates to:
+  /// **'Reset your temporary password'**
+  String get resetTempPasswordTitle;
+
+  /// Explanation on the temporary password replacement screen
+  ///
+  /// In en, this message translates to:
+  /// **'It looks like you tried to sign in with a temporary password, please reset your password below before proceeding.'**
+  String get resetTempPasswordMessage;
+
   /// Validation message when passwords don't match
   ///
   /// In en, this message translates to:
