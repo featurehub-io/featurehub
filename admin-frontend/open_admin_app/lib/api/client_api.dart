@@ -57,6 +57,11 @@ class ManagementRepositoryClientBloc implements Bloc {
   final ApiClient _client;
   PersonState personState = PersonState();
 
+  /// The server's password complexity policy, picked up from the setup call at bootstrap. Null if
+  /// we could not get it (an older backend, or the call failed) - password forms fall back to
+  /// [defaultPasswordPolicy] in that case. The server is authoritative either way.
+  PasswordPolicy? passwordPolicy;
+
   late SetupServiceApi setupApi;
   late PersonServiceApi personServiceApi;
   late AuthServiceApi authServiceApi;
@@ -414,6 +419,7 @@ class ManagementRepositoryClientBloc implements Bloc {
       organization = setupResponse.organization;
       identityProviders.identityProviders = setupResponse.providers;
       identityProviders.capabilities = setupResponse.capabilityInfo;
+      passwordPolicy = setupResponse.passwordPolicy;
 
       FHAnalytics.setGA(setupResponse.capabilityInfo['trackingId']);
 
@@ -438,6 +444,8 @@ class ManagementRepositoryClientBloc implements Bloc {
               as SetupMissingResponse;
           identityProviders.identityProviders = smr.providers;
           identityProviders.identityInfo = smr.providerInfo;
+          // the setup form sets a password, so it needs the policy before it can validate
+          passwordPolicy = smr.passwordPolicy;
           FHAnalytics.setGA(smr.capabilityInfo['trackingId']);
           routeSlot(RouteSlot.setup);
         } else {

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
+import 'package:open_admin_app/utils/password_policy_validator.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
+import 'package:open_admin_app/widgets/common/password_requirements_widget.dart';
 import 'package:open_admin_app/widgets/setup/setup_bloc.dart';
 import 'package:open_admin_app/widgets/user/signin/signin_provider_button.dart';
 import 'package:zxcvbn/zxcvbn.dart';
@@ -29,6 +32,12 @@ class _SetupPage1State extends State<SetupPage1Widget> {
   double? _passwordScore;
   Color _passwordStrengthColor = Colors.white;
 
+  /// Set when zxcvbn could not score the password at all - distinct from "scored as weak".
+  bool _passwordStrengthUnavailable = false;
+
+  /// Populated when the server rejects a password this form accepted - the server is authoritative.
+  List<PasswordPolicyRule>? _serverRejectedRules;
+
   final _formKey = GlobalKey<FormState>(debugLabel: 'setup_page1');
 
   @override
@@ -43,27 +52,37 @@ class _SetupPage1State extends State<SetupPage1Widget> {
     _pw1.addListener(setPasswordStrength);
   }
 
+  /// The strength meter is advisory only - what is actually enforced comes from the password
+  /// policy, which never touches zxcvbn. zxcvbn throws a RangeError on an empty password (it
+  /// unwinds its scoring table from index length-1) and has a history of similar failures on other
+  /// inputs, so any failure here hides the meter instead of taking the app down.
   void setPasswordStrength() {
     double? score;
-    Color stateColor;
+    Color stateColor = Colors.white;
+    var unavailable = false;
 
-    if (_pw1.text.isEmpty) {
-      stateColor = Colors.white;
-    } else {
-      final result = Zxcvbn().evaluate(_pw1.text);
-      score = result.score;
-      stateColor =
-          (result.score == null || result.score! < _passwordScoreThreshold)
-              ? Colors.red
-              : Colors.green;
-      if (result.score != null && result.score! < 2) {
-        stateColor = Colors.orange;
+    if (_pw1.text.isNotEmpty) {
+      try {
+        final result = Zxcvbn().evaluate(_pw1.text);
+        score = result.score;
+        stateColor =
+            (result.score == null || result.score! < _passwordScoreThreshold)
+                ? Colors.red
+                : Colors.green;
+        if (result.score != null && result.score! < 2) {
+          stateColor = Colors.orange;
+        }
+      } catch (e) {
+        // Hide the meter rather than fall through to the null-score branch, which would label a
+        // password we simply could not evaluate as "weak".
+        unavailable = true;
       }
     }
 
     setState(() {
       _passwordScore = score;
       _passwordStrengthColor = stateColor;
+      _passwordStrengthUnavailable = unavailable;
     });
   }
 
@@ -151,16 +170,21 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                       if (v == null || v.isEmpty) {
                         return l10n.passwordRequired;
                       }
-                      if (v.length < 7) {
-                        return l10n.passwordMustBe7Chars;
-                      }
-                      //this is quite sensitive and annoying at the moment, commenting out
-//                    Result result = Xcvbnm().estimate(v);
-//                    if (result.score < _PASSWORD_SCORE_THRESHOLD) {
-//                      return 'Password not strong enough, try adding numbers and symbols';
-//                    }
-                      return null;
+                      return passwordValidationMessage(
+                          v, widget.bloc.mrClient.passwordPolicy, l10n);
                     }),
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 4),
+                    child: PasswordRequirementsWidget(
+                      policy: widget.bloc.mrClient.passwordPolicy,
+                      password: _pw1.text,
+                      serverRejectedRules: _serverRejectedRules ??
+                          widget.bloc.serverRejectedPasswordRules,
+                    ),
+                  ),
+                ),
                 Align(
                   alignment: Alignment.topLeft,
                   child: Padding(
@@ -201,7 +225,8 @@ class _SetupPage1State extends State<SetupPage1Widget> {
   }
 
   Widget _buildPasswordStrengthText(BuildContext context, AppLocalizations l10n) {
-    if (_passwordScore == null && _pw1.text.isEmpty) {
+    if (_passwordStrengthUnavailable ||
+        (_passwordScore == null && _pw1.text.isEmpty)) {
       return const SizedBox.shrink();
     }
     String label;

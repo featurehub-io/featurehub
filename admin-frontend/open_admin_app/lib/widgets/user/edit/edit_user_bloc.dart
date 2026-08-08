@@ -32,7 +32,18 @@ class EditUserBloc implements Bloc {
         password: password,
       );
 
-      await mrClient.authServiceApi.resetPassword(personId!, passwordReset);
+      final updated =
+          await mrClient.authServiceApi.resetPassword(personId!, passwordReset);
+
+      // Resetting a password writes to the person record, so the server bumps its version. Without
+      // syncing it here the page would still hold the pre-reset version and a subsequent
+      // "save and close" would fail optimistic locking with a 422.
+      //
+      // Only the version is taken: the person returned by resetPassword is built without groups,
+      // so replacing `person` wholesale would drop the group data this page relies on.
+      if (updated.version != null) {
+        person?.version = updated.version;
+      }
     }
   }
 

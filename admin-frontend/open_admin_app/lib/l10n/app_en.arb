@@ -630,6 +630,42 @@
   "passwordMustBe7Chars": "Password must be at least 7 characters!",
   "@passwordMustBe7Chars": { "description": "Validation message when password is too short" },
 
+  "passwordRuleMinLength": "At least {count} characters",
+  "@passwordRuleMinLength": {
+    "description": "Password policy rule: minimum length",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "passwordRuleMaxLength": "No more than {count} characters",
+  "@passwordRuleMaxLength": {
+    "description": "Password policy rule: maximum length",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "passwordRuleUppercase": "At least one uppercase letter",
+  "@passwordRuleUppercase": { "description": "Password policy rule: an uppercase letter is required" },
+
+  "passwordRuleLowercase": "At least one lowercase letter",
+  "@passwordRuleLowercase": { "description": "Password policy rule: a lowercase letter is required" },
+
+  "passwordRuleNumeric": "At least one number",
+  "@passwordRuleNumeric": { "description": "Password policy rule: a digit is required" },
+
+  "passwordRuleSymbol": "At least one symbol (e.g. ! ? #)",
+  "@passwordRuleSymbol": { "description": "Password policy rule: a non-alphanumeric character is required" },
+
+  "passwordRequirementsTitle": "Your password must have:",
+  "@passwordRequirementsTitle": { "description": "Heading above the list of password requirements" },
+
+  "passwordRejectedByServer": "This password was rejected:",
+  "@passwordRejectedByServer": { "description": "Shown when the server rejects a password the form had accepted" },
+
+  "resetTempPasswordTitle": "Reset your temporary password",
+  "@resetTempPasswordTitle": { "description": "Title of the temporary password replacement screen" },
+
+  "resetTempPasswordMessage": "It looks like you tried to sign in with a temporary password, please reset your password below before proceeding.",
+  "@resetTempPasswordMessage": { "description": "Explanation on the temporary password replacement screen" },
+
   "passwordsDoNotMatch": "Passwords don't match",
   "@passwordsDoNotMatch": { "description": "Validation message when passwords don't match" },
 

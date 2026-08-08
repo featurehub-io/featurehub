@@ -3,6 +3,7 @@ package io.featurehub.mr.resources
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.db.api.*
+import io.featurehub.db.password.PasswordPolicyViolationException
 import io.featurehub.encryption.WebhookEncryptionFeature
 import io.featurehub.mr.api.SetupServiceDelegate
 import io.featurehub.mr.auth.AuthenticationRepository
@@ -16,6 +17,7 @@ import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.Response
 import org.slf4j.LoggerFactory
+import io.featurehub.db.password.PasswordPolicy as PasswordPolicyConfig
 
 class SetupResource @Inject constructor(
   private val setupApi: SetupApi,
@@ -26,7 +28,8 @@ class SetupResource @Inject constructor(
   private val authRepository: AuthenticationRepository,
   private val personApi: PersonApi,
   private val portfolioUtils: PortfolioUtils,
-  private val authProviderCollection: AuthProviderCollection
+  private val authProviderCollection: AuthProviderCollection,
+  private val passwordPolicy: PasswordPolicyConfig
 ) : SetupServiceDelegate {
   @ConfigKey("auth.disable-login")
   protected var loginDisabled: Boolean? = false
@@ -53,6 +56,7 @@ class SetupResource @Inject constructor(
       }
 
       sr.capabilityInfo(capabilityInfo())
+      sr.passwordPolicy(publishedPasswordPolicy())
 
       return sr
     }
@@ -60,7 +64,42 @@ class SetupResource @Inject constructor(
       .capabilityInfo(java.util.Map.of("trackingId", googleTrackingId))
       .providers(providerCodes)
       .providerInfo(fillProviderInfo())
+      .passwordPolicy(publishedPasswordPolicy())
     throw WebApplicationException(Response.status(Response.Status.NOT_FOUND).entity(setupMissingResponse).build())
+  }
+
+  /**
+   * Published so password forms can show the rules and validate before submitting. This is a
+   * convenience for clients, never the enforcement point - the server always revalidates.
+   */
+  private fun publishedPasswordPolicy(): PasswordPolicy {
+    return PasswordPolicy()
+      .minLength(passwordPolicy.minLength)
+      .maxLength(passwordPolicy.maxLength)
+      .requireUppercase(passwordPolicy.isRequireUppercase)
+      .requireLowercase(passwordPolicy.isRequireLowercase)
+      .requireNumeric(passwordPolicy.isRequireNumeric)
+      .requireSymbol(passwordPolicy.isRequireSymbol)
+  }
+
+  /**
+   * Runs before anything is created, so a rejected setup leaves no half-built org/portfolio/group.
+   */
+  private fun enforcePasswordPolicy(password: String?) {
+    try {
+      passwordPolicy.validate(password)
+    } catch (e: PasswordPolicyViolationException) {
+      throw WebApplicationException(
+        Response.status(Response.Status.BAD_REQUEST)
+          .entity(
+            PasswordPolicyViolationReport()
+              .violatedRules(e.violations.map { PasswordPolicyRule.valueOf(it.name) })
+              .minLength(e.minLength)
+              .maxLength(e.maxLength)
+          )
+          .build()
+      )
+    }
   }
 
   private fun capabilityInfo(): Map<String, String> {
@@ -105,6 +144,12 @@ class SetupResource @Inject constructor(
 
     if (setupSiteAdmin.organizationName.trim { it <= ' ' }.isEmpty()) {
       throw BadRequestException("Org name cannot be 0 length")
+    }
+
+    // before createOrganization so a rejected setup leaves nothing behind. Only applies to the local
+    // password flow - an external provider setup supplies no email or password and is exempt.
+    if (setupSiteAdmin.emailAddress != null) {
+      enforcePasswordPolicy(setupSiteAdmin.password)
     }
 
     // if we don't have an email address from them, and they haven't provided an auth provider in the setup request

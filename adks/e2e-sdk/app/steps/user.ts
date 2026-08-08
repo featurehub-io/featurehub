@@ -12,6 +12,11 @@ import {expect} from "chai";
 import {logger} from "../support/logging";
 import {createTestUser, testingSaas} from "../support/saas_test";
 
+// Must satisfy the server's password complexity policy (see backend PasswordPolicy - by default
+// 8+ chars with upper, lower and a digit). This used to be the user's email address, which only
+// satisfied the policy when makeid() happened to produce an uppercase letter and a digit.
+const testUserPassword = 'Passw0rdE2e';
+
 
 When("I create a new user", async function() {
   const world = this as SdkWorld;
@@ -33,8 +38,8 @@ When("I create a new user", async function() {
 
   const regPerson = new PersonRegistrationDetails({
     email: email,
-    password: email,
-    confirmPassword: email,
+    password: testUserPassword,
+    confirmPassword: testUserPassword,
     name: name,
     registrationToken: person.token
   });
@@ -46,7 +51,7 @@ When("I create a new user", async function() {
   expect(result.status).to.be.lessThan(205);
 
   const loginResponse = await world.superuser.anonAuthorizationAPi.login(new UserCredentials({
-    email: email, password: email
+    email: email, password: testUserPassword
   }));
 
   expect(loginResponse.status).to.eq(200);

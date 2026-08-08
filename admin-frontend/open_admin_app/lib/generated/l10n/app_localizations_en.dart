@@ -646,6 +646,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordMustBe7Chars => 'Password must be at least 7 characters!';
 
   @override
+  String passwordRuleMinLength(int count) {
+    return 'At least $count characters';
+  }
+
+  @override
+  String passwordRuleMaxLength(int count) {
+    return 'No more than $count characters';
+  }
+
+  @override
+  String get passwordRuleUppercase => 'At least one uppercase letter';
+
+  @override
+  String get passwordRuleLowercase => 'At least one lowercase letter';
+
+  @override
+  String get passwordRuleNumeric => 'At least one number';
+
+  @override
+  String get passwordRuleSymbol => 'At least one symbol (e.g. ! ? #)';
+
+  @override
+  String get passwordRequirementsTitle => 'Your password must have:';
+
+  @override
+  String get passwordRejectedByServer => 'This password was rejected:';
+
+  @override
+  String get resetTempPasswordTitle => 'Reset your temporary password';
+
+  @override
+  String get resetTempPasswordMessage =>
+      'It looks like you tried to sign in with a temporary password, please reset your password below before proceeding.';
+
+  @override
   String get passwordsDoNotMatch => 'Passwords don\'t match';
 
   @override

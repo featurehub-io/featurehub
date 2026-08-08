@@ -1,6 +1,7 @@
 package io.featurehub.mr
 
 import io.featurehub.app.db.utils.CommonDbFeature
+import io.featurehub.db.password.PasswordPolicy
 import io.featurehub.db.utils.ApiToSqlApiBinder
 import io.featurehub.db.utils.ComplexUpdateMigrations
 import io.featurehub.encryption.WebhookEncryptionFeature
@@ -95,6 +96,8 @@ class ManagementRepositoryFeature : Feature {
         )
         bind(PortfolioUtils::class.java).to(PortfolioUtils::class.java).`in`(Singleton::class.java)
         bind(AuthManager::class.java).to(AuthManagerService::class.java).`in`(Singleton::class.java)
+        // AuthResource and SetupResource must share one policy - SetupResource publishes it to clients
+        bind(PasswordPolicy::class.java).to(PasswordPolicy::class.java).`in`(Singleton::class.java)
         bind(ApplicationResource::class.java).to(ApplicationServiceDelegate::class.java).`in`(
           Singleton::class.java
         )

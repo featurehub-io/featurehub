@@ -6,6 +6,8 @@ import io.featurehub.db.api.AuthenticationApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonApi
+import io.featurehub.db.password.PasswordPolicy
+import io.featurehub.db.password.PasswordPolicyViolationException
 import io.featurehub.mr.api.AuthServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.auth.AuthenticationRepository
@@ -16,6 +18,8 @@ import jakarta.inject.Inject
 import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
+import jakarta.ws.rs.WebApplicationException
+import jakarta.ws.rs.core.Response
 import jakarta.ws.rs.core.SecurityContext
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -24,7 +28,8 @@ import kotlin.String
 class AuthResource @Inject constructor(
   private val authenticationApi: AuthenticationApi,
   private val authManager: AuthManagerService, private val personApi: PersonApi,
-  private val authRepository: AuthenticationRepository, private val authProviderCollection: AuthProviderCollection
+  private val authRepository: AuthenticationRepository, private val authProviderCollection: AuthProviderCollection,
+  private val passwordPolicy: PasswordPolicy
 ) : AuthServiceDelegate {
   private val log = LoggerFactory.getLogger(AuthResource::class.java)
 
@@ -35,12 +40,40 @@ class AuthResource @Inject constructor(
     DeclaredConfigResolver.resolve(this)
   }
 
+  /**
+   * Rejects a password that fails the complexity policy with a 400 carrying every rule it violated,
+   * so the (localised) admin console can render its own guidance.
+   *
+   * Only ever called on a path that *sets* a password. Login and the old-password half of a change
+   * request deliberately do not go through here - stored passwords predate this policy and their
+   * owners must still be able to authenticate. See PasswordPolicy.
+   */
+  private fun enforcePasswordPolicy(password: String?) {
+    try {
+      passwordPolicy.validate(password)
+    } catch (e: PasswordPolicyViolationException) {
+      throw WebApplicationException(
+        Response.status(Response.Status.BAD_REQUEST)
+          .entity(
+            PasswordPolicyViolationReport()
+              .violatedRules(e.violations.map { PasswordPolicyRule.valueOf(it.name) })
+              .minLength(e.minLength)
+              .maxLength(e.maxLength)
+          )
+          .build()
+      )
+    }
+  }
+
   override fun changePassword(id: UUID, passwordUpdate: PasswordUpdate, securityContext: SecurityContext?): Person {
     val personByToken = authManager.from(securityContext)
 
     // yourself or a superuser can change your password. This allows a superuser to change the password immediately
     // after reset without having to go to any further trouble.
     if (personByToken.id!!.id == id || authManager.isOrgAdmin(personByToken)) {
+      // only the new password is policed - the old one is an existing credential being verified
+      enforcePasswordPolicy(passwordUpdate.newPassword)
+
       return authenticationApi.changePassword(id, passwordUpdate.oldPassword, passwordUpdate.newPassword)
         ?: throw BadRequestException("Old password does not match.")
     }
@@ -109,6 +142,8 @@ class AuthResource @Inject constructor(
       throw BadRequestException()
     }
 
+    enforcePasswordPolicy(personRegistrationDetails.password)
+
     val newPerson = authenticationApi.register(
       personRegistrationDetails.name,
       personRegistrationDetails.email,
@@ -126,6 +161,8 @@ class AuthResource @Inject constructor(
     val person = authManager.from(context)
     if (true == person.passwordRequiresReset) {
       if (person.id!!.id == id) { // its me
+        enforcePasswordPolicy(passwordReset.password)
+
         val newPerson = authenticationApi.replaceTemporaryPassword(id, passwordReset.password)
         authRepository.invalidate(context)
         return TokenizedPerson().accessToken(authRepository.put(newPerson)).person(newPerson)
@@ -148,6 +185,9 @@ class AuthResource @Inject constructor(
 
   override fun resetPassword(id: UUID, passwordReset: PasswordReset, context: SecurityContext?): Person {
     if (authManager.isAnyAdmin(authManager.from(context))) {
+      // after the admin check, so an unauthorised caller gets a bare 403 and learns nothing about the policy
+      enforcePasswordPolicy(passwordReset.password)
+
       return authenticationApi.resetPassword(
         id, passwordReset.password,
         authManager.from(context).id!!.id, true == passwordReset.reactivate

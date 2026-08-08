@@ -2,6 +2,7 @@ package io.featurehub.mr.rest
 
 import io.featurehub.db.api.AuthenticationApi
 import io.featurehub.db.api.PersonApi
+import io.featurehub.db.password.PasswordPolicy
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.auth.AuthenticationRepository
 import io.featurehub.mr.model.PasswordReset
@@ -15,6 +16,10 @@ import jakarta.ws.rs.core.SecurityContext
 import spock.lang.Specification
 
 class AuthenticationResourceSpec extends Specification {
+  // these tests are about authorisation and session handling, not the password policy, but they run
+  // against the real default policy so they cannot accidentally mask it - hence the compliant passwords
+  static final String GOOD_PASSWORD = 'Passw0rdX'
+
   PersonApi personApi
   AuthManagerService authManager
   AuthenticationApi authApi
@@ -32,7 +37,8 @@ class AuthenticationResourceSpec extends Specification {
     fromPerson = new Person().id(new PersonId().id(UUID.randomUUID()))
     authManager.from(_) >> fromPerson
 
-    resource = new AuthResource(authApi, authManager, personApi, authRepository, authProviderCollection)
+    resource = new AuthResource(authApi, authManager, personApi, authRepository, authProviderCollection,
+      new PasswordPolicy(8, 40, true, true, true, false))
   }
 
   def "A non-admin cannot reset a password"() {
@@ -48,10 +54,10 @@ class AuthenticationResourceSpec extends Specification {
     and:
       Person p = new Person()
     when: "i try and reset a password"
-      Person newPerson = resource.resetPassword(fromPerson.id.id, new PasswordReset(password: 'fred'), null)
+      Person newPerson = resource.resetPassword(fromPerson.id.id, new PasswordReset(password: GOOD_PASSWORD), null)
     then:
       newPerson == p
-      1 * authApi.resetPassword(fromPerson.id.id, 'fred', fromPerson.id.id, false) >> p
+      1 * authApi.resetPassword(fromPerson.id.id, GOOD_PASSWORD, fromPerson.id.id, false) >> p
   }
 
   def "An admin trying to reset a password for an unknown person will get 404"() {
@@ -61,7 +67,7 @@ class AuthenticationResourceSpec extends Specification {
     and: "the reset process returns a person"
       authApi.resetPassword(pId, null, UUID.randomUUID(), false) >> null
     when: "i try and reset a password"
-      resource.resetPassword(pId, new PasswordReset(password: 'rrrrr'), null)
+      resource.resetPassword(pId, new PasswordReset(password: GOOD_PASSWORD), null)
     then:
       thrown NotFoundException
   }
@@ -92,9 +98,9 @@ class AuthenticationResourceSpec extends Specification {
     and:
       SecurityContext ctx = Mock(SecurityContext)
     when:
-      def tp = resource.replaceTempPassword(fromPerson.id.id, new PasswordReset(password: 'ibiza'), ctx)
+      def tp = resource.replaceTempPassword(fromPerson.id.id, new PasswordReset(password: GOOD_PASSWORD), ctx)
     then:
-      authApi.replaceTemporaryPassword(fromPerson.id.id, 'ibiza') >> newPerson
+      authApi.replaceTemporaryPassword(fromPerson.id.id, GOOD_PASSWORD) >> newPerson
       authRepository.invalidate(ctx)
       authRepository.put(newPerson) >> "fred"
       tp.accessToken == "fred"

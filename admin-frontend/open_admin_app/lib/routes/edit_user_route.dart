@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
+import 'package:open_admin_app/utils/password_policy_validator.dart';
 import 'package:open_admin_app/widget_creator.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
@@ -10,6 +11,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
+import 'package:open_admin_app/widgets/common/password_requirements_widget.dart';
 import 'package:open_admin_app/widgets/user/common/admin_checkbox.dart';
 import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widget.dart';
 import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
@@ -192,6 +194,9 @@ class _UserPasswordUpdateDialogWidgetState
   final TextEditingController _password = TextEditingController();
   final TextEditingController _passwordConfirm = TextEditingController();
 
+  /// Populated when the server rejects a password this form accepted - the server is authoritative.
+  List<PasswordPolicyRule>? _serverRejectedRules;
+
   _UserPasswordUpdateDialogWidgetState();
 
   @override
@@ -212,16 +217,29 @@ class _UserPasswordUpdateDialogWidgetState
               ),
               TextFormField(
                   controller: _password,
+                  onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
                     labelText: l10n.newPasswordLabel,
                   ),
                   validator: ((v) {
-                    if (v?.isEmpty == true) {
+                    if (v == null || v.isEmpty) {
                       return l10n.newPasswordRequired;
                     }
-                    return null;
+                    return passwordValidationMessage(
+                        v, widget.bloc.mrClient.passwordPolicy, l10n);
                   })),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 4),
+                  child: PasswordRequirementsWidget(
+                    policy: widget.bloc.mrClient.passwordPolicy,
+                    password: _password.text,
+                    serverRejectedRules: _serverRejectedRules,
+                  ),
+                ),
+              ),
               TextFormField(
                   controller: _passwordConfirm,
                   decoration: InputDecoration(
@@ -256,6 +274,13 @@ class _UserPasswordUpdateDialogWidgetState
                     await widget.bloc.resetUserPassword(_password.text);
                     widget.bloc.mrClient.removeOverlay();
                   } catch (e, s) {
+                    final rejected = passwordPolicyRejection(e);
+                    if (rejected != null) {
+                      // the server disagreed with us about the password - it wins, and it says
+                      // which rules failed, so show those against the field rather than a dialog
+                      setState(() => _serverRejectedRules = rejected);
+                      return;
+                    }
                     await widget.bloc.mrClient.dialogError(e, s);
                   }
                 }

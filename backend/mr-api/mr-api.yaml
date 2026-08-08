@@ -880,7 +880,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/TokenizedPerson"
         400:
-          description: "Bad Request"
+          description: "Bad Request. Carries a PasswordPolicyViolationReport if the password failed the complexity policy."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordPolicyViolationReport"
         401:
           description: "no permission"
         404:
@@ -985,7 +989,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/TokenizedPerson"
         400:
-          description: "Bad Request"
+          description: "Bad Request. Carries a PasswordPolicyViolationReport if the password failed the complexity policy."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordPolicyViolationReport"
         401:
           description: "no permission"
         403:
@@ -1049,7 +1057,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/Person"
         400:
-          description: "Bad Request"
+          description: "Bad Request. Carries a PasswordPolicyViolationReport if the new password failed the complexity policy."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordPolicyViolationReport"
         401:
           description: "no permission"
         403:
@@ -1110,7 +1122,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/Person"
         400:
-          description: "Bad Request"
+          description: "Bad Request. Carries a PasswordPolicyViolationReport if the temporary password failed the complexity policy."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordPolicyViolationReport"
         401:
           description: "no permission"
         403:
@@ -2348,7 +2364,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/TokenizedPerson"
         400:
-          description: "Bad Request"
+          description: "Bad Request. Carries a PasswordPolicyViolationReport if the password failed the complexity policy."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordPolicyViolationReport"
         401:
           description: "no permission"
         409:
@@ -2473,6 +2493,10 @@ components:
           description: "Set if there is only one external provider and no local. Allows immediate redirect to provider. It assumes it will be used immediate (e.g. state in oauth2 url)"
           type: string
           nullable: true
+        passwordPolicy: # do not include a description or the API changes code generation
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PasswordPolicy"
     IdentityProviderInfo:
       type: object
       required:
@@ -2500,6 +2524,11 @@ components:
           type: object
           additionalProperties:
             $ref: "#/components/schemas/IdentityProviderInfo"
+        # the site admin setup form sees this response and it sets a password, so it needs the policy too.
+        passwordPolicy: # do not include a description or the API changes code generation
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PasswordPolicy"
     ProviderRedirect:
       type: object
       properties:
@@ -2614,6 +2643,10 @@ components:
           maxLength: 100
           format: email
         password:
+          # DO NOT narrow this to the password policy maximum. This carries an *existing* password
+          # for verification, not a new one. No release has ever validated password length, so
+          # stored passwords may be longer than the policy allows - narrowing this would lock those
+          # users out of their accounts permanently. See PasswordPolicy.
           type: string
           maxLength: 100
     PasswordReset:
@@ -2623,6 +2656,7 @@ components:
       properties:
         password:
           type: string
+          maxLength: 40
         reactivate:
           default: false
           type: boolean
@@ -2633,13 +2667,65 @@ components:
         - newPassword
       properties:
         oldPassword:
+          # DO NOT narrow this to the password policy maximum - it carries an *existing* password
+          # for verification. A user whose stored password is longer than the policy allows must
+          # still be able to supply it here in order to change to a compliant one. See PasswordPolicy.
           maxLength: 100
           format: password
           type: string
         newPassword:
-          maxLength: 100
+          maxLength: 40
           format: password
           type: string
+    PasswordPolicyRule:
+      type: string
+      description: "A single rule a password can violate. Reported as an enum rather than a message so the localised admin console can render its own text."
+      enum:
+        - MIN_LENGTH
+        - MAX_LENGTH
+        - REQUIRE_UPPERCASE
+        - REQUIRE_LOWERCASE
+        - REQUIRE_NUMERIC
+        - REQUIRE_SYMBOL
+    PasswordPolicy:
+      type: object
+      description: "The active password complexity policy, published so clients can describe the rules and pre-validate. This is not the enforcement point - the server always revalidates."
+      required:
+        - minLength
+        - maxLength
+        - requireUppercase
+        - requireLowercase
+        - requireNumeric
+        - requireSymbol
+      properties:
+        minLength:
+          type: integer
+        maxLength:
+          type: integer
+        requireUppercase:
+          type: boolean
+        requireLowercase:
+          type: boolean
+        requireNumeric:
+          type: boolean
+        requireSymbol:
+          type: boolean
+    PasswordPolicyViolationReport:
+      type: object
+      description: "Returned with a 400 when a password fails the policy. Lists every rule violated, never the password itself."
+      required:
+        - violatedRules
+      properties:
+        violatedRules:
+          type: array
+          items:
+            $ref: "#/components/schemas/PasswordPolicyRule"
+        minLength:
+          nullable: true
+          type: integer
+        maxLength:
+          nullable: true
+          type: integer
 
     RolloutStrategyValidationRequest:
       type: object

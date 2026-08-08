@@ -1,9 +1,12 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
+import 'package:open_admin_app/utils/password_policy_validator.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
+import 'package:open_admin_app/widgets/common/password_requirements_widget.dart';
 import 'package:open_admin_app/widgets/user/register/register_url_bloc.dart';
 import 'package:openapi_dart_common/openapi.dart';
 import 'package:zxcvbn/zxcvbn.dart';
@@ -27,6 +30,9 @@ class RegisterURLState extends State<RegisterURLRoute> {
   final _pw1 = TextEditingController();
   final _pw2 = TextEditingController();
   Text _passwordStrength = const Text('');
+
+  /// Populated when the server rejects a password this form accepted - the server is authoritative.
+  List<PasswordPolicyRule>? _serverRejectedRules;
 
   @override
   Widget build(BuildContext context) {
@@ -109,20 +115,27 @@ class RegisterURLState extends State<RegisterURLRoute> {
               decoration: InputDecoration(labelText: l10n.passwordLabel),
               onChanged: (_) => setPasswordStrength(l10n),
               validator: (v) {
-                if (v == null) {
+                if (v == null || v.isEmpty) {
                   return l10n.passwordRequired;
                 }
-                if (v.isEmpty) {
-                  return l10n.passwordRequired;
-                }
-                if (v.length < 7) {
-                  return l10n.passwordMustBe7Chars;
+                final policyFailure = passwordValidationMessage(
+                    v, bloc.mrClient.passwordPolicy, l10n);
+                if (policyFailure != null) {
+                  return policyFailure;
                 }
                 if (_pw2.text.isNotEmpty && v != _pw2.text) {
                   return l10n.passwordsDoNotMatch;
                 }
                 return null;
               }),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 8, 0, 4),
+            child: PasswordRequirementsWidget(
+              policy: bloc.mrClient.passwordPolicy,
+              password: _pw1.text,
+              serverRejectedRules: _serverRejectedRules,
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 5, 0, 10),
             child: _passwordStrength,
@@ -148,14 +161,24 @@ class RegisterURLState extends State<RegisterURLRoute> {
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
                 child: FHFlatButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        bloc.completeRegistration(
+                        final rejected = await bloc.completeRegistration(
                             widget.token,
                             bloc.person!.email!,
                             _name.text,
                             _pw1.text,
                             _pw2.text);
+
+                        if (!context.mounted) return;
+
+                        if (rejected != null) {
+                          // the server disagreed with us about the password - it wins
+                          setState(() => _serverRejectedRules = rejected);
+                          return;
+                        }
+
+                        setState(() => _serverRejectedRules = null);
                         ManagementRepositoryClientBloc.router
                             .navigateTo(context, '/');
                       }
@@ -169,28 +192,44 @@ class RegisterURLState extends State<RegisterURLRoute> {
     );
   }
 
+  /// The strength meter is advisory only - what is actually enforced comes from the password
+  /// policy, which never touches zxcvbn. zxcvbn throws a RangeError on an empty password (it
+  /// unwinds its scoring table from index length-1) and has a history of similar failures on other
+  /// inputs, so any failure here hides the meter instead of taking the app down.
+  ///
+  /// setState runs either way, so the requirements checklist re-renders as the field changes.
   void setPasswordStrength(AppLocalizations l10n) {
-    final result = Zxcvbn().evaluate(_pw1.text);
-    var state = l10n.passwordStrengthWeak;
-    if (result.score == 1) {
-      state = l10n.passwordStrengthBelowAverage;
-    } else if (result.score == 2) {
-      state = l10n.passwordStrengthGood;
-    } else if (result.score == 3) {
-      state = l10n.passwordStrengthStrong;
-    }
-    Color stateColor =
-        (result.score == null || result.score! < _passwordScoreThreshold)
-            ? Colors.red
-            : Colors.green;
+    Text strength = const Text('');
 
-    if (result.score == 1) {
-      stateColor = Colors.orange;
+    if (_pw1.text.isNotEmpty) {
+      try {
+        final result = Zxcvbn().evaluate(_pw1.text);
+
+        var state = l10n.passwordStrengthWeak;
+        if (result.score == 1) {
+          state = l10n.passwordStrengthBelowAverage;
+        } else if (result.score == 2) {
+          state = l10n.passwordStrengthGood;
+        } else if (result.score == 3) {
+          state = l10n.passwordStrengthStrong;
+        }
+        Color stateColor =
+            (result.score == null || result.score! < _passwordScoreThreshold)
+                ? Colors.red
+                : Colors.green;
+
+        if (result.score == 1) {
+          stateColor = Colors.orange;
+        }
+
+        strength = Text(state, style: TextStyle(color: stateColor));
+      } catch (e) {
+        // Leave the meter hidden - the enforced rules are shown by the requirements checklist.
+      }
     }
 
-    final stateText = Text(state, style: TextStyle(color: stateColor));
     setState(() {
-      _passwordStrength = stateText;
+      _passwordStrength = strength;
     });
   }
 }
