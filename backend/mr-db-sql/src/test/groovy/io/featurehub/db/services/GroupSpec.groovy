@@ -1,6 +1,6 @@
 package io.featurehub.db.services
 
-import groovy.transform.CompileStatic
+
 import io.featurehub.db.FilterOptType
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.GroupApi
@@ -96,10 +96,10 @@ class GroupSpec extends BaseSpec {
     and: "i create a new group in the common portfolio"
       Group g = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name("plain-bob-group"), superPerson)
     and: "i update it with the basic user"
-      groupSqlApi.addPersonsToGroup(g.id, [bob.id.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(g.id, [bob.id.id], superuser,Opts.empty())
     when: "i add jane as a portfolio admin"
       def latestGroup = groupSqlApi.getGroup(portfolioAdminGroup.id, Opts.opts(FillOpts.Members), superPerson)
-      groupSqlApi.addPersonsToGroup(g.id, [jane.id.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(g.id, [jane.id.id], superuser,Opts.empty())
     then: "bob can get the group"
       groupSqlApi.getGroup(g.id, Opts.opts(FillOpts.Members), bob)
     and: "jane can get the group"
@@ -168,7 +168,7 @@ class GroupSpec extends BaseSpec {
 
   def "i can only add users to a group that exists"() {
     when:
-      Group g = groupSqlApi.addPersonsToGroup(UUID.randomUUID(), [superuser], Opts.empty())
+      Group g = groupSqlApi.addPersonsToGroup(UUID.randomUUID(), [superuser], superuser,Opts.empty())
     then:
       g == null
   }
@@ -187,7 +187,7 @@ class GroupSpec extends BaseSpec {
       Group g = nonAdminGroup()
       def randomUser = UUID.randomUUID()
     when: "i add a non existent person"
-      Group ng = groupSqlApi.addPersonsToGroup(g.id, [randomUser], Opts.opts(FillOpts.Members))
+      Group ng = groupSqlApi.addPersonsToGroup(g.id, [randomUser], superuser,Opts.opts(FillOpts.Members))
     then:
       ng.members.find(p -> p.id.id == randomUser) == null
   }
@@ -220,9 +220,9 @@ class GroupSpec extends BaseSpec {
       database.save(person)
       def personId = person.id
     when: "i add a person to the group"
-      Group ng = groupSqlApi.addPersonsToGroup(g.id, [personId], Opts.empty())
+      Group ng = groupSqlApi.addPersonsToGroup(g.id, [personId], superuser,Opts.empty())
     and: "i add the person to the group again"
-      Group sng = groupSqlApi.addPersonsToGroup(g.id, [personId], Opts.opts(FillOpts.Members))
+      Group sng = groupSqlApi.addPersonsToGroup(g.id, [personId], superuser,Opts.opts(FillOpts.Members))
     and: "i check the org admin groups this generic person is part of"
       def adminGroups = groupSqlApi.groupsPersonOrgAdminOf(personId)
     then:
@@ -244,7 +244,7 @@ class GroupSpec extends BaseSpec {
     when: "i add all people to the group"
       Group group
       people.each { DbPerson p ->
-        group = groupSqlApi.addPersonsToGroup(g.id, [p.id], Opts.opts(FillOpts.Members))
+        group = groupSqlApi.addPersonsToGroup(g.id, [p.id], superuser,Opts.opts(FillOpts.Members))
       }
     then:
       group != null
@@ -281,7 +281,7 @@ class GroupSpec extends BaseSpec {
     and: "i am not a member of the portfolio"
       boolean amNotMember = !groupSqlApi.isPersonMemberOfPortfolioGroup(g.portfolioId, person.id)
     when: "i add a person to the group"
-      Group addedToGroup = groupSqlApi.addPersonsToGroup(g.id, [person.id], Opts.opts(FillOpts.Members))
+      Group addedToGroup = groupSqlApi.addPersonsToGroup(g.id, [person.id], superuser,Opts.opts(FillOpts.Members))
     and: "i am confirmed to be a portfolio member"
       boolean amMember = groupSqlApi.isPersonMemberOfPortfolioGroup(g.portfolioId, person.id)
     and: "i delete the person from the group"
@@ -348,14 +348,14 @@ class GroupSpec extends BaseSpec {
         new Person().id(new PersonId().id(p1.id)),
         new Person().id(new PersonId().id(p2.id)),
       ]
-      def g2 = groupSqlApi.updateGroupV1(g.id, g, null, true, true, true, new Opts().add(FillOpts.Members))
+      def g2 = groupSqlApi.updateGroupV1(g.id, g, null, true, true, true, superuser, new Opts().add(FillOpts.Members))
     and: "I updated the group to remove Alena and add Toya"
       def g2_copy = g2.copy()
       g2_copy.members = [
         new Person().id(new PersonId().id(p1.id)),
         new Person().id(new PersonId().id(p3.id)),
       ]
-      groupSqlApi.updateGroupV1(g.id, g2_copy, null, true, true, true, new Opts().add(FillOpts.Members))
+      groupSqlApi.updateGroupV1(g.id, g2_copy, null, true, true, true, superuser, new Opts().add(FillOpts.Members))
       def g3 = groupSqlApi.getGroup(g.id, new Opts().add(FillOpts.Members), superPerson)
     then:
       g2.members.size() == 2
@@ -375,10 +375,10 @@ class GroupSpec extends BaseSpec {
       DbPerson p2 = createPerson("Jingjing")
       DbPerson p3 = createPerson("Nine")
     when: "i update the group to add Jan and Jingjing"
-      def g2 = groupSqlApi.addPersonsToGroup(g.id, [p1.id, p2.id], Opts.opts(FillOpts.Members))
+      def g2 = groupSqlApi.addPersonsToGroup(g.id, [p1.id, p2.id], superuser, Opts.opts(FillOpts.Members))
     and: "I updated the group to remove Jingjing and add Nine"
       groupSqlApi.deletePersonFromGroup(g.id, p2.id, Opts.empty())
-      def g3 = groupSqlApi.addPersonsToGroup(g.id, [p3.id], Opts.opts(FillOpts.Members))
+      def g3 = groupSqlApi.addPersonsToGroup(g.id, [p3.id], superuser,Opts.opts(FillOpts.Members))
     then:
       g2.members.size() == 2
       g2.members*.name.contains('Jan')
@@ -438,8 +438,8 @@ class GroupSpec extends BaseSpec {
     and: "i add a person to this group"
       DbPerson user = new DbPerson.Builder().email("bob-test@featurehub.io").name("Rob test").build();
       database.save(user);
-      groupSqlApi.addPersonsToGroup(g1.id, [user.id], Opts.empty())
-      groupSqlApi.addPersonsToGroup(g3.id, [user.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(g1.id, [user.id], superuser,Opts.empty())
+      groupSqlApi.addPersonsToGroup(g3.id, [user.id], superuser,Opts.empty())
     when: "i get their admin groups"
       List<Group> groups = groupSqlApi.groupsWherePersonIsAnAdminMember(user.id)
     then:
@@ -538,7 +538,7 @@ class GroupSpec extends BaseSpec {
       def iSuperPerson = new DbPerson.Builder().email("irushka@featurehub.io").name("Irina").build()
       database.save(iSuperPerson)
       def adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
-      groupSqlApi.addPersonsToGroup(adminGroup.id, [iSuperPerson.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(adminGroup.id, [iSuperPerson.id], superuser,Opts.empty())
     and: "i get the person"
       def person = personApi.get(iSuperPerson.id, Opts.opts(FillOpts.Groups))
     when: "i update the person to remove the superuser group"
@@ -595,7 +595,49 @@ class GroupSpec extends BaseSpec {
         new UpdateGroup().version(permGroup.version).portfolioRoles([PortfolioGroupRoleType.GROUP_MEMBER_MANAGER, PortfolioGroupRoleType.PORTFOLIO_STRATEGY_EDIT] as Set),
         commonApplication1.id, false, false, superuser, Opts.empty())
     then: "the updated group still has no portfolio roles as they are ignored"
-      updatedGroup.portfolioRoles.size() == 1
-      updatedGroup.portfolioRoles.contains(PortfolioGroupRoleType.PORTFOLIO_STRATEGY_EDIT)
+      thrown(GroupApi.CannotSetGroupManagerRoleOnAclGroup)
+    when: "i create a group and then try and assign it a GMM role and ACL roles at the same time, the ACL roles do not get applied"
+      def gmmGroup = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name(ranName()), superPerson)
+      def gmmUpdatedGroup = groupSqlApi.updateGroup(gmmGroup.id, new UpdateGroup().version(gmmGroup.version)
+        .portfolioRoles([PortfolioGroupRoleType.GROUP_MEMBER_MANAGER,] as Set)
+        .environmentRoles(appDetails.environments.collect( { new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE]).environmentId(it.id).groupId(plainGroup.id)})),
+        commonApplication1.id, false, true, superuser, Opts.opts(FillOpts.Acls))
+    then:
+      gmmUpdatedGroup.portfolioRoles.size() == 1
+      gmmUpdatedGroup.environmentRoles.size() == 0
+  }
+
+  def "a member of a group with an ACL cannot be added to a group-member-manager group"() {
+    given: "we have a group for member managers"
+      def gmmGroup = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name(ranName()).portfolioRoles([PortfolioGroupRoleType.GROUP_MEMBER_MANAGER,] as Set), superPerson)
+    and: "a group that will have ACLs"
+      def aclGroup = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name(ranName()), superPerson)
+      aclGroup = groupSqlApi.updateGroup(aclGroup.id, new UpdateGroup().version(aclGroup.version).environmentRoles([
+        new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE]).environmentId(env1App1.id).groupId(aclGroup.id)
+      ]), commonApplication1.id, false, true, superuser, Opts.opts(FillOpts.Acls))
+    and: "a member manager person"
+      def gmmPerson = createPerson()
+    and: "a ACL person"
+      def aclPerson = createPerson()
+    when: "we add the users to the appropriate groups"
+      def gmmMembers = groupSqlApi.addPersonsToGroup(gmmGroup.id, [gmmPerson.id], superuser, Opts.opts(FillOpts.MembersV2))
+      def aclMembers = groupSqlApi.addPersonsToGroup(aclGroup.id, [aclPerson.id], gmmPerson.id, Opts.opts(FillOpts.MembersV2))
+    then: "groups should have one member each"
+      gmmMembers.simpleMembers.size() == 1
+      aclMembers.simpleMembers.size() == 1
+    when: "i ask gmm user to add themselves to the acl group they cannot"
+      aclMembers = groupSqlApi.addPersonsToGroup(aclGroup.id, [gmmPerson.id], gmmPerson.id, Opts.opts(FillOpts.MembersV2))
+    then:
+      aclMembers.simpleMembers.size() == 1
+      aclMembers.simpleMembers.find({it.id == gmmPerson.id}) == null
+    when: "i try and add the acl user to the gmm user group i cannot"
+      gmmMembers = groupSqlApi.addPersonsToGroup(gmmGroup.id, [aclPerson.id], gmmPerson.id, Opts.opts(FillOpts.MembersV2))
+    then:
+      gmmMembers.simpleMembers.size() == 1
+    when: "the super user tries to add the acl user to the gmm, they also cannot"
+      gmmMembers = groupSqlApi.addPersonsToGroup(gmmGroup.id, [aclPerson.id], superuser, Opts.opts(FillOpts.MembersV2))
+    then:
+      gmmMembers.simpleMembers.size() == 1
+
   }
 }

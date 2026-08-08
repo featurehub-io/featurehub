@@ -5,7 +5,6 @@ import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonApi
 import io.featurehub.db.model.DbPerson
-import io.featurehub.db.model.query.QDbGroupMember
 import io.featurehub.mr.model.*
 import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Shared
@@ -120,7 +119,7 @@ class PersonSpec extends BaseSpec {
     and: "add the person to the group"
       g1.members.add(pers)
       g1.members.add(pers2)
-      def group = groupSqlApi.addPersonsToGroup(g1.id, [pers.id.id, pers2.id.id], Opts.opts(FillOpts.Members))
+      def group = groupSqlApi.addPersonsToGroup(g1.id, [pers.id.id, pers2.id.id], superuser,Opts.opts(FillOpts.Members))
     when:
       personSqlApi.delete(person.email, true)
     and:
@@ -252,7 +251,7 @@ class PersonSpec extends BaseSpec {
       def pAdmin = new DbPerson.Builder().name("Frederick Von Brinkenstorm").email("freddy@mailinator.com").build()
       database.save(pAdmin)
       def pAdminId = pAdmin.id
-      def adminPersonAddedToGroup = groupSqlApi.addPersonsToGroup(gPortfolioAdmin.id, [pAdminId], Opts.empty())
+      def adminPersonAddedToGroup = groupSqlApi.addPersonsToGroup(gPortfolioAdmin.id, [pAdminId], superuser,Opts.empty())
     when: "the portfolio admin updates the person to add the two groups, but only have access to 1"
       def originalPerson = personSqlApi.get(person.id, Opts.empty())
       def resultingPerson = personSqlApi.update(person.id,
@@ -293,7 +292,7 @@ class PersonSpec extends BaseSpec {
       def pAdmin = new DbPerson.Builder().name("Frederick Von Brinkenstorm").email(RandomStringUtils.randomAlphabetic(4) + "freddy@mailinator.com").build()
       database.save(pAdmin)
       def pAdminId = pAdmin.id
-      def adminPersonAddedToGroup = groupSqlApi.addPersonsToGroup(gPortfolioAdmin.id, [pAdminId], Opts.empty())
+      def adminPersonAddedToGroup = groupSqlApi.addPersonsToGroup(gPortfolioAdmin.id, [pAdminId], superuser,Opts.empty())
     when: "the portfolio admin updates the person to add the two groups, but only have access to 1"
       def originalPerson = personSqlApi.get(person.id, Opts.empty())
       def resultingPerson = personSqlApi.updateV2(person.id, new UpdatePerson().version(originalPerson.version)

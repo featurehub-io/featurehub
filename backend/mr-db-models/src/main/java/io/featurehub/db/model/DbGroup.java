@@ -38,6 +38,7 @@ public class DbGroup extends DbVersionedBase {
 
   @ManyToOne(optional = true) // could be in superadmin, which is no portfolio
   @JoinColumn(name = "fk_portfolio_id")
+  @Nullable
   private DbPortfolio owningPortfolio;
 
   // is this an admin group
@@ -88,6 +89,7 @@ public class DbGroup extends DbVersionedBase {
     this.portfolioRoles = portfolioRoles;
   }
 
+  @Nullable
   public DbPortfolio getOwningPortfolio() {
     return owningPortfolio;
   }

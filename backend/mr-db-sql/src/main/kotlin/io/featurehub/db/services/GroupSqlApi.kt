@@ -30,8 +30,10 @@ open class GroupSqlApi @Inject constructor(
       .person.id.eq(personId).exists()
   }
 
-  override fun portfolioRoles(personId: UUID, portfolio: UUID): Set<PortfolioGroupRoleType> {
+  override fun portfolioRoles(personId: UUID, portfolio: UUID?): Set<PortfolioGroupRoleType> {
     val result: MutableSet<PortfolioGroupRoleType> = mutableSetOf()
+
+    if (portfolio == null) return result
 
     QDbGroup()
       .select(QDbGroup.Alias.portfolioRoles)
@@ -207,7 +209,7 @@ open class GroupSqlApi @Inject constructor(
 
   @Transactional
   private fun copySuperusersToPortfolioGroup(dbGroup: DbGroup) {
-    superuserGroupMembers(dbGroup.owningPortfolio.organization)
+    superuserGroupMembers(dbGroup.owningPortfolio!!.organization)
       .forEach { p: DbPerson ->
         if (!QDbGroupMember().person.id.eq(p.id).group.id.eq(dbGroup.id)
             .exists()
@@ -227,7 +229,7 @@ open class GroupSqlApi @Inject constructor(
   }
 
   // the GroupResource has pre-checked these personIds belong to this organisation
-  override fun addPersonsToGroup(groupId: UUID, personIds: List<UUID>, opts: Opts): Group? {
+  override fun systemAddPersonsToGroup(groupId: UUID, personIds: List<UUID>, opts: Opts): Group? {
     return addGroupMembers(groupId, personIds, null, opts)
   }
 
@@ -237,23 +239,42 @@ open class GroupSqlApi @Inject constructor(
     personAdding: UUID?,
     opts: Opts
   ): Group? {
+    val foundGroup = QDbGroup()
+      .select(
+        QDbGroup.Alias.id, QDbGroup.Alias.owningPortfolio.id,
+        QDbGroup.Alias.adminGroup, QDbGroup.Alias.owningPortfolio, QDbGroup.Alias.portfolioRoles
+      )
+      .id.eq(groupId)
+      .owningOrganization.fetch(QDbOrganization.Alias.id)
+      .whenArchived.isNull
+      .findOne() ?: return null
+
+    internalAddGroupMembers(foundGroup, personIds, personAdding) ?: return null
+
+    // we don't optimize for children or parents
+    return convertUtils.toGroup(foundGroup, opts)
+  }
+
+
+  fun internalAddGroupMembers(
+    dbGroup: DbGroup,
+    personIds: List<UUID>,
+    personAdding: UUID?,
+//    opts: Opts
+  ): DbGroup? {
     // if we are passed a personAdding, then we need to check if this person is in a group where the portfolioRoles include GROUP_MEMBER_MANAGER
     // if they are in such a group, then they can only add people who do not have membership in these groups (i.e. people who are themselves
     // not GROUP_MEMBER_MANAGERs) to groups which are not member manager groups. This sets certain groups aside as specifically for tagging folk as being
     // group managers and they cannot add themselves or other members of their group to normal use groups and therefore escalate their priveleges.
 
-    val dbGroup = QDbGroup()
-      .select(QDbGroup.Alias.id, QDbGroup.Alias.owningPortfolio.id,
-        QDbGroup.Alias.adminGroup, QDbGroup.Alias.owningPortfolio, QDbGroup.Alias.portfolioRoles)
-      .id.eq(groupId)
-      .whenArchived.isNull
-      .findOne() ?: return null
     // no adding people to archived groups
 
-    // only superusers can add to the superuser group
+    // only superusers can add to the superuser group, system's can add however (where personAdding is null)
     if (dbGroup.owningPortfolio == null && (personAdding != null && !convertUtils.personIsSuperAdmin(personAdding))) {
       return null
     }
+
+    val groupId = dbGroup.id
 
     // lets ensure we have a unique set of people
     val uniqueIds = personIds.toSet().toMutableSet()
@@ -264,30 +285,48 @@ open class GroupSqlApi @Inject constructor(
       .group.id.eq(groupId)
       .findList().forEach { personId -> uniqueIds.remove(personId.person.id) }
 
-    // if we know who the user is doing this
-    // and this is part of a portfolio
-    // and the group is not a group member manager group
-    // and the person isn't a super or portfolio admin
+    // a Group Member Manager can add or remove any non-GMM user to/from ANY non-superadmin group. That is the purpose
+    // of the role. They exist to add or remove people to and from groups. They can add themselves to other GMM groups,
+    // or remove other GMM users
+
     if (personAdding != null
       && dbGroup.owningPortfolio != null
-      && !dbGroup.portfolioRoles.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER)
-      ) {
-      // we now have to check if any of the remaining users to add are group member managers
-      // even superusers and portfolio managers can't add users who are group member managers
-      // to a normal group
-      val groupsWithMemberManagers = QDbGroup()
-        .select(QDbGroup.Alias.id, QDbGroup.Alias.portfolioRoles)
-        .owningPortfolio.eq(dbGroup.owningPortfolio)
-        .id.ne(dbGroup.id)
-        .portfolioRoles.isNotNull.findList()
-        .filter { dbg -> dbg.portfolioRoles.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER) }
-        .map { it.id }
+    ) {
+      if (dbGroup.portfolioRoles.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER)) {
+        // we cannot add any users with ACL permissions into this group. So we find all members who we
+        // are trying to add from the list of unique ids
 
-      QDbGroupMember()
-        .select(QDbGroupMember.Alias.person.id)
-        .distinctOn(QDbGroupMember.Alias.person.id)
-        .group.id.`in`(groupsWithMemberManagers)
-        .findList().forEach { uniqueIds.remove(it.person.id) }
+        QDbGroupMember()
+          .select(QDbGroupMember.Alias.person.id)
+          .distinctOn(QDbGroupMember.Alias.person.id)
+          .group.owningPortfolio.eq(dbGroup.owningPortfolio)
+          .group.id.ne(dbGroup.id)
+          .person.id.`in`(uniqueIds).findList().forEach { personId ->
+            uniqueIds.remove(personId.person.id)
+          }
+      } else {
+        // if we know who the user is doing this
+        // and this is part of a portfolio
+        // and the group is not a group member manager group
+        // and the person isn't a super or portfolio admin
+
+        // we now have to check if any of the remaining users to add are group member managers
+        // even superusers and portfolio managers can't add users who are group member managers
+        // to a normal group
+        val groupsWithMemberManagers = QDbGroup()
+          .select(QDbGroup.Alias.id, QDbGroup.Alias.portfolioRoles)
+          .owningPortfolio.eq(dbGroup.owningPortfolio)
+          .id.ne(dbGroup.id)
+          .portfolioRoles.isNotNull.findList()
+          .filter { dbg -> dbg.portfolioRoles.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER) }
+          .map { it.id }
+
+        QDbGroupMember()
+          .select(QDbGroupMember.Alias.person.id)
+          .distinctOn(QDbGroupMember.Alias.person.id)
+          .group.id.`in`(groupsWithMemberManagers)
+          .findList().forEach { uniqueIds.remove(it.person.id) }
+      }
     }
 
     if (uniqueIds.isNotEmpty()) {
@@ -298,17 +337,13 @@ open class GroupSqlApi @Inject constructor(
       }
     }
 
-    // we don't optimize for children or parents
-    return convertUtils.toGroup(QDbGroup()
-      .owningPortfolio.fetch(QDbPortfolio.Alias.id)
-      .owningOrganization.fetch(QDbOrganization.Alias.id)
-      .id.eq(groupId).findOne()!!, opts)
+    return dbGroup
   }
 
   @Transactional
   private fun updateGroupMembership(dbGroup: DbGroup, uniqueIds: Iterable<UUID>) {
     uniqueIds.forEach { personId ->
-     DbGroupMember(DbGroupMemberKey(personId, dbGroup.id)).save()
+      DbGroupMember(DbGroupMemberKey(personId, dbGroup.id)).save()
     }
 
     // they actually got added from the superusers group, so
@@ -331,7 +366,7 @@ open class GroupSqlApi @Inject constructor(
     personId: UUID
   ): Group? {
 
-  var eq = QDbGroup().id.eq(gid).groupMembers.person.fetch()
+    var eq = QDbGroup().id.eq(gid).groupMembers.person.fetch()
 
     if (!opts.contains(FillOpts.Archived)) {
       eq = eq.whenArchived.isNull
@@ -345,7 +380,7 @@ open class GroupSqlApi @Inject constructor(
       ).exists()
         || convertUtils.personIsSuperAdmin(personId)
         || isPersonMemberOfPortfolioAdminGroup(one.owningPortfolio, personId)
-        || portfolioRoles(personId, one.owningPortfolio.id).isNotEmpty()
+        || portfolioRoles(personId, one.owningPortfolio?.id).isNotEmpty()
         )
     ) {
       convertUtils.toGroup(one, opts)!!
@@ -401,32 +436,30 @@ open class GroupSqlApi @Inject constructor(
   }
 
   override fun deletePersonFromGroup(groupId: UUID, personId: UUID, opts: Opts): Group? {
-    val person = convertUtils.byPerson(personId)
-    if (person != null) {
-      val member =
-        QDbGroupMember().person.id.eq(personId).group.id.eq(groupId).group.whenArchived.isNull.group.fetch()
-          .findOne() ?: return null
-      val group = member.group
+    val person = convertUtils.byPerson(personId) ?: return null
+    val member =
+      QDbGroupMember().person.id.eq(personId).group.id.eq(groupId).group.whenArchived.isNull.group.fetch()
+        .findOne() ?: return null
+    val group = member.group
 
-      // if it is an admin portfolio group, and they are a superuser, you can't remove them
-      if (group.isAdminGroup && group.owningPortfolio != null && isSuperuser(
-          group.owningPortfolio.organization,
-          person
-        )
-      ) {
-        return null
-      }
-      deleteMember(member)
-
-      // they actually got removed from the superusers group, so lets update the portfolios
-      if (group.isAdminGroup && group.owningPortfolio == null) {
-        val sc = SuperuserChanges(group.owningOrganization)
-        sc.removedSuperusers.add(person.id)
-        updateSuperusersFromPortfolioGroups(sc)
-      }
-      return convertUtils.toGroup(group, opts)!!
+    // if it is an admin portfolio group, and they are a superuser, you can't remove them
+    if (group.isAdminGroup && group.owningPortfolio != null && isSuperuser(
+        group.owningPortfolio!!.organization,
+        person
+      )
+    ) {
+      return null
     }
-    return null
+    deleteMember(member)
+
+    // they actually got removed from the superusers group, so lets update the portfolios
+    if (group.isAdminGroup && group.owningPortfolio == null) {
+      val sc = SuperuserChanges(group.owningOrganization)
+      sc.removedSuperusers.add(person.id)
+      updateSuperusersFromPortfolioGroups(sc)
+    }
+
+    return convertUtils.toGroup(group, opts)!!
   }
 
   @Transactional
@@ -439,6 +472,7 @@ open class GroupSqlApi @Inject constructor(
     database.save(group)
   }
 
+  @Deprecated("Does not enforce group member management", replaceWith = ReplaceWith("updateGroup"))
   @Throws(OptimisticLockingException::class, GroupApi.DuplicateGroupException::class, DuplicateUsersException::class)
   override fun updateGroupV1(
     gid: UUID,
@@ -447,6 +481,7 @@ open class GroupSqlApi @Inject constructor(
     updateMembers: Boolean,
     updateApplicationGroupRoles: Boolean,
     updateEnvironmentGroupRoles: Boolean,
+    personMakingUpdate: UUID, // must have superuser or portfolio admin perms
     opts: Opts
   ): Group? {
     val dbGroup = convertUtils.byGroup(gid, opts)
@@ -466,7 +501,8 @@ open class GroupSqlApi @Inject constructor(
         updateApplicationGroupRoles,
         updateEnvironmentGroupRoles,
         dbGroup,
-        appId
+        appId,
+        personMakingUpdate
       )
       return convertUtils.toGroup(dbGroup, opts)!!
     }
@@ -482,11 +518,12 @@ open class GroupSqlApi @Inject constructor(
     updateApplicationGroupRoles: Boolean,
     updateEnvironmentGroupRoles: Boolean,
     group: DbGroup,
-    appId: UUID?
+    appId: UUID?,
+    personModifiyingUserGroup: UUID
   ) {
     var superuserChanges: SuperuserChanges? = null
-    if (gp.members.isNotEmpty() && updateMembers) {
-      superuserChanges = updateMembersOfGroup(gp, group)
+    if (updateMembers) {
+      superuserChanges = updateMembersOfGroup(gp, group, personModifiyingUserGroup)
     }
     var aclUpdates: AclUpdates? = null
     gp.environmentRoles.let {
@@ -519,22 +556,35 @@ open class GroupSqlApi @Inject constructor(
     updatedByPersonId: UUID,
     opts: Opts
   ): Group? {
-    val dbGroup = convertUtils.byGroup(gid, opts)
+    val dbGroup = convertUtils.byGroup(gid, opts) ?: return null
 
-    if (dbGroup != null && dbGroup.whenArchived == null) {
-      if (dbGroup.version != group.version) {
-        throw OptimisticLockingException()
-      }
+    if (dbGroup.whenArchived != null) {
+      return null
+    }
 
-      group.name.let { groupName ->
-        if (groupName != null) {
-          val trimmed = groupName.trim()
-          if (!trimmed.isEmpty()) {
-            dbGroup.name = trimmed
-          }
+    if (dbGroup.version != group.version) {
+      throw OptimisticLockingException()
+    }
+
+    if (!convertUtils.personIsSuperAdmin(updatedByPersonId) && !(dbGroup.owningPortfolio != null &&
+        convertUtils.isPersonMemberOfPortfolioAdminGroup(dbGroup.owningPortfolio!!.id, updatedByPersonId))
+    ) {
+      return null
+    }
+
+    group.name.let { groupName ->
+      if (groupName != null) {
+        val trimmed = groupName.trim()
+        if (!trimmed.isEmpty()) {
+          dbGroup.name = trimmed
         }
       }
+    }
 
+    // we update the portfolio roles independently of the ACL rules because if done later, any updates to ACL
+    // rules would not have been persisted. User will have to remove ACLs before making this group a group manager
+    // one if they wish to do that
+    if (group.portfolioRoles == null || !transactionalPortfolioRolesUpdate(group, dbGroup)) {
       transactionalGroupUpdate(
         group,
         updateApplicationGroupRoles,
@@ -543,9 +593,36 @@ open class GroupSqlApi @Inject constructor(
         appId,
         updatedByPersonId
       )
-      return convertUtils.toGroup(dbGroup, opts)!!
     }
-    return null
+
+    return convertUtils.toGroup(dbGroup, opts)!!
+  }
+
+  @Transactional
+  private fun transactionalPortfolioRolesUpdate(gp: UpdateGroup, group: DbGroup): Boolean {
+    // we can update them to empty but null won't replace them.
+    if (gp.portfolioRoles != null) {
+      // check if we are adding it
+      if (gp.portfolioRoles!!.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER) && !group.portfolioRoles.contains(
+          PortfolioGroupRoleType.GROUP_MEMBER_MANAGER
+        )
+      ) {
+        // if the group already has any ACLs, then we cannot add the Group Member Manager portfolio role.
+        if (QDbAcl().group.id.eq(group.id).findCount() > 0) {
+          // this is not allowed, tell the client layer
+          throw GroupApi.CannotSetGroupManagerRoleOnAclGroup()
+        }
+      }
+
+      group.portfolioRoles = gp.portfolioRoles
+
+      group.save()
+      return group.portfolioRoles.contains(
+        PortfolioGroupRoleType.GROUP_MEMBER_MANAGER
+      )
+    }
+
+    return false
   }
 
   // there are too many updates
@@ -560,6 +637,7 @@ open class GroupSqlApi @Inject constructor(
     updatedByPersonId: UUID,
   ) {
     var aclUpdates: AclUpdates? = null
+
     gp.environmentRoles.let {
       if (updateEnvironmentGroupRoles) {
         aclUpdates = updateEnvironmentMembersOfGroup(it, group)
@@ -570,19 +648,7 @@ open class GroupSqlApi @Inject constructor(
       updateApplicationMembersOfGroup(gp.applicationRoles ?: listOf(), group, appId)
     }
 
-    // we can update them to empty but null won't replace them.
-    if (gp.portfolioRoles != null) {
-      // check if we are adding it
-      if (gp.portfolioRoles!!.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER) && !group.portfolioRoles.contains(
-          PortfolioGroupRoleType.GROUP_MEMBER_MANAGER)) {
-        if (QDbAcl().group.id.eq(group.id).findCount() > 0) {
-          // this is not allowed
-          gp.portfolioRoles!!.remove(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER)
-        }
-      }
 
-      group.portfolioRoles = gp.portfolioRoles
-    }
 
     log.debug("Updating group {} by user {}", group.name, updatedByPersonId)
 
@@ -686,7 +752,7 @@ open class GroupSqlApi @Inject constructor(
     // add ones that we want
     for (ae in addedApplications) {
       val app = convertUtils.byApplication(ae)
-      if (app != null && app.portfolio.id == group.owningPortfolio.id) {
+      if (app != null && app.portfolio.id == group.owningPortfolio?.id) {
         val acl = DbAcl.Builder().application(app).group(group).build()
         desiredApplications[ae]?.let { egr ->
           resetApplicationAcl(acl, egr)
@@ -768,7 +834,7 @@ open class GroupSqlApi @Inject constructor(
             ae, Opts.opts(FillOpts.ApplicationIds, FillOpts.PortfolioIds)
           )
 
-          if ((env != null) && (env.parentApplication.portfolio.id == group.owningPortfolio.id)) {
+          if ((env != null) && (env.parentApplication.portfolio.id == group.owningPortfolio?.id)) {
             val acl = DbAcl.Builder().environment(env).group(group).build()
             resetEnvironmentAcl(acl, egr)
             aclUpdates.creates.add(acl)
@@ -792,7 +858,7 @@ open class GroupSqlApi @Inject constructor(
   }
 
   @Throws(DuplicateUsersException::class)
-  private fun updateMembersOfGroup(gp: Group, group: DbGroup): SuperuserChanges? {
+  private fun updateMembersOfGroup(gp: Group, group: DbGroup, personModifiyingUserGroup: UUID): SuperuserChanges? {
     val uuids = gp.members
       .filter { p: Person -> p.id != null }
       .map { p: Person ->
@@ -816,7 +882,7 @@ open class GroupSqlApi @Inject constructor(
     val isSuperuserGroup = group.isAdminGroup && group.owningPortfolio == null
 
     val superusers =
-      if (group.isAdminGroup && !isSuperuserGroup) superuserGroupMembers(group.owningPortfolio.organization)
+      if (group.isAdminGroup && !isSuperuserGroup) superuserGroupMembers(group.owningPortfolio!!.organization)
         .map { obj: DbPerson -> obj.id } else listOf()
 
     QDbGroupMember().group.id.eq(group.id).person.fetch(QDbPerson.Alias.id).findList()
@@ -834,23 +900,21 @@ open class GroupSqlApi @Inject constructor(
         }
       }
 
+    // if this is a portfolio admin group or a supsergroup group remove this user as they are a superuser and cannot remove themselves
+    if (group.owningPortfolio == null || group.isAdminGroup) {
+      removedPerson.remove(personModifiyingUserGroup)
+    }
+
+    // now remove the rest of them
     QDbGroupMember().group.id.eq(group.id).person.id.`in`(removedPerson).delete()
 
-    val actuallyAddedPeople = mutableListOf<DbPerson>()
-    addedPeople.forEach { p: UUID? ->
-      val person = convertUtils.byPerson(p)
-      if (person != null) {
-        if (!QDbGroupMember().person.id.eq(person.id).group.id.eq(group.id).exists()) {
-          DbGroupMember(DbGroupMemberKey(person.id, group.id)).save()
-          actuallyAddedPeople.add(person)
-        }
-      }
-    }
+    internalAddGroupMembers(group, addedPeople.toList(), personModifiyingUserGroup)
 
     if (isSuperuserGroup) {
       val sc = SuperuserChanges(group.owningOrganization)
       sc.removedSuperusers.addAll(removedPerson)
-      sc.addedSuperusers.addAll(actuallyAddedPeople)
+      // we don't need to worry about the added ones as the internalAddGroupMembers did that, and it cleaned out the ones
+      // that shouldn't have been processed.
       return sc
     }
 
@@ -896,6 +960,7 @@ open class GroupSqlApi @Inject constructor(
   override fun groupUserIsManagerOf(personId: UUID, portfolioId: UUID): UUID? {
     val group = QDbGroup()
       .select(QDbGroup.Alias.id, QDbGroup.Alias.portfolioRoles)
+      .groupMembers.person.id.eq(personId)
       .owningPortfolio.id.eq(portfolioId)
       .findList().filter { group ->
         group.portfolioRoles.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER)

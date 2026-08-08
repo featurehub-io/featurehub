@@ -45,7 +45,7 @@ class Environment2Spec extends Base2Spec {
 
     // create the portfolio group
     groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("p1-app-1-env1-portfolio-group").admin(true), superPerson)
-    groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [superPerson.id.id], Opts.empty())
+    groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [superPerson.id.id], superuser, Opts.empty())
 
     app1 = appApi.createApplication(portfolio1.id, new CreateApplication().description("x").name('app-1-env'), superPerson)
     assert app1 != null && app1.id != null
@@ -285,7 +285,7 @@ class Environment2Spec extends Base2Spec {
       db.save(averageJoe)
       def averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     and: "i create a general (non-admin) portfolio group"
-      groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [averageJoeMemberOfPortfolio1.id.id], superuser,Opts.empty())
     when: 'i ask for environment access'
       def averageJoAccess = envApi.getEnvironmentsUserCanAccess(app1.id, averageJoe.id)
     then:
@@ -300,7 +300,7 @@ class Environment2Spec extends Base2Spec {
       def averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     and: "i create a general (non-admin) portfolio group"
       groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("envspec-p1-plain-portfolio-group"), superPerson)
-      groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [averageJoeMemberOfPortfolio1.id.id], superuser,Opts.empty())
     and: "i have an environment"
       def env = envApi.create(new CreateEnvironment().name("env-1-perm-1").description("1"), app1.id, superPerson)
     when: "i find out of the superuser has permissions to the environment"

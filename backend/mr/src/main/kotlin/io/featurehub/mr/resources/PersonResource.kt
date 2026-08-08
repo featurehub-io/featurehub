@@ -61,7 +61,7 @@ class PersonResource @Inject constructor(
       }
 
       createPersonDetails.groupIds?.forEach { id ->
-        groupApi.addPersonsToGroup(id, listOf(person.id), Opts.empty())
+        groupApi.addPersonsToGroup(id, listOf(person.id), currentUser.id!!.id, Opts.empty())
       }
 
       //return registration url
@@ -94,7 +94,7 @@ class PersonResource @Inject constructor(
     val servicePersonId = person.id!!.id
 
     createPersonDetails.groupIds?.forEach { id ->
-      groupApi.addPersonsToGroup(id, listOf(servicePersonId), Opts.empty())
+      groupApi.addPersonsToGroup(id, listOf(servicePersonId), currentUser.id!!.id, Opts.empty())
     }
 
     // return registration url

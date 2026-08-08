@@ -5,7 +5,6 @@ import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PortfolioApi
-import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.encryption.WebhookEncryptionService
@@ -104,11 +103,11 @@ class ApplicationSpec extends BaseSpec {
       def notInAnyGroupsAccess = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
     and: "then we give them access to a portfolio group that still has no access"
       Group group = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("envtest-appX1"), superPerson)
-      group = groupSqlApi.addPersonsToGroup(group.id, [person.id.id], Opts.opts(FillOpts.Members))
+      group = groupSqlApi.addPersonsToGroup(group.id, [person.id.id], superuser, Opts.opts(FillOpts.Members))
       def portfoliosNoPerms = portfolioApi.findPortfolios(null, SortOrder.ASC, Opts.opts(FillOpts.Applications), person.id.id)
     and: "the superuser adds to a group as well"
       Group superuserGroup = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("envtest-appSuperuser"), superPerson)
-      superuserGroup = groupSqlApi.addPersonsToGroup(superuserGroup.id, [superPerson.id.id], Opts.opts(FillOpts.Members))
+      superuserGroup = groupSqlApi.addPersonsToGroup(superuserGroup.id, [superPerson.id.id], superuser, Opts.opts(FillOpts.Members))
     and: "with no environment access the two groups have no visibility to applications"
       def stillNotInAnyGroupsPerson = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
       def stillNotInAnyGroupsSuperuser = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), superPerson, false)
@@ -219,7 +218,7 @@ class ApplicationSpec extends BaseSpec {
       database.save(deepme)
       def personIsCreator0 = appApi.personIsFeatureCreator(app1.id, deepme.id)
       def personIsEditor0 = appApi.personIsFeatureEditor(app1.id, deepme.id)
-      groupSqlApi.addPersonsToGroup(createdGroup.id, [deepme.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(createdGroup.id, [deepme.id],superuser, Opts.empty())
       def group = createdGroup.addMembersItem(new Person().id(new PersonId().id(deepme.id)))
     when: "i add create permissions for the app to the group"
       def groupWithCreatePerms = groupSqlApi.updateGroup(group.id,
@@ -283,7 +282,7 @@ class ApplicationSpec extends BaseSpec {
       database.save(prilipko)
       def prilipkoPortfolioAdmin = convertUtils.toPerson(prilipko)
       def g = groupSqlApi.getGroup(p1AdminGroup.id, Opts.opts(FillOpts.Members), superPerson)
-      groupSqlApi.addPersonsToGroup(g.id, [prilipkoPortfolioAdmin.id.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(g.id, [prilipkoPortfolioAdmin.id.id], superuser,Opts.empty())
     and: "I create a new portfolio group and add in Golodryga by he has no permission to an application"
       def golodryga = new DbPerson.Builder().email("Golodryga@m.com").name("Golodryga").build()
       database.save(golodryga)
@@ -296,7 +295,7 @@ class ApplicationSpec extends BaseSpec {
       database.save(sverbylo)
       def sverbyloHasReadAccess = convertUtils.toPerson(sverbylo)
       def iGroup = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("Itchy Group"), superPerson)
-      iGroup = groupSqlApi.addPersonsToGroup(iGroup.id, [sverbyloHasReadAccess.id.id], Opts.empty())
+      iGroup = groupSqlApi.addPersonsToGroup(iGroup.id, [sverbyloHasReadAccess.id.id], superuser,Opts.empty())
     when: "i create a new application"
       def newApp = appApi.createApplication(portfolio1.id, new CreateApplication().description("x").name("app-perm-check-appl1"), superPerson)
     and: "a new environment"
@@ -335,7 +334,7 @@ class ApplicationSpec extends BaseSpec {
       def group = groupSqlApi.createGroup(portfolio.id,
         new CreateGroup().name("creators-" + RandomStringUtils.randomAlphabetic(6)).admin(false),
         superPerson)
-      groupSqlApi.addPersonsToGroup(group.id, [person.id.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(group.id, [person.id.id], superuser,Opts.empty())
       groupSqlApi.updateGroup(group.id,
         new UpdateGroup().version(group.version).applicationRoles([
           new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])
@@ -366,7 +365,7 @@ class ApplicationSpec extends BaseSpec {
       def group = groupSqlApi.createGroup(portfolio.id,
         new CreateGroup().name("readers-" + RandomStringUtils.randomAlphabetic(6)).admin(false),
         superPerson)
-      group = groupSqlApi.addPersonsToGroup(group.id, [person.id.id], Opts.empty())
+      group = groupSqlApi.addPersonsToGroup(group.id, [person.id.id],superuser, Opts.empty())
       groupSqlApi.updateGroup(group.id,
         new UpdateGroup().version(group.version).applicationRoles([
           new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_EDIT])

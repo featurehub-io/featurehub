@@ -59,11 +59,11 @@ class GroupResource @Inject constructor(
       authManager.from(securityContext)
     ) { group: Group ->
       personCheck(personId) {
-        portfolioUtils.portfolioUserManager(securityContext, group.portfolioId)
+        val currentUser = portfolioUtils.portfolioUserManager(securityContext, group.portfolioId)
 
         groupHolder.group =
           groupApi.addPersonsToGroup(
-            gid, listOf(personId), Opts()
+            gid, listOf(personId), currentUser, Opts()
               .add(FillOpts.Members, holder.includeMembers)
               .add(FillOpts.MembersV2, holder.includeMembersV2)
           )
@@ -134,11 +134,11 @@ class GroupResource @Inject constructor(
     groupCheck(gid, authManager.from(securityContext)) { group: Group ->
       val portfolioId = group.portfolioId ?: throw ForbiddenException("cannot delete superuser group")
 
+      portfolioUtils.portfolioAdmin(securityContext, portfolioId)
+
       if (group.admin!!) {
         throw ForbiddenException("Cannot delete admin group from deleteGroup method.")
       }
-
-      portfolioUtils.portfolioAdmin(securityContext, portfolioId)
 
       groupApi.deleteGroup(gid)
       groupHolder.delete = true
@@ -196,7 +196,8 @@ class GroupResource @Inject constructor(
     securityContext: SecurityContext
   ): Group {
     // a person can get their own groups details on ACLs and apps, but not members
-    // unless they are an admin
+    // unless they are an admin. If a non-admin includes these permissions they will get a 403
+    // instead of a 404 for a non-existent group, this is an acceptable behaviour because they shouoldn't be asking
     if (holder.includeMembers == true || holder.includeMembersV2 == true) {
       // ensure they are a user manager or admin if they are asking for members
       portfolioUtils.portfolioUserManager(securityContext,
@@ -216,10 +217,9 @@ class GroupResource @Inject constructor(
   }
 
   fun updatePermissionCheck(groupId: UUID, securityContext: SecurityContext, portfolioId: UUID,updateApplicationGroupRoles: Boolean?, updateEnvironmentGroupRoles: Boolean?,
-                            unavailableToGroupMemberManagers: Boolean,
                             callback: (updateAppRoles: Boolean, updateEnvRoles: Boolean, personId: UUID,) -> Unit) {
-    // superuser, portfolio admin or group manager admin
-    val personId = portfolioUtils.portfolioUserManager(securityContext, portfolioId)
+    // superuser, portfolio admin only. No GMMs, they must use addUserToGroup
+    val personId = portfolioUtils.portfolioAdmin(securityContext, portfolioId)
 
     val group = groupApi.getGroup(groupId, Opts.empty(), personId) ?: throw NotFoundException("No such group")
 
@@ -228,21 +228,7 @@ class GroupResource @Inject constructor(
       throw BadRequestException()
     }
 
-    var updateAppRoles = updateApplicationGroupRoles == true
-    var updateEnvRoles = updateEnvironmentGroupRoles == true
-
-    // determine if this person is a group-member-manager, and if so, they can never update permissions of a group
-    val groupPersonIsMemberManagerOf = groupApi.groupUserIsManagerOf(personId, portfolioId)
-    if (groupPersonIsMemberManagerOf != null) {
-      if (unavailableToGroupMemberManagers) {
-        throw ForbiddenException("API is unavailable to group member managers, use newer APIs")
-      }
-
-      updateAppRoles = false
-      updateEnvRoles = false
-    }
-
-    callback( updateAppRoles, updateEnvRoles, personId)
+    callback( updateApplicationGroupRoles == true, updateEnvironmentGroupRoles == true, personId)
   }
 
   @Deprecated("Deprecated in Java")
@@ -257,7 +243,8 @@ class GroupResource @Inject constructor(
     // this prevents us from having to support the complex user checking in the backend.
 
     updatePermissionCheck(group.id, securityContext, id, holder.updateApplicationGroupRoles,
-      holder.updateEnvironmentGroupRoles, true) { updateApplicationGroupRoles, updateEnvironmentGroupRoles, _ ->
+      holder.updateEnvironmentGroupRoles
+    ) { updateApplicationGroupRoles, updateEnvironmentGroupRoles, currentUserId ->
 
       try {
         groupHolder.group = groupApi.updateGroupV1(
@@ -267,6 +254,7 @@ class GroupResource @Inject constructor(
           true == holder.updateMembers,
           updateApplicationGroupRoles,
           updateEnvironmentGroupRoles,
+          currentUserId,
           Opts().add(FillOpts.Members, holder.includeMembers).add(FillOpts.Acls, holder.includeGroupRoles)
         )
       } catch (e: OptimisticLockingException) {
@@ -293,7 +281,8 @@ class GroupResource @Inject constructor(
   ): Group {
     val groupHolder = GroupHolder()
     updatePermissionCheck(group.id, securityContext, id, holder.updateApplicationGroupRoles,
-      holder.updateEnvironmentGroupRoles, false) { updateApplicationGroupRoles, updateEnvironmentGroupRoles, personId ->
+      holder.updateEnvironmentGroupRoles
+    ) { updateApplicationGroupRoles, updateEnvironmentGroupRoles, personId ->
 
       try {
         groupHolder.group = groupApi.updateGroup(
@@ -314,6 +303,8 @@ class GroupResource @Inject constructor(
         throw WebApplicationException(Response.Status.CONFLICT)
       } catch (_: DuplicateUsersException) {
         throw WebApplicationException(Response.Status.CONFLICT)
+      } catch (_: GroupApi.CannotSetGroupManagerRoleOnAclGroup) {
+        throw BadRequestException()
       }
     }
 

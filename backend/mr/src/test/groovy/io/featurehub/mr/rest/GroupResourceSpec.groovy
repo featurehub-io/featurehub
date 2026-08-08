@@ -120,26 +120,29 @@ class GroupResourceSpec extends Specification {
 
   def "a portfolio admin can change a portfolio group"() {
     given: "the group is set up and the portfolio admin is setup"
-      def personId = UUID.randomUUID()
-      def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), personId, personId)
+      def adminPersonId = UUID.randomUUID()
+      def personBeingAdded = UUID.randomUUID()
+      def sc = setupGroupAndPortfoioAdmin(portfolioId, adminPersonId, adminPersonId)
+      portfolioUtils.portfolioUserManager(sc, portfolioId) >> adminPersonId
     and: "the person to be added exists"
-      personApi.get(personId, (Opts) _) >> new Person()
+      personApi.get(personBeingAdded, (Opts) _) >> new Person()
     when:
-      gr.addPersonToGroup(groupId, personId, new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
+      gr.addPersonToGroup(groupId, personBeingAdded, new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
     then: "the person is added to the group"
-      1 * groupApi.addPersonsToGroup(groupId, [personId], (Opts) _) >> new Group()
+      1 * groupApi.addPersonsToGroup(groupId, [personBeingAdded], adminPersonId,  (Opts) _) >> new Group()
   }
 
   def "a superadmin can change a portfolio group"() {
     given: "the group is set up and the portfolio admin is setup"
       def personInChargeOfPortfolioAdminGroup = UUID.randomUUID()
-      def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), personInChargeOfPortfolioAdminGroup, adminUser)
+      def sc = setupGroupAndPortfoioAdmin(portfolioId, personInChargeOfPortfolioAdminGroup, adminUser)
+      portfolioUtils.portfolioUserManager(sc, portfolioId) >> personInChargeOfPortfolioAdminGroup
     and: "the person to be added exists"
       personApi.get(personInChargeOfPortfolioAdminGroup, (Opts) _) >> new Person()
     when:
       gr.addPersonToGroup(groupId, personInChargeOfPortfolioAdminGroup, new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
     then: "the person is added to the group"
-      1 * groupApi.addPersonsToGroup(groupId, [personInChargeOfPortfolioAdminGroup], (Opts) _) >> new Group()
+      1 * groupApi.addPersonsToGroup(groupId, [personInChargeOfPortfolioAdminGroup], personInChargeOfPortfolioAdminGroup, (Opts) _) >> new Group()
   }
 
   def "cannot add a person to an known group"() {
@@ -294,11 +297,12 @@ class GroupResourceSpec extends Specification {
     given:
       def pidOwner = UUID.randomUUID()
       SecurityContext sc = setupGroupAndPortfoioAdmin(portfolioId, pidOwner, pidOwner)
-      portfolioUtils.portfolioUserManager(sc, portfolioId) >> personId
     when:
       Group g = gr.updateGroupOnPortfolioV2(portfolioId, new UpdateGroup().id(groupId).name("sausage"), new GroupServiceDelegate.UpdateGroupOnPortfolioV2Holder(), sc)
     then:
-      1 * groupApi.updateGroup(groupId, { UpdateGroup g1 -> g1.name == "sausage" }, null, false, false, personId, (Opts) _) >> new Group().name("sausage")
+      1 * groupApi.updateGroup(groupId, { UpdateGroup g1 -> g1.name == "sausage" }, null, false, false,
+        personId, (Opts) _) >> new Group().name("sausage")
+      1 * portfolioUtils.portfolioAdmin(sc, portfolioId) >> personId
       g.getName() == "sausage"
   }
 
@@ -306,7 +310,7 @@ class GroupResourceSpec extends Specification {
     given:
       def pidOwner = UUID.randomUUID()
       SecurityContext sc = setupGroupAndPortfoioAdmin(portfolioId, pidOwner, adminUser)
-      portfolioUtils.portfolioUserManager(sc, portfolioId) >> personId
+      portfolioUtils.portfolioAdmin(sc, portfolioId) >> personId
     when:
       Group g = gr.updateGroupOnPortfolioV2(portfolioId, new UpdateGroup().id(groupId).name("sausage"), new GroupServiceDelegate.UpdateGroupOnPortfolioV2Holder(applicationId: pidOwner), sc)
     then:

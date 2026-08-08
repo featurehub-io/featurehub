@@ -5,7 +5,6 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
-import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.db.test.DbSpecification
@@ -69,7 +68,7 @@ class Base2Spec extends DbSpecification {
       adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
     }
 
-    groupSqlApi.addPersonsToGroup(adminGroup.id, [superuser], Opts.empty())
+    groupSqlApi.addPersonsToGroup(adminGroup.id, [superuser], superuser, Opts.empty())
   }
 
   @CompileStatic

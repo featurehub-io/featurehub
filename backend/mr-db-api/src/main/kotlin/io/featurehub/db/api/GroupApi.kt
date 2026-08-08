@@ -17,8 +17,9 @@ interface GroupApi {
   fun getSuperuserGroup(orgId: UUID): Group?
   fun groupsPersonOrgAdminOf(personId: UUID): List<Group>
   fun orgsUserIn(personId: UUID): List<Organization>?
-  fun portfolioRoles(personId: UUID, portfolio: UUID): Set<PortfolioGroupRoleType>
+  fun portfolioRoles(personId: UUID, portfolio: UUID?): Set<PortfolioGroupRoleType>
 
+  class CannotSetGroupManagerRoleOnAclGroup : RuntimeException()
   class DuplicateGroupException : Exception()
 
   /**
@@ -37,13 +38,9 @@ interface GroupApi {
   fun createGroup(portfolioId: UUID, group: CreateGroup, whoCreated: Person?): Group?
 
   /**
-   * Adds a person to a group
-   * @param groupId
-   * @param personId
-   * @param opts
-   * @return Group with the group id - default. Or plus opts if provided
+   * Used only when the system itself needs to add a user, such as during initial setup or oauth/saml
    */
-  fun addPersonsToGroup(groupId: UUID, personIds: List<UUID>, opts: Opts): Group?
+  fun systemAddPersonsToGroup(groupId: UUID, personIds: List<UUID>, opts: Opts): Group?
   fun addPersonsToGroup(groupId: UUID, personIds: List<UUID>, personAdding: UUID, opts: Opts): Group?
   fun getGroup(gid: UUID, opts: Opts, personId: UUID): Group?
   fun getGroup(gid: UUID, opts: Opts, person: Person): Group?
@@ -76,6 +73,7 @@ interface GroupApi {
     updateMembers: Boolean,
     updateApplicationGroupRoles: Boolean,
     updateEnvironmentGroupRoles: Boolean,
+    personMakingUpdate: UUID,
     opts: Opts
   ): Group?
 

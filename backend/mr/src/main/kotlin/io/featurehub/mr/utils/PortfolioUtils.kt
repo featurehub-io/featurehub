@@ -70,11 +70,7 @@ class PortfolioUtilsImpl @Inject constructor(private val authManager: AuthManage
   }
 
   override fun portfolioAdmin(user: SecurityContext, portfolioId: UUID): UUID {
-    val personId = authManager.from(user).id!!.id
-    if (conversions.personIsSuperAdmin(personId) ||
-      conversions.isPersonMemberOfPortfolioAdminGroup(portfolioId, personId)) return personId
-
-    throw ForbiddenException()
+    return portfolioGroupRole(user, portfolioId, emptySet())
   }
 
   private fun portfolioGroupRole(user: SecurityContext, portfolioId: UUID, roles: Set<PortfolioGroupRoleType>): UUID {
@@ -82,13 +78,9 @@ class PortfolioUtilsImpl @Inject constructor(private val authManager: AuthManage
 
     if (conversions.personIsSuperAdmin(personId) ||
       conversions.isPersonMemberOfPortfolioAdminGroup(portfolioId, personId) ||
-      groupApi.portfolioRoles(personId, portfolioId).intersect(roles).isNotEmpty()) return personId
+      (roles.isNotEmpty() && groupApi.portfolioRoles(personId, portfolioId).intersect(roles).isNotEmpty())) return personId
 
     throw ForbiddenException()
-  }
-
-  private fun groupUserIsManagerOf(personId: UUID, portfolioId: UUID): UUID? {
-    return groupApi.groupUserIsManagerOf(personId, portfolioId)
   }
 
   override fun portfolioStrategyRead(

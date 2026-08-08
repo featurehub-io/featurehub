@@ -104,7 +104,7 @@ class FeatureSpec extends Base2Spec {
     db.save(averageJoe)
     averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("fsspec-1-p1"), superPerson)
-    groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+    groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [averageJoeMemberOfPortfolio1.id.id], superuser,Opts.empty())
 
     def averageIrina = new DbPerson.Builder().email(ranName() +"averageirina@featurehub.io").name("Average Irina").build()
     db.save(averageIrina)
@@ -115,7 +115,7 @@ class FeatureSpec extends Base2Spec {
     portfolioAdminOfPortfolio1 = convertUtils.toPerson(portfolioAdmin)
 
     adminGroupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().admin(true).name(ranName()), superPerson)
-    groupSqlApi.addPersonsToGroup(adminGroupInPortfolio1.id, [portfolioAdminOfPortfolio1.id.id], Opts.empty())
+    groupSqlApi.addPersonsToGroup(adminGroupInPortfolio1.id, [portfolioAdminOfPortfolio1.id.id], superuser,Opts.empty())
 
     if (db.currentTransaction() != null && db.currentTransaction().active) {
       db.currentTransaction().commit()
@@ -523,7 +523,7 @@ class FeatureSpec extends Base2Spec {
       def env1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("production"), app2Id, superPerson)
     and: "i allow average joe access to access the environment"
       Group g1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("app2-f1-test"), superPerson)
-      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], superuser,Opts.empty())
       groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(g1.version)
         .environmentRoles([new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id)]),
         null, false, true, superuser, Opts.empty());
@@ -550,7 +550,7 @@ class FeatureSpec extends Base2Spec {
       appApi.createApplicationFeature(app2Id, new CreateFeature().description("x").name('not').key('FEATURE_ALEX').description('not').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     and: "i allow average joe access to access the environment"
       Group g1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("app2-f1-test"), superPerson)
-      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], superuser,Opts.empty())
       groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(g1.version).environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
       ]), null, false, true, superuser, Opts.empty());
@@ -592,7 +592,7 @@ class FeatureSpec extends Base2Spec {
         Opts.empty())
     and: "i allow average joe access to two of the three environments"
       Group g1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("app2-f1-test"), superPerson)
-      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], superuser,Opts.empty())
       groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(g1.version).environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK]).environmentId(env3.id),
@@ -733,7 +733,7 @@ class FeatureSpec extends Base2Spec {
     and: "a group in the current portfolio"
       def group = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("lockunlock group"), superPerson)
     and: "i add permissions and members to the group"
-      groupSqlApi.addPersonsToGroup(group.id, [person.id.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(group.id, [person.id.id], superuser,Opts.empty())
       groupSqlApi.updateGroup(group.id, new UpdateGroup().version(group.version).environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.READ, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
       ]), null, false, true, superuser, Opts.empty());

@@ -31,12 +31,14 @@ class InternalApplicationSqlApi @Inject constructor(private val conversions: Con
   ): QDbApplication {
     val queryApplicationList = QDbApplication().portfolio.id.eq(portfolioId)
 
+    // if they are a portfolio admin, they will get picked up next
     if (conversions.personIsSuperAdmin(personId)) {
       return queryApplicationList
     }
 
       // we need to ascertain which apps they can actually see based on environments
     return queryApplicationList
+      .portfolio.id.eq(portfolioId)
       .or()
         .environments.groupRolesAcl.group.groupMembers.person.id.eq(personId)
         .groupRolesAcl.group.groupMembers.person.id.eq(personId).endOr()

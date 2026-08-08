@@ -418,14 +418,12 @@ open class ConvertUtils @Inject constructor(
     group.id = dbg.id
     group.name = stripArchived(dbg.name, dbg.whenArchived)
     group.admin = dbg.isAdminGroup
-    if (dbg.owningPortfolio != null) {
-      group.portfolioId = dbg.owningPortfolio.id
-    }
+    group.portfolioId = dbg.owningPortfolio?.id
     group.organizationId = if (dbg.owningOrganization == null) null else dbg.owningOrganization.id
     group.portfolioRoles = dbg.portfolioRoles
 
     if (opts!!.contains(FillOpts.Members)) {
-      val org = if (dbg.owningOrganization == null) dbg.owningPortfolio.organization else dbg.owningOrganization
+      val org = dbg.owningOrganization ?: dbg.owningPortfolio?.organization
       group.members = QDbPerson()
         .orderBy().name.asc().whenArchived.isNull.groupMembers.group.eq(dbg).findList()
         .map { p: DbPerson? ->
