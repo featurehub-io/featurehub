@@ -15,6 +15,7 @@ interface GroupApi {
   // checks if any group in this portfolio has this user as a member
   fun isPersonMemberOfAnyPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean
   fun getSuperuserGroup(orgId: UUID): Group?
+  fun getPortfolioAdminGroup(portfolio: UUID): UUID?
   fun groupsPersonOrgAdminOf(personId: UUID): List<Group>
   fun orgsUserIn(personId: UUID): List<Organization>?
   fun portfolioRoles(personId: UUID, portfolio: UUID?): Set<PortfolioGroupRoleType>

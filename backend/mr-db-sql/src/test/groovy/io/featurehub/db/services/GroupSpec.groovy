@@ -615,6 +615,8 @@ class GroupSpec extends BaseSpec {
       aclGroup = groupSqlApi.updateGroup(aclGroup.id, new UpdateGroup().version(aclGroup.version).environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE]).environmentId(env1App1.id).groupId(aclGroup.id)
       ]), commonApplication1.id, false, true, superuser, Opts.opts(FillOpts.Acls))
+    and: "i make a second group with no ACLs but isn't a GMM group"
+      def userGroup = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name(ranName()), superPerson)
     and: "a member manager person"
       def gmmPerson = createPerson()
     and: "a ACL person"
@@ -625,6 +627,10 @@ class GroupSpec extends BaseSpec {
     then: "groups should have one member each"
       gmmMembers.simpleMembers.size() == 1
       aclMembers.simpleMembers.size() == 1
+    when: "i ask the GMM user to add themselves to the user group they should not be able to"
+      def userGroupMembers = groupSqlApi.addPersonsToGroup(userGroup.id, [gmmPerson.id], gmmPerson.id, Opts.opts(FillOpts.MembersV2))
+    then:
+      userGroupMembers.simpleMembers.size() == 0
     when: "i ask gmm user to add themselves to the acl group they cannot"
       aclMembers = groupSqlApi.addPersonsToGroup(aclGroup.id, [gmmPerson.id], gmmPerson.id, Opts.opts(FillOpts.MembersV2))
     then:
@@ -638,6 +644,16 @@ class GroupSpec extends BaseSpec {
       gmmMembers = groupSqlApi.addPersonsToGroup(gmmGroup.id, [aclPerson.id], superuser, Opts.opts(FillOpts.MembersV2))
     then:
       gmmMembers.simpleMembers.size() == 1
-
+    when: "the GMM user tries to add a GMM user to the portfolio admin group, they cannot"
+      def gmm2Person = createPerson()
+      gmmMembers = groupSqlApi.addPersonsToGroup(gmmGroup.id, [gmm2Person.id], gmmPerson.id, Opts.opts(FillOpts.MembersV2))
+      def portfolioGroup = groupSqlApi.getGroup(groupSqlApi.getPortfolioAdminGroup(commonPortfolio.id), Opts.empty(), superuser)
+      portfolioGroup = groupSqlApi.addPersonsToGroup(portfolioGroup.id, [gmm2Person.id], gmmPerson.id, Opts.opts(FillOpts.MembersV2))
+    then:
+      portfolioGroup.simpleMembers.find({it.id == gmm2Person.id}) == null
+    when: "a GMM tries to add a normal person to the portfolio admin group, they can"
+      portfolioGroup = groupSqlApi.addPersonsToGroup(portfolioGroup.id, [aclPerson.id], gmmPerson.id, Opts.opts(FillOpts.MembersV2))
+    then:
+      portfolioGroup.simpleMembers.find({it.id == aclPerson.id})
   }
 }

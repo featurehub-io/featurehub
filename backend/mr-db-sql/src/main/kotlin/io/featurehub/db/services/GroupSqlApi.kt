@@ -65,6 +65,12 @@ open class GroupSqlApi @Inject constructor(
     } else null
   }
 
+  override fun getPortfolioAdminGroup(portfolio: UUID): UUID? {
+    return QDbGroup()
+      .adminGroup.isTrue
+      .owningPortfolio.id.eq(portfolio).findOne()?.id
+  }
+
   override fun groupsPersonOrgAdminOf(personId: UUID): List<Group> {
     return QDbGroup().whenArchived
       .isNull.owningPortfolio
@@ -293,26 +299,28 @@ open class GroupSqlApi @Inject constructor(
       && dbGroup.owningPortfolio != null
     ) {
       if (dbGroup.portfolioRoles.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER)) {
-        // we cannot add any users with ACL permissions into this group. So we find all members who we
-        // are trying to add from the list of unique ids
+        // we cannot add any users with membership in any non-GMM aware group
+        // in the same portfolio
+        val normalGroups = QDbGroup()
+          .select(QDbGroup.Alias.id, QDbGroup.Alias.portfolioRoles)
+          .id.ne(dbGroup.id)
+          .owningPortfolio.eq(dbGroup.owningPortfolio)
+          .findList()
+          .filter { !it.portfolioRoles.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER) }
+          .map { it.id }
 
+        // if you are a group member of any portfolio group already which isn't a GMM group, you cannot
+        // join this one
         QDbGroupMember()
           .select(QDbGroupMember.Alias.person.id)
           .distinctOn(QDbGroupMember.Alias.person.id)
           .group.owningPortfolio.eq(dbGroup.owningPortfolio)
-          .group.id.ne(dbGroup.id)
+          .group.id.`in`(normalGroups)
           .person.id.`in`(uniqueIds).findList().forEach { personId ->
             uniqueIds.remove(personId.person.id)
           }
       } else {
-        // if we know who the user is doing this
-        // and this is part of a portfolio
-        // and the group is not a group member manager group
-        // and the person isn't a super or portfolio admin
-
-        // we now have to check if any of the remaining users to add are group member managers
-        // even superusers and portfolio managers can't add users who are group member managers
-        // to a normal group
+        // if you are a member of any GMM group, you cannot be allowed to join this group
         val groupsWithMemberManagers = QDbGroup()
           .select(QDbGroup.Alias.id, QDbGroup.Alias.portfolioRoles)
           .owningPortfolio.eq(dbGroup.owningPortfolio)
@@ -584,7 +592,8 @@ open class GroupSqlApi @Inject constructor(
     // we update the portfolio roles independently of the ACL rules because if done later, any updates to ACL
     // rules would not have been persisted. User will have to remove ACLs before making this group a group manager
     // one if they wish to do that
-    if (group.portfolioRoles == null || !transactionalPortfolioRolesUpdate(group, dbGroup)) {
+    if (dbGroup.portfolioRoles?.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER) == false &&
+          (group.portfolioRoles == null || !transactionalPortfolioRolesUpdate(group, dbGroup))) {
       transactionalGroupUpdate(
         group,
         updateApplicationGroupRoles,
