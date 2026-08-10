@@ -305,6 +305,7 @@ open class GroupSqlApi @Inject constructor(
           .select(QDbGroup.Alias.id, QDbGroup.Alias.portfolioRoles)
           .id.ne(dbGroup.id)
           .owningPortfolio.eq(dbGroup.owningPortfolio)
+          .whenArchived.isNull
           .findList()
           .filter { !it.portfolioRoles.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER) }
           .map { it.id }
@@ -325,6 +326,7 @@ open class GroupSqlApi @Inject constructor(
           .select(QDbGroup.Alias.id, QDbGroup.Alias.portfolioRoles)
           .owningPortfolio.eq(dbGroup.owningPortfolio)
           .id.ne(dbGroup.id)
+          .whenArchived.isNull
           .portfolioRoles.isNotNull.findList()
           .filter { dbg -> dbg.portfolioRoles.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER) }
           .map { it.id }
@@ -675,9 +677,9 @@ open class GroupSqlApi @Inject constructor(
     for (group in QDbGroup()
       .select(QDbGroup.Alias.id)
       .adminGroup.isTrue
+      .whenArchived.isNull
       .owningPortfolio.isNotNull
-      .owningPortfolio.organization
-      .eq(superuserChanges.organization)
+      .owningPortfolio.organization.eq(superuserChanges.organization)
       .findList()) {
       if (superuserChanges.ignoredGroups.contains(group.id)) {
         continue
@@ -954,8 +956,9 @@ open class GroupSqlApi @Inject constructor(
   }
 
   override fun updateAdminGroupForPortfolio(portfolioId: UUID, name: String) {
-    QDbGroup().whenArchived
-      .isNull.owningPortfolio.id
+    QDbGroup()
+      .whenArchived.isNull
+      .owningPortfolio.id
       .eq(portfolioId)
       .and().adminGroup
       .isTrue
@@ -971,6 +974,7 @@ open class GroupSqlApi @Inject constructor(
       .select(QDbGroup.Alias.id, QDbGroup.Alias.portfolioRoles)
       .groupMembers.person.id.eq(personId)
       .owningPortfolio.id.eq(portfolioId)
+      .whenArchived.isNull
       .findList().filter { group ->
         group.portfolioRoles.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER)
       }.firstOrNull()
@@ -984,6 +988,45 @@ open class GroupSqlApi @Inject constructor(
       .id.eq(groupId).findList()
 
     return if (groups.isEmpty()) null else groups.first().owningPortfolio?.id
+  }
+
+  override fun groupsCurrentUserCanAddUsersTo(
+    personId: UUID,
+    groupIds: List<UUID>
+  ): List<UUID> {
+    val portfolioIds = QDbGroupMember()
+      .select(QDbGroupMember.Alias.group.owningPortfolio.id)
+      .distinctOn(QDbGroupMember.Alias.group.owningPortfolio.id)
+      .group.adminGroup.isTrue
+      .group.owningPortfolio.isNotNull
+      .group.whenArchived.isNull
+      .person.id.eq(personId)
+      .findList()
+      .map { it.group.owningPortfolio?.id }
+      .filterNotNull()
+
+    // find all groups in which this person is a member that are also
+    // not archived, in the list passed and in valid portfolios and are
+    // admin groups (i.e. they are portfolio admins). All superusers are
+    // portfolio admins
+    val matchedGroups =  QDbGroup()
+      .select(QDbGroup.Alias.id)
+      .id.`in`(groupIds)
+      .whenArchived.isNull
+      .owningPortfolio.id.`in`(portfolioIds)
+      .findList()
+      .map { it.id }.toMutableList()
+
+    // now is the admin group included?
+    QDbGroup()
+      .select(QDbGroup.Alias.id)
+      .id.`in`(groupIds)
+      .whenArchived.isNull
+      .owningPortfolio.isNull
+      .groupMembers.person.id.eq(personId)
+      .adminGroup.isTrue.findOne()?.let { matchedGroups.add(it.id) }
+
+    return matchedGroups
   }
 
   companion object {

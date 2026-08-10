@@ -91,4 +91,11 @@ interface GroupApi {
    * (superadmin group) or the group exists and the portfolio id is returned. The method does not distinguish the first two.
    */
   fun findPortfolioOfGroup(groupId: UUID): UUID?
+
+
+  /**
+   * returns empty list if the person has no permission to any
+   */
+  fun groupsCurrentUserCanAddUsersTo(personId: UUID, groupIds: List<UUID>): List<UUID>
+
 }

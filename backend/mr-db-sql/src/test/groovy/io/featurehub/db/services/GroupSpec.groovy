@@ -655,5 +655,11 @@ class GroupSpec extends BaseSpec {
       portfolioGroup = groupSqlApi.addPersonsToGroup(portfolioGroup.id, [aclPerson.id], gmmPerson.id, Opts.opts(FillOpts.MembersV2))
     then:
       portfolioGroup.simpleMembers.find({it.id == aclPerson.id})
+    and:
+      groupSqlApi.groupsCurrentUserCanAddUsersTo(aclPerson.id, [aclGroup.id]) == [aclGroup.id]
+    when: "i ask for the groups a superuser can add"
+      def groupIds = [aclGroup.id, gmmGroup.id, userGroup.id, adminGroup.id]
+    then: "all of them should be returned"
+      groupSqlApi.groupsCurrentUserCanAddUsersTo(superuser, groupIds).intersect(groupIds).size() == groupIds.size()
   }
 }

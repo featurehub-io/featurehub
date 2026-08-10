@@ -132,11 +132,11 @@ open class ConvertUtils @Inject constructor(
   }
 
   override fun personIsSuperAdmin(person: UUID): Boolean {
-    return QDbGroup().whenArchived
-      .isNull.owningPortfolio
-      .isNull.groupMembers.person
-      .id.eq(person).adminGroup
-      .isTrue
+    return QDbGroup()
+      .whenArchived.isNull
+      .owningPortfolio.isNull
+      .groupMembers.person.id.eq(person)
+      .adminGroup.isTrue
       .exists()
   }
 
