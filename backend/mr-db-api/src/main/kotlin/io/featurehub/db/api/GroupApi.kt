@@ -21,7 +21,10 @@ interface GroupApi {
   fun portfolioRoles(personId: UUID, portfolio: UUID?): Set<PortfolioGroupRoleType>
 
   class CannotSetGroupManagerRoleOnAclGroup : RuntimeException()
+  // cannot combine a group manager role with other portfolio roles
+  class CannotCombineGroupManagerRole : RuntimeException()
   class DuplicateGroupException : Exception()
+  class NoValidUsersToAddToGroup : RuntimeException()
 
   /**
    * Creates top level admin group for a given organization
@@ -43,6 +46,7 @@ interface GroupApi {
    */
   fun systemAddPersonsToGroup(groupId: UUID, personIds: List<UUID>, opts: Opts): Group?
   fun addPersonsToGroup(groupId: UUID, personIds: List<UUID>, personAdding: UUID, opts: Opts): Group?
+  fun addPersonsToGroupWithValidate(groupId: UUID, personIds: List<UUID>, personAdding: UUID, opts: Opts): Group?
   fun getGroup(gid: UUID, opts: Opts, personId: UUID): Group?
   fun getGroup(gid: UUID, opts: Opts, person: Person): Group?
   fun findPortfolioAdminGroup(portfolioId: UUID, opts: Opts): Group?

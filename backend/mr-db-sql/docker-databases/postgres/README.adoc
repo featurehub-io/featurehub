@@ -21,7 +21,7 @@ You can also use:
 
 then:
 
-`docker exec -it postgres psql -Upostgres`docker exec -it postgres psql -Upostgres`
+`docker exec -it postgres psql -Upostgres`
 
 
 [sql]

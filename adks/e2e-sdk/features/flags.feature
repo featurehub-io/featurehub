@@ -35,9 +35,16 @@ Feature: All flag based functionality works as expected
 
 
   @flags @history2
-  Scenario: A new portfolio with complex history
+  Scenario: A new feature with complex history
     Given There is a new feature flag
+    When I check the feature history I see
+      | locked | retired | value | strategies |
+      | true   | false   | off   |            |
     And I set the feature flag to on and unlocked
+    When I check the feature history I see
+      | locked | retired | value | strategies |
+      | true   | false   | off   |            |
+      | false  | false   | on    |            |
     And I can create custom feature rollout strategies
       | percentage | name          | value |
       | 15         | orange-roughy | on    |
@@ -48,8 +55,9 @@ Feature: All flag based functionality works as expected
       | 16         | green-diamon  | on    |
       | 50         | blue-peter    | off   |
     When I check the feature history I see
-      | locked | retired | value | strategies                                               |
-      | true   | false   | off   |                                                          |
+      | locked | retired | value | strategies |
+      | true   | false   | off   |            |
+      | false  | false   | on    |            |
       | false  | false   | on    | 15/orange-roughy/on,12/green-diamon/off                  |
       | false  | false   | on    | 25/orange-roughy/on,16/green-diamon/on,50/blue-peter/off |
 

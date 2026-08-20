@@ -129,7 +129,7 @@ class GroupResourceSpec extends Specification {
     when:
       gr.addPersonToGroup(groupId, personBeingAdded, new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
     then: "the person is added to the group"
-      1 * groupApi.addPersonsToGroup(groupId, [personBeingAdded], adminPersonId,  (Opts) _) >> new Group()
+      1 * groupApi.addPersonsToGroupWithValidate(groupId, [personBeingAdded], adminPersonId,  (Opts) _) >> new Group()
   }
 
   def "a superadmin can change a portfolio group"() {
@@ -142,7 +142,7 @@ class GroupResourceSpec extends Specification {
     when:
       gr.addPersonToGroup(groupId, personInChargeOfPortfolioAdminGroup, new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
     then: "the person is added to the group"
-      1 * groupApi.addPersonsToGroup(groupId, [personInChargeOfPortfolioAdminGroup], personInChargeOfPortfolioAdminGroup, (Opts) _) >> new Group()
+      1 * groupApi.addPersonsToGroupWithValidate(groupId, [personInChargeOfPortfolioAdminGroup], personInChargeOfPortfolioAdminGroup, (Opts) _) >> new Group()
   }
 
   def "cannot add a person to an known group"() {

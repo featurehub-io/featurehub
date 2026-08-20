@@ -61,12 +61,16 @@ class GroupResource @Inject constructor(
       personCheck(personId) {
         val currentUser = portfolioUtils.portfolioUserManager(securityContext, group.portfolioId)
 
-        groupHolder.group =
-          groupApi.addPersonsToGroup(
+        try {
+          groupHolder.group =
+          groupApi.addPersonsToGroupWithValidate(
             gid, listOf(personId), currentUser, Opts()
               .add(FillOpts.Members, holder.includeMembers)
               .add(FillOpts.MembersV2, holder.includeMembersV2)
           )
+        } catch (_ : GroupApi.NoValidUsersToAddToGroup) {
+          throw BadRequestException("No valid users being added to group")
+        }
       }
     }
     if (groupHolder.group == null) {
@@ -92,14 +96,23 @@ class GroupResource @Inject constructor(
       authManager.from(securityContext)
     ) { group: Group ->
       personCheck(holder.personId ?: emptyList(), holder.email ?: emptyList()) { personIds ->
+//        if (group.admin == true) {
+//          // if i'm trying to add a group member manager to the portfolio admin group i can't
+//          if (i'm a group membe groupApi.anyPersonIdIsGroupMemberManager()
+//        }
+        // only a superuser or portfolio admin can add a user to the group
         val personId = portfolioUtils.portfolioUserManager(securityContext, group.portfolioId)
 
-        groupHolder.group =
-          groupApi.addPersonsToGroup(
-            gid, personIds.toList(),
-            personId,
-            Opts().add(FillOpts.MembersV2, holder.includeMembersV2)
-          )
+        try {
+          groupHolder.group =
+            groupApi.addPersonsToGroupWithValidate(
+              gid, personIds.toList(),
+              personId,
+              Opts().add(FillOpts.MembersV2, holder.includeMembersV2)
+            )
+        } catch (_ : GroupApi.NoValidUsersToAddToGroup) {
+          throw BadRequestException("No valid users being added to group")
+        }
       }
     }
     if (groupHolder.group == null) {
@@ -155,7 +168,6 @@ class GroupResource @Inject constructor(
     val groupHolder = GroupHolder()
     groupCheck(gid, authManager.from(securityContext)) { group: Group ->
       personCheck(personId) {
-        // is a person an admin, or a group member manager
         portfolioUtils.portfolioUserManager(securityContext, group.portfolioId)
 
         groupHolder.group = groupApi.deletePersonFromGroup(
@@ -200,8 +212,10 @@ class GroupResource @Inject constructor(
     // instead of a 404 for a non-existent group, this is an acceptable behaviour because they shouoldn't be asking
     if (holder.includeMembers == true || holder.includeMembersV2 == true) {
       // ensure they are a user manager or admin if they are asking for members
-      portfolioUtils.portfolioUserManager(securityContext,
-        groupApi.findPortfolioOfGroup(gid))
+      portfolioUtils.portfolioUserManager(
+        securityContext,
+        groupApi.findPortfolioOfGroup(gid)
+      )
     }
 
     // the getGroup API in SQL enforces that only members of the group in some way can read the groups
@@ -216,8 +230,14 @@ class GroupResource @Inject constructor(
       ?: throw NotFoundException("No such group")
   }
 
-  fun updatePermissionCheck(groupId: UUID, securityContext: SecurityContext, portfolioId: UUID,updateApplicationGroupRoles: Boolean?, updateEnvironmentGroupRoles: Boolean?,
-                            callback: (updateAppRoles: Boolean, updateEnvRoles: Boolean, personId: UUID,) -> Unit) {
+  fun updatePermissionCheck(
+    groupId: UUID,
+    securityContext: SecurityContext,
+    portfolioId: UUID,
+    updateApplicationGroupRoles: Boolean?,
+    updateEnvironmentGroupRoles: Boolean?,
+    callback: (updateAppRoles: Boolean, updateEnvRoles: Boolean, personId: UUID) -> Unit
+  ) {
     // superuser, portfolio admin only. No GMMs, they must use addUserToGroup
     val personId = portfolioUtils.portfolioAdmin(securityContext, portfolioId)
 
@@ -228,7 +248,7 @@ class GroupResource @Inject constructor(
       throw BadRequestException()
     }
 
-    callback( updateApplicationGroupRoles == true, updateEnvironmentGroupRoles == true, personId)
+    callback(updateApplicationGroupRoles == true, updateEnvironmentGroupRoles == true, personId)
   }
 
   @Deprecated("Deprecated in Java")
@@ -242,7 +262,8 @@ class GroupResource @Inject constructor(
     // this API is not only deprecated, it will not support someone trying to use it who has a group member manager role.
     // this prevents us from having to support the complex user checking in the backend.
 
-    updatePermissionCheck(group.id, securityContext, id, holder.updateApplicationGroupRoles,
+    updatePermissionCheck(
+      group.id, securityContext, id, holder.updateApplicationGroupRoles,
       holder.updateEnvironmentGroupRoles
     ) { updateApplicationGroupRoles, updateEnvironmentGroupRoles, currentUserId ->
 
@@ -263,6 +284,10 @@ class GroupResource @Inject constructor(
         throw WebApplicationException(Response.Status.CONFLICT)
       } catch (e: DuplicateUsersException) {
         throw WebApplicationException(Response.Status.CONFLICT)
+      } catch (_: GroupApi.CannotSetGroupManagerRoleOnAclGroup) {
+        throw BadRequestException()
+      } catch (_: GroupApi.CannotCombineGroupManagerRole) {
+        throw BadRequestException()
       }
     }
 
@@ -280,7 +305,8 @@ class GroupResource @Inject constructor(
     securityContext: SecurityContext
   ): Group {
     val groupHolder = GroupHolder()
-    updatePermissionCheck(group.id, securityContext, id, holder.updateApplicationGroupRoles,
+    updatePermissionCheck(
+      group.id, securityContext, id, holder.updateApplicationGroupRoles,
       holder.updateEnvironmentGroupRoles
     ) { updateApplicationGroupRoles, updateEnvironmentGroupRoles, personId ->
 
@@ -304,6 +330,8 @@ class GroupResource @Inject constructor(
       } catch (_: DuplicateUsersException) {
         throw WebApplicationException(Response.Status.CONFLICT)
       } catch (_: GroupApi.CannotSetGroupManagerRoleOnAclGroup) {
+        throw BadRequestException()
+      } catch (_: GroupApi.CannotCombineGroupManagerRole) {
         throw BadRequestException()
       }
     }

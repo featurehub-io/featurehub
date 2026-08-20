@@ -10,7 +10,7 @@ Feature: We can save, change and retrieve portfolio strategies on feature values
   @portstrat
   Scenario: I can create a feature value with an portfolio strategy attached
     Given I create a new normal group
-    And I assign portfolio strategy "edit,delete" roles to the group
+    And I can assign portfolio strategy "edit,delete" roles to the group
     And I create a new user
     And I assign the new user to the new group
     Given I create portfolio strategies

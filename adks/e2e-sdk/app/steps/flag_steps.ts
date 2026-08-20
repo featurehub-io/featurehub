@@ -222,7 +222,9 @@ function decodeStrategies(s: string | undefined): Array<RolloutStrategy> {
     strategies.push(new RolloutStrategy({
       name: data[1],
       percentage: parseInt(data[0]),
-      value: data[2] === 'on'
+      value: data[2] === 'on',
+      disabled: false,
+      attributes: []
     }));
   });
 
@@ -255,11 +257,13 @@ When(/^I check the feature history I see$/, async function (table: DataTable) {
     const retired = row['retired'] === 'true';
     const strategies = decodeStrategies(row['strategies']);
     let found = false;
-    while (!found && pos < itemData.history.length) {
-      console.log('comparing ', JSON.stringify(itemData.history[pos]), 'to locked', locked, 'retired', retired, 'value', value, 'strategies', JSON.stringify(strategies));
-      const item = itemData.history[pos++];
-      found = (item.locked == locked) && (item.retired == retired) && (item.value == value) && (strategyComparison(item.rolloutStrategies, strategies));
+    const item = itemData.history[pos];
+    found = (item.locked == locked) && (item.retired == retired) && (item.value == value) && (strategyComparison(item.rolloutStrategies, strategies));
+    if (!found) {
+      console.log('comparing failed between', JSON.stringify(itemData.history[pos]));
+      console.log('and', 'to locked', locked, 'retired', retired, 'value', value, 'strategies', JSON.stringify(strategies));
     }
+    pos ++;
 
     expect(found).to.be.true;
   }

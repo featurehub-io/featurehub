@@ -607,6 +607,24 @@ class GroupSpec extends BaseSpec {
       gmmUpdatedGroup.environmentRoles.size() == 0
   }
 
+  def "a group with a group manager portfolio role cannot add other portfolio roles"() {
+    given: "we have a group for member managers"
+      def gmmGroup = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name(ranName()).portfolioRoles([PortfolioGroupRoleType.GROUP_MEMBER_MANAGER,] as Set), superPerson)
+    when: "i update the group to add another role"
+      gmmGroup = groupSqlApi.updateGroup(gmmGroup.id,
+          new UpdateGroup().version(gmmGroup.version).portfolioRoles([PortfolioGroupRoleType.GROUP_MEMBER_MANAGER, PortfolioGroupRoleType.PORTFOLIO_STRATEGY_EDIT] as Set),
+        null, false, false, superuser, Opts.empty())
+    then:
+      thrown(GroupApi.CannotCombineGroupManagerRole)
+    when: "i remove the GMM role, I should be able to replace it"
+      gmmGroup = groupSqlApi.updateGroup(gmmGroup.id,
+        new UpdateGroup().version(gmmGroup.version).portfolioRoles([PortfolioGroupRoleType.PORTFOLIO_STRATEGY_EDIT] as Set),
+        null, false, false, superuser, Opts.empty())
+    then:
+      gmmGroup.portfolioRoles.size() == 1
+      gmmGroup.portfolioRoles.contains(PortfolioGroupRoleType.PORTFOLIO_STRATEGY_EDIT)
+  }
+
   def "a member of a group with an ACL cannot be added to a group-member-manager group"() {
     given: "we have a group for member managers"
       def gmmGroup = groupSqlApi.createGroup(commonPortfolio.id, new CreateGroup().name(ranName()).portfolioRoles([PortfolioGroupRoleType.GROUP_MEMBER_MANAGER,] as Set), superPerson)

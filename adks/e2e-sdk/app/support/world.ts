@@ -141,13 +141,15 @@ export class SdkWorld extends World {
   public featureHistory: FeatureHistoryList;
   public featureHistorySave: Record<string, FeatureHistoryValue> = {};
   public readonly _edgeApi: EdgeService;
-  public group: Group;
+  public currentGroup: Group;
+  public namedGroups: Record<string, Group> = {};
 
   public readonly axiosInstance: AxiosInstance;
   public readonly superuser: ApiUser;
   public user: ApiUser | undefined;
   public currentUser: ApiUser;
   public dashboard: ApplicationFeatureValues | undefined;
+  public namedUsers: Record<string, ApiUser> = {};
 
   constructor(props: any) {
     super(props);
@@ -162,6 +164,7 @@ export class SdkWorld extends World {
 
     this.axiosInstance = globalAxios.create();
     this.superuser = new ApiUser(this.adminUrl, this.featureUrl, this.axiosInstance, apiKey);
+    this.namedUsers["superuser"] = this.superuser;
     this.currentUser = this.superuser;
 
     const edgeConfig = new EdgeConfig({ basePath: this.featureUrl, axiosInstance: this.adminApiConfig.axiosInstance});
@@ -222,6 +225,12 @@ export class SdkWorld extends World {
     return this.user;
   }
 
+  public setNamedUser(name: string, apiKey: string): ApiUser {
+    const user = new ApiUser(this.adminUrl, this.featureUrl, this.axiosInstance, apiKey);
+    this.namedUsers[name] = user;
+    return user;
+  }
+
   public setScenarioId(id: string) {
     this.scenarioId = id;
     logger.info('session id is %s', this.scenarioId);
@@ -243,6 +252,15 @@ export class SdkWorld extends World {
 
   public get repository() {
     return this._repository;
+  }
+
+  public set group(g: Group) {
+    this.currentGroup = g;
+    this.namedGroups["current"] = g;
+  }
+
+  public get group(): Group {
+    return this.currentGroup;
   }
 
   public featureState(key: string): FeatureStateHolder {
