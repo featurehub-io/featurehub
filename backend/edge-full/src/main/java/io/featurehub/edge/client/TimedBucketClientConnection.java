@@ -80,8 +80,7 @@ public class TimedBucketClientConnection implements ClientConnection {
     attributesForStrategy =
         ClientContext.decode(featureHubAttributes, Collections.singletonList(apiKey));
 
-    etags =
-        ETagSplitter.Companion.splitTag(etag, List.of(apiKey), attributesForStrategy.makeEtag());
+    etags = ETagSplitter.Companion.makeEtagHolderForSSE(etag, List.of(apiKey), attributesForStrategy.makeEtag());
 
     timer = connectionLengthHistogram.startTimer();
     sseGauge.inc();
