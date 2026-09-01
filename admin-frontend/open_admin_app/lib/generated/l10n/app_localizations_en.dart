@@ -952,6 +952,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get portfolioRoleLabel => 'Portfolio role';
+
+  @override
+  String get portfolioRoleNone => 'No portfolio role';
+
+  @override
+  String get portfolioRoleGroupMemberManager => 'Group Member Manager';
+
+  @override
+  String get portfolioRolePortfolioStrategyEdit => 'Portfolio Strategy Editor';
+
+  @override
+  String get portfolioRolePortfolioStrategyEditAndDelete =>
+      'Portfolio Strategy Editor & Deleter';
+
+  @override
   String get viewFeature => 'View feature';
 
   @override

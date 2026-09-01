@@ -907,6 +907,21 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get portfolioRoleLabel => '项目组合角色';
+
+  @override
+  String get portfolioRoleNone => '无项目组合角色';
+
+  @override
+  String get portfolioRoleGroupMemberManager => '用户组成员管理员';
+
+  @override
+  String get portfolioRolePortfolioStrategyEdit => '项目组合策略编辑者';
+
+  @override
+  String get portfolioRolePortfolioStrategyEditAndDelete => '项目组合策略编辑与删除者';
+
+  @override
   String get viewFeature => '查看功能标志';
 
   @override

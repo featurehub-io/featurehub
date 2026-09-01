@@ -939,6 +939,21 @@
     "placeholders": { "name": { "type": "String" } }
   },
 
+  "portfolioRoleLabel": "Portfolio role",
+  "@portfolioRoleLabel": { "description": "Label for the portfolio role dropdown on the group dialog" },
+
+  "portfolioRoleNone": "No portfolio role",
+  "@portfolioRoleNone": { "description": "Portfolio role dropdown option meaning the group has no special portfolio-wide role" },
+
+  "portfolioRoleGroupMemberManager": "Group Member Manager",
+  "@portfolioRoleGroupMemberManager": { "description": "Portfolio role dropdown option: can edit members of groups across the portfolio" },
+
+  "portfolioRolePortfolioStrategyEdit": "Portfolio Strategy Editor",
+  "@portfolioRolePortfolioStrategyEdit": { "description": "Portfolio role dropdown option: can create and edit portfolio strategies" },
+
+  "portfolioRolePortfolioStrategyEditAndDelete": "Portfolio Strategy Editor & Deleter",
+  "@portfolioRolePortfolioStrategyEditAndDelete": { "description": "Portfolio role dropdown option: can create, edit and delete portfolio strategies" },
+
   "viewFeature": "View feature",
   "@viewFeature": { "description": "Dialog title when viewing a feature (read-only)" },
 

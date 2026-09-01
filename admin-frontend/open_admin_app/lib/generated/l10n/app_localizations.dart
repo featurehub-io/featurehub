@@ -1736,6 +1736,36 @@ abstract class AppLocalizations {
   /// **'Could not delete group {name}'**
   String couldNotDeleteGroup(String name);
 
+  /// Label for the portfolio role dropdown on the group dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio role'**
+  String get portfolioRoleLabel;
+
+  /// Portfolio role dropdown option meaning the group has no special portfolio-wide role
+  ///
+  /// In en, this message translates to:
+  /// **'No portfolio role'**
+  String get portfolioRoleNone;
+
+  /// Portfolio role dropdown option: can edit members of groups across the portfolio
+  ///
+  /// In en, this message translates to:
+  /// **'Group Member Manager'**
+  String get portfolioRoleGroupMemberManager;
+
+  /// Portfolio role dropdown option: can create and edit portfolio strategies
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategy Editor'**
+  String get portfolioRolePortfolioStrategyEdit;
+
+  /// Portfolio role dropdown option: can create, edit and delete portfolio strategies
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategy Editor & Deleter'**
+  String get portfolioRolePortfolioStrategyEditAndDelete;
+
   /// Dialog title when viewing a feature (read-only)
   ///
   /// In en, this message translates to:

@@ -286,6 +286,11 @@
   "groupDeleteContent": "该用户组的所有权限将被删除 \n\n此操作无法撤销！",
   "groupDeleted": "用户组「{name}」已删除！",
   "couldNotDeleteGroup": "无法删除用户组「{name}」",
+  "portfolioRoleLabel": "项目组合角色",
+  "portfolioRoleNone": "无项目组合角色",
+  "portfolioRoleGroupMemberManager": "用户组成员管理员",
+  "portfolioRolePortfolioStrategyEdit": "项目组合策略编辑者",
+  "portfolioRolePortfolioStrategyEditAndDelete": "项目组合策略编辑与删除者",
 
   "viewFeature": "查看功能标志",
   "editFeature": "编辑功能标志",
