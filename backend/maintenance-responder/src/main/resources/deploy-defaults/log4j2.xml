@@ -1,0 +1,15 @@
+<Configuration packages="cd.connect.logging" monitorInterval="30" verbose="true">
+    <Appenders>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <ConnectJsonLayout/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+      <AsyncLogger name="net.stickycode" level="warn"/>
+      <AsyncLogger name="org.glassfish.jersey.server.wadl" level="error"/>
+      <AsyncRoot level="info">
+        <AppenderRef ref="STDOUT"/>
+      </AsyncRoot>
+    </Loggers>
+</Configuration>
