@@ -3,6 +3,7 @@ import {expect} from "chai";
 import {logger} from "./logging";
 import DataTable from "@cucumber/cucumber/lib/models/data_table";
 import {attributeType, conditional} from "../steps/feature-groups";
+import {isDeepStrictEqual} from "node:util";
 
 
 export function decodeAndValidateRoles(roles: string): Array<RoleType> {
@@ -92,19 +93,56 @@ function nullOutIds(strategy: RolloutStrategy) {
 }
 
 export function strategyComparison(rs1: Array<any>, rs2: Array<any>): boolean {
-  const strategies1 = rs1.map(r => nullOutIds(JSON.parse(JSON.stringify(r))));
-  const strategies2 = rs2.map(r => nullOutIds(JSON.parse(JSON.stringify(r))));
+  const strategies1 = rs1.map(r => nullOutIds(structuredClone(r)));
+  const strategies2 = rs2.map(r => nullOutIds(structuredClone(r)));
 
-  return JSON.stringify(strategies1) === JSON.stringify(strategies2);
+  // deep, type-safe comparison - unlike JSON.stringify this isn't sensitive to
+  // key ordering and won't treat e.g. "1" and 1 as equivalent
+  return isDeepStrictEqual(strategies1, strategies2);
+}
+
+
+
+function internalRolloutStrategyCompare(s1: RolloutStrategy, s2: RolloutStrategy): boolean {
+  function internalComparePercentageAttributes(pa1?: Array<string>, pa2?: Array<string>) {
+    if (pa1 === undefined && pa2 === undefined) return true;
+    if (pa1 === undefined || pa2 === undefined) return false;
+
+    return pa1.sort() === pa2.sort();
+  }
+
+  function internalCompareAttributes(a1?: Array<RolloutStrategyAttribute>, a2?: Array<RolloutStrategyAttribute>) {
+    if (a1 === undefined && a2 === undefined) return true;
+    if (a1 === undefined || a2 === undefined) return false;
+    if (a1.length != a2.length) return false;
+
+    for(let count = 0; count < a1.length; count ++) {
+      if (a1[count].conditional !== a2[count].conditional) return false;
+      if (a1[count].fieldName !== a2[count].fieldName) return false;
+      if (a1[count].type !== a2[count].type) return false;
+      if (!isDeepStrictEqual(a1[count].values.sort(), a2[count].values.sort())) return false;
+    }
+
+    return true;
+  }
+
+  return s1.disabled == s2.disabled &&
+       s1.name == s2.name &&
+       s1.value == s2.value &&
+       s1.percentage == s2.percentage &&
+       internalComparePercentageAttributes(s1.percentageAttributes, s2.percentageAttributes) &&
+      internalCompareAttributes(s1.attributes, s2.attributes)
 }
 
 export function compareStrategies(strategy1: any, strategy2: any) {
-  const s1 = JSON.parse(JSON.stringify(strategy1));
-  const s2 = JSON.parse(JSON.stringify(strategy2));
-  nullOutIds(s1);
-  nullOutIds(s2)
+  const s1 = nullOutIds(structuredClone(strategy1));
+  const s2 = nullOutIds(structuredClone(strategy2));
 
-  expect(s1, `expected ${JSON.stringify(s1)} to deep equal ${JSON.stringify(s2)}`).to.deep.eq(s2);
+  const matched = internalRolloutStrategyCompare(s1 as RolloutStrategy, s2 as RolloutStrategy);
+  if (!matched) {
+    console.log(`expected ${JSON.stringify(s1)} to deep equal ${JSON.stringify(s2)}`);
+  }
+  expect(matched).to.be.true;
 }
 
 export function trimField(v : string|undefined): string|undefined {
