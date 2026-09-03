@@ -7,7 +7,7 @@ Feature: Group managers
     And I create a service account and full permissions based on the application environments
 
     @gmm @gmmpermission
-  Scenario: A person can be added to a group manager group and add and remove people from any groupo
+  Scenario: A person can be added to a group manager group and add and remove people from any group
     Given I create a new user "GMM1"
     And I create a new user "GMM2"
     And I create a new group "GMM"

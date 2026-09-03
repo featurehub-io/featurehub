@@ -323,14 +323,16 @@ open class GroupSqlApi @Inject constructor(
 
         // if you are a group member of any portfolio group already which isn't a GMM group, you cannot
         // join this one
-        QDbGroupMember()
-          .select(QDbGroupMember.Alias.person.id)
-          .distinctOn(QDbGroupMember.Alias.person.id)
-          .group.owningPortfolio.eq(dbGroup.owningPortfolio)
-          .group.id.`in`(normalGroups)
-          .person.id.`in`(uniqueIds).findList().forEach { personId ->
-            uniqueIds.remove(personId.person.id)
-          }
+        if (normalGroups.isNotEmpty() && uniqueIds.isNotEmpty()) {
+          QDbGroupMember()
+            .select(QDbGroupMember.Alias.person.id)
+            .setDistinct(true)
+            .group.owningPortfolio.eq(dbGroup.owningPortfolio)
+            .group.id.`in`(normalGroups)
+            .person.id.`in`(uniqueIds).findList().forEach { personId ->
+              uniqueIds.remove(personId.person.id)
+            }
+        }
       } else {
         // if you are a member of any GMM group, you cannot be allowed to join this group
         val groupsWithMemberManagers = QDbGroup()
@@ -342,11 +344,13 @@ open class GroupSqlApi @Inject constructor(
           .filter { dbg -> dbg.portfolioRoles.contains(PortfolioGroupRoleType.GROUP_MEMBER_MANAGER) }
           .map { it.id }
 
-        QDbGroupMember()
-          .select(QDbGroupMember.Alias.person.id)
-          .distinctOn(QDbGroupMember.Alias.person.id)
-          .group.id.`in`(groupsWithMemberManagers)
-          .findList().forEach { uniqueIds.remove(it.person.id) }
+        if (groupsWithMemberManagers.isNotEmpty()) {
+          QDbGroupMember()
+            .select(QDbGroupMember.Alias.person.id)
+            .setDistinct(true)
+            .group.id.`in`(groupsWithMemberManagers)
+            .findList().forEach { uniqueIds.remove(it.person.id) }
+        }
       }
     }
 
@@ -1016,7 +1020,7 @@ open class GroupSqlApi @Inject constructor(
   ): List<UUID> {
     val portfolioIds = QDbGroupMember()
       .select(QDbGroupMember.Alias.group.owningPortfolio.id)
-      .distinctOn(QDbGroupMember.Alias.group.owningPortfolio.id)
+      .setDistinct(true)
       .group.adminGroup.isTrue
       .group.owningPortfolio.isNotNull
       .group.whenArchived.isNull

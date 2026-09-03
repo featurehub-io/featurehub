@@ -58,19 +58,19 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>42.7.11</version>
+      <version>42.7.13</version>
     </dependency>
 
     <dependency>
       <groupId>org.mariadb.jdbc</groupId>
       <artifactId>mariadb-java-client</artifactId>
-      <version>3.5.7</version>
+      <version>3.5.10</version>
     </dependency>
 
     <dependency>
       <groupId>com.mysql</groupId>
       <artifactId>mysql-connector-j</artifactId>
-      <version>9.5.0</version>
+      <version>9.7.0</version>
     </dependency>
 
     <dependency>
