@@ -80,4 +80,13 @@ public class DbLogin extends Model {
       return new DbLogin(this);
     }
   }
+
+  @Override
+  public String toString() {
+    return "DbLogin{" +
+      "token='" + token + '\'' +
+      ", person=" + person +
+      ", lastSeen=" + lastSeen +
+      '}';
+  }
 }
