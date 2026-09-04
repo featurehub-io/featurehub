@@ -3,13 +3,35 @@ package io.featurehub.db.services
 import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
 import io.featurehub.db.api.FeatureGroupApi
-import io.featurehub.db.model.*
-import io.featurehub.db.model.query.*
+import io.featurehub.db.model.DbApplicationFeature
+import io.featurehub.db.model.DbEnvironment
+import io.featurehub.db.model.DbFeatureGroup
+import io.featurehub.db.model.DbFeatureGroupFeature
+import io.featurehub.db.model.DbFeatureGroupFeatureKey
+import io.featurehub.db.model.DbFeatureValue
+import io.featurehub.db.model.DbPerson
+import io.featurehub.db.model.query.QDbApplication
+import io.featurehub.db.model.query.QDbApplicationFeature
+import io.featurehub.db.model.query.QDbEnvironment
+import io.featurehub.db.model.query.QDbFeatureGroup
+import io.featurehub.db.model.query.QDbFeatureGroupFeature
+import io.featurehub.db.model.query.QDbFeatureValue
+import io.featurehub.db.model.query.QFeatureGroupOrderHighest
 import io.featurehub.db.publish.FeatureGroupHelper
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.mr.model.*
+import io.featurehub.mr.model.ApplicationPermissions
+import io.featurehub.mr.model.FeatureGroup
+import io.featurehub.mr.model.FeatureGroupCreate
+import io.featurehub.mr.model.FeatureGroupFeature
+import io.featurehub.mr.model.FeatureGroupList
+import io.featurehub.mr.model.FeatureGroupListFeature
+import io.featurehub.mr.model.FeatureGroupListGroup
+import io.featurehub.mr.model.FeatureGroupUpdate
+import io.featurehub.mr.model.FeatureValueType
+import io.featurehub.mr.model.GroupRolloutStrategy
+import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.SortOrder
 import jakarta.inject.Inject
-import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Instant
@@ -26,6 +48,10 @@ class FeatureGroupSqlApi @Inject constructor(
   archiveStrategy: ArchiveStrategy
 ) : FeatureGroupApi {
   private val log: Logger = LoggerFactory.getLogger(FeatureGroupSqlApi::class.java)
+
+  companion object {
+    const val featureGroupStrategyPrefix = "!"
+  }
 
   init {
     archiveStrategy.environmentArchiveListener {
@@ -425,30 +451,26 @@ class FeatureGroupSqlApi @Inject constructor(
     return toFeatureGroup(group)
   }
 
-  private fun randomId(): String {
-    return "!${RandomStringUtils.randomAlphanumeric(FeatureSqlApi.strategyIdLength - 1)}"
-  }
-
   private fun rationaliseStrategyIdsAndAttributeIds(strategies: List<GroupRolloutStrategy>): Boolean {
     var changes = false
 
     strategies.forEach { strategy ->
-      if (strategy.id == null || strategy.id!!.length > FeatureSqlApi.strategyIdLength) {
-        var id = randomId()
+      if (strategy.id == null || strategy.id!!.length > Conversions.strategyIdLength || !strategy.id!!.startsWith(featureGroupStrategyPrefix)) {
+        var id = Conversions.strategyCodeGenerator(featureGroupStrategyPrefix)
         // make sure it is unique
         while (strategies.any { id == strategy.id }) {
-          id = randomId()
+          id = Conversions.strategyCodeGenerator(featureGroupStrategyPrefix)
         }
         changes = true
         strategy.id = id
       }
 
       strategy.attributes?.forEach { attribute ->
-        if (attribute.id == null || attribute.id!!.length > FeatureSqlApi.strategyIdLength) {
-          var id = randomId()
+        if (attribute.id == null || attribute.id!!.length > Conversions.strategyIdLength) {
+          var id = Conversions.strategyCodeGenerator(featureGroupStrategyPrefix)
           // make sure it is unique
           while (strategy.attributes!!.any { id == attribute.id }) {
-            id = randomId()
+            id = Conversions.strategyCodeGenerator(featureGroupStrategyPrefix)
           }
 
           changes = true

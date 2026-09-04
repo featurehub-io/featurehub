@@ -99,7 +99,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey, Opts.empty())
 
       // it already exists, so we have  to unlock it
-      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.valueBoolean(true).locked(false), pers)
+      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.value(true).locked(false), pers)
 
     then: "feature update is published"
 
@@ -147,7 +147,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
       }, org.id)
 
     when: "i set the feature value "
-      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.valueBoolean(true).locked(true), pers)
+      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, f.value(true).locked(true), pers)
 
     then: "feature update is published"
       1 * featureMessagingCloudEventPublisher.publish({ FeatureMessagingParameter param ->
@@ -164,7 +164,7 @@ class FeatureUpdatesPublishingSpec extends Base2Spec {
       }, org.id)
     when: "i update the feature value"
       def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, featureKey, Opts.empty())
-      fv.valueBoolean(false)
+      fv.value(false)
       fv.locked(false)
       featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, featureKey, fv, pers)
 

@@ -105,8 +105,7 @@ class _ServiceAccountWidget extends StatelessWidget {
       FHIconButton(
           icon: const Icon(Icons.edit),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) =>
-              updateServiceAccountDialog(
-                  bloc, serviceAccount))),
+              updateServiceAccountDialog(bloc, serviceAccount))),
       FHIconButton(
           icon: const Icon(Icons.delete),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
@@ -206,7 +205,7 @@ class _ServiceAccountEnvironment extends StatelessWidget {
                           .currentAid = application.id;
 
                       ManagementRepositoryClientBloc.router
-                          .navigateTo(context, '/app-settings', params: {
+                          .navigateTo('/app-settings', params: {
                         'service-account': [serviceAccount.id],
                         'tab': ['service-accounts']
                       });
@@ -286,9 +285,11 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
   }
 }
 
-Widget updateServiceAccountDialog(ManageServiceAccountsBloc bloc, ServiceAccount? serviceAccount) {
-  return BlocProvider<FeatureFilterBloc>.builder(creator: (c,b) => FeatureFilterBloc(bloc.mrClient),
-      builder: (c,b) {
+Widget updateServiceAccountDialog(
+    ManageServiceAccountsBloc bloc, ServiceAccount? serviceAccount) {
+  return BlocProvider<FeatureFilterBloc>.builder(
+      creator: (c, b) => FeatureFilterBloc(bloc.mrClient),
+      builder: (c, b) {
         if (serviceAccount == null) {
           return ServiceAccountUpdateDialogWidget(bloc: bloc);
         }
@@ -297,8 +298,9 @@ Widget updateServiceAccountDialog(ManageServiceAccountsBloc bloc, ServiceAccount
             future: bloc.loadFreshServiceAccount(serviceAccount.id),
             builder: (context, asyncSnapshot) {
               if (asyncSnapshot.hasError) {
-                return FHErrorWidget(error: FHError(
-                    AppLocalizations.of(context)!.errorNotFound));
+                return FHErrorWidget(
+                    error:
+                        FHError(AppLocalizations.of(context)!.errorNotFound));
               }
 
               if (asyncSnapshot.hasData) {
@@ -307,10 +309,8 @@ Widget updateServiceAccountDialog(ManageServiceAccountsBloc bloc, ServiceAccount
               }
 
               return FHLoadingIndicator();
-            }
-        );
-      }
-  );
+            });
+      });
 }
 
 class ServiceAccountUpdateDialogWidget extends StatefulWidget {
@@ -348,11 +348,13 @@ class _ServiceAccountUpdateDialogWidgetState
       isUpdate = true;
 
       // Initialize filters
-      if (widget.serviceAccount!.featureFilters != null && widget.serviceAccount!.featureFilters!.isNotEmpty) {
+      if (widget.serviceAccount!.featureFilters != null &&
+          widget.serviceAccount!.featureFilters!.isNotEmpty) {
         _filterBloc.filterResultStream.take(1).listen((result) {
           if (result != null) {
             setState(() {
-              _selectedFilters.addAll(result.filters.where((f) => widget.serviceAccount!.featureFilters!.contains(f.id)));
+              _selectedFilters.addAll(result.filters.where((f) =>
+                  widget.serviceAccount!.featureFilters!.contains(f.id)));
               _updateMatching();
             });
           }
@@ -387,8 +389,7 @@ class _ServiceAccountUpdateDialogWidgetState
                 TextFormField(
                     controller: _name,
                     autofocus: true,
-                    decoration: InputDecoration(
-                        labelText: l10n.saNameLabel),
+                    decoration: InputDecoration(labelText: l10n.saNameLabel),
                     validator: ((v) {
                       if (v == null || v.isEmpty) {
                         return l10n.saNameRequired;
@@ -400,17 +401,14 @@ class _ServiceAccountUpdateDialogWidgetState
                     })),
                 TextFormField(
                     controller: _description,
-                    decoration: InputDecoration(
-                        labelText:
-                            l10n.saDescriptionLabel),
+                    decoration:
+                        InputDecoration(labelText: l10n.saDescriptionLabel),
                     validator: ((v) {
                       if (v == null || v.isEmpty) {
-                        return l10n
-                            .saDescriptionRequired;
+                        return l10n.saDescriptionRequired;
                       }
                       if (v.length < 4) {
-                        return l10n
-                            .saDescriptionTooShort;
+                        return l10n.saDescriptionTooShort;
                       }
                       return null;
                     })),
@@ -431,25 +429,23 @@ class _ServiceAccountUpdateDialogWidgetState
             },
           ),
           FHFlatButton(
-              title: isUpdate
-                  ? l10n.update
-                  : l10n.create,
+              title: isUpdate ? l10n.update : l10n.create,
               onPressed: (() async {
                 if (_formKey.currentState!.validate()) {
                   try {
-                    final filterIds = _selectedFilters.map((f) => f.id).toList();
+                    final filterIds =
+                        _selectedFilters.map((f) => f.id).toList();
                     if (isUpdate) {
                       await widget.bloc.updateServiceAccount(
-                          widget.serviceAccount!,
-                          _name.text,
-                          _description.text,
+                          widget.serviceAccount!, _name.text, _description.text,
                           featureFilterIds: filterIds);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient
                           .addSnackbar(Text(l10n.saUpdated(_name.text)));
                     } else {
-                      await widget.bloc
-                          .createServiceAccount(_name.text, _description.text, featureFilterIds: filterIds);
+                      await widget.bloc.createServiceAccount(
+                          _name.text, _description.text,
+                          featureFilterIds: filterIds);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient
                           .addSnackbar(Text(l10n.saCreated(_name.text)));
@@ -457,8 +453,7 @@ class _ServiceAccountUpdateDialogWidgetState
                   } catch (e, s) {
                     if (e is ApiException && e.code == 409 && context.mounted) {
                       widget.bloc.mrClient.customError(
-                          messageTitle: l10n
-                              .saAlreadyExists(_name.text));
+                          messageTitle: l10n.saAlreadyExists(_name.text));
                     } else {
                       await widget.bloc.mrClient.dialogError(e, s);
                     }
@@ -505,7 +500,8 @@ class _ServiceAccountUpdateDialogWidgetState
                   label: Text(filter.name),
                   selected: isSelected,
                   selectedColor: Theme.of(context).colorScheme.primaryContainer,
-                  checkmarkColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                  checkmarkColor:
+                      Theme.of(context).colorScheme.onPrimaryContainer,
                   labelStyle: TextStyle(
                     color: isSelected
                         ? Theme.of(context).colorScheme.onPrimaryContainer
@@ -542,10 +538,13 @@ class _ServiceAccountUpdateDialogWidgetState
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.matchingFeatures, style: Theme.of(context).textTheme.bodySmall),
+            Text(l10n.matchingFeatures,
+                style: Theme.of(context).textTheme.bodySmall),
             Wrap(
               spacing: 8,
-              children: res.matchingResults.map((m) => Chip(label: Text(m.name))).toList(),
+              children: res.matchingResults
+                  .map((m) => Chip(label: Text(m.name)))
+                  .toList(),
             ),
             const SizedBox(height: 8),
           ],

@@ -14,6 +14,17 @@ Feature: System supports Slack
     # we have to set it now otherwise it won't trigger
     And I set the feature flag to unlocked and on
     Then I receive a cloud event of type "integration/slack-v1"
+      | previous-or-next | locked | retired | value |
+      | p                | true   | false   | false |
+      | n                | false  | false   | true  |
+    And I clear cloud events
+    And I create portfolio strategies
+      | name   | fieldName | conditional | values | type   |
+      | chubby | customer  | equals      | ilf    | string |
+    And I attach portfolio strategy "chubby" to the current environment feature value with the value "pearl"
+    Then I receive a cloud event of type "integration/slack-v1"
+      | previous-or-next | portfolio-strategy-name | portfolio-strategy-fieldName | portfolio-strategy-conditional | portfolio-strategy-values | portfolio-strategy-type | portfolio-strategy-value | 
+      | a                | chubby                  | customer                     | equals                         | ilf                       | string                  | pearl                    |
 
   @slack-direct  @slack  @notsaas
   Scenario: I setup and test a slack event directly to slack

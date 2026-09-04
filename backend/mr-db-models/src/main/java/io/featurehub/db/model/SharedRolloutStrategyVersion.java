@@ -1,5 +1,6 @@
 package io.featurehub.db.model;
 
+import java.util.Objects;
 import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,11 +15,16 @@ public class SharedRolloutStrategyVersion {
   @Nullable
   private Object value;
 
-  public SharedRolloutStrategyVersion(@NotNull UUID strategyId, long version, boolean enabled, @Nullable Object value) {
+  // percentage override - as its stored in JSON, we keep it short. This is optional and a new field in 1.11.x +
+  @Nullable
+  private Integer pOride;
+
+  public SharedRolloutStrategyVersion(@NotNull UUID strategyId, long version, boolean enabled, @Nullable Object value, @Nullable Integer percentage) {
     this.strategyId = strategyId;
     this.version = version;
     this.enabled = enabled;
     this.value = value;
+    this.pOride = percentage;
   }
 
   public SharedRolloutStrategyVersion() {}
@@ -55,25 +61,29 @@ public class SharedRolloutStrategyVersion {
     this.value = value;
   }
 
+  public @Nullable Integer getpOride() {
+    return pOride;
+  }
+
+  public void setpOride(@Nullable Integer pOride) {
+    this.pOride = pOride;
+  }
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
     SharedRolloutStrategyVersion that = (SharedRolloutStrategyVersion) o;
-
-    if (getVersion() != that.getVersion()) return false;
-    if (isEnabled() != that.isEnabled()) return false;
-    if (!getStrategyId().equals(that.getStrategyId())) return false;
-      return getValue() != null ? getValue().equals(that.getValue()) : that.getValue() == null;
+    return getVersion() == that.getVersion() && isEnabled() == that.isEnabled() && getStrategyId().equals(that.getStrategyId()) && Objects.equals(getValue(), that.getValue()) && Objects.equals(getpOride(), that.getpOride());
   }
 
   @Override
   public int hashCode() {
     int result = getStrategyId().hashCode();
-    result = 31 * result + (int) (getVersion() ^ (getVersion() >>> 32));
-    result = 31 * result + (isEnabled() ? 1 : 0);
-    result = 31 * result + (getValue() != null ? getValue().hashCode() : 0);
+    result = 31 * result + Long.hashCode(getVersion());
+    result = 31 * result + Boolean.hashCode(isEnabled());
+    result = 31 * result + Objects.hashCode(getValue());
+    result = 31 * result + Objects.hashCode(getpOride());
     return result;
   }
 }

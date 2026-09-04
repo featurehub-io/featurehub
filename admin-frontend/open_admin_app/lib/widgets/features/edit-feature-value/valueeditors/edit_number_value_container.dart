@@ -1,47 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
-import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/valueeditors/edit_feature_value_widget.dart';
 
-class EditNumberValueContainer extends StatefulWidget {
+class EditNumberValueContainer extends EditFeatureValueWidget {
   const EditNumberValueContainer({
     super.key,
-    required this.unlocked,
-    required this.canEdit,
-    this.rolloutStrategy,
-    required this.strBloc,
-    this.groupRolloutStrategy,
-    this.applicationRolloutStrategy,
+    required super.unlocked,
+    required super.canEdit,
+    super.rolloutStrategy,
+    super.groupRolloutStrategy,
+    super.applicationRolloutStrategy,
+    super.portfolioRolloutStrategy,
+    required super.strBloc,
   });
-
-  final bool unlocked;
-  final bool canEdit;
-  final RolloutStrategy? rolloutStrategy;
-  final ThinGroupRolloutStrategy? groupRolloutStrategy;
-  final RolloutStrategyInstance? applicationRolloutStrategy;
-  final EditingFeatureValueBloc strBloc;
 
   @override
   EditNumberValueContainerState createState() =>
       EditNumberValueContainerState();
 }
 
-class EditNumberValueContainerState extends State<EditNumberValueContainer> {
+class EditNumberValueContainerState
+    extends EditFeatureValueState<EditNumberValueContainer> {
   TextEditingController tec = TextEditingController();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    final valueSource = widget.rolloutStrategy != null
-        ? widget.rolloutStrategy!.value
-        : widget.groupRolloutStrategy != null
-            ? widget.groupRolloutStrategy!.value
-            : widget.applicationRolloutStrategy != null
-                ? widget.applicationRolloutStrategy!.value
-                : widget.strBloc.currentFeatureValue.valueNumber;
-    tec.text = (valueSource ?? '').toString();
+    final v = resolveStrategyValue() ??
+        widget.strBloc.currentFeatureValue.valueNumber;
+    tec.text = (v ?? '').toString();
   }
 
   @override
@@ -68,9 +56,7 @@ class EditNumberValueContainerState extends State<EditNumberValueContainer> {
             )),
             hintText: widget.groupRolloutStrategy == null
                 ? (widget.canEdit
-                    ? (widget.unlocked
-                        ? 'Enter number value'
-                        : 'Unlock to edit')
+                    ? (widget.unlocked ? 'Enter number value' : 'Unlock to edit')
                     : 'No editing rights')
                 : 'not set',
             hintStyle: Theme.of(context).textTheme.bodySmall,
@@ -78,30 +64,16 @@ class EditNumberValueContainerState extends State<EditNumberValueContainer> {
                 validateNumber(tec.text) != null ? 'Not a valid number' : null,
           ),
           onChanged: (value) {
-            debouncer.run(
-              () {
-                final replacementValue =
-                    value.trim().isEmpty ? null : double.parse(tec.text.trim());
-                _updateFeatureValue(replacementValue);
-              },
-            );
+            debouncer.run(() {
+              updateValue(value.trim().isEmpty
+                  ? null
+                  : double.parse(tec.text.trim()));
+            });
           },
           inputFormatters: [
             DecimalTextInputFormatter(
                 decimalRange: 5, activatedNegativeValues: true)
           ],
         ));
-  }
-
-  void _updateFeatureValue(double? replacementValue) {
-    if (widget.rolloutStrategy != null) {
-      widget.rolloutStrategy!.value = replacementValue;
-      widget.strBloc.updateStrategyValue();
-    } else if (widget.applicationRolloutStrategy != null) {
-      widget.applicationRolloutStrategy!.value = replacementValue;
-      widget.strBloc.updateApplicationStrategyValue();
-    } else {
-      widget.strBloc.updateFeatureValueDefault(replacementValue);
-    }
   }
 }

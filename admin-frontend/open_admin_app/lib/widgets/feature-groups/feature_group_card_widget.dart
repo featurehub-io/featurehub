@@ -112,8 +112,7 @@ class FeatureGroupCard extends StatelessWidget {
 class _PopUpGroupAdminMenu extends StatelessWidget {
   final FeatureGroupsBloc bloc;
   final FeatureGroupListGroup featureGroup;
-  const _PopUpGroupAdminMenu(
-      {required this.bloc, required this.featureGroup});
+  const _PopUpGroupAdminMenu({required this.bloc, required this.featureGroup});
 
   @override
   Widget build(BuildContext context) {
@@ -153,8 +152,8 @@ class _PopUpGroupAdminMenu extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyMedium)),
           PopupMenuItem(
               value: 'edit',
-              child:
-                  Text(l10n.edit, style: Theme.of(context).textTheme.bodyMedium)),
+              child: Text(l10n.edit,
+                  style: Theme.of(context).textTheme.bodyMedium)),
           PopupMenuItem(
               value: 'delete',
               child: Text(l10n.delete,
@@ -169,7 +168,7 @@ class _PopUpGroupAdminMenu extends StatelessWidget {
 void navigateToEditFeatureGroupSettingsPage(FeatureGroupsBloc bloc,
     FeatureGroupListGroup featureGroup, BuildContext context) {
   ManagementRepositoryClientBloc.router
-      .navigateTo(context, '/edit-feature-group-strategy-values', params: {
+      .navigateTo('/edit-feature-group-strategy-values', params: {
     'appid': [bloc.appId ?? ""],
     'envid': [bloc.currentEnvId ?? ""],
     'groupid': [featureGroup.id]
@@ -200,8 +199,7 @@ class FeaturesCounter extends StatelessWidget {
                   height: iconSize + 12.0, // Adjust the size as needed
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color:
-                        Theme.of(context).colorScheme.primary.withAlpha(51),
+                    color: Theme.of(context).colorScheme.primary.withAlpha(51),
                   ),
                 ),
                 Icon(

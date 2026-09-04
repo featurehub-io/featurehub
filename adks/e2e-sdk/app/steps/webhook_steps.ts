@@ -128,16 +128,16 @@ function featureValue(version: number, type: FeatureValueType, value: string, ke
 
   switch (type) {
     case FeatureValueType.Boolean:
-      val.valueBoolean = (value === 'true') || (value === 'on');
+      val.value = (value === 'true') || (value === 'on');
       break;
     case FeatureValueType.String:
-      val.valueString = value;
+      val.value = value;
       break;
     case FeatureValueType.Number:
-      val.valueNumber = parseFloat(value);
+      val.value = parseFloat(value);
       break;
     case FeatureValueType.Json:
-      val.valueJson = value;
+      val.value = value;
       break;
   }
 

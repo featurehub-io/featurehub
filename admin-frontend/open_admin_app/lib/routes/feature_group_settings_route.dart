@@ -143,7 +143,7 @@ class _FeatureGroupSettingsRouteState extends State<FeatureGroupSettingsRoute> {
                                               onPressed: () {
                                                 ManagementRepositoryClientBloc
                                                     .router
-                                                    .navigateTo(context,
+                                                    .navigateTo(
                                                         '/feature-groups');
                                               },
                                             ),

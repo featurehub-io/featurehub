@@ -197,6 +197,28 @@ open class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
           }
           it
         }
+        .let {
+          val strategyUpdates = featureMessagingParameter.portfolioStrategyUpdates
+          if (strategyUpdates.hasChanged) {
+            if (strategyUpdates.updated.isNotEmpty())
+              it.portfolioStrategiesUpdated(
+                strategyUpdates.updated.map { rolloutStrategyUpdate -> toMessagingStrategyUpdate(rolloutStrategyUpdate) })
+
+            val messagingStrategiesReorder = MessagingStrategiesReorder()
+            if (strategyUpdates.reordered.isNotEmpty())
+              it.portfolioStrategiesReordered(
+                messagingStrategiesReorder.reordered(
+                  strategyUpdates.reordered.map { rolloutStrategy -> toMessagingRolloutStrategy(rolloutStrategy) }
+                ))
+
+            if (strategyUpdates.previous.isNotEmpty())
+              it.portfolioStrategiesReordered(
+                messagingStrategiesReorder.previous(
+                  strategyUpdates.previous.map { rolloutStrategy -> toMessagingRolloutStrategy(rolloutStrategy) }
+                ))
+          }
+          it
+        }
     } catch (e: Exception) {
       log.error("Unable to convert feature messaging parameter {}",featureMessagingParameter, e)
       throw(e)

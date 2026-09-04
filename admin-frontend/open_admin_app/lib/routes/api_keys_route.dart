@@ -32,15 +32,19 @@ class ApiKeysRoute extends StatelessWidget {
             children: <Widget>[
               Wrap(
                 children: [
-                  FHHeader(title: AppLocalizations.of(context)!.apiKeys, children: [
-                    FHExternalLinkWidget(
-                      tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
-                      link:
-                          "https://docs.featurehub.io/featurehub/latest/service-accounts.html#_api_keys",
-                      icon: const Icon(Icons.arrow_outward_outlined),
-                      label: AppLocalizations.of(context)!.apiKeysDocumentation,
-                    )
-                  ]),
+                  FHHeader(
+                      title: AppLocalizations.of(context)!.apiKeys,
+                      children: [
+                        FHExternalLinkWidget(
+                          tooltipMessage:
+                              AppLocalizations.of(context)!.viewDocumentation,
+                          link:
+                              "https://docs.featurehub.io/featurehub/latest/service-accounts.html#_api_keys",
+                          icon: const Icon(Icons.arrow_outward_outlined),
+                          label: AppLocalizations.of(context)!
+                              .apiKeysDocumentation,
+                        )
+                      ]),
                 ],
               ),
               Padding(
@@ -69,11 +73,11 @@ class ApiKeysRoute extends StatelessWidget {
                             return Padding(
                               padding: const EdgeInsets.only(left: 8.0),
                               child: FHUnderlineButton(
-                                  title: AppLocalizations.of(context)!.goToServiceAccountsSettings,
+                                  title: AppLocalizations.of(context)!
+                                      .goToServiceAccountsSettings,
                                   onPressed: () => {
                                         ManagementRepositoryClientBloc.router
                                             .navigateTo(
-                                          context,
                                           '/service-accounts',
                                         )
                                       }),
@@ -105,7 +109,9 @@ class ApiKeysRoute extends StatelessWidget {
                         return const FHLoadingError();
                       } else if (envSnapshot.hasData) {
                         if (envSnapshot.data!.serviceAccounts.isEmpty) {
-                          return Text(AppLocalizations.of(context)!.noServiceAccountsAvailable,
+                          return Text(
+                              AppLocalizations.of(context)!
+                                  .noServiceAccountsAvailable,
                               style: Theme.of(context).textTheme.bodySmall);
                         } else {
                           return _ApiKeysDisplayWidget(
@@ -152,7 +158,8 @@ class _ApiKeysDisplayWidget extends StatelessWidget {
               ),
               Expanded(
                 flex: 2,
-                child: SelectableText(AppLocalizations.of(context)!.environments,
+                child: SelectableText(
+                    AppLocalizations.of(context)!.environments,
                     style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
               Expanded(
@@ -249,8 +256,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
   final Environment env;
   final ServiceAccount sa;
 
-  const _ServiceAccountPermissionWidget(
-      {required this.env, required this.sa});
+  const _ServiceAccountPermissionWidget({required this.env, required this.sa});
 
   @override
   Widget build(BuildContext context) {

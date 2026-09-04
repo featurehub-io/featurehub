@@ -20,7 +20,6 @@ class PortfolioResource @Inject constructor(
   private val groupApi: GroupApi,
   private val authManager: AuthManagerService,
   private val portfolioApi: PortfolioApi,
-  private val organizationApi: OrganizationApi,
   private val portfolioUtils: PortfolioUtils
 ) : PortfolioServiceDelegate {
 

@@ -13,6 +13,7 @@ import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.SortOrder
 import io.featurehub.mr.model.UpdateGroup
 import io.featurehub.mr.resources.GroupResource
+import io.featurehub.mr.utils.PortfolioUtils
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.core.SecurityContext
@@ -29,12 +30,15 @@ class GroupResourceSpec extends Specification {
   UUID personId
   Person person
   UUID adminUser
+  PortfolioUtils portfolioUtils
 
   def setup() {
     groupApi = Mock(GroupApi)
     personApi = Mock(PersonApi)
     authManager = Mock(AuthManagerService)
-    gr = new GroupResource(personApi, groupApi, authManager)
+    portfolioUtils = Mock()
+
+    gr = new GroupResource(personApi, groupApi, authManager, portfolioUtils)
     groupId = UUID.randomUUID()
     portfolioId = UUID.randomUUID()
     adminUser = UUID.randomUUID()
@@ -80,11 +84,11 @@ class GroupResourceSpec extends Specification {
 
   def "if you are not a portfolio admin, you cannot create a group"() {
     given: "i am not a portfolio admin"
-      authManager.isPortfolioAdmin(portfolioId, person, null) >> false
+      portfolioUtils.portfolioAdmin(sc, portfolioId) >> { throw new ForbiddenException() }
     and: "i have a group"
       def group = new CreateGroup()
     when: "i attempt to create a group"
-      gr.createGroup(groupId, group, new GroupServiceDelegate.CreateGroupHolder(includePeople: true), sc)
+      gr.createGroup(portfolioId, group, new GroupServiceDelegate.CreateGroupHolder(includePeople: true), sc)
     then:
       thrown(ForbiddenException)
   }
@@ -96,17 +100,18 @@ class GroupResourceSpec extends Specification {
     UUID orgId = UUID.randomUUID()
     groupApi.getGroup(groupId, (Opts) _, _) >> new Group().id(groupId).portfolioId(portfolioId).admin(groupIsAdmin).organizationId(orgId)
     def sc = Mock(SecurityContext)
-    groupApi.findPortfolioAdminGroup(portfolioId, (Opts)_) >> new Group().id(groupId).admin(true).members([new Person().id(new PersonId().id(idPersonInChargeOfPortfolioAdminGroup))])
-    groupApi.findOrganizationAdminGroup(orgId, (Opts)_) >> new Group().id(groupId).admin(true).members([new Person().id(new PersonId().id(personIdInAdminGroup))])
+    groupApi.findPortfolioAdminGroup(portfolioId, (Opts) _) >> new Group().id(groupId).admin(true).members([new Person().id(new PersonId().id(idPersonInChargeOfPortfolioAdminGroup))])
+    groupApi.findOrganizationAdminGroup(orgId, (Opts) _) >> new Group().id(groupId).admin(true).members([new Person().id(new PersonId().id(personIdInAdminGroup))])
     authManager.from(sc) >> new Person().id(new PersonId().id(currentPersonId))
     return sc
   }
 
   def "a person not in a portfolio admin group cannot change portfolio group"() {
     given: "the group is set up and the portfolio admin is setup"
-      def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), UUID.randomUUID(), personId)
+      def sc = setupGroupAndPortfoioAdmin(portfolioId, UUID.randomUUID(), personId)
+      portfolioUtils.portfolioUserManager(sc, portfolioId) >> { throw new ForbiddenException() }
     and: "the person to be added exists"
-      personApi.get(personId, (Opts)_) >> new Person()
+      personApi.get(personId, (Opts) _) >> new Person()
     when:
       gr.addPersonToGroup(groupId, personId, new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
     then: "not allowed to add a person to the group"
@@ -115,26 +120,29 @@ class GroupResourceSpec extends Specification {
 
   def "a portfolio admin can change a portfolio group"() {
     given: "the group is set up and the portfolio admin is setup"
-      def personId = UUID.randomUUID()
-      def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), personId, personId)
+      def adminPersonId = UUID.randomUUID()
+      def personBeingAdded = UUID.randomUUID()
+      def sc = setupGroupAndPortfoioAdmin(portfolioId, adminPersonId, adminPersonId)
+      portfolioUtils.portfolioUserManager(sc, portfolioId) >> adminPersonId
     and: "the person to be added exists"
-      personApi.get(personId, (Opts)_) >> new Person()
+      personApi.get(personBeingAdded, (Opts) _) >> new Person()
     when:
-      gr.addPersonToGroup(groupId, personId, new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
+      gr.addPersonToGroup(groupId, personBeingAdded, new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
     then: "the person is added to the group"
-      1 * groupApi.addPersonsToGroup(groupId, [personId], (Opts)_) >> new Group()
+      1 * groupApi.addPersonsToGroupWithValidate(groupId, [personBeingAdded], adminPersonId,  (Opts) _) >> new Group()
   }
 
   def "a superadmin can change a portfolio group"() {
     given: "the group is set up and the portfolio admin is setup"
       def personInChargeOfPortfolioAdminGroup = UUID.randomUUID()
-      def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), personInChargeOfPortfolioAdminGroup, adminUser)
+      def sc = setupGroupAndPortfoioAdmin(portfolioId, personInChargeOfPortfolioAdminGroup, adminUser)
+      portfolioUtils.portfolioUserManager(sc, portfolioId) >> personInChargeOfPortfolioAdminGroup
     and: "the person to be added exists"
-      personApi.get(personInChargeOfPortfolioAdminGroup, (Opts)_) >> new Person()
+      personApi.get(personInChargeOfPortfolioAdminGroup, (Opts) _) >> new Person()
     when:
       gr.addPersonToGroup(groupId, personInChargeOfPortfolioAdminGroup, new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
     then: "the person is added to the group"
-      1 * groupApi.addPersonsToGroup(groupId, [personInChargeOfPortfolioAdminGroup], (Opts)_) >> new Group()
+      1 * groupApi.addPersonsToGroupWithValidate(groupId, [personInChargeOfPortfolioAdminGroup], personInChargeOfPortfolioAdminGroup, (Opts) _) >> new Group()
   }
 
   def "cannot add a person to an known group"() {
@@ -192,7 +200,8 @@ class GroupResourceSpec extends Specification {
     given:
       def pidOwner = UUID.randomUUID()
       def piddle = UUID.randomUUID()
-      def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), pidOwner, piddle)
+      def sc = setupGroupAndPortfoioAdmin(portfolioId, pidOwner, piddle)
+      portfolioUtils.portfolioAdmin(sc, portfolioId) >> { throw new ForbiddenException() }
     when:
       gr.deleteGroup(groupId, new GroupServiceDelegate.DeleteGroupHolder(), sc)
     then:
@@ -215,9 +224,10 @@ class GroupResourceSpec extends Specification {
     given:
       def pidOwner = UUID.randomUUID()
       def piddle = UUID.randomUUID()
-      def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), pidOwner, piddle)
+      def sc = setupGroupAndPortfoioAdmin(portfolioId, pidOwner, piddle)
+      portfolioUtils.portfolioUserManager(sc, portfolioId) >> { throw new ForbiddenException() }
     and: "the person to be deleted exists"
-      personApi.get(piddle, (Opts)_) >> new Person()
+      personApi.get(piddle, (Opts) _) >> new Person()
     when:
       gr.deletePersonFromGroup(groupId, piddle, new GroupServiceDelegate.DeletePersonFromGroupHolder(), sc)
     then:
@@ -229,11 +239,11 @@ class GroupResourceSpec extends Specification {
       def pidOwner = UUID.randomUUID()
       def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), pidOwner, pidOwner)
     and: "the person to be deleted exists"
-      personApi.get(pidOwner, (Opts)_) >> new Person()
+      personApi.get(pidOwner, (Opts) _) >> new Person()
     when:
       gr.deletePersonFromGroup(groupId, pidOwner, new GroupServiceDelegate.DeletePersonFromGroupHolder(), sc)
     then:
-      1 * groupApi.deletePersonFromGroup(groupId, pidOwner, (Opts)_)  >> new Group()
+      1 * groupApi.deletePersonFromGroup(groupId, pidOwner, (Opts) _) >> new Group()
   }
 
   def "can delete a person from a group if you are the super-admin"() {
@@ -241,11 +251,11 @@ class GroupResourceSpec extends Specification {
       def pidOwner = UUID.randomUUID()
       def sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), pidOwner, adminUser)
     and: "the person to be deleted exists"
-      personApi.get(pidOwner, (Opts)_) >> new Person()
+      personApi.get(pidOwner, (Opts) _) >> new Person()
     when:
       gr.deletePersonFromGroup(groupId, pidOwner, new GroupServiceDelegate.DeletePersonFromGroupHolder(), sc)
     then:
-      1 * groupApi.deletePersonFromGroup(groupId, pidOwner, (Opts)_)  >> new Group()
+      1 * groupApi.deletePersonFromGroup(groupId, pidOwner, (Opts) _) >> new Group()
   }
 
   def "cannot delete person from non-existent group"() {
@@ -286,22 +296,25 @@ class GroupResourceSpec extends Specification {
   def "a portfolio admin can rename a portfolio group"() {
     given:
       def pidOwner = UUID.randomUUID()
-      SecurityContext sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), pidOwner, pidOwner)
+      SecurityContext sc = setupGroupAndPortfoioAdmin(portfolioId, pidOwner, pidOwner)
     when:
       Group g = gr.updateGroupOnPortfolioV2(portfolioId, new UpdateGroup().id(groupId).name("sausage"), new GroupServiceDelegate.UpdateGroupOnPortfolioV2Holder(), sc)
     then:
-      1 * groupApi.updateGroup(groupId, { UpdateGroup g1 -> g1.name == "sausage" }, null, false, false, (Opts)_) >> new Group().name("sausage")
+      1 * groupApi.updateGroup(groupId, { UpdateGroup g1 -> g1.name == "sausage" }, null, false, false,
+        personId, (Opts) _) >> new Group().name("sausage")
+      1 * portfolioUtils.portfolioAdmin(sc, portfolioId) >> personId
       g.getName() == "sausage"
   }
 
   def "an admin can rename a portfolio group"() {
     given:
       def pidOwner = UUID.randomUUID()
-      SecurityContext sc = setupGroupAndPortfoioAdmin(UUID.randomUUID(), pidOwner, adminUser)
+      SecurityContext sc = setupGroupAndPortfoioAdmin(portfolioId, pidOwner, adminUser)
+      portfolioUtils.portfolioAdmin(sc, portfolioId) >> personId
     when:
       Group g = gr.updateGroupOnPortfolioV2(portfolioId, new UpdateGroup().id(groupId).name("sausage"), new GroupServiceDelegate.UpdateGroupOnPortfolioV2Holder(applicationId: pidOwner), sc)
     then:
-      1 * groupApi.updateGroup(groupId, { UpdateGroup g1 -> g1.name == "sausage" }, pidOwner, false, false, (Opts)_) >> new Group().name("sausage")
+      1 * groupApi.updateGroup(groupId, { UpdateGroup g1 -> g1.name == "sausage" }, pidOwner, false, false, personId, (Opts) _) >> new Group().name("sausage")
       g.getName() == "sausage"
   }
 }

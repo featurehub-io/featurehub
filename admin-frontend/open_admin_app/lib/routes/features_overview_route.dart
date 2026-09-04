@@ -12,7 +12,6 @@ import 'package:open_admin_app/widgets/features/edit-feature/create_update_featu
 import 'package:open_admin_app/widgets/features/feature-data-table/features_data_table.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
-import 'package:open_admin_app/widgets/portfolio/feature_filter_bloc.dart';
 
 class FeatureStatusRoute extends StatefulWidget {
   final bool createFeature;

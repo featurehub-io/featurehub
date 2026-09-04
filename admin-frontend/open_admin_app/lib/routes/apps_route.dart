@@ -50,11 +50,13 @@ class AppsRouteState extends State<AppsRoute> {
               title: AppLocalizations.of(context)!.applications,
               children: [
                 FHExternalLinkWidget(
-                  tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
+                  tooltipMessage:
+                      AppLocalizations.of(context)!.viewDocumentation,
                   link:
                       "https://docs.featurehub.io/featurehub/latest/applications.html",
                   icon: const Icon(Icons.arrow_outward_outlined),
-                  label: AppLocalizations.of(context)!.applicationsDocumentation,
+                  label:
+                      AppLocalizations.of(context)!.applicationsDocumentation,
                 )
               ],
             ),
@@ -65,7 +67,8 @@ class AppsRouteState extends State<AppsRoute> {
                       (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
                     return FilledButton.icon(
                       icon: const Icon(Icons.add),
-                      label: Text(AppLocalizations.of(context)!.createNewApplication),
+                      label: Text(
+                          AppLocalizations.of(context)!.createNewApplication),
                       onPressed: () => _createApp(bloc),
                     );
                   } else {
@@ -89,7 +92,8 @@ class AppsRouteState extends State<AppsRoute> {
                         child: OutlinedButton.icon(
                             onPressed: () => _refreshPortfolioConfirm(bloc),
                             icon: const Icon(Icons.cached),
-                            label: Text(AppLocalizations.of(context)!.republishPortfolioCache))),
+                            label: Text(AppLocalizations.of(context)!
+                                .republishPortfolioCache))),
                   );
                 }
 
@@ -116,7 +120,8 @@ class AppsRouteState extends State<AppsRoute> {
           AppLocalizations.of(context)!.republishPortfolioCacheWarningTitle,
           style: const TextStyle(fontSize: 22.0),
         ),
-        content: Text(AppLocalizations.of(context)!.republishPortfolioCacheWarningContent),
+        content: Text(AppLocalizations.of(context)!
+            .republishPortfolioCacheWarningContent),
         actions: <Widget>[
           FHFlatButton(
             title: AppLocalizations.of(context)!.ok,
@@ -215,7 +220,6 @@ class _ApplicationCard extends StatelessWidget {
           onTap: () {
             bloc.mrClient.setCurrentAid(application.id);
             ManagementRepositoryClientBloc.router.navigateTo(
-              context,
               routeNameFeatureDashboard,
             );
           },
@@ -368,8 +372,7 @@ class _PopUpAdminMenu extends StatelessWidget {
   final AppsBloc bloc;
   final Application application;
 
-  const _PopUpAdminMenu(
-      {required this.bloc, required this.application});
+  const _PopUpAdminMenu({required this.bloc, required this.application});
 
   @override
   Widget build(BuildContext context) {
@@ -399,7 +402,6 @@ class _PopUpAdminMenu extends StatelessWidget {
         if (value == 'features') {
           bloc.mrClient.setCurrentAid(application.id);
           ManagementRepositoryClientBloc.router.navigateTo(
-            context,
             routeNameFeatureDashboard,
           );
         }

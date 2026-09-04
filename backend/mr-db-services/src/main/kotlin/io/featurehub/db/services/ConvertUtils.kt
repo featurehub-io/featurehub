@@ -30,6 +30,7 @@ import io.featurehub.db.model.query.QDbPortfolio
 import io.featurehub.db.model.query.QDbServiceAccountEnvironment
 import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.db.model.DbFeatureFilter
+import io.featurehub.db.model.DbPortfolioStrategyForFeatureValue
 import io.featurehub.db.model.query.QDbGroupMember
 import io.featurehub.mr.model.AnemicPerson
 import io.featurehub.mr.model.Application
@@ -131,11 +132,11 @@ open class ConvertUtils @Inject constructor(
   }
 
   override fun personIsSuperAdmin(person: UUID): Boolean {
-    return QDbGroup().whenArchived
-      .isNull.owningPortfolio
-      .isNull.groupMembers.person
-      .id.eq(person).adminGroup
-      .isTrue
+    return QDbGroup()
+      .whenArchived.isNull
+      .owningPortfolio.isNull
+      .groupMembers.person.id.eq(person)
+      .adminGroup.isTrue
       .exists()
   }
 
@@ -417,12 +418,12 @@ open class ConvertUtils @Inject constructor(
     group.id = dbg.id
     group.name = stripArchived(dbg.name, dbg.whenArchived)
     group.admin = dbg.isAdminGroup
-    if (dbg.owningPortfolio != null) {
-      group.portfolioId = dbg.owningPortfolio.id
-    }
+    group.portfolioId = dbg.owningPortfolio?.id
     group.organizationId = if (dbg.owningOrganization == null) null else dbg.owningOrganization.id
+    group.portfolioRoles = dbg.portfolioRoles
+
     if (opts!!.contains(FillOpts.Members)) {
-      val org = if (dbg.owningOrganization == null) dbg.owningPortfolio.organization else dbg.owningOrganization
+      val org = dbg.owningOrganization ?: dbg.owningPortfolio?.organization
       group.members = QDbPerson()
         .orderBy().name.asc().whenArchived.isNull.groupMembers.group.eq(dbg).findList()
         .map { p: DbPerson? ->
@@ -591,24 +592,21 @@ open class ConvertUtils @Inject constructor(
       .retired(true == fs.retired)
       .version(fs.version)
     if (appFeature.valueType == FeatureValueType.BOOLEAN) {
-      featureValue.valueBoolean(
-        if (fs.defaultValue == null) java.lang.Boolean.FALSE else java.lang.Boolean.parseBoolean(fs.defaultValue)
-      )
-      featureValue.value = featureValue.valueBoolean;
+      featureValue.valueBoolean = if (fs.defaultValue == null) java.lang.Boolean.FALSE else java.lang.Boolean.parseBoolean(fs.defaultValue)
+      featureValue.value = featureValue.valueBoolean
     }
     if (appFeature.valueType == FeatureValueType.JSON) {
-      featureValue.valueJson(fs.defaultValue)
-      featureValue.value = featureValue.valueJson;
+      featureValue.valueJson = fs.defaultValue
+      featureValue.value = fs.defaultValue;
     }
     if (appFeature.valueType == FeatureValueType.STRING) {
-      featureValue.valueString(fs.defaultValue)
-      featureValue.value = featureValue.valueString;
+      featureValue.valueString = fs.defaultValue
+      featureValue.value = fs.defaultValue;
     }
     if (appFeature.valueType == FeatureValueType.NUMBER) {
-      featureValue.valueNumber(
+      featureValue.valueNumber =
         if (fs.defaultValue == null) null else BigDecimal(fs.defaultValue)
-      )
-      featureValue.value = featureValue.valueNumber;
+      featureValue.value = featureValue.valueNumber
     }
     featureValue.environmentId = fs.environment.id
     if (opts.contains(FillOpts.RolloutStrategies)) {
@@ -623,7 +621,22 @@ open class ConvertUtils @Inject constructor(
               )
             )
             .name(rolloutStrategy.name)
+            .percentageOverride(srs.percentageOverride)
             .disabled(if (srs.isEnabled == true) null else true)
+            .strategyId(rolloutStrategy.id)
+        }
+      featureValue.portfolioStrategyInstances =
+        fs.sharedPortfolioRolloutStrategies.map { prs: DbPortfolioStrategyForFeatureValue ->
+          val rolloutStrategy = prs.rolloutStrategy
+          RolloutStrategyInstance()
+            .value(
+              sharedRolloutStrategyToObject(
+                prs.value, appFeature.valueType
+              )
+            )
+            .name(rolloutStrategy.name)
+            .percentageOverride(prs.percentageOverride)
+            .disabled(if (prs.isEnabled == true) null else true)
             .strategyId(rolloutStrategy.id)
         }
     }

@@ -16,6 +16,7 @@ data class FeatureMessagingParameter(
   val retiredUpdate: SingleFeatureValueUpdate<Boolean>,
   val strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
   val applicationStrategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
+  val portfolioStrategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
   val versionUpdate: SingleNullableFeatureValueUpdate<Long>
 )
 

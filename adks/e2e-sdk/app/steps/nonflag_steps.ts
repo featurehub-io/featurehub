@@ -41,7 +41,7 @@ Then(/^the (string|json|number) feature is (locked|unlocked) and (.*)$/, async f
     expect(this.repository.readyness).to.eq(Readyness.Ready);
     const f = this.featureState(this.feature.key) as FeatureStateHolder;
     // console.log('key is val', this.feature.key, f.getBoolean(), value, f.isLocked(), lockedStatus);
-    // logger.info('the feature %s is value %s and locked status %s', this.feature.key, f.valueBoolean, f.locked);
+    // logger.info('the feature %s is value %s and locked status %s', this.feature.key, f.value, f.locked);
     if (value === 'null') {
       if (featureType === 'number') {
         expect(f.getNumber()).to.be.undefined;
@@ -74,11 +74,11 @@ Then(/^I set the (string|json|number) feature value to (.*)$/, async function (f
   expect(fValue).to.not.be.undefined;
 
   if (featureType === 'number') {
-    fValue.valueNumber = parseFloat(value);
+    fValue.value = parseFloat(value);
   } else if (featureType === 'string') {
-    fValue.valueString = value;
+    fValue.value = value;
   } else if (featureType === 'json') {
-    fValue.valueJson = value;
+    fValue.value = value;
   } else {
     expect(false).to.be.true; // this is a big fail
   }

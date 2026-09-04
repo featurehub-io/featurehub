@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
@@ -24,12 +25,27 @@ class GroupUpdateDialogWidget extends StatefulWidget {
 class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _groupName = TextEditingController();
+  PortfolioGroupRoleType? _portfolioRole;
 
   @override
   void initState() {
     super.initState();
     if (widget.group != null) {
       _groupName.text = widget.group!.name;
+      _portfolioRole = widget.group!.portfolioRoles?.firstOrNull;
+    }
+  }
+
+  String _portfolioRoleName(AppLocalizations l10n, PortfolioGroupRoleType? role) {
+    switch (role) {
+      case PortfolioGroupRoleType.GROUP_MEMBER_MANAGER:
+        return l10n.portfolioRoleGroupMemberManager;
+      case PortfolioGroupRoleType.PORTFOLIO_STRATEGY_EDIT:
+        return l10n.portfolioRolePortfolioStrategyEdit;
+      case PortfolioGroupRoleType.PORTFOLIO_STRATEGY_EDIT_AND_DELETE:
+        return l10n.portfolioRolePortfolioStrategyEditAndDelete;
+      case null:
+        return l10n.portfolioRoleNone;
     }
   }
 
@@ -58,6 +74,45 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
                     }
                     return null;
                   })),
+              const SizedBox(height: 16.0),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.portfolioRoleLabel,
+                        style: Theme.of(context).textTheme.bodySmall),
+                    DropdownButton<PortfolioGroupRoleType?>(
+                      isExpanded: true,
+                      icon: const Padding(
+                        padding: EdgeInsets.only(left: 8.0),
+                        child: Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 18,
+                        ),
+                      ),
+                      isDense: true,
+                      value: _portfolioRole,
+                      items: <PortfolioGroupRoleType?>[
+                        null,
+                        ...PortfolioGroupRoleType.values,
+                      ].map((role) {
+                        return DropdownMenuItem<PortfolioGroupRoleType?>(
+                          value: role,
+                          child: Text(
+                            _portfolioRoleName(l10n, role),
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() => _portfolioRole = value);
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -100,7 +155,12 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
 
   Future<void> _callUpdateGroup(String name) {
     final groupName = name.trim();
-    return widget.group == null ? widget.bloc.createGroup(groupName) : widget.bloc.updateGroupName(widget.group!, groupName);
+    final portfolioRoles =
+        _portfolioRole == null ? <PortfolioGroupRoleType>{} : {_portfolioRole!};
+    return widget.group == null
+        ? widget.bloc.createGroup(groupName, portfolioRoles: portfolioRoles)
+        : widget.bloc.updateGroupName(widget.group!, groupName,
+            portfolioRoles: portfolioRoles);
   }
 }
 

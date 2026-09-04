@@ -39,4 +39,12 @@ public class DbGroupMemberKey extends Model {
   public int hashCode() {
     return Objects.hash(getPersonId(), getGroupId());
   }
+
+  @Override
+  public String toString() {
+    return "DbGroupMemberKey{" +
+      "personId=" + personId +
+      ", groupId=" + groupId +
+      '}';
+  }
 }

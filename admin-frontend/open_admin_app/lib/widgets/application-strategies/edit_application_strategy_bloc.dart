@@ -42,6 +42,7 @@ class EditApplicationStrategyBloc implements Bloc {
           id: applicationRolloutStrategy.id,
           name: applicationRolloutStrategy.name,
           percentage: applicationRolloutStrategy.percentage,
+          percentageAttributes: applicationRolloutStrategy.percentageAttributes,
           attributes: applicationRolloutStrategy.attributes);
     }
     return rolloutStrategy;

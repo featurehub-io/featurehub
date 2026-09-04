@@ -1,33 +1,17 @@
 package io.featurehub.db.services
 
-import groovy.transform.CompileStatic
+
 import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.messaging.FeatureMessagingPublisher
-import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
-import io.featurehub.db.model.query.QDbEnvironment
 import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.mr.model.Application
-import io.featurehub.mr.model.ApplicationGroupRole
-import io.featurehub.mr.model.ApplicationRoleType
-import io.featurehub.mr.model.CreateApplication
-import io.featurehub.mr.model.CreateEnvironment
-import io.featurehub.mr.model.CreateGroup
-import io.featurehub.mr.model.Environment
-import io.featurehub.mr.model.EnvironmentGroupRole
-import io.featurehub.mr.model.EnvironmentSortOrder
-import io.featurehub.mr.model.Group
-import io.featurehub.mr.model.RoleType
-import io.featurehub.mr.model.UpdateEnvironment
-import io.featurehub.mr.model.UpdateEnvironmentV2
-import io.featurehub.mr.model.UpdateGroup
+import io.featurehub.mr.model.*
 import org.apache.commons.lang3.RandomStringUtils
-import org.jetbrains.annotations.Nullable
 
 class Environment2Spec extends Base2Spec {
   PersonSqlApi personSqlApi
@@ -61,7 +45,7 @@ class Environment2Spec extends Base2Spec {
 
     // create the portfolio group
     groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("p1-app-1-env1-portfolio-group").admin(true), superPerson)
-    groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [superPerson.id.id], Opts.empty())
+    groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [superPerson.id.id], superuser, Opts.empty())
 
     app1 = appApi.createApplication(portfolio1.id, new CreateApplication().description("x").name('app-1-env'), superPerson)
     assert app1 != null && app1.id != null
@@ -301,7 +285,7 @@ class Environment2Spec extends Base2Spec {
       db.save(averageJoe)
       def averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     and: "i create a general (non-admin) portfolio group"
-      groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [averageJoeMemberOfPortfolio1.id.id], superuser,Opts.empty())
     when: 'i ask for environment access'
       def averageJoAccess = envApi.getEnvironmentsUserCanAccess(app1.id, averageJoe.id)
     then:
@@ -316,7 +300,7 @@ class Environment2Spec extends Base2Spec {
       def averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     and: "i create a general (non-admin) portfolio group"
       groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("envspec-p1-plain-portfolio-group"), superPerson)
-      groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [averageJoeMemberOfPortfolio1.id.id], superuser,Opts.empty())
     and: "i have an environment"
       def env = envApi.create(new CreateEnvironment().name("env-1-perm-1").description("1"), app1.id, superPerson)
     when: "i find out of the superuser has permissions to the environment"
@@ -337,7 +321,7 @@ class Environment2Spec extends Base2Spec {
       def g = groupSqlApi.getGroup(groupInPortfolio1.id, Opts.opts(FillOpts.Members), superPerson)
 //      g.members.add(averageJoeMemberOfPortfolio1)
       g.environmentRoles.add(new EnvironmentGroupRole().environmentId(env.id).roles([RoleType.CHANGE_VALUE]))
-      groupSqlApi.updateGroup(g.id, new UpdateGroup().version(g.version).environmentRoles(g.environmentRoles), null, false, true, Opts.empty())
+      groupSqlApi.updateGroup(g.id, new UpdateGroup().version(g.version).environmentRoles(g.environmentRoles), null, false, true, superuser, Opts.empty())
       def permsAverageJoeAfterAddingPerms = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id)
       def permsAdmin = envApi.personRoles(superPerson, env.id)
       appPermsJoe = appApi.findApplicationPermissions(app1.id, averageJoe.id)
@@ -357,7 +341,7 @@ class Environment2Spec extends Base2Spec {
     when: "I make average joe a feature creator"
       g = groupSqlApi.getGroup(groupInPortfolio1.id, Opts.opts(FillOpts.Acls), superPerson)
       g.applicationRoles.add(new ApplicationGroupRole().applicationId(app1.id).roles([ApplicationRoleType.FEATURE_CREATE]))
-      def permsAverageJoeAfterAdminOfApp1 = groupSqlApi.updateGroup(g.id, new UpdateGroup().version(g.version).applicationRoles(g.applicationRoles), app1.id, true, false, Opts.opts(FillOpts.Acls))
+      def permsAverageJoeAfterAdminOfApp1 = groupSqlApi.updateGroup(g.id, new UpdateGroup().version(g.version).applicationRoles(g.applicationRoles), app1.id, true, false, superuser, Opts.opts(FillOpts.Acls))
       averageJoAccess = envApi.getEnvironmentsUserCanAccess(app1.id, averageJoe.id)
       appPermsJoe = appApi.findApplicationPermissions(app1.id, averageJoe.id)
     then: "the permissions to the portfolio are empty"

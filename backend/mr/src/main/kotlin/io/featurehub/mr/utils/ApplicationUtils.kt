@@ -80,7 +80,9 @@ class ApplicationUtils @Inject constructor(
     val current = authManager.from(securityContext)
     val personId = current.id!!.id
 
-    if (isSuperuserOrPortfolioAdmin(personId, id) || applicationApi.personIsFeatureReader(id, personId) || applicationApi.personApplicationRoles(id, personId).isEmpty()) {
+    if (isSuperuserOrPortfolioAdmin(personId, id) ||
+        applicationApi.personIsFeatureReader(id, personId) ||
+        applicationApi.personApplicationRoles(id, personId).isEmpty()) {
       return personId
     }
 

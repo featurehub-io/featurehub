@@ -47,7 +47,7 @@ class Base3Spec extends Specification {
   @Shared InternalFeatureApi internalFeatureApi
 
   String ranName() {
-    return RandomStringUtils.randomAlphabetic(10)
+    return RandomStringUtils.secure().nextAlphabetic(10)
   }
 
   def setupSpec() {
@@ -89,7 +89,7 @@ class Base3Spec extends Specification {
       adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
     }
 
-    groupSqlApi.addPersonsToGroup(adminGroup.id, [superuser], Opts.empty())
+    groupSqlApi.systemAddPersonsToGroup(adminGroup.id, [superuser], Opts.empty())
 
     rsValidator = Mock()
     rsValidator.validateStrategies(_, _, _) >> new RolloutStrategyValidator.ValidationFailure()

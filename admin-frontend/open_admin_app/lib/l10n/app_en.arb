@@ -97,6 +97,9 @@
   "applicationStrategies": "Application Strategies",
   "@applicationStrategies": { "description": "Navigation menu item for application strategies" },
 
+  "portfolioStrategies": "Portfolio Strategies",
+  "@portfolioStrategies": { "description": "Navigation menu item for portfolio strategies" },
+
   "apiKeys": "API Keys",
   "@apiKeys": { "description": "Navigation menu item for API keys" },
 
@@ -669,6 +672,9 @@
   "applicationStrategiesDocumentation": "Application Strategies Documentation",
   "@applicationStrategiesDocumentation": { "description": "Label for application strategies docs link" },
 
+  "portfolioStrategiesDocumentation": "Portfolio Strategies Documentation",
+  "@portfolioStrategiesDocumentation": { "description": "Label for portfolio strategies docs link" },
+
   "editUser": "Edit user",
   "@editUser": { "description": "Page header for the edit user screen" },
 
@@ -801,6 +807,18 @@
     "placeholders": { "name": { "type": "String" } }
   },
 
+  "createPortfolioStrategyTitle": "Create Portfolio Strategy for {name}",
+  "@createPortfolioStrategyTitle": {
+    "description": "Page header when creating a portfolio strategy",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "editPortfolioStrategyTitle": "Edit Portfolio Strategy for {name}",
+  "@editPortfolioStrategyTitle": {
+    "description": "Page header when editing a portfolio strategy",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
   "editApplication": "Edit application",
   "@editApplication": { "description": "Dialog title when editing an application" },
 
@@ -920,6 +938,21 @@
     "description": "Error when deleting a group fails",
     "placeholders": { "name": { "type": "String" } }
   },
+
+  "portfolioRoleLabel": "Portfolio role",
+  "@portfolioRoleLabel": { "description": "Label for the portfolio role dropdown on the group dialog" },
+
+  "portfolioRoleNone": "No portfolio role",
+  "@portfolioRoleNone": { "description": "Portfolio role dropdown option meaning the group has no special portfolio-wide role" },
+
+  "portfolioRoleGroupMemberManager": "Group Member Manager",
+  "@portfolioRoleGroupMemberManager": { "description": "Portfolio role dropdown option: can edit members of groups across the portfolio" },
+
+  "portfolioRolePortfolioStrategyEdit": "Portfolio Strategy Editor",
+  "@portfolioRolePortfolioStrategyEdit": { "description": "Portfolio role dropdown option: can create and edit portfolio strategies" },
+
+  "portfolioRolePortfolioStrategyEditAndDelete": "Portfolio Strategy Editor & Deleter",
+  "@portfolioRolePortfolioStrategyEditAndDelete": { "description": "Portfolio role dropdown option: can create, edit and delete portfolio strategies" },
 
   "viewFeature": "View feature",
   "@viewFeature": { "description": "Dialog title when viewing a feature (read-only)" },
@@ -1113,6 +1146,15 @@
   "appStrategyDeleted": "Application strategy '{name}' deleted!",
   "@appStrategyDeleted": {
     "description": "Snackbar after deleting an application strategy",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "portfolioStrategyDeleteContent": "This portfolio strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!",
+  "@portfolioStrategyDeleteContent": { "description": "Body of the delete portfolio strategy confirmation dialog" },
+
+  "portfolioStrategyDeleted": "Portfolio strategy '{name}' deleted!",
+  "@portfolioStrategyDeleted": {
+    "description": "Snackbar after deleting a portfolio strategy",
     "placeholders": { "name": { "type": "String" } }
   },
 
@@ -1992,14 +2034,42 @@
   "applicationStrategyVariationsInfo": "Application strategies are created at application level and can be assigned to multiple features in any environment. Application strategy can be created and edited from the Application Strategies page.",
   "@applicationStrategyVariationsInfo": { "description": "Info tooltip describing application strategy variations" },
 
+  "applicationStrategyOverrideInfo": "Setting this rollout value overrides the application strategy value configured globally",
+  "@applicationStrategyOverrideInfo": { "description": "Info note explaining that the per-feature-value percentage overrides the shared application strategy's configured percentage" },
+
+  "portfolioStrategyOverrideInfo": "Setting this rollout value overrides the portfolio strategy value configured globally",
+  "@portfolioStrategyOverrideInfo": { "description": "Info note explaining that the per-feature-value percentage overrides the shared portfolio strategy's configured percentage" },
+
+  "percentageOverrideRolloutAt": "rollout at",
+  "@percentageOverrideRolloutAt": { "description": "Label preceding the inline percentage-override input field on a shared-strategy card, e.g. 'rollout at [ 50 ] %'" },
+
+  "percentageOverridePercentSign": "%",
+  "@percentageOverridePercentSign": { "description": "Percent sign shown after the inline percentage-override input field on a shared-strategy card" },
+
   "noApplicationStrategiesSet": "No application strategies set",
   "@noApplicationStrategiesSet": { "description": "Placeholder when no application strategies have been assigned" },
 
   "showAvailableAppStrategies": "Show available app strategies",
   "@showAvailableAppStrategies": { "description": "Button to reveal the list of available application strategies to add" },
 
-  "addStrategy": "Add Strategy",
-  "@addStrategy": { "description": "Button label to add an application strategy to a feature value" },
+  "addApplicationStrategy": "Add Strategy",
+  "@addApplicationStrategy": { "description": "Button label to add an application strategy to a feature value" },
+
+    "portfolioStrategyVariations": "Portfolio strategy variations",
+    "@portfolioStrategyVariations": { "description": "Section heading for portfolio-level strategy variations" },
+
+    "portfolioStrategyVariationsInfo": "Portfolio strategies are created at portfolio level and can be assigned to multiple features in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.",
+    "@portfolioStrategyVariationsInfo": { "description": "Info tooltip describing portfolio strategy variations" },
+
+    "noPortfolioStrategiesSet": "No portfolio strategies set",
+    "@noPortfolioStrategiesSet": { "description": "Placeholder when no portfolio strategies have been assigned" },
+
+    "showAvailablePortfolioStrategies": "Show available portfolio strategies",
+    "@showAvailablePortfolioStrategies": { "description": "Button to reveal the list of available portfolio strategies to add" },
+
+    "addPortfolioStrategy": "Add Strategy",
+    "@addPortfolioStrategy": { "description": "Button label to add an portfolio strategy to a feature value" },
+
 
   "retiredStatus": "Retired status",
   "@retiredStatus": { "description": "Section label for the retire feature value checkbox" },
@@ -2060,6 +2130,9 @@
 
   "applicationStrategyTooltip": "Application Strategy",
   "@applicationStrategyTooltip": { "description": "Tooltip label on application strategy cells in the feature value table" },
+
+  "portfolioStrategyTooltip": "Portfolio Strategy",
+  "@portfolioStrategyTooltip": { "description": "Tooltip label on portfolio strategy cells in the feature value table" },
 
   "lockedStatus": "Locked status",
   "@lockedStatus": { "description": "Section label for the lock/unlock switch in the feature value side sheet" },

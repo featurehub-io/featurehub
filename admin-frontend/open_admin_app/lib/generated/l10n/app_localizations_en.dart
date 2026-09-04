@@ -107,6 +107,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get applicationStrategies => 'Application Strategies';
 
   @override
+  String get portfolioStrategies => 'Portfolio Strategies';
+
+  @override
   String get apiKeys => 'API Keys';
 
   @override
@@ -687,6 +690,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Application Strategies Documentation';
 
   @override
+  String get portfolioStrategiesDocumentation =>
+      'Portfolio Strategies Documentation';
+
+  @override
   String get editUser => 'Edit user';
 
   @override
@@ -818,6 +825,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String createPortfolioStrategyTitle(String name) {
+    return 'Create Portfolio Strategy for $name';
+  }
+
+  @override
+  String editPortfolioStrategyTitle(String name) {
+    return 'Edit Portfolio Strategy for $name';
+  }
+
+  @override
   String get editApplication => 'Edit application';
 
   @override
@@ -933,6 +950,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String couldNotDeleteGroup(String name) {
     return 'Could not delete group $name';
   }
+
+  @override
+  String get portfolioRoleLabel => 'Portfolio role';
+
+  @override
+  String get portfolioRoleNone => 'No portfolio role';
+
+  @override
+  String get portfolioRoleGroupMemberManager => 'Group Member Manager';
+
+  @override
+  String get portfolioRolePortfolioStrategyEdit => 'Portfolio Strategy Editor';
+
+  @override
+  String get portfolioRolePortfolioStrategyEditAndDelete =>
+      'Portfolio Strategy Editor & Deleter';
 
   @override
   String get viewFeature => 'View feature';
@@ -1131,6 +1164,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String appStrategyDeleted(String name) {
     return 'Application strategy \'$name\' deleted!';
+  }
+
+  @override
+  String get portfolioStrategyDeleteContent =>
+      'This portfolio strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!';
+
+  @override
+  String portfolioStrategyDeleted(String name) {
+    return 'Portfolio strategy \'$name\' deleted!';
   }
 
   @override
@@ -2058,13 +2100,44 @@ class AppLocalizationsEn extends AppLocalizations {
       'Application strategies are created at application level and can be assigned to multiple features in any environment. Application strategy can be created and edited from the Application Strategies page.';
 
   @override
+  String get applicationStrategyOverrideInfo =>
+      'Setting this rollout value overrides the application strategy value configured globally';
+
+  @override
+  String get portfolioStrategyOverrideInfo =>
+      'Setting this rollout value overrides the portfolio strategy value configured globally';
+
+  @override
+  String get percentageOverrideRolloutAt => 'rollout at';
+
+  @override
+  String get percentageOverridePercentSign => '%';
+
+  @override
   String get noApplicationStrategiesSet => 'No application strategies set';
 
   @override
   String get showAvailableAppStrategies => 'Show available app strategies';
 
   @override
-  String get addStrategy => 'Add Strategy';
+  String get addApplicationStrategy => 'Add Strategy';
+
+  @override
+  String get portfolioStrategyVariations => 'Portfolio strategy variations';
+
+  @override
+  String get portfolioStrategyVariationsInfo =>
+      'Portfolio strategies are created at portfolio level and can be assigned to multiple features in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.';
+
+  @override
+  String get noPortfolioStrategiesSet => 'No portfolio strategies set';
+
+  @override
+  String get showAvailablePortfolioStrategies =>
+      'Show available portfolio strategies';
+
+  @override
+  String get addPortfolioStrategy => 'Add Strategy';
 
   @override
   String get retiredStatus => 'Retired status';
@@ -2126,6 +2199,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get applicationStrategyTooltip => 'Application Strategy';
+
+  @override
+  String get portfolioStrategyTooltip => 'Portfolio Strategy';
 
   @override
   String get lockedStatus => 'Locked status';

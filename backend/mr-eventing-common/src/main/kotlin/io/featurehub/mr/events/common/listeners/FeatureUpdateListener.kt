@@ -29,10 +29,10 @@ open class FoundationFeatureUpdateListenerImpl @Inject constructor(
         update.updatingValue?.let { amUpdatingValue ->
           if (amUpdatingValue) {
             when (valueType) {
-              FeatureValueType.BOOLEAN -> fv.valueBoolean(update.valueBoolean)
-              FeatureValueType.STRING -> fv.valueString(update.valueString)
-              FeatureValueType.NUMBER -> fv.valueNumber = update.valueNumber
-              FeatureValueType.JSON -> fv.valueJson(update.valueString)
+              FeatureValueType.BOOLEAN -> fv.value(update.valueBoolean)
+              FeatureValueType.STRING -> fv.value(update.valueString)
+              FeatureValueType.NUMBER -> fv.value = update.valueNumber
+              FeatureValueType.JSON -> fv.value(update.valueString)
               else -> {
               }
             }

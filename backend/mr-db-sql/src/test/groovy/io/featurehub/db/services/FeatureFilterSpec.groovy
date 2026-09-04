@@ -274,7 +274,7 @@ class FeatureFilterSpec extends Base3Spec {
     and: "a feature is associated with it"
       createFeature(app1.id, [ff.id])
     when:
-      def result = featureFilterApi.find(portfolio.id, ff.name, null, null, null, true, superPerson.id.id)
+      def result = featureFilterApi.find(portfolio.id, ff.name, null, null, null, true, superuser)
     then:
       result.filters.size() == 1
       def item = result.filters[0]

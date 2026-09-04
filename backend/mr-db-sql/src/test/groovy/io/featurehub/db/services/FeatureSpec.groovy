@@ -104,7 +104,7 @@ class FeatureSpec extends Base2Spec {
     db.save(averageJoe)
     averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     groupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("fsspec-1-p1"), superPerson)
-    groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+    groupSqlApi.addPersonsToGroup(groupInPortfolio1.id, [averageJoeMemberOfPortfolio1.id.id], superuser,Opts.empty())
 
     def averageIrina = new DbPerson.Builder().email(ranName() +"averageirina@featurehub.io").name("Average Irina").build()
     db.save(averageIrina)
@@ -115,7 +115,7 @@ class FeatureSpec extends Base2Spec {
     portfolioAdminOfPortfolio1 = convertUtils.toPerson(portfolioAdmin)
 
     adminGroupInPortfolio1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().admin(true).name(ranName()), superPerson)
-    groupSqlApi.addPersonsToGroup(adminGroupInPortfolio1.id, [portfolioAdminOfPortfolio1.id.id], Opts.empty())
+    groupSqlApi.addPersonsToGroup(adminGroupInPortfolio1.id, [portfolioAdminOfPortfolio1.id.id], superuser,Opts.empty())
 
     if (db.currentTransaction() != null && db.currentTransaction().active) {
       db.currentTransaction().commit()
@@ -313,29 +313,28 @@ class FeatureSpec extends Base2Spec {
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty())
       // it already exists, so we have  to unlock it
       f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.locked(false), pers)
-      assert(!f.locked && !f.valueBoolean);
-      def f2 = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
-      assert(f2.valueBoolean && f2.locked);
+      assert(!f.locked && !f.value);
+      def f2 = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.value(true).locked(true), pers)
+      assert(f2.value && f2.locked);
     and: "i get the FV"
       def env1Features = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, true, Opts.empty())
       def fvEnv1 = env1Features.featureValues
     then:
       fvEnv1.find({it.key == "FEATURE_FV1"})
-      fvEnv1.find({it.key == "FEATURE_FV1"}).valueBoolean
+      fvEnv1.find({it.key == "FEATURE_FV1"}).value
       fvEnv1.find({it.key == "FEATURE_FV1"}).locked
       env1Features.features.size() == 1
       env1Features.features[0].key == 'FEATURE_FV1'
     when: "i update the feature value"
       def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty())
-      fv.valueBoolean(false)
-      fv.valueString("string val")
+      fv.valueBoolean(false) // provided but will be ignored
+      fv.value("string val")
       fv.locked(false)
       featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, fv, pers)
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty())
     then:
       !fv2.locked
-      !fv2.valueBoolean
-      fv2.valueString == null
+      !fv2.value
   }
 
   def "if i only have unlock permission i cannot lock or change a feature value"() {
@@ -347,7 +346,7 @@ class FeatureSpec extends Base2Spec {
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty());
     // unlock it so we can change it in  the next step
       f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.locked(false), pers)
-      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
+      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.value(true).locked(true), pers)
     and: "i update the feature value as unlock permission only"
       def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty())
       fv.locked(false)
@@ -355,7 +354,7 @@ class FeatureSpec extends Base2Spec {
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty())
     then:
       !fv2.locked
-      fv2.valueBoolean // my permission was unlock only, so i can't change its value
+      fv2.value // my permission was unlock only, so i can't change its value
   }
 
   def "if i only have unlock permission i get an exception if i try and lock"() {
@@ -365,10 +364,10 @@ class FeatureSpec extends Base2Spec {
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set the feature value"
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty());
-      featureSqlApi.createFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(false).locked(false), pers)
+      featureSqlApi.createFeatureValueForEnvironment(envIdApp1, k, f.value(false).locked(false), pers)
     and: "i update the feature value as unlock permission only"
       def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k, Opts.empty())
-      fv.valueBoolean(false)
+      fv.value(false)
       fv.locked(true)
       featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, fv, new PersonFeaturePermission(superPerson, [RoleType.UNLOCK] as Set<RoleType>))
     then:
@@ -395,27 +394,27 @@ class FeatureSpec extends Base2Spec {
       names.each { k -> appApi.createApplicationFeature(appId, new CreateFeature().description("x").name(k).key(k).valueType(FeatureValueType.STRING), superPerson, Opts.empty()) }
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set two of those values"
-      def updatesForCreate = [new FeatureValue().key('FEATURE_FVU_1').retired(false).valueString('h').locked(true),
-                              new FeatureValue().key( 'FEATURE_FVU_2').valueString('h').retired(false).locked(true)]
+      def updatesForCreate = [new FeatureValue().key('FEATURE_FVU_1').retired(false).value('z').locked(true),
+                              new FeatureValue().key( 'FEATURE_FVU_2').value('h1').retired(false).locked(true)]
       featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updatesForCreate, pers, Opts.empty())
     and:
       List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false, Opts.empty()).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
     and:
       def updating = new ArrayList<>(found.findAll({k -> k.key == 'FEATURE_FVU_1'}).collect({it.copy().locked(false).valueString('z')}))
-//      updating.add(found.find({it.key == 'FEATURE_FVU_3'}).valueBoolean(true).locked(true))
-//      updating.add(found.find({it.key == 'FEATURE_FVU_4'}).valueBoolean(true).locked(true))
-      updating.addAll([new FeatureValue().key('FEATURE_FVU_3').valueString('h').locked(true),
-                       new FeatureValue().key('FEATURE_FVU_4').valueString('h').locked(true)])
+//      updating.add(found.find({it.key == 'FEATURE_FVU_3'}).value(true).locked(true))
+//      updating.add(found.find({it.key == 'FEATURE_FVU_4'}).value(true).locked(true))
+      updating.addAll([new FeatureValue().key('FEATURE_FVU_3').value('h2').locked(true),
+                       new FeatureValue().key('FEATURE_FVU_4').value('h3').locked(true)])
       featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updating, pers, Opts.empty())
       def foundUpdating = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1, false, Opts.empty()).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
     then:
       found.size() == 2
       foundUpdating.size() == 4
       !foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).locked
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).valueString == 'z'
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).valueString == 'h'
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).valueString == 'h'
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_2'}).valueString == 'h'
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).value == 'z'
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).value == 'h2'
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).value == 'h3'
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_2'}).value == 'h1'
       foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).locked
       foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).locked
   }
@@ -524,10 +523,10 @@ class FeatureSpec extends Base2Spec {
       def env1 = environmentSqlApi.create(new CreateEnvironment().description("x").name("production"), app2Id, superPerson)
     and: "i allow average joe access to access the environment"
       Group g1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("app2-f1-test"), superPerson)
-      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], superuser,Opts.empty())
       groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(g1.version)
         .environmentRoles([new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id)]),
-        null, false, true, Opts.empty());
+        null, false, true, superuser, Opts.empty());
     when: 'application features with null filter'
       ApplicationFeatureValues withNull = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1,
         null, null, null, null, null, null, [], Opts.empty())
@@ -551,10 +550,10 @@ class FeatureSpec extends Base2Spec {
       appApi.createApplicationFeature(app2Id, new CreateFeature().description("x").name('not').key('FEATURE_ALEX').description('not').valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     and: "i allow average joe access to access the environment"
       Group g1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("app2-f1-test"), superPerson)
-      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], superuser,Opts.empty())
       groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(g1.version).environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
-      ]), null, false, true, Opts.empty());
+      ]), null, false, true, superuser, Opts.empty());
     when: "i request application features for 'desc'"
       ApplicationFeatureValues withDesc = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1, 'desc', null, null, null, null, null, [], Opts.empty())
     and: 'application features with null'
@@ -593,12 +592,12 @@ class FeatureSpec extends Base2Spec {
         Opts.empty())
     and: "i allow average joe access to two of the three environments"
       Group g1 = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("app2-f1-test"), superPerson)
-      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], Opts.empty())
+      g1 = groupSqlApi.addPersonsToGroup(g1.id, [averageJoeMemberOfPortfolio1.id.id], superuser,Opts.empty())
       groupSqlApi.updateGroup(g1.id, new UpdateGroup().version(g1.version).environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK]).environmentId(env3.id),
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env2.id)
-      ]), null, false, true, Opts.empty());
+      ]), null, false, true, superuser, Opts.empty());
     and: "i create a feature value called FEATURE_BUNCH and unlock the feature in all branches"
       String k = 'FEATURE_BUNCH'
       appApi.createApplicationFeature(app2Id, new CreateFeature().description("x").name(k).key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
@@ -610,8 +609,8 @@ class FeatureSpec extends Base2Spec {
       }
     when: "i update the feature value in environments 1 and 3 using average joe and then relock them"
       featureSqlApi.updateAllFeatureValuesByApplicationForKey(app2Id, k, [
-        featureSqlApi.getFeatureValueForEnvironment(env1.id, k, Opts.empty()).valueBoolean(true).locked(true),
-        featureSqlApi.getFeatureValueForEnvironment(env3.id, k, Opts.empty()).valueBoolean(null).locked(true),
+        featureSqlApi.getFeatureValueForEnvironment(env1.id, k, Opts.empty()).value(true).locked(true),
+        featureSqlApi.getFeatureValueForEnvironment(env3.id, k, Opts.empty()).value(null).locked(true),
       ], averageJoeMemberOfPortfolio1, Opts.empty())
 
     and: "i ask for irina's api"
@@ -630,11 +629,11 @@ class FeatureSpec extends Base2Spec {
     then:
       envs.size() == 4
       envs.find({e -> e.environment.id == env1.id}).featureValue.locked
-      envs.find({e -> e.environment.id == env1.id}).featureValue.valueBoolean
+      envs.find({e -> e.environment.id == env1.id}).featureValue.value
       envs.find({e -> e.environment.id == env1.id}).serviceAccounts[0].id == serviceA1.id
       envs.find({e -> e.environment.id == env2.id}).featureValue != null // confirm this was unchanged
       envs.find({e -> e.environment.id == env3.id}).featureValue.locked
-      envs.find({e -> e.environment.id == env3.id}).featureValue.valueBoolean == false
+      envs.find({e -> e.environment.id == env3.id}).featureValue.value == false
       envs1.size() == 4
       envsAverageJoe.size() == 4
       envsAverageJoe.find({ FeatureEnvironment e -> e.environment.id == env4.id }).roles.size() == 0
@@ -734,16 +733,16 @@ class FeatureSpec extends Base2Spec {
     and: "a group in the current portfolio"
       def group = groupSqlApi.createGroup(portfolio1.id, new CreateGroup().name("lockunlock group"), superPerson)
     and: "i add permissions and members to the group"
-      groupSqlApi.addPersonsToGroup(group.id, [person.id.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(group.id, [person.id.id], superuser,Opts.empty())
       groupSqlApi.updateGroup(group.id, new UpdateGroup().version(group.version).environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.READ, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
-      ]), null, false, true, Opts.empty());
+      ]), null, false, true, superuser, Opts.empty());
     when: "i try and unlock the feature with the person, it will let me"
       def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key, Opts.empty())
       if (fv == null) {
         fv = new FeatureValue().environmentId(env1.id).key(key)
       }
-      featureSqlApi.updateAllFeatureValuesByApplicationForKey(app2Id, key, [fv.locked(false).valueString("sausage")], person, Opts.empty())
+      featureSqlApi.updateAllFeatureValuesByApplicationForKey(app2Id, key, [fv.locked(false).value("sausage")], person, Opts.empty())
     then:
       thrown(FeatureApi.NoAppropriateRole)
   }

@@ -1,32 +1,30 @@
 import {Given, Then, When} from '@cucumber/cucumber';
-import { SdkWorld } from '../support/world';
+import {SdkWorld} from '../support/world';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
 import {
-  ApplicationRolloutStrategy,
-  CreateApplicationRolloutStrategy, ListApplicationRolloutStrategyItem,
-  RolloutStrategy,
+  CreateApplicationRolloutStrategy,
+  ListApplicationRolloutStrategyItem,
   RolloutStrategyInstance
 } from '../apis/mr-service';
 import waitForExpect from 'wait-for-expect';
-import { expect } from 'chai';
-import {makeid} from "../support/random";
+import {expect} from 'chai';
+import {
+  compareStrategies,
+  convertValue,
+  extractInt,
+  extractRolloutStrategyFromDataTable,
+  trimField
+} from "../support/utils";
+import {FeatureState} from "featurehub-javascript-node-sdk";
+import {waitForRepository} from "./flag_steps";
 
-Then(/^I (cannot|can) create custom flag rollout strategies$/, async function(can: string, table: DataTable) {
+Then(/^I (cannot|can) create custom feature rollout strategies$/, async function(can: string, table: DataTable) {
   const world = this as SdkWorld;
 
   const fv = await world.getFeatureValue();
-  const s: Array<RolloutStrategy> = [];
-  for(const row of table.hashes()) {
-    const rs = new RolloutStrategy({
-      percentage: parseFloat(row['percentage']),
-      name: row['name'],
-      value: row['value'] === 'true'
-    });
 
-    s.push(rs);
-  }
+  fv.rolloutStrategies = extractRolloutStrategyFromDataTable(table, world.feature.valueType);
 
-  fv.rolloutStrategies = s;
   try {
     await world.updateFeature(fv, can === 'cannot' ? 422 : 200);
   } catch (e) {
@@ -34,23 +32,62 @@ Then(/^I (cannot|can) create custom flag rollout strategies$/, async function(ca
   }
 });
 
-Given('I create an application strategy tagged {string}', async function(strategyKey: string) {
+Given('I create application strategies', async function(table: DataTable) {
   const world = this as SdkWorld;
 
   expect(world.application, 'You must have an application to create an application strategy').to.not.be.undefined;
 
-  const data = await world.applicationStrategyApi.createApplicationStrategy(world.application.id, new CreateApplicationRolloutStrategy({
-    name: strategyKey, disabled: false, attributes: []
-  }));
-  expect(data.status).to.eq(201);
+  const rs = extractRolloutStrategyFromDataTable(table);
+  expect(rs.length, 'No strategies defined').to.be.gt(0);
 
-  const all = await world.applicationStrategyApi.listApplicationStrategies(world.application.id);
+  for (const strategy of rs) {
+    const data = await world.currentUser.applicationStrategyApi.createApplicationStrategy(world.application.id, new CreateApplicationRolloutStrategy({
+      name: strategy.name, percentage: strategy.percentage, percentageAttributes: strategy.percentageAttributes, disabled: false, attributes: strategy.attributes
+    }));
+
+    expect(data.status).to.eq(201);
+  }
+
+  const all = await world.currentUser.applicationStrategyApi.listApplicationStrategies(world.application.id);
   expect(all.status).to.eq(200);
+
+  for (const strategy of rs) {
+    const found = all.data.items.find(s => s.strategy.name === strategy.name);
+    expect(found, `Unable to find application strategy ${strategy.name}`).to.not.be.undefined;
+    const details = await world.currentUser.applicationStrategyApi.getApplicationStrategy(world.application.id, found.strategy.id, true);
+    expect(details.status).to.eq(200);
+    compareStrategies(details.data, strategy);
+  }
+
 
   world.applicationStrategies = {};
 
   all.data.items.forEach(s => world.applicationStrategies[s.strategy.name] = s);
 });
+
+
+Then('The feature from the repository has strategies', async function (table: DataTable) {
+  const world = this as SdkWorld;
+  await waitForRepository(world);
+
+  await waitForExpect(() => {
+    const f = this.featureState(world.feature.key) as any; // FeatureStateBaseHolder
+    const state = f.internalFeatureState as FeatureState | undefined;
+    expect(state).to.not.be.undefined;
+    for(const row of table.hashes()) {
+      const position = parseInt(row['position']);
+      const v = trimField(row['value']);
+      const value = convertValue(v, world.feature.valueType);
+      const percentage = extractInt(row['percentage']);
+
+      expect(position, `position is ${position} (${JSON.stringify(row)}) and strategies length is ${state.strategies.length}`).to.be.lte(state.strategies.length);
+      const strat = state.strategies[position-1];
+      expect(strat.value).to.eq(value);
+      expect(strat.percentage).to.eq(percentage);
+    }
+  }, 4000, 500);
+});
+
 
 export function validateWorldForApplicationStrategies(world: SdkWorld, strategy: ListApplicationRolloutStrategyItem, strategyKey: string) {
   expect(strategy, `The strategy referenced by key ${strategyKey} does not exist`).to.not.be.undefined;
@@ -96,23 +133,35 @@ When('I delete the application strategy called {string} from the current environ
     rsi.strategyId === strategy.strategy.id)).to.be.undefined;
 });
 
-When('I attach application strategy {string} to the current environment feature value', async function (strategyKey: string) {
-  const world = this as SdkWorld;
+async function attachApplicationStrategyToFeatureValue(strategyKey: string, value: string|undefined, world: SdkWorld, percentage?: number) {
 
   const strategy = world.applicationStrategies[strategyKey];
   validateWorldForApplicationStrategies(world, strategy, strategyKey);
 
   const featureValue = await world.getFeatureValue();
 
+  const convertedValue = convertValue(value, world.feature.valueType);
   featureValue.rolloutStrategyInstances.push(new RolloutStrategyInstance({ strategyId: strategy.strategy.id,
-    value: true }));
+    value: convertedValue, percentageOverride: percentage }));
 
   const updatedValue = await world.updateFeature(featureValue);
-  expect(updatedValue.rolloutStrategyInstances.find(rsi =>
-    rsi.strategyId === strategy.strategy.id && rsi.value)).to.not.be.undefined;
+  const found = updatedValue.rolloutStrategyInstances.find(rsi => rsi.strategyId === strategy.strategy.id);
+  expect(found).to.not.be.undefined;
+  expect(found.value).to.eq(convertedValue)
+  expect(found.percentageOverride).to.eq(percentage);
+}
+
+When('I attach application strategy {string} to the current environment feature value with the value {string}', async function (strategyKey: string, value: string) {
+  const world = this as SdkWorld;
+  await attachApplicationStrategyToFeatureValue(strategyKey, value, world);
 });
 
-When('I swap the order of {string} and {string} they remain swapped', async function (key1: string, key2: string) {
+When('I attach application strategy {string} to the current environment feature value with the value {string} with percentage {int}', async function (strategyKey: string, value: string, percentage: number) {
+  const world = this as SdkWorld;
+  await attachApplicationStrategyToFeatureValue(strategyKey, value, world, percentage);
+});
+
+When('I swap the order of application strategies {string} and {string} they remain swapped', async function (key1: string, key2: string) {
   const world = this as SdkWorld;
 
   const strategy1 = world.applicationStrategies[key1];

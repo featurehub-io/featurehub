@@ -5,7 +5,6 @@ import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
 import io.featurehub.dacha.model.PublishAction
 import io.featurehub.db.api.ApplicationApi
-import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
@@ -32,6 +31,7 @@ class InternalApplicationSqlApi @Inject constructor(private val conversions: Con
   ): QDbApplication {
     val queryApplicationList = QDbApplication().portfolio.id.eq(portfolioId)
 
+    // if they are a portfolio admin, they will get picked up next
     if (conversions.personIsSuperAdmin(personId)) {
       return queryApplicationList
     }

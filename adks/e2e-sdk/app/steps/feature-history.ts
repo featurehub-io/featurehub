@@ -3,6 +3,7 @@ import {SdkWorld} from "../support/world";
 import {expect} from "chai";
 import {validateWorldForApplicationStrategies} from "./strategies";
 import {FeatureHistoryItem, FeatureHistoryList, FeatureHistoryOrder} from "../apis/mr-service";
+import {validateFeatureHistory} from "./portfolio_strategies";
 
 async function getFeatureHistory(world: SdkWorld, max: number = 10)  : Promise<FeatureHistoryList> {
   const history =
@@ -21,7 +22,7 @@ Given("I get the feature history", async function () {
   await getFeatureHistory(world);
 });
 
-async function findHistory(world: SdkWorld) : Promise<FeatureHistoryItem> {
+export async function findHistory(world: SdkWorld) : Promise<FeatureHistoryItem> {
   const history = await getFeatureHistory(world);
 
   const historyItem = history.items.find(s => s.envId == world.environment.id && s.featureId == world.feature.id);
@@ -30,7 +31,7 @@ async function findHistory(world: SdkWorld) : Promise<FeatureHistoryItem> {
   return historyItem;
 }
 
-Given("I save this spot in feature history as {string} for application strategy {string}", async function (name: string, strategyKey: string) {
+Given("I save the current feature value's history using the key {string}", async function (name: string) {
   const world = this as SdkWorld;
 
   const historyItem = await findHistory(world);
@@ -49,6 +50,8 @@ Then("I expect the application strategy {string} to be removed from the feature 
   expect(currentStatus.rolloutStrategies.find(s => s.id === strategy.uniqueCode)).to.be.undefined;
 });
 
+
+
 Then("I find the feature history and compare it to {string} and it is the same", async function(name: string) {
   const world = this as SdkWorld;
 
@@ -63,23 +66,11 @@ Then("I find the feature history and compare it to {string} and it is the same",
   expect(found).to.deep.eq(saved);
 });
 
-Then("I expect the application strategy {string} to be attached to the feature history", async function (strategyKey: string) {
+Then("I expect the application strategy {string} to be attached to the feature history with the value {string}", async function (strategyKey: string, value: string) {
   const world = this as SdkWorld;
 
   const strategy = world.applicationStrategies[strategyKey];
   validateWorldForApplicationStrategies(world, strategy, strategyKey);
 
-  const history =
-    await world.featureHistoryApi.listFeatureHistory(world.application.id, [world.feature.key],
-      [], [], [world.environment.id], 10, 0, FeatureHistoryOrder.Desc);
-
-  expect(history.status).to.eq(200);
-  expect(history.data.items.length).to.be.gt(0);
-  expect(history.data.items[0].envId).to.eq(world.environment.id);
-  expect(history.data.items[0].history.length).to.be.gt(0);
-  let rolloutStrategies = history.data.items[0].history[0].rolloutStrategies;
-  expect(rolloutStrategies.length).to.be.gt(0);
-  expect(rolloutStrategies[rolloutStrategies.length-1].id).to.eq(strategy.uniqueCode);
-  expect(rolloutStrategies[rolloutStrategies.length-1].name).to.eq(strategy.strategy.name);
-  expect(rolloutStrategies[rolloutStrategies.length-1].value).to.eq(true);
+  await validateFeatureHistory(world, strategy.uniqueCode, strategy.strategy.name, value);
 });

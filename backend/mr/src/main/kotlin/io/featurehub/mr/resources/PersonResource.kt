@@ -36,11 +36,14 @@ class PersonResource @Inject constructor(
     createPersonDetails: CreatePersonDetails, holder: PersonServiceDelegate.CreatePersonHolder,
     securityContext: SecurityContext
   ): RegistrationUrl {
-    val currentUser = authManager.from(securityContext)
+    val currentUser = authManager.from(securityContext).id?.id ?: throw BadRequestException()
 
-    if (!authManager.isAnyAdmin(currentUser.id!!.id)) {
+    if (!authManager.isAnyAdmin(currentUser)) {
       throw ForbiddenException("Not allowed")
     }
+
+    createPersonDetails.groupIds = if (createPersonDetails.groupIds.isNullOrEmpty()) emptyList()
+      else groupApi.groupsCurrentUserCanAddUsersTo(currentUser, createPersonDetails.groupIds!!)
 
     if (createPersonDetails.personType == PersonType.SERVICEACCOUNT) {
       return createServiceAccount(createPersonDetails, currentUser)
@@ -54,14 +57,14 @@ class PersonResource @Inject constructor(
     return try {
       val person = personApi.create(
         createPersonDetails.email!!,
-        createPersonDetails.name, currentUser.id!!.id
+        createPersonDetails.name, currentUser
       )
       if (person?.id == null) {
         throw BadRequestException()
       }
 
       createPersonDetails.groupIds?.forEach { id ->
-        groupApi.addPersonsToGroup(id, listOf(person.id), Opts.empty())
+        groupApi.addPersonsToGroup(id, listOf(person.id), currentUser, Opts.empty())
       }
 
       //return registration url
@@ -81,7 +84,7 @@ class PersonResource @Inject constructor(
 
   private fun createServiceAccount(
     createPersonDetails: CreatePersonDetails,
-    currentUser: Person
+    currentUser: UUID
   ): RegistrationUrl {
     if (createPersonDetails.name == null) {
       throw BadRequestException("Name is required parameter")
@@ -89,12 +92,12 @@ class PersonResource @Inject constructor(
 
     val (person, token) = personApi.createServicePerson(
       createPersonDetails.name!!,
-      currentUser.id!!.id
+      currentUser
     ) ?: throw BadRequestException()
     val servicePersonId = person.id!!.id
 
     createPersonDetails.groupIds?.forEach { id ->
-      groupApi.addPersonsToGroup(id, listOf(servicePersonId), Opts.empty())
+      groupApi.addPersonsToGroup(id, listOf(servicePersonId), currentUser, Opts.empty())
     }
 
     // return registration url
