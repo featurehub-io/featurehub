@@ -14,7 +14,7 @@ import io.featurehub.mr.model.RolloutStrategyValidationRequest
 import io.featurehub.mr.model.RolloutStrategyValidationResponse
 import io.featurehub.mr.model.RolloutStrategyViolation
 import io.featurehub.mr.model.UpdatePortfolioRolloutStrategy
-import io.featurehub.mr.utils.PortfolioUtils
+import io.featurehub.mr.utils.PortfolioAuthUtils
 import jakarta.inject.Inject
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
@@ -25,7 +25,7 @@ import java.util.*
 class PortfolioRolloutStrategyResource @Inject
   constructor(private val portfolioRolloutStrategyApi: PortfolioRolloutStrategyApi,
               private val validator: RolloutStrategyValidator,
-              private val portfolioUtils: PortfolioUtils) :
+              private val portfolioAuthUtils: PortfolioAuthUtils) :
   PortfolioRolloutStrategyServiceDelegate {
   override fun createPortfolioStrategy(
     portfolioId: UUID,
@@ -33,7 +33,7 @@ class PortfolioRolloutStrategyResource @Inject
     holder: PortfolioRolloutStrategyServiceDelegate.CreatePortfolioStrategyHolder,
     securityContext: SecurityContext
   ): PortfolioRolloutStrategy {
-    val personId = portfolioUtils.portfolioStrategyCreateOrEdit(securityContext, portfolioId)
+    val personId = portfolioAuthUtils.portfolioStrategyCreateOrEdit(securityContext, portfolioId)
 
     try {
       return portfolioRolloutStrategyApi.createStrategy(portfolioId, createPortfolioRolloutStrategy, personId,
@@ -50,7 +50,7 @@ class PortfolioRolloutStrategyResource @Inject
     holder: PortfolioRolloutStrategyServiceDelegate.DeletePortfolioStrategyHolder,
     securityContext: SecurityContext
   ) {
-    val personId = portfolioUtils.portfolioStrategyDelete(securityContext, portfolioId)
+    val personId = portfolioAuthUtils.portfolioStrategyDelete(securityContext, portfolioId)
     if (!portfolioRolloutStrategyApi.archiveStrategy(portfolioId, portfolioStrategyId, personId)) {
       throw NotFoundException("No such strategy to delete")
     }
@@ -62,7 +62,7 @@ class PortfolioRolloutStrategyResource @Inject
     holder: PortfolioRolloutStrategyServiceDelegate.GetPortfolioStrategyHolder,
     securityContext: SecurityContext
   ): PortfolioRolloutStrategy {
-    portfolioUtils.portfolioStrategyRead(securityContext, portfolioId)
+    portfolioAuthUtils.portfolioStrategyRead(securityContext, portfolioId)
 
     return portfolioRolloutStrategyApi.getStrategy(portfolioId, portfolioStrategyId,
       Opts().add(
@@ -76,7 +76,7 @@ class PortfolioRolloutStrategyResource @Inject
     holder: PortfolioRolloutStrategyServiceDelegate.ListPortfolioStrategiesHolder,
     securityContext: SecurityContext
   ): PortfolioRolloutStrategyList {
-    portfolioUtils.portfolioStrategyRead(securityContext, portfolioId)
+    portfolioAuthUtils.portfolioStrategyRead(securityContext, portfolioId)
     return portfolioRolloutStrategyApi.listStrategies(
       portfolioId,
       holder.page ?: 0, holder.max ?: 20, holder.filter,
@@ -110,7 +110,7 @@ class PortfolioRolloutStrategyResource @Inject
     holder: PortfolioRolloutStrategyServiceDelegate.UpdatePortfolioStrategyHolder,
     securityContext: SecurityContext
   ): PortfolioRolloutStrategy {
-    val person = portfolioUtils.portfolioStrategyCreateOrEdit(securityContext, portfolioId)
+    val person = portfolioAuthUtils.portfolioStrategyCreateOrEdit(securityContext, portfolioId)
 
     return try {
       portfolioRolloutStrategyApi.updateStrategy(

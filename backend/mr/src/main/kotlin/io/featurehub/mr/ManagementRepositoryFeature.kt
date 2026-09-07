@@ -16,6 +16,8 @@ import io.featurehub.mr.resources.*
 import io.featurehub.mr.resources.oauth2.OAuth2MRAdapter
 import io.featurehub.mr.utils.ApplicationUtils
 import io.featurehub.mr.utils.PortfolioFeaturePermissionUtils
+import io.featurehub.mr.utils.PortfolioAuthUtils
+import io.featurehub.mr.utils.PortfolioAuthUtilsImpl
 import io.featurehub.mr.utils.PortfolioUtils
 import io.featurehub.mr.utils.PortfolioUtilsImpl
 import io.featurehub.mr.webhook.ManagementRepositoryWebhookFeature
@@ -95,6 +97,7 @@ class ManagementRepositoryFeature : Feature {
         bind(DatabaseAuthRepository::class.java).to(AuthenticationRepository::class.java).`in`(
           Singleton::class.java
         )
+        bind(PortfolioAuthUtilsImpl::class.java).to(PortfolioAuthUtils::class.java).`in`(Singleton::class.java)
         bind(PortfolioUtilsImpl::class.java).to(PortfolioUtils::class.java).`in`(Singleton::class.java)
         bind(AuthManager::class.java).to(AuthManagerService::class.java).`in`(Singleton::class.java)
         bind(ApplicationResource::class.java).to(ApplicationServiceDelegate::class.java).`in`(

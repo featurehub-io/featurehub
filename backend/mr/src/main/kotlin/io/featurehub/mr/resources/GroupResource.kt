@@ -8,7 +8,7 @@ import io.featurehub.mr.model.CreateGroup
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.UpdateGroup
-import io.featurehub.mr.utils.PortfolioUtils
+import io.featurehub.mr.utils.PortfolioAuthUtils
 import jakarta.inject.Inject
 import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.ForbiddenException
@@ -23,7 +23,7 @@ class GroupResource @Inject constructor(
   private val personApi: PersonApi,
   private val groupApi: GroupApi,
   private val authManager: AuthManagerService,
-  private val portfolioUtils: PortfolioUtils
+  private val portfolioAuthUtils: PortfolioAuthUtils
 ) : GroupServiceDelegate {
   internal class GroupHolder {
     var group: Group? = null
@@ -59,7 +59,7 @@ class GroupResource @Inject constructor(
       authManager.from(securityContext)
     ) { group: Group ->
       personCheck(personId) {
-        val currentUser = portfolioUtils.portfolioUserManager(securityContext, group.portfolioId)
+        val currentUser = portfolioAuthUtils.portfolioUserManager(securityContext, group.portfolioId)
 
         try {
           groupHolder.group =
@@ -101,7 +101,7 @@ class GroupResource @Inject constructor(
 //          if (i'm a group membe groupApi.anyPersonIdIsGroupMemberManager()
 //        }
         // only a superuser or portfolio admin can add a user to the group
-        val personId = portfolioUtils.portfolioUserManager(securityContext, group.portfolioId)
+        val personId = portfolioAuthUtils.portfolioUserManager(securityContext, group.portfolioId)
 
         try {
           groupHolder.group =
@@ -129,7 +129,7 @@ class GroupResource @Inject constructor(
   ): Group {
     val current = authManager.from(securityContext)
     // only admins can create groups
-    portfolioUtils.portfolioAdmin(securityContext, id)
+    portfolioAuthUtils.portfolioAdmin(securityContext, id)
 
     return try {
       groupApi.createGroup(id, createGroup, current) ?: throw NotFoundException()
@@ -147,7 +147,7 @@ class GroupResource @Inject constructor(
     groupCheck(gid, authManager.from(securityContext)) { group: Group ->
       val portfolioId = group.portfolioId ?: throw ForbiddenException("cannot delete superuser group")
 
-      portfolioUtils.portfolioAdmin(securityContext, portfolioId)
+      portfolioAuthUtils.portfolioAdmin(securityContext, portfolioId)
 
       if (group.admin!!) {
         throw ForbiddenException("Cannot delete admin group from deleteGroup method.")
@@ -168,7 +168,7 @@ class GroupResource @Inject constructor(
     val groupHolder = GroupHolder()
     groupCheck(gid, authManager.from(securityContext)) { group: Group ->
       personCheck(personId) {
-        portfolioUtils.portfolioUserManager(securityContext, group.portfolioId)
+        portfolioAuthUtils.portfolioUserManager(securityContext, group.portfolioId)
 
         groupHolder.group = groupApi.deletePersonFromGroup(
           gid,
@@ -192,7 +192,7 @@ class GroupResource @Inject constructor(
     securityContext: SecurityContext
   ): List<Group> {
     // is a person an admin, or a group member manager
-    portfolioUtils.portfolioUserManager(securityContext, id)
+    portfolioAuthUtils.portfolioUserManager(securityContext, id)
 
     return groupApi.findGroups(
       id, holder.filter, holder.order, Opts().add(
@@ -212,7 +212,7 @@ class GroupResource @Inject constructor(
     // instead of a 404 for a non-existent group, this is an acceptable behaviour because they shouoldn't be asking
     if (holder.includeMembers == true || holder.includeMembersV2 == true) {
       // ensure they are a user manager or admin if they are asking for members
-      portfolioUtils.portfolioUserManager(
+      portfolioAuthUtils.portfolioUserManager(
         securityContext,
         groupApi.findPortfolioOfGroup(gid)
       )
@@ -239,7 +239,7 @@ class GroupResource @Inject constructor(
     callback: (updateAppRoles: Boolean, updateEnvRoles: Boolean, personId: UUID) -> Unit
   ) {
     // superuser, portfolio admin only. No GMMs, they must use addUserToGroup
-    val personId = portfolioUtils.portfolioAdmin(securityContext, portfolioId)
+    val personId = portfolioAuthUtils.portfolioAdmin(securityContext, portfolioId)
 
     val group = groupApi.getGroup(groupId, Opts.empty(), personId) ?: throw NotFoundException("No such group")
 
