@@ -136,11 +136,11 @@ class InternalFeatureSqlApi @Inject constructor(
         QDbPortfolioStrategyForFeatureValue.Alias.rolloutStrategy,
         QDbPortfolioStrategyForFeatureValue.Alias.value
       )
-      .featureValue.id.eq(fv.id).findList().map { InternalFeatureApi.toRolloutStrategy(it) }
+      .featureValue.id.eq(fv.id).orderBy().sortOrder.asc().findList().map { InternalFeatureApi.toRolloutStrategy(it) }
 
     val appStrategies = QDbStrategyForFeatureValue()
       .select(QDbStrategyForFeatureValue.Alias.rolloutStrategy, QDbStrategyForFeatureValue.Alias.value)
-      .featureValue.id.eq(fv.id).findList().map { InternalFeatureApi.toRolloutStrategy(it) }
+      .featureValue.id.eq(fv.id).orderBy().sortOrder.asc().findList().map { InternalFeatureApi.toRolloutStrategy(it) }
 
     // missing feature group strategies
 

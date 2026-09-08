@@ -47,6 +47,7 @@ class DefaultCommonCacheGenerator : CommonCacheGenerator {
       .featureValue.id.eq(featureValue.id)
       .enabled.isTrue
       .rolloutStrategy.fetch(QDbApplicationRolloutStrategy.Alias.strategy, QDbApplicationRolloutStrategy.Alias.shortUniqueCode)
+      .orderBy().sortOrder.asc()
       .findList()
 
     allStrategies.addAll(activeSharedStrategies.filter { !it.rolloutStrategy.strategy.disabled }.map { shared ->
@@ -60,6 +61,7 @@ class DefaultCommonCacheGenerator : CommonCacheGenerator {
       .featureValue.id.eq(featureValue.id)
       .enabled.isTrue
       .rolloutStrategy.fetch(QDbPortfolioRolloutStrategy.Alias.strategy, QDbPortfolioRolloutStrategy.Alias.shortUniqueCode)
+      .orderBy().sortOrder.asc()
       .findList()
 
     allStrategies.addAll(activePortfolioStrategies.filter { !it.rolloutStrategy.strategy.disabled }.map { shared ->

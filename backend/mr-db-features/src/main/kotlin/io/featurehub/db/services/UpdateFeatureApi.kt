@@ -364,7 +364,8 @@ class UpdateFeatureApiImpl@Inject constructor(
     }
 
     // now the desiredList has been ordered according to the incoming strategies but picked from the
-    // list of DbStrategyForFeatureValue's
+    // list of DbStrategyForFeatureValue's - stamp that order onto each row so it survives a reload
+    desiredList.forEachIndexed { pos, strategy -> strategy.sortOrder = pos }
 
     existingDbFeatureValue.sharedRolloutStrategies = desiredList
 
@@ -542,7 +543,8 @@ class UpdateFeatureApiImpl@Inject constructor(
     }
 
     // now the desiredList has been ordered according to the incoming strategies but picked from the
-    // list of DbStrategyForFeatureValue's
+    // list of DbStrategyForFeatureValue's - stamp that order onto each row so it survives a reload
+    desiredList.forEachIndexed { pos, strategy -> strategy.sortOrder = pos }
 
     existingDbFeatureValue.sharedPortfolioRolloutStrategies = desiredList
 
@@ -893,17 +895,18 @@ class UpdateFeatureApiImpl@Inject constructor(
     val newList = mutableListOf<DbStrategyForFeatureValue>()
 
     // we have to preserve this new order, so we do it in the order they give us
-    updatedStrategies.forEach { s ->
+    updatedStrategies.forEachIndexed { pos, s ->
       val match = existing.find { strategy -> strategy.rolloutStrategy.id == s.strategyId }
       if (match != null) { // already in the list
         match.value = s.value?.toString()
+        match.sortOrder = pos
         newList.add(match)
       } else { // new shared strategy reference
         QDbApplicationRolloutStrategy().application.id.eq(appId).id.eq(s.strategyId).findOne()
           ?.let { foundAppStrategy ->
             newList.add(
               DbStrategyForFeatureValue.Builder().featureValue(dbFeatureValue)
-                .rolloutStrategy(foundAppStrategy).value(s.value?.toString()).enabled(true).build()
+                .rolloutStrategy(foundAppStrategy).value(s.value?.toString()).enabled(true).sortOrder(pos).build()
             )
           }
       }
@@ -975,12 +978,13 @@ class UpdateFeatureApiImpl@Inject constructor(
 
     return portfolioStrategies
       .filter { strat -> strategies[strat.strategyId] != null }
-      .map { DbPortfolioStrategyForFeatureValue.Builder()
+      .mapIndexed { pos, it -> DbPortfolioStrategyForFeatureValue.Builder()
         .featureValue(dfv)
         .value(it.value?.toString())
         .percentageOverride(it.percentageOverride)
         .rolloutStrategy(strategies[it.strategyId])
         .enabled(true)
+        .sortOrder(pos)
         .build()
       }.toMutableList()
   }
@@ -994,12 +998,13 @@ class UpdateFeatureApiImpl@Inject constructor(
 
     return sharedStrategies
       .filter { strat ->  strategies[strat.strategyId] != null }
-      .map { DbStrategyForFeatureValue.Builder()
+      .mapIndexed { pos, it -> DbStrategyForFeatureValue.Builder()
         .featureValue(dfv)
         .value(it.value?.toString())
         .enabled(true)
         .percentageOverride(it.percentageOverride)
         .rolloutStrategy(strategies[it.strategyId])
+        .sortOrder(pos)
         .build() }
       .toMutableList()
   }

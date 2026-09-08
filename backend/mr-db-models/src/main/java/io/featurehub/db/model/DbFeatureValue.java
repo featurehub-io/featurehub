@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.LocalDateTime;
@@ -59,11 +60,13 @@ public class DbFeatureValue extends DbBaseFeatureValue {
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "fk_fv_id")
+  @OrderBy("sortOrder")
   @Nullable
   protected List<DbStrategyForFeatureValue> sharedRolloutStrategies;
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "fk_fv_id")
+  @OrderBy("sortOrder")
   @Nullable
   protected List<DbPortfolioStrategyForFeatureValue> sharedPortfolioRolloutStrategies;
 
