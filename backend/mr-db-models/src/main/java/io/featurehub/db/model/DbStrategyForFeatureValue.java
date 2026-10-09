@@ -2,7 +2,6 @@ package io.featurehub.db.model;
 
 import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.DbDefault;
-import io.ebean.annotation.DbJson;
 import io.ebean.annotation.Index;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,8 +10,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
 
 @Index(unique = true, columnNames = {"fk_fv_id", "fk_rs_id"}, name = "idx_feature_strat")
 @Entity

@@ -18,6 +18,13 @@ import {
 import {FeatureState} from "featurehub-javascript-node-sdk";
 import {waitForRepository} from "./flag_steps";
 
+const percentageMultiplier = 10000.0;
+
+export function actualPercentage(p: number | undefined): number|undefined {
+  if (!p) return p;
+  return p * percentageMultiplier;
+}
+
 Then(/^I (cannot|can) create custom feature rollout strategies$/, async function(can: string, table: DataTable) {
   const world = this as SdkWorld;
 
@@ -78,7 +85,7 @@ Then('The feature from the repository has strategies', async function (table: Da
       const position = parseInt(row['position']);
       const v = trimField(row['value']);
       const value = convertValue(v, world.feature.valueType);
-      const percentage = extractInt(row['percentage']);
+      const percentage = actualPercentage(extractInt(row['percentage']));
 
       expect(position, `position is ${position} (${JSON.stringify(row)}) and strategies length is ${state.strategies.length}`).to.be.lte(state.strategies.length);
       const strat = state.strategies[position-1];
@@ -142,18 +149,14 @@ async function attachApplicationStrategyToFeatureValue(strategyKey: string, valu
 
   const convertedValue = convertValue(value, world.feature.valueType);
   featureValue.rolloutStrategyInstances.push(new RolloutStrategyInstance({ strategyId: strategy.strategy.id,
-    value: convertedValue, percentageOverride: percentage ? percentage * 10000.0 : undefined }));
+    value: convertedValue, percentageOverride: actualPercentage(percentage) }));
 
   const updatedValue = await world.updateFeature(featureValue);
   const found = updatedValue.rolloutStrategyInstances.find(rsi => rsi.strategyId === strategy.strategy.id);
   expect(found).to.not.be.undefined;
   expect(found.value).to.eq(convertedValue)
 
-  if (percentage) {
-    expect(found.percentageOverride).to.eq(percentage * 10000.0);
-  } else {
-    expect(found.percentageOverride).to.eq(percentage);
-  }
+  expect(found.percentageOverride).to.eq(actualPercentage(percentage));
 }
 
 When('I attach application strategy {string} to the current environment feature value with the value {string}', async function (strategyKey: string, value: string) {
