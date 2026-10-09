@@ -399,9 +399,10 @@ open class ConvertUtils @Inject constructor(
       }
     }
     if (opts.contains(FillOpts.Groups)) {
-      val groupList = QDbGroup().whenArchived
-        .isNull.groupMembers.person
-        .eq(dbp).owningOrganization.id.eq(if (org == null) organizationId() else org.id)
+      val groupList = QDbGroup()
+        .whenArchived.isNull
+        .groupMembers.person.eq(dbp)
+        .owningOrganization.id.eq(if (org == null) organizationId() else org.id)
         .findList()
       log.trace("groups for person {} are {}", p, groupList)
       groupList

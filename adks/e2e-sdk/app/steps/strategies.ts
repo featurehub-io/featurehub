@@ -142,13 +142,18 @@ async function attachApplicationStrategyToFeatureValue(strategyKey: string, valu
 
   const convertedValue = convertValue(value, world.feature.valueType);
   featureValue.rolloutStrategyInstances.push(new RolloutStrategyInstance({ strategyId: strategy.strategy.id,
-    value: convertedValue, percentageOverride: percentage }));
+    value: convertedValue, percentageOverride: percentage ? percentage * 10000.0 : undefined }));
 
   const updatedValue = await world.updateFeature(featureValue);
   const found = updatedValue.rolloutStrategyInstances.find(rsi => rsi.strategyId === strategy.strategy.id);
   expect(found).to.not.be.undefined;
   expect(found.value).to.eq(convertedValue)
-  expect(found.percentageOverride).to.eq(percentage);
+
+  if (percentage) {
+    expect(found.percentageOverride).to.eq(percentage * 10000.0);
+  } else {
+    expect(found.percentageOverride).to.eq(percentage);
+  }
 }
 
 When('I attach application strategy {string} to the current environment feature value with the value {string}', async function (strategyKey: string, value: string) {

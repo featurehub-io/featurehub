@@ -75,7 +75,7 @@ class EditPortfolioStrategyRoute extends StatelessWidget {
 
   bool _canEdit(EditPortfolioStrategyBloc bloc) {
     final rel = bloc.mrBloc.streamValley.currentPortfolio;
-    return rel.currentPortfolioStrategyEditCreate ||
+    return rel.currentPortfolioStrategyEditDelete ||
         rel.currentPortfolioStrategyEditor ||
         rel.currentPortfolioOrSuperAdmin;
   }

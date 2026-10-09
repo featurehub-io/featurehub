@@ -60,7 +60,9 @@ class PortfolioStrategyListState extends State<PortfolioStrategyList> {
                           builder: (context, portfolioSnapshot) {
                             final canCreate = portfolioSnapshot.hasData &&
                                 (portfolioSnapshot.data!
-                                        .currentPortfolioStrategyEditCreate ||
+                                        .currentPortfolioStrategyEditDelete ||
+                                    portfolioSnapshot.data!
+                                        .currentPortfolioStrategyEditor ||
                                     portfolioSnapshot
                                         .data!.currentPortfolioOrSuperAdmin);
                             return Row(
@@ -222,7 +224,7 @@ class PortfolioStrategyDataTableSource
                 builder: (context, portfolioSnapshot) {
                   final canEdit = portfolioSnapshot.hasData &&
                       (portfolioSnapshot
-                              .data!.currentPortfolioStrategyEditCreate ||
+                              .data!.currentPortfolioStrategyEditDelete ||
                           portfolioSnapshot
                               .data!.currentPortfolioStrategyEditor ||
                           portfolioSnapshot.data!.currentPortfolioOrSuperAdmin);
@@ -269,7 +271,7 @@ class PortfolioStrategyDataTableSource
         ],
         onSelectChanged: (newValue) {
           final rel = bloc.mrClient.streamValley.currentPortfolio;
-          final canEdit = rel.currentPortfolioStrategyEditCreate ||
+          final canEdit = rel.currentPortfolioStrategyEditDelete ||
               rel.currentPortfolioStrategyEditor ||
               rel.currentPortfolioOrSuperAdmin;
           if (canEdit) {

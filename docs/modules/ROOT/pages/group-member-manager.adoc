@@ -1,0 +1,19 @@
+= Group Member Managers
+
+Group Member Managers are a concept introduced to allow users to exist who can *only* edit members of groups of 
+a Portfolio. Their existence is intended for use by "people" who manage people in your FeatureHub installation or
+Organisation (SaaS), not as parts of the active development process. These can be: 
+
+ - Actual people who manually manage portfolio group membership
+ - An Admin Service
+Account, allocate it to a Group which has been tagged as a Group Member Manager account and that Admin Service
+Account will *only* be allowed to manage group users in your Portfolio.
+
+Once a user is in a group that has been set as a Group Member Manager group, they cannot participate in any other
+activity in the Portfolio. Any attempt to add them to a group that has permission to do anything else will fail, and
+any attempt to add a user who is in a normal group to a Group Member Manager group will also fail.
+
+
+Create them using a normal Create Group, but then set the Portfolio Role to "Group Member Manager"
+
+image::group-member-manager.png[Group member manager, 1500]

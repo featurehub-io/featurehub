@@ -15,7 +15,7 @@ class ReleasedPortfolio {
   final bool currentPortfolioFeatureCreator;
   final bool currentPortfolioGroupManager;
   final bool currentPortfolioStrategyEditor;
-  final bool currentPortfolioStrategyEditCreate;
+  final bool currentPortfolioStrategyEditDelete;
 
   @override
   String toString() {
@@ -27,7 +27,7 @@ class ReleasedPortfolio {
   }
 
   ReleasedPortfolio(
-      {required this.portfolio, required this.currentPortfolioOrSuperAdmin, required this.currentPortfolioFeatureCreator, required this.currentPortfolioGroupManager, required this.currentPortfolioStrategyEditor, required this.currentPortfolioStrategyEditCreate});
+      {required this.portfolio, required this.currentPortfolioOrSuperAdmin, required this.currentPortfolioFeatureCreator, required this.currentPortfolioGroupManager, required this.currentPortfolioStrategyEditor, required this.currentPortfolioStrategyEditDelete});
 }
 
 class ReleasedApplication {
@@ -54,7 +54,7 @@ final ReleasedPortfolio nullPortfolio = ReleasedPortfolio(
     portfolio:
         Portfolio(name: 'null-portfolio', id: '', description: '', version: -1),
     currentPortfolioOrSuperAdmin: false, currentPortfolioFeatureCreator: false,
-    currentPortfolioStrategyEditor: false, currentPortfolioStrategyEditCreate: false,
+    currentPortfolioStrategyEditor: false, currentPortfolioStrategyEditDelete: false,
     currentPortfolioGroupManager: false);
 
 final ReleasedApplication nullApplication = ReleasedApplication(
@@ -286,7 +286,7 @@ class StreamValley {
         currentPortfolioFeatureCreator:
             personState.isPersonPortfolioFeatureCreator(found.id),
       currentPortfolioGroupManager: personState.isPersonGroupManagerRole(),
-      currentPortfolioStrategyEditCreate: personState.isPortfolioStrategyEditDelete(),
+      currentPortfolioStrategyEditDelete: personState.isPortfolioStrategyEditDelete(),
       currentPortfolioStrategyEditor: personState.isPortfolioStrategyEditor()
     ));
 

@@ -90,7 +90,7 @@ class _MenuContainer extends StatelessWidget {
                                     }
                                     if (rel.currentPortfolioFeatureCreator ||
                                         rel.currentPortfolioGroupManager ||
-                                        rel.currentPortfolioStrategyEditCreate ||
+                                        rel.currentPortfolioStrategyEditDelete ||
                                         rel.currentPortfolioStrategyEditor) {
                                       return menuForFeatureCreator(
                                           context, rel);
@@ -142,7 +142,7 @@ class _MenuContainer extends StatelessWidget {
             displayNewLabel: true,
             params: {}),
       if (rel.currentPortfolioStrategyEditor ||
-          rel.currentPortfolioStrategyEditCreate)
+          rel.currentPortfolioStrategyEditDelete)
         FHMenuItem(
             name: l10n.portfolioStrategies,
             iconData: Icons.call_split_outlined,

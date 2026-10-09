@@ -53,9 +53,10 @@ async function attachPortfolioStrategyToFeatureValue(strategyName: string, value
 
   const featureValue = await world.getFeatureValue();
 
+
   const v = convertValue(value, world.feature.valueType);
   featureValue.portfolioStrategyInstances.push(new RolloutStrategyInstance({ strategyId: strategy.strategy.id,
-    value:  v, percentageOverride: percentage}));
+    value:  v, percentageOverride: percentage ? percentage * 10000.0 : undefined}));
 
   const updatedValue = await world.updateFeature(featureValue);
   const found = updatedValue.portfolioStrategyInstances.find(rsi => rsi.strategyId === strategy.strategy.id  );
@@ -64,7 +65,11 @@ async function attachPortfolioStrategyToFeatureValue(strategyName: string, value
 
   expect(found.value).to.eq(v);
 
-  expect(found.percentageOverride).to.eq(percentage);
+  if (percentage) {
+    expect(found.percentageOverride).to.eq(percentage * 10000.0);
+  } else {
+    expect(found.percentageOverride).to.eq(percentage);
+  }
 }
 
 When("I attach portfolio strategy {string} to the current environment feature value with the value {string}", async function(strategyName: string, value: string) {
