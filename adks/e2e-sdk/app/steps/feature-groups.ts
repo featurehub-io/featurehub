@@ -52,7 +52,7 @@ When("I create a feature group {string}", async function (groupName: string, tab
     features: (await translateFeatureValueTable(world, table))
   });
 
-  const data = await world.featureGroupApi.createFeatureGroup(world.application.id, fg);
+  const data = await world.currentUser.featureGroupApi.createFeatureGroup(world.application.id, fg);
   expect(data.status).to.eq(201);
   const g = data.data;
   world.featureGroup = new FeatureGroup({
