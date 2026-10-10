@@ -9,11 +9,12 @@ RUN mkdir -p /pnpm
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PATH:/pnpm:/pnpm/bin
 ARG branch=main
+# we pull and build the js-sdk on this branch (or main if there isn't one) so we can link it in below
 RUN (git clone --depth 1 -b $branch https://github.com/featurehub-io/featurehub-javascript-sdk.git || git clone --depth 1 https://github.com/featurehub-io/featurehub-javascript-sdk.git) && \
      cd featurehub-javascript-sdk && \
      (git checkout $branch || true) && \
-    cd packages/core && pnpm install && pnpm build && pnpm link && \
-    cd ../node && pnpm install && pnpm build && pnpm link
+    cd packages/core && pnpm install && pnpm run build && \
+    cd ../node && pnpm install && pnpm run build
 
 WORKDIR /app
 
