@@ -235,7 +235,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
                   icon: const Icon(Icons.edit),
                   onPressed: () => {
                         ManagementRepositoryClientBloc.router
-                            .navigateTo(context, '/manage-user', params: {
+                            .navigateTo('/manage-user', params: {
                           'id': [personEntry.person.id]
                         })
                       }),
@@ -278,7 +278,7 @@ class PersonDataTableSource extends AdvancedDataTableSource<SearchPersonEntry> {
         onSelectChanged: (newValue) {
           if (personEntry.person.whenDeactivated == null) {
             ManagementRepositoryClientBloc.router
-                .navigateTo(context, '/manage-user', params: {
+                .navigateTo('/manage-user', params: {
               'id': [personEntry.person.id]
             });
           } else {
@@ -339,6 +339,8 @@ class _ListUserInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final allowedLocalIdentity = bloc.mrClient.identityProviders.hasLocal;
+    // we have an async gap for this text so we need to grab it first
+    final registrationRenewalText = AppLocalizations.of(context)!.registrationUrlRenewed;
 
     return FutureBuilder<Person>(
         future: bloc.getPerson(foundPerson.person.id),
@@ -424,9 +426,7 @@ class _ListUserInfo extends StatelessWidget {
                           try {
                             final token = await bloc.mrClient.authServiceApi
                                 .resetExpiredToken(foundPerson.person.email);
-                            bloc.mrClient.addSnackbar(Text(
-                                AppLocalizations.of(context)!
-                                    .registrationUrlRenewed));
+                            bloc.mrClient.addSnackbar(Text(registrationRenewalText));
                             return bloc.mrClient.registrationUrl(token.token);
                           } catch (e, s) {
                             bloc.mrClient.addError(FHError.createError(e, s));

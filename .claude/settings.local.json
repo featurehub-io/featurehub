@@ -2,7 +2,21 @@
   "permissions": {
     "allow": [
       "Bash(flutter gen-l10n:*)",
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(mvn -DskipTests compile -q)",
+      "Bash(dart --version)",
+      "Bash(mvn -q -pl backend/mr-db-models -am -DskipTests compile)",
+      "Bash(mvn -q -pl backend/mr-db-models -am -DskipTests -Dgib.disable=true compile)",
+      "Bash(mvn -q -pl backend/mr-db-services,backend/mr-db-features -am -DskipTests -Dgib.disable=true compile)",
+      "Bash(mvn -q -pl backend/edge-rest,backend/mr-db-sql -am -DskipTests -Dgib.disable=true compile)",
+      "Bash(mvn -q -pl backend/mr-db-sql -Dgib.disable=true test -Dtest=PortfolioStrategiesSpec)",
+      "Bash(mvn -q -pl backend/mr-db-sql -Dgib.disable=true test -Dtest=FeatureAuditingStrategiesUnitSpec)",
+      "Bash(mvn -q -pl backend/mr-db-sql,backend/mr-db-features -Dgib.disable=true test)",
+      "Bash(mvn -pl backend/mr-db-sql,backend/mr-db-features -Dgib.disable=true test)",
+      "Bash(mvn -q -pl backend/mr-db-sql,backend/mr-db-features -am -Dgib.disable=true test)",
+      "Bash(awk -F: '{sum+=$2} END{print sum, \"report files\"}')",
+      "Bash(awk -F'Tests run: |, Failures' '{sum+=$2} END{print \"total tests:\", sum}')",
+      "Bash(mvn -q -pl backend/edge-rest -am -DskipTests -Dgib.disable=true compile)"
     ]
   }
 }

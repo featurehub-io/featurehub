@@ -170,8 +170,10 @@ open class PersonSqlApi @Inject constructor(
   ) {
     val groupPortfolioMap =
       QDbGroup().id.`in`(groupsTheyWantToAdd)
-        .select(QDbGroup.Alias.id, QDbGroup.Alias.owningPortfolio.id).findList()
-        .associate { it.id!! to it.owningPortfolio.id }
+        .select(QDbGroup.Alias.id, QDbGroup.Alias.owningPortfolio.id)
+        .owningPortfolio.isNotNull
+        .findList()
+        .associate { it.id!! to it.owningPortfolio!!.id }
 
     // now we have to work through them to ensure they are allowed to add them
     groupsTheyWantToAdd.removeIf { groupId ->
@@ -382,7 +384,7 @@ open class PersonSqlApi @Inject constructor(
   }
 
   private fun createAdminServiceAccountToken(person: DbPerson): String {
-    val token = RandomStringUtils.randomAlphanumeric(48)
+    val token = RandomStringUtils.secure().nextAlphanumeric(48)
     DbLogin.Builder().person(person).token(token).lastSeen(Instant.now()).build().save()
     return token
   }

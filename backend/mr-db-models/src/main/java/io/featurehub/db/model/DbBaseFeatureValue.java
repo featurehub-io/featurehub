@@ -72,7 +72,7 @@ public class DbBaseFeatureValue extends Model {
       rolloutStrategies = new LinkedList<>();
     }
 
-    return rolloutStrategies ;
+    return rolloutStrategies;
   }
 
   public void setRolloutStrategies(@NotNull List<RolloutStrategy> rolloutStrategies) {

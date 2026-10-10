@@ -1,10 +1,6 @@
 package io.featurehub.mr.resources.oauth2
 
-import io.featurehub.db.api.AuthenticationApi
-import io.featurehub.db.api.GroupApi
-import io.featurehub.db.api.OrganizationApi
-import io.featurehub.db.api.PersonApi
-import io.featurehub.db.api.PortfolioApi
+import io.featurehub.db.api.*
 import io.featurehub.mr.auth.AuthenticationRepository
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId

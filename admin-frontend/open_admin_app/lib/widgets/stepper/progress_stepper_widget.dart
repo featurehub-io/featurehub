@@ -11,7 +11,6 @@ import 'package:open_admin_app/widgets/stepper/custom_stepper.dart';
 import 'package:open_admin_app/widgets/stepper/fh_stepper.dart';
 import 'package:open_admin_app/widgets/stepper/progress_stepper_bloc.dart';
 
-
 class FHSetupProgressStepper extends StatefulWidget {
   const FHSetupProgressStepper({super.key});
 
@@ -85,8 +84,7 @@ class StepperState extends State<FHSetupProgressStepper> {
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
-                                                .navigateTo(
-                                                    context, '/applications')
+                                                .navigateTo('/applications')
                                           },
                                         ),
                                       ],
@@ -110,7 +108,7 @@ class StepperState extends State<FHSetupProgressStepper> {
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
-                                                .navigateTo(context, '/groups')
+                                                .navigateTo('/groups')
                                           },
                                         ),
                                       ],
@@ -134,8 +132,7 @@ class StepperState extends State<FHSetupProgressStepper> {
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
-                                                .navigateTo(context,
-                                                    '/service-accounts')
+                                                .navigateTo('/service-accounts')
                                           },
                                         ),
                                       ],
@@ -162,7 +159,6 @@ class StepperState extends State<FHSetupProgressStepper> {
                                             ManagementRepositoryClientBloc
                                                 .router
                                                 .navigateTo(
-                                              context,
                                               '/app-settings',
                                               params: {
                                                 'id': [bloc.applicationId!],
@@ -196,7 +192,6 @@ class StepperState extends State<FHSetupProgressStepper> {
                                             ManagementRepositoryClientBloc
                                                 .router
                                                 .navigateTo(
-                                              context,
                                               '/app-settings',
                                               params: {
                                                 'id': [bloc.applicationId!],
@@ -208,7 +203,8 @@ class StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title: Text(l10n.stepGiveAccessToServiceAccount),
+                                    title: Text(
+                                        l10n.stepGiveAccessToServiceAccount),
                                     state: snapshot.data!.environment &&
                                             snapshot.data!.serviceAccount
                                         ? (snapshot.data!
@@ -232,7 +228,6 @@ class StepperState extends State<FHSetupProgressStepper> {
                                             ManagementRepositoryClientBloc
                                                 .router
                                                 .navigateTo(
-                                              context,
                                               '/app-settings',
                                               params: {
                                                 'id': [bloc.applicationId!],
@@ -264,9 +259,9 @@ class StepperState extends State<FHSetupProgressStepper> {
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
-                                                .navigateTo(context,
-                                                    routeNameFeatureDashboard,
-                                               )
+                                                .navigateTo(
+                                              routeNameFeatureDashboard,
+                                            )
                                           },
                                         ),
                                       ],

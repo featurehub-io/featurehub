@@ -290,6 +290,12 @@ abstract class AppLocalizations {
   /// **'Application Strategies'**
   String get applicationStrategies;
 
+  /// Navigation menu item for portfolio strategies
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategies'**
+  String get portfolioStrategies;
+
   /// Navigation menu item for API keys
   ///
   /// In en, this message translates to:
@@ -1310,6 +1316,12 @@ abstract class AppLocalizations {
   /// **'Application Strategies Documentation'**
   String get applicationStrategiesDocumentation;
 
+  /// Label for portfolio strategies docs link
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategies Documentation'**
+  String get portfolioStrategiesDocumentation;
+
   /// Page header for the edit user screen
   ///
   /// In en, this message translates to:
@@ -1532,6 +1544,18 @@ abstract class AppLocalizations {
   /// **'Edit Application Strategy for {name}'**
   String editApplicationStrategyTitle(String name);
 
+  /// Page header when creating a portfolio strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Create Portfolio Strategy for {name}'**
+  String createPortfolioStrategyTitle(String name);
+
+  /// Page header when editing a portfolio strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Portfolio Strategy for {name}'**
+  String editPortfolioStrategyTitle(String name);
+
   /// Dialog title when editing an application
   ///
   /// In en, this message translates to:
@@ -1711,6 +1735,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not delete group {name}'**
   String couldNotDeleteGroup(String name);
+
+  /// Label for the portfolio role dropdown on the group dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio role'**
+  String get portfolioRoleLabel;
+
+  /// Portfolio role dropdown option meaning the group has no special portfolio-wide role
+  ///
+  /// In en, this message translates to:
+  /// **'No portfolio role'**
+  String get portfolioRoleNone;
+
+  /// Portfolio role dropdown option: can edit members of groups across the portfolio
+  ///
+  /// In en, this message translates to:
+  /// **'Group Member Manager'**
+  String get portfolioRoleGroupMemberManager;
+
+  /// Portfolio role dropdown option: can create and edit portfolio strategies
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategy Editor'**
+  String get portfolioRolePortfolioStrategyEdit;
+
+  /// Portfolio role dropdown option: can create, edit and delete portfolio strategies
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategy Editor & Deleter'**
+  String get portfolioRolePortfolioStrategyEditAndDelete;
 
   /// Dialog title when viewing a feature (read-only)
   ///
@@ -2059,6 +2113,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Application strategy \'{name}\' deleted!'**
   String appStrategyDeleted(String name);
+
+  /// Body of the delete portfolio strategy confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This portfolio strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!'**
+  String get portfolioStrategyDeleteContent;
+
+  /// Snackbar after deleting a portfolio strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio strategy \'{name}\' deleted!'**
+  String portfolioStrategyDeleted(String name);
 
   /// Strategy usage cell: how many environments and feature values use this strategy
   ///
@@ -3686,6 +3752,30 @@ abstract class AppLocalizations {
   /// **'Application strategies are created at application level and can be assigned to multiple features in any environment. Application strategy can be created and edited from the Application Strategies page.'**
   String get applicationStrategyVariationsInfo;
 
+  /// Info note explaining that the per-feature-value percentage overrides the shared application strategy's configured percentage
+  ///
+  /// In en, this message translates to:
+  /// **'Setting this rollout value overrides the application strategy value configured globally'**
+  String get applicationStrategyOverrideInfo;
+
+  /// Info note explaining that the per-feature-value percentage overrides the shared portfolio strategy's configured percentage
+  ///
+  /// In en, this message translates to:
+  /// **'Setting this rollout value overrides the portfolio strategy value configured globally'**
+  String get portfolioStrategyOverrideInfo;
+
+  /// Label preceding the inline percentage-override input field on a shared-strategy card, e.g. 'rollout at [ 50 ] %'
+  ///
+  /// In en, this message translates to:
+  /// **'rollout at'**
+  String get percentageOverrideRolloutAt;
+
+  /// Percent sign shown after the inline percentage-override input field on a shared-strategy card
+  ///
+  /// In en, this message translates to:
+  /// **'%'**
+  String get percentageOverridePercentSign;
+
   /// Placeholder when no application strategies have been assigned
   ///
   /// In en, this message translates to:
@@ -3702,7 +3792,37 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Add Strategy'**
-  String get addStrategy;
+  String get addApplicationStrategy;
+
+  /// Section heading for portfolio-level strategy variations
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio strategy variations'**
+  String get portfolioStrategyVariations;
+
+  /// Info tooltip describing portfolio strategy variations
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio strategies are created at portfolio level and can be assigned to multiple features in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.'**
+  String get portfolioStrategyVariationsInfo;
+
+  /// Placeholder when no portfolio strategies have been assigned
+  ///
+  /// In en, this message translates to:
+  /// **'No portfolio strategies set'**
+  String get noPortfolioStrategiesSet;
+
+  /// Button to reveal the list of available portfolio strategies to add
+  ///
+  /// In en, this message translates to:
+  /// **'Show available portfolio strategies'**
+  String get showAvailablePortfolioStrategies;
+
+  /// Button label to add an portfolio strategy to a feature value
+  ///
+  /// In en, this message translates to:
+  /// **'Add Strategy'**
+  String get addPortfolioStrategy;
 
   /// Section label for the retire feature value checkbox
   ///
@@ -3823,6 +3943,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Application Strategy'**
   String get applicationStrategyTooltip;
+
+  /// Tooltip label on portfolio strategy cells in the feature value table
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategy'**
+  String get portfolioStrategyTooltip;
 
   /// Section label for the lock/unlock switch in the feature value side sheet
   ///

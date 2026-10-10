@@ -97,6 +97,7 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
 
     fmData.strategiesUpdated?.let { strategiesUpdated("", it, data, fmData ) }
     fmData.applicationStrategiesUpdated?.let { strategiesUpdated("application", it, data, fmData ) }
+    fmData.portfolioStrategiesUpdated?.let { strategiesUpdated("portfolio", it, data, fmData ) }
 
     fmData.lockUpdated?.let { locked ->
       data["wasLocked"] = !locked.previous && locked.updated

@@ -15,6 +15,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import org.jetbrains.annotations.NotNull;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -210,6 +212,7 @@ public class DbPerson extends DbVersionedBase {
       return this;
     }
 
+    @NotNull
     public DbPerson build() {
       DbPerson dbPerson = new DbPerson();
       dbPerson.setToken(token);

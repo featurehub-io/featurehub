@@ -1,19 +1,9 @@
 package io.featurehub.mr.rest
 
-import io.featurehub.db.api.ApplicationApi
-import io.featurehub.db.api.EnvironmentApi
-import io.featurehub.db.api.GroupApi
-import io.featurehub.db.api.Opts
-import io.featurehub.db.api.OrganizationApi
-import io.featurehub.db.api.PortfolioApi
-import io.featurehub.db.api.ServiceAccountApi
+import io.featurehub.db.api.*
 import io.featurehub.mr.api.PortfolioServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
-import io.featurehub.mr.model.CreatePortfolio
-import io.featurehub.mr.model.Group
-import io.featurehub.mr.model.Person
-import io.featurehub.mr.model.PersonId
-import io.featurehub.mr.model.Portfolio
+import io.featurehub.mr.model.*
 import io.featurehub.mr.resources.PortfolioResource
 import io.featurehub.mr.utils.PortfolioUtils
 import jakarta.ws.rs.ForbiddenException
@@ -28,25 +18,26 @@ class PortfolioResourceSpec extends Specification {
   ApplicationApi applicationApi;
   GroupApi groupApi;
   PortfolioApi portfolioApi;
-  OrganizationApi organizationApi;
   PortfolioResource pr
   ServiceAccountApi serviceAccountApi
   EnvironmentApi environmentApi
   SecurityContext mockCtx
+  PortfolioUtils portfolioAuthUtils
 
   def setup() {
     authManager = Mock(AuthManagerService)
     applicationApi = Mock(ApplicationApi)
     groupApi = Mock(GroupApi)
     portfolioApi = Mock(PortfolioApi)
-    organizationApi = Mock(OrganizationApi)
     serviceAccountApi = Mock(ServiceAccountApi)
     environmentApi = Mock(EnvironmentApi)
+    portfolioApi = Mock()
+    portfolioAuthUtils = Mock()
 
     System.setProperty('portfolio.admin.group.suffix', 'Administrators')
 
     mockCtx = Mock()
-    pr = new PortfolioResource(groupApi, authManager, portfolioApi, organizationApi, new PortfolioUtils())
+    pr = new PortfolioResource(groupApi, authManager, portfolioApi, portfolioAuthUtils)
   }
 
 
@@ -75,6 +66,7 @@ class PortfolioResourceSpec extends Specification {
     when: "i try and create a portfolio"
       pr.createPortfolio(p, new PortfolioServiceDelegate.CreatePortfolioHolder(), sc)
     then:
+      1 * portfolioAuthUtils.formatPortfolioAdminGroupName("art") >> "Portfolio Art Admins"
       1 * portfolioApi.createPortfolio(p, (Opts)_, personId) >> new Portfolio().id(personId)
       1 * groupApi.createGroup(_,  _, _) >> new Group()
   }

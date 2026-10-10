@@ -196,7 +196,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                         onPressed: () {
                           widget.returnToRoute != null
                               ? ManagementRepositoryClientBloc.router
-                                  .navigateTo(context, widget.returnToRoute!)
+                                  .navigateTo(widget.returnToRoute!)
                               : Navigator.pop(context);
                         },
                       ),
@@ -250,12 +250,12 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
         if (isValidationOk(validationCheck)) {
           await onSuccess();
           if (widget.returnToRoute != null) {
-            if (context.mounted) {
+            if (mounted) {
               ManagementRepositoryClientBloc.router
-                  .navigateTo(context, widget.returnToRoute!);
+                  .navigateTo(widget.returnToRoute!);
             }
           } else {
-            if (context.mounted) {
+            if (mounted) {
               Navigator.pop(context);
             }
           }

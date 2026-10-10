@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.LocalDateTime;
@@ -59,8 +60,15 @@ public class DbFeatureValue extends DbBaseFeatureValue {
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "fk_fv_id")
+  @OrderBy("sortOrder")
   @Nullable
   protected List<DbStrategyForFeatureValue> sharedRolloutStrategies;
+
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "fk_fv_id")
+  @OrderBy("sortOrder")
+  @Nullable
+  protected List<DbPortfolioStrategyForFeatureValue> sharedPortfolioRolloutStrategies;
 
   public DbFeatureValue(@NotNull DbPerson whoUpdated, boolean locked, @NotNull DbApplicationFeature feature,
                         @NotNull DbEnvironment environment,
@@ -109,6 +117,18 @@ public class DbFeatureValue extends DbBaseFeatureValue {
 
   public void setSharedRolloutStrategies(@NotNull List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
     this.sharedRolloutStrategies = sharedRolloutStrategies;
+  }
+
+  public @NotNull List<DbPortfolioStrategyForFeatureValue> getSharedPortfolioRolloutStrategies() {
+    if (sharedPortfolioRolloutStrategies == null) {
+      sharedPortfolioRolloutStrategies = new LinkedList<>();
+    }
+
+    return sharedPortfolioRolloutStrategies;
+  }
+
+  public void setSharedPortfolioRolloutStrategies(@NotNull List<DbPortfolioStrategyForFeatureValue> sharedPortfolioRolloutStrategies) {
+    this.sharedPortfolioRolloutStrategies = sharedPortfolioRolloutStrategies;
   }
 
   public @NotNull DbEnvironment getEnvironment() {

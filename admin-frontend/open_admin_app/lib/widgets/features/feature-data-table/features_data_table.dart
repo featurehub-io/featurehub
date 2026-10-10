@@ -197,7 +197,7 @@ class FeaturesDataTableState extends State<FeaturesDataTable> {
                                   Icons.filter_list,
                                   size: 18,
                                 ),
-                                selectedDisplay: Text(l10n.filterByFeatureFilters + " - " + filters.where((f) => _selectedFeatureFilterIds.contains(f.id)).map((f) => f.name).join(", ")),
+                                selectedDisplay: Text("${l10n.filterByFeatureFilters} - ${filters.where((f) => _selectedFeatureFilterIds.contains(f.id)).map((f) => f.name).join(", ")}"),
                                 hint: Text(
                                   l10n.filterByFeatureFilters,
                                   style: Theme.of(context).textTheme.bodyMedium,

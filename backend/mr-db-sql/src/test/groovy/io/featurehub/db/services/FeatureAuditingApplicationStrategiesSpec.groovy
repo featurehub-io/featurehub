@@ -55,11 +55,11 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
 
 
   String ranName() {
-    return RandomStringUtils.randomAlphabetic(10)
+    return RandomStringUtils.secure().nextAlphabetic(10)
   }
 
   String ranCode() {
-    return RandomStringUtils.randomAlphabetic(4)
+    return RandomStringUtils.secure().nextAlphabetic(4)
   }
 
   @CompileStatic
@@ -78,14 +78,16 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
   }
 
   MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy> updateStrategies(List<DbStrategyForFeatureValue> current,
-                                                                                   List<SharedRolloutStrategyVersion> historical,
+                                                                                   List<SharedRolloutStrategyVersion> historicalApplicationStrategies,
+                                                                                   List<SharedRolloutStrategyVersion> historicalPortfolioStrategies,
                                                                                    List<RolloutStrategyInstance> updated, PersonFeaturePermission person) {
     currentFeature = featureValue("y", feature).with { it.locked = currentLock; it.sharedRolloutStrategies = current; it }
 
     return updateFeatureApi.updateSelectivelyApplicationRolloutStrategies(
       person,
       new FeatureValue().rolloutStrategyInstances(updated),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], historical, feature, 0),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [],
+        historicalApplicationStrategies, historicalPortfolioStrategies, feature, 0),
       currentFeature, lockChanged, app1.id
     )
   }
@@ -104,7 +106,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
         new RolloutStrategyInstance()
           .disabled(false).value(true).strategyId(sharedStrategy.id)]
     when:
-      def result = updateStrategies([], [], incoming,
+      def result = updateStrategies([], [], [], incoming,
         new PersonFeaturePermission(superPerson, defaultRoles))
     then:
       result.hasChanged
@@ -120,8 +122,8 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
       def ss2 = applicationRolloutStrategySqlApi.createStrategy(app1.id,
         new CreateApplicationRolloutStrategy().name(ranName()), superuser, Opts.empty())
     and: "i have a historical strategies in the 1/2 order"
-      def his1 = new SharedRolloutStrategyVersion(ss1.id, 1, true, true)
-      def his2 = new SharedRolloutStrategyVersion(ss2.id, 1, true, true)
+      def his1 = new SharedRolloutStrategyVersion(ss1.id, 1, true, true, null)
+      def his2 = new SharedRolloutStrategyVersion(ss2.id, 1, true, true, null)
     and: "i swap the strategy order"
       def incoming1 = [
         new RolloutStrategyInstance()
@@ -146,7 +148,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
         updateFeatureApi.updateSelectivelyApplicationRolloutStrategies(
           new PersonFeaturePermission(superPerson, defaultRoles),
           new FeatureValue().rolloutStrategyInstances(incoming1),
-          new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], feature, 0),
+          new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], [], feature, 0),
           currentFeature, lockChanged, app1.id
         )
     then:
@@ -159,7 +161,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
         = updateFeatureApi.updateSelectivelyApplicationRolloutStrategies(
       new PersonFeaturePermission(superPerson, defaultRoles),
       new FeatureValue().rolloutStrategyInstances([incoming1.first()]),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], feature, 0),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], [], feature, 0),
       currentFeature, lockChanged, app1.id
     )
     then: "we only have one rollout strategy instance in the current feature"
@@ -169,7 +171,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
     updateFeatureApi.updateSelectivelyApplicationRolloutStrategies(
       new PersonFeaturePermission(superPerson, defaultRoles),
       new FeatureValue().rolloutStrategyInstances([incoming1.first()]),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], feature, 0),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], [], feature, 0),
       currentFeature, lockChanged, app1.id)
     then:
       currentFeature.sharedRolloutStrategies.size() == 1

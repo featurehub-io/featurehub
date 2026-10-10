@@ -11,6 +11,7 @@ class StrategyCard extends StatelessWidget {
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupRolloutStrategy;
   final RolloutStrategyInstance? applicationRolloutStrategy;
+  final RolloutStrategyInstance? portfolioRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
   final FeatureValueType featureValueType;
 
@@ -20,7 +21,7 @@ class StrategyCard extends StatelessWidget {
       required this.strBloc,
       required this.featureValueType,
       this.groupRolloutStrategy,
-      this.applicationRolloutStrategy});
+      this.applicationRolloutStrategy, this.portfolioRolloutStrategy});
 
   @override
   Widget build(BuildContext context) {
@@ -31,24 +32,35 @@ class StrategyCard extends StatelessWidget {
             final editable = strBloc.environmentFeatureValue.roles
                 .contains(RoleType.CHANGE_VALUE);
             final unlocked = !snap.data!.locked;
-            return StrategyCardWidget(
-              editable: editable && unlocked,
-              strBloc: strBloc,
+            final editContainer = EditValueContainer(
+              key: ValueKey(
+                  '${strBloc.environmentFeatureValue.environmentId}-${strBloc.feature.key}'),
+              editable: groupRolloutStrategy != null ? false : editable,
+              unlocked: unlocked,
               rolloutStrategy: rolloutStrategy,
               groupRolloutStrategy: groupRolloutStrategy,
               applicationRolloutStrategy: applicationRolloutStrategy,
-              editableHolderWidget: EditValueContainer(
-                key: ValueKey(
-                    '${strBloc.environmentFeatureValue.environmentId}-${strBloc.feature.key}'),
-                editable: groupRolloutStrategy != null ? false : editable,
-                unlocked: unlocked,
-                rolloutStrategy: rolloutStrategy,
-                groupRolloutStrategy: groupRolloutStrategy,
-                applicationRolloutStrategy: applicationRolloutStrategy,
-                strBloc: strBloc,
-                featureValueType: featureValueType,
-              ),
+              portfolioRolloutStrategy: portfolioRolloutStrategy,
+              strBloc: strBloc,
+              featureValueType: featureValueType,
             );
+
+            final canEdit = editable && unlocked;
+
+            if (groupRolloutStrategy != null) {
+              return GroupRolloutStrategyCardWidget(editable: canEdit, strBloc: strBloc, strategy: groupRolloutStrategy!, editableHolderWidget:  editContainer,);
+            }
+            if (applicationRolloutStrategy != null) {
+              return ApplicationRolloutStrategyCardWidget(editable: canEdit, strBloc: strBloc,  strategyInstance: applicationRolloutStrategy!, editableHolderWidget: editContainer);
+            }
+            if (rolloutStrategy != null) {
+              return RolloutStrategyCardWidget(editable: canEdit, strBloc: strBloc, strategy: rolloutStrategy!, editableHolderWidget: editContainer);
+            }
+            if (portfolioRolloutStrategy != null) {
+              return PortfolioRolloutStrategyCardWidget(editable: canEdit, strBloc: strBloc, strategyInstance: portfolioRolloutStrategy!, editableHolderWidget: editContainer);
+            }
+
+            return NullRolloutStrategyCardWidget(strBloc: strBloc, editableHolderWidget: editContainer);
           } else {
             return const SizedBox.shrink();
           }
@@ -63,6 +75,7 @@ class EditValueContainer extends StatelessWidget {
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupRolloutStrategy;
   final RolloutStrategyInstance? applicationRolloutStrategy;
+  final RolloutStrategyInstance? portfolioRolloutStrategy;
   final EditingFeatureValueBloc strBloc;
 
   const EditValueContainer(
@@ -73,7 +86,7 @@ class EditValueContainer extends StatelessWidget {
       this.rolloutStrategy,
       required this.strBloc,
       this.groupRolloutStrategy,
-      this.applicationRolloutStrategy});
+      this.applicationRolloutStrategy, this.portfolioRolloutStrategy});
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +98,7 @@ class EditValueContainer extends StatelessWidget {
           rolloutStrategy: rolloutStrategy,
           groupRolloutStrategy: groupRolloutStrategy,
           applicationRolloutStrategy: applicationRolloutStrategy,
+          portfolioRolloutStrategy: portfolioRolloutStrategy,
           strBloc: strBloc,
         );
       case FeatureValueType.BOOLEAN:
@@ -93,8 +107,9 @@ class EditValueContainer extends StatelessWidget {
           rolloutStrategy: rolloutStrategy,
           groupRolloutStrategy: groupRolloutStrategy,
           applicationRolloutStrategy: applicationRolloutStrategy,
+          portfolioRolloutStrategy: portfolioRolloutStrategy,
           strBloc: strBloc,
-          editable: editable,
+          canEdit: editable,
         );
       case FeatureValueType.NUMBER:
         return EditNumberValueContainer(
@@ -103,6 +118,7 @@ class EditValueContainer extends StatelessWidget {
           rolloutStrategy: rolloutStrategy,
           groupRolloutStrategy: groupRolloutStrategy,
           applicationRolloutStrategy: applicationRolloutStrategy,
+          portfolioRolloutStrategy: portfolioRolloutStrategy,
           strBloc: strBloc,
         );
       case FeatureValueType.JSON:
@@ -112,6 +128,7 @@ class EditValueContainer extends StatelessWidget {
           rolloutStrategy: rolloutStrategy,
           groupRolloutStrategy: groupRolloutStrategy,
           applicationRolloutStrategy: applicationRolloutStrategy,
+          portfolioRolloutStrategy: portfolioRolloutStrategy,
           strBloc: strBloc,
         );
     }

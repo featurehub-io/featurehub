@@ -1,0 +1,37 @@
+= How the messaging API works
+
+The messaging api, which is the message as described in `backend/messaging-api` - more specifically the `FeatureMessagingUpdate`
+is generated whenever a feature has been changed. 
+
+- it is generated from `io.featurehub.db.services.UpdateFeatureApi` in the `backend/mr-db-features` module. 
+- this class is extracted there because it is used by MR as well as Edge-Rest (which updates via the test-api)
+- it works by comparing the difference between the version that a user is updating and the current version. 
+This allows multiple people to be editing the same feature value at the same time, and as long as they don't change
+the same thing in a conflicting fashion, it will make the appropriate change.
+
+It has a dual responsibility 
+- crafting the difference record that is then passed to the `FeatureMessagePublisher` interface - using a data value `FeatureMessagingParameter` object. These are defined in `mr-db-services` module. The implementation for these is in `mr-eventing` where the cloud message is actually published.  
+- creating audited feature changes - it creates the `DbFeatureValueVersion` object
+
+The message is converted into the `FeatureMessagingUpdate` by `FeatureMessagingCloudEventPublisherImpl:publish`. This creates
+the cloud event and writes a tracking message into the database for it so when a delivery response is emitted by the eventual
+delivery mechanism, it can update it. 
+
+[source]
+----
+UpdateFeatureApi:publishChangesForMessaging (mr-db-features) 
+  -> FeatureMessagPublisher:publish (mr-db-services) 
+     -> io.featurehub.messaging.service.FeatureMessagingCloudEventPublisherImpl:publish (mr-eventing)   <--- addHook called by services interested in this message (e.g. SlackClient) 
+      => given webhook config for environment, are there any dynamically registered CE destinations for this data? (io.featurehub.systemcfg.SlackClient.SlackClient is one)
+      => for each one that matches, if enabled, publish a new event with associated data directly to that hook + a pre-filled CloudEventBuider (NOT a CloudEvent). Data MUST of type io.featurehub.events.messaging.AdditionalInfoMessage  
+       -> io.featurehub.systemcfg.SlackClient (hook)
+         => collect headers and bearer tokens and extra information required
+         => publish to DynamicCloudEventRegistry (CE Builder + extra info)
+         => IF: no slack delivery url specified, publish directly to bus (uses inbuilt SlackWebClient, otherwise webhook delivery process) 
+           -> io.featurehub.messaging.slack.SlackWebClient (messaging-delivery)
+            -> io.featurehub.messaging.utils.FeatureMessageFormatter (messaging-delivery, converts to map usable by handlebars)
+            -> formats using handlebars
+            -> extracts destination information from "info" (i.e. environment webhook data)
+            -> posts to slack
+            -> sends track event response to complete record of hook
+----

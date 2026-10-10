@@ -3,13 +3,11 @@ package io.featurehub.db.services
 import io.featurehub.db.api.DBLoginSession
 import io.featurehub.db.api.Opts
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.CreateGroup
 import io.featurehub.mr.model.CreatePortfolio
-import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.Portfolio
@@ -18,7 +16,6 @@ import spock.lang.Shared
 
 import java.time.Instant
 import java.time.temporal.ChronoField
-import java.time.temporal.TemporalField
 
 class AuthenticationSpec extends BaseSpec {
   @Shared AuthenticationSqlApi auth
@@ -235,7 +232,7 @@ class AuthenticationSpec extends BaseSpec {
         new CreateGroup().name("admin-group").admin(true)
           .applicationRoles([new ApplicationGroupRole().applicationId(app1.id)
                                .roles([ApplicationRoleType.FEATURE_EDIT])]), superPerson)
-      groupSqlApi.addPersonsToGroup(portfolioGroup.id, [p2.id.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(portfolioGroup.id, [p2.id.id], superuser,Opts.empty())
     when: "i login"
       def user = auth.login(p2.email, "hooray")
     then: "i have the application role permission to the portfolio"

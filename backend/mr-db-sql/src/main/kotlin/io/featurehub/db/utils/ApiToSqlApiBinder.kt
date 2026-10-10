@@ -12,6 +12,7 @@ import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.OrganizationApi
 import io.featurehub.db.api.PersonApi
 import io.featurehub.db.api.PortfolioApi
+import io.featurehub.db.api.PortfolioRolloutStrategyApi
 import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.db.api.SessionApi
@@ -44,6 +45,7 @@ import io.featurehub.db.services.InternalPersonApi
 import io.featurehub.db.services.InternalServiceAccountApi
 import io.featurehub.db.services.OrganizationSqlApi
 import io.featurehub.db.services.PersonSqlApi
+import io.featurehub.db.services.PortfolioRolloutStrategySqlApi
 import io.featurehub.db.services.PortfolioSqlApi
 import io.featurehub.db.services.ServiceAccountSqlApi
 import io.featurehub.db.services.SetupSqlApi
@@ -102,6 +104,7 @@ class ApiToSqlApiBinder : Feature {
         bind(ApplicationRolloutStrategySqlApi::class.java).to(
           ApplicationRolloutStrategyApi::class.java
         ).`in`(Singleton::class.java)
+        bind(PortfolioRolloutStrategySqlApi::class.java).to(PortfolioRolloutStrategyApi::class.java).`in`(Singleton::class.java)
         bind(WebhookSqlApi::class.java).to(WebhookApi::class.java).`in`(Singleton::class.java)
         bind(FeatureHistorySqlApi::class.java).to(FeatureHistoryApi::class.java).`in`(Singleton::class.java)
         bind(FeatureGroupSqlApi::class.java).to(FeatureGroupApi::class.java).`in`(Singleton::class.java)

@@ -1,5 +1,6 @@
 package io.featurehub.db.services
 
+import groovy.transform.CompileStatic
 import io.ebean.DB
 import io.ebean.Database
 import io.featurehub.db.api.Opts
@@ -13,6 +14,7 @@ import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
+import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -73,6 +75,24 @@ class BaseSpec extends Specification {
       adminGroup = groupSqlApi.createOrgAdminGroup(org.id, 'admin group', superPerson)
     }
 
-    groupSqlApi.addPersonsToGroup(adminGroup.id, [superuser], Opts.empty())
+    groupSqlApi.systemAddPersonsToGroup(adminGroup.id, [superuser], Opts.empty())
+  }
+
+  String ranName() {
+    return RandomStringUtils.secure().nextAlphabetic(10)
+  }
+
+  @CompileStatic
+  DbPerson createPerson(String name = null, String email = null) {
+    if (name == null) {
+      name = ranName()
+    }
+    if (email == null) {
+      email = name.toLowerCase() + "@"
+    }
+
+    DbPerson p1 = new DbPerson.Builder().name(name).email(email).build()
+    database.save(p1)
+    return p1
   }
 }

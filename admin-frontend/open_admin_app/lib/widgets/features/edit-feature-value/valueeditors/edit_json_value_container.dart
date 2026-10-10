@@ -1,51 +1,39 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_json_editor.dart';
+import 'package:open_admin_app/widgets/features/edit-feature-value/valueeditors/edit_feature_value_widget.dart';
 import 'package:open_admin_app/widgets/features/edit-feature-value/valueeditors/json_viewer_field.dart';
-import 'package:open_admin_app/widgets/features/editing_feature_value_block.dart';
 
-class EditJsonValueContainer extends StatefulWidget {
+class EditJsonValueContainer extends EditFeatureValueWidget {
   const EditJsonValueContainer({
     super.key,
-    required this.unlocked,
-    required this.canEdit,
-    this.rolloutStrategy,
-    required this.strBloc,
-    this.groupRolloutStrategy,
-    this.applicationRolloutStrategy,
+    required super.unlocked,
+    required super.canEdit,
+    super.rolloutStrategy,
+    super.groupRolloutStrategy,
+    super.applicationRolloutStrategy,
+    super.portfolioRolloutStrategy,
+    required super.strBloc,
   });
-
-  final bool unlocked;
-  final bool canEdit;
-  final RolloutStrategy? rolloutStrategy;
-  final ThinGroupRolloutStrategy? groupRolloutStrategy;
-  final RolloutStrategyInstance? applicationRolloutStrategy;
-  final EditingFeatureValueBloc strBloc;
 
   @override
   EditJsonValueContainerState createState() => EditJsonValueContainerState();
 }
 
-class EditJsonValueContainerState extends State<EditJsonValueContainer> {
+class EditJsonValueContainerState
+    extends EditFeatureValueState<EditJsonValueContainer> {
   TextEditingController tec = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    final valueSource = widget.rolloutStrategy != null
-        ? widget.rolloutStrategy!.value
-        : widget.groupRolloutStrategy != null
-            ? widget.groupRolloutStrategy!.value
-            : widget.applicationRolloutStrategy != null
-                ? widget.applicationRolloutStrategy!.value
-                : widget.strBloc.featureValue.valueJson;
+    final valueSource =
+        resolveStrategyValue() ?? widget.strBloc.featureValue.valueJson;
     if (valueSource != null) {
       try {
         tec.text = const JsonEncoder.withIndent('  ')
@@ -68,7 +56,7 @@ class EditJsonValueContainerState extends State<EditJsonValueContainer> {
           color: Theme.of(context).colorScheme.primary,
         ),
         borderRadius: const BorderRadius.all(
-          Radius.circular(6.0), //         <--- border radius here
+          Radius.circular(6.0),
         ),
       );
     }
@@ -87,7 +75,6 @@ class EditJsonValueContainerState extends State<EditJsonValueContainer> {
             padding: const EdgeInsets.all(4.0),
             decoration: myBoxDecoration(),
             child: Align(
-              // alignment: Alignment.centerLeft,
               child: JsonViewerField(
                   text: tec.text,
                   canEdit: widget.canEdit,
@@ -135,17 +122,8 @@ class EditJsonValueContainerState extends State<EditJsonValueContainer> {
   }
 
   void _valueChanged() {
-    final replacementValue = tec.text.isEmpty
+    updateValue(tec.text.isEmpty
         ? null
-        : json.encode(json.decode(tec.text.trim())).toString();
-    if (widget.rolloutStrategy != null) {
-      widget.rolloutStrategy!.value = replacementValue;
-      widget.strBloc.updateStrategyValue();
-    } else if (widget.applicationRolloutStrategy != null) {
-      widget.applicationRolloutStrategy!.value = replacementValue;
-      widget.strBloc.updateApplicationStrategyValue();
-    } else {
-      widget.strBloc.updateFeatureValueDefault(replacementValue);
-    }
+        : json.encode(json.decode(tec.text.trim())).toString());
   }
 }

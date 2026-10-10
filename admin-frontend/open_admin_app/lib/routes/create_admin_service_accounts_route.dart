@@ -142,7 +142,7 @@ class TopAdminSAWidgetSuccess extends StatelessWidget {
                 onPressed: () {
                   bloc.backToDefault();
                   ManagementRepositoryClientBloc.router
-                      .navigateTo(context, '/admin-service-accounts');
+                      .navigateTo('/admin-service-accounts');
                 },
                 title: l10n.close),
             FHFlatButton(
@@ -190,7 +190,7 @@ class CreateAdminSAFormButtons extends StatelessWidget {
             bloc.formKey!.currentState!.reset;
           }
           ManagementRepositoryClientBloc.router
-              .navigateTo(context, '/admin-service-accounts');
+              .navigateTo('/admin-service-accounts');
         },
         title: l10n.cancel,
         keepCase: true,
@@ -206,8 +206,7 @@ class CreateAdminSAFormButtons extends StatelessWidget {
                   } catch (e, s) {
                     if (e is ApiException && e.code == 409) {
                       await bloc.client.dialogError(e, s,
-                          messageTitle:
-                              l10n.adminSaAlreadyExists(bloc.name!));
+                          messageTitle: l10n.adminSaAlreadyExists(bloc.name!));
                     } else {
                       await bloc.client.dialogError(e, s);
                     }

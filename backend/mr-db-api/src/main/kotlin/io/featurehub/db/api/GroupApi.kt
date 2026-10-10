@@ -4,17 +4,27 @@ import io.featurehub.mr.model.CreateGroup
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.PortfolioGroupRoleType
 import io.featurehub.mr.model.SortOrder
 import io.featurehub.mr.model.UpdateGroup
 import java.util.*
 
 interface GroupApi {
+  // checks if a person is a portfolio admin for this portfolio
   fun isPersonMemberOfPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean
+  // checks if any group in this portfolio has this user as a member
+  fun isPersonMemberOfAnyPortfolioGroup(portfolioId: UUID, personId: UUID): Boolean
   fun getSuperuserGroup(orgId: UUID): Group?
+  fun getPortfolioAdminGroup(portfolio: UUID): UUID?
   fun groupsPersonOrgAdminOf(personId: UUID): List<Group>
   fun orgsUserIn(personId: UUID): List<Organization>?
+  fun portfolioRoles(personId: UUID, portfolio: UUID?): Set<PortfolioGroupRoleType>
 
+  class CannotSetGroupManagerRoleOnAclGroup : RuntimeException()
+  // cannot combine a group manager role with other portfolio roles
+  class CannotCombineGroupManagerRole : RuntimeException()
   class DuplicateGroupException : Exception()
+  class NoValidUsersToAddToGroup : RuntimeException()
 
   /**
    * Creates top level admin group for a given organization
@@ -32,13 +42,12 @@ interface GroupApi {
   fun createGroup(portfolioId: UUID, group: CreateGroup, whoCreated: Person?): Group?
 
   /**
-   * Adds a person to a group
-   * @param groupId
-   * @param personId
-   * @param opts
-   * @return Group with the group id - default. Or plus opts if provided
+   * Used only when the system itself needs to add a user, such as during initial setup or oauth/saml
    */
-  fun addPersonsToGroup(groupId: UUID, personIds: List<UUID>, opts: Opts): Group?
+  fun systemAddPersonsToGroup(groupId: UUID, personIds: List<UUID>, opts: Opts): Group?
+  fun addPersonsToGroup(groupId: UUID, personIds: List<UUID>, personAdding: UUID, opts: Opts): Group?
+  fun addPersonsToGroupWithValidate(groupId: UUID, personIds: List<UUID>, personAdding: UUID, opts: Opts): Group?
+  fun getGroup(gid: UUID, opts: Opts, personId: UUID): Group?
   fun getGroup(gid: UUID, opts: Opts, person: Person): Group?
   fun findPortfolioAdminGroup(portfolioId: UUID, opts: Opts): Group?
   fun findOrganizationAdminGroup(orgId: UUID, opts: Opts): Group?
@@ -53,12 +62,14 @@ interface GroupApi {
     appId: UUID?,
     updateApplicationGroupRoles: Boolean,
     updateEnvironmentGroupRoles: Boolean,
+    updatedByPersonId: UUID,
     opts: Opts
   ): Group?
 
   fun findGroups(portfolioId: UUID, filter: String?, ordering: SortOrder?, opts: Opts): List<Group>
   fun updateAdminGroupForPortfolio(portfolioId: UUID, name: String)
 
+  @Deprecated(replaceWith = ReplaceWith("updateGroup"), message = "Does not enforce group member management")
   @Throws(OptimisticLockingException::class, DuplicateGroupException::class, DuplicateUsersException::class)
   fun updateGroupV1(
     gid: UUID,
@@ -67,6 +78,28 @@ interface GroupApi {
     updateMembers: Boolean,
     updateApplicationGroupRoles: Boolean,
     updateEnvironmentGroupRoles: Boolean,
+    personMakingUpdate: UUID,
     opts: Opts
   ): Group?
+
+  /**
+   * This returns the UUID the group that the specified user is a group_member_manager of. A person
+   * who is a group_member_manager can only update members of a group, they cannot create new groups
+   * and they cannot change the group roles. To allow them to do would be a privilege escalation.
+   */
+  fun groupUserIsManagerOf(personId: UUID, portfolioId: UUID): UUID?
+
+  /**
+   * Used by GroupResource to determine if it needs to check what the client is asking for and what permissions it needs to check
+   * across the portfolio. There are actually 3 states - the group doesn't exist or the owning portfolio is null
+   * (superadmin group) or the group exists and the portfolio id is returned. The method does not distinguish the first two.
+   */
+  fun findPortfolioOfGroup(groupId: UUID): UUID?
+
+
+  /**
+   * returns empty list if the person has no permission to any
+   */
+  fun groupsCurrentUserCanAddUsersTo(personId: UUID, groupIds: List<UUID>): List<UUID>
+
 }

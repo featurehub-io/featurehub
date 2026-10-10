@@ -2,11 +2,27 @@ package io.featurehub.mr.resources
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import io.featurehub.db.api.*
+import io.featurehub.db.api.AuthenticationApi
+import io.featurehub.db.api.FillOpts
+import io.featurehub.db.api.GroupApi
+import io.featurehub.db.api.Opts
+import io.featurehub.db.api.OrganizationApi
+import io.featurehub.db.api.PersonApi
+import io.featurehub.db.api.PortfolioApi
+import io.featurehub.db.api.SetupApi
+import io.featurehub.db.api.SystemConfigApi
 import io.featurehub.encryption.WebhookEncryptionFeature
 import io.featurehub.mr.api.SetupServiceDelegate
 import io.featurehub.mr.auth.AuthenticationRepository
-import io.featurehub.mr.model.*
+import io.featurehub.mr.model.CreateGroup
+import io.featurehub.mr.model.CreatePortfolio
+import io.featurehub.mr.model.IdentityProviderInfo
+import io.featurehub.mr.model.Organization
+import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.SetupMissingResponse
+import io.featurehub.mr.model.SetupResponse
+import io.featurehub.mr.model.SetupSiteAdmin
+import io.featurehub.mr.model.TokenizedPerson
 import io.featurehub.mr.utils.ConfigurationUtils
 import io.featurehub.mr.utils.PortfolioUtils
 import io.featurehub.web.security.oauth.AuthProviderCollection
@@ -156,7 +172,7 @@ class SetupResource @Inject constructor(
 
     //create the group and add admin to the group - any preference on group name here?
     val group = groupApi.createOrgAdminGroup(organization.id!!, "org_admin", person!!)
-    groupApi.addPersonsToGroup(group!!.id, listOf(person.id!!.id), Opts.empty())
+    groupApi.systemAddPersonsToGroup(group!!.id, listOf(person.id!!.id), Opts.empty())
     person = personApi[person.id!!.id, Opts.opts(FillOpts.Groups, FillOpts.Acls)]
 
     // the capability needing to be returned is a unique problem of using username/password and

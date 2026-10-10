@@ -48,7 +48,7 @@ class ManageAdminServiceAccountsRoute extends StatelessWidget {
             label: Text(l10n.createAdminServiceAccount),
             onPressed: () {
               ManagementRepositoryClientBloc.router
-                  .navigateTo(context, '/create-admin-api-key');
+                  .navigateTo('/create-admin-api-key');
             },
           ),
         const SizedBox(height: 16.0),

@@ -1,6 +1,7 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.ChangeLog;
+import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.Index;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,6 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.UUID;
 
 @Index(unique = true, columnNames = {"fk_fv_id", "fk_rs_id"}, name = "idx_feature_strat")
@@ -36,11 +39,24 @@ public class DbStrategyForFeatureValue {
   @Column(name = "fv_value")
   private String value;
 
+  // this allows the user to override the percentage when applying it to this feature value
+  @Column(name = "percent_oride", nullable = true)
+  @Nullable
+  private Integer percentageOverride;
+
+  // preserves the order the client presented these strategies in, as the natural fetch order of a
+  // OneToMany relationship is not guaranteed to reflect insertion or client-supplied ordering
+  @Column(name = "sort_order", nullable = false)
+  @DbDefault("0")
+  private int sortOrder;
+
   private DbStrategyForFeatureValue(Builder builder) {
     setFeatureValue(builder.featureValue);
     setRolloutStrategy(builder.rolloutStrategy);
     setEnabled(builder.enabled);
     setValue(builder.value);
+    setPercentageOverride(builder.percentageOverride);
+    setSortOrder(builder.sortOrder);
   }
 
   public UUID getId() {
@@ -79,13 +95,43 @@ public class DbStrategyForFeatureValue {
     this.value = value;
   }
 
+  public @Nullable Integer getPercentageOverride() {
+    return percentageOverride;
+  }
+
+  public void setPercentageOverride(@Nullable Integer percentageOverride) {
+    this.percentageOverride = percentageOverride;
+  }
+
+  public int getSortOrder() {
+    return sortOrder;
+  }
+
+  public void setSortOrder(int sortOrder) {
+    this.sortOrder = sortOrder;
+  }
+
   public static final class Builder {
     private DbFeatureValue featureValue;
     private DbApplicationRolloutStrategy rolloutStrategy;
     private boolean enabled;
+    @Nullable
     private String value;
+    @Nullable
+    private Integer percentageOverride;
+    private int sortOrder;
 
     public Builder() {
+    }
+
+    public Builder percentageOverride(@Nullable Integer percentageOverride) {
+      this.percentageOverride = percentageOverride;
+      return this;
+    }
+
+    public Builder sortOrder(int val) {
+      sortOrder = val;
+      return this;
     }
 
     public Builder featureValue(DbFeatureValue val) {

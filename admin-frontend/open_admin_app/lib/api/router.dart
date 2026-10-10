@@ -2,11 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
-import 'package:logging/logging.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/config/route_names.dart';
-
-final _log = Logger('router');
 
 typedef HandlerFunc = Widget Function(
     BuildContext context, Map<String, List<String>> params);
@@ -49,7 +46,7 @@ enum TransitionType { fadeIn, material }
 enum PermissionType {
   superadmin,
   portfolioadmin,
-  portfolioadmin_featurecreator,
+  portfolioadminFeatureCreator,
   regular,
   personal,
   any, // RouteSlot.loading
@@ -63,7 +60,15 @@ enum PermissionType {
 
 // we need to track what states we can be in, what permission types routes have to have, and what the initial route you should have when you are in i
 
-enum RouteSlot { loading, setup, login, personal, portfolio, nowhere, maintenance }
+enum RouteSlot {
+  loading,
+  setup,
+  login,
+  personal,
+  portfolio,
+  nowhere,
+  maintenance
+}
 
 class RouteSlotMapping {
   final RouteSlot routePermission;
@@ -203,8 +208,9 @@ class FHRouter {
         return true;
       }
 
-      if (perm == PermissionType.portfolioadmin_featurecreator) {
-        return portfolioAdmin == true || bloc.streamValley.currentPortfolio.currentPortfolioFeatureCreator;
+      if (perm == PermissionType.portfolioadminFeatureCreator) {
+        return portfolioAdmin == true ||
+            bloc.streamValley.currentPortfolio.currentPortfolioFeatureCreator;
       }
 
       return perm == PermissionType.regular || perm == PermissionType.personal;
@@ -223,8 +229,7 @@ class FHRouter {
     }
   }
 
-  void navigateTo(BuildContext? context, String route,
-      {Map<String, List<String>>? params}) {
+  void navigateTo(String route, {Map<String, List<String>>? params}) {
     navigateRoute(route, params: params);
   }
 

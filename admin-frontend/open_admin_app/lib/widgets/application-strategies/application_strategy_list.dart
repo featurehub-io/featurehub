@@ -79,7 +79,7 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                                           onPressed: () {
                                             ManagementRepositoryClientBloc
                                                 .router
-                                                .navigateTo(context,
+                                                .navigateTo(
                                                     '/create-application-strategy',
                                                     params: {
                                                   'appid': [bloc.appId ?? ""]
@@ -125,7 +125,8 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                         showHorizontalScrollbarAlways: false,
                         columns: [
                           DataColumn(
-                              label: Text(l10n.columnStrategyName), onSort: setSort),
+                              label: Text(l10n.columnStrategyName),
+                              onSort: setSort),
                           DataColumn(
                             label: Text(l10n.columnDateCreated),
                           ),
@@ -155,14 +156,12 @@ class ApplicationStrategyListState extends State<ApplicationStrategyList> {
                           snapshot.data!.currentPortfolioOrSuperAdmin) {
                         return Row(
                           children: <Widget>[
-                            SelectableText(
-                                l10n.cannotCreateStrategyNoApps,
+                            SelectableText(l10n.cannotCreateStrategyNoApps,
                                 style: Theme.of(context).textTheme.bodySmall),
                           ],
                         );
                       } else {
-                        return SelectableText(
-                            l10n.noApplicationsAccessMessage,
+                        return SelectableText(l10n.noApplicationsAccessMessage,
                             style: Theme.of(context).textTheme.bodySmall);
                       }
                     });
@@ -237,20 +236,18 @@ class ApplicationStrategyDataTableSource
           DataCell(
             Text(strategy.updatedBy.email),
           ),
-          DataCell(Text(l10n.strategyUsage(
-              strategy.usage!.length,
+          DataCell(Text(l10n.strategyUsage(strategy.usage!.length,
               strategy.usage!.map((e) => e.featuresCount).sum))),
           DataCell(Row(children: <Widget>[
             if (bloc.mrClient.userHasAppStrategyEditRoleInCurrentApplication)
               FHIconButton(
                   icon: const Icon(Icons.edit),
                   onPressed: () => {
-                        ManagementRepositoryClientBloc.router.navigateTo(
-                            context, '/edit-application-strategy',
-                            params: {
-                              'id': [strategy.strategy.id],
-                              'appid': [bloc.appId ?? ""]
-                            })
+                        ManagementRepositoryClientBloc.router
+                            .navigateTo('/edit-application-strategy', params: {
+                          'id': [strategy.strategy.id],
+                          'appid': [bloc.appId ?? ""]
+                        })
                       }),
             // const SizedBox(
             //   width: 8.0,
@@ -284,7 +281,7 @@ class ApplicationStrategyDataTableSource
         onSelectChanged: (newValue) {
           if (bloc.mrClient.userHasAppStrategyEditRoleInCurrentApplication) {
             ManagementRepositoryClientBloc.router
-                .navigateTo(context, '/edit-application-strategy', params: {
+                .navigateTo('/edit-application-strategy', params: {
               'id': [strategy.strategy.id],
               'appid': [bloc.appId ?? ""]
             });
