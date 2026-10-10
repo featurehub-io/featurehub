@@ -58,7 +58,7 @@ Given(/^There is a feature (flag|string|number|json) with the key (.*)$/, async 
     fType = FeatureValueType.Json;
   }
   expect(fType, `${type} is an unrecognized flag type`).to.not.be.undefined;
-  const fCreate = await this.featureApi.createFeaturesForApplication(this.application.id, new CreateFeature({
+  const fCreate = await world.currentUser.featureApi.createFeaturesForApplication(this.application.id, new CreateFeature({
     name: key,
     key: key,
     valueType: fType
@@ -253,6 +253,7 @@ When(/^I check the feature history I see$/, async function (table: DataTable) {
 
   for (const row of table.hashes()) {
     console.log('history row', row);
+    expect(pos, 'Too many rows expected for what was actually provided').to.be.lessThan(itemData.history.length);
     let found = true;
     const item = itemData.history[pos];
 

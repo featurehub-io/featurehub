@@ -150,7 +150,7 @@ When("I update the strategy in the feature group", async function (table: DataTa
     strategies: [extractStrategy(table)]
   });
 
-  const data = await world.featureGroupApi.updateFeatureGroup(world.application.id, update);
+  const data = await world.currentUser.featureGroupApi.updateFeatureGroup(world.application.id, update);
   expect(data.status).to.eq(200);
   world.featureGroup.version = data.data.version;
 });
@@ -160,7 +160,7 @@ async function getGroupFromServer(world: SdkWorld) {
   expect(world.application).to.not.be.undefined;
   expect(world.environment).to.not.be.undefined;
 
-  const getData = await world.featureGroupApi.getFeatureGroup(world.application.id, world.featureGroup.id);
+  const getData = await world.currentUser.featureGroupApi.getFeatureGroup(world.application.id, world.featureGroup.id);
   expect(getData.status).to.eq(200);
   world.featureGroup = getData.data;
 }
@@ -188,7 +188,7 @@ When('I update the values of the feature group to', async function (table: DataT
     features: (await translateFeatureValueTable(world, table))
   });
 
-  const data = await world.featureGroupApi.updateFeatureGroup(world.application.id, update);
+  const data = await world.currentUser.featureGroupApi.updateFeatureGroup(world.application.id, update);
   expect(data.status).to.eq(200);
   world.featureGroup.version = data.data.version;
 });

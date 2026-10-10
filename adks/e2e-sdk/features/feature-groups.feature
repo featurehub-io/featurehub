@@ -45,11 +45,19 @@ Feature: Feature groups should operate as per definition
     And I create a feature group "ch3"
       | key     | value |
       | aw-flag | false |
+    And I update the strategy in the feature group
+      | name   | percentage | percentageAttributes | fieldName | conditional | values  | type   |
+      | mobile | _          | _                    | device    | equals      | android | string |
+    And I am the user "orm-fg"
+    And I update the values of the feature group to
+      | key     | value |
+      | aw-flag | true |
     When I check the feature history I see
       | user    |
       | orm-fg  |
       | orm-fg  |
       | ling-fg |
+      | orm-fg  |
 
     @fgroups
   Scenario: New feature groups should expose new strategies
