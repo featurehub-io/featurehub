@@ -1,5 +1,6 @@
 package io.featurehub.messaging.service
 
+import io.featurehub.db.api.FeatureMessagingOperation
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
@@ -83,7 +84,8 @@ class FeatureMessagingConverterImplSpec extends Specification {
       def portfolioStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
 
       def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate,
-        retiredUpdate, strategyUpdates, appStrategyUpdates, portfolioStrategyUpdates, version)
+        retiredUpdate, strategyUpdates, appStrategyUpdates, portfolioStrategyUpdates, version,
+        new MultiFeatureValueUpdate(false, [], [], []), FeatureMessagingOperation.UPDATE)
 
     when:
       def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
@@ -123,7 +125,8 @@ class FeatureMessagingConverterImplSpec extends Specification {
       def appStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
       def portfolioStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
       def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate,
-        defaultValueUpdate, retiredUpdate, strategyUpdates, appStrategyUpdates, portfolioStrategyUpdates, version)
+        defaultValueUpdate, retiredUpdate, strategyUpdates, appStrategyUpdates, portfolioStrategyUpdates, version,
+        new MultiFeatureValueUpdate(false, [], [], []), FeatureMessagingOperation.UPDATE)
 
     when:
       def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
@@ -171,7 +174,8 @@ class FeatureMessagingConverterImplSpec extends Specification {
       def portfolioStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
 
       def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate,
-        defaultValueUpdate, retiredUpdate, strategyUpdates, appStrategyUpdates, portfolioStrategyUpdates, version)
+        defaultValueUpdate, retiredUpdate, strategyUpdates, appStrategyUpdates, portfolioStrategyUpdates, version,
+        new MultiFeatureValueUpdate(false, [], [], []), FeatureMessagingOperation.UPDATE)
 
     when:
       def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
@@ -223,7 +227,8 @@ class FeatureMessagingConverterImplSpec extends Specification {
       def portfolioStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
 
       def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate,
-        strategyUpdates, appStrategyUpdates, portfolioStrategyUpdates, version)
+        strategyUpdates, appStrategyUpdates, portfolioStrategyUpdates, version,
+        new MultiFeatureValueUpdate(false, [], [], []), FeatureMessagingOperation.UPDATE)
 
     when:
       def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
@@ -275,7 +280,8 @@ class FeatureMessagingConverterImplSpec extends Specification {
       def appStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
       def portfolioStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
       def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate,
-        strategyUpdates, appStrategyUpdates, portfolioStrategyUpdates, version)
+        strategyUpdates, appStrategyUpdates, portfolioStrategyUpdates, version,
+        new MultiFeatureValueUpdate(false, [], [], []), FeatureMessagingOperation.UPDATE)
 
     when:
       def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(
@@ -325,7 +331,8 @@ class FeatureMessagingConverterImplSpec extends Specification {
       def appStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
       def portfolioStrategyUpdates = new MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>(false, [], [], [])
       def featureMessagingParameter = new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate,
-        strategyUpdates, appStrategyUpdates, portfolioStrategyUpdates, version)
+        strategyUpdates, appStrategyUpdates, portfolioStrategyUpdates, version,
+        new MultiFeatureValueUpdate(false, [], [], []), FeatureMessagingOperation.UPDATE)
     when:
       def featureMessagingUpdate = featureMessagingConverter.toFeatureMessagingUpdate(featureMessagingParameter)
     then:

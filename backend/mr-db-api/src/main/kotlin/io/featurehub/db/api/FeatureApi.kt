@@ -8,6 +8,13 @@ data class SingleFeatureValueUpdate<T>(var hasChanged: Boolean=false, var update
 data class MultiFeatureValueUpdate<T, V>(var hasChanged: Boolean=false, var updated: MutableList<T> = mutableListOf(), var reordered: MutableList<V> = mutableListOf(), var previous: List<V> = listOf())
 data class RolloutStrategyUpdate(val type: String, val old: RolloutStrategy? = null, val new: RolloutStrategy? = null)
 
+/**
+ * The lifecycle operation a FeatureMessagingUpdate webhook describes. Kept here (rather than referencing the
+ * generated messaging-api model directly) so modules that build a FeatureMessagingParameter don't have to
+ * depend on the messaging/cloud-eventing artifact.
+ */
+enum class FeatureMessagingOperation { CREATE, UPDATE, DELETE }
+
 
 interface FeatureApi {
   @Throws(

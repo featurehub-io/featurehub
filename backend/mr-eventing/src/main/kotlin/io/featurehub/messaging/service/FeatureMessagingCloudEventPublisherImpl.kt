@@ -8,6 +8,7 @@ import io.featurehub.db.api.TrackingEventApi
 import io.featurehub.db.messaging.FeatureMessagingParameter
 import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.events.DynamicCloudEventDestination
+import io.featurehub.messaging.model.FeatureMessagingOperation
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.messaging.model.MessagingFeatureValueUpdate
 import io.featurehub.messaging.model.MessagingLockUpdate
@@ -119,6 +120,7 @@ open class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
         .organizationId(portfolio.organization.id)
         .orgName(portfolio.organization.name)
         .version(FeatureVersion().curr(featureMessagingParameter.versionUpdate.updated!!).prev(featureMessagingParameter.versionUpdate.previous))
+        .operation(FeatureMessagingOperation.valueOf(featureMessagingParameter.operation.name))
         .featureValueType(featureValue.feature.valueType)
         .desc(featureValue.feature.description)
         .link(featureValue.feature.link)
@@ -216,6 +218,14 @@ open class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
                 messagingStrategiesReorder.previous(
                   strategyUpdates.previous.map { rolloutStrategy -> toMessagingRolloutStrategy(rolloutStrategy) }
                 ))
+          }
+          it
+        }
+        .let {
+          val strategyUpdates = featureMessagingParameter.featureGroupStrategyUpdates
+          if (strategyUpdates.hasChanged && strategyUpdates.updated.isNotEmpty()) {
+            it.featureGroupStrategiesUpdated(
+              strategyUpdates.updated.map { rolloutStrategyUpdate -> toMessagingStrategyUpdate(rolloutStrategyUpdate) })
           }
           it
         }

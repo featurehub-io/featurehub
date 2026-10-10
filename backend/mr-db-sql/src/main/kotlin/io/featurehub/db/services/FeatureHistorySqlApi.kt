@@ -43,6 +43,7 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
         QDbFeatureValueVersion.Alias.rolloutStrategies,
         QDbFeatureValueVersion.Alias.sharedRolloutStrategies,
         QDbFeatureValueVersion.Alias.sharedPortfolioRolloutStrategies,
+        QDbFeatureValueVersion.Alias.featureGroupStrategies,
         QDbFeatureValueVersion.Alias.whenCreated,
       )
       .whoUpdated.fetch(QDbPerson.Alias.id, QDbPerson.Alias.name, QDbPerson.Alias.personType, QDbPerson.Alias.email)
@@ -89,6 +90,13 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
       if (item == null) {
         item = key.copy()
         items[key] = item
+      }
+
+      // order matters, FG strategies occur before app strategies
+      if (it.featureGroupStrategies.isNotEmpty()) {
+        // these are already fully resolved (not an id reference to a shared/versioned strategy), as a feature
+        // group's strategy applies uniformly to every feature in the group
+        it.rolloutStrategies.addAll(it.featureGroupStrategies)
       }
 
 

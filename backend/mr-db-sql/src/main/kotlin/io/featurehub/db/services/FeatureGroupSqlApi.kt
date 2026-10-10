@@ -3,6 +3,13 @@ package io.featurehub.db.services
 import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
 import io.featurehub.db.api.FeatureGroupApi
+import io.featurehub.db.api.FeatureMessagingOperation
+import io.featurehub.db.api.MultiFeatureValueUpdate
+import io.featurehub.db.api.RolloutStrategyUpdate
+import io.featurehub.db.api.SingleFeatureValueUpdate
+import io.featurehub.db.api.SingleNullableFeatureValueUpdate
+import io.featurehub.db.messaging.FeatureMessagingParameter
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbFeatureGroup
@@ -17,6 +24,7 @@ import io.featurehub.db.model.query.QDbFeatureGroup
 import io.featurehub.db.model.query.QDbFeatureGroupFeature
 import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.model.query.QFeatureGroupOrderHighest
+import io.featurehub.db.publish.CacheSourceFeatureGroupApi
 import io.featurehub.db.publish.FeatureGroupHelper
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.ApplicationPermissions
@@ -30,6 +38,7 @@ import io.featurehub.mr.model.FeatureGroupUpdate
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.GroupRolloutStrategy
 import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.SortOrder
 import jakarta.inject.Inject
 import org.slf4j.Logger
@@ -45,7 +54,9 @@ class FeatureGroupSqlApi @Inject constructor(
   private val conversions: Conversions,
   private val cacheSource: CacheSource,
   private val internalFeatureApi: InternalFeatureApi,
-  archiveStrategy: ArchiveStrategy
+  archiveStrategy: ArchiveStrategy,
+  private val featureGroupApi: CacheSourceFeatureGroupApi,
+  private val featureMessagePublisher: FeatureMessagingPublisher
 ) : FeatureGroupApi {
   private val log: Logger = LoggerFactory.getLogger(FeatureGroupSqlApi::class.java)
 
@@ -89,20 +100,88 @@ class FeatureGroupSqlApi @Inject constructor(
     fg.refresh()
 
     if (mappedFeatures.isNotEmpty() && featureGroup.strategies?.isNotEmpty() == true) {
-      republishFeatureValues(fg.environment, featureGroup.features.map { it.id })
+      // the group didn't exist before, so there is nothing to diff against - every feature is gaining a strategy
+      republishFeatureValues(fg.environment, featureGroup.features.map { it.id }, person, emptyMap())
     }
 
     return toFeatureGroup(fg)
   }
 
   @Transactional(type = TxType.REQUIRES_NEW)
-  private fun republishFeatureValues(env: DbEnvironment, featureIds: List<UUID>) {
-    internalFeatureApi.forceVersionBump(featureIds, env.id)
+  private fun republishFeatureValues(
+    env: DbEnvironment,
+    featureIds: List<UUID>,
+    person: DbPerson,
+    beforeStrategies: Map<UUID, List<RolloutStrategy>>
+  ) {
+    internalFeatureApi.forceVersionBump(featureIds, env.id, person)
 
     QDbFeatureValue().feature.id.`in`(featureIds).environment.id.eq(env.id).findList().forEach { fv ->
       // we can't push the strategy as this feature may be in several strategies
       cacheSource.publishFeatureChange(fv)
+      publishFeatureGroupStrategyMessage(fv, beforeStrategies[fv.feature.id] ?: listOf())
     }
+  }
+
+  /**
+   * Feature group membership/strategy changes don't go through the normal feature-value update path, so they
+   * need their own (much simpler) webhook message: diff what feature-group strategy applied to this feature
+   * before vs after the group change, and publish it if it differs.
+   */
+  private fun publishFeatureGroupStrategyMessage(fv: DbFeatureValue, before: List<RolloutStrategy>) {
+    val after = featureGroupApi.collectStrategiesFromGroupsForEnvironmentFeature(fv.environment.id, fv.feature.id)
+    val diff = diffFeatureGroupStrategies(before, after)
+
+    if (!diff.hasChanged) {
+      return
+    }
+
+    val noChange = SingleFeatureValueUpdate(hasChanged = false, updated = false, previous = false)
+
+    try {
+      featureMessagePublisher.publish(
+        FeatureMessagingParameter(
+          fv, noChange,
+          SingleNullableFeatureValueUpdate(false, null, null), noChange,
+          MultiFeatureValueUpdate(),
+          MultiFeatureValueUpdate(), MultiFeatureValueUpdate(),
+          SingleNullableFeatureValueUpdate(true, fv.version - 1, fv.version),
+          diff,
+          FeatureMessagingOperation.UPDATE
+        ), conversions.organizationId()
+      )
+    } catch (e: Exception) {
+      log.error(
+        "failed to process feature-group messaging publish for feature {} (id {} in app {})",
+        fv.feature.key, fv.feature.id, fv.feature.parentApplication.id, e
+      )
+    }
+  }
+
+  private fun diffFeatureGroupStrategies(
+    before: List<RolloutStrategy>,
+    after: List<RolloutStrategy>
+  ): MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy> {
+    val updates = mutableListOf<RolloutStrategyUpdate>()
+    val beforeById = before.associateBy { it.id }
+    val afterById = after.associateBy { it.id }
+
+    afterById.forEach { (id, newStrategy) ->
+      val oldStrategy = beforeById[id]
+      if (oldStrategy == null) {
+        updates.add(RolloutStrategyUpdate(type = "added", new = newStrategy))
+      } else if (!Objects.deepEquals(oldStrategy, newStrategy)) {
+        updates.add(RolloutStrategyUpdate(type = "changed", old = oldStrategy, new = newStrategy))
+      }
+    }
+
+    beforeById.forEach { (id, oldStrategy) ->
+      if (!afterById.containsKey(id)) {
+        updates.add(RolloutStrategyUpdate(type = "deleted", old = oldStrategy))
+      }
+    }
+
+    return MultiFeatureValueUpdate(updates.isNotEmpty(), updates, mutableListOf(), listOf())
   }
 
   @Transactional
@@ -148,7 +227,9 @@ class FeatureGroupSqlApi @Inject constructor(
   private fun ensureFeatureValueExists(feat: DbApplicationFeature, env: DbEnvironment, person: DbPerson) {
     val valueExists = QDbFeatureValue().feature.id.eq(feat.id).environment.id.eq(env.id).exists()
     if (!valueExists) {
-      internalFeatureApi.saveFeatureValue(DbFeatureValue(person, false, feat, env, null))
+      val fv = DbFeatureValue(person, false, feat, env, null)
+      internalFeatureApi.saveFeatureValue(fv)
+      publishFeatureValueCreatedMessage(fv)
     }
   }
 
@@ -158,8 +239,36 @@ class FeatureGroupSqlApi @Inject constructor(
 
     features.forEach { feat ->
       if (!values.contains(feat.id)) {
-        internalFeatureApi.saveFeatureValue(DbFeatureValue(person, false, feat, env, null))
+        val fv = DbFeatureValue(person, false, feat, env, null)
+        internalFeatureApi.saveFeatureValue(fv)
+        publishFeatureValueCreatedMessage(fv)
       }
+    }
+  }
+
+  /**
+   * ensureFeatureValueExists/ensureFeatureValuesExist create a brand new, blank feature value for a feature
+   * that just joined a feature group and never had a value in this environment before. That's never gone
+   * through the normal feature-value create/update path, so it never fired a "created" webhook - fix that here.
+   */
+  private fun publishFeatureValueCreatedMessage(fv: DbFeatureValue) {
+    val noChange = SingleFeatureValueUpdate(hasChanged = false, updated = false, previous = false)
+
+    try {
+      featureMessagePublisher.publish(
+        FeatureMessagingParameter(
+          fv, noChange,
+          SingleNullableFeatureValueUpdate(false, null, null), noChange,
+          MultiFeatureValueUpdate(), MultiFeatureValueUpdate(), MultiFeatureValueUpdate(),
+          SingleNullableFeatureValueUpdate(true, null, fv.version),
+          operation = FeatureMessagingOperation.CREATE
+        ), conversions.organizationId()
+      )
+    } catch (e: Exception) {
+      log.error(
+        "failed to publish feature-value-created messaging update for feature {} (id {} in app {})",
+        fv.feature.key, fv.feature.id, fv.feature.parentApplication.id, e
+      )
     }
   }
 
@@ -212,12 +321,27 @@ class FeatureGroupSqlApi @Inject constructor(
   }
 
   override fun deleteGroup(appId: UUID, current: Person, fgId: UUID): Boolean {
+    val person = conversions.byPerson(current.id?.id) ?: return false
+
+    // snapshot what's about to disappear BEFORE we archive the group, since once archived its strategies
+    // no longer resolve for any feature
+    val preDeleteGroup = QDbFeatureGroup()
+      .select(QDbFeatureGroup.Alias.id, QDbFeatureGroup.Alias.strategies, QDbFeatureGroup.Alias.environment.id)
+      .id.eq(fgId).environment.parentApplication.id.eq(appId).whenArchived.isNull.findOne()
+    val featureIds =
+      QDbFeatureGroupFeature().select(QDbFeatureGroupFeature.Alias.key.feature).key.group.eq(fgId).findList()
+        .map { it.key.feature }
+    val beforeStrategies = if (preDeleteGroup?.strategies?.isNotEmpty() == true && featureIds.isNotEmpty())
+      featureIds.associateWith {
+        featureGroupApi.collectStrategiesFromGroupsForEnvironmentFeature(preDeleteGroup.environment.id, it)
+      }
+    else emptyMap()
+
     val group = deleteSelectedGroup(appId, current, fgId) ?: return false
 
-    if (group.strategies?.isNotEmpty() == true) {
+    if (beforeStrategies.isNotEmpty()) {
       // now republish these attached features
-      republishFeatureValues(group.environment,
-        QDbFeatureGroupFeature().select(QDbFeatureGroupFeature.Alias.key.feature).key.group.eq(fgId).findList().map { it.key.feature })
+      republishFeatureValues(group.environment, featureIds, person, beforeStrategies)
     }
 
     return true
@@ -335,6 +459,13 @@ class FeatureGroupSqlApi @Inject constructor(
 
     val person = conversions.byPerson(current.id?.id) ?: return null
 
+    // snapshot what currently applies to each existing feature BEFORE we make any changes, so we can diff
+    // old-vs-new feature-group strategies for the audit trail/webhook once the update is done
+    val existingFeatureIds = group.features.map { it.key.feature }
+    val beforeStrategies = existingFeatureIds.associateWith {
+      featureGroupApi.collectStrategiesFromGroupsForEnvironmentFeature(group.environment.id, it)
+    }
+
     var orderChanged = false
 
     update.order?.let { newOrder ->
@@ -432,19 +563,19 @@ class FeatureGroupSqlApi @Inject constructor(
       log.trace("Group refreshed is now {}", group)
       if (strategyChanged) {
         log.trace("Strategy changed so publishing all features {}", group.features)
-        republishFeatureValues(group.environment, group.features.map { it.key.feature })
+        republishFeatureValues(group.environment, group.features.map { it.key.feature }, person, beforeStrategies)
       } else {
         if (updates.updatedFeatures.isNotEmpty()) {
           log.trace("Publishing updated features {}", updates.updatedFeatures)
-          republishFeatureValues(group.environment, updates.updatedFeatures.map { it.key.feature })
+          republishFeatureValues(group.environment, updates.updatedFeatures.map { it.key.feature }, person, beforeStrategies)
         }
         if (updates.deletedFeatures.isNotEmpty()) {
           log.trace("Publishing deleted features {}", updates.deletedFeatures)
-          republishFeatureValues(group.environment, updates.deletedFeatures.map { it.key.feature })
+          republishFeatureValues(group.environment, updates.deletedFeatures.map { it.key.feature }, person, beforeStrategies)
         }
         if (updates.addedFeatures.isNotEmpty()) {
           log.trace("Publishing added features {}", updates.addedFeatures)
-          republishFeatureValues(group.environment, updates.addedFeatures.map { it.key.feature })
+          republishFeatureValues(group.environment, updates.addedFeatures.map { it.key.feature }, person, beforeStrategies)
         }
       }
     }

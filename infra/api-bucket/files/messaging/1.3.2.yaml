@@ -39,6 +39,9 @@ components:
         operation:
           description: "The basic operation performed, create a feature, update a\
             \ feature in an environment, delete a feature"
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/FeatureMessagingOperation'
         featureValueType:
           description: Type of the feature value
           allOf:
@@ -82,6 +85,12 @@ components:
         portfolioStrategiesUpdated:
           type: array
           description: Portfolio strategies changes
+          nullable: true
+          items:
+            $ref: '#/components/schemas/MessagingStrategyUpdate'
+        featureGroupStrategiesUpdated:
+          type: array
+          description: Feature group strategies changes
           nullable: true
           items:
             $ref: '#/components/schemas/MessagingStrategyUpdate'
@@ -233,6 +242,13 @@ components:
       - ADDED
       - CHANGED
       - DELETED
+    FeatureMessagingOperation:
+      type: string
+      description: The basic lifecycle operation this update describes
+      enum:
+      - CREATE
+      - UPDATE
+      - DELETE
     MessagingRolloutStrategy:
       description: Updated rollout strategy
       allOf:

@@ -1,5 +1,6 @@
 package io.featurehub.db.services
 
+import io.featurehub.db.api.FeatureMessagingOperation
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
@@ -17,6 +18,8 @@ import io.featurehub.db.model.query.QDbFeatureValue
 import io.featurehub.db.model.query.QDbPortfolioRolloutStrategy
 import io.featurehub.db.model.query.QDbPortfolioStrategyForFeatureValue
 import io.featurehub.db.model.query.QDbStrategyForFeatureValue
+import io.featurehub.db.publish.CacheSourceFeatureGroupApi
+import io.featurehub.db.publish.CacheSourceFeatureGroupSqlApi
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.model.RolloutStrategy
 import jakarta.inject.Inject
@@ -26,7 +29,13 @@ import java.util.UUID
 
 interface InternalFeatureApi {
   fun saveFeatureValue(featureValue: DbFeatureValue, forceUpdate: Boolean = false)
-  fun forceVersionBump(featureIds: List<UUID>, envId: UUID)
+
+  /**
+   * Forces every feature value for these features/environment to bump version (and be audited), attributing
+   * the change to `person` - used when something outside the feature value itself (e.g. a feature group)
+   * changed in a way that affects the evaluated value.
+   */
+  fun forceVersionBump(featureIds: List<UUID>, envId: UUID, person: DbPerson)
 
   // we want to collect them before we do anything to the feature value like updating any existing strategies, portfolio strategies, application strategies, feature group strategies
   // this should get passed to the update/detach process so it can correctly export the full message
@@ -96,10 +105,11 @@ interface InternalFeatureApi {
   }
 }
 
-class InternalFeatureSqlApi @Inject constructor(
+class InternalFeatureSqlApi @JvmOverloads @Inject constructor(
   private val convertUtils: Conversions,
   private val cacheSource: CacheSource,
   private val featureMessagePublisher: FeatureMessagingPublisher,
+  private val featureGroupApi: CacheSourceFeatureGroupApi = CacheSourceFeatureGroupSqlApi(),
 ) : InternalFeatureApi {
   private val log: Logger = LoggerFactory.getLogger(InternalFeatureSqlApi::class.java)
 
@@ -113,17 +123,23 @@ class InternalFeatureSqlApi @Inject constructor(
     featureValue.save()
 
     if (originalVersion != featureValue.version) { // have we got auditing enabled and did the feature change
-      // now saved a versioned copy
-      DbFeatureValueVersion.fromDbFeatureValue(featureValue, featureValue.version).save()
+      // now saved a versioned copy, including whatever feature-group strategies currently apply to this
+      // feature in this environment so history/audit reflects the full picture, not just the feature value's
+      // own fields
+      val featureGroupStrategies =
+        featureGroupApi.collectStrategiesFromGroupsForEnvironmentFeature(featureValue.environment.id, featureValue.feature.id)
+      DbFeatureValueVersion.fromDbFeatureValue(featureValue, featureValue.version, featureGroupStrategies).save()
     }
   }
 
-  override fun forceVersionBump(featureIds: List<UUID>, envId: UUID) {
-    // force a version change on all these features
+  override fun forceVersionBump(featureIds: List<UUID>, envId: UUID, person: DbPerson) {
+    // force a version change on all these features, attributing it to the person who caused it (e.g. editing
+    // the feature group that these features belong to)
     QDbFeatureValue()
       .feature.id.`in`(featureIds)
       .environment.id.eq(envId)
       .findList().forEach {
+        it.whoUpdated = person
         saveFeatureValue(it, true)
       }
   }
@@ -264,7 +280,8 @@ class InternalFeatureSqlApi @Inject constructor(
           SingleNullableFeatureValueUpdate(false, null, null), singleNotUpdated,
           MultiFeatureValueUpdate(),
           appStrategyUpdates ?: MultiFeatureValueUpdate(), portfolioStrategyUpdates ?: MultiFeatureValueUpdate(),
-          SingleNullableFeatureValueUpdate(true, fv.version - 1, fv.version)
+          SingleNullableFeatureValueUpdate(true, fv.version - 1, fv.version),
+          operation = FeatureMessagingOperation.UPDATE
         ), convertUtils.organizationId()
       )
     } catch (e: Exception) {
