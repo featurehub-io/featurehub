@@ -116,10 +116,19 @@ class FeatureGroupSqlApi @Inject constructor(
   ) {
     internalFeatureApi.forceVersionBump(featureIds, env.id, person)
 
+    // one batched lookup for every affected feature, rather than a query per feature value
+    val afterStrategies = if (featureIds.isNotEmpty())
+      featureGroupApi.collectStrategiesFromGroupsForEnvironmentFeatures(env.id, featureIds)
+    else emptyMap()
+
     QDbFeatureValue().feature.id.`in`(featureIds).environment.id.eq(env.id).findList().forEach { fv ->
       // we can't push the strategy as this feature may be in several strategies
       cacheSource.publishFeatureChange(fv)
-      publishFeatureGroupStrategyMessage(fv, beforeStrategies[fv.feature.id] ?: listOf())
+      publishFeatureGroupStrategyMessage(
+        fv,
+        beforeStrategies[fv.feature.id] ?: listOf(),
+        afterStrategies[fv.feature.id] ?: listOf()
+      )
     }
   }
 
@@ -128,8 +137,7 @@ class FeatureGroupSqlApi @Inject constructor(
    * need their own (much simpler) webhook message: diff what feature-group strategy applied to this feature
    * before vs after the group change, and publish it if it differs.
    */
-  private fun publishFeatureGroupStrategyMessage(fv: DbFeatureValue, before: List<RolloutStrategy>) {
-    val after = featureGroupApi.collectStrategiesFromGroupsForEnvironmentFeature(fv.environment.id, fv.feature.id)
+  private fun publishFeatureGroupStrategyMessage(fv: DbFeatureValue, before: List<RolloutStrategy>, after: List<RolloutStrategy>) {
     val diff = diffFeatureGroupStrategies(before, after)
 
     if (!diff.hasChanged) {
@@ -145,7 +153,7 @@ class FeatureGroupSqlApi @Inject constructor(
           SingleNullableFeatureValueUpdate(false, null, null), noChange,
           MultiFeatureValueUpdate(),
           MultiFeatureValueUpdate(), MultiFeatureValueUpdate(),
-          SingleNullableFeatureValueUpdate(true, fv.version - 1, fv.version),
+          SingleNullableFeatureValueUpdate(true, fv.version, fv.version - 1),
           diff,
           FeatureMessagingOperation.UPDATE
         ), conversions.organizationId()
@@ -332,9 +340,7 @@ class FeatureGroupSqlApi @Inject constructor(
       QDbFeatureGroupFeature().select(QDbFeatureGroupFeature.Alias.key.feature).key.group.eq(fgId).findList()
         .map { it.key.feature }
     val beforeStrategies = if (preDeleteGroup?.strategies?.isNotEmpty() == true && featureIds.isNotEmpty())
-      featureIds.associateWith {
-        featureGroupApi.collectStrategiesFromGroupsForEnvironmentFeature(preDeleteGroup.environment.id, it)
-      }
+      featureGroupApi.collectStrategiesFromGroupsForEnvironmentFeatures(preDeleteGroup.environment.id, featureIds)
     else emptyMap()
 
     val group = deleteSelectedGroup(appId, current, fgId) ?: return false
@@ -462,9 +468,9 @@ class FeatureGroupSqlApi @Inject constructor(
     // snapshot what currently applies to each existing feature BEFORE we make any changes, so we can diff
     // old-vs-new feature-group strategies for the audit trail/webhook once the update is done
     val existingFeatureIds = group.features.map { it.key.feature }
-    val beforeStrategies = existingFeatureIds.associateWith {
-      featureGroupApi.collectStrategiesFromGroupsForEnvironmentFeature(group.environment.id, it)
-    }
+    val beforeStrategies = if (existingFeatureIds.isNotEmpty())
+      featureGroupApi.collectStrategiesFromGroupsForEnvironmentFeatures(group.environment.id, existingFeatureIds)
+    else emptyMap()
 
     var orderChanged = false
 

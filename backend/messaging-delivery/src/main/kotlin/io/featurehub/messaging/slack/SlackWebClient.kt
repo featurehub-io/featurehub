@@ -105,7 +105,7 @@ Summary of changes:
 {{~#if portfoliodeletedStrategies}}
 >• Deleted portfolio strategies: {{#portfoliodeletedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
 {{/portfoliodeletedStrategies}}{{/if}}{{#if wasCreated}}
->' Feature set to '{{lockedStatus}}'{{else}}{{~#lockUpdated}}
+>• Feature set to '{{lockedStatus}}'{{else}}{{~#lockUpdated}}
 {{~#wasLocked}}
 >• Feature set to `locked`{{/wasLocked}}
 {{~^wasLocked}}

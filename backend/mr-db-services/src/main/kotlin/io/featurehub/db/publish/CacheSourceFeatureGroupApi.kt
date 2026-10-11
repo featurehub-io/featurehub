@@ -18,5 +18,6 @@ interface CacheSourceFeatureGroupApi {
   // returns a Map<Feature-ID,List-of-Rollout-Strategies> (note NOT feature-value id)
   fun collectStrategiesFromGroupsForEnvironment(envId: UUID): Map<UUID, List<RolloutStrategy>>
   fun collectStrategiesFromGroupsForEnvironmentFeature(envId: UUID, featureId: UUID): List<RolloutStrategy>
+  fun collectStrategiesFromGroupsForEnvironmentFeatures(envId: UUID, featureIds: List<UUID>): Map<UUID, List<RolloutStrategy>>
   fun collectStrategiesFromEnvironmentsWithFeatures(envId: List<UUID>, featureIds: List<UUID>): List<CacheSourceCollectedStrategy>
 }
