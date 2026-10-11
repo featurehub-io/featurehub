@@ -7,6 +7,7 @@ import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.TrackingEventApi
 import io.featurehub.db.messaging.FeatureMessagingParameter
 import io.featurehub.db.messaging.FeatureMessagingPublisher
+import io.featurehub.db.publish.FeatureGroupHelper
 import io.featurehub.events.DynamicCloudEventDestination
 import io.featurehub.messaging.model.FeatureMessagingOperation
 import io.featurehub.messaging.model.FeatureMessagingUpdate
@@ -130,8 +131,8 @@ open class FeatureMessagingCloudEventPublisherImpl @Inject constructor(
           val defaultValuePrevious = defaultValueUpdate.previous
           if (defaultValueUpdate.hasChanged) it.featureValueUpdated(
             MessagingFeatureValueUpdate()
-              .updated(defaultValueUpdated)
-              .previous(defaultValuePrevious)
+              .updated(FeatureGroupHelper.cast(defaultValueUpdated, featureValue.feature.valueType))
+              .previous(FeatureGroupHelper.cast(defaultValuePrevious, featureValue.feature.valueType))
           )
           else it
         }

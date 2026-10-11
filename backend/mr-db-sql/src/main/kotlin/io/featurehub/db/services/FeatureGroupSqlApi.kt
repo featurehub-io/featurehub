@@ -260,7 +260,7 @@ class FeatureGroupSqlApi @Inject constructor(
           fv, noChange,
           SingleNullableFeatureValueUpdate(false, null, null), noChange,
           MultiFeatureValueUpdate(), MultiFeatureValueUpdate(), MultiFeatureValueUpdate(),
-          SingleNullableFeatureValueUpdate(true, null, fv.version),
+          SingleNullableFeatureValueUpdate(true, fv.version, null),
           operation = FeatureMessagingOperation.CREATE
         ), conversions.organizationId()
       )

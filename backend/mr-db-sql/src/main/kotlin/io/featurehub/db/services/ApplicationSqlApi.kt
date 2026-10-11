@@ -5,9 +5,15 @@ import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
 import io.featurehub.dacha.model.PublishAction
 import io.featurehub.db.api.ApplicationApi
+import io.featurehub.db.api.FeatureMessagingOperation
 import io.featurehub.db.api.FillOpts
+import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
+import io.featurehub.db.api.SingleFeatureValueUpdate
+import io.featurehub.db.api.SingleNullableFeatureValueUpdate
+import io.featurehub.db.messaging.FeatureMessagingParameter
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.*
 //import io.featurehub.db.model.RoleType
 import io.featurehub.db.model.query.*
@@ -44,12 +50,17 @@ class InternalApplicationSqlApi @Inject constructor(private val conversions: Con
   }
 }
 
+private object NoopFeatureMessagingPublisher : FeatureMessagingPublisher {
+  override fun publish(featureMessagingParameter: FeatureMessagingParameter, orgId: UUID) {}
+}
+
 @Singleton
-class ApplicationSqlApi @Inject constructor(
+class ApplicationSqlApi @JvmOverloads @Inject constructor(
   private val convertUtils: Conversions,
   private val cacheSource: CacheSource,
   private val archiveStrategy: ArchiveStrategy,
-  private val internalFeatureSqlApi: InternalFeatureApi
+  private val internalFeatureSqlApi: InternalFeatureApi,
+  private val featureMessagePublisher: FeatureMessagingPublisher = NoopFeatureMessagingPublisher
 ) : ApplicationApi {
   override fun getApplicationSummary(appId: UUID): ApplicationSummary? {
     return if (!QDbApplication().id.eq(appId).exists()) {
@@ -312,6 +323,7 @@ class ApplicationSqlApi @Inject constructor(
         )
       }
     saveAllFeatures(newFeatures)
+    newFeatures.forEach { publishFeatureValueCreatedMessage(it) }
     cacheSource.publishFeatureChange(appFeature, PublishAction.CREATE)
   }
 
@@ -320,6 +332,32 @@ class ApplicationSqlApi @Inject constructor(
   private fun saveAllFeatures(newFeatures: List<DbFeatureValue>) {
     for (newFeature in newFeatures) {
       internalFeatureSqlApi.saveFeatureValue(newFeature)
+    }
+  }
+
+  /**
+   * The feature value just created (blank/default) for a brand new feature never goes through the normal
+   * feature-value create/update path, so it never fired a "created" webhook - fix that here, otherwise the
+   * first webhook anyone ever sees for a new flag is whatever edit happens to configure it, reported as UPDATE.
+   */
+  private fun publishFeatureValueCreatedMessage(fv: DbFeatureValue) {
+    try {
+      featureMessagePublisher.publish(
+        FeatureMessagingParameter(
+          fv,
+          SingleFeatureValueUpdate(hasChanged = true, updated = true, previous = true), // not strictly true but we want to tell the other end exactly what it is
+          SingleNullableFeatureValueUpdate(true, fv.defaultValue, null),
+          SingleFeatureValueUpdate(hasChanged = false, updated = false, previous = false),
+          MultiFeatureValueUpdate(), MultiFeatureValueUpdate(), MultiFeatureValueUpdate(),
+          SingleNullableFeatureValueUpdate(true, fv.version, null),
+          operation = FeatureMessagingOperation.CREATE
+        ), convertUtils.organizationId()
+      )
+    } catch (e: Exception) {
+      log.error(
+        "failed to publish feature-value-created messaging update for feature {} (id {} in app {})",
+        fv.feature.key, fv.feature.id, fv.feature.parentApplication.id, e
+      )
     }
   }
 
