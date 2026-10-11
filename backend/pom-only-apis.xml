@@ -43,5 +43,7 @@
     <module>dacha-api</module>
     <module>edge-api</module>
     <module>edge-stats-api</module>
+    <module>messaging-api</module>
+
   </modules>
 </project>
