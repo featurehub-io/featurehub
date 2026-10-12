@@ -29,6 +29,35 @@ Feature: Feature groups should operate as per definition
       When I undelete the feature "chago"
       Then the feature group only has the keys "kwongkee,omuandco,chago"
 
+      @fgroups @fgrouphistory
+  Scenario: The feature value history has the correct users who perform the feature changes when a feature group is used
+    Given I create a new group with application roles "FEATURE_EDIT_AND_DELETE"
+    And I can assign roles "all" to the group for the current environment
+    Given I create a new user "ling-fg"
+    And I am the user "ling-fg"
+    And I assign the new user to the new group
+    Given I create a new user "orm-fg"
+    And I am the user "orm-fg"
+    And I assign the new user to the new group
+    Given There is a feature flag with the key aw-flag
+    And I set the feature flag to on and unlocked
+    And I am the user "ling-fg"
+    And I create a feature group "ch3"
+      | key     | value |
+      | aw-flag | false |
+    And I update the strategy in the feature group
+      | name   | percentage | percentageAttributes | fieldName | conditional | values  | type   |
+      | mobile | _          | _                    | device    | equals      | android | string |
+    And I am the user "orm-fg"
+    And I update the values of the feature group to
+      | key     | value |
+      | aw-flag | true |
+    When I check the feature history I see
+      | user    |
+      | orm-fg  |
+      | orm-fg  |
+      | ling-fg |
+      | orm-fg  |
 
     @fgroups
   Scenario: New feature groups should expose new strategies

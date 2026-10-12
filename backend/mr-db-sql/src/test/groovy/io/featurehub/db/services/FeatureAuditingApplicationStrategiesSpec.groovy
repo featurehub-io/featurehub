@@ -87,7 +87,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
       person,
       new FeatureValue().rolloutStrategyInstances(updated),
       new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [],
-        historicalApplicationStrategies, historicalPortfolioStrategies, feature, 0),
+        historicalApplicationStrategies, historicalPortfolioStrategies, [], feature, 0),
       currentFeature, lockChanged, app1.id
     )
   }
@@ -148,7 +148,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
         updateFeatureApi.updateSelectivelyApplicationRolloutStrategies(
           new PersonFeaturePermission(superPerson, defaultRoles),
           new FeatureValue().rolloutStrategyInstances(incoming1),
-          new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], [], feature, 0),
+          new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], [], [], feature, 0),
           currentFeature, lockChanged, app1.id
         )
     then:
@@ -161,7 +161,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
         = updateFeatureApi.updateSelectivelyApplicationRolloutStrategies(
       new PersonFeaturePermission(superPerson, defaultRoles),
       new FeatureValue().rolloutStrategyInstances([incoming1.first()]),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], [], feature, 0),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], [], [], feature, 0),
       currentFeature, lockChanged, app1.id
     )
     then: "we only have one rollout strategy instance in the current feature"
@@ -171,7 +171,7 @@ class FeatureAuditingApplicationStrategiesSpec extends Base3Spec {
     updateFeatureApi.updateSelectivelyApplicationRolloutStrategies(
       new PersonFeaturePermission(superPerson, defaultRoles),
       new FeatureValue().rolloutStrategyInstances([incoming1.first()]),
-      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], [], feature, 0),
+      new DbFeatureValueVersion(histId, LocalDateTime.now(), dbSuperPerson, "y", false, false, [], [his1,his2], [], [], feature, 0),
       currentFeature, lockChanged, app1.id)
     then:
       currentFeature.sharedRolloutStrategies.size() == 1

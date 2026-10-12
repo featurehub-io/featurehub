@@ -3,6 +3,7 @@ package io.featurehub.db.services
 import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
 import io.featurehub.db.api.FeatureApi
+import io.featurehub.db.api.FeatureMessagingOperation
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.OptimisticLockingException
@@ -144,7 +145,8 @@ class UpdateFeatureApiImpl@Inject constructor(
         existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates,
         applicationStrategyUpdates,
         portfolioStrategyUpdates,
-        SingleNullableFeatureValueUpdate(true, featureValue.version, historical.versionFrom)
+        SingleNullableFeatureValueUpdate(true, featureValue.version, historical.versionFrom),
+        FeatureMessagingOperation.UPDATE
       )
     } else {
       log.trace("update created no changes, not saving or publishing")
@@ -1120,7 +1122,8 @@ class UpdateFeatureApiImpl@Inject constructor(
     publishChangesForMessaging(
       existing, lockUpdate, defaultValueUpdate, retiredUpdate, strategyUpdates,
       applicationStrategyUpdates, portfolioStrategyUpdates,
-      SingleNullableFeatureValueUpdate(true, featureValue.version, null)
+      SingleNullableFeatureValueUpdate(true, featureValue.version, null),
+      FeatureMessagingOperation.CREATE
     )
   }
 
@@ -1132,7 +1135,8 @@ class UpdateFeatureApiImpl@Inject constructor(
     strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
     applicationStrategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
     portfolioStrategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
-    versionUpdate: SingleNullableFeatureValueUpdate<Long>
+    versionUpdate: SingleNullableFeatureValueUpdate<Long>,
+    operation: FeatureMessagingOperation
   ) {
     try {
       val featureMessagingParameter =
@@ -1144,7 +1148,8 @@ class UpdateFeatureApiImpl@Inject constructor(
           strategyUpdates,
           applicationStrategyUpdates,
           portfolioStrategyUpdates,
-          versionUpdate
+          versionUpdate,
+          operation = operation
         )
       log.trace("publishing {}", featureMessagingParameter)
       featureMessagePublisher.publish(featureMessagingParameter, convertUtils.organizationId())

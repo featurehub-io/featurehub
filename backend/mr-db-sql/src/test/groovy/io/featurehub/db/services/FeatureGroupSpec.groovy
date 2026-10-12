@@ -42,7 +42,7 @@ class FeatureGroupSpec extends Base3Spec {
     featureMessagingPublisher = Mock()
     internalFeatureApi = new InternalFeatureSqlApi(convertUtils, cacheSource, featureMessagingPublisher)
     fgApi = new FeatureGroupSqlApi(convertUtils, cacheSource,
-      internalFeatureApi, archiveStrategy)
+      internalFeatureApi, archiveStrategy, new CacheSourceFeatureGroupSqlApi(), featureMessagingPublisher)
     permsToEnv1 = new ApplicationPermissions().environments([new EnvironmentPermission().id(env1.id)])
   }
 
@@ -66,7 +66,8 @@ class FeatureGroupSpec extends Base3Spec {
     given: "i have a mock archive strategy"
       def myArchive = Mock(ArchiveStrategy)
     when: "when i create the group sql api"
-      fgApi = new FeatureGroupSqlApi(convertUtils, cacheSource, internalFeatureApi, myArchive)
+      fgApi = new FeatureGroupSqlApi(convertUtils, cacheSource, internalFeatureApi, myArchive,
+        new CacheSourceFeatureGroupSqlApi(), featureMessagingPublisher)
     then: "the it self registers with the archive strategy"
       1 * myArchive.environmentArchiveListener(_)
   }

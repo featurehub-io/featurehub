@@ -58,7 +58,7 @@ Given(/^There is a feature (flag|string|number|json) with the key (.*)$/, async 
     fType = FeatureValueType.Json;
   }
   expect(fType, `${type} is an unrecognized flag type`).to.not.be.undefined;
-  const fCreate = await this.featureApi.createFeaturesForApplication(this.application.id, new CreateFeature({
+  const fCreate = await world.currentUser.featureApi.createFeaturesForApplication(this.application.id, new CreateFeature({
     name: key,
     key: key,
     valueType: fType
@@ -249,20 +249,46 @@ When(/^I check the feature history I see$/, async function (table: DataTable) {
   });
 
   let pos = 0; // position in version history
+  const columns = table.raw()[0];
 
   for (const row of table.hashes()) {
     console.log('history row', row);
-    const locked = row['locked'] === 'true';
-    const value = row['value'] === 'on';
-    const retired = row['retired'] === 'true';
-    const strategies = decodeStrategies(row['strategies']);
-    let found = false;
+    expect(pos, 'Too many rows expected for what was actually provided').to.be.lessThan(itemData.history.length);
+    let found = true;
     const item = itemData.history[pos];
-    found = (item.locked == locked) && (item.retired == retired) && (item.value == value) && (strategyComparison(item.rolloutStrategies, strategies));
-    if (!found) {
-      console.log('comparing failed between', JSON.stringify(itemData.history[pos]));
-      console.log('and', 'to locked', locked, 'retired', retired, 'value', value, 'strategies', JSON.stringify(strategies));
+
+    const params = {};
+    if (columns.includes('locked')) {
+      const locked = row['locked'] === 'true';
+      found = (item.locked == locked);
+      params['locked'] = locked;
     }
+    if (found && columns.includes('value')) {
+      const value = row['value'] === 'on';
+      found = (item.value == value);
+      params['value'] = value;
+    }
+    if (found && columns.includes('retired')) {
+      const retired = row['retired'] === 'true';
+      found = (item.retired == retired);
+      params['retired'] = retired;
+    }
+    if (found && columns.includes('strategies')) {
+      const strategies = decodeStrategies(row['strategies']);
+      found = strategyComparison(item.rolloutStrategies, strategies);
+      params['strategies'] = strategies;
+    }
+    if (found && columns.includes('user')) {
+      const user = row['user'];
+      found = item.who.name.toLowerCase() === user.toLowerCase();
+      params['user'] = user;
+    }
+
+    if (!found) {
+      console.log('comparing failed between', JSON.stringify(item));
+      console.log('and', JSON.stringify(params));
+    }
+
     pos ++;
 
     expect(found).to.be.true;

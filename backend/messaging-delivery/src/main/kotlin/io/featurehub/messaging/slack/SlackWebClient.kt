@@ -54,10 +54,20 @@ class SlackWebClient @Inject constructor(
     private val slackMessageFormat = FallbackPropertyConfig.getConfig("slack.message-format", DEFAULT_MESSAGE_FORMAT);
     const val DEFAULT_MESSAGE_FORMAT =
       """
-Feature *{{fName}}* (`{{fKey}}`) in *{{ eName }}* was changed by *{{ whoUpdated }}* at {{ whenUpdatedReadable }}
+Feature *{{fName}}* (`{{fKey}}`) in *{{ eName }}* was {{#if wasCreated}}created{{else}}changed{{/if}} by *{{ whoUpdated }}* at {{ whenUpdatedReadable }}
 
 Summary of changes:
-{{#featureValueUpdated}}>• Default value now `{{{updated}}}` was `{{{previous}}}`{{/featureValueUpdated}}
+{{#featureValueUpdated}}>• Default value now `{{{updated}}}`{{#unless wasCreated}} was `{{{previous}}}`{{/unless}}{{/featureValueUpdated}}
+{{~#if featuregroupaddedStrategies}}
+>• Added feature group strategies: {{#featuregroupaddedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
+{{/featuregroupaddedStrategies}}{{/if}}
+{{~#if featuregroupupdatedStrategies}}{{#featuregroupupdatedStrategies}}
+{{~#if valueChanged}}
+>• *{{newStrategy.name}}* feature group strategy value set to `{{{newStrategy.value}}}`{{/if}}
+{{/featuregroupupdatedStrategies}}{{/if}}
+{{~#if featuregroupdeletedStrategies}}
+>• Deleted feature group strategies: {{#featuregroupdeletedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
+{{/featuregroupdeletedStrategies}}{{/if}}
 {{~#if updatedStrategies}}{{#updatedStrategies}}{{~#if nameChanged}}
 >• Strategy name changed from `{{oldStrategy.name}}` to `{{newStrategy.name}}`{{/if}}
 {{~#if valueChanged}}
@@ -94,12 +104,13 @@ Summary of changes:
 {{/portfolioupdatedStrategies}}{{/if}}
 {{~#if portfoliodeletedStrategies}}
 >• Deleted portfolio strategies: {{#portfoliodeletedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
-{{/portfoliodeletedStrategies}}{{/if}}
-{{~#lockUpdated}}
+{{/portfoliodeletedStrategies}}{{/if}}{{#if wasCreated}}
+>• Feature set to '{{lockedStatus}}'{{else}}{{~#lockUpdated}}
 {{~#wasLocked}}
 >• Feature set to `locked`{{/wasLocked}}
 {{~^wasLocked}}
 >• Feature set to `unlocked`{{/wasLocked}}{{~/lockUpdated}}
+{{/if}}
 {{~#retiredUpdated}}
 >• {{~#if wasRetired}} Feature set to `retired`{{/if}}{{#unless wasRetired}} Feature set to `unretired`{{/unless}}{{/retiredUpdated}}
 

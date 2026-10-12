@@ -30,6 +30,7 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
                                @NotNull List<RolloutStrategy> rolloutStrategies,
                                @NotNull List<SharedRolloutStrategyVersion> sharedRolloutStrategies,
                                @NotNull List<SharedRolloutStrategyVersion> sharedPortfolioRolloutStrategies,
+                               @NotNull List<RolloutStrategy> featureGroupStrategies,
                                DbApplicationFeature feature,
                                @Nullable Long versionFrom) {
     super(whoCreated, locked);
@@ -40,6 +41,7 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
     this.retired = retired;
     this.sharedRolloutStrategies = sharedRolloutStrategies;
     this.sharedPortfolioRolloutStrategies = sharedPortfolioRolloutStrategies;
+    this.featureGroupStrategies = featureGroupStrategies;
     this.feature = feature;
     this.versionFrom = versionFrom;
 
@@ -78,6 +80,24 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
   @Column(name = "shared_pstrat")
   protected List<SharedRolloutStrategyVersion> sharedPortfolioRolloutStrategies;
 
+  /**
+   * Strategies that applied to this feature value because of feature group membership at the time this
+   * version was recorded. These are resolved/denormalised (not a strategy-id reference like the shared
+   * strategies above) because a feature group's strategy applies uniformly to every feature in the group,
+   * rather than being an individually-attached, independently versioned strategy.
+   */
+  @DbJson
+  @Column(name = "fg_strat")
+  protected List<RolloutStrategy> featureGroupStrategies;
+
+  public @NotNull List<RolloutStrategy> getFeatureGroupStrategies() {
+    if (featureGroupStrategies == null) {
+      featureGroupStrategies = new LinkedList<>();
+    }
+
+    return featureGroupStrategies;
+  }
+
   public @NotNull List<SharedRolloutStrategyVersion> getSharedRolloutStrategies() {
     if (sharedRolloutStrategies == null) {
       sharedRolloutStrategies = new LinkedList<>();
@@ -107,7 +127,8 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
     return id;
   }
 
-  public static DbFeatureValueVersion fromDbFeatureValue(DbFeatureValue from, @Nullable Long versionFrom) {
+  public static DbFeatureValueVersion fromDbFeatureValue(
+    DbFeatureValue from, @Nullable Long versionFrom, @NotNull List<RolloutStrategy> featureGroupStrategies) {
     final DbFeatureValueVersion newVersion = new DbFeatureValueVersion(
       new DbFeatureValueVersionKey(from.getId(), from.getVersion()),
       from.getVersion() == 1L ? from.getWhenCreated() : from.getWhenUpdated(),
@@ -118,6 +139,7 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
       from.getRolloutStrategies(),
       transformSharedStrategies(from.getSharedRolloutStrategies()),
       transformPortfolioStrategies(from.getSharedPortfolioRolloutStrategies()),
+      featureGroupStrategies,
       from.getFeature(),
       versionFrom
     );

@@ -165,16 +165,16 @@ function comparFeatureeMessageWithDataTable(msg: FeatureMessagingUpdate, dataTab
     });
 
     evalFunc('value', v => {
-      expect(convertValue(msg.featureValueUpdated.previous, msg.featureValueType)).to.eq(v === 'true');
+      expect(msg.featureValueUpdated.previous).to.eq(v === 'true');
     }, v => {
-      expect(convertValue(msg.featureValueUpdated.updated, msg.featureValueType)).to.eq(v === 'true');
+      expect(msg.featureValueUpdated.updated).to.eq(v === 'true');
     });
   }
 }
 
-Then('I receive a cloud event of type {string}', async function (ceType: string, dataTable: DataTable) {
-  const world = this as SdkWorld;
+async function findMessagingCloudEvent(operation: string, ceType: string, world: SdkWorld): Promise<FeatureMessagingUpdate> {
   let msg: FeatureMessagingUpdate;
+
   await waitForExpect(async () => {
     const events = cloudEvents.filter(ce => ce.type === ceType);
     expect(events.length).to.be.gt(0);
@@ -184,33 +184,59 @@ Then('I receive a cloud event of type {string}', async function (ceType: string,
         if (ce.subject === 'io.featurehub.events.messaging') {
           const result = FeatureMessagingUpdateTypeTransformer.fromJson(msg1);
           logger.info(`envId ${result.environmentId} vs ${world.environment.id} app ${result.applicationId} vs ${world.application.id} port ${world.portfolio.id} ${result.portfolioId}`);
-          const correct = (result.environmentId === world.environment.id && result.applicationId === world.application.id && world.portfolio.id === result.portfolioId);
+          const correct = (result.environmentId === world.environment.id && result.applicationId === world.application.id && world.portfolio.id === result.portfolioId && operation === result.operation);
+
           if (correct) {
             console.log(`message is ${JSON.stringify(result, null, 2)}`);
             msg = result;
           }
+
           return correct;
         } else {
-          return false;
+          return undefined;
         }
       }
     });
 
     expect(found, `Events ${events} did not match environment ${world.environment.id}, appId ${world.application.id}, portfolio ${world.portfolio.id}`).to.not.be.undefined;
   }, 10000, 500);
-  if (msg) {
-    expect(msg.whoUpdated).to.eq(world.currentUser.me.name);
-    expect(msg.whoUpdatedId).to.eq(world.currentUser.personId);
-    expect(msg.whenUpdated).to.not.be.undefined;
-    expect(msg.featureKey, `key from message ${msg.featureKey} ${JSON.stringify(msg)} is not the same as the key we know ${world.feature.key}`).to.eq(world.feature.key);
-    expect(msg.featureName, `key from message ${msg.featureName} ${JSON.stringify(msg)} is not the same as the key we know ${world.feature.name}`).to.eq(world.feature.name);
-    expect(msg.featureValueType).to.eq(world.feature.valueType);
-    expect(msg.featureId).to.eq(world.feature.id);
-    expect(msg.featureValueId).to.eq((await world.getFeatureValue()).id);
-    expect(msg.environmentName).to.eq(world.environment.name);
-    expect(msg.portfolioName).to.eq(world.portfolio.name);
-    expect(msg.appName).to.eq(world.application.name);
 
+  return msg;
+}
+
+async function compareMessageBodySimple(msg: FeatureMessagingUpdate, world: SdkWorld) {
+  expect(msg.whoUpdated).to.eq(world.currentUser.me.name);
+  expect(msg.whoUpdatedId).to.eq(world.currentUser.personId);
+  expect(msg.whenUpdated).to.not.be.undefined;
+  expect(msg.featureKey, `key from message ${msg.featureKey} ${JSON.stringify(msg)} is not the same as the key we know ${world.feature.key}`).to.eq(world.feature.key);
+  expect(msg.featureName, `key from message ${msg.featureName} ${JSON.stringify(msg)} is not the same as the key we know ${world.feature.name}`).to.eq(world.feature.name);
+  expect(msg.featureValueType).to.eq(world.feature.valueType);
+  expect(msg.featureId).to.eq(world.feature.id);
+  expect(msg.featureValueId).to.eq((await world.getFeatureValue()).id);
+  expect(msg.environmentName).to.eq(world.environment.name);
+  expect(msg.portfolioName).to.eq(world.portfolio.name);
+  expect(msg.appName).to.eq(world.application.name);
+}
+
+Then('I receive a create {string} cloud event', async function(ceType: string, dataTable: DataTable) {
+  const world = this as SdkWorld;
+  const msg = await findMessagingCloudEvent('CREATE', ceType, world);
+
+  await compareMessageBodySimple(msg, world);
+
+  for(const myRow of dataTable.hashes()) {
+    expect(msg.lockUpdated.updated).to.eq(myRow['locked'] === 'true');
+    expect(msg.featureValueUpdated.updated).to.eq(myRow['value'] === 'true');
+    expect(msg.retiredUpdated).to.be.undefined;
+  }
+});
+
+Then('I receive a cloud event of type {string}', async function (ceType: string, dataTable: DataTable) {
+  const world = this as SdkWorld;
+  const msg = await findMessagingCloudEvent('UPDATE', ceType, world);
+
+  if (msg) {
+    await compareMessageBodySimple(msg, world);
 
     comparFeatureeMessageWithDataTable(msg, dataTable);
   }

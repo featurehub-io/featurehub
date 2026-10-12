@@ -6,7 +6,7 @@ import io.featurehub.mr.model.RolloutStrategy
 import java.util.*
 
 class CacheSourceFeatureGroupSqlApi : CacheSourceFeatureGroupApi {
-  private fun collectStrategiesFromGroupsForEnvironmentFeatures(
+  override fun collectStrategiesFromGroupsForEnvironmentFeatures(
     envId: UUID,
     featureIds: List<UUID>
   ): Map<UUID, List<RolloutStrategy>> {
