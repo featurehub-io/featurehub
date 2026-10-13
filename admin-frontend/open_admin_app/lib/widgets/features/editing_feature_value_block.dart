@@ -281,7 +281,7 @@ class EditingFeatureValueBloc implements Bloc {
   }
 
   Future<void> getPortfolioStrategies() async {
-    final pStrategiesList = await _portfolioRolloutStrategyServiceApi.listPortfolioStrategies(portfolioId);
+    final pStrategiesList = await _portfolioRolloutStrategyServiceApi.listPortfolioStrategies(portfolioId, max: 1000);
     _availablePortfolioStrategiesSource.add(pStrategiesList.items);
   }
 
