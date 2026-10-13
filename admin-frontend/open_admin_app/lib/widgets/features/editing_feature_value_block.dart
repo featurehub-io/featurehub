@@ -252,7 +252,7 @@ class EditingFeatureValueBloc implements Bloc {
 
   Future<void> getApplicationStrategies() async {
     var appStrategiesList = await _applicationStrategyServiceApi
-        .listApplicationStrategies(applicationId);
+        .listApplicationStrategies(applicationId, max: 1000);
     _availableApplicationStrategiesSource.add(appStrategiesList.items);
   }
 
