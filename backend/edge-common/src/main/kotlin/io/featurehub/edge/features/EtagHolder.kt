@@ -6,6 +6,14 @@ class EtagStructureHolder(val environmentTags: Map<KeyParts, String>, val contex
 
 class ETagSplitter {
   companion object {
+    fun makeEtagHolderForSSE(etag: String?, keys: List<KeyParts>, etagFromClientContext: String): EtagStructureHolder {
+      if (etag == null || keys.size != 1) {
+        return EtagStructureHolder(emptyMap(), etagFromClientContext, false)
+      }
+
+      return EtagStructureHolder(mapOf(Pair(keys[0], etag)), etagFromClientContext, true)
+    }
+
     fun splitTag(etag: String?, keys: List<KeyParts>, clientContextTag: String): EtagStructureHolder {
       if (etag == null || !etag.startsWith("\"") || !etag.endsWith("\"")) return EtagStructureHolder(mapOf(), clientContextTag, false)
 
