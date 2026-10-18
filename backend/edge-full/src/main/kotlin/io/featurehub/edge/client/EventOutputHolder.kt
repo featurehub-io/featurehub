@@ -28,7 +28,13 @@ class InternalEventOutput(private val output: EventOutput) : EventOutputHolder {
     }
     eventBuilder.data(data)
     val event = eventBuilder.build()
-    output.write(event)
+    if (!output.isClosed) {
+      try {
+        output.write(event)
+      } catch (_: IOException) {
+        // ignore iex
+      }
+    }
   }
 
   override fun isClosed(): Boolean {
