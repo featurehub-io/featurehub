@@ -186,6 +186,34 @@ class AuthenticationSpec extends BaseSpec {
       reset == null
   }
 
+  def "an sso login clears the password reset flag and scrambles the password when asked"() {
+    given: "i register and the superuser resets my password"
+      personApi.create('sso-scramble@featurehub.io', "William", null)
+      Person person = auth.register("william", "sso-scramble@featurehub.io", "bathroom", null)
+      auth.resetPassword(person.id.id, "honey", superuser, false)
+    when: "i login via sso with password login enabled"
+      def cleared = auth.clearPasswordResetAfterSsoLogin(person.id.id, true)
+    then: "the flag is cleared and the temporary password no longer works"
+      cleared
+      !personApi.get(person.id.id, Opts.empty()).passwordRequiresReset
+      auth.login("sso-scramble@featurehub.io", "honey") == null
+    and: "a second sso login does nothing"
+      !auth.clearPasswordResetAfterSsoLogin(person.id.id, true)
+  }
+
+  def "an sso login clears the password reset flag and leaves the password alone when not scrambling"() {
+    given: "i register and the superuser resets my password"
+      personApi.create('sso-noscramble@featurehub.io', "William", null)
+      Person person = auth.register("william", "sso-noscramble@featurehub.io", "bathroom", null)
+      auth.resetPassword(person.id.id, "honey", superuser, false)
+    when: "i login via sso with password login disabled"
+      def cleared = auth.clearPasswordResetAfterSsoLogin(person.id.id, false)
+    then:
+      cleared
+      !personApi.get(person.id.id, Opts.empty()).passwordRequiresReset
+      !auth.login("sso-noscramble@featurehub.io", "honey").passwordRequiresReset
+  }
+
   def "a person cannot reset their own password"() {
     given: "i register"
       def createdPerson = personApi.create('william-reset@featurehub.io', "William", null)

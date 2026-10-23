@@ -56,4 +56,16 @@ public interface AuthenticationApi {
    * @param id - a person id
    */
   void updateLastAuthenticated(@NotNull UUID id);
+
+  /**
+   * A person has successfully authenticated via an SSO provider (OAuth2/SAML). If they are flagged as requiring a
+   * password reset (e.g. they were deleted and re-added), that flag would otherwise reject every SSO session they
+   * create, so it is cleared. If password login is still enabled, their password is replaced with a long random
+   * one so any temporary password can no longer be used to log in.
+   *
+   * @param id - a person id
+   * @param scramblePassword - true if password login is enabled and the password should be replaced
+   * @return true if the flag was set and has been cleared
+   */
+  boolean clearPasswordResetAfterSsoLogin(@NotNull UUID id, boolean scramblePassword);
 }
