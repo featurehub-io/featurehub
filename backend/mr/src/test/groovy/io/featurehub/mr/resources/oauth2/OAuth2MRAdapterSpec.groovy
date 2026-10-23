@@ -96,4 +96,35 @@ class OAuth2MRAdapterSpec extends Specification {
       response.status == 302
       response.getCookies()["bearer-token"] != null
   }
+
+  def "an existing user requiring a password reset has it cleared and password scrambled when password login is enabled"() {
+    given:
+      person.version(15).passwordRequiresReset(true)
+    when:
+      def response = adapter.successfulCompletion(email, uname, false, "http://failure", "http://success", "provider")
+    then:
+      1 * personApi.get(email, _) >> person
+      1 * personApi.updateV2(person.id.id, _, person.id.id)
+      1 * authenticationApi.updateLastAuthenticated(person.id.id)
+      1 * authenticationApi.clearPasswordResetAfterSsoLogin(person.id.id, true) >> true
+      1 * authenticationRepository.put({ Person p -> !p.passwordRequiresReset }) >> apiToken
+      0 * _
+      response.getHeaderString("location") == "http://success"
+  }
+
+  def "an existing user requiring a password reset has it cleared without scrambling when password login is disabled"() {
+    given:
+      person.version(15).passwordRequiresReset(true)
+      adapter.passwordLoginDisabled = true
+    when:
+      def response = adapter.successfulCompletion(email, uname, false, "http://failure", "http://success", "provider")
+    then:
+      1 * personApi.get(email, _) >> person
+      1 * personApi.updateV2(person.id.id, _, person.id.id)
+      1 * authenticationApi.updateLastAuthenticated(person.id.id)
+      1 * authenticationApi.clearPasswordResetAfterSsoLogin(person.id.id, false) >> true
+      1 * authenticationRepository.put({ Person p -> !p.passwordRequiresReset }) >> apiToken
+      0 * _
+      response.getHeaderString("location") == "http://success"
+  }
 }
