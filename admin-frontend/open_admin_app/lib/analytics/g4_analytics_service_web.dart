@@ -50,7 +50,7 @@ class GoogleAnalytics4ServiceWeb extends G4AnalyticsService {
 
   static dynamic _evalJs(String code) {
     _logger.finer('JS eval: $code');
-    return js.globalContext.callMethod('eval'.toJS, [code.toJS].toJS);
+    return js.globalContext.callMethod('eval'.toJS, code.toJS);
   }
 
   void _logJsDate() {

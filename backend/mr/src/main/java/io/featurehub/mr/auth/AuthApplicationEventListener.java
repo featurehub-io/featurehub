@@ -113,6 +113,10 @@ public class AuthApplicationEventListener implements ApplicationEventListener {
               ConnectContext.set(USER, Map.of("id", userId, "email", value.person.getEmail()));
             }
             event.getContainerRequest().setSecurityContext(new AuthHolder(value));
+          } else if (value != null) {
+            log.warn("Rejecting valid session for {} on {} as their password requires reset",
+              value.person.getEmail(), event.getUriInfo().getPath());
+            abort(event, unauthorized());
           } else {
             abort(event, unauthorized());
           }
