@@ -1,7 +1,5 @@
 package io.featurehub.lifecycle
 
-import cd.connect.app.config.ConfigKey
-import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.jersey.common.LoggingConfiguration
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.rest.Info
@@ -338,7 +336,7 @@ class UseTelemetryFeature(private val injector: ServiceLocator) : Feature {
 class TelemetryFeature : Feature {
   private val log: Logger = LoggerFactory.getLogger(TelemetryFeature::class.java)
 
-  var logTelemetry = FallbackPropertyConfig.getConfig("telemetry.logging-enabled", "false") == "true"
+  val logTelemetry = FallbackPropertyConfig.getConfig("telemetry.logging-enabled", "false") == "true"
 
   override fun configure(context: FeatureContext): Boolean {
     context.register(TelemetryApplicationEventListener::class.java)

@@ -3,7 +3,6 @@ package io.featurehub.jersey.config;
 import cd.connect.openapi.support.OpenApiEnumProvider;
 import io.featurehub.rest.MaintenanceNotificationFilter;
 import io.featurehub.jersey.OffsetDateTimeQueryProvider;
-import io.featurehub.jersey.SSEAwareEncodingFilter;
 import io.featurehub.lifecycle.LifecycleListenerFeature;
 import io.featurehub.rest.WebHeaderAuditLogger;
 import io.featurehub.utils.FallbackPropertyConfig;
@@ -28,17 +27,14 @@ public class CommonConfiguration implements Feature {
     config.property(CommonProperties.FEATURE_AUTO_DISCOVERY_DISABLE, true);
     config.property(CommonProperties.MOXY_JSON_FEATURE_DISABLE, true);
 
-    if ("true".equals(FallbackPropertyConfig.Companion.getConfig("http-compression-enable", "false"))) {
-      // SSE-aware version of the encoding filter, prevents encoding SSE messages
-      config.register(SSEAwareEncodingFilter.class);
-      config.register(GZipEncoder.class);
-    }
-
     // this is the objectmapper we want to use
     config.register(JacksonContextProvider.class);
     // this forces all requests to use an objectmapper to use our application wide singleton
     config.register(new JacksonJaxbJsonProvider(JacksonObjectProvider.mapper, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS));
     config.register(MultiPartFeature.class);
+    // always registered so gzip request/response bodies can be decoded; it only encodes when
+    // a Content-Encoding header is set (see SSEAwareEncodingFilter, which is server only)
+    config.register(GZipEncoder.class);
     config.register(LocalExceptionMapper.class);
     config.register(OffsetDateTimeQueryProvider.class);
     config.register(OpenApiEnumProvider.class);

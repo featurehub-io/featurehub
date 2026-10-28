@@ -6,6 +6,7 @@ import cd.connect.jersey.prometheus.PrometheusDynamicFeature
 import cd.connect.openapi.support.ReturnStatusContainerResponseFilter
 import io.featurehub.info.ApplicationVersionFeatures
 import io.featurehub.jersey.ManagedAsyncThreadPoolExecutorProvider
+import io.featurehub.jersey.SSEAwareEncodingFilter
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.jersey.config.EndpointLoggingListener
 import io.featurehub.rest.ResponseTrackingResponseFilter
@@ -22,7 +23,6 @@ import jakarta.ws.rs.core.FeatureContext
 import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities
 import org.glassfish.jersey.internal.inject.AbstractBinder
-import org.glassfish.jersey.logging.ReprioritisedFilteringClientLoggingFilter
 import org.glassfish.jersey.logging.ReprioritisedFilteringServerLoggingFilter
 import org.glassfish.jersey.server.ServerProperties
 
@@ -39,7 +39,11 @@ class CommonFeatureHubFeatures @Inject constructor(private val locator: ServiceL
 
     context.register(CommonConfiguration::class.java)
 
-    context.register(ReprioritisedFilteringClientLoggingFilter::class.java)
+    if (FallbackPropertyConfig.getConfig("http-compression-enable", "false") == "true") {
+      // SSE-aware version of Jersey's EncodingFilter, prevents encoding SSE streams
+      context.register(SSEAwareEncodingFilter::class.java)
+    }
+
     context.register(ReprioritisedFilteringServerLoggingFilter::class.java)
     context.register(object : AbstractBinder() {
       override fun configure() {
@@ -47,7 +51,6 @@ class CommonFeatureHubFeatures @Inject constructor(private val locator: ServiceL
           .to(JerseyFiltering::class.java)
       }
     })
-
 
     context.register(ReturnStatusContainerResponseFilter::class.java)
     context.register(EndpointLoggingListener::class.java)
