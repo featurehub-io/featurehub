@@ -24,7 +24,7 @@ class DbArchiveStrategy @Inject constructor(private val cacheSource: CacheSource
   @Transactional
   override fun archivePortfolio(portfolio: DbPortfolio) {
     portfolio.whenArchived = LocalDateTime.now()
-    portfolio.name = (portfolio.name + Conversions.archivePrefix + isoDate.format(portfolio.whenArchived)).take(250)
+    portfolio.name = (portfolio.name + Conversions.archiveSuffix + isoDate.format(portfolio.whenArchived)).take(250)
     portfolio.save()
     portfolio.applications.forEach { application: DbApplication -> archiveApplication(application) }
     portfolio.groups.forEach { group: DbGroup -> archiveGroup(group) }
@@ -46,7 +46,7 @@ class DbArchiveStrategy @Inject constructor(private val cacheSource: CacheSource
   @Transactional
   override fun archiveEnvironment(environment: DbEnvironment) {
     environment.whenArchived = LocalDateTime.now()
-    environment.name = (environment.name + Conversions.archivePrefix + isoDate.format(environment.whenArchived)).take(250)
+    environment.name = (environment.name + Conversions.archiveSuffix + isoDate.format(environment.whenArchived)).take(250)
     environment.save()
     cacheSource.deleteEnvironment(environment.id)
     QDbEnvironment().priorEnvironment.eq(environment).findList().forEach { e: DbEnvironment ->
@@ -82,7 +82,7 @@ class DbArchiveStrategy @Inject constructor(private val cacheSource: CacheSource
   override fun archiveServiceAccount(serviceAccount: DbServiceAccount) {
     serviceAccount.whenArchived = LocalDateTime.now()
     serviceAccount.name =
-      (serviceAccount.name + Conversions.archivePrefix + isoDate.format(serviceAccount.whenArchived)).take(250)
+      (serviceAccount.name + Conversions.archiveSuffix + isoDate.format(serviceAccount.whenArchived)).take(250)
     serviceAccount.save()
     cacheSource.deleteServiceAccount(serviceAccount.id)
   }
@@ -91,7 +91,7 @@ class DbArchiveStrategy @Inject constructor(private val cacheSource: CacheSource
   override fun archiveGroup(group: DbGroup) {
     group.whenArchived = LocalDateTime.now()
     group.name =
-      (group.name + Conversions.archivePrefix + isoDate.format(group.whenArchived)).take(250)
+      (group.name + Conversions.archiveSuffix + isoDate.format(group.whenArchived)).take(250)
     group.save()
   }
 
@@ -101,7 +101,7 @@ class DbArchiveStrategy @Inject constructor(private val cacheSource: CacheSource
     // key is unique
     val originalKey = feature.key
     feature.key =
-      (feature.key + Conversions.archivePrefix + isoDate.format(feature.whenArchived)).take(250)
+      (feature.key + Conversions.archiveSuffix + isoDate.format(feature.whenArchived)).take(250)
     feature.save()
 
     featureListeners.forEach {

@@ -5,7 +5,7 @@ services:
     image: postgres:14-alpine
     restart: always
     environment:
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_PASSWORD: password
     volumes:
       - ./initdb:/docker-entrypoint-initdb.d
       - featurehub-ps-data:/var/lib/postgresql/data

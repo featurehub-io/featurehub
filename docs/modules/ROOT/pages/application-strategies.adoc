@@ -13,15 +13,17 @@ image::app-strategy-create.png[Create Application Strategy, 1500]
 
 You can update application strategy name at a later time. If you decide to delete an application strategy, it will be removed from all feature values where it is used. Extra care should be taken when deleting application strategy. The features itself won't be removed.
 
+While percentage rollout can be specified, if it is it will apply across *all* feature values by default. It should generally
+be set at the individual feature value where the application strategy is being applied.
+
 == Assigning Application Strategy to a feature
 
-In order to assign an application strategy to a feature value, you first need to have a feature created from the "Features" screen. Once this is done, you can find application strategies in the drop-down list on the feature value editing screen. You can assign as many application strategies as you like and set the desired values.
+In order to assign an application strategy to a feature value, you first need to have a feature created from the "Features" screen. Once this is done, you can find application strategies in the drop-down list on the feature value editing screen. You can assign as many application strategies as you like and set the desired values. You can also set the percentage override this feature value has in this environment for a specific application strategy.
 
-image::app-strategy-assign.png[Assign app strategy, 1500]
-
+image::apps-strategy-assign.png[Assign app strategy, 1500]
 
 NOTE: The order in which application strategy is evaluated, is as following:
-First evaluate against any "standard" rollout strategies assigned (you can set those from the Features screen), if no match, then evaluate against "feature group" strategy, then evaluate against "application strategy", then if no match, use "default" value.
+First evaluate against any "standard" rollout strategies assigned (you can set those from the Features screen), if no match, then evaluate against "feature group" strategy, then evaluate against "application strategy", then against the "portfolio strategy", then if no match, use "default" value.
 
 
 == Application Strategies User Permissions

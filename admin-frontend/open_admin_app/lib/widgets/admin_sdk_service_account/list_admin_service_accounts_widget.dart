@@ -165,11 +165,10 @@ class AdminServiceAccountDataTableSource
             FHIconButton(
                 icon: const Icon(Icons.edit),
                 onPressed: () => {
-                      ManagementRepositoryClientBloc.router.navigateTo(
-                          context, '/edit-admin-service-account',
-                          params: {
-                            'id': [serviceAccount.id]
-                          })
+                      ManagementRepositoryClientBloc.router
+                          .navigateTo('/edit-admin-service-account', params: {
+                        'id': [serviceAccount.id]
+                      })
                     }),
             // const SizedBox(
             //   width: 8.0,
@@ -188,7 +187,8 @@ class AdminServiceAccountDataTableSource
             ),
             FHIconButton(
               icon: const Icon(Icons.delete),
-              onPressed: () => bloc.mrClient.addOverlay((BuildContext overlayContext) {
+              onPressed: () =>
+                  bloc.mrClient.addOverlay((BuildContext overlayContext) {
                 final l10n = AppLocalizations.of(overlayContext)!;
                 return FHDeleteThingWarningWidget(
                   thing: "service account '${serviceAccount.name}'",
@@ -198,8 +198,8 @@ class AdminServiceAccountDataTableSource
                     try {
                       await bloc.deletePerson(serviceAccount.id, true);
                       setNextView(); // triggers reload from server with latest settings and rebuilds state
-                      bloc.mrClient.addSnackbar(Text(
-                          l10n.adminSADeleted(serviceAccount.name)));
+                      bloc.mrClient.addSnackbar(
+                          Text(l10n.adminSADeleted(serviceAccount.name)));
                       return true;
                     } catch (e, s) {
                       await bloc.mrClient.dialogError(e, s);
@@ -213,7 +213,7 @@ class AdminServiceAccountDataTableSource
         ],
         onSelectChanged: (newValue) {
           ManagementRepositoryClientBloc.router
-              .navigateTo(context, '/edit-admin-service-account', params: {
+              .navigateTo('/edit-admin-service-account', params: {
             'id': [serviceAccount.id]
           });
         });
@@ -300,14 +300,12 @@ class _AdminServiceAccountInfo extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     if (entry.groups.isNotEmpty)
-                                      ...entry.groups
-                                          .map((e) => Text(
-                                                e.name,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyMedium,
-                                              ))
-                                          ,
+                                      ...entry.groups.map((e) => Text(
+                                            e.name,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium,
+                                          )),
                                   ]))
                         ],
                       ),
@@ -325,8 +323,7 @@ class _AdminServiceAccountRow extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const _AdminServiceAccountRow(
-      {required this.title, required this.child});
+  const _AdminServiceAccountRow({required this.title, required this.child});
 
   @override
   Widget build(BuildContext context) {

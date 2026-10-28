@@ -102,12 +102,18 @@ class GroupBloc implements Bloc {
     }
   }
 
-  Future<bool> updateGroupName(Group groupToUpdate, String name) async {
+  Future<bool> updateGroupName(Group groupToUpdate, String name,
+      {Set<PortfolioGroupRoleType>? portfolioRoles}) async {
     try {
       groupToUpdate.name = name;
 
       final newGroup = await _groupServiceApi.updateGroupOnPortfolioV2(
-          mrClient.currentPortfolio!.id, UpdateGroup(id: groupToUpdate.id, version: groupToUpdate.version, name: name),
+          mrClient.currentPortfolio!.id,
+          UpdateGroup(
+              id: groupToUpdate.id,
+              version: groupToUpdate.version,
+              name: name,
+              portfolioRoles: portfolioRoles ?? {}),
           includeMembersV2: true);
 
       // tell the portfolio groups to update as the name has changed.
@@ -126,9 +132,10 @@ class GroupBloc implements Bloc {
     }
   }
 
-  Future<void> createGroup(String name) async {
-    final createdGroup = await _groupServiceApi.createGroup(
-        mrClient.currentPid!, CreateGroup(name: name));
+  Future<void> createGroup(String name,
+      {Set<PortfolioGroupRoleType>? portfolioRoles}) async {
+    final createdGroup = await _groupServiceApi.createGroup(mrClient.currentPid!,
+        CreateGroup(name: name, portfolioRoles: portfolioRoles ?? {}));
     await getGroups(focusGroup: createdGroup);
     groupId = createdGroup.id;
     group = createdGroup;

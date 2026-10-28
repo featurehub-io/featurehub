@@ -15,9 +15,19 @@ import {createTestUser, testingSaas} from "../support/saas_test";
 
 When("I create a new user", async function() {
   const world = this as SdkWorld;
+  world.setUser(await createUser(world));
+});
 
-  const name = makeid(10);
-  const email = name + '@mailinator.com';
+When("I create a new user {string}", async function(name: string) {
+  const world = this as SdkWorld;
+  world.setNamedUser(name, await createUser(world, name));
+});
+
+async function createUser(world: SdkWorld, specifiedName?: string): Promise<string> {
+
+  const name = specifiedName || makeid(10);
+  // email has to be unique otherwise test will fail 2nd time
+  const email = (specifiedName ? makeid(10) : name) + '@mailinator.com';
 
   const created = await world.personApi.createPerson(new CreatePersonDetails({
     email: email, personType: PersonType.Person, groupIds: []}));
@@ -25,8 +35,7 @@ When("I create a new user", async function() {
 
   if (testingSaas()) {
     const registeredPerson = await createTestUser(name, email, world);
-    world.setUser(registeredPerson.token);
-    return;
+    return registeredPerson.token;
   }
 
   const person = created.data;
@@ -50,7 +59,15 @@ When("I create a new user", async function() {
   }));
 
   expect(loginResponse.status).to.eq(200);
-  world.setUser(loginResponse.data.accessToken);
+  return loginResponse.data.accessToken;
+}
+
+When('I am the user {string}', function(name: string) {
+  const world = this as SdkWorld;
+  const user = world.namedUsers[name];
+  expect(user).to.not.be.undefined;
+  world.currentUser = user;
+  world.user = user;
 });
 
 When('I am the created user', function () {

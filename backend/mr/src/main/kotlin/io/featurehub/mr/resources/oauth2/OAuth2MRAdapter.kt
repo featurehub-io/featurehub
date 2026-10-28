@@ -2,9 +2,19 @@ package io.featurehub.mr.resources.oauth2
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import io.featurehub.db.api.*
+import io.featurehub.db.api.AuthenticationApi
+import io.featurehub.db.api.FillOpts
+import io.featurehub.db.api.GroupApi
+import io.featurehub.db.api.OptimisticLockingException
+import io.featurehub.db.api.Opts
+import io.featurehub.db.api.OrganizationApi
+import io.featurehub.db.api.PersonApi
+import io.featurehub.db.api.PortfolioApi
 import io.featurehub.mr.auth.AuthenticationRepository
-import io.featurehub.mr.model.*
+import io.featurehub.mr.model.CreateGroup
+import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.SortOrder
+import io.featurehub.mr.model.UpdatePerson
 import io.featurehub.mr.utils.PortfolioUtils
 import io.featurehub.web.security.oauth.SSOCompletionListener
 import jakarta.inject.Inject
@@ -30,6 +40,9 @@ class OAuth2MRAdapter @Inject constructor(
 
   @ConfigKey("oauth2.cookie.https-only")
   var cookieSecure: Boolean? = false
+
+  @ConfigKey("auth.disable-login")
+  var passwordLoginDisabled: Boolean? = false
 
   init {
     DeclaredConfigResolver.resolve(this)
@@ -61,6 +74,13 @@ class OAuth2MRAdapter @Inject constructor(
       }
 
       authenticationApi.updateLastAuthenticated(p.id!!.id)
+
+      // a person flagged for password reset (e.g. deleted and re-added) would otherwise have every SSO session
+      // rejected. If password login is still enabled, their password is scrambled so they must reset it to use it.
+      if (p.passwordRequiresReset == true) {
+        authenticationApi.clearPasswordResetAfterSsoLogin(p.id!!.id, passwordLoginDisabled != true)
+        p.passwordRequiresReset = false
+      }
     }
 
     // store user in session with bearer token
@@ -99,7 +119,7 @@ class OAuth2MRAdapter @Inject constructor(
       val organization = organizationApi.get()
       // create the superuser group and add admin to the group -
       val group = groupApi.createOrgAdminGroup(organization.id, "org_admin", person)
-      groupApi.addPersonsToGroup(group!!.id, listOf(person.id!!.id), Opts.empty())
+      groupApi.systemAddPersonsToGroup(group!!.id, listOf(person.id!!.id), Opts.empty())
 
       // find the only portfolio and update its members to include this one
       val portfolio = portfolioApi.findPortfolios(

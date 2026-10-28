@@ -1,0 +1,34 @@
+= Maintenance Windows
+
+The system in version 1.11 introduces 3 new variables, `maintenance.start`, `maintenance.end` and `maintenance.message`. If these are defined in the Management Repository or Party Server config,  then as long as their "end" window hasn't passed, they will show in the UI. 
+
+NOTE: Set these in the `src/test/application.properties` file when running in the IDE, the start/end timestamps must be in UTC format e.g. `2026-08-17T10:15:30.00Z`. 
+
+Further more, they will automatically turn into shutting down the UI for the purposes of that specific maintenance window. If the time on the client app is within that window, the DIO Interceptor in `client_api.dart` will add the maintenance window information to the `active` stream instead of the `pending` one, causing the "Scheduled Maintenance" window overlay to pop up and prevent further interaction.
+
+== Maintenance indicators in  the UI
+
+The way this works is that when MR/Party Server detects these environment variables are set on the server, it will add a Response Header (including to CORs) of `X-Maintenance-Start`, `X-Maintenance-End` and `X-Maintenance-Message` for every response. The DIO interceptor picks up on this and performs the appropriate checks in the `client_api.dart` to ensure the message is dropped into the right streams.
+
+The `fh_scaffold.dart` picks up on both of these streams, showing the appropriate information. 
+
+=== No API blocking
+
+These windows do not prevent calls going to the application once the window is open.
+
+Another Route was also added `maintenance` so that if the server detects a 503 with a `retry-after` header being set, it will automatically route to the maintenance page and not allow any further action.
+
+== The maintenance responder 
+
+This is a new application which just wires up the common web stuff, but it hosts the application (including all the Flutter app) but for API calls to `mr-api` (this is the prefix for all API calls for MR or the Party Server), it responds with CORS headers and a 503 response with the retry-after set to the `maintenance.end` variable, and the message set to the `maintenance.message`. This prevents any and all API calls, and is intended to be deployed in a Kubernetes or similar system and the routes to everything except `/features` swapped to it. It will therefore respond with the normal Flutter assets, server the website as normal but all backend requests will signal to the frontend the maintenance window is operational.
+
+This allows sysadmins to scale this deploy up, change the ingres configuration, and when all traffic is routing to the `maintenance-responder`, shut down the Management Repository.
+
+== The Party Server
+
+In a situation where MR/Edge/Dacha are separate, this process works well but it does not when the Party Server or Party Server REST are being used as they are all in one
+applications which are tied to the database. 
+
+== Prepublishing State
+
+

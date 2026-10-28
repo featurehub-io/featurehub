@@ -234,28 +234,27 @@ class WebhookConfiguration extends StatefulWidget {
   final WebhookTypeDetail type;
   final WebhookEnvironmentBloc bloc;
 
+
   const WebhookConfiguration(this.environment, this.type, this.bloc, {super.key});
 
+  bool get encryptionEnabled => bloc.mrBloc.identityProviders.capabilityWebhookEncryption;
+  bool get decryptionEnabled => bloc.mrBloc.identityProviders.capabilityWebhookDecryption;
+
   @override
-  State<WebhookConfiguration> createState() => _WebhookConfigurationState(
-      bloc.mrBloc.identityProviders.capabilityWebhookEncryption,
-      bloc.mrBloc.identityProviders.capabilityWebhookDecryption);
+  State<WebhookConfiguration> createState() => _WebhookConfigurationState();
 }
 
 class _WebhookConfigurationState extends State<WebhookConfiguration>
     with WebhookEncryption {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _url = TextEditingController();
-  final _WebhookHeadersDataSource _headers;
+  late _WebhookHeadersDataSource _headers;
   final DataGridController _dataGridController = DataGridController();
-  final bool encryptionEnabled;
-  final bool decryptionEnabled;
   bool enabled = false;
 
   // List<String> encrypt = [];
 
-  _WebhookConfigurationState(this.encryptionEnabled, this.decryptionEnabled)
-      : _headers = _WebhookHeadersDataSource(encryptionEnabled);
+  // _WebhookConfigurationState();
 
   @override
   void initState() {
@@ -274,6 +273,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
   }
 
   void _setup() {
+    _headers = _WebhookHeadersDataSource(widget.encryptionEnabled);
     final envInfo = widget.environment.webhookEnvironmentInfo ?? {};
     enabled = envInfo['${widget.type.envPrefix}.enabled'] == 'true';
 
@@ -346,8 +346,8 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
                             });
                           }),
                       const Text('Enabled'),
-                      if (encryptionEnabled &&
-                          decryptionEnabled &&
+                      if (widget.encryptionEnabled &&
+                          widget.decryptionEnabled &&
                           (_url.text == _encryptedText ||
                               _headers._headers
                                   .where((element) =>
@@ -366,7 +366,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
                             autofocus: true,
                             textInputAction: TextInputAction.next,
                             readOnly: _url.text == _encryptedText &&
-                                decryptionEnabled,
+                                widget.decryptionEnabled,
                             decoration:
                                 const InputDecoration(labelText: 'Webhook URL'),
                             validator: ((v) {
@@ -440,7 +440,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
                                       child: const Text('Value',
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold)))),
-                              if (encryptionEnabled)
+                              if (widget.encryptionEnabled)
                                 GridColumn(
                                     columnName: 'encrypt',
                                     allowEditing: true,
@@ -462,7 +462,7 @@ class _WebhookConfigurationState extends State<WebhookConfiguration>
   }
 
   List<Widget> buildUrlEncryptionOptions() {
-    if (!encryptionEnabled) {
+    if (!widget.encryptionEnabled) {
       return [];
     }
 

@@ -39,7 +39,7 @@ class FeatureStandaloneSpec extends Base2Spec {
 
       Feature f2 = features.find({ it -> it.key == 'FEATURE_UPD3'})
     when: "i update the second to the same name as the first"
-      appApi.updateApplicationFeature(app.id, 'FEATURE_UPD3', f2.key('FEATURE_UPD2'), Opts.empty())
+      appApi.updateApplicationFeature(app.id, 'FEATURE_UPD3', f2.key('FEATURE_UPD2'), false, Opts.empty())
     then:
       thrown ApplicationApi.DuplicateFeatureException
   }

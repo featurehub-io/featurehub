@@ -26,13 +26,16 @@ dependencies:
     path: ../app_mr_layer
   releases:
     path: ../releases_api
-  openapi_dart_common: ^5.0.0
+  openapi_dart_common: ^5.1.2
   zxcvbn: ^1.0.0
   universal_html: ^2.2.4
   url_launcher: ^6.3.2
   timeago: ^3.0.2
   shared_preferences: ^2.1.1
-  flutter_signin_button: ^2.0.0
+  flutter_signin_button:
+    git:
+      url: https://github.com/abdulhaq-e/Flutter-Sign-in-Button/
+      ref: feat/font_awesome_upgrade
   advanced_datatable: ^0.0.9
   syncfusion_flutter_datagrid: ^32.1.19
   side_sheet: ^1.0.4+1
@@ -41,7 +44,7 @@ dependencies:
   intl: ^0.20.2
   meta: ^1.8.0
   syncfusion_localizations: ^32.2.9
-
+  font_awesome_flutter: ^11.0.0
   syncfusion_flutter_core: any
 dev_dependencies:
   flutter_lints: ^6.0.0

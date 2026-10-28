@@ -100,7 +100,9 @@ class FHappBar extends StatelessWidget {
                       _LanguageDropdown(),
                       IconButton(
                           // splashRadius: 20,
-                          tooltip: light ? AppLocalizations.of(context)!.darkMode : AppLocalizations.of(context)!.lightMode,
+                          tooltip: light
+                              ? AppLocalizations.of(context)!.darkMode
+                              : AppLocalizations.of(context)!.lightMode,
                           color: Theme.of(context).colorScheme.primary,
                           icon: Icon(light
                               ? Icons.dark_mode_outlined
@@ -114,7 +116,7 @@ class FHappBar extends StatelessWidget {
                           onPressed: () async {
                             await mrBloc.logout();
                             ManagementRepositoryClientBloc.router
-                                .navigateTo(context, '/');
+                                .navigateTo('/');
                           },
                           color: Theme.of(context).colorScheme.primary,
                           icon: const Icon(Icons.exit_to_app),

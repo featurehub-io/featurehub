@@ -39,14 +39,25 @@
   </licenses>
 
   <modules>
-    <module>mr-api</module>
-    <module>mr-api-java-server</module>
-    <module>dacha-api</module>
-    <module>dacha-api-java-server</module>
-    <module>enricher-api</module>
-    <module>webhook-api</module>
-    <module>messaging-api</module>
-    <module>edge-api</module>
-    <module>edge-api-java-server</module>
+    <module>backend/edge-feature-update-async-api</module>
+    <module>backend/eventing-tracker</module>
+    <module>backend/mr-api</module>
+    <module>backend/mr-api-java-server</module>
+    <module>backend/dacha-api</module>
+    <module>backend/dacha-api-java-server</module>
+    <module>backend/mr-dacha-api</module>
+    <module>backend/enricher-api</module>
+    <module>backend/webhook-api</module>
+    <module>backend/messaging-api</module>
+    <module>backend/edge-api</module>
+    <module>backend/edge-api-java-server</module>
+    <module>backend/edge-stats-api</module>
+    <module>backend/edge-stats-api-java-server</module>
+    <module>admin-frontend/app_mr_layer</module>
+    <module>admin-frontend/releases_api</module>
   </modules>
+
+  <properties>
+    <gib.disable>true</gib.disable>
+  </properties>
 </project>

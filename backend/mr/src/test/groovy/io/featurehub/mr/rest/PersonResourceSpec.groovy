@@ -28,6 +28,7 @@ class PersonResourceSpec extends Specification {
   PersonResource resource
   SecurityContext ctx
   ServiceAccountApi serviceAccountApi
+  UUID authPersonId
 
   def setup() {
     groupApi = Mock()
@@ -35,7 +36,9 @@ class PersonResourceSpec extends Specification {
     authManager = Mock()
     serviceAccountApi = Mock()
     ctx = Mock()
-    authManager.from(ctx) >> new Person().id(new PersonId().id(UUID.randomUUID()))
+    authPersonId = UUID.randomUUID()
+
+    authManager.from(ctx) >> new Person().id(new PersonId().id(authPersonId))
 
     System.setProperty("register.url", "%s")
     resource = new PersonResource(personApi, groupApi, serviceAccountApi, authManager)
@@ -88,8 +91,9 @@ class PersonResourceSpec extends Specification {
       RegistrationUrl url = resource.createPerson(cpd, new PersonServiceDelegate.CreatePersonHolder(), ctx)
     then:
       url.registrationUrl == "fred"
-      1 * groupApi.addPersonsToGroup(cpd.groupIds.get(0), [token.id], (Opts)_)
-      1 * groupApi.addPersonsToGroup(cpd.groupIds.get(1), [token.id], (Opts)_)
+      1 * groupApi.groupsCurrentUserCanAddUsersTo(authPersonId, cpd.groupIds) >> [cpd.groupIds[0]]
+      1 * groupApi.addPersonsToGroup(cpd.groupIds.get(0), [token.id], authPersonId, (Opts)_)
+      0 * groupApi.addPersonsToGroup(cpd.groupIds.get(1), [token.id], authPersonId, (Opts)_)
   }
 
   def "a person who is not an admin cannot search"() {

@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 FeatureHub is a Cloud Native feature flag and A/B testing platform. It supports self-hosted (open source) and SaaS modes. The primary open-source repository contains the backend services, Flutter web admin console, and SDK end-to-end tests.
 
+## Search / Review Scope
+
+Maven builds populate `backend/*/target/` with generated `.jar`, `.class`, and other build artifacts. Never search, list, or read inside `target/` directories (or any `.jar` files) — they are build output, not source, and scanning them wastes time and context. This applies to code review, exploration, and rg/grep/find usage alike. When doing a code review, use the gh tool to determine what changes have been made against main, and focus on correctness, completeness, security (authorisation and authentication). 
+
 ## Build Commands
 
 ### Full Build (from root)
@@ -22,7 +26,6 @@ sh build_all_and_test.sh
 
 ### Backend Only
 ```sh
-cd backend
 mvn -DskipTests -T4C clean install         # skip tests
 mvn -f pom-apis.xml -DskipTests -T4C clean install  # regenerate OpenAPI artifacts only
 ```

@@ -1,0 +1,11 @@
+= The Maintenance Responder
+
+To test this, the standard MR or Party Server should be run up, the user can login (or not) or this
+can be run straight up, and by default it will respond with a system down for maintenance response
+on all `/mr-api` URLs. 
+
+In a Kubernetes deployment, this can be deployed and then the ingress can be redirected to this
+service when the maintenance window is active, then the MR service shut down, the database maintained
+and then MR started and the route changed back. 
+
+It would be more complex when deploying in ECS, but the same basic pattern would still hold.

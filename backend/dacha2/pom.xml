@@ -40,6 +40,7 @@
   <properties>
     <app.port>8902</app.port>
     <app.entrypoint>io.featurehub.dacha2.Application</app.entrypoint>
+    <app.baseimage>eclipse-temurin:25-jdk-alpine</app.baseimage>
   </properties>
 
   <licenses>

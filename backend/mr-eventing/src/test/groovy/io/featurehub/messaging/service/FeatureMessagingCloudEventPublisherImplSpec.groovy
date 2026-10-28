@@ -1,6 +1,7 @@
 package io.featurehub.messaging.service
 
 import io.featurehub.db.api.CloudEventLinkType
+import io.featurehub.db.api.FeatureMessagingOperation
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
 import io.featurehub.db.api.SingleNullableFeatureValueUpdate
@@ -67,7 +68,9 @@ class FeatureMessagingCloudEventPublisherImplSpec extends Specification {
     def retiredUpdate = new SingleFeatureValueUpdate(false, false, false)
     def strategiesUpdate = new MultiFeatureValueUpdate(false, [], [], [])
     def appStrategiesUpdate = new MultiFeatureValueUpdate(false, [], [], [])
-    return new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategiesUpdate, appStrategiesUpdate, version)
+    def portfolioStrategiesUpdate = new MultiFeatureValueUpdate(false, [], [], [])
+    return new FeatureMessagingParameter(dbFeatureValue, lockUpdate, defaultValueUpdate, retiredUpdate, strategiesUpdate, appStrategiesUpdate, portfolioStrategiesUpdate, version,
+      new MultiFeatureValueUpdate(false, [], [], []), FeatureMessagingOperation.UPDATE)
   }
 
   def "should publish FeatureMessagingUpdate cloud event"() {

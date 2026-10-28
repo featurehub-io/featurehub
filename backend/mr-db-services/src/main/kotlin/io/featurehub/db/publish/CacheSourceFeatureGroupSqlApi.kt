@@ -6,7 +6,7 @@ import io.featurehub.mr.model.RolloutStrategy
 import java.util.*
 
 class CacheSourceFeatureGroupSqlApi : CacheSourceFeatureGroupApi {
-  private fun collectStrategiesFromGroupsForEnvironmentFeatures(
+  override fun collectStrategiesFromGroupsForEnvironmentFeatures(
     envId: UUID,
     featureIds: List<UUID>
   ): Map<UUID, List<RolloutStrategy>> {
@@ -22,6 +22,9 @@ class CacheSourceFeatureGroupSqlApi : CacheSourceFeatureGroupApi {
 
     if (featureIds.isNotEmpty()) {
       finder = finder.features.key.feature.`in`(featureIds)
+    } else {
+      // its a wide open request for all features in the environment, so we don't want the archived ones
+      finder = finder.features.feature.whenArchived.isNull
     }
 
     finder
@@ -67,7 +70,9 @@ class CacheSourceFeatureGroupSqlApi : CacheSourceFeatureGroupApi {
       return collected
     }
 
-    QDbFeatureGroupFeature().key.feature.`in`(featureIds).group.environment.id.`in`(envId)
+    QDbFeatureGroupFeature()
+      .key.feature.`in`(featureIds)
+      .group.environment.id.`in`(envId)
       .group.whenArchived.isNull
       .select(
         QDbFeatureGroupFeature.Alias.group.strategies, QDbFeatureGroupFeature.Alias.value,

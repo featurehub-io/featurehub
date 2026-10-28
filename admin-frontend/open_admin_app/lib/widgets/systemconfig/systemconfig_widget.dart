@@ -11,6 +11,8 @@ import 'package:open_admin_app/widgets/systemconfig/site/site_system_config_widg
 import 'package:open_admin_app/widgets/systemconfig/slack/slack_system_config_widget.dart';
 import 'package:open_admin_app/widgets/systemconfig/systemconfig_bloc.dart';
 
+import 'cache/refresh_cache_config_widget.dart' show RefreshCacheSystemConfigWidget;
+
 class SystemConfigPanel extends StatelessWidget {
   const SystemConfigPanel({super.key});
 
@@ -81,7 +83,17 @@ class SystemConfigPanel extends StatelessWidget {
                   if (isSlackEnabled)
                     Card(child: SlackSystemConfigWidget(knownConfigs: config))
                 ],
-              )
+              ),
+              if (config.any((cfg) => cfg.key == 'refresh.cache'))
+                  ExpansionTile(
+                    title: SelectableText(l10n.refreshCacheTitle, style: Theme.of(context).textTheme.titleLarge),
+                    subtitle: Text(l10n.refreshConfigurationSubtitle,
+                        style: Theme.of(context).textTheme.titleSmall),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      children: [
+                        Card(child: RefreshCacheSystemConfigWidget())
+                      ],
+                  )
             ],
           );
         });

@@ -6,6 +6,7 @@ import io.featurehub.db.model.*
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.model.*
 import io.featurehub.mr.model.RoleType
+import org.apache.commons.lang3.RandomStringUtils
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.*
@@ -58,10 +59,16 @@ interface Conversions {
     if (whenArchived == null) {
       return name
     }
-    val prefix = name.indexOf(archivePrefix)
+    val prefix = name.indexOf(archiveSuffix)
     return if (prefix == -1) {
       name
     } else name.substring(0, prefix)
+  }
+
+  fun addArchiveIndicator(name: String?): String? {
+    if (name == null) return name;
+
+    return name + archiveSuffix
   }
 
   fun toGroup(dbg: DbGroup?, opts: Opts?): Group?
@@ -100,7 +107,8 @@ interface Conversions {
   fun isPersonEnvironmentAdmin(current: Person, environmentId: UUID): Boolean
 
   companion object {
-    const val archivePrefix = ":\\:\\:"
+    const val archiveSuffix = ":\\:\\:"
+    const val strategyIdLength = 4
 
     // in case a field can be a name or a uuid (i.e. feature key)
     @JvmStatic
@@ -172,6 +180,14 @@ interface Conversions {
 
     fun nonNullStrategyId(strategyId: UUID?) {
       requireNotNull(strategyId) { "Strategy ID is required" }
+    }
+
+    fun strategyCodeGenerator(prefix: String? = null) : String {
+      if (prefix == null) {
+        return "${RandomStringUtils.secure().nextAlphanumeric(strategyIdLength)}"
+      } else {
+        return "${prefix}${RandomStringUtils.secure().nextAlphanumeric(strategyIdLength - 1)}"
+      }
     }
   }
 }

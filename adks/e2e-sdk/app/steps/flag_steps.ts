@@ -1,14 +1,15 @@
-import { Given, Then, When } from '@cucumber/cucumber';
-import {CreateFeature, Feature, FeatureValue, FeatureValueType, RolloutStrategy} from '../apis/mr-service';
-import { makeid } from '../support/random';
-import { expect } from 'chai';
+import {Given, Then, When} from '@cucumber/cucumber';
+import {CreateFeature, Feature, FeatureValueType, RolloutStrategy} from '../apis/mr-service';
+import {makeid} from '../support/random';
+import {expect} from 'chai';
 import waitForExpect from 'wait-for-expect';
-import { FeatureStateHolder, Readyness } from 'featurehub-javascript-node-sdk';
-import { logger } from '../support/logging';
-import { SdkWorld } from '../support/world';
+import {FeatureStateBaseHolder, FeatureStateHolder, Readyness} from 'featurehub-javascript-node-sdk';
+import {logger} from '../support/logging';
+import {SdkWorld} from '../support/world';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
 import {validateWorldForApplicationStrategies} from "./strategies";
-import { FeatureStateBaseHolder } from "featurehub-javascript-node-sdk";
+import {convertValue, strategyComparison} from "../support/utils";
+import {FeatureState} from "../apis/edge";
 
 Given(/^There is a new feature flag$/, async function () {
   const name = makeid(5).toUpperCase();
@@ -23,6 +24,7 @@ Given(/^There is a new feature flag$/, async function () {
   this.feature = feat;
 });
 
+
 When(/^I set the feature value to (.*)$/, async function(value: string) {
   const world = this as SdkWorld;
 
@@ -30,18 +32,21 @@ When(/^I set the feature value to (.*)$/, async function(value: string) {
   expect(world.environment.id).to.not.be.undefined;
   expect(world.feature.id).to.not.be.undefined;
 
-  const result = await world.featureValueApi.createFeatureForEnvironment(world.environment.id, world.feature.key, new FeatureValue({
-    key: world.feature.key,
-    locked: false,
-    valueNumber: world.feature.valueType === FeatureValueType.Number ? parseFloat(value) : null,
-    valueBoolean: world.feature.valueType === FeatureValueType.Boolean ? ('true' === value) : null,
-    valueJson: world.feature.valueType === FeatureValueType.Json ? value : null,
-    valueString: world.feature.valueType === FeatureValueType.String ? value : null,
-  }));
+  const existingValue = await world.getFeatureValue();
+  existingValue.locked = false;
+  existingValue.whoUpdated = undefined;
+  existingValue.whenUpdated = undefined;
+  existingValue.whatUpdated = undefined;
+  existingValue.value = convertValue(value, world.feature.valueType);
+
+  const result = await world.featureValueApi.createFeatureForEnvironment(world.environment.id, world.feature.key, existingValue);
+
   expect(result.status).to.eq(200);
 });
 
 Given(/^There is a feature (flag|string|number|json) with the key (.*)$/, async function (type: string, key: string) {
+  const world = this as SdkWorld;
+
   let fType: FeatureValueType | undefined;
   if (type === "flag" || type === "boolean") {
     fType = FeatureValueType.Boolean;
@@ -53,7 +58,7 @@ Given(/^There is a feature (flag|string|number|json) with the key (.*)$/, async 
     fType = FeatureValueType.Json;
   }
   expect(fType, `${type} is an unrecognized flag type`).to.not.be.undefined;
-  const fCreate = await this.featureApi.createFeaturesForApplication(this.application.id, new CreateFeature({
+  const fCreate = await world.currentUser.featureApi.createFeaturesForApplication(this.application.id, new CreateFeature({
     name: key,
     key: key,
     valueType: fType
@@ -62,15 +67,46 @@ Given(/^There is a feature (flag|string|number|json) with the key (.*)$/, async 
   const feature = fCreate.data.find((f: Feature) => f.key == key);
   expect(feature).to.not.be.undefined;
 
-  this.feature = feature;
+  world.feature = feature;
 });
 
-Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (lockedStatus, value) {
-  const world = this as SdkWorld;
+export async function waitForRepository(world: SdkWorld) {
   await waitForExpect(() => {
     expect(world.repository).to.not.be.undefined;
     expect(world.repository.readyness).to.eq(Readyness.Ready);
   }, 2000, 500);
+
+}
+
+Then('The feature from the repository has the default value {string}', async function(value: string) {
+  const world = this as SdkWorld;
+  await waitForRepository(world);
+
+  const val = convertValue(value, world.feature.valueType);
+
+  await waitForExpect(() => {
+    const f = this.featureState(world.feature.key) as any;
+    const state = f.internalFeatureState as FeatureState | undefined;
+    expect(state).to.not.be.undefined;
+    expect(state.value, `Expecting the feature value to be ${val} but it is ${JSON.stringify(state)}`).to.eq(val);
+  }, 4000, 500);
+});
+
+
+Then('The flag in the sdk has a value {string}', async function (val: string) {
+  const world = this as SdkWorld;
+  await waitForRepository(world);
+
+  const compare = convertValue(val, world.feature.valueType);
+  await waitForExpect(() => {
+    const f = this.featureState(world.feature.key) as FeatureStateHolder;
+    expect(f.value, `value in repository is ${f.value} (strategies applied) but that is not ${compare}`).to.eq(compare);
+  }, 4000, 500);
+});
+
+Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (lockedStatus, value) {
+  const world = this as SdkWorld;
+  await waitForRepository(world);
 
   await waitForExpect(() => {
     // const f = this.featureState(this.feature.key) as FeatureStateHolder;
@@ -123,7 +159,7 @@ When(/^I (unlock|lock) the feature$/, async function (lockUnlock) {
 Then(/^I set the feature flag to (on|off|locked|unlocked)$/, async function (flagChange) {
   const fValue = await (this as SdkWorld).getFeatureValue();
   if (flagChange === 'on' || flagChange === 'off') {
-    fValue.valueBoolean = (flagChange === 'on');
+    fValue.value = (flagChange === 'on');
   } else {
     fValue.locked = (flagChange === 'locked');
   }
@@ -134,18 +170,19 @@ Then(/^I set the feature flag to (on|off|locked|unlocked)$/, async function (fla
 });
 
 Then(/^I set the feature flag to (on|off|locked|unlocked) and (on|off|locked|unlocked)$/, async function (flagChange1, flagChange2) {
-  const fValue = await (this as SdkWorld).getFeatureValue();
+  const world = this as SdkWorld;
+  const fValue = await world.getFeatureValue();
   if (flagChange1 === 'on' || flagChange1 === 'off') {
-    fValue.valueBoolean = (flagChange1 === 'on');
+    fValue.value = (flagChange1 === 'on');
   } else {
     fValue.locked = (flagChange1 === 'locked');
   }
   if (flagChange2 === 'on' || flagChange2 === 'off') {
-    fValue.valueBoolean = (flagChange2 === 'on');
+    fValue.value = (flagChange2 === 'on');
   } else {
     fValue.locked = (flagChange2 === 'locked');
   }
-  await this.updateFeature(fValue);
+  await world.updateFeature(fValue);
 });
 
 
@@ -176,43 +213,6 @@ When(/^I setup (\d+) random feature (flags|strings|numbers|json)$/, async functi
 
 });
 
-When(/^I create custom rollout strategies$/, async function (table: DataTable) {
-  const world = this as SdkWorld;
-  const fv = (await world.featureValueApi.getFeatureForEnvironment(world.environment.id, world.feature.key)).data;
-
-  fv.rolloutStrategies = [];
-
-  for(const row of table.hashes()) {
-    console.log('strategy row', row);
-    const percentage = parseInt(row['percentage']);
-    const name = row['name'];
-    const value = row['value'];
-    const rs = new RolloutStrategy({
-      name: name,
-      percentage: percentage,
-      value: value === 'on'
-    });
-    fv.rolloutStrategies.push(rs);
-  }
-
-  const updated = await world.updateFeature(fv);
-  updated.rolloutStrategies.forEach(rs => rs.id = undefined);
-  expect(strategyComparison(updated.rolloutStrategies, fv.rolloutStrategies)).to.be.true;
-});
-
-function strategyComparison(one: Array<RolloutStrategy>, two: Array<RolloutStrategy>): boolean {
-  if (one.length != two.length) return false;
-  for(let count = 0; count < one.length; count ++) {
-    if ((one[count].percentage !== two[count].percentage) ||
-       (one[count].value !== two[count].value) ||
-      (one[count].name !== two[count].name)) {
-      console.log('one: ', JSON.stringify(one[count]), 'not equal  to two: ', JSON.stringify(two[count]));
-      return false;
-    }
-  }
-  return true;
-}
-
 function decodeStrategies(s: string | undefined): Array<RolloutStrategy> {
   if (!s || s.trim().length == 0) return [];
 
@@ -222,7 +222,9 @@ function decodeStrategies(s: string | undefined): Array<RolloutStrategy> {
     strategies.push(new RolloutStrategy({
       name: data[1],
       percentage: parseInt(data[0]),
-      value: data[2] === 'on'
+      value: data[2] === 'on',
+      disabled: false,
+      attributes: []
     }));
   });
 
@@ -247,19 +249,47 @@ When(/^I check the feature history I see$/, async function (table: DataTable) {
   });
 
   let pos = 0; // position in version history
+  const columns = table.raw()[0];
 
   for (const row of table.hashes()) {
     console.log('history row', row);
-    const locked = row['locked'] === 'true';
-    const value = row['value'] === 'on';
-    const retired = row['retired'] === 'true';
-    const strategies = decodeStrategies(row['strategies']);
-    let found = false;
-    while (!found && pos < itemData.history.length) {
-      console.log('comparing ', JSON.stringify(itemData.history[pos]), 'to locked', locked, 'retired', retired, 'value', value, 'strategies', JSON.stringify(strategies));
-      const item = itemData.history[pos++];
-      found = (item.locked == locked) && (item.retired == retired) && (item.value == value) && (strategyComparison(item.rolloutStrategies, strategies));
+    expect(pos, 'Too many rows expected for what was actually provided').to.be.lessThan(itemData.history.length);
+    let found = true;
+    const item = itemData.history[pos];
+
+    const params = {};
+    if (columns.includes('locked')) {
+      const locked = row['locked'] === 'true';
+      found = (item.locked == locked);
+      params['locked'] = locked;
     }
+    if (found && columns.includes('value')) {
+      const value = row['value'] === 'on';
+      found = (item.value == value);
+      params['value'] = value;
+    }
+    if (found && columns.includes('retired')) {
+      const retired = row['retired'] === 'true';
+      found = (item.retired == retired);
+      params['retired'] = retired;
+    }
+    if (found && columns.includes('strategies')) {
+      const strategies = decodeStrategies(row['strategies']);
+      found = strategyComparison(item.rolloutStrategies, strategies);
+      params['strategies'] = strategies;
+    }
+    if (found && columns.includes('user')) {
+      const user = row['user'];
+      found = item.who.name.toLowerCase() === user.toLowerCase();
+      params['user'] = user;
+    }
+
+    if (!found) {
+      console.log('comparing failed between', JSON.stringify(item));
+      console.log('and', JSON.stringify(params));
+    }
+
+    pos ++;
 
     expect(found).to.be.true;
   }

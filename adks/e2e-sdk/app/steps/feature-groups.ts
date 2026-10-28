@@ -12,6 +12,7 @@ import {
   RolloutStrategyAttributeConditional,
   RolloutStrategyFieldType
 } from '../apis/mr-service';
+import {extractRolloutStrategyFromDataTable} from "../support/utils";
 
 async function translateFeatureValueTable(world: SdkWorld, table: DataTable): Promise<Array<FeatureGroupUpdateFeature>> {
   const appFeatureResult = await world.featureApi.getAllFeaturesForApplication(world.application.id, false);
@@ -51,7 +52,7 @@ When("I create a feature group {string}", async function (groupName: string, tab
     features: (await translateFeatureValueTable(world, table))
   });
 
-  const data = await world.featureGroupApi.createFeatureGroup(world.application.id, fg);
+  const data = await world.currentUser.featureGroupApi.createFeatureGroup(world.application.id, fg);
   expect(data.status).to.eq(201);
   const g = data.data;
   world.featureGroup = new FeatureGroup({
@@ -126,34 +127,16 @@ When('I delete the feature group {string}', async function(name: string) {
 });
 
 function extractStrategy(table: DataTable): GroupRolloutStrategy {
-  const strategies: Array<GroupRolloutStrategy> = [];
+  const rs = extractRolloutStrategyFromDataTable(table);
 
-  for (const row of table.hashes()) {
-    if (!strategies.find(s => s.name === row['name'])) {
-      strategies.push(new GroupRolloutStrategy({
-        name: row["name"],
-        percentage: row['percentage'].trim() === '-' ? null : parseInt(row['percentage'].trim()),
-        attributes: [],
-      }));
-    }
-  }
-  // now go thru again and add the attributes
-  for (const row of table.hashes()) {
-    console.log('strategies ', strategies, 'vs row name', row['name']);
-    const strat = strategies.find(s => s.name === row['name']);
-    if (row['fieldName'].trim().length > 0) {
-      strat.attributes.push(new RolloutStrategyAttribute({
-        fieldName: row['fieldName'].trim(),
-        conditional: conditional(row['conditional'].trim()),
-        values: row['values'].trim().split(','),
-        type: attributeType(row['type'].trim())
-      }));
-    }
-  }
+  expect(rs.length, `A feature group can only have one strategy and you have ${rs.length}`).to.eq(1);
 
-  expect(strategies.length, `A feature group can only have one strategy and you have ${strategies.length}`).to.eq(1);
-
-  return strategies[0];
+  return new GroupRolloutStrategy({
+    name: rs[0].name,
+    percentage: rs[0].percentage,
+    percentageAttributes: rs[0].percentageAttributes,
+    attributes: rs[0].attributes
+  });
 }
 
 When("I update the strategy in the feature group", async function (table: DataTable) {
@@ -162,11 +145,12 @@ When("I update the strategy in the feature group", async function (table: DataTa
   await getGroupFromServer(world);
 
   const update = new FeatureGroupUpdate({
+    id: world.featureGroup.id,
     version: world.featureGroup.version,
     strategies: [extractStrategy(table)]
   });
 
-  const data = await world.featureGroupApi.updateFeatureGroup(world.application.id, update);
+  const data = await world.currentUser.featureGroupApi.updateFeatureGroup(world.application.id, update);
   expect(data.status).to.eq(200);
   world.featureGroup.version = data.data.version;
 });
@@ -176,10 +160,22 @@ async function getGroupFromServer(world: SdkWorld) {
   expect(world.application).to.not.be.undefined;
   expect(world.environment).to.not.be.undefined;
 
-  const getData = await world.featureGroupApi.getFeatureGroup(world.application.id, world.featureGroup.id);
+  const getData = await world.currentUser.featureGroupApi.getFeatureGroup(world.application.id, world.featureGroup.id);
   expect(getData.status).to.eq(200);
   world.featureGroup = getData.data;
 }
+
+When("the feature group only has the keys {string}", async function (keys: string) {
+  const featureKeys = keys.split(",").map(k => k.trim()).filter(k => k.length > 0);
+  const world = this as SdkWorld;
+
+  await getGroupFromServer(world);
+
+  expect(world.featureGroup.features.length).to.eq(featureKeys.length);
+  for(const key of featureKeys) {
+    expect(world.featureGroup.features.find(k => k.key === key)).to.not.be.undefined;
+  }
+});
 
 When('I update the values of the feature group to', async function (table: DataTable) {
   const world = this as SdkWorld;
@@ -187,11 +183,12 @@ When('I update the values of the feature group to', async function (table: DataT
   await getGroupFromServer(world);
 
   const update = new FeatureGroupUpdate({
+    id: world.featureGroup.id,
     version: world.featureGroup.version,
     features: (await translateFeatureValueTable(world, table))
   });
 
-  const data = await world.featureGroupApi.updateFeatureGroup(world.application.id, update);
+  const data = await world.currentUser.featureGroupApi.updateFeatureGroup(world.application.id, update);
   expect(data.status).to.eq(200);
   world.featureGroup.version = data.data.version;
 });

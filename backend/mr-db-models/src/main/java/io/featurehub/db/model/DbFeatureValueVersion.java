@@ -1,7 +1,6 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.DbJson;
-import io.featurehub.db.model.query.QDbStrategyForFeatureValue;
 import io.featurehub.mr.model.RolloutStrategy;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -30,6 +29,8 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
                                boolean locked, boolean retired,
                                @NotNull List<RolloutStrategy> rolloutStrategies,
                                @NotNull List<SharedRolloutStrategyVersion> sharedRolloutStrategies,
+                               @NotNull List<SharedRolloutStrategyVersion> sharedPortfolioRolloutStrategies,
+                               @NotNull List<RolloutStrategy> featureGroupStrategies,
                                DbApplicationFeature feature,
                                @Nullable Long versionFrom) {
     super(whoCreated, locked);
@@ -39,6 +40,8 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
 
     this.retired = retired;
     this.sharedRolloutStrategies = sharedRolloutStrategies;
+    this.sharedPortfolioRolloutStrategies = sharedPortfolioRolloutStrategies;
+    this.featureGroupStrategies = featureGroupStrategies;
     this.feature = feature;
     this.versionFrom = versionFrom;
 
@@ -73,12 +76,43 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
   @Column(name = "shared_strat")
   protected List<SharedRolloutStrategyVersion> sharedRolloutStrategies;
 
+  @DbJson
+  @Column(name = "shared_pstrat")
+  protected List<SharedRolloutStrategyVersion> sharedPortfolioRolloutStrategies;
+
+  /**
+   * Strategies that applied to this feature value because of feature group membership at the time this
+   * version was recorded. These are resolved/denormalised (not a strategy-id reference like the shared
+   * strategies above) because a feature group's strategy applies uniformly to every feature in the group,
+   * rather than being an individually-attached, independently versioned strategy.
+   */
+  @DbJson
+  @Column(name = "fg_strat")
+  protected List<RolloutStrategy> featureGroupStrategies;
+
+  public @NotNull List<RolloutStrategy> getFeatureGroupStrategies() {
+    if (featureGroupStrategies == null) {
+      featureGroupStrategies = new LinkedList<>();
+    }
+
+    return featureGroupStrategies;
+  }
+
   public @NotNull List<SharedRolloutStrategyVersion> getSharedRolloutStrategies() {
     if (sharedRolloutStrategies == null) {
       sharedRolloutStrategies = new LinkedList<>();
     }
 
     return sharedRolloutStrategies;
+  }
+
+  @NotNull
+  public List<SharedRolloutStrategyVersion> getSharedPortfolioRolloutStrategies() {
+    if (sharedPortfolioRolloutStrategies == null) {
+      sharedPortfolioRolloutStrategies = new LinkedList<>();
+    }
+
+    return sharedPortfolioRolloutStrategies;
   }
 
   public boolean isRetired() {
@@ -93,7 +127,8 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
     return id;
   }
 
-  public static DbFeatureValueVersion fromDbFeatureValue(DbFeatureValue from, @Nullable Long versionFrom) {
+  public static DbFeatureValueVersion fromDbFeatureValue(
+    DbFeatureValue from, @Nullable Long versionFrom, @NotNull List<RolloutStrategy> featureGroupStrategies) {
     final DbFeatureValueVersion newVersion = new DbFeatureValueVersion(
       new DbFeatureValueVersionKey(from.getId(), from.getVersion()),
       from.getVersion() == 1L ? from.getWhenCreated() : from.getWhenUpdated(),
@@ -103,16 +138,25 @@ public class DbFeatureValueVersion extends DbBaseFeatureValue {
       from.getRetired() == Boolean.TRUE,
       from.getRolloutStrategies(),
       transformSharedStrategies(from.getSharedRolloutStrategies()),
+      transformPortfolioStrategies(from.getSharedPortfolioRolloutStrategies()),
+      featureGroupStrategies,
       from.getFeature(),
       versionFrom
     );
+
     return newVersion;
   }
 
   private static List<SharedRolloutStrategyVersion> transformSharedStrategies(@NotNull List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
     return sharedRolloutStrategies.stream().map(shared -> new SharedRolloutStrategyVersion(shared.getRolloutStrategy().getId(),
       shared.getRolloutStrategy().getVersion(),
-      shared.isEnabled(), shared.getValue())).collect(Collectors.toList());
+      shared.isEnabled(), shared.getValue(), shared.getPercentageOverride())).collect(Collectors.toList());
+  }
+
+  private static List<SharedRolloutStrategyVersion> transformPortfolioStrategies(@NotNull List<DbPortfolioStrategyForFeatureValue> sharedRolloutStrategies) {
+    return sharedRolloutStrategies.stream().map(shared -> new SharedRolloutStrategyVersion(shared.getRolloutStrategy().getId(),
+      shared.getRolloutStrategy().getVersion(),
+      shared.isEnabled(), shared.getValue(), shared.getPercentageOverride())).collect(Collectors.toList());
   }
 
   public @Nullable Long getVersionFrom() {

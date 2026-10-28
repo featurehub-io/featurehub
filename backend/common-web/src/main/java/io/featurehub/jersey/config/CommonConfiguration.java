@@ -1,6 +1,7 @@
 package io.featurehub.jersey.config;
 
 import cd.connect.openapi.support.OpenApiEnumProvider;
+import io.featurehub.rest.MaintenanceNotificationFilter;
 import io.featurehub.jersey.OffsetDateTimeQueryProvider;
 import io.featurehub.jersey.SSEAwareEncodingFilter;
 import io.featurehub.lifecycle.LifecycleListenerFeature;
@@ -42,6 +43,11 @@ public class CommonConfiguration implements Feature {
     config.register(OffsetDateTimeQueryProvider.class);
     config.register(OpenApiEnumProvider.class);
     config.register(LifecycleListenerFeature.class);
+
+    // only wire it in if its configured, otherwise its wasted time
+    if (MaintenanceNotificationFilter.Companion.wireFilterCheck()) {
+      config.register(MaintenanceNotificationFilter.class);
+    }
 
     // only wire this up if the config is actually there
     if (FallbackPropertyConfig.Companion.getConfig(WebHeaderAuditLogger.Companion.getCONFIG_KEY())

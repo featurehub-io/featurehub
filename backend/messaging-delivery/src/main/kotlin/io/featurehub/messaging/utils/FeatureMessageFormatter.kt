@@ -9,6 +9,7 @@ import com.github.jknack.handlebars.Template
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
+import io.featurehub.messaging.model.FeatureMessagingOperation
 import io.featurehub.messaging.model.FeatureMessagingUpdate
 import io.featurehub.messaging.model.MessagingRolloutStrategy
 import io.featurehub.messaging.model.MessagingStrategyUpdate
@@ -95,14 +96,22 @@ class FeatureMessageFormatterImpl : FeatureMessageFormatter {
 
     data["whenUpdatedReadable"] = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").format(fmData.whenUpdated)
 
+    // order matters, feature group strategies are shown before application/portfolio ones
+    fmData.featureGroupStrategiesUpdated?.let { strategiesUpdated("featuregroup", it, data, fmData ) }
     fmData.strategiesUpdated?.let { strategiesUpdated("", it, data, fmData ) }
     fmData.applicationStrategiesUpdated?.let { strategiesUpdated("application", it, data, fmData ) }
+    fmData.portfolioStrategiesUpdated?.let { strategiesUpdated("portfolio", it, data, fmData ) }
+
 
     fmData.lockUpdated?.let { locked ->
       data["wasLocked"] = !locked.previous && locked.updated
     }
     fmData.retiredUpdated?.let { retired ->
       data["wasRetired"] = !retired.previous && retired.updated
+    }
+    if (fmData.operation == FeatureMessagingOperation.CREATE) {
+      data["wasCreated"] = true
+      data["lockedStatus"] = if (fmData.lockUpdated?.updated == true) "locked" else "unlocked"
     }
 
     return data

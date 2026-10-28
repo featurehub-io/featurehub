@@ -11,15 +11,19 @@ import io.featurehub.mr.resources.FeatureFilterResource
 import io.featurehub.mr.auth.*
 import io.featurehub.mr.dacha2.Dacha2Feature
 import io.featurehub.mr.events.EventingFeature
+import io.featurehub.mr.fhos.DachaPublisherConfigSource
 import io.featurehub.mr.resources.*
 import io.featurehub.mr.resources.oauth2.OAuth2MRAdapter
 import io.featurehub.mr.utils.ApplicationUtils
-import io.featurehub.mr.utils.ConfigurationUtils
 import io.featurehub.mr.utils.PortfolioFeaturePermissionUtils
+import io.featurehub.mr.utils.PortfolioAuthUtils
+import io.featurehub.mr.utils.PortfolioAuthUtilsImpl
 import io.featurehub.mr.utils.PortfolioUtils
+import io.featurehub.mr.utils.PortfolioUtilsImpl
 import io.featurehub.mr.webhook.ManagementRepositoryWebhookFeature
 import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
+import io.featurehub.systemcfg.KnownSystemConfigSource
 import io.featurehub.web.security.oauth.*
 import io.featurehub.web.security.oauth.OAuth2Feature.Companion.oauth2ProvidersExist
 import io.featurehub.web.security.saml.SamlEnvironmentalFeature
@@ -49,6 +53,7 @@ class ManagementRepositoryFeature : Feature {
       SetupServiceDelegator::class.java,
       UserStateServiceDelegator::class.java,
       ApplicationRolloutStrategyServiceDelegator::class.java,
+      PortfolioRolloutStrategyServiceDelegator::class.java,
       FeatureGroupServiceDelegator::class.java,
       FeatureFilterServiceDelegator::class.java,
       CorsFilter::class.java,
@@ -61,9 +66,7 @@ class ManagementRepositoryFeature : Feature {
       WebhookEncryptionFeature::class.java
     ).forEach { componentClass: Class<out Any?>? -> context.register(componentClass) }
 
-    if (ConfigurationUtils.dacha1Enabled) {
-      context.register(CacheServiceDelegator::class.java)
-    }
+    context.register(CacheServiceDelegator::class.java)
 
     // only mount the dacha2 endpoints on the public API if the keys exist to protect it.
     if (Dacha2Feature.dacha2ApiKeysExist()) {
@@ -86,12 +89,16 @@ class ManagementRepositoryFeature : Feature {
           bind(NoAuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
         }
 
+        // FHOS config, do not configure in SaaS.
+        bind(DachaPublisherConfigSource::class.java).to(KnownSystemConfigSource::class.java).`in`(Singleton::class.java)
+
         bind(BaggageSourceAuth::class.java).to(WebBaggageSource::class.java).`in`(Singleton::class.java)
         bind(OAuth2MRAdapter::class.java).to(SSOCompletionListener::class.java).`in`(Singleton::class.java)
         bind(DatabaseAuthRepository::class.java).to(AuthenticationRepository::class.java).`in`(
           Singleton::class.java
         )
-        bind(PortfolioUtils::class.java).to(PortfolioUtils::class.java).`in`(Singleton::class.java)
+        bind(PortfolioAuthUtilsImpl::class.java).to(PortfolioAuthUtils::class.java).`in`(Singleton::class.java)
+        bind(PortfolioUtilsImpl::class.java).to(PortfolioUtils::class.java).`in`(Singleton::class.java)
         bind(AuthManager::class.java).to(AuthManagerService::class.java).`in`(Singleton::class.java)
         bind(ApplicationResource::class.java).to(ApplicationServiceDelegate::class.java).`in`(
           Singleton::class.java
@@ -105,9 +112,7 @@ class ManagementRepositoryFeature : Feature {
         bind(PortfolioFeaturePermissionUtils::class.java).to(PortfolioFeaturePermissionUtils::class.java).`in`(
           Singleton::class.java
         )
-        if (ConfigurationUtils.dacha1Enabled) {
-          bind(CacheResource::class.java).to(CacheServiceDelegate::class.java).`in`(Singleton::class.java)
-        }
+        bind(CacheResource::class.java).to(CacheServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(SystemConfigResource::class.java).to(SystemConfigServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(TrackEventResource::class.java).to(TrackEventsServiceDelegate::class.java).`in`(Singleton::class.java)
         bind(AuthResource::class.java).to(AuthServiceDelegate::class.java).`in`(Singleton::class.java)
@@ -132,6 +137,9 @@ class ManagementRepositoryFeature : Feature {
           Singleton::class.java
         )
         bind(ApplicationRolloutStrategyResource::class.java).to(ApplicationRolloutStrategyServiceDelegate::class.java).`in`(
+          Singleton::class.java
+        )
+        bind(PortfolioRolloutStrategyResource::class.java).to(PortfolioRolloutStrategyServiceDelegate::class.java).`in`(
           Singleton::class.java
         )
         bind(ServiceAccountResource::class.java).to(ServiceAccountServiceDelegate::class.java).`in`(

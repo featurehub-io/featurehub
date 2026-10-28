@@ -9,7 +9,7 @@ Feature: Service accounts have expected permissions and operation
     When I ask for api keys for the application for superuser
     Then the current environment api keys are visible for superuser
     When I create a new normal group
-    And I assign roles "read,extended_data" to the group for the current environment
+    And I can assign roles "read,extended_data" to the group for the current environment
     And I create a new user
     And I assign the new user to the new group
     And I ask for api keys for the application for new user

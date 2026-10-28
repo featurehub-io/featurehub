@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'package:open_admin_app/maintenance/maintenance_info.dart';
 import 'package:universal_html/html.dart';
 import 'package:dio/dio.dart';
 import 'package:bloc_provider/bloc_provider.dart';
@@ -89,6 +91,17 @@ class ManagementRepositoryClientBloc implements Bloc {
   late StreamSubscription<Portfolio?> _personPermissionInPortfolioChanged;
   late ServerCapabilities identityProviders;
 
+  final _pendingMaintenanceSource =
+      BehaviorSubject<MaintenanceInfo?>.seeded(null);
+
+  Stream<MaintenanceInfo?> get pendingMaintenanceStream =>
+      _pendingMaintenanceSource.stream;
+  final _activeMaintenanceSource =
+      BehaviorSubject<MaintenanceInfo?>.seeded(null);
+
+  Stream<MaintenanceInfo?> get activeMaintenanceStream =>
+      _activeMaintenanceSource.stream;
+
   StreamSubscription<Person>? personStreamListener;
 
   BehaviorSubject<bool> get stepperOpened => _stepperOpened;
@@ -115,7 +128,9 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   Stream<RouteChange?> get routeCurrentStream => _routerCollectedSource.stream;
+
   Stream<RouteChange?> get routeChangedStream => _routerSource.stream;
+
   Stream<RouteChange?> get redrawChangedStream =>
       _routerRedrawRouteSource.stream;
 
@@ -253,19 +268,79 @@ class ManagementRepositoryClientBloc implements Bloc {
     return webInterface.homeUrl(overrideOrigin);
   }
 
-  ManagementRepositoryClientBloc({String? basePathUrl})
-      : _client = ApiClient(basePath: basePathUrl ?? homeUrl()) {
-    streamValley = StreamValley(personState);
-    webInterface.setOrigin();
-
-    // attach a request id from this client to every outgoing request
-    (_client.apiClientDelegate as DioClientDelegate).client.interceptors.add(
-        InterceptorsWrapper(onRequest:
-            (RequestOptions options, RequestInterceptorHandler handler) {
+  void addInterceptorToDio(Dio client) {
+    client.interceptors.add(InterceptorsWrapper(
+        onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
+      // attach a request id from this client to every outgoing request
       options.headers
           .putIfAbsent("baggage", () => "x-fh-reqid=${requestIdCounter++}");
       return handler.next(options);
+    }, onError: (DioException err, ErrorInterceptorHandler handler) async {
+      var handled = false;
+
+      try {
+        if (err.response != null) {
+          final response = err.response!;
+          final message = (response.data is ResponseBody)
+              ? (await decodeBodyBytes((response.data as ResponseBody).stream))
+              : null;
+          final headers = response.headers;
+          // dio parses this as an array because of the comma, so we have to reconstruct
+          final retryAfter = headers['retry-after'];
+
+          if (response.statusCode == 503 && retryAfter != null && retryAfter.isNotEmpty) {
+            _activeMaintenanceSource.add(MaintenanceInfo(
+                message: message, end: HttpDate.parse("${retryAfter[0]},${retryAfter[1]}")));
+            handled = true;
+            handler.resolve(response);
+            return;
+          }
+        }
+      } finally {
+        if (!handled) {
+          handler.next(err);
+        }
+      }
+    }, onResponse: (Response response, ResponseInterceptorHandler handler) {
+      // it is seeded null, so we just need to know if it isn't already null -
+      // clear it in case it is left over, it will be added again below if it is active
+      if (_activeMaintenanceSource.valueOrNull != null) {
+        _activeMaintenanceSource.add(null);
+      }
+      // if we get a 503 with a retry-after set, we are in active maintenance mode and should overlay the UI
+      final headers = response.headers;
+
+      // if we
+      final endStr = headers.value('x-maintenance-end');
+
+      if (endStr != null) {
+        final maintenanceInfo = MaintenanceInfo(
+          message: headers.value('x-maintenance-message'),
+          start: DateTime.tryParse(headers.value('x-maintenance-start') ?? ''),
+          end: DateTime.tryParse(endStr),
+        );
+
+        if (maintenanceInfo.isValid()) {
+          if (maintenanceInfo.isActive()) {
+            _activeMaintenanceSource.add(maintenanceInfo);
+          } else {
+            _pendingMaintenanceSource.add(maintenanceInfo);
+          }
+        }
+      } else if (_pendingMaintenanceSource.hasValue) {
+        _pendingMaintenanceSource.add(null);
+      }
+      handler.next(response);
     }));
+  }
+
+  ManagementRepositoryClientBloc({String? basePathUrl})
+      : _client = ApiClient(basePath: basePathUrl ?? homeUrl()) {
+    addInterceptorToDio(
+        (_client.apiClientDelegate as DioClientDelegate).client);
+
+    streamValley = StreamValley(personState);
+    webInterface.setOrigin();
 
     _client.passErrorsAsApiResponses = true;
 
@@ -507,6 +582,13 @@ class ManagementRepositoryClientBloc implements Bloc {
       {String? messageTitle,
       bool showDetails = true,
       String messageBody = ''}) async {
+    if (e is ApiException &&
+        e.code == 500 &&
+        _activeMaintenanceSource.value != null) {
+      routeSlot(RouteSlot.maintenance);
+      return;
+    }
+
     _log.warning(messageBody, e, s);
     if (messageTitle != null) {
       addError(FHError(messageTitle,

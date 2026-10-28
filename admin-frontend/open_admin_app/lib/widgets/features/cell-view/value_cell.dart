@@ -54,21 +54,25 @@ class _ValueContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
     if (fv != null) {
+      // Archived features are read-only; restore them before editing values.
+      final isArchived = feature.whenArchived != null;
       return InkWell(
-        onTap: () {
-          SideSheet.right(
-              sheetColor: Theme.of(context).canvasColor,
-              body: BlocProvider<EditingFeatureValueBloc>.builder(
-                  creator: (c, b) =>
-                      bloc.perFeatureStateTrackingBloc(feature, fv!, efv),
-                  builder: (ctx, efvBloc) => EditFeatureValueWidget(
-                        bloc: efvBloc,
-                      )),
-              width: MediaQuery.of(context).size.width > 800
-                  ? MediaQuery.of(context).size.width * 0.7
-                  : MediaQuery.of(context).size.width,
-              context: context);
-        },
+        onTap: isArchived
+            ? null
+            : () {
+                SideSheet.right(
+                    sheetColor: Theme.of(context).canvasColor,
+                    body: BlocProvider<EditingFeatureValueBloc>.builder(
+                        creator: (c, b) =>
+                            bloc.perFeatureStateTrackingBloc(feature, fv!, efv),
+                        builder: (ctx, efvBloc) => EditFeatureValueWidget(
+                              bloc: efvBloc,
+                            )),
+                    width: MediaQuery.of(context).size.width > 800
+                        ? MediaQuery.of(context).size.width * 0.7
+                        : MediaQuery.of(context).size.width,
+                    context: context);
+              },
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -110,15 +114,17 @@ class _ValueContainer extends StatelessWidget {
                         fv: fv!,
                         feature: feature,
                       ),
-                  if (fv!.rolloutStrategyInstances != null &&
-                      fv!.rolloutStrategyInstances!.isNotEmpty)
+                  if (fv?.rolloutStrategyInstances?.isNotEmpty == true)
                     for (RolloutStrategyInstance rsi
                         in fv!.rolloutStrategyInstances!)
                       _ValueCard(
                         applicationStrategy: rsi,
                         fv: fv!,
                         feature: feature,
-                      )
+                      ),
+                  if (fv?.portfolioStrategyInstances?.isNotEmpty == true)
+                    for(RolloutStrategyInstance rsi in fv!.portfolioStrategyInstances!)
+                      _ValueCard(fv: fv!, feature: feature, portfolioStrategy: rsi,)
                 ],
               )
             ],
@@ -172,6 +178,7 @@ class _ValueCard extends StatelessWidget {
   final RolloutStrategy? rolloutStrategy;
   final ThinGroupRolloutStrategy? groupStrategy;
   final RolloutStrategyInstance? applicationStrategy;
+  final RolloutStrategyInstance? portfolioStrategy;
 
   const _ValueCard({
     required this.fv,
@@ -179,6 +186,7 @@ class _ValueCard extends StatelessWidget {
     this.rolloutStrategy,
     this.groupStrategy,
     this.applicationStrategy,
+    this.portfolioStrategy
   });
 
   @override
@@ -212,7 +220,7 @@ class _ValueCard extends StatelessWidget {
                           ? groupStrategyTextColor.withAlpha(38)
                           : applicationStrategy != null
                               ? applicationStrategyTextColor.withAlpha(38)
-                              : defaultTextColor.withAlpha(38),
+                              : portfolioStrategy != null ? portfolioStrategyTextColor.withAlpha(38) : defaultTextColor.withAlpha(38),
                   borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(4.0),
                       bottomLeft: Radius.circular(4.0)),
@@ -278,6 +286,25 @@ class _ValueCard extends StatelessWidget {
                                   ),
                                 ),
                               )
+                        : portfolioStrategy != null
+                          ? Tooltip(
+                                message: l10n.portfolioStrategyTooltip,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Text(
+                                    portfolioStrategy!.name!,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelLarge!
+                                        .copyWith(
+                                        color: portfolioStrategyTextColor,
+                                        // fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.9),
+                                  ),
+                                ),
+                              )
                             : Padding(
                                 padding: const EdgeInsets.all(4.0),
                                 child: Text('default',
@@ -292,18 +319,11 @@ class _ValueCard extends StatelessWidget {
             feature.valueType == FeatureValueType.BOOLEAN
                 ? Flexible(
                     fit: FlexFit.tight,
-                    child: FlagOnOffColoredIndicator(
-                        on: rolloutStrategy != null
-                            ? rolloutStrategy!.value
-                            : groupStrategy != null
-                                ? groupStrategy!.value
-                                : applicationStrategy != null
-                                    ? applicationStrategy!.value
-                                    : fv.valueBoolean),
+                    child: FlagOnOffColoredIndicator(on: _findBooleanValue()),
                   )
                 : Flexible(
                     fit: FlexFit.tight,
-                    child: Text(displayValue.isEmpty ? 'not set' : displayValue,
+                    child: Text(displayValue.isEmpty ? l10n.notSet : displayValue,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: displayValue.isEmpty
@@ -317,6 +337,15 @@ class _ValueCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// boolean features are never null
+  bool _findBooleanValue() {
+    if (rolloutStrategy != null) return rolloutStrategy!.value as bool;
+    if (groupStrategy != null) return groupStrategy!.value as bool;
+    if (applicationStrategy != null) return applicationStrategy!.value as bool;
+    if (portfolioStrategy != null) return portfolioStrategy!.value as bool;
+    return fv.value;
   }
 
   String _findDisplayValue() {

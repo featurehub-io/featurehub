@@ -14,6 +14,7 @@ import io.featurehub.mr.model.PersonType
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
+import java.security.SecureRandom
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
@@ -220,7 +221,31 @@ class AuthenticationSqlApi @Inject constructor(private val convertUtils: Convers
     }
   }
 
+  override fun clearPasswordResetAfterSsoLogin(id: UUID, scramblePassword: Boolean): Boolean {
+    val person = QDbPerson().id.eq(id).personType.eq(PersonType.PERSON).findOne() ?: return false
+    if (!person.isPasswordRequiresReset) {
+      return false
+    }
+
+    person.isPasswordRequiresReset = false
+    person.whoChanged = null
+    if (scramblePassword) {
+      person.password = passwordSalter.saltAnyPassword(randomPassword(), DbPerson.DEFAULT_PASSWORD_ALGORITHM)
+      person.passwordAlgorithm = DbPerson.DEFAULT_PASSWORD_ALGORITHM
+    }
+    updateUser(person)
+    log.info("sso: cleared password reset for {} (password scrambled: {})", id, scramblePassword)
+    return true
+  }
+
+  private fun randomPassword(): String {
+    val bytes = ByteArray(48)
+    secureRandom.nextBytes(bytes)
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
+  }
+
   companion object {
     private val log = LoggerFactory.getLogger(AuthenticationSqlApi::class.java)
+    private val secureRandom = SecureRandom()
   }
 }

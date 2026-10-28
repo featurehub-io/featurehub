@@ -65,7 +65,6 @@ class ServiceAccountPermissionState
                                 .goToServiceAccountSettings,
                             onPressed: () => {
                               ManagementRepositoryClientBloc.router.navigateTo(
-                                context,
                                 '/service-accounts',
                               )
                             },

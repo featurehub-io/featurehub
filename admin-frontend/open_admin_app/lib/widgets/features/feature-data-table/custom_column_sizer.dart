@@ -19,7 +19,8 @@ class CustomColumnSizer extends ColumnSizer {
             int stratLength = 0;
             stratLength = typedCellData.fv!.rolloutStrategies!.length +
                 typedCellData.fv!.featureGroupStrategies!.length +
-                typedCellData.fv!.rolloutStrategyInstances!.length;
+                typedCellData.fv!.rolloutStrategyInstances!.length +
+                (typedCellData.fv!.portfolioStrategyInstances ?? []).length;
             if (stratLength * defaultCellHeight > height) {
               height = stratLength * defaultCellHeight;
             }

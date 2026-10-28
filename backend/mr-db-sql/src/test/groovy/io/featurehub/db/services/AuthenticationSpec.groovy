@@ -3,13 +3,11 @@ package io.featurehub.db.services
 import io.featurehub.db.api.DBLoginSession
 import io.featurehub.db.api.Opts
 import io.featurehub.mr.events.common.CacheSource
-import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.CreateApplication
 import io.featurehub.mr.model.CreateGroup
 import io.featurehub.mr.model.CreatePortfolio
-import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.Portfolio
@@ -18,7 +16,6 @@ import spock.lang.Shared
 
 import java.time.Instant
 import java.time.temporal.ChronoField
-import java.time.temporal.TemporalField
 
 class AuthenticationSpec extends BaseSpec {
   @Shared AuthenticationSqlApi auth
@@ -189,6 +186,34 @@ class AuthenticationSpec extends BaseSpec {
       reset == null
   }
 
+  def "an sso login clears the password reset flag and scrambles the password when asked"() {
+    given: "i register and the superuser resets my password"
+      personApi.create('sso-scramble@featurehub.io', "William", null)
+      Person person = auth.register("william", "sso-scramble@featurehub.io", "bathroom", null)
+      auth.resetPassword(person.id.id, "honey", superuser, false)
+    when: "i login via sso with password login enabled"
+      def cleared = auth.clearPasswordResetAfterSsoLogin(person.id.id, true)
+    then: "the flag is cleared and the temporary password no longer works"
+      cleared
+      !personApi.get(person.id.id, Opts.empty()).passwordRequiresReset
+      auth.login("sso-scramble@featurehub.io", "honey") == null
+    and: "a second sso login does nothing"
+      !auth.clearPasswordResetAfterSsoLogin(person.id.id, true)
+  }
+
+  def "an sso login clears the password reset flag and leaves the password alone when not scrambling"() {
+    given: "i register and the superuser resets my password"
+      personApi.create('sso-noscramble@featurehub.io', "William", null)
+      Person person = auth.register("william", "sso-noscramble@featurehub.io", "bathroom", null)
+      auth.resetPassword(person.id.id, "honey", superuser, false)
+    when: "i login via sso with password login disabled"
+      def cleared = auth.clearPasswordResetAfterSsoLogin(person.id.id, false)
+    then:
+      cleared
+      !personApi.get(person.id.id, Opts.empty()).passwordRequiresReset
+      !auth.login("sso-noscramble@featurehub.io", "honey").passwordRequiresReset
+  }
+
   def "a person cannot reset their own password"() {
     given: "i register"
       def createdPerson = personApi.create('william-reset@featurehub.io', "William", null)
@@ -235,7 +260,7 @@ class AuthenticationSpec extends BaseSpec {
         new CreateGroup().name("admin-group").admin(true)
           .applicationRoles([new ApplicationGroupRole().applicationId(app1.id)
                                .roles([ApplicationRoleType.FEATURE_EDIT])]), superPerson)
-      groupSqlApi.addPersonsToGroup(portfolioGroup.id, [p2.id.id], Opts.empty())
+      groupSqlApi.addPersonsToGroup(portfolioGroup.id, [p2.id.id], superuser,Opts.empty())
     when: "i login"
       def user = auth.login(p2.email, "hooray")
     then: "i have the application role permission to the portfolio"

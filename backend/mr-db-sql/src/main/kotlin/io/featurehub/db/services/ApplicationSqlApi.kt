@@ -1,12 +1,19 @@
 package io.featurehub.db.services
 
+import io.ebean.DuplicateKeyException
 import io.ebean.annotation.Transactional
 import io.ebean.annotation.TxType
 import io.featurehub.dacha.model.PublishAction
 import io.featurehub.db.api.ApplicationApi
+import io.featurehub.db.api.FeatureMessagingOperation
 import io.featurehub.db.api.FillOpts
+import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
+import io.featurehub.db.api.SingleFeatureValueUpdate
+import io.featurehub.db.api.SingleNullableFeatureValueUpdate
+import io.featurehub.db.messaging.FeatureMessagingParameter
+import io.featurehub.db.messaging.FeatureMessagingPublisher
 import io.featurehub.db.model.*
 //import io.featurehub.db.model.RoleType
 import io.featurehub.db.model.query.*
@@ -30,6 +37,7 @@ class InternalApplicationSqlApi @Inject constructor(private val conversions: Con
   ): QDbApplication {
     val queryApplicationList = QDbApplication().portfolio.id.eq(portfolioId)
 
+    // if they are a portfolio admin, they will get picked up next
     if (conversions.personIsSuperAdmin(personId)) {
       return queryApplicationList
     }
@@ -42,12 +50,17 @@ class InternalApplicationSqlApi @Inject constructor(private val conversions: Con
   }
 }
 
+private object NoopFeatureMessagingPublisher : FeatureMessagingPublisher {
+  override fun publish(featureMessagingParameter: FeatureMessagingParameter, orgId: UUID) {}
+}
+
 @Singleton
-class ApplicationSqlApi @Inject constructor(
+class ApplicationSqlApi @JvmOverloads @Inject constructor(
   private val convertUtils: Conversions,
   private val cacheSource: CacheSource,
   private val archiveStrategy: ArchiveStrategy,
-  private val internalFeatureSqlApi: InternalFeatureApi
+  private val internalFeatureSqlApi: InternalFeatureApi,
+  private val featureMessagePublisher: FeatureMessagingPublisher = NoopFeatureMessagingPublisher
 ) : ApplicationApi {
   override fun getApplicationSummary(appId: UUID): ApplicationSummary? {
     return if (!QDbApplication().id.eq(appId).exists()) {
@@ -310,6 +323,7 @@ class ApplicationSqlApi @Inject constructor(
         )
       }
     saveAllFeatures(newFeatures)
+    newFeatures.forEach { publishFeatureValueCreatedMessage(it) }
     cacheSource.publishFeatureChange(appFeature, PublishAction.CREATE)
   }
 
@@ -321,79 +335,130 @@ class ApplicationSqlApi @Inject constructor(
     }
   }
 
+  /**
+   * The feature value just created (blank/default) for a brand new feature never goes through the normal
+   * feature-value create/update path, so it never fired a "created" webhook - fix that here, otherwise the
+   * first webhook anyone ever sees for a new flag is whatever edit happens to configure it, reported as UPDATE.
+   */
+  private fun publishFeatureValueCreatedMessage(fv: DbFeatureValue) {
+    try {
+      featureMessagePublisher.publish(
+        FeatureMessagingParameter(
+          fv,
+          SingleFeatureValueUpdate(hasChanged = true, updated = true, previous = true), // not strictly true but we want to tell the other end exactly what it is
+          SingleNullableFeatureValueUpdate(true, fv.defaultValue, null),
+          SingleFeatureValueUpdate(hasChanged = false, updated = false, previous = false),
+          MultiFeatureValueUpdate(), MultiFeatureValueUpdate(), MultiFeatureValueUpdate(),
+          SingleNullableFeatureValueUpdate(true, fv.version, null),
+          operation = FeatureMessagingOperation.CREATE
+        ), convertUtils.organizationId()
+      )
+    } catch (e: Exception) {
+      log.error(
+        "failed to publish feature-value-created messaging update for feature {} (id {} in app {})",
+        fv.feature.key, fv.feature.id, fv.feature.parentApplication.id, e
+      )
+    }
+  }
+
   private fun getAppFeatures(app: DbApplication, opts: Opts): List<Feature> {
+    val includeArchived = opts.contains(FillOpts.Archived)
     return app.features
-      .filter { af: DbApplicationFeature -> af.whenArchived == null }
+      .filter { af: DbApplicationFeature -> includeArchived || af.whenArchived == null }
       .map { af: DbApplicationFeature? -> convertUtils.toApplicationFeature(af, opts)!! }
   }
 
-  override fun updateApplicationFeature(appId: UUID, feature: Feature, opts: Opts): List<Feature>? {
-    return updateApplicationFeature(appId, feature.key, feature, opts)
+  override fun updateApplicationFeature(appId: UUID, feature: Feature, unarchiveFeature: Boolean, opts: Opts): List<Feature>? {
+    val app = convertUtils.byApplication(appId) ?: return ArrayList()
+
+    // we can only change the key by specifying the id of the feature
+    if (feature.id != null) {
+      val appFeature = QDbApplicationFeature()
+        .id.eq(feature.id)
+        .parentApplication.eq(app)
+        .findOne() ?: return null
+
+      // we pass the existing appFeature.key as updateAppFeature checks for key change with the feature object
+      return updateAppFeature(app, appFeature.key, feature, appFeature, unarchiveFeature, opts)
+    }
+
+    return updateApplicationFeature(appId, feature.key, feature, unarchiveFeature, opts)
   }
 
   @Throws(ApplicationApi.DuplicateFeatureException::class, OptimisticLockingException::class)
-  override fun updateApplicationFeature(appId: UUID, key: String, feature: Feature, opts: Opts): List<Feature>? {
-    Conversions.nonNullApplicationId(appId)
-    val app = convertUtils.byApplication(appId)
-    if (app != null) {
-      val appFeature = QDbApplicationFeature()
-        .and().key
-        .eq(key).parentApplication
-        .eq(app)
-        .endAnd()
-        .findOne() ?: return null
-      if (feature.version == null || appFeature.version != feature.version) {
-        throw OptimisticLockingException()
-      }
-      if (key != feature.key) { // we are changing the key?
-        if (QDbApplicationFeature().key
-            .eq(feature.key).parentApplication
-            .eq(app)
-            .endAnd()
-            .exists()
-        ) {
-          throw ApplicationApi.DuplicateFeatureException()
-        }
-        bumpVersionOfAllEnvironmentsWithFeatureChanged(appId)
-      }
-      val changed = feature.key != appFeature.key || feature.valueType != appFeature.valueType
-      appFeature.name = feature.name
-      appFeature.alias = feature.alias
-      appFeature.key = feature.key
-      if (feature.link != null) {
-        appFeature.link = feature.link
-      }
-      appFeature.valueType = feature.valueType
-      appFeature.isSecret = feature.secret != null && feature.secret!!
-      if (feature.metaData != null) {
-        appFeature.metaData = feature.metaData
-      }
-      if (feature.description != null) {
-        appFeature.description = feature.description
-      }
-      // update filter associations — replace entirely with whatever is specified (empty list clears them)
-      var forceUpdateFeature = false
-      feature.featureFilter?.let { updatedFilters ->
-        // remove any filters that should no longer be there
-        forceUpdateFeature = appFeature.filters.removeIf { f -> !updatedFilters.contains(f.id) }
+  override fun updateApplicationFeature(appId: UUID, key: String, feature: Feature, unarchiveFeature: Boolean, opts: Opts): List<Feature>? {
+    val app = convertUtils.byApplication(appId) ?: return ArrayList()
 
-        val remainingIds = appFeature.filters.map { it.id }
+    val appFeature = QDbApplicationFeature()
+      .key.eq(key)
+      .parentApplication.eq(app)
+      .findOne() ?: return null
 
-        updatedFilters.removeAll(remainingIds)
+    return updateAppFeature(app, key, feature, appFeature, unarchiveFeature, opts)
+  }
 
-        if (updatedFilters.isNotEmpty()) {
-          forceUpdateFeature = true
-          appFeature.filters.addAll(QDbFeatureFilter().id.`in`(updatedFilters).findList())
-        }
-      }
-
-      updateApplicationFeature(appFeature, forceUpdateFeature)
-      if (appFeature.whenArchived == null && changed) {
-        cacheSource.publishFeatureChange(appFeature, PublishAction.UPDATE)
-      }
-      return getAppFeatures(app, opts)
+  private fun updateAppFeature(app: DbApplication, key: String?, feature: Feature, appFeature: DbApplicationFeature, unarchiveFeature: Boolean, opts: Opts ): List<Feature>? {
+    if (appFeature.version != feature.version) {
+      throw OptimisticLockingException()
     }
-    return ArrayList()
+    if (key != feature.key) { // we are changing the key?
+      if (QDbApplicationFeature()
+        .key.eq(feature.key)
+        .parentApplication.eq(app)
+        .exists()) {
+        throw ApplicationApi.DuplicateFeatureException()
+      }
+    }
+
+    // we re-write the key when we archive a flag, so if they update it, they can end up setting the flag name
+    // back to what it originally was. If that is the case, they can use the UI to rename the old
+    // key by themselves
+    val changed = feature.key != appFeature.key || feature.valueType != appFeature.valueType || (unarchiveFeature && feature.whenArchived != null)
+    appFeature.name = feature.name
+    appFeature.alias = feature.alias
+    appFeature.key = feature.key
+    if (feature.link != null) {
+      appFeature.link = feature.link
+    }
+    appFeature.valueType = feature.valueType
+    appFeature.isSecret = feature.secret != null && feature.secret!!
+    if (feature.metaData != null) {
+      appFeature.metaData = feature.metaData
+    }
+    if (feature.description != null) {
+      appFeature.description = feature.description
+    }
+    if (appFeature.whenArchived != null && unarchiveFeature) {
+      // key has already changed
+      appFeature.whenArchived = null
+    }
+    // update filter associations — replace entirely with whatever is specified (empty list clears them)
+    var forceUpdateFeature = false
+    feature.featureFilter?.let { updatedFilters ->
+      // remove any filters that should no longer be there
+      forceUpdateFeature = appFeature.filters.removeIf { f -> !updatedFilters.contains(f.id) }
+
+      val remainingIds = appFeature.filters.map { it.id }
+
+      updatedFilters.removeAll(remainingIds)
+
+      if (updatedFilters.isNotEmpty()) {
+        forceUpdateFeature = true
+        appFeature.filters.addAll(QDbFeatureFilter().id.`in`(updatedFilters).findList())
+      }
+    }
+
+    if (changed) {
+      bumpVersionOfAllEnvironmentsWithFeatureChanged(app.id)
+    }
+
+    try {
+      updateApplicationFeature(appFeature, forceUpdateFeature)
+    } catch (e: DuplicateKeyException) {
+      throw ApplicationApi.DuplicateFeatureException()
+    }
+
+    return getAppFeatures(app, opts)
   }
 
   @Transactional
@@ -432,10 +497,13 @@ class ApplicationSqlApi @Inject constructor(
     val app = convertUtils.byApplication(appId)
     if (app != null) {
       var qAppFeature = QDbApplicationFeature()
-        .and().key
-        .eq(applicationFeatureKeyName).parentApplication
-        .eq(app)
-        .endAnd()
+        .parentApplication.eq(app)
+
+      if (opts.contains(FillOpts.Archived)) {
+        qAppFeature = qAppFeature.or().key.eq(applicationFeatureKeyName).and().key.startsWith(applicationFeatureKeyName + Conversions.archiveSuffix).whenArchived.isNotNull.endAnd().endOr()
+      } else {
+        qAppFeature = qAppFeature.key.eq(applicationFeatureKeyName)
+      }
 
       if (opts.contains(FillOpts.ServiceAccountFilters) || opts.contains(FillOpts.FeatureFilters)) {
         qAppFeature = qAppFeature.filters.fetch()
@@ -462,10 +530,10 @@ class ApplicationSqlApi @Inject constructor(
       return null
     }
 
-    bumpVersionOfAllEnvironmentsWithFeatureChanged(appId)
-
     // make sure it isn't already deleted
     if (appFeature.appFeature!!.whenArchived == null) {
+      bumpVersionOfAllEnvironmentsWithFeatureChanged(appId)
+
       archiveStrategy.archiveApplicationFeature(appFeature.appFeature)
     }
 
@@ -556,7 +624,10 @@ class ApplicationSqlApi @Inject constructor(
   ): Boolean {
     val query = QDbAcl()
       .select(QDbAcl.Alias.roles)
+      .or()
       .application.portfolio.id.eq(portfolioId)
+      .environment.parentApplication.portfolio.id.eq(portfolioId)
+      .endOr()
       .group.whenArchived.isNull
       .group.groupMembers.person.id.eq(personId)
 

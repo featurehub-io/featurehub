@@ -13,7 +13,7 @@ Portfolios, Applications, Environments, Features, Service Accounts, Authenticati
 
 == Installing the ADK in your project
 
-We currently have Java 8 and Java 11 ADKs released. Typescript and DotNet ADKs will follow soon.
+We currently have Java 11+ ADKs released. Typescript and DotNet ADKs will follow soon.
 
 ====
 .Maven - Java 8

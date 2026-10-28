@@ -1,6 +1,7 @@
 package io.featurehub.db.messaging
 
 import io.cloudevents.CloudEvent
+import io.featurehub.db.api.FeatureMessagingOperation
 import io.featurehub.db.api.MultiFeatureValueUpdate
 import io.featurehub.db.api.RolloutStrategyUpdate
 import io.featurehub.db.api.SingleFeatureValueUpdate
@@ -16,7 +17,10 @@ data class FeatureMessagingParameter(
   val retiredUpdate: SingleFeatureValueUpdate<Boolean>,
   val strategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
   val applicationStrategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
-  val versionUpdate: SingleNullableFeatureValueUpdate<Long>
+  val portfolioStrategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy>,
+  val versionUpdate: SingleNullableFeatureValueUpdate<Long>,
+  val featureGroupStrategyUpdates: MultiFeatureValueUpdate<RolloutStrategyUpdate, RolloutStrategy> = MultiFeatureValueUpdate(),
+  val operation: FeatureMessagingOperation
 )
 
 interface FeatureMessagingPublisher {

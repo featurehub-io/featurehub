@@ -87,8 +87,10 @@ class EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
                   padding: const EdgeInsets.only(top: 30),
                   child: TextFormField(
                     controller: _name,
-                    decoration: fhFilledInputDecoration(labelText: l10n.nameLabel),
-                    validator: (v) => (v?.isEmpty == true) ? l10n.editName : null,
+                    decoration:
+                        fhFilledInputDecoration(labelText: l10n.nameLabel),
+                    validator: (v) =>
+                        (v?.isEmpty == true) ? l10n.editName : null,
                   ),
                 ),
                 Padding(
@@ -109,7 +111,7 @@ class EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
                 onPressed: () {
                   _formKey.currentState!.reset;
                   ManagementRepositoryClientBloc.router
-                      .navigateTo(context, '/admin-service-accounts');
+                      .navigateTo('/admin-service-accounts');
                 },
                 title: l10n.cancel,
                 keepCase: true),
@@ -121,10 +123,10 @@ class EditUserFormState extends State<EditAdminServiceAccountFormWidget> {
                         _formKey.currentState!.save();
                         try {
                           bloc.updateApiKeyDetails(_name.text);
-                          bloc.mrClient.addSnackbar(Text(
-                              l10n.adminSaUpdated(bloc.person!.name!)));
+                          bloc.mrClient.addSnackbar(
+                              Text(l10n.adminSaUpdated(bloc.person!.name!)));
                           ManagementRepositoryClientBloc.router
-                              .navigateTo(context, '/admin-service-accounts');
+                              .navigateTo('/admin-service-accounts');
                         } catch (e, s) {
                           bloc.mrClient.dialogError(e, s);
                         }

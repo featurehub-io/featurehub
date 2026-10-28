@@ -98,6 +98,30 @@ abstract class AppLocalizations {
     Locale('zh')
   ];
 
+  /// Description in the RefreshCacheSystemConfigWidget widget
+  ///
+  /// In en, this message translates to:
+  /// **'Publish the entire feature, environment and service account cache to Dacha'**
+  String get refreshCacheDescription;
+
+  /// Title used in SystemConfigPanel
+  ///
+  /// In en, this message translates to:
+  /// **'Publish all data to cache'**
+  String get refreshCacheTitle;
+
+  /// Subtitle used in SystemConfigPanel
+  ///
+  /// In en, this message translates to:
+  /// **'Publishes all feature and related data to the cache. Used for system updates.'**
+  String get refreshConfigurationSubtitle;
+
+  /// Button text shown when inviting the user to refresh the cache
+  ///
+  /// In en, this message translates to:
+  /// **'Start refresh now'**
+  String get refreshCacheAction;
+
   /// Title on the sign-in screen
   ///
   /// In en, this message translates to:
@@ -265,6 +289,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Application Strategies'**
   String get applicationStrategies;
+
+  /// Navigation menu item for portfolio strategies
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategies'**
+  String get portfolioStrategies;
 
   /// Navigation menu item for API keys
   ///
@@ -1286,6 +1316,12 @@ abstract class AppLocalizations {
   /// **'Application Strategies Documentation'**
   String get applicationStrategiesDocumentation;
 
+  /// Label for portfolio strategies docs link
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategies Documentation'**
+  String get portfolioStrategiesDocumentation;
+
   /// Page header for the edit user screen
   ///
   /// In en, this message translates to:
@@ -1508,6 +1544,18 @@ abstract class AppLocalizations {
   /// **'Edit Application Strategy for {name}'**
   String editApplicationStrategyTitle(String name);
 
+  /// Page header when creating a portfolio strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Create Portfolio Strategy for {name}'**
+  String createPortfolioStrategyTitle(String name);
+
+  /// Page header when editing a portfolio strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Portfolio Strategy for {name}'**
+  String editPortfolioStrategyTitle(String name);
+
   /// Dialog title when editing an application
   ///
   /// In en, this message translates to:
@@ -1687,6 +1735,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not delete group {name}'**
   String couldNotDeleteGroup(String name);
+
+  /// Label for the portfolio role dropdown on the group dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio role'**
+  String get portfolioRoleLabel;
+
+  /// Portfolio role dropdown option meaning the group has no special portfolio-wide role
+  ///
+  /// In en, this message translates to:
+  /// **'No portfolio role'**
+  String get portfolioRoleNone;
+
+  /// Portfolio role dropdown option: can edit members of groups across the portfolio
+  ///
+  /// In en, this message translates to:
+  /// **'Group Member Manager'**
+  String get portfolioRoleGroupMemberManager;
+
+  /// Portfolio role dropdown option: can create and edit portfolio strategies
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategy Editor'**
+  String get portfolioRolePortfolioStrategyEdit;
+
+  /// Portfolio role dropdown option: can create, edit and delete portfolio strategies
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategy Editor & Deleter'**
+  String get portfolioRolePortfolioStrategyEditAndDelete;
 
   /// Dialog title when viewing a feature (read-only)
   ///
@@ -2035,6 +2113,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Application strategy \'{name}\' deleted!'**
   String appStrategyDeleted(String name);
+
+  /// Body of the delete portfolio strategy confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This portfolio strategy will be deleted and unassigned from all the flags. \n\nThis cannot be undone!'**
+  String get portfolioStrategyDeleteContent;
+
+  /// Snackbar after deleting a portfolio strategy
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio strategy \'{name}\' deleted!'**
+  String portfolioStrategyDeleted(String name);
 
   /// Strategy usage cell: how many environments and feature values use this strategy
   ///
@@ -3083,7 +3173,7 @@ abstract class AppLocalizations {
   /// Body text of the delete-feature confirmation dialog
   ///
   /// In en, this message translates to:
-  /// **'You need to make sure all your code is cleaned up and can deal without this feature!\n\nThis cannot be undone!'**
+  /// **'You need to make sure all your code is cleaned up and can deal without this feature!\n\nThe feature will be archived. You can restore it later by turning on \'Show archived\'.'**
   String get featureDeleteContent;
 
   /// Snackbar after deleting a feature
@@ -3091,6 +3181,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Feature \'{name}\' deleted!'**
   String featureDeleted(String name);
+
+  /// Toolbar toggle to include archived features in the features table
+  ///
+  /// In en, this message translates to:
+  /// **'Show archived'**
+  String get showArchivedFeatures;
+
+  /// Badge shown next to a feature that has been archived
+  ///
+  /// In en, this message translates to:
+  /// **'Archived'**
+  String get archivedFeatureBadge;
+
+  /// Tooltip on the archived badge showing when the feature was archived
+  ///
+  /// In en, this message translates to:
+  /// **'Archived on {date}'**
+  String archivedFeatureTooltip(String date);
+
+  /// Menu action to restore (unarchive) a feature
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// Snackbar after restoring an archived feature
+  ///
+  /// In en, this message translates to:
+  /// **'Feature \'{name}\' restored!'**
+  String featureRestored(String name);
+
+  /// Error when restoring a feature fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t restore feature {name}'**
+  String featureRestoreError(String name);
+
+  /// Error when restoring a feature fails because a live feature with the same name exists
+  ///
+  /// In en, this message translates to:
+  /// **'A feature named \'{name}\' already exists. Rename or archive it before restoring this one.'**
+  String featureRestoreNameCollision(String name);
+
+  /// Body text of the restore-feature confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This will restore the archived feature and make it active again across all environments.'**
+  String get featureRestoreContent;
+
+  /// Title of the restore-feature confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Restore feature \'{name}\'?'**
+  String featureRestoreTitle(String name);
 
   /// Error when the user lacks permission for an operation
   ///
@@ -3608,6 +3752,30 @@ abstract class AppLocalizations {
   /// **'Application strategies are created at application level and can be assigned to multiple features in any environment. Application strategy can be created and edited from the Application Strategies page.'**
   String get applicationStrategyVariationsInfo;
 
+  /// Info note explaining that the per-feature-value percentage overrides the shared application strategy's configured percentage
+  ///
+  /// In en, this message translates to:
+  /// **'Setting this rollout value overrides the application strategy value configured globally'**
+  String get applicationStrategyOverrideInfo;
+
+  /// Info note explaining that the per-feature-value percentage overrides the shared portfolio strategy's configured percentage
+  ///
+  /// In en, this message translates to:
+  /// **'Setting this rollout value overrides the portfolio strategy value configured globally'**
+  String get portfolioStrategyOverrideInfo;
+
+  /// Label preceding the inline percentage-override input field on a shared-strategy card, e.g. 'rollout at [ 50 ] %'
+  ///
+  /// In en, this message translates to:
+  /// **'rollout at'**
+  String get percentageOverrideRolloutAt;
+
+  /// Percent sign shown after the inline percentage-override input field on a shared-strategy card
+  ///
+  /// In en, this message translates to:
+  /// **'%'**
+  String get percentageOverridePercentSign;
+
   /// Placeholder when no application strategies have been assigned
   ///
   /// In en, this message translates to:
@@ -3624,7 +3792,37 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Add Strategy'**
-  String get addStrategy;
+  String get addApplicationStrategy;
+
+  /// Section heading for portfolio-level strategy variations
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio strategy variations'**
+  String get portfolioStrategyVariations;
+
+  /// Info tooltip describing portfolio strategy variations
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio strategies are created at portfolio level and can be assigned to multiple features in any environment. Portfolio strategy can be created and edited from the Portfolio Strategies page.'**
+  String get portfolioStrategyVariationsInfo;
+
+  /// Placeholder when no portfolio strategies have been assigned
+  ///
+  /// In en, this message translates to:
+  /// **'No portfolio strategies set'**
+  String get noPortfolioStrategiesSet;
+
+  /// Button to reveal the list of available portfolio strategies to add
+  ///
+  /// In en, this message translates to:
+  /// **'Show available portfolio strategies'**
+  String get showAvailablePortfolioStrategies;
+
+  /// Button label to add an portfolio strategy to a feature value
+  ///
+  /// In en, this message translates to:
+  /// **'Add Strategy'**
+  String get addPortfolioStrategy;
 
   /// Section label for the retire feature value checkbox
   ///
@@ -3745,6 +3943,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Application Strategy'**
   String get applicationStrategyTooltip;
+
+  /// Tooltip label on portfolio strategy cells in the feature value table
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio Strategy'**
+  String get portfolioStrategyTooltip;
 
   /// Section label for the lock/unlock switch in the feature value side sheet
   ///

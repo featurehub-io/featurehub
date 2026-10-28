@@ -14,6 +14,7 @@ import io.featurehub.messaging.utils.TestingSlackMessage
 import io.featurehub.metrics.MetricsCollector
 import io.featurehub.trackedevent.models.TrackedEventMethod
 import io.featurehub.trackedevent.models.TrackedEventResult
+import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
 import jakarta.ws.rs.client.Entity
 import org.slf4j.Logger
@@ -50,12 +51,23 @@ class SlackWebClient @Inject constructor(
 
   companion object {
     private val log: Logger = LoggerFactory.getLogger(SlackWebClient::class.java)
+    private val slackMessageFormat = FallbackPropertyConfig.getConfig("slack.message-format", DEFAULT_MESSAGE_FORMAT);
     const val DEFAULT_MESSAGE_FORMAT =
       """
-Feature *{{fName}}* (`{{fKey}}`) in *{{ eName }}* was changed by *{{ whoUpdated }}* at {{ whenUpdatedReadable }}
+Feature *{{fName}}* (`{{fKey}}`) in *{{ eName }}* was {{#if wasCreated}}created{{else}}changed{{/if}} by *{{ whoUpdated }}* at {{ whenUpdatedReadable }}
 
 Summary of changes:
-{{#featureValueUpdated}}>• Default value now `{{{updated}}}` was `{{{previous}}}`{{/featureValueUpdated}}
+{{#featureValueUpdated}}>• Default value now `{{{updated}}}`{{#unless wasCreated}} was `{{{previous}}}`{{/unless}}{{/featureValueUpdated}}
+{{~#if featuregroupaddedStrategies}}
+>• Added feature group strategies: {{#featuregroupaddedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
+{{/featuregroupaddedStrategies}}{{/if}}
+{{~#if featuregroupupdatedStrategies}}{{#featuregroupupdatedStrategies}}
+{{~#if valueChanged}}
+>• *{{newStrategy.name}}* feature group strategy value set to `{{{newStrategy.value}}}`{{/if}}
+{{/featuregroupupdatedStrategies}}{{/if}}
+{{~#if featuregroupdeletedStrategies}}
+>• Deleted feature group strategies: {{#featuregroupdeletedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
+{{/featuregroupdeletedStrategies}}{{/if}}
 {{~#if updatedStrategies}}{{#updatedStrategies}}{{~#if nameChanged}}
 >• Strategy name changed from `{{oldStrategy.name}}` to `{{newStrategy.name}}`{{/if}}
 {{~#if valueChanged}}
@@ -82,11 +94,23 @@ Summary of changes:
 {{~#if applicationdeletedStrategies}}
 >• Deleted application strategies: {{#applicationdeletedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
 {{/applicationdeletedStrategies}}{{/if}}
-{{~#lockUpdated}}
+{{~#if portfolioaddedStrategies}}
+>• Added portfolio strategies: {{#portfolioaddedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
+{{/portfolioaddedStrategies}}{{/if}}
+{{~#portfolioStrategiesReordered}}>• Portfolio strategies were re-ordered from {{#previous}}*{{name}}*, {{/previous}} to {{#reordered}}*{{name}}*{{^last}}{{#unless @last}}, {{/unless}} {{/last}}{{/reordered}}{{/portfolioStrategiesReordered}}
+{{~#if portfolioupdatedStrategies}}{{#portfolioupdatedStrategies}}
+{{~#if valueChanged}}
+>• *{{newStrategy.name}}* strategy value set to `{{{newStrategy.value}}}`{{/if}}
+{{/portfolioupdatedStrategies}}{{/if}}
+{{~#if portfoliodeletedStrategies}}
+>• Deleted portfolio strategies: {{#portfoliodeletedStrategies}}*{{name}}*{{#unless @last}}, {{/unless}}
+{{/portfoliodeletedStrategies}}{{/if}}{{#if wasCreated}}
+>• Feature set to '{{lockedStatus}}'{{else}}{{~#lockUpdated}}
 {{~#wasLocked}}
 >• Feature set to `locked`{{/wasLocked}}
 {{~^wasLocked}}
 >• Feature set to `unlocked`{{/wasLocked}}{{~/lockUpdated}}
+{{/if}}
 {{~#retiredUpdated}}
 >• {{~#if wasRetired}} Feature set to `retired`{{/if}}{{#unless wasRetired}} Feature set to `unretired`{{/unless}}{{/retiredUpdated}}
 
@@ -122,7 +146,7 @@ Portfolio: *{{ pName }}*, Application: *{{ aName }}*
 
     val channel = info["slack.channel"]!!
 
-    val fmt = info["slack.messageFormat"] ?: DEFAULT_MESSAGE_FORMAT
+    val fmt = info["slack.messageFormat"] ?: slackMessageFormat
 
     if (info["slack.token"] == null) {
       log.error("received slack message with no bearer token")
@@ -169,7 +193,7 @@ Portfolio: *{{ pName }}*, Application: *{{ aName }}*
 
     try {
       val msg = featureMessageFormatter.enhanceMessagingUpdateForHandlebars(fmUpdate)
-      val formatted = featureMessageFormatter.formatMessage(msg, DEFAULT_MESSAGE_FORMAT)
+      val formatted = featureMessageFormatter.formatMessage(msg, slackMessageFormat)
 
       log.trace("publishing Slack {}:{}", ce.type, ce.id)
       val request = target.request()

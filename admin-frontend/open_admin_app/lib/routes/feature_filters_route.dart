@@ -87,6 +87,11 @@ class _FeatureFiltersRouteState extends State<FeatureFiltersRoute> {
                 padding: const EdgeInsets.all(16.0),
                 child: Card(
                   child: DataTable(
+                    // Rows must grow to fit filters used by multiple
+                    // applications/service accounts; the default fixed row
+                    // height clips and overlaps multi-line cells.
+                    dataRowMinHeight: kMinInteractiveDimension,
+                    dataRowMaxHeight: double.infinity,
                     columns: [
                       DataColumn(label: Text(l10n.columnName)),
                       DataColumn(label: Text(l10n.filterTableDescriptionLabel)),
@@ -254,8 +259,9 @@ class _FeatureFilterEditDialogState extends State<FeatureFilterEditDialog> {
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   validator: (value) {
-                    if (value == null || value.isEmpty)
+                    if (value == null || value.isEmpty) {
                       return l10n.filterNameRequired;
+                    }
                     if (value.length < 4) return l10n.filterNameTooShort;
                     return null;
                   },

@@ -5,14 +5,14 @@ substitutions:
 
 steps:
   - waitFor: ['-']
-    name: gcr.io/cloud-builders/gsutil
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
     dir: /root
     entrypoint: bash
     args:
       - -c
       - |
         (
-          gsutil cp gs://${_GCS_CACHE_BUCKET}/fh-m2-cache.tar.gz /tmp/m2-cache.tar.gz &&
+          gcloud storage cp gs://${_GCS_CACHE_BUCKET}/fh-m2-cache.tar.gz /tmp/m2-cache.tar.gz &&
           mkdir -p /root/.m2/repository &&
           tar -xzf /tmp/m2-cache.tar.gz
         ) || echo 'Cache not found'
@@ -63,7 +63,7 @@ steps:
 #        path: /root
 
   # Saves the files to the GCS cache, but NEVER STORE OUR OWN
-  - name: gcr.io/cloud-builders/gsutil
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     dir: /root
     entrypoint: bash
     # Caches the local Maven repository.
@@ -72,7 +72,7 @@ steps:
       - |
         rm -rf ~/.m2/repository/io/featurehub &&
         tar -czf /tmp/m2-cache.tar.gz .m2 &&
-        gsutil cp /tmp/m2-cache.tar.gz gs://${_GCS_CACHE_BUCKET}/fh-m2-cache.tar.gz
+        gcloud storage cp /tmp/m2-cache.tar.gz gs://${_GCS_CACHE_BUCKET}/fh-m2-cache.tar.gz
     volumes:
       - name: user.home
         path: /root

@@ -11,6 +11,11 @@ final _log = Logger('Routes');
 class Routes {
   static FHRouter configureRoutes(ManagementRepositoryClientBloc mrBloc) {
     // no particular permission of any kind is required for this, but if you use NONE it is a no-where slot
+    routeSlotMappings[RouteSlot.maintenance] = RouteSlotMapping(
+        routePermission: RouteSlot.maintenance,
+        acceptablePermissionTypes: [PermissionType.none],
+        initialRoute: '/maintenance');
+
     routeSlotMappings[RouteSlot.nowhere] = RouteSlotMapping(
         routePermission: RouteSlot.nowhere,
         acceptablePermissionTypes: [PermissionType.none],
@@ -37,7 +42,7 @@ class Routes {
           PermissionType.personal,
           PermissionType.any,
           PermissionType.portfolioadmin,
-          PermissionType.portfolioadmin_featurecreator,
+          PermissionType.portfolioadminFeatureCreator,
           PermissionType.superadmin,
           PermissionType.regular,
           PermissionType.extra1,
@@ -59,6 +64,11 @@ class Routes {
     router.define('/404',
         handler: handleRouteChangeRequest(routeCreator.notFound),
         routeSlots: [RouteSlot.nowhere],
+        permissionType: PermissionType.any,
+        wrapInScaffold: false);
+    router.define('/maintenance',
+        handler: handleRouteChangeRequest(routeCreator.maintenance),
+        routeSlots: [RouteSlot.maintenance],
         permissionType: PermissionType.any,
         wrapInScaffold: false);
     // Public routes (public URL's also need ot be added to array above)
@@ -110,6 +120,17 @@ class Routes {
         routeSlots: [RouteSlot.portfolio],
         handler:
             handleRouteChangeRequest(routeCreator.editApplicationStrategy));
+    router.define('/portfolio-strategies',
+        routeSlots: [RouteSlot.portfolio],
+        handler: handleRouteChangeRequest(routeCreator.portfolioStrategies));
+    router.define('/create-portfolio-strategy',
+        routeSlots: [RouteSlot.portfolio],
+        handler:
+            handleRouteChangeRequest(routeCreator.createPortfolioStrategy));
+    router.define('/edit-portfolio-strategy',
+        routeSlots: [RouteSlot.portfolio],
+        handler:
+            handleRouteChangeRequest(routeCreator.editPortfolioStrategy));
     router.define('/feature-groups',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.featureGroups));
@@ -157,7 +178,7 @@ class Routes {
     router.define('/feature-filters',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.featureFilters),
-        permissionType: PermissionType.portfolioadmin_featurecreator);
+        permissionType: PermissionType.portfolioadminFeatureCreator);
     router.define('/manage-user',
         routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.manageUser),

@@ -27,7 +27,8 @@ class ManageUsersRoute extends StatelessWidget {
               title: AppLocalizations.of(context)!.manageUsers,
               children: [
                 FHExternalLinkWidget(
-                  tooltipMessage: AppLocalizations.of(context)!.viewDocumentation,
+                  tooltipMessage:
+                      AppLocalizations.of(context)!.viewDocumentation,
                   link:
                       "https://docs.featurehub.io/featurehub/latest/users.html#_users",
                   icon: const Icon(Icons.arrow_outward_outlined),
@@ -41,7 +42,7 @@ class ManageUsersRoute extends StatelessWidget {
                 label: Text(AppLocalizations.of(context)!.createNewUser),
                 onPressed: () {
                   ManagementRepositoryClientBloc.router
-                      .navigateTo(context, '/create-user');
+                      .navigateTo('/create-user');
                 },
               )
           ],

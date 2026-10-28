@@ -6,7 +6,6 @@ import 'package:open_admin_app/generated/l10n/app_localizations.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 
-
 class NoEnvironmentMessage extends StatelessWidget {
   const NoEnvironmentMessage({
     super.key,
@@ -20,8 +19,7 @@ class NoEnvironmentMessage extends StatelessWidget {
       padding: const EdgeInsets.only(left: 12.0),
       child: Row(
         children: <Widget>[
-          SelectableText(
-              AppLocalizations.of(context)!.noEnvironmentsForApp,
+          SelectableText(AppLocalizations.of(context)!.noEnvironmentsForApp,
               style: Theme.of(context).textTheme.bodySmall),
           StreamBuilder<ReleasedPortfolio?>(
               stream: bloc.mrClient.streamValley.currentPortfolioStream,
@@ -31,9 +29,10 @@ class NoEnvironmentMessage extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: FHUnderlineButton(
-                        title: AppLocalizations.of(context)!.goToEnvironmentsSettings,
+                        title: AppLocalizations.of(context)!
+                            .goToEnvironmentsSettings,
                         onPressed: () => ManagementRepositoryClientBloc.router
-                                .navigateTo(context, '/app-settings', params: {
+                                .navigateTo('/app-settings', params: {
                               'id': [bloc.applicationId!],
                               'tab': ['environments']
                             })),

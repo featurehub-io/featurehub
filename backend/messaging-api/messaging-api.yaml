@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: Feature Messaging API
   description: This is an OpenAPI document for featurehub messaging data. It is used to publish feature updates to messaging listeners.
-  version: "1.3.1"
+  version: "1.3.2"
 paths:
   /v2/fake:
     get:
@@ -82,6 +82,9 @@ components:
           nullable: true
         operation:
           description: "The basic operation performed, create a feature, update a feature in an environment, delete a feature"
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/FeatureMessagingOperation'
         featureValueType:
           description: "Type of the feature value"
           allOf:
@@ -121,7 +124,19 @@ components:
             $ref: '#/components/schemas/MessagingStrategyUpdate'
         applicationStrategiesUpdated:
           nullable: true
-          description: "Strategies changes"
+          description: "Application strategies changes"
+          type: array
+          items:
+            $ref: '#/components/schemas/MessagingStrategyUpdate'
+        portfolioStrategiesUpdated:
+          nullable: true
+          description: "Portfolio strategies changes"
+          type: array
+          items:
+            $ref: '#/components/schemas/MessagingStrategyUpdate'
+        featureGroupStrategiesUpdated:
+          nullable: true
+          description: "Feature group strategies changes"
           type: array
           items:
             $ref: '#/components/schemas/MessagingStrategyUpdate'
@@ -131,6 +146,11 @@ components:
           allOf:
             - $ref: '#/components/schemas/MessagingStrategiesReorder'
         applicationStrategiesReordered:
+          nullable: true
+          #description: "Strategies reorder changes"
+          allOf:
+            - $ref: '#/components/schemas/MessagingStrategiesReorder'
+        portfolioStrategiesReordered:
           nullable: true
           #description: "Strategies reorder changes"
           allOf:
@@ -237,6 +257,15 @@ components:
         - ADDED
         - CHANGED
         - DELETED
+
+    FeatureMessagingOperation:
+      x-package: io.featurehub.messaging.model
+      description: "The basic lifecycle operation this update describes"
+      type: string
+      enum:
+        - CREATE
+        - UPDATE
+        - DELETE
 
     MessagingRolloutStrategy:
       x-package: io.featurehub.messaging.model
