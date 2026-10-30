@@ -23,7 +23,7 @@ import jakarta.ws.rs.core.FeatureContext
 import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities
 import org.glassfish.jersey.internal.inject.AbstractBinder
-import org.glassfish.jersey.logging.ReprioritisedFilteringServerLoggingFilter
+import org.glassfish.jersey.logging.FilteringServerLoggingFilter
 import org.glassfish.jersey.server.ServerProperties
 
 
@@ -44,7 +44,7 @@ class CommonFeatureHubFeatures @Inject constructor(private val locator: ServiceL
       context.register(SSEAwareEncodingFilter::class.java)
     }
 
-    context.register(ReprioritisedFilteringServerLoggingFilter::class.java)
+    context.register(FilteringServerLoggingFilter::class.java)
     context.register(object : AbstractBinder() {
       override fun configure() {
         bind(JerseyFilteringConfiguration::class.java).`in`(Singleton::class.java)
