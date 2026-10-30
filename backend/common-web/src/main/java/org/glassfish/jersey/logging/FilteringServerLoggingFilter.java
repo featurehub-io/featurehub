@@ -23,7 +23,9 @@ import java.io.OutputStream;
  * @author Richard Vowles - https://plus.google.com/+RichardVowles
  */
 @ConstrainedTo(RuntimeType.SERVER)
-@Priority(Integer.MAX_VALUE-2) // ensure the content-encoding is already set
+// response filters run in descending priority order, so this runs before the encoding filter sets Content-Encoding
+// on the response - aroundWriteTo is where we find out whether the entity is compressed
+@Priority(Integer.MAX_VALUE)
 @Singleton
 @SuppressWarnings("ClassWithMultipleLoggers")
 public class FilteringServerLoggingFilter extends BaseFilteringLogger implements ContainerRequestFilter, ContainerResponseFilter {
@@ -47,7 +49,7 @@ public class FilteringServerLoggingFilter extends BaseFilteringLogger implements
 	public void filter(final ContainerRequestContext context) throws IOException {
 
 		String uri = context.getUriInfo().getRequestUri().getPath();
-		if (jerseyFiltering.excludeForUri(uri)) {
+		if (!logger.isTraceEnabled() || jerseyFiltering.excludeForUri(uri)) {
 			return;
 		}
 
@@ -74,7 +76,7 @@ public class FilteringServerLoggingFilter extends BaseFilteringLogger implements
 	public void filter(final ContainerRequestContext requestContext, final ContainerResponseContext responseContext) throws IOException {
 
 		String uri = requestContext.getUriInfo().getRequestUri().getPath();
-		if (jerseyFiltering.excludeForUri(uri)) {
+		if (!logger.isTraceEnabled() || jerseyFiltering.excludeForUri(uri)) {
 			return;
 		}
 
@@ -89,7 +91,7 @@ public class FilteringServerLoggingFilter extends BaseFilteringLogger implements
 		printResponseLine(b, "Server responded with a response", id, responseContext.getStatus());
 		printPrefixedHeaders(b, id, RESPONSE_PREFIX, responseContext.getStringHeaders());
 
-		if (responseContext.hasEntity() && printEntity(verbosity, responseContext.getMediaType())) {
+		if (responseContext.hasEntity() && printEntity(verbosity, responseContext.getMediaType()) && !jerseyFiltering.excludePayloadForUri(uri)) {
 			OutputStream stream = new LoggingStream(b, responseContext.getEntityStream());
 			responseContext.setEntityStream(stream);
 			requestContext.setProperty(ENTITY_LOGGER_PROPERTY, stream);

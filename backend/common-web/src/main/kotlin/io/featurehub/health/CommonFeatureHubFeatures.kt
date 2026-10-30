@@ -39,7 +39,7 @@ class CommonFeatureHubFeatures @Inject constructor(private val locator: ServiceL
 
     context.register(CommonConfiguration::class.java)
 
-    if (FallbackPropertyConfig.getConfig("http-compression-enable", "false") == "true") {
+    if (FallbackPropertyConfig.getConfig("http-compression-enable", "false").toBoolean()) {
       // SSE-aware version of Jersey's EncodingFilter, prevents encoding SSE streams
       context.register(SSEAwareEncodingFilter::class.java)
     }
@@ -54,7 +54,7 @@ class CommonFeatureHubFeatures @Inject constructor(private val locator: ServiceL
 
     context.register(ReturnStatusContainerResponseFilter::class.java)
     context.register(EndpointLoggingListener::class.java)
-    if (FallbackPropertyConfig.getConfig("prometheus.dynamic-jersey", "true") == "true") {
+    if (FallbackPropertyConfig.getConfig("prometheus.dynamic-jersey", "true").toBoolean()) {
       context.register(PrometheusDynamicFeature::class.java)
     } else {
       context.register(ResponseTrackingResponseFilter::class.java)

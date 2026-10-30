@@ -259,7 +259,12 @@ abstract class BaseFilteringLogger implements WriterInterceptor {
 		}
 		stream.mark(maxEntitySize + 1);
 		final byte[] entity = new byte[maxEntitySize + 1];
-		final int entitySize = stream.read(entity);
+		// a single read may return less than is available, so keep reading until we have enough or hit EOF
+		int entitySize = 0;
+		int read;
+		while (entitySize < entity.length && (read = stream.read(entity, entitySize, entity.length - entitySize)) != -1) {
+			entitySize += read;
+		}
 		b.append(new String(entity, 0, Math.min(entitySize, maxEntitySize), charset));
 		if (entitySize > maxEntitySize) {
 			b.append("...more...");
@@ -280,8 +285,11 @@ abstract class BaseFilteringLogger implements WriterInterceptor {
 		if (stream != null && encoded) {
 			stream.disableCapture();
 		}
-		writerInterceptorContext.proceed();
-		if (logger.isTraceEnabled() && printEntity(verbosity, writerInterceptorContext.getMediaType())) {
+		try {
+			writerInterceptorContext.proceed();
+		} finally {
+			// the stream is only set when the filter deferred logging to us, and log() is also what clears the
+			// ConnectContext, so it must always be called, even if writing failed
 			if (stream != null) {
 				if (encoded) {
 					log(stream.getStringBuilderWithoutEntity(contentEncoding.toString()));
@@ -386,6 +394,15 @@ abstract class BaseFilteringLogger implements WriterInterceptor {
 				baos.write(i);
 			}
 			out.write(i);
+		}
+
+		@Override
+		public void write(final byte[] buf, final int off, final int len) throws IOException {
+			// keep up to maxEntitySize + 1 bytes so getStringBuilder knows there is more
+			if (capture && baos.size() <= maxEntitySize) {
+				baos.write(buf, off, Math.min(len, maxEntitySize + 1 - baos.size()));
+			}
+			out.write(buf, off, len);
 		}
 	}
 }

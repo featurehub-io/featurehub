@@ -7,14 +7,12 @@ import jakarta.ws.rs.core.Feature;
 import jakarta.ws.rs.core.FeatureContext;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.logging.FilteringClientLoggingFilter;
-import org.glassfish.jersey.logging.FilteringServerLoggingFilter;
 
-public class LoggingConfiguration implements Feature {
+public class ClientLoggingConfiguration implements Feature {
 
 	@Override
 	public boolean configure(FeatureContext ctx) {
 		ctx.register(FilteringClientLoggingFilter.class);
-		ctx.register(FilteringServerLoggingFilter.class);
 		ctx.register(new AbstractBinder() {
       @Override
       protected void configure() {

@@ -36,7 +36,7 @@ public class FilteringClientLoggingFilter extends BaseFilteringLogger implements
 	}
 
 	protected void recordOutgoing(ClientRequestContext context, String action) {
-		ConnectContext.set(Constants.REST_CONTEXT, action + ": " + context.getMethod() + " - " +  context.getMethod() + " " + context.getUri().toASCIIString());
+		ConnectContext.set(Constants.REST_CONTEXT, action + ": " + context.getMethod() + " - " + context.getUri().toASCIIString());
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class FilteringClientLoggingFilter extends BaseFilteringLogger implements
 		String contentEncoding = responseContext.getHeaderString(HttpHeaders.CONTENT_ENCODING);
 		if (responseContext.hasEntity() && isEncoded(contentEncoding)) {
 			printEncodedEntity(b, contentEncoding);
-		} else if (responseContext.hasEntity() && printEntity(verbosity, responseContext.getMediaType())) {
+		} else if (responseContext.hasEntity() && printEntity(verbosity, responseContext.getMediaType()) && !jerseyFiltering.excludePayloadForUri(uriPath)) {
 			responseContext.setEntityStream(logInboundEntity(b, responseContext.getEntityStream(), MessageUtils.getCharset(responseContext.getMediaType())));
 		}
 

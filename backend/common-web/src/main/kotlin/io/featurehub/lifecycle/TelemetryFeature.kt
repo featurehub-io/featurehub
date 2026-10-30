@@ -1,6 +1,6 @@
 package io.featurehub.lifecycle
 
-import cd.connect.jersey.common.LoggingConfiguration
+import cd.connect.jersey.common.ClientLoggingConfiguration
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.rest.Info
 import io.featurehub.utils.FallbackPropertyConfig
@@ -318,7 +318,7 @@ class UseTelemetryFeature(private val injector: ServiceLocator) : Feature {
     val client = ClientBuilder.newClient()
       .register(ClientTelemetryFeature::class.java)
       .register(CommonConfiguration::class.java)
-      .register(LoggingConfiguration::class.java)
+      .register(ClientLoggingConfiguration::class.java)
       .register(telemetryBinder)
 
     context.register(object: AbstractBinder() {
@@ -336,7 +336,7 @@ class UseTelemetryFeature(private val injector: ServiceLocator) : Feature {
 class TelemetryFeature : Feature {
   private val log: Logger = LoggerFactory.getLogger(TelemetryFeature::class.java)
 
-  val logTelemetry = FallbackPropertyConfig.getConfig("telemetry.logging-enabled", "false") == "true"
+  val logTelemetry = FallbackPropertyConfig.getConfig("telemetry.logging-enabled", "false").toBoolean()
 
   override fun configure(context: FeatureContext): Boolean {
     context.register(TelemetryApplicationEventListener::class.java)
@@ -362,7 +362,7 @@ class TelemetryFeature : Feature {
     val client = ClientBuilder.newClient()
       .register(ClientTelemetryFeature::class.java)
       .register(CommonConfiguration::class.java)
-      .register(LoggingConfiguration::class.java)
+      .register(ClientLoggingConfiguration::class.java)
 
     val telemetryBinder = object : AbstractBinder() {
       override fun configure() {
