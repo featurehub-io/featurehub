@@ -14,10 +14,15 @@ class FHInfoCardWidget extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(10),
             constraints: const BoxConstraints(maxWidth: 250),
-            child: Text(message),
+            child: Text(
+              message,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSecondaryContainer,
+              ),
+            ),
           )),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColorLight,
+        color: Theme.of(context).colorScheme.secondaryContainer,
         borderRadius: const BorderRadius.all(Radius.circular(4)),
       ),
       waitDuration: const Duration(milliseconds: 300),
