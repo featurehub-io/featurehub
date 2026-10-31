@@ -2,7 +2,7 @@ package io.featurehub.dacha.api
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import cd.connect.jersey.common.LoggingConfiguration
+import cd.connect.jersey.common.ClientLoggingConfiguration
 import cd.connect.openapi.support.ApiClient
 import io.featurehub.dacha.api.impl.DachaApiKeyServiceServiceImpl
 import io.featurehub.dacha.api.impl.DachaEnvironmentServiceServiceImpl
@@ -76,7 +76,7 @@ class DachaClientRegistry @Inject constructor(private val backupDachaFactory: Ba
     DeclaredConfigResolver.resolve(this)
     client = ClientBuilder.newClient()
       .register(CommonConfiguration::class.java)
-      .register(LoggingConfiguration::class.java)
+      .register(ClientLoggingConfiguration::class.java)
     client.property(ClientProperties.CONNECT_TIMEOUT, connectTimeout)
     client.property(ClientProperties.READ_TIMEOUT, readTimeout)
   }

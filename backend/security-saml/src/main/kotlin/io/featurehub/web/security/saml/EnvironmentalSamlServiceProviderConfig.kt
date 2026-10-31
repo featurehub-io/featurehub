@@ -1,6 +1,6 @@
 package io.featurehub.web.security.saml
 
-import cd.connect.jersey.common.LoggingConfiguration
+import cd.connect.jersey.common.ClientLoggingConfiguration
 import com.onelogin.saml2.settings.Saml2Settings
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.utils.FallbackPropertyConfig
@@ -86,7 +86,7 @@ class EnvironmentSamlSources @Inject constructor(provider: EnvironmentSamlSource
   init {
     val client = ClientBuilder.newClient()
       .register(CommonConfiguration::class.java)
-      .register(LoggingConfiguration::class.java)
+      .register(ClientLoggingConfiguration::class.java)
 
     idpProviders =
       FallbackPropertyConfig.getConfig("saml.idp-providers", "")

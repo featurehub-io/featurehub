@@ -6,7 +6,9 @@ class EtagStructureHolder(val environmentTags: Map<KeyParts, String>, val contex
 
 class ETagSplitter {
   companion object {
-    fun splitTag(etag: String?, keys: List<KeyParts>, clientContextTag: String): EtagStructureHolder {
+    fun splitTag(incomingEtag: String?, keys: List<KeyParts>, clientContextTag: String): EtagStructureHolder {
+      // compressed responses are given weak etags (see SSEAwareEncodingFilter), the tag itself is the same
+      val etag = incomingEtag?.trim()?.removePrefix("W/")
       if (etag == null || !etag.startsWith("\"") || !etag.endsWith("\"")) return EtagStructureHolder(mapOf(), clientContextTag, false)
 
       val environmentTagVsContextTag = etag.trim().substring(1, etag.length -1).split("//").toTypedArray()

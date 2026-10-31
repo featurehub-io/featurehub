@@ -1,6 +1,6 @@
 package io.features.webhooks.features
 
-import cd.connect.jersey.common.LoggingConfiguration
+import cd.connect.jersey.common.ClientLoggingConfiguration
 import io.cloudevents.CloudEvent
 import io.cloudevents.core.v1.CloudEventBuilder
 import io.featurehub.encryption.WebhookEncryptionService
@@ -75,7 +75,7 @@ class WebhookEnricherListener @Inject constructor(
 
     client = ClientBuilder.newClient()
       .register(CommonConfiguration::class.java)
-      .register(LoggingConfiguration::class.java)
+      .register(ClientLoggingConfiguration::class.java)
 
     client.property(ClientProperties.CONNECT_TIMEOUT, connectTimeout)
     client.property(ClientProperties.READ_TIMEOUT, readTimeout)

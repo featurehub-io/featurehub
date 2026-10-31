@@ -16,6 +16,8 @@ import org.glassfish.jersey.message.GZipEncoder;
 /**
  * This class is used in clients and servers, so only classes that are relevant to
  * both should be registered here.
+ *
+ * It is registered in CommonFeatureHubFeatures, which is in turn registered in FeatureHubJerseyHost.
  */
 public class CommonConfiguration implements Feature {
 
@@ -30,6 +32,8 @@ public class CommonConfiguration implements Feature {
     // this forces all requests to use an objectmapper to use our application wide singleton
     config.register(new JacksonJaxbJsonProvider(JacksonObjectProvider.mapper, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS));
     config.register(MultiPartFeature.class);
+    // always registered so gzip request/response bodies can be decoded; it only encodes when
+    // a Content-Encoding header is set (see SSEAwareEncodingFilter, which is server only)
     config.register(GZipEncoder.class);
     config.register(LocalExceptionMapper.class);
     config.register(OffsetDateTimeQueryProvider.class);
