@@ -119,12 +119,21 @@ class _ValueContainer extends StatelessWidget {
                         in fv!.rolloutStrategyInstances!)
                       _ValueCard(
                         applicationStrategy: rsi,
+                        sharedStrategyDetails:
+                            _applicationStrategyDetails(bloc, rsi),
                         fv: fv!,
                         feature: feature,
                       ),
                   if (fv?.portfolioStrategyInstances?.isNotEmpty == true)
-                    for(RolloutStrategyInstance rsi in fv!.portfolioStrategyInstances!)
-                      _ValueCard(fv: fv!, feature: feature, portfolioStrategy: rsi,)
+                    for (RolloutStrategyInstance rsi
+                        in fv!.portfolioStrategyInstances!)
+                      _ValueCard(
+                        fv: fv!,
+                        feature: feature,
+                        portfolioStrategy: rsi,
+                        sharedStrategyDetails:
+                            _portfolioStrategyDetails(bloc, rsi),
+                      )
                 ],
               )
             ],
@@ -135,6 +144,34 @@ class _ValueContainer extends StatelessWidget {
       return const NotSetContainer();
     }
   }
+}
+
+/// Details of a shared strategy, with the feature value's percentage override
+/// taking precedence over the strategy's own percentage. Null if the strategy
+/// definition is not known.
+StrategyTooltipDetails? _sharedStrategyDetails(RolloutStrategyInstance rsi,
+    bool found, int? percentage, List<RolloutStrategyAttribute>? attributes) {
+  if (!found) {
+    return null;
+  }
+  return StrategyTooltipDetails(
+      percentage: rsi.percentageOverride ?? percentage,
+      percentageOverridden: rsi.percentageOverride != null,
+      attributes: attributes);
+}
+
+StrategyTooltipDetails? _applicationStrategyDetails(
+    PerApplicationFeaturesBloc bloc, RolloutStrategyInstance rsi) {
+  final strategy = bloc.applicationStrategy(rsi.strategyId);
+  return _sharedStrategyDetails(
+      rsi, strategy != null, strategy?.percentage, strategy?.attributes);
+}
+
+StrategyTooltipDetails? _portfolioStrategyDetails(
+    PerApplicationFeaturesBloc bloc, RolloutStrategyInstance rsi) {
+  final strategy = bloc.portfolioStrategy(rsi.strategyId);
+  return _sharedStrategyDetails(
+      rsi, strategy != null, strategy?.percentage, strategy?.attributes);
 }
 
 class LockedIndicator extends StatelessWidget {
@@ -179,15 +216,16 @@ class _ValueCard extends StatelessWidget {
   final ThinGroupRolloutStrategy? groupStrategy;
   final RolloutStrategyInstance? applicationStrategy;
   final RolloutStrategyInstance? portfolioStrategy;
+  final StrategyTooltipDetails? sharedStrategyDetails;
 
-  const _ValueCard({
-    required this.fv,
-    required this.feature,
-    this.rolloutStrategy,
-    this.groupStrategy,
-    this.applicationStrategy,
-    this.portfolioStrategy
-  });
+  const _ValueCard(
+      {required this.fv,
+      required this.feature,
+      this.rolloutStrategy,
+      this.groupStrategy,
+      this.applicationStrategy,
+      this.portfolioStrategy,
+      this.sharedStrategyDetails});
 
   @override
   Widget build(BuildContext context) {
@@ -220,18 +258,21 @@ class _ValueCard extends StatelessWidget {
                           ? groupStrategyTextColor.withAlpha(38)
                           : applicationStrategy != null
                               ? applicationStrategyTextColor.withAlpha(38)
-                              : portfolioStrategy != null ? portfolioStrategyTextColor.withAlpha(38) : defaultTextColor.withAlpha(38),
+                              : portfolioStrategy != null
+                                  ? portfolioStrategyTextColor.withAlpha(38)
+                                  : defaultTextColor.withAlpha(38),
                   borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(4.0),
                       bottomLeft: Radius.circular(4.0)),
                 ),
                 child: rolloutStrategy != null
-                    ? Tooltip(
-                        richMessage: TextSpan(children: [
-                          TextSpan(text: rolloutStrategy!.name),
-                          TextSpan(
-                              text: generateTooltipMessage(rolloutStrategy, l10n))
-                        ]),
+                    ? StrategyTooltip(
+                        name: rolloutStrategy!.name,
+                        kind: StrategyTooltipKind.custom,
+                        accent: strategyTextColor,
+                        details: StrategyTooltipDetails(
+                            percentage: rolloutStrategy!.percentage,
+                            attributes: rolloutStrategy!.attributes),
                         child: Padding(
                           padding: const EdgeInsets.all(4.0),
                           child: Text(
@@ -268,8 +309,11 @@ class _ValueCard extends StatelessWidget {
                             ),
                           )
                         : applicationStrategy != null
-                            ? Tooltip(
-                                message: l10n.applicationStrategyTooltip,
+                            ? StrategyTooltip(
+                                name: applicationStrategy!.name ?? '',
+                                kind: StrategyTooltipKind.application,
+                                accent: applicationStrategyTextColor,
+                                details: sharedStrategyDetails,
                                 child: Padding(
                                   padding: const EdgeInsets.all(4.0),
                                   child: Text(
@@ -286,33 +330,37 @@ class _ValueCard extends StatelessWidget {
                                   ),
                                 ),
                               )
-                        : portfolioStrategy != null
-                          ? Tooltip(
-                                message: l10n.portfolioStrategyTooltip,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Text(
-                                    portfolioStrategy!.name!,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge!
-                                        .copyWith(
-                                        color: portfolioStrategyTextColor,
-                                        // fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.9),
+                            : portfolioStrategy != null
+                                ? StrategyTooltip(
+                                    name: portfolioStrategy!.name ?? '',
+                                    kind: StrategyTooltipKind.portfolio,
+                                    accent: portfolioStrategyTextColor,
+                                    details: sharedStrategyDetails,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Text(
+                                        portfolioStrategy!.name!,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge!
+                                            .copyWith(
+                                                color:
+                                                    portfolioStrategyTextColor,
+                                                // fontWeight: FontWeight.bold,
+                                                letterSpacing: 0.9),
+                                      ),
+                                    ),
+                                  )
+                                : Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Text('default',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge!
+                                            .copyWith(color: defaultTextColor)),
                                   ),
-                                ),
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: Text('default',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge!
-                                        .copyWith(color: defaultTextColor)),
-                              ),
               ),
             ),
             const SizedBox(width: 4.0),
@@ -323,7 +371,8 @@ class _ValueCard extends StatelessWidget {
                   )
                 : Flexible(
                     fit: FlexFit.tight,
-                    child: Text(displayValue.isEmpty ? l10n.notSet : displayValue,
+                    child: Text(
+                        displayValue.isEmpty ? l10n.notSet : displayValue,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: displayValue.isEmpty
@@ -351,7 +400,8 @@ class _ValueCard extends StatelessWidget {
   String _findDisplayValue() {
     if (rolloutStrategy == null &&
         groupStrategy == null &&
-        applicationStrategy == null) {
+        applicationStrategy == null &&
+        portfolioStrategy == null) {
       return _getDefaultFeatureValue();
     } else if (rolloutStrategy != null && rolloutStrategy!.value != null) {
       return rolloutStrategy!.value.toString();
@@ -360,6 +410,8 @@ class _ValueCard extends StatelessWidget {
     } else if (applicationStrategy != null &&
         applicationStrategy!.value != null) {
       return applicationStrategy!.value.toString();
+    } else if (portfolioStrategy != null && portfolioStrategy!.value != null) {
+      return portfolioStrategy!.value.toString();
     } else {
       return '';
     }

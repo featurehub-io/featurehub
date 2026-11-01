@@ -3638,18 +3638,6 @@ abstract class AppLocalizations {
   /// **'User Key'**
   String get wellKnownUserKey;
 
-  /// Section header in the strategy tooltip listing which rules apply
-  ///
-  /// In en, this message translates to:
-  /// **'Applied rules'**
-  String get tooltipAppliedRules;
-
-  /// Tooltip line showing the percentage rollout value
-  ///
-  /// In en, this message translates to:
-  /// **'Percentage: {value}%'**
-  String tooltipPercentage(String value);
-
   /// Tooltip line indicating a user-key rule is applied
   ///
   /// In en, this message translates to:
@@ -3685,6 +3673,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Custom'**
   String get tooltipCustom;
+
+  /// Badge in the strategy hover card for a strategy defined on the feature value itself
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Strategy'**
+  String get tooltipCustomStrategy;
+
+  /// Label for the percentage rollout section in the strategy hover card
+  ///
+  /// In en, this message translates to:
+  /// **'Rollout'**
+  String get tooltipRollout;
+
+  /// Note in the strategy hover card when a shared strategy's percentage is overridden for this feature value
+  ///
+  /// In en, this message translates to:
+  /// **'Overridden for this feature'**
+  String get tooltipPercentageOverridden;
+
+  /// Header for the list of targeting rules in the strategy hover card
+  ///
+  /// In en, this message translates to:
+  /// **'Rules (all must match)'**
+  String get tooltipRulesAllMatch;
+
+  /// Shown in the strategy hover card when a strategy has no percentage and no rules
+  ///
+  /// In en, this message translates to:
+  /// **'No targeting rules'**
+  String get tooltipNoRules;
+
+  /// Shown in the strategy hover card when the shared strategy definition could not be loaded
+  ///
+  /// In en, this message translates to:
+  /// **'Rule details unavailable'**
+  String get tooltipRulesUnavailable;
 
   /// Banner shown in the feature value side sheet when there are unsaved changes
   ///

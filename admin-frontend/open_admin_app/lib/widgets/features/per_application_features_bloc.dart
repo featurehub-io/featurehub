@@ -51,6 +51,7 @@ class PerApplicationFeaturesBloc
   late ApplicationServiceApi _appServiceApi;
   late UserStateServiceApi _userStateServiceApi;
   late ApplicationRolloutStrategyServiceApi _rolloutStrategyServiceApi;
+  late PortfolioRolloutStrategyServiceApi _portfolioRolloutStrategyServiceApi;
   late EnvironmentServiceApi _environmentServiceApi;
 
   late FeatureServiceApi _featureServiceApi;
@@ -78,6 +79,18 @@ class PerApplicationFeaturesBloc
 
   final _environments = <Environment>[];
 
+  // strategy-id -> shared strategy definition, so the dashboard can show the
+  // rules of application / portfolio strategies (feature values only carry
+  // a reference to them)
+  final _applicationStrategies = <String, ApplicationRolloutStrategy>{};
+  final _portfolioStrategies = <String, PortfolioRolloutStrategy>{};
+
+  ApplicationRolloutStrategy? applicationStrategy(String strategyId) =>
+      _applicationStrategies[strategyId];
+
+  PortfolioRolloutStrategy? portfolioStrategy(String strategyId) =>
+      _portfolioStrategies[strategyId];
+
   final _appFeatureValues = BehaviorSubject<CollectedFeatureTableData?>();
 
   Stream<CollectedFeatureTableData?> get appFeatureValuesStream =>
@@ -102,6 +115,8 @@ class PerApplicationFeaturesBloc
     _userStateServiceApi = UserStateServiceApi(_mrClient.apiClient);
     _rolloutStrategyServiceApi =
         ApplicationRolloutStrategyServiceApi(_mrClient.apiClient);
+    _portfolioRolloutStrategyServiceApi =
+        PortfolioRolloutStrategyServiceApi(_mrClient.apiClient);
     _environmentServiceApi = EnvironmentServiceApi(_mrClient.apiClient);
 
     _currentPid = _mrClient.streamValley.currentPortfolioIdStream
@@ -159,10 +174,8 @@ class PerApplicationFeaturesBloc
       applicationId = appId;
 
       if (applicationId != null) {
-        currentRowsPerPage =
-            (await prefs.getInt(_rppKey(applicationId!))) ?? 5;
-        currentPageIndex =
-            (await prefs.getInt(_pageKey(applicationId!))) ?? 0;
+        currentRowsPerPage = (await prefs.getInt(_rppKey(applicationId!))) ?? 5;
+        currentPageIndex = (await prefs.getInt(_pageKey(applicationId!))) ?? 0;
         await fetchEnvironmentsAvailableToApp();
         await updateHiddenEnvironments();
       }
@@ -339,8 +352,7 @@ class PerApplicationFeaturesBloc
   Future<void> unarchiveFeature(Feature feature) async {
     await _featureServiceApi.updateFeatureForApplicationOnFeature(
         applicationId!, feature,
-        includeArchived: true,
-        unarchiveFeature: true);
+        includeArchived: true, unarchiveFeature: true);
     mrClient.streamValley.triggerRocket();
   }
 
@@ -354,12 +366,8 @@ class PerApplicationFeaturesBloc
     _appFeatureValues.close();
   }
 
-  Future<void> getApplicationFeatureValuesData(
-      String appId,
-      String searchTerm,
-      List<FeatureValueType> featureTypes,
-      int rowsPerPage,
-      int pageOffset,
+  Future<void> getApplicationFeatureValuesData(String appId, String searchTerm,
+      List<FeatureValueType> featureTypes, int rowsPerPage, int pageOffset,
       {List<String>? featureFilterIds}) async {
     fhosLogger.fine(
         "started: getApplicationFeatureValuesData with $appId search $searchTerm");
@@ -368,6 +376,7 @@ class PerApplicationFeaturesBloc
     }
 
     final hiddenEnvs = _hiddenEnvironmentSource.value!;
+    final sharedStrategies = _loadSharedStrategies(appId);
     var allFeatureValues = await _featureServiceApi
         .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(appId,
             max: rowsPerPage,
@@ -380,6 +389,8 @@ class PerApplicationFeaturesBloc
                     (hiddenEnvs.noneSelected != true))
                 ? null
                 : hiddenEnvs.environmentIds);
+
+    await sharedStrategies;
 
     _appFeatureValues
         .add(CollectedFeatureTableData(allFeatureValues, _environments));
@@ -394,6 +405,40 @@ class PerApplicationFeaturesBloc
     prefs.saveInt(_pageKey(appId), pageOffset);
     fhosLogger.fine(
         "finished: getApplicationFeatureValuesData with $appId search $searchTerm");
+  }
+
+  /// Loads the application and portfolio strategy definitions used to build
+  /// the dashboard tooltips. Failures are logged and ignored, the tooltips
+  /// just fall back to having no rule detail.
+  Future<void> _loadSharedStrategies(String appId) async {
+    final pid = portfolioId;
+    await Future.wait([
+      _rolloutStrategyServiceApi
+          .listApplicationStrategies(appId, includeArchived: true, max: 1000)
+          .then((list) {
+        _applicationStrategies
+          ..clear()
+          ..addEntries(
+              list.items.map((i) => MapEntry(i.strategy.id, i.strategy)));
+      }).catchError((e) {
+        _applicationStrategies.clear();
+        _log.fine("unable to load application strategies for $appId", e);
+      }),
+      if (pid == null)
+        Future.sync(_portfolioStrategies.clear)
+      else
+        _portfolioRolloutStrategyServiceApi
+            .listPortfolioStrategies(pid, includeArchived: true, max: 1000)
+            .then((list) {
+          _portfolioStrategies
+            ..clear()
+            ..addEntries(
+                list.items.map((i) => MapEntry(i.strategy.id, i.strategy)));
+        }).catchError((e) {
+          _portfolioStrategies.clear();
+          _log.fine("unable to load portfolio strategies for $pid", e);
+        }),
+    ]);
   }
 
   Future<void> updateApplicationFeatureValuesStream() async {
@@ -417,6 +462,7 @@ class PerApplicationFeaturesBloc
   }
 
   Future<Feature>? loadFreshFeature(String featureKey) async {
-    return _featureServiceApi.getFeatureByKey(applicationId!, featureKey, includeFilters: true);
+    return _featureServiceApi.getFeatureByKey(applicationId!, featureKey,
+        includeFilters: true);
   }
 }
