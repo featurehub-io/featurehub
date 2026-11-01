@@ -1948,14 +1948,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wellKnownUserKey => '用户键';
 
   @override
-  String get tooltipAppliedRules => '已应用规则';
-
-  @override
-  String tooltipPercentage(String value) {
-    return '百分比：$value%';
-  }
-
-  @override
   String get tooltipUserKey => '用户键';
 
   @override
@@ -1972,6 +1964,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tooltipCustom => '自定义';
+
+  @override
+  String get tooltipCustomStrategy => '自定义策略';
+
+  @override
+  String get tooltipRollout => '发布比例';
+
+  @override
+  String get tooltipPercentageOverridden => '已针对此功能覆盖';
+
+  @override
+  String get tooltipRulesAllMatch => '规则（须全部匹配）';
+
+  @override
+  String get tooltipNoRules => '无定向规则';
+
+  @override
+  String get tooltipRulesUnavailable => '规则详情不可用';
 
   @override
   String get unsavedChanges => '您有未保存的更改，是否保存？';

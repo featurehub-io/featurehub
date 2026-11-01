@@ -1977,12 +1977,6 @@
   "wellKnownUserKey": "User Key",
   "@wellKnownUserKey": { "description": "Display label for the User Key well-known attribute in strategy editor" },
 
-  "tooltipAppliedRules": "Applied rules",
-  "@tooltipAppliedRules": { "description": "Section header in the strategy tooltip listing which rules apply" },
-
-  "tooltipPercentage": "Percentage: {value}%",
-  "@tooltipPercentage": { "description": "Tooltip line showing the percentage rollout value", "placeholders": { "value": { "type": "String" } } },
-
   "tooltipUserKey": "User key",
   "@tooltipUserKey": { "description": "Tooltip line indicating a user-key rule is applied" },
 
@@ -2000,6 +1994,24 @@
 
   "tooltipCustom": "Custom",
   "@tooltipCustom": { "description": "Tooltip line indicating a custom attribute rule is applied" },
+
+  "tooltipCustomStrategy": "Custom Strategy",
+  "@tooltipCustomStrategy": { "description": "Badge in the strategy hover card for a strategy defined on the feature value itself" },
+
+  "tooltipRollout": "Rollout",
+  "@tooltipRollout": { "description": "Label for the percentage rollout section in the strategy hover card" },
+
+  "tooltipPercentageOverridden": "Overridden for this feature",
+  "@tooltipPercentageOverridden": { "description": "Note in the strategy hover card when a shared strategy's percentage is overridden for this feature value" },
+
+  "tooltipRulesAllMatch": "Rules (all must match)",
+  "@tooltipRulesAllMatch": { "description": "Header for the list of targeting rules in the strategy hover card" },
+
+  "tooltipNoRules": "No targeting rules",
+  "@tooltipNoRules": { "description": "Shown in the strategy hover card when a strategy has no percentage and no rules" },
+
+  "tooltipRulesUnavailable": "Rule details unavailable",
+  "@tooltipRulesUnavailable": { "description": "Shown in the strategy hover card when the shared strategy definition could not be loaded" },
 
   "unsavedChanges": "You have unsaved changes, save?",
   "@unsavedChanges": { "description": "Banner shown in the feature value side sheet when there are unsaved changes" },

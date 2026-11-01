@@ -2036,14 +2036,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wellKnownUserKey => 'User Key';
 
   @override
-  String get tooltipAppliedRules => 'Applied rules';
-
-  @override
-  String tooltipPercentage(String value) {
-    return 'Percentage: $value%';
-  }
-
-  @override
   String get tooltipUserKey => 'User key';
 
   @override
@@ -2060,6 +2052,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tooltipCustom => 'Custom';
+
+  @override
+  String get tooltipCustomStrategy => 'Custom Strategy';
+
+  @override
+  String get tooltipRollout => 'Rollout';
+
+  @override
+  String get tooltipPercentageOverridden => 'Overridden for this feature';
+
+  @override
+  String get tooltipRulesAllMatch => 'Rules (all must match)';
+
+  @override
+  String get tooltipNoRules => 'No targeting rules';
+
+  @override
+  String get tooltipRulesUnavailable => 'Rule details unavailable';
 
   @override
   String get unsavedChanges => 'You have unsaved changes, save?';
