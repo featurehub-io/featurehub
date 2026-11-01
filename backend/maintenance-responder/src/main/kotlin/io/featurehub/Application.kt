@@ -1,5 +1,6 @@
 package io.featurehub
 
+import io.featurehub.health.LoadBalancerFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.jersey.config.CommonConfiguration
@@ -9,8 +10,6 @@ import io.featurehub.responder.AbortForMaintenanceFilter
 import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info
 import io.featurehub.rest.MaintenanceNotificationFilter
-import org.glassfish.hk2.api.ServiceLocator
-import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.glassfish.jersey.server.ResourceConfig
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -47,12 +46,12 @@ class Application {
     val config = ResourceConfig(
       CorsFilter::class.java,
       CommonConfiguration::class.java,
+      LoadBalancerFeature::class.java,
       AbortForMaintenanceFilter::class.java,
     )
 
-    registerMetrics(config) { resourceConfig: ResourceConfig?, locator: ServiceLocator?, binder: AbstractBinder? ->
-      resourceConfig
-    }
+    // check if we should list on a different port
+    registerMetrics(config)
 
     FeatureHubJerseyHost(config).start()
 
