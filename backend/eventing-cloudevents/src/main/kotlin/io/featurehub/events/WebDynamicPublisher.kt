@@ -1,7 +1,7 @@
 package io.featurehub.events
 
 import cd.connect.app.config.ConfigKey
-import cd.connect.jersey.common.LoggingConfiguration
+import cd.connect.jersey.common.ClientLoggingConfiguration
 import io.cloudevents.CloudEvent
 import io.featurehub.encryption.WebhookEncryptionService
 import io.featurehub.jersey.config.CommonConfiguration
@@ -26,7 +26,7 @@ import java.util.*
 open class BaseWebhook {
   protected val client: Client = ClientBuilder.newClient()
     .register(CommonConfiguration::class.java)
-    .register(LoggingConfiguration::class.java)
+    .register(ClientLoggingConfiguration::class.java)
 
   init {
     // support individual override of proxies

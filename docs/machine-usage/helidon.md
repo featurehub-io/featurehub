@@ -216,7 +216,7 @@ These cd.connect and openapi-support libraries wrap Jersey and must be verified 
 
 | Library | Role | Expected Status |
 |---|---|---|
-| `connect-jersey-common` (2.1) | Logging filters, CORS, `LoggingConfiguration` | Should work — pure JAX-RS filters |
+| `connect-jersey-common` (2.1) | Logging filters, CORS, `ClientLoggingConfiguration` | Should work — pure JAX-RS filters |
 | `connect-prometheus-jersey` (4.3) | Prometheus `JerseyPrometheusResource` | Should work — JAX-RS resource + filter |
 | `openapi-jersey3-support` (2.5) | OpenAPI generated resource base classes | Should work — Jersey annotations only |
 | `cd.connect app-config` | `@ConfigKey`, `DeclaredConfigResolver` | Unaffected — plain Java field injection |

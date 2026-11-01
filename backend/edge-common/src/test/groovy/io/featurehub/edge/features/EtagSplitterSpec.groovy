@@ -20,6 +20,22 @@ class EtagSplitterSpec extends Specification {
       holder.environmentTags[k2] == "2"
   }
 
+  def "a weak etag (from a compressed response) is split the same as a strong one"() {
+    given: "i have a weak etag"
+      def etag = 'W/"1;2//other"'
+    and: "i have two keypairs"
+      def k1 = new KeyParts("1", UUID.randomUUID(), "s1")
+      def k2 = new KeyParts("1", UUID.randomUUID(), "s2")
+      def keypairs = [k1,k2]
+    when: "i split"
+      def holder = ETagSplitter.@Companion.splitTag(etag, keypairs, "other")
+    then:
+      holder.validEtag
+      holder.contextTag == "other"
+      holder.environmentTags[k1] == "1"
+      holder.environmentTags[k2] == "2"
+  }
+
   def "when the etag is null, the holder will be invalid but the context etag will still be the context's one"() {
     given: "i have tags"
       def etag = null
