@@ -40,7 +40,7 @@
   </licenses>
 
   <properties>
-    <google-pubsub.version>1.144.1</google-pubsub.version>
+    <google-pubsub.version>1.158.0</google-pubsub.version>
   </properties>
 
   <dependencies>

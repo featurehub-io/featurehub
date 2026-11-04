@@ -118,19 +118,19 @@ class PubSubFactoryService @Inject constructor(private val applicationStarted: A
       grpcChannel = ManagedChannelBuilder.forTarget(pubsubHost).usePlaintext().build()
 
       channelProvider = FixedTransportChannelProvider.create(GrpcTransportChannel.create(grpcChannel!!))
-      credsProvider = NoCredentialsProvider.create()
+      val noCredsProvider = NoCredentialsProvider.create()
 
       topicAdminClient = TopicAdminClient.create(
         TopicAdminSettings.newBuilder()
           .setTransportChannelProvider(channelProvider)
-          .setCredentialsProvider(credsProvider)
+          .setCredentialsProvider(noCredsProvider)
           .build()
       )
 
       subscriptionAdminClient = SubscriptionAdminClient.create(
         SubscriptionAdminSettings.newBuilder()
           .setTransportChannelProvider(channelProvider)
-          .setCredentialsProvider(credsProvider)
+          .setCredentialsProvider(noCredsProvider)
           .build()
       )
 
