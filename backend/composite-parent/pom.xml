@@ -57,7 +57,7 @@
     <ebean.version>17.2.0</ebean.version>
     <ebean.tile.version>17.2.0</ebean.tile.version>
     <h2.version>2.3.230</h2.version>
-    <handlebars-version>4.3.1</handlebars-version>
+    <handlebars-version>4.5.2</handlebars-version>
   </properties>
 
   <build>
