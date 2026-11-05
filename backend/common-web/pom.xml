@@ -39,9 +39,6 @@
   <properties>
     <cloudevents.version>4.0.1</cloudevents.version>
     <otel.version>1.67.0</otel.version>
-    <!-- zipkin exporter is discontinued upstream; 1.64.0 is the final release -->
-    <otel.zipkin.version>1.64.0</otel.zipkin.version>
-    <otel.jaeger.version>1.34.1</otel.jaeger.version>
   </properties>
 
   <dependencies>
@@ -80,18 +77,6 @@
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-exporter-otlp</artifactId>
       <version>${otel.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-zipkin</artifactId>
-      <version>${otel.zipkin.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-jaeger</artifactId>
-      <version>${otel.jaeger.version}</version>
     </dependency>
 
     <dependency>

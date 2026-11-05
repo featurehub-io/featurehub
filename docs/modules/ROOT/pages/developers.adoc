@@ -15,7 +15,7 @@ Java was also chosen amongst the JVM stack because of its ability to allow the g
 contribute. The `pom.xml`  in the main repository to allow for easy loading and local installation
 of the project. It is called a _reactor_.
 
-If you want to go more advanced, we also support Prometheus, Health Checks, OpenTracing and Jaeger.
+If you want to go more advanced, we also support Prometheus, Health Checks and OpenTelemetry.
 
 === The FeatureHub Admin Console
 
