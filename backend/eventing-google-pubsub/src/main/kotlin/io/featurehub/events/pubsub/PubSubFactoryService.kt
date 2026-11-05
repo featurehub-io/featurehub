@@ -118,19 +118,22 @@ class PubSubFactoryService @Inject constructor(private val applicationStarted: A
       grpcChannel = ManagedChannelBuilder.forTarget(pubsubHost).usePlaintext().build()
 
       channelProvider = FixedTransportChannelProvider.create(GrpcTransportChannel.create(grpcChannel!!))
-      credsProvider = NoCredentialsProvider.create()
+      // must also be stored in the field: enrichPublisherClient/enrichSubscriberClient use it, otherwise
+      // publishers/subscribers fall back to default credentials which gRPC rejects on a plaintext channel
+      val noCredsProvider = NoCredentialsProvider.create()
+      credsProvider = noCredsProvider
 
       topicAdminClient = TopicAdminClient.create(
         TopicAdminSettings.newBuilder()
           .setTransportChannelProvider(channelProvider)
-          .setCredentialsProvider(credsProvider)
+          .setCredentialsProvider(noCredsProvider)
           .build()
       )
 
       subscriptionAdminClient = SubscriptionAdminClient.create(
         SubscriptionAdminSettings.newBuilder()
           .setTransportChannelProvider(channelProvider)
-          .setCredentialsProvider(credsProvider)
+          .setCredentialsProvider(noCredsProvider)
           .build()
       )
 

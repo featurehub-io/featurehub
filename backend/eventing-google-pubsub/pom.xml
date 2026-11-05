@@ -40,7 +40,7 @@
   </licenses>
 
   <properties>
-    <google-pubsub.version>1.144.1</google-pubsub.version>
+    <google-pubsub.version>1.158.0</google-pubsub.version>
   </properties>
 
   <dependencies>
@@ -60,11 +60,12 @@
       <artifactId>google-cloud-pubsub</artifactId>
       <version>[${google-pubsub.version}]</version>
     </dependency>
-<!--    <dependency>-->
-<!--      <groupId>com.google.protobuf</groupId>-->
-<!--      <artifactId>protobuf-java</artifactId>-->
-<!--      <version>[3.25.5]</version>-->
-<!--    </dependency>-->
+    <!-- mysql-connector-j drags in an older protobuf runtime; Google client gencode requires a runtime at least as new as itself -->
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>4.36.2</version>
+    </dependency>
     <dependency>
       <groupId>io.featurehub.cloudevents</groupId>
       <artifactId>cloudevents-google-pubsub</artifactId>
