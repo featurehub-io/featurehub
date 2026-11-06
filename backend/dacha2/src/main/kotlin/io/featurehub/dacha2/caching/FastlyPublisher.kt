@@ -10,7 +10,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
 
-class FastlyPublisher @Inject constructor(@FeatureHubConfig("edge.cache.fastly.key")
+// SaaS version needs to override it and some 3rd party may wish to as well
+
+open class FastlyPublisher @Inject constructor(@FeatureHubConfig("edge.cache.fastly.key")
                                     private val fastlyKey: String?,
                                           @FeatureHubConfig("edge.cache.fastly.service-id")
                                     private val fastlyServiceId: String?,

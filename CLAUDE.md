@@ -33,8 +33,11 @@ mvn -f pom-apis.xml -DskipTests -T4C clean install  # regenerate OpenAPI artifac
 ### Run a Single Backend Module's Tests
 ```sh
 cd backend/<module-name>
-mvn test                                    # run all tests for this module
-mvn test -Dtest=MySpec                      # run a specific Spock/Groovy spec
+mvn test -Dgib.disable=true                      # all tests
+mvn test -Dgib.disable=true -Dtest=MySpec        # specific Spock spec
+
+# subset of reactor modules (from a parent directory)
+mvn install -Dgib.disable=true -pl <module-a>,<module-b> -am
 ```
 
 ### Admin Frontend (Flutter)
