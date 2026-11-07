@@ -517,6 +517,7 @@
   "connectFeatureHubToSlack": "将 FeatureHub 连接到 Slack",
   "installFeatureHubBot": "将 FeatureHub Bot 应用安装到您的 Slack 工作区",
   "connectToSlack": "连接到 Slack",
+  "disconnectSlack": "断开 Slack 连接",
   "slackBotTokenLabel": "Slack Bot 用户 OAuth 令牌",
   "slackBotTokenRequired": "请输入 Slack Bot 用户 OAuth 令牌",
   "defaultSlackChannelIdLabel": "默认 Slack 频道 ID",

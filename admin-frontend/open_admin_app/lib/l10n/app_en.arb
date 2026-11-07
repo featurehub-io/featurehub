@@ -1626,6 +1626,9 @@
   "connectToSlack": "Connect to Slack",
   "@connectToSlack": { "description": "Label on the filled button to initiate Slack OAuth connection" },
 
+  "disconnectSlack": "Disconnect Slack",
+  "@disconnectSlack": { "description": "Label on the button that removes the Slack token obtained through the Connect to Slack flow, so Slack can be connected again" },
+
   "slackBotTokenLabel": "Slack Bot User OAuth Token",
   "@slackBotTokenLabel": { "description": "Label for the Slack bot token input field" },
 

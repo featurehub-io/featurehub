@@ -108,6 +108,9 @@ class SystemConfigSqlApi @Inject constructor(
       }
     }
 
+    // reject the whole update before anything is written if any value has been changed elsewhere
+    checkVersions(configs, allowInternal)
+
     val updatedBy = conversions.byPerson(whoUpdated)
     val originalConfigs = findConfigs(configs.map { it.key })
     val updatedConfigs =
@@ -128,6 +131,30 @@ class SystemConfigSqlApi @Inject constructor(
 //    configProvider.forEach {  it.configUpdateCheck(updatedConfigs) }
 
     return updatedConfigs.values.map { it.updated }
+  }
+
+  /**
+   * If a stored config's version doesn't match the one the caller last saw, someone else (another admin, or a
+   * flow such as Slack's OAuth connect) has changed it since. Saving over it would silently do nothing, so
+   * tell the caller to refresh instead.
+   */
+  private fun checkVersions(configs: List<UpdatedSystemConfig>, allowInternal: Boolean) {
+    val updatable = configs.filter { cfg ->
+      systemConfigMap[cfg.key]?.let { !it.internalOnly || allowInternal } ?: false
+    }
+    if (updatable.isEmpty()) return
+
+    val stored = QDbSystemConfig().id.key.`in`(updatable.map { it.key }).id.orgId.eq(conversions.organizationId())
+      .findList().associateBy { it.key }
+
+    updatable.forEach { cfg ->
+      stored[cfg.key]?.let { existing ->
+        if (existing.version != cfg.version) {
+          throw SystemConfigApi.UpdateSystemConfigFailedException(
+            "Configuration `${cfg.key}` has been changed elsewhere, please refresh and try again")
+        }
+      }
+    }
   }
 
   inner class UpdateResult(val value: String?, val skip: Boolean)
@@ -174,6 +201,13 @@ class SystemConfigSqlApi @Inject constructor(
     if (definition.requiresEncryption && definition.dataType == KnownSystemConfigSource.stringRef &&
           updatedVal == WebhookEncryptionService.ENCRYPTEDTEXT) {
       return UpdateResult(null, true) // don't bother using this, it hasn't actually changed
+    }
+
+    // a blank secret is no secret: store it as cleared rather than encrypting an empty string, which would
+    // otherwise still count as "set" (e.g. Slack would consider its token present)
+    if (definition.requiresEncryption && definition.dataType == KnownSystemConfigSource.stringRef &&
+          updatedVal.toString().isBlank()) {
+      return UpdateResult(null, false)
     }
 
     if (definition.requiresEncryption) {
