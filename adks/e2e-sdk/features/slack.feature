@@ -1,7 +1,7 @@
 @needs-webserver @allvariants @streamingvariants
 Feature: System supports Slack
 
-  @slack-external @slack @notsaas
+  @slack-external @slack @notsaas @notkind
   Scenario: I setup and test a slack event to an external app
     Given I am logged in and have a person configured
     And I create a new portfolio
@@ -31,7 +31,7 @@ Feature: System supports Slack
       | previous-or-next | portfolio-strategy-name | portfolio-strategy-fieldName | portfolio-strategy-conditional | portfolio-strategy-values | portfolio-strategy-type | portfolio-strategy-value |
       | a                | chubby                  | customer                     | equals                         | ilf                       | string                  | pearl                    |
 
-  @slack-direct  @slack  @notsaas
+  @slack-direct  @slack  @notsaas  @notkind
   Scenario: I setup and test a slack event directly to slack
     Given I am logged in and have a person configured
     And I create a new portfolio

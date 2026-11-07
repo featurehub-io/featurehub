@@ -17,4 +17,7 @@ enabled. Slack will not appear if and encryption key is not configured.
 
 image::slack-system-config.png[Slack system config, 1500]
 
+== Publish All To Cache
 
+The system also lets you publish all data to the cache, cycling through all portfolios, applications and environments and pushing your data into the cache. This is typically something you might do if you are going to
+perform maintenance and need to take the Management Repository server down and replace it with the Maintenance Responder. 

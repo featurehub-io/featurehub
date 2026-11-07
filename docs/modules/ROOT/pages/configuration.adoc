@@ -341,7 +341,7 @@ The `party-server-ish` honours all the values set by the Management Repository  
 === Common to all servers
 
 All servers expose metrics and health checks. The metrics are for Prometheus and are on `/metrics`,
-liveness is on `/health/liveness` and readyness on `/health/readyness`. Furthermore, every listening port responds with a 200 on
+liveness is on `/health/liveness` and readiness on `/health/readiness`. Furthermore, every listening port responds with a 200 on
 a request to `/` so that load balancers that aren't configured to listen to the proper readiness checks will function.
 
 Each different server has a collection of what things are important to indicate aliveness.
@@ -456,7 +456,7 @@ Jersey specific config around logging is from here: https://github.com/ClearPoin
 - `jersey.bufferSize` (8k) - how much data of a body to log before chopping off
 - `jersey.logging.exclude-body-uris` - urls in which the body should be excluded from the logs
 - `jersey.logging.exclude-entirely-uris` - urls in which the entire context should be excluded from the logs. Typically
-you will include the /health/liveness and /health/readyness API calls along with the /metrics from this. You may also
+you will include the /health/liveness and /health/readiness API calls along with the /metrics from this. You may also
 wish to include login urls.
 - `jersey.logging.verbosity` - the default level of verbosity for logging `HEADERS_ONLY, - PAYLOAD_TEXT, - PAYLOAD_ANY`
 
@@ -475,4 +475,4 @@ servers put themselves into STARTING mode as soon as they are able, and then STA
 listening. The urls are:
 
 - `/health/liveness`
-- `/health/readyness`
+- `/health/readiness`
