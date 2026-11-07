@@ -79,7 +79,7 @@ docker run -p 8085:8085 --user 999:999 -v $HOME/party:/db featurehub/party-serve
 ```sh
 sh build_all_and_test.sh           # builds all artifacts + generates APIs
 cd backend && sh build.sh <version> # builds and tags Docker images
-cd backend && sh push.sh <version>  # pushes Docker images
+cd backend && sh release.sh  # pushes Docker images
 ```
 
 ## Architecture

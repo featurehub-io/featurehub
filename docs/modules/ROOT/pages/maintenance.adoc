@@ -45,7 +45,7 @@ nothing writes to the database, route the Admin traffic to the Maintenance Respo
 
 It is recommended that you use the Publish All to Cache feature of the System Configuration setting before shutting
 your Management Repositories down so you won't suffer an outage. Most modern container scheduling frameworks (like
-cilium) allow you to annotate your Dacha2 containers to prevent them from moving during this process. 
+Karpenter) allow you to annotate your Dacha2 containers to prevent them from moving during this process. 
 
 [#_maintenance_responder]
 == The Maintenance Responder

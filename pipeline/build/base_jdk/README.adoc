@@ -1,2 +1,0 @@
-== the base_jdk image
-
