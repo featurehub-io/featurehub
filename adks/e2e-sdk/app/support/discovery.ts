@@ -9,12 +9,14 @@ export abstract class BackendDiscovery {
   private static _isRESTEdge = false;
   private static _discovered = false;
 
+  public static hostname = process.env.INGRESS_IP || 'localhost';
+
   public static get mrUrl() {
-    return BackendDiscovery._mrUrl || `http://localhost:${BackendDiscovery._mrPort}`;
+    return BackendDiscovery._mrUrl || `http://${BackendDiscovery.hostname}:${BackendDiscovery._mrPort}`;
   }
 
   public static get edgeUrl() {
-    return BackendDiscovery._edgeUrl || `http://localhost:${BackendDiscovery._featuresPort}`;
+    return BackendDiscovery._edgeUrl || `http://${BackendDiscovery.hostname}:${BackendDiscovery._featuresPort}`;
   }
 
   public static get supportsSSE() {
@@ -45,7 +47,7 @@ export abstract class BackendDiscovery {
   static async edgePortCheck(port: number): Promise<boolean> {
     try {
       logger.info('looking for edge on port %d', port);
-      const versionInfo = await (new InfoServiceApi(new Configuration({ basePath: `http://localhost:${port}` }))).getInfoVersion();
+      const versionInfo = await (new InfoServiceApi(new Configuration({ basePath: `http://${BackendDiscovery.hostname}:${port}` }))).getInfoVersion();
       logger.info('edge version is', versionInfo.data);
       if (versionInfo.data.name === 'edge-full') {
         this._featuresPort = port;
@@ -68,8 +70,8 @@ export abstract class BackendDiscovery {
 
   static async mrPortCheck(port: number): Promise<boolean> {
     try {
-      logger.info('checking for mr on port %d', port);
-      const versionInfo = await (new InfoServiceApi(new Configuration({ basePath: `http://localhost:${port}` }))).getInfoVersion();
+      logger.info(`checking for mr on port http://${BackendDiscovery.hostname}:${port}`);
+      const versionInfo = await (new InfoServiceApi(new Configuration({ basePath: `http://${BackendDiscovery.hostname}:${port}` }))).getInfoVersion();
       if (versionInfo.data.name == 'party-server') {
         this._discovered = true;
         this._featuresPort = port;

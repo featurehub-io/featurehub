@@ -1,0 +1,65 @@
+name: publish DockerHub READMEs
+
+# Pushes each container module's README.md to its DockerHub repository overview,
+# so the image documentation on DockerHub stays in step with the source.
+on:
+  push:
+    tags:
+      - '**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dockerhub_readme:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.repository }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - readme: backend/party-server/README.md
+            repository: featurehub/party-server
+            short: "FeatureHub all-in-one: Admin app, MR, Dacha2 cache and streaming + REST Edge"
+          - readme: backend/party-server-ish/README.md
+            repository: featurehub/party-server-ish
+            short: "FeatureHub all-in-one, REST only: Admin app, MR and Edge-REST (no NATS/Dacha)"
+          - readme: backend/mr/README.md
+            repository: featurehub/mr
+            short: "FeatureHub Management Repository: Admin app and admin API"
+          - readme: backend/dacha2/README.md
+            repository: featurehub/dacha2
+            short: "FeatureHub Dacha2: lazy, CloudEvents-based feature cache for Edge"
+          - readme: backend/dacha/README.md
+            repository: featurehub/dacha
+            short: "FeatureHub Dacha1: legacy NATS-only feature cache (use dacha2 for new installs)"
+          - readme: backend/edge-full/README.md
+            repository: featurehub/edge
+            short: "FeatureHub Edge: SDK-facing streaming (SSE) and REST feature API"
+          - readme: backend/edge-rest/README.md
+            repository: featurehub/edge-rest
+            short: "FeatureHub Edge-REST: database-backed GET/PUT SDK feature API"
+          - readme: backend/maintenance-responder/README.md
+            repository: featurehub/maintenance-responder
+            short: "FeatureHub Maintenance Responder: holds the Admin app in maintenance mode"
+          - readme: pipeline/build/base_jdk/README.md
+            repository: featurehub/base_jdk
+            short: "Base JRE 25 image for FeatureHub server containers (build use only)"
+          - readme: pipeline/build/base_party/README.md
+            repository: featurehub/base_party
+            short: "Base JRE 25 + NATS image for the FeatureHub Party Server (build use only)"
+          - readme: pipeline/build/flutter_web/README.md
+            repository: featurehub/flutter_web
+            short: "Flutter SDK build image for the FeatureHub Admin web app (build use only)"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Update DockerHub description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ matrix.repository }}
+          readme-filepath: ${{ matrix.readme }}
+          short-description: ${{ matrix.short }}

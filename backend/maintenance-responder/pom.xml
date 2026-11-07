@@ -38,7 +38,7 @@
 
   <properties>
     <app.entrypoint>io.featurehub.Application</app.entrypoint>
-    <app.port>8085</app.port>
+    <app.port>8553</app.port>
     <build.version>0.0.1</build.version>
   </properties>
 

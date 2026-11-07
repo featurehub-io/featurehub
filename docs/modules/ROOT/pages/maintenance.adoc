@@ -1,0 +1,117 @@
+= Maintenance Windows
+
+From version 1.11, FeatureHub lets you announce a planned maintenance window to Admin app users. It also provides
+a dedicated *Maintenance Responder* image that holds the Admin app in maintenance mode while the Management Repository
+(MR) is shut down, for example during a database upgrade.
+
+Maintenance windows only affect the Admin app and the MR API. SDK traffic through Edge keeps working, so your
+applications continue to receive features throughout.
+
+[#_configuring_a_maintenance_window]
+== Configuring a maintenance window
+
+A maintenance window is defined by three properties. Set them the same way as any other
+xref:configuration.adoc#_run_configuration[FeatureHub configuration], as environment variables or in
+`/etc/app-config/application.properties`.
+
+- `maintenance.start` - the start of the window, as an ISO-8601 UTC timestamp, for example `2026-11-08T01:00:00Z`.
+- `maintenance.end` - the end of the window, in the same format.
+- `maintenance.message` - the message shown to users, for example `FeatureHub is being upgraded`.
+
+All three must be set and the timestamps must be valid, otherwise the window is ignored.
+
+[#_announcing_maintenance]
+== Announcing maintenance in the Admin app
+
+Set the three properties on your `mr`, `party-server` or `party-server-ish` deployment and restart it.
+Until `maintenance.end` has passed, every response from the server includes these headers:
+
+- `X-Maintenance-Start`
+- `X-Maintenance-End`
+- `X-Maintenance-Message`
+
+The headers are also added to the CORS exposed headers, so they work when the Admin app is served from a different
+domain.
+
+The Admin app reads these headers and behaves as follows:
+
+- *Before the window starts:* users see a notice of the upcoming maintenance and its message.
+- *During the window* (judged by the clock of the user's browser): the Admin app shows a "Scheduled Maintenance"
+overlay that blocks further interaction.
+
+NOTE: Announcing a window does not stop the server accepting API calls. A user whose clock is wrong, or a script or
+xref:admin-development-kit.adoc[Admin SDK] calling the API, can still make changes during the window. To make sure
+nothing writes to the database, route the Admin traffic to the Maintenance Responder (below).
+
+It is recommended that you use the Publish All to Cache feature of the System Configuration setting before shutting
+your Management Repositories down so you won't suffer an outage. Most modern container scheduling frameworks (like
+Karpenter) allow you to annotate your Dacha2 containers to prevent them from moving during this process. 
+
+[#_maintenance_responder]
+== The Maintenance Responder
+
+The Maintenance Responder (Docker image `featurehub/maintenance-responder`) is a small server that replaces MR
+during maintenance. It:
+
+- serves the Admin web app as normal, so users get a maintenance page instead of a connection error
+- answers every API request whose path starts with `mr-api`, `saml` or `oauth` with *HTTP 503 Service Unavailable*,
+with the maintenance message as the body and a `Retry-After` header set to `maintenance.end`. When the Admin app
+receives this, it switches to the maintenance page.
+- sends the `X-Maintenance-*` headers described above
+- returns `200` on `/`, so load balancers that check the root path still route traffic to it
+- exposes the usual xref:configuration.adoc#_health_and_liveness_checks[health checks] and
+xref:metrics.adoc[Prometheus metrics]
+
+It never connects to the database or to NATS, Kafka or Pub/Sub.
+
+=== Configuration
+
+The Maintenance Responder *will not start* unless all three `maintenance.*` properties are set.
+
+- `maintenance.start`, `maintenance.end`, `maintenance.message` - as described
+<<_configuring_a_maintenance_window,above>>. Use the same values as on MR.
+- `interceptPrefixes` - a comma-separated list of path prefixes that get a 503 (default `mr-api,saml,oauth`).
+- `server.port` - the HTTP port (default `8553`). Many installs set this to match MR, for example `8085`.
+- `monitor.port` - the metrics and health check port (default `8701`).
+- `featurehub.url-path` - set this if FeatureHub is served under a context path other than `/`, the same as on MR.
+
+The general options listed under xref:configuration.adoc#_common_to_all_servers[Common to all servers] also apply.
+
+[source,sh]
+----
+docker run -p 8085:8085 --user 999:999 \
+  -e server.port=8085 \
+  -e maintenance.start=2026-11-08T01:00:00Z \
+  -e maintenance.end=2026-11-08T03:00:00Z \
+  -e "maintenance.message=FeatureHub is being upgraded" \
+  featurehub/maintenance-responder:latest
+----
+
+[#_running_maintenance]
+== Running a maintenance window
+
+This process applies to deployments where MR runs separately from Edge and Dacha
+(xref:installation.adoc#_option_2a_scalable_deployment_streaming_rest_feature_updates[Option 2a] or
+xref:installation.adoc#_option_2b_scalable_deployment_rest_feature_updates_only[Option 2b]), such as Kubernetes
+installs using the https://github.com/featurehub-io/featurehub-helm[Helm chart].
+
+. *Announce the window.* Set the `maintenance.*` properties on MR and roll it out. Admin users now see the upcoming
+maintenance notice.
+. *Deploy the Maintenance Responder* with the same `maintenance.*` values and wait until it is ready.
+. *Switch the routes.* When the window starts, change your ingress or load balancer so that all Admin traffic goes to the
+Maintenance Responder instead of MR. Keep SDK traffic (Edge, usually under `/features`) where it is.
+. *Shut down MR* once no traffic reaches it, then carry out the database work.
+. *Start MR* again (removing the `maintenance.*` properties, or leaving them until the end time has passed) and wait
+until it is ready.
+. *Switch the routes back* to MR and remove the Maintenance Responder.
+
+On ECS and other platforms the same pattern applies: move the Admin target group or route to the Maintenance Responder
+for the duration of the work.
+
+=== Party Server and Party Server-ish
+
+`party-server` and `party-server-ish` serve the Admin app, MR and Edge from a single process connected to the
+database. You can still announce a window with the `maintenance.*` properties, but if you shut the container down,
+SDK traffic stops as well. In these deployments the Maintenance Responder can only stand in for the Admin app; your
+SDKs will be without a live FeatureHub until the server is back. See
+xref:resilience.adoc[Building for Resilience] for how SDKs behave when FeatureHub is unavailable.

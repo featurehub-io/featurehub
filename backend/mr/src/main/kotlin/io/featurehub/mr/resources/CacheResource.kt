@@ -8,7 +8,6 @@ import io.featurehub.mr.model.CacheRefreshResponse
 import jakarta.inject.Inject
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.core.SecurityContext
-import java.util.*
 
 class CacheResource @Inject constructor(private val authManager: AuthManagerService, private val cacheRefresherApi: CacheRefresherApi) : CacheServiceDelegate {
   override fun cacheRefresh(

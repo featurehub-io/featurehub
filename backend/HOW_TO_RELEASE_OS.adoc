@@ -49,9 +49,10 @@ Because the build tagged everything latest, you don't have to worry
 
 == All good? time to push
 
-in the backups folder is a script that will tag all the versions you built as latest and push everything.
+in the backups folder is a script that will tag all the versions you built as latest and push everything. Make sure the `current-rc.txt` in the root folder is not `-RC`,
+then:
 
 ----
-sh push.sh 1.4.0
+./release.sh
 ----
 

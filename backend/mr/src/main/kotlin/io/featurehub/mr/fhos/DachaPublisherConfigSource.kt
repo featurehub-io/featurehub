@@ -27,7 +27,7 @@ class DachaPublisherConfigSource : KnownSystemConfigSource {
   override val name: String
     get() = "dacha-system-wide-publish"
   override val knownConfig: List<ValidSystemConfig>
-    get() = listOf(ValidSystemConfig("refresh.cache", "System wide cache respublish", false, KnownSystemConfigSource.boolRef, false, null, false))
+    get() = listOf(ValidSystemConfig("refresh.cache", "System wide cache republish", false, KnownSystemConfigSource.boolRef, false, null, false))
   override val readOnlyConfg: List<ReadOnlySystemConfig>
     get() = listOf(ReadOnlySystemConfig("refresh.cache", "System wide cache republish", null))
 }
