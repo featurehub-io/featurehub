@@ -2948,6 +2948,12 @@ abstract class AppLocalizations {
   /// **'Connect to Slack'**
   String get connectToSlack;
 
+  /// Label on the button that removes the Slack token obtained through the Connect to Slack flow, so Slack can be connected again
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect Slack'**
+  String get disconnectSlack;
+
   /// Label for the Slack bot token input field
   ///
   /// In en, this message translates to:

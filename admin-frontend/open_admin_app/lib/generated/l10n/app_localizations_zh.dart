@@ -1562,6 +1562,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get connectToSlack => '连接到 Slack';
 
   @override
+  String get disconnectSlack => '断开 Slack 连接';
+
+  @override
   String get slackBotTokenLabel => 'Slack Bot 用户 OAuth 令牌';
 
   @override
