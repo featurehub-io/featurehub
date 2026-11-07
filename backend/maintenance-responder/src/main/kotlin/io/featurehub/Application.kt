@@ -46,7 +46,6 @@ class Application {
     val config = ResourceConfig(
       CorsFilter::class.java,
       CommonConfiguration::class.java,
-      LoadBalancerFeature::class.java,
       AbortForMaintenanceFilter::class.java,
     )
 
