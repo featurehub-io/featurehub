@@ -25,10 +25,10 @@ open class FastlyPublisher @Inject constructor(@FeatureHubConfig("edge.cache.fas
   }
 
   override fun updateEnvironment(e: PublishEnvironment) {
-    // for new or updated environments, we don't worry about, as they will take care of filling the Fastly cache
-    // later. Environments that have features updated will have their features coming through updateFeatureValue
-    // below. We only purge for a DELETE
-    if (e.action == PublishAction.DELETE) {
+    // new environments have nothing cached in Fastly yet, so they don't need a purge. Updated environments are purged
+    // because their metadata (or other environment-level data) may have changed what is served, and deleted
+    // environments are purged so they stop being served. Feature value changes are purged separately below.
+    if (e.action == PublishAction.DELETE || e.action == PublishAction.UPDATE) {
       purge(e.environment.id)
     }
   }
@@ -37,15 +37,20 @@ open class FastlyPublisher @Inject constructor(@FeatureHubConfig("edge.cache.fas
     purge(feature.environmentId)
   }
 
-  private fun purge(e: UUID) {
+  private fun purge(environmentId: UUID) {
     if (fastlyServiceId != null && fastlyKey != null) {
       try {
-        client.target("https://api.fastly.com/service/${fastlyServiceId}/purge/${e}")
+        client.target("https://api.fastly.com/service/${fastlyServiceId}/purge/${environmentId}")
           .request()
           .header("Fastly-Key", fastlyKey)
           .post(null)
-      } catch (e: Exception) {
-        log.error("Unable to break cache for Fastly for environment ${e}")
+          .use { response ->
+            if (response.status !in 200..299) {
+              log.warn("Fastly refused cache purge for environment {}: HTTP {}", environmentId, response.status)
+            }
+          }
+      } catch (ex: Exception) {
+        log.error("Unable to break cache for Fastly for environment {}", environmentId, ex)
       }
     }
   }
