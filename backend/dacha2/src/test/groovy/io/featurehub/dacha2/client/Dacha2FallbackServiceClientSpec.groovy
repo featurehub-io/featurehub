@@ -19,6 +19,8 @@ import jakarta.ws.rs.ServerErrorException
 import jakarta.ws.rs.ServiceUnavailableException
 import jakarta.ws.rs.core.Response
 import kotlin.jvm.functions.Function0
+import io.featurehub.redis.FeatureHubRedis
+import io.featurehub.redis.RedisSource
 import spock.lang.Specification
 
 class Dacha2FallbackServiceClientSpec extends Specification {
@@ -203,5 +205,44 @@ class Dacha2FallbackServiceClientSpec extends Specification {
       second.features.environment.environment.id == envId
     cleanup:
       cache.closeCache()
+  }
+
+  def "with no redis configured MR failures pass straight through and the circuit never opens"() {
+    given:
+      FeatureHubRedis current = null
+      def c = new Dacha2FallbackServiceClient(mr, { -> current } as RedisSource, 10000, { -> now } as Function0<Long>)
+      storeInRedis()
+    when:
+      c.getEnvironment(envId, null)
+    then:
+      1 * mr.getEnvironment(envId, null) >> { throw new ProcessingException("down") }
+      thrown(ProcessingException)
+      !c.open
+  }
+
+  def "redis can be enabled and disabled at runtime"() {
+    given:
+      FeatureHubRedis current = null
+      def c = new Dacha2FallbackServiceClient(mr, { -> current } as RedisSource, 10000, { -> now } as Function0<Long>)
+      storeInRedis()
+    when: "redis is configured while MR is down"
+      current = redis
+      def found = c.getEnvironment(envId, null)
+    then:
+      1 * mr.getEnvironment(envId, null) >> { throw new ProcessingException("down") }
+      found.env.environment.id == envId
+      c.open
+    when: "redis is removed again while the circuit is open, MR is asked directly"
+      current = null
+      c.getEnvironment(envId, null)
+    then:
+      1 * mr.getEnvironment(envId, null) >> { throw new ProcessingException("still down") }
+      thrown(ProcessingException)
+    when: "MR comes back"
+      def again = c.getEnvironment(envId, null)
+    then:
+      1 * mr.getEnvironment(envId, null) >> new Dacha2Environment().env(env())
+      again.env.environment.id == envId
+      !c.open
   }
 }

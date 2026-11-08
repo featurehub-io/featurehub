@@ -48,11 +48,18 @@ data class RedisConfig(
      * Returns null if no URL is configured - which means the Redis fallback is disabled.
      */
     @JvmStatic @JvmOverloads
-    fun load(prefix: String = DEFAULT_PREFIX): RedisConfig? {
+    fun load(prefix: String = DEFAULT_PREFIX): RedisConfig? = loadFrom(prefix) { FallbackPropertyConfig.getConfig(it) }
+
+    /**
+     * As [load], but looking each key up with the supplied function (e.g. a properties file that can change at
+     * runtime, falling back to the normal configuration).
+     */
+    @JvmStatic
+    fun loadFrom(prefix: String, lookup: (String) -> String?): RedisConfig? {
       fun cfg(name: String): String? {
-        val v = FallbackPropertyConfig.getConfig("$prefix.$name")
-        if (v != null || prefix == DEFAULT_PREFIX) return v?.trim()?.ifEmpty { null }
-        return FallbackPropertyConfig.getConfig("$DEFAULT_PREFIX.$name")?.trim()?.ifEmpty { null }
+        val v = lookup("$prefix.$name")?.trim()?.ifEmpty { null }
+        if (v != null || prefix == DEFAULT_PREFIX) return v
+        return lookup("$DEFAULT_PREFIX.$name")?.trim()?.ifEmpty { null }
       }
 
       val url = cfg("url") ?: return null

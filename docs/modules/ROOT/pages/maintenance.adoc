@@ -170,6 +170,34 @@ MR. All the connection options above are supported, and the key prefix must matc
 - `dacha2.redis.evict-on-recovery` - drop entries that came from Redis when MR is available again, default `true`.
 - `dacha2.redis.mr-connect-timeout-ms` - connect timeout for requests to MR when the fallback is on, default `2000`.
 - `dacha2.redis.mr-read-timeout-ms` - read timeout for requests to MR when the fallback is on, default `15000`.
+- `dacha2.redis.config-file` - a comma-separated list of properties files to read the `dacha2.redis.*` (and
+`redis.*`) settings from. They are re-read while Dacha2 runs (see below). Settings in the files take precedence, and
+later files win.
+- `dacha2.redis.config-reload-seconds` - how often to re-read those files, default `30`.
+
+[#_redis_without_restart]
+==== Enabling the fallback on Dacha2 without a restart
+
+Restarting Dacha2 empties its cache, so all of it has to be reloaded from MR. To avoid that, put the Dacha2 Redis
+settings in files and point `dacha2.redis.config-file` at them. Running Dacha2 instances pick up changes within
+`dacha2.redis.config-reload-seconds`, and new instances read the same files when they start. Adding a URL enables
+the fallback, changing a setting reconnects, and removing the URL disables it again. If a change is invalid or Redis
+cannot be reached, the current connection is kept and an error is logged.
+
+In Kubernetes, mount a ConfigMap (connection settings) and a Secret (password) as volumes, for example at
+`/etc/redis-config/redis.properties` and `/etc/redis-secret/redis.properties`, and set
+`dacha2.redis.config-file=/etc/redis-config/redis.properties,/etc/redis-secret/redis.properties`. Kubernetes updates
+mounted ConfigMaps and Secrets in running pods without restarting them, as long as:
+
+* the volume is *not* mounted with `subPath` (those are never updated), and
+* nothing in the pod template changes when the data changes (for example a checksum annotation of the ConfigMap),
+otherwise the pods are restarted anyway.
+
+The files can exist and be empty until you are ready, or not exist yet: missing files are treated as empty. With
+`dacha2.redis.config-file` set, Dacha2 uses the shorter MR timeouts above even before Redis is configured.
+
+Enable Redis on MR first (that needs a restart, which is cheap because MR holds no cache). Then wait for its full
+sync to finish (`mr_redis_last_full_sync_seconds`) before adding the settings for Dacha2.
 
 ==== Redis requirements
 
@@ -184,7 +212,7 @@ policy. If your Redis supports ACLs, give Dacha2 a user that can only read keys 
 - MR: `mr_redis_writes_total`, `mr_redis_write_failures_total`, `mr_redis_env_republish_queue`,
 `mr_redis_last_full_sync_seconds`, `mr_redis_environments`, `mr_redis_service_accounts`,
 `mr_redis_full_sync_failures`.
-- Dacha2: `dacha2_mr_fallback_state` (`1` while serving from Redis), `dacha2_redis_hits_total`,
+- Dacha2: `dacha2_redis_configured` (`1` while a Redis connection is configured), `dacha2_mr_fallback_state` (`1` while serving from Redis), `dacha2_redis_hits_total`,
 `dacha2_redis_misses_total`, `dacha2_redis_errors`.
 
 The Redis fallback does not apply to `party-server` or `party-server-ish`, where Dacha2 runs inside the same process as

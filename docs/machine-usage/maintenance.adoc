@@ -59,6 +59,12 @@ in front of the MR client.
   non-expiring miss caches.
 - When the circuit closes, `Dacha2RedisRecovery` invalidates the entries that came from Redis
   (`dacha2.redis.evict-on-recovery`, default true).
+- The Redis connection comes from a `RedisSource`. With `dacha2.redis.config-file` set it is a
+  `ReloadingRedisSource`, which re-reads those properties files every `dacha2.redis.config-reload-seconds`. It swaps
+  connections atomically, closes the old one after a grace period, and keeps the current one if the new config is
+  invalid. Each request fetches the connection once. While there is none, the client passes MR failures straight
+  through and the circuit never opens. That way Redis can be enabled on running Dacha2 instances, which matters
+  because restarting Dacha2 empties its cache.
 
 `dacha2` is in the maintenance responder's default `interceptPrefixes`, so if MR's address is pointed at the
 responder, Dacha2 gets a 503 (fallback) rather than a 404 (which it would cache as "does not exist").

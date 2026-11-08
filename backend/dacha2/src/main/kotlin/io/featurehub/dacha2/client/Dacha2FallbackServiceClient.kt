@@ -9,6 +9,8 @@ import io.featurehub.metrics.MetricsCollector
 import io.featurehub.mr.model.Dacha2Environment
 import io.featurehub.mr.model.Dacha2ServiceAccount
 import io.featurehub.redis.FeatureHubRedis
+import io.featurehub.redis.RedisSource
+import io.featurehub.redis.StaticRedisSource
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.ws.rs.ProcessingException
 import jakarta.ws.rs.ServerErrorException
@@ -36,13 +38,23 @@ fun interface Dacha2RecoveryListener {
  * - A Redis miss is a [ServiceUnavailableException], never a NotFoundException, so the caches do not put the id into
  *   their (non-expiring) miss caches.
  * - Dacha2 only ever reads from Redis.
+ * - The Redis connection comes from a [RedisSource] and can appear, change or disappear at runtime. While there is
+ *   none, this behaves exactly like the plain MR client (failures are passed straight through, the circuit never
+ *   opens).
  */
 class Dacha2FallbackServiceClient(
   private val primary: Dacha2ServiceClient,
-  private val redis: FeatureHubRedis,
+  private val redisSource: RedisSource,
   private val retryIntervalMs: Long = FallbackPropertyConfig.getConfig("dacha2.redis.mr-retry-interval-ms", "10000").toLong(),
   private val clock: () -> Long = System::currentTimeMillis
 ) : Dacha2ServiceClient {
+  constructor(
+    primary: Dacha2ServiceClient,
+    redis: FeatureHubRedis,
+    retryIntervalMs: Long,
+    clock: () -> Long
+  ) : this(primary, StaticRedisSource(redis), retryIntervalMs, clock)
+
   @Volatile private var open = false
   @Volatile private var nextProbeAt = 0L
   private val probing = AtomicBoolean(false)
@@ -50,8 +62,6 @@ class Dacha2FallbackServiceClient(
   private val environmentsFromRedis = ConcurrentHashMap.newKeySet<UUID>()
   private val apiKeysFromRedis = ConcurrentHashMap.newKeySet<String>()
   private val recoveryListeners = CopyOnWriteArrayList<Dacha2RecoveryListener>()
-
-  private val keys = redis.keys
 
   val isOpen: Boolean
     get() = open
@@ -61,8 +71,8 @@ class Dacha2FallbackServiceClient(
   }
 
   override fun getEnvironment(id: UUID, key: String?): Dacha2Environment {
-    return call("env", { primary.getEnvironment(id, key) }) { mrFailure ->
-      val env = readRedis("env", mrFailure) { redis.get(keys.environment(id)) }
+    return call("env", { primary.getEnvironment(id, key) }) { redis, mrFailure ->
+      val env = readRedis("env", mrFailure) { redis.get(redis.keys.environment(id)) }
         ?.let { CacheJsonMapper.mapper.readValue(it, PublishEnvironment::class.java) }
         ?: throw miss("env", "environment $id is not in redis")
 
@@ -72,10 +82,10 @@ class Dacha2FallbackServiceClient(
   }
 
   override fun getServiceAccount(id: String, key: String?): Dacha2ServiceAccount {
-    return call("sa", { primary.getServiceAccount(id, key) }) { mrFailure ->
+    return call("sa", { primary.getServiceAccount(id, key) }) { redis, mrFailure ->
       val sa = readRedis("sa", mrFailure) {
-        redis.get(keys.serviceAccountKey(id))?.let { saId ->
-          redis.get(keys.serviceAccount(UUID.fromString(saId)))
+        redis.get(redis.keys.serviceAccountKey(id))?.let { saId ->
+          redis.get(redis.keys.serviceAccount(UUID.fromString(saId)))
         }
       }?.let { CacheJsonMapper.mapper.readValue(it, CacheServiceAccount::class.java) }
         // never trust a stale index - the key must still belong to the service account
@@ -88,12 +98,22 @@ class Dacha2FallbackServiceClient(
     }
   }
 
-  private fun <T> call(type: String, fromMr: () -> T, fromRedis: (Exception?) -> T): T {
+  private fun <T> call(type: String, fromMr: () -> T, fromRedis: (FeatureHubRedis, Exception?) -> T): T {
+    // fetch once - the connection can change at runtime, so use the same one for the whole request
+    val redis = redisSource.current()
+
+    if (redis == null) {
+      // no redis configured (or it has just been removed): behave like the plain MR client
+      val result = fromMr()
+      if (open) closeCircuit()
+      return result
+    }
+
     var amProbing = false
 
     if (open) {
       if (clock() < nextProbeAt || !probing.compareAndSet(false, true)) {
-        return fromRedis(null)
+        return fromRedis(redis, null)
       }
       amProbing = true
     }
@@ -110,7 +130,7 @@ class Dacha2FallbackServiceClient(
       }
 
       openCircuit(e)
-      return fromRedis(e)
+      return fromRedis(redis, e)
     } finally {
       if (amProbing) probing.set(false)
     }
