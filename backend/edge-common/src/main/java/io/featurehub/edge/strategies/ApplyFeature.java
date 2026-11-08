@@ -13,10 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ApplyFeature {
@@ -89,7 +86,7 @@ public class ApplyFeature {
   // This applies the rules as an AND. If at any point it fails it jumps out.
   private boolean matchAttributes(ClientContext cac, FeatureRolloutStrategy rsi) {
     for(FeatureRolloutStrategyAttribute attr : rsi.getAttributes()) {
-      List<String> suppliedValues = cac.get(attr.getFieldName());
+      List<String> suppliedValues = cac.get(attr.getFieldName(), null);
 
       // "now" for dates and date-times are not passed by the client, so we create them in-situ
       if (suppliedValues == null && "now".equalsIgnoreCase(attr.getFieldName())) {
@@ -100,10 +97,10 @@ public class ApplyFeature {
         }
       }
 
-      Object val = attr.getValues();
+      List<Object> val = attr.getValues();
 
       // both are null, just check against equals
-      if (val == null && suppliedValues == null) {
+      if (val.isEmpty() && suppliedValues == null) {
         if (attr.getConditional() != RolloutStrategyAttributeConditional.EQUALS) {
           return false;
         }
@@ -112,7 +109,7 @@ public class ApplyFeature {
       }
 
       // either of them are null, check against not equals as we can't do anything else
-      if (val == null || suppliedValues == null) {
+      if (val.isEmpty() || suppliedValues == null) {
         return false;
       }
 

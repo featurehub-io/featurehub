@@ -4,10 +4,12 @@ import io.featurehub.edge.KeyParts
 import io.featurehub.edge.features.DachaFeatureRequestSubmitter
 import io.featurehub.edge.features.ETagSplitter.Companion.makeEtags
 import io.featurehub.edge.features.ETagSplitter.Companion.splitTag
+import io.featurehub.edge.features.EtagStructureHolder
 import io.featurehub.edge.features.FeatureRequestResponse
 import io.featurehub.edge.features.FeatureRequestSuccess
 import io.featurehub.edge.stats.StatRecorder
 import io.featurehub.edge.strategies.ClientContext
+import io.featurehub.metrics.MetricsCollector
 import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
 import io.prometheus.client.Gauge
@@ -21,7 +23,7 @@ import jakarta.ws.rs.core.Response
 import org.glassfish.hk2.api.IterableProvider
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.function.Consumer
+import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 interface FeatureGet {
   fun processGet(
@@ -29,8 +31,7 @@ interface FeatureGet {
     sdkUrls: List<String>?,
     apiKeys: List<String>?,
     featureHubAttrs: List<String>?,
-    etagHeader: String?,
-    statRecorder: StatRecorder?
+    etagHeader: String?
   )
 }
 
@@ -39,13 +40,13 @@ interface EdgeGetResponseWrapper {
   fun wrapResponse(environments: List<FeatureRequestResponse>, builder: Response.ResponseBuilder, status: Int): Int
 }
 
-class FeatureGetProcessor @Inject constructor(
-  private val getOrchestrator: DachaFeatureRequestSubmitter,
-  private val sourceResponseWrapper: IterableProvider<EdgeGetResponseWrapper>,
-  ) : FeatureGet {
-
-  private val log: Logger = LoggerFactory.getLogger(FeatureGetProcessor::class.java)
-  private val responseWrappers = mutableListOf <EdgeGetResponseWrapper>()
+abstract class BaseFeatureGetProcessor @Inject constructor(
+  protected val getOrchestrator: DachaFeatureRequestSubmitter,
+  protected val sourceResponseWrapper: IterableProvider<EdgeGetResponseWrapper>,
+  protected val statRecorder: StatRecorder
+) {
+  protected val responseWrappers = mutableListOf <EdgeGetResponseWrapper>()
+  private val log: Logger = LoggerFactory.getLogger(BaseFeatureGetProcessor::class.java)
 
   @PostConstruct
   fun postConstruct() {
@@ -53,56 +54,15 @@ class FeatureGetProcessor @Inject constructor(
     log.debug("there are {} post response wrappers for GET requests: {}", responseWrappers.size, responseWrappers.map { it.javaClass.name })
   }
 
-  override fun processGet(
-    response: AsyncResponse,
-    sdkUrls: List<String>?,
-    apiKeys: List<String>?,
-    featureHubAttrs: List<String>?,
-    etagHeader: String?,
-    statRecorder: StatRecorder?
-  ) {
-    if ((sdkUrls == null || sdkUrls.isEmpty()) && (apiKeys == null || apiKeys.isEmpty())) {
-      response.resume(BadRequestException())
-      return
+  fun recordStatResponse(environments: List<FeatureRequestResponse>) {
+    // record the result
+    environments.forEach { resp: FeatureRequestResponse ->
+      statRecorder.recordHit(resp.key, mapSuccess(resp.success), EdgeHitSourceType.POLL)
     }
+  }
 
-    inout.inc()
 
-    val timer: Histogram.Timer = pollSpeedHistogram.startTimer()
-
-    val realApiKeys = (if (sdkUrls == null || sdkUrls.isEmpty()) apiKeys else sdkUrls)!!
-      .asSequence()
-      .distinct() // we want unique ones
-      .map { KeyParts.fromString(it) }
-      .filterNotNull()
-      .toList()
-
-    if (realApiKeys.isEmpty()) {
-      response.resume(NotFoundException())
-      return
-    }
-
-    val clientContext = ClientContext.decode(featureHubAttrs, realApiKeys)
-    val etags = splitTag(etagHeader, realApiKeys, clientContext.makeEtag())
-
-    val environments = getOrchestrator.request(realApiKeys, clientContext, etags)
-
-    if (statRecorder != null) {
-      // record the result
-      environments.forEach(Consumer { resp: FeatureRequestResponse ->
-        with(statRecorder) {
-          recordHit(
-            resp.key, mapSuccess(resp.success),
-            EdgeHitSourceType.POLL
-          )
-        }
-      })
-    }
-
-    timer.observeDuration()
-
-    inout.dec()
-
+  fun createResponse(response: AsyncResponse, environments: List<FeatureRequestResponse>, etagHeader: String?, etags: EtagStructureHolder) {
     if (environments[0].success === FeatureRequestSuccess.NO_CHANGE && environments.size == 1) {
       response.resume(wrapResponse(environments, Response.status(304).header("etag", etagHeader), 304).build())
     } else if (environments.all { it.success == FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE }) {
@@ -120,15 +80,16 @@ class FeatureGetProcessor @Inject constructor(
           environments,
           Response.status(200)
             .header("etag", "\"${newEtags}\"")
-            .entity(environments.map(FeatureRequestResponse::environment)), 200
+            .entity(buildResponseObject(environments)), 200
         )
           .build()
       )
     }
   }
 
+  abstract fun buildResponseObject(environments: List<FeatureRequestResponse>): Any
 
-  private fun wrapResponse(environments: List<FeatureRequestResponse>, builder: Response.ResponseBuilder, httpStatus: Int): Response.ResponseBuilder {
+  fun wrapResponse(environments: List<FeatureRequestResponse>, builder: Response.ResponseBuilder, httpStatus: Int): Response.ResponseBuilder {
     var status = httpStatus
 
     responseWrappers.forEach { wrapper -> status = wrapper.wrapResponse(environments, builder, status) }
@@ -136,21 +97,76 @@ class FeatureGetProcessor @Inject constructor(
     return builder
   }
 
-  private fun mapSuccess(success: FeatureRequestSuccess): EdgeHitResultType {
-    return when (success) {
-      FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE -> EdgeHitResultType.MISSED
-      FeatureRequestSuccess.SUCCESS -> EdgeHitResultType.SUCCESS
-      FeatureRequestSuccess.NO_CHANGE -> EdgeHitResultType.NO_CHANGE
-      FeatureRequestSuccess.DACHA_NOT_READY -> EdgeHitResultType.MISSED
+  companion object {
+    val inout = MetricsCollector.gauge("edge_get_req", "how many GET requests")
+
+    fun mapSuccess(success: FeatureRequestSuccess): EdgeHitResultType {
+      return when (success) {
+        FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE -> EdgeHitResultType.MISSED
+        FeatureRequestSuccess.SUCCESS -> EdgeHitResultType.SUCCESS
+        FeatureRequestSuccess.NO_CHANGE -> EdgeHitResultType.NO_CHANGE
+        FeatureRequestSuccess.DACHA_NOT_READY -> EdgeHitResultType.MISSED
+      }
+    }
+
+    val pollSpeedHistogram = MetricsCollector.histogram(
+      "edge_conn_length_poll", "The length of time that the connection is open for Polling clients"
+    )
+  }
+}
+
+class FeatureGetProcessor @Inject constructor(
+  getOrchestrator: DachaFeatureRequestSubmitter,
+  sourceResponseWrapper: IterableProvider<EdgeGetResponseWrapper>,
+  statRecorder: StatRecorder
+) : BaseFeatureGetProcessor(getOrchestrator, sourceResponseWrapper, statRecorder), FeatureGet {
+
+  override fun buildResponseObject(environments: List<FeatureRequestResponse>): Any {
+    return environments.map(FeatureRequestResponse::environment)
+  }
+
+  override fun processGet(
+    response: AsyncResponse,
+    sdkUrls: List<String>?,
+    apiKeys: List<String>?,
+    featureHubAttrs: List<String>?,
+    etagHeader: String?
+  ) {
+    if (sdkUrls.isNullOrEmpty() && apiKeys.isNullOrEmpty()) {
+      response.resume(BadRequestException())
+      return
+    }
+
+    inout.inc()
+
+    val realApiKeys = (if (sdkUrls.isNullOrEmpty()) apiKeys else sdkUrls)!!
+      .distinct().mapNotNull { KeyParts.fromString(it) }
+
+    if (realApiKeys.isEmpty()) {
+      response.resume(NotFoundException())
+      inout.dec()
+      return
+    }
+
+    val timer: Histogram.Timer = pollSpeedHistogram.startTimer()
+
+    try {
+      val clientContext = ClientContext.decode(featureHubAttrs, realApiKeys)
+      val etags = splitTag(etagHeader, realApiKeys, clientContext.makeEtag())
+
+      val environments = getOrchestrator.request(realApiKeys, clientContext, etags)
+
+      recordStatResponse(environments)
+
+      createResponse(response, environments, etagHeader, etags)
+    } finally {
+      timer.observeDuration()
+
+      inout.dec()
     }
   }
 
-  companion object {
-    val inout = Gauge.build("edge_get_req", "how many GET requests").register()
-    val pollSpeedHistogram = Histogram.build(
-      "edge_conn_length_poll", "The length of " +
-        "time that the connection is open for Polling clients"
-    ).register()
-  }
+
+
 
 }
