@@ -43,8 +43,9 @@ NOTE: Announcing a window does not stop the server accepting API calls. A user w
 xref:admin-development-kit.adoc[Admin SDK] calling the API, can still make changes during the window. To make sure
 nothing writes to the database, route the Admin traffic to the Maintenance Responder (below).
 
-It is recommended that you use the Publish All to Cache feature of the System Configuration setting before shutting
-your Management Repositories down so you won't suffer an outage. Most modern container scheduling frameworks (like
+It is recommended that you republish everything to the caches before shutting your Management Repositories down so
+you won't suffer an outage. Do it with the <<_maintenance_publish_all,maintenance publish-all endpoint>> after the
+Admin traffic has been routed to the Maintenance Responder, so nothing can change in between. Most modern container scheduling frameworks (like
 Karpenter) allow you to annotate your Dacha2 containers to prevent them from moving during this process. If you
 configure the <<_redis_fallback,Redis fallback>>, Dacha2 can also serve environments it has not cached yet, and
 Dacha2 pods can be moved or restarted during the window.
@@ -102,8 +103,11 @@ maintenance notice.
 . *Deploy the Maintenance Responder* with the same `maintenance.*` values and wait until it is ready.
 . *Switch the routes.* When the window starts, change your ingress or load balancer so that all Admin traffic goes to the
 Maintenance Responder instead of MR. Keep SDK traffic (Edge, usually under `/features`) where it is.
-. *If you use the <<_redis_fallback,Redis fallback>>*, use Publish All to Cache and check that the Redis full sync
-has completed (`mr_redis_last_full_sync_seconds` has updated).
+. *Publish everything to the caches* with the <<_maintenance_publish_all,maintenance publish-all endpoint>>. Admin
+changes can no longer reach MR at this point, so the caches and (with the <<_redis_fallback,Redis fallback>>) Redis
+end up exactly matching the database. With Redis, the call returns once the Redis full sync is complete. Changes made
+by SDKs through Edge are *not* stopped by the Maintenance Responder: see
+<<_sdk_feature_updates,SDK feature updates during a window>>.
 . *Shut down MR* once no traffic reaches it, then carry out the database work. With the Redis fallback, MR writes any
 pending Redis updates before it exits.
 . *Start MR* again (removing the `maintenance.*` properties, or leaving them until the end time has passed) and wait
@@ -112,6 +116,64 @@ until it is ready.
 
 On ECS and other platforms the same pattern applies: move the Admin target group or route to the Maintenance Responder
 for the duration of the work.
+
+[#_sdk_feature_updates]
+=== SDK feature updates during a window
+
+SDKs, and scripts or test automation using a service account allowed to change feature values, can update features
+through *Edge* rather than the Admin API. Routing the Admin traffic to the Maintenance Responder does not stop these
+requests. Edge passes them to MR over the messaging layer:
+
+* *While MR is still running* (after the routes are switched, before it is shut down), MR applies them to the database
+as normal. They happen *after* your final publish-all, so the database is not frozen. With the
+<<_redis_fallback,Redis fallback>> and more than one MR instance, Redis can again hold an out-of-order version of the
+affected environments.
+* *While MR is shut down*, what happens depends on your messaging platform and how it is configured. The updates
+may be held and applied when MR starts again (against the migrated database), or they may be lost.
+
+If anything changes features through Edge:
+
+* pause it for the whole window, from before you switch the routes until MR is back, and
+* if you cannot, call the <<_maintenance_publish_all,maintenance publish-all endpoint>> again immediately before
+shutting MR down, to make the window as small as possible.
+
+[#_maintenance_publish_all]
+=== The maintenance publish-all endpoint
+
+MR has an endpoint on its *monitoring port* (`monitor.port`, `8701` in the examples) that republishes everything:
+
+[source,sh]
+----
+kubectl port-forward <an mr pod> 8701:8701
+curl -X POST http://localhost:8701/maintenance/publish-all
+----
+
+It republishes every environment and service account to Dacha2, the same as Publish All to Cache does. If the
+<<_redis_fallback,Redis fallback>> is configured, it first runs a full Redis sync: everything is written, and
+anything no longer in the database is removed. The call returns when that has finished, with what it did:
+
+[source,json]
+----
+{
+  "cachesPublished": true,
+  "redisConfigured": true,
+  "redis": { "environments": 120, "serviceAccounts": 45, "orphanedEnvironments": 0,
+             "orphanedServiceAccounts": 0, "removedApiKeys": 0, "durationMs": 2310 }
+}
+----
+
+* `409` means another Redis full sync is running (for example MR's startup sync). Wait a few seconds and call it again.
+* `503` means cache publishing is not enabled on this MR.
+
+Call it on *one* MR instance only.
+
+The endpoint is only available when MR has a separate monitoring port (`monitor.port` set and not `0`), and it is
+never added to the main port. It is not authenticated, so the monitoring port must never be exposed outside the
+cluster. That is already the case for the Dacha2 API and metrics MR serves on it. It is not available in
+`party-server` or `party-server-ish`.
+
+Unlike Publish All to Cache in the Admin app, it works while the Admin traffic is routed to the Maintenance
+Responder. That is the point of it: it is the last sync before MR is shut down, with nothing changing in between.
 
 [#_redis_fallback]
 === Serving Dacha2 cache misses from Redis
@@ -136,9 +198,22 @@ database:
 
 * when MR starts,
 * every 24 hours,
-* when Publish All to Cache (the cache refresh API with `allTheThings`) is used.
+* when Publish All to Cache (the cache refresh API with `allTheThings`) is used,
+* when the <<_maintenance_publish_all,maintenance publish-all endpoint>> is called. That call waits for the sync to
+finish.
 
 Only one MR instance runs a full sync at a time.
+
+*With more than one MR instance*, the incremental updates are only ordered within each instance. If two instances
+rewrite the same environment or service account at almost the same moment, the older database read can land last.
+Redis then holds an earlier version of that object until it next changes or the next full sync. This includes a
+removed permission or a reset API key, which Dacha2 would honour while MR is down. The objects are always complete:
+it is the version that can be stale. The <<_maintenance_publish_all,maintenance publish-all endpoint>>, called after
+the Admin traffic has gone to the Maintenance Responder, is the fix. With nothing changing, its full sync leaves Redis
+exactly matching the database just before MR stops.
+
+Feature updates made through Edge are not stopped by the Maintenance Responder and can still arrive after that final
+sync. See <<_sdk_feature_updates,SDK feature updates during a window>>.
 
 ==== MR configuration
 

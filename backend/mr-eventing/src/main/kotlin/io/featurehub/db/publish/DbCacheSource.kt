@@ -104,8 +104,20 @@ open class DbCacheSource @Inject constructor(
     if (broadcasters.size == 1) broadcasters.first() else CacheBroadcastProxy(broadcasters, executor)
 
   override fun publishObjectsAssociatedWithCache() {
+    publishObjectsAssociatedWithCache(true)
+  }
+
+  override fun publishToStreamingCaches() {
+    publishObjectsAssociatedWithCache(false)
+  }
+
+  /**
+   * Publishes everything to the streaming caches (e.g. Dacha2 via cloud events). If requestSelfSyncing is false,
+   * self-syncing broadcasters (Redis) are not asked to do their own full sync - for callers that run it themselves.
+   */
+  private fun publishObjectsAssociatedWithCache(requestSelfSyncing: Boolean) {
     // self-syncing broadcasters (e.g. Redis) do their own full walk + sweep in the background
-    selfSyncingBroadcasters.forEach {
+    if (requestSelfSyncing) selfSyncingBroadcasters.forEach {
       try {
         it.fullPublishRequested()
       } catch (e: Exception) {

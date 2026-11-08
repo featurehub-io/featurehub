@@ -10,6 +10,11 @@ import io.featurehub.lifecycle.LifecycleStatus;
 import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.mr.ManagementRepositoryFeature;
 import io.featurehub.mr.dacha2.Dacha2Feature;
+import io.featurehub.mr.events.common.CacheSource;
+import io.featurehub.mr.events.redis.RedisFullSync;
+import io.featurehub.mr.maintenance.MaintenanceCachePublisher;
+import io.featurehub.mr.maintenance.MaintenancePublishResource;
+import io.featurehub.mr.maintenance.MaintenancePublisher;
 import io.featurehub.mr.events.dacha2.CacheApi;
 import io.featurehub.mr.utils.ConfigurationUtils;
 import io.featurehub.web.security.saml.SamlEnvironmentalFeature;
@@ -45,13 +50,27 @@ public class Application {
       TelemetryFeature.class
       );
 
+    // the maintenance publish-all endpoint is ONLY ever registered on the separate (internal) monitoring port, never on
+    // the main port, as it is not authenticated. It is only reachable from inside the cluster (e.g. kubectl port-forward).
+    final boolean maintenanceEndpoint = MetricsHealthRegistration.Companion.hasExternalMonitoringPort();
+
     MetricsHealthRegistration.Companion.registerMetrics(config, (resourceConfig, locator, binder) -> {
       if (locator != null) {
         binder.bind(locator.getService(CacheApi.class)).to(CacheApi.class).in(Singleton.class);
+
+        if (maintenanceEndpoint) {
+          // either may be missing (cache publishing disabled, redis not configured)
+          binder.bind(new MaintenancePublisher(locator.getService(CacheSource.class), locator.getService(RedisFullSync.class)))
+            .to(MaintenanceCachePublisher.class);
+        }
       }
 
       if (resourceConfig != null) {
         resourceConfig.register(Dacha2Feature.class);
+
+        if (maintenanceEndpoint) {
+          resourceConfig.register(MaintenancePublishResource.class);
+        }
       }
 
       return resourceConfig;
