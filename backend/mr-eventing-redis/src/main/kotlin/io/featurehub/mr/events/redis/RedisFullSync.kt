@@ -18,6 +18,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 data class RedisSyncResult(
   val reason: String,
@@ -56,7 +57,8 @@ open class RedisFullSync @Inject constructor(
   private val writer: RedisCacheWriter,
   private val walkerProvider: Provider<CacheWalker>
 ) {
-  private val lockTtlMs = FallbackPropertyConfig.getConfig("redis.full-sync-lock-ms", (30 * 60 * 1000).toString()).toLong()
+  // the lock is renewed every third of this while a sync runs, so it only needs to cover a crashed holder
+  private val lockTtlMs = FallbackPropertyConfig.getConfig("redis.full-sync-lock-ms", (2 * 60 * 1000).toString()).toLong()
   private val intervalHours = FallbackPropertyConfig.getConfig("redis.full-sync-interval-hours", "24").toLong()
   private val syncOnStartup = FallbackPropertyConfig.getConfig("redis.full-sync-on-startup", "true") == "true"
   private val batchSize = 1000
@@ -77,7 +79,13 @@ open class RedisFullSync @Inject constructor(
     }
   }
 
+  // separate from the sync thread, as syncs can also run on other threads (e.g. the maintenance endpoint)
+  private val lockRenewer: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor { r ->
+    Thread(r, "redis-full-sync-lock").apply { isDaemon = true }
+  }
+
   fun stop() {
+    lockRenewer.shutdownNow()
     executor.shutdownNow()
   }
 
@@ -115,6 +123,22 @@ open class RedisFullSync @Inject constructor(
       return null
     }
 
+    // keep the lock while we run (a large sync can outlive the TTL). If it is ever lost, another instance may have
+    // started a sync, so we stop before the sweep (the only destructive part)
+    val lockLost = AtomicBoolean(false)
+    val renewMs = (lockTtlMs / 3).coerceAtLeast(1000)
+    val renewal = lockRenewer.scheduleWithFixedDelay({
+      try {
+        if (!redis.expireIfEquals(keys.syncLock, token, lockTtlMs)) {
+          if (lockLost.compareAndSet(false, true)) {
+            log.warn("redis: full sync ({}) lost its lock", reason)
+          }
+        }
+      } catch (e: Exception) {
+        log.warn("redis: unable to renew the full sync lock", e)
+      }
+    }, renewMs, renewMs, TimeUnit.MILLISECONDS)
+
     try {
       val start = System.currentTimeMillis()
       log.info("redis: full sync ({}) starting", reason)
@@ -125,6 +149,10 @@ open class RedisFullSync @Inject constructor(
 
       waitInBatches(envIds) { writer.refreshEnvironmentOnWorker(it) }
       waitInBatches(saIds) { writer.refreshServiceAccountOnWorker(it) }
+
+      if (lockLost.get()) {
+        throw IllegalStateException("redis: full sync ($reason) lost its lock, stopping before the sweep")
+      }
 
       // sweep: anything in Redis we did not find in the database gets re-checked (and removed if gone)
       val orphanEnvs = mutableSetOf<UUID>()
@@ -165,10 +193,10 @@ open class RedisFullSync @Inject constructor(
       log.info("redis: full sync complete {}", result)
       return result
     } finally {
+      renewal.cancel(false)
       try {
-        if (redis.get(keys.syncLock) == token) {
-          redis.del(keys.syncLock)
-        }
+        // atomic compare-and-delete, so we never release a lock another instance now holds
+        redis.deleteIfEquals(keys.syncLock, token)
       } catch (e: Exception) {
         log.warn("redis: unable to release sync lock, it will expire", e)
       }

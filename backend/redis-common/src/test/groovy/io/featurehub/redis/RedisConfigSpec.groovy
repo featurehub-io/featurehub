@@ -84,4 +84,25 @@ class RedisConfigSpec extends Specification {
       keys.environmentIdFromKey("{acme}:env:not-a-uuid") == null
       keys.environmentPattern == "{acme}:env:*"
   }
+
+  def "hostnames with underscores (docker-compose service names), IPv6 and default ports are accepted"() {
+    expect:
+      RedisConfig.parse(url, null, null, null, null, null, null, null, null).hosts == hosts
+    where:
+      url                                   | hosts
+      "redis://redis_cache:6379"            | [new RedisHost("redis_cache", 6379)]
+      "redis://redis_cache"                 | [new RedisHost("redis_cache", 6379)]
+      "rediss://pw@my_redis.local:6380/1"   | [new RedisHost("my_redis.local", 6380)]
+      "redis://[::1]:6390"                  | [new RedisHost("::1", 6390)]
+      "redis://[fe80::1]"                   | [new RedisHost("fe80::1", 6379)]
+  }
+
+  def "invalid hosts and ports are rejected"() {
+    when:
+      RedisConfig.parse(url, null, null, null, null, null, null, null, null)
+    then:
+      thrown(IllegalArgumentException)
+    where:
+      url << ["redis://host:notaport", "redis://host:0", "redis://host:70000", "redis://::1:6379", "redis://[::1]x", "redis://:6379"]
+  }
 }

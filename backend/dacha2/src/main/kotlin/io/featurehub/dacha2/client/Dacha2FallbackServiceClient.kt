@@ -20,6 +20,9 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -41,19 +44,38 @@ fun interface Dacha2RecoveryListener {
  * - The Redis connection comes from a [RedisSource] and can appear, change or disappear at runtime. While there is
  *   none, this behaves exactly like the plain MR client (failures are passed straight through, the circuit never
  *   opens).
+ * - While the circuit is open, MR is probed in the background every retry interval, so recovery is noticed even if
+ *   the caches are warm and no miss ever reaches this client.
+ * - Recovery listeners run on this client's own thread, never on the caller's: calls arrive from inside the caches'
+ *   loaders, and a listener invalidates entries in those same caches.
  */
-class Dacha2FallbackServiceClient(
+class Dacha2FallbackServiceClient @JvmOverloads constructor(
   private val primary: Dacha2ServiceClient,
   private val redisSource: RedisSource,
   private val retryIntervalMs: Long = FallbackPropertyConfig.getConfig("dacha2.redis.mr-retry-interval-ms", "10000").toLong(),
-  private val clock: () -> Long = System::currentTimeMillis
+  private val clock: () -> Long = System::currentTimeMillis,
+  backgroundProbe: Boolean = true,
+  // a Redis read that completes after recovery is evicted after this delay, by which time its loader has cached it
+  private val lateEvictionDelayMs: Long = 2000
 ) : Dacha2ServiceClient {
   constructor(
     primary: Dacha2ServiceClient,
     redis: FeatureHubRedis,
     retryIntervalMs: Long,
     clock: () -> Long
-  ) : this(primary, StaticRedisSource(redis), retryIntervalMs, clock)
+  ) : this(primary, StaticRedisSource(redis), retryIntervalMs, clock, false, 100)
+
+  private val probeKey: String? = FallbackPropertyConfig.getConfig("dacha2.cache.api-key")
+
+  private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor { r ->
+    Thread(r, "dacha2-redis-fallback").apply { isDaemon = true }
+  }
+
+  init {
+    if (backgroundProbe) {
+      scheduler.scheduleWithFixedDelay({ probeIfOpen() }, retryIntervalMs, retryIntervalMs, TimeUnit.MILLISECONDS)
+    }
+  }
 
   @Volatile private var open = false
   @Volatile private var nextProbeAt = 0L
@@ -76,7 +98,7 @@ class Dacha2FallbackServiceClient(
         ?.let { CacheJsonMapper.mapper.readValue(it, PublishEnvironment::class.java) }
         ?: throw miss("env", "environment $id is not in redis")
 
-      environmentsFromRedis.add(id)
+      servedFromRedis(setOf(id), setOf())
       Dacha2Environment().env(env)
     }
   }
@@ -92,8 +114,7 @@ class Dacha2FallbackServiceClient(
         ?.takeIf { it.apiKeyClientSide == id || it.apiKeyServerSide == id }
         ?: throw miss("sa", "service account key is not in redis")
 
-      apiKeysFromRedis.add(sa.apiKeyClientSide)
-      apiKeysFromRedis.add(sa.apiKeyServerSide)
+      servedFromRedis(setOf(), setOfNotNull(sa.apiKeyClientSide, sa.apiKeyServerSide))
       Dacha2ServiceAccount().serviceAccount(sa)
     }
   }
@@ -134,6 +155,69 @@ class Dacha2FallbackServiceClient(
     } finally {
       if (amProbing) probing.set(false)
     }
+  }
+
+  /**
+   * Remember what was served from Redis so it can be evicted when MR recovers. If the circuit has already closed (a
+   * Redis read that was in flight when MR came back) evict it straight away instead - after a short delay, so the
+   * cache loader that asked for it has stored it by then.
+   */
+  private fun servedFromRedis(envIds: Set<UUID>, apiKeys: Set<String>) {
+    environmentsFromRedis.addAll(envIds)
+    apiKeysFromRedis.addAll(apiKeys)
+
+    if (!open) {
+      environmentsFromRedis.removeAll(envIds)
+      apiKeysFromRedis.removeAll(apiKeys)
+      log.debug("dacha2: redis read completed after recovery, evicting {} / {}", envIds, apiKeys)
+      notifyRecovered(envIds, apiKeys, lateEvictionDelayMs)
+    }
+  }
+
+  /**
+   * Background probe while the circuit is open: an environment that does not exist, so a healthy MR answers 404.
+   * Any answer from MR (2xx or 4xx) means it is back.
+   */
+  fun probeIfOpen() {
+    if (!open || !probing.compareAndSet(false, true)) return
+
+    try {
+      primary.getEnvironment(PROBE_ENVIRONMENT_ID, probeKey)
+      closeCircuit()
+    } catch (e: Exception) {
+      if (isFallbackTrigger(e)) {
+        nextProbeAt = clock() + retryIntervalMs
+        log.trace("dacha2: background probe, management repository still unavailable ({})", e.message)
+      } else {
+        closeCircuit()
+      }
+    } finally {
+      probing.set(false)
+    }
+  }
+
+  private fun notifyRecovered(envIds: Set<UUID>, apiKeys: Set<String>, delayMs: Long) {
+    if (envIds.isEmpty() && apiKeys.isEmpty()) return
+
+    val task = Runnable {
+      recoveryListeners.forEach {
+        try {
+          it.recovered(envIds, apiKeys)
+        } catch (e: Exception) {
+          log.error("dacha2: recovery listener failed", e)
+        }
+      }
+    }
+
+    try {
+      scheduler.schedule(task, delayMs, TimeUnit.MILLISECONDS)
+    } catch (e: Exception) {
+      log.warn("dacha2: unable to schedule eviction of entries served from redis", e)
+    }
+  }
+
+  fun close() {
+    scheduler.shutdownNow()
   }
 
   private fun isFallbackTrigger(e: Exception): Boolean {
@@ -191,13 +275,8 @@ class Dacha2FallbackServiceClient(
     log.info("dacha2: management repository is available again ({} environments and {} api keys were served from redis)",
       envs.size, apiKeys.size)
 
-    recoveryListeners.forEach {
-      try {
-        it.recovered(envs, apiKeys)
-      } catch (e: Exception) {
-        log.error("dacha2: recovery listener failed", e)
-      }
-    }
+    // never inline: we are often inside a cache loader, and the listeners invalidate entries in those caches
+    notifyRecovered(envs, apiKeys, 0)
   }
 
   override fun getEnvironment(id: UUID, key: String?, extraHeaders: MutableMap<String, String>?): Dacha2Environment =
@@ -214,6 +293,8 @@ class Dacha2FallbackServiceClient(
 
   companion object {
     private val log: Logger = LoggerFactory.getLogger(Dacha2FallbackServiceClient::class.java)
+    // an environment that never exists - a healthy MR answers 404
+    private val PROBE_ENVIRONMENT_ID: UUID = UUID.fromString("00000000-0000-0000-0000-00000000fa11")
 
     private val gaugeState = MetricsCollector.gauge("dacha2_mr_fallback_state", "1 if MR is unavailable and cache misses are served from redis")
     private val counterHits = io.prometheus.client.Counter.build("dacha2_redis_hits_total", "Cache misses served from redis")

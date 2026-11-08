@@ -75,4 +75,29 @@ class MaintenancePublishResourceSpec extends Specification {
       !p.redisConfigured
       p.syncRedis() == null
   }
+
+  def "if the redis sync fails the streaming caches are still published and it returns 500 with the error"() {
+    given:
+      publisher.cachePublishingEnabled >> true
+      publisher.redisConfigured >> true
+    when:
+      def response = resource.publishAll()
+    then:
+      1 * publisher.syncRedis() >> { throw new RuntimeException("redis is down") }
+    then:
+      1 * publisher.publishToStreamingCaches()
+      response.status == 500
+      response.entity.cachesPublished == true
+      response.entity.redisConfigured == true
+      response.entity.redisError == "redis is down"
+      response.entity.redis == null
+  }
+
+  def "a DummyPublisher (cloud event publishing disabled) counts as publishing disabled"() {
+    given:
+      def p = new MaintenancePublisher(new io.featurehub.mr.events.common.DummyPublisher(), null)
+    expect:
+      !p.cachePublishingEnabled
+      new MaintenancePublishResource(p).publishAll().status == 503
+  }
 }

@@ -39,6 +39,18 @@ interface FeatureHubRedis : AutoCloseable {
   fun setIfAbsent(key: String, value: String, ttlMs: Long): Boolean
 
   /**
+   * Atomically deletes the key only if it still holds the expected value (e.g. releasing a lock we own).
+   * Returns true if it was deleted.
+   */
+  fun deleteIfEquals(key: String, expected: String): Boolean
+
+  /**
+   * Atomically resets the key's TTL only if it still holds the expected value (e.g. renewing a lock we own).
+   * Returns true if it was renewed.
+   */
+  fun expireIfEquals(key: String, expected: String, ttlMs: Long): Boolean
+
+  /**
    * Iterates all keys matching the pattern in batches. The pattern must include the hash tag prefix
    * so that cluster mode routes it correctly.
    */
@@ -69,6 +81,14 @@ class JedisFeatureHubRedis(private val config: RedisConfig) : FeatureHubRedis {
     return "OK" == client.set(key, value, SetParams().nx().px(ttlMs))
   }
 
+  override fun deleteIfEquals(key: String, expected: String): Boolean {
+    return 1L == client.eval(DELETE_IF_EQUALS, listOf(key), listOf(expected))
+  }
+
+  override fun expireIfEquals(key: String, expected: String, ttlMs: Long): Boolean {
+    return 1L == client.eval(EXPIRE_IF_EQUALS, listOf(key), listOf(expected, ttlMs.toString()))
+  }
+
   override fun scanKeys(pattern: String, batchSize: Int, consumer: (List<String>) -> Unit) {
     val params = ScanParams().match(pattern).count(batchSize)
     var cursor = ScanParams.SCAN_POINTER_START
@@ -87,6 +107,11 @@ class JedisFeatureHubRedis(private val config: RedisConfig) : FeatureHubRedis {
 
   companion object {
     private val log: Logger = LoggerFactory.getLogger(JedisFeatureHubRedis::class.java)
+
+    private const val DELETE_IF_EQUALS =
+      "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end"
+    private const val EXPIRE_IF_EQUALS =
+      "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end"
 
     fun clientConfig(config: RedisConfig, includeDatabase: Boolean = true): JedisClientConfig {
       val builder = DefaultJedisClientConfig.builder()

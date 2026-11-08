@@ -196,4 +196,40 @@ class RedisCacheSpec extends Specification {
       redis.get(redis.keys.environment(envId)) != null
       redis.get(redis.keys.metaSync) != null
   }
+
+  def "a sync that loses its lock (e.g. it expired and another instance took it) stops before the sweep"() {
+    given:
+      System.setProperty("redis.full-sync-lock-ms", "300") // renewed every 1s (the minimum)
+      def lockedSync = new RedisFullSync(redis, writer, { -> walker } as Provider<CacheWalker>)
+      def orphan = UUID.randomUUID()
+      redis.set(redis.keys.environment(orphan), "{}")
+      walker.publishableEnvironmentIds() >> {
+        // another instance takes over the lock while we are walking the database
+        redis.set(redis.keys.syncLock, "another-instance")
+        Thread.sleep(1600)
+        []
+      }
+      walker.publishableServiceAccountIds() >> []
+      walker.publishableEnvironment(orphan) >> null
+    when:
+      lockedSync.syncAll("test")
+    then:
+      thrown(IllegalStateException)
+      redis.get(redis.keys.environment(orphan)) != null // the sweep did not run
+      redis.get(redis.keys.syncLock) == "another-instance" // and we did not release their lock
+    cleanup:
+      lockedSync.stop()
+      System.clearProperty("redis.full-sync-lock-ms")
+  }
+
+  def "the sync lock is released when the sync finishes"() {
+    given:
+      walker.publishableEnvironmentIds() >> []
+      walker.publishableServiceAccountIds() >> []
+    when:
+      def result = sync.syncAll("test")
+    then:
+      result != null
+      redis.get(redis.keys.syncLock) == null
+  }
 }

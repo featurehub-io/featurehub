@@ -1,6 +1,7 @@
 package io.featurehub.mr.maintenance
 
 import io.featurehub.mr.events.common.CacheSource
+import io.featurehub.mr.events.common.DummyPublisher
 import io.featurehub.mr.events.redis.RedisFullSync
 import io.featurehub.mr.events.redis.RedisSyncResult
 import jakarta.inject.Inject
@@ -32,7 +33,8 @@ interface MaintenanceCachePublisher {
  */
 class MaintenancePublisher(private val cacheSource: CacheSource?, private val redisFullSync: RedisFullSync?) :
   MaintenanceCachePublisher {
-  override val cachePublishingEnabled: Boolean = cacheSource != null
+  // with cloud event publishing turned off, a DummyPublisher is bound as the CacheSource: nothing would be published
+  override val cachePublishingEnabled: Boolean = cacheSource != null && cacheSource !is DummyPublisher
   override val redisConfigured: Boolean = redisFullSync != null
 
   override fun syncRedis(): RedisSyncResult? = redisFullSync?.syncAll("maintenance-publish-all")
@@ -58,6 +60,8 @@ class MaintenancePublisher(private val cacheSource: CacheSource?, private val re
  * - If Redis is configured, a full Redis sync (write everything, sweep what is no longer in the database) runs and
  *   the call only returns when it is complete, with what it did. If another sync is already running (e.g. the
  *   startup sync) it returns 409 - retry.
+ * - If the Redis sync fails (e.g. Redis or the database is unavailable) the streaming caches are still republished
+ *   and the call returns 500 with `redisError`, so the operator knows Redis is not up to date.
  */
 @Path("/maintenance")
 class MaintenancePublishResource @Inject constructor(private val publisher: MaintenanceCachePublisher) {
@@ -73,31 +77,46 @@ class MaintenancePublishResource @Inject constructor(private val publisher: Main
     log.info("maintenance: publish-all requested")
 
     var redis: Map<String, Any>? = null
-    if (publisher.redisConfigured) {
-      val result = publisher.syncRedis()
-        ?: return Response.status(Response.Status.CONFLICT)
-          .entity(mapOf("error" to "a redis full sync is already running, retry shortly")).build()
+    var redisError: String? = null
 
-      redis = mapOf(
-        "environments" to result.environments,
-        "serviceAccounts" to result.serviceAccounts,
-        "orphanedEnvironments" to result.orphanedEnvironments,
-        "orphanedServiceAccounts" to result.orphanedServiceAccounts,
-        "removedApiKeys" to result.removedApiKeys,
-        "durationMs" to result.durationMs,
-      )
+    if (publisher.redisConfigured) {
+      try {
+        val result = publisher.syncRedis()
+          ?: return Response.status(Response.Status.CONFLICT)
+            .entity(mapOf("error" to "a redis full sync is already running, retry shortly")).build()
+
+        redis = mapOf(
+          "environments" to result.environments,
+          "serviceAccounts" to result.serviceAccounts,
+          "orphanedEnvironments" to result.orphanedEnvironments,
+          "orphanedServiceAccounts" to result.orphanedServiceAccounts,
+          "removedApiKeys" to result.removedApiKeys,
+          "durationMs" to result.durationMs,
+        )
+      } catch (e: Exception) {
+        // still republish the streaming caches - they are needed whether or not Redis is up to date
+        log.error("maintenance: redis full sync failed, still publishing to the streaming caches", e)
+        redisError = e.message ?: e.javaClass.name
+      }
     }
 
-    // we have just done the Redis sync, so don't ask Redis to do another one
+    // we have just done (or tried) the Redis sync, so don't ask Redis to do another one
     publisher.publishToStreamingCaches()
 
-    log.info("maintenance: publish-all complete (redis: {})", redis ?: "not configured")
+    log.info("maintenance: publish-all complete (redis: {})", redis ?: redisError ?: "not configured")
 
-    return Response.ok(mapOf(
+    val body = mutableMapOf<String, Any?>(
       "cachesPublished" to true,
-      "redisConfigured" to (redis != null),
+      "redisConfigured" to publisher.redisConfigured,
       "redis" to redis,
-    )).build()
+    )
+
+    if (redisError != null) {
+      body["redisError"] = redisError
+      return Response.serverError().entity(body).build()
+    }
+
+    return Response.ok(body).build()
   }
 
   companion object {

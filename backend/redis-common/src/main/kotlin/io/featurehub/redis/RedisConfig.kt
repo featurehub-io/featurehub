@@ -1,7 +1,6 @@
 package io.featurehub.redis
 
 import io.featurehub.utils.FallbackPropertyConfig
-import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -127,11 +126,7 @@ data class RedisConfig(
         if (db.isNotEmpty()) database = db.toInt()
       }
 
-      val hosts = rest.split(",").map { it.trim() }.filter { it.isNotEmpty() }.map { hp ->
-        // allow URI style parsing for IPv6 etc
-        val uri = URI("redis://$hp")
-        RedisHost(uri.host ?: throw IllegalArgumentException("invalid redis host `$hp`"), if (uri.port < 0) 6379 else uri.port)
-      }
+      val hosts = rest.split(",").map { it.trim() }.filter { it.isNotEmpty() }.map { parseHost(it) }
 
       if (hosts.isEmpty()) throw IllegalArgumentException("redis url has no hosts")
 
@@ -166,5 +161,41 @@ data class RedisConfig(
     }
 
     private fun decode(s: String) = URLDecoder.decode(s, StandardCharsets.UTF_8)
+
+    /**
+     * `host`, `host:port`, `[ipv6]` or `[ipv6]:port`. Deliberately not java.net.URI, which rejects hostnames that
+     * contain underscores (common for docker-compose service names).
+     */
+    internal fun parseHost(hp: String): RedisHost {
+      fun port(p: String): Int {
+        val port = p.toIntOrNull() ?: throw IllegalArgumentException("invalid redis port in `$hp`")
+        if (port !in 1..65535) throw IllegalArgumentException("invalid redis port in `$hp`")
+        return port
+      }
+
+      if (hp.startsWith("[")) {
+        val end = hp.indexOf(']')
+        if (end < 2) throw IllegalArgumentException("invalid redis host `$hp`")
+        val host = hp.substring(1, end)
+        val after = hp.substring(end + 1)
+        return when {
+          after.isEmpty() -> RedisHost(host, 6379)
+          after.startsWith(":") -> RedisHost(host, port(after.substring(1)))
+          else -> throw IllegalArgumentException("invalid redis host `$hp`")
+        }
+      }
+
+      val colon = hp.lastIndexOf(':')
+      if (colon >= 0 && hp.indexOf(':') != colon) {
+        throw IllegalArgumentException("IPv6 redis hosts must be in brackets, e.g. [::1]:6379, not `$hp`")
+      }
+
+      val host = if (colon >= 0) hp.substring(0, colon) else hp
+      if (host.isEmpty() || host.any { it.isWhitespace() || it == '/' || it == '@' }) {
+        throw IllegalArgumentException("invalid redis host `$hp`")
+      }
+
+      return RedisHost(host, if (colon >= 0) port(hp.substring(colon + 1)) else 6379)
+    }
   }
 }

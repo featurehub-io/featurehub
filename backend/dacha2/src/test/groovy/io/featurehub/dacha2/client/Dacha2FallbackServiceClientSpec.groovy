@@ -22,6 +22,10 @@ import kotlin.jvm.functions.Function0
 import io.featurehub.redis.FeatureHubRedis
 import io.featurehub.redis.RedisSource
 import spock.lang.Specification
+import spock.util.concurrent.PollingConditions
+
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class Dacha2FallbackServiceClientSpec extends Specification {
   Dacha2ServiceClient mr
@@ -181,8 +185,10 @@ class Dacha2FallbackServiceClientSpec extends Specification {
       1 * mr.getEnvironment(envId, null) >> new Dacha2Environment().env(env())
       !client.open
       found.env.environment.id == envId
-      recoveredEnvs == [envId] as Set
-      recoveredKeys == ["c*1", "s1"] as Set
+      new PollingConditions(timeout: 5).eventually {
+        assert recoveredEnvs == [envId] as Set
+        assert recoveredKeys == ["c*1", "s1"] as Set
+      }
   }
 
   def "through the real cache, a redis miss during an outage does not stop the environment loading once MR is back"() {
@@ -276,5 +282,103 @@ class Dacha2FallbackServiceClientSpec extends Specification {
       scenario                                  | url
       "connection refused, no endpoints"        | "http://127.0.0.1:1"
       "packets dropped, connect timeout"        | "http://10.255.255.1:8904"
+  }
+
+  def "the recovery listener runs on the client's own thread, not inside the caller (which may be a cache loader)"() {
+    given:
+      storeInRedis()
+      Thread listenerThread = null
+      client.addRecoveryListener({ envs, keys -> listenerThread = Thread.currentThread() } as Dacha2RecoveryListener)
+      def calls = 0
+      mr.getEnvironment(envId, null) >> {
+        if (calls++ == 0) throw new ProcessingException("down")
+        return new Dacha2Environment().env(env())
+      }
+    when:
+      client.getEnvironment(envId, null) // opens, served from redis
+      now += 20000
+      client.getEnvironment(envId, null) // probe succeeds, closes
+    then:
+      new PollingConditions(timeout: 5).eventually {
+        assert listenerThread != null
+        assert listenerThread != Thread.currentThread()
+        assert listenerThread.name == 'dacha2-redis-fallback'
+      }
+  }
+
+  def "with no cache misses at all, the background probe notices MR is back and evicts what came from redis"() {
+    given:
+      storeInRedis()
+      Set<UUID> recovered = null
+      def mrUp = false
+      def background = Mock(io.featurehub.dacha2.api.Dacha2ServiceClient)
+      background.getEnvironment(_, _) >> { args ->
+        if (!mrUp) throw new ProcessingException("down")
+        throw new NotFoundException() // the probe's environment does not exist, so MR answers 404
+      }
+      def c = new Dacha2FallbackServiceClient(background, { -> redis } as io.featurehub.redis.RedisSource, 200,
+        { -> System.currentTimeMillis() } as Function0<Long>, true, 100)
+      c.addRecoveryListener({ envs, keys -> recovered = envs } as Dacha2RecoveryListener)
+    when: "MR goes down, the miss is served from redis"
+      c.getEnvironment(envId, null)
+    then:
+      c.open
+    when: "MR comes back and nothing ever asks this client again"
+      mrUp = true
+    then:
+      new PollingConditions(timeout: 5).eventually {
+        assert !c.open
+        assert recovered == [envId] as Set
+      }
+    cleanup:
+      c?.close()
+  }
+
+  def "a redis read that finishes after MR has recovered is evicted too"() {
+    given: "a redis whose environment read blocks until we release it"
+      storeInRedis()
+      def readStarted = new CountDownLatch(1)
+      def release = new CountDownLatch(1)
+      def backing = redis
+      def envKey = redis.keys.environment(envId)
+      def blocking = Stub(io.featurehub.redis.FeatureHubRedis) {
+        getKeys() >> backing.keys
+        get(_) >> { String key ->
+          if (key == envKey) {
+            readStarted.countDown()
+            release.await(5, TimeUnit.SECONDS)
+          }
+          return backing.get(key)
+        }
+      }
+      def mrUp = false
+      def slowMr = Mock(io.featurehub.dacha2.api.Dacha2ServiceClient)
+      slowMr.getEnvironment(_, _) >> { args ->
+        if (!mrUp) throw new ProcessingException("down")
+        return new Dacha2Environment().env(env())
+      }
+      def c = new Dacha2FallbackServiceClient(slowMr, { -> blocking } as io.featurehub.redis.RedisSource, 10000,
+        { -> now } as Function0<Long>, false, 100)
+      List<Set<UUID>> recovered = [].asSynchronized()
+      c.addRecoveryListener({ envs, keys -> if (!envs.isEmpty()) recovered.add(envs) } as Dacha2RecoveryListener)
+    when: "MR is down and a lookup is reading from redis"
+      Throwable readerFailure = null
+      def reader = Thread.start {
+        try { c.getEnvironment(envId, null) } catch (Throwable t) { readerFailure = t }
+      }
+      assert readStarted.await(5, TimeUnit.SECONDS)
+    and: "MR recovers (the background probe) before that read completes"
+      mrUp = true
+      c.probeIfOpen()
+      release.countDown()
+      reader.join(5000)
+    then: "the late redis read is still evicted"
+      readerFailure == null
+      !c.open
+      new PollingConditions(timeout: 5).eventually {
+        assert recovered.any { it.contains(envId) }
+      }
+    cleanup:
+      c?.close()
   }
 }

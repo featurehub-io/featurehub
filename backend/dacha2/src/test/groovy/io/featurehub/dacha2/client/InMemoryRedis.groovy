@@ -37,6 +37,16 @@ class InMemoryRedis implements FeatureHubRedis {
   }
 
   @Override
+  boolean deleteIfEquals(@NotNull String key, @NotNull String expected) {
+    return data.remove(key, expected)
+  }
+
+  @Override
+  boolean expireIfEquals(@NotNull String key, @NotNull String expected, long ttlMs) {
+    return data.get(key) == expected // no TTLs in the fake
+  }
+
+  @Override
   void scanKeys(@NotNull String pattern, int batchSize, @NotNull Function1<? super List<String>, Unit> consumer) {
     def prefix = pattern.substring(0, pattern.length() - 1) // we only use trailing * patterns
     def matched = data.keySet().findAll { it.startsWith(prefix) }.toList()

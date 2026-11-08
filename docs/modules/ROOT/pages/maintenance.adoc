@@ -163,6 +163,8 @@ anything no longer in the database is removed. The call returns when that has fi
 ----
 
 * `409` means another Redis full sync is running (for example MR's startup sync). Wait a few seconds and call it again.
+* `500` with `redisError` means the Redis full sync failed. Dacha2 was still republished, but Redis is *not* up to
+date, so fix the cause (usually Redis or the database being unreachable) and call it again before shutting MR down.
 * `503` means cache publishing is not enabled on this MR.
 
 Call it on *one* MR instance only.
@@ -188,8 +190,9 @@ To avoid this, give MR and Dacha2 a Redis instance:
 Redis only stores whole environments, so when a single feature changes MR rewrites the entire environment in Redis.
 This extra work is deliberate: Redis is only read while MR is unavailable.
 * *Dacha2* keeps asking MR first. If MR cannot be reached or returns a 5xx error (including the Maintenance
-Responder's 503), Dacha2 serves cache misses from Redis instead, and tries MR again every 10 seconds. Once MR
-answers, Dacha2 drops the entries it got from Redis and reloads them from MR.
+Responder's 503), Dacha2 serves cache misses from Redis instead, and checks MR again every 10 seconds in the
+background, so it notices MR is back even if every request is being answered from its cache. Once MR answers,
+Dacha2 drops the entries it got from Redis and reloads them from MR.
 * A `404` from MR is always trusted and Redis is not consulted. Anything not found in Redis is treated as "not
 available right now", so once MR is back it loads normally.
 
@@ -202,7 +205,9 @@ database:
 * when the <<_maintenance_publish_all,maintenance publish-all endpoint>> is called. That call waits for the sync to
 finish.
 
-Only one MR instance runs a full sync at a time.
+Only one MR instance runs a full sync at a time. The lock is held in Redis for `redis.full-sync-lock-ms` (default two
+minutes) and renewed while the sync runs, so a sync that takes longer keeps it, and an MR that dies part way through
+frees it quickly. If a sync ever loses the lock, it stops before removing anything from Redis.
 
 *With more than one MR instance*, the incremental updates are only ordered within each instance. If two instances
 rewrite the same environment or service account at almost the same moment, the older database read can land last.
@@ -232,6 +237,7 @@ sync. See <<_sdk_feature_updates,SDK feature updates during a window>>.
 rewrite.
 - `redis.pool-size` - the number of Redis writer threads, default `2`.
 - `redis.shutdown-drain-seconds` - how long MR waits for pending Redis writes when shutting down, default `10`.
+- `redis.full-sync-lock-ms` - how long the full sync lock lasts if it is not renewed, default `120000` (two minutes).
 
 MR only writes to Redis when it publishes cache updates (cloud events publishing is enabled).
 
