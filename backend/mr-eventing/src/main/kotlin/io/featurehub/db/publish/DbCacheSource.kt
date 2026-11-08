@@ -10,6 +10,8 @@ import io.featurehub.db.model.query.*
 import io.featurehub.db.services.Conversions
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.mr.events.common.CacheSource
+import io.featurehub.mr.events.common.CacheWalker
+import io.featurehub.mr.events.common.SelfSyncingCacheBroadcast
 import io.featurehub.mr.events.dacha2.CacheApi
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
@@ -60,12 +62,15 @@ open class DbCacheSource @Inject constructor(
   private val featureModelWalker: FeatureModelWalker,
   private val commonCacheGenerator: CommonCacheGenerator,
   executorSupplier: ExecutorSupplier
-) : CacheSource, CacheApi, CacheRefresherApi {
+) : CacheSource, CacheApi, CacheRefresherApi, CacheWalker {
   private val executor: ExecutorService
 
   @ConfigKey("cache.pool-size")
   private var cachePoolSize: Int?
   private var cacheBroadcast: CacheBroadcast
+  // used when publishing *everything* - excludes broadcasters that manage their own full publish (e.g. Redis)
+  private var fullPublishBroadcast: CacheBroadcast
+  private var selfSyncingBroadcasters: List<SelfSyncingCacheBroadcast> = listOf()
 
   val featureGroupsEnabled: Boolean
 
@@ -83,24 +88,73 @@ open class DbCacheSource @Inject constructor(
     log.info("Using maximum of {} connections to service request from Dacha", cachePoolSize)
     executor = executorSupplier.executorService(cachePoolSize!!)
     cacheBroadcast = CacheBroadcastProxy(emptyList(), executor)
+    fullPublishBroadcast = cacheBroadcast
   }
 
   @PostConstruct
-  fun publishInit() = if (cacheBroadcasters.size == 1) {
-    cacheBroadcast = cacheBroadcasters.first()
-  } else {
-    cacheBroadcast = CacheBroadcastProxy(cacheBroadcasters.toList(), executor)
+  fun publishInit() {
+    val all = cacheBroadcasters.toList()
+    cacheBroadcast = proxyFor(all)
+
+    selfSyncingBroadcasters = all.filterIsInstance<SelfSyncingCacheBroadcast>()
+    fullPublishBroadcast = proxyFor(all.filter { it !is SelfSyncingCacheBroadcast })
   }
 
+  private fun proxyFor(broadcasters: List<CacheBroadcast>): CacheBroadcast =
+    if (broadcasters.size == 1) broadcasters.first() else CacheBroadcastProxy(broadcasters, executor)
+
   override fun publishObjectsAssociatedWithCache() {
-    val saFuture = executor.submit { publishToCacheServiceAccounts(cacheBroadcast) }
-    val envFuture = executor.submit { publishCacheEnvironments(cacheBroadcast) }
+    // self-syncing broadcasters (e.g. Redis) do their own full walk + sweep in the background
+    selfSyncingBroadcasters.forEach {
+      try {
+        it.fullPublishRequested()
+      } catch (e: Exception) {
+        log.error("Failed to request full publish from {}", it.javaClass.name, e)
+      }
+    }
+
+    val saFuture = executor.submit { publishToCacheServiceAccounts(fullPublishBroadcast) }
+    val envFuture = executor.submit { publishCacheEnvironments(fullPublishBroadcast) }
     try {
       saFuture.get()
       envFuture.get()
     } catch (e: Exception) {
       log.error("Failed to publish cache.", e)
     }
+  }
+
+  override fun publishableEnvironmentIds(): List<UUID> {
+    return QDbEnvironment()
+      .whenArchived.isNull.whenUnpublished.isNull
+      .parentApplication.portfolio.organization.whenArchived.isNull
+      .select(QDbEnvironment.Alias.id)
+      .findList().map { it.id }
+  }
+
+  override fun publishableServiceAccountIds(): List<UUID> {
+    return allServiceAccounts().select(QDbServiceAccount.Alias.id).findList().map { it.id }
+  }
+
+  override fun publishableEnvironment(id: UUID): PublishEnvironment? {
+    return QDbEnvironment().id.eq(id)
+      .whenArchived.isNull.whenUnpublished.isNull
+      .parentApplication.portfolio.organization.whenArchived.isNull
+      .select(
+        QDbEnvironment.Alias.id,
+        QDbEnvironment.Alias.version,
+        QDbEnvironment.Alias.userEnvironmentInfo,
+        QDbEnvironment.Alias.managementEnvironmentInfo,
+        QDbEnvironment.Alias.webhookEnvironmentInfo
+      ).findOne()?.let { fillEnvironmentCacheItem(0, it, PublishAction.CREATE) }
+  }
+
+  override fun publishableServiceAccount(id: UUID): CacheServiceAccount? {
+    return allServiceAccounts().id.eq(id).select(
+      QDbServiceAccount.Alias.id,
+      QDbServiceAccount.Alias.version,
+      QDbServiceAccount.Alias.apiKeyClientEval,
+      QDbServiceAccount.Alias.apiKeyServerEval,
+    ).findOne()?.let { fillServiceAccount(it) }
   }
 
   private fun publishToCacheServiceAccounts(cacheBroadcast: CacheBroadcast) {

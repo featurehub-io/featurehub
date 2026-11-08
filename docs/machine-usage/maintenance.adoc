@@ -32,3 +32,35 @@ applications which are tied to the database.
 == Prepublishing State
 
 
+
+Before MR is shut down, all caches should hold everything they might be asked for. "Publish All to Cache"
+(`CacheResource.cacheRefresh` with `allTheThings`) calls `DbCacheSource.publishObjectsAssociatedWithCache()`, which
+republishes every environment and service account to Dacha2 over CloudEvents.
+
+== Redis fallback for Dacha2
+
+If `redis.url` is set on MR, `RedisCacheFeature` (`backend/mr-eventing-redis`) registers a `RedisCacheBroadcaster`
+alongside the normal broadcasters.
+
+- Every environment, service account or feature event schedules a debounced re-read of the *whole* object from the
+  database (`CacheWalker`, implemented by `DbCacheSource`), which is then written to Redis. All work for one id runs on
+  the same `RedisCacheWriter` worker, so the last write for an id is the latest database state.
+- It is a `SelfSyncingCacheBroadcast`: `publishObjectsAssociatedWithCache()` does not fan out to it. Instead it asks it
+  to run `RedisFullSync`, which writes everything and sweeps keys that are no longer in the database (re-checking each
+  one first). A full sync also runs at startup and every `redis.full-sync-interval-hours`, guarded by a Redis lock.
+- On shutdown, `RedisCacheWriter` (an `ExecutorPoolDrainageSource`) finishes pending writes.
+
+If `dacha2.redis.url` (or `redis.url`) is set on Dacha2, `Dacha2MRClientFeature` binds `Dacha2FallbackServiceClient`
+in front of the MR client.
+
+- Connection failures and 5xx responses (including the maintenance responder's 503) open a circuit, and cache misses
+  are then read from Redis. MR is probed again every `dacha2.redis.mr-retry-interval-ms`.
+- MR 4xx responses are authoritative. A Redis miss is a `ServiceUnavailableException`, so it never lands in the
+  non-expiring miss caches.
+- When the circuit closes, `Dacha2RedisRecovery` invalidates the entries that came from Redis
+  (`dacha2.redis.evict-on-recovery`, default true).
+
+`dacha2` is in the maintenance responder's default `interceptPrefixes`, so if MR's address is pointed at the
+responder, Dacha2 gets a 503 (fallback) rather than a 404 (which it would cache as "does not exist").
+
+The operator documentation is in `docs/modules/ROOT/pages/maintenance.adoc`.

@@ -45,7 +45,9 @@ nothing writes to the database, route the Admin traffic to the Maintenance Respo
 
 It is recommended that you use the Publish All to Cache feature of the System Configuration setting before shutting
 your Management Repositories down so you won't suffer an outage. Most modern container scheduling frameworks (like
-Karpenter) allow you to annotate your Dacha2 containers to prevent them from moving during this process. 
+Karpenter) allow you to annotate your Dacha2 containers to prevent them from moving during this process. If you
+configure the <<_redis_fallback,Redis fallback>>, Dacha2 can also serve environments it has not cached yet, and
+Dacha2 pods can be moved or restarted during the window.
 
 [#_maintenance_responder]
 == The Maintenance Responder
@@ -54,7 +56,7 @@ The Maintenance Responder (Docker image `featurehub/maintenance-responder`) is a
 during maintenance. It:
 
 - serves the Admin web app as normal, so users get a maintenance page instead of a connection error
-- answers every API request whose path starts with `mr-api`, `saml` or `oauth` with *HTTP 503 Service Unavailable*,
+- answers every API request whose path starts with `mr-api`, `saml`, `oauth` or `dacha2` with *HTTP 503 Service Unavailable*,
 with the maintenance message as the body and a `Retry-After` header set to `maintenance.end`. When the Admin app
 receives this, it switches to the maintenance page.
 - sends the `X-Maintenance-*` headers described above
@@ -70,7 +72,7 @@ The Maintenance Responder *will not start* unless all three `maintenance.*` prop
 
 - `maintenance.start`, `maintenance.end`, `maintenance.message` - as described
 <<_configuring_a_maintenance_window,above>>. Use the same values as on MR.
-- `interceptPrefixes` - a comma-separated list of path prefixes that get a 503 (default `mr-api,saml,oauth`).
+- `interceptPrefixes` - a comma-separated list of path prefixes that get a 503 (default `mr-api,saml,oauth,dacha2`).
 - `server.port` - the HTTP port (default `8553`). Many installs set this to match MR, for example `8085`.
 - `monitor.port` - the metrics and health check port (default `8701`).
 - `featurehub.url-path` - set this if FeatureHub is served under a context path other than `/`, the same as on MR.
@@ -100,13 +102,93 @@ maintenance notice.
 . *Deploy the Maintenance Responder* with the same `maintenance.*` values and wait until it is ready.
 . *Switch the routes.* When the window starts, change your ingress or load balancer so that all Admin traffic goes to the
 Maintenance Responder instead of MR. Keep SDK traffic (Edge, usually under `/features`) where it is.
-. *Shut down MR* once no traffic reaches it, then carry out the database work.
+. *If you use the <<_redis_fallback,Redis fallback>>*, use Publish All to Cache and check that the Redis full sync
+has completed (`mr_redis_last_full_sync_seconds` has updated).
+. *Shut down MR* once no traffic reaches it, then carry out the database work. With the Redis fallback, MR writes any
+pending Redis updates before it exits.
 . *Start MR* again (removing the `maintenance.*` properties, or leaving them until the end time has passed) and wait
 until it is ready.
 . *Switch the routes back* to MR and remove the Maintenance Responder.
 
 On ECS and other platforms the same pattern applies: move the Admin target group or route to the Maintenance Responder
 for the duration of the work.
+
+[#_redis_fallback]
+=== Serving Dacha2 cache misses from Redis
+
+Normally, when Dacha2 is asked for an environment or service account it does not have in memory, it asks MR. While
+MR is shut down those requests fail, so SDKs using an API key Dacha2 has not yet seen, or any Dacha2 pod that
+restarts, cannot get features until MR is back.
+
+To avoid this, give MR and Dacha2 a Redis instance:
+
+* *MR* writes every environment and service account to Redis, as well as publishing changes in the normal way.
+Redis only stores whole environments, so when a single feature changes MR rewrites the entire environment in Redis.
+This extra work is deliberate: Redis is only read while MR is unavailable.
+* *Dacha2* keeps asking MR first. If MR cannot be reached or returns a 5xx error (including the Maintenance
+Responder's 503), Dacha2 serves cache misses from Redis instead, and tries MR again every 10 seconds. Once MR
+answers, Dacha2 drops the entries it got from Redis and reloads them from MR.
+* A `404` from MR is always trusted and Redis is not consulted. Anything not found in Redis is treated as "not
+available right now", so once MR is back it loads normally.
+
+MR keeps Redis complete by running a full sync, which writes everything and removes anything that is no longer in the
+database:
+
+* when MR starts,
+* every 24 hours,
+* when Publish All to Cache (the cache refresh API with `allTheThings`) is used.
+
+Only one MR instance runs a full sync at a time.
+
+==== MR configuration
+
+- `redis.url` - enables the feature, for example `redis://user:password@redis:6379` or
+`rediss://password@10.0.0.3:6378` (TLS). A value with no `:` before the `@` is treated as the password only.
+- `redis.mode` - `standalone` (default), `sentinel` or `cluster`. For sentinel and cluster, list several
+`host:port` pairs separated by commas in the URL.
+- `redis.sentinel.master` - the master name, required for sentinel mode.
+- `redis.username`, `redis.password` - override the values in the URL.
+- `redis.tls.ca-cert` - a PEM file with the CA certificate(s) to trust for `rediss://`, if it is not a public CA.
+- `redis.key-prefix` - default `featurehub`. Use a different prefix for each FeatureHub install sharing one Redis.
+- `redis.connect-timeout-ms`, `redis.socket-timeout-ms` - default `2000`.
+- `redis.full-sync-interval-hours` - default `24`, `0` disables the periodic sync.
+- `redis.full-sync-on-startup` - default `true`.
+- `redis.env-republish-debounce-ms` - default `250`. Changes to one environment within this time cause a single
+rewrite.
+- `redis.pool-size` - the number of Redis writer threads, default `2`.
+- `redis.shutdown-drain-seconds` - how long MR waits for pending Redis writes when shutting down, default `10`.
+
+MR only writes to Redis when it publishes cache updates (cloud events publishing is enabled).
+
+==== Dacha2 configuration
+
+Dacha2 reads `dacha2.redis.*` first and falls back to the `redis.*` value, so it can use different credentials from
+MR. All the connection options above are supported, and the key prefix must match MR's.
+
+- `dacha2.redis.url` (or `redis.url`) - enables the fallback.
+- `dacha2.redis.mr-retry-interval-ms` - how long to wait before trying MR again, default `10000`.
+- `dacha2.redis.evict-on-recovery` - drop entries that came from Redis when MR is available again, default `true`.
+- `dacha2.redis.mr-connect-timeout-ms` - connect timeout for requests to MR when the fallback is on, default `2000`.
+- `dacha2.redis.mr-read-timeout-ms` - read timeout for requests to MR when the fallback is on, default `15000`.
+
+==== Redis requirements
+
+* Set `maxmemory-policy noeviction`. An eviction policy such as `allkeys-lru` would silently remove environments.
+* Redis holds your server-evaluated API keys, so protect it like the database: use authentication, TLS and network
+policy. If your Redis supports ACLs, give Dacha2 a user that can only read keys starting with the prefix (for example
+`+get` on `~{featurehub}:*`) and MR a read/write user for the same keys.
+* Dacha2 only ever reads from Redis.
+
+==== Metrics
+
+- MR: `mr_redis_writes_total`, `mr_redis_write_failures_total`, `mr_redis_env_republish_queue`,
+`mr_redis_last_full_sync_seconds`, `mr_redis_environments`, `mr_redis_service_accounts`,
+`mr_redis_full_sync_failures`.
+- Dacha2: `dacha2_mr_fallback_state` (`1` while serving from Redis), `dacha2_redis_hits_total`,
+`dacha2_redis_misses_total`, `dacha2_redis_errors`.
+
+The Redis fallback does not apply to `party-server` or `party-server-ish`, where Dacha2 runs inside the same process as
+MR.
 
 === Party Server and Party Server-ish
 

@@ -222,6 +222,20 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
     }
   }
 
+  override fun invalidateEntries(environmentIds: Set<UUID>, apiKeys: Set<String>) {
+    environmentIds.forEach { envId ->
+      environmentCache.getIfPresent(envId)?.let { found ->
+        environmentCache.invalidate(envId) // the removal listener clears the related permissions
+        gaugeFeaturesInCache.dec(found.featureCount.toDouble())
+      }
+    }
+
+    apiKeys.forEach { key ->
+      serviceAccountApiKeyCache.getIfPresent(key)?.let { serviceAccountCache.invalidate(it.id) }
+    }
+    serviceAccountApiKeyCache.invalidateAll(apiKeys) // the removal listener clears the related permissions
+  }
+
   override fun findEnvironment(eId: UUID): FeatureValues {
     environmentMissCache.getIfPresent(eId)?.let {
       throw RuntimeException()

@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 @Priority(2000)
 class AbortForMaintenanceFilter : ContainerRequestFilter {
   companion object {
-    val interceptPrefixes = FallbackPropertyConfig.getConfig("interceptPrefixes", "mr-api,saml,oauth")
+    val interceptPrefixes = FallbackPropertyConfig.getConfig("interceptPrefixes", "mr-api,saml,oauth,dacha2")
       .split(",")
       .map { it.trim() }
       .filter { it.isNotBlank() }

@@ -96,6 +96,7 @@
     <module>backend/messaging-api</module>
     <module>backend/messaging-delivery</module>
     <module>backend/mr-eventing-nats</module>
+    <module>backend/mr-eventing-redis</module>
     <module>backend/edge-feature-update-async-api</module>
     <module>backend/eventing-nats</module>
     <module>backend/eventing-google-pubsub</module>
@@ -112,6 +113,7 @@
     <module>backend/dacha-api</module>
     <module>backend/dacha-client</module>
     <module>backend/encryption-common</module>
+    <module>backend/redis-common</module>
     <module>admin-frontend/app_mr_layer</module>
     <module>admin-frontend/releases_api</module>
   </modules>
