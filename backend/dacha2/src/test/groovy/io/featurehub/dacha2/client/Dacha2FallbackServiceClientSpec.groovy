@@ -245,4 +245,36 @@ class Dacha2FallbackServiceClientSpec extends Specification {
       again.env.environment.id == envId
       !c.open
   }
+
+  /**
+   * When MR is scaled to 0 during maintenance, a Kubernetes Service in front of it has no endpoints: there is no 503.
+   * Depending on the network layer the connection is either refused or the packets are dropped (connect timeout).
+   * Both must open the circuit - this uses the real HTTP client rather than a mocked exception.
+   */
+  @spock.lang.Unroll
+  def "an unreachable MR (#scenario) with the real HTTP client falls back to redis"() {
+    given:
+      storeInRedis()
+      def httpClient = jakarta.ws.rs.client.ClientBuilder.newClient()
+      httpClient.property(org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT, 500)
+      httpClient.property(org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT, 500)
+      System.setProperty("management-repository.url", url)
+      def realMr = new Dacha2Client(httpClient)
+      def c = new Dacha2FallbackServiceClient(realMr, redis, 10000, { -> now } as Function0<Long>)
+    when:
+      def start = System.currentTimeMillis()
+      def found = c.getEnvironment(envId, null)
+      def elapsed = System.currentTimeMillis() - start
+    then:
+      found.env.environment.id == envId
+      c.open
+      elapsed < 5000 // bounded by the connect timeout, not hanging
+    cleanup:
+      System.clearProperty("management-repository.url")
+      httpClient?.close()
+    where:
+      scenario                                  | url
+      "connection refused, no endpoints"        | "http://127.0.0.1:1"
+      "packets dropped, connect timeout"        | "http://10.255.255.1:8904"
+  }
 }
