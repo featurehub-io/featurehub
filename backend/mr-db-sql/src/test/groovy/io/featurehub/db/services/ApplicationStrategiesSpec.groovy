@@ -17,6 +17,9 @@ import io.featurehub.mr.model.CreateFeature
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategy
+import io.featurehub.mr.model.RolloutStrategyAttribute
+import io.featurehub.mr.model.RolloutStrategyAttributeConditional
+import io.featurehub.mr.model.RolloutStrategyFieldType
 import io.featurehub.mr.model.RolloutStrategyInstance
 import io.featurehub.mr.model.UpdateApplicationRolloutStrategy
 import org.apache.commons.lang3.RandomStringUtils
@@ -232,5 +235,29 @@ class ApplicationStrategiesSpec extends Base3Spec {
         p.applicationStrategyUpdates.updated[0].new == null
         p.applicationStrategyUpdates.updated[0].old.percentage == 1000
       }, _)
+  }
+
+  def "feature history includes the rules of application strategies attached to the feature value"() {
+    given: "i have a feature"
+      String key = createFeature(FeatureValueType.BOOLEAN)
+    and: "an application strategy with a rule and a percentage"
+      def strategy = applicationRolloutStrategySqlApi.createStrategy(app1.id,
+        new CreateApplicationRolloutStrategy().name(ranName()).percentage(20000)
+          .attributes([new RolloutStrategyAttribute().fieldName("country")
+                         .conditional(RolloutStrategyAttributeConditional.EQUALS)
+                         .type(RolloutStrategyFieldType.STRING).values(["nz"])]),
+        superPerson.id.id, Opts.empty())
+    when: "i attach it to the feature value"
+      associateStrategyWithFeatureValue(key, strategy, true)
+    and: "i ask for the history"
+      def history = new FeatureHistorySqlApi().listHistory(app1.id, [env1.id], [], [key], [], null, null, true)
+      def rs = history.items[0].history[0].rolloutStrategies.find { it.name == strategy.name }
+    then:
+      rs != null
+      rs.value == true
+      rs.percentage == 20000
+      rs.attributes.size() == 1
+      rs.attributes[0].fieldName == "country"
+      rs.attributes[0].values == ["nz"]
   }
 }

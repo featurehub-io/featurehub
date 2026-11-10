@@ -2,6 +2,7 @@ package io.featurehub.db.services
 
 import io.featurehub.db.api.FeatureHistoryApi
 import io.featurehub.db.model.DbFeatureValueVersion
+import io.featurehub.db.model.SharedRolloutStrategyVersion
 import io.featurehub.db.model.query.QDbApplicationFeature
 import io.featurehub.db.model.query.QDbApplicationRolloutStrategy
 import io.featurehub.db.model.query.QDbFeatureValue
@@ -112,8 +113,10 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
             val rs = RolloutStrategy()
               .id(pairedStrategy.shortUniqueCode)
               .value(convert(strategy.value, it.feature.valueType))
-              .attributes(mutableListOf())
               .name(pairedStrategy.name)
+
+            copySharedRules(rs, pairedStrategy.strategy?.attributes, pairedStrategy.strategy?.percentage,
+              pairedStrategy.strategy?.percentageAttributes, strategy)
 
             if (pairedStrategy.whenArchived != null) {
               rs.name(pairedStrategy.name.split(Conversions.archiveSuffix)[0])
@@ -136,8 +139,10 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
             val rs = RolloutStrategy()
               .id(pairedStrategy.shortUniqueCode)
               .value(convert(strategy.value, it.feature.valueType))
-              .attributes(mutableListOf())
               .name(pairedStrategy.name)
+
+            copySharedRules(rs, pairedStrategy.strategy?.attributes, pairedStrategy.strategy?.percentage,
+              pairedStrategy.strategy?.percentageAttributes, strategy)
 
              if (pairedStrategy.whenArchived != null) {
                rs.name(pairedStrategy.name.split(Conversions.archiveSuffix)[0])
@@ -163,6 +168,23 @@ class FeatureHistorySqlApi : InternalFeatureHistoryApi, FeatureHistoryApi {
     return FeatureHistoryList()
       .max(count.get().toLong())
       .items(items.values.toList())
+  }
+
+  /**
+   * Application and portfolio strategies are stored on the feature value version by reference only, so pull
+   * the rules (attributes / percentage) from the shared strategy so the history can show what they are. A
+   * per-feature-value percentage override takes precedence over the shared strategy's percentage.
+   */
+  private fun copySharedRules(
+    rs: RolloutStrategy,
+    attributes: List<RolloutStrategyAttribute>?,
+    percentage: Int?,
+    percentageAttributes: List<String>?,
+    usage: SharedRolloutStrategyVersion
+  ) {
+    rs.attributes(attributes?.toMutableList() ?: mutableListOf())
+    rs.percentage(usage.getpOride() ?: percentage)
+    rs.percentageAttributes(percentageAttributes?.toMutableList())
   }
 
   private fun convert(defaultValue: Any?, valueType: FeatureValueType): Any? {
