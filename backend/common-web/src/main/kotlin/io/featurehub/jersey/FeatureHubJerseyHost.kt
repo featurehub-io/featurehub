@@ -38,7 +38,7 @@ class FeatureHubJerseyHost(private val config: ResourceConfig) {
   var gracePeriod: Int? = 10
 
   var allowedWebHosting = true
-  private var jerseyPrefixes = listOf("/mr-api/*", "/saml/*", "/oauth/*", "/features", "/features/*", "/info/*", "/dacha2/*")
+  private var jerseyPrefixes = listOf("/mr-api/*", "/saml/*", "/oauth/*", "/features", "/features/*", "/info/*", "/dacha2/*", "/ofrep/v1", "/ofrep/v1/*")
 
   init {
     DeclaredConfigResolver.resolve(this)

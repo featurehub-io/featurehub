@@ -1,6 +1,7 @@
 package io.featurehub.edge
 
 import io.featurehub.edge.features.DachaFeatureRequestSubmitter
+import io.featurehub.edge.ofrep.OfrepFeature
 import io.featurehub.edge.features.DachaRequestOrchestrator
 import io.featurehub.edge.features.EdgeConcurrentRequestPool
 import io.featurehub.edge.rest.*
@@ -15,6 +16,8 @@ class EdgeCommonFeature : Feature {
     if (FastlyResponseWrapper.fastlyConfigured()) {
       context.register(FastlySSEContainerResponseFilter::class.java)
     }
+
+    context.register(OfrepFeature::class.java)
 
     context.register(object: AbstractBinder() {
       override fun configure() {
