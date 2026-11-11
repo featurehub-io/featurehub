@@ -136,9 +136,7 @@ open class DbCacheSource @Inject constructor(
   }
 
   override fun publishableEnvironmentIds(): List<UUID> {
-    return QDbEnvironment()
-      .whenArchived.isNull.whenUnpublished.isNull
-      .parentApplication.portfolio.organization.whenArchived.isNull
+    return publishableEnvironments()
       .select(QDbEnvironment.Alias.id)
       .findList().map { it.id }
   }
@@ -148,9 +146,7 @@ open class DbCacheSource @Inject constructor(
   }
 
   override fun publishableEnvironment(id: UUID): PublishEnvironment? {
-    return QDbEnvironment().id.eq(id)
-      .whenArchived.isNull.whenUnpublished.isNull
-      .parentApplication.portfolio.organization.whenArchived.isNull
+    return publishableEnvironments().id.eq(id)
       .select(
         QDbEnvironment.Alias.id,
         QDbEnvironment.Alias.version,
@@ -187,8 +183,29 @@ open class DbCacheSource @Inject constructor(
     }
   }
 
+  override fun publishableApiKeys(): List<String> {
+    // the same rules as publishableEnvironments() and allServiceAccounts(), applied to both ends of the link
+    return QDbServiceAccountEnvironment()
+      .select(QDbServiceAccountEnvironment.Alias.permissions)
+      .environment.whenArchived.isNull
+      .environment.whenUnpublished.isNull
+      .environment.parentApplication.portfolio.organization.whenArchived.isNull
+      .environment.fetch(QDbEnvironment.Alias.id)
+      .serviceAccount.whenArchived.isNull
+      .serviceAccount.whenUnpublished.isNull
+      .serviceAccount.portfolio.organization.whenArchived.isNull
+      .serviceAccount.fetch(QDbServiceAccount.Alias.apiKeyClientEval)
+      .findList()
+      .filter { sae -> convertUtils.splitServiceAccountPermissions(sae.permissions)?.isNotEmpty() == true }
+      .map { sae -> "${sae.environment.id}/${sae.serviceAccount.apiKeyClientEval}" }
+  }
+
+  /**
+   * only finds publishable service accounts - this is what dacha2 asks for when it does not have a service account
+   * cached, so an unpublished or archived one (or one in an archived organisation) must not come back
+   */
   private fun findServiceAccount(key: String): DbServiceAccount? {
-    var finder = QDbServiceAccount()
+    var finder = allServiceAccounts()
 
     finder = if (key.contains('*')) {
       finder.apiKeyClientEval.eq(key)
@@ -235,10 +252,25 @@ open class DbCacheSource @Inject constructor(
     return serviceAccount
   }
 
+  /**
+   * The single definition of a publishable service account: not archived, not unpublished, and in an organisation
+   * that is not archived. Every query that decides which service accounts reach a cache starts here.
+   */
   private fun allServiceAccounts(): QDbServiceAccount {
     return QDbServiceAccount()
       .whenArchived.isNull
+      .whenUnpublished.isNull
       .portfolio.organization.whenArchived.isNull
+  }
+
+  /**
+   * The single definition of a publishable environment: not archived, not unpublished, and in an organisation that
+   * is not archived. Every query that decides which environments reach a cache starts here.
+   */
+  private fun publishableEnvironments(): QDbEnvironment {
+    return QDbEnvironment()
+      .whenArchived.isNull.whenUnpublished.isNull
+      .parentApplication.portfolio.organization.whenArchived.isNull
   }
 
   private fun publishCacheEnvironments(cacheBroadcast: CacheBroadcast) {
@@ -353,17 +385,6 @@ open class DbCacheSource @Inject constructor(
       .featureProperties(featureModelWalker.walk(feature, dfv, toCacheFeature, toCacheFeatureValue, featureGroupRolloutStrategies))
   }
 
-  // we should select out only the details we need to publish
-  private fun findEnvironment(id: UUID): DbEnvironment? {
-    return QDbEnvironment().id.eq(id).select(
-      QDbEnvironment.Alias.id,
-      QDbEnvironment.Alias.version,
-      QDbEnvironment.Alias.userEnvironmentInfo,
-      QDbEnvironment.Alias.managementEnvironmentInfo,
-      QDbEnvironment.Alias.webhookEnvironmentInfo
-    ).findOne()
-  }
-
   private fun toEnvironment(env: DbEnvironment): CacheEnvironment {
     // match these fields with the finder environmentsByCacheName, so you don't get fields you don't need
     val ce = CacheEnvironment()
@@ -426,14 +447,13 @@ open class DbCacheSource @Inject constructor(
   }
 
   private fun allEnvironments(wantCount: Boolean): QDbEnvironment {
-    val envQuery = QDbEnvironment()
-      .whenArchived.isNull.whenUnpublished.isNull
+    val envQuery = publishableEnvironments()
       .environmentFeatures.feature.fetch().parentApplication.fetch(
         QDbApplication.Alias.id
       ).parentApplication.portfolio.fetch(QDbPortfolio.Alias.id)
       .parentApplication.portfolio.organization.fetch(
         QDbOrganization.Alias.id
-      ).parentApplication.portfolio.organization.whenArchived.isNull
+      )
 
     return if (wantCount) {
       envQuery.select(
@@ -642,10 +662,12 @@ open class DbCacheSource @Inject constructor(
     private val log = LoggerFactory.getLogger(DbCacheSource::class.java)
   }
 
+  /**
+   * dacha2 asks for this when it does not have the environment cached, so it must only return publishable
+   * environments - otherwise an unpublished or archived one (or one in an archived organisation) comes straight back
+   */
   override fun getEnvironment(id: UUID): PublishEnvironment? {
-    return findEnvironment(id)?.let {
-      fillEnvironmentCacheItem(0, it, PublishAction.CREATE)
-    }
+    return publishableEnvironment(id)
   }
 
   override fun getServiceAccount(apiKey: String): CacheServiceAccount? {

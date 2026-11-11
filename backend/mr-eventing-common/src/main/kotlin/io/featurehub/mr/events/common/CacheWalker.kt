@@ -17,6 +17,13 @@ interface CacheWalker {
   fun publishableServiceAccountIds(): List<UUID>
 
   /**
+   * every `environmentId/clientEvalApiKey` pair where both the environment and the service account are publishable
+   * and the service account has at least one permission in that environment - i.e. the client side SDK urls that a
+   * full publish makes available
+   */
+  fun publishableApiKeys(): List<String>
+
+  /**
    * returns null if the environment does not exist or is no longer publishable
    */
   fun publishableEnvironment(id: UUID): PublishEnvironment?
