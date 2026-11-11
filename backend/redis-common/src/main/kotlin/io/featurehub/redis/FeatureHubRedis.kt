@@ -134,6 +134,23 @@ class JedisFeatureHubRedis(private val config: RedisConfig) : FeatureHubRedis {
       return builder.build()
     }
 
+    /**
+     * Sentinels typically do not share the data node credentials or database, but they do sit behind the same TLS
+     * (and so the same private CA).
+     */
+    fun sentinelClientConfig(config: RedisConfig): JedisClientConfig {
+      val builder = DefaultJedisClientConfig.builder()
+        .connectionTimeoutMillis(config.connectTimeoutMs)
+        .socketTimeoutMillis(config.socketTimeoutMs)
+
+      if (config.tls) {
+        builder.ssl(true)
+        config.caCertPath?.let { builder.sslSocketFactory(sslSocketFactory(it)) }
+      }
+
+      return builder.build()
+    }
+
     private fun createClient(config: RedisConfig): UnifiedJedis {
       val hosts = config.hosts.map { HostAndPort(it.host, it.port) }
 
@@ -143,11 +160,7 @@ class JedisFeatureHubRedis(private val config: RedisConfig) : FeatureHubRedis {
         RedisMode.SENTINEL -> JedisSentineled(
           config.sentinelMaster!!, clientConfig(config), hosts.toSet(),
           // sentinels typically do not share the data node credentials or database
-          DefaultJedisClientConfig.builder()
-            .connectionTimeoutMillis(config.connectTimeoutMs)
-            .socketTimeoutMillis(config.socketTimeoutMs)
-            .ssl(config.tls)
-            .build()
+          sentinelClientConfig(config)
         )
       }
     }

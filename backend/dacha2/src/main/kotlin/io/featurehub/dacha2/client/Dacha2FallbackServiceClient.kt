@@ -275,8 +275,10 @@ class Dacha2FallbackServiceClient @JvmOverloads constructor(
     log.info("dacha2: management repository is available again ({} environments and {} api keys were served from redis)",
       envs.size, apiKeys.size)
 
-    // never inline: we are often inside a cache loader, and the listeners invalidate entries in those caches
-    notifyRecovered(envs, apiKeys, 0)
+    // never inline: we are often inside a cache loader, and the listeners invalidate entries in those caches.
+    // Delayed (not 0) because a value served from redis just before this point may not have been stored by its
+    // loader yet - evicting it now would let that store land afterwards, leaving it cached and untracked.
+    notifyRecovered(envs, apiKeys, lateEvictionDelayMs)
   }
 
   override fun getEnvironment(id: UUID, key: String?, extraHeaders: MutableMap<String, String>?): Dacha2Environment =

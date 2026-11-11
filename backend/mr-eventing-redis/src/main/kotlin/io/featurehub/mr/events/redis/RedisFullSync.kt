@@ -212,19 +212,20 @@ open class RedisFullSync @Inject constructor(
     val serviceAccounts = mutableMapOf<String, CacheServiceAccount?>()
 
     redis.scanKeys(keys.serviceAccountKeyPattern) { batch ->
-      val stale = batch.filter { indexKey ->
+      batch.forEach { indexKey ->
         val apiKey = indexKey.substring(prefix.length)
-        val saId = redis.get(indexKey) ?: return@filter false
+        val saId = redis.get(indexKey) ?: return@forEach
         val sa = serviceAccounts.getOrPut(saId) {
           redis.get(keys.serviceAccount(UUID.fromString(saId)))?.let {
             CacheJsonMapper.mapper.readValue(it, CacheServiceAccount::class.java)
           }
         }
-        sa == null || (sa.apiKeyClientSide != apiKey && sa.apiKeyServerSide != apiKey)
-      }
+        val stale = sa == null || (sa.apiKeyClientSide != apiKey && sa.apiKeyServerSide != apiKey)
 
-      if (stale.isNotEmpty()) {
-        removed += redis.del(*stale.toTypedArray()).toInt()
+        // compare-and-delete, so an index rewritten since we read it is never removed
+        if (stale && redis.deleteIfEquals(indexKey, saId)) {
+          removed++
+        }
       }
     }
 

@@ -157,10 +157,8 @@ open class RedisCacheWriter @Inject constructor(
   }
 
   private fun removeIndexesIfOwned(apiKeys: Set<String>, saId: UUID) {
-    val owned = apiKeys.map { keys.serviceAccountKey(it) }.filter { redis.get(it) == saId.toString() }
-    if (owned.isNotEmpty()) {
-      redis.del(*owned.toTypedArray())
-    }
+    // compare-and-delete, so an index rewritten to another owner in the meantime is never removed
+    apiKeys.forEach { redis.deleteIfEquals(keys.serviceAccountKey(it), saId.toString()) }
   }
 
   override fun drain() {
