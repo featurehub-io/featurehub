@@ -92,7 +92,7 @@ steps:
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - 'cd featurehub && if [ -f all-build ]; then mvn -T4C -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml; else true; fi'
+      - 'cd featurehub && if [ -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml; else true; fi'
     volumes:
       - name: user.home
         path: /root/.m2
@@ -103,7 +103,7 @@ steps:
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - 'cd featurehub && if [ ! -f all-build ]; then mvn -T4C -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=main -f pom.xml; else true; fi'
+      - 'cd featurehub && if [ ! -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=main -f pom.xml; else true; fi'
     volumes:
       - name: user.home
         path: /root/.m2
