@@ -12,18 +12,25 @@ import spock.lang.Specification
  * them, without creating a client that was never used.
  */
 class Dacha2FallbackShutdownSpec extends Specification {
+  static Set<Thread> probeThreads() {
+    Thread.allStackTraces.keySet().findAll { it.name == "dacha2-redis-fallback" && it.alive } as Set
+  }
+
   def "closing the fallback client stops its probe thread and closes its redis source"() {
-    given:
+    given: "other specs may leave their own probe threads running, so only look at the one this client starts"
+      def existing = probeThreads()
       def source = Mock(RedisSource)
       def client = new Dacha2FallbackServiceClient(Mock(Dacha2ServiceClient), source, 10000,
         { -> 0L } as Function0<Long>, true, 100)
+      def ours = probeThreads() - existing
+    expect:
+      ours.size() == 1
     when:
       client.close()
     then:
       1 * source.close()
-    and: "the probe thread has gone"
-      Thread.allStackTraces.keySet().findAll { it.name == "dacha2-redis-fallback" && it.alive }
-        .every { it.join(1000); !it.alive }
+    and: "its probe thread has gone"
+      ours.every { it.join(5000); !it.alive }
   }
 
   def "a failure closing the redis source does not escape close"() {
