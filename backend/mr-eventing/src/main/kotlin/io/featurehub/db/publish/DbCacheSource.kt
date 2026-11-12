@@ -2,6 +2,9 @@ package io.featurehub.db.publish
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
+import io.ebean.DB
+import io.ebean.Transaction
+import io.ebean.TransactionCallbackAdapter
 import io.ebean.datasource.DataSourceConfig
 import io.featurehub.dacha.model.*
 import io.featurehub.db.api.CacheRefresherApi
@@ -28,29 +31,56 @@ import java.util.stream.Collectors
 
 
 /**
- * This allows us to have multiple active broadcasters
+ * This allows us to have multiple active broadcasters.
+ *
+ * Every caller is already on the cache executor, so broadcasts are delivered on the calling thread, in order:
+ * - self-syncing broadcasters (e.g. Redis) only schedule their own work and never block, so are always called inline.
+ * - if only one other broadcaster remains (the usual Dacha2 cloud events case) it is also called inline, so adding
+ *   Redis does not change the order or threading of what Dacha2 receives.
+ * - only with several blocking broadcasters are they fanned out to the executor, so one slow one cannot hold up
+ *   the rest.
+ *
+ * A failure in one broadcaster never stops the others.
  */
 internal class CacheBroadcastProxy(
-  private val broadcasters: List<CacheBroadcast>,
+  broadcasters: List<CacheBroadcast>,
   private val executor: ExecutorService
 ) : CacheBroadcast {
+  private val inline: List<CacheBroadcast>
+  private val fanOut: List<CacheBroadcast>
 
-  override fun publishEnvironment(eci: PublishEnvironment) {
-    broadcasters.forEach { cb ->
-      executor.submit { cb.publishEnvironment(eci) }
+  init {
+    val (selfSyncing, others) = broadcasters.partition { it is SelfSyncingCacheBroadcast }
+    if (others.size <= 1) {
+      inline = others + selfSyncing
+      fanOut = listOf()
+    } else {
+      inline = selfSyncing
+      fanOut = others
     }
   }
 
-  override fun publishServiceAccount(saci: PublishServiceAccount) {
-    broadcasters.forEach { cb ->
-      executor.submit { cb.publishServiceAccount(saci) }
+  private fun deliver(action: (CacheBroadcast) -> Unit) {
+    fanOut.forEach { cb -> executor.submit { safely(cb, action) } }
+    inline.forEach { cb -> safely(cb, action) }
+  }
+
+  private fun safely(cb: CacheBroadcast, action: (CacheBroadcast) -> Unit) {
+    try {
+      action(cb)
+    } catch (e: Exception) {
+      log.error("cache broadcaster {} failed", cb.javaClass.name, e)
     }
   }
 
-  override fun publishFeatures(features: PublishFeatureValues) {
-    broadcasters.forEach { cb ->
-      executor.submit { cb.publishFeatures(features) }
-    }
+  override fun publishEnvironment(eci: PublishEnvironment) = deliver { it.publishEnvironment(eci) }
+
+  override fun publishServiceAccount(saci: PublishServiceAccount) = deliver { it.publishServiceAccount(saci) }
+
+  override fun publishFeatures(features: PublishFeatureValues) = deliver { it.publishFeatures(features) }
+
+  companion object {
+    private val log = LoggerFactory.getLogger(CacheBroadcastProxy::class.java)
   }
 }
 
@@ -102,6 +132,37 @@ open class DbCacheSource @Inject constructor(
 
   private fun proxyFor(broadcasters: List<CacheBroadcast>): CacheBroadcast =
     if (broadcasters.size == 1) broadcasters.first() else CacheBroadcastProxy(broadcasters, executor)
+
+  /**
+   * Change events are raised by the service layer, frequently inside an open transaction (e.g. @Transactional updates
+   * or a feature group republishing all of its values). Every publish re-reads the database on another thread, so it
+   * must not start until that transaction has committed, otherwise it can read (and publish to Dacha2 and Redis) the
+   * pre-commit state. If the transaction rolls back nothing is published, as nothing changed.
+   */
+  private fun afterCommit(task: () -> Unit) {
+    // declared nullable: ebean marks it non-null, but it returns null when there is no current transaction
+    val txn: Transaction? = DB.currentTransaction()
+
+    if (txn != null && txn.isActive) {
+      txn.register(object : TransactionCallbackAdapter() {
+        override fun postCommit() {
+          submit(task)
+        }
+      })
+    } else {
+      submit(task)
+    }
+  }
+
+  private fun submit(task: () -> Unit) {
+    executor.submit {
+      try {
+        task()
+      } catch (e: Exception) {
+        log.error("Failed to publish", e)
+      }
+    }
+  }
 
   override fun publishObjectsAssociatedWithCache() {
     publishObjectsAssociatedWithCache(true)
@@ -472,13 +533,7 @@ open class DbCacheSource @Inject constructor(
   }
 
   override fun publishFeatureChange(featureValue: DbFeatureValue) {
-    executor.submit {
-      try {
-        innerPublishFeatureValueChange(featureValue, cacheBroadcast)
-      } catch (e: Exception) {
-        log.error("Failed to publish", e)
-      }
-    }
+    afterCommit { innerPublishFeatureValueChange(featureValue, cacheBroadcast) }
   }
 
   private fun innerPublishFeatureValueChange(
@@ -509,7 +564,7 @@ open class DbCacheSource @Inject constructor(
 
 
   override fun deleteFeatureChange(feature: DbApplicationFeature, environmentId: UUID) {
-    executor.submit {
+    afterCommit {
       cacheBroadcast.publishFeatures(
         PublishFeatureValues().addFeaturesItem(
           PublishFeatureValue()
@@ -526,7 +581,7 @@ open class DbCacheSource @Inject constructor(
 
   // this call comes in from the service layer
   override fun updateServiceAccount(serviceAccount: DbServiceAccount, publishAction: PublishAction) {
-    executor.submit { internalUpdateServiceAccount(serviceAccount, publishAction) }
+    afterCommit { internalUpdateServiceAccount(serviceAccount, publishAction) }
   }
 
   private fun internalUpdateServiceAccount(serviceAccount: DbServiceAccount, publishAction: PublishAction) {
@@ -545,7 +600,7 @@ open class DbCacheSource @Inject constructor(
 
 
   override fun deleteServiceAccount(id: UUID) {
-    executor.submit { internalDeleteServiceAccount(id) }
+    afterCommit { internalDeleteServiceAccount(id) }
   }
 
   private fun internalDeleteServiceAccount(id: UUID) {
@@ -565,7 +620,7 @@ open class DbCacheSource @Inject constructor(
   }
 
   override fun updateEnvironment(environment: DbEnvironment, publishAction: PublishAction) {
-    executor.submit { internalUpdateEnvironment(environment, publishAction) }
+    afterCommit { internalUpdateEnvironment(environment, publishAction) }
   }
 
   private fun internalUpdateEnvironment(environment: DbEnvironment?, publishAction: PublishAction) {
@@ -581,6 +636,10 @@ open class DbCacheSource @Inject constructor(
   }
 
   override fun deleteEnvironment(id: UUID) {
+    afterCommit { internalDeleteEnvironment(id) }
+  }
+
+  private fun internalDeleteEnvironment(id: UUID) {
     log.debug("deleting environment: `{}`", id)
     val randomUUID = UUID.randomUUID() // we use this to fill in not-nullable fields
     cacheBroadcast.publishEnvironment(
@@ -651,11 +710,11 @@ open class DbCacheSource @Inject constructor(
   }
 
   override fun publishFeatureChange(appFeature: DbApplicationFeature, action: PublishAction) {
-    executor.submit { publishAppLevelFeatureChange(appFeature, action, null) } // background as not going away
+    afterCommit { publishAppLevelFeatureChange(appFeature, action, null) }
   }
 
   override fun publishFeatureChange(appFeature: DbApplicationFeature, update: PublishAction, featureKey: String) {
-    executor.submit { publishAppLevelFeatureChange(appFeature, update, featureKey) } // background as not going away
+    afterCommit { publishAppLevelFeatureChange(appFeature, update, featureKey) }
   }
 
   companion object {

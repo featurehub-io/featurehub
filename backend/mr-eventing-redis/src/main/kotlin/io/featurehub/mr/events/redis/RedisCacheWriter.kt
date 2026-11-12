@@ -100,6 +100,11 @@ open class RedisCacheWriter @Inject constructor(
   fun refreshServiceAccountOnWorker(saId: UUID): Future<*> = worker(saId).submit { refreshServiceAccountNow(saId) }
 
   /**
+   * Runs the task on the worker that owns this service account, so it cannot interleave with a refresh of it.
+   */
+  fun <T> onServiceAccountWorker(saId: UUID, task: () -> T): Future<T> = worker(saId).submit(java.util.concurrent.Callable { task() })
+
+  /**
    * Must only be called on the worker for this id.
    */
   protected fun refreshEnvironmentNow(envId: UUID) {

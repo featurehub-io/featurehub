@@ -5,6 +5,7 @@ import io.featurehub.mr.events.common.DummyPublisher
 import io.featurehub.mr.events.redis.RedisFullSync
 import io.featurehub.mr.events.redis.RedisSyncResult
 import jakarta.inject.Inject
+import java.util.concurrent.ExecutionException
 import jakarta.ws.rs.POST
 import jakarta.ws.rs.Path
 import jakarta.ws.rs.Produces
@@ -37,7 +38,19 @@ class MaintenancePublisher(private val cacheSource: CacheSource?, private val re
   override val cachePublishingEnabled: Boolean = cacheSource != null && cacheSource !is DummyPublisher
   override val redisConfigured: Boolean = redisFullSync != null
 
-  override fun syncRedis(): RedisSyncResult? = redisFullSync?.syncAll("maintenance-publish-all")
+  /**
+   * This is called on a Jersey request thread, so the sync is run on RedisFullSync's own untenanted thread (the orphan
+   * sweep is only safe when the database id list covers every tenant) and we wait for it.
+   */
+  override fun syncRedis(): RedisSyncResult? {
+    val future = redisFullSync?.syncOnSyncThread("maintenance-publish-all") ?: return null
+
+    try {
+      return future.get()
+    } catch (e: ExecutionException) {
+      throw (e.cause as? Exception) ?: e
+    }
+  }
 
   override fun publishToStreamingCaches() {
     cacheSource?.publishToStreamingCaches()

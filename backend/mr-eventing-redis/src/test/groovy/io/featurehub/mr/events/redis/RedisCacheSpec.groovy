@@ -10,6 +10,8 @@ import io.featurehub.dacha.model.PublishServiceAccount
 import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.mr.events.common.CacheWalker
 import jakarta.inject.Provider
+import kotlin.Unit
+import kotlin.jvm.functions.Function1
 import spock.lang.Specification
 
 class RedisCacheSpec extends Specification {
@@ -232,4 +234,71 @@ class RedisCacheSpec extends Specification {
       result != null
       redis.get(redis.keys.syncLock) == null
   }
+
+  def "syncOnSyncThread runs the sync on the untenanted redis-full-sync thread, not the caller's"() {
+    given:
+      def envId = UUID.randomUUID()
+      String walkedOn = null
+      walker.publishableEnvironmentIds() >> { walkedOn = Thread.currentThread().name; [envId] }
+      walker.publishableServiceAccountIds() >> []
+      walker.publishableEnvironment(envId) >> env(envId)
+    when:
+      def result = sync.syncOnSyncThread("test").get()
+    then:
+      walkedOn == "redis-full-sync"
+      result.environments == 1
+      redis.get(redis.keys.environment(envId)) != null
+  }
+
+  def "syncOnSyncThread holds null when another instance holds the lock"() {
+    given:
+      redis.set(redis.keys.syncLock, "someone-else")
+    expect:
+      sync.syncOnSyncThread("test").get() == null
+  }
+
+  def "an api key added to a service account during the sweep is not removed (e.g. a client key reset)"() {
+    given: "service account X had keys K1/S, and has just been reset to K3/S - the writer wrote X, then sakey:K3"
+      def saX = UUID.randomUUID()
+      def before = CacheJsonMapper.mapper.writeValueAsString(sa(saX, "K1*", "S"))
+      redis.set(redis.keys.serviceAccount(saX), CacheJsonMapper.mapper.writeValueAsString(sa(saX, "K3*", "S")))
+      redis.set(redis.keys.serviceAccountKey("K3*"), saX.toString())
+      redis.set(redis.keys.serviceAccountKey("S"), saX.toString())
+    and: "the sweep's first read of X happened just before the reset was written"
+      def racing = new InMemoryRedis() {
+        boolean armed = false
+        @Override
+        void scanKeys(String pattern, int batchSize, Function1<? super List<String>, Unit> consumer) {
+          // only the api key sweep sees the old copy, not the sync's own refresh of X
+          if (pattern == keys.serviceAccountKeyPattern) armed = true
+          super.scanKeys(pattern, batchSize, consumer)
+        }
+
+        @Override
+        String get(String key) {
+          if (armed && key == keys.serviceAccount(saX)) {
+            armed = false
+            return before
+          }
+          return super.get(key)
+        }
+      }
+      racing.data.putAll(redis.data)
+      def provider = { -> walker } as Provider<CacheWalker>
+      def racingWriter = new RedisCacheWriter(racing, provider)
+      def racingSync = new RedisFullSync(racing, racingWriter, provider)
+      walker.publishableEnvironmentIds() >> []
+      walker.publishableServiceAccountIds() >> [saX]
+      walker.publishableServiceAccount(saX) >> sa(saX, "K3*", "S")
+    when:
+      def result = racingSync.syncAll("test")
+    then: "the sweep's old copy says X does not hold K3, but the confirmation re-read does - so K3 is kept"
+      racing.get(racing.keys.serviceAccountKey("K3*")) == saX.toString()
+      racing.get(racing.keys.serviceAccountKey("S")) == saX.toString()
+      result.removedApiKeys == 0
+    cleanup:
+      racingWriter.drain()
+      racingSync.stop()
+  }
 }
+

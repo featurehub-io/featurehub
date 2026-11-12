@@ -9,6 +9,8 @@ import redis.clients.jedis.JedisCluster
 import redis.clients.jedis.JedisPooled
 import redis.clients.jedis.JedisSentineled
 import redis.clients.jedis.UnifiedJedis
+import redis.clients.jedis.exceptions.JedisConnectionException
+import redis.clients.jedis.exceptions.JedisException
 import redis.clients.jedis.params.ScanParams
 import redis.clients.jedis.params.SetParams
 import java.io.FileInputStream
@@ -57,13 +59,60 @@ interface FeatureHubRedis : AutoCloseable {
   fun scanKeys(pattern: String, batchSize: Int = 500, consumer: (List<String>) -> Unit)
 }
 
-class JedisFeatureHubRedis(private val config: RedisConfig) : FeatureHubRedis {
-  private val client: UnifiedJedis = createClient(config)
+/**
+ * Redis is an optional fallback, so it must never stop an application starting. Cluster and sentinel clients connect
+ * (slot discovery / master lookup) as soon as they are constructed, so the client is created lazily on first use and
+ * re-attempted - at most once per [reconnectBackoffMs] - if Redis is unreachable. Until then every operation fails with
+ * a [JedisException], exactly as it would if Redis went away later, which callers already handle.
+ *
+ * The client configuration (credentials, TLS, CA certificate) is still built eagerly so that a misconfiguration is
+ * reported at startup.
+ */
+class JedisFeatureHubRedis @JvmOverloads constructor(
+  private val config: RedisConfig,
+  private val reconnectBackoffMs: Long = 5000,
+  private val clientFactory: (RedisConfig) -> UnifiedJedis = { createClient(it) },
+) : FeatureHubRedis {
   override val keys: RedisKeys = config.keys
 
+  private val lock = Any()
+  @Volatile private var connected: UnifiedJedis? = null
+  @Volatile private var closed = false
+  private var lastFailure = 0L
+
   init {
-    log.info("redis: connected using {}", config)
+    // fail fast on a broken configuration (e.g. an unreadable CA file), without connecting
+    clientConfig(config)
+    if (config.mode == RedisMode.SENTINEL) sentinelClientConfig(config)
+    log.info("redis: configured using {} (connecting on first use)", config)
   }
+
+  private val client: UnifiedJedis
+    get() {
+      connected?.let { return it }
+
+      synchronized(lock) {
+        connected?.let { return it }
+        if (closed) throw JedisConnectionException("redis: connection has been closed")
+
+        val now = System.currentTimeMillis()
+        if (lastFailure != 0L && now - lastFailure < reconnectBackoffMs) {
+          throw JedisConnectionException("redis: not connected, will retry shortly")
+        }
+
+        try {
+          val c = clientFactory(config)
+          connected = c
+          lastFailure = 0L
+          log.info("redis: connected using {}", config)
+          return c
+        } catch (e: Exception) {
+          lastFailure = System.currentTimeMillis()
+          log.warn("redis: unable to connect using {}: {}", config, e.message)
+          throw e as? JedisException ?: JedisConnectionException("redis: unable to connect", e)
+        }
+      }
+    }
 
   override fun get(key: String): String? = client.get(key)
 
@@ -90,10 +139,11 @@ class JedisFeatureHubRedis(private val config: RedisConfig) : FeatureHubRedis {
   }
 
   override fun scanKeys(pattern: String, batchSize: Int, consumer: (List<String>) -> Unit) {
+    val c = client
     val params = ScanParams().match(pattern).count(batchSize)
     var cursor = ScanParams.SCAN_POINTER_START
     do {
-      val result = client.scan(cursor, params)
+      val result = c.scan(cursor, params)
       if (result.result.isNotEmpty()) {
         consumer(result.result)
       }
@@ -102,7 +152,11 @@ class JedisFeatureHubRedis(private val config: RedisConfig) : FeatureHubRedis {
   }
 
   override fun close() {
-    client.close()
+    val c = synchronized(lock) {
+      closed = true
+      connected.also { connected = null }
+    }
+    c?.close()
   }
 
   companion object {
@@ -151,7 +205,7 @@ class JedisFeatureHubRedis(private val config: RedisConfig) : FeatureHubRedis {
       return builder.build()
     }
 
-    private fun createClient(config: RedisConfig): UnifiedJedis {
+    fun createClient(config: RedisConfig): UnifiedJedis {
       val hosts = config.hosts.map { HostAndPort(it.host, it.port) }
 
       return when (config.mode) {

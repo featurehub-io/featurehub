@@ -14,13 +14,21 @@ import java.util.concurrent.atomic.AtomicReference
 /**
  * Gives access to the Redis connection currently configured, or null if there is none. Callers should fetch it once
  * per operation and use that instance throughout, as it can change between calls.
+ *
+ * Closing a source releases whatever it owns (connections, reload threads). The default owns nothing.
  */
-fun interface RedisSource {
+fun interface RedisSource : AutoCloseable {
   fun current(): FeatureHubRedis?
+
+  override fun close() {}
 }
 
 class StaticRedisSource(private val redis: FeatureHubRedis?) : RedisSource {
   override fun current(): FeatureHubRedis? = redis
+
+  override fun close() {
+    redis?.close()
+  }
 }
 
 /**

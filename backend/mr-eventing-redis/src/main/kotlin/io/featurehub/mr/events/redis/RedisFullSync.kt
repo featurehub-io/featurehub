@@ -14,6 +14,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.UUID
+import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.ScheduledExecutorService
@@ -79,7 +80,7 @@ open class RedisFullSync @Inject constructor(
     }
   }
 
-  // separate from the sync thread, as syncs can also run on other threads (e.g. the maintenance endpoint)
+  // separate from the sync thread, as syncs can also run on other threads (e.g. tests, or a caller's own thread)
   private val lockRenewer: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor { r ->
     Thread(r, "redis-full-sync-lock").apply { isDaemon = true }
   }
@@ -101,6 +102,14 @@ open class RedisFullSync @Inject constructor(
     }
   }
 
+  /**
+   * Runs a full sync on the untenanted `redis-full-sync` thread and returns its result, for callers (e.g. the
+   * maintenance endpoint) that need to wait for it but are on a request thread. Behaves like [syncAll]: the future
+   * holds null if another replica holds the sync lock, and fails if the sync fails. If a sync is already running on
+   * this instance (e.g. the startup sync) this one runs after it.
+   */
+  open fun syncOnSyncThread(reason: String): Future<RedisSyncResult?> = executor.submit(Callable { syncAll(reason) })
+
   private fun syncAllSafely(reason: String) {
     try {
       syncAll(reason)
@@ -114,9 +123,9 @@ open class RedisFullSync @Inject constructor(
    * Runs synchronously on the calling thread. Returns null if another replica holds the sync lock.
    *
    * In a multi-tenant deployment the calling thread must not have a tenant set (see the class notes) - use
-   * [requestSync] unless you are on a thread you control.
+   * [requestSync] or [syncOnSyncThread] unless you are on a thread you control.
    */
-  fun syncAll(reason: String): RedisSyncResult? {
+  open fun syncAll(reason: String): RedisSyncResult? {
     val token = UUID.randomUUID().toString()
     if (!redis.setIfAbsent(keys.syncLock, token, lockTtlMs)) {
       log.info("redis: full sync ({}) skipped, another instance is syncing", reason)
@@ -205,32 +214,72 @@ open class RedisFullSync @Inject constructor(
 
   /**
    * Removes api-key indexes that point at a service account that is gone or no longer holds that key.
+   *
+   * The scan uses a cached copy of each service account only to find *candidates*. Each candidate is then confirmed
+   * against a fresh read on the writer worker that owns that service account, and only deleted there: every write for a
+   * service account (account first, then its indexes) happens on that same worker, so a key added during the sync
+   * (e.g. a client key reset) can never be mistaken for a stale one.
    */
   private fun sweepApiKeyIndexes(): Int {
     val prefix = keys.serviceAccountKey("")
-    var removed = 0
     val serviceAccounts = mutableMapOf<String, CacheServiceAccount?>()
+    val candidates = mutableListOf<Pair<String, String>>() // index key, service account id
 
     redis.scanKeys(keys.serviceAccountKeyPattern) { batch ->
       batch.forEach { indexKey ->
         val apiKey = indexKey.substring(prefix.length)
         val saId = redis.get(indexKey) ?: return@forEach
-        val sa = serviceAccounts.getOrPut(saId) {
-          redis.get(keys.serviceAccount(UUID.fromString(saId)))?.let {
-            CacheJsonMapper.mapper.readValue(it, CacheServiceAccount::class.java)
-          }
-        }
-        val stale = sa == null || (sa.apiKeyClientSide != apiKey && sa.apiKeyServerSide != apiKey)
+        val sa = serviceAccounts.getOrPut(saId) { readServiceAccount(saId) }
 
-        // compare-and-delete, so an index rewritten since we read it is never removed
-        if (stale && redis.deleteIfEquals(indexKey, saId)) {
-          removed++
+        if (!holdsKey(sa, apiKey)) {
+          candidates.add(indexKey to saId)
         }
       }
     }
 
+    var removed = 0
+
+    candidates.chunked(batchSize).forEach { chunk ->
+      chunk.map { (indexKey, saId) -> confirmAndRemove(indexKey, prefix, saId) }.forEach { if (it.get()) removed++ }
+    }
+
     return removed
   }
+
+  private fun confirmAndRemove(indexKey: String, prefix: String, saId: String): Future<Boolean> {
+    val id = try {
+      UUID.fromString(saId)
+    } catch (e: IllegalArgumentException) {
+      null
+    }
+
+    // an index holding something that is not a service account id is junk - remove it (still compare-and-delete)
+    if (id == null) {
+      return java.util.concurrent.CompletableFuture.completedFuture(redis.deleteIfEquals(indexKey, saId))
+    }
+
+    return writer.onServiceAccountWorker(id) {
+      if (holdsKey(readServiceAccount(saId), indexKey.substring(prefix.length))) {
+        false
+      } else {
+        // compare-and-delete, so an index pointed at another owner in the meantime is never removed
+        redis.deleteIfEquals(indexKey, saId)
+      }
+    }
+  }
+
+  private fun readServiceAccount(saId: String): CacheServiceAccount? {
+    val id = try {
+      UUID.fromString(saId)
+    } catch (e: IllegalArgumentException) {
+      return null
+    }
+
+    return redis.get(keys.serviceAccount(id))?.let { CacheJsonMapper.mapper.readValue(it, CacheServiceAccount::class.java) }
+  }
+
+  private fun holdsKey(sa: CacheServiceAccount?, apiKey: String): Boolean =
+    sa != null && (sa.apiKeyClientSide == apiKey || sa.apiKeyServerSide == apiKey)
 
   private fun waitInBatches(ids: Collection<UUID>, submit: (UUID) -> Future<*>) {
     ids.chunked(batchSize).forEach { chunk ->

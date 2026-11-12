@@ -63,6 +63,8 @@ class MetricsHealthRegistration {
       val port = FallbackPropertyConfig.getConfig(monitorPortName)!!.toInt()
       FeatureHubJerseyHost(resourceConfig)
         .disallowWebHosting()
+        // internal-only endpoints (e.g. MR's POST /maintenance/publish-all) are only ever registered on this port
+        .additionalJerseyPrefixes("/maintenance/*")
         .start(port)
 
       log.info("metric/health endpoint now active on port {}", port)

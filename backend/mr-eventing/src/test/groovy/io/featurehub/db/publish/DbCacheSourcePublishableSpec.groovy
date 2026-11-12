@@ -186,4 +186,54 @@ class DbCacheSourcePublishableSpec extends Specification {
     expect:
       cacheSource.publishableApiKeys() == ["${live.env.id}/${live.sa.apiKeyClientEval}".toString()]
   }
+
+  static void waitFor(Closure<Boolean> condition) {
+    def deadline = System.currentTimeMillis() + 5000
+    while (!condition() && System.currentTimeMillis() < deadline) {
+      Thread.sleep(20)
+    }
+  }
+
+  def "a change raised inside a transaction is only published once that transaction commits"() {
+    given:
+      def id = UUID.randomUUID()
+      def txn = DB.beginTransaction()
+    when:
+      cacheSource.deleteEnvironment(id)
+      Thread.sleep(300)
+    then: "nothing goes out while the transaction is open, as a publish re-reads the database"
+      envsPublished.isEmpty()
+    when:
+      txn.commit()
+      waitFor { !envsPublished.isEmpty() }
+    then:
+      envsPublished*.environment*.id == [id]
+    cleanup:
+      txn?.end()
+  }
+
+  def "a change raised inside a transaction that rolls back is never published"() {
+    given:
+      def txn = DB.beginTransaction()
+    when:
+      cacheSource.deleteEnvironment(UUID.randomUUID())
+      cacheSource.deleteServiceAccount(UUID.randomUUID())
+      txn.rollback()
+      Thread.sleep(300)
+    then:
+      envsPublished.isEmpty()
+      sasPublished.isEmpty()
+    cleanup:
+      txn?.end()
+  }
+
+  def "a change raised outside a transaction is published straight away"() {
+    given:
+      def id = UUID.randomUUID()
+    when:
+      cacheSource.deleteEnvironment(id)
+      waitFor { !envsPublished.isEmpty() }
+    then:
+      envsPublished*.environment*.id == [id]
+  }
 }

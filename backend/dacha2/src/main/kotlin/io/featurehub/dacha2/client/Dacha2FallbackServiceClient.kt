@@ -216,8 +216,17 @@ class Dacha2FallbackServiceClient @JvmOverloads constructor(
     }
   }
 
+  /**
+   * Stops the background probe and closes the [RedisSource] (which this client owns), releasing its reload thread
+   * and Redis connections. Safe to call more than once.
+   */
   fun close() {
     scheduler.shutdownNow()
+    try {
+      redisSource.close()
+    } catch (e: Exception) {
+      log.warn("dacha2: failed to close the redis source", e)
+    }
   }
 
   private fun isFallbackTrigger(e: Exception): Boolean {
