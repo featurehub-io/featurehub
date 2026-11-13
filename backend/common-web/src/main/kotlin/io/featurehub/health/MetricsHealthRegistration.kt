@@ -59,12 +59,17 @@ class MetricsHealthRegistration {
       return resourceConfig
     }
 
-    fun startMetricsEndpoint(resourceConfig: ResourceConfig) {
+    /**
+     * @param monitorJerseyPrefixes extra paths the application serves on the monitoring port (beyond metrics and
+     * health), e.g. MR's internal-only maintenance paths. Only the application that registers such resources passes
+     * them, so no other application's monitoring port routes them.
+     */
+    @JvmOverloads
+    fun startMetricsEndpoint(resourceConfig: ResourceConfig, monitorJerseyPrefixes: List<String> = listOf()) {
       val port = FallbackPropertyConfig.getConfig(monitorPortName)!!.toInt()
       FeatureHubJerseyHost(resourceConfig)
         .disallowWebHosting()
-        // internal-only endpoints (e.g. MR's POST /maintenance/publish-all) are only ever registered on this port
-        .additionalJerseyPrefixes("/maintenance/*")
+        .additionalJerseyPrefixes(*monitorJerseyPrefixes.toTypedArray())
         .start(port)
 
       log.info("metric/health endpoint now active on port {}", port)
@@ -84,6 +89,15 @@ class MetricsHealthRegistration {
      */
     fun registerMetrics(config: ResourceConfig,
                         registerCallback: (config: ResourceConfig?, locator: ServiceLocator?, binder: AbstractBinder?) -> ResourceConfig?) {
+      registerMetrics(config, listOf(), registerCallback)
+    }
+
+    /**
+     * As above, and with a separate monitoring port, also routes [monitorJerseyPrefixes] on it - for resources the
+     * callback registers there beyond metrics and health (e.g. MR's maintenance paths).
+     */
+    fun registerMetrics(config: ResourceConfig, monitorJerseyPrefixes: List<String>,
+                        registerCallback: (config: ResourceConfig?, locator: ServiceLocator?, binder: AbstractBinder?) -> ResourceConfig?) {
       // turn on all jvm prometheus metrics
       DefaultExports.initialize()
 
@@ -101,7 +115,7 @@ class MetricsHealthRegistration {
               .injectionManager.getInstance(ServiceLocator::class.java)
 
             startMetricsEndpoint(
-              configureMetrics(ResourceConfig(), serviceLocator, registerCallback))
+              configureMetrics(ResourceConfig(), serviceLocator, registerCallback), monitorJerseyPrefixes)
           }
 
           override fun onReload(container: Container) {

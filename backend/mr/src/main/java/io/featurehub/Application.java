@@ -4,6 +4,7 @@ import static io.featurehub.rest.Info.APPLICATION_NAME_PROPERTY;
 
 import io.featurehub.events.CloudEventConfigDiscoveryService;
 import io.featurehub.health.MetricsHealthRegistration;
+import java.util.List;
 import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.lifecycle.ApplicationLifecycleManager;
 import io.featurehub.lifecycle.LifecycleStatus;
@@ -54,7 +55,10 @@ public class Application {
     // the main port, as it is not authenticated. It is only reachable from inside the cluster (e.g. kubectl port-forward).
     final boolean maintenanceEndpoint = MetricsHealthRegistration.Companion.hasExternalMonitoringPort();
 
-    MetricsHealthRegistration.Companion.registerMetrics(config, (resourceConfig, locator, binder) -> {
+    // only MR's monitoring port routes /maintenance/* - no other application serves it
+    final List<String> monitorPrefixes = maintenanceEndpoint ? List.of("/maintenance/*") : List.of();
+
+    MetricsHealthRegistration.Companion.registerMetrics(config, monitorPrefixes, (resourceConfig, locator, binder) -> {
       if (locator != null) {
         binder.bind(locator.getService(CacheApi.class)).to(CacheApi.class).in(Singleton.class);
 

@@ -75,6 +75,9 @@ responder, Dacha2 gets a 503 (fallback) rather than a 404 (which it would cache 
 `Application` *only* on the separate monitoring port (`MetricsHealthRegistration.hasExternalMonitoringPort()`), never
 on the main port, as it is unauthenticated.
 
+- MR passes `/maintenance/*` to `MetricsHealthRegistration.registerMetrics(config, monitorJerseyPrefixes, ...)`, so
+  only MR's monitoring port routes it. Other applications' monitoring ports serve just metrics and health.
+
 - Its services come from the main context through `MaintenancePublisher`, either of which may be missing.
 - It returns `202` straight away. If Redis is configured, `RedisFullSync.syncInBackgroundThen` runs the full sync on
   the untenanted `redis-full-sync` thread and then, whatever its outcome, calls `CacheSource.publishToStreamingCaches()`

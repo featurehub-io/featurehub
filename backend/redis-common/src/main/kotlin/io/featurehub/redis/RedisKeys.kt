@@ -6,7 +6,10 @@ import java.util.UUID
  * The key schema shared between the writer (MR) and reader (Dacha2).
  *
  * The prefix is wrapped in a hash tag (`{prefix}`) so that in cluster mode all keys for one FeatureHub install land
- * in the same slot - this allows MULTI transactions across a service account and its api-key indexes.
+ * in the same slot. That is what lets [FeatureHubRedis] use multi-key commands - the batched MGETs of the api-key
+ * sweep and multi-key DELs - which cluster mode only allows within one slot. It is not used for transactions:
+ * FeatureHubRedis deliberately uses no MULTI, and writers order their writes instead (see [FeatureHubRedis]).
+ * The cost is that one install's keys all live on one cluster node, which is fine for the size of this data.
  */
 class RedisKeys(prefix: String) {
   private val base = "{${prefix}}:"
