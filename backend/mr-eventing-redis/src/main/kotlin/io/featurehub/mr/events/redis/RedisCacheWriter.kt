@@ -94,10 +94,13 @@ open class RedisCacheWriter @Inject constructor(
 
   /**
    * Used by the full sync - runs the refresh on the owning worker (so it is ordered with any incremental change)
-   * without a debounce, returns a future so the caller can wait.
+   * without a debounce, returns a future so the caller can wait. The future holds false if the refresh failed (it has
+   * already been logged and counted), so the sync can report that Redis is not complete.
    */
-  fun refreshEnvironmentOnWorker(envId: UUID): Future<*> = worker(envId).submit { refreshEnvironmentNow(envId) }
-  fun refreshServiceAccountOnWorker(saId: UUID): Future<*> = worker(saId).submit { refreshServiceAccountNow(saId) }
+  fun refreshEnvironmentOnWorker(envId: UUID): Future<Boolean> =
+    worker(envId).submit(java.util.concurrent.Callable { refreshEnvironmentNow(envId) })
+  fun refreshServiceAccountOnWorker(saId: UUID): Future<Boolean> =
+    worker(saId).submit(java.util.concurrent.Callable { refreshServiceAccountNow(saId) })
 
   /**
    * Runs the task on the worker that owns this service account, so it cannot interleave with a refresh of it.
@@ -105,9 +108,9 @@ open class RedisCacheWriter @Inject constructor(
   fun <T> onServiceAccountWorker(saId: UUID, task: () -> T): Future<T> = worker(saId).submit(java.util.concurrent.Callable { task() })
 
   /**
-   * Must only be called on the worker for this id.
+   * Must only be called on the worker for this id. Returns false if it failed.
    */
-  protected fun refreshEnvironmentNow(envId: UUID) {
+  protected fun refreshEnvironmentNow(envId: UUID): Boolean {
     try {
       val env = walkerProvider.get().publishableEnvironment(envId)
       val key = keys.environment(envId)
@@ -121,20 +124,22 @@ open class RedisCacheWriter @Inject constructor(
       }
 
       counterWrites.labels("env").inc()
+      return true
     } catch (e: Exception) {
       counterFailures.labels("env").inc()
       log.error("redis: failed to refresh environment {}", envId, e)
+      return false
     }
   }
 
   /**
-   * Must only be called on the worker for this id.
+   * Must only be called on the worker for this id. Returns false if it failed.
    *
    * Write order is: the service account, then its api key indexes, then remove stale indexes. A reader
    * always goes sakey -> sa and validates the key is still in the service account, so it never trusts
    * a stale index.
    */
-  protected fun refreshServiceAccountNow(saId: UUID) {
+  protected fun refreshServiceAccountNow(saId: UUID): Boolean {
     try {
       val saKey = keys.serviceAccount(saId)
       val previous = redis.get(saKey)?.let { CacheJsonMapper.mapper.readValue(it, CacheServiceAccount::class.java) }
@@ -155,9 +160,11 @@ open class RedisCacheWriter @Inject constructor(
       }
 
       counterWrites.labels("sa").inc()
+      return true
     } catch (e: Exception) {
       counterFailures.labels("sa").inc()
       log.error("redis: failed to refresh service account {}", saId, e)
+      return false
     }
   }
 

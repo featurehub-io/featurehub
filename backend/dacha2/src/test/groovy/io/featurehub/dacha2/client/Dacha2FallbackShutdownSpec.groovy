@@ -74,4 +74,34 @@ class Dacha2FallbackShutdownSpec extends Specification {
     then:
       noExceptionThrown()
   }
+
+  def "shutdown also closes the dedicated management repository client, once"() {
+    given:
+      def mrClient = Mock(jakarta.ws.rs.client.Client)
+      def client = new Dacha2FallbackServiceClient(Mock(Dacha2ServiceClient), Mock(RedisSource), 10000,
+        { -> 0L } as Function0<Long>, false, 100)
+      def resources = new Dacha2FallbackResources()
+      resources.created(client, mrClient)
+    when:
+      new Dacha2FallbackShutdown(resources).shutdown()
+      new Dacha2FallbackShutdown(resources).shutdown()
+    then:
+      1 * mrClient.close()
+  }
+
+  def "a retry interval below the minimum uses the minimum and keeps going"() {
+    given:
+      def existing = probeThreads()
+    when:
+      def client = new Dacha2FallbackServiceClient(Mock(Dacha2ServiceClient), Mock(RedisSource), retry,
+        { -> 0L } as Function0<Long>, true, 100)
+    then:
+      noExceptionThrown()
+      client.retryIntervalMs == Dacha2FallbackServiceClient.MINIMUM_RETRY_INTERVAL_MS
+      (probeThreads() - existing).size() == 1
+    cleanup:
+      client?.close()
+    where:
+      retry << [0L, -5L, 10L]
+  }
 }

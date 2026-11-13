@@ -37,6 +37,10 @@ fun interface Dacha2RecoveryListener {
  * Wraps the normal MR client. If MR is unavailable (connection failure or any 5xx, including the maintenance
  * responder's 503) the "circuit" opens and requests are served from Redis until MR responds again.
  *
+ * - Any single connection failure or 5xx opens the circuit for every environment and api key, not just the one that
+ *   failed: a 500 from a healthy MR for one bad environment sends all cache misses to Redis for the next retry
+ *   interval. This only ever happens while Redis is configured (the fallback is only configured around a maintenance
+ *   window), and the circuit closes again on the next answer from MR.
  * - MR 4xx responses (e.g. 404 Not Found) are authoritative and are never served from Redis.
  * - A Redis miss is a [ServiceUnavailableException], never a NotFoundException, so the caches do not put the id into
  *   their (non-expiring) miss caches.
@@ -52,7 +56,7 @@ fun interface Dacha2RecoveryListener {
 class Dacha2FallbackServiceClient @JvmOverloads constructor(
   private val primary: Dacha2ServiceClient,
   private val redisSource: RedisSource,
-  private val retryIntervalMs: Long = FallbackPropertyConfig.getConfig("dacha2.redis.mr-retry-interval-ms", "10000").toLong(),
+  retryIntervalMs: Long = FallbackPropertyConfig.getConfig("dacha2.redis.mr-retry-interval-ms", "10000").toLong(),
   private val clock: () -> Long = System::currentTimeMillis,
   backgroundProbe: Boolean = true,
   // a Redis read that completes after recovery is evicted after this delay, by which time its loader has cached it
@@ -67,14 +71,16 @@ class Dacha2FallbackServiceClient @JvmOverloads constructor(
 
   private val probeKey: String? = FallbackPropertyConfig.getConfig("dacha2.cache.api-key")
 
-  private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor { r ->
-    Thread(r, "dacha2-redis-fallback").apply { isDaemon = true }
+  private val retryIntervalMs: Long = if (retryIntervalMs < MINIMUM_RETRY_INTERVAL_MS) {
+    log.error("dacha2: dacha2.redis.mr-retry-interval-ms of {}ms is below the minimum, using {}ms",
+      retryIntervalMs, MINIMUM_RETRY_INTERVAL_MS)
+    MINIMUM_RETRY_INTERVAL_MS
+  } else {
+    retryIntervalMs
   }
 
-  init {
-    if (backgroundProbe) {
-      scheduler.scheduleWithFixedDelay({ probeIfOpen() }, retryIntervalMs, retryIntervalMs, TimeUnit.MILLISECONDS)
-    }
+  private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor { r ->
+    Thread(r, "dacha2-redis-fallback").apply { isDaemon = true }
   }
 
   @Volatile private var open = false
@@ -84,6 +90,13 @@ class Dacha2FallbackServiceClient @JvmOverloads constructor(
   private val environmentsFromRedis = ConcurrentHashMap.newKeySet<UUID>()
   private val apiKeysFromRedis = ConcurrentHashMap.newKeySet<String>()
   private val recoveryListeners = CopyOnWriteArrayList<Dacha2RecoveryListener>()
+
+  // after every property above is initialised, as the probe uses them
+  init {
+    if (backgroundProbe) {
+      scheduler.scheduleWithFixedDelay({ probeIfOpen() }, this.retryIntervalMs, this.retryIntervalMs, TimeUnit.MILLISECONDS)
+    }
+  }
 
   val isOpen: Boolean
     get() = open
@@ -304,6 +317,8 @@ class Dacha2FallbackServiceClient @JvmOverloads constructor(
 
   companion object {
     private val log: Logger = LoggerFactory.getLogger(Dacha2FallbackServiceClient::class.java)
+    // below this the background probe would hammer an MR that is down
+    const val MINIMUM_RETRY_INTERVAL_MS = 1000L
     // an environment that never exists - a healthy MR answers 404
     private val PROBE_ENVIRONMENT_ID: UUID = UUID.fromString("00000000-0000-0000-0000-00000000fa11")
 

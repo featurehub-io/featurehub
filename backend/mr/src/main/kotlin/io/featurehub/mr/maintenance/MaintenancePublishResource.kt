@@ -3,9 +3,7 @@ package io.featurehub.mr.maintenance
 import io.featurehub.mr.events.common.CacheSource
 import io.featurehub.mr.events.common.DummyPublisher
 import io.featurehub.mr.events.redis.RedisFullSync
-import io.featurehub.mr.events.redis.RedisSyncResult
 import jakarta.inject.Inject
-import java.util.concurrent.ExecutionException
 import jakarta.ws.rs.POST
 import jakarta.ws.rs.Path
 import jakarta.ws.rs.Produces
@@ -22,11 +20,10 @@ interface MaintenanceCachePublisher {
   val redisConfigured: Boolean
 
   /**
-   * Runs a full Redis sync synchronously. Returns null if another sync holds the lock (or Redis is not configured).
+   * Starts the publish and returns straight away. With Redis, a full Redis sync runs first and the streaming caches
+   * are republished after it, whatever its outcome; the full outcome is logged.
    */
-  fun syncRedis(): RedisSyncResult?
-
-  fun publishToStreamingCaches()
+  fun publishAllInBackground()
 }
 
 /**
@@ -40,20 +37,24 @@ class MaintenancePublisher(private val cacheSource: CacheSource?, private val re
 
   /**
    * This is called on a Jersey request thread, so the sync is run on RedisFullSync's own untenanted thread (the orphan
-   * sweep is only safe when the database id list covers every tenant) and we wait for it.
+   * sweep is only safe when the database id list covers every tenant), and the streaming caches are republished on
+   * that thread once it has finished. We have just done (or tried) the Redis sync, so publishToStreamingCaches does
+   * not ask Redis for another one.
    */
-  override fun syncRedis(): RedisSyncResult? {
-    val future = redisFullSync?.syncOnSyncThread("maintenance-publish-all") ?: return null
+  override fun publishAllInBackground() {
+    val sync = redisFullSync
 
-    try {
-      return future.get()
-    } catch (e: ExecutionException) {
-      throw (e.cause as? Exception) ?: e
+    if (sync == null) {
+      cacheSource?.publishToStreamingCaches()
+      log.info("maintenance: publish-all: redis is not configured, streaming caches published")
+      return
     }
+
+    sync.syncInBackgroundThen("maintenance-publish-all") { cacheSource?.publishToStreamingCaches() }
   }
 
-  override fun publishToStreamingCaches() {
-    cacheSource?.publishToStreamingCaches()
+  companion object {
+    private val log: Logger = LoggerFactory.getLogger(MaintenancePublisher::class.java)
   }
 }
 
@@ -69,12 +70,13 @@ class MaintenancePublisher(private val cacheSource: CacheSource?, private val re
  * before MR goes away (with several MR instances, incremental Redis updates from different instances can otherwise
  * overwrite each other out of order; this full sync puts Redis back to exactly the database state).
  *
- * - Streaming caches (Dacha2) are republished in the background, as "Publish All to Cache" does.
- * - If Redis is configured, a full Redis sync (write everything, sweep what is no longer in the database) runs and
- *   the call only returns when it is complete, with what it did. If another sync is already running (e.g. the
- *   startup sync) it returns 409 - retry.
- * - If the Redis sync fails (e.g. Redis or the database is unavailable) the streaming caches are still republished
- *   and the call returns 500 with `redisError`, so the operator knows Redis is not up to date.
+ * It returns 202 straight away and does the work in the background, as a full sync of a large database (or one
+ * queued behind MR's startup sync) can outlast any HTTP or port-forward timeout:
+ * - if Redis is configured, a full Redis sync (write everything, sweep what is no longer in the database) runs first;
+ * - the streaming caches (Dacha2) are then republished, whatever the outcome of the sync;
+ * - the full outcome is logged by `RedisFullSync` as `maintenance-publish-all: finished` (INFO) when Redis is a
+ *   complete copy of the database, or `finished WITH PROBLEMS` (ERROR) when the sync was skipped because another
+ *   instance holds the lock, failed, or failed to write some objects. In those cases fix the cause and call it again.
  */
 @Path("/maintenance")
 class MaintenancePublishResource @Inject constructor(private val publisher: MaintenanceCachePublisher) {
@@ -88,48 +90,14 @@ class MaintenancePublishResource @Inject constructor(private val publisher: Main
     }
 
     log.info("maintenance: publish-all requested")
+    publisher.publishAllInBackground()
 
-    var redis: Map<String, Any>? = null
-    var redisError: String? = null
-
-    if (publisher.redisConfigured) {
-      try {
-        val result = publisher.syncRedis()
-          ?: return Response.status(Response.Status.CONFLICT)
-            .entity(mapOf("error" to "a redis full sync is already running, retry shortly")).build()
-
-        redis = mapOf(
-          "environments" to result.environments,
-          "serviceAccounts" to result.serviceAccounts,
-          "orphanedEnvironments" to result.orphanedEnvironments,
-          "orphanedServiceAccounts" to result.orphanedServiceAccounts,
-          "removedApiKeys" to result.removedApiKeys,
-          "durationMs" to result.durationMs,
-        )
-      } catch (e: Exception) {
-        // still republish the streaming caches - they are needed whether or not Redis is up to date
-        log.error("maintenance: redis full sync failed, still publishing to the streaming caches", e)
-        redisError = e.message ?: e.javaClass.name
-      }
-    }
-
-    // we have just done (or tried) the Redis sync, so don't ask Redis to do another one
-    publisher.publishToStreamingCaches()
-
-    log.info("maintenance: publish-all complete (redis: {})", redis ?: redisError ?: "not configured")
-
-    val body = mutableMapOf<String, Any?>(
-      "cachesPublished" to true,
+    return Response.accepted(mapOf(
       "redisConfigured" to publisher.redisConfigured,
-      "redis" to redis,
-    )
-
-    if (redisError != null) {
-      body["redisError"] = redisError
-      return Response.serverError().entity(body).build()
-    }
-
-    return Response.ok(body).build()
+      "message" to if (publisher.redisConfigured)
+        "redis full sync and cache publish started in the background, check the MR log for 'maintenance-publish-all: finished'"
+      else "cache publish started",
+    )).build()
   }
 
   companion object {

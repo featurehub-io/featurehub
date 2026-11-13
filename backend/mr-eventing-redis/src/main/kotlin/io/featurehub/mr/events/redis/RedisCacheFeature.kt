@@ -2,10 +2,13 @@ package io.featurehub.mr.events.redis
 
 import io.featurehub.lifecycle.ExecutorPoolDrainageSource
 import io.featurehub.lifecycle.LifecycleListeners
+import io.featurehub.lifecycle.LifecyclePriority
+import io.featurehub.lifecycle.LifecycleShutdown
 import io.featurehub.mr.events.common.CacheBroadcast
 import io.featurehub.redis.FeatureHubRedis
 import io.featurehub.redis.JedisFeatureHubRedis
 import io.featurehub.redis.RedisConfig
+import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
@@ -39,11 +42,33 @@ class RedisCacheFeature : Feature {
     })
 
     LifecycleListeners.wrap(RedisFullSyncLifecycle::class.java, context)
+    LifecycleListeners.shutdown(RedisConnectionShutdown::class.java, context)
 
     return true
   }
 
   companion object {
     private val log: Logger = LoggerFactory.getLogger(RedisCacheFeature::class.java)
+  }
+}
+
+/**
+ * Closes the Redis connection (pool, cluster or sentinel connections and their threads) on shutdown. It runs last, so
+ * the cache writer has drained (priority 20) and the full sync has stopped (default priority) before the connection
+ * goes away.
+ */
+@LifecyclePriority(priority = Int.MAX_VALUE)
+class RedisConnectionShutdown @Inject constructor(private val redis: FeatureHubRedis) : LifecycleShutdown {
+  override fun shutdown() {
+    try {
+      redis.close()
+      log.info("redis: connection closed")
+    } catch (e: Exception) {
+      log.warn("redis: failed to close the connection", e)
+    }
+  }
+
+  companion object {
+    private val log: Logger = LoggerFactory.getLogger(RedisConnectionShutdown::class.java)
   }
 }

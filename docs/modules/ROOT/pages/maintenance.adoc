@@ -5,7 +5,8 @@ a dedicated *Maintenance Responder* image that holds the Admin app in maintenanc
 (MR) is shut down, for example during a database upgrade.
 
 Maintenance windows only affect the Admin app and the MR API. SDK traffic through Edge keeps working, so your
-applications continue to receive features throughout.
+applications continue to receive features throughout. Edge can also be told to refuse feature *updates* for the
+duration, see <<_sdk_feature_updates,SDK feature updates during a window>>.
 
 [#_configuring_a_maintenance_window]
 == Configuring a maintenance window
@@ -103,11 +104,11 @@ maintenance notice.
 . *Deploy the Maintenance Responder* with the same `maintenance.*` values and wait until it is ready.
 . *Switch the routes.* When the window starts, change your ingress or load balancer so that all Admin traffic goes to the
 Maintenance Responder instead of MR. Keep SDK traffic (Edge, usually under `/features`) where it is.
+. *Block feature updates through Edge* by creating the <<_edge_update_block,update block file>> on every Edge, and
+wait until each one logs `feature updates are now BLOCKED`.
 . *Publish everything to the caches* with the <<_maintenance_publish_all,maintenance publish-all endpoint>>. Admin
 changes can no longer reach MR at this point, so the caches and (with the <<_redis_fallback,Redis fallback>>) Redis
-end up exactly matching the database. With Redis, the call returns once the Redis full sync is complete. Changes made
-by SDKs through Edge are *not* stopped by the Maintenance Responder: see
-<<_sdk_feature_updates,SDK feature updates during a window>>.
+end up exactly matching the database. The call returns straight away and the outcome is in MR's log.
 . *Shut down MR* once no traffic reaches it, then carry out the database work. With the Redis fallback, MR writes any
 pending Redis updates before it exits.
 . *Start MR* again (removing the `maintenance.*` properties, or leaving them until the end time has passed) and wait
@@ -133,9 +134,38 @@ may be held and applied when MR starts again (against the migrated database), or
 
 If anything changes features through Edge:
 
-* pause it for the whole window, from before you switch the routes until MR is back, and
-* if you cannot, call the <<_maintenance_publish_all,maintenance publish-all endpoint>> again immediately before
-shutting MR down, to make the window as small as possible.
+* block the updates in Edge for the whole window, from when you switch the routes until MR is back and checked (see
+below), or pause whatever makes them, and
+* if you can do neither, call the <<_maintenance_publish_all,maintenance publish-all endpoint>> again immediately
+before shutting MR down, to make the window as small as possible.
+
+[#_edge_update_block]
+==== Blocking feature updates in Edge
+
+Edge refuses feature updates while a file exists, without restarting. While it is blocked, every feature update (the
+`PUT`/`POST` on `/features/...`) gets a `503` with a `Retry-After` header, and nothing is sent to MR. Reading features
+(GET and SSE) is not affected.
+
+[cols="2,1,4",options="header"]
+|===
+| Property | Default | Meaning
+| `edge.update-block.file` | _(unset)_ | The file. While it exists, updates are blocked. If it is unset, updates are never blocked.
+| `edge.update-block.check-interval-seconds` | `30` | How often Edge checks for the file. Less than `1` logs an error and uses `1`.
+| `edge.update-block.retry-after` | `60` | The `Retry-After` value when the file is empty.
+|===
+
+If the file has content, its first non-blank line is the `Retry-After` value: a number of seconds, or an HTTP date
+such as the end of the window (`Fri, 13 Nov 2026 10:00:00 GMT`). A file that exists but cannot be read blocks with the
+default. Each Edge logs `feature updates are now BLOCKED` and `feature updates are now allowed again` (WARN) when it
+sees the change.
+
+On Kubernetes, make the file a key of a ConfigMap mounted as a directory (*not* with `subPath`, as those mounts never
+update), e.g. mount it at `/etc/edge-update-block` and set `edge.update-block.file=/etc/edge-update-block/blocked`.
+Adding or removing the `blocked` key adds or removes the file in the running pods. The kubelet can take a minute or two
+to do that, plus the check interval, so wait for the log line on every Edge before you publish.
+
+Updates that Edge accepted before it logged the block still reach MR while it is running, and the publish-all that
+follows includes them.
 
 [#_maintenance_publish_all]
 === The maintenance publish-all endpoint
@@ -150,22 +180,33 @@ curl -X POST http://localhost:8701/maintenance/publish-all
 
 It republishes every environment and service account to Dacha2, the same as Publish All to Cache does. If the
 <<_redis_fallback,Redis fallback>> is configured, it first runs a full Redis sync: everything is written, and
-anything no longer in the database is removed. The call returns when that has finished, with what it did:
+anything no longer in the database is removed. Dacha2 is republished after the sync, whatever its outcome.
+
+The work is done *in the background*, because a full sync of a large database, or one queued behind MR's startup
+sync, can take longer than an HTTP or port-forward timeout. The call returns `202` straight away:
 
 [source,json]
 ----
-{
-  "cachesPublished": true,
-  "redisConfigured": true,
-  "redis": { "environments": 120, "serviceAccounts": 45, "orphanedEnvironments": 0,
-             "orphanedServiceAccounts": 0, "removedApiKeys": 0, "durationMs": 2310 }
-}
+{ "redisConfigured": true,
+  "message": "redis full sync and cache publish started in the background, check the MR log for 'maintenance-publish-all: finished'" }
 ----
 
-* `409` means another Redis full sync is running (for example MR's startup sync). Wait a few seconds and call it again.
-* `500` with `redisError` means the Redis full sync failed. Dacha2 was still republished, but Redis is *not* up to
-date, so fix the cause (usually Redis or the database being unreachable) and call it again before shutting MR down.
-* `503` means cache publishing is not enabled on this MR.
+`503` means cache publishing is not enabled on this MR.
+
+*The outcome is only reported in the MR log* of the instance you called. Wait for the line
+`redis: maintenance-publish-all: finished`:
+
+* `finished. Redis: complete, it matches the database: RedisSyncResult(environments=120, serviceAccounts=45, ...)`
+(INFO): Redis is a complete copy of the database and Dacha2 has been republished. `mr_redis_last_full_sync_seconds`
+is updated only by a complete sync.
+* `finished WITH PROBLEMS` (ERROR) is followed by what went wrong. Fix the cause and call the endpoint again before
+shutting MR down:
+** `Redis: NOT SYNCED, another instance holds the sync lock`: another full sync (for example MR's startup sync on
+another instance) was running. Call it again once that has finished.
+** `Redis: INCOMPLETE, N environments and M service accounts failed to write`: the errors logged above it say which
+objects and why (for example a Redis timeout, or Redis being out of memory).
+** `Redis: FAILED (...)`: the sync could not run at all, usually because Redis or the database is unreachable.
+** `Streaming caches: FAILED (...)`: republishing to Dacha2 failed.
 
 Call it on *one* MR instance only.
 
@@ -190,9 +231,14 @@ To avoid this, give MR and Dacha2 a Redis instance:
 Redis only stores whole environments, so when a single feature changes MR rewrites the entire environment in Redis.
 This extra work is deliberate: Redis is only read while MR is unavailable.
 * *Dacha2* keeps asking MR first. If MR cannot be reached or returns a 5xx error (including the Maintenance
-Responder's 503), Dacha2 serves cache misses from Redis instead, and checks MR again every 10 seconds in the
+Responder's 503), Dacha2 serves cache misses from Redis instead, and checks MR again every 10 seconds
+(`dacha2.redis.mr-retry-interval-ms`, at least 1000; a smaller value is logged as an error and 1000 is used) in the
 background, so it notices MR is back even if every request is being answered from its cache. Once MR answers,
 Dacha2 drops the entries it got from Redis and reloads them from MR.
+* A single failure opens this fallback for *every* environment and API key, not just the one that failed. So while
+Redis is configured, one 500 from an otherwise healthy MR (for example a bug affecting one environment) sends every
+cache miss to Redis until the next check of MR. This is why Redis should only be configured around a maintenance
+window.
 * A `404` from MR is always trusted and Redis is not consulted. Anything not found in Redis is treated as "not
 available right now", so once MR is back it loads normally.
 
@@ -202,8 +248,8 @@ database:
 * when MR starts,
 * every 24 hours,
 * when Publish All to Cache (the cache refresh API with `allTheThings`) is used,
-* when the <<_maintenance_publish_all,maintenance publish-all endpoint>> is called. That call waits for the sync to
-finish.
+* when the <<_maintenance_publish_all,maintenance publish-all endpoint>> is called. It runs in the background and
+logs its outcome.
 
 Only one MR instance runs a full sync at a time. The lock is held in Redis for `redis.full-sync-lock-ms` (default two
 minutes) and renewed while the sync runs, so a sync that takes longer keeps it, and an MR that dies part way through
@@ -218,7 +264,7 @@ the Admin traffic has gone to the Maintenance Responder, is the fix. With nothin
 exactly matching the database just before MR stops.
 
 Feature updates made through Edge are not stopped by the Maintenance Responder and can still arrive after that final
-sync. See <<_sdk_feature_updates,SDK feature updates during a window>>.
+sync, unless Edge <<_edge_update_block,blocks them>>. See <<_sdk_feature_updates,SDK feature updates during a window>>.
 
 ==== MR configuration
 

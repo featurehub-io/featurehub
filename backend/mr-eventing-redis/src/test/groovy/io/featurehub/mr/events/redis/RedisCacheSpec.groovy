@@ -300,5 +300,135 @@ class RedisCacheSpec extends Specification {
       racingWriter.drain()
       racingSync.stop()
   }
-}
 
+  def "a sync where some writes fail is reported as incomplete, with what failed"() {
+    given:
+      def good = UUID.randomUUID()
+      def bad = UUID.randomUUID()
+      def badSa = UUID.randomUUID()
+      walker.publishableEnvironmentIds() >> [good, bad]
+      walker.publishableServiceAccountIds() >> [badSa]
+      walker.publishableEnvironment(good) >> env(good)
+      walker.publishableEnvironment(bad) >> { throw new RuntimeException("database unavailable") }
+      walker.publishableServiceAccount(badSa) >> { throw new RuntimeException("database unavailable") }
+    when:
+      def result = sync.syncAll("test")
+    then:
+      result.environments == 2
+      result.failedEnvironments == 1
+      result.failedServiceAccounts == 1
+      !result.complete
+      redis.get(redis.keys.environment(good)) != null
+      redis.get(redis.keys.metaSync).contains('"complete":false')
+      redis.get(redis.keys.syncLock) == null
+  }
+
+  def "a complete sync says so"() {
+    given:
+      walker.publishableEnvironmentIds() >> []
+      walker.publishableServiceAccountIds() >> []
+    expect:
+      sync.syncAll("test").complete
+      redis.get(redis.keys.metaSync).contains('"complete":true')
+  }
+
+  def "the lock is released even if the lock renewal cannot be scheduled (e.g. while shutting down)"() {
+    given:
+      sync.stop()
+    when:
+      sync.syncAll("test")
+    then:
+      thrown(java.util.concurrent.RejectedExecutionException)
+      redis.get(redis.keys.syncLock) == null
+  }
+
+  def "syncInBackgroundThen returns straight away, then syncs and runs afterwards on the redis-full-sync thread"() {
+    given:
+      def envId = UUID.randomUUID()
+      def done = new java.util.concurrent.CountDownLatch(1)
+      String afterwardsOn = null
+      walker.publishableEnvironmentIds() >> [envId]
+      walker.publishableServiceAccountIds() >> []
+      walker.publishableEnvironment(envId) >> env(envId)
+    when:
+      sync.syncInBackgroundThen("test") { afterwardsOn = Thread.currentThread().name; done.countDown(); kotlin.Unit.INSTANCE }
+      done.await(5, java.util.concurrent.TimeUnit.SECONDS)
+    then:
+      afterwardsOn == "redis-full-sync"
+      redis.get(redis.keys.environment(envId)) != null
+  }
+
+  def "syncInBackgroundThen still runs afterwards when the sync fails or is skipped"() {
+    given:
+      def done = new java.util.concurrent.CountDownLatch(2)
+      walker.publishableEnvironmentIds() >> { throw new RuntimeException("database unavailable") }
+    when: "the sync fails"
+      sync.syncInBackgroundThen("test") { done.countDown(); kotlin.Unit.INSTANCE }
+    and: "the next one is skipped, another instance holds the lock"
+      sync.syncInBackgroundThen("test") { redis.set(redis.keys.syncLock, "someone-else"); kotlin.Unit.INSTANCE }
+      sync.syncInBackgroundThen("test") { done.countDown(); kotlin.Unit.INSTANCE }
+    then:
+      done.await(5, java.util.concurrent.TimeUnit.SECONDS)
+  }
+
+  def "the api key sweep reads the indexes and their service accounts in batches, not one key at a time"() {
+    given:
+      def counting = new InMemoryRedis() {
+        int indexGets = 0
+        int mgets = 0
+        @Override
+        String get(String key) {
+          if (key.startsWith(keys.serviceAccountKey(""))) indexGets++
+          return super.get(key)
+        }
+        @Override
+        List<String> mget(List<String> k) {
+          mgets++
+          return k.collect { data.get(it) }
+        }
+      }
+      def ids = (1..20).collect { UUID.randomUUID() }
+      ids.each { id ->
+        counting.set(counting.keys.serviceAccount(id), CacheJsonMapper.mapper.writeValueAsString(sa(id, "c*${id}", "s${id}")))
+        counting.set(counting.keys.serviceAccountKey("c*${id}"), id.toString())
+        counting.set(counting.keys.serviceAccountKey("s${id}"), id.toString())
+      }
+      counting.set(counting.keys.serviceAccountKey("stale"), ids[0].toString())
+      def provider = { -> walker } as Provider<CacheWalker>
+      def countingWriter = new RedisCacheWriter(counting, provider)
+      def countingSync = new RedisFullSync(counting, countingWriter, provider)
+      walker.publishableEnvironmentIds() >> []
+      walker.publishableServiceAccountIds() >> ids
+      ids.each { id -> walker.publishableServiceAccount(id) >> sa(id, "c*${id}", "s${id}") }
+    when:
+      def result = countingSync.syncAll("test")
+    then: "one scan batch of 41 indexes: one MGET of the indexes, one of the 20 service accounts"
+      counting.mgets == 2
+      counting.indexGets == 0
+      result.removedApiKeys == 1
+      counting.get(counting.keys.serviceAccountKey("stale")) == null
+      counting.get(counting.keys.serviceAccountKey("c*${ids[0]}")) == ids[0].toString()
+    cleanup:
+      countingWriter.drain()
+      countingSync.stop()
+  }
+
+  def "on shutdown the redis connection is closed, and a failure closing it does not escape"() {
+    given:
+      def r = Mock(io.featurehub.redis.FeatureHubRedis)
+    when:
+      new RedisConnectionShutdown(r).shutdown()
+    then:
+      1 * r.close() >> { throw new RuntimeException("already gone") }
+      noExceptionThrown()
+  }
+
+  def "the redis connection is closed after the writer has drained and the full sync has stopped"() {
+    expect:
+      RedisConnectionShutdown.getAnnotation(io.featurehub.lifecycle.LifecyclePriority).priority() >
+        io.featurehub.lifecycle.DrainExecutorPool.getAnnotation(io.featurehub.lifecycle.LifecyclePriority).priority()
+      RedisConnectionShutdown.getAnnotation(io.featurehub.lifecycle.LifecyclePriority).priority() >
+        io.featurehub.lifecycle.LifecyclePriority.APPLICATION_PRIORITY_END
+      RedisFullSyncLifecycle.getAnnotation(io.featurehub.lifecycle.LifecyclePriority) == null // the default, 100
+  }
+}

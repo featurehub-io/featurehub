@@ -32,6 +32,13 @@ interface FeatureHubRedis : AutoCloseable {
   val keys: RedisKeys
 
   fun get(key: String): String?
+
+  /**
+   * Reads several keys in one round trip, returning a value (or null) for each key in the same order. In cluster mode
+   * all the keys must hash to the same slot - ours do, as they all share the hash tag prefix.
+   */
+  fun mget(keys: List<String>): List<String?> = keys.map { get(it) }
+
   fun set(key: String, value: String)
   fun del(vararg keys: String): Long
 
@@ -115,6 +122,8 @@ class JedisFeatureHubRedis @JvmOverloads constructor(
     }
 
   override fun get(key: String): String? = client.get(key)
+
+  override fun mget(keys: List<String>): List<String?> = if (keys.isEmpty()) listOf() else client.mget(*keys.toTypedArray())
 
   override fun set(key: String, value: String) {
     client.set(key, value)

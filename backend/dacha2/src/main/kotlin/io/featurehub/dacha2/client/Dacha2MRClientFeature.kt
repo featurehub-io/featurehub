@@ -69,24 +69,37 @@ class Dacha2Client @Inject constructor(client: Client) : Dacha2ServiceServiceImp
 ))
 
 /**
- * Remembers the fallback client once it has been created, so shutdown can close it without creating it (injecting
- * Dacha2ServiceClient into a shutdown listener would build it - and start its probe thread - just to close it).
+ * Remembers the fallback client (and the MR JAX-RS client it was given) once they have been created, so shutdown can
+ * close them without creating them (injecting Dacha2ServiceClient into a shutdown listener would build it - and start
+ * its probe thread - just to close it).
  */
 class Dacha2FallbackResources {
-  private val created = AtomicReference<Dacha2FallbackServiceClient?>(null)
+  private val created = AtomicReference<Pair<Dacha2FallbackServiceClient, Client?>?>(null)
 
-  fun created(client: Dacha2FallbackServiceClient) {
-    created.set(client)
+  @JvmOverloads
+  fun created(client: Dacha2FallbackServiceClient, mrClient: Client? = null) {
+    created.set(client to mrClient)
   }
 
   fun close() {
-    created.getAndSet(null)?.close()
+    created.getAndSet(null)?.let { (client, mrClient) ->
+      client.close()
+      try {
+        mrClient?.close()
+      } catch (e: Exception) {
+        log.warn("dacha2: failed to close the management repository client", e)
+      }
+    }
+  }
+
+  companion object {
+    private val log: Logger = LoggerFactory.getLogger(Dacha2FallbackResources::class.java)
   }
 }
 
 /**
- * Closes the fallback client (its probe thread, the redis config reload thread and the redis connections) when the
- * container shuts down.
+ * Closes the fallback client (its probe thread, the redis config reload thread and the redis connections) and its
+ * dedicated MR JAX-RS client when the container shuts down.
  */
 class Dacha2FallbackShutdown @Inject constructor(private val resources: Dacha2FallbackResources) : LifecycleShutdown {
   override fun shutdown() {
@@ -108,7 +121,7 @@ class Dacha2FallbackClientFactory @Inject constructor(
     mrClient.property(ClientProperties.READ_TIMEOUT,
       FallbackPropertyConfig.getConfig("dacha2.redis.mr-read-timeout-ms", "15000").toInt())
 
-    return Dacha2FallbackServiceClient(Dacha2Client(mrClient), redisSource()).also { resources.created(it) }
+    return Dacha2FallbackServiceClient(Dacha2Client(mrClient), redisSource()).also { resources.created(it, mrClient) }
   }
 
   private fun redisSource(): RedisSource {

@@ -21,15 +21,25 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
-data class RedisSyncResult(
+/**
+ * What a full sync did. `failedEnvironments` / `failedServiceAccounts` count the objects (including re-checked
+ * orphans) whose Redis write or database read failed - each is logged by [RedisCacheWriter]. If either is non zero
+ * Redis is NOT a complete copy of the database ([complete] is false).
+ */
+data class RedisSyncResult @JvmOverloads constructor(
   val reason: String,
   val environments: Int,
   val serviceAccounts: Int,
   val orphanedEnvironments: Int,
   val orphanedServiceAccounts: Int,
   val removedApiKeys: Int,
-  val durationMs: Long
-)
+  val durationMs: Long,
+  val failedEnvironments: Int = 0,
+  val failedServiceAccounts: Int = 0,
+) {
+  val complete: Boolean
+    get() = failedEnvironments == 0 && failedServiceAccounts == 0
+}
 
 /**
  * Writes every publishable environment and service account to Redis and then sweeps out anything in Redis
@@ -110,6 +120,50 @@ open class RedisFullSync @Inject constructor(
    */
   open fun syncOnSyncThread(reason: String): Future<RedisSyncResult?> = executor.submit(Callable { syncAll(reason) })
 
+  /**
+   * For a maintenance publish-all, which returns straight away: runs a full sync on the untenanted `redis-full-sync`
+   * thread (after any sync already running on this instance), then [afterwards] (e.g. republishing the streaming
+   * caches) on that same thread whatever the outcome of the sync was, and logs the whole outcome - including whether
+   * Redis is now a complete copy of the database. The log is the only place the outcome is reported.
+   */
+  open fun syncInBackgroundThen(reason: String, afterwards: () -> Unit) {
+    try {
+      executor.submit { syncThen(reason, afterwards) }
+    } catch (e: Exception) {
+      log.error("redis: {}: unable to schedule the full sync, nothing was published - call it again", reason, e)
+    }
+  }
+
+  private fun syncThen(reason: String, afterwards: () -> Unit) {
+    val redisStatus = try {
+      val result = syncAll(reason)
+      when {
+        result == null -> "NOT SYNCED, another instance holds the sync lock - call it again once that sync has finished"
+        result.complete -> "complete, it matches the database: $result"
+        else -> "INCOMPLETE, ${result.failedEnvironments} environments and ${result.failedServiceAccounts} service " +
+          "accounts failed to write (see the errors above) - fix the cause and call it again: $result"
+      }
+    } catch (e: Exception) {
+      counterSyncFailures.inc()
+      log.error("redis: {}: full sync failed", reason, e)
+      "FAILED (${e.message ?: e.javaClass.name}), it is not up to date - fix the cause and call it again"
+    }
+
+    val afterwardsStatus = try {
+      afterwards()
+      "published"
+    } catch (e: Exception) {
+      log.error("redis: {}: publishing after the full sync failed", reason, e)
+      "FAILED (${e.message ?: e.javaClass.name})"
+    }
+
+    if (redisStatus.startsWith("complete") && afterwardsStatus == "published") {
+      log.info("redis: {}: finished. Redis: {}. Streaming caches: {}.", reason, redisStatus, afterwardsStatus)
+    } else {
+      log.error("redis: {}: finished WITH PROBLEMS. Redis: {}. Streaming caches: {}.", reason, redisStatus, afterwardsStatus)
+    }
+  }
+
   private fun syncAllSafely(reason: String) {
     try {
       syncAll(reason)
@@ -136,19 +190,22 @@ open class RedisFullSync @Inject constructor(
     // started a sync, so we stop before the sweep (the only destructive part)
     val lockLost = AtomicBoolean(false)
     val renewMs = (lockTtlMs / 3).coerceAtLeast(1000)
-    val renewal = lockRenewer.scheduleWithFixedDelay({
-      try {
-        if (!redis.expireIfEquals(keys.syncLock, token, lockTtlMs)) {
-          if (lockLost.compareAndSet(false, true)) {
-            log.warn("redis: full sync ({}) lost its lock", reason)
-          }
-        }
-      } catch (e: Exception) {
-        log.warn("redis: unable to renew the full sync lock", e)
-      }
-    }, renewMs, renewMs, TimeUnit.MILLISECONDS)
+    var renewal: java.util.concurrent.ScheduledFuture<*>? = null
 
     try {
+      // inside the try, so the lock is still released if this cannot be scheduled (e.g. we are shutting down)
+      renewal = lockRenewer.scheduleWithFixedDelay({
+        try {
+          if (!redis.expireIfEquals(keys.syncLock, token, lockTtlMs)) {
+            if (lockLost.compareAndSet(false, true)) {
+              log.warn("redis: full sync ({}) lost its lock", reason)
+            }
+          }
+        } catch (e: Exception) {
+          log.warn("redis: unable to renew the full sync lock", e)
+        }
+      }, renewMs, renewMs, TimeUnit.MILLISECONDS)
+
       val start = System.currentTimeMillis()
       log.info("redis: full sync ({}) starting", reason)
 
@@ -156,8 +213,8 @@ open class RedisFullSync @Inject constructor(
       val envIds = walker.publishableEnvironmentIds().toSet()
       val saIds = walker.publishableServiceAccountIds().toSet()
 
-      waitInBatches(envIds) { writer.refreshEnvironmentOnWorker(it) }
-      waitInBatches(saIds) { writer.refreshServiceAccountOnWorker(it) }
+      var failedEnvs = waitInBatches(envIds) { writer.refreshEnvironmentOnWorker(it) }
+      var failedSas = waitInBatches(saIds) { writer.refreshServiceAccountOnWorker(it) }
 
       if (lockLost.get()) {
         throw IllegalStateException("redis: full sync ($reason) lost its lock, stopping before the sweep")
@@ -168,19 +225,19 @@ open class RedisFullSync @Inject constructor(
       redis.scanKeys(keys.environmentPattern) { batch ->
         batch.mapNotNull { keys.environmentIdFromKey(it) }.filter { !envIds.contains(it) }.forEach { orphanEnvs.add(it) }
       }
-      waitInBatches(orphanEnvs) { writer.refreshEnvironmentOnWorker(it) }
+      failedEnvs += waitInBatches(orphanEnvs) { writer.refreshEnvironmentOnWorker(it) }
 
       val orphanSas = mutableSetOf<UUID>()
       redis.scanKeys(keys.serviceAccountPattern) { batch ->
         batch.mapNotNull { keys.serviceAccountIdFromKey(it) }.filter { !saIds.contains(it) }.forEach { orphanSas.add(it) }
       }
-      waitInBatches(orphanSas) { writer.refreshServiceAccountOnWorker(it) }
+      failedSas += waitInBatches(orphanSas) { writer.refreshServiceAccountOnWorker(it) }
 
       val removedApiKeys = sweepApiKeyIndexes()
 
       val result = RedisSyncResult(
         reason, envIds.size, saIds.size, orphanEnvs.size, orphanSas.size, removedApiKeys,
-        System.currentTimeMillis() - start
+        System.currentTimeMillis() - start, failedEnvs, failedSas
       )
 
       val completedAt = Instant.now()
@@ -193,16 +250,27 @@ open class RedisFullSync @Inject constructor(
         "orphanedServiceAccounts" to result.orphanedServiceAccounts,
         "removedApiKeys" to result.removedApiKeys,
         "durationMs" to result.durationMs,
+        "failedEnvironments" to result.failedEnvironments,
+        "failedServiceAccounts" to result.failedServiceAccounts,
+        "complete" to result.complete,
       )))
 
-      gaugeLastSync.set(completedAt.epochSecond.toDouble())
       gaugeEnvironments.set(result.environments.toDouble())
       gaugeServiceAccounts.set(result.serviceAccounts.toDouble())
 
-      log.info("redis: full sync complete {}", result)
+      if (result.complete) {
+        // only a complete sync counts: mr_redis_last_full_sync_seconds means "Redis matched the database at"
+        gaugeLastSync.set(completedAt.epochSecond.toDouble())
+        log.info("redis: full sync complete {}", result)
+      } else {
+        counterSyncFailures.inc()
+        log.error("redis: full sync INCOMPLETE, {} environments and {} service accounts failed to write: {}",
+          result.failedEnvironments, result.failedServiceAccounts, result)
+      }
+
       return result
     } finally {
-      renewal.cancel(false)
+      renewal?.cancel(false)
       try {
         // atomic compare-and-delete, so we never release a lock another instance now holds
         redis.deleteIfEquals(keys.syncLock, token)
@@ -225,13 +293,20 @@ open class RedisFullSync @Inject constructor(
     val serviceAccounts = mutableMapOf<String, CacheServiceAccount?>()
     val candidates = mutableListOf<Pair<String, String>>() // index key, service account id
 
+    // one MGET for each scan batch's indexes, and one for the service accounts they point at that we have not read yet
     redis.scanKeys(keys.serviceAccountKeyPattern) { batch ->
-      batch.forEach { indexKey ->
-        val apiKey = indexKey.substring(prefix.length)
-        val saId = redis.get(indexKey) ?: return@forEach
-        val sa = serviceAccounts.getOrPut(saId) { readServiceAccount(saId) }
+      val indexes = batch.zip(redis.mget(batch)).mapNotNull { (indexKey, saId) -> saId?.let { indexKey to it } }
 
-        if (!holdsKey(sa, apiKey)) {
+      val unread = indexes.map { it.second }.distinct().filter { !serviceAccounts.containsKey(it) }
+      val unreadIds = unread.associateWith { asUuid(it) }
+      val toRead = unreadIds.filterValues { it != null }
+      toRead.keys.zip(redis.mget(toRead.values.map { keys.serviceAccount(it!!) })).forEach { (saId, json) ->
+        serviceAccounts[saId] = json?.let { CacheJsonMapper.mapper.readValue(it, CacheServiceAccount::class.java) }
+      }
+      unreadIds.filterValues { it == null }.keys.forEach { serviceAccounts[it] = null }
+
+      indexes.forEach { (indexKey, saId) ->
+        if (!holdsKey(serviceAccounts[saId], indexKey.substring(prefix.length))) {
           candidates.add(indexKey to saId)
         }
       }
@@ -269,22 +344,28 @@ open class RedisFullSync @Inject constructor(
   }
 
   private fun readServiceAccount(saId: String): CacheServiceAccount? {
-    val id = try {
-      UUID.fromString(saId)
-    } catch (e: IllegalArgumentException) {
-      return null
-    }
-
+    val id = asUuid(saId) ?: return null
     return redis.get(keys.serviceAccount(id))?.let { CacheJsonMapper.mapper.readValue(it, CacheServiceAccount::class.java) }
+  }
+
+  private fun asUuid(id: String): UUID? = try {
+    UUID.fromString(id)
+  } catch (e: IllegalArgumentException) {
+    null
   }
 
   private fun holdsKey(sa: CacheServiceAccount?, apiKey: String): Boolean =
     sa != null && (sa.apiKeyClientSide == apiKey || sa.apiKeyServerSide == apiKey)
 
-  private fun waitInBatches(ids: Collection<UUID>, submit: (UUID) -> Future<*>) {
+  /**
+   * Returns how many of the refreshes failed.
+   */
+  private fun waitInBatches(ids: Collection<UUID>, submit: (UUID) -> Future<Boolean>): Int {
+    var failed = 0
     ids.chunked(batchSize).forEach { chunk ->
-      chunk.map(submit).forEach { it.get() }
+      chunk.map(submit).forEach { if (!it.get()) failed++ }
     }
+    return failed
   }
 
   companion object {
