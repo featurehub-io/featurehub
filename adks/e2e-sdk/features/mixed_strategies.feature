@@ -29,6 +29,12 @@ Feature: We can have a mixed set of strategies against a feature value and it pr
     And I attach portfolio strategy "black" to the current environment feature value with the value "pearl"
     And I expect the application strategy "white" to be attached to the feature history with the value "jade"
     And I expect the portfolio strategy "black" to be attached to the feature history with the value set to "pearl"
+    And the feature history for application strategy "white" has the rules
+      | fieldName | conditional | values | type   |
+      | customer  | equals      | brand  | string |
+    And the feature history for portfolio strategy "black" has the rules
+      | fieldName | conditional | values    | type   |
+      | customer  | equals      | scrunchie | string |
     Then The feature from the repository has the default value "kwong"
     Then The feature from the repository has strategies
       | position | value  |
