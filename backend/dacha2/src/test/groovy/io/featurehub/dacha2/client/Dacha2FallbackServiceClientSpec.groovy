@@ -381,4 +381,62 @@ class Dacha2FallbackServiceClientSpec extends Specification {
     cleanup:
       c?.close()
   }
+
+  def "a corrupt value in redis is reported like a redis failure, never as a raw parse error"() {
+    given:
+      redis.set(redis.keys.environment(envId), "{not json")
+    when: "MR has just failed - its failure is surfaced, as when redis is down"
+      client.getEnvironment(envId, null)
+    then:
+      1 * mr.getEnvironment(envId, null) >> { throw new ProcessingException("down") }
+      thrown(ProcessingException)
+    when: "the circuit is open - unavailable"
+      client.getEnvironment(envId, null)
+    then:
+      0 * mr._
+      thrown(ServiceUnavailableException)
+  }
+
+  def "a corrupt service account in redis is reported as unavailable"() {
+    given:
+      redis.set(redis.keys.serviceAccountKey("s1"), saId.toString())
+      redis.set(redis.keys.serviceAccount(saId), "[]")
+    when: "MR goes down, opening the circuit"
+      client.getEnvironment(envId, null)
+    then:
+      1 * mr.getEnvironment(envId, null) >> { throw new ProcessingException("down") }
+      thrown(ServiceUnavailableException) // the environment is not in redis
+    when:
+      client.getServiceAccount("s1", null)
+    then:
+      0 * mr._
+      thrown(ServiceUnavailableException)
+  }
+
+  def "a #status from MR is passed through and does not open the circuit"() {
+    given:
+      storeInRedis()
+    when:
+      client.getEnvironment(envId, null)
+    then:
+      1 * mr.getEnvironment(envId, null) >> { throw new ServerErrorException(status) }
+      def e = thrown(ServerErrorException)
+      e.response.status == status
+      !client.open
+    where:
+      status << [500, 501, 505]
+  }
+
+  def "a #status from in front of MR opens the circuit"() {
+    given:
+      storeInRedis()
+    when:
+      def found = client.getEnvironment(envId, null)
+    then:
+      1 * mr.getEnvironment(envId, null) >> { throw new ServerErrorException(status) }
+      found.env.environment.id == envId
+      client.open
+    where:
+      status << [502, 503, 504]
+  }
 }

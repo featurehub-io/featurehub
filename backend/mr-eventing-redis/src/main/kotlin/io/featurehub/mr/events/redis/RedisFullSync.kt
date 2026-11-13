@@ -7,6 +7,7 @@ import io.featurehub.lifecycle.LifecycleStarted
 import io.featurehub.metrics.MetricsCollector
 import io.featurehub.mr.events.common.CacheWalker
 import io.featurehub.redis.FeatureHubRedis
+import io.featurehub.redis.RedisConfig
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Inject
 import jakarta.inject.Provider
@@ -69,8 +70,8 @@ open class RedisFullSync @Inject constructor(
   private val walkerProvider: Provider<CacheWalker>
 ) {
   // the lock is renewed every third of this while a sync runs, so it only needs to cover a crashed holder
-  private val lockTtlMs = FallbackPropertyConfig.getConfig("redis.full-sync-lock-ms", (2 * 60 * 1000).toString()).toLong()
-  private val intervalHours = FallbackPropertyConfig.getConfig("redis.full-sync-interval-hours", "24").toLong()
+  private val lockTtlMs = RedisConfig.longSetting("redis.full-sync-lock-ms", 2 * 60 * 1000L)
+  private val intervalHours = RedisConfig.longSetting("redis.full-sync-interval-hours", 24)
   private val syncOnStartup = FallbackPropertyConfig.getConfig("redis.full-sync-on-startup", "true") == "true"
   private val batchSize = 1000
 

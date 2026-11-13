@@ -6,7 +6,7 @@ import io.featurehub.lifecycle.ExecutorPoolDrainageSource
 import io.featurehub.metrics.MetricsCollector
 import io.featurehub.mr.events.common.CacheWalker
 import io.featurehub.redis.FeatureHubRedis
-import io.featurehub.utils.FallbackPropertyConfig
+import io.featurehub.redis.RedisConfig
 import jakarta.inject.Inject
 import jakarta.inject.Provider
 import org.slf4j.Logger
@@ -40,9 +40,9 @@ open class RedisCacheWriter @Inject constructor(
   private val redis: FeatureHubRedis,
   private val walkerProvider: Provider<CacheWalker>
 ) : ExecutorPoolDrainageSource {
-  private val debounceMs = FallbackPropertyConfig.getConfig("redis.env-republish-debounce-ms", "250").toLong()
-  private val workerCount = FallbackPropertyConfig.getConfig("redis.pool-size", "2").toInt().coerceAtLeast(1)
-  private val drainSeconds = FallbackPropertyConfig.getConfig("redis.shutdown-drain-seconds", "10").toLong()
+  private val debounceMs = RedisConfig.longSetting("redis.env-republish-debounce-ms", 250)
+  private val workerCount = RedisConfig.intSetting("redis.pool-size", 2).coerceAtLeast(1)
+  private val drainSeconds = RedisConfig.longSetting("redis.shutdown-drain-seconds", 10)
 
   private val workers: List<ScheduledExecutorService> = (0 until workerCount).map { idx ->
     ScheduledThreadPoolExecutor(1) { r -> Thread(r, "redis-cache-writer-$idx").apply { isDaemon = true } }.apply {
@@ -142,7 +142,7 @@ open class RedisCacheWriter @Inject constructor(
   protected fun refreshServiceAccountNow(saId: UUID): Boolean {
     try {
       val saKey = keys.serviceAccount(saId)
-      val previous = redis.get(saKey)?.let { CacheJsonMapper.mapper.readValue(it, CacheServiceAccount::class.java) }
+      val previous = previousServiceAccount(saId, redis.get(saKey))
       val current = walkerProvider.get().publishableServiceAccount(saId)
 
       val previousApiKeys = previous?.let { setOfNotNull(it.apiKeyClientSide, it.apiKeyServerSide) } ?: setOf()
@@ -165,6 +165,22 @@ open class RedisCacheWriter @Inject constructor(
       counterFailures.labels("sa").inc()
       log.error("redis: failed to refresh service account {}", saId, e)
       return false
+    }
+  }
+
+  /**
+   * The previous value is only used to find api key indexes that are no longer needed. A corrupt value (or one from an
+   * incompatible model) must not stop the account being rewritten, so it is treated as absent: any index it owned is
+   * left for the full sync's sweep, and readers never trust an index whose key is not in the service account.
+   */
+  private fun previousServiceAccount(saId: UUID, json: String?): CacheServiceAccount? {
+    if (json == null) return null
+    return try {
+      CacheJsonMapper.mapper.readValue(json, CacheServiceAccount::class.java)
+    } catch (e: Exception) {
+      counterCorrupt.inc()
+      log.warn("redis: service account {} in redis cannot be read, overwriting it ({})", saId, e.message)
+      null
     }
   }
 
@@ -198,6 +214,8 @@ open class RedisCacheWriter @Inject constructor(
       .labelNames("type").register()
     private val counterFailures = io.prometheus.client.Counter.build("mr_redis_write_failures_total", "Redis cache write failures by type")
       .labelNames("type").register()
+    private val counterCorrupt = io.prometheus.client.Counter.build("mr_redis_corrupt_values_total",
+      "Service accounts in Redis that could not be read before being overwritten").register()
     private val gaugeQueue = MetricsCollector.gauge("mr_redis_env_republish_queue", "Pending (debounced) Redis cache writes")
   }
 }

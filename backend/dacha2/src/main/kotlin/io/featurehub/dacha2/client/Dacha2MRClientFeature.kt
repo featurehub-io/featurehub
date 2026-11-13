@@ -28,7 +28,8 @@ import org.slf4j.LoggerFactory
 
 class Dacha2MRClientFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
-    val redisConfig = RedisConfig.load(REDIS_CONFIG_PREFIX)
+    // invalid config logs an error and leaves the fallback off: Redis is optional, so it must never stop dacha2 starting
+    val redisConfig = RedisConfig.loadOrDisable(REDIS_CONFIG_PREFIX)
     // parsed the same way as the factory does, so e.g. " , " is treated as no files rather than an empty file list
     val configFiles = ReloadingRedisSource.files(FallbackPropertyConfig.getConfig(REDIS_CONFIG_FILES))
 
@@ -117,9 +118,9 @@ class Dacha2FallbackClientFactory @Inject constructor(
     // shared client used for other things
     val mrClient = ClientBuilder.newBuilder().withConfig(client.configuration).build()
     mrClient.property(ClientProperties.CONNECT_TIMEOUT,
-      FallbackPropertyConfig.getConfig("dacha2.redis.mr-connect-timeout-ms", "2000").toInt())
+      RedisConfig.intSetting("dacha2.redis.mr-connect-timeout-ms", 2000))
     mrClient.property(ClientProperties.READ_TIMEOUT,
-      FallbackPropertyConfig.getConfig("dacha2.redis.mr-read-timeout-ms", "15000").toInt())
+      RedisConfig.intSetting("dacha2.redis.mr-read-timeout-ms", 15000))
 
     return Dacha2FallbackServiceClient(Dacha2Client(mrClient), redisSource()).also { resources.created(it, mrClient) }
   }
@@ -128,7 +129,7 @@ class Dacha2FallbackClientFactory @Inject constructor(
     val files = ReloadingRedisSource.files(FallbackPropertyConfig.getConfig(Dacha2MRClientFeature.REDIS_CONFIG_FILES))
 
     if (files.isEmpty()) {
-      val config = RedisConfig.load(Dacha2MRClientFeature.REDIS_CONFIG_PREFIX)
+      val config = RedisConfig.loadOrDisable(Dacha2MRClientFeature.REDIS_CONFIG_PREFIX)
       gaugeConfigured.set(if (config == null) 0.0 else 1.0)
       // JedisFeatureHubRedis connects lazily, so an unreachable redis does not stop dacha2 starting
       return StaticRedisSource(config?.let { JedisFeatureHubRedis(it) })
@@ -137,7 +138,7 @@ class Dacha2FallbackClientFactory @Inject constructor(
     return ReloadingRedisSource(
       Dacha2MRClientFeature.REDIS_CONFIG_PREFIX,
       files,
-      FallbackPropertyConfig.getConfig(Dacha2MRClientFeature.REDIS_CONFIG_RELOAD_SECONDS, "30").toLong(),
+      RedisConfig.longSetting(Dacha2MRClientFeature.REDIS_CONFIG_RELOAD_SECONDS, 30),
       onChange = { config -> gaugeConfigured.set(if (config == null) 0.0 else 1.0) }
     )
   }

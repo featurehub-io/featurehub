@@ -105,4 +105,50 @@ class RedisConfigSpec extends Specification {
     where:
       url << ["redis://host:notaport", "redis://host:0", "redis://host:70000", "redis://::1:6379", "redis://[::1]x", "redis://:6379"]
   }
+
+  def "loadOrDisable turns invalid configuration (#name=#value) into disabled instead of failing"() {
+    given:
+      System.setProperty("badcfg.redis.url", "redis://localhost:6379")
+      System.setProperty("badcfg.redis." + name, value)
+    when:
+      RedisConfig.load("badcfg.redis")
+    then:
+      thrown(IllegalArgumentException)
+    expect:
+      RedisConfig.loadOrDisable("badcfg.redis") == null
+    cleanup:
+      System.clearProperty("badcfg.redis.url")
+      System.clearProperty("badcfg.redis." + name)
+    where:
+      name                 | value
+      "url"                | "http://localhost"
+      "url"                | "redis://localhost:notaport"
+      "mode"               | "galaxy"
+      "connect-timeout-ms" | "abc"
+  }
+
+  def "loadOrDisable still loads a valid configuration"() {
+    given:
+      System.setProperty("goodcfg.redis.url", "redis://localhost:6390")
+    expect:
+      RedisConfig.loadOrDisable("goodcfg.redis").hosts == [new RedisHost("localhost", 6390)]
+    cleanup:
+      System.clearProperty("goodcfg.redis.url")
+  }
+
+  def "a numeric setting that is not a number (#value) uses the default"() {
+    given:
+      if (value != null) System.setProperty("numcfg.setting", value)
+    expect:
+      RedisConfig.longSetting("numcfg.setting", 42) == expected
+      RedisConfig.intSetting("numcfg.setting", 42) == (int) expected
+    cleanup:
+      System.clearProperty("numcfg.setting")
+    where:
+      value  | expected
+      null   | 42
+      ""     | 42
+      "abc"  | 42
+      " 17 " | 17
+  }
 }

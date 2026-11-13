@@ -230,15 +230,22 @@ To avoid this, give MR and Dacha2 a Redis instance:
 * *MR* writes every environment and service account to Redis, as well as publishing changes in the normal way.
 Redis only stores whole environments, so when a single feature changes MR rewrites the entire environment in Redis.
 This extra work is deliberate: Redis is only read while MR is unavailable.
-* *Dacha2* keeps asking MR first. If MR cannot be reached or returns a 5xx error (including the Maintenance
-Responder's 503), Dacha2 serves cache misses from Redis instead, and checks MR again every 10 seconds
+* *Dacha2* keeps asking MR first. If MR cannot be reached (connection refused, timeout) or the answer is a 502, 503
+(including the Maintenance Responder's) or 504, Dacha2 serves cache misses from Redis instead, and checks MR again every 10 seconds
 (`dacha2.redis.mr-retry-interval-ms`, at least 1000; a smaller value is logged as an error and 1000 is used) in the
 background, so it notices MR is back even if every request is being answered from its cache. Once MR answers,
 Dacha2 drops the entries it got from Redis and reloads them from MR.
-* A single failure opens this fallback for *every* environment and API key, not just the one that failed. So while
-Redis is configured, one 500 from an otherwise healthy MR (for example a bug affecting one environment) sends every
-cache miss to Redis until the next check of MR. This is why Redis should only be configured around a maintenance
-window.
+* Any other error from MR, including a 500, is MR's answer for that one request: it is passed on and does not open the
+fallback. Note that an MR that is running but cannot reach its database answers 500, so it does *not* trigger the
+fallback: stop MR (or route it to the Maintenance Responder) for the fallback to be used.
+* A single failure that does trigger it opens the fallback for *every* environment and API key, not just the one that
+failed, until the next check of MR. This is why Redis should only be configured around a maintenance window.
+* A value in Redis that cannot be read is treated as a Redis failure (counted in `dacha2_redis_errors`), so the request
+gets a 503 rather than a parse error. MR overwrites such a service account the next time it writes it, rather than
+failing on it.
+* Redis is optional: an invalid Redis configuration at startup (a malformed `redis.url`, port, mode or timeout) logs
+an error and leaves the fallback *disabled*, in MR and in Dacha2, rather than stopping them starting. A numeric setting
+that is not a number logs an error and uses its default.
 * A `404` from MR is always trusted and Redis is not consulted. Anything not found in Redis is treated as "not
 available right now", so once MR is back it loads normally.
 
@@ -336,11 +343,19 @@ policy. If your Redis supports ACLs, give Dacha2 a user that can only read keys 
 
 ==== Metrics
 
-- MR: `mr_redis_writes_total`, `mr_redis_write_failures_total`, `mr_redis_env_republish_queue`,
+- MR: `mr_redis_writes_total`, `mr_redis_write_failures_total`, `mr_redis_corrupt_values_total`, `mr_redis_env_republish_queue`,
 `mr_redis_last_full_sync_seconds`, `mr_redis_environments`, `mr_redis_service_accounts`,
 `mr_redis_full_sync_failures`.
 - Dacha2: `dacha2_redis_configured` (`1` while a Redis connection is configured), `dacha2_mr_fallback_state` (`1` while serving from Redis), `dacha2_redis_hits_total`,
-`dacha2_redis_misses_total`, `dacha2_redis_errors`.
+`dacha2_redis_misses_total`, `dacha2_redis_errors`, `dacha2_cache_load_unavailable_total{type}` (cache loads that
+failed because MR, and Redis if configured, could not answer).
+
+Failed cache loads during an MR outage are expected, so Dacha2 does not log each one as an error: they are logged at
+DEBUG, counted in `dacha2_cache_load_unavailable_total`, and summarised in one WARN a minute while they continue
+(`dacha2: N cache loads failed in the last 60s because MR is unavailable`). "MR is unavailable" means the same as for
+the fallback: a connection failure, a 502/503/504, or Redis not being able to answer while the fallback is in use. Any
+other failure, including a 500, is still logged at ERROR with its stack trace. Alert on the rate of the metric rather
+than on log volume.
 
 The Redis fallback does not apply to `party-server` or `party-server-ish`, where Dacha2 runs inside the same process as
 MR.

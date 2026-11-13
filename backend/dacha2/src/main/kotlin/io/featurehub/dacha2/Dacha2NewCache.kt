@@ -1,5 +1,6 @@
 package io.featurehub.dacha2
 
+import io.featurehub.dacha2.client.MRUnavailable
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.CacheLoader
 import com.github.benmanes.caffeine.cache.Caffeine
@@ -82,7 +83,8 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
           environmentMissCache.put(id, true)
           throw nfe
         } catch (e: Exception) {
-          log.error("failed", e)
+          // quiet (DEBUG, counted, one WARN a minute) when MR is unavailable - an expected part of an outage
+          MRUnavailable.loadFailed("environment", id, e, log)
           throw e
         }
       })
@@ -104,6 +106,9 @@ open class Dacha2NewCacheImpl @Inject constructor(private val mrDacha2Api: Dacha
           log.trace("service account {} does not exist", key)
           serviceAccountMissCache.put(key, true)
           throw nfe
+        } catch (e: Exception) {
+          MRUnavailable.loadFailed("service-account", key, e, log)
+          throw e
         }
       })
 

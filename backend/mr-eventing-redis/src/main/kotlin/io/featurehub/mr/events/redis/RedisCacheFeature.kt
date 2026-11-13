@@ -27,7 +27,8 @@ import org.slf4j.LoggerFactory
  */
 class RedisCacheFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
-    val config = RedisConfig.load() ?: return false
+    // invalid config logs an error and leaves Redis off: it is optional, so it must never stop MR starting
+    val config = RedisConfig.loadOrDisable() ?: return false
 
     log.info("redis: Redis fallback cache publishing is enabled ({})", config)
 

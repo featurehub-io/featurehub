@@ -9,6 +9,7 @@ import io.featurehub.metrics.MetricsCollector
 import io.featurehub.mr.model.Dacha2Environment
 import io.featurehub.mr.model.Dacha2ServiceAccount
 import io.featurehub.redis.FeatureHubRedis
+import io.featurehub.redis.RedisConfig
 import io.featurehub.redis.RedisSource
 import io.featurehub.redis.StaticRedisSource
 import io.featurehub.utils.FallbackPropertyConfig
@@ -56,7 +57,7 @@ fun interface Dacha2RecoveryListener {
 class Dacha2FallbackServiceClient @JvmOverloads constructor(
   private val primary: Dacha2ServiceClient,
   private val redisSource: RedisSource,
-  retryIntervalMs: Long = FallbackPropertyConfig.getConfig("dacha2.redis.mr-retry-interval-ms", "10000").toLong(),
+  retryIntervalMs: Long = RedisConfig.longSetting("dacha2.redis.mr-retry-interval-ms", 10000),
   private val clock: () -> Long = System::currentTimeMillis,
   backgroundProbe: Boolean = true,
   // a Redis read that completes after recovery is evicted after this delay, by which time its loader has cached it
@@ -107,9 +108,10 @@ class Dacha2FallbackServiceClient @JvmOverloads constructor(
 
   override fun getEnvironment(id: UUID, key: String?): Dacha2Environment {
     return call("env", { primary.getEnvironment(id, key) }) { redis, mrFailure ->
-      val env = readRedis("env", mrFailure) { redis.get(redis.keys.environment(id)) }
-        ?.let { CacheJsonMapper.mapper.readValue(it, PublishEnvironment::class.java) }
-        ?: throw miss("env", "environment $id is not in redis")
+      // parsed inside readRedis, so a corrupt value is counted and reported like any other Redis failure
+      val env = readRedis("env", mrFailure) {
+        redis.get(redis.keys.environment(id))?.let { CacheJsonMapper.mapper.readValue(it, PublishEnvironment::class.java) }
+      } ?: throw miss("env", "environment $id is not in redis")
 
       servedFromRedis(setOf(id), setOf())
       Dacha2Environment().env(env)
@@ -121,8 +123,8 @@ class Dacha2FallbackServiceClient @JvmOverloads constructor(
       val sa = readRedis("sa", mrFailure) {
         redis.get(redis.keys.serviceAccountKey(id))?.let { saId ->
           redis.get(redis.keys.serviceAccount(UUID.fromString(saId)))
-        }
-      }?.let { CacheJsonMapper.mapper.readValue(it, CacheServiceAccount::class.java) }
+        }?.let { CacheJsonMapper.mapper.readValue(it, CacheServiceAccount::class.java) }
+      }
         // never trust a stale index - the key must still belong to the service account
         ?.takeIf { it.apiKeyClientSide == id || it.apiKeyServerSide == id }
         ?: throw miss("sa", "service account key is not in redis")
@@ -242,9 +244,11 @@ class Dacha2FallbackServiceClient @JvmOverloads constructor(
     }
   }
 
-  private fun isFallbackTrigger(e: Exception): Boolean {
-    return e is ProcessingException || e is ServerErrorException
-  }
+  /**
+   * See [MRUnavailable.isMRUnavailable] - the single definition, including why a 500 does not open the circuit
+   * (DECIDED - do not re-raise in review).
+   */
+  private fun isFallbackTrigger(e: Exception): Boolean = MRUnavailable.isMRUnavailable(e)
 
   private fun <T> readRedis(type: String, mrFailure: Exception?, read: () -> T?): T? {
     try {
@@ -255,14 +259,14 @@ class Dacha2FallbackServiceClient @JvmOverloads constructor(
       counterErrors.inc()
       log.error("dacha2: MR unavailable and unable to read from redis", e)
       // Redis is down as well, surface the original problem
-      throw mrFailure ?: ServiceUnavailableException("MR and Redis unavailable")
+      throw mrFailure ?: MRUnavailableException("MR and Redis unavailable", e)
     }
   }
 
-  private fun miss(type: String, message: String): ServiceUnavailableException {
+  private fun miss(type: String, message: String): MRUnavailableException {
     counterMisses.labels(type).inc()
     log.debug("dacha2: redis fallback miss: {}", message)
-    return ServiceUnavailableException(message)
+    return MRUnavailableException(message)
   }
 
   @Synchronized

@@ -117,6 +117,30 @@ class RedisCacheSpec extends Specification {
       redis.get(redis.keys.serviceAccountKey("c*1")) == saId.toString()
   }
 
+  def "a corrupt service account in redis is overwritten, not left to block every later refresh"() {
+    given:
+      def saId = UUID.randomUUID()
+      redis.set(redis.keys.serviceAccount(saId), value)
+    when:
+      def ok = writer.refreshServiceAccountOnWorker(saId).get()
+    then:
+      1 * walker.publishableServiceAccount(saId) >> sa(saId, "c*1", "s2")
+      ok
+      CacheJsonMapper.mapper.readValue(redis.get(redis.keys.serviceAccount(saId)), CacheServiceAccount).apiKeyServerSide == "s2"
+      redis.get(redis.keys.serviceAccountKey("s2")) == saId.toString()
+    where:
+      value << ["{not json", "[]", '{"id": "not-a-uuid"}']
+  }
+
+  def "a malformed redis url leaves the redis feature off instead of stopping MR starting"() {
+    given:
+      System.setProperty("redis.url", "http://nope")
+    expect:
+      !new RedisCacheFeature().configure(Mock(jakarta.ws.rs.core.FeatureContext))
+    cleanup:
+      System.clearProperty("redis.url")
+  }
+
   def "deleting a service account removes it and its indexes, but not an index now owned by another"() {
     given:
       def saId = UUID.randomUUID()

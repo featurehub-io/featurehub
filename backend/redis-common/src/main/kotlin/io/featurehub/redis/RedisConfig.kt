@@ -70,11 +70,52 @@ data class RedisConfig(
         password = cfg("password"),
         sentinelMaster = cfg("sentinel.master"),
         keyPrefix = cfg("key-prefix"),
-        connectTimeoutMs = cfg("connect-timeout-ms")?.toInt(),
-        socketTimeoutMs = cfg("socket-timeout-ms")?.toInt(),
+        connectTimeoutMs = cfg("connect-timeout-ms")?.let { number("$prefix.connect-timeout-ms", it) },
+        socketTimeoutMs = cfg("socket-timeout-ms")?.let { number("$prefix.socket-timeout-ms", it) },
         caCertPath = cfg("tls.ca-cert"),
       )
     }
+
+    /**
+     * As [load], but a malformed configuration (bad url, port, mode or timeout) logs an error and returns null, so
+     * the Redis fallback is disabled rather than stopping the application starting - Redis is optional.
+     */
+    private fun number(name: String, value: String): Int =
+      value.toIntOrNull() ?: throw IllegalArgumentException("`$name` must be a number, not `$value`")
+
+    @JvmStatic @JvmOverloads
+    fun loadOrDisable(prefix: String = DEFAULT_PREFIX): RedisConfig? {
+      return try {
+        load(prefix)
+      } catch (e: IllegalArgumentException) {
+        configLog.error("redis: the `{}.*` configuration is invalid ({}), the Redis fallback is DISABLED", prefix, e.message)
+        null
+      }
+    }
+
+    /**
+     * Reads a numeric Redis setting. A value that is not a number logs an error and uses the default, so a typo in an
+     * optional Redis setting never stops the application starting.
+     */
+    @JvmStatic
+    fun longSetting(name: String, default: Long): Long {
+      val value = FallbackPropertyConfig.getConfig(name)?.trim()?.ifEmpty { null } ?: return default
+      return value.toLongOrNull() ?: run {
+        configLog.error("redis: `{}` is `{}`, which is not a number, using {}", name, value, default)
+        default
+      }
+    }
+
+    @JvmStatic
+    fun intSetting(name: String, default: Int): Int {
+      val value = longSetting(name, default.toLong())
+      return if (value in Int.MIN_VALUE..Int.MAX_VALUE) value.toInt() else {
+        configLog.error("redis: `{}` is {}, which is too large, using {}", name, value, default)
+        default
+      }
+    }
+
+    private val configLog: org.slf4j.Logger = org.slf4j.LoggerFactory.getLogger(RedisConfig::class.java)
 
     @JvmStatic @JvmOverloads
     fun enabled(prefix: String = DEFAULT_PREFIX): Boolean = load(prefix) != null
