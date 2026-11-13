@@ -202,6 +202,6 @@ When('I expect the portfolio strategy {string} to be removed from the feature hi
   const strategy = await findStrategy(world, strategyName);
 
   const historyItem = await findHistory(world);
-  const currentStatus = historyItem.history[historyItem.history.length-1];
+  const currentStatus = historyItem.history[0];
   expect(currentStatus.rolloutStrategies.find(s => s.id === strategy.uniqueCode)).to.be.undefined;
 });

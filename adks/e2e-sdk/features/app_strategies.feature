@@ -43,7 +43,7 @@ Feature: We can save, change and retrieve application strategies on feature valu
 #    And I attach application strategy "first" to the current environment feature value
 #    And I set the feature flag to off and locked
 
-  @appstrat @strathistory
+  @appstrat @strathistory @appstratpercentageoride
   Scenario: The feature history shows the rules and percentages of application strategies attached to a feature value
     Given I create application strategies
       | name     | percentage | percentageAttributes | fieldName | conditional | values | type   |
@@ -67,7 +67,7 @@ Feature: We can save, change and retrieve application strategies on feature valu
       | customer  | equals      | brand  | string |
     And the feature history for application strategy "split" has percentage 20
 
-  @appstrat @strathistory
+  @appstrat @strathistory @retired
   Scenario: The feature history keeps the name and rules of an application strategy after it is archived
     Given I create application strategies
       | name    | percentage | percentageAttributes | fieldName | conditional | values | type   |

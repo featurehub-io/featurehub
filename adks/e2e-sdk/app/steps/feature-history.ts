@@ -16,7 +16,7 @@ import DataTable from "@cucumber/cucumber/lib/models/data_table";
 async function getFeatureHistory(world: SdkWorld, max: number = 10)  : Promise<FeatureHistoryList> {
   const history =
     await world.featureHistoryApi.listFeatureHistory(world.application.id, [world.feature.key],
-      [], [], [world.environment.id], max, 1, FeatureHistoryOrder.Desc);
+      [], [], [world.environment.id], max, 0, FeatureHistoryOrder.Desc);
 
   expect(history.status).to.eq(200);
 
@@ -30,6 +30,9 @@ Given("I get the feature history", async function () {
   await getFeatureHistory(world);
 });
 
+/**
+ * The feature value's history, newest version first (so history[0] is the current version).
+ */
 export async function findHistory(world: SdkWorld) : Promise<FeatureHistoryItem> {
   const history = await getFeatureHistory(world);
 
@@ -150,7 +153,7 @@ Given("I save the current feature value's history using the key {string}", async
 
   const historyItem = await findHistory(world);
 
-  world.featureHistorySave[name] = historyItem.history[historyItem.history.length-1];
+  world.featureHistorySave[name] = historyItem.history[0];
 });
 
 Then("I expect the application strategy {string} to be removed from the feature history", async function (strategyKey: string) {
@@ -160,7 +163,7 @@ Then("I expect the application strategy {string} to be removed from the feature 
   validateWorldForApplicationStrategies(world, strategy, strategyKey);
 
   const historyItem = await findHistory(world);
-  const currentStatus = historyItem.history[historyItem.history.length-1];
+  const currentStatus = historyItem.history[0];
   expect(currentStatus.rolloutStrategies.find(s => s.id === strategy.uniqueCode)).to.be.undefined;
 });
 
