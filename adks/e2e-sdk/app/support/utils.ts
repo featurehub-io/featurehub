@@ -108,7 +108,8 @@ function internalRolloutStrategyCompare(s1: RolloutStrategy, s2: RolloutStrategy
     if (pa1 === undefined && pa2 === undefined) return true;
     if (pa1 === undefined || pa2 === undefined) return false;
 
-    return pa1.sort() === pa2.sort();
+    // compare sorted copies by content - `===` on arrays is reference equality and never matches
+    return isDeepStrictEqual([...pa1].sort(), [...pa2].sort());
   }
 
   function internalCompareAttributes(a1?: Array<RolloutStrategyAttribute>, a2?: Array<RolloutStrategyAttribute>) {
