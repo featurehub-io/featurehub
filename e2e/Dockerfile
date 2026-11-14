@@ -1,4 +1,4 @@
-FROM dart:3.2.3
+FROM dart:3.10.4
 
 ADD . /e2e
 WORKDIR /e2e
